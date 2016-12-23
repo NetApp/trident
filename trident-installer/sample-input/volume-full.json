@@ -1,0 +1,11 @@
+{
+	"version": "1",
+	"name": "full",
+	"protocol": "block",
+	"size": "200MB",
+	"snapshotPolicy": "none",
+	"exportPolicy": "default",
+	"snapshotDirectory": "false",
+	"unixPermissions": "---rwxr-xr-x",
+	"storageClass": "gold"
+}

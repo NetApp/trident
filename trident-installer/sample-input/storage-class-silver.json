@@ -1,0 +1,11 @@
+{
+	"name": "silver",
+	"attributes" : {
+		"media":"hybrid",
+		"provisioningType":"thin",
+		"snapshots":"true"
+	},
+	"requiredStorage": {
+		"solidfire_10.0.0.1": ["Silver"]
+	}
+}

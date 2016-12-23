@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: trident-launcher
+    namespace: default
+spec:
+    serviceAccount: default
+    containers:
+    - name: launcher
+      image: __LAUNCHER_TAG__
+      command:
+      - /usr/local/bin/launcher
+      #args:
+      #- "-apiserver"
+      #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
+      volumeMounts:
+      - name: config-volume
+        mountPath: /etc/config
+    volumes:
+    - name: config-volume
+      configMap:
+            name: trident-launcher-config
+    restartPolicy: Never

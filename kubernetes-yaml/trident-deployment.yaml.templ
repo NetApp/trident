@@ -1,0 +1,61 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: trident
+  namespace: default
+  labels:
+    app: trident.netapp.io
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  template:
+      metadata:
+          labels:
+              app: trident.netapp.io
+      spec:
+          serviceAccount: default
+          containers:
+          - name: trident-main
+            image: __TRIDENT_IMAGE__ 
+            command:
+            - /usr/local/bin/trident_orchestrator
+            args:
+            - "-port"
+            - "8000"
+            - "-etcd_v2"
+            - "http://127.0.0.1:8001"
+            - "-k8s_pod"
+            #- "-k8s_api_server"
+            #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
+            ports:
+            - containerPort: 8000
+          - name: etcd
+            image: quay.io/coreos/etcd:v2.3.7
+            ports:
+            - containerPort: 8001 
+            command:
+            - /etcd
+            args:
+            - -name
+            - etcd1
+            - -advertise-client-urls
+            - http://0.0.0.0:8001
+            - -listen-client-urls
+            - http://0.0.0.0:8001
+            - -initial-cluster
+            - default=http://0.0.0.0:8002
+            - -initial-advertise-peer-urls
+            - http://0.0.0.0:8002
+            - -listen-peer-urls
+            - http://0.0.0.0:8002
+            - -data-dir
+            - /var/etcd/data
+            - -initial-cluster
+            - etcd1=http://0.0.0.0:8002
+            volumeMounts:
+            - name: etcd-vol
+              mountPath: /var/etcd/data
+          volumes:
+          - name: etcd-vol
+            persistentVolumeClaim:
+              claimName: trident
