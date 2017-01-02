@@ -817,7 +817,7 @@ We provide an example `StorageClass` definition for use with Trident in
 #### Volumes
 
 Trident follows the proposal for external Kubernetes Dynamic Provisioners found
-[here](https://github.com/kubernetes/kubernetes/blob/master/docs/proposals/volume-provisioning.md).
+[here](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/volume-provisioning.md).
 Thus, when a user creates a PVC that refers to a Trident-based `StorageClass`,
 Trident will provision a new volume using the corresponding storage class and
 register a new PV for that volume.  In configuring the provisioned volume and
