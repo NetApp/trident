@@ -182,7 +182,7 @@ available in [Volume Configurations](#volume-configurations), and
 [Volumes](#volumes) describes how to create them using PVCs.  If you are
 unfamiliar with the `PersistentVolume` interface in Kubernetes, a walkthrough
 is available
-[here](http://kubernetes.io/docs/user-guide/persistent-volumes/walkthrough/)
+[here](http://kubernetes.io/docs/user-guide/persistent-volumes/walkthrough/).
 
 Unlike the nDVP, Trident supports managing multiple backends with a single
 instance.  To add an additional backend, create a new configuration file and
@@ -195,7 +195,11 @@ describes the parameters that storage classes take.  Instructions for creating
 them via Kubernetes are available in the [Storage Classes](#storage-classes)
 section.  For more details on how Trident chooses storage pools from a storage
 class to provision its volumes, see [Provisioning
-Workflow](#provisioning-workflow)
+Workflow](#provisioning-workflow).
+
+The following tutorial presents an in-depth overview of Trident and demonstrates some advanced use cases:
+
+[![Trident: External Provisioner for NetApp Storage](https://img.youtube.com/vi/NDcnyGe2GFo/0.jpg)](https://www.youtube.com/watch?v=NDcnyGe2GFo)
 
 ## Requirements
 
