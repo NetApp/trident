@@ -59,7 +59,7 @@ func getStorageBackendSpecsCommon(
 		}
 	}()
 	// find the aggregates for this backend
-	r1, err1 := azgo.NewVserverGetIterRequest().ExecuteUsing(zr)
+	r1, err1 := azgo.NewVserverGetIterRequest().SetMaxRecords(0xffffffff - 1).ExecuteUsing(zr)
 	if err1 != nil {
 		err = fmt.Errorf("Problem in contacting storage backend to get its " +
 			"specs!")
@@ -95,7 +95,7 @@ func getStorageBackendSpecsCommon(
 	}
 
 	// find storage level classes for aggregates that are backed by this SVM
-	r2, err2 := azgo.NewAggrGetIterRequest().ExecuteUsing(zr)
+	r2, err2 := azgo.NewAggrGetIterRequest().SetMaxRecords(0xffffffff - 1).ExecuteUsing(zr)
 	if err2 != nil {
 		err = fmt.Errorf("Problem in contacting storage backends to get its " +
 			"specs!")
