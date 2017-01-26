@@ -1,5 +1,5 @@
 FROM debian:jessie  
-MAINTAINER Ardalan Kangarlou <ardalan.kangarlou@netapp.com>
+MAINTAINER Ardalan Kangarlou <Ardalan.Kangarlou@netapp.com>
 
 LABEL version="1.0" \
 	  description="Kubernetes storage orchestrator"
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 	scsitools \
 	kmod \
 	curl \
-	aeson-pretty \
+	jq \
 	ca-certificates
 ARG PORT=8000
 ENV PORT $PORT

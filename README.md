@@ -230,7 +230,7 @@ does have the following requirements, however:
 We provide several helper scripts for the REST API in `scripts/`.  These
 require:
 * curl:  Needed by all scripts for communicating with the API server.
-* [aeson-pretty](https://hackage.haskell.org/package/aeson-pretty): Used by
+* [jq](https://stedolan.github.io/jq/download/): Used by
   `json-get.sh` to pretty-print its output.
 * If used in Kubernetes, these scripts can automatically detect Trident's IP
   address.  Doing so is optional, but requires:

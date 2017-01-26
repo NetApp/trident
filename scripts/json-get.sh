@@ -18,10 +18,10 @@ fi
 
 if [ $# -eq 1 ]
 then
-	curl -s -S ${TRIDENT_IP}:${TRIDENT_PORT}/trident/v1/${1} | aeson-pretty
+	curl -s -S ${TRIDENT_IP}:${TRIDENT_PORT}/trident/v1/${1} | jq '.'
 elif [ $# -eq 2 ]
 then
-	curl -s -S ${TRIDENT_IP}:${TRIDENT_PORT}/trident/v1/${1}/${2} | aeson-pretty
+	curl -s -S ${TRIDENT_IP}:${TRIDENT_PORT}/trident/v1/${1}/${2} | jq '.'
 else
 	>&2 echo "Usage: $0 <resource-type> <resource-name>"
 	>&2 echo "resource-type:  either 'volume' or 'backend'.  Required."
