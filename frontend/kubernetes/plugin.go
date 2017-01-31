@@ -484,6 +484,8 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 					"backend": vol.Backend,
 				}).Error(err2)
 				err = fmt.Errorf("%s => %s", err1.Error(), err2)
+			} else {
+				err = err1
 			}
 		}
 	}()
