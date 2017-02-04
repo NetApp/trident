@@ -90,11 +90,10 @@ are not available, see the subsequent sections.
     This will also be used in step 8 to provision the PVC on which Trident will
 	store its metadata.
    
-    Edit either `sample-input/backend-ontap-nas.json`,
-    `sample-input/backend-ontap-san.json`,   or
-    `sample-input/backend-solidfire.json` to refer to an actual ONTAP or
-    SolidFire deployment (use `backend-ontap-nas.json` to provision NFS volumes
-    from ONTAP and `backend-ontap-san.json` for iSCSI volumes).
+    In the Trident installer directory, edit either `sample-input/backend-ontap-nas.json`,
+    `sample-input/backend-ontap-san.json`, or `sample-input/backend-solidfire.json` to
+    refer to an actual ONTAP or SolidFire deployment (use `backend-ontap-nas.json` to 
+    provision NFS volumes from ONTAP and `backend-ontap-san.json` for iSCSI volumes).
 	
 	If multiple clusters will be running Trident against the same backend, add
 	the storagePrefix attribute, with a value that will be unique to your
