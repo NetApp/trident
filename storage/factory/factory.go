@@ -13,6 +13,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/storage/eseries"
 	"github.com/netapp/trident/storage/fake"
 	"github.com/netapp/trident/storage/ontap"
 	"github.com/netapp/trident/storage/solidfire"
@@ -50,6 +51,8 @@ func NewStorageBackendForConfig(configJSON string) (
 		storageDriver = &ontap.OntapSANStorageDriver{}
 	case dvp.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SolidfireSANStorageDriver{}
+	case dvp.EseriesIscsiStorageDriverName:
+		storageDriver = &eseries.EseriesStorageDriver{}
 	case fake_driver.FakeStorageDriverName:
 		storageDriver = &fake.FakeStorageDriver{}
 	default:
@@ -222,6 +225,33 @@ func NewStorageBackendForConfig(configJSON string) (
 			}
 			driver.VagID = vagID
 		}*/
+
+	case dvp.EseriesIscsiStorageDriverName:
+		driver := storageDriver.(*eseries.EseriesStorageDriver)
+
+		// Override default HostGroup name if it is "netappdvp"
+		if driver.Config.AccessGroup == "netappdvp" {
+			driver.Config.AccessGroup = config.DefaultEseriesHostGroup
+			log.Debugf("Set default E-series HostGroup to %s", config.DefaultEseriesHostGroup)
+		}
+
+		// Make sure the Trident Host Group exists
+		hostGroup, err := driver.API.GetHostGroup(driver.Config.AccessGroup)
+		if err != nil {
+			return nil, err
+		} else if hostGroup.ClusterRef == "" {
+			return nil, fmt.Errorf("Host Group %s doesn't exist for E-Series array %s "+
+				"and needs to be manually created! Please also ensure all "+
+				"relevant Hosts are defined on the array and added to the Host Group.",
+				driver.Config.AccessGroup, driver.Config.ControllerA)
+		} else {
+			log.WithFields(log.Fields{
+				"driver":     dvp.EseriesIscsiStorageDriverName,
+				"controller":        driver.Config.ControllerA,
+				"hostGroup":     hostGroup.Label,
+			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", driver.Config.AccessGroup)
+		}
+
 	case fake_driver.FakeStorageDriverName:
 	default:
 		err = fmt.Errorf("Unknown storage driver: %v",

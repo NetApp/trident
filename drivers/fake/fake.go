@@ -4,6 +4,7 @@ package fake
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -162,11 +163,11 @@ func (m *FakeStorageDriver) Destroy(name string) error {
 }
 
 func (m *FakeStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
-	return fmt.Errorf("Fake driver does not support attaching.")
+	return errors.New("Fake driver does not support attaching.")
 }
 
 func (m *FakeStorageDriver) Detach(name, mountpoint string) error {
-	return fmt.Errorf("Fake driver does not support detaching.")
+	return errors.New("Fake driver does not support detaching.")
 }
 
 func (m *FakeStorageDriver) DefaultStoragePrefix() string {
@@ -176,7 +177,7 @@ func (m *FakeStorageDriver) DefaultStoragePrefix() string {
 func (d *FakeStorageDriver) CreateClone(
 	name, source, snapshot, newSnapshotPrefix string,
 ) error {
-	return fmt.Errorf("Fake driver does not support CreateClone")
+	return errors.New("Fake driver does not support CreateClone")
 }
 
 func (d *FakeStorageDriver) DefaultSnapshotPrefix() string {
@@ -184,5 +185,23 @@ func (d *FakeStorageDriver) DefaultSnapshotPrefix() string {
 }
 
 func (d *FakeStorageDriver) SnapshotList(name string) ([]dvp.CommonSnapshot, error) {
-	return nil, fmt.Errorf("Fake driver does not support SnapshotList")
+	return nil, errors.New("Fake driver does not support SnapshotList")
+}
+
+func (m *FakeStorageDriver) List(prefix string) ([]string, error) {
+	vols := []string{}
+	for vol := range m.Volumes {
+		vols = append(vols, vol)
+	}
+	return vols, nil
+}
+
+func (d *FakeStorageDriver) Get(name string) error {
+
+	_, ok := d.Volumes[name]
+	if !ok {
+		return fmt.Errorf("Could not find volume %s.", name)
+	}
+
+	return nil
 }

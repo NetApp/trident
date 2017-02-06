@@ -92,7 +92,7 @@ func (b *StorageBackend) AddVolume(
 ) (*Volume, error) {
 	requestedSize, err := utils.ConvertSizeToBytes64(volConfig.Size)
 	if err != nil {
-		return nil, fmt.Errorf("Could n't convert volume size %s: %s", volConfig.Size, err.Error())
+		return nil, fmt.Errorf("Couldn't convert volume size %s: %s", volConfig.Size, err.Error())
 	}
 	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
 	if err != nil {
@@ -217,6 +217,7 @@ func (b *StorageBackend) ConstructExternal() *StorageBackendExternal {
 type PersistentStorageBackendConfig struct {
 	OntapConfig             *dvp.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
 	SolidfireConfig         *dvp.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
+	EseriesConfig           *dvp.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
 	FakeStorageDriverConfig *fake.FakeStorageDriverConfig     `json:"fake_config,omitempty"`
 }
 
@@ -240,7 +241,7 @@ func (b *StorageBackend) ConstructPersistent() *StorageBackendPersistent {
 
 // Unfortunately, this method appears to be necessary to avoid arbitrary values
 // ending up in the json.RawMessage fields of CommonStorageDriverConfig.
-// Ideally, StorageBackendPesistent would just store a serialized config, but
+// Ideally, StorageBackendPersistent would just store a serialized config, but
 // doing so appears to cause problems with the json.RawMessage fields.
 func (p *StorageBackendPersistent) MarshalConfig() (string, error) {
 	var (
@@ -252,11 +253,12 @@ func (p *StorageBackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.OntapConfig)
 	case p.Config.SolidfireConfig != nil:
 		bytes, err = json.Marshal(p.Config.SolidfireConfig)
+	case p.Config.EseriesConfig != nil:
+		bytes, err = json.Marshal(p.Config.EseriesConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
-		return "", fmt.Errorf("No recognized config found for backend %s.",
-			p.Name)
+		return "", fmt.Errorf("No recognized config found for backend %s.", p.Name)
 	}
 	if err != nil {
 		return "", err

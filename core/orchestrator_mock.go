@@ -260,6 +260,8 @@ func (m *MockOrchestrator) GetVolumeType(vol *storage.VolumeExternal) config.Vol
 		return config.ONTAP_iSCSI
 	case driver == dvp.SolidfireSANStorageDriverName:
 		return config.SolidFire_iSCSI
+	case driver == dvp.EseriesIscsiStorageDriverName:
+		return config.Eseries_iSCSI
 	default:
 		return config.UnknownVolumeType
 	}

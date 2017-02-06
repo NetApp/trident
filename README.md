@@ -1,10 +1,9 @@
 # Trident
 
 Trident provides storage orchestration for Kubernetes, integrating with its
-[Persistent Volume
-framework](http://kubernetes.io/docs/user-guide/persistent-volumes/) to act as
-an external provisioner for NetApp ONTAP and SolidFire systems. Additionally,
-through its REST interface, Trident can provide storage orchestration for
+[Persistent Volume framework](http://kubernetes.io/docs/user-guide/persistent-volumes/)
+to act as an external provisioner for NetApp Data ONTAP, SolidFire, and E-series systems.
+Additionally, through its REST interface, Trident can provide storage orchestration for
 non-Kubernetes deployments.
 
 Relative to other Kubernetes external provisioners, Trident is novel from the
@@ -35,6 +34,7 @@ exposing users to complexities of various backends.
       * [Backends](#backends)
 	      * [ONTAP Configurations](#ontap-configurations)
 	      * [SolidFire Configurations](#solidfire-configurations)
+	      * [E-Series Configurations](#e-series configurations)
       * [Volume Configurations](#volume-configurations)
 	  * [Storage Class Configurations](#storage-class-configurations)
 	      * [Storage Attributes](#storage-attributes)
@@ -77,12 +77,15 @@ are not available, see the subsequent sections.
 	[here](https://github.com/NetApp/netappdvp#configuring-your-docker-host-for-nfs-or-iscsi)
 	for instructions.
 
-4.  If you plan on using SolidFire with Trident, create a VAG named
-	`trident` and place the IQN of each node in the cluster into it.
-	Similarly, if you plan on using ONTAP SAN, create an iGroup named `trident`
-	that contains the IQN of each node in the cluster; for an example of this,
-	see [this blog
-	post](http://netapp.github.io/blog/2016/06/08/netapp-persistent-storage-in-kubernetes-using-ontap-and-iscsi/).
+4.  If you plan on using SolidFire with Trident, create a volume access group (VAG)
+    named `trident` and place the IQN of each node in the cluster into it.
+	
+	If you plan on using ONTAP SAN, create an iGroup named `trident`
+	that contains the IQN of each node in the cluster; for an example of this, see
+	[this blog post](http://netapp.github.io/blog/2016/06/08/netapp-persistent-storage-in-kubernetes-using-ontap-and-iscsi/).
+	
+	If you plan on using E-Series, create a Host Group named `trident` and create
+	a Host in that Host Group that contains the IQN of each node in the cluster.
 
 5.  Download and untar the [Trident installer bundle](https://github.com/NetApp/trident/releases/download/v1.0/trident-installer-1.0.tar.gz).
 
@@ -90,19 +93,19 @@ are not available, see the subsequent sections.
     This will also be used in step 8 to provision the PVC on which Trident will
 	store its metadata.
    
-    Edit either `sample-input/backend-ontap-nas.json`,
-    `sample-input/backend-ontap-san.json`,   or
-    `sample-input/backend-solidfire.json` to refer to an actual ONTAP or
-    SolidFire deployment (use `backend-ontap-nas.json` to provision NFS volumes
-    from ONTAP and `backend-ontap-san.json` for iSCSI volumes).
+    Edit either `sample-input/backend-ontap-nas.json`, `sample-input/backend-ontap-san.json`,
+    `sample-input/backend-solidfire.json`, or `sample-input/sample-eseries-iscsi.json`
+    to refer to an actual Data ONTAP, SolidFire, or E-Series deployment. (Use
+    `backend-ontap-nas.json` to provision NFS volumes from Data ONTAP and
+    `backend-ontap-san.json` for iSCSI volumes).
 	
 	If multiple clusters will be running Trident against the same backend, add
 	the storagePrefix attribute, with a value that will be unique to your
 	cluster, e.g., `storagePrefix="username"`.  See the [Caveats](#caveats)
 	section for further details.
 
-	If using ONTAP-SAN or SolidFire, make sure all hosts in the Kubernetes
-	cluster are mapped into the `trident` iGroup or VAG, respectively, as
+	If using ONTAP-SAN or SolidFire or E-Series, make sure all hosts in the Kubernetes
+	cluster are mapped into the `trident` iGroup, VAG, or Host Group, respectively, as
 	described in the [Requirements](#requirements) section.
 
 7.  Copy the backend configuration file from step 6 the `setup/` directory
@@ -158,8 +161,8 @@ are not available, see the subsequent sections.
 	
 	Edit the `backendType` parameter of
 	`sample-input/storage-class-basic.yaml.templ` and replace
-	`__BACKEND_TYPE__` with either `ontap-nas`, `ontap-san`, or
-	`solidfire-san`, depending on the backend created in the previous steps.
+	`__BACKEND_TYPE__` with either `ontap-nas`, `ontap-san`, `solidfire-san`,
+	or `eseries-iscsi` depending on the backend created in the previous steps.
 	Save it as `sample-input/storage-class-basic.yaml`.
 
 11. Create the storage class.  Run
@@ -194,8 +197,7 @@ REST API.  [Storage Class Configurations](#storage-class-configurations)
 describes the parameters that storage classes take.  Instructions for creating
 them via Kubernetes are available in the [Storage Classes](#storage-classes)
 section.  For more details on how Trident chooses storage pools from a storage
-class to provision its volumes, see [Provisioning
-Workflow](#provisioning-workflow).
+class to provision its volumes, see [Provisioning Workflow](#provisioning-workflow).
 
 The following tutorial presents an in-depth overview of Trident and demonstrates some advanced use cases:
 
@@ -220,12 +222,10 @@ does have the following requirements, however:
   defintion, the Trident launcher, and the installation script.
 * Service accounts:  To use the default pod and deployment definitions and for
   Trident to communicate securely with the Kubernetes API server, the
-  Kubernetes cluster must have [service
-  accounts](http://kubernetes.io/docs/user-guide/service-accounts/) enabled.
-  If they are not available, Trident can only communicate with the API server
-  over the server's insecure port. See
-  [here](http://kubernetes.io/docs/admin/service-accounts-admin/) for
-  additional details on service accounts.
+  Kubernetes cluster must have [service accounts](http://kubernetes.io/docs/user-guide/service-accounts/)
+  enabled. If they are not available, Trident can only communicate with the API server
+  over the server's insecure port. See [here](http://kubernetes.io/docs/admin/service-accounts-admin/)
+  for additional details on service accounts.
 
 We provide several helper scripts for the REST API in `scripts/`.  These
 require:
@@ -243,15 +243,24 @@ Alternatively, these scripts are included in the main Trident image with all of
 their dependencies and can be run from within it.  See the [REST API](#rest-api)
 section for more details.
 
-Finally, the SolidFire and ONTAP SAN backends create LUNs using a VAG and
-iGroup, respectively, named `trident`.  Both the VAG and the iGroup must be
-created before creating volumes on the backend, and they must have the IQN of
-each host that will mount Trident volumes mapped into them.  ONTAP SAN backends
+### Cluster Access
+
+SolidFire backends create LUNs using a VAG named `trident`. The VAG must be created
+before creating volumes on the backend, and it must have the IQN of each host that
+will mount Trident volumes mapped to it.
+
+Data ONTAP SAN backends create LUNs using an iGroup named `trident`. The iGroup
+must be created before creating volumes on the backend, and it must have the IQN of
+each host that will mount Trident volumes mapped to it.  Data ONTAP SAN backends
 allow the administrator to specify a different iGroup for Trident to use (see
 [ONTAP Configurations](#ontap-configurations) for further details); any such
 iGroup must also have the same hosts mapped into it.  An example for how to
 create an ONTAP SAN iGroup is available
 [here](http://netapp.github.io/blog/2016/06/08/netapp-persistent-storage-in-kubernetes-using-ontap-and-iscsi/).
+
+E-Series iSCSI backends create LUNs using a Host Group named `trident`. The Host
+Group must contain a Host definition for each member of the cluster. Both the
+Hosts and Host Group must exist before creating volumes on the backend.
 
 ## Deploying Trident
 
@@ -262,9 +271,9 @@ launcher utility, which comprises the easiest way to start Trident from a new
 deployment.  [Deploying As a Pod](#deploying-as-a-pod) describes the necessary
 configuration when using the provided Kubernetes deployment definition, and
 [Command-line Options](#command-line-options) describes the run-time flags
-available when launching it manually.  Finally, [Deploying In
-OpenShift](#deploying-in-openshift) covers the necessary set-up for launching
-Trident in OpenShift, which imposes several security requirements.
+available when launching it manually.  Finally,
+[Deploying In OpenShift](#deploying-in-openshift) covers the necessary set-up for
+launching Trident in OpenShift, which imposes several security requirements.
 
 ### Using the Trident Launcher
 
@@ -303,8 +312,8 @@ The `ConfigMap` can be created by copying the backend and deployment definition
 files to a directory and running `kubectl create configmap
 trident-launcher-config --from-file <config-directory>`, as described
 [here](http://kubernetes.io/docs/user-guide/configmap/).  Alternatively, the
-Makefile contains targets that automate this; see [Building
-Trident](building.md#building-the-trident-launcher).
+Makefile contains targets that automate this; see 
+[Building Trident](building.md#building-the-trident-launcher).
 
 Note that the ephemeral version of Trident that the launcher creates, named
 `trident-ephemeral`, runs in the same namespace as the provided deployment
@@ -490,8 +499,8 @@ overview of each of these types and the function they serve.
 	Unlike the other object types, which are registered and described by users,
 	Trident automatically detects the storage pools available for a given
 	backend.  Users can inspect the attributes of a backend's storage pools by
-	issuing GET calls to the REST interface, as described in the [REST
-	API](#rest-api) section.  [Storage attributes](#storage-attributes)
+	issuing GET calls to the REST interface, as described in the
+	[REST API](#rest-api) section.  [Storage attributes](#storage-attributes)
 	describes the different storage attributes that can be associated with a
 	given storage pool.
 
@@ -503,9 +512,9 @@ overview of each of these types and the function they serve.
   In Kubernetes, these correspond directly to `StorageClass` objects.
 
 	[Storage Class Configurations](#storage-class-configurations) describes how
-	these storage classes are configured and used.  [Matching Storage
-	Attributes](#matching-storage-attributes) goes into more detail on how
-	Trident matches the attributes that storage classes request to those
+	these storage classes are configured and used.
+	[Matching Storage Attributes](#matching-storage-attributes) goes into more detail
+	on how Trident matches the attributes that storage classes request to those
 	offered by storage pools.  Finally, [Storage Classes](#storage-classes)
 	discusses how Trident storage classes can be created via Kubernetes
 	`StorageClasses`.
@@ -518,9 +527,9 @@ overview of each of these types and the function they serve.
   be explicitly specified by the user or omitted, in which case the type of
   protocol will be determined by the backend on which the volume is provisioned.
 
-    We describe these parameters further in [Volume 
-    Configurations](#volume-configurations) and discuss how to create them using
-    `PersistentVolumeClaims` in Kubernetes in [Volumes](#volumes).
+    We describe these parameters further in [Volume Configurations](#volume-configurations)
+    and discuss how to create them using `PersistentVolumeClaims` in Kubernetes in
+    [Volumes](#volumes).
 
 ### Object configurations
 
@@ -529,8 +538,8 @@ volumes) is defined by a JSON configuration.  These configurations can either
 be implicitly created from Kubernetes API objects or they can be posted to the
 Trident REST API to create objects of the corresponding types.  This section
 describes these configurations and their attributes; we discuss how
-configurations are created from Kubernetes objects in the [Kubernetes
-API](#kubernetes-api) section.
+configurations are created from Kubernetes objects in the
+[Kubernetes API](#kubernetes-api) section.
 
 #### Backends
 
@@ -599,13 +608,13 @@ We provide an example SolidFire backend configuration under
 ###### VolType
 
 VolType associates a set of QoS attributes with volumes provisioned on
-SolidFire.  This is only used in the Types array of a [SolidFire
-configuration](#solidfire-configurations).
+SolidFire.  This is only used in the Types array of a
+[SolidFire configuration](#solidfire-configurations).
 
-| Attribute | Type | Required | Description |
-| --------- | ---- | --- | ----------- |
-| Type | string | Yes | Name for the VolType. |
-| Qos | [Qos](#qos) | Yes | QoS descriptor for the VolType. |
+| Attribute | Type        | Required | Description |
+| --------- | ----------- | -------- | ----------- |
+| Type      | string      | Yes      | Name for the VolType. |
+| Qos       | [Qos](#qos) | Yes      | QoS descriptor for the VolType. |
 
 ###### QoS
 
@@ -618,6 +627,33 @@ used within the QoS attribute of each [VolType](#voltype) as part of a
 | minIOPS   | int64 | No | Minimum IOPS for provisioned volumes. |
 | maxIOPS   | int64 | No | Maximum IOPS for provisioned volumes. |
 | burstIOPS | int64 | No | Burst IOPS for provisioned volumes. |
+
+##### E-Series Configurations
+
+This backend provides connection data for E-Series iSCSI backends.
+
+| Attribute             | Type   | Required | Description |
+| --------------------- | ------ | -------- | ----------- |
+| version               | int    | No       | Version of the nDVP API in use. |
+| storageDriverName     | string | Yes      | Must be "eseries-iscsi". |
+| controllerA           | string | Yes      | IP address of controller A. |
+| controllerB           | string | Yes      | IP address of controller B. |
+| hostDataIP            | string | Yes      | Host iSCSI IP address (if multipathing choose either one). |
+| username              | string | Yes      | Username for Web Services Proxy. |
+| password              | string | Yes      | Password for Web Services Proxy. |
+| passwordArray         | string | Yes      | Password for storage array (if set). |
+| webProxyHostname      | string | Yes      | Hostname or IP address of Web Services Proxy. |
+| webProxyPort          | string | No       | Port number of the Web Services Proxy. |
+| webProxyUseHTTP       | bool   | No       | Use HTTP instead of HTTPS for Web Services Proxy. |
+| webProxyVerifyTLS     | bool   | No       | Verify server's certificate chain and hostname. |
+| poolNameSearchPattern | string | No       | Regular expression for matching storage pools available for Trident volumes (default = .+). |
+
+The IQNs of all hosts that may mount Trident volumes (e.g., all nodes in the Kubernetes cluster that
+Trident monitors) must be defined on the storage array as Host objects in the same Host Group. Trident
+assigns LUNs to the Host Group, so that they are accessible by each host in the cluster. The Hosts
+and Host Group must exist before using Trident to provision storage.
+
+`sample-input/backend-eseries-iscsi.json` provides an example of an E-Series backend configuration.
 
 #### Volume Configurations
 
@@ -633,10 +669,10 @@ Volume configurations are unique to Trident and are unused in the nDVP.
 | size | string | Yes | Size of the volume to provision. |
 | protocol | string | No | Class of protocol to use for the volume.  Users can specify either "file" for file-based protocols (currently NFS) or "block" for SAN protocols (currently iSCSI).  If omitted, Trident will use either. |
 | internalName | string | No | Name of volume to use on the backend.  This will be generated by Trident when the volume is created; if the user specifies something in this field, Trident will ignore it.  Its value is reported when GETing the created volume from the REST API, however. |
-| snapshotPolicy | string | No | For ONTAP backends, specifies the snapshot policy to use.  Ignored for SolidFire. |
-| exportPolicy | string | No | For ONTAP backends, specifies the export policy to use.  Ignored for SolidFire. |
-| snapshotDirectory | bool | No | For ONTAP backends, specifies whether the snapshot directory should be visible.  Ignored for SolidFire. |
-| unixPermissions | string | No | For ONTAP backends, initial NFS permissions to set on the created volume.  Ignored for SolidFire. |
+| snapshotPolicy | string | No | For ONTAP backends, specifies the snapshot policy to use.  Ignored for SolidFire and E-Series. |
+| exportPolicy | string | No | For ONTAP backends, specifies the export policy to use.  Ignored for SolidFire and E-Series. |
+| snapshotDirectory | bool | No | For ONTAP backends, specifies whether the snapshot directory should be visible.  Ignored for SolidFire and E-Series. |
+| unixPermissions | string | No | For ONTAP backends, initial NFS permissions to set on the created volume.  Ignored for SolidFire and E-Series. |
 
 As mentioned, Trident generates internalName when creating the volume.  This
 consists of two steps.  First, it prepends the storage prefix--either the
@@ -645,7 +681,11 @@ volume name, resulting in a name of the form `<prefix>-<volume-name>`.  It then
 proceeds to sanitize the name, replacing characters not permitted in the
 backend.  For ONTAP backends, it replaces hyphens with underscores (thus, the
 internal name becomes `<prefix>_<volume-name>`), and for SolidFire, it replaces
-underscores with hyphens.
+underscores with hyphens. For E-Series, which imposes a 30-character limit on
+all object names, Trident generates a random string for the internal name of each
+volume on the array; the mappings between names (as seen in Kubernetes) and the
+internal names (as seen on the E-Series storage array) may be obtained via the
+Trident REST interface.
 
 See `sample-input/volume.json` for an example of a basic volume configuration
 and `sample-input/volume-full.json` for a volume configuration with all options
@@ -682,7 +722,7 @@ The current attributes and their possible values are below:
 | --------- | ---- | ------ | ----------- | --- |
 | media | string | hdd, hybrid, ssd | Type of media used by the storage pool.  Hybrid indicates both HDD and SSD. | Type of media desired for the volume. |
 | provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. |
-| backendType | string | ontap-nas, ontap-san, solidfire-san | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. |
+| backendType | string | ontap-nas, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. |
 | snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. |
 | IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. |
 
