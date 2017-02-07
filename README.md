@@ -545,6 +545,10 @@ each backend type.  In general, these correspond to those used by the nDVP.
 This backend provides connection data for ONTAP backends.  Separate backends
 must be created for NAS and SAN.
 
+***IMPORTANT NOTE***
+  >Use of Kubernetes with the iSCSI protocol in ONTAP is not currently recommended.
+   See [caveats](#caveats) for more information.
+
 | Attribute | Type | Required | Description |
 | --------- | ---- | --- | ----------- |
 | version   | int  | No | Version of the nDVP API in use. |
@@ -958,6 +962,12 @@ all of the storage pools available for the requested storage class and protocol.
 Trident is in an early stage of development, and thus, there are several
 outstanding issues to be aware of when using it:
 
+* Due to known issues in Kubernetes, use of iSCSI with ONTAP in production
+  deployments is not recommended at this time. See Kubernetes Issues 
+  [#40941](https://github.com/kubernetes/kubernetes/issues/40941),
+  [#41041](https://github.com/kubernetes/kubernetes/issues/41041) and
+  [#39202](https://github.com/kubernetes/kubernetes/issues/39202). ONTAP NAS and
+  SolidFire are unaffected.
 * Although we provide a deployment for Trident, it should never be scaled
   beyond a single replica.  Similarly, only one instance of Trident should be
   run per cluster.  Trident cannot communicate with other instances and cannot
