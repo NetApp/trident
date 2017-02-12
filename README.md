@@ -578,7 +578,7 @@ deployments.
 | storageDriverName | string | Yes | Must be "solidfire-san" |
 | storagePrefix | string | No | Prefix to prepend to created volumes on the backend.  The format of the resultant volume name will be `<prefix>-<volumeName>`; this prefix should be chosen so that volume names are unique.  If unspecified, this defaults to `trident`.|
 | TenantName | string | Yes | Tenant name for created volumes. | 
-| EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:sf-address/json-rpc/7.0`). |
+| EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:solidfire-mvip/json-rpc/9.0`). |
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
 | InitiatorIFace | string | No | ISCI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
 | Types | [VolType](#voltype) array | No | JSON array of possible volume types.  Each of these will be created as a StoragePool for the SolidFire backend.  See below for the specification. |
