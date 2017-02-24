@@ -558,7 +558,7 @@ must be created for NAS and SAN.
 | dataLIF | string | Yes | IP address of the cluster data LIF to use for connecting to provisioned volumes. |
 | igroupName | string | No | iGroup to add all provisioned LUNs to.  If using Kubernetes, the iGroup must be preconfigured to include all nodes in the cluster.  If empty, defaults to `trident`. |
 | svm | string | Yes | SVM from which to provision volumes. |
-| username | string | Yes | Username for the provisioning account (must have cluster admin privileges). |
+| username | string | Yes | Username for the provisioning account (must have cluster scope). |
 | password | string | Yes | Password for the provisioning account. |
 
 Any ONTAP SAN backend must have either an iGroup named `trident` or an iGroup
