@@ -21,21 +21,10 @@ type OntapSANStorageDriver struct {
 }
 
 // Retrieve storage backend capabilities
-func (d *OntapSANStorageDriver) GetStorageBackendSpecs(
-	backend *storage.StorageBackend,
-) error {
-	backend.Name = "ontapsan_" + d.Config.DataLIF
+func (d *OntapSANStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
 
-	// find the aggregates for this backend
-	zr := &azgo.ZapiRunner{
-		ManagementLIF: d.Config.ManagementLIF,
-		SVM:           "",
-		Username:      d.Config.Username,
-		Password:      d.Config.Password,
-		Secure:        true,
-	}
-	return getStorageBackendSpecsCommon(backend, d.Name(), d.Config.SVM, zr,
-		d.Config.Aggregate)
+	backend.Name = "ontapsan_" + d.Config.DataLIF
+	return getStorageBackendSpecsCommon(d, backend)
 }
 
 func (d *OntapSANStorageDriver) GetVolumeOpts(

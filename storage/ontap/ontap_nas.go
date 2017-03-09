@@ -3,7 +3,6 @@
 package ontap
 
 import (
-	"github.com/netapp/netappdvp/azgo"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/config"
@@ -16,22 +15,11 @@ type OntapNASStorageDriver struct {
 	dvp.OntapNASStorageDriver
 }
 
-// Retrieve storage backend configuration
-func (d *OntapNASStorageDriver) GetStorageBackendSpecs(
-	backend *storage.StorageBackend,
-) error {
-	backend.Name = "ontapnas_" + d.Config.DataLIF
+// Retrieve storage backend capabilities
+func (d *OntapNASStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
 
-	// find the aggregates for this backend
-	zr := &azgo.ZapiRunner{
-		ManagementLIF: d.Config.ManagementLIF,
-		SVM:           "",
-		Username:      d.Config.Username,
-		Password:      d.Config.Password,
-		Secure:        true,
-	}
-	return getStorageBackendSpecsCommon(backend, d.Name(), d.Config.SVM, zr,
-		d.Config.Aggregate)
+	backend.Name = "ontapnas_" + d.Config.DataLIF
+	return getStorageBackendSpecsCommon(d, backend)
 }
 
 func (d *OntapNASStorageDriver) GetVolumeOpts(

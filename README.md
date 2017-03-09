@@ -249,9 +249,9 @@ SolidFire backends create LUNs using a VAG named `trident`. The VAG must be crea
 before creating volumes on the backend, and it must have the IQN of each host that
 will mount Trident volumes mapped to it.
 
-Data ONTAP SAN backends create LUNs using an iGroup named `trident`. The iGroup
+ONTAP SAN backends create LUNs using an iGroup named `trident`. The iGroup
 must be created before creating volumes on the backend, and it must have the IQN of
-each host that will mount Trident volumes mapped to it.  Data ONTAP SAN backends
+each host that will mount Trident volumes mapped to it.  ONTAP SAN backends
 allow the administrator to specify a different iGroup for Trident to use (see
 [ONTAP Configurations](#ontap-configurations) for further details); any such
 iGroup must also have the same hosts mapped into it.  An example for how to
@@ -483,12 +483,7 @@ overview of each of these types and the function they serve.
 
 * Backends:  Backends represent the storage providers on top of which Trident
   provisions volumes; a single Trident instance can manage any number of
-  backends.  Trident currently supports ONTAP and SolidFire backends.
-
-    Configuration files for Trident backends are identical to those used by the
-    nDVP; however, ONTAP backends require access to the cluster management IP,
-    rather than the LIF management IP.  The [Backends](#backends) section
-    describes these files in further detail.
+  backends.  Trident currently supports ONTAP, SolidFire, and E-Series backends.
 
 * Storage Pools:  Storage pools represent the distinct locations
   available for provisioning on each backend. For ONTAP, these correspond to
@@ -563,12 +558,20 @@ must be created for NAS and SAN.
 | version   | int  | No | Version of the nDVP API in use. |
 | storageDriverName | string | Yes | Must be either "ontap-nas" or "ontap-san". |
 | storagePrefix | string | No | Prefix to prepend to volumes created on the backend.  The format of the resultant volume name will be `<prefix>_<volumeName>`; this prefix should be chosen so that volume names are unique.  If unspecified, this defaults to `trident`.|
-| managementLIF | string | Yes | IP address of the cluster management LIF. Using an SVM management LIF **will not** work. |
-| dataLIF | string | Yes | IP address of the cluster data LIF to use for connecting to provisioned volumes. |
+| managementLIF | string | Yes | IP address of the cluster or SVM management LIF. |
+| dataLIF | string | Yes | IP address of the SVM data LIF to use for connecting to provisioned volumes. |
 | igroupName | string | No | iGroup to add all provisioned LUNs to.  If using Kubernetes, the iGroup must be preconfigured to include all nodes in the cluster.  If empty, defaults to `trident`. |
 | svm | string | Yes | SVM from which to provision volumes. |
-| username | string | Yes | Username for the provisioning account (must have cluster scope). |
+| username | string | Yes | Username for the provisioning account. |
 | password | string | Yes | Password for the provisioning account. |
+
+Any ONTAP backend must have one or more aggregates assigned to the configured SVM.
+
+ONTAP 9.0 or later backends may operate with either cluster- or SVM-scoped credentials.
+ONTAP 8.3 backends must be configured with cluster-scoped credentials; otherwise Trident
+will still function but will be unable to discover physical attributes such as the aggregate
+media type.  In all cases, Trident may be configured with a limited user account that is
+restricted to only those APIs used by Trident.
 
 Any ONTAP SAN backend must have either an iGroup named `trident` or an iGroup
 corresponding to the one specified in igroupName.  The IQNs of all hosts that
@@ -986,8 +989,6 @@ all of the storage pools available for the requested storage class and protocol.
   provisioning a volume for Trident's etcd instance has likely failed.
   `trident-ephemeral` is the name of the pod used to create this volume;
   inspecting its logs with `kubectl logs trident-ephemeral` may be helpful.
-* If using an ONTAP backend, managementLIF must refer to a cluster management
-  LIF, rather than the SVM management LIF.
 * ONTAP backends will ignore anything specified in the aggregate parameter of
   the configuration.
 * If service accounts are not available, `kubectl logs trident trident-main`
