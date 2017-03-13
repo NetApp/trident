@@ -372,7 +372,7 @@ storage), start Trident with
 kubectl create -f <deployment-file>
 ```
 where `<deployment-file>` is the configured deployment definition.  The pod in
-the deployment contains an etcd v2.3.7 instance that stores its data in the
+the deployment contains an etcd instance that stores its data in the
 PVC, providing everything that is necessary for Trident to run.
 
 Note that these steps are unnecessary when using the
