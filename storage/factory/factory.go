@@ -247,8 +247,8 @@ func NewStorageBackendForConfig(configJSON string) (
 		} else {
 			log.WithFields(log.Fields{
 				"driver":     dvp.EseriesIscsiStorageDriverName,
-				"controller":        driver.Config.ControllerA,
-				"hostGroup":     hostGroup.Label,
+				"controller": driver.Config.ControllerA,
+				"hostGroup":  hostGroup.Label,
 			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", driver.Config.AccessGroup)
 		}
 

@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"github.com/netapp/netappdvp/apis/eseries"
+	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"github.com/pborman/uuid"
 
 	"github.com/netapp/trident/config"
@@ -179,7 +179,7 @@ func (d *EseriesStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) e
 
 	// Map the volume directly to the Host Group
 	host := eseries.HostEx{
-		HostRef: eseries.NULL_REF,
+		HostRef:    eseries.NULL_REF,
 		ClusterRef: hostGroup.ClusterRef,
 	}
 	mapping, err := d.API.MapVolume(volume, host)
@@ -239,7 +239,7 @@ func (d *EseriesStorageDriver) uuidToBase64(UUID string) (string, error) {
 	// Convert hex chars to binary
 	var bytes [16]byte
 	_, err := hex.Decode(bytes[:], []byte(UUID))
-	if (err != nil) {
+	if err != nil {
 		return "", err
 	}
 
