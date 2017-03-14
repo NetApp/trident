@@ -236,6 +236,9 @@ func (k *KubeClient) StartInMemoryTrident() (string, error) {
 			},
 		},
 	}
+	if *debug {
+		podToCreate.Spec.Containers[0].Args = append(podToCreate.Spec.Containers[0].Args, "-debug")
+	}
 	log.Debug("Creating Trident.")
 	_, err := k.clientset.Core().Pods(k.namespace).Create(podToCreate)
 	if err != nil {
