@@ -1,5 +1,5 @@
-hash: dd67b782a7ae132fc44420278dcf76b16e659ad88f5afa57edebec9acde4b4c6
-updated: 2017-04-04T11:31:02.172933601-04:00
+hash: 290daa05926848f034bcd490f7285ab55dd18ef43eb0df790fe88b228f059194
+updated: 2017-04-06T19:48:30.863279998-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -39,8 +39,6 @@ imports:
   subpackages:
   - digest
   - reference
-- name: github.com/dustin/go-humanize
-  version: 259d2a102b871d17f30e3cd9881a642961a1e486
 - name: github.com/emicklei/go-restful
   version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
   subpackages:
@@ -77,6 +75,8 @@ imports:
   version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
 - name: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
+- name: github.com/hashicorp/go-version
+  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
 - name: github.com/howeyc/gopass
   version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
 - name: github.com/imdario/mergo
@@ -89,10 +89,8 @@ imports:
   - buffer
   - jlexer
   - jwriter
-- name: github.com/mattn/go-runewidth
-  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: cf4fbb74aba04229bdd0d3db19757a4d6e4afce9
+  version: fd2e77efb33a1059a11882a1b70ccbba0d133a52
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -100,8 +98,6 @@ imports:
   - azgo
   - storage_drivers
   - utils
-- name: github.com/olekukonko/tablewriter
-  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/PuerkitoBio/purell
@@ -109,7 +105,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/Sirupsen/logrus
-  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
+  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
 - name: github.com/spf13/pflag
   version: 5ccb023bc27df288a957c5e994cd44fd19619465
 - name: github.com/tylerb/graceful
@@ -118,8 +114,6 @@ imports:
   version: f1f1a805ed361a0e078bb537e4ea78cd37dcf065
   subpackages:
   - codec
-- name: github.com/urfave/cli
-  version: 8ba6f23b6e36d03666a14bd9421f5e3efcb59aca
 - name: golang.org/x/crypto
   version: 1f22c0103821b9390939b6776727195525381532
   subpackages:

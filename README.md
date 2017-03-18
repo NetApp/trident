@@ -34,7 +34,7 @@ exposing users to complexities of various backends.
       * [Backends](#backends)
 	      * [ONTAP Configurations](#ontap-configurations)
 	      * [SolidFire Configurations](#solidfire-configurations)
-	      * [E-Series Configurations](#e-series configurations)
+	      * [E-Series Configurations](#e-series-configurations)
       * [Volume Configurations](#volume-configurations)
 	  * [Storage Class Configurations](#storage-class-configurations)
 	      * [Storage Attributes](#storage-attributes)
@@ -87,7 +87,8 @@ are not available, see the subsequent sections.
 	If you plan on using E-Series, create a Host Group named `trident` and create
 	a Host in that Host Group that contains the IQN of each node in the cluster.
 
-5.  Download and untar the [Trident installer bundle](https://github.com/NetApp/trident/releases/download/v1.0/trident-installer-1.0.tar.gz).
+5.  Download and untar the [Trident installer bundle](https://github.com/NetApp/trident/releases).
+    Then, change into the `trident-installer` directory resulted from untar.
 
 6. Configure a storage backend from which Trident will provision its volumes.
     This will also be used in step 8 to provision the PVC on which Trident will
@@ -199,7 +200,10 @@ them via Kubernetes are available in the [Storage Classes](#storage-classes)
 section.  For more details on how Trident chooses storage pools from a storage
 class to provision its volumes, see [Provisioning Workflow](#provisioning-workflow).
 
-The following tutorial presents an in-depth overview of Trident and demonstrates some advanced use cases:
+The following tutorial presents an in-depth overview of Trident and demonstrates
+some advanced use cases (the tutorial is based on v1.0, so please view
+[CHANGELOG](https://github.com/NetApp/trident/blob/master/CHANGELOG.md) for
+the changes since the first release):
 
 [![Trident: External Provisioner for NetApp Storage](https://img.youtube.com/vi/NDcnyGe2GFo/0.jpg)](https://www.youtube.com/watch?v=NDcnyGe2GFo)
 

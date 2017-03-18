@@ -10,6 +10,7 @@ import (
 
 const (
 	KubernetesSyncPeriod = 60 * time.Second
+
 	// Kubernetes-defined annotations
 	// (Based on kubernetes/pkg/controller/volume/persistentvolume/controller.go)
 	AnnClass                  = "volume.beta.kubernetes.io/storage-class"
@@ -27,4 +28,12 @@ const (
 	AnnVendor          = AnnPrefix + "/vendor"
 	AnnBackendID       = AnnPrefix + "/backendID"
 	AnnExportPolicy    = AnnPrefix + "/exportPolicy"
+
+	// Minimum and maximum supported Kubernetes versions
+	KubernetesVersionMin = "1.4"
+	KubernetesVersionMax = "1.6"
+
+	//Minimum and maximum supported OpenShift versions
+	OpenShiftVersionMin = "3.4"
+	OpenShiftVersionMax = "3.6"
 )

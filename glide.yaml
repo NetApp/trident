@@ -10,7 +10,7 @@ import:
 - package: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - package: github.com/Sirupsen/logrus
-  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
+  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
 - package: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - package: github.com/blang/semver
@@ -93,7 +93,7 @@ import:
   - jlexer
   - jwriter
 - package: github.com/netapp/netappdvp
-  version: cf4fbb74aba04229bdd0d3db19757a4d6e4afce9
+  version: fd2e77efb33a1059a11882a1b70ccbba0d133a52
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -296,3 +296,4 @@ import:
   - tools/metrics
   - tools/record
   - transport
+- package: github.com/hashicorp/go-version

@@ -54,7 +54,6 @@ func (o *tridentOrchestrator) Bootstrap() error {
 			"store! Bootstrap might have failed, persistent store might "+
 			"be down, or persistent store may not have any backend, "+
 			"volume, or storage class state: %s", err.Error())
-		log.Warnf(errMsg)
 		return fmt.Errorf(errMsg)
 	}
 	o.bootstrapped = true
@@ -207,10 +206,10 @@ func (o *tridentOrchestrator) bootstrap() error {
 
 func (o *tridentOrchestrator) rollBackTransaction(v *persistent_store.VolumeTransaction) error {
 	log.WithFields(log.Fields{
-		"volume":        v.Config.Name,
-		"size":          v.Config.Size,
-		"storage_class": v.Config.StorageClass,
-		"op":            v.Op,
+		"volume":       v.Config.Name,
+		"size":         v.Config.Size,
+		"storageClass": v.Config.StorageClass,
+		"op":           v.Op,
 	}).Info("Processed volume transaction log.")
 	switch v.Op {
 	case persistent_store.AddVolume:
@@ -602,6 +601,7 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	log.WithFields(log.Fields{
 		"volume": volumeConfig.Name,
 	}).Debugf("Looking through %d backends", len(pools))
+	errorMessages := make([]string, 0)
 	for _, num := range rand.Perm(len(pools)) {
 		backend = pools[num].Backend
 		if vol, err = backend.AddVolume(
@@ -624,14 +624,24 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 				"volume":  volumeConfig.Name,
 				"error":   err,
 			}).Warn("Failed to create the volume on this backend!")
+			errorMessages = append(errorMessages,
+				fmt.Sprintf("[Failed to create volume %s "+
+					"on storage pool %s from backend %s: %s]",
+					volumeConfig.Name, pools[num].Name, backend.Name,
+					err.Error()))
 		}
 	}
 
 	externalVol = nil
-	err = fmt.Errorf("No suitable %s backend with \"%s\" "+
-		"storage class and %s of free space was found! Find available backends"+
-		" under %s.", volumeConfig.Protocol,
-		volumeConfig.StorageClass, volumeConfig.Size, config.BackendURL)
+	if len(errorMessages) == 0 {
+		err = fmt.Errorf("No suitable %s backend with \"%s\" "+
+			"storage class and %s of free space was found! Find available backends"+
+			" under %s.", volumeConfig.Protocol,
+			volumeConfig.StorageClass, volumeConfig.Size, config.BackendURL)
+	} else {
+		err = fmt.Errorf("Encountered error(s) in creating the volume: %s",
+			strings.Join(errorMessages, ", "))
+	}
 	return nil, err
 }
 

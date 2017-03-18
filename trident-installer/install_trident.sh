@@ -43,8 +43,13 @@ command -v curl > /dev/null 2>&1 || \
 command -v kubectl > /dev/null || \
 	{ echo >&2 "$0 requires kubectl present in \$PATH."; exit 1; }
 
-kubectl delete configmap --ignore-not-found=true trident-launcher-config
-kubectl delete pod --ignore-not-found=true trident-launcher
+if [ -z $NAMESPACE ]
+then
+	NAMESPACE="default"
+fi
+
+kubectl --namespace=$NAMESPACE delete configmap --ignore-not-found=true trident-launcher-config
+kubectl --namespace=$NAMESPACE delete pod --ignore-not-found=true trident-launcher
 
 if [ ! -z $NAMESPACE ]
 then
@@ -58,11 +63,11 @@ then
 	sed -i "s/serviceAccount: [A-Za-z-]\+/serviceAccount: $SERVICE_ACCOUNT/g" launcher-pod.yaml
 fi
 
-kubectl create configmap trident-launcher-config --from-file=./setup
+kubectl --namespace=$NAMESPACE create configmap trident-launcher-config --from-file=./setup
 if [ $? -ne 0 ]; then
 	exit 1;
 fi
-kubectl create -f ./launcher-pod.yaml
+kubectl --namespace=$NAMESPACE create -f ./launcher-pod.yaml
 if [ $? -ne 0 ]; then
 	exit 1;
 fi

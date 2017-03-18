@@ -13,7 +13,7 @@ BIN ?= trident_orchestrator
 
 DIST_REGISTRY=netapp
 
-TRIDENT_DIST_VERSION ?= 1.1
+TRIDENT_DIST_VERSION ?= 17.04.0
 
 TRIDENT_VERSION ?= local
 TRIDENT_IMAGE ?= trident
@@ -130,7 +130,7 @@ test_core:
 	@docker rm etcd-test > /dev/null
 
 test_other:
-	@go test -cover $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store)
+	@go test -cover -v $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store)
 
 vet:
 	@go vet $(shell go list ./... | grep -v /vendor/)
@@ -157,14 +157,14 @@ launcher_build: check_registry launcher_retag
 	docker push ${LAUNCHER_TAG}
 	-docker rmi ${LAUNCHER_TAG_OLD}
 
-docker_launcher_build:
+docker_launcher_build: check_registry launcher_retag
 	@chmod 777 ./launcher/docker-build
 	@${GO} ${BUILD} -o ${TRIDENT_VOLUME_PATH}/launcher/docker-build/launcher ./launcher
 	docker build -t ${LAUNCHER_TAG} ./launcher/docker-build/
 	docker push ${LAUNCHER_TAG}
 	-docker rmi ${LAUNCHER_TAG_OLD}
 
-launcher_start: check_registry
+launcher_start: prep_pod_template
 ifndef LAUNCHER_BACKEND
 	$(error Must define LAUNCHER_BACKEND to start the launcher.)
 endif
@@ -207,10 +207,10 @@ endif
 	-kubectl delete --ignore-not-found=true pod trident-launcher
 	@mkdir -p ${LAUNCHER_CONFIG_DIR}
 	@cp ${LAUNCHER_BACKEND} ${LAUNCHER_CONFIG_DIR}/backend.json
-	@sed "s|__TRIDENT_IMAGE__|netapp/trident:1.0|g" kubernetes-yaml/trident-deployment.yaml.templ > ${LAUNCHER_CONFIG_DIR}/trident-deployment.yaml
+	@sed "s|__TRIDENT_IMAGE__|netapp/trident:latest|g" kubernetes-yaml/trident-deployment.yaml.templ > ${LAUNCHER_CONFIG_DIR}/trident-deployment.yaml
 	@echo "Usable Trident pod definition available at ./launcher/kubernetes-yaml/trident-deployment.yaml"
 	@kubectl create configmap trident-launcher-config --from-file=${LAUNCHER_CONFIG_DIR}
-	@sed "s|__LAUNCHER_TAG__|netapp/trident-launcher:1.0|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > ${LAUNCHER_POD_FILE}
+	@sed "s|__LAUNCHER_TAG__|netapp/trident-launcher:latest|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > ${LAUNCHER_POD_FILE}
 	@kubectl create -f ${LAUNCHER_POD_FILE}
 	@echo "Trident Launcher started; pod definition in ${LAUNCHER_POD_FILE}"
 

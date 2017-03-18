@@ -10,9 +10,18 @@ spec:
       image: __LAUNCHER_TAG__
       command:
       - /usr/local/bin/launcher
-      #args:
+      args:
+      - "-volume_size"
+      - "2"
+      #- "-volume_name"
+      #- "trident"
+      #- "-pvc_name
+      #- "trident"
+      #- "-pv_name"
+      #- "trident"
       #- "-apiserver"
       #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
+      #- "-debug"
       volumeMounts:
       - name: config-volume
         mountPath: /etc/config

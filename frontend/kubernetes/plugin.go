@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	version "github.com/hashicorp/go-version"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"k8s.io/client-go/kubernetes"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -16,32 +17,56 @@ import (
 	k8s_storage "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/pkg/conversion"
 	"k8s.io/client-go/pkg/runtime"
+	k8s_version "k8s.io/client-go/pkg/version"
 	"k8s.io/client-go/pkg/watch"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
 )
 
+func VersionSupported(versionInfo *k8s_version.Info) (bool, error) {
+	v, err := version.NewVersion(versionInfo.Major + "." + versionInfo.Minor)
+	if err != nil {
+		return false, err
+	}
+	kubeConstraints, err := version.NewConstraint(fmt.Sprintf(">= %s, <= %s",
+		KubernetesVersionMin, KubernetesVersionMax))
+	if err != nil {
+		return false, err
+	}
+	openshiftConstraints, err := version.NewConstraint(
+		fmt.Sprintf(">= %s, <= %s", OpenShiftVersionMin, OpenShiftVersionMax))
+	if err != nil {
+		return false, err
+	}
+	if kubeConstraints.Check(v) || openshiftConstraints.Check(v) {
+		return true, nil
+	}
+	return false, nil
+}
+
 type KubernetesPlugin struct {
-	orchestrator             core.Orchestrator
-	kubeClient               kubernetes.Interface
-	eventRecorder            record.EventRecorder
-	pendingClaimMatchMap     map[string]*v1.PersistentVolume
-	claimController          *cache.Controller
-	claimControllerStopChan  chan struct{}
-	claimSource              cache.ListerWatcher
-	volumeController         *cache.Controller
-	volumeControllerStopChan chan struct{}
-	volumeSource             cache.ListerWatcher
-	classController          *cache.Controller
-	classControllerStopChan  chan struct{}
-	classSource              cache.ListerWatcher
+	orchestrator                 core.Orchestrator
+	kubeClient                   kubernetes.Interface
+	eventRecorder                record.EventRecorder
+	pendingClaimMatchMap         map[string]*v1.PersistentVolume
+	claimController              *cache.Controller
+	claimControllerStopChan      chan struct{}
+	claimSource                  cache.ListerWatcher
+	volumeController             *cache.Controller
+	volumeControllerStopChan     chan struct{}
+	volumeSource                 cache.ListerWatcher
+	classController              *cache.Controller
+	classControllerStopChan      chan struct{}
+	classSource                  cache.ListerWatcher
+	containerOrchestratorVersion *k8s_version.Info
 }
 
 func NewPlugin(
@@ -68,7 +93,30 @@ func newForConfig(
 	if err != nil {
 		return nil, err
 	}
-	return newKubernetesPlugin(kubeClient, o), nil
+	versionInfo, err := kubeClient.Discovery().ServerVersion()
+	if err != nil {
+		return nil,
+			fmt.Errorf("Kubernetes frontend couldn't retrieve API server's "+
+				"version: %v", err)
+	}
+	if supported, err := VersionSupported(versionInfo); err != nil {
+		return nil, fmt.Errorf("Kubernetes frontend encountered error "+
+			"in checking the version of container orchestrator: %s", err)
+	} else if !supported {
+		log.Warnf("%s v%s may not support "+
+			"container orchestrator version %s.%s! "+
+			"Supported versions for Kubernetes are %s-%s "+
+			"and for OpenShift are %s-%s.",
+			config.OrchestratorName, config.OrchestratorVersion,
+			versionInfo.Major, versionInfo.Minor,
+			KubernetesVersionMin, KubernetesVersionMax,
+			OpenShiftVersionMin, OpenShiftVersionMax)
+	}
+	log.WithFields(log.Fields{
+		"version": versionInfo.Major + "." + versionInfo.Minor,
+	}).Info("Kubernetes frontend determined the container orchestrator ",
+		"version.")
+	return newKubernetesPlugin(kubeClient, o, versionInfo), nil
 }
 
 func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
@@ -84,14 +132,16 @@ func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
 func newKubernetesPlugin(
 	kubeClient kubernetes.Interface,
 	orchestrator core.Orchestrator,
+	containerOrchestratorVersion *k8s_version.Info,
 ) *KubernetesPlugin {
 	ret := &KubernetesPlugin{
-		orchestrator:             orchestrator,
-		kubeClient:               kubeClient,
-		claimControllerStopChan:  make(chan struct{}),
-		volumeControllerStopChan: make(chan struct{}),
-		classControllerStopChan:  make(chan struct{}),
-		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
+		orchestrator:                 orchestrator,
+		kubeClient:                   kubeClient,
+		claimControllerStopChan:      make(chan struct{}),
+		volumeControllerStopChan:     make(chan struct{}),
+		classControllerStopChan:      make(chan struct{}),
+		pendingClaimMatchMap:         make(map[string]*v1.PersistentVolume),
+		containerOrchestratorVersion: containerOrchestratorVersion,
 	}
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(

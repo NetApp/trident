@@ -123,30 +123,35 @@ func (b *StorageBackend) AddVolume(
 		}
 
 		if err := b.Driver.Create(volConfig.InternalName, volSize, args); err != nil {
-			log.WithFields(log.Fields{
-				"backend":      b.Name,
-				"storage_pool": storagePool.Name,
-				"volume":       volConfig.Name,
-				"error":        err,
-			}).Warn("Failed to create the volume on this backend.")
-		} else {
-			if err = b.Driver.CreateFollowup(volConfig); err != nil {
-				errDestroy := b.Driver.Destroy(volConfig.InternalName)
-				if errDestroy != nil {
-					log.WithFields(log.Fields{
-						"backend": b.Name,
-						"volume":  volConfig.InternalName,
-					}).Warnf("Mapping the created volume failed "+
-						"and %s wasn't able to delete it afterwards: %s. "+
-						"Volume needs to be manually deleted.",
-						config.OrchestratorName, errDestroy.Error())
-				}
+			// Implement idempotency at the Trident layer
+			// Ignore the error if the volume exists already
+			if b.Driver.Get(volConfig.InternalName) != nil {
+				log.WithFields(log.Fields{
+					"backend":     b.Name,
+					"storagePool": storagePool.Name,
+					"volume":      volConfig.Name,
+					"error":       err,
+				}).Warn("Failed to create the volume on this backend.")
 				return nil, err
 			}
-			vol := NewVolume(volConfig, b, storagePool)
-			storagePool.AddVolume(vol, false)
-			return vol, err
 		}
+
+		if err = b.Driver.CreateFollowup(volConfig); err != nil {
+			errDestroy := b.Driver.Destroy(volConfig.InternalName)
+			if errDestroy != nil {
+				log.WithFields(log.Fields{
+					"backend": b.Name,
+					"volume":  volConfig.InternalName,
+				}).Warnf("Mapping the created volume failed "+
+					"and %s wasn't able to delete it afterwards: %s. "+
+					"Volume needs to be manually deleted.",
+					config.OrchestratorName, errDestroy)
+			}
+			return nil, err
+		}
+		vol := NewVolume(volConfig, b, storagePool)
+		storagePool.AddVolume(vol, false)
+		return vol, err
 	} else {
 		log.WithFields(log.Fields{
 			"storagePoolName":       storagePool.Name,
