@@ -1,5 +1,5 @@
-hash: 24db7320ebac325614d74927c1cfe1501913f8145fd66f261b46ce537fd70710
-updated: 2016-12-21T17:15:05.833058438-05:00
+hash: d9562e8817c748e9888af8208d6c62c44989457db70898870406fc727c1b4e87
+updated: 2017-03-22T11:50:13.779012969-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -88,7 +88,7 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/netapp/netappdvp
-  version: e4ca60f1d3ac377993b7d17be2dd1ea5b9e42b35
+  version: 88398c036dea8f672224921086dadcd807fb4c24
   subpackages:
   - apis/eseries
   - apis/ontap
