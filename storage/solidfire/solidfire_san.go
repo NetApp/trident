@@ -4,14 +4,11 @@ package solidfire
 
 import (
 	"fmt"
-	"math"
-	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/netappdvp/apis/sfapi"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
-	"github.com/netapp/netappdvp/utils"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -129,20 +126,6 @@ func (d *SolidfireSANStorageDriver) GetVolumeOpts(
 	opts := make(map[string]string)
 	opts["type"] = pool.Name
 
-	// Set the size, since the SolidFire driver takes storage in GB, rather
-	// than bytes.
-	requestedSize, err := utils.ConvertSizeToBytes64(volConfig.Size)
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't convert volume size %s: %s",
-			volConfig.Size, err.Error())
-	}
-	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("%v is an invalid volume size: %s",
-			volConfig.Size, err.Error())
-	}
-	opts["size"] = fmt.Sprintf("%d", int(
-		math.Ceil(float64(volSize)/(1024*1024*1024))))
 	return opts, nil
 }
 

@@ -90,20 +90,23 @@ func (b *StorageBackend) AddVolume(
 	storagePool *StoragePool,
 	volumeAttributes map[string]storage_attribute.Request,
 ) (*Volume, error) {
-	requestedSize, err := utils.ConvertSizeToBytes64(volConfig.Size)
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't convert volume size %s: %s", volConfig.Size, err.Error())
+		return nil, fmt.Errorf("Could not convert volume size %s: %v", volConfig.Size, err)
 	}
 	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("%v is an invalid volume size: %s", volConfig.Size, err.Error())
+		return nil, fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 
 	log.WithFields(log.Fields{
-		"storagePool":            storagePool.Name,
-		"volSize":                volSize,
+		"storagePool": storagePool.Name,
+		"size":        volSize,
 		"volConfig.StorageClass": volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
+
 	// CreatePrepare should perform the following tasks:
 	// 1. Sanitize the volume name
 	// 2. Ensure no volume with the same name exists on that backend
@@ -119,18 +122,13 @@ func (b *StorageBackend) AddVolume(
 			return nil, err
 		}
 
-		// Set size if it hasn't already been set in GetVolumeOpts.
-		if _, ok := args["size"]; !ok {
-			args["size"] = volConfig.Size
-		}
-
-		if err := b.Driver.Create(volConfig.InternalName, args); err != nil {
+		if err := b.Driver.Create(volConfig.InternalName, volSize, args); err != nil {
 			log.WithFields(log.Fields{
 				"backend":      b.Name,
 				"storage_pool": storagePool.Name,
 				"volume":       volConfig.Name,
-			}).Warn("Failed to create the volume on this backend: " +
-				err.Error())
+				"error":        err,
+			}).Warn("Failed to create the volume on this backend.")
 		} else {
 			if err = b.Driver.CreateFollowup(volConfig); err != nil {
 				errDestroy := b.Driver.Destroy(volConfig.InternalName)
@@ -139,7 +137,7 @@ func (b *StorageBackend) AddVolume(
 						"backend": b.Name,
 						"volume":  volConfig.InternalName,
 					}).Warnf("Mapping the created volume failed "+
-						"and %s wasn't able to delete it afterwards: %s."+
+						"and %s wasn't able to delete it afterwards: %s. "+
 						"Volume needs to be manually deleted.",
 						config.OrchestratorName, errDestroy.Error())
 				}

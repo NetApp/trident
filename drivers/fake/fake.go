@@ -6,10 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
 	dvp "github.com/netapp/netappdvp/storage_drivers"
-	"github.com/netapp/netappdvp/utils"
 
 	"github.com/netapp/trident/config"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -118,16 +116,7 @@ func (m *FakeStorageDriver) Validate() error {
 	return nil
 }
 
-func (m *FakeStorageDriver) Create(name string, opts map[string]string) error {
-	requestedSize, err := utils.ConvertSizeToBytes64(opts["size"])
-	if err != nil {
-		return fmt.Errorf("Unable to convert volume size %s: %s",
-			opts["size"], err.Error())
-	}
-	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return fmt.Errorf("%s is an invalid volume size: %v", opts["size"], err)
-	}
+func (m *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	poolName, ok := opts[FakePoolAttribute]
 	if !ok {
@@ -141,13 +130,13 @@ func (m *FakeStorageDriver) Create(name string, opts map[string]string) error {
 	if _, ok = m.Volumes[name]; ok {
 		return fmt.Errorf("Volume %s already exists", name)
 	}
-	if volSize > pool.Bytes {
+	if sizeBytes > pool.Bytes {
 		return fmt.Errorf("Requested volume is too large.  Requested %d bytes;"+
-			" have %d available in pool %s.", volSize, pool.Bytes, poolName)
+			" have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
 	}
 	m.Volumes[name] = poolName
 	m.VolumesAdded++
-	pool.Bytes -= volSize
+	pool.Bytes -= sizeBytes
 	return nil
 }
 

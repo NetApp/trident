@@ -1,5 +1,5 @@
-hash: 8cf223b60f1d6211d1f011104d3fc9724edb577642906efcc52c98e68afc5fba
-updated: 2017-03-27T13:54:44.228407841-04:00
+hash: 8eef2e396fd655b9ae3e65e1f2408ee68e2d36dc4f7858c9295554dcef9c0ced
+updated: 2017-04-04T09:54:39.087472237-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -92,7 +92,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: e8bce7b05161d8039e5dbf5d43804fce4964e2f4
+  version: 2ac65bff97b3ab87632df3e895f3bc0111d2b336
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -119,7 +119,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/urfave/cli
-  version: 9e5b04886c4bfee2ceba1465b8121057355c4e53
+  version: 8ba6f23b6e36d03666a14bd9421f5e3efcb59aca
 - name: golang.org/x/crypto
   version: 1f22c0103821b9390939b6776727195525381532
   subpackages:
