@@ -91,7 +91,7 @@ func (d *SolidfireSANStorageDriver) CreateFollowup(volConfig *storage.VolumeConf
 func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeConfig) error {
 	// Add the newly created volume to the default VAG
 	name := volConfig.InternalName
-	v, err := d.Client.GetVolumeByName(name, d.TenantID)
+	v, err := d.GetVolume(name)
 	if err != nil {
 		return fmt.Errorf("Could not find SolidFire volume %s: %s", name, err.Error())
 	}

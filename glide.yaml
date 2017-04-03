@@ -93,7 +93,7 @@ import:
   - jlexer
   - jwriter
 - package: github.com/netapp/netappdvp
-  version: 2ac65bff97b3ab87632df3e895f3bc0111d2b336
+  version: cf4fbb74aba04229bdd0d3db19757a4d6e4afce9
   subpackages:
   - apis/eseries
   - apis/ontap
