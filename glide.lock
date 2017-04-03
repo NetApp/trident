@@ -1,5 +1,5 @@
-hash: 24db7320ebac325614d74927c1cfe1501913f8145fd66f261b46ce537fd70710
-updated: 2016-12-21T17:15:05.833058438-05:00
+hash: 8cf223b60f1d6211d1f011104d3fc9724edb577642906efcc52c98e68afc5fba
+updated: 2017-03-27T13:54:44.228407841-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -39,6 +39,8 @@ imports:
   subpackages:
   - digest
   - reference
+- name: github.com/dustin/go-humanize
+  version: 259d2a102b871d17f30e3cd9881a642961a1e486
 - name: github.com/emicklei/go-restful
   version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
   subpackages:
@@ -87,8 +89,10 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/mattn/go-runewidth
+  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: e4ca60f1d3ac377993b7d17be2dd1ea5b9e42b35
+  version: e8bce7b05161d8039e5dbf5d43804fce4964e2f4
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -96,6 +100,8 @@ imports:
   - azgo
   - storage_drivers
   - utils
+- name: github.com/olekukonko/tablewriter
+  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/PuerkitoBio/purell
@@ -112,6 +118,8 @@ imports:
   version: f1f1a805ed361a0e078bb537e4ea78cd37dcf065
   subpackages:
   - codec
+- name: github.com/urfave/cli
+  version: 9e5b04886c4bfee2ceba1465b8121057355c4e53
 - name: golang.org/x/crypto
   version: 1f22c0103821b9390939b6776727195525381532
   subpackages:

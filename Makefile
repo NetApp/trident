@@ -13,13 +13,14 @@ BIN ?= trident_orchestrator
 
 DIST_REGISTRY=netapp
 
-TRIDENT_DIST_VERSION ?= 1.0
+TRIDENT_DIST_VERSION ?= 1.1
 
 TRIDENT_VERSION ?= local
 TRIDENT_IMAGE ?= trident
 TRIDENT_DEPLOYMENT_FILE ?= ./kubernetes-yaml/trident-deployment-local.yaml
 TRIDENT_DIST_TAG = ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_DIST_VERSION}
 
+ETCD_VERSION ?= v3.1.3
 ETCDV2 ?= http://localhost:8001
 ETCDV2_TEST ?= http://localhost:${PORT}
 ETCD_DIR ?= /tmp/etcd
@@ -32,7 +33,7 @@ LAUNCHER_POD_FILE ?= ./launcher/kubernetes-yaml/launcher-pod-local.yaml
 LAUNCHER_VERSION ?= local
 LAUNCHER_DIST_TAG = ${DIST_REGISTRY}/${LAUNCHER_IMAGE}:${TRIDENT_DIST_VERSION}
 
-DR=docker run --rm -it \
+DR=docker run --rm \
 	-e GOOS=$(GOOS) \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
@@ -122,7 +123,7 @@ test: test_core test_other
 test_core:
 	-docker kill etcd-test > /dev/null
 	-docker rm etcd-test > /dev/null
-	@docker run -d -p ${PORT}:${PORT} --name etcd-test quay.io/coreos/etcd:v2.3.7 -name etcd1 -advertise-client-urls http://localhost:${PORT} -listen-client-urls http://0.0.0.0:${PORT} > /dev/null
+	@docker run -d -p ${PORT}:${PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} -name etcd1 -advertise-client-urls http://localhost:${PORT} -listen-client-urls http://0.0.0.0:${PORT} > /dev/null
 	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCDV2_TEST} 
 	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCDV2_TEST} 
 	@docker kill etcd-test > /dev/null

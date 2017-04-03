@@ -14,7 +14,7 @@ type VolumeType string
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName       = "trident"
-	OrchestratorVersion    = "1.0"
+	OrchestratorVersion    = "1.1"
 	PersistentStoreTimeout = 60 * time.Second
 	MaxBootstrapAttempts   = 10
 
@@ -34,12 +34,14 @@ const (
 	ONTAP_NFS         VolumeType = "ONTAP_NFS"
 	ONTAP_iSCSI       VolumeType = "ONTAP_iSCSI"
 	SolidFire_iSCSI   VolumeType = "SolidFire_iSCSI"
+	Eseries_iSCSI     VolumeType = "Eseries_iSCSI"
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */
-	DefaultOntapIgroup  = OrchestratorName
-	DefaultSolidFireVAG = OrchestratorName
-	UnknownDriver       = "UnknownDriver"
+	DefaultOntapIgroup      = OrchestratorName
+	DefaultSolidFireVAG     = OrchestratorName
+	DefaultEseriesHostGroup = OrchestratorName
+	UnknownDriver           = "UnknownDriver"
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240

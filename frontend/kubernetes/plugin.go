@@ -540,7 +540,8 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch {
 	case driverType == dvp.SolidfireSANStorageDriverName ||
-		driverType == dvp.OntapSANStorageDriverName:
+		driverType == dvp.OntapSANStorageDriverName ||
+		driverType == dvp.EseriesIscsiStorageDriverName:
 		iscsiSource = CreateISCSIVolumeSource(vol.Config)
 		pv.Spec.ISCSI = iscsiSource
 	case driverType == dvp.OntapNASStorageDriverName:
@@ -553,7 +554,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			"volume": vol.Config.Name,
 			"type":   p.orchestrator.GetVolumeType(vol),
 			"driver": driverType,
-		}).Warn("Kubernetes frontend does n't recognize this type of volume; ",
+		}).Warn("Kubernetes frontend doesn't recognize this type of volume; ",
 			"deleting the provisioned volume.")
 		err = fmt.Errorf("Unrecognized volume type by Kubernetes")
 		return
