@@ -62,7 +62,7 @@ func (m *MockOrchestrator) AddFrontend(f frontend.FrontendPlugin) {
 }
 
 func (o *MockOrchestrator) GetVersion() string {
-	return config.OrchestratorVersion
+	return config.OrchestratorFullVersion
 }
 
 // TODO:  Add extra methods to add backends without needing to provide a valid,

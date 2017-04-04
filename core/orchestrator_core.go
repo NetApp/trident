@@ -11,14 +11,13 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
-	"golang.org/x/net/context"
-
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/factory"
 	"github.com/netapp/trident/storage_class"
+	"golang.org/x/net/context"
 )
 
 type tridentOrchestrator struct {
@@ -49,7 +48,7 @@ func (o *tridentOrchestrator) Bootstrap() error {
 	var err error = nil
 	dvp.DefaultStoragePrefix = config.OrchestratorName
 	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" +
-		config.OrchestratorVersion
+		config.OrchestratorFullVersion
 	if err = o.bootstrap(); err != nil {
 		errMsg := fmt.Sprintf("Could not bootstrap from persistent "+
 			"store! Bootstrap might have failed, persistent store might "+
@@ -370,7 +369,7 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 }
 
 func (o *tridentOrchestrator) GetVersion() string {
-	return config.OrchestratorVersion
+	return config.OrchestratorFullVersion
 }
 
 func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (

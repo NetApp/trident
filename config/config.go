@@ -14,7 +14,7 @@ type VolumeType string
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName       = "trident"
-	OrchestratorVersion    = "17.07.0-beta"
+	OrchestratorVersion    = "17.07.0"
 	OrchestratorAPIVersion = "1"
 	PersistentStoreTimeout = 60 * time.Second
 	MaxBootstrapAttempts   = 10
@@ -61,6 +61,13 @@ var (
 	VolumeURL                = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
 	TransactionURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
 	StorageClassURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
+	/* Orchestrator build info variables */
+	OrchestratorBuildType    = "custom"
+	OrchestratorBuildTypeRev = "0"
+	OrchestratorBuildHash    = "unknown"
+	OrchestratorFullVersion  = OrchestratorVersion
+	OrchestratorBuildVersion = "unknown"
+	OrchestratorBuildTime    = "unknown"
 )
 
 func IsValidProtocol(p Protocol) bool {

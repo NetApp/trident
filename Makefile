@@ -6,6 +6,13 @@ GOGC=""
 TRIDENT_VOLUME=trident_build
 TRIDENT_VOLUME_PATH=/go/src/github.com/netapp/trident
 
+GITHASH?=`git rev-parse HEAD || echo unknown`
+BUILD_TYPE?=custom
+BUILD_TYPE_REV?=0
+BUILD_TIME=`date`
+# Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
+BUILD_FLAGS="-X \"main.BuildHash=$(GITHASH)\" -X \"main.BuildType=$(BUILD_TYPE)\" -X \"main.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"main.BuildTime=$(BUILD_TIME)\""
+
 PORT ?= 8000
 ROOT = $(shell pwd)
 BIN_DIR = ${ROOT}/bin
@@ -13,9 +20,9 @@ BIN ?= trident_orchestrator
 
 DIST_REGISTRY=netapp
 
-TRIDENT_DIST_VERSION ?= 17.07.0-beta
+TRIDENT_DIST_VERSION ?= 17.07.0
 
-TRIDENT_VERSION ?= local
+TRIDENT_VERSION ?= ${TRIDENT_DIST_VERSION}
 TRIDENT_IMAGE ?= trident
 TRIDENT_DEPLOYMENT_FILE ?= ./kubernetes-yaml/trident-deployment-local.yaml
 TRIDENT_DIST_TAG = ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_DIST_VERSION}
@@ -27,10 +34,11 @@ ETCD_DIR ?= /tmp/etcd
 K8S ?= ""
 BUILD = build
 
+
 LAUNCHER_IMAGE ?= trident-launcher
 LAUNCHER_CONFIG_DIR ?= ./launcher/config
 LAUNCHER_POD_FILE ?= ./launcher/kubernetes-yaml/launcher-pod-local.yaml
-LAUNCHER_VERSION ?= local
+LAUNCHER_VERSION ?= ${TRIDENT_DIST_VERSION}
 LAUNCHER_DIST_TAG = ${DIST_REGISTRY}/${LAUNCHER_IMAGE}:${TRIDENT_DIST_VERSION}
 
 DR=docker run --rm \
@@ -56,13 +64,13 @@ ifndef REGISTRY_ADDR
 endif
 
 TRIDENT_TAG=${TRIDENT_IMAGE}:${TRIDENT_VERSION}
-TRIDENT_TAG_OLD=${TRIDENT_IMAGE}:old
+TRIDENT_TAG_OLD=${TRIDENT_IMAGE}:${TRIDENT_VERSION}_old
 ifdef REGISTRY_ADDR
 TRIDENT_TAG:=${REGISTRY_ADDR}/${TRIDENT_TAG}
 TRIDENT_TAG_OLD:=${REGISTRY_ADDR}/${TRIDENT_TAG_OLD}
 endif
 LAUNCHER_TAG=${REGISTRY_ADDR}/${LAUNCHER_IMAGE}:${LAUNCHER_VERSION}
-LAUNCHER_TAG_OLD=${REGISTRY_ADDR}/${LAUNCHER_IMAGE}:old
+LAUNCHER_TAG_OLD=${REGISTRY_ADDR}/${LAUNCHER_IMAGE}:${LAUNCHER_VERSION}_old
 
 get:
 	@go get github.com/Masterminds/glide
@@ -71,7 +79,7 @@ get:
 
 build:
 	@mkdir -p ${BIN_DIR}
-	@go ${BUILD} -o ${BIN_DIR}/${BIN}
+	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${BIN}
 
 vendor:
 	@mkdir -p vendor
@@ -83,7 +91,7 @@ vendor:
 docker_build: vendor *.go
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
-	@${GO} ${BUILD} -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
+	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	
 docker_image: docker_retag docker_build
 	cp ${BIN_DIR}/${BIN} .

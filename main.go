@@ -11,6 +11,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/kubernetes"
@@ -61,6 +62,11 @@ func processCmdLineArgs() {
 }
 
 func main() {
+	log.Infof("NetApp Trident\n"+
+		"Version: %v\n"+
+		"Build: %v\n"+
+		"Built: %v", config.OrchestratorFullVersion, config.OrchestratorBuildVersion, config.OrchestratorBuildTime)
+
 	frontends := make([]frontend.FrontendPlugin, 0)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()

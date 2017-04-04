@@ -2,13 +2,7 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v17.04.1
-
-**Fixes:**
-
-**Enhancements:**
-
-## v17.04.1
+## Changes since v17.04.0
 
 **Fixes:**
 - Trident and Trident launcher no longer fail if they cannot validate the
