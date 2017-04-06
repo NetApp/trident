@@ -1015,7 +1015,7 @@ outstanding issues to be aware of when using it:
   [#40941](https://github.com/kubernetes/kubernetes/issues/40941),
   [#41041](https://github.com/kubernetes/kubernetes/issues/41041) and
   [#39202](https://github.com/kubernetes/kubernetes/issues/39202). ONTAP NAS and
-  SolidFire are unaffected. These issues are addressed in Kubernetes 1.6.
+  SolidFire are unaffected. These issues are fixed in Kubernetes 1.6.
 * Although we provide a deployment for Trident, it should never be scaled
   beyond a single replica.  Similarly, only one instance of Trident should be
   run per cluster.  Trident cannot communicate with other instances and cannot
