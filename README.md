@@ -1,7 +1,7 @@
 # Trident
 
 Trident provides storage orchestration for Kubernetes, integrating with its
-[Persistent Volume framework](http://kubernetes.io/docs/user-guide/persistent-volumes/)
+[Persistent Volume framework](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 to act as an external provisioner for NetApp ONTAP, SolidFire, and E-Series systems.
 Additionally, through its REST interface, Trident can provide storage orchestration for
 non-Kubernetes deployments.
@@ -156,7 +156,7 @@ are not available, see the subsequent sections.
 	instead; registering the backend used to provision the etcd volume is not
 	mandatory.
 
-10. Configure a [storage class](http://kubernetes.io/docs/user-guide/persistent-volumes/#storageclasses)
+10. Configure a [storage class](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses)
 	that uses this backend.  This will allow Trident to provision volumes on
 	top of that backend.
 	
@@ -177,7 +177,7 @@ are not available, see the subsequent sections.
 
 Once this is done, Trident will be ready to provision storage, either by
 creating
-[PVCs](http://kubernetes.io/docs/user-guide/persistent-volumes/#persistentvolumeclaims)
+[PVCs](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims)
 in Kubernetes (see `sample-input/pvc-basic.yaml` for an example) or through the
 REST API using `cat <json-file> | kubectl exec -i <trident-pod-name> -- post.sh
 volume` (see `sample-input/sample-volume.json` for an example configuration).
@@ -186,7 +186,7 @@ available in [Volume Configurations](#volume-configurations), and
 [Volumes](#volumes) describes how to create them using PVCs.  If you are
 unfamiliar with the `PersistentVolume` interface in Kubernetes, a walkthrough
 is available
-[here](http://kubernetes.io/docs/user-guide/persistent-volumes/walkthrough/).
+[here](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#introduction).
 
 Unlike the nDVP, Trident supports managing multiple backends with a single
 instance.  To add an additional backend, create a new configuration file and
@@ -226,9 +226,9 @@ does have the following requirements, however:
   defintion, the Trident launcher, and the installation script.
 * Service accounts:  To use the default pod and deployment definitions and for
   Trident to communicate securely with the Kubernetes API server, the
-  Kubernetes cluster must have [service accounts](http://kubernetes.io/docs/user-guide/service-accounts/)
+  Kubernetes cluster must have [service accounts](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
   enabled. If they are not available, Trident can only communicate with the API server
-  over the server's insecure port. See [here](http://kubernetes.io/docs/admin/service-accounts-admin/)
+  over the server's insecure port. See [here](https://kubernetes.io/docs/admin/service-accounts-admin/)
   for additional details on service accounts.
 
 We provide several helper scripts for the REST API in `scripts/`.  These
@@ -315,7 +315,7 @@ injected via a `ConfigMap` object with the following key-value pairs:
 The `ConfigMap` can be created by copying the backend and deployment definition
 files to a directory and running `kubectl create configmap
 trident-launcher-config --from-file <config-directory>`, as described
-[here](http://kubernetes.io/docs/user-guide/configmap/).  Alternatively, the
+[here](https://kubernetes.io/docs/tasks/configure-pod-container/configmap/).  Alternatively, the
 Makefile contains targets that automate this; see 
 [Building Trident](building.md#building-the-trident-launcher).
 
