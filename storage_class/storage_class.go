@@ -58,6 +58,8 @@ func (s *StorageClass) Matches(vc *storage.StoragePool) bool {
 		}
 		if offer, ok := vc.Attributes[name]; !ok || !offer.Matches(request) {
 			log.WithFields(log.Fields{
+				"offer":        offer,
+				"request":      request,
 				"storageClass": s.GetName(),
 				"pool":         vc.Name,
 				"attribute":    name,

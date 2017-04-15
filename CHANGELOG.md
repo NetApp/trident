@@ -8,6 +8,9 @@
 - Trident and Trident launcher no longer fail if they cannot validate the
 container orchestrator version.
 
+**Enhancements:**
+- Added tridentctl CLI tool for managing Trident.
+
 
 ## v17.04.0
 

@@ -3,8 +3,8 @@
 Trident provides storage orchestration for Kubernetes, integrating with its
 [Persistent Volume framework](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 to act as an external provisioner for NetApp ONTAP, SolidFire, and E-Series systems.
-Additionally, through its REST interface, Trident can provide storage orchestration for
-non-Kubernetes deployments.
+Additionally, through its tridentctl CLI or REST interface, Trident can provide
+storage orchestration for non-Kubernetes deployments.
 
 Relative to other Kubernetes external provisioners, Trident is novel from the
 following standpoints:
@@ -39,6 +39,7 @@ exposing users to complexities of various backends.
 	  * [Storage Class Configurations](#storage-class-configurations)
 	      * [Storage Attributes](#storage-attributes)
 	      * [Matching Storage Attributes](#matching-storage-attributes)
+  * [CLI](#cli)
   * [REST API](#rest-api)
       * [Backend Deletion](#backend-deletion)
   * [Kubernetes API](#kubernetes-api)
@@ -152,18 +153,18 @@ are not available, see the subsequent sections.
 	[Troubleshooting](#troubleshooting) section for some advice on how to deal
 	with some of the pitfalls that can occur during this step.
 
-9. Register the backend from step 6 with Trident once Trident is running.  Run
+9. Copy the `tridentctl` CLI tool from the `trident-installer` directory to any
+    location reflected in the environment `$PATH`.
 
-    ```bash
-	cat setup/backend.json | kubectl exec -i <trident-pod-name> -- post.sh backend
-    ```
+10. Register the backend from step 6 with Trident once Trident is running.  Run
 
-	where `<trident-pod-name>` is the name of running Trident pod.  Note that,
-	should you so desire, you could configure and register a different backend
+    ```tridentctl create backend -f setup/backend.json```
+
+	Note that if desired you could configure and register a different backend
 	instead; registering the backend used to provision the etcd volume is not
 	mandatory.
 
-10. Configure a [storage class](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses)
+11. Configure a [storage class](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses)
 	that uses this backend.  This will allow Trident to provision volumes on
 	top of that backend.
 
@@ -173,14 +174,12 @@ are not available, see the subsequent sections.
 	or `eseries-iscsi` depending on the backend created in the previous steps.
 	Save it as `sample-input/storage-class-basic.yaml`.
 
-11. Create the storage class.  Run
+12. Create the storage class.  Run
 
-    ```bash
-	kubectl create -f sample-input/storage-class-basic.yaml
-	```
+    ```bash kubectl create -f sample-input/storage-class-basic.yaml```
 
 	Volumes that refer to this storage class will be provisioned on top of the
-	backend registered in step 9.
+	backend registered in step 10.
 
 Once this is done, Trident will be ready to provision storage, either by
 creating
@@ -197,10 +196,10 @@ is available
 
 Unlike the nDVP, Trident supports managing multiple backends with a single
 instance.  To add an additional backend, create a new configuration file and
-add it using the REST API, as shown in step 9.  See [Backends](#backends) for
+add it using tridentctl, as shown in step 10.  See [Backends](#backends) for
 the different configuration parameters and [REST API](#rest-api) for details
 about the REST API.  Similarly, more storage classes can be added, either via
-Kubernetes, as in step 11, or via POSTing JSON configuration files to Trident's
+Kubernetes, as in step 12, or via POSTing JSON configuration files to Trident's
 REST API.  [Storage Class Configurations](#storage-class-configurations)
 describes the parameters that storage classes take.  Instructions for creating
 them via Kubernetes are available in the [Storage Classes](#storage-classes)
@@ -223,11 +222,11 @@ does have the following requirements, however:
 * ONTAP 8.3 or later:  needed for any ONTAP backends used by Trident.
 * SolidFire Element OS 7 (Nitrogen) or later:  needed for any SolidFire
   backends used by Trident.
-* etcd v2.2.0 or later:  Required, used to store metadata about the storage
+* etcd v3.1.3 or later:  Required, used to store metadata about the storage
   Trident manages.  This is provided by the deployment definition.
 * Kubernetes 1.4/OpenShift Enterprise 3.4/OpenShift Origin 1.4 or greater:
   Optional, but necessary for the integrations with Kubernetes.  While Trident
-  can be run independently and interacted with via its REST API alone, users
+  can be run independently and managed via its CLI or REST API, users
   will benefit the most from its functionality as an external provisioner for
   Kubernetes storage.  This is required to use the Trident deployment
   defintion, the Trident launcher, and the installation script.
@@ -337,8 +336,8 @@ discussion of the security implications of this.
 #### Install Script
 
 To facilitate getting started with Trident, we offer a tarball containing an
-installation script, the deployment and pod definitions for Trident and the
-Trident launcher, and several sample input files for Trident.  The install
+installation script, the deployment and pod definitions for Trident, the
+Trident launcher and CLI, and several sample input files for Trident.  The install
 script requires a backend configuration named `backend.json` to be added to the
 `setup/` directory.  Once this has been done, it will create the ConfigMap
 described above using the files in `setup/` and then launch the Trident
@@ -482,12 +481,12 @@ or the deployment definition.
 
 ## Using Trident
 
-Once Trident is up and running, it can be managed directly via a REST API and
-indirectly via interactions with Kubernetes.  These interfaces allow users and
-administrators to create, view, update, and delete the objects that Trident
-uses to abstract storage.  This section explains the objects and how they are
-configured, and then provides details on how to use the two interfaces to
-manage them.
+Once Trident is installed and running, it can be managed directly via the
+tridentctl CLI or the Trident REST API, and indirectly via interactions with
+Kubernetes.  These interfaces allow users and administrators to create, view,
+update, and delete the objects that Trident uses to abstract storage.  This
+section explains the objects and how they are configured, and then provides
+details on how to use the two interfaces to manage them.
 
 ### Trident Objects
 
@@ -507,8 +506,8 @@ overview of each of these types and the function they serve.
 
 	Unlike the other object types, which are registered and described by users,
 	Trident automatically detects the storage pools available for a given
-	backend.  Users can inspect the attributes of a backend's storage pools by
-	issuing GET calls to the REST interface, as described in the
+	backend.  Users can inspect the attributes of a backend's storage pools via
+	the tridentctl CLI or the REST interface, as described in the
 	[REST API](#rest-api) section.  [Storage attributes](#storage-attributes)
 	describes the different storage attributes that can be associated with a
 	given storage pool.
@@ -708,7 +707,7 @@ underscores with hyphens. For E-Series, which imposes a 30-character limit on
 all object names, Trident generates a random string for the internal name of each
 volume on the array; the mappings between names (as seen in Kubernetes) and the
 internal names (as seen on the E-Series storage array) may be obtained via the
-Trident REST interface.
+Trident CLI or REST interface.
 
 See `sample-input/volume.json` for an example of a basic volume configuration
 and `sample-input/volume-full.json` for a volume configuration with all options
@@ -770,11 +769,20 @@ volume.  However, a SolidFire storage pool will use its offered IOPS
 minimum and maximum to set QoS values, rather than the requested value.  In
 this case, the requested value is used only to select the storage pool.
 
+### CLI
+
+Trident includes a command-line utility, tridentctl, that provides simple
+access to Trident, even if Trident is running inside a pod.  Kubernetes users
+with sufficient privileges to manage the namespace that contains the Trident
+pod may use tridentctl.  The tridentctl utility can add storage backends, and
+it can list and remove backends, storage classes, and volumes.  You can get
+more information by running `tridentctl --help`.
+
 ### REST API
 
 Trident exposes all of its functionality through a REST API with endpoints
 corresponding to each of the user-controlled object types (i.e., `backend`,
-`storageclass`, and `volume`) as well as a `version` endpoint for retieving
+`storageclass`, and `volume`) as well as a `version` endpoint for retrieving
 Trident's version.  The API works as follows:
 * `GET <trident-address>/trident/v1/<object-type>`:  Lists all objects of that
   type.

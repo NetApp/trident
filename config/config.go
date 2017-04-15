@@ -56,6 +56,7 @@ var (
 	}
 	/* API Server and persistent store variables */
 	OrchestratorMajorVersion = getMajorVersion(OrchestratorVersion)
+	BaseURL                  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
 	VersionURL               = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
 	BackendURL               = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
 	VolumeURL                = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"

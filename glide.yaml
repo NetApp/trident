@@ -104,7 +104,9 @@ import:
 - package: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - package: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: c990990ab4981d84da820b7b00c85139ca150b5f
+- package: github.com/spf13/cobra
+  version: 69f86e6d5d7a67467ecd43b4a3c98d9c143d11c4
 - package: github.com/tylerb/graceful
   version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 - package: github.com/ugorji/go

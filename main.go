@@ -22,18 +22,17 @@ import (
 var (
 	debug        = flag.Bool("debug", false, "Enable debugging output")
 	k8sAPIServer = flag.String("k8s_api_server", "", "Kubernetes API server "+
-		"address to enable dynamic storage provisioning for Kubernetes.",
-	)
-	k8sPod = flag.Bool("k8s_pod", false, "Enables dynamic storage provisioning"+
-		" for Kubernetes if running in a pod.")
-	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for"+
+		"address to enable dynamic storage provisioning for Kubernetes.")
+	k8sConfigPath = flag.String("k8s_config_path", "", "Path to KubeConfig file.")
+	k8sPod        = flag.Bool("k8s_pod", false, "Enables dynamic storage provisioning "+
+		"for Kubernetes if running in a pod.")
+	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
-	port = flag.String("port", "8000", "Storage orchestrator "+
-		"port")
+	port        = flag.String("port", "8000", "Storage orchestrator port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
-	storeClient persistent_store.Client
 
+	storeClient      persistent_store.Client
 	enableKubernetes bool
 )
 
@@ -81,8 +80,7 @@ func main() {
 			err                error
 		)
 		if *k8sAPIServer != "" {
-			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator,
-				*k8sAPIServer)
+			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
 		} else {
 			kubernetesFrontend, err = kubernetes.NewPluginInCluster(orchestrator)
 		}

@@ -64,9 +64,8 @@ type KubernetesPlugin struct {
 	containerOrchestratorVersion *k8s_version.Info
 }
 
-func NewPlugin(
-	o core.Orchestrator, apiServerIP string) (*KubernetesPlugin, error) {
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, "")
+func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*KubernetesPlugin, error) {
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, kubeConfigPath)
 	if err != nil {
 		return nil, err
 	}

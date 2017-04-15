@@ -17,6 +17,8 @@ PORT ?= 8000
 ROOT = $(shell pwd)
 BIN_DIR = ${ROOT}/bin
 BIN ?= trident_orchestrator
+CLI_BIN ?= tridentctl
+CLI_PKG ?= github.com/netapp/trident/cli
 
 DIST_REGISTRY=netapp
 
@@ -80,6 +82,7 @@ get:
 build:
 	@mkdir -p ${BIN_DIR}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${BIN}
+	@go ${BUILD} -o ${BIN_DIR}/${CLI_BIN} ${CLI_PKG}
 
 vendor:
 	@mkdir -p vendor
@@ -92,11 +95,14 @@ docker_build: vendor *.go
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
+	@${GO} ${BUILD} -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	
 docker_image: docker_retag docker_build
 	cp ${BIN_DIR}/${BIN} .
-	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg ETCDV2=${ETCDV2} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
+	cp ${BIN_DIR}/${CLI_BIN} .
+	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV2=${ETCDV2} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 	rm ${BIN}
+	rm ${CLI_BIN}
 	-docker rmi ${TRIDENT_TAG_OLD}
 
 docker_retag:
@@ -148,6 +154,7 @@ install: build
 
 clean: docker_clean
 	-rm -f ${BIN_DIR}/${BIN}
+	-rm -f ${BIN_DIR}/${CLI_BIN}
 
 fmt:
 	@$(GO) fmt
@@ -189,6 +196,7 @@ endif
 launcher: docker_launcher_build launcher_start
 
 dist_tar:
+	cp ${BIN_DIR}/${CLI_BIN} trident-installer/
 	-rm -f trident-installer/setup/backend.json
 	@mkdir -p trident-installer/setup
 	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > trident-installer/launcher-pod.yaml
