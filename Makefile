@@ -13,7 +13,7 @@ BIN ?= trident_orchestrator
 
 DIST_REGISTRY=netapp
 
-TRIDENT_DIST_VERSION ?= 17.04.0
+TRIDENT_DIST_VERSION ?= 17.07.0-beta
 
 TRIDENT_VERSION ?= local
 TRIDENT_IMAGE ?= trident
