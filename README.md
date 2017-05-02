@@ -852,11 +852,11 @@ backend object only once its last volume is deleted.
 Trident also translates Kubernetes objects directly into its internal objects
 as part of its dynamic provisioning capabilities.  Specifically, it creates
 storage classes to correspond to Kubernetes
-[`StorageClasses`](http://kubernetes.io/docs/user-guide/persistent-volumes/#storageclasses),
+[`StorageClasses`](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses),
 and it manages volumes based on user interactions with
-[`PersistentVolumeClaims`](http://kubernetes.io/docs/user-guide/persistent-volumes/#persistentvolumeclaims)
+[`PersistentVolumeClaims`](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims)
 (PVCs) and
-[`PersistentVolumes`](http://kubernetes.io/docs/user-guide/persistent-volumes/#persistent-volumes)
+[`PersistentVolumes`](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#introduction)
 (PVs).
 
 #### Storage Classes
