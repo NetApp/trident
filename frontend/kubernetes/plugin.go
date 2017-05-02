@@ -41,12 +41,7 @@ func VersionSupported(versionInfo *k8s_version.Info) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	openshiftConstraints, err := version.NewConstraint(
-		fmt.Sprintf(">= %s, <= %s", OpenShiftVersionMin, OpenShiftVersionMax))
-	if err != nil {
-		return false, err
-	}
-	if kubeConstraints.Check(v) || openshiftConstraints.Check(v) {
+	if kubeConstraints.Check(v) {
 		return true, nil
 	}
 	return false, nil
@@ -100,8 +95,16 @@ func newForConfig(
 				"version: %v", err)
 	}
 	if supported, err := VersionSupported(versionInfo); err != nil {
-		return nil, fmt.Errorf("Kubernetes frontend encountered error "+
-			"in checking the version of container orchestrator: %s", err)
+		log.Warnf("Kubernetes frontend encountered an error "+
+			"in checking the version of the container orchestrator: %s", err)
+		log.Warnf("%s v%s may not support "+
+			"container orchestrator version %s.%s! "+
+			"Supported versions for Kubernetes are %s-%s "+
+			"and for OpenShift are %s-%s.",
+			config.OrchestratorName, config.OrchestratorVersion,
+			versionInfo.Major, versionInfo.Minor,
+			KubernetesVersionMin, KubernetesVersionMax,
+			OpenShiftVersionMin, OpenShiftVersionMax)
 	} else if !supported {
 		log.Warnf("%s v%s may not support "+
 			"container orchestrator version %s.%s! "+

@@ -22,45 +22,23 @@ func TestValidKubeVersion(t *testing.T) {
 		Minor: "5",
 	}
 	launcher := &Launcher{}
-	supported, err := launcher.ValidateVersion(k8sVersion)
-	if !supported || err != nil {
-		t.Fatalf("The test for a valid Kubernetes version failed: %s", err)
+	supported, _ := launcher.ValidateVersion(k8sVersion)
+	if !supported {
+		t.Fatalf("The test for a valid Kubernetes version (%s.%s) failed!",
+			k8sVersion.Major, k8sVersion.Minor)
 	}
 }
 
-func TestInvalidKubeVersion(t *testing.T) {
+func TestInvalidKubeVersion1(t *testing.T) {
 	k8sVersion := &version.Info{
 		Major: "1",
 		Minor: "3",
 	}
 	launcher := &Launcher{}
-	supported, err := launcher.ValidateVersion(k8sVersion)
-	if supported || err != nil {
-		t.Fatalf("The test for an invalid Kubernetes version failed: %s", err)
-	}
-}
-
-func TestValidOpenShiftVersion(t *testing.T) {
-	osVersion := &version.Info{
-		Major: "3",
-		Minor: "5",
-	}
-	launcher := &Launcher{}
-	supported, err := launcher.ValidateVersion(osVersion)
-	if !supported || err != nil {
-		t.Fatalf("The test for a valid OpenShift version failed: %s", err)
-	}
-}
-
-func TestInvalidOpenShiftVersion(t *testing.T) {
-	osVersion := &version.Info{
-		Major: "3",
-		Minor: "3",
-	}
-	launcher := &Launcher{}
-	supported, err := launcher.ValidateVersion(osVersion)
-	if supported || err != nil {
-		t.Fatalf("The test for an invalid OpenShift version failed: %s", err)
+	supported, _ := launcher.ValidateVersion(k8sVersion)
+	if supported {
+		t.Fatalf("The test for an invalid Kubernetes version (%s.%s) failed!",
+			k8sVersion.Major, k8sVersion.Minor)
 	}
 }
 

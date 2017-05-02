@@ -862,8 +862,17 @@ func main() {
 	if supported, err := launcher.ValidateVersion(k8sVersion); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
-		}).Fatal("Launcher encountered an error in checking the version of " +
+		}).Warn("Launcher encountered an error in checking the version of " +
 			"the container orchestrator!")
+		log.WithFields(log.Fields{
+			"yourVersion": fmt.Sprintf("%s.%s",
+				k8sVersion.Major, k8sVersion.Minor),
+			"minKubernetesVersion": k8sfrontend.KubernetesVersionMin,
+			"maxKubernetesVersion": k8sfrontend.KubernetesVersionMax,
+			"minOpenShiftVersion":  k8sfrontend.OpenShiftVersionMin,
+			"maxOpenShiftVersion":  k8sfrontend.OpenShiftVersionMax,
+		}).Warn("Launcher may not support this version of the container " +
+			"orchestrator; however, it will proceed.")
 	} else if !supported {
 		log.WithFields(log.Fields{
 			"yourVersion": fmt.Sprintf("%s.%s",
@@ -873,7 +882,7 @@ func main() {
 			"minOpenShiftVersion":  k8sfrontend.OpenShiftVersionMin,
 			"maxOpenShiftVersion":  k8sfrontend.OpenShiftVersionMax,
 		}).Warn("Launcher may not support this version of the container " +
-			"orchestrator!")
+			"orchestrator; however, it will proceed.")
 	}
 
 	// Run the launcher

@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since 1.0
+## v17.04.1
+
+**Fixes:**
+- Trident and Trident launcher no longer fail if they cannot validate the
+container orchestrator version.
+
+
+## v17.04.0
 
 **Fixes:**
 
@@ -17,8 +24,15 @@ classes that require a specific media type.
 - The improved Trident launcher has a better support for failure recovery, error
 reporting, user arguments, and unit testing.
 - Enabled SVM-scoped users for ONTAP backends.
-- Switched to using vserver-show-aggr-get-iter API for ONTAP 9.0 and later to get aggregate
-media type.
+- Switched to using vserver-show-aggr-get-iter API for ONTAP 9.0 and later to get
+aggregate media type.
 - Added support for E-Series.
 - Upgraded the etcd version to v3.1.3.
 - Added release notes (CHANGELOG.md).
+
+## v1.0
+
+- Trident v1.0 provides storage orchestration for Kubernetes, acting as an
+external provisioner for NetApp ONTAP and SolidFire systems.
+- Through its REST interface, Trident can provide storage orchestration for
+non-Kubernetes deployments.
