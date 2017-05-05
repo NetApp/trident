@@ -34,6 +34,7 @@ const (
 	tridentEphemeralPodName = "trident-ephemeral"
 	tridentDefaultPort      = 8000
 	tridentStorageClassName = "trident-basic"
+	tridentNamespaceFile    = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 	//based on the number of seconds Trident waits on etcd to bootstrap
 	bootstrappingTimeout int64 = 11
 )
@@ -46,7 +47,7 @@ var (
 		"/etc/config/trident-deployment.yaml", "Deployment definition file for Trident")
 	debug                  = flag.Bool("debug", false, "Enable debug output.")
 	k8sTimeout             = flag.Int64("k8s_timeout", 60, "The number of seconds to wait before timing out on Kubernetes operations.")
-	tridentVolumeSize      = flag.Int("volume_size", 1, "The size of the volume used by etcd in GB.")
+	tridentVolumeSize      = flag.Int("volume_size", 1, "The size of the volume provisioned by launcher in GB.")
 	tridentVolumeName      = flag.String("volume_name", "trident", "The name of the volume used by etcd.")
 	tridentPVCName         = flag.String("pvc_name", "trident", "The name of the PVC used by Trident.")
 	tridentPVName          = flag.String("pv_name", "trident", "The name of the PV used by Trident.")
@@ -694,8 +695,14 @@ func (launcher *Launcher) Run() (errors []error) {
 			return
 		}
 		if pv, err = createPV(launcher.kubeClient, *tridentPVName, volConfig, pvc); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed in creating PV %s: %s",
-				*tridentPVName, err)
+			launcherErr = fmt.Errorf("Launcher failed in creating PV %s: %s. "+
+				"Either use -pv_name in launcher-pod.yaml to create a volume "+
+				"and a PV with a different name, or delete PV %s so that "+
+				"launcher can create a new PV with the same name. "+
+				"(The new PV will reuse the volume represented by the old "+
+				"PV unless the volume is manually deleted from the storage "+
+				"backend.)",
+				*tridentPVName, err, *tridentPVName)
 			return
 		}
 		pvCreated = true
@@ -820,7 +827,14 @@ func main() {
 	for _, container := range tridentDeployment.Spec.Template.Spec.Containers {
 		if container.Name == tridentContainerName {
 			tridentImage = container.Image
-			tridentNamespace = tridentDeployment.Namespace
+			bytes, err := ioutil.ReadFile(tridentNamespaceFile)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"error":         err,
+					"namespaceFile": tridentNamespaceFile,
+				}).Fatal("Launcher failed to obtain the namespace for the launcher pod!")
+			}
+			tridentNamespace = string(bytes)
 			break
 		}
 	}

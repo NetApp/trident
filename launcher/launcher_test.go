@@ -29,7 +29,7 @@ func TestValidKubeVersion(t *testing.T) {
 	}
 }
 
-func TestInvalidKubeVersion1(t *testing.T) {
+func TestInvalidKubeVersion(t *testing.T) {
 	k8sVersion := &version.Info{
 		Major: "1",
 		Minor: "3",

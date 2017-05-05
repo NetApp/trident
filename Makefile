@@ -201,6 +201,9 @@ dist_tar:
 	@mkdir -p trident-installer/setup
 	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > trident-installer/launcher-pod.yaml
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment.yaml.templ > trident-installer/setup/trident-deployment.yaml
+	@cp kubernetes-yaml/trident-namespace.yaml trident-installer/
+	@cp kubernetes-yaml/trident-serviceaccounts.yaml trident-installer/
+	@cp kubernetes-yaml/trident-clusterrole* trident-installer/
 	@tar -czf trident-installer-${TRIDENT_DIST_VERSION}.tar.gz trident-installer
 
 dist_tag:

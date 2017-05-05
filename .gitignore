@@ -13,7 +13,7 @@ kubernetes-yaml/trident-deployment-local.yaml
 launcher/kubernetes-yaml/launcher-pod-local.yaml
 launcher/config/
 trident-installer.tar.gz
-trident-installer/launcher-pod.yaml
+trident-installer/*.yaml
 trident-installer/setup
 trident
 

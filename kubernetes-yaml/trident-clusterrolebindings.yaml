@@ -1,0 +1,26 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: trident
+subjects:
+  - kind: ServiceAccount
+    name: trident
+    namespace: trident
+roleRef:
+  kind: ClusterRole
+  name: trident
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+    name: trident-launcher
+subjects:
+  - kind: ServiceAccount
+    name: trident-launcher
+    namespace: trident
+roleRef:
+  kind: ClusterRole
+  name: trident-launcher
+  apiGroup: rbac.authorization.k8s.io
+

@@ -2,10 +2,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: trident
-  namespace: default
   labels:
     app: trident.netapp.io
-    kubernetes.io/cluster-service: "true"
 spec:
   replicas: 1
   template:
@@ -13,7 +11,7 @@ spec:
           labels:
               app: trident.netapp.io
       spec:
-          serviceAccount: default
+          serviceAccount: trident
           containers:
           - name: trident-main
             image: __TRIDENT_IMAGE__ 
@@ -25,6 +23,7 @@ spec:
             - "-k8s_pod"
             #- "-k8s_api_server"
             #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
+            #- "-debug"
           - name: etcd
             image: quay.io/coreos/etcd:v3.1.3
             command:

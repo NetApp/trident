@@ -120,28 +120,24 @@ are not available, see the subsequent sections.
 7.  Copy the backend configuration file from step 6 the `setup/` directory
     and name it `backend.json`.
 
-8. Run the Trident installation script.  If using Kubernetes, run:
+8. Run the Trident installation script:
 
 	```bash
-	./install_trident.sh
+	./install_trident.sh -n trident
 	```
-
-	If using OpenShift, run:
-
-	```bash
-	./install_trident.sh --namespace <namespace> --serviceaccount trident
-	```
-
-	where the `--namespace` argument is optional.
+	where the `-n` argument is optional and specifies the namespace for the
+	Trident deployment. If not specified, namespace defaults to the current
+	namespace; however, it is highly recommended to run Trident in its own
+	namespace so that it is isoloated from other applications in the cluster.
 
 	The install script first configures the Trident deployment and Trident
 	launcher pod definitions, found in `setup/trident-deployment.yaml` and
 	`launcher-pod.yaml`, to use the namespace and service account specified
-	(defaulting to `default` for both if unspecified, as in the Kubernetes
-	command above).  It then starts the Trident launcher pod, which provisions
-	a PVC and PV on which Trident will store its data, using the provided
-	backend.  The launcher then starts a deployment for Trident itself, using
-	the defintion in `setup/`.
+	(defaulting to the current namespace for both if unspecified, as in the 
+	Kubernetes command above).  It then starts the Trident launcher pod, 
+	which provisions a PVC and PV on which Trident will store its data, using
+	the provided backend.  The launcher then starts a deployment for Trident 
+	itself, using the defintion in `setup/`.
 
 	When the installer completes, `kubectl get deployment trident` should show
 	a deployment named `trident` with a single live replica.  Running `kubectl
@@ -304,10 +300,22 @@ parameters:
 * `-deployment_file`:  The path to a Trident deployment definition, as
   described in [Deploying As a Pod](#deploying-as-a-pod).  Defaults to
   `/etc/config/trident-deployment.yaml`.
-* `-apiserver`:  The IP address and insecure port for the Kubernetes API
+* `-apiserver`: The IP address and insecure port for the Kubernetes API
   server.  Optional; if specified, the launcher uses this to communicate with
   the API server.  If omitted, the launcher will assume it is being launched as
   a Kubernetes pod and connect using the service account for that pod.
+* `-volume_name`: The name of the volume provisioned by launcher on the storage
+  backend. If omitted, it defaults to "trident".
+* `-volume_size`: The size of the volume provisioned by launcher in GB. If
+  omitted, it defaults to 1GB.
+* `pvc_name`: The name of the PVC created by launcher. If omitted, it defaults
+  to "trident".
+* `pv_name`: The name of the PV created by launcher. If omitted, it defaults
+  to "trident".
+* `-trident_timeout`: The number of seconds to wait before the launcher times
+  out on a Trident connection. If omitted, it defaults to 10 seconds.
+* `-k8s_timeout`: The number of seconds to wait before timing out on Kubernetes
+   operations. If omitted, it defaults to 60 seconds.  
 * `-debug`: Optional; enables debugging output.
 
 As with Trident itself, the launcher can be deployed as a pod using the
@@ -341,19 +349,59 @@ Trident launcher and CLI, and several sample input files for Trident.  The insta
 script requires a backend configuration named `backend.json` to be added to the
 `setup/` directory.  Once this has been done, it will create the ConfigMap
 described above using the files in `setup/` and then launch the Trident
-deployment.  It takes two optional parameters:
+deployment.  This script can be run from any directory and from any namespace.
+```bash
+$ ./install_trident.sh -h
 
-* `-n <namespace>`/`--namespace <namespace>`:  Namespace in which to deploy
-  Trident and the Trident launcher.  Defaults to `default`.
-* `-s <service-account>`/`--serviceaccount <service-account>`:  Service account
-  to use for Trident and the Trident launcher.  Defaults to `default`.
+Usage:
+ -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -h                  Prints this usage guide.
 
-The script will change the deployment definition files (`launcher-pod.yaml` and
-`setup/trident-deployment.yaml`) provided based on these parameters.  These
-defintions can also be changed manually as needed.  Note that the script must
-be run with `kubectl` using a context with the namespace used in `--namespace`;
-otherwise, the ConfigMap will be created in the wrong namespace and the
-launcher will not run.
+Example:
+  ./install_trident.sh -n trident		Installs the Trident deployment in namespace "trident".
+```
+
+It is highly recommended to run Trident in its own namespace
+(`./install_trident.sh -n trident`) so that it is isolated from other
+applications in the Kubernetes cluster. This script also creates service
+accounts, cluster roles, and cluster role bindings for both Trident and Trident
+launcher.
+
+#### Delete Script
+
+The delete script deletes most artifacts of the install script. This script can
+be run from any directory and from any namespace.
+```bash
+$ ./delete_trident.sh -h
+
+Usage:
+ -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -h                  Prints this usage guide.
+
+Example:
+  ./delete_trident.sh -n trident		Deletes artifacts of Trident from namespace "trident".
+```
+
+This script does not delete the namespace, the PVC, and the PV created by the
+install script.
+
+#### Update Script
+
+The update script can be used to update or rollback container images in the
+Trident deployment.
+```bash
+$ ./update_trident.sh -h
+
+Usage:
+ -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -t <trident_image>  Specifies the new image for the "trident-main" container in the Trident deployment.
+ -e <etcd_image>     Specifies the new image for the "etcd" container in the Trident deployment.
+ -d <deployment>     Specifies the name of the deployment; defaults to "trident". 
+ -h                  Prints this usage guide.
+
+Example:
+  ./update_trident.sh -n trident -t netapp/trident:17.04.1		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.04.1".
+```
 
 ### Deploying As a Pod
 
