@@ -14,12 +14,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/trident/k8s_client"
-	"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/api/unversioned"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/util/yaml"
-	"k8s.io/client-go/pkg/version"
 	k8srest "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -90,11 +90,11 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 
 	// Create the pod
 	pod := &v1.Pod{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      tridentEphemeralPodName,
 			Namespace: tridentNamespace,
 			Labels:    tridentEphemeralLabels,
@@ -126,7 +126,7 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 // stopTridentEphemeralPod stops the ephemeral Trident pod.
 func stopTridentEphemeralPod(kubeClient k8s_client.Interface) error {
 	var gracePeriod int64 = 0
-	options := &v1.DeleteOptions{
+	options := &metav1.DeleteOptions{
 		GracePeriodSeconds: &gracePeriod,
 	}
 	return kubeClient.DeletePod(tridentEphemeralPodName, options)
@@ -330,11 +330,11 @@ func provisionVolume(tridentClient tridentrest.Interface) error {
 // createPVC creates a PVC in the Kubernetes cluster.
 func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentVolumeClaim, error) {
 	pvc := &v1.PersistentVolumeClaim{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolumeClaim",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      pvcName,
 			Namespace: tridentNamespace,
 			Labels:    tridentLabels,
@@ -348,7 +348,7 @@ func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentV
 						resource.BinarySI),
 				},
 			},
-			Selector: &unversioned.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: tridentLabels,
 			},
 		},
@@ -361,11 +361,11 @@ func createPV(kubeClient k8s_client.Interface, pvName string,
 	volConfig *storage.VolumeConfig,
 	pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
 	pv := &v1.PersistentVolume{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   pvName,
 			Labels: tridentLabels,
 		},
@@ -468,7 +468,7 @@ func (launcher *Launcher) Run() (errors []error) {
 
 			// Cleanup after failure (err != nil)
 			var gracePeriod int64 = 0
-			options := &v1.DeleteOptions{
+			options := &metav1.DeleteOptions{
 				GracePeriodSeconds: &gracePeriod,
 			}
 			log.WithFields(log.Fields{
@@ -574,12 +574,15 @@ func (launcher *Launcher) Run() (errors []error) {
 
 	// Check for an existing PVC for Trident
 	if pvcExists, err = launcher.kubeClient.CheckPVCExists(*tridentPVCName); pvcExists {
-		var phase v1.PersistentVolumeClaimPhase
+		var (
+			options metav1.GetOptions
+			phase   v1.PersistentVolumeClaimPhase
+		)
 		log.WithFields(log.Fields{
 			"pvc": *tridentPVCName,
 		}).Info("Launcher detected a preexisting PVC. It assumes " +
 			"this PVC was created for the Trident deployment.")
-		phase, err = launcher.kubeClient.GetPVCPhase(*tridentPVCName)
+		phase, err = launcher.kubeClient.GetPVCPhase(*tridentPVCName, options)
 		if err != nil {
 			launcherErr = fmt.Errorf(
 				"Launcher couldn't detect the phase for PVC %s: %s",
@@ -678,7 +681,8 @@ func (launcher *Launcher) Run() (errors []error) {
 		}).Info("Launcher successfully created the PVC.")
 	} else {
 		// Retrieve the preexisting PVC
-		if pvc, err = launcher.kubeClient.GetPVC(*tridentPVCName); err != nil {
+		var options metav1.GetOptions
+		if pvc, err = launcher.kubeClient.GetPVC(*tridentPVCName, options); err != nil {
 			launcherErr = fmt.Errorf("Launcher failed in getting PVC %s: %s",
 				*tridentPVCName, err)
 			return

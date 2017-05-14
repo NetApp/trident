@@ -2,7 +2,7 @@
 
 Trident supports both native and Dockerized builds, each of which has different
 base requirements.
-* Go 1.6 or greater, if building natively.
+* Go 1.7 or greater, if building natively.
 * Docker 1.10 or greater, if using the Makefile targets that perform a
   Dockerized build.
 

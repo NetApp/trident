@@ -9,16 +9,16 @@ import (
 	log "github.com/Sirupsen/logrus"
 	version "github.com/hashicorp/go-version"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/runtime"
+	k8s_version "k8s.io/apimachinery/pkg/version"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/unversioned"
 	"k8s.io/client-go/pkg/api/v1"
-	k8s_storage "k8s.io/client-go/pkg/apis/storage/v1beta1"
-	"k8s.io/client-go/pkg/conversion"
-	"k8s.io/client-go/pkg/runtime"
-	k8s_version "k8s.io/client-go/pkg/version"
-	"k8s.io/client-go/pkg/watch"
+	k8s_storage_v1beta "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -52,13 +52,13 @@ type KubernetesPlugin struct {
 	kubeClient                   kubernetes.Interface
 	eventRecorder                record.EventRecorder
 	pendingClaimMatchMap         map[string]*v1.PersistentVolume
-	claimController              *cache.Controller
+	claimController              cache.Controller
 	claimControllerStopChan      chan struct{}
 	claimSource                  cache.ListerWatcher
-	volumeController             *cache.Controller
+	volumeController             cache.Controller
 	volumeControllerStopChan     chan struct{}
 	volumeSource                 cache.ListerWatcher
-	classController              *cache.Controller
+	classController              cache.Controller
 	classControllerStopChan      chan struct{}
 	classSource                  cache.ListerWatcher
 	containerOrchestratorVersion *k8s_version.Info
@@ -151,23 +151,18 @@ func newKubernetesPlugin(
 			Interface: kubeClient.Core().Events(""),
 		})
 	ret.eventRecorder = broadcaster.NewRecorder(
+		api.Scheme,
 		v1.EventSource{Component: AnnProvisioner})
 
 	// Setting up a watch for PVCs
 	ret.claimSource = &cache.ListWatch{
-		ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			return kubeClient.Core().PersistentVolumeClaims(
-				v1.NamespaceAll).List(v1Options)
+				v1.NamespaceAll).List(options)
 		},
-		WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			return kubeClient.Core().PersistentVolumeClaims(
-				v1.NamespaceAll).Watch(v1Options)
+				v1.NamespaceAll).Watch(options)
 		},
 	}
 	_, ret.claimController = cache.NewInformer(
@@ -183,17 +178,11 @@ func newKubernetesPlugin(
 
 	// Setting up a watch for PVs
 	ret.volumeSource = &cache.ListWatch{
-		ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
-			return kubeClient.Core().PersistentVolumes().List(v1Options)
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.Core().PersistentVolumes().List(options)
 		},
-		WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
-			return kubeClient.Core().PersistentVolumes().Watch(v1Options)
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.Core().PersistentVolumes().Watch(options)
 		},
 	}
 	_, ret.volumeController = cache.NewInformer(
@@ -209,22 +198,16 @@ func newKubernetesPlugin(
 
 	// Setting up a watch for StorageClasses
 	ret.classSource = &cache.ListWatch{
-		ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
-			return kubeClient.Storage().StorageClasses().List(v1Options)
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.StorageV1beta1().StorageClasses().List(options)
 		},
-		WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-			var v1Options v1.ListOptions
-			v1.Convert_api_ListOptions_To_v1_ListOptions(&options, &v1Options,
-				nil)
-			return kubeClient.Storage().StorageClasses().Watch(v1Options)
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.StorageV1beta1().StorageClasses().Watch(options)
 		},
 	}
 	_, ret.classController = cache.NewInformer(
 		ret.classSource,
-		&k8s_storage.StorageClass{},
+		&k8s_storage_v1beta.StorageClass{},
 		KubernetesSyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    ret.addClass,
@@ -563,11 +546,11 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		UID:       claim.UID,
 	}
 	pv = &v1.PersistentVolume{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: uniqueName,
 			Annotations: map[string]string{
 				AnnClass:                  getClaimClass(claim),
@@ -627,7 +610,7 @@ func (p *KubernetesPlugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error 
 		return fmt.Errorf(message)
 	}
 	err = p.kubeClient.Core().PersistentVolumes().Delete(volume.GetName(),
-		&v1.DeleteOptions{})
+		&metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("Kubernetes frontend failed to contact the "+
 			"API server and delete the PV: %s", err.Error())
@@ -764,7 +747,7 @@ func (p *KubernetesPlugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 			return
 		}
 		err = p.kubeClient.Core().PersistentVolumes().Delete(volume.Name,
-			&v1.DeleteOptions{})
+			&metav1.DeleteOptions{})
 		if err != nil {
 			if !strings.HasSuffix(err.Error(), "not found") {
 				// PVs provisioned by external provisioners seem to end up in
@@ -845,7 +828,7 @@ func (p *KubernetesPlugin) updateClaimWithEvent(
 }
 
 func (p *KubernetesPlugin) addClass(obj interface{}) {
-	class, ok := obj.(*k8s_storage.StorageClass)
+	class, ok := obj.(*k8s_storage_v1beta.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", obj)
 	}
@@ -853,7 +836,7 @@ func (p *KubernetesPlugin) addClass(obj interface{}) {
 }
 
 func (p *KubernetesPlugin) updateClass(oldObj, newObj interface{}) {
-	class, ok := newObj.(*k8s_storage.StorageClass)
+	class, ok := newObj.(*k8s_storage_v1beta.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", newObj)
 	}
@@ -861,7 +844,7 @@ func (p *KubernetesPlugin) updateClass(oldObj, newObj interface{}) {
 }
 
 func (p *KubernetesPlugin) deleteClass(obj interface{}) {
-	class, ok := obj.(*k8s_storage.StorageClass)
+	class, ok := obj.(*k8s_storage_v1beta.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", obj)
 	}
@@ -869,7 +852,7 @@ func (p *KubernetesPlugin) deleteClass(obj interface{}) {
 }
 
 func (p *KubernetesPlugin) processClass(
-	class *k8s_storage.StorageClass,
+	class *k8s_storage_v1beta.StorageClass,
 	eventType string,
 ) {
 	log.WithFields(log.Fields{
@@ -897,7 +880,7 @@ func (p *KubernetesPlugin) processClass(
 	}
 }
 
-func (p *KubernetesPlugin) processAddedClass(class *k8s_storage.StorageClass) {
+func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1beta.StorageClass) {
 	scConfig := new(storage_class.Config)
 	scConfig.Name = class.Name
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
@@ -950,7 +933,7 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage.StorageClass) {
 	return
 }
 
-func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage.StorageClass) {
+func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage_v1beta.StorageClass) {
 	deleted, err := p.orchestrator.DeleteStorageClass(class.Name)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -966,6 +949,6 @@ func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage.StorageClass) 
 	return
 }
 
-func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage.StorageClass) {
+func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1beta.StorageClass) {
 
 }

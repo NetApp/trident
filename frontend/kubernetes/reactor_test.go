@@ -10,11 +10,11 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/conversion"
-	"k8s.io/client-go/pkg/runtime"
-	"k8s.io/client-go/pkg/util/diff"
 	k8s_testing "k8s.io/client-go/testing"
 
 	"github.com/netapp/trident/frontend/kubernetes/framework"

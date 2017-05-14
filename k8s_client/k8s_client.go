@@ -8,39 +8,39 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/errors"
-	"k8s.io/client-go/pkg/api/unversioned"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/version"
-	"k8s.io/client-go/pkg/watch"
 	"k8s.io/client-go/rest"
 )
 
 type Interface interface {
 	Version() *version.Info
-	GetDeployment(deploymentName string) (*v1beta1.Deployment, error)
+	GetDeployment(deploymentName string, options metav1.GetOptions) (*v1beta1.Deployment, error)
 	CheckDeploymentExists(deploymentName string) (bool, error)
 	CreateDeployment(deployment *v1beta1.Deployment) (*v1beta1.Deployment, error)
-	GetPod(podName string) (*v1.Pod, error)
-	GetPodByLabels(listOptions *v1.ListOptions) (*v1.Pod, error)
-	GetPodPhase(podName string) (v1.PodPhase, error)
+	GetPod(podName string, options metav1.GetOptions) (*v1.Pod, error)
+	GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, error)
+	GetPodPhase(podName string, options metav1.GetOptions) (v1.PodPhase, error)
 	CheckPodExists(pod string) (bool, error)
 	CreatePod(pod *v1.Pod) (*v1.Pod, error)
-	DeletePod(podName string, options *v1.DeleteOptions) error
-	WatchPod(listOptions *v1.ListOptions) (watch.Interface, error)
-	ListPod(listOptions *v1.ListOptions) (*v1.PodList, error)
+	DeletePod(podName string, options *metav1.DeleteOptions) error
+	WatchPod(listOptions *metav1.ListOptions) (watch.Interface, error)
+	ListPod(listOptions *metav1.ListOptions) (*v1.PodList, error)
 	GetRunningPod(pod *v1.Pod, timeout *int64, labels map[string]string) (*v1.Pod, error)
-	GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error)
-	GetPVCPhase(pvcName string) (v1.PersistentVolumeClaimPhase, error)
+	GetPVC(pvcName string, options metav1.GetOptions) (*v1.PersistentVolumeClaim, error)
+	GetPVCPhase(pvcName string, options metav1.GetOptions) (v1.PersistentVolumeClaimPhase, error)
 	CheckPVCExists(pvc string) (bool, error)
 	CreatePVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
-	DeletePVC(pvcName string, options *v1.DeleteOptions) error
-	WatchPVC(listOptions *v1.ListOptions) (watch.Interface, error)
+	DeletePVC(pvcName string, options *metav1.DeleteOptions) error
+	WatchPVC(listOptions *metav1.ListOptions) (watch.Interface, error)
 	GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64, labels map[string]string) (*v1.PersistentVolumeClaim, error)
 	CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
-	DeletePV(pvName string, options *v1.DeleteOptions) error
+	DeletePV(pvName string, options *metav1.DeleteOptions) error
 }
 
 type KubeClient struct {
@@ -74,14 +74,17 @@ func (k *KubeClient) Version() *version.Info {
 	return k.versionInfo
 }
 
-func (k *KubeClient) GetDeployment(deploymentName string) (*v1beta1.Deployment, error) {
+func (k *KubeClient) GetDeployment(
+	deploymentName string,
+	options metav1.GetOptions) (*v1beta1.Deployment, error) {
 	return k.clientset.ExtensionsV1beta1().Deployments(k.namespace).Get(
-		deploymentName)
+		deploymentName, options)
 }
 
 func (k *KubeClient) CheckDeploymentExists(deploymentName string) (bool, error) {
-	if _, err := k.GetDeployment(deploymentName); err != nil {
-		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == unversioned.StatusReasonNotFound {
+	var options metav1.GetOptions
+	if _, err := k.GetDeployment(deploymentName, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
@@ -94,11 +97,11 @@ func (k *KubeClient) CreateDeployment(deployment *v1beta1.Deployment) (*v1beta1.
 		deployment)
 }
 
-func (k *KubeClient) GetPod(podName string) (*v1.Pod, error) {
-	return k.clientset.Core().Pods(k.namespace).Get(podName)
+func (k *KubeClient) GetPod(podName string, options metav1.GetOptions) (*v1.Pod, error) {
+	return k.clientset.Core().Pods(k.namespace).Get(podName, options)
 }
 
-func (k *KubeClient) GetPodByLabels(listOptions *v1.ListOptions) (*v1.Pod, error) {
+func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, error) {
 	var (
 		watchedPod *v1.Pod
 		timeout    int64
@@ -142,8 +145,8 @@ func (k *KubeClient) GetPodByLabels(listOptions *v1.ListOptions) (*v1.Pod, error
 	return watchedPod, nil
 }
 
-func (k *KubeClient) GetPodPhase(podName string) (v1.PodPhase, error) {
-	pod, err := k.GetPod(podName)
+func (k *KubeClient) GetPodPhase(podName string, options metav1.GetOptions) (v1.PodPhase, error) {
+	pod, err := k.GetPod(podName, options)
 	if err != nil {
 		var phase v1.PodPhase = ""
 		return phase, err
@@ -152,8 +155,9 @@ func (k *KubeClient) GetPodPhase(podName string) (v1.PodPhase, error) {
 }
 
 func (k *KubeClient) CheckPodExists(pod string) (bool, error) {
-	if _, err := k.GetPod(pod); err != nil {
-		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == unversioned.StatusReasonNotFound {
+	var options metav1.GetOptions
+	if _, err := k.GetPod(pod, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
@@ -165,15 +169,15 @@ func (k *KubeClient) CreatePod(pod *v1.Pod) (*v1.Pod, error) {
 	return k.clientset.Core().Pods(k.namespace).Create(pod)
 }
 
-func (k *KubeClient) DeletePod(podName string, options *v1.DeleteOptions) error {
+func (k *KubeClient) DeletePod(podName string, options *metav1.DeleteOptions) error {
 	return k.clientset.Core().Pods(k.namespace).Delete(podName, options)
 }
 
-func (k *KubeClient) WatchPod(listOptions *v1.ListOptions) (watch.Interface, error) {
+func (k *KubeClient) WatchPod(listOptions *metav1.ListOptions) (watch.Interface, error) {
 	return k.clientset.Core().Pods(k.namespace).Watch(*listOptions)
 }
 
-func (k *KubeClient) ListPod(listOptions *v1.ListOptions) (*v1.PodList, error) {
+func (k *KubeClient) ListPod(listOptions *metav1.ListOptions) (*v1.PodList, error) {
 	return k.clientset.Core().Pods(k.namespace).List(*listOptions)
 }
 
@@ -224,14 +228,15 @@ func (k *KubeClient) GetRunningPod(pod *v1.Pod, timeout *int64, labels map[strin
 		pod.Name, *timeout)
 }
 
-func (k *KubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
+func (k *KubeClient) GetPVC(pvcName string,
+	options metav1.GetOptions) (*v1.PersistentVolumeClaim, error) {
 	return k.clientset.Core().PersistentVolumeClaims(k.namespace).Get(
-		pvcName)
+		pvcName, options)
 }
 
-func (k *KubeClient) GetPVCPhase(pvcName string) (v1.PersistentVolumeClaimPhase,
-	error) {
-	pvc, err := k.GetPVC(pvcName)
+func (k *KubeClient) GetPVCPhase(pvcName string,
+	options metav1.GetOptions) (v1.PersistentVolumeClaimPhase, error) {
+	pvc, err := k.GetPVC(pvcName, options)
 	if err != nil {
 		var phase v1.PersistentVolumeClaimPhase = ""
 		return phase, err
@@ -240,8 +245,9 @@ func (k *KubeClient) GetPVCPhase(pvcName string) (v1.PersistentVolumeClaimPhase,
 }
 
 func (k *KubeClient) CheckPVCExists(pvc string) (bool, error) {
-	if _, err := k.GetPVC(pvc); err != nil {
-		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == unversioned.StatusReasonNotFound {
+	var options metav1.GetOptions
+	if _, err := k.GetPVC(pvc, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
@@ -253,11 +259,11 @@ func (k *KubeClient) CreatePVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVol
 	return k.clientset.Core().PersistentVolumeClaims(k.namespace).Create(pvc)
 }
 
-func (k *KubeClient) DeletePVC(pvcName string, options *v1.DeleteOptions) error {
+func (k *KubeClient) DeletePVC(pvcName string, options *metav1.DeleteOptions) error {
 	return k.clientset.Core().PersistentVolumeClaims(k.namespace).Delete(pvcName, options)
 }
 
-func (k *KubeClient) WatchPVC(listOptions *v1.ListOptions) (watch.Interface, error) {
+func (k *KubeClient) WatchPVC(listOptions *metav1.ListOptions) (watch.Interface, error) {
 	return k.clientset.Core().PersistentVolumeClaims(k.namespace).Watch(*listOptions)
 }
 
@@ -307,7 +313,7 @@ func (k *KubeClient) CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume, er
 	return k.clientset.Core().PersistentVolumes().Create(pv)
 }
 
-func (k *KubeClient) DeletePV(pvName string, options *v1.DeleteOptions) error {
+func (k *KubeClient) DeletePV(pvName string, options *metav1.DeleteOptions) error {
 	return k.clientset.Core().PersistentVolumes().Delete(pvName, options)
 }
 
@@ -322,8 +328,8 @@ func CreateLabelSelectorString(labels map[string]string) string {
 	return strings.TrimSuffix(ret, ",")
 }
 
-func CreateListOptions(timeout *int64, labels map[string]string, resourceVersion string) *v1.ListOptions {
-	listOptions := &v1.ListOptions{
+func CreateListOptions(timeout *int64, labels map[string]string, resourceVersion string) *metav1.ListOptions {
+	listOptions := &metav1.ListOptions{
 		TimeoutSeconds: timeout,
 	}
 	if len(labels) > 0 {

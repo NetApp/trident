@@ -50,7 +50,7 @@ DR=docker run --rm \
 	-v $(TRIDENT_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
-	golang:1.6 
+	golang:1.8
 
 GO=${DR} go
 

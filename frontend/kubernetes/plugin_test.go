@@ -10,15 +10,15 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/api/unversioned"
 	"k8s.io/client-go/pkg/api/v1"
 	k8s_storage "k8s.io/client-go/pkg/apis/storage/v1beta1"
-	"k8s.io/client-go/pkg/conversion"
-	"k8s.io/client-go/pkg/types"
-	"k8s.io/client-go/pkg/util/diff"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 
@@ -72,7 +72,7 @@ func testVolume(
 	name = getUniqueClaimName(testClaim(name, pvcUID, size, accessModes,
 		v1.ClaimPending, map[string]string{}))
 	pv := &v1.PersistentVolume{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
 			APIVersion: "v1",
 		},
@@ -114,7 +114,7 @@ func testClaim(
 	annotations map[string]string,
 ) *v1.PersistentVolumeClaim {
 	return &v1.PersistentVolumeClaim{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolumeClaim",
 			APIVersion: "v1",
 		},
@@ -741,7 +741,7 @@ func testStorageClass(
 	name string, useTrident bool, parameters map[string]string,
 ) *k8s_storage.StorageClass {
 	ret := k8s_storage.StorageClass{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "StorageClass",
 			APIVersion: "v1",
 		},

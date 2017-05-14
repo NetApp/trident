@@ -334,7 +334,7 @@ files to a directory and running `kubectl create configmap
 trident-launcher-config --from-file <config-directory>`, as described
 [here](https://kubernetes.io/docs/tasks/configure-pod-container/configmap/).  Alternatively, the
 Makefile contains targets that automate this; see
-[Building Trident](building.md#building-the-trident-launcher).
+[Building Trident](BUILD.md#building-the-trident-launcher).
 
 Note that the ephemeral version of Trident that the launcher creates, named
 `trident-ephemeral`, runs in the same namespace as the provided deployment

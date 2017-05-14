@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"sort"
 
-	"k8s.io/client-go/pkg/api/errors"
-	"k8s.io/client-go/pkg/api/unversioned"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/version"
-	"k8s.io/client-go/pkg/watch"
 )
 
 type FakeKubeClient struct {
@@ -53,7 +53,8 @@ func (k *FakeKubeClient) Version() *version.Info {
 	return nil
 }
 
-func (k *FakeKubeClient) GetDeployment(deploymentName string) (*v1beta1.Deployment, error) {
+func (k *FakeKubeClient) GetDeployment(deploymentName string,
+	options metav1.GetOptions) (*v1beta1.Deployment, error) {
 	if fail, ok := k.failMatrix["GetDeployment"]; fail && ok {
 		return nil, fmt.Errorf("GetDeployment failed")
 	}
@@ -61,13 +62,14 @@ func (k *FakeKubeClient) GetDeployment(deploymentName string) (*v1beta1.Deployme
 		return deployment, nil
 	}
 	err := &errors.StatusError{}
-	err.ErrStatus.Reason = unversioned.StatusReasonNotFound
+	err.ErrStatus.Reason = metav1.StatusReasonNotFound
 	return nil, err
 }
 
 func (k *FakeKubeClient) CheckDeploymentExists(deploymentName string) (bool, error) {
-	if _, err := k.GetDeployment(deploymentName); err != nil {
-		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == unversioned.StatusReasonNotFound {
+	var options metav1.GetOptions
+	if _, err := k.GetDeployment(deploymentName, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
@@ -83,15 +85,17 @@ func (k *FakeKubeClient) CreateDeployment(deployment *v1beta1.Deployment) (*v1be
 	return deployment, nil
 }
 
-func (k *FakeKubeClient) GetPod(podName string) (*v1.Pod, error) {
+func (k *FakeKubeClient) GetPod(podName string,
+	options metav1.GetOptions) (*v1.Pod, error) {
 	return nil, nil
 }
 
-func (k *FakeKubeClient) GetPodByLabels(listOptions *v1.ListOptions) (*v1.Pod, error) {
+func (k *FakeKubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, error) {
 	return nil, nil
 }
 
-func (k *FakeKubeClient) GetPodPhase(podName string) (v1.PodPhase, error) {
+func (k *FakeKubeClient) GetPodPhase(podName string,
+	options metav1.GetOptions) (v1.PodPhase, error) {
 	return v1.PodRunning, nil
 }
 
@@ -103,15 +107,15 @@ func (k *FakeKubeClient) CreatePod(pod *v1.Pod) (*v1.Pod, error) {
 	return nil, nil
 }
 
-func (k *FakeKubeClient) DeletePod(podName string, options *v1.DeleteOptions) error {
+func (k *FakeKubeClient) DeletePod(podName string, options *metav1.DeleteOptions) error {
 	return nil
 }
 
-func (k *FakeKubeClient) WatchPod(listOptions *v1.ListOptions) (watch.Interface, error) {
+func (k *FakeKubeClient) WatchPod(listOptions *metav1.ListOptions) (watch.Interface, error) {
 	return watch.NewEmptyWatch(), nil
 }
 
-func (k *FakeKubeClient) ListPod(listOptions *v1.ListOptions) (*v1.PodList, error) {
+func (k *FakeKubeClient) ListPod(listOptions *metav1.ListOptions) (*v1.PodList, error) {
 	return nil, nil
 }
 
@@ -119,7 +123,8 @@ func (k *FakeKubeClient) GetRunningPod(pod *v1.Pod, timeout *int64, labels map[s
 	return nil, nil
 }
 
-func (k *FakeKubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
+func (k *FakeKubeClient) GetPVC(pvcName string,
+	options metav1.GetOptions) (*v1.PersistentVolumeClaim, error) {
 	if fail, ok := k.failMatrix["GetPVC"]; fail && ok {
 		return nil, fmt.Errorf("GetPVC failed")
 	}
@@ -127,12 +132,13 @@ func (k *FakeKubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, erro
 		return pvc, nil
 	}
 	err := &errors.StatusError{}
-	err.ErrStatus.Reason = unversioned.StatusReasonNotFound
+	err.ErrStatus.Reason = metav1.StatusReasonNotFound
 	return nil, err
 }
 
-func (k *FakeKubeClient) GetPVCPhase(pvcName string) (v1.PersistentVolumeClaimPhase, error) {
-	pvc, err := k.GetPVC(pvcName)
+func (k *FakeKubeClient) GetPVCPhase(pvcName string,
+	options metav1.GetOptions) (v1.PersistentVolumeClaimPhase, error) {
+	pvc, err := k.GetPVC(pvcName, options)
 	if err != nil {
 		var phase v1.PersistentVolumeClaimPhase = ""
 		return phase, err
@@ -141,8 +147,9 @@ func (k *FakeKubeClient) GetPVCPhase(pvcName string) (v1.PersistentVolumeClaimPh
 }
 
 func (k *FakeKubeClient) CheckPVCExists(pvc string) (bool, error) {
-	if _, err := k.GetPVC(pvc); err != nil {
-		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == unversioned.StatusReasonNotFound {
+	var options metav1.GetOptions
+	if _, err := k.GetPVC(pvc, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
@@ -158,15 +165,17 @@ func (k *FakeKubeClient) CreatePVC(pvc *v1.PersistentVolumeClaim) (*v1.Persisten
 	return pvc, nil
 }
 
-func (k *FakeKubeClient) DeletePVC(pvcName string, options *v1.DeleteOptions) error {
+func (k *FakeKubeClient) DeletePVC(pvcName string, options *metav1.DeleteOptions) error {
 	return nil
 }
 
-func (k *FakeKubeClient) WatchPVC(listOptions *v1.ListOptions) (watch.Interface, error) {
+func (k *FakeKubeClient) WatchPVC(listOptions *metav1.ListOptions) (watch.Interface, error) {
 	return watch.NewEmptyWatch(), nil
 }
 
-func (k *FakeKubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64, labels map[string]string) (*v1.PersistentVolumeClaim, error) {
+func (k *FakeKubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim,
+	pv *v1.PersistentVolume, timeout *int64,
+	labels map[string]string) (*v1.PersistentVolumeClaim, error) {
 	return nil, nil
 }
 
@@ -174,6 +183,6 @@ func (k *FakeKubeClient) CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume
 	return nil, nil
 }
 
-func (k *FakeKubeClient) DeletePV(pvName string, options *v1.DeleteOptions) error {
+func (k *FakeKubeClient) DeletePV(pvName string, options *metav1.DeleteOptions) error {
 	return nil
 }
