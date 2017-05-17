@@ -16,29 +16,47 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
-func TestValidKubeVersion(t *testing.T) {
+func TestSupportedKubeVersion(t *testing.T) {
 	k8sVersion := &version.Info{
-		Major: "1",
-		Minor: "5",
+		Major:      "1",
+		Minor:      "6",
+		GitVersion: "v1.6.0-beta+exp.sha.5114f85",
 	}
 	launcher := &Launcher{}
-	supported, _ := launcher.ValidateVersion(k8sVersion)
-	if !supported {
-		t.Fatalf("The test for a valid Kubernetes version (%s.%s) failed!",
-			k8sVersion.Major, k8sVersion.Minor)
+	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	if err != nil {
+		t.Fatalf("%s.%s (%s) is a supported Kubernetes version!",
+			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
+	}
+}
+
+func TestUnsupportedKubeVersion(t *testing.T) {
+	k8sVersion := &version.Info{
+		Major:      "1",
+		Minor:      "3+",
+		GitVersion: "v1.3.4-rancher1",
+	}
+	launcher := &Launcher{}
+	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	if !strings.Contains(err.Error(),
+		"Kubernetes frontend only works with Kubernetes") {
+		t.Fatalf("%s.%s (%s) is an unsupported Kubernetes version!",
+			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
 	}
 }
 
 func TestInvalidKubeVersion(t *testing.T) {
 	k8sVersion := &version.Info{
-		Major: "1",
-		Minor: "3",
+		Major:      "1",
+		Minor:      "6",
+		GitVersion: "v1.6",
 	}
 	launcher := &Launcher{}
-	supported, _ := launcher.ValidateVersion(k8sVersion)
-	if supported {
-		t.Fatalf("The test for an invalid Kubernetes version (%s.%s) failed!",
-			k8sVersion.Major, k8sVersion.Minor)
+	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	if !strings.Contains(err.Error(),
+		"Kubernetes frontend recovered from a panic") {
+		t.Fatalf("%s.%s (%s) is an invalid Kubernetes version!",
+			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
 	}
 }
 

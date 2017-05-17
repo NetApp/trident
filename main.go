@@ -31,9 +31,9 @@ var (
 	port        = flag.String("port", "8000", "Storage orchestrator port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
-
-	storeClient      persistent_store.Client
-	enableKubernetes bool
+	kubernetesVersion = "unknown"
+	storeClient       persistent_store.Client
+	enableKubernetes  bool
 )
 
 func processCmdLineArgs() {
@@ -61,10 +61,10 @@ func processCmdLineArgs() {
 }
 
 func main() {
-	log.Infof("NetApp Trident\n"+
-		"Version: %v\n"+
-		"Build: %v\n"+
-		"Built: %v", config.OrchestratorFullVersion, config.OrchestratorBuildVersion, config.OrchestratorBuildTime)
+	log.WithFields(log.Fields{
+		"version":    config.OrchestratorBuildVersion,
+		"build_time": config.OrchestratorBuildTime,
+	}).Info("Running Trident storage orchestrator.")
 
 	frontends := make([]frontend.FrontendPlugin, 0)
 	runtime.GOMAXPROCS(runtime.NumCPU())

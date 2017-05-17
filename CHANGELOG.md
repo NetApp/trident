@@ -9,6 +9,8 @@
 container orchestrator version.
 
 **Enhancements:**
+- Added support for storage.k8s.io/v1 storage classes introduced in Kubernetes
+v1.6.0.
 - Added tridentctl CLI tool for managing Trident.
 
 

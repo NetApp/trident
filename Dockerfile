@@ -1,8 +1,8 @@
 FROM debian:jessie
 
-LABEL maintainer Ardalan Kangarlou <Ardalan.Kangarlou@netapp.com>
-LABEL version="17.07.0-beta"
-LABEL description="Kubernetes storage orchestrator"
+LABEL maintainer="Ardalan.Kangarlou@netapp.com" \
+      app="trident.netapp.io" \
+      description="Trident Storage Orchestrator"
 
 RUN apt-get update && apt-get install -y \
 	open-iscsi \

@@ -1,9 +1,8 @@
 FROM debian:jessie
 
-MAINTAINER Chris Dragga <chris.dragga@netapp.com>
-
-LABEL version="17.07.0-beta" \
-	description="Tool to bootstrap a PVC for Trident's etcd deployment."
+LABEL maintainer="Ardalan.Kangarlou@netapp.com" \
+      app="trident-launcher.netapp.io" \
+      description="Trident Storage Orchestrator Launcher"
 
 COPY launcher /usr/local/bin/launcher
 ENTRYPOINT ["/usr/local/bin/launcher"]

@@ -30,10 +30,6 @@ const (
 	AnnExportPolicy    = AnnPrefix + "/exportPolicy"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "1.4"
-	KubernetesVersionMax = "1.6"
-
-	//Minimum and maximum supported OpenShift versions
-	OpenShiftVersionMin = "3.4"
-	OpenShiftVersionMax = "3.6"
+	KubernetesVersionMin = "v1.4.0"
+	KubernetesVersionMax = "v1.6.0"
 )

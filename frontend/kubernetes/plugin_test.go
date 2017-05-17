@@ -17,14 +17,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
 	k8s_storage "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/tools/cache"
+	framework "k8s.io/client-go/tools/cache/testing"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/frontend/kubernetes/framework"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
@@ -76,7 +77,7 @@ func testVolume(
 			Kind:       "PersistentVolume",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Annotations: map[string]string{
 				AnnDynamicallyProvisioned: AnnProvisioner,
@@ -118,7 +119,7 @@ func testClaim(
 			Kind:       "PersistentVolumeClaim",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
 			Namespace:   testNamespace,
 			UID:         uid,
@@ -220,7 +221,7 @@ func newTestPlugin(
 		&core_v1.EventSinkImpl{
 			Interface: client.Core().Events(""),
 		})
-	ret.eventRecorder = broadcaster.NewRecorder(
+	ret.eventRecorder = broadcaster.NewRecorder(api.Scheme,
 		v1.EventSource{Component: AnnProvisioner})
 	// Note that at the moment we can only actually support NFS here; the
 	// iSCSI backends all trigger interactions with a real backend to map
@@ -745,7 +746,7 @@ func testStorageClass(
 			Kind:       "StorageClass",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		Parameters: parameters,

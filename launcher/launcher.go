@@ -22,6 +22,7 @@ import (
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	k8srest "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	k8sfrontend "github.com/netapp/trident/frontend/kubernetes"
 	tridentrest "github.com/netapp/trident/frontend/rest"
@@ -416,8 +417,8 @@ func NewLauncher(kubeClient k8s_client.Interface, tridentClient tridentrest.Inte
 
 // ValidateVersion checks whether the container orchestrator version is
 // supported or not.
-func (launcher *Launcher) ValidateVersion(versionInfo *version.Info) (bool, error) {
-	return k8sfrontend.VersionSupported(versionInfo)
+func (launcher *Launcher) ValidateKubeVersion(versionInfo *version.Info) (*k8s_util_version.Version, error) {
+	return k8sfrontend.ValidateKubeVersion(versionInfo)
 }
 
 // Run runs the launcher.
@@ -877,28 +878,15 @@ func main() {
 		tridentDeployment)
 
 	// Check whether this version of Kubernetes is supported by Trident
-	if supported, err := launcher.ValidateVersion(k8sVersion); err != nil {
+	if _, err := launcher.ValidateKubeVersion(k8sVersion); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Warn("Launcher encountered an error in checking the version of " +
 			"the container orchestrator!")
 		log.WithFields(log.Fields{
-			"yourVersion": fmt.Sprintf("%s.%s",
-				k8sVersion.Major, k8sVersion.Minor),
-			"minKubernetesVersion": k8sfrontend.KubernetesVersionMin,
-			"maxKubernetesVersion": k8sfrontend.KubernetesVersionMax,
-			"minOpenShiftVersion":  k8sfrontend.OpenShiftVersionMin,
-			"maxOpenShiftVersion":  k8sfrontend.OpenShiftVersionMax,
-		}).Warn("Launcher may not support this version of the container " +
-			"orchestrator; however, it will proceed.")
-	} else if !supported {
-		log.WithFields(log.Fields{
-			"yourVersion": fmt.Sprintf("%s.%s",
-				k8sVersion.Major, k8sVersion.Minor),
-			"minKubernetesVersion": k8sfrontend.KubernetesVersionMin,
-			"maxKubernetesVersion": k8sfrontend.KubernetesVersionMax,
-			"minOpenShiftVersion":  k8sfrontend.OpenShiftVersionMin,
-			"maxOpenShiftVersion":  k8sfrontend.OpenShiftVersionMax,
+			"yourVersion":         k8sVersion.GitVersion,
+			"minSupportedVersion": k8sfrontend.KubernetesVersionMin,
+			"maxSupportedVersion": k8sfrontend.KubernetesVersionMax,
 		}).Warn("Launcher may not support this version of the container " +
 			"orchestrator; however, it will proceed.")
 	}

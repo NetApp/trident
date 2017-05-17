@@ -137,7 +137,7 @@ test: test_core test_other
 test_core:
 	-docker kill etcd-test > /dev/null
 	-docker rm etcd-test > /dev/null
-	@docker run -d -p ${PORT}:${PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} -name etcd1 -advertise-client-urls http://localhost:${PORT} -listen-client-urls http://0.0.0.0:${PORT} > /dev/null
+	@docker run -d -p ${PORT}:${PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${PORT} -listen-client-urls http://0.0.0.0:${PORT} > /dev/null
 	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCDV2_TEST} 
 	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCDV2_TEST} 
 	@docker kill etcd-test > /dev/null

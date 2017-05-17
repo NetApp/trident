@@ -16,8 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/pkg/api/v1"
 	k8s_testing "k8s.io/client-go/testing"
-
-	"github.com/netapp/trident/frontend/kubernetes/framework"
+	framework "k8s.io/client-go/tools/cache/testing"
 )
 
 // This file defines a k8s_testing.Reactor used for testing purposes (see below).

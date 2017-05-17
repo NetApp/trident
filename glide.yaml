@@ -16,7 +16,7 @@ import:
 - package: github.com/blang/semver
   version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - package: github.com/coreos/etcd
-  version: 8a37349097a592db79ba3087f3cae9cd4b0af21c
+  version: 20490caaf0dcd96bb4a95e40625559def8ef5b04 
   subpackages:
   - client
   - pkg/pathutil
@@ -262,6 +262,7 @@ import:
   - tools/clientcmd/api
   - tools/clientcmd/api/latest
   - tools/clientcmd/api/v1
+  - tools/cache/testing
   - tools/metrics
   - tools/record
   - transport
@@ -315,4 +316,7 @@ import:
   - pkg/watch
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
-- package: github.com/hashicorp/go-version
+- package: k8s.io/kubernetes
+  version: ee39d359dd0896c4c0eccf23f033f158ad3d3bd7
+  subpackages:
+  - pkg/util/version

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	version "github.com/hashicorp/go-version"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
@@ -18,11 +17,13 @@ import (
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
+	k8s_storage_v1 "k8s.io/client-go/pkg/apis/storage/v1"
 	k8s_storage_v1beta "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
+	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -31,37 +32,39 @@ import (
 	"github.com/netapp/trident/storage_class"
 )
 
-func VersionSupported(versionInfo *k8s_version.Info) (bool, error) {
-	v, err := version.NewVersion(versionInfo.Major + "." + versionInfo.Minor)
-	if err != nil {
-		return false, err
+func ValidateKubeVersion(versionInfo *k8s_version.Info) (kubeVersion *k8s_util_version.Version, err error) {
+	kubeVersion, err = nil, nil
+	defer func() {
+		if r := recover(); r != nil {
+			log.WithFields(log.Fields{
+				"panic": r,
+			}).Errorf("Kubernetes frontend recovered from a panic!")
+			err = fmt.Errorf("Kubernetes frontend recovered from a panic: %v", r)
+		}
+	}()
+	kubeVersion = k8s_util_version.MustParseSemantic(versionInfo.GitVersion)
+	if !kubeVersion.AtLeast(k8s_util_version.MustParseSemantic(KubernetesVersionMin)) {
+		err = fmt.Errorf("Kubernetes frontend only works with Kubernetes %s or later!",
+			KubernetesVersionMin)
 	}
-	kubeConstraints, err := version.NewConstraint(fmt.Sprintf(">= %s, <= %s",
-		KubernetesVersionMin, KubernetesVersionMax))
-	if err != nil {
-		return false, err
-	}
-	if kubeConstraints.Check(v) {
-		return true, nil
-	}
-	return false, nil
+	return
 }
 
 type KubernetesPlugin struct {
-	orchestrator                 core.Orchestrator
-	kubeClient                   kubernetes.Interface
-	eventRecorder                record.EventRecorder
-	pendingClaimMatchMap         map[string]*v1.PersistentVolume
-	claimController              cache.Controller
-	claimControllerStopChan      chan struct{}
-	claimSource                  cache.ListerWatcher
-	volumeController             cache.Controller
-	volumeControllerStopChan     chan struct{}
-	volumeSource                 cache.ListerWatcher
-	classController              cache.Controller
-	classControllerStopChan      chan struct{}
-	classSource                  cache.ListerWatcher
-	containerOrchestratorVersion *k8s_version.Info
+	orchestrator             core.Orchestrator
+	kubeClient               kubernetes.Interface
+	eventRecorder            record.EventRecorder
+	pendingClaimMatchMap     map[string]*v1.PersistentVolume
+	claimController          cache.Controller
+	claimControllerStopChan  chan struct{}
+	claimSource              cache.ListerWatcher
+	volumeController         cache.Controller
+	volumeControllerStopChan chan struct{}
+	volumeSource             cache.ListerWatcher
+	classController          cache.Controller
+	classControllerStopChan  chan struct{}
+	classSource              cache.ListerWatcher
+	kubernetesVersion        *k8s_version.Info
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*KubernetesPlugin, error) {
@@ -69,7 +72,7 @@ func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Kubern
 	if err != nil {
 		return nil, err
 	}
-	return newForConfig(o, kubeConfig)
+	return newKubernetesPlugin(o, kubeConfig)
 }
 
 func NewPluginInCluster(o core.Orchestrator) (*KubernetesPlugin, error) {
@@ -77,81 +80,59 @@ func NewPluginInCluster(o core.Orchestrator) (*KubernetesPlugin, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newForConfig(o, kubeConfig)
+	return newKubernetesPlugin(o, kubeConfig)
 }
 
-func newForConfig(
-	o core.Orchestrator, kubeConfig *rest.Config,
-) (*KubernetesPlugin, error) {
+func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config) (*KubernetesPlugin, error) {
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	versionInfo, err := kubeClient.Discovery().ServerVersion()
+
+	ret := &KubernetesPlugin{
+		orchestrator:             orchestrator,
+		kubeClient:               kubeClient,
+		claimControllerStopChan:  make(chan struct{}),
+		volumeControllerStopChan: make(chan struct{}),
+		classControllerStopChan:  make(chan struct{}),
+		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
+	}
+
+	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
 	if err != nil {
 		return nil,
 			fmt.Errorf("Kubernetes frontend couldn't retrieve API server's "+
 				"version: %v", err)
 	}
-	if supported, err := VersionSupported(versionInfo); err != nil {
-		log.Warnf("Kubernetes frontend encountered an error "+
-			"in checking the version of the container orchestrator: %s", err)
-		log.Warnf("%s v%s may not support "+
-			"container orchestrator version %s.%s! "+
-			"Supported versions for Kubernetes are %s-%s "+
-			"and for OpenShift are %s-%s.",
-			config.OrchestratorName, config.OrchestratorVersion,
-			versionInfo.Major, versionInfo.Minor,
-			KubernetesVersionMin, KubernetesVersionMax,
-			OpenShiftVersionMin, OpenShiftVersionMax)
-	} else if !supported {
-		log.Warnf("%s v%s may not support "+
-			"container orchestrator version %s.%s! "+
-			"Supported versions for Kubernetes are %s-%s "+
-			"and for OpenShift are %s-%s.",
-			config.OrchestratorName, config.OrchestratorVersion,
-			versionInfo.Major, versionInfo.Minor,
-			KubernetesVersionMin, KubernetesVersionMax,
-			OpenShiftVersionMin, OpenShiftVersionMax)
-	}
 	log.WithFields(log.Fields{
-		"version": versionInfo.Major + "." + versionInfo.Minor,
+		"version":    ret.kubernetesVersion.Major + "." + ret.kubernetesVersion.Minor,
+		"gitVersion": ret.kubernetesVersion.GitVersion,
 	}).Info("Kubernetes frontend determined the container orchestrator ",
 		"version.")
-	return newKubernetesPlugin(kubeClient, o, versionInfo), nil
-}
-
-func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
-	id := string(claim.UID)
-	r := strings.NewReplacer("-", "", "_", "", " ", "", ",", "")
-	id = r.Replace(id)
-	if len(id) > 5 {
-		id = id[:5]
+	kubeVersion, err := ValidateKubeVersion(ret.kubernetesVersion)
+	if err != nil &&
+		strings.Contains(err.Error(),
+			"Kubernetes frontend only works with Kubernetes") {
+		return nil, err
+	} else if err != nil {
+		log.Warnf("%s v%s may not support "+
+			"container orchestrator version %s.%s (%s)! "+
+			"Supported versions for Kubernetes are %s-%s.",
+			config.OrchestratorName, config.OrchestratorVersion,
+			ret.kubernetesVersion.Major, ret.kubernetesVersion.Minor,
+			ret.kubernetesVersion.GitVersion, KubernetesVersionMin,
+			KubernetesVersionMax)
+		log.Warnf("Kubernetes frontend proceeds as if you are running "+
+			"Kubernetes %s!", KubernetesVersionMax)
+		kubeVersion = k8s_util_version.MustParseSemantic(KubernetesVersionMax)
 	}
-	return fmt.Sprintf("%s-%s-%s", claim.Namespace, claim.Name, id)
-}
 
-func newKubernetesPlugin(
-	kubeClient kubernetes.Interface,
-	orchestrator core.Orchestrator,
-	containerOrchestratorVersion *k8s_version.Info,
-) *KubernetesPlugin {
-	ret := &KubernetesPlugin{
-		orchestrator:                 orchestrator,
-		kubeClient:                   kubeClient,
-		claimControllerStopChan:      make(chan struct{}),
-		volumeControllerStopChan:     make(chan struct{}),
-		classControllerStopChan:      make(chan struct{}),
-		pendingClaimMatchMap:         make(map[string]*v1.PersistentVolume),
-		containerOrchestratorVersion: containerOrchestratorVersion,
-	}
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(
 		&core_v1.EventSinkImpl{
 			Interface: kubeClient.Core().Events(""),
 		})
-	ret.eventRecorder = broadcaster.NewRecorder(
-		api.Scheme,
+	ret.eventRecorder = broadcaster.NewRecorder(api.Scheme,
 		v1.EventSource{Component: AnnProvisioner})
 
 	// Setting up a watch for PVCs
@@ -197,25 +178,47 @@ func newKubernetesPlugin(
 	)
 
 	// Setting up a watch for StorageClasses
-	ret.classSource = &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.StorageV1beta1().StorageClasses().List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.StorageV1beta1().StorageClasses().Watch(options)
-		},
+	switch {
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
+		ret.classSource = &cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return kubeClient.StorageV1().StorageClasses().List(options)
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return kubeClient.StorageV1().StorageClasses().Watch(options)
+			},
+		}
+		_, ret.classController = cache.NewInformer(
+			ret.classSource,
+			&k8s_storage_v1.StorageClass{},
+			KubernetesSyncPeriod,
+			cache.ResourceEventHandlerFuncs{
+				AddFunc:    ret.addClass,
+				UpdateFunc: ret.updateClass,
+				DeleteFunc: ret.deleteClass,
+			},
+		)
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.4.0")):
+		ret.classSource = &cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return kubeClient.StorageV1beta1().StorageClasses().List(options)
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return kubeClient.StorageV1beta1().StorageClasses().Watch(options)
+			},
+		}
+		_, ret.classController = cache.NewInformer(
+			ret.classSource,
+			&k8s_storage_v1beta.StorageClass{},
+			KubernetesSyncPeriod,
+			cache.ResourceEventHandlerFuncs{
+				AddFunc:    ret.addClass,
+				UpdateFunc: ret.updateClass,
+				DeleteFunc: ret.deleteClass,
+			},
+		)
 	}
-	_, ret.classController = cache.NewInformer(
-		ret.classSource,
-		&k8s_storage_v1beta.StorageClass{},
-		KubernetesSyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc:    ret.addClass,
-			UpdateFunc: ret.updateClass,
-			DeleteFunc: ret.deleteClass,
-		},
-	)
-	return ret
+	return ret, nil
 }
 
 func (p *KubernetesPlugin) Activate() error {
@@ -232,8 +235,22 @@ func (p *KubernetesPlugin) Deactivate() error {
 	return nil
 }
 
-func (km *KubernetesPlugin) GetName() string {
+func (p *KubernetesPlugin) GetName() string {
 	return "kubernetes"
+}
+
+func (p *KubernetesPlugin) Version() string {
+	return p.kubernetesVersion.GitVersion
+}
+
+func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
+	id := string(claim.UID)
+	r := strings.NewReplacer("-", "", "_", "", " ", "", ",", "")
+	id = r.Replace(id)
+	if len(id) > 5 {
+		id = id[:5]
+	}
+	return fmt.Sprintf("%s-%s-%s", claim.Namespace, claim.Name, id)
 }
 
 func (p *KubernetesPlugin) addClaim(obj interface{}) {
@@ -286,7 +303,7 @@ func (p *KubernetesPlugin) processClaim(
 		// For k8s version >= 1.5
 	} else if provisioner == "" {
 		// For k8s version < 1.5
-		pvcStorageClass := getClaimClass(claim)
+		pvcStorageClass := v1.GetPersistentVolumeClaimClass(claim)
 		if pvcStorageClass == "" {
 			return
 		}
@@ -529,7 +546,15 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	accessModes := claim.Spec.AccessModes
 	annotations := claim.Annotations
 
-	// TODO: log volume creation in etcd
+	// TODO: A quick way to support v1 storage classes before changing unit tests
+	if _, found := annotations[AnnClass]; !found {
+		if annotations == nil {
+			annotations = make(map[string]string)
+		}
+		annotations[AnnClass] = v1.GetPersistentVolumeClaimClass(claim)
+		// TODO: correct handling of the default storage class
+	}
+
 	vol, err = p.orchestrator.AddVolume(
 		getVolumeConfig(accessModes, uniqueName, size, annotations))
 	if err != nil {
@@ -553,7 +578,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		ObjectMeta: metav1.ObjectMeta{
 			Name: uniqueName,
 			Annotations: map[string]string{
-				AnnClass:                  getClaimClass(claim),
+				AnnClass:                  v1.GetPersistentVolumeClaimClass(claim),
 				AnnDynamicallyProvisioned: AnnProvisioner,
 			},
 		},
@@ -616,18 +641,6 @@ func (p *KubernetesPlugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error 
 			"API server and delete the PV: %s", err.Error())
 	}
 	return err
-}
-
-// getClaimClass returns name of class that is requested by given claim.
-// Request for `nil` class is interpreted as request for class "",
-// i.e. for a classless PV.
-func getClaimClass(claim *v1.PersistentVolumeClaim) string {
-	// TODO: change to PersistentVolumeClaim.Spec.Class value when this
-	// attribute is introduced.
-	if class, found := claim.Annotations[AnnClass]; found {
-		return class
-	}
-	return ""
 }
 
 // getClaimReclaimPolicy returns the reclaim policy for a claim
@@ -827,32 +840,60 @@ func (p *KubernetesPlugin) updateClaimWithEvent(
 	return claim, nil
 }
 
+func convertStorageClassV1BetaToV1(class *k8s_storage_v1beta.StorageClass) *k8s_storage_v1.StorageClass {
+	// For now we just copy the fields used by Trident.
+	v1Class := &k8s_storage_v1.StorageClass{
+		Provisioner: class.Provisioner,
+		Parameters:  class.Parameters,
+	}
+	v1Class.Name = class.Name
+	return v1Class
+}
+
 func (p *KubernetesPlugin) addClass(obj interface{}) {
 	class, ok := obj.(*k8s_storage_v1beta.StorageClass)
-	if !ok {
-		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", obj)
+	if ok {
+		p.processClass(convertStorageClassV1BetaToV1(class), "add")
+		return
 	}
-	p.processClass(class, "add")
+	classV1, ok := obj.(*k8s_storage_v1.StorageClass)
+	if !ok {
+		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+			"or storage.k8s.io/v1 StorageClass; handler got %v", obj)
+	}
+	p.processClass(classV1, "add")
 }
 
 func (p *KubernetesPlugin) updateClass(oldObj, newObj interface{}) {
 	class, ok := newObj.(*k8s_storage_v1beta.StorageClass)
-	if !ok {
-		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", newObj)
+	if ok {
+		p.processClass(convertStorageClassV1BetaToV1(class), "update")
+		return
 	}
-	p.processClass(class, "update")
+	classV1, ok := newObj.(*k8s_storage_v1.StorageClass)
+	if !ok {
+		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+			"or storage.k8s.io/v1 StorageClass; handler got %v", newObj)
+	}
+	p.processClass(classV1, "update")
 }
 
 func (p *KubernetesPlugin) deleteClass(obj interface{}) {
 	class, ok := obj.(*k8s_storage_v1beta.StorageClass)
-	if !ok {
-		log.Panicf("Kubernetes frontend expected StorageClass; handler got %v", obj)
+	if ok {
+		p.processClass(convertStorageClassV1BetaToV1(class), "delete")
+		return
 	}
-	p.processClass(class, "delete")
+	classV1, ok := obj.(*k8s_storage_v1.StorageClass)
+	if !ok {
+		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+			"or storage.k8s.io/v1 StorageClass; handler got %v", obj)
+	}
+	p.processClass(classV1, "delete")
 }
 
 func (p *KubernetesPlugin) processClass(
-	class *k8s_storage_v1beta.StorageClass,
+	class *k8s_storage_v1.StorageClass,
 	eventType string,
 ) {
 	log.WithFields(log.Fields{
@@ -880,7 +921,7 @@ func (p *KubernetesPlugin) processClass(
 	}
 }
 
-func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1beta.StorageClass) {
+func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass) {
 	scConfig := new(storage_class.Config)
 	scConfig.Name = class.Name
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
@@ -933,7 +974,7 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1beta.StorageCl
 	return
 }
 
-func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage_v1beta.StorageClass) {
+func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage_v1.StorageClass) {
 	deleted, err := p.orchestrator.DeleteStorageClass(class.Name)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -949,6 +990,5 @@ func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage_v1beta.Storage
 	return
 }
 
-func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1beta.StorageClass) {
-
+func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1.StorageClass) {
 }

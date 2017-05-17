@@ -6,4 +6,5 @@ type FrontendPlugin interface {
 	Activate() error
 	Deactivate() error
 	GetName() string
+	Version() string
 }

@@ -128,7 +128,7 @@ are not available, see the subsequent sections.
 	where the `-n` argument is optional and specifies the namespace for the
 	Trident deployment. If not specified, namespace defaults to the current
 	namespace; however, it is highly recommended to run Trident in its own
-	namespace so that it is isoloated from other applications in the cluster.
+	namespace so that it is isolated from other applications in the cluster.
 
 	The install script first configures the Trident deployment and Trident
 	launcher pod definitions, found in `setup/trident-deployment.yaml` and

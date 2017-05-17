@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tylerb/graceful"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 )
 
@@ -60,4 +61,8 @@ func (server *APIServer) Deactivate() error {
 
 func (server *APIServer) GetName() string {
 	return "REST"
+}
+
+func (server *APIServer) Version() string {
+	return "v" + config.OrchestratorAPIVersion
 }

@@ -11,13 +11,14 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+	"golang.org/x/net/context"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/factory"
 	"github.com/netapp/trident/storage_class"
-	"golang.org/x/net/context"
 )
 
 type tridentOrchestrator struct {
@@ -49,6 +50,10 @@ func (o *tridentOrchestrator) Bootstrap() error {
 	dvp.DefaultStoragePrefix = config.OrchestratorName
 	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" +
 		config.OrchestratorFullVersion
+	if kubeFrontend, found := o.frontends["kubernetes"]; found {
+		dvp.ExtendedDriverVersion =
+			dvp.ExtendedDriverVersion + "-" + kubeFrontend.Version()
+	}
 	if err = o.bootstrap(); err != nil {
 		errMsg := fmt.Sprintf("Could not bootstrap from persistent "+
 			"store! Bootstrap might have failed, persistent store might "+
