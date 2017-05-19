@@ -156,46 +156,86 @@ func NewStorageBackendForConfig(configJSON string) (
 	case dvp.SolidfireSANStorageDriverName:
 		driver := storageDriver.(*solidfire.SolidfireSANStorageDriver)
 
-		// Verify the VAG already exists
-		listVAGReq := &sfapi.ListVolumeAccessGroupsRequest{
-			StartVAGID: 0,
-			Limit:      0,
-		}
-		vags, vagErr := driver.Client.ListVolumeAccessGroups(listVAGReq)
-		if vagErr != nil {
-			err = fmt.Errorf("Could not list VAGs for backend %s: %s",
-				driver.Config.SVIP, vagErr.Error())
-			return
-		}
-
-		found := false
-		initiators := ""
-		for _, vag := range vags {
-			//TODO: SolidFire backend config should support taking VAG as an arg
-			if vag.Name == config.DefaultSolidFireVAG {
-				driver.VagID = vag.VAGID
-				found = true
-				for _, initiator := range vag.Initiators {
-					initiators = initiators + initiator + ","
-				}
-				initiators = strings.TrimSuffix(initiators, ",")
-				break
+		// If zero AccessGroups are specified it could be that this is an upgrade where we
+		// just utilize the default 'trident' group automatically.  Or, perhaps the deployment
+		// doesn't need more than one set of 64 initiators, so we'll just use the old way of
+		// doing it here, and look for/set the default group.
+		if len(driver.AccessGroups) == 0 {
+			// We're going to do some hacky stuff here and make sure that if this is an upgrade
+			// that we verify that one of the AccessGroups in the list is the default Trident VAG ID
+			listVAGReq := &sfapi.ListVolumeAccessGroupsRequest{
+				StartVAGID: 0,
+				Limit:      0,
 			}
-		}
-		if !found {
-			err = fmt.Errorf("Volume Access Group %v doesn't exist at %v "+
-				"and needs to be manually created! Please also ensure all "+
-				"relevant hosts are added to the VAG.",
-				config.DefaultSolidFireVAG, driver.Config.SVIP)
+			vags, vagErr := driver.Client.ListVolumeAccessGroups(listVAGReq)
+			if vagErr != nil {
+				err = fmt.Errorf("Could not list VAGs for backend %s: %s",
+					driver.Config.SVIP, vagErr.Error())
+				return
+			}
+
+			found := false
+			initiators := ""
+			for _, vag := range vags {
+				//TODO: SolidFire backend config should support taking VAG as an arg
+				if vag.Name == config.DefaultSolidFireVAG {
+					driver.AccessGroups = append(driver.AccessGroups, vag.VAGID)
+					found = true
+					for _, initiator := range vag.Initiators {
+						initiators = initiators + initiator + ","
+					}
+					initiators = strings.TrimSuffix(initiators, ",")
+					log.Infof("no AccessGroup ID's configured, using the default group: %v, "+
+						"with initiators: %+v", vag.Name, initiators)
+					break
+				}
+			}
+			if !found {
+				err = fmt.Errorf("Volume Access Group %v doesn't exist at %v "+
+					"and needs to be manually created! Please also ensure all "+
+					"relevant hosts are added to the VAG.",
+					config.DefaultSolidFireVAG, driver.Config.SVIP)
+				return
+			}
+		} else if len(driver.AccessGroups) > 4 {
+			err = fmt.Errorf("The maximum number of allowed Volume Access Groups per config is 4 "+
+				"but your config has specified %v!", len(driver.AccessGroups))
 			return
 		} else {
-			log.WithFields(log.Fields{
-				"driver":     dvp.SolidfireSANStorageDriverName,
-				"SVIP":       driver.Config.SVIP,
-				"VAG":        config.DefaultSolidFireVAG,
-				"initiators": initiators,
-			}).Warn("Please ensure all relevant hosts are added to the ",
-				"initiator group.")
+			// We only need this in the case that AccessGroups were specified, if it was zero and we
+			// used the default we already verified it in that step so we're good here.
+			missingVags := driver.VerifyVags(driver.AccessGroups)
+			if len(missingVags) != 0 {
+				err = fmt.Errorf("Failed to discover 1 or more of the specified VAG ID's! "+
+					"Missing VAG IDS from Cluster discovery: %+v", missingVags)
+				return
+			}
+		}
+
+		log.WithFields(log.Fields{
+			"driver":       dvp.SolidfireSANStorageDriverName,
+			"SVIP":         driver.Config.SVIP,
+			"AccessGroups": driver.AccessGroups,
+		}).Warn("Please ensure all relevant hosts are added to one of ",
+			"the specified Volume Access Groups.")
+
+		// Deal with upgrades for versions prior to handling multiple VAG ID's
+		var vIDs []int64
+		var req sfapi.ListVolumesForAccountRequest
+		req.AccountID = driver.TenantID
+		volumes, _ := driver.Client.ListVolumesForAccount(&req)
+		for _, v := range volumes {
+			if v.Status != "deleted" {
+				vIDs = append(vIDs, v.VolumeID)
+			}
+		}
+		for _, vag := range driver.AccessGroups {
+			addAGErr := driver.AddMissingVolumesToVag(vag, vIDs)
+			if addAGErr != nil {
+				err = fmt.Errorf("Failed to update AccessGroup membership of volume "+
+					"%+v", addAGErr)
+				return
+			}
 		}
 
 		/* TODO: DON'T DELETE

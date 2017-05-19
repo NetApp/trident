@@ -15,6 +15,7 @@ launcher/config/
 trident-installer.tar.gz
 trident-installer/launcher-pod.yaml
 trident-installer/setup
+trident
 
 ###############################################################################
 # Go

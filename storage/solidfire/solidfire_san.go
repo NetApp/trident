@@ -33,6 +33,7 @@ type SolidfireStorageDriverConfigExternal struct {
 	SVIP           string
 	InitiatorIFace string //iface to use of iSCSI initiator
 	Types          *[]sfapi.VolType
+	AccessGroups   []int64
 }
 
 // Retrieve storage backend capabilities
@@ -96,23 +97,30 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 		return fmt.Errorf("Could not find SolidFire volume %s: %s", name, err.Error())
 	}
 	volumeIDList := []int64{v.VolumeID}
-	err = d.Client.AddVolumeToAccessGroup(d.VagID, volumeIDList)
-	if err != nil {
-		return fmt.Errorf("Could not map SolidFire volume %s to the VAG: %s", name, err.Error())
+	for _, vagID := range d.AccessGroups {
+		req := sfapi.AddVolumesToVolumeAccessGroupRequest{
+			VolumeAccessGroupID: vagID,
+			Volumes:             volumeIDList,
+		}
+
+		err = d.Client.AddVolumesToAccessGroup(&req)
+		if err != nil {
+			return fmt.Errorf("Could not map SolidFire volume %s to the VAG: %s", name, err.Error())
+		}
 	}
 
 	volConfig.AccessInfo.IscsiTargetPortal = d.Config.SVIP
 	volConfig.AccessInfo.IscsiTargetIQN = v.Iqn
 	volConfig.AccessInfo.IscsiLunNumber = 0
 	volConfig.AccessInfo.IscsiInterface = d.Config.InitiatorIFace
-	volConfig.AccessInfo.IscsiVAG = d.VagID
+	volConfig.AccessInfo.IscsiVAGs = d.AccessGroups
 	log.WithFields(log.Fields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,
 		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
 		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
 		"interface":       volConfig.AccessInfo.IscsiInterface,
-		"VAG":             volConfig.AccessInfo.IscsiVAG,
+		"VAGs":            volConfig.AccessInfo.IscsiVAGs,
 	}).Debug("Successfully mapped SolidFire LUN.")
 
 	return nil
@@ -155,5 +163,52 @@ func (d *SolidfireSANStorageDriver) GetExternalConfig() interface{} {
 		SVIP:           d.Config.SVIP,
 		InitiatorIFace: d.Config.InitiatorIFace,
 		Types:          d.Config.Types,
+		AccessGroups:   d.Config.AccessGroups,
 	}
+}
+
+// Find/Return items that exist in b but NOT a
+func diffSlices(a, b []int64) []int64 {
+	var r []int64
+	m := make(map[int64]bool)
+	for _, s := range a {
+		m[s] = true
+	}
+	for _, s := range b {
+		if !m[s] {
+			r = append(r, s)
+		}
+	}
+	return r
+}
+
+// Verify that the provided list of VAG ID's exist, return list of those that don't
+func (d *SolidfireSANStorageDriver) VerifyVags(vags []int64) []int64 {
+	var vagIDs []int64
+
+	discovered, err := d.Client.ListVolumeAccessGroups(&sfapi.ListVolumeAccessGroupsRequest{})
+	if err != nil {
+		log.Fatalf("Failed to retrieve VAGs from SolidFire backend: %+v", err)
+	}
+
+	for _, v := range discovered {
+		vagIDs = append(vagIDs, v.VAGID)
+	}
+	return diffSlices(vags, vagIDs)
+}
+
+// Add volume ID's in the provided list that aren't already a member of the specified VAG
+func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []int64) error {
+	var req sfapi.ListVolumeAccessGroupsRequest
+	req.StartVAGID = vagID
+	req.Limit = 1
+
+	vags, _ := d.Client.ListVolumeAccessGroups(&req)
+	missingVolIDs := diffSlices(vags[0].Volumes, vols)
+
+	var addReq sfapi.AddVolumesToVolumeAccessGroupRequest
+	addReq.VolumeAccessGroupID = vagID
+	addReq.Volumes = missingVolIDs
+
+	return d.Client.AddVolumesToAccessGroup(&addReq)
 }

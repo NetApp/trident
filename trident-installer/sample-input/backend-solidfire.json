@@ -5,6 +5,7 @@
     "SVIP": "10.0.0.1:3260",
     "TenantName": "trident",
     "InitiatorIFace": "default",
+    "AccessGroups": [1, 2, 3, 4],
     "Types": [{"Type": "Bronze", "Qos": {"minIOPS": 1000, "maxIOPS": 2000, "burstIOPS": 4000}},
               {"Type": "Silver", "Qos": {"minIOPS": 4000, "maxIOPS": 6000, "burstIOPS": 8000}},
               {"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}]

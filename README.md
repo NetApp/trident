@@ -14,9 +14,9 @@ that works by watching events at the Kubernetes API Server.
 2. Trident supports storage provisioning on multiple platforms through a
 unified interface.
 
-Rather than force users to choose a single target for their volumes, Trident 
-selects a backend from those it manages based on the higher-level storage 
-qualities that the user needs.  This allows it to provide unified, 
+Rather than force users to choose a single target for their volumes, Trident
+selects a backend from those it manages based on the higher-level storage
+qualities that the user needs.  This allows it to provide unified,
 platform-agnostic management for the storage systems under its control without
 exposing users to complexities of various backends.
 
@@ -47,7 +47,7 @@ exposing users to complexities of various backends.
 * [Provisioning Workflow](#provisioning-workflow)
 * [Troubleshooting](#troubleshooting)
 * [Caveats](#caveats)
-	
+
 ## Getting Started
 
 Although Trident can be launched in a number of ways, the most straightforward
@@ -77,13 +77,20 @@ are not available, see the subsequent sections.
 	[here](https://github.com/NetApp/netappdvp#configuring-your-docker-host-for-nfs-or-iscsi)
 	for instructions.
 
-4.  If you plan on using SolidFire with Trident, create a volume access group (VAG)
-    named `trident` and place the IQN of each node in the cluster into it.
-	
+4.  If you plan on using SolidFire with Trident, you'll need to create and specify
+    in your config up to 4 volume AccessGroups.  Each Access Group has a limit of 64
+    initiators (IQN entries) that can belong to it, so if your deployment includes
+    greater than 64 nodes, you'll create a VAG per each setup of 64 nodes.  The
+    max number of VAG's per Trident deployment is 4, providing access of up to
+    256 nodes per configuration.  Specify the Access Groups via the AccessGropus entry in your
+    configuration file, which accepts a list of ID's of at least 1 and up to 4 unique
+    existing SolidFire Volume Access Group ID's.  If you're upgrading your Trident deployment,
+    remember to include your original Trident Access Group ID in this list!
+
 	If you plan on using ONTAP SAN, create an iGroup named `trident`
 	that contains the IQN of each node in the cluster; for an example of this, see
 	[this blog post](http://netapp.github.io/blog/2016/06/08/netapp-persistent-storage-in-kubernetes-using-ontap-and-iscsi/).
-	
+
 	If you plan on using E-Series, create a Host Group named `trident` and create
 	a Host in that Host Group that contains the IQN of each node in the cluster.
 
@@ -93,20 +100,20 @@ are not available, see the subsequent sections.
 6. Configure a storage backend from which Trident will provision its volumes.
     This will also be used in step 8 to provision the PVC on which Trident will
 	store its metadata.
-   
+
     Edit either `sample-input/backend-ontap-nas.json`, `sample-input/backend-ontap-san.json`,
     `sample-input/backend-solidfire.json`, or `sample-input/sample-eseries-iscsi.json`
     to refer to an actual ONTAP, SolidFire, or E-Series deployment. (Use
     `backend-ontap-nas.json` to provision NFS volumes from ONTAP and
     `backend-ontap-san.json` for iSCSI volumes).
-	
+
 	If multiple clusters will be running Trident against the same backend, add
 	the storagePrefix attribute, with a value that will be unique to your
 	cluster, e.g., `storagePrefix="username"`.  See the [Caveats](#caveats)
 	section for further details.
 
 	If using ONTAP-SAN or SolidFire or E-Series, make sure all hosts in the Kubernetes
-	cluster are mapped into the `trident` iGroup, VAG, or Host Group, respectively, as
+	cluster are mapped into the `trident` iGroup, AccessGroups, or Host Group, respectively, as
 	described in the [Requirements](#requirements) section.
 
 7.  Copy the backend configuration file from step 6 the `setup/` directory
@@ -133,7 +140,7 @@ are not available, see the subsequent sections.
 	command above).  It then starts the Trident launcher pod, which provisions
 	a PVC and PV on which Trident will store its data, using the provided
 	backend.  The launcher then starts a deployment for Trident itself, using
-	the defintion in `setup/`. 
+	the defintion in `setup/`.
 
 	When the installer completes, `kubectl get deployment trident` should show
 	a deployment named `trident` with a single live replica.  Running `kubectl
@@ -159,7 +166,7 @@ are not available, see the subsequent sections.
 10. Configure a [storage class](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses)
 	that uses this backend.  This will allow Trident to provision volumes on
 	top of that backend.
-	
+
 	Edit the `backendType` parameter of
 	`sample-input/storage-class-basic.yaml.templ` and replace
 	`__BACKEND_TYPE__` with either `ontap-nas`, `ontap-san`, `solidfire-san`,
@@ -249,9 +256,12 @@ section for more details.
 
 ### Cluster Access
 
-SolidFire backends create LUNs using a VAG named `trident`. The VAG must be created
-before creating volumes on the backend, and it must have the IQN of each host that
-will mount Trident volumes mapped to it.
+SolidFire backends enable connectivity between host and Volume via Access
+Groups.  These Groups must be created BEFORE creating volumes on the backend
+and must include the IQN's of the host that will mount Trident volumes.  Each
+AccessGroup has allows a max of 64 initiator entries, so for deployments >64
+you'll need to split up your initiators into groups of 64 and specify all of
+the groups that you configure (up to 4).
 
 ONTAP SAN backends create LUNs using an iGroup named `trident`. The iGroup
 must be created before creating volumes on the backend, and it must have the IQN of
@@ -316,7 +326,7 @@ The `ConfigMap` can be created by copying the backend and deployment definition
 files to a directory and running `kubectl create configmap
 trident-launcher-config --from-file <config-directory>`, as described
 [here](https://kubernetes.io/docs/tasks/configure-pod-container/configmap/).  Alternatively, the
-Makefile contains targets that automate this; see 
+Makefile contains targets that automate this; see
 [Building Trident](building.md#building-the-trident-launcher).
 
 Note that the ephemeral version of Trident that the launcher creates, named
@@ -354,7 +364,7 @@ template, `kubernetes-yaml/trident-deployment.yaml.templ`, for doing so.  The
 PVC can be used as-is; however, the deployment template requires modification:
 * Substitute `__TRIDENT_IMAGE__` with the registry tag of a Trident image,
   either `netapp/trident` or the tag for a locally built image.  `make pod`
-  will do this automatically. 
+  will do this automatically.
 * If the Kubernetes cluster does not have service accounts enabled, configure
   direct HTTP access to the API Server:
   * Comment out line 20 (`-k8s-pod`) and  remove the comments from lines 21
@@ -477,7 +487,7 @@ indirectly via interactions with Kubernetes.  These interfaces allow users and
 administrators to create, view, update, and delete the objects that Trident
 uses to abstract storage.  This section explains the objects and how they are
 configured, and then provides details on how to use the two interfaces to
-manage them. 
+manage them.
 
 ### Trident Objects
 
@@ -599,7 +609,7 @@ deployments.
 | version   | int  | No | Version of the nDVP API in use |
 | storageDriverName | string | Yes | Must be "solidfire-san" |
 | storagePrefix | string | No | Prefix to prepend to created volumes on the backend.  The format of the resultant volume name will be `<prefix>-<volumeName>`; this prefix should be chosen so that volume names are unique.  If unspecified, this defaults to `trident`.|
-| TenantName | string | Yes | Tenant name for created volumes. | 
+| TenantName | string | Yes | Tenant name for created volumes. |
 | EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:sf-address/json-rpc/7.0`). |
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
 | InitiatorIFace | string | No | ISCI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
@@ -715,7 +725,7 @@ storage classes and requests follows below.
 | Attribute | Type | Required | Description |
 | --------- | ---- | --- | ----------- |
 | version | string | No | Version of the Trident API in use. |
-| name | string | Yes | Storage class name. | 
+| name | string | Yes | Storage class name. |
 | attributes | `map[string]string` | No | Map of attribute names to requested values for that attribute.  These attribute requests will be matched against the offered attributes from each backend storage pool to determine which targets are valid for provisioning. See [Storage Attributes](#storage-attributes) for possible names and values, and [Matching Storage Attributes](#matching-storage-attributes) for a description of how Trident uses them. |
 | requiredStorage | `map[string]StringList` | No | Map of backend names to lists of storage pool names for that backend.  Storage pools specified here will be used by this storage class regardless of whether they match the attributes requested above. |
 
@@ -763,7 +773,7 @@ this case, the requested value is used only to select the storage pool.
 ### REST API
 
 Trident exposes all of its functionality through a REST API with endpoints
-corresponding to each of the user-controlled object types (i.e., `backend`, 
+corresponding to each of the user-controlled object types (i.e., `backend`,
 `storageclass`, and `volume`) as well as a `version` endpoint for retieving
 Trident's version.  The API works as follows:
 * `GET <trident-address>/trident/v1/<object-type>`:  Lists all objects of that
