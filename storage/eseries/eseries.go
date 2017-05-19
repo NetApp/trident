@@ -214,7 +214,7 @@ func (d *EseriesStorageDriver) StoreConfig(b *storage.PersistentStorageBackendCo
 	log.Debugln("EseriesStorageDriver:StoreConfig")
 
 	storage.SanitizeCommonStorageDriverConfig(
-		&d.Config.CommonStorageDriverConfig)
+		d.Config.CommonStorageDriverConfig)
 	b.EseriesConfig = &d.Config
 }
 
@@ -223,7 +223,7 @@ func (d *EseriesStorageDriver) GetExternalConfig() interface{} {
 
 	return &EseriesStorageDriverConfigExternal{
 		CommonStorageDriverConfigExternal: storage.GetCommonStorageDriverConfigExternal(
-			&d.Config.CommonStorageDriverConfig),
+			d.Config.CommonStorageDriverConfig),
 		Username:    d.Config.Username,
 		ControllerA: d.Config.ControllerA,
 		ControllerB: d.Config.ControllerB,

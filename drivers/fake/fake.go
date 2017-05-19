@@ -70,13 +70,13 @@ func newFakeStorageDriverConfigJSON(
 	pools map[string]*FakeStoragePool,
 	destroyIgnoreNotPresent bool,
 ) (string, error) {
+	prefix := ""
 	json, err := json.Marshal(
 		&FakeStorageDriverConfig{
 			CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: FakeStorageDriverName,
-				StoragePrefixRaw:  json.RawMessage("{}"),
-				SnapshotPrefixRaw: json.RawMessage("{}"),
+				StoragePrefix:     &prefix,
 			},
 			Protocol:     protocol,
 			Pools:        pools,
@@ -101,7 +101,7 @@ func (m *FakeStorageDriver) Name() string {
 	return FakeStorageDriverName
 }
 
-func (m *FakeStorageDriver) Initialize(configJSON string) error {
+func (m *FakeStorageDriver) Initialize(configJSON string, commonConfig *dvp.CommonStorageDriverConfig) error {
 	err := json.Unmarshal([]byte(configJSON), &m.Config)
 	if err != nil {
 		return fmt.Errorf("Unable to initialize fake driver:  %v", err)
@@ -164,7 +164,7 @@ func (m *FakeStorageDriver) DefaultStoragePrefix() string {
 }
 
 func (d *FakeStorageDriver) CreateClone(
-	name, source, snapshot, newSnapshotPrefix string,
+	name, source, snapshot string,
 ) error {
 	return errors.New("Fake driver does not support CreateClone")
 }
@@ -177,7 +177,7 @@ func (d *FakeStorageDriver) SnapshotList(name string) ([]dvp.CommonSnapshot, err
 	return nil, errors.New("Fake driver does not support SnapshotList")
 }
 
-func (m *FakeStorageDriver) List(prefix string) ([]string, error) {
+func (m *FakeStorageDriver) List() ([]string, error) {
 	vols := []string{}
 	for vol := range m.Volumes {
 		vols = append(vols, vol)

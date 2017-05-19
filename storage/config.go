@@ -3,7 +3,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
@@ -13,33 +12,27 @@ import (
 )
 
 type CommonStorageDriverConfigExternal struct {
-	Version           int             `json:"version"`
-	StorageDriverName string          `json:"storageDriverName"`
-	StoragePrefixRaw  json.RawMessage `json:"storagePrefix,string"`
+	Version           int     `json:"version"`
+	StorageDriverName string  `json:"storageDriverName"`
+	StoragePrefix     *string `json:"storagePrefix"`
 }
 
 func SanitizeCommonStorageDriverConfig(c *dvp.CommonStorageDriverConfig) {
 	log.WithFields(log.Fields{
 		"name": c.StorageDriverName,
 	}).Debug("Sanitizing common config.")
-	if c.StoragePrefixRaw == nil {
+	if c.StoragePrefix == nil {
+		prefix := ""
 		log.WithFields(log.Fields{
 			"name": c.StorageDriverName,
-		}).Debug("Setting nil raw storage prefix to contain an empty set.")
-		c.StoragePrefixRaw = json.RawMessage("{}")
-	}
-	if c.SnapshotPrefixRaw == nil {
-		log.WithFields(log.Fields{
-			"name": c.StorageDriverName,
-		}).Debug("Setting nil raw snapshot prefix to contain an empty set.")
-		c.SnapshotPrefixRaw = json.RawMessage("{}")
+		}).Debug("Setting nil storage prefix to contain an empty string.")
+		c.StoragePrefix = &prefix
 	}
 }
 
-// SanitizeCommonConfig sets the json.RawMessage fields in
-// dvp.CommonStorageDriverConfig to contain empty JSON objects if they are
-// currently nil.  If this is not done, any attempts to marshal the config
-// object will error.
+// SanitizeCommonConfig makes sure none of the fields in
+// dvp.CommonStorageDriverConfig are nil. If this is not done, any
+// attempts to marshal the config object will error.
 func GetCommonStorageDriverConfigExternal(
 	c *dvp.CommonStorageDriverConfig,
 ) *CommonStorageDriverConfigExternal {
@@ -47,28 +40,18 @@ func GetCommonStorageDriverConfigExternal(
 	return &CommonStorageDriverConfigExternal{
 		Version:           c.Version,
 		StorageDriverName: c.StorageDriverName,
-		StoragePrefixRaw:  c.StoragePrefixRaw,
+		StoragePrefix:     c.StoragePrefix,
 	}
 }
 
 func GetCommonInternalVolumeName(
 	c *dvp.CommonStorageDriverConfig, name string,
 ) string {
-	prefixToUse := ""
-	// BEGIN Copied from the NetApp DVP.
-	storagePrefixRaw := c.StoragePrefixRaw // this is a raw version of the json value, we will get quotes in it
-	if len(storagePrefixRaw) >= 2 {
-		s := string(storagePrefixRaw)
-		if s == "\"\"" || s == "" {
-			prefixToUse = ""
-		} else {
-			// trim quotes from start and end of string
-			prefixToUse = s[1 : len(s)-1]
-		}
+	prefixToUse := config.OrchestratorName
+
+	if c.StoragePrefix != nil {
+		prefixToUse = *c.StoragePrefix
 	}
-	// END copying
-	if prefixToUse == "" {
-		prefixToUse = config.OrchestratorName
-	}
+
 	return fmt.Sprintf("%s-%s", prefixToUse, name)
 }

@@ -271,7 +271,7 @@ func getInternalVolumeNameCommon(name string) string {
 
 func getExternalConfig(config dvp.OntapStorageDriverConfig) interface{} {
 	storage.SanitizeCommonStorageDriverConfig(
-		&config.CommonStorageDriverConfig)
+		config.CommonStorageDriverConfig)
 	return &struct {
 		*storage.CommonStorageDriverConfigExternal
 		ManagementLIF string `json:"managementLIF"`
@@ -280,7 +280,7 @@ func getExternalConfig(config dvp.OntapStorageDriverConfig) interface{} {
 		SVM           string `json:"svm"`
 	}{
 		CommonStorageDriverConfigExternal: storage.GetCommonStorageDriverConfigExternal(
-			&config.CommonStorageDriverConfig,
+			config.CommonStorageDriverConfig,
 		),
 		ManagementLIF: config.ManagementLIF,
 		DataLIF:       config.DataLIF,

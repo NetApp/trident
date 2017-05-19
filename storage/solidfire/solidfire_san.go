@@ -72,7 +72,7 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(
 
 func (d *SolidfireSANStorageDriver) GetInternalVolumeName(name string) string {
 	internalName := storage.GetCommonInternalVolumeName(
-		&d.Config.CommonStorageDriverConfig, name)
+		d.Config.CommonStorageDriverConfig, name)
 	return strings.Replace(internalName, "_", "-", -1)
 }
 
@@ -141,7 +141,7 @@ func (d *SolidfireSANStorageDriver) StoreConfig(
 	b *storage.PersistentStorageBackendConfig,
 ) {
 	storage.SanitizeCommonStorageDriverConfig(
-		&d.Config.CommonStorageDriverConfig)
+		d.Config.CommonStorageDriverConfig)
 	b.SolidfireConfig = &d.Config
 }
 
@@ -149,7 +149,7 @@ func (d *SolidfireSANStorageDriver) GetExternalConfig() interface{} {
 	endpointHalves := strings.Split(d.Config.EndPoint, "@")
 	return &SolidfireStorageDriverConfigExternal{
 		CommonStorageDriverConfigExternal: storage.GetCommonStorageDriverConfigExternal(
-			&d.Config.CommonStorageDriverConfig),
+			d.Config.CommonStorageDriverConfig),
 		TenantName:     d.Config.TenantName,
 		EndPoint:       fmt.Sprintf("https://%s", endpointHalves[1]),
 		SVIP:           d.Config.SVIP,

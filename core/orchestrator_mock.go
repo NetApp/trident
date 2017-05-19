@@ -105,7 +105,7 @@ func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.Sto
 	backend.Driver = &ontap.OntapNASStorageDriver{
 		OntapNASStorageDriver: dvp.OntapNASStorageDriver{
 			Config: dvp.OntapStorageDriverConfig{
-				CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+				CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 					StorageDriverName: "ontap-nas",
 				},
 				DataLIF: lif,

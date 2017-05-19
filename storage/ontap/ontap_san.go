@@ -37,7 +37,7 @@ func (d *OntapSANStorageDriver) GetVolumeOpts(
 
 func (d *OntapSANStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(
-		storage.GetCommonInternalVolumeName(&d.Config.CommonStorageDriverConfig,
+		storage.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig,
 			name),
 	)
 }
@@ -139,7 +139,7 @@ func (d *OntapSANStorageDriver) StoreConfig(
 	b *storage.PersistentStorageBackendConfig,
 ) {
 	storage.SanitizeCommonStorageDriverConfig(
-		&d.Config.CommonStorageDriverConfig)
+		d.Config.CommonStorageDriverConfig)
 	b.OntapConfig = &d.Config
 }
 
