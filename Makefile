@@ -20,9 +20,15 @@ BIN ?= trident_orchestrator
 CLI_BIN ?= tridentctl
 CLI_PKG ?= github.com/netapp/trident/cli
 
-DIST_REGISTRY=netapp
+DIST_REGISTRY?=netapp
 
 TRIDENT_DIST_VERSION ?= 17.07.0
+
+ifeq ($(BUILD_TYPE),custom)
+TRIDENT_DIST_VERSION := ${TRIDENT_DIST_VERSION}-custom
+else ifneq ($(BUILD_TYPE),stable)
+TRIDENT_DIST_VERSION := ${TRIDENT_DIST_VERSION}-${BUILD_TYPE}.${BUILD_TYPE_REV}
+endif
 
 TRIDENT_VERSION ?= ${TRIDENT_DIST_VERSION}
 TRIDENT_IMAGE ?= trident
@@ -107,13 +113,13 @@ docker_image: docker_retag docker_build
 
 docker_retag:
 	-docker volume rm $(TRIDENT_VOLUME) || true
-	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose rm -f --all || true
+	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose rm -f || true
 	-docker tag ${TRIDENT_TAG} ${TRIDENT_TAG_OLD}
 	-docker rmi ${TRIDENT_TAG}
 
 docker_clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
-	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose rm -f --all || true
+	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose rm -f || true
 	-docker rmi ${TRIDENT_TAG} || true
 
 docker_run:
@@ -207,10 +213,14 @@ dist_tar:
 	@tar -czf trident-installer-${TRIDENT_DIST_VERSION}.tar.gz trident-installer
 
 dist_tag:
+ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
 	-docker rmi ${TRIDENT_DIST_TAG}
-	-docker rmi ${LAUNCHER_DIST_TAG}
 	@docker tag ${TRIDENT_TAG} ${TRIDENT_DIST_TAG}
+endif
+ifneq ($(LAUNCHER_DIST_TAG),$(LAUNCHER_TAG))
+	-docker rmi ${LAUNCHER_DIST_TAG}
 	@docker tag ${LAUNCHER_TAG} ${LAUNCHER_DIST_TAG}
+endif
 
 build_all: pod docker_launcher_build
 
