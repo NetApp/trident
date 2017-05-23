@@ -233,7 +233,7 @@ type StorageBackendPersistent struct {
 
 func (b *StorageBackend) ConstructPersistent() *StorageBackendPersistent {
 	persistentBackend := &StorageBackendPersistent{
-		Version: config.OrchestratorMajorVersion,
+		Version: config.OrchestratorVersion.MajorVersionString(),
 		Config:  PersistentStorageBackendConfig{},
 		Name:    b.Name,
 		Online:  b.Online,

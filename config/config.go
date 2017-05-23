@@ -3,8 +3,10 @@
 package config
 
 import (
-	"strings"
+	"fmt"
 	"time"
+
+	"github.com/netapp/trident/utils"
 )
 
 type Protocol string
@@ -14,7 +16,7 @@ type VolumeType string
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName       = "trident"
-	OrchestratorVersion    = "17.07.0"
+	orchestratorVersion    = "17.07.0"
 	OrchestratorAPIVersion = "1"
 	PersistentStoreTimeout = 60 * time.Second
 	MaxBootstrapAttempts   = 10
@@ -54,21 +56,28 @@ var (
 		Block:       true,
 		ProtocolAny: true,
 	}
+
+	// BuildHash is the git hash the binary was built from
+	BuildHash = "unknown"
+
+	// BuildType is the type of build: custom, beta or stable
+	BuildType = "custom"
+
+	// BuildTypeRev is the revision of the build
+	BuildTypeRev = "0"
+
+	// BuildTime is the time the binary was built
+	BuildTime = "unknown"
+
+	OrchestratorVersion = utils.MustParseDate(version())
+
 	/* API Server and persistent store variables */
-	OrchestratorMajorVersion = getMajorVersion(OrchestratorVersion)
-	BaseURL                  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
-	VersionURL               = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
-	BackendURL               = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
-	VolumeURL                = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
-	TransactionURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
-	StorageClassURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
-	/* Orchestrator build info variables */
-	OrchestratorBuildType    = "custom"
-	OrchestratorBuildTypeRev = "0"
-	OrchestratorBuildHash    = "unknown"
-	OrchestratorFullVersion  = OrchestratorVersion
-	OrchestratorBuildVersion = "unknown"
-	OrchestratorBuildTime    = "unknown"
+	BaseURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
+	VersionURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
+	BackendURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
+	VolumeURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
+	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
+	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
 )
 
 func IsValidProtocol(p Protocol) bool {
@@ -84,10 +93,19 @@ func GetValidProtocolNames() []string {
 	return ret
 }
 
-func getMajorVersion(version string) string {
-	tmp := strings.Split(version, ".")
-	if len(tmp) == 1 {
-		return version
+func version() string {
+
+	var version string
+
+	if BuildType != "stable" {
+		if BuildType == "custom" {
+			version = fmt.Sprintf("%v-%v+%v", orchestratorVersion, BuildType, BuildHash)
+		} else {
+			version = fmt.Sprintf("%v-%v.%v+%v", orchestratorVersion, BuildType, BuildTypeRev, BuildHash)
+		}
+	} else {
+		version = orchestratorVersion
 	}
-	return tmp[0]
+
+	return version
 }

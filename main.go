@@ -62,8 +62,8 @@ func processCmdLineArgs() {
 
 func main() {
 	log.WithFields(log.Fields{
-		"version":    config.OrchestratorBuildVersion,
-		"build_time": config.OrchestratorBuildTime,
+		"version":    config.OrchestratorVersion.String(),
+		"build_time": config.BuildTime,
 	}).Info("Running Trident storage orchestrator.")
 
 	frontends := make([]frontend.FrontendPlugin, 0)

@@ -54,12 +54,22 @@ type MultipleVolumeResponse struct {
 
 type VersionResponse struct {
 	Server struct {
-		Version    string `json:"version"`
-		APIVersion string `json:"apiVersion"`
+		Version       string `json:"version"`
+		MajorVersion  uint   `json:"majorVersion"`
+		MinorVersion  uint   `json:"minorVersion"`
+		PatchVersion  uint   `json:"patchVersion"`
+		PreRelease    string `json:"preRelease"`
+		BuildMetadata string `json:"buildMetadata"`
+		APIVersion    string `json:"apiVersion"`
 	} `json:"server"`
 	Client struct {
-		Version    string `json:"version"`
-		APIVersion string `json:"apiVersion"`
+		Version       string `json:"version"`
+		MajorVersion  uint   `json:"majorVersion"`
+		MinorVersion  uint   `json:"minorVersion"`
+		PatchVersion  uint   `json:"patchVersion"`
+		PreRelease    string `json:"preRelease"`
+		BuildMetadata string `json:"buildMetadata"`
+		APIVersion    string `json:"apiVersion"`
 	} `json:"client"`
 }
 

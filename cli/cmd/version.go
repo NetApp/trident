@@ -9,6 +9,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -38,8 +39,13 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("Error: %v\n", err)
 		}
 
+		parsedServerVersion, err := utils.ParseDate(serverVersion.Version)
+		if err != nil {
+			return fmt.Errorf("Error: %v\n", err)
+		}
+
 		// Add the client version, which is always hardcoded at compile time
-		versions := addClientVersion(serverVersion)
+		versions := addClientVersion(parsedServerVersion)
 
 		writeVersions(versions)
 
@@ -99,12 +105,24 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 }
 
 // addClientVersion accepts the server version and fills in the client version
-func addClientVersion(serverVersion rest.GetVersionResponse) api.VersionResponse {
+func addClientVersion(serverVersion *utils.Version) api.VersionResponse {
 
 	versions := api.VersionResponse{}
-	versions.Server.Version = serverVersion.Version
+
+	versions.Server.Version = serverVersion.String()
+	versions.Server.MajorVersion = serverVersion.MajorVersion()
+	versions.Server.MinorVersion = serverVersion.MinorVersion()
+	versions.Server.PatchVersion = serverVersion.PatchVersion()
+	versions.Server.PreRelease = serverVersion.PreRelease()
+	versions.Server.BuildMetadata = serverVersion.BuildMetadata()
 	versions.Server.APIVersion = config.OrchestratorAPIVersion
-	versions.Client.Version = config.OrchestratorVersion
+
+	versions.Client.Version = config.OrchestratorVersion.String()
+	versions.Client.MajorVersion = config.OrchestratorVersion.MajorVersion()
+	versions.Client.MinorVersion = config.OrchestratorVersion.MinorVersion()
+	versions.Client.PatchVersion = config.OrchestratorVersion.PatchVersion()
+	versions.Client.PreRelease = config.OrchestratorVersion.PreRelease()
+	versions.Client.BuildMetadata = config.OrchestratorVersion.BuildMetadata()
 	versions.Client.APIVersion = config.OrchestratorAPIVersion
 
 	return versions

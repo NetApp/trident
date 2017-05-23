@@ -64,5 +64,5 @@ func (server *APIServer) GetName() string {
 }
 
 func (server *APIServer) Version() string {
-	return "v" + config.OrchestratorAPIVersion
+	return config.OrchestratorAPIVersion
 }

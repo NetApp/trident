@@ -22,8 +22,7 @@ var routes = Routes{
 	Route{
 		"GetVersion",
 		"GET",
-		strings.Replace(config.VersionURL,
-			"/v"+config.OrchestratorMajorVersion, "", 1),
+		strings.Replace(config.VersionURL, "/v"+config.OrchestratorAPIVersion, "", 1),
 		GetVersion,
 	},
 	Route{

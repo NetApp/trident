@@ -16,7 +16,7 @@ import (
 
 func New(c *Config) *StorageClass {
 	if c.Version == "" {
-		c.Version = config.OrchestratorMajorVersion
+		c.Version = config.OrchestratorVersion.MajorVersionString()
 	}
 	return &StorageClass{
 		config: c,

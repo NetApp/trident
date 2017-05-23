@@ -48,8 +48,7 @@ func NewTridentOrchestrator(client persistent_store.Client) *tridentOrchestrator
 func (o *tridentOrchestrator) Bootstrap() error {
 	var err error = nil
 	dvp.DefaultStoragePrefix = config.OrchestratorName
-	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" +
-		config.OrchestratorFullVersion
+	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" + config.OrchestratorVersion.String()
 	if kubeFrontend, found := o.frontends["kubernetes"]; found {
 		dvp.ExtendedDriverVersion =
 			dvp.ExtendedDriverVersion + " " + kubeFrontend.Version()
@@ -375,7 +374,7 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 }
 
 func (o *tridentOrchestrator) GetVersion() string {
-	return config.OrchestratorFullVersion
+	return config.OrchestratorVersion.String()
 }
 
 func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
@@ -507,7 +506,7 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	if _, ok := o.volumes[volumeConfig.Name]; ok {
 		return nil, fmt.Errorf("Volume %s already exists.", volumeConfig.Name)
 	}
-	volumeConfig.Version = config.OrchestratorMajorVersion
+	volumeConfig.Version = config.OrchestratorVersion.MajorVersionString()
 
 	storageClass, ok := o.storageClasses[volumeConfig.StorageClass]
 	if !ok {

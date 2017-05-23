@@ -5,13 +5,14 @@ GOARCH=amd64
 GOGC=""
 TRIDENT_VOLUME=trident_build
 TRIDENT_VOLUME_PATH=/go/src/github.com/netapp/trident
+TRIDENT_CONFIG_PKG=github.com/netapp/trident/config
 
 GITHASH?=`git rev-parse HEAD || echo unknown`
 BUILD_TYPE?=custom
 BUILD_TYPE_REV?=0
 BUILD_TIME=`date`
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS="-X \"main.BuildHash=$(GITHASH)\" -X \"main.BuildType=$(BUILD_TYPE)\" -X \"main.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"main.BuildTime=$(BUILD_TIME)\""
+BUILD_FLAGS="-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\""
 
 PORT ?= 8000
 ROOT = $(shell pwd)
@@ -87,7 +88,7 @@ get:
 build:
 	@mkdir -p ${BIN_DIR}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${BIN}
-	@go ${BUILD} -o ${BIN_DIR}/${CLI_BIN} ${CLI_PKG}
+	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${CLI_BIN} ${CLI_PKG}
 
 vendor:
 	@mkdir -p vendor
@@ -100,7 +101,7 @@ docker_build: vendor *.go
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
-	@${GO} ${BUILD} -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	
 docker_image: docker_retag docker_build
 	cp ${BIN_DIR}/${BIN} .
