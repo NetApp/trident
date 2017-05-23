@@ -22,18 +22,17 @@ CLI_PKG ?= github.com/netapp/trident/cli
 
 DIST_REGISTRY?=netapp
 
-TRIDENT_DIST_VERSION ?= 17.07.0
+TRIDENT_VERSION ?= 17.07.0
 
 ifeq ($(BUILD_TYPE),custom)
-TRIDENT_DIST_VERSION := ${TRIDENT_DIST_VERSION}-custom
+TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
 else ifneq ($(BUILD_TYPE),stable)
-TRIDENT_DIST_VERSION := ${TRIDENT_DIST_VERSION}-${BUILD_TYPE}.${BUILD_TYPE_REV}
+TRIDENT_VERSION := ${TRIDENT_VERSION}-${BUILD_TYPE}.${BUILD_TYPE_REV}
 endif
 
-TRIDENT_VERSION ?= ${TRIDENT_DIST_VERSION}
 TRIDENT_IMAGE ?= trident
 TRIDENT_DEPLOYMENT_FILE ?= ./kubernetes-yaml/trident-deployment-local.yaml
-TRIDENT_DIST_TAG = ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_DIST_VERSION}
+TRIDENT_DIST_TAG = ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
 ETCD_VERSION ?= v3.1.3
 ETCDV2 ?= http://localhost:8001
@@ -46,8 +45,8 @@ BUILD = build
 LAUNCHER_IMAGE ?= trident-launcher
 LAUNCHER_CONFIG_DIR ?= ./launcher/config
 LAUNCHER_POD_FILE ?= ./launcher/kubernetes-yaml/launcher-pod-local.yaml
-LAUNCHER_VERSION ?= ${TRIDENT_DIST_VERSION}
-LAUNCHER_DIST_TAG = ${DIST_REGISTRY}/${LAUNCHER_IMAGE}:${TRIDENT_DIST_VERSION}
+LAUNCHER_VERSION ?= ${TRIDENT_VERSION}
+LAUNCHER_DIST_TAG = ${DIST_REGISTRY}/${LAUNCHER_IMAGE}:${TRIDENT_VERSION}
 
 DR=docker run --rm \
 	-e GOOS=$(GOOS) \
@@ -210,7 +209,7 @@ dist_tar:
 	@cp kubernetes-yaml/trident-namespace.yaml trident-installer/
 	@cp kubernetes-yaml/trident-serviceaccounts.yaml trident-installer/
 	@cp kubernetes-yaml/trident-clusterrole* trident-installer/
-	@tar -czf trident-installer-${TRIDENT_DIST_VERSION}.tar.gz trident-installer
+	@tar -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
