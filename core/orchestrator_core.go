@@ -506,7 +506,7 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	if _, ok := o.volumes[volumeConfig.Name]; ok {
 		return nil, fmt.Errorf("Volume %s already exists.", volumeConfig.Name)
 	}
-	volumeConfig.Version = config.OrchestratorVersion.MajorVersionString()
+	volumeConfig.Version = config.OrchestratorAPIVersion
 
 	storageClass, ok := o.storageClasses[volumeConfig.StorageClass]
 	if !ok {
