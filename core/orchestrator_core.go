@@ -52,7 +52,7 @@ func (o *tridentOrchestrator) Bootstrap() error {
 		config.OrchestratorFullVersion
 	if kubeFrontend, found := o.frontends["kubernetes"]; found {
 		dvp.ExtendedDriverVersion =
-			dvp.ExtendedDriverVersion + "-" + kubeFrontend.Version()
+			dvp.ExtendedDriverVersion + " " + kubeFrontend.Version()
 	}
 	if err = o.bootstrap(); err != nil {
 		errMsg := fmt.Sprintf("Could not bootstrap from persistent "+
@@ -142,12 +142,12 @@ func (o *tridentOrchestrator) bootstrapVolumes() error {
 			return fmt.Errorf("Couldn't find backend %s for volume %s!",
 				v.Backend, v.Config.Name)
 		}
-		vc, ok := backend.Storage[v.Pool]
+		storagePool, ok := backend.Storage[v.Pool]
 		if !ok {
 			return fmt.Errorf("Couldn't find storage pool %s on backend %s!",
 				v.Pool, v.Backend)
 		}
-		vol := storage.NewVolume(v.Config, backend, vc)
+		vol := storage.NewVolume(v.Config, backend, storagePool)
 		vol.Pool.AddVolume(vol, true)
 		o.volumes[vol.Config.Name] = vol
 		log.WithFields(log.Fields{
@@ -313,56 +313,57 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 	var err error
 	err = nil
 	errorList := make([]string, 0)
+
 	// Validate that protocols haven't changed
 	if oldBackend.GetProtocol() != newBackend.GetProtocol() {
 		errorList = append(errorList, "Cannot change backend protocol")
 	}
 
-	// Validate that the storage pools of the updated backend contain enough
-	// capacity to accommodate all of the original backend's volumes.
+	// Identifying all storage pools that have been used for
+	// provisioning volumes.
 	usedPools := make([]string, 0)
-	for name, vc := range oldBackend.Storage {
-		if len(vc.Volumes) > 0 {
+	for name, storagePool := range oldBackend.Storage {
+		if len(storagePool.Volumes) > 0 {
 			usedPools = append(usedPools, name)
 		}
 	}
-	for _, vcName := range usedPools {
-		if _, ok := newBackend.Storage[vcName]; !ok {
+	for _, storagePoolName := range usedPools {
+		if _, ok := newBackend.Storage[storagePoolName]; !ok {
 			// If a storage pool that contained volumes isn't present in
 			// the new config, we can't use the new config.
 			errorList = append(errorList,
-				fmt.Sprintf("In-use storage pool %s not present in "+
-					"updated backend", vcName))
+				fmt.Sprintf("In-use storage pool %s not present in the "+
+					"updated backend", storagePoolName))
 		}
 	}
 
 	// Now validate that all of the previous storage classes work.
-	vcsForStorageClasses := make(map[string][]string)
-	for vcName, vc := range oldBackend.Storage {
+	storagePoolsForStorageClasses := make(map[string][]string)
+	for storagePoolName, storagePool := range oldBackend.Storage {
 		// We could just process the storage class list, but this way
 		// we only care about the storage classes in use.
-		for _, volume := range vc.Volumes {
+		for _, volume := range storagePool.Volumes {
 			scName := volume.Config.StorageClass
-			_, ok := vcsForStorageClasses[scName]
+			_, ok := storagePoolsForStorageClasses[scName]
 			if !ok {
-				vcsForStorageClasses[scName] = make([]string, 0, 1)
+				storagePoolsForStorageClasses[scName] = make([]string, 0, 1)
 			}
-			vcsForStorageClasses[scName] = append(vcsForStorageClasses[scName],
-				vcName)
+			storagePoolsForStorageClasses[scName] =
+				append(storagePoolsForStorageClasses[scName], storagePoolName)
 		}
 	}
-	for scName, vcList := range vcsForStorageClasses {
+	for scName, storagePoolList := range storagePoolsForStorageClasses {
 		sc := o.storageClasses[scName]
-		for _, vcName := range vcList {
+		for _, storagePoolName := range storagePoolList {
 			log.WithFields(log.Fields{
-				"backendName":  newBackend.Name,
-				"vcName":       vcName,
+				"backend":      newBackend.Name,
+				"storagePool":  storagePoolName,
 				"storageClass": scName,
-			}).Debug("Checking whether storage class satisfies new backend VC.")
-			if newVC, ok := newBackend.Storage[vcName]; ok && !sc.Matches(newVC) {
+			}).Debug("Checking whether storage class satisfies the new backend's storage pool.")
+			if newStoragePool, ok := newBackend.Storage[storagePoolName]; ok && !sc.Matches(newStoragePool) {
 				errorList = append(errorList, fmt.Sprintf("Storage pool "+
 					"%s has volumes with storage class %s, but it no longer "+
-					"satisfies that storage class", vcName, scName))
+					"satisfies that storage class", storagePoolName, scName))
 			}
 		}
 	}
@@ -432,13 +433,13 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 			strings.Join(classes, ", "))
 	}
 	if !newBackend {
-		for vcName, vc := range originalBackend.Storage {
-			for volName, vol := range vc.Volumes {
+		for storagePoolName, storagePool := range originalBackend.Storage {
+			for volName, vol := range storagePool.Volumes {
 				vol.Backend = storageBackend
 				// Note that the validation ensures that the storage pool
 				// will exist in the new backend, as well.
-				vol.Pool = storageBackend.Storage[vcName]
-				storageBackend.Storage[vcName].Volumes[volName] = vol
+				vol.Pool = storageBackend.Storage[storagePoolName]
+				storageBackend.Storage[storagePoolName].Volumes[volName] = vol
 			}
 		}
 	}
@@ -474,15 +475,15 @@ func (o *tridentOrchestrator) OfflineBackend(backendName string) (bool, error) {
 
 	backend, found := o.backends[backendName]
 	if !found {
-		return false, nil
+		return false, fmt.Errorf("Backend %s not found.", backendName)
 	}
 	backend.Online = false
 	storageClasses := make(map[string]*storage_class.StorageClass, 0)
-	for _, vc := range backend.Storage {
-		for _, scName := range vc.StorageClasses {
+	for _, storagePool := range backend.Storage {
+		for _, scName := range storagePool.StorageClasses {
 			storageClasses[scName] = o.storageClasses[scName]
 		}
-		vc.StorageClasses = []string{}
+		storagePool.StorageClasses = []string{}
 	}
 	for _, sc := range storageClasses {
 		sc.RemovePoolsForBackend(backend)
@@ -904,8 +905,8 @@ func (o *tridentOrchestrator) DeleteStorageClass(scName string) (bool, error) {
 		return found, err
 	}
 	delete(o.storageClasses, scName)
-	for _, vc := range sc.GetStoragePoolsForProtocol(config.ProtocolAny) {
-		vc.RemoveStorageClass(scName)
+	for _, storagePool := range sc.GetStoragePoolsForProtocol(config.ProtocolAny) {
+		storagePool.RemoveStorageClass(scName)
 	}
 	return found, nil
 }

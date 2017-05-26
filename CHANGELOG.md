@@ -11,8 +11,12 @@ container orchestrator version.
 **Enhancements:**
 - Added support for storage.k8s.io/v1 storage classes introduced in Kubernetes
 v1.6.0.
+- Changed the installer script to support both Kubernetes and OpenShift
+deployments in a uniform manner and to leverage Role-Based Access Control
+(RBAC) authorization for better security.
+- Added scripts for uninstalling and updating Trident.
 - Added tridentctl CLI tool for managing Trident.
-
+- SolidFire backend configuration file accepts up to four Volume Access Group IDs.
 
 ## v17.04.0
 

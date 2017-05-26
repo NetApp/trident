@@ -21,13 +21,13 @@ platform-agnostic management for the storage systems under its control without
 exposing users to complexities of various backends.
 
 * [Getting Started](#getting-started)
+* [Tutorials](#tutorials)
 * [Requirements](#requirements)
 * [Deploying Trident](#deploying-trident)
   * [Using the Trident Launcher](#using-the-trident-launcher)
       * [Install Script](#install-script)
   * [Deploying As a Pod](#deploying-as-a-pod)
   * [Command-line options](#command-line-options)
-  * [Deploying in OpenShift](#deploying-in-openshift)
 * [Using Trident](#using-trident)
   * [Trident Objects](#trident-objects)
   * [Object Configurations](#object-configurations)
@@ -70,13 +70,20 @@ are not available, see the subsequent sections.
 	[kubeadm](http://kubernetes.io/docs/getting-started-guides/kubeadm/) as it
 	allows for easy creation of clusters that meet Trident's requirements.
 
-2.  If using OpenShift, you need to configure a service account for the Trident
-	and Trident Launcher pods to use.  See [Deploying In OpenShift](#deploying-in-openshift) for instructions on how to do this.
-
-3.  Ensure iSCSI and the NFS utils are present on all the nodes in the cluster,
+2.  Ensure iSCSI and the NFS utils are present on all the nodes in the cluster,
 	so that they can mount the volumes that Trident creates.  See
-	[here](https://github.com/NetApp/netappdvp#configuring-your-docker-host-for-nfs-or-iscsi)
+	[here](http://netappdvp.readthedocs.io/en/latest/install/host_config.html#host-configuration)
 	for instructions.
+
+3.  The installer script requires you to have cluster admin-level privileges in
+	your Kubernetes or OpenShift deployment. Otherwise, the installer script
+	will fail in operating on cluster-level resources such as PVs,
+	ClusterRoles, ClusterRoleBindings, etc. Once installed,
+	the Trident pod is limited to the operations allowed by RBAC authorization
+	(see [Kubernetes ClusterRoles](https://github.com/NetApp/trident/tree/master/kubernetes-yaml/trident-clusterroles-k8s.yaml)
+	or [OpenShift ClusterRoles](https://github.com/NetApp/trident/tree/master/kubernetes-yaml/trident-clusterroles-openshift.yaml)).
+	As an example, logging in as `system:admin` provides the necessary credentials
+	to install Trident in OpenShift: ```oc login -u system:admin```.
 
 4.  If you plan on using SolidFire with Trident, you'll need to create and specify
     in your config up to 4 volume AccessGroups.  Each Access Group has a limit of 64
@@ -117,7 +124,7 @@ are not available, see the subsequent sections.
 	cluster are mapped into the `trident` iGroup, AccessGroups, or Host Group, respectively, as
 	described in the [Requirements](#requirements) section.
 
-7.  Copy the backend configuration file from step 6 the `setup/` directory
+7.  Copy the backend configuration file from step 6 to the `setup/` directory
     and name it `backend.json`.
 
 8. Run the Trident installation script:
@@ -129,25 +136,30 @@ are not available, see the subsequent sections.
 	Trident deployment. If not specified, namespace defaults to the current
 	namespace; however, it is highly recommended to run Trident in its own
 	namespace so that it is isolated from other applications in the cluster.
+	Trident's REST API and the `tridentctl` CLI tool are intended to be used
+	by IT administrators only, so exposing such functionalities to unprivileged
+	users in the same namespace can pose security risks and can potentially
+	result in loss of data and disruption to operations.
 
 	The install script first configures the Trident deployment and Trident
 	launcher pod definitions, found in `setup/trident-deployment.yaml` and
-	`launcher-pod.yaml`, to use the namespace and service account specified
-	(defaulting to the current namespace for both if unspecified, as in the 
-	Kubernetes command above).  It then starts the Trident launcher pod, 
+	`launcher-pod.yaml`.  It then starts the Trident launcher pod,
 	which provisions a PVC and PV on which Trident will store its data, using
 	the provided backend.  The launcher then starts a deployment for Trident 
-	itself, using the defintion in `setup/`.
-
+	itself, using the defintion in `setup/`. For an overview of steps carried
+	out by the installer script, please see [Install Script](#install-script)
+	and [Using the Trident Launcher](#using-the-trident-launcher).
 	When the installer completes, `kubectl get deployment trident` should show
 	a deployment named `trident` with a single live replica.  Running `kubectl
 	get pod` should show a pod with a name starting with `trident-` with 2/2
-	containers running.  From here, running `kubectl logs <trident-pod-name>
-	trident-main` will allow you to inspect the logs.  If you run into problems
-	at this stage--for instance, if a `trident-ephemeral` pod remains in the
-	running state for a long period--see the
-	[Troubleshooting](#troubleshooting) section for some advice on how to deal
-	with some of the pitfalls that can occur during this step.
+	containers running.  From here, running `kubectl logs <trident-pod-name> -c
+	trident-main` will allow you to inspect the log for the Trident pod. If no
+	problem was encountered, the log should include
+	`"trident bootstrapped successfully."`. If you run into problems at this
+	stage--for instance, if a `trident-ephemeral` pod remains in the running
+	state for a long period--see the [Troubleshooting](#troubleshooting)
+	section for some advice on how to deal with some of the pitfalls that can
+	occur during this step.
 
 9. Copy the `tridentctl` CLI tool from the `trident-installer` directory to any
     location reflected in the environment `$PATH`.
@@ -202,12 +214,13 @@ them via Kubernetes are available in the [Storage Classes](#storage-classes)
 section.  For more details on how Trident chooses storage pools from a storage
 class to provision its volumes, see [Provisioning Workflow](#provisioning-workflow).
 
-The following tutorial presents an in-depth overview of Trident and demonstrates
-some advanced use cases (the tutorial is based on v1.0, so please view
-[CHANGELOG](https://github.com/NetApp/trident/blob/master/CHANGELOG.md) for
-the changes since the first release):
+## Tutorials
 
-[![Trident: External Provisioner for NetApp Storage](https://img.youtube.com/vi/NDcnyGe2GFo/0.jpg)](https://www.youtube.com/watch?v=NDcnyGe2GFo)
+* [Trident v1.0](https://www.youtube.com/watch?v=NDcnyGe2GFo): This tutorial presents an in-depth overview of Trident
+and demonstrates some advanced use cases (please see
+[CHANGELOG](https://github.com/NetApp/trident/blob/master/CHANGELOG.md) for the
+changes since v1.0).
+[![Trident v1.0](https://img.youtube.com/vi/NDcnyGe2GFo/0.jpg)](https://www.youtube.com/watch?v=NDcnyGe2GFo)
 
 ## Requirements
 
@@ -291,8 +304,8 @@ deployment, either for the first time or after shutting it down.  When the
 launcher starts, it checks whether a PVC named `trident` exists; if one does
 not, it creates one and launches an ephemeral version of Trident that creates a
 PV and backing volume for it.  Once this is complete, it starts the Trident
-deployment, using the PVC to store Trident's metadata.  The launcher takes four
-parameters:
+deployment, using the PVC to store Trident's metadata.  The launcher takes a
+few parameters:
 
 * `-backend`: The path to a configuration file defining the backend on which
   the launcher should provision Trident's metadata volume.  Defaults to
@@ -308,9 +321,9 @@ parameters:
   backend. If omitted, it defaults to "trident".
 * `-volume_size`: The size of the volume provisioned by launcher in GB. If
   omitted, it defaults to 1GB.
-* `pvc_name`: The name of the PVC created by launcher. If omitted, it defaults
+* `-pvc_name`: The name of the PVC created by launcher. If omitted, it defaults
   to "trident".
-* `pv_name`: The name of the PV created by launcher. If omitted, it defaults
+* `-pv_name`: The name of the PV created by launcher. If omitted, it defaults
   to "trident".
 * `-trident_timeout`: The number of seconds to wait before the launcher times
   out on a Trident connection. If omitted, it defaults to 10 seconds.
@@ -336,17 +349,22 @@ trident-launcher-config --from-file <config-directory>`, as described
 Makefile contains targets that automate this; see
 [Building Trident](BUILD.md#building-the-trident-launcher).
 
-Note that the ephemeral version of Trident that the launcher creates, named
-`trident-ephemeral`, runs in the same namespace as the provided deployment
-definition.  See [Deploying in OpenShift](#deploying-in-openshift) for a
-discussion of the security implications of this.
 
 #### Install Script
 
-To facilitate getting started with Trident, we offer a tarball containing an
-installation script, the deployment and pod definitions for Trident, the
-Trident launcher and CLI, and several sample input files for Trident.  The install
-script requires a backend configuration named `backend.json` to be added to the
+To facilitate getting started with Trident, we offer
+[Trident installer bundle](https://github.com/NetApp/trident/releases)
+containing an installation script, the deployment and pod definitions for
+Trident, the Trident launcher, Trident CLI, and several sample input files for
+Trident. Additionally, the installer bundle includes definitions for service
+accounts, cluster roles, and cluster role bindings that are used by Trident
+and Trident launcher. The main objective with the installer script is to have
+a single script that configures Kubernetes or OpenShift deployments in the most
+secure manner possible without requiring intimate knowledge of Kubernetes or
+OpenShift internals. If you are deploying Trident in OpenShift, please make
+sure `oc` is present in `$PATH`.
+
+The install script requires a backend configuration named `backend.json` to be added to the
 `setup/` directory.  Once this has been done, it will create the ConfigMap
 described above using the files in `setup/` and then launch the Trident
 deployment.  This script can be run from any directory and from any namespace.
@@ -355,6 +373,7 @@ $ ./install_trident.sh -h
 
 Usage:
  -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -i                  Enables the insecure mode to disable RBAC configuration for Trident and Trident launcher.
  -h                  Prints this usage guide.
 
 Example:
@@ -363,27 +382,27 @@ Example:
 
 It is highly recommended to run Trident in its own namespace
 (`./install_trident.sh -n trident`) so that it is isolated from other
-applications in the Kubernetes cluster. This script also creates service
-accounts, cluster roles, and cluster role bindings for both Trident and Trident
-launcher.
+applications in the Kubernetes cluster. Otherwise, there is a risk of deletion
+of Trident-provisioned volumes and disruption to provisioning operations.
 
-#### Delete Script
+If you are using the install script with Kubernetes 1.4, use the `-i` option due to lack of support for RBAC.
 
-The delete script deletes most artifacts of the install script. This script can
-be run from any directory and from any namespace.
+#### Uninstall Script
+
+The uninstall script deletes almost all artifacts of the install script. This
+script can be run from any directory and from any namespace. If you are
+deploying Trident in OpenShift, please make sure `oc` is present in `$PATH`.
 ```bash
-$ ./delete_trident.sh -h
+$ ./uninstall_trident.sh -h
 
 Usage:
  -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -a                  Deletes almost all artifacts of Trident, including the PVC and PV used by Trident; however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!
  -h                  Prints this usage guide.
 
 Example:
-  ./delete_trident.sh -n trident		Deletes artifacts of Trident from namespace "trident".
+  ./uninstall_trident.sh -n trident		Deletes artifacts of Trident from namespace "trident".
 ```
-
-This script does not delete the namespace, the PVC, and the PV created by the
-install script.
 
 #### Update Script
 
@@ -464,68 +483,6 @@ Trident exposes a number of command line options.  These are as follows:
 * `-port <port-number>`:  Optional; specifies the port on which Trident's REST
   server should listen.  Defaults to 8000.
 * `-debug`: Optional; enables debugging output.
-
-### Deploying in OpenShift
-
-Although Trident works with versions of OpenShift Origin and Enterprise based
-in Kubernetes 1.4 or later (Origin 1.4 and Enterprise 3.4 or later),
-OpenShift's tighter access control and security places additional requirements
-on Trident.  Trident and the Trident launcher only support secure connections
-to the API server using service accounts, so both must be run as pods.
-In addition, several steps are necessary to create and configure their service
-accounts with the necessary permissions:
-
-1. Identify or create a service account for Trident.  This should probably not
-   be the default service account, as Trident requires additional permissions
-   beyond standard roles.  For example:
-
-    ```bash
-    oc create serviceaccount trident
-    ```
-
-2. Provide the service account from step 1 with a cluster role that offers the
-   following permissions.  The `storage-admin` role provides these and works
-   well for this purpose.
-    * `StorageClasses`: get, list, watch
-    * `PersistentVolumeClaims`:  get, list, watch, update
-    * `PersistentVolumes`: get, list, watch, create, delete
-
-    For example:
-
-    ```bash
-	oadm policy add-cluster-role-to-user storage-admin system:serviceaccount:<namespace>:trident
-    ```
-
-    where `<namespace>` refers to the namespace in which Trident will run.
-
-3. Add the `anyuid` security context constraint to the chosen service account;
-   the etcd container runs as root and requires this.  For example:
-
-    ```bash
-    oadm policy add-scc-to-user anyuid system:serviceaccount:<namespace>:trident
-	```
-
-	where `<namespace>` refers to the namespace in which Trident will run.
-
-4. Specify the service account in the serviceAccount attribute of the Trident
-   deployment definition.
-
-5. The Trident launcher also requires a service account with the same
-   permissions as Trident itself, as well as local permissions to get, list,
-   watch, create, and delete Pods.  The `edit` role allows this.  For example,
-   if using the same service account for the launcher as Trident, run:
-
-    ```bash
-	   oadm policy add-role-to-user edit system:serviceaccount:<namespace>:trident
-    ```
-
-    where `<namespace>` refers to the namespace in which the Trident will run.
-    As with Trident, modify the serviceAccount field of the launcher pod
-    definition to refer to the service account used here. Please make sure
-    you are in the project/namespace where you will be running the launcher.
-
-After performing these steps, start Trident as normal, either via the launcher
-or the deployment definition.
 
 ## Using Trident
 
@@ -1042,32 +999,16 @@ all of the storage pools available for the requested storage class and protocol.
 
 ## Troubleshooting
 
-* `kubectl logs <trident-pod-name> trident-main` and `kubectl logs
-  <trident-pod-name> etcd` will display the logs for Trident and etcd when
-  running the Trident pod.
-* If the launcher fails, it require manual cleanup.  To do so, run
-
-    ```bash
-	kubectl delete pv --ignore-not-found=true trident
-	kubectl delete pvc --ignore-not-found=true trident
-	kubectl delete deployment --ignore-not-found=true trident
-	kubectl delete pod --ignore-not-found=true trident-ephemeral
-	kubectl delete pod --ignore-not-found=true trident-launcher
-	```
-
-	It may also be necessary to clean up the volume on the backend.  The
-	commands for this will vary depending on the backend in use, but you should
-	look for a volume named with a name similar to "trident_trident" if the
-	backend configuration does not specify a storagePrefix field or
-	"<storagePrefix>_trident" if it does.
-* If a pod named `trident-ephemeral` persists after running the launcher
-  (either via the install script, or directly via the pod definition),
-  provisioning a volume for Trident's etcd instance has likely failed.
-  `trident-ephemeral` is the name of the pod used to create this volume;
-  inspecting its logs with `kubectl logs trident-ephemeral` may be helpful.
+* If Trident launcher fails during install, you should inspect the logs via
+	`kubectl logs trident-launcher`. The log may prompt you to inspect the
+	logs for the trident-ephemeral pod or take other corrective measures.
+* `kubectl logs <trident-pod-name> -c trident-main` shows the logs for the
+	Trident pod. Trident is operational once you see `"trident bootstrapped successfully."`
+	In the absence of any errors in the log, it would be helpful to
+	inspect the logs for the etcd container: `kubectl logs <trident-pod-name> -c etcd`.
 * ONTAP backends will ignore anything specified in the aggregate parameter of
   the configuration.
-* If service accounts are not available, `kubectl logs trident trident-main`
+* If service accounts are not available, `kubectl logs trident -c trident-main`
   will report an error that
   `/var/run/secrets/kubernetes.io/serviceaccount/token` does not exist.  In
   this case, you will either need to enable service accounts or connect to the
@@ -1093,26 +1034,23 @@ outstanding issues to be aware of when using it:
   and incorrect behavior if more than one instance runs within a cluster.
 * Volumes and storage classes created in the REST API will not have
   corresponding objects (PVCs or `StorageClasses`) created in Kubernetes;
-  however, storage classes created in the REST API will be usable by PVCs
+  however, storage classes created via `tridentctl` or the REST API will be usable by PVCs
   created in Kubernetes.
 * If Trident-based `StorageClass` objects are deleted from Kubernetes while
   Trident is offline, Trident will not remove the corresponding storage classes
   from its database when it comes back online.  Any such storage classes must
-  be deleted manually using the REST API.
+  be deleted manually using `tridentctl` or the REST API.
 * If a user deletes a PV provisioned by Trident before deleting the
   corresponding PVC, Trident will not automatically delete the backing volume.
-  In this case, the user must remove the volume manually via the REST API.
+  In this case, the user must remove the volume manually via `tridentctl` or the REST API.
 * Trident will not boot unless it can successfully communicate with an etcd
   instance.  If it loses communication with etcd during the bootstrap process,
   it will halt; communication must be restored before Trident will come online.
   Once fully booted, however, etcd outages should not cause Trident to crash.
-* When using a backend across multiple Trident instances, each backend
-  configuration file needs to specify a different storagePrefix value.  Trident
+* When using a backend across multiple Trident instances, it is recommended that each backend
+  configuration file specifies a different storagePrefix value.  Trident
   cannot detect volumes that other instances of Trident has created, and
   attempting to create an existing volume on either ONTAP or SolidFire backends
-  fails silently.  Thus, if the storagePrefixes do not differ, users may create
-  identically named volumes across different Trident instances; these different
-  Trident volumes would then refer to the same backend volume.
-* Trident generates events for PVCs reflecting their status in Kubernetes, but
-  not OpenShift.  Doing so in OpenShift requires additional permissions that
-  are not readily available.
+  succeeds as Trident treats volume creation as an idempotent operation.  Thus,
+  if the storagePrefixes do not differ, there is a very slim chance to have
+  name collisions for volumes created on the same backend.

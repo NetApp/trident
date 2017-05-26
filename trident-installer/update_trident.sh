@@ -4,6 +4,7 @@
 # -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
 # -t <trident_image>  Specifies the new image for the "trident-main" container in the Trident deployment.
 # -e <etcd_image>     Specifies the new image for the "etcd" container in the Trident deployment.
+# -d <deployment>     Specifies the name of the deployment; defaults to "trident".
 # -h                  Prints this usage guide.
 #
 #Example:
@@ -25,13 +26,22 @@ die() {
 	exit 1
 }
 
+get_environment() {
+	TMP=$(command -v oc > /dev/null 2>&1)
+	if [ $? -ne 0 ]; then
+		echo k8s
+	else
+		echo openshift
+	fi
+}
+
 get_namespace() {
-	TMP=$(kubectl get serviceaccount default -o json | grep "namespace\":" | awk '{print $2}' | sed 's/,//g; s/"//g')
+	TMP=$($CMD get serviceaccount default -o json | grep "namespace\":" | awk '{print $2}' | sed 's/,//g; s/"//g')
 	echo $TMP
 }
 
 # Process arguments
-TMP=`getopt -o n:t:e:d:h:: -- "$@"`
+TMP=`getopt -o n:t:e:d:h -- "$@"`
 if [ $? -ne 0 ]; then
 	die
 fi
@@ -60,10 +70,18 @@ done
 
 # Check for the requirements
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ENV=$(get_environment)
+if [ "$ENV" == "k8s" ]; then
+	CMD="kubectl"
+	echo "Installer assumes you have deployed Kubernetes. If this is an OpenShift deployment, make sure 'oc' is in the \$PATH."
+else
+	CMD="oc"
+	echo "Installer assumes you have deployed OpenShift."
+fi
 command -v curl > /dev/null 2>&1 || \
 	{ echo >&2 "$0 requires curl present in \$PATH."; exit 1; }
-command -v kubectl > /dev/null || \
-	{ echo >&2 "$0 requires kubectl present in \$PATH."; exit 1; }
+command -v $CMD > /dev/null || \
+	{ echo >&2 "$0 requires $CMD present in \$PATH."; exit 1; }
 if [ -z "$TRIDENT_IMAGE" ] && [ -z "$ETCD_IMAGE" ]; then
 	echo >&2 "Requires to use -t, -e, or both options!"
 	die
@@ -78,7 +96,7 @@ if [ -z "$NAMESPACE" ]; then
 	echo "You are running in namespace $NAMESPACE."
 	echo "Update will take place in namespace ${NAMESPACE}."
 fi
-TMP=$(kubectl get namespace $NAMESPACE 2>&1)
+TMP=$($CMD get namespace $NAMESPACE 2>&1)
 if [ "$?" -ne "0" ]; then
 	exit 1
 fi
@@ -89,14 +107,14 @@ if [ -z "$DEPLOYMENT" ]; then
 fi
 
 if [ -n "$TRIDENT_IMAGE" ]; then
-	kubectl --namespace=$NAMESPACE set image deployment/$DEPLOYMENT trident-main=$TRIDENT_IMAGE
+	$CMD --namespace=$NAMESPACE set image deployment/$DEPLOYMENT trident-main=$TRIDENT_IMAGE
 	if [ "$?" -ne "0" ]; then
 		exit 1
 	fi
 fi
 
 if [ -n "$ETCD_IMAGE" ]; then
-	kubectl --namespace=$NAMESPACE set image deployment/$DEPLOYMENT etcd=$ETCD_IMAGE
+	$CMD --namespace=$NAMESPACE set image deployment/$DEPLOYMENT etcd=$ETCD_IMAGE
 	if [ "$?" -ne "0" ]; then
 		exit 1
 	fi
