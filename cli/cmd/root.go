@@ -9,9 +9,9 @@ import (
 
 	"strings"
 
-	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
+	k8s "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -27,8 +27,9 @@ const (
 )
 
 var (
-	OperatingMode string
-	TridentPod    string
+	OperatingMode       string
+	TridentPodName      string
+	TridentPodNamespace string
 
 	Debug        bool
 	Server       string
@@ -52,10 +53,12 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Debug output")
 	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface")
 	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format.  One of json|yaml|name|wide|ps (default)")
+	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 }
 
 func discoverOperatingMode() error {
 
+	var err error
 	envServer := os.Getenv("TRIDENT_SERVER")
 
 	if Server != "" {
@@ -78,25 +81,33 @@ func discoverOperatingMode() error {
 	} else {
 
 		// Server not specified, so try tunneling to a pod
-		pod, err := getTridentPod()
+
+		if TridentPodNamespace == "" {
+			TridentPodNamespace, err = getCurrentNamespace()
+			if err != nil {
+				return err
+			}
+		}
+
+		TridentPodName, err = getTridentPod(TridentPodNamespace)
 		if err != nil {
 			return err
-		} else {
-			OperatingMode = MODE_TUNNEL
-			TridentPod = pod
-			Server = POD_SERVER
-			if Debug {
-				fmt.Printf("Operating mode = %s, Trident pod = %s\n", OperatingMode, TridentPod)
-			}
-			return nil
 		}
+
+		OperatingMode = MODE_TUNNEL
+		Server = POD_SERVER
+		if Debug {
+			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s\n",
+				OperatingMode, TridentPodName, TridentPodNamespace)
+		}
+		return nil
 	}
 }
 
-func getTridentPod() (string, error) {
+func getCurrentNamespace() (string, error) {
 
-	// Get 'trident' pod info
-	cmd := exec.Command("kubectl", "get", "pod", "-l", "app=trident.netapp.io", "-o=json")
+	// Get current namespace from service account info
+	cmd := exec.Command("kubectl", "get", "serviceaccount", "default", "-o=json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -105,7 +116,35 @@ func getTridentPod() (string, error) {
 		return "", err
 	}
 
-	var tridentPod api.KubectlPodInfo
+	var serviceAccount k8s.ServiceAccount
+	if err := json.NewDecoder(stdout).Decode(&serviceAccount); err != nil {
+		return "", err
+	}
+	if err := cmd.Wait(); err != nil {
+		return "", err
+	}
+
+	//fmt.Printf("%+v\n", serviceAccount)
+
+	// Get Trident pod name & namespace
+	namespace := serviceAccount.ObjectMeta.Namespace
+
+	return namespace, nil
+}
+
+func getTridentPod(namespace string) (string, error) {
+
+	// Get 'trident' pod info
+	cmd := exec.Command("kubectl", "get", "pod", "-n", namespace, "-l", "app=trident.netapp.io", "-o=json")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", err
+	}
+	if err := cmd.Start(); err != nil {
+		return "", err
+	}
+
+	var tridentPod k8s.PodList
 	if err := json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
 		return "", err
 	}
@@ -119,8 +158,8 @@ func getTridentPod() (string, error) {
 		return "", errors.New("Could not find a Trident pod.")
 	}
 
-	// Get Trident pod name
-	name := tridentPod.Items[0].Metadata.Name
+	// Get Trident pod name & namespace
+	name := tridentPod.Items[0].ObjectMeta.Name
 
 	return name, nil
 }
@@ -139,7 +178,7 @@ func GetBaseURL() (string, error) {
 func TunnelCommand(commandArgs []string) {
 
 	// Build tunnel command for 'kubectl exec'
-	execCommand := []string{"exec", TridentPod, "-c", "trident-main", "--"}
+	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", "trident-main", "--"}
 
 	// Build CLI command
 	cliCommand := []string{"tridentctl", "-s", Server}
@@ -170,7 +209,7 @@ func TunnelCommand(commandArgs []string) {
 func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 
 	// Build tunnel command for 'kubectl exec'
-	execCommand := []string{"exec", TridentPod, "-c", "trident-main", "--"}
+	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", "trident-main", "--"}
 
 	// Build CLI command
 	cliCommand := []string{"tridentctl", "-s", Server}

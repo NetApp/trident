@@ -1,10 +1,6 @@
 package api
 
-import (
-	"time"
-
-	"github.com/netapp/trident/storage"
-)
+import "github.com/netapp/trident/storage"
 
 type Backend struct {
 	Name   string `json:"name"`
@@ -71,33 +67,4 @@ type VersionResponse struct {
 		BuildMetadata string `json:"buildMetadata"`
 		APIVersion    string `json:"apiVersion"`
 	} `json:"client"`
-}
-
-type KubectlPodInfo struct {
-	APIVersion string `json:"apiVersion"`
-	Items      []struct {
-		APIVersion string `json:"apiVersion"`
-		Kind       string `json:"kind"`
-		Metadata   struct {
-			Annotations struct {
-				KubernetesIoCreatedBy string `json:"kubernetes.io/created-by"`
-			} `json:"annotations"`
-			CreationTimestamp time.Time `json:"creationTimestamp"`
-			GenerateName      string    `json:"generateName"`
-			Labels            struct {
-				App             string `json:"app"`
-				PodTemplateHash string `json:"pod-template-hash"`
-			} `json:"labels"`
-			Name            string `json:"name"`
-			Namespace       string `json:"namespace"`
-			ResourceVersion string `json:"resourceVersion"`
-			SelfLink        string `json:"selfLink"`
-			UID             string `json:"uid"`
-		} `json:"metadata"`
-	} `json:"items"`
-	Kind     string `json:"kind"`
-	Metadata struct {
-	} `json:"metadata"`
-	ResourceVersion string `json:"resourceVersion"`
-	SelfLink        string `json:"selfLink"`
 }
