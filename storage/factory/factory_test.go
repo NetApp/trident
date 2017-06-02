@@ -17,6 +17,7 @@ func TestInitializeRecovery(t *testing.T) {
 		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "ontap-nas",
+			StoragePrefixRaw:  json.RawMessage("{}"),
 			StoragePrefix:     &empty,
 		},
 		// These should be invalid connection parameters

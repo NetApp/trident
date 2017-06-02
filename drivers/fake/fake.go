@@ -76,6 +76,7 @@ func newFakeStorageDriverConfigJSON(
 			CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: FakeStorageDriverName,
+				StoragePrefixRaw:  json.RawMessage("{}"),
 				StoragePrefix:     &prefix,
 			},
 			Protocol:     protocol,

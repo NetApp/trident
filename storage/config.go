@@ -3,6 +3,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
@@ -21,12 +22,11 @@ func SanitizeCommonStorageDriverConfig(c *dvp.CommonStorageDriverConfig) {
 	log.WithFields(log.Fields{
 		"name": c.StorageDriverName,
 	}).Debug("Sanitizing common config.")
-	if c.StoragePrefix == nil {
-		prefix := ""
+	if c.StoragePrefixRaw == nil {
 		log.WithFields(log.Fields{
 			"name": c.StorageDriverName,
-		}).Debug("Setting nil storage prefix to contain an empty string.")
-		c.StoragePrefix = &prefix
+		}).Debug("Setting nil raw storage prefix to contain an empty set.")
+		c.StoragePrefixRaw = json.RawMessage("{}")
 	}
 }
 
@@ -49,8 +49,14 @@ func GetCommonInternalVolumeName(
 ) string {
 	prefixToUse := config.OrchestratorName
 
+	// If a prefix was specified in the configuration, use that.
 	if c.StoragePrefix != nil {
 		prefixToUse = *c.StoragePrefix
+	}
+
+	// Special case an empty prefix so that we don't get a delimiter in front.
+	if prefixToUse == "" {
+		return name
 	}
 
 	return fmt.Sprintf("%s-%s", prefixToUse, name)

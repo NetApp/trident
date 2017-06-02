@@ -7,38 +7,33 @@ import (
 	"testing"
 
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+
+	"github.com/netapp/trident/config"
 )
 
 func TestGetCommonInternalVolumeName(t *testing.T) {
 	const name = "volume"
 	for _, test := range []struct {
-		prefix   string
+		prefix   *string
 		expected string
 	}{
 		{
-			prefix:   "specific",
+			prefix:   &[]string{"specific"}[0],
 			expected: fmt.Sprintf("specific-%s", name),
 		},
-		// Temporarily removing these. A follow-on change fixes these up.
-		/*
-			{
-				prefix:   "",
-				expected: fmt.Sprintf("%s-%s", config.OrchestratorName, name),
-			},
-			{
-				prefix:   "\"\"",
-				expected: fmt.Sprintf("%s-%s", config.OrchestratorName, name),
-			},
-			{
-				prefix:   "{}",
-				expected: fmt.Sprintf("%s-%s", config.OrchestratorName, name),
-			},
-		*/
+		{
+			prefix:   &[]string{""}[0],
+			expected: fmt.Sprintf("%s", name),
+		},
+		{
+			prefix:   nil,
+			expected: fmt.Sprintf("%s-%s", config.OrchestratorName, name),
+		},
 	} {
 		c := dvp.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "fake",
-			StoragePrefix:     &test.prefix,
+			StoragePrefix:     test.prefix,
 		}
 		got := GetCommonInternalVolumeName(&c, name)
 		if test.expected != got {

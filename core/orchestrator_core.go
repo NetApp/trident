@@ -47,7 +47,7 @@ func NewTridentOrchestrator(client persistent_store.Client) *tridentOrchestrator
 
 func (o *tridentOrchestrator) Bootstrap() error {
 	var err error = nil
-	dvp.DefaultStoragePrefix = config.OrchestratorName + "_"
+	dvp.DefaultStoragePrefix = config.OrchestratorName
 	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" +
 		config.OrchestratorVersion
 	if err = o.bootstrap(); err != nil {
