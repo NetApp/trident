@@ -97,7 +97,7 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 		return fmt.Errorf("Could not find SolidFire volume %s: %s", name, err.Error())
 	}
 	volumeIDList := []int64{v.VolumeID}
-	for _, vagID := range d.AccessGroups {
+	for _, vagID := range d.Config.AccessGroups {
 		req := sfapi.AddVolumesToVolumeAccessGroupRequest{
 			VolumeAccessGroupID: vagID,
 			Volumes:             volumeIDList,
@@ -113,7 +113,7 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 	volConfig.AccessInfo.IscsiTargetIQN = v.Iqn
 	volConfig.AccessInfo.IscsiLunNumber = 0
 	volConfig.AccessInfo.IscsiInterface = d.Config.InitiatorIFace
-	volConfig.AccessInfo.IscsiVAGs = d.AccessGroups
+	volConfig.AccessInfo.IscsiVAGs = d.Config.AccessGroups
 	log.WithFields(log.Fields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,
@@ -194,7 +194,7 @@ func (d *SolidfireSANStorageDriver) VerifyVags(vags []int64) []int64 {
 	for _, v := range discovered {
 		vagIDs = append(vagIDs, v.VAGID)
 	}
-	return diffSlices(vags, vagIDs)
+	return diffSlices(vagIDs, vags)
 }
 
 // Add volume ID's in the provided list that aren't already a member of the specified VAG

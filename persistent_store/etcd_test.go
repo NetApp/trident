@@ -145,7 +145,7 @@ func TestEtcdv2Backend(t *testing.T) {
 
 	// Adding storage backend
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
@@ -188,7 +188,7 @@ func TestEtcdv2Backend(t *testing.T) {
 
 	// Updating a storage backend
 	nfsServerNewConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
@@ -234,7 +234,7 @@ func TestEtcdv2Backends(t *testing.T) {
 	// Adding storage backends
 	for i := 1; i <= 5; i++ {
 		nfsServerConfig := dvp.OntapStorageDriverConfig{
-			CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+			CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 				StorageDriverName: dvp.OntapNASStorageDriverName,
 			},
 			ManagementLIF: "10.0.0." + strconv.Itoa(i),
@@ -278,7 +278,7 @@ func TestEtcdv2DuplicateBackend(t *testing.T) {
 	p, err := NewEtcdClient(*etcdV2)
 
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
@@ -315,7 +315,7 @@ func TestEtcdv2Volume(t *testing.T) {
 
 	// Adding a volume
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
@@ -398,7 +398,7 @@ func TestEtcdv2Volumes(t *testing.T) {
 
 	// Adding volumes
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
@@ -509,7 +509,7 @@ func TestEtcdv2VolumeTransactions(t *testing.T) {
 		t.FailNow()
 	}
 	if len(volTxns) != 0 {
-		t.Error("Did n't delete all volume transactions!")
+		t.Error("Didn't delete all volume transactions!")
 	}
 }
 
@@ -564,7 +564,7 @@ func TestDuplicateVolumeTransaction(t *testing.T) {
 func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 	p, err := NewEtcdClient(*etcdV2)
 	sfConfig := dvp.SolidfireStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.SolidfireSANStorageDriverName,
 		},
 		TenantName:   "docker",
@@ -612,6 +612,7 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 	bronzeConfig.BackendStoragePools["ontapsan_10.0.207.103"] =
 		[]string{"aggr1"}
 	bronzeClass := storage_class.New(bronzeConfig)
+
 	if err := p.AddStorageClass(bronzeClass); err != nil {
 		t.Fatal(err.Error())
 	}
@@ -647,5 +648,9 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 				}
 			}
 		}
+	}
+
+	if err := p.DeleteStorageClass(bronzeClass); err != nil {
+		t.Fatal(err.Error())
 	}
 }

@@ -12,12 +12,12 @@ import (
 // TestInitializeRecovery intentionally passes a bogus config to
 // NewStorageBackendForConfig to test its ability to recover.
 func TestInitializeRecovery(t *testing.T) {
+	empty := ""
 	config := &dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "ontap-nas",
-			StoragePrefixRaw:  json.RawMessage("{}"),
-			SnapshotPrefixRaw: json.RawMessage("{}"),
+			StoragePrefix:     &empty,
 		},
 		// These should be invalid connection parameters
 		ManagementLIF: "127.0.0.1",

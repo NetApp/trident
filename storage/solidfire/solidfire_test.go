@@ -14,7 +14,7 @@ func TestGetExternalConfig(t *testing.T) {
 	driver := SolidfireSANStorageDriver{
 		SolidfireSANStorageDriver: dvp.SolidfireSANStorageDriver{
 			Config: dvp.SolidfireStorageDriverConfig{
-				CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+				CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 					Version:           1,
 					StorageDriverName: "solidfire-san",
 				},

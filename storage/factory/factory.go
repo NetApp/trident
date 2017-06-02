@@ -160,7 +160,7 @@ func NewStorageBackendForConfig(configJSON string) (
 		// just utilize the default 'trident' group automatically.  Or, perhaps the deployment
 		// doesn't need more than one set of 64 initiators, so we'll just use the old way of
 		// doing it here, and look for/set the default group.
-		if len(driver.AccessGroups) == 0 {
+		if len(driver.Config.AccessGroups) == 0 {
 			// We're going to do some hacky stuff here and make sure that if this is an upgrade
 			// that we verify that one of the AccessGroups in the list is the default Trident VAG ID
 			listVAGReq := &sfapi.ListVolumeAccessGroupsRequest{
@@ -179,7 +179,7 @@ func NewStorageBackendForConfig(configJSON string) (
 			for _, vag := range vags {
 				//TODO: SolidFire backend config should support taking VAG as an arg
 				if vag.Name == config.DefaultSolidFireVAG {
-					driver.AccessGroups = append(driver.AccessGroups, vag.VAGID)
+					driver.Config.AccessGroups = append(driver.Config.AccessGroups, vag.VAGID)
 					found = true
 					for _, initiator := range vag.Initiators {
 						initiators = initiators + initiator + ","
@@ -197,14 +197,14 @@ func NewStorageBackendForConfig(configJSON string) (
 					config.DefaultSolidFireVAG, driver.Config.SVIP)
 				return
 			}
-		} else if len(driver.AccessGroups) > 4 {
+		} else if len(driver.Config.AccessGroups) > 4 {
 			err = fmt.Errorf("The maximum number of allowed Volume Access Groups per config is 4 "+
-				"but your config has specified %v!", len(driver.AccessGroups))
+				"but your config has specified %v!", len(driver.Config.AccessGroups))
 			return
 		} else {
 			// We only need this in the case that AccessGroups were specified, if it was zero and we
 			// used the default we already verified it in that step so we're good here.
-			missingVags := driver.VerifyVags(driver.AccessGroups)
+			missingVags := driver.VerifyVags(driver.Config.AccessGroups)
 			if len(missingVags) != 0 {
 				err = fmt.Errorf("Failed to discover 1 or more of the specified VAG ID's! "+
 					"Missing VAG IDS from Cluster discovery: %+v", missingVags)
@@ -215,7 +215,7 @@ func NewStorageBackendForConfig(configJSON string) (
 		log.WithFields(log.Fields{
 			"driver":       dvp.SolidfireSANStorageDriverName,
 			"SVIP":         driver.Config.SVIP,
-			"AccessGroups": driver.AccessGroups,
+			"AccessGroups": driver.Config.AccessGroups,
 		}).Warn("Please ensure all relevant hosts are added to one of ",
 			"the specified Volume Access Groups.")
 
@@ -229,7 +229,7 @@ func NewStorageBackendForConfig(configJSON string) (
 				vIDs = append(vIDs, v.VolumeID)
 			}
 		}
-		for _, vag := range driver.AccessGroups {
+		for _, vag := range driver.Config.AccessGroups {
 			addAGErr := driver.AddMissingVolumesToVag(vag, vIDs)
 			if addAGErr != nil {
 				err = fmt.Errorf("Failed to update AccessGroup membership of volume "+
