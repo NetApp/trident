@@ -33,7 +33,7 @@ However, we also provide a Makefile with several targets.  These are as follows:
 * `make docker_image`:  Calls `make docker_build` and creates a Docker image
   for it, tagging it as `[$REGISTRY_ADDR/]$TRIDENT_IMAGE:$VERSION_TAG`, with
   the bracketed portion omitted if `$REGISTRY_ADDR` is unset.  This tag
-  defaults to `trident:local`.  
+  defaults to `trident:local`.
 * `make pod`:  Calls `make docker_image`, tags the resultant image as
   `$REGISTRY_ADDR/$TRIDENT_IMAGE:$VERSION_TAG` and pushes it to the local
   docker registry referenced in `$REGISTRY_ADDR`, described below.
@@ -57,7 +57,7 @@ Launcher](#building-the-trident-launcher) describes these and their parameters.
 ## Building the Trident Launcher
 
 As with Trident, the Trident Launcher can be built using standard Go tools;
-e.g., 
+e.g.,
 
 ```bash
 go build -o trident-launcher ./launcher

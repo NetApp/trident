@@ -26,6 +26,8 @@ exposing users to complexities of various backends.
 * [Deploying Trident](#deploying-trident)
   * [Using the Trident Launcher](#using-the-trident-launcher)
       * [Install Script](#install-script)
+      * [Uninstall Script](#uninstall-script)
+      * [Update Script](#update-script)
   * [Deploying As a Pod](#deploying-as-a-pod)
   * [Command-line options](#command-line-options)
 * [Using Trident](#using-trident)
@@ -145,8 +147,8 @@ are not available, see the subsequent sections.
 	launcher pod definitions, found in `setup/trident-deployment.yaml` and
 	`launcher-pod.yaml`.  It then starts the Trident launcher pod,
 	which provisions a PVC and PV on which Trident will store its data, using
-	the provided backend.  The launcher then starts a deployment for Trident 
-	itself, using the defintion in `setup/`. For an overview of steps carried
+	the provided backend.  The launcher then starts a deployment for Trident
+	itself, using the defintion in `setup/`.  For an overview of steps carried
 	out by the installer script, please see [Install Script](#install-script)
 	and [Using the Trident Launcher](#using-the-trident-launcher).
 	When the installer completes, `kubectl get deployment trident` should show
@@ -184,7 +186,7 @@ are not available, see the subsequent sections.
 
 12. Create the storage class.  Run
 
-    ```bash kubectl create -f sample-input/storage-class-basic.yaml```
+    ```kubectl create -f sample-input/storage-class-basic.yaml```
 
 	Volumes that refer to this storage class will be provisioned on top of the
 	backend registered in step 10.
@@ -293,9 +295,7 @@ launcher utility, which comprises the easiest way to start Trident from a new
 deployment.  [Deploying As a Pod](#deploying-as-a-pod) describes the necessary
 configuration when using the provided Kubernetes deployment definition, and
 [Command-line Options](#command-line-options) describes the run-time flags
-available when launching it manually.  Finally,
-[Deploying In OpenShift](#deploying-in-openshift) covers the necessary set-up for
-launching Trident in OpenShift, which imposes several security requirements.
+available when launching it manually.
 
 ### Using the Trident Launcher
 
@@ -328,7 +328,7 @@ few parameters:
 * `-trident_timeout`: The number of seconds to wait before the launcher times
   out on a Trident connection. If omitted, it defaults to 10 seconds.
 * `-k8s_timeout`: The number of seconds to wait before timing out on Kubernetes
-   operations. If omitted, it defaults to 60 seconds.  
+   operations. If omitted, it defaults to 60 seconds.
 * `-debug`: Optional; enables debugging output.
 
 As with Trident itself, the launcher can be deployed as a pod using the
@@ -1014,6 +1014,7 @@ all of the storage pools available for the requested storage class and protocol.
   this case, you will either need to enable service accounts or connect to the
   API server using the insecure address and port, as described in [Command-line
   Options](#command-line-options).
+* The [Uninstall Script](#uninstall-script) can help with cleaning up the state after a failure.
 
 ## Caveats
 
