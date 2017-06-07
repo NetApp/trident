@@ -7,6 +7,8 @@
 **Fixes:**
 - Trident and Trident launcher no longer fail if they cannot validate the
 container orchestrator version.
+- When running in a pod, the Trident REST interface is no longer accessible
+by default outside the pod.
 
 **Enhancements:**
 - Added support for storage.k8s.io/v1 storage classes introduced in Kubernetes

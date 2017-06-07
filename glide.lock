@@ -1,5 +1,5 @@
-hash: 5ad855d61a67a889d22478bf8bd6a5ff1532e485ecf605fae7845356090932be
-updated: 2017-06-07T16:47:43.109236567-04:00
+hash: 50859f058e15bafdbcbab034cc000953ae2319dab05624c76c84d668b9bfbe1d
+updated: 2017-06-07T17:11:45.346418637-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -118,8 +118,6 @@ imports:
   version: 69f86e6d5d7a67467ecd43b4a3c98d9c143d11c4
 - name: github.com/spf13/pflag
   version: c990990ab4981d84da820b7b00c85139ca150b5f
-- name: github.com/tylerb/graceful
-  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:

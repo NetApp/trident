@@ -107,8 +107,6 @@ import:
   version: c990990ab4981d84da820b7b00c85139ca150b5f
 - package: github.com/spf13/cobra
   version: 69f86e6d5d7a67467ecd43b4a3c98d9c143d11c4
-- package: github.com/tylerb/graceful
-  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 - package: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:

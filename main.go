@@ -28,7 +28,8 @@ var (
 		"for Kubernetes if running in a pod.")
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
-	port        = flag.String("port", "8000", "Storage orchestrator port")
+	address     = flag.String("address", "localhost", "Storage orchestrator API address")
+	port        = flag.String("port", "8000", "Storage orchestrator API port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
 	kubernetesVersion = "unknown"
@@ -90,7 +91,7 @@ func main() {
 		orchestrator.AddFrontend(kubernetesFrontend)
 		frontends = append(frontends, kubernetesFrontend)
 	}
-	restServer := rest.NewAPIServer(orchestrator, *port)
+	restServer := rest.NewAPIServer(orchestrator, *address, *port)
 	frontends = append(frontends, restServer)
 	// Bootstrapping the orchestrator
 	if err := orchestrator.Bootstrap(); err != nil {

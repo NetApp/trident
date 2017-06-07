@@ -480,6 +480,11 @@ Trident exposes a number of command line options.  These are as follows:
   outside of a pod; however, it only supports insecure connections to the API
   server.  To connect securely, deploy Trident in a pod with the `-k8s_pod`
   option.
+* `-address <ip-or-host>`:  Optional; specifies the address on which Trident's REST
+  server should listen.  Defaults to localhost.  When listening on localhost and
+  running inside a Kubernetes pod, the REST interface will not be directly
+  accessible from outside the pod.  Use '-address ""' to make the REST interface
+  accessible from the pod IP address.
 * `-port <port-number>`:  Optional; specifies the port on which Trident's REST
   server should listen.  Defaults to 8000.
 * `-debug`: Optional; enables debugging output.
@@ -785,6 +790,8 @@ more information by running `tridentctl --help`.
 
 ### REST API
 
+While tridentctl is the preferred method of interacting with Trident, and
+Trident's REST API is not exposed by default when running inside a pod,
 Trident exposes all of its functionality through a REST API with endpoints
 corresponding to each of the user-controlled object types (i.e., `backend`,
 `storageclass`, and `volume`) as well as a `version` endpoint for retrieving

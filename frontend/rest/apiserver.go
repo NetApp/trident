@@ -3,50 +3,43 @@
 package rest
 
 import (
-	"log"
+	"context"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/tylerb/graceful"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 )
 
 const httpTimeout = 10 * time.Second
 
-func init() {
-
-}
-
 var orchestrator core.Orchestrator
 
 type APIServer struct {
-	router *mux.Router
-	port   string
-	server *graceful.Server
+	server *http.Server
 }
 
-func NewAPIServer(p core.Orchestrator, port string) *APIServer {
+func NewAPIServer(p core.Orchestrator, address, port string) *APIServer {
+
 	orchestrator = p
-	router := NewRouter()
+
+	address_port := address + ":" + port
+	log.Infof("Starting REST interface on %s", address_port)
+
 	return &APIServer{
-		router: router,
-		port:   port,
-		server: &graceful.Server{
-			Timeout: httpTimeout,
-			Server: &http.Server{
-				Addr:    ":" + port,
-				Handler: router,
-			},
+		server: &http.Server{
+			Addr:         address_port,
+			Handler:      NewRouter(),
+			ReadTimeout:  httpTimeout,
+			WriteTimeout: httpTimeout,
 		},
 	}
 }
 
-func (server *APIServer) Activate() error {
+func (s *APIServer) Activate() error {
 	go func() {
-		err := server.server.ListenAndServe()
+		err := s.server.ListenAndServe()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,15 +47,16 @@ func (server *APIServer) Activate() error {
 	return nil
 }
 
-func (server *APIServer) Deactivate() error {
-	server.server.Stop(httpTimeout)
-	return nil
+func (s *APIServer) Deactivate() error {
+	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	defer cancel()
+	return s.server.Shutdown(ctx)
 }
 
-func (server *APIServer) GetName() string {
+func (s *APIServer) GetName() string {
 	return "REST"
 }
 
-func (server *APIServer) Version() string {
+func (s *APIServer) Version() string {
 	return config.OrchestratorAPIVersion
 }
