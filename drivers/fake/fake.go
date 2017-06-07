@@ -164,9 +164,7 @@ func (m *FakeStorageDriver) DefaultStoragePrefix() string {
 	return "fake"
 }
 
-func (d *FakeStorageDriver) CreateClone(
-	name, source, snapshot string,
-) error {
+func (d *FakeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 	return errors.New("Fake driver does not support CreateClone")
 }
 
