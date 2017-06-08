@@ -21,15 +21,13 @@ var getBackendCmd = &cobra.Command{
 	Use:     "backend",
 	Short:   "Get one or more storage backends from Trident",
 	Aliases: []string{"b", "backends"},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == MODE_TUNNEL {
 			command := []string{"get", "backend"}
 			TunnelCommand(append(command, args...))
+			return nil
 		} else {
-			err := backendList(args)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			}
+			return backendList(args)
 		}
 	},
 }

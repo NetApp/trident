@@ -23,15 +23,13 @@ var getVolumeCmd = &cobra.Command{
 	Use:     "volume",
 	Short:   "Get one or more volumes from Trident",
 	Aliases: []string{"v", "volumes"},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == MODE_TUNNEL {
 			command := []string{"get", "volume"}
 			TunnelCommand(append(command, args...))
+			return nil
 		} else {
-			err := volumeList(args)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			}
+			return volumeList(args)
 		}
 	},
 }

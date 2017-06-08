@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/netapp/trident/cli/cmd"
 )
 
 func main() {
+	cmd.ExitCode = cmd.EXIT_CODE_SUCCESS
+
 	if err := cmd.RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		cmd.SetExitCodeFromError(err)
 	}
+
+	os.Exit(cmd.ExitCode)
 }

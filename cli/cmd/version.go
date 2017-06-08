@@ -36,12 +36,12 @@ var versionCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			return fmt.Errorf("Error: %v\n", err)
+			return err
 		}
 
 		parsedServerVersion, err := utils.ParseDate(serverVersion.Version)
 		if err != nil {
-			return fmt.Errorf("Error: %v\n", err)
+			return err
 		}
 
 		// Add the client version, which is always hardcoded at compile time

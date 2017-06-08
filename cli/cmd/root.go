@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-
 	"strings"
+	"syscall"
 
 	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
@@ -24,12 +24,16 @@ const (
 	MODE_TUNNEL = "tunnel"
 
 	POD_SERVER = "127.0.0.1:8000"
+
+	EXIT_CODE_SUCCESS = 0
+	EXIT_CODE_FAILURE = 1
 )
 
 var (
 	OperatingMode       string
 	TridentPodName      string
 	TridentPodNamespace string
+	ExitCode            int
 
 	Debug        bool
 	Server       string
@@ -37,13 +41,14 @@ var (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "tridentctl",
-	Short: "A CLI tool for NetApp Trident",
-	Long:  `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
+	SilenceUsage: true,
+	Use:          "tridentctl",
+	Short:        "A CLI tool for NetApp Trident",
+	Long:         `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		err := discoverOperatingMode()
 		if err != nil {
-			return fmt.Errorf("%v", err)
+			return err
 		}
 		return nil
 	},
@@ -155,7 +160,7 @@ func getTridentPod(namespace string) (string, error) {
 	//fmt.Printf("%+v\n", tridentPod)
 
 	if len(tridentPod.Items) != 1 {
-		return "", errors.New("Could not find a Trident pod.")
+		return "", errors.New("could not find a Trident pod.")
 	}
 
 	// Get Trident pod name & namespace
@@ -199,8 +204,10 @@ func TunnelCommand(commandArgs []string) {
 
 	// Invoke tridentctl inside the Trident pod
 	out, err := exec.Command("kubectl", execCommand...).CombinedOutput()
+
+	SetExitCodeFromError(err)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%s", string(out))
 	} else {
 		fmt.Print(string(out))
 	}
@@ -223,5 +230,24 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	return exec.Command("kubectl", execCommand...).CombinedOutput()
+	output, err := exec.Command("kubectl", execCommand...).CombinedOutput()
+
+	SetExitCodeFromError(err)
+	return output, err
+}
+
+func SetExitCodeFromError(err error) {
+
+	if err == nil {
+		ExitCode = EXIT_CODE_SUCCESS
+	} else {
+
+		// Default to 1 in case we can't determine a process exit code
+		ExitCode = EXIT_CODE_FAILURE
+
+		if exitError, ok := err.(*exec.ExitError); ok {
+			ws := exitError.Sys().(syscall.WaitStatus)
+			ExitCode = ws.ExitStatus()
+		}
+	}
 }

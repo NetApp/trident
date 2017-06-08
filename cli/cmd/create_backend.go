@@ -37,13 +37,10 @@ var createBackendCmd = &cobra.Command{
 		if OperatingMode == MODE_TUNNEL {
 			command := []string{"create", "backend", "--base64", base64.StdEncoding.EncodeToString(postData)}
 			TunnelCommand(append(command, args...))
+			return nil
 		} else {
-			err := backendCreate(postData)
-			if err != nil {
-				return err
-			}
+			return backendCreate(postData)
 		}
-		return nil
 	},
 }
 
@@ -53,7 +50,7 @@ func getBackendCreateData() ([]byte, error) {
 	var postData []byte
 
 	if b64Data == "" && filename == "" {
-		return nil, errors.New("No input file was specified.")
+		return nil, errors.New("no input file was specified.")
 	}
 
 	// Read from file or stdin or b64 data

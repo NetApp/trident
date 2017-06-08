@@ -20,15 +20,13 @@ var getStorageClassCmd = &cobra.Command{
 	Use:     "storageclass",
 	Short:   "Get one or more storage classes from Trident",
 	Aliases: []string{"sc", "storageclasses"},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == MODE_TUNNEL {
 			command := []string{"get", "storageclass"}
 			TunnelCommand(append(command, args...))
+			return nil
 		} else {
-			err := storageClassList(args)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			}
+			return storageClassList(args)
 		}
 	},
 }
