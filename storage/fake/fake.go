@@ -13,11 +13,9 @@ type FakeStorageDriver struct {
 	fake.FakeStorageDriver
 }
 
-func (m *FakeStorageDriver) GetStorageBackendSpecs(
-	backend *storage.StorageBackend,
-) error {
-	backend.Name = m.Config.InstanceName
-	for name, pool := range m.Config.Pools {
+func (d *FakeStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
+	backend.Name = d.Config.InstanceName
+	for name, pool := range d.Config.Pools {
 		vc := &storage.StoragePool{
 			Name:           name,
 			StorageClasses: make([]string, 0),
@@ -25,13 +23,13 @@ func (m *FakeStorageDriver) GetStorageBackendSpecs(
 			Backend:        backend,
 			Attributes:     pool.Attrs,
 		}
-		vc.Attributes[sa.BackendType] = sa.NewStringOffer(m.Name())
+		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
 		backend.AddStoragePool(vc)
 	}
 	return nil
 }
 
-func (m *FakeStorageDriver) GetVolumeOpts(
+func (d *FakeStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
 	pool *storage.StoragePool,
 	requests map[string]sa.Request,
@@ -41,21 +39,27 @@ func (m *FakeStorageDriver) GetVolumeOpts(
 	return opts, nil
 }
 
-func (m *FakeStorageDriver) GetInternalVolumeName(name string) string {
+func (d *FakeStorageDriver) GetInternalVolumeName(name string) string {
 	return storage.GetCommonInternalVolumeName(
-		&m.Config.CommonStorageDriverConfig, name)
+		&d.Config.CommonStorageDriverConfig, name)
 }
 
-func (m *FakeStorageDriver) CreatePrepare(
-	volConfig *storage.VolumeConfig,
-) bool {
-	volConfig.InternalName = m.GetInternalVolumeName(volConfig.Name)
+func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 	return true
 }
 
-func (m *FakeStorageDriver) CreateFollowup(
-	volConfig *storage.VolumeConfig,
-) error {
+func (d *FakeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+
+	switch d.Config.Protocol {
+	case config.File:
+		volConfig.AccessInfo.NfsServerIP = "192.0.2.1" // unrouteable test address, see RFC 5737
+		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+	case config.Block:
+		volConfig.AccessInfo.IscsiTargetPortal = "192.0.2.1"
+		volConfig.AccessInfo.IscsiTargetIQN = "iqn.2017-06.com.netapp:fake"
+		volConfig.AccessInfo.IscsiLunNumber = 0
+	}
 	return nil
 }
 
@@ -67,11 +71,8 @@ func (d *FakeStorageDriver) GetDriverName() string {
 	return d.Config.StorageDriverName
 }
 
-func (d *FakeStorageDriver) StoreConfig(
-	b *storage.PersistentStorageBackendConfig,
-) {
-	storage.SanitizeCommonStorageDriverConfig(
-		&d.Config.CommonStorageDriverConfig)
+func (d *FakeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
+	storage.SanitizeCommonStorageDriverConfig(&d.Config.CommonStorageDriverConfig)
 	b.FakeStorageDriverConfig = &d.Config
 }
 

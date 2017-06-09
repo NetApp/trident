@@ -27,6 +27,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
@@ -607,6 +608,14 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	case driverType == dvp.OntapNASStorageDriverName:
 		nfsSource = CreateNFSVolumeSource(vol.Config)
 		pv.Spec.NFS = nfsSource
+	case driverType == fake.FakeStorageDriverName:
+		if vol.Config.Protocol == config.File {
+			nfsSource = CreateNFSVolumeSource(vol.Config)
+			pv.Spec.NFS = nfsSource
+		} else if vol.Config.Protocol == config.Block {
+			iscsiSource = CreateISCSIVolumeSource(vol.Config)
+			pv.Spec.ISCSI = iscsiSource
+		}
 	default:
 		// Unknown driver for the frontend plugin or for Kubernetes.
 		// Provisioned volume should get deleted.
