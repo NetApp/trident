@@ -7,7 +7,6 @@ import (
 	"os/exec"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/netapp/netappdvp/azgo"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/config"
@@ -60,12 +59,8 @@ func (d *OntapSANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) 
 
 func (d *OntapSANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error {
 	var (
-		targetIQN                 string
-		lunID                     int32
-		acceptableLunMapResponses = map[string]bool{
-			azgo.EVDISK_ERROR_INITGROUP_HAS_VDISK:  true, // LUN is already mapped to the igroup
-			azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST: true, // TODO: bad naming by nDVP?
-		}
+		targetIQN string
+		lunID     int
 	)
 
 	response, err := d.API.IscsiServiceGetIterRequest()
@@ -84,37 +79,16 @@ func (d *OntapSANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) 
 		}
 	}
 
-	// Based on netappdvp/storage_drivers/ontap_san.go:
-	// Map the newly created volume to the specified or default igroup
-	// spin until we get a LUN ID that works
-	// TODO: find one directly instead of spinning-and-looking for one:
-	// (The signature for netappdvp/apis/ontap/ontap.go:LunMap() needs to change.)
+	// Map LUN
 	lunPath := fmt.Sprintf("/vol/%v/lun0", volConfig.InternalName)
-	for i := 0; i < 4096; i++ {
-		response, err := d.API.LunMap(d.Config.IgroupName, lunPath, i)
-		if err != nil {
-			return fmt.Errorf("Problem mapping lun: %v error: %v,%v",
-				lunPath, err, response.Result.ResultErrnoAttr)
-		}
-		if response.Result.ResultStatusAttr == "passed" {
-			lunID = int32(i)
-			break
-		}
-		if acceptableLunMapResponses[response.Result.ResultErrnoAttr] {
-			break
-		} else if response.Result.ResultErrnoAttr ==
-			azgo.EVDISK_ERROR_INITGROUP_HAS_LUN {
-			// another LUN mapped with this LUN number
-			continue
-		} else {
-			return fmt.Errorf("Problem mapping lun: %v error: %v,%v",
-				lunPath, err, response.Result.ResultErrnoAttr)
-		}
+	lunID, err = d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath)
+	if err != nil {
+		return err
 	}
 
 	volConfig.AccessInfo.IscsiTargetPortal = d.Config.DataLIF
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
-	volConfig.AccessInfo.IscsiLunNumber = lunID
+	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
 	volConfig.AccessInfo.IscsiIgroup = d.Config.IgroupName
 	log.WithFields(log.Fields{
 		"volume":          volConfig.Name,

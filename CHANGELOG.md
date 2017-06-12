@@ -19,6 +19,7 @@ deployments in a uniform manner and to leverage Role-Based Access Control
 - Added scripts for uninstalling and updating Trident.
 - Added tridentctl CLI tool for managing Trident.
 - SolidFire backend configuration file accepts up to four Volume Access Group IDs.
+- Improved efficiency of ONTAP LUN ID selection.
 
 ## v17.04.0
 

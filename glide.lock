@@ -96,7 +96,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: 2201db8961d95f865ab8d0613cdebfc4f68b2963
+  version: ca90c99ae6a8dfef7b3945e068a4a14f44ba7d35
   subpackages:
   - apis/eseries
   - apis/ontap
