@@ -313,12 +313,14 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 	err = nil
 	errorList := make([]string, 0)
 
-	// Validate that protocols haven't changed
-	if oldBackend.GetProtocol() != newBackend.GetProtocol() {
-		errorList = append(errorList, "Cannot change backend protocol")
+	// In case Trident supports custom backend names in the future, validate
+	// that backend type isn't being changed as backend type has implications
+	// for the internal volume name.
+	if oldBackend.GetDriverName() != newBackend.GetDriverName() {
+		errorList = append(errorList, "Cannot update the backend type")
 	}
 
-	// Identifying all storage pools that have been used for
+	// Identifying all storage pools in the old backend that have been used for
 	// provisioning volumes.
 	usedPools := make([]string, 0)
 	for name, storagePool := range oldBackend.Storage {
@@ -343,8 +345,7 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 		// we only care about the storage classes in use.
 		for _, volume := range storagePool.Volumes {
 			scName := volume.Config.StorageClass
-			_, ok := storagePoolsForStorageClasses[scName]
-			if !ok {
+			if _, found := storagePoolsForStorageClasses[scName]; !found {
 				storagePoolsForStorageClasses[scName] = make([]string, 0, 1)
 			}
 			storagePoolsForStorageClasses[scName] =
@@ -352,23 +353,37 @@ func (o *tridentOrchestrator) validateBackendUpdate(
 		}
 	}
 	for scName, storagePoolList := range storagePoolsForStorageClasses {
-		sc := o.storageClasses[scName]
+		sc, found := o.storageClasses[scName]
+		if !found {
+			// The storage class for the volume was deleted. The volume remains
+			// associated with the storage pool of the same name in the new
+			// backend.
+			continue
+		}
 		for _, storagePoolName := range storagePoolList {
-			log.WithFields(log.Fields{
-				"backend":      newBackend.Name,
-				"storagePool":  storagePoolName,
-				"storageClass": scName,
-			}).Debug("Checking whether storage class satisfies the new backend's storage pool.")
 			if newStoragePool, ok := newBackend.Storage[storagePoolName]; ok && !sc.Matches(newStoragePool) {
+				log.WithFields(log.Fields{
+					"backend":      newBackend.Name,
+					"storagePool":  storagePoolName,
+					"storageClass": scName,
+				}).Debug("The storage pool in the new backend doesn't satisfy " +
+					"the storage class.")
 				errorList = append(errorList, fmt.Sprintf("Storage pool "+
 					"%s has volumes with storage class %s, but it no longer "+
 					"satisfies that storage class", storagePoolName, scName))
+			} else if ok {
+				log.WithFields(log.Fields{
+					"backend":      newBackend.Name,
+					"storagePool":  storagePoolName,
+					"storageClass": scName,
+				}).Debug("The storage pool in the new backend satisfies the " +
+					"storage class.")
 			}
 		}
 	}
 	if len(errorList) > 0 {
-		err = fmt.Errorf("Cannot update backend:\n\t%s",
-			strings.Join(errorList, "\n\t"))
+		err = fmt.Errorf("Cannot update backend: %s", strings.Join(errorList,
+			"; "))
 	}
 	return err
 }
@@ -379,10 +394,6 @@ func (o *tridentOrchestrator) GetVersion() string {
 
 func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 	*storage.StorageBackendExternal, error) {
-	var (
-		protocol config.Protocol
-	)
-
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
@@ -391,7 +402,6 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 		return nil, err
 	}
 	newBackend := true
-	protocol = storageBackend.GetProtocol()
 	originalBackend, ok := o.backends[storageBackend.Name]
 	if ok {
 		newBackend = false
@@ -401,9 +411,8 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 	}
 
 	log.WithFields(log.Fields{
-		"backendName": storageBackend.Name,
-		"protocol":    protocol,
-		"newBackend":  newBackend,
+		"backend":       storageBackend.Name,
+		"backendUpdate": !newBackend,
 	}).Debug("Adding backend.")
 	if err = o.updateBackendOnPersistentStore(storageBackend, newBackend); err != nil {
 		return nil, err
@@ -421,13 +430,11 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 	}
 	if len(classes) == 0 {
 		log.WithFields(log.Fields{
-			"backendName": storageBackend.Name,
-			"protocol":    protocol,
+			"backend": storageBackend.Name,
 		}).Info("Newly added backend satisfies no storage classes.")
 	} else {
 		log.WithFields(log.Fields{
-			"backendName": storageBackend.Name,
-			"protocol":    protocol,
+			"backend": storageBackend.Name,
 		}).Infof("Newly added backend satisfies storage classes %s.",
 			strings.Join(classes, ", "))
 	}

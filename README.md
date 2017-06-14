@@ -222,6 +222,7 @@ class to provision its volumes, see [Provisioning Workflow](#provisioning-workfl
 and demonstrates some advanced use cases (please see
 [CHANGELOG](https://github.com/NetApp/trident/blob/master/CHANGELOG.md) for the
 changes since v1.0).
+
 [![Trident v1.0](https://img.youtube.com/vi/NDcnyGe2GFo/0.jpg)](https://www.youtube.com/watch?v=NDcnyGe2GFo)
 
 ## Requirements

@@ -333,7 +333,7 @@ func TestEtcdv2Volume(t *testing.T) {
 		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
 	}
 	vol1Config := storage.VolumeConfig{
-		Version:      string(config.OrchestratorMajorVersion),
+		Version:      string(config.OrchestratorAPIVersion),
 		Name:         "vol1",
 		Size:         "1GB",
 		Protocol:     config.File,
@@ -418,7 +418,7 @@ func TestEtcdv2Volumes(t *testing.T) {
 
 	for i := 1; i <= newVolumeCount; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorMajorVersion),
+			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "vol" + strconv.Itoa(i),
 			Size:         strconv.Itoa(i) + "GB",
 			Protocol:     config.File,
@@ -464,7 +464,7 @@ func TestEtcdv2VolumeTransactions(t *testing.T) {
 	// Adding volume transactions
 	for i := 1; i <= 5; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorMajorVersion),
+			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "vol" + strconv.Itoa(i),
 			Size:         strconv.Itoa(i) + "GB",
 			Protocol:     config.File,
@@ -516,7 +516,7 @@ func TestEtcdv2VolumeTransactions(t *testing.T) {
 func TestDuplicateVolumeTransaction(t *testing.T) {
 	firstTxn := &VolumeTransaction{
 		Config: &storage.VolumeConfig{
-			Version:      string(config.OrchestratorMajorVersion),
+			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
 			Size:         "1 GB",
 			Protocol:     config.File,
@@ -526,7 +526,7 @@ func TestDuplicateVolumeTransaction(t *testing.T) {
 	}
 	secondTxn := &VolumeTransaction{
 		Config: &storage.VolumeConfig{
-			Version:      string(config.OrchestratorMajorVersion),
+			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
 			Size:         "1 GB",
 			Protocol:     config.File,

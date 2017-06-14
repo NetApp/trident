@@ -953,22 +953,6 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			},
 			protocol: config.File,
 		},
-		{
-			name: "Wrong protocol",
-			pools: map[string]*fake.FakeStoragePool{
-				"primary": &fake.FakeStoragePool{
-					Attrs: map[string]sa.Offer{
-						sa.Media:            sa.NewStringOffer("hdd"),
-						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
-						// testingAttribute is here to ensure that only one
-						// storage class will match this backend.
-						sa.TestingAttribute: sa.NewBoolOffer(true),
-					},
-					Bytes: 100 * 1024 * 1024 * 1024,
-				},
-			},
-			protocol: config.Block,
-		},
 	} {
 		newConfigJSON, err := fake.NewFakeStorageDriverConfigJSON(backendName,
 			c.protocol, c.pools)

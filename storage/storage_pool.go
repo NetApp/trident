@@ -28,30 +28,30 @@ func NewStoragePool(backend *StorageBackend, name string) *StoragePool {
 	}
 }
 
-func (vc *StoragePool) AddVolume(vol *Volume, bootstrap bool) {
-	vc.Volumes[vol.Config.Name] = vol
+func (pool *StoragePool) AddVolume(vol *Volume, bootstrap bool) {
+	pool.Volumes[vol.Config.Name] = vol
 }
 
-func (vc *StoragePool) DeleteVolume(vol *Volume) bool {
-	if _, ok := vc.Volumes[vol.Config.Name]; ok {
-		delete(vc.Volumes, vol.Config.Name)
+func (pool *StoragePool) DeleteVolume(vol *Volume) bool {
+	if _, ok := pool.Volumes[vol.Config.Name]; ok {
+		delete(pool.Volumes, vol.Config.Name)
 		return true
 	}
 	return false
 }
 
-func (vc *StoragePool) AddStorageClass(class string) {
+func (pool *StoragePool) AddStorageClass(class string) {
 	// Note that this function should get called once per storage class
 	// affecting the volume; thus, we don't need to check for duplicates.
-	vc.StorageClasses = append(vc.StorageClasses, class)
+	pool.StorageClasses = append(pool.StorageClasses, class)
 }
 
-func (vc *StoragePool) RemoveStorageClass(class string) bool {
+func (pool *StoragePool) RemoveStorageClass(class string) bool {
 	found := false
-	for i, name := range vc.StorageClasses {
+	for i, name := range pool.StorageClasses {
 		if name == class {
-			vc.StorageClasses = append(vc.StorageClasses[:i],
-				vc.StorageClasses[i+1:]...)
+			pool.StorageClasses = append(pool.StorageClasses[:i],
+				pool.StorageClasses[i+1:]...)
 			found = true
 			break
 		}
@@ -60,23 +60,24 @@ func (vc *StoragePool) RemoveStorageClass(class string) bool {
 }
 
 type StoragePoolExternal struct {
-	Name           string              `json:"name"`
-	StorageClasses []string            `json:"storageClasses"`
-	Attributes     map[string]sa.Offer `json:"storageAttributes"`
-	Volumes        []string            `json:"volumes"`
+	Name           string   `json:"name"`
+	StorageClasses []string `json:"storageClasses"`
+	//TODO: can't have an interface here for unmarshalling
+	Attributes map[string]sa.Offer `json:"storageAttributes"`
+	Volumes    []string            `json:"volumes"`
 }
 
-func (vc *StoragePool) ConstructExternal() *StoragePoolExternal {
+func (pool *StoragePool) ConstructExternal() *StoragePoolExternal {
 	external := &StoragePoolExternal{
-		Name:           vc.Name,
-		StorageClasses: vc.StorageClasses,
+		Name:           pool.Name,
+		StorageClasses: pool.StorageClasses,
 		Attributes:     make(map[string]sa.Offer),
-		Volumes:        make([]string, 0, len(vc.Volumes)),
+		Volumes:        make([]string, 0, len(pool.Volumes)),
 	}
-	for k, v := range vc.Attributes {
+	for k, v := range pool.Attributes {
 		external.Attributes[k] = v
 	}
-	for name, _ := range vc.Volumes {
+	for name, _ := range pool.Volumes {
 		external.Volumes = append(external.Volumes, name)
 	}
 	// We want to sort these so that the output remains consistent;

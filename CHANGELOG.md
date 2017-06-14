@@ -9,6 +9,8 @@
 container orchestrator version.
 - When running in a pod, the Trident REST interface is no longer accessible
 by default outside the pod.
+- Trident correctly handles updating backends that have volumes provisioned
+using storage classes that no longer exist.
 
 **Enhancements:**
 - Added support for storage.k8s.io/v1 storage classes introduced in Kubernetes
