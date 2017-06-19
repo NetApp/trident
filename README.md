@@ -484,7 +484,7 @@ Trident exposes a number of command line options.  These are as follows:
 * `-address <ip-or-host>`:  Optional; specifies the address on which Trident's REST
   server should listen.  Defaults to localhost.  When listening on localhost and
   running inside a Kubernetes pod, the REST interface will not be directly
-  accessible from outside the pod.  Use '-address ""' to make the REST interface
+  accessible from outside the pod.  Use `-address ""` to make the REST interface
   accessible from the pod IP address.
 * `-port <port-number>`:  Optional; specifies the port on which Trident's REST
   server should listen.  Defaults to 8000.

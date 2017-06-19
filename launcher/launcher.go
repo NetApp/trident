@@ -108,6 +108,7 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 					Command: []string{"/usr/local/bin/trident_orchestrator"},
 					Args: []string{
 						"-port", fmt.Sprintf("%d", tridentDefaultPort),
+						"-address", "",
 						"-no_persistence",
 					},
 					Ports: []v1.ContainerPort{
