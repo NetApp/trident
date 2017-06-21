@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
+	"github.com/netapp/trident/config"
 	k8sfrontend "github.com/netapp/trident/frontend/kubernetes"
 	tridentrest "github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
@@ -31,7 +32,7 @@ import (
 )
 
 const (
-	tridentContainerName    = "trident-main"
+	tridentContainerName    = config.ContainerTrident
 	tridentEphemeralPodName = "trident-ephemeral"
 	tridentDefaultPort      = 8000
 	tridentStorageClassName = "trident-basic"

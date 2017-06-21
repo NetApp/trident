@@ -48,6 +48,10 @@ const (
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240
+
+	/* Kubernetes deployment constants */
+	ContainerTrident = "trident-main"
+	ContainerEtcd    = "etcd"
 )
 
 var (

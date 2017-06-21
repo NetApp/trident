@@ -57,7 +57,7 @@ var RootCmd = &cobra.Command{
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Debug output")
 	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface")
-	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format.  One of json|yaml|name|wide|ps (default)")
+	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 }
 
@@ -183,7 +183,7 @@ func GetBaseURL() (string, error) {
 func TunnelCommand(commandArgs []string) {
 
 	// Build tunnel command for 'kubectl exec'
-	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", "trident-main", "--"}
+	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
 	cliCommand := []string{"tridentctl", "-s", Server}
@@ -216,7 +216,7 @@ func TunnelCommand(commandArgs []string) {
 func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 
 	// Build tunnel command for 'kubectl exec'
-	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", "trident-main", "--"}
+	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
 	cliCommand := []string{"tridentctl", "-s", Server}
