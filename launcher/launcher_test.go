@@ -89,7 +89,7 @@ func TestTridentClientVolume(t *testing.T) {
 
 func TestKubeSnapshotStateValid(t *testing.T) {
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	snapshotBefore := kubeClient.SnapshotState()
 	snapshotAfter := kubeClient.SnapshotState()
 	if !reflect.DeepEqual(snapshotBefore, snapshotAfter) {
@@ -100,7 +100,7 @@ func TestKubeSnapshotStateValid(t *testing.T) {
 func TestKubeSnapshotStateInvalid(t *testing.T) {
 	var err error
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	snapshotBefore := kubeClient.SnapshotState()
 
 	tridentDeployment := &v1beta1.Deployment{}
@@ -121,7 +121,7 @@ func TestExistingDeployment(t *testing.T) {
 	// Creating the parameters for launcher
 	tridentClientFailMatrix := map[string]bool{}
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -162,7 +162,7 @@ func TestExistingDeploymentFailure(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"GetDeployment": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -203,7 +203,7 @@ func TestExistingPVCFailure(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"GetPVC": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -246,7 +246,7 @@ func TestPrexistingBoundPVCFailedDeployment(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"CreateDeployment": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix)
+	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}

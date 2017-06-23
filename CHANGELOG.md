@@ -13,8 +13,8 @@ by default outside the pod.
 using storage classes that no longer exist.
 
 **Enhancements:**
-- Added support for storage.k8s.io/v1 storage classes introduced in Kubernetes
-v1.6.0.
+- Added support for storage.k8s.io/v1 storage classes and the default storage
+class introduced in Kubernetes v1.6.0.
 - Changed the installer script to support both Kubernetes and OpenShift
 deployments in a uniform manner and to leverage Role-Based Access Control
 (RBAC) authorization for better security.

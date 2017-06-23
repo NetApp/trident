@@ -5,6 +5,7 @@ package kubernetes
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
@@ -55,7 +56,6 @@ type KubernetesPlugin struct {
 	orchestrator             core.Orchestrator
 	kubeClient               kubernetes.Interface
 	eventRecorder            record.EventRecorder
-	pendingClaimMatchMap     map[string]*v1.PersistentVolume
 	claimController          cache.Controller
 	claimControllerStopChan  chan struct{}
 	claimSource              cache.ListerWatcher
@@ -65,7 +65,10 @@ type KubernetesPlugin struct {
 	classController          cache.Controller
 	classControllerStopChan  chan struct{}
 	classSource              cache.ListerWatcher
+	mutex                    *sync.Mutex
+	pendingClaimMatchMap     map[string]*v1.PersistentVolume
 	kubernetesVersion        *k8s_version.Info
+	defaultStorageClasses    map[string]bool
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*KubernetesPlugin, error) {
@@ -96,7 +99,9 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
-		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
+		mutex:                 &sync.Mutex{},
+		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
+		defaultStorageClasses: make(map[string]bool, 1),
 	}
 
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
@@ -134,7 +139,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 			Interface: kubeClient.Core().Events(""),
 		})
 	ret.eventRecorder = broadcaster.NewRecorder(api.Scheme,
-		v1.EventSource{Component: AnnProvisioner})
+		v1.EventSource{Component: AnnOrchestrator})
 
 	// Setting up a watch for PVCs
 	ret.claimSource = &cache.ListWatch{
@@ -178,7 +183,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		},
 	)
 
-	// Setting up a watch for StorageClasses
+	// Setting up a watch for storage classes
 	switch {
 	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
 		ret.classSource = &cache.ListWatch{
@@ -288,34 +293,91 @@ func (p *KubernetesPlugin) processClaim(
 		return
 	}
 	log.WithFields(log.Fields{
-		"PVC":             claim.Name,
-		"PVC_phase":       claim.Status.Phase,
-		"PVC_size":        size.String(),
-		"PVC_uid":         claim.UID,
-		"PVC_accessModes": claim.Spec.AccessModes,
-		"PVC_annotations": claim.Annotations,
-		"PVC_volume":      claim.Spec.VolumeName,
-		"PVC_eventType":   eventType,
+		"PVC":              claim.Name,
+		"PVC_phase":        claim.Status.Phase,
+		"PVC_size":         size.String(),
+		"PVC_uid":          claim.UID,
+		"PVC_storageClass": v1.GetPersistentVolumeClaimClass(claim),
+		"PVC_accessModes":  claim.Spec.AccessModes,
+		"PVC_annotations":  claim.Annotations,
+		"PVC_volume":       claim.Spec.VolumeName,
+		"PVC_eventType":    eventType,
 	}).Debug("Kubernetes frontend got notified of a PVC.")
 
-	// Filtering unrelated claims
+	// Filter unrelated claims
 	provisioner := getClaimProvisioner(claim)
-	if provisioner == AnnProvisioner {
-		// For k8s version >= 1.5
-	} else if provisioner == "" {
-		// For k8s version < 1.5
-		pvcStorageClass := v1.GetPersistentVolumeClaimClass(claim)
-		if pvcStorageClass == "" {
-			return
-		}
-		if p.orchestrator.GetStorageClass(pvcStorageClass) == nil {
-			return
-		}
-	} else {
+	if claim.Spec.StorageClassName != nil &&
+		*claim.Spec.StorageClassName == "" {
+		log.WithFields(log.Fields{
+			"PVC": claim.Name,
+		}).Info("Kubernetes frontend ignores this PVC as an empty string " +
+			"was specified for the storage class!")
 		return
 	}
+	kubeVersion, _ := ValidateKubeVersion(p.kubernetesVersion)
+	switch {
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.5.0")):
+		// Reject PVCs whose provisioner was not set to Trident.
+		// However, don't reject a PVC whose provisioner wasn't set
+		// just because no default storage class existed at the time
+		// of the PVC creation.
+		if provisioner != AnnOrchestrator &&
+			v1.GetPersistentVolumeClaimClass(claim) != "" {
+			log.WithFields(log.Fields{
+				"PVC":             claim.Name,
+				"PVC_provisioner": provisioner,
+			}).Debugf("Kubernetes frontend ignores this PVC as it's not "+
+				"tagged with %s as the storage provisioner!", AnnOrchestrator)
+			return
+		}
+		if kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")) &&
+			v1.GetPersistentVolumeClaimClass(claim) == "" &&
+			claim.Spec.StorageClassName == nil {
+			// Check if the default storage class should be used.
+			p.mutex.Lock()
+			if len(p.defaultStorageClasses) == 1 {
+				// Using the default storage class
+				var defaultStorageClassName string
+				for defaultStorageClassName, _ = range p.defaultStorageClasses {
+					claim.Spec.StorageClassName = &defaultStorageClassName
+					break
+				}
+				log.WithFields(log.Fields{
+					"PVC": claim.Name,
+					"storageClass_default": defaultStorageClassName,
+				}).Info("Kubernetes frontend will use the default storage " +
+					"class for this PVC.")
+			} else if len(p.defaultStorageClasses) > 1 {
+				log.WithFields(log.Fields{
+					"PVC": claim.Name,
+					"default_storageClasses": p.getDefaultStorageClasses(),
+				}).Warn("Kubernetes frontend ignores this PVC as more than " +
+					"one default storage class has been configured!")
+				p.mutex.Unlock()
+				return
+			} else {
+				log.WithFields(log.Fields{
+					"PVC": claim.Name,
+				}).Warn("Kubernetes frontend ignores this PVC as no storage class " +
+					"was specified and no default storage class was configured!")
+				p.mutex.Unlock()
+				return
+			}
+			p.mutex.Unlock()
+		}
+	}
+	// If storage class is still empty (after considering the default storage
+	// class), ignore the PVC as Kubernetes doesn't allow a storage class with
+	// empty string as the name.
+	if v1.GetPersistentVolumeClaimClass(claim) == "" {
+		log.WithFields(log.Fields{
+			"PVC": claim.Name,
+		}).Warn("Kubernetes frontend ignores this PVC as no storage class " +
+			"was specified!")
+		return
+	}
+	// As of Kubernetes 1.6, selector and storage class are mutally exclusive.
 	if claim.Spec.Selector != nil {
-		// For now selector and storage class are mutally exclusive.
 		message := "Kubernetes frontend ignores PVCs with label selectors!"
 		p.updateClaimWithEvent(claim, v1.EventTypeWarning,
 			"IgnoredClaim", message)
@@ -325,6 +387,7 @@ func (p *KubernetesPlugin) processClaim(
 		return
 	}
 
+	// It's a valid PVC.
 	switch eventType {
 	case "delete":
 		p.processDeletedClaim(claim)
@@ -367,11 +430,15 @@ func (p *KubernetesPlugin) processBoundClaim(claim *v1.PersistentVolumeClaim) {
 	defer func() {
 		// Remove the pending claim, if present.
 		if deleteClaim {
+			p.mutex.Lock()
 			delete(p.pendingClaimMatchMap, orchestratorClaimName)
+			p.mutex.Unlock()
 		}
 	}()
 
+	p.mutex.Lock()
 	pv, ok := p.pendingClaimMatchMap[orchestratorClaimName]
+	p.mutex.Unlock()
 	if !ok {
 		// Ignore the claim if we have no record of it.
 		return
@@ -418,7 +485,9 @@ func (p *KubernetesPlugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 
 	defer func() {
 		// Remove the pending claim, if present.
+		p.mutex.Lock()
 		delete(p.pendingClaimMatchMap, volName)
+		p.mutex.Unlock()
 	}()
 
 	// A PVC is in the "Lost" phase when the corresponding PV is deleted.
@@ -460,12 +529,16 @@ func (p *KubernetesPlugin) processDeletedClaim(claim *v1.PersistentVolumeClaim) 
 	// the corresponding PV to end up in the "Released" phase, which gets
 	// handled by processUpdatedVolume.
 	// Remove the pending claim, if present.
+	p.mutex.Lock()
 	delete(p.pendingClaimMatchMap, getUniqueClaimName(claim))
+	p.mutex.Unlock()
 }
 
 // processPendingClaim processes PVCs in the pending phase.
 func (p *KubernetesPlugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 	orchestratorClaimName := getUniqueClaimName(claim)
+	p.mutex.Lock()
+
 	// Check whether we have already provisioned a PV for this claim
 	if pv, ok := p.pendingClaimMatchMap[orchestratorClaimName]; ok {
 		// If there's an entry for this claim in the pending claim match
@@ -477,6 +550,7 @@ func (p *KubernetesPlugin) processPendingClaim(claim *v1.PersistentVolumeClaim) 
 		// specs are immutable.  This remains in case Kubernetes allows PVC
 		// modification again.
 		if canPVMatchWithPVC(pv, claim) {
+			p.mutex.Unlock()
 			return
 		}
 		// Otherwise, we need to delete the old volume and allocate a new one
@@ -487,10 +561,12 @@ func (p *KubernetesPlugin) processPendingClaim(claim *v1.PersistentVolumeClaim) 
 			}).Error("Kubernetes frontend failed in processing "+
 				"an updated claim (will try again upon resync): ",
 				err)
+			p.mutex.Unlock()
 			return
 		}
 		delete(p.pendingClaimMatchMap, orchestratorClaimName)
 	}
+	p.mutex.Unlock()
 
 	// We need to provision a new volume for this claim.
 	pv, err := p.createVolumeAndPV(orchestratorClaimName, claim)
@@ -504,7 +580,9 @@ func (p *KubernetesPlugin) processPendingClaim(claim *v1.PersistentVolumeClaim) 
 		}
 		return
 	}
+	p.mutex.Lock()
 	p.pendingClaimMatchMap[orchestratorClaimName] = pv
+	p.mutex.Unlock()
 	message := "Kubernetes frontend provisioned a volume and a PV for the PVC."
 	p.updateClaimWithEvent(claim, v1.EventTypeNormal,
 		"ProvisioningSuccess", message)
@@ -553,7 +631,6 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			annotations = make(map[string]string)
 		}
 		annotations[AnnClass] = v1.GetPersistentVolumeClaimClass(claim)
-		// TODO: correct handling of the default storage class
 	}
 
 	vol, err = p.orchestrator.AddVolume(
@@ -580,7 +657,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			Name: uniqueName,
 			Annotations: map[string]string{
 				AnnClass:                  v1.GetPersistentVolumeClaimClass(claim),
-				AnnDynamicallyProvisioned: AnnProvisioner,
+				AnnDynamicallyProvisioned: AnnOrchestrator,
 			},
 		},
 		Spec: v1.PersistentVolumeSpec{
@@ -590,6 +667,11 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			// Default policy is "Delete".
 			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
 		},
+	}
+	kubeVersion, _ := ValidateKubeVersion(p.kubernetesVersion)
+	switch {
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
+		pv.Spec.StorageClassName = v1.GetPersistentVolumeClaimClass(claim)
 	}
 	if getClaimReclaimPolicy(claim) ==
 		string(v1.PersistentVolumeReclaimRetain) {
@@ -709,7 +791,7 @@ func (p *KubernetesPlugin) processVolume(
 
 	// Validating the PV (making sure it's provisioned by Trident)
 	if volume.ObjectMeta.Annotations[AnnDynamicallyProvisioned] !=
-		AnnProvisioner {
+		AnnOrchestrator {
 		return
 	}
 
@@ -868,7 +950,7 @@ func (p *KubernetesPlugin) addClass(obj interface{}) {
 	classV1, ok := obj.(*k8s_storage_v1.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
-			"or storage.k8s.io/v1 StorageClass; handler got %v", obj)
+			"or storage.k8s.io/v1 storage class; handler got %v", obj)
 	}
 	p.processClass(classV1, "add")
 }
@@ -882,7 +964,7 @@ func (p *KubernetesPlugin) updateClass(oldObj, newObj interface{}) {
 	classV1, ok := newObj.(*k8s_storage_v1.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
-			"or storage.k8s.io/v1 StorageClass; handler got %v", newObj)
+			"or storage.k8s.io/v1 storage class; handler got %v", newObj)
 	}
 	p.processClass(classV1, "update")
 }
@@ -896,7 +978,7 @@ func (p *KubernetesPlugin) deleteClass(obj interface{}) {
 	classV1, ok := obj.(*k8s_storage_v1.StorageClass)
 	if !ok {
 		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
-			"or storage.k8s.io/v1 StorageClass; handler got %v", obj)
+			"or storage.k8s.io/v1 storage class; handler got %v", obj)
 	}
 	p.processClass(classV1, "delete")
 }
@@ -906,12 +988,12 @@ func (p *KubernetesPlugin) processClass(
 	eventType string,
 ) {
 	log.WithFields(log.Fields{
-		"StorageClass":             class.Name,
-		"StorageClass_provisioner": class.Provisioner,
-		"StorageClass_parameters":  class.Parameters,
-		"StorageClass_eventType":   eventType,
-	}).Debug("Kubernetes frontend got notified of a StorageClass.")
-	if class.Provisioner != AnnProvisioner {
+		"storageClass":             class.Name,
+		"storageClass_provisioner": class.Provisioner,
+		"storageClass_parameters":  class.Parameters,
+		"storageClass_eventType":   eventType,
+	}).Debug("Kubernetes frontend got notified of a storage class.")
+	if class.Provisioner != AnnOrchestrator {
 		return
 	}
 	switch eventType {
@@ -920,12 +1002,22 @@ func (p *KubernetesPlugin) processClass(
 	case "delete":
 		p.processDeletedClass(class)
 	case "update":
+		// Make sure Trident has a record of this storage class.
+		storageClass := p.orchestrator.GetStorageClass(class.Name)
+		if storageClass == nil {
+			log.WithFields(log.Fields{
+				"storageClass": class.Name,
+			}).Warn("Kubernetes frontend has no record of the updated " +
+				"storage class; instead it will try to create it.")
+			p.processAddedClass(class)
+			return
+		}
 		p.processUpdatedClass(class)
 	default:
 		log.WithFields(log.Fields{
-			"StorageClass": class.Name,
+			"storageClass": class.Name,
 			"event":        eventType,
-		}).Warn("Kubernetes frontend didn't recognize the notification event corresponding to the StorageClass!")
+		}).Warn("Kubernetes frontend didn't recognize the notification event corresponding to the storage class!")
 		return
 	}
 }
@@ -934,6 +1026,7 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 	scConfig := new(storage_class.Config)
 	scConfig.Name = class.Name
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
+
 	// Populate storage class config attributes and backend storage pools
 	for k, v := range class.Parameters {
 		if k == storage_attribute.BackendStoragePools {
@@ -941,9 +1034,9 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 			backendVCs, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
 				log.WithFields(log.Fields{
-					"StorageClass":             class.Name,
-					"StorageClass_provisioner": class.Provisioner,
-					"StorageClass_parameters":  class.Parameters,
+					"storageClass":             class.Name,
+					"storageClass_provisioner": class.Provisioner,
+					"storageClass_parameters":  class.Parameters,
 				}).Error("Kubernetes frontend couldn't process %s parameter: ",
 					storage_attribute.BackendStoragePools, err)
 			}
@@ -954,50 +1047,123 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 		req, err := storage_attribute.CreateAttributeRequestFromTypedValue(k, v)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"StorageClass":             class.Name,
-				"StorageClass_provisioner": class.Provisioner,
-				"StorageClass_parameters":  class.Parameters,
-			}).Error("Kubernetes frontend couldn't process the encoded StorageClass attribute: ", err)
+				"storageClass":             class.Name,
+				"storageClass_provisioner": class.Provisioner,
+				"storageClass_parameters":  class.Parameters,
+			}).Error("Kubernetes frontend couldn't process the encoded storage class attribute: ", err)
 			return
 		}
 		scConfig.Attributes[k] = req
 	}
 
-	// Add the storge class
+	// Add the storage class
 	sc, err := p.orchestrator.AddStorageClass(scConfig)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"StorageClass":             class.Name,
-			"StorageClass_provisioner": class.Provisioner,
-			"StorageClass_parameters":  class.Parameters,
-		}).Error("Kubernetes frontend couldn't add the StorageClass: ", err)
+			"storageClass":             class.Name,
+			"storageClass_provisioner": class.Provisioner,
+			"storageClass_parameters":  class.Parameters,
+		}).Error("Kubernetes frontend couldn't add the storage class: ", err)
 		return
 	}
 	if sc != nil {
+		// Check if it's a default storage class
+		if getAnnotation(class.Annotations, AnnDefaultStorageClass) == "true" {
+			p.mutex.Lock()
+			p.defaultStorageClasses[class.Name] = true
+			if len(p.defaultStorageClasses) > 1 {
+				log.WithFields(log.Fields{
+					"storageClass":           class.Name,
+					"default_storageClasses": p.getDefaultStorageClasses(),
+				}).Warn("Kubernetes frontend already manages more than one " +
+					"default storage class!")
+			}
+			p.mutex.Unlock()
+		}
 		log.WithFields(log.Fields{
-			"StorageClass":             class.Name,
-			"StorageClass_provisioner": class.Provisioner,
-			"StorageClass_parameters":  class.Parameters,
-		}).Info("Kubernetes frontend successfully added the StorageClass.")
+			"storageClass":             class.Name,
+			"storageClass_provisioner": class.Provisioner,
+			"storageClass_parameters":  class.Parameters,
+			"default_storageClasses":   p.getDefaultStorageClasses(),
+		}).Info("Kubernetes frontend successfully added the storage class.")
 	}
 	return
 }
 
 func (p *KubernetesPlugin) processDeletedClass(class *k8s_storage_v1.StorageClass) {
+	// Check if we're deleting the default storage class.
+	if getAnnotation(class.Annotations, AnnDefaultStorageClass) == "true" {
+		p.mutex.Lock()
+		if p.defaultStorageClasses[class.Name] {
+			delete(p.defaultStorageClasses, class.Name)
+			log.WithFields(log.Fields{
+				"storageClass": class.Name,
+			}).Info("Kubernetes frontend will be deleting a default " +
+				"storage class.")
+		}
+		p.mutex.Unlock()
+	}
+
+	// Delete the storage class.
 	deleted, err := p.orchestrator.DeleteStorageClass(class.Name)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"StorageClass": class.Name,
-		}).Error("Kubernetes frontend couldn't delete the StorageClass: ", err)
+			"storageClass": class.Name,
+		}).Error("Kubernetes frontend couldn't delete the storage class: ", err)
 		return
 	}
 	if deleted {
 		log.WithFields(log.Fields{
-			"StorageClass": class.Name,
-		}).Info("Kubernetes frontend successfully deleted the StorageClass.")
+			"storageClass": class.Name,
+		}).Info("Kubernetes frontend successfully deleted the storage class.")
 	}
 	return
 }
 
 func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1.StorageClass) {
+	// Here we only check for updates associated with the default storage class.
+	p.mutex.Lock()
+	defer func() {
+		p.mutex.Unlock()
+	}()
+
+	if p.defaultStorageClasses[class.Name] {
+		// It's an update to a default storage class.
+		// Check to see if it's still a default storage class.
+		if getAnnotation(class.Annotations, AnnDefaultStorageClass) != "true" {
+			delete(p.defaultStorageClasses, class.Name)
+			return
+		}
+		log.WithFields(log.Fields{
+			"storageClass":           class.Name,
+			"default_storageClasses": p.getDefaultStorageClasses(),
+		}).Debug("Kubernetes frontend only supports updating the " +
+			"default storage class tag.")
+		return
+	} else {
+		// It's an update to a non-default storage class.
+		if getAnnotation(class.Annotations, AnnDefaultStorageClass) == "true" {
+			// The update defines a new default storage class.
+			p.defaultStorageClasses[class.Name] = true
+			log.WithFields(log.Fields{
+				"storageClass":           class.Name,
+				"default_storageClasses": p.getDefaultStorageClasses(),
+			}).Warn("Kubernetes frontend added a new default storage class.")
+			return
+		}
+		log.WithFields(log.Fields{
+			"storageClass":           class.Name,
+			"default_storageClasses": p.getDefaultStorageClasses(),
+		}).Debug("Kubernetes frontend only supports updating the " +
+			"default storage class tag.")
+		return
+	}
+}
+
+func (p *KubernetesPlugin) getDefaultStorageClasses() string {
+	classes := make([]string, 0)
+	for class, _ := range p.defaultStorageClasses {
+		classes = append(classes, class)
+	}
+	return strings.Join(classes, ",")
 }

@@ -608,11 +608,12 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 		return
 	}()
 
-	// randomize the backend list for better distribution of load across all backends
+	// Randomize the storage pool list for better distribution of load across
+	// all pools.
 	rand.Seed(time.Now().UnixNano())
 	log.WithFields(log.Fields{
 		"volume": volumeConfig.Name,
-	}).Debugf("Looking through %d backends", len(pools))
+	}).Debugf("Looking through %d storage pools.", len(pools))
 	errorMessages := make([]string, 0)
 	for _, num := range rand.Perm(len(pools)) {
 		backend = pools[num].Backend
@@ -898,9 +899,9 @@ func (o *tridentOrchestrator) DeleteStorageClass(scName string) (bool, error) {
 		}
 		log.WithFields(log.Fields{
 			"storageClass": scName,
-		}).Warnf("Storage class being removed still has volumes in use. "+
-			"These will continue to refer to the storage class.\n\tVolumes:  "+
-			"%s\n", strings.Join(volNames, ", "))
+			"volumes":      strings.Join(volNames, ","),
+		}).Warn("The storage class being removed still has volumes in use. " +
+			"These volumes will continue to refer to the storage class.")
 	}
 	// Note that we don't need a tranasaction here.  If this crashes prior
 	// to successful deletion, the storage class will be reloaded upon reboot

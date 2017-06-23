@@ -15,13 +15,19 @@ import (
 )
 
 type FakeKubeClient struct {
+	version     *version.Info
 	Deployments map[string]*v1beta1.Deployment
 	PVCs        map[string]*v1.PersistentVolumeClaim
 	failMatrix  map[string]bool
 }
 
-func NewFakeKubeClient(failMatrix map[string]bool) *FakeKubeClient {
+func NewFakeKubeClient(failMatrix map[string]bool, versionMajor, versionMinor string) *FakeKubeClient {
 	return &FakeKubeClient{
+		version: &version.Info{
+			Major:      versionMajor,
+			Minor:      versionMinor,
+			GitVersion: "v" + versionMajor + "." + versionMinor + ".0",
+		},
 		Deployments: make(map[string]*v1beta1.Deployment, 0),
 		PVCs:        make(map[string]*v1.PersistentVolumeClaim, 0),
 		failMatrix:  failMatrix,
@@ -50,7 +56,7 @@ func (k *FakeKubeClient) SnapshotState() *FakeKubeClientState {
 }
 
 func (k *FakeKubeClient) Version() *version.Info {
-	return nil
+	return k.version
 }
 
 func (k *FakeKubeClient) GetDeployment(deploymentName string,

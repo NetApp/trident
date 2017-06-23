@@ -41,7 +41,7 @@ exposing users to complexities of various backends.
 	  * [Storage Class Configurations](#storage-class-configurations)
 	      * [Storage Attributes](#storage-attributes)
 	      * [Matching Storage Attributes](#matching-storage-attributes)
-  * [CLI](#cli)
+  * [tridentctl CLI](#tridentctl-cli)
   * [REST API](#rest-api)
       * [Backend Deletion](#backend-deletion)
   * [Kubernetes API](#kubernetes-api)
@@ -50,6 +50,7 @@ exposing users to complexities of various backends.
 * [Provisioning Workflow](#provisioning-workflow)
 * [Troubleshooting](#troubleshooting)
 * [Caveats](#caveats)
+* [Questions](#questions)
 
 ## Getting Started
 
@@ -780,14 +781,15 @@ volume.  However, a SolidFire storage pool will use its offered IOPS
 minimum and maximum to set QoS values, rather than the requested value.  In
 this case, the requested value is used only to select the storage pool.
 
-### CLI
+### tridentctl CLI
 
-Trident includes a command-line utility, tridentctl, that provides simple
-access to Trident, even if Trident is running inside a pod.  Kubernetes users
-with sufficient privileges to manage the namespace that contains the Trident
-pod may use tridentctl.  The tridentctl utility can add storage backends, and
-it can list and remove backends, storage classes, and volumes.  You can get
-more information by running `tridentctl --help`.
+Trident installer bundle includes a command-line utility, `tridentctl`, that
+provides simple access to Trident, even if Trident is running inside a pod.
+Kubernetes users with sufficient privileges to manage the namespace that
+contains the Trident pod may use tridentctl.  The `tridentctl` utility can
+add storage backends, and it can list and remove backends, storage classes,
+and volumes.  You can get more information by running `tridentctl --help`.
+As of v17.07.0, `tridentctl` is the preferred way to interact with Trident.
 
 ### REST API
 
@@ -894,8 +896,8 @@ and it manages volumes based on user interactions with
 
 Trident creates matching storage classes for Kubernetes `StorageClass` objects
 that specify `netapp.io/trident` in their provisioner field.  The storage
-class's name will match that of the `StorageClass`, and the parameters will
-be parsed as follows, based on their key:
+class's name will match that of the Kubernetes `StorageClass` object, and the
+parameters will be parsed as follows, based on their key:
 
 * `requiredStorage`:  This corresponds to the requiredStorage parameter for
   storage classes and consists of a semi-colon separated list.  Each entry is
@@ -911,11 +913,39 @@ be parsed as follows, based on their key:
   `hdd`.  Requests can be any of the storage attributes described in the
   [storage attributes](#storage-attributes) section.
 
-Deleting a Kubernetes `StorageClass` will cause the corresponding Trident
-storage class to be deleted as well.
+Trident installer bundle provides an example storage class definition for use
+with Trident in `sample-input/storage-class-bronze.yaml`. Deleting a
+Kubernetes storage class will cause the corresponding Trident storage class
+to be deleted as well.
 
-We provide an example `StorageClass` definition for use with Trident in
-`sample-input/storage-class-bronze.yaml`
+Trident also supports the default storage class functionality introduced in
+Kubernetes v1.6. With such a capability, the default storage class is used to
+provision a PV for a PVC that does not set the `storageClassName` field.
+
+* An administrator can define a default storage class by setting the
+  annotation `storageclass.kubernetes.io/is-default-class` to `true` in the
+  storage class definition. According to the specification, any other value or
+  absence of the annotation is interpreted as `false`.
+* It is possible to configure an existing storage class to be the default
+  storage class by using the following command:
+  
+  `kubectl patch storageclass <your-class-name> -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'`
+
+  Similarly, an administrator can unset the default storage class by using the
+  following command:
+
+  `kubectl patch storageclass <your-class-name> -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'`	
+
+* Kubernetes allows creation of more than *one* default storage class, but for
+  such a scenario it doesn't allow creation of PVCs that don't specify a
+  storage class. Trident exhibits a similar behavior as it accepts multiple
+  default storage classes, but it doesn't allow provisioning storage for PVCs
+  that lack a storage class if multiple default storage classes are configured.
+
+Trident installer bundle includes two sample input files, namely
+`sample-input/storage-class-bronze-default.yaml` and
+`sample-input/pvc-default-class.yaml` that illustrate the use of the default
+storage class.
 
 #### Volumes
 
@@ -1063,3 +1093,8 @@ outstanding issues to be aware of when using it:
   succeeds as Trident treats volume creation as an idempotent operation.  Thus,
   if the storagePrefixes do not differ, there is a very slim chance to have
   name collisions for volumes created on the same backend.
+
+## Questions
+
+If you have questions, please reach out to us on
+[Slack](https://netapppub.slack.com/messages/C1E3QH84C).

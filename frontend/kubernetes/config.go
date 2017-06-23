@@ -16,8 +16,10 @@ const (
 	AnnClass                  = "volume.beta.kubernetes.io/storage-class"
 	AnnDynamicallyProvisioned = "pv.kubernetes.io/provisioned-by"
 	AnnStorageProvisioner     = "volume.beta.kubernetes.io/storage-provisioner"
-	// Provisioner-defined annotations
-	AnnProvisioner     = "netapp.io/" + config.OrchestratorName
+	AnnDefaultStorageClass    = "storageclass.kubernetes.io/is-default-class"
+
+	// Orchestrator-defined annotations
+	AnnOrchestrator    = "netapp.io/" + config.OrchestratorName
 	AnnPrefix          = config.OrchestratorName + ".netapp.io"
 	AnnReclaimPolicy   = AnnPrefix + "/reclaimPolicy"
 	AnnProtocol        = AnnPrefix + "/protocol"
