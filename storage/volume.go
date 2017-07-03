@@ -22,6 +22,8 @@ type VolumeConfig struct {
 	StorageClass    string            `json:"storageClass,omitempty"`
 	AccessMode      config.AccessMode `json:"accessMode,omitempty"`
 	AccessInfo      VolumeAccessInfo  `json:"accessInformation"`
+	BlockSize       string            `json:"blockSize"`
+	FileSystem      string            `json:"fileSystem"`
 }
 
 type VolumeAccessInfo struct {

@@ -707,6 +707,9 @@ Volume configurations are unique to Trident and are unused in the nDVP.
 | exportPolicy | string | No | For ONTAP backends, specifies the export policy to use.  Ignored for SolidFire and E-Series. |
 | snapshotDirectory | bool | No | For ONTAP backends, specifies whether the snapshot directory should be visible.  Ignored for SolidFire and E-Series. |
 | unixPermissions | string | No | For ONTAP backends, initial NFS permissions to set on the created volume.  Ignored for SolidFire and E-Series. |
+| blockSize | string | No | For SolidFire backends, specifies the block/sector size for the created volume. Possible values are 512 and 4096. If not specified, 512 will be used to enable 512B sector emulation. Ignored for ONTAP and E-Series. |
+| fileSystem | string | No | For ONTAP SAN, SolidFire, and E-Series backends, specifies the file system for the created volume. If not specified, `ext4` will be set as the file system. Ignored for ONTAP NAS. |
+
 
 As mentioned, Trident generates internalName when creating the volume.  This
 consists of two steps.  First, it prepends the storage prefix--either the
@@ -972,13 +975,16 @@ corresponding PV, Trident follows the following rules:
 * Other volume configuration parameters can be specified using the following
   PVC annotations:
 
-| Annotation | Volume Parameter |
-| ---------- | ---------------- |
-| `trident.netapp.io/protocol` |  `protocol` |
-| `trident.netapp.io/exportPolicy` |  `exportPolicy`|
-| `trident.netapp.io/snapshotPolicy` |  `snapshotPolicy`|
-| `trident.netapp.io/snapshotDirectory` |  `snapshotDirectory`|
-| `trident.netapp.io/unixPermissions` |  `unixPermissions`|
+| Annotation | Volume Parameter | Supported Drivers |
+| ---------- | ---------------- | ----------------- |
+| `trident.netapp.io/protocol` |  `protocol` | `ontap-nas`, `ontap-san`, `solidfire-san` |
+| `trident.netapp.io/exportPolicy` |  `exportPolicy`| `ontap-nas`, `ontap-san` |
+| `trident.netapp.io/snapshotPolicy` |  `snapshotPolicy`| `ontap-nas`, `ontap-san` |
+| `trident.netapp.io/snapshotDirectory` |  `snapshotDirectory`| `ontap-nas` |
+| `trident.netapp.io/unixPermissions` |  `unixPermissions`| `ontap-nas` |
+| `trident.netapp.io/blockSize` |  `blockSize`| `solidfire-san` |
+| `trident.netapp.io/fileSystem` |  `fileSystem` | `ontap-san`, `solidfire-san`, `eseries-iscsi` |
+| `trident.netapp.io/reclaimPolicy` | N/A | N/A |
 
 The reclaim policy for the created PV can be determined by setting the
 annotation `trident.netapp.io/reclaimPolicy` in the PVC to either `Delete` or

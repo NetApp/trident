@@ -77,6 +77,9 @@ func getVolumeConfig(
 	} else {
 		accessMode = config.AccessMode(accessModes[0])
 	}
+	if getAnnotation(annotations, AnnFileSystem) == "" {
+		annotations[AnnFileSystem] = "ext4"
+	}
 	return &storage.VolumeConfig{
 		Name:            name,
 		Size:            fmt.Sprintf("%d", size.Value()),
@@ -86,6 +89,8 @@ func getVolumeConfig(
 		SnapshotDir:     getAnnotation(annotations, AnnSnapshotDir),
 		UnixPermissions: getAnnotation(annotations, AnnUnixPermissions),
 		StorageClass:    getAnnotation(annotations, AnnClass),
+		BlockSize:       getAnnotation(annotations, AnnBlockSize),
+		FileSystem:      getAnnotation(annotations, AnnFileSystem),
 		AccessMode:      accessMode,
 	}
 }
@@ -103,6 +108,6 @@ func CreateISCSIVolumeSource(volConfig *storage.VolumeConfig) *v1.ISCSIVolumeSou
 		IQN:            volConfig.AccessInfo.IscsiTargetIQN,
 		Lun:            volConfig.AccessInfo.IscsiLunNumber,
 		ISCSIInterface: volConfig.AccessInfo.IscsiInterface,
-		FSType:         "ext4",
+		FSType:         volConfig.FileSystem,
 	}
 }

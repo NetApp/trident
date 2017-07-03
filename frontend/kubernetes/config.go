@@ -30,6 +30,8 @@ const (
 	AnnVendor          = AnnPrefix + "/vendor"
 	AnnBackendID       = AnnPrefix + "/backendID"
 	AnnExportPolicy    = AnnPrefix + "/exportPolicy"
+	AnnBlockSize       = AnnPrefix + "/blockSize"
+	AnnFileSystem      = AnnPrefix + "/fileSystem"
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.4.0"

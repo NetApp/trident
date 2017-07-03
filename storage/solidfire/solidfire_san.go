@@ -133,7 +133,9 @@ func (d *SolidfireSANStorageDriver) GetVolumeOpts(
 ) (map[string]string, error) {
 	opts := make(map[string]string)
 	opts["type"] = pool.Name
-
+	if volConfig.BlockSize != "" {
+		opts["blocksize"] = volConfig.BlockSize
+	}
 	return opts, nil
 }
 
