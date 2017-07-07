@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: solidfire-bronze
+provisioner: netapp.io/trident
+parameters:
+  IOPS: "1500"
+

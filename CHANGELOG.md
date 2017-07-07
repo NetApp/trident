@@ -13,7 +13,7 @@ by default outside the pod.
 using storage classes that no longer exist.
 
 **Enhancements:**
-- Added support for storage.k8s.io/v1 storage classes and the default storage
+- Added support for `storage.k8s.io/v1` storage classes and the default storage
 class introduced in Kubernetes v1.6.0.
 - Changed the installer script to support both Kubernetes and OpenShift
 deployments in a uniform manner and to leverage Role-Based Access Control
@@ -22,6 +22,9 @@ deployments in a uniform manner and to leverage Role-Based Access Control
 - Added tridentctl CLI tool for managing Trident.
 - SolidFire backend configuration file accepts up to four Volume Access Group IDs.
 - Improved efficiency of ONTAP LUN ID selection.
+- Added PVC annotation `trident.netapp.io/blockSize` to specify block/sector size for SolidFire backends.
+- Added PVC annotation `trident.netapp.io/fileSystem` to specify the file system type for iSCSI volumes.
+
 
 ## v17.04.0
 
