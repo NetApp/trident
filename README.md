@@ -48,7 +48,9 @@ exposing users to complexities of various backends.
       * [Storage Classes](#storage-classes)
 	  * [Volumes](#volumes)
 * [Provisioning Workflow](#provisioning-workflow)
-* [Troubleshooting](#troubleshooting)
+* [Support](#support)
+  * [Troubleshooting](#troubleshooting)
+  * [Getting Help](#getting-help)
 * [Caveats](#caveats)
 * [Questions](#questions)
 
@@ -1042,7 +1044,9 @@ succeeds on one, it returns successfully, logging any failures encountered in
 the process.  Trident returns a failure if and only if it fails to provision on
 all of the storage pools available for the requested storage class and protocol.
 
-## Troubleshooting
+## Support
+
+### Troubleshooting
 
 * You can enable the debug mode for Trident and Trident launcher by passing the
   `-d` flag to the installer script: `./install_trident.sh -d -n trident`.
@@ -1063,6 +1067,12 @@ all of the storage pools available for the requested storage class and protocol.
   Options](#command-line-options).
 * ONTAP backends will ignore anything specified in the aggregate parameter of
   the configuration.
+
+### Getting Help
+
+Trident is a supported NetApp product.  See the [find the support you need](http://mysupport.netapp.com/info/web/ECMLP2619434.html) landing page on the Support site for options available to you.  To open a support case, use the serial number of the backend storage system and select containers and Trident as the category you want help in.
+
+There is also a vibrant discussion community of container users and engineers on the #containers channel of [Slack]( http://netapp.io/slack). This can be a great place to get answers and discuss with like-minded peers; highly recommended!
 
 ## Caveats
 
