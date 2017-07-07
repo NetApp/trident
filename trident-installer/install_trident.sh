@@ -12,6 +12,7 @@
 usage() {
 	printf "\nUsage:\n"
 	printf " %-20s%s\n" "-n <namespace>" "Specifies the namespace for the Trident deployment; defaults to the current namespace."
+	printf " %-20s%s\n" "-d" "Enables the debug mode for Trident and Trident launcher."
 	printf " %-20s%s\n" "-i" "Enables the insecure mode to disable RBAC configuration for Trident and Trident launcher."
 	printf " %-20s%s\n" "-h" "Prints this usage guide."
 	printf "\nExample:\n"
@@ -43,7 +44,7 @@ get_environment_version() {
 }
 
 # Process arguments
-TMP=`getopt -o n:i,h -- "$@"`
+TMP=`getopt -o n:d,i,h -- "$@"`
 if [ $? -ne 0 ]; then
 	die
 fi
@@ -53,6 +54,9 @@ while true ; do
 		-n)
 			NAMESPACE=$2
 			shift 2 ;;
+		-d)
+			DEBUG="true"
+			shift ;;
 		-i)
 			INSECURE="true"
 			shift ;;
@@ -151,6 +155,19 @@ if [ -z "$INSECURE" ]; then
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
+fi
+
+# Enable or disable the debug mode
+if [ -z "$DEBUG" ]; then
+	# Disable the debug mode for Trident launcher and trident-ephemeral pods
+	sed -r -i 's/([[:space:]]+)- "-debug"/\1#- "-debug"/g' $DIR/launcher-pod.yaml
+	# Disable the debug mode for the Trident deployment
+	sed -r -i 's/([[:space:]]+)- "-debug"/\1#- "-debug"/g' $DIR/setup/trident-deployment.yaml
+else
+	# Enable the debug mode for Trident launcher and trident-ephemeral pods
+	sed -r -i 's/([[:space:]]+)#- "-debug"/\1- "-debug"/g' $DIR/launcher-pod.yaml
+	# Enable the debug mode for the Trident deployment
+	sed -r -i 's/([[:space:]]+)#- "-debug"/\1- "-debug"/g' $DIR/setup/trident-deployment.yaml
 fi
 
 # Create configmap

@@ -375,6 +375,7 @@ $ ./install_trident.sh -h
 
 Usage:
  -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
+ -d                  Enables the debug mode for Trident and Trident launcher.
  -i                  Enables the insecure mode to disable RBAC configuration for Trident and Trident launcher.
  -h                  Prints this usage guide.
 
@@ -1043,6 +1044,10 @@ all of the storage pools available for the requested storage class and protocol.
 
 ## Troubleshooting
 
+* You can enable the debug mode for Trident and Trident launcher by passing the
+  `-d` flag to the installer script: `./install_trident.sh -d -n trident`.
+* The [Uninstall Script](#uninstall-script) can help with cleaning up the state
+  after a failed run.
 * If Trident launcher fails during install, you should inspect the logs via
 	`kubectl logs trident-launcher`. The log may prompt you to inspect the
 	logs for the trident-ephemeral pod or take other corrective measures.
@@ -1050,15 +1055,14 @@ all of the storage pools available for the requested storage class and protocol.
 	Trident pod. Trident is operational once you see `"trident bootstrapped successfully."`
 	In the absence of any errors in the log, it would be helpful to
 	inspect the logs for the etcd container: `kubectl logs <trident-pod-name> -c etcd`.
-* ONTAP backends will ignore anything specified in the aggregate parameter of
-  the configuration.
 * If service accounts are not available, `kubectl logs trident -c trident-main`
   will report an error that
   `/var/run/secrets/kubernetes.io/serviceaccount/token` does not exist.  In
   this case, you will either need to enable service accounts or connect to the
   API server using the insecure address and port, as described in [Command-line
   Options](#command-line-options).
-* The [Uninstall Script](#uninstall-script) can help with cleaning up the state after a failure.
+* ONTAP backends will ignore anything specified in the aggregate parameter of
+  the configuration.
 
 ## Caveats
 
