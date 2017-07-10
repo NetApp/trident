@@ -8,9 +8,10 @@
 - Trident and Trident launcher no longer fail if they cannot validate the
 container orchestrator version.
 - When running in a pod, the Trident REST interface is no longer accessible
-by default outside the pod.
+by default from outside the pod.
 - Trident correctly handles updating backends that have volumes provisioned
-using storage classes that no longer exist.
+using storage classes that no longer exist (Issue #29).
+- Installer script correctly creates a new namespace (Issue #39).
 
 **Enhancements:**
 - Added support for `storage.k8s.io/v1` storage classes and the default storage
@@ -20,10 +21,13 @@ deployments in a uniform manner and to leverage Role-Based Access Control
 (RBAC) authorization for better security.
 - Added scripts for uninstalling and updating Trident.
 - Added tridentctl CLI tool for managing Trident.
-- SolidFire backend configuration file accepts up to four Volume Access Group IDs.
+- SolidFire backend configuration file accepts up to four Volume Access Group
+IDs (Issue #24).
 - Improved efficiency of ONTAP LUN ID selection.
-- Added PVC annotation `trident.netapp.io/blockSize` to specify block/sector size for SolidFire backends.
-- Added PVC annotation `trident.netapp.io/fileSystem` to specify the file system type for iSCSI volumes.
+- Added PVC annotation `trident.netapp.io/blockSize` to specify block/sector
+size for SolidFire backends (Issues #33 and #37).
+- Added PVC annotation `trident.netapp.io/fileSystem` to specify the file
+system type for iSCSI volumes (Issue #37).
 
 
 ## v17.04.0

@@ -104,6 +104,10 @@ fi
 # Check if the namespace exists already
 TMP=$($CMD get namespace $NAMESPACE 2>&1)
 if [ "$?" -ne "0" ]; then
+	sed -i -r "s/name: [a-z0-9]([-a-z0-9]*[a-z0-9])?/name: $NAMESPACE/g" $DIR/trident-namespace.yaml
+	if [ $? -ne 0 ]; then
+		exit 1;
+	fi
 	TMP=$($CMD create -f $DIR/trident-namespace.yaml 2>&1)
 	if [ "$?" -ne "0" ]; then
 		echo >&2 "Installer failed to create namespace ${NAMESPACE}: ${TMP}"; exit 1
@@ -147,7 +151,7 @@ if [ -z "$INSECURE" ]; then
 		exit 1;
 	fi
 	# Create cluster role bindings
-	sed -i "s/namespace: [A-Za-z-]\+/namespace: $NAMESPACE/g" $DIR/trident-clusterrolebindings-${ENV}.yaml
+	sed -i -r "s/namespace: [a-z0-9]([-a-z0-9]*[a-z0-9])?/namespace: $NAMESPACE/g" $DIR/trident-clusterrolebindings-${ENV}.yaml
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
