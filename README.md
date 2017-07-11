@@ -22,10 +22,10 @@ exposing users to complexities of various backends.
 
 * [Getting Started](#getting-started)
 * [Requirements](#requirements)
-* [Storage Backend Preparation](#storage-backend-prep)
-  * [ONTAP Preparation](#ontap-prep)
-  * [SolidFire Preparation](#solidfire-prep)
-  * [E-Series Preparation](#eseries-prep)
+* [Storage Backend Preparation](#storage-backend-preparation)
+  * [ONTAP Preparation](#ontap-preparation)
+  * [SolidFire Preparation](#solidfire-preparation)
+  * [E-Series Preparation](#e-series-preparation)
 * [Deploying Trident](#deploying-trident)
   * [Helper Scripts](#helper-scripts)
       * [Install Script](#install-script)
@@ -49,8 +49,8 @@ exposing users to complexities of various backends.
   * [REST API](#rest-api)
       * [Backend Deletion](#backend-deletion)
   * [Kubernetes API](#kubernetes-api)
-      * [Kubernetes Storage Classes](#k8s-storage-classes)
-	  * [Kubernetes Volumes](#k8s-volumes)
+      * [Kubernetes Storage Classes](#kubernetes-storage-classes)
+	  * [Kubernetes Volumes](#kubernetes-volumes)
 * [Provisioning Workflow](#provisioning-workflow)
 * [Tutorials](#tutorials)
 * [Support](#support)
@@ -79,7 +79,7 @@ Kubernetes.
 
 1.  Ensure you have met all the [requirements](#requirements) for running
     Trident, **particularly** those listed under 
-	[Storage Backend Preparation](#storage-backend-prep).
+	[Storage Backend Preparation](#storage-backend-preparation).
 
 2.  The installer script requires you to have cluster administrator-level
     privileges in your Kubernetes or OpenShift environment. Otherwise, the
@@ -151,7 +151,7 @@ Kubernetes.
 7.  Make sure the `tridentctl` CLI tool, which is included in the installer
     bundle, is accessible through the `$PATH` environment variable.
 
-8.  Register the backend from step 5 with Trident once Trident is running.  Run
+8.  Register the backend from step 5 with Trident once Trident is running:
 
     ```bash
 	$ tridentctl create backend -f setup/backend.json
@@ -185,7 +185,7 @@ creating
 in Kubernetes (see `sample-input/pvc-basic.yaml` for an example) or through the
 REST API using `cat <json-file> | kubectl exec -i <trident-pod-name> -- post.sh
 volume` (see `sample-input/sample-volume.json` for an example configuration).
-[Kubernetes Volumes](#k8s-volumes) describes how to create PersistentVolumes in
+[Kubernetes Volumes](#kubernetes-volumes) describes how to create PersistentVolumes in
 Kubernetes using PVCs. Detailed information on creating Volume configurations
 for the REST API is available in [Volume Configurations](#volume-configurations).
 
@@ -201,7 +201,7 @@ REST API.
 
 [Storage Class Configurations](#storage-class-configurations)
 describes the parameters that storage classes take.  Instructions for creating
-them via Kubernetes are available in the [Kubernetes Storage Classes](#k8s-storage-classes)
+them via Kubernetes are available in the [Kubernetes Storage Classes](#kubernetes-storage-classes)
 section.  For more details on how Trident chooses storage pools from a storage
 class to provision its volumes, see [Provisioning Workflow](#provisioning-workflow).
 
@@ -238,7 +238,7 @@ does have the following requirements, however:
   for instructions.
 * Storage backend configuration: Trident may require preconfiguring storage
   backends before it can be run. Section 
-  [Storage Backend Preparation](#storage-backend-prep) describes the
+  [Storage Backend Preparation](#storage-backend-preparation) describes the
   requirements for different types of platforms that Trident supports.
 
 
@@ -271,7 +271,7 @@ for further details). These Groups must be created **before** creating volumes
 on the backend and must include the IQNs of all the hosts in the Kubernetes
 cluster that will mount Trident volumes.
 
-Each AccessGroup allows a maximum of 64 initiators and one can specify up to 4
+Each Access Group allows a maximum of 64 initiators and one can specify up to 4
 Access Group IDs in a backend configuration file, thereby allowing a volume to
 be accessed by up to 256 nodes. Therefore, for deployments greater than 64
 nodes, initiators need to be split into groups of 64 and multiple Access Groups
@@ -465,7 +465,7 @@ with a standard deployment definition in `setup/trident-deployment.yaml`. The
 deployment has two containers: `trident-main` and `etcd`. The etcd component
 uses a volume called `etcd-vol`. You can either use [Trident Launcher](#trident-launcher)
 to automatically create the PVC, PV, and the volume for the etcd container or
-create a PVC for an existing (or manually provisioned) PV before creating the
+create a PVC for an existing or manually provisioned PV before creating the
 Trident deployment.
 
 ### Command-line options
@@ -539,7 +539,7 @@ overview of each of these types and the function they serve.
 	these storage classes are configured and used.
 	[Matching Storage Attributes](#matching-storage-attributes) goes into more detail
 	on how Trident matches the attributes that storage classes request to those
-	offered by storage pools.  Finally, [Kubernetes Storage Classes](#k8s-storage-classes)
+	offered by storage pools.  Finally, [Kubernetes Storage Classes](#kubernetes-storage-classes)
 	discusses how Trident storage classes can be created via Kubernetes
 	`StorageClasses`.
 
@@ -553,7 +553,7 @@ overview of each of these types and the function they serve.
 
     We describe these parameters further in [Volume Configurations](#volume-configurations)
     and discuss how to create them using `PersistentVolumeClaims` in Kubernetes in
-    [Kubernetes Volumes](#k8s-volumes).
+    [Kubernetes Volumes](#kubernetes-volumes).
 
 Above object types are persisted to etcd, so Trident can retrieve them upon
 restarts.
@@ -637,7 +637,7 @@ deployments.
 | AccessGroups | Array of int | No | The list of Access Group IDs to be used by Trident (e.g., [1, 3, 9]). |
 | Types | [VolType](#voltype) array | No | JSON array of possible volume types.  Each of these will be created as a StoragePool for the SolidFire backend.  See below for the specification. |
 
-For more information about AccessGroups, please see [SolidFire Preparation](#solidfire-prep).
+For more information about AccessGroups, please see [SolidFire Preparation](#solidfire-preparation).
 
 We provide an example SolidFire backend configuration under
 `sample-input/backend-solidfire.json`.
@@ -736,7 +736,7 @@ volume configuration and `sample-input/volume-full.json` for a volume
 configuration with all options specified. However, for Kubernetes deployments,
 we expect most users to use the Kubernetes API for volume provisioning. In that
 case, Trident uses the volume object to represent
-[Kubernetes Volumes](#k8s-volumes) internally.
+[Kubernetes Volumes](#kubernetes-volumes) internally.
 
 #### Storage Class Configurations
 
@@ -758,7 +758,7 @@ the [REST API](#rest-api). See `sample-input/storage-class-bronze.json` for an
 example of a storage class configuration.  However, for Kubernetes deployments,
 we expect most users to use the Kubernetes API for volume provisioning. In that
 case, Trident uses the storage class object to represent
-[Kubernetes Storage Classes](#k8s-storage-classes) internally.
+[Kubernetes Storage Classes](#kubernetes-storage-classes) internally.
 
 ##### Storage Attributes
 
