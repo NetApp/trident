@@ -8,7 +8,7 @@
 # -h                  Prints this usage guide.
 #
 #Example:
-#  ./update_trident.sh -n trident -t netapp/trident:17.04.1		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.04.1".
+#  ./update_trident.sh -n trident -t netapp/trident:17.07.0		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.07.0".
 
 usage() {
 	printf "\nUsage:\n"
@@ -18,7 +18,7 @@ usage() {
 	printf " %-20s%s\n" "-d <deployment>" "Specifies the name of the deployment; defaults to \"trident\"."
 	printf " %-20s%s\n" "-h" "Prints this usage guide."
 	printf "\nExample:\n"
-	printf " %s\t\t%s\n\n" " ./update_trident.sh -n trident -t netapp/trident:17.04.1" "Updates the Trident deployment in namespace \"trident\" to use image \"netapp/trident:17.04.1\"."
+	printf " %s\t\t%s\n\n" " ./update_trident.sh -n trident -t netapp/trident:17.07.0" "Updates the Trident deployment in namespace \"trident\" to use image \"netapp/trident:17.07.0\"."
 }
 
 die() {

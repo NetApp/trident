@@ -310,7 +310,7 @@ func (p *KubernetesPlugin) processClaim(
 		*claim.Spec.StorageClassName == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
-		}).Info("Kubernetes frontend ignores this PVC as an empty string " +
+		}).Debug("Kubernetes frontend ignores this PVC as an empty string " +
 			"was specified for the storage class!")
 		return
 	}
@@ -358,7 +358,7 @@ func (p *KubernetesPlugin) processClaim(
 			} else {
 				log.WithFields(log.Fields{
 					"PVC": claim.Name,
-				}).Warn("Kubernetes frontend ignores this PVC as no storage class " +
+				}).Debug("Kubernetes frontend ignores this PVC as no storage class " +
 					"was specified and no default storage class was configured!")
 				p.mutex.Unlock()
 				return
@@ -372,7 +372,7 @@ func (p *KubernetesPlugin) processClaim(
 	if v1.GetPersistentVolumeClaimClass(claim) == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
-		}).Warn("Kubernetes frontend ignores this PVC as no storage class " +
+		}).Debug("Kubernetes frontend ignores this PVC as no storage class " +
 			"was specified!")
 		return
 	}
@@ -1148,7 +1148,7 @@ func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1.StorageClas
 			log.WithFields(log.Fields{
 				"storageClass":           class.Name,
 				"default_storageClasses": p.getDefaultStorageClasses(),
-			}).Warn("Kubernetes frontend added a new default storage class.")
+			}).Info("Kubernetes frontend added a new default storage class.")
 			return
 		}
 		log.WithFields(log.Fields{

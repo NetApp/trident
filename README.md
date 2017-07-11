@@ -395,7 +395,7 @@ Usage:
  -h                  Prints this usage guide.
 
 Example:
-  ./update_trident.sh -n trident -t netapp/trident:17.04.1		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.04.1".
+  ./update_trident.sh -n trident -t netapp/trident:17.07.0		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.07.0".
 ```
 
 ### Trident Launcher
@@ -582,6 +582,10 @@ For more information on how to manage Trident backends, please see the
 
 ##### ONTAP Configurations
 
+***IMPORTANT NOTE***
+  >Use of Kubernetes 1.5 (or OpenShift 3.5) or earlier with the iSCSI protocol and
+   ONTAP is not recommended. See [caveats](#caveats) for more information.
+
 This backend provides connection data for ONTAP backends.  Separate backends
 must be created for NAS and SAN.
 
@@ -662,6 +666,10 @@ used within the QoS attribute of each [VolType](#voltype) as part of a
 | burstIOPS | int64 | No | Burst IOPS for provisioned volumes. |
 
 ##### E-Series Configurations
+
+***IMPORTANT NOTE***
+  >Use of Kubernetes 1.5 (or OpenShift 3.5) or earlier with the iSCSI protocol and
+   E-Series is not recommended. See [caveats](#caveats) for more information.
 
 This backend provides connection data for E-Series iSCSI backends.
 
@@ -1121,9 +1129,9 @@ changes since v1.0).
 
 ### Getting Help
 
-Trident is a supported NetApp product.  See the [find the support you need](http://mysupport.netapp.com/info/web/ECMLP2619434.html) page on the Support site for options available to you.  To open a support case, use the serial number of the backend storage system and select containers and Trident as the category you want help in.
+Trident is a supported NetApp project.  See the [find the support you need](http://mysupport.netapp.com/info/web/ECMLP2619434.html) page on the Support site for options available to you.  To open a support case, use the serial number of the backend storage system and select containers and Trident as the category you want help in.
 
-There is also a vibrant community of container users and engineers on the [#containers]((https://netapppub.slack.com/messages/C1E3QH84C)) channel of [Slack]( http://netapp.io/slack). This can be a great place to get answers and discuss with like-minded peers; highly recommended!
+There is also a vibrant community of container users and engineers on Pub's [#containers](https://netapppub.slack.com/messages/C1E3QH84C) Slack channel. This can be a great place to get answers and discuss with like-minded peers; highly recommended!
 
 ## Caveats
 
