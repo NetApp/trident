@@ -44,7 +44,7 @@ func (p *FakeStoragePool) UnmarshalJSON(data []byte) error {
 }
 
 type FakeStorageDriverConfig struct {
-	dvp.CommonStorageDriverConfig
+	*dvp.CommonStorageDriverConfig
 	Protocol config.Protocol `json:"protocol"`
 	// pools represents the possible buckets into which a given volume should go
 	Pools        map[string]*FakeStoragePool `json:"pools"`
@@ -79,7 +79,7 @@ func newFakeStorageDriverConfigJSON(
 	prefix := ""
 	json, err := json.Marshal(
 		&FakeStorageDriverConfig{
-			CommonStorageDriverConfig: dvp.CommonStorageDriverConfig{
+			CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("{}"),
@@ -119,6 +119,7 @@ func (d *FakeStorageDriver) Initialize(
 
 	d.volumes = make(map[string]FakeVolume)
 	d.DestroyedVolumes = make(map[string]bool)
+	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 
 	s, err := json.Marshal(d.Config)
 	log.Debugf("FakeStorageDriverConfig: %s", string(s))

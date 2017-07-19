@@ -80,29 +80,37 @@ func cleanup(t *testing.T, o *tridentOrchestrator) {
 	}
 }
 
-func diffConfig(expected reflect.Value, got reflect.Value, fieldToSkip string,
-	diffs []string) {
-	expectedType := expected.Type()
-	for i := 0; i < expectedType.NumField(); i++ {
-		typeName := expectedType.Field(i).Name
+func diffConfig(expected, got interface{}, fieldToSkip string) []string {
+
+	diffs := make([]string, 0, 0)
+	expectedStruct := reflect.ValueOf(expected).Elem()
+	gotStruct := reflect.ValueOf(got).Elem()
+
+	for i := 0; i < expectedStruct.NumField(); i++ {
+
+		// Optionally skip a field
+		typeName := expectedStruct.Type().Field(i).Name
 		if typeName == fieldToSkip {
 			continue
 		}
-		expectedValue := expected.FieldByName(typeName).Interface()
-		gotValue := got.FieldByName(typeName).Interface()
-		if expectedValue != nil && !reflect.DeepEqual(expectedValue,
-			gotValue) {
+
+		// Compare each field in the structs
+		expectedField := expectedStruct.FieldByName(typeName).Interface()
+		gotField := gotStruct.FieldByName(typeName).Interface()
+		if !reflect.DeepEqual(expectedField, gotField) {
 			diffs = append(diffs, fmt.Sprintf("%s: expected %v, got %v",
-				typeName, expectedValue, gotValue))
+				typeName, expectedField, gotField))
 		}
 	}
+
+	return diffs
 }
 
 // To be called after reflect.DeepEqual has failed.
-func diffExternalBackends(
-	t *testing.T, expected, got *storage.StorageBackendExternal,
-) {
+func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExternal) {
+
 	diffs := make([]string, 0)
+
 	if expected.Name != got.Name {
 		diffs = append(diffs,
 			fmt.Sprintf("Name:  expected %s, got %s", expected.Name, got.Name))
@@ -111,18 +119,31 @@ func diffExternalBackends(
 		diffs = append(diffs, fmt.Sprintf("Online:  expected %s, got %s",
 			expected.Name, got.Name))
 	}
+
 	// Diff configs
-	gotVal := reflect.ValueOf(got.Config)
-	expectedVal := reflect.ValueOf(expected.Config)
-	diffConfig(expectedVal.FieldByName("CommonStorageDriverConfig"),
-		gotVal.FieldByName("CommonStorageDriverConfig"), "", diffs)
-	diffConfig(expectedVal, gotVal, "CommonStorageDriverConfig", diffs)
+	expectedConfig := expected.Config
+	gotConfig := got.Config
+
+	expectedValElem := reflect.ValueOf(expected.Config).Elem()
+	gotValElem := reflect.ValueOf(got.Config).Elem()
+
+	expectedCSDCIntf := expectedValElem.FieldByName("CommonStorageDriverConfigExternal").Interface()
+	gotCSDCIntf := gotValElem.FieldByName("CommonStorageDriverConfigExternal").Interface()
+
+	var configDiffs []string
+
+	// Compare the common storage driver config
+	configDiffs = diffConfig(expectedCSDCIntf, gotCSDCIntf, "")
+	diffs = append(diffs, configDiffs...)
+
+	// Compare the base config, without the common storage driver config
+	configDiffs = diffConfig(expectedConfig, gotConfig, "CommonStorageDriverConfig")
+	diffs = append(diffs, configDiffs...)
 
 	// Diff storage
 	for name, expectedVC := range expected.Storage {
 		if gotVC, ok := got.Storage[name]; !ok {
-			diffs = append(diffs,
-				fmt.Sprintf("Storage: did not get expected VC %s", name))
+			diffs = append(diffs, fmt.Sprintf("Storage: did not get expected VC %s", name))
 		} else if !reflect.DeepEqual(expectedVC, gotVC) {
 			expectedJSON, err := json.Marshal(expectedVC)
 			if err != nil {
@@ -133,14 +154,12 @@ func diffExternalBackends(
 				t.Fatal("Unable to marshal got JSON for VC ", name)
 			}
 			diffs = append(diffs, fmt.Sprintf("Storage:  vc %s differs:\n\t\t"+
-				"Expected: %s\n\t\tGot: %s", name, string(expectedJSON),
-				string(gotJSON)))
+				"Expected: %s\n\t\tGot: %s", name, string(expectedJSON), string(gotJSON)))
 		}
 	}
 	for name, _ := range got.Storage {
 		if _, ok := expected.Storage[name]; !ok {
-			diffs = append(diffs, fmt.Sprintf("Storage:  got unexpected VC %s",
-				name))
+			diffs = append(diffs, fmt.Sprintf("Storage:  got unexpected VC %s", name))
 		}
 	}
 
@@ -155,14 +174,12 @@ func diffExternalBackends(
 	}
 	for name, _ := range expectedVolMap {
 		if _, ok := gotVolMap[name]; !ok {
-			diffs = append(diffs, fmt.Sprintf("Volumes:  did not get expected "+
-				"volume %s", name))
+			diffs = append(diffs, fmt.Sprintf("Volumes:  did not get expected volume %s", name))
 		}
 	}
 	for name, _ := range gotVolMap {
 		if _, ok := expectedVolMap[name]; !ok {
-			diffs = append(diffs, fmt.Sprintf("Volumes:  got unexpected "+
-				"volume %s", name))
+			diffs = append(diffs, fmt.Sprintf("Volumes:  got unexpected volume %s", name))
 		}
 	}
 	if len(diffs) > 0 {

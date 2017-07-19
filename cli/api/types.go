@@ -5,10 +5,10 @@ import "github.com/netapp/trident/storage"
 type Backend struct {
 	Name   string `json:"name"`
 	Config struct {
-		Version           int    `json:"version"`
-		StorageDriverName string `json:"storageDriverName"`
-		//StoragePrefix     struct {
-		//} `json:"storagePrefix"`
+		Version           int      `json:"version"`
+		StorageDriverName string   `json:"storageDriverName"`
+		StoragePrefix     string   `json:"storagePrefix"`
+		SerialNumbers     []string `json:"serialNumbers"`
 	} `json:"config"`
 	Storage interface{} `json:"storage"`
 	Online  bool        `json:"online"`

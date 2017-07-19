@@ -13,9 +13,10 @@ import (
 )
 
 type CommonStorageDriverConfigExternal struct {
-	Version           int     `json:"version"`
-	StorageDriverName string  `json:"storageDriverName"`
-	StoragePrefix     *string `json:"storagePrefix"`
+	Version           int      `json:"version"`
+	StorageDriverName string   `json:"storageDriverName"`
+	StoragePrefix     *string  `json:"storagePrefix"`
+	SerialNumbers     []string `json:"serialNumbers"`
 }
 
 func SanitizeCommonStorageDriverConfig(c *dvp.CommonStorageDriverConfig) {
@@ -37,10 +38,12 @@ func GetCommonStorageDriverConfigExternal(
 	c *dvp.CommonStorageDriverConfig,
 ) *CommonStorageDriverConfigExternal {
 	SanitizeCommonStorageDriverConfig(c)
+
 	return &CommonStorageDriverConfigExternal{
 		Version:           c.Version,
 		StorageDriverName: c.StorageDriverName,
 		StoragePrefix:     c.StoragePrefix,
+		SerialNumbers:     c.SerialNumbers,
 	}
 }
 

@@ -3,6 +3,10 @@
 package fake
 
 import (
+	"bytes"
+	"encoding/gob"
+
+	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
@@ -41,7 +45,7 @@ func (d *FakeStorageDriver) GetVolumeOpts(
 
 func (d *FakeStorageDriver) GetInternalVolumeName(name string) string {
 	return storage.GetCommonInternalVolumeName(
-		&d.Config.CommonStorageDriverConfig, name)
+		d.Config.CommonStorageDriverConfig, name)
 }
 
 func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
@@ -72,11 +76,43 @@ func (d *FakeStorageDriver) GetDriverName() string {
 }
 
 func (d *FakeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
-	storage.SanitizeCommonStorageDriverConfig(&d.Config.CommonStorageDriverConfig)
-	b.FakeStorageDriverConfig = &d.Config
+	storage.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
+
+	// Clone the config so we don't alter the original
+	var cloneCommonConfig dvp.CommonStorageDriverConfig
+	Clone(d.Config.CommonStorageDriverConfig, &cloneCommonConfig)
+	cloneCommonConfig.SerialNumbers = nil
+
+	b.FakeStorageDriverConfig = &fake.FakeStorageDriverConfig{
+		CommonStorageDriverConfig: &cloneCommonConfig,
+		Protocol:                  d.Config.Protocol,
+		Pools:                     d.Config.Pools,
+		InstanceName:              d.Config.InstanceName,
+	}
 }
 
 func (d *FakeStorageDriver) GetExternalConfig() interface{} {
-	// It's fake, so by definition, there's nothing sensitive
-	return &d.Config
+
+	storage.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
+
+	return &struct {
+		*storage.CommonStorageDriverConfigExternal
+		Protocol     config.Protocol                  `json:"protocol"`
+		Pools        map[string]*fake.FakeStoragePool `json:"pools"`
+		InstanceName string
+	}{
+		storage.GetCommonStorageDriverConfigExternal(
+			d.Config.CommonStorageDriverConfig),
+		d.Config.Protocol,
+		d.Config.Pools,
+		d.Config.InstanceName,
+	}
+}
+
+func Clone(a, b interface{}) {
+	buff := new(bytes.Buffer)
+	enc := gob.NewEncoder(buff)
+	dec := gob.NewDecoder(buff)
+	enc.Encode(a)
+	dec.Decode(b)
 }

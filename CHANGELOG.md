@@ -6,8 +6,10 @@
 
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.
+- Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
 
 **Enhancements:**
+- Controller serial numbers are reported by the REST interface and tridentctl.
 
 ## v17.07.0
 
