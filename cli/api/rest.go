@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
+
+const HTTP_TIMEOUT = time.Second * 10
 
 func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
 
@@ -28,15 +31,15 @@ func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*
 		LogHttpRequest(request, requestBody)
 	}
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: HTTP_TIMEOUT}
 	response, err := client.Do(request)
 
 	responseBody := []byte{}
 	if err == nil {
-		if response.ContentLength > 0 {
-			responseBody, _ = ioutil.ReadAll(response.Body)
-			response.Body.Close()
-		}
+
+		responseBody, err = ioutil.ReadAll(response.Body)
+		response.Body.Close()
+
 		if debug {
 			LogHttpResponse(response, responseBody)
 		}

@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v17.04.0
+## Changes since v17.07.0
+
+**Fixes:**
+- tridentctl correctly handles larger payloads using chunked encoding.
+
+**Enhancements:**
+
+## v17.07.0
 
 **Fixes:**
 - Trident and Trident launcher no longer fail if they cannot validate the
