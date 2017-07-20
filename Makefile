@@ -23,7 +23,7 @@ CLI_PKG ?= github.com/netapp/trident/cli
 
 DIST_REGISTRY?=netapp
 
-TRIDENT_VERSION ?= 17.07.0
+TRIDENT_VERSION ?= 17.10.0
 
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
