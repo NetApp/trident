@@ -108,7 +108,9 @@ func (d *FakeStorageDriver) Name() string {
 	return FakeStorageDriverName
 }
 
-func (d *FakeStorageDriver) Initialize(configJSON string, commonConfig *dvp.CommonStorageDriverConfig) error {
+func (d *FakeStorageDriver) Initialize(
+	context dvp.DriverContext, configJSON string, commonConfig *dvp.CommonStorageDriverConfig,
+) error {
 
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
 	if err != nil {

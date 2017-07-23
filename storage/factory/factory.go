@@ -73,7 +73,8 @@ func NewStorageBackendForConfig(configJSON string) (
 		}).Warn("disableDelete set in backend config.  This will be ignored.")
 	}
 
-	if initializeErr := storageDriver.Initialize(configJSON, commonConfig); initializeErr != nil {
+	if initializeErr := storageDriver.Initialize(
+		dvp.ContextTrident, configJSON, commonConfig); initializeErr != nil {
 		err = fmt.Errorf("Problem initializing storage driver: '%v' error: %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return
