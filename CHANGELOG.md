@@ -6,6 +6,7 @@
 
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.
+- Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
 
 **Enhancements:**
 
