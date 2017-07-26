@@ -376,16 +376,6 @@ func (p *KubernetesPlugin) processClaim(
 			"was specified!")
 		return
 	}
-	// As of Kubernetes 1.6, selector and storage class are mutally exclusive.
-	if claim.Spec.Selector != nil {
-		message := "Kubernetes frontend ignores PVCs with label selectors!"
-		p.updateClaimWithEvent(claim, v1.EventTypeWarning,
-			"IgnoredClaim", message)
-		log.WithFields(log.Fields{
-			"PVC": claim.Name,
-		}).Warn(message)
-		return
-	}
 
 	// It's a valid PVC.
 	switch eventType {
@@ -398,7 +388,7 @@ func (p *KubernetesPlugin) processClaim(
 		log.WithFields(log.Fields{
 			"PVC":   claim.Name,
 			"event": eventType,
-		}).Warn("Kubernetes frontend didn't recognize the notification event ",
+		}).Error("Kubernetes frontend didn't recognize the notification event ",
 			"corresponding to the PVC!")
 		return
 	}
@@ -413,12 +403,22 @@ func (p *KubernetesPlugin) processClaim(
 		p.processLostClaim(claim)
 		return
 	case v1.ClaimPending:
+		// As of Kubernetes 1.6, selector and storage class are mutually exclusive.
+		if claim.Spec.Selector != nil {
+			message := "Kubernetes frontend ignores PVCs with label selectors!"
+			p.updateClaimWithEvent(claim, v1.EventTypeWarning, "IgnoredClaim",
+				message)
+			log.WithFields(log.Fields{
+				"PVC": claim.Name,
+			}).Debug(message)
+			return
+		}
 		p.processPendingClaim(claim)
 	default:
 		log.WithFields(log.Fields{
 			"PVC":       claim.Name,
 			"PVC_phase": claim.Status.Phase,
-		}).Warn("Kubernetes frontend doesn't recognize the claim phase.")
+		}).Error("Kubernetes frontend doesn't recognize the claim phase.")
 	}
 }
 
@@ -705,7 +705,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			"volume": vol.Config.Name,
 			"type":   p.orchestrator.GetVolumeType(vol),
 			"driver": driverType,
-		}).Warn("Kubernetes frontend doesn't recognize this type of volume; ",
+		}).Error("Kubernetes frontend doesn't recognize this type of volume; ",
 			"deleting the provisioned volume.")
 		err = fmt.Errorf("Unrecognized volume type by Kubernetes")
 		return
@@ -805,7 +805,7 @@ func (p *KubernetesPlugin) processVolume(
 		log.WithFields(log.Fields{
 			"PV":    volume.Name,
 			"event": eventType,
-		}).Warn("Kubernetes frontend didn't recognize the notification event ",
+		}).Error("Kubernetes frontend didn't recognize the notification event ",
 			"corresponding to the PV!")
 		return
 	}
@@ -870,7 +870,7 @@ func (p *KubernetesPlugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 		log.WithFields(log.Fields{
 			"PV":       volume.Name,
 			"PV_phase": volume.Status.Phase,
-		}).Warn("Kubernetes frontend doesn't recognize the volume phase.")
+		}).Error("Kubernetes frontend doesn't recognize the volume phase.")
 	}
 }
 
@@ -1017,7 +1017,7 @@ func (p *KubernetesPlugin) processClass(
 		log.WithFields(log.Fields{
 			"storageClass": class.Name,
 			"event":        eventType,
-		}).Warn("Kubernetes frontend didn't recognize the notification event corresponding to the storage class!")
+		}).Error("Kubernetes frontend didn't recognize the notification event corresponding to the storage class!")
 		return
 	}
 }
