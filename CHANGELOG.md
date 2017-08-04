@@ -7,11 +7,13 @@
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.
 - Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
+- Trident allows periods in PVC names.
 
 **Enhancements:**
 - Controller serial numbers are reported by the REST interface and tridentctl.
 - tridentctl logs can display launcher and ephemeral logs, and it can create a
   support archive.
+- Added ontap-nas-economy driver.
 
 ## v17.07.0
 

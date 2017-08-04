@@ -103,9 +103,9 @@ Kubernetes.
     This will be also used in step 8 to provision the volume on which Trident
 	will store its metadata.
 
-    Edit either `sample-input/backend-ontap-nas.json`, `sample-input/backend-ontap-san.json`,
-    `sample-input/backend-solidfire.json`, or `sample-input/sample-eseries-iscsi.json`
-    to specify an ONTAP NAS, ONTAP SAN, SolidFire, or E-Series backend. 
+    Edit either `sample-input/backend-ontap-nas.json`, `sample-input/backend-ontap-nas-economy.json`,
+    `sample-input/backend-ontap-san.json`, `sample-input/backend-solidfire.json`, or
+    `sample-input/sample-eseries-iscsi.json` to specify an ONTAP NAS, ONTAP SAN, SolidFire, or E-Series backend.
 
 	If multiple clusters will be running Trident against the same backend, add
 	the `storagePrefix` attribute, with a value that will be unique to your
@@ -166,7 +166,7 @@ Kubernetes.
 
 	Edit the `backendType` parameter of
 	`sample-input/storage-class-basic.yaml.templ` and replace
-	`__BACKEND_TYPE__` with either `ontap-nas`, `ontap-san`, `solidfire-san`,
+	`__BACKEND_TYPE__` with either `ontap-nas`, `ontap-nas-economy`, `ontap-san`, `solidfire-san`,
 	or `eseries-iscsi` depending on the backend created in the previous steps.
 	Save it as `sample-input/storage-class-basic.yaml`.
 
@@ -592,7 +592,7 @@ must be created for NAS and SAN.
 | Attribute | Type | Required | Description |
 | --------- | ---- | --- | ----------- |
 | version   | int  | No | Version of the nDVP API in use. |
-| storageDriverName | string | Yes | Must be either "ontap-nas" or "ontap-san". |
+| storageDriverName | string | Yes | Must be one of "ontap-nas", "ontap-nas-economy", or "ontap-san". |
 | storagePrefix | string | No | Prefix to prepend to volumes created on the backend.  The format of the resultant volume name will be `<prefix>_<volumeName>`; this prefix should be chosen so that volume names are unique.  If unspecified, this defaults to `trident`.|
 | managementLIF | string | Yes | IP address of the cluster or SVM management LIF. |
 | dataLIF | string | Yes | IP address of the SVM data LIF to use for connecting to provisioned volumes. |
@@ -615,9 +615,20 @@ may mount Trident volumes (e.g., all nodes in the Kubernetes cluster that would
 attach volumes) must be mapped into this iGroup.  This must be configured
 before these hosts can mount and attach Trident volumes from this backend.
 
+The ontap-nas and ontap-san backend types create an ONTAP FlexVol for each persistent volume. ONTAP supports up to 1000
+FlexVols per cluster node with a cluster maximum of 12,000 FlexVols. If your Kubernetes volume requirements fit within
+that limitation, the ontap-nas driver is the preferred NAS solution due to the additional features offered by FlexVols
+such as PV-granular snapshots. If you need more persistent volumes than may be accommodated by the FlexVol limits,
+choose the ontap-nas-economy driver, which creates volumes as ONTAP Qtrees within a pool of automatically managed
+FlexVols. Qtrees offer far greater scaling, up to 100,000 per cluster node and 2,400,000 per cluster, at the expense of
+some features such as PV-granular snapshots. To get advanced features and huge scale in the same environment, you can
+configure multiple backends, with some using ontap-nas and others using ontap-nas-economy.
+
 `sample-input/backend-ontap-nas.json` provides an example of an ONTAP NAS
-backend configuration.  `sample-input/backend-ontap-san.json` and
-`sample-input/backend-ontap-san-full.json` provide the same for an ONTAP SAN
+backend configuration.  `sample-input/backend-ontap-nas-economy.json` provides
+an example of an ONTAP NAS backend configuration that can support far more volumes,
+albeit without certain features such as snapshots.  `sample-input/backend-ontap-san.json`
+and `sample-input/backend-ontap-san-full.json` provide examples for an ONTAP SAN
 backend; the latter includes all available configuration options.
 
 ##### SolidFire Configurations
@@ -773,7 +784,7 @@ The current attributes and their possible values are below:
 | --------- | ---- | ------ | ----------- | --- |
 | media | string | hdd, hybrid, ssd | Type of media used by the storage pool.  Hybrid indicates both HDD and SSD. | Type of media desired for the volume. |
 | provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. |
-| backendType | string | ontap-nas, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. |
+| backendType | string | ontap-nas, ontap-nas-economy, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. |
 | snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. |
 | IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. |
 
@@ -1029,11 +1040,11 @@ corresponding PV, Trident follows the following rules:
 
 | Annotation | Volume Parameter | Supported Drivers |
 | ---------- | ---------------- | ----------------- |
-| `trident.netapp.io/protocol` |  `protocol` | `ontap-nas`, `ontap-san`, `solidfire-san` |
-| `trident.netapp.io/exportPolicy` |  `exportPolicy`| `ontap-nas`, `ontap-san` |
-| `trident.netapp.io/snapshotPolicy` |  `snapshotPolicy`| `ontap-nas`, `ontap-san` |
-| `trident.netapp.io/snapshotDirectory` |  `snapshotDirectory`| `ontap-nas` |
-| `trident.netapp.io/unixPermissions` |  `unixPermissions`| `ontap-nas` |
+| `trident.netapp.io/protocol` |  `protocol` | `ontap-nas`, `ontap-nas-economy`, `ontap-san`, `solidfire-san` |
+| `trident.netapp.io/exportPolicy` |  `exportPolicy`| `ontap-nas`, `ontap-nas-economy`, `ontap-san` |
+| `trident.netapp.io/snapshotPolicy` |  `snapshotPolicy`| `ontap-nas`, `ontap-nas-economy`, `ontap-san` |
+| `trident.netapp.io/snapshotDirectory` |  `snapshotDirectory`| `ontap-nas`, `ontap-nas-economy`  |
+| `trident.netapp.io/unixPermissions` |  `unixPermissions`| `ontap-nas`, `ontap-nas-economy` |
 | `trident.netapp.io/blockSize` |  `blockSize`| `solidfire-san` |
 | `trident.netapp.io/fileSystem` |  `fileSystem` | `ontap-san`, `solidfire-san`, `eseries-iscsi` |
 | `trident.netapp.io/reclaimPolicy` | N/A | N/A |

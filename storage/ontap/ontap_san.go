@@ -23,7 +23,17 @@ type OntapSANStorageDriver struct {
 func (d *OntapSANStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
 
 	backend.Name = "ontapsan_" + d.Config.DataLIF
-	return getStorageBackendSpecsCommon(d, backend)
+	poolAttrs := d.GetStoragePoolAttributes()
+	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
+}
+
+func (d *OntapSANStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+
+	return map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
 }
 
 func (d *OntapSANStorageDriver) GetVolumeOpts(
@@ -35,10 +45,7 @@ func (d *OntapSANStorageDriver) GetVolumeOpts(
 }
 
 func (d *OntapSANStorageDriver) GetInternalVolumeName(name string) string {
-	return getInternalVolumeNameCommon(
-		storage.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig,
-			name),
-	)
+	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
 func (d *OntapSANStorageDriver) CreatePrepare(

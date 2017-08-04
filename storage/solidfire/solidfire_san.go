@@ -72,9 +72,10 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(
 }
 
 func (d *SolidfireSANStorageDriver) GetInternalVolumeName(name string) string {
-	internalName := storage.GetCommonInternalVolumeName(
-		d.Config.CommonStorageDriverConfig, name)
-	return strings.Replace(internalName, "_", "-", -1)
+	s1 := storage.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+	s2 := strings.Replace(s1, "_", "-", -1)
+	s3 := strings.Replace(s2, ".", "-", -1)
+	return s3
 }
 
 func (d *SolidfireSANStorageDriver) CreatePrepare(

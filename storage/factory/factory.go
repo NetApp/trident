@@ -47,6 +47,8 @@ func NewStorageBackendForConfig(configJSON string) (
 	switch commonConfig.StorageDriverName {
 	case dvp.OntapNASStorageDriverName:
 		storageDriver = &ontap.OntapNASStorageDriver{}
+	case dvp.OntapNASQtreeStorageDriverName:
+		storageDriver = &ontap.OntapNASQtreeStorageDriver{}
 	case dvp.OntapSANStorageDriverName:
 		storageDriver = &ontap.OntapSANStorageDriver{}
 	case dvp.SolidfireSANStorageDriverName:
@@ -83,6 +85,11 @@ func NewStorageBackendForConfig(configJSON string) (
 	// Post-driver initialization setup
 	switch commonConfig.StorageDriverName {
 	case dvp.OntapNASStorageDriverName:
+		break
+
+	case dvp.OntapNASQtreeStorageDriverName:
+		break
+
 	case dvp.OntapSANStorageDriverName:
 		driver := storageDriver.(*ontap.OntapSANStorageDriver)
 		if driver.Config.IgroupName == "netappdvp" {

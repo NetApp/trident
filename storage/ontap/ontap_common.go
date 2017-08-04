@@ -24,27 +24,16 @@ const (
 )
 
 var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
-	ontapHDD: map[string]sa.Offer{
-		sa.Media: sa.NewStringOffer(sa.HDD),
-	},
-	ontapHybrid: map[string]sa.Offer{
-		sa.Media: sa.NewStringOffer(sa.Hybrid),
-	},
-	ontapSSD: map[string]sa.Offer{
-		sa.Media: sa.NewStringOffer(sa.SSD),
-	},
-}
-
-func getCommonONTAPStoragePoolAttributes(pool *storage.StoragePool) {
-	// ONTAP supports snapshots
-	pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-	// ONTAP volumes support both thick and thin provisioning.
-	pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thick", "thin")
+	ontapHDD:    {sa.Media: sa.NewStringOffer(sa.HDD)},
+	ontapHybrid: {sa.Media: sa.NewStringOffer(sa.Hybrid)},
+	ontapSSD:    {sa.Media: sa.NewStringOffer(sa.SSD)},
 }
 
 // getStorageBackendSpecsCommon discovers the aggregates assigned to the configured SVM, and it updates the specified StorageBackend
 // object with StoragePools and their associated attributes.
-func getStorageBackendSpecsCommon(d dvp.OntapStorageDriver, backend *storage.StorageBackend) (err error) {
+func getStorageBackendSpecsCommon(
+	d dvp.OntapStorageDriver, backend *storage.StorageBackend, poolAttributes map[string]sa.Offer,
+) (err error) {
 
 	api := d.GetAPI()
 	config := d.GetConfig()
@@ -104,10 +93,13 @@ func getStorageBackendSpecsCommon(d dvp.OntapStorageDriver, backend *storage.Sto
 			"such as 'media' will not match pools on this backend. %v", err)
 	}
 
-	// Add common attributes and register pools with backend
+	// Add attributes common to each pool and register pools with backend
 	for _, pool := range storagePools {
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(driverName)
-		getCommonONTAPStoragePoolAttributes(pool)
+
+		for attrName, offer := range poolAttributes {
+			pool.Attributes[attrName] = offer
+		}
+
 		backend.AddStoragePool(pool)
 	}
 
@@ -255,8 +247,11 @@ func getVolumeOptsCommon(
 	return opts
 }
 
-func getInternalVolumeNameCommon(name string) string {
-	return strings.Replace(name, "-", "_", -1)
+func getInternalVolumeNameCommon(config *dvp.CommonStorageDriverConfig, name string) string {
+	s1 := storage.GetCommonInternalVolumeName(config, name)
+	s2 := strings.Replace(s1, "-", "_", -1)
+	s3 := strings.Replace(s2, ".", "_", -1)
+	return s3
 }
 
 /*func createPrepareCommon(volConfig *storage.VolumeConfig) bool {

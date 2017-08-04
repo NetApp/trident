@@ -687,7 +687,8 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		driverType == dvp.EseriesIscsiStorageDriverName:
 		iscsiSource = CreateISCSIVolumeSource(vol.Config)
 		pv.Spec.ISCSI = iscsiSource
-	case driverType == dvp.OntapNASStorageDriverName:
+	case driverType == dvp.OntapNASStorageDriverName ||
+		driverType == dvp.OntapNASQtreeStorageDriverName:
 		nfsSource = CreateNFSVolumeSource(vol.Config)
 		pv.Spec.NFS = nfsSource
 	case driverType == fake.FakeStorageDriverName:
