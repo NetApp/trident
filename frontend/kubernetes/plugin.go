@@ -1048,7 +1048,7 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 	// Populate storage class config attributes and backend storage pools
 	for k, v := range class.Parameters {
 		if k == storage_attribute.BackendStoragePools {
-			// format:     backendStoragePools: "backend1:vc1,vc2;backend2:vc1"
+			// format:     backendStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			backendVCs, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
 				log.WithFields(log.Fields{

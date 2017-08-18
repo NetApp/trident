@@ -1,0 +1,21 @@
+{
+    "CN": "Trident etcd server",
+	"hosts": [
+		"localhost",
+		"trident-etcd-client",
+		"trident-etcd-client.trident.svc",
+		"*.trident-etcd.trident.svc"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "NC",
+            "ST": "Raleigh"
+        }
+    ]
+}
+
