@@ -7,7 +7,38 @@ import (
 	"github.com/netapp/trident/storage_class"
 )
 
+type StoreType string
+
+const (
+	MemoryStore StoreType = "memory"
+	EtcdV2Store StoreType = "etcdv2"
+	EtcdV3Store StoreType = "etcdv3"
+)
+
+type PersistentStateVersion struct {
+	PersistentStoreVersion string `json:"store_version"`
+	OrchestratorVersion    string `json:"orchestration_version"`
+}
+
+type EtcdClient interface {
+	Create(key, value string) error
+	Read(key string) (string, error)
+	ReadKeys(keyPrefix string) ([]string, error)
+	Update(key, value string) error
+	Set(key, value string) error
+	Delete(key string) error
+	DeleteKeys(keyPrefix string) error
+	GetType() StoreType
+	Stop() error
+}
+
 type Client interface {
+	EtcdClient
+
+	GetEndpoints() string
+	GetVersion() (*PersistentStateVersion, error)
+	SetVersion(version *PersistentStateVersion) error
+
 	AddBackend(b *storage.StorageBackend) error
 	GetBackend(backendName string) (*storage.StorageBackendPersistent, error)
 	UpdateBackend(b *storage.StorageBackend) error

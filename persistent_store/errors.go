@@ -3,15 +3,39 @@
 package persistent_store
 
 const (
-	KeyErrorMsg = "Unable to find key"
+	KeyNotFoundErr        = "Unable to find key"
+	KeyExistsErr          = "Key already exists"
+	UnavailableClusterErr = "Unavailable etcd cluster"
 )
 
 // Used to turn etcd errors into something that callers can understand without
 // having to import the client library
-type KeyError struct {
-	Key string
+type PersistentStoreError struct {
+	Message string
+	Key     string
 }
 
-func (e KeyError) Error() string {
-	return KeyErrorMsg
+func NewPersistentStoreError(message, key string) *PersistentStoreError {
+	return &PersistentStoreError{
+		Message: message,
+		Key:     key,
+	}
+}
+
+func (e *PersistentStoreError) Error() string {
+	return e.Message
+}
+
+func MatchKeyNotFoundErr(err error) bool {
+	if err != nil && err.Error() == KeyNotFoundErr {
+		return true
+	}
+	return false
+}
+
+func MatchUnavailableClusterErr(err error) bool {
+	if err != nil && err.Error() == UnavailableClusterErr {
+		return true
+	}
+	return false
 }

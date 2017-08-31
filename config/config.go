@@ -15,11 +15,12 @@ type VolumeType string
 
 const (
 	/* Misc. orchestrator constants */
-	OrchestratorName       = "trident"
-	orchestratorVersion    = "17.10.0"
-	OrchestratorAPIVersion = "1"
-	PersistentStoreTimeout = 60 * time.Second
-	MaxBootstrapAttempts   = 10
+	OrchestratorName                 = "trident"
+	orchestratorVersion              = "17.10.0"
+	OrchestratorAPIVersion           = "1"
+	PersistentStoreBootstrapAttempts = 30
+	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
+	PersistentStoreTimeout           = 10 * time.Second
 
 	/* Protocol constants */
 	File                Protocol = "file"
@@ -82,6 +83,7 @@ var (
 	VolumeURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
 	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
 	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
+	StoreURL        = "/" + OrchestratorName + "/store"
 )
 
 func IsValidProtocol(p Protocol) bool {

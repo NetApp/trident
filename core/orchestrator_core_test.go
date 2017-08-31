@@ -24,6 +24,7 @@ import (
 
 var (
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API)")
+	etcdV3 = flag.String("etcd_v3", "", "etcd server (v3 API)")
 	debug  = flag.Bool("debug", false, "Enable debugging output")
 
 	inMemoryClient *persistent_store.InMemoryClient
@@ -34,7 +35,7 @@ func init() {
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
-	if *etcdV2 == "" {
+	if *etcdV2 == "" && *etcdV3 == "" {
 		inMemoryClient = persistent_store.NewInMemoryClient()
 	}
 }
@@ -53,11 +54,11 @@ type recoveryTest struct {
 
 func cleanup(t *testing.T, o *tridentOrchestrator) {
 	err := o.storeClient.DeleteBackends()
-	if err != nil && err.Error() != persistent_store.KeyErrorMsg {
+	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up backends:  ", err)
 	}
 	storageClasses, err := o.storeClient.GetStorageClasses()
-	if err != nil && err.Error() != persistent_store.KeyErrorMsg {
+	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to retrieve storage classes:  ", err)
 	} else if err == nil {
 		for _, psc := range storageClasses {
@@ -70,13 +71,38 @@ func cleanup(t *testing.T, o *tridentOrchestrator) {
 		}
 	}
 	err = o.storeClient.DeleteVolumes()
-	if err != nil && err.Error() != persistent_store.KeyErrorMsg {
+	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up volumes:  ", err)
 	}
-	if *etcdV2 == "" {
+	if *etcdV2 == "" && *etcdV3 == "" {
 		// Clear the InMemoryClient state so that it looks like we're
 		// bootstrapping afresh next time.
-		inMemoryClient.ClearAdded()
+		inMemoryClient.Stop()
+	}
+}
+
+func cleanupStoreVersion(t *testing.T, etcd string) {
+	// Deleting etcdv2 persistent state version
+	etcdv2Client, err := persistent_store.NewEtcdClientV2(etcd)
+	if err != nil {
+		t.Fatalf("Creating etcdv2 client failed: %v", err)
+	}
+	if err = etcdv2Client.Delete(config.StoreURL); err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+		t.Fatalf("Couldn't delete etcdv2 persistent state version: %v", err)
+	}
+	if err = etcdv2Client.Stop(); err != nil {
+		t.Fatalf("Couldn't shut down etcdv2 client: %v", err)
+	}
+	// Deleting etcdv3 persistent state version
+	etcdv3Client, err := persistent_store.NewEtcdClientV3(etcd)
+	if err != nil {
+		t.Fatalf("Creating etcdv3 client failed: %v", err)
+	}
+	if err = etcdv3Client.Delete(config.StoreURL); err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+		t.Fatalf("Couldn't delete etcdv3 persistent state version: %v", err)
+	}
+	if err = etcdv3Client.Stop(); err != nil {
+		t.Fatalf("Couldn't shut down etcdv3 client: %v", err)
 	}
 }
 
@@ -211,7 +237,7 @@ func runDeleteTest(
 		}
 		externalVol, err := orchestrator.storeClient.GetVolume(d.name)
 		if err != nil {
-			if err.Error() != persistent_store.KeyErrorMsg {
+			if !persistent_store.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", d.name, err)
 			}
@@ -241,9 +267,16 @@ func getOrchestrator() *tridentOrchestrator {
 	// between the two stores (e.g., differing error conditions) causing
 	// problems at a later time.
 	if *etcdV2 != "" {
-		log.Debug("Creating new etcd client.")
+		log.Debug("Creating new etcdv2 client.")
 		// Note that this will panic if the etcd connection fails.
-		storeClient, err = persistent_store.NewEtcdClient(*etcdV2)
+		storeClient, err = persistent_store.NewEtcdClientV2(*etcdV2)
+		if err != nil {
+			panic(err)
+		}
+	} else if *etcdV3 != "" {
+		log.Debug("Creating new etcdv3 client.")
+		// Note that this will panic if the etcd connection fails.
+		storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
 		if err != nil {
 			panic(err)
 		}
@@ -255,8 +288,9 @@ func getOrchestrator() *tridentOrchestrator {
 		storeClient = inMemoryClient
 	}
 	o := NewTridentOrchestrator(storeClient)
-	// Ignore the return value here.
-	o.Bootstrap()
+	if err = o.Bootstrap(); err != nil {
+		log.Fatal("Failure occurred during bootstrapping: ", err)
+	}
 	return o
 }
 
@@ -710,7 +744,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		externalSC, err := orchestrator.storeClient.GetStorageClass(
 			s.config.Name)
 		if err != nil {
-			if err.Error() != persistent_store.KeyErrorMsg {
+			if !persistent_store.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", s.config.Name, err)
 			}
@@ -1311,7 +1345,7 @@ func runRecoveryTests(
 		}
 		_, err = newOrchestrator.storeClient.GetVolume(c.volumeConfig.Name)
 		if err != nil {
-			if err.Error() != persistent_store.KeyErrorMsg {
+			if !persistent_store.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", c.name, err)
 			}
@@ -1394,16 +1428,234 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
-func TestBadBootstrap(t *testing.T) {
-	storeClient, err := persistent_store.NewEtcdClient("invalidIPAddress")
+func TestBadBootstrapEtcdV2(t *testing.T) {
+	if *etcdV2 == "" {
+		t.SkipNow()
+	}
+	_, err := persistent_store.NewEtcdClientV2("invalidIPAddress")
+	if err != nil && persistent_store.MatchUnavailableClusterErr(err) {
+	} else {
+		panic(fmt.Errorf("Didn't catch invalid etcdv2 client!"))
+	}
+}
+
+func TestBadBootstrapEtcdV3(t *testing.T) {
+	if *etcdV3 == "" {
+		t.SkipNow()
+	}
+	_, err := persistent_store.NewEtcdClientV3("invalidIPAddress")
+	if err != nil && persistent_store.MatchUnavailableClusterErr(err) {
+	} else {
+		panic(fmt.Errorf("Didn't catch invalid etcdv3 client!"))
+	}
+}
+
+func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
+	const (
+		backendName = "bootstrapV2toV3_backend"
+		scName      = "bootstrapV2toV3_class"
+		volumeName  = "bootstrapV2toV3_vol"
+	)
+	if *etcdV3 == "" {
+		t.SkipNow()
+	}
+	cleanupStoreVersion(t, *etcdV3)
+
+	// Populate the etcdv2 cluster with one backend, one storage class, and one volume
+	etcdV2Orig := etcdV2
+	etcdV2 = etcdV3
+	orchestratorV2 := getOrchestrator()
+	addBackendStorageClass(t, orchestratorV2, backendName, scName)
+
+	orchestratorV2.mutex.Lock()
+	if _, ok := orchestratorV2.storageClasses[scName]; !ok {
+		t.Fatal("Storage class not found in the orchestrator map!")
+	}
+	orchestratorV2.mutex.Unlock()
+
+	v2Volume, err := orchestratorV2.AddVolume(generateVolumeConfig(volumeName, 50, scName,
+		config.File))
 	if err != nil {
-		panic(err)
+		t.Fatal("Unable to create volume: ", err)
 	}
-	o := NewTridentOrchestrator(storeClient)
-	err = o.Bootstrap()
-	if err == nil {
-		t.Errorf("Did not get error for invalid bootstrap attempt.")
+	orchestratorV2.mutex.Lock()
+	if _, ok := orchestratorV2.volumes[volumeName]; !ok {
+		t.Fatal("Volume name found in orchestrator map!")
 	}
+	orchestratorV2.mutex.Unlock()
+
+	// Bootstrap etcdv3 orchestrator with etcdv2 data
+	etcdV2 = etcdV2Orig
+	orchestratorV3 := getOrchestrator()
+
+	// Verify etcdv2 to etcdv3 transformation
+	if orchestratorV3.GetBackend(backendName) == nil {
+		t.Fatalf("Failed to find backend %s after bootstrapping!", backendName)
+	}
+	//TODO: Optionally we can diff etcdv2 and etcdv3 backends here
+	if orchestratorV3.GetStorageClass(scName) == nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!",
+			scName)
+	}
+	//TODO: Optionally we can diff etcdv2 and etcdv3 storage classes here
+	v3Volume := orchestratorV3.GetVolume(volumeName)
+	if v3Volume == nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!",
+			volumeName)
+	}
+	// Verifying the same volume exists on both clusters
+	if !reflect.DeepEqual(v2Volume, v3Volume) {
+		t.Fatalf("etcdv2 volume (%v) doesn't match the etcdv3 volume (%v)!",
+			v2Volume, v3Volume)
+	}
+	etcdv3Client, err := persistent_store.NewEtcdClientV3(*etcdV3)
+	if err != nil {
+		t.Fatalf("Creating etcdv3 client failed: %v", err)
+	}
+	versionJSON, err := etcdv3Client.Read(config.StoreURL)
+	if err != nil {
+		t.Fatalf("Couldn't determine the orchestrator persistent state version: %v",
+			err)
+	}
+	version := &persistent_store.PersistentStateVersion{}
+	err = json.Unmarshal([]byte(versionJSON), version)
+	if err != nil {
+		t.Fatalf("Couldn't unmarshall the orchestrator persistent state version: %v",
+			err)
+	}
+	if config.OrchestratorAPIVersion != version.OrchestratorVersion ||
+		string(orchestratorV3.storeClient.GetType()) != version.PersistentStoreVersion {
+		t.Fatalf("Failed to set the orchestrator persistent state version after bootsrapping: %v",
+			err)
+	}
+
+	// cleanup
+	if err = etcdv3Client.Stop(); err != nil {
+		t.Fatalf("Couldn't shut down etcdv3 client: %v", err)
+	}
+	cleanup(t, orchestratorV2)
+	cleanup(t, orchestratorV3)
+	cleanupStoreVersion(t, *etcdV3)
+}
+
+func TestBootstrapEtcdV3ToEtcdV2Migration(t *testing.T) {
+	const (
+		backendName = "bootstrapV3toV2_backend"
+		scName      = "bootstrapV3toV2_class"
+		volumeName  = "bootstrapV3toV2_vol"
+	)
+	if *etcdV2 == "" {
+		t.SkipNow()
+	}
+	cleanupStoreVersion(t, *etcdV2)
+
+	// Populate the etcdv3 cluster with one backend, one storage class, and one volume
+	empty := ""
+	etcdV3 = etcdV2
+	etcdV2 = &empty
+
+	// Set the persistent state version to etcdv3
+	etcdv3Client, err := persistent_store.NewEtcdClientV3(*etcdV3)
+	if err != nil {
+		t.Fatalf("Creating etcdv3 client failed: %v", err)
+	}
+	version := &persistent_store.PersistentStateVersion{
+		string(persistent_store.EtcdV3Store),
+		config.OrchestratorAPIVersion,
+	}
+	versionJSON, err := json.Marshal(version)
+	if err != nil {
+		t.Fatalf("Marshalling persistent state version failed: %v", err)
+	}
+	if err = etcdv3Client.Set(config.StoreURL, string(versionJSON)); err != nil {
+		t.Fatalf("Setting persistent state version failed: %v", err)
+	}
+	orchestratorV3 := getOrchestrator()
+	addBackendStorageClass(t, orchestratorV3, backendName, scName)
+
+	orchestratorV3.mutex.Lock()
+	if _, ok := orchestratorV3.storageClasses[scName]; !ok {
+		t.Fatal("Storage class not found in the orchestrator map!")
+	}
+	orchestratorV3.mutex.Unlock()
+
+	v3Volume, err := orchestratorV3.AddVolume(generateVolumeConfig(volumeName, 50, scName,
+		config.File))
+	if err != nil {
+		t.Fatal("Unable to create volume: ", err)
+	}
+	orchestratorV3.mutex.Lock()
+	if _, ok := orchestratorV3.volumes[volumeName]; !ok {
+		t.Fatal("Volume name found in orchestrator map!")
+	}
+	orchestratorV3.mutex.Unlock()
+	// Set the current persistent state version to be etcdv3 and bring up the
+	// an etcdv2 orchestrator with etcdv3 data
+	etcdV2 = etcdV3
+	etcdv2Client, err := persistent_store.NewEtcdClientV2(*etcdV2)
+	if err != nil {
+		t.Fatalf("Creating etcdv2 client failed: %v", err)
+	}
+	version = &persistent_store.PersistentStateVersion{
+		string(orchestratorV3.storeClient.GetType()),
+		config.OrchestratorAPIVersion,
+	}
+	if versionJSON, err = json.Marshal(version); err != nil {
+		t.Fatalf("Marshalling persistent state version failed: %v", err)
+	}
+	if err = etcdv2Client.Set(config.StoreURL, string(versionJSON)); err != nil {
+		t.Fatalf("Setting persistent state version failed: %v", err)
+	}
+	// Bootstrap etcdv2 orchestrator with etcdv3 data
+	orchestratorV2 := getOrchestrator()
+
+	// Verify etcdv3 to etcdv2 transformation
+	if orchestratorV2.GetBackend(backendName) == nil {
+		t.Fatalf("Failed to find backend %s after bootstrapping!",
+			backendName)
+	}
+	//TODO: Optionally we can diff etcdv2 and etcdv3 backends here
+	if orchestratorV2.GetStorageClass(scName) == nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!",
+			scName)
+	}
+	//TODO: Optionally we can diff etcdv2 and etcdv3 storage classes here
+	v2Volume := orchestratorV2.GetVolume(volumeName)
+	if v2Volume == nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!",
+			volumeName)
+	}
+	// Verifying the same volume exists on both clusters
+	if !reflect.DeepEqual(v2Volume, v3Volume) {
+		t.Fatalf("etcdv2 volume (%v) doesn't match the etcdv3 volume (%v)!",
+			v2Volume, v3Volume)
+	}
+	versionJSONString, err := etcdv2Client.Read(config.StoreURL)
+	if err != nil {
+		t.Fatalf("Couldn't determine the orchestrator persistent state version: %v",
+			err)
+	}
+	err = json.Unmarshal([]byte(versionJSONString), version)
+	if err != nil {
+		t.Fatalf("Couldn't unmarshall the orchestrator persistent state version: %v",
+			err)
+	}
+	if config.OrchestratorAPIVersion != version.OrchestratorVersion ||
+		string(orchestratorV2.storeClient.GetType()) != version.PersistentStoreVersion {
+		t.Fatalf("Failed to set the orchestrator persistent state version after bootsrapping: %v",
+			err)
+	}
+
+	// cleanup
+	if err = etcdv3Client.Stop(); err != nil {
+		t.Fatalf("Couldn't shut down etcdv3 client: %v", err)
+	}
+	if err = etcdv2Client.Stop(); err != nil {
+		t.Fatalf("Couldn't shut down etcdv2 client: %v", err)
+	}
+	cleanup(t, orchestratorV2)
+	cleanup(t, orchestratorV3)
+	cleanupStoreVersion(t, *etcdV2)
 }
 
 // The next series of tests test that bootstrap doesn't exit early if it

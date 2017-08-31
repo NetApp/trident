@@ -5,6 +5,7 @@ package persistent_store
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -21,7 +22,7 @@ import (
 )
 
 var (
-	etcdV2 = flag.String("etcd_v2", "http://127.0.0.1:2379", "etcd server (v2 API)")
+	etcdV2 = flag.String("etcd_v2", "http://127.0.0.1:8001", "etcd server (v2 API)")
 	debug  = flag.Bool("debug", false, "Enable debugging output")
 
 	storagePool = storage.StoragePool{
@@ -36,26 +37,24 @@ func init() {
 	}
 }
 
-func TestNewEtcdClient(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+func TestNewEtcdClientV2(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
 	if p == nil || err != nil {
-		t.Error("etcd v2 is a valid persistent store!")
+		t.Errorf("Failed to create a working etcdv2 client in %v!",
+			config.PersistentStoreBootstrapTimeout)
 	}
 }
 
 func TestEtcdv2InvalidClient(t *testing.T) {
-	p, err := NewEtcdClient("http://127.0.0.1:9999")
-	if err != nil {
-		t.Log("Invalid client is caught during creation!")
-	}
-	_, errJSON := p.Read("/backend/nfs_server_10.0.0.1")
-	if errJSON == nil {
-		t.Error("Invalid store is not caught during access!")
+	_, err := NewEtcdClientV2("http://127.0.0.1:9999")
+	if err != nil && MatchUnavailableClusterErr(err) {
+	} else {
+		t.Error("Invalid client wasn't caught!")
 	}
 }
 
 func TestEtcdv2CRUD(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Testing Create
 	err = p.Create("key1", "val1")
@@ -90,8 +89,8 @@ func TestEtcdv2CRUD(t *testing.T) {
 	}
 }
 
-func TestEtcdv2ReadKeys(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+func TestEtcdv2ReadDeleteKeys(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	for i := 1; i <= 5; i++ {
 		err = p.Create("/volume/"+"vol"+strconv.Itoa(i), "val"+strconv.Itoa(i))
@@ -115,33 +114,106 @@ func TestEtcdv2ReadKeys(t *testing.T) {
 		if keys[i-1] != key {
 			t.Error("")
 		}
-		err = p.Delete(key)
+	}
+	if err = p.DeleteKeys("/volume"); err != nil {
+		t.Error("Deleting the keys failed!")
+	}
+	keys, err = p.ReadKeys("/volume")
+	if err != nil && MatchKeyNotFoundErr(err) {
+	} else {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+}
+
+func TestEtcdv2RecursiveReadDelete(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+
+	for i := 1; i <= 5; i++ {
+		err = p.Set(fmt.Sprintf("/trident_etcd/v%d/volume/vol%d", i, i),
+			"VOLUME"+strconv.Itoa(i))
 		if err != nil {
 			t.Error(err.Error())
+			t.FailNow()
 		}
+	}
+	for i := 1; i <= 3; i++ {
+		err = p.Set(fmt.Sprintf("/trident_etcd/v%d/backend/backend%d", i, i),
+			"BACKEND"+strconv.Itoa(i))
+		if err != nil {
+			t.Error(err.Error())
+			t.FailNow()
+		}
+	}
+
+	var keys []string
+	keys, err = p.ReadKeys("/trident_etcd")
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	if len(keys) != 8 {
+		t.Error("Reading all the keys failed!")
+	}
+	keys, err = p.ReadKeys("/trident_etcd/v1")
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	if len(keys) != 2 {
+		t.Error("Reading all the keys failed!")
+	}
+
+	if err = p.DeleteKeys("/trident_etcd"); err != nil {
+		t.Errorf("Failed to delete the keys: %v", err)
+	}
+
+	// Validate delete
+	keys, err = p.ReadKeys("/trident_etcd")
+	if err != nil && MatchKeyNotFoundErr(err) {
+	} else {
+		t.Fatal("Failed to delete the keys: ", err)
+	}
+}
+
+func TestEtcdv2NonexistentReadKeys(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+	_, err = p.ReadKeys("/trident_102983471023")
+	if err != nil && MatchKeyNotFoundErr(err) {
+	} else {
+		t.Fatal("Failed to return an error for the nonexistent keys: ", err)
+	}
+}
+
+func TestEtcdv2NonexistentDeleteKeys(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+	err = p.DeleteKeys("/trident_102983471023")
+	if err != nil && MatchKeyNotFoundErr(err) {
+	} else {
+		t.Fatal("Failed to return an error for the nonexistent keys: ", err)
 	}
 }
 
 func TestEtcdv2CRUDFailure(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	var backend string
 	backend, err = p.Read("/backend/nonexistent_server_10.0.0.1")
-	if backend != "" || err == nil {
+	if backend != "" || !(err != nil && MatchKeyNotFoundErr(err)) {
 		t.Error("Failed to catch an invalid read!")
 	}
-	if err = p.Update("/backend/nonexistent_server_10.0.0.1", ""); err == nil {
+	if err = p.Update("/backend/nonexistent_server_10.0.0.1", ""); !(err != nil && MatchKeyNotFoundErr(err)) {
 		t.Error("Failed to catch an invalid update!")
 	}
-	if err = p.Delete("/backend/nonexistent_server_10.0.0.1"); err == nil {
+	if err = p.Delete("/backend/nonexistent_server_10.0.0.1"); !(err != nil && MatchKeyNotFoundErr(err)) {
 		t.Error("Failed to catch an invalid delete!")
 	}
 }
 
 func TestEtcdv2Backend(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Adding storage backend
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
@@ -225,7 +297,7 @@ func TestEtcdv2Backend(t *testing.T) {
 
 func TestEtcdv2Backends(t *testing.T) {
 	var backends []*storage.StorageBackendPersistent
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 	if backends, err = p.GetBackends(); err != nil {
 		t.Fatal("Unable to list backends at test start: ", err)
 	}
@@ -275,7 +347,7 @@ func TestEtcdv2Backends(t *testing.T) {
 }
 
 func TestEtcdv2DuplicateBackend(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
@@ -311,7 +383,7 @@ func TestEtcdv2DuplicateBackend(t *testing.T) {
 }
 
 func TestEtcdv2Volume(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Adding a volume
 	nfsServerConfig := dvp.OntapStorageDriverConfig{
@@ -386,7 +458,7 @@ func TestEtcdv2Volumes(t *testing.T) {
 		newVolumeCount  = 5
 		expectedVolumes = newVolumeCount
 	)
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Because we don't reset database state between tests, get an initial
 	// count of the existing volumes
@@ -459,7 +531,7 @@ func TestEtcdv2Volumes(t *testing.T) {
 }
 
 func TestEtcdv2VolumeTransactions(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Adding volume transactions
 	for i := 1; i <= 5; i++ {
@@ -513,7 +585,7 @@ func TestEtcdv2VolumeTransactions(t *testing.T) {
 	}
 }
 
-func TestDuplicateVolumeTransaction(t *testing.T) {
+func TestEtcdv2DuplicateVolumeTransaction(t *testing.T) {
 	firstTxn := &VolumeTransaction{
 		Config: &storage.VolumeConfig{
 			Version:      string(config.OrchestratorAPIVersion),
@@ -534,7 +606,7 @@ func TestDuplicateVolumeTransaction(t *testing.T) {
 		},
 		Op: AddVolume,
 	}
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 	if err != nil {
 		t.Fatal("Unable to create persistent store client:  ", err)
 	}
@@ -562,7 +634,7 @@ func TestDuplicateVolumeTransaction(t *testing.T) {
 }
 
 func TestEtcdv2AddSolidFireBackend(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 	sfConfig := dvp.SolidfireStorageDriverConfig{
 		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
 			StorageDriverName: dvp.SolidfireSANStorageDriverName,
@@ -597,10 +669,14 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 		t.Errorf("Backend state doesn't match: %v != %v",
 			retrievedConfig.DefaultVolSz, sfConfig.DefaultVolSz)
 	}
+
+	if err = p.DeleteBackend(sfBackend); err != nil {
+		t.Fatal(err.Error())
+	}
 }
 
 func TestEtcdv2AddStorageClass(t *testing.T) {
-	p, err := NewEtcdClient(*etcdV2)
+	p, err := NewEtcdClientV2(*etcdV2)
 	bronzeConfig := &storage_class.Config{
 		Name:                "bronze",
 		Attributes:          make(map[string]storage_attribute.Request),

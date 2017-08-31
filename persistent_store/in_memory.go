@@ -5,6 +5,7 @@ package persistent_store
 import (
 	"fmt"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 )
@@ -18,6 +19,7 @@ type InMemoryClient struct {
 	storageClassesAdded int
 	volumeTxns          map[string]*VolumeTransaction
 	volumeTxnsAdded     int
+	version             *PersistentStateVersion
 }
 
 func NewInMemoryClient() *InMemoryClient {
@@ -26,14 +28,62 @@ func NewInMemoryClient() *InMemoryClient {
 		volumes:        make(map[string]*storage.VolumeExternal),
 		storageClasses: make(map[string]*sc.StorageClassPersistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
+		version: &PersistentStateVersion{
+			"memory", config.OrchestratorAPIVersion,
+		},
 	}
 }
 
-func (c *InMemoryClient) ClearAdded() {
+func (c *InMemoryClient) Create(key, value string) error {
+	return nil
+}
+
+func (c *InMemoryClient) Read(key string) (string, error) {
+	return "", nil
+}
+
+func (c *InMemoryClient) ReadKeys(keyPrefix string) ([]string, error) {
+	return make([]string, 0), nil
+}
+
+func (c *InMemoryClient) Update(key, value string) error {
+	return nil
+}
+
+func (c *InMemoryClient) Set(key, value string) error {
+	return nil
+}
+
+func (c *InMemoryClient) Delete(key string) error {
+	return nil
+}
+
+func (c *InMemoryClient) DeleteKeys(keyPrefix string) error {
+	return nil
+}
+
+func (p *InMemoryClient) GetType() StoreType {
+	return MemoryStore
+}
+
+func (c *InMemoryClient) Stop() error {
 	c.backendsAdded = 0
 	c.volumesAdded = 0
 	c.storageClassesAdded = 0
 	c.volumeTxnsAdded = 0
+	return nil
+}
+
+func (p *InMemoryClient) GetEndpoints() string {
+	return ""
+}
+
+func (p *InMemoryClient) GetVersion() (*PersistentStateVersion, error) {
+	return p.version, nil
+}
+
+func (p *InMemoryClient) SetVersion(version *PersistentStateVersion) error {
+	return nil
 }
 
 func (c *InMemoryClient) AddBackend(b *storage.StorageBackend) error {
@@ -49,7 +99,7 @@ func (c *InMemoryClient) AddBackend(b *storage.StorageBackend) error {
 func (c *InMemoryClient) GetBackend(backendName string) (*storage.StorageBackendPersistent, error) {
 	ret, ok := c.backends[backendName]
 	if !ok {
-		return nil, KeyError{Key: backendName}
+		return nil, NewPersistentStoreError(KeyNotFoundErr, backendName)
 	}
 	return ret, nil
 }
@@ -57,10 +107,7 @@ func (c *InMemoryClient) GetBackend(backendName string) (*storage.StorageBackend
 func (c *InMemoryClient) UpdateBackend(b *storage.StorageBackend) error {
 	// UpdateBackend requires the backend to already exist.
 	if _, ok := c.backends[b.Name]; !ok {
-		// Note that we're not using a KeyError, since Etcd doesn't return
-		// one.
-		// TODO:  Use a KeyError here if that changes.
-		return fmt.Errorf("Unable to update %s:  key not found.", b.Name)
+		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
 	}
 	c.backends[b.Name] = b.ConstructPersistent()
 	return nil
@@ -68,30 +115,28 @@ func (c *InMemoryClient) UpdateBackend(b *storage.StorageBackend) error {
 
 func (c *InMemoryClient) DeleteBackend(b *storage.StorageBackend) error {
 	if _, ok := c.backends[b.Name]; !ok {
-		// TODO:  Use a KeyError here if the etcdclient delete starts
-		// returning them.
-		return fmt.Errorf("Unable to delete %s:  key not found.", b.Name)
+		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
 	}
 	delete(c.backends, b.Name)
 	return nil
 }
 
 func (c *InMemoryClient) GetBackends() ([]*storage.StorageBackendPersistent, error) {
+	backendList := make([]*storage.StorageBackendPersistent, 0)
 	if c.backendsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return nil, KeyError{Key: "Backends"}
+		return backendList, nil
 	}
-	ret := make([]*storage.StorageBackendPersistent, 0, len(c.backends))
 	for _, b := range c.backends {
-		ret = append(ret, b)
+		backendList = append(backendList, b)
 	}
-	return ret, nil
+	return backendList, nil
 }
 
 func (c *InMemoryClient) DeleteBackends() error {
 	if c.backendsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return KeyError{Key: "Backends"}
+		return NewPersistentStoreError(KeyNotFoundErr, "Backends")
 	}
 	c.backends = make(map[string]*storage.StorageBackendPersistent)
 	return nil
@@ -100,7 +145,7 @@ func (c *InMemoryClient) DeleteBackends() error {
 func (c *InMemoryClient) AddVolume(vol *storage.Volume) error {
 	volume := vol.ConstructExternal()
 	if _, ok := c.volumes[volume.Config.Name]; ok {
-		return fmt.Errorf("Backend %s already exists.", volume.Config.Name)
+		return fmt.Errorf("Volume %s already exists.", volume.Config.Name)
 	}
 	c.volumes[volume.Config.Name] = volume
 	c.volumesAdded++
@@ -112,7 +157,7 @@ func (c *InMemoryClient) GetVolume(volumeName string) (
 ) {
 	ret, ok := c.volumes[volumeName]
 	if !ok {
-		return nil, KeyError{Key: volumeName}
+		return nil, NewPersistentStoreError(KeyNotFoundErr, volumeName)
 	}
 	return ret, nil
 }
@@ -120,11 +165,7 @@ func (c *InMemoryClient) GetVolume(volumeName string) (
 func (c *InMemoryClient) UpdateVolume(vol *storage.Volume) error {
 	// UpdateVolume requires the volume to already exist.
 	if _, ok := c.volumes[vol.Config.Name]; !ok {
-		// Note that we're not using a KeyError, since Etcd doesn't return
-		// one.
-		// TODO:  Use a KeyError here if that changes.
-		return fmt.Errorf("Unable to update %d:  key not found.",
-			vol.Config.Name)
+		return NewPersistentStoreError(KeyNotFoundErr, vol.Config.Name)
 	}
 	c.volumes[vol.Config.Name] = vol.ConstructExternal()
 	return nil
@@ -132,10 +173,7 @@ func (c *InMemoryClient) UpdateVolume(vol *storage.Volume) error {
 
 func (c *InMemoryClient) DeleteVolume(vol *storage.Volume) error {
 	if _, ok := c.volumes[vol.Config.Name]; !ok {
-		// TODO:  Use a KeyError here if the etcdclient delete starts
-		// returning them.
-		return fmt.Errorf("Unable to delete %s:  key not found.",
-			vol.Config.Name)
+		return NewPersistentStoreError(KeyNotFoundErr, vol.Config.Name)
 	}
 	delete(c.volumes, vol.Config.Name)
 	return nil
@@ -147,11 +185,11 @@ func (c *InMemoryClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error {
 }
 
 func (c *InMemoryClient) GetVolumes() ([]*storage.VolumeExternal, error) {
+	ret := make([]*storage.VolumeExternal, 0, len(c.volumes))
 	if c.volumesAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return nil, KeyError{Key: "Volumes"}
+		return ret, nil
 	}
-	ret := make([]*storage.VolumeExternal, 0, len(c.volumes))
 	for _, v := range c.volumes {
 		ret = append(ret, v)
 	}
@@ -161,7 +199,7 @@ func (c *InMemoryClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 func (c *InMemoryClient) DeleteVolumes() error {
 	if c.volumesAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return KeyError{Key: "Volumes"}
+		return NewPersistentStoreError(KeyNotFoundErr, "Volumes")
 	}
 	c.volumes = make(map[string]*storage.VolumeExternal)
 	return nil
@@ -177,7 +215,7 @@ func (c *InMemoryClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
 func (c *InMemoryClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 	if c.volumeTxnsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return nil, KeyError{Key: "VolumeTransactions"}
+		return nil, NewPersistentStoreError(KeyNotFoundErr, "VolumesTransactions")
 	}
 	ret := make([]*VolumeTransaction, 0, len(c.volumeTxns))
 	for _, v := range c.volumeTxns {
@@ -198,10 +236,7 @@ func (c *InMemoryClient) GetExistingVolumeTransaction(
 
 func (c *InMemoryClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
 	if _, ok := c.volumeTxns[volTxn.getKey()]; !ok {
-		// TODO:  Use a KeyError here if the etcdclient delete starts
-		// returning them.
-		return fmt.Errorf("Unable to delete %s:  key not found.",
-			volTxn.getKey())
+		return NewPersistentStoreError(KeyNotFoundErr, "VolumesTransactions")
 	}
 	delete(c.volumeTxns, volTxn.getKey())
 	return nil
@@ -210,7 +245,7 @@ func (c *InMemoryClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) erro
 func (c *InMemoryClient) AddStorageClass(s *sc.StorageClass) error {
 	storageClass := s.ConstructPersistent()
 	if _, ok := c.storageClasses[storageClass.GetName()]; ok {
-		return fmt.Errorf("Backend %s already exists.", storageClass.GetName())
+		return fmt.Errorf("Storage class %s already exists.", storageClass.GetName())
 	}
 	c.storageClasses[storageClass.GetName()] = storageClass
 	c.storageClassesAdded++
@@ -222,7 +257,7 @@ func (c *InMemoryClient) GetStorageClass(scName string) (
 ) {
 	ret, ok := c.storageClasses[scName]
 	if !ok {
-		return nil, KeyError{Key: scName}
+		return nil, NewPersistentStoreError(KeyNotFoundErr, scName)
 	}
 	return ret, nil
 }
@@ -230,11 +265,11 @@ func (c *InMemoryClient) GetStorageClass(scName string) (
 func (c *InMemoryClient) GetStorageClasses() (
 	[]*sc.StorageClassPersistent, error,
 ) {
+	ret := make([]*sc.StorageClassPersistent, 0, len(c.storageClasses))
 	if c.storageClassesAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
-		return nil, KeyError{Key: "StorageClasses"}
+		return ret, nil
 	}
-	ret := make([]*sc.StorageClassPersistent, 0, len(c.storageClasses))
 	for _, v := range c.storageClasses {
 		ret = append(ret, v)
 	}
@@ -243,9 +278,7 @@ func (c *InMemoryClient) GetStorageClasses() (
 
 func (c *InMemoryClient) DeleteStorageClass(s *sc.StorageClass) error {
 	if _, ok := c.storageClasses[s.GetName()]; !ok {
-		// TODO:  Use a KeyError here if the etcdclient delete starts
-		// returning them.
-		return fmt.Errorf("Unable to delete %s:  key not found.", s.GetName())
+		return NewPersistentStoreError(KeyNotFoundErr, s.GetName())
 	}
 	delete(c.storageClasses, s.GetName())
 	return nil

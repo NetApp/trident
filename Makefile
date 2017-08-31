@@ -35,13 +35,12 @@ TRIDENT_IMAGE ?= trident
 TRIDENT_DEPLOYMENT_FILE ?= ./kubernetes-yaml/trident-deployment-local.yaml
 TRIDENT_DIST_TAG = ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
-ETCD_VERSION ?= v3.1.3
-ETCDV2 ?= http://localhost:8001
-ETCDV2_TEST ?= http://localhost:${PORT}
+ETCD_VERSION ?= v3.1.5
+ETCD_PORT ?= 8001
+ETCD_SERVER ?= http://localhost:${ETCD_PORT}
 ETCD_DIR ?= /tmp/etcd
 K8S ?= ""
 BUILD = build
-
 
 LAUNCHER_IMAGE ?= trident-launcher
 LAUNCHER_CONFIG_DIR ?= ./launcher/config
@@ -90,6 +89,7 @@ build:
 	@mkdir -p ${BIN_DIR}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${BIN}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${CLI_BIN} ${CLI_PKG}
+	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o trident-installer/etcd/bin/etcd-copy github.com/netapp/trident/trident-installer/etcd/etcd-copy
 
 vendor:
 	@mkdir -p vendor
@@ -103,11 +103,12 @@ docker_build: vendor *.go
 	@chmod 777 ${BIN_DIR}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/trident-installer/etcd/bin/etcd-copy github.com/netapp/trident/trident-installer/etcd/etcd-copy
 	
 docker_image: docker_retag docker_build
 	cp ${BIN_DIR}/${BIN} .
 	cp ${BIN_DIR}/${CLI_BIN} .
-	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV2=${ETCDV2} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
+	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV3=${ETCD_SERVER} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 	rm ${BIN}
 	rm ${CLI_BIN}
 	-docker rmi ${TRIDENT_TAG_OLD}
@@ -144,9 +145,14 @@ test: test_core test_other
 test_core:
 	-docker kill etcd-test > /dev/null
 	-docker rm etcd-test > /dev/null
-	@docker run -d -p ${PORT}:${PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${PORT} -listen-client-urls http://0.0.0.0:${PORT} > /dev/null
-	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCDV2_TEST} 
-	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCDV2_TEST} 
+	@docker run -d -p ${ETCD_PORT}:${ETCD_PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${ETCD_PORT} -listen-client-urls http://0.0.0.0:${ETCD_PORT} > /dev/null
+	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCD_SERVER} -etcd_v3=${ETCD_SERVER} -etcd_src=${ETCD_SERVER} -etcd_dest=${ETCD_SERVER}
+	@sleep 1
+	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCD_SERVER}
+	@sleep 1
+	@go test -cover -v github.com/netapp/trident/core -args -etcd_v3=${ETCD_SERVER}
+	@sleep 1
+	@go test -cover -v github.com/netapp/trident/core
 	@docker kill etcd-test > /dev/null
 	@docker rm etcd-test > /dev/null
 
@@ -203,15 +209,22 @@ endif
 launcher: docker_launcher_build launcher_start
 
 dist_tar:
-	cp ${BIN_DIR}/${CLI_BIN} trident-installer/
-	-rm -f trident-installer/setup/backend.json
-	@mkdir -p trident-installer/setup
-	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > trident-installer/launcher-pod.yaml
-	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment.yaml.templ > trident-installer/setup/trident-deployment.yaml
-	@cp kubernetes-yaml/trident-namespace.yaml trident-installer/
-	@cp kubernetes-yaml/trident-serviceaccounts.yaml trident-installer/
-	@cp kubernetes-yaml/trident-clusterrole* trident-installer/
-	@tar -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
+	-rm -rf /tmp/trident-installer
+	@cp -a trident-installer /tmp/
+	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
+	@mkdir -p /tmp/trident-installer/bin
+	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/bin
+	@cp launcher/docker-build/launcher /tmp/trident-installer/bin
+	-rm -f /tmp/trident-installer/setup/backend.json
+	@rm -rf /tmp/trident-installer/etcd/etcd-copy
+	@mkdir -p /tmp/trident-installer/setup
+	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > /tmp/trident-installer/launcher-pod.yaml
+	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment.yaml.templ > /tmp/trident-installer/setup/trident-deployment.yaml
+	@cp kubernetes-yaml/trident-namespace.yaml /tmp/trident-installer/
+	@cp kubernetes-yaml/trident-serviceaccounts.yaml /tmp/trident-installer/
+	@cp kubernetes-yaml/trident-clusterrole* /tmp/trident-installer/
+	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
+	-rm -rf /tmp/trident-installer
 
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))

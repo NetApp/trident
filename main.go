@@ -28,6 +28,8 @@ var (
 		"for Kubernetes if running in a pod.")
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
+	etcdV3 = flag.String("etcd_v3", "", "etcd server (v3 API) for "+
+		"persisting orchestrator state (e.g., -etcd_v3=http://127.0.0.1:8001)")
 	address     = flag.String("address", "localhost", "Storage orchestrator API address")
 	port        = flag.String("port", "8000", "Storage orchestrator API port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -45,18 +47,23 @@ func processCmdLineArgs() {
 	// Don't bother validating the Kubernetes API server address; we'll know if
 	// it's invalid during start-up.  Given that users can specify DNS names,
 	// validation would be more trouble than it's worth.
-	if *etcdV2 != "" {
-		storeClient, err = persistent_store.NewEtcdClient(*etcdV2)
+	if *etcdV3 != "" {
+		storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
 		if err != nil {
 			panic(err)
 		}
-	} else if *etcdV2 != "" && *useInMemory {
-		log.Fatal("Cannot skip persistence and use etcdV2.")
+	} else if *etcdV2 != "" {
+		storeClient, err = persistent_store.NewEtcdClientV2(*etcdV2)
+		if err != nil {
+			panic(err)
+		}
+	} else if (*etcdV3 != "" || *etcdV2 != "") && *useInMemory {
+		log.Fatal("Cannot skip persistence and use etcd.")
 	} else if *useInMemory {
 		storeClient = persistent_store.NewInMemoryClient()
 	} else {
 		log.Fatal("Must specify a valid persistent store (currently " +
-			"supporting etcdV2) or no persistence.")
+			"supporting etcdv2 and etcdv3) or no persistence.")
 	}
 	enableKubernetes = *k8sPod || *k8sAPIServer != ""
 }
@@ -109,4 +116,5 @@ func main() {
 	for _, frontend := range frontends {
 		frontend.Deactivate()
 	}
+	storeClient.Stop()
 }

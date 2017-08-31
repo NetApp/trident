@@ -215,7 +215,7 @@ does have the following requirements, however:
 * ONTAP 8.3 or later:  needed for any ONTAP backends used by Trident.
 * SolidFire Element OS 7 (Nitrogen) or later:  needed for any SolidFire
   backends used by Trident.
-* etcd v3.1.3 or later:  used to store metadata about the storage
+* etcd v3.1.5 or later:  used to store metadata about the storage
   Trident manages.  The standard deployment definition distributed as part of
   the installer includes an etcd container, so there is no need to install etcd
   separately; however, it is possible to deploy Trident with an external etcd
@@ -500,8 +500,8 @@ Trident deployment.
 
 Trident exposes several command line options.  These are as follows:
 
-* `-etcd_v2 <address>`:  Required; use this to specify the etcd deployment
-  that Trident should use.
+* `-etcd_v3 <address>` or `-etcd_v2 <address>`:  Required; use this to specify
+  the etcd deployment that Trident should use.
 * `-k8s_pod`:  Optional; however, either this or `-k8s_api_server` must be set
   to enable Kubernetes support.  Setting this will cause Trident to use its
   containing pod's Kubernetes service account credentials to contact the API

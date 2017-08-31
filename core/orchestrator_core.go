@@ -11,7 +11,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
-	"golang.org/x/net/context"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
@@ -45,6 +44,92 @@ func NewTridentOrchestrator(client persistent_store.Client) *tridentOrchestrator
 	return &orchestrator
 }
 
+func (o *tridentOrchestrator) transformPersistentState() error {
+	// Determine if Trident needs to transform the persistent state before bootstrapping:
+	// Transforming persistent state happens under two scenarios:
+	// 1) Change in the persistent store version (e.g., from etcdv2 to etcdv3)
+	// 2) Change in the Trident API version (e.g., from Trident API v1 to v2)
+	if o.storeClient.GetType() == persistent_store.MemoryStore {
+		// No persistence so no transformation
+		return nil
+	}
+	version, err := o.storeClient.GetVersion()
+	if err != nil && persistent_store.MatchKeyNotFoundErr(err) {
+		// Version should be etcdv2 and Trident API v1
+		version = &persistent_store.PersistentStateVersion{
+			string(persistent_store.EtcdV2Store),
+			config.OrchestratorAPIVersion,
+		}
+	} else if err != nil {
+		return fmt.Errorf("Couldn't determine the orchestrator persistent state version: %v",
+			err)
+	}
+	if config.OrchestratorAPIVersion != version.OrchestratorVersion {
+		log.WithFields(log.Fields{
+			"current_api_version": version.OrchestratorVersion,
+			"desired_api_version": config.OrchestratorAPIVersion,
+		}).Info("Transforming Trident API objects on the persistent store.")
+		//TODO: transform Trident API objects
+	}
+	clientVersion := string(o.storeClient.GetType())
+	if clientVersion != version.PersistentStoreVersion {
+		log.WithFields(log.Fields{
+			"current_store_version": version.PersistentStoreVersion,
+			"desired_store_version": clientVersion,
+		}).Info("Transforming persistent state.")
+		var srcClient, destinationClient persistent_store.EtcdClient
+		switch o.storeClient.GetType() {
+		case persistent_store.EtcdV2Store:
+			destinationClient, err = persistent_store.NewEtcdClientV2(
+				o.storeClient.GetEndpoints())
+		case persistent_store.EtcdV3Store:
+			destinationClient, err = persistent_store.NewEtcdClientV3(
+				o.storeClient.GetEndpoints())
+		default:
+			return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
+				o.storeClient.GetType())
+		}
+		if err != nil {
+			return fmt.Errorf("Failed in creating the destination etcd client for data migration: %v",
+				err)
+		}
+		switch version.PersistentStoreVersion {
+		case string(persistent_store.EtcdV2Store):
+			srcClient, err = persistent_store.NewEtcdClientV2(
+				o.storeClient.GetEndpoints())
+		case string(persistent_store.EtcdV3Store):
+			srcClient, err = persistent_store.NewEtcdClientV3(
+				o.storeClient.GetEndpoints())
+		default:
+			return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
+				version.PersistentStoreVersion)
+		}
+		if err != nil {
+			return fmt.Errorf("Failed in creating the source etcd client for data migration: %v",
+				err)
+		}
+		dataMigrator := persistent_store.NewEtcdDataMigrator(srcClient,
+			destinationClient)
+		// Moving all Trident objects for all API versions
+		if err = dataMigrator.Start("/"+config.OrchestratorName, false); err != nil {
+			return fmt.Errorf("etcd data migration failed: %v", err)
+		}
+		if err = dataMigrator.Stop(); err != nil {
+			return fmt.Errorf("Failed to shut down the etcd data migrator: %v",
+				err)
+		}
+
+		// Store the persistent store and API versions
+		version.OrchestratorVersion = config.OrchestratorAPIVersion
+		version.PersistentStoreVersion = string(o.storeClient.GetType())
+		if err = o.storeClient.SetVersion(version); err != nil {
+			return fmt.Errorf("Failed to set the persistent state version after migration: %v",
+				err)
+		}
+	}
+	return nil
+}
+
 func (o *tridentOrchestrator) Bootstrap() error {
 	var err error = nil
 	dvp.DefaultStoragePrefix = config.OrchestratorName
@@ -53,11 +138,16 @@ func (o *tridentOrchestrator) Bootstrap() error {
 		dvp.ExtendedDriverVersion =
 			dvp.ExtendedDriverVersion + " " + kubeFrontend.Version()
 	}
+
+	// Transform persistent state, if necessary
+	if err = o.transformPersistentState(); err != nil {
+		return err
+	}
+
+	// Bootstrap state from persistent store
 	if err = o.bootstrap(); err != nil {
-		errMsg := fmt.Sprintf("Could not bootstrap from persistent "+
-			"store! Bootstrap might have failed, persistent store might "+
-			"be down, or persistent store may not have any backend, "+
-			"volume, or storage class state: %s", err.Error())
+		errMsg := fmt.Sprintf("Failed during bootstrapping: %s",
+			err.Error())
 		return fmt.Errorf(errMsg)
 	}
 	o.bootstrapped = true
@@ -66,22 +156,9 @@ func (o *tridentOrchestrator) Bootstrap() error {
 }
 
 func (o *tridentOrchestrator) bootstrapBackends() error {
-	var tries int
-
 	persistentBackends, err := o.storeClient.GetBackends()
-	for tries = 0; err == context.DeadlineExceeded && tries < config.MaxBootstrapAttempts; tries++ {
-		// Wait up to ten seconds for etcd to come online if unavailable.
-		time.Sleep(time.Second)
-		persistentBackends, err = o.storeClient.GetBackends()
-	}
-
 	if err != nil {
-		if tries == config.MaxBootstrapAttempts {
-			log.Warnf("Persistent store failed to come online after %d seconds.", tries)
-		}
 		return err
-	} else if tries > 0 {
-		log.Infof("Persistent store is up after %d second(s).", tries)
 	}
 
 	for _, b := range persistentBackends {
@@ -181,8 +258,8 @@ func (o *tridentOrchestrator) bootstrap() error {
 		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns} {
 		err := f()
 		if err != nil {
-			if err.Error() == persistent_store.KeyErrorMsg {
-				keyError := err.(persistent_store.KeyError)
+			if persistent_store.MatchKeyNotFoundErr(err) {
+				keyError := err.(*persistent_store.PersistentStoreError)
 				log.Warnf("Unable to find key %s.  Continuing bootstrap, but "+
 					"consider checking integrity if Trident installation is "+
 					"not new.", keyError.Key)
@@ -540,8 +617,7 @@ func (o *tridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	}
 	oldTxn, err := o.storeClient.GetExistingVolumeTransaction(volTxn)
 	if err != nil {
-		log.Warning("Unable to check for existing volume transactions:  %v",
-			err)
+		log.Warnf("Unable to check for existing volume transactions:  %v", err)
 		return nil, err
 	}
 	if oldTxn != nil {
