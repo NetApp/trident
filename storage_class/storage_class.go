@@ -38,24 +38,42 @@ func NewFromPersistent(persistent *StorageClassPersistent) *StorageClass {
 }
 
 func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
+
+	log.WithFields(log.Fields{
+		"pool":         storagePool.Name,
+		"storageClass": s.GetName(),
+	}).Debug("Checking pool for storage class")
+
+	// First consider requiredStorage, since a match of the pool name will always return true
+	// regardless of the storage pool attributes.
 	if len(s.config.BackendStoragePools) > 0 {
 		if storagePoolList, ok := s.config.BackendStoragePools[storagePool.Backend.Name]; ok {
 			for _, storagePoolName := range storagePoolList {
 				if storagePoolName == storagePool.Name {
+					log.WithField("pool", storagePoolName).Debug("Matched by pool name.")
 					return true
 				}
 			}
 		}
-	}
-	matches := len(s.config.Attributes) > 0
-	for name, request := range s.config.Attributes {
-		if storagePool.Attributes == nil {
+
+		// Handle the sub-case where requiredStorage is specified (but didn't match) and
+		// there are no attributes specified in the storage class.  This should always return
+		// false.
+		if len(s.config.Attributes) == 0 {
 			log.WithFields(log.Fields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
-				"attribute":    name,
-			}).Panic("Storage pool attributes are nil")
+			}).Debug("Pool failed to match storage class requiredStorage attribute.")
+			return false
 		}
+	}
+
+	// Now handle the case where requiredStorage produced no match, so it's up to the storage
+	// class attributes to determine whether a pool matches.  Because storage class attributes
+	// are used to restrict the set of matching pools, it follows that a storage class without
+	// any attributes (or requiredStorage!) should match all pools.
+	matches := true
+	for name, request := range s.config.Attributes {
 		if offer, ok := storagePool.Attributes[name]; !ok || !offer.Matches(request) {
 			log.WithFields(log.Fields{
 				"offer":        offer,
@@ -63,8 +81,8 @@ func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
 				"attribute":    name,
-				"found":        ok}).Debug("Attribute for storage " +
-				"pool failed to match storage class.")
+				"found":        ok,
+			}).Debug("Attribute for storage pool failed to match storage class.")
 			matches = false
 			break
 		}
@@ -76,15 +94,27 @@ func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
 func (s *StorageClass) CheckAndAddBackend(b *storage.StorageBackend) int {
+
+	log.WithFields(log.Fields{
+		"backend":      b.Name,
+		"storageClass": s.GetName(),
+	}).Debug("Checking backend for storage class")
+
 	if !b.Online {
+		log.WithField("backend", b.Name).Warn("Backend not online.")
 		return 0
 	}
+
 	added := 0
 	for _, storagePool := range b.Storage {
 		if s.Matches(storagePool) {
 			s.pools = append(s.pools, storagePool)
 			storagePool.AddStorageClass(s.GetName())
 			added++
+			log.WithFields(log.Fields{
+				"pool":         storagePool.Name,
+				"storageClass": s.GetName(),
+			}).Debug("Storage class added to the storage pool.")
 		}
 	}
 	return added

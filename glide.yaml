@@ -1,7 +1,7 @@
 package: github.com/netapp/trident
 import:
 - package: github.com/Sirupsen/logrus
-  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/coreos/etcd
   version: 0520cb9304cb2385f7e72b8bc02d6e4d3257158a
   subpackages:
@@ -72,4 +72,9 @@ import:
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
-
+- package: github.com/docker/go-plugins-helpers
+  version: bd8c600f0cdd76c7a57ff6aa86bd2b423868c688
+  subpackages:
+  - volume
+- package: github.com/mitchellh/hashstructure
+  version: 2bca23e0e452137f789efbc8610126fd8b94f73b

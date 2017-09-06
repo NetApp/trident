@@ -61,7 +61,7 @@ func (m *MockOrchestrator) AddFrontend(f frontend.FrontendPlugin) {
 	// NOP for the time being, since users of MockOrchestrator don't need this
 }
 
-func (o *MockOrchestrator) GetVersion() string {
+func (m *MockOrchestrator) GetVersion() string {
 	return config.OrchestratorVersion.String()
 }
 
@@ -296,6 +296,14 @@ func (m *MockOrchestrator) DeleteVolume(volumeName string) (found bool, err erro
 func (m *MockOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.VolumeExternal {
 	// Currently returns nil, since this is backend agnostic.  Change this
 	// if we ever have non-apiserver functionality depend on this function.
+	return nil
+}
+
+func (m *MockOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+	return nil
+}
+
+func (m *MockOrchestrator) DetachVolume(volumeName, mountpoint string) error {
 	return nil
 }
 

@@ -4,6 +4,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime"
@@ -15,13 +16,17 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/persistent_store"
 )
 
 var (
-	debug        = flag.Bool("debug", false, "Enable debugging output")
+	debug    = flag.Bool("debug", false, "Enable debugging output")
+	logLevel = flag.String("log_level", "info", "Logging level (debug, info, warn, error, fatal)")
+
 	k8sAPIServer = flag.String("k8s_api_server", "", "Kubernetes API server "+
 		"address to enable dynamic storage provisioning for Kubernetes.")
 	k8sConfigPath = flag.String("k8s_config_path", "", "Path to KubeConfig file.")
@@ -41,9 +46,15 @@ var (
 	port        = flag.String("port", "8000", "Storage orchestrator API port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
-	kubernetesVersion = "unknown"
-	storeClient       persistent_store.Client
-	enableKubernetes  bool
+
+	enableDocker = flag.Bool("docker", false, "Enable Docker Volume Plugin frontend")
+	driverName   = flag.String("volume_driver", "netapp", "Register as a Docker "+
+		"volume plugin with this driver name")
+	driverPort = flag.String("driver_port", "", "Listen on this port instead of using a "+
+		"Unix domain socket")
+
+	storeClient      persistent_store.Client
+	enableKubernetes bool
 )
 
 func shouldEnableTLS() bool {
@@ -62,9 +73,7 @@ func shouldEnableTLS() bool {
 
 func processCmdLineArgs() {
 	var err error
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
+
 	// Don't bother validating the Kubernetes API server address; we'll know if
 	// it's invalid during start-up.  Given that users can specify DNS names,
 	// validation would be more trouble than it's worth.
@@ -101,16 +110,27 @@ func processCmdLineArgs() {
 }
 
 func main() {
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	flag.Parse()
+	frontends := make([]frontend.FrontendPlugin, 0)
+
+	// Set log level
+	err := logging.InitLogLevel(*debug, *logLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.WithFields(log.Fields{
 		"version":    config.OrchestratorVersion.String(),
 		"build_time": config.BuildTime,
 	}).Info("Running Trident storage orchestrator.")
 
-	frontends := make([]frontend.FrontendPlugin, 0)
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	flag.Parse()
-
 	processCmdLineArgs()
+
+	if enableKubernetes && *enableDocker {
+		log.Fatal("Trident cannot serve both Docker and Kubernetes at the same time.")
+	}
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
 
@@ -119,6 +139,7 @@ func main() {
 			kubernetesFrontend frontend.FrontendPlugin
 			err                error
 		)
+
 		if *k8sAPIServer != "" {
 			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
 		} else {
@@ -129,6 +150,21 @@ func main() {
 		}
 		orchestrator.AddFrontend(kubernetesFrontend)
 		frontends = append(frontends, kubernetesFrontend)
+	}
+	if *enableDocker {
+
+		// Set up multi-output logging
+		err := logging.InitLogging(*driverName)
+		if err != nil {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		dockerPlugin, err := docker.NewPlugin(*driverName, *driverPort, orchestrator)
+		if err != nil {
+			log.Fatalf("Unable to start the Docker frontend. %v", err)
+		}
+		frontends = append(frontends, dockerPlugin)
 	}
 	restServer := rest.NewAPIServer(orchestrator, *address, *port)
 	frontends = append(frontends, restServer)

@@ -5,12 +5,14 @@ package core
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+	dvp_utils "github.com/netapp/netappdvp/utils"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
@@ -842,6 +844,77 @@ func (o *tridentOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.
 		}
 	}
 	return volumes
+}
+
+// AttachVolume mounts a volume to the local host.  It ensures the mount point exists,
+// and it calls the underlying storage driver to perform the attach operation as appropriate
+// for the protocol and storage controller type.
+func (o *tridentOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return fmt.Errorf("Volume %s not found.", volumeName)
+	}
+
+	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Mounting volume.")
+
+	// Ensure mount point exists and is a directory
+	fileInfo, err := os.Lstat(mountpoint)
+	if os.IsNotExist(err) {
+		// Make mount point if it doesn't exist
+		if err := os.MkdirAll(mountpoint, 0755); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	} else if !fileInfo.IsDir() {
+		return fmt.Errorf("%v already exists and it's not a directory", mountpoint)
+	}
+
+	// Check if volume is already mounted
+	dfOutput, dfOuputErr := dvp_utils.GetDFOutput()
+	if dfOuputErr != nil {
+		err = fmt.Errorf("Error checking if %v is already mounted: %v", mountpoint, dfOuputErr)
+		return err
+	}
+	for _, e := range dfOutput {
+		if e.Target == mountpoint {
+			log.Debugf("%v is already mounted", mountpoint)
+			return nil
+		}
+	}
+
+	return volume.Backend.Driver.Attach(volume.Config.InternalName, mountpoint, options)
+}
+
+// DetachVolume unmounts a volume from the local host.  It ensures the volume is already
+// mounted, and it calls the underlying storage driver to perform the detach operation as
+// appropriate for the protocol and storage controller type.
+func (o *tridentOrchestrator) DetachVolume(volumeName, mountpoint string) error {
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return fmt.Errorf("Volume %s not found.", volumeName)
+	}
+
+	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Unmounting volume.")
+
+	// Check if the mount point exists, so we know that it's attached and must be cleaned up
+	_, err := os.Stat(mountpoint)
+	if err != nil {
+		// Not attached, so nothing to do
+		return nil
+	}
+
+	// Unmount the volume
+	err = volume.Backend.Driver.Detach(volume.Config.InternalName, mountpoint)
+	if err != nil {
+		return err
+	}
+
+	// Best effort removal of the mount point
+	os.Remove(mountpoint)
+	return nil
 }
 
 // getProtocol returns the appropriate protocol name based on volume access mode

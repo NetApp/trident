@@ -414,10 +414,9 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots},
 		},
 		{
-			name:     "slow-block",
-			protocol: config.Block,
-			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots,
-				"medium-overlap"},
+			name:      "slow-block",
+			protocol:  config.Block,
+			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
 		},
 	} {
 		pools := make(map[string]*fake.FakeStoragePool, len(c.poolNames))
@@ -504,8 +503,8 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			config: &storage_class.Config{
 				Name: "specific",
 				BackendStoragePools: map[string][]string{
-					"fast-a":     []string{tu.FastThinOnly},
-					"slow-block": []string{tu.SlowNoSnapshots, tu.MediumOverlap},
+					"fast-a":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
 				},
 			},
 			expected: []*tu.PoolMatch{
@@ -516,10 +515,19 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			config: &storage_class.Config{
+				Name: "specificNoMatch",
+				BackendStoragePools: map[string][]string{
+					"unknown": {tu.FastThinOnly},
+				},
+			},
+			expected: []*tu.PoolMatch{},
+		},
+		{
+			config: &storage_class.Config{
 				Name: "mixed",
 				BackendStoragePools: map[string][]string{
-					"slow-file": []string{tu.SlowNoSnapshots},
-					"fast-b":    []string{tu.FastThinOnly, tu.FastUniqueAttr},
+					"slow-file": {tu.SlowNoSnapshots},
+					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
 				},
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -533,6 +541,22 @@ func TestAddStorageClassVolumes(t *testing.T) {
 				{Backend: "fast-b", Pool: tu.FastThinOnly},
 				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
 				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "emptyStorageClass",
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-file", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
 			},
 		},
 	}
@@ -1523,7 +1547,7 @@ func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
 		t.Fatalf("Couldn't unmarshall the orchestrator persistent state version: %v",
 			err)
 	}
-	if config.OrchestratorAPIVersion != version.OrchestratorVersion ||
+	if config.OrchestratorAPIVersion != version.OrchestratorAPIVersion ||
 		string(orchestratorV3.storeClient.GetType()) != version.PersistentStoreVersion {
 		t.Fatalf("Failed to set the orchestrator persistent state version after bootsrapping: %v",
 			err)

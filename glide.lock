@@ -1,5 +1,5 @@
-hash: 5fe603f312560cb422ebbc058ff8d38eff441549b1894ada2221739e9d4a41d0
-updated: 2017-10-31T11:44:35.484406719-04:00
+hash: b3ccf56738b1f933c6e6306a37625b77d1093c9e150be11091da806523db1e97
+updated: 2017-11-03T09:51:07.213565884-04:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -20,6 +20,13 @@ imports:
   - pkg/pathutil
   - pkg/tlsutil
   - pkg/types
+- name: github.com/coreos/go-systemd
+  version: 48702e0da86bd25e76cfef347e2adeb434a0d0a6
+  subpackages:
+  - activation
+  - daemon
+  - journal
+  - util
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -29,6 +36,15 @@ imports:
   subpackages:
   - digest
   - reference
+- name: github.com/docker/go-connections
+  version: 3ede32e2033de7505e6500d6c868c2b9ed9f169d
+  subpackages:
+  - sockets
+- name: github.com/docker/go-plugins-helpers
+  version: bd8c600f0cdd76c7a57ff6aa86bd2b423868c688
+  subpackages:
+  - sdk
+  - volume
 - name: github.com/dustin/go-humanize
   version: 8929fe90cee4b2cb9deb468b51fb34eba64d1bf0
 - name: github.com/emicklei/go-restful
@@ -105,6 +121,10 @@ imports:
   version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
   subpackages:
   - pbutil
+- name: github.com/Microsoft/go-winio
+  version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
+- name: github.com/mitchellh/hashstructure
+  version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/netapp/netappdvp
   version: 5721dac47725b60e7e2a2a706ae5615493d1ab95
   subpackages:
@@ -141,7 +161,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/Sirupsen/logrus
-  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
@@ -163,11 +183,13 @@ imports:
   - idna
   - internal/timeseries
   - lex/httplex
+  - proxy
   - trace
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
+  - windows
 - name: golang.org/x/text
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:

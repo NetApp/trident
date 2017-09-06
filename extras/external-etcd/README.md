@@ -104,7 +104,7 @@ For more information about the Secrets used by the operator, please see
 and [Generating Self-signed Certificates](https://coreos.com/os/docs/latest/generate-self-signed-certificates.html).
 
 
-### Testing etcd Cluster
+### Test etcd Cluster
 
 To verify the cluster we brought up in the previous step is working properly,
 we can run the following commands:
