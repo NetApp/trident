@@ -63,6 +63,7 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(
 		vc.Attributes[sa.IOPS] = sa.NewIntOffer(int(volType.QOS.MinIOPS),
 			int(volType.QOS.MaxIOPS))
 		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
+		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thin")
 		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
 		backend.AddStoragePool(vc)

@@ -7,8 +7,8 @@
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.
 - Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
-- Trident allows periods in PVC names
-  (Issue [#40](https://github.com/NetApp/trident/issues/40)).
+- Trident allows periods in PVC names (Issue 
+[#40](https://github.com/NetApp/trident/issues/40)).
 - Fixed issue where ONTAP NAS volumes were not mountable immediately
   after creation when using load-sharing mirrors for the SVM root
   volume (Issue [#44](https://github.com/NetApp/trident/issues/44)).
@@ -20,8 +20,10 @@
 - Controller serial numbers are reported by the REST interface and tridentctl.
 - tridentctl logs can display launcher and ephemeral logs, and it can create a
   support archive.
-- Added ontap-nas-economy driver
-  (Issue [#2](https://github.com/NetApp/trident/issues/2)).
+- Added ontap-nas-economy driver (Issue 
+[#2](https://github.com/NetApp/trident/issues/2)).
+- Added support for NetApp Volume Encryption to the ONTAP drivers (Issue 
+[#3](https://github.com/NetApp/trident/issues/3)).
 
 ## v17.07.0
 
@@ -31,10 +33,10 @@ container orchestrator version.
 - When running in a pod, the Trident REST interface is no longer accessible
 by default from outside the pod.
 - Trident correctly handles updating backends that have volumes provisioned
-using storage classes that no longer exist
-(Issue [#29](https://github.com/NetApp/trident/issues/29)).
-- Installer script correctly creates a new namespace
-(Issue [#39](https://github.com/NetApp/trident/issues/39)).
+using storage classes that no longer exist (Issue 
+[#29](https://github.com/NetApp/trident/issues/29)).
+- Installer script correctly creates a new namespace (Issue 
+[#39](https://github.com/NetApp/trident/issues/39)).
 
 **Enhancements:**
 - Added support for `storage.k8s.io/v1` storage classes and the default storage

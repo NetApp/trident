@@ -9,6 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 
+	"github.com/netapp/netappdvp/apis/ontap"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -32,6 +33,7 @@ func (d *OntapSANStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsApiFeature(ontap.NETAPP_VOLUME_ENCRYPTION)),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

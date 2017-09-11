@@ -18,6 +18,7 @@ func getPools(count int) map[string]*FakeStoragePool {
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(0, 100),
 				sa.Snapshots:        sa.NewBoolOffer(false),
+				sa.Encryption:       sa.NewBoolOffer(false),
 				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 			},
 		}

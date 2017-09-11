@@ -1,5 +1,5 @@
-hash: 120fdc38c76f2b29a3ff7df36760980fe3c4251be088e0b956ebf37ba7c1c3a3
-updated: 2017-10-16T18:17:46.155368705-04:00
+hash: 624fdd174bedc96f5bef0226a31e38c4077bf493dc553d14f54d422fc6c9d8ff
+updated: 2017-10-17T16:16:22.8861239-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -40,7 +40,7 @@ imports:
   - digest
   - reference
 - name: github.com/dustin/go-humanize
-  version: 8929fe90cee4b2cb9deb468b51fb34eba64d1bf0
+  version: 259d2a102b871d17f30e3cd9881a642961a1e486
 - name: github.com/emicklei/go-restful
   version: 09691a3b6378b740595c1002f40c34dd5f218a22
   subpackages:
@@ -94,9 +94,9 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/mattn/go-runewidth
-  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: 86a4aca8800cf2663fb8b712e0e33ca6963ef2ae
+  version: a93463d46ae59acabd4cb68f95d74879be9c3701
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -105,7 +105,7 @@ imports:
   - storage_drivers
   - utils
 - name: github.com/olekukonko/tablewriter
-  version: cca8bbc0798408af109aaaa239cbd2634846b340
+  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/PuerkitoBio/purell

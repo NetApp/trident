@@ -271,6 +271,12 @@ nodes in the Kubernetes cluster. [Using ONTAP SAN with Kubernetes](http://netapp
 blog post provides the necessary instructions for (1) creating an iGroup and
 (2) assigning Kubernetes nodes to an iGroup.
 
+Trident supports NetApp Volume Encryption (NVE) with each of the ONTAP drivers.
+NVE requires ONTAP 9.1 or later, and NVE must be licensed and configured on the
+cluster by the storage administrator before using it with Trident.  If NVE is
+not configured correctly, PVCs whose storage classes require encryption may
+remain in pending state.
+
 ### SolidFire Preparation
 For SolidFire backends, Trident assigns the volumes it provisions to the Access
 Group(s) specified in the backend configuration file (see [SolidFire Configurations](#solidfire-configurations)
@@ -812,6 +818,7 @@ The current attributes and their possible values are below:
 | provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. | thick provisioning: ontap-nas, ontap-nas-economy, ontap-san, eseries-iscsi; thin provisioning: ontap-nas, ontap-nas-economy, ontap-san, solidfire-san |
 | backendType | string | ontap-nas, ontap-nas-economy, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. | All drivers |
 | snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. | ontap-nas, ontap-san, solidfire-san |
+| encryption | bool | true, false | Whether the backend supports volume encryption. | Whether volumes must be encrypted. |
 | IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. | solidfire-san |
 
 

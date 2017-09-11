@@ -7,7 +7,8 @@ const (
 	IOPS = "IOPS"
 
 	// Constants for boolean storage category attributes
-	Snapshots = "snapshots"
+	Snapshots  = "snapshots"
+	Encryption = "encryption"
 
 	// Constants for string list attributes
 	ProvisioningType = "provisioningType"
@@ -31,6 +32,7 @@ const (
 var attrTypes = map[string]StorageAttributeType{
 	IOPS:             intType,
 	Snapshots:        boolType,
+	Encryption:       boolType,
 	ProvisioningType: stringType,
 	BackendType:      stringType,
 	Media:            stringType,

@@ -57,6 +57,7 @@ func (d *EseriesStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBa
 
 		// No snapshots or thin provisioning on E-series
 		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
+		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thick")
 
 		backend.AddStoragePool(vc)

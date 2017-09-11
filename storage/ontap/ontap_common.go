@@ -232,6 +232,19 @@ func getVolumeOptsCommon(
 			}).Warnf("Expected string for %s; ignoring.", sa.ProvisioningType)
 		}
 	}
+	if encryptionReq, ok := requests[sa.Encryption]; ok {
+		if encryption, ok := encryptionReq.Value().(bool); ok {
+			if encryption {
+				opts["encryption"] = "true"
+			}
+		} else {
+			log.WithFields(log.Fields{
+				"provisioner": "ONTAP",
+				"method":      "getVolumeOptsCommon",
+				"encryption":  encryptionReq.Value(),
+			}).Warnf("Expected bool for %s; ignoring.", sa.Encryption)
+		}
+	}
 	if volConfig.SnapshotPolicy != "" {
 		opts["snapshotPolicy"] = volConfig.SnapshotPolicy
 	}
