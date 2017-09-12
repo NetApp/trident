@@ -127,7 +127,7 @@ func (d *FakeStorageDriver) Initialize(
 	return nil
 }
 
-func (d *FakeStorageDriver) Validate() error {
+func (d *FakeStorageDriver) Validate(context dvp.DriverContext) error {
 	return nil
 }
 
