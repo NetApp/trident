@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -22,6 +21,7 @@ const (
 
 	MODE_DIRECT = "direct"
 	MODE_TUNNEL = "tunnel"
+	MODE_LOGS   = "logs"
 
 	POD_SERVER = "127.0.0.1:8000"
 
@@ -46,11 +46,8 @@ var RootCmd = &cobra.Command{
 	Short:        "A CLI tool for NetApp Trident",
 	Long:         `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		err := discoverOperatingMode()
-		if err != nil {
-			return err
-		}
-		return nil
+		err := discoverOperatingMode(cmd)
+		return err
 	},
 }
 
@@ -61,52 +58,63 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 }
 
-func discoverOperatingMode() error {
+func discoverOperatingMode(cmd *cobra.Command) error {
+
+	defer func() {
+		if !Debug {
+			return
+		}
+
+		switch OperatingMode {
+		case MODE_DIRECT:
+			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
+		case MODE_TUNNEL:
+			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s\n",
+				OperatingMode, TridentPodName, TridentPodNamespace)
+		case MODE_LOGS:
+			fmt.Printf("Operating mode = %s, Namespace = %s\n", OperatingMode, TridentPodNamespace)
+		}
+	}()
 
 	var err error
+
 	envServer := os.Getenv("TRIDENT_SERVER")
 
 	if Server != "" {
 
 		// Server specified on command line takes precedence
 		OperatingMode = MODE_DIRECT
-		if Debug {
-			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
-		}
 		return nil
 	} else if envServer != "" {
 
 		// Consider environment variable next
 		Server = envServer
 		OperatingMode = MODE_DIRECT
-		if Debug {
-			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
-		}
 		return nil
-	} else {
+	}
 
-		// Server not specified, so try tunneling to a pod
-
-		if TridentPodNamespace == "" {
-			TridentPodNamespace, err = getCurrentNamespace()
-			if err != nil {
-				return err
-			}
-		}
-
-		TridentPodName, err = getTridentPod(TridentPodNamespace)
+	// Server not specified, so try tunneling to a pod
+	if TridentPodNamespace == "" {
+		TridentPodNamespace, err = getCurrentNamespace()
 		if err != nil {
 			return err
 		}
-
-		OperatingMode = MODE_TUNNEL
-		Server = POD_SERVER
-		if Debug {
-			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s\n",
-				OperatingMode, TridentPodName, TridentPodNamespace)
-		}
-		return nil
 	}
+
+	TridentPodName, err = getTridentPod(TridentPodNamespace)
+	if err != nil {
+		// If we're running 'logs', and there isn't a Trident pod, set a special mode
+		// so we don't terminate execution before we even start.
+		if cmd.Name() == "logs" {
+			OperatingMode = MODE_LOGS
+			return nil
+		}
+		return err
+	}
+
+	OperatingMode = MODE_TUNNEL
+	Server = POD_SERVER
+	return nil
 }
 
 func getCurrentNamespace() (string, error) {
@@ -160,7 +168,7 @@ func getTridentPod(namespace string) (string, error) {
 	//fmt.Printf("%+v\n", tridentPod)
 
 	if len(tridentPod.Items) != 1 {
-		return "", errors.New("could not find a Trident pod.")
+		return "", fmt.Errorf("could not find a Trident pod in the %s namespace.", namespace)
 	}
 
 	// Get Trident pod name & namespace

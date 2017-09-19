@@ -10,6 +10,8 @@
 
 **Enhancements:**
 - Controller serial numbers are reported by the REST interface and tridentctl.
+- tridentctl logs can display launcher and ephemeral logs, and it can create a
+  support archive.
 
 ## v17.07.0
 
