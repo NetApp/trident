@@ -1,5 +1,5 @@
-hash: 695544c53cc3df0c072d8927e542ac296807733b5e44ff1984c076f75a39e1ab
-updated: 2017-09-20T19:48:00.705720833-04:00
+hash: b1afd0b3a9013a4b56385ab02d7413295542759cd6a7e574aef2feb5cf749161
+updated: 2017-09-21T01:09:31.224910928-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -96,7 +96,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/netapp/netappdvp
-  version: bb65bea19b8233c334f57f03504eb0e6478874ff
+  version: 1a434dd335ed57cfba3c7e0393b5a6b544ebcdf7
   subpackages:
   - apis/eseries
   - apis/ontap
