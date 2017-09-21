@@ -7,13 +7,18 @@
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.
 - Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
-- Trident allows periods in PVC names.
+- Trident allows periods in PVC names
+  (Issue [#40](https://github.com/NetApp/trident/issues/40)).
+- Fixed issue where ONTAP NAS volumes were not mountable immediately
+  after creation when using load-sharing mirrors for the SVM root
+  volume. (Issue [#44](https://github.com/NetApp/trident/issues/44)).
 
 **Enhancements:**
 - Controller serial numbers are reported by the REST interface and tridentctl.
 - tridentctl logs can display launcher and ephemeral logs, and it can create a
   support archive.
-- Added ontap-nas-economy driver.
+- Added ontap-nas-economy driver
+  (Issue [#2](https://github.com/NetApp/trident/issues/2)).
 
 ## v17.07.0
 

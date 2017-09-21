@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const HTTP_TIMEOUT = time.Second * 10
+const HTTP_TIMEOUT = time.Second * 30
 
 func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
 
