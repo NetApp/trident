@@ -770,6 +770,18 @@ storage classes and requests follows below.
 | attributes | `map[string]string` | No | Map of attribute names to requested values for that attribute.  These attribute requests will be matched against the offered attributes from each backend storage pool to determine which targets are valid for provisioning. See [Storage Attributes](#storage-attributes) for possible names and values, and [Matching Storage Attributes](#matching-storage-attributes) for a description of how Trident uses them. |
 | requiredStorage | `map[string]StringList` | No | Map of backend names to lists of storage pool names for that backend.  Storage pools specified here will be used by this storage class **regardless** of whether they match the attributes requested above. |
 
+The main use of the `requiredStorage` parameter is to limit a storage class to
+a specific set of known storage pools. Therefore, for such a use case, it is
+recommended to define a storage class with just the `requiredStorage` parameter
+and with no attributes (see `sample-input/storage-class-bronze-default.yaml` in
+the installer bundle). However, it is possible to define a storage class by
+specifiying both attributes and `requiredStorage`. For such a configuration, the
+set of storage pools that will be used for the storage class are all the pools
+that satisfy *all* the attributes **or** the pools included in the
+`requiredStorage` field, whether those pools satisfy the storage class
+attributes or not. Therefore, the `requiredStorage` parameter effectively
+provides a means of overwriting the attributes set in the storage class.
+
 One can use storage class configurations to directly define storage classes via
 the [REST API](#rest-api). See `sample-input/storage-class-bronze.json` for an
 example of a storage class configuration.  However, for Kubernetes deployments,

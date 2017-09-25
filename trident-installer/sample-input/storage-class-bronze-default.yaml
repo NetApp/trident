@@ -6,8 +6,5 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: netapp.io/trident
 parameters:
-  media: "hdd"
-  provisioningType: "thin"
-  snapshots: "true"
   requiredStorage: "solidfire_10.0.0.1:Bronze"
 

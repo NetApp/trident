@@ -11,7 +11,9 @@
   (Issue [#40](https://github.com/NetApp/trident/issues/40)).
 - Fixed issue where ONTAP NAS volumes were not mountable immediately
   after creation when using load-sharing mirrors for the SVM root
-  volume. (Issue [#44](https://github.com/NetApp/trident/issues/44)).
+  volume (Issue [#44](https://github.com/NetApp/trident/issues/44)).
+- File system type is not set for NFS volumes in the persistent store (Issue
+[#57](https://github.com/NetApp/trident/issues/57)).
 
 **Enhancements:**
 - Controller serial numbers are reported by the REST interface and tridentctl.
