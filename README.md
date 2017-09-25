@@ -107,10 +107,9 @@ Kubernetes.
     `sample-input/backend-ontap-san.json`, `sample-input/backend-solidfire.json`, or
     `sample-input/sample-eseries-iscsi.json` to specify an ONTAP NAS, ONTAP SAN, SolidFire, or E-Series backend.
 
-	If multiple clusters will be running Trident against the same backend, add
-	the `storagePrefix` attribute, with a value that will be unique to your
-	cluster, e.g., `storagePrefix="username"`.  See the [Caveats](#caveats)
-	section for further details.
+	For scenarios where multiple Kubernetes clusters each run an instance of Trident
+	against the same storage backend, the instructions under [Caveats](#caveats)
+	provide some guidelines for configuring backend definitions.
 
 5.  Copy the backend configuration file from step 4 to the `setup/` directory
     and name it `backend.json`:
@@ -234,6 +233,12 @@ does have the following requirements, however:
   enabled. If they are not available, Trident can only communicate with the API server
   over the server's insecure port. See [here](https://kubernetes.io/docs/admin/service-accounts-admin/)
   for additional details on service accounts.
+* A Linux system for install: The [Install Script](#install-script) and
+  the `tridentctl` binary included in the
+  [Trident installer bundle](https://github.com/NetApp/trident/releases)
+  require a Linux system to run. If you are planning to install Trident from
+  Mac, you can install `gnu-sed` by running
+  `brew install gnu-sed --with-default-names` and build `tridentctl` for Mac OS X.
 * iSCSI and the NFS utilities: Ensure iSCSI and the NFS utilities are present
   on all the nodes in the cluster, so that they can mount the volumes
   provisioned by Trident. See [nDVP documentation](http://netappdvp.readthedocs.io/en/latest/install/host_config.html#host-configuration)
@@ -642,7 +647,6 @@ deployments.
 | --------- | ---- | -------- | ----------- |
 | version   | int  | No | Version of the nDVP API in use |
 | storageDriverName | string | Yes | Must be "solidfire-san" |
-| storagePrefix | string | No | Prefix to prepend to created volumes on the backend.  The format of the resultant volume name will be `<prefix>-<volumeName>`; this prefix should be chosen so that volume names are unique.  If unspecified, this defaults to `trident`.|
 | TenantName | string | Yes | Tenant name for created volumes. |
 | EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:sf-address/json-rpc/7.0`). |
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
@@ -1179,10 +1183,11 @@ outstanding issues to be aware of when using it:
   it will halt; communication must be restored before Trident will come online.
   Once fully booted, however, etcd outages should not cause Trident to crash.
 * When using a backend across multiple Trident instances, it is recommended that each backend
-  configuration file specifies a different `storagePrefix` value.  Trident
+  configuration file specifies a different `storagePrefix` value for ONTAP
+  backends or use a different `TenantName` for SolidFire backends.  Trident
   cannot detect volumes that other instances of Trident has created, and
   attempting to create an existing volume on either ONTAP or SolidFire backends
-  succeeds as Trident treats volume creation as an idempotent operation.  Thus,
-  if the `storagePrefix`es do not differ, there is a very slim chance to have
-  name collisions for volumes created on the same backend.
+  succeeds as Trident treats volume creation as an idempotent operation. Thus,
+  if the `storagePrefix`es or `TenantName`s do not differ, there is a very slim
+  chance to have name collisions for volumes created on the same backend.
 
