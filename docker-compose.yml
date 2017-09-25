@@ -9,11 +9,12 @@ services:
      - /dev:/dev
     privileged: true
     tty: true
-    command: /usr/local/bin/trident_orchestrator -port "${PORT}" -etcd_v2 http://etcd:2379 -k8s_api_server "${K8S}"
+    command: /usr/local/bin/trident_orchestrator -address "" -port "${PORT}" -etcd_v2 http://etcd:2379 -k8s_api_server "${K8S}"
     depends_on:
      - etcd  
   etcd:
     image: quay.io/coreos/etcd:v3.1.3
     volumes:
      - "${ETCD_DIR}:/var/etcd/data"
-    command: -name etcd1 -advertise-client-urls http://etcd:2379,http://localhost:2379 -listen-client-urls http://etcd:2379,http://localhost:2379 -data-dir /var/etcd/data   
+    command: /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://etcd:2379,http://localhost:2379 -listen-client-urls http://etcd:2379,http://localhost:2379 -data-dir /var/etcd/data
+

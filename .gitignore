@@ -5,7 +5,7 @@
 test-yaml
 input/backend-aws-ebs-real.json
 reset_demo.sh
-bin/
+bin/trident*
 vendor/
 launcher/launcher
 launcher/docker-build/launcher
