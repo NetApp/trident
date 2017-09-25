@@ -151,14 +151,16 @@ Kubernetes.
 7.  Make sure the `tridentctl` CLI tool, which is included in the installer
     bundle, is accessible through the `$PATH` environment variable.
 
-8.  Register the backend from step 5 with Trident once Trident is running:
+8.  Assuming the Trident deployment is running in namesapce `trident`, register
+	the backend from step 5 with Trident:
 
     ```bash
-	$ tridentctl create backend -f setup/backend.json
+	$ tridentctl create backend -n trident -f setup/backend.json
 	```
 
-	Note that you can configure and register a backend different from the one
-	used for the etcd volume here.
+	Note that `-n trident` is not required if you are running in namespace
+	`trident` and that you can configure and register a backend different from
+	the one used for the etcd volume here.
 
 9. Configure a [storage class](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses)
 	that uses this backend.  This will allow Trident to provision volumes on

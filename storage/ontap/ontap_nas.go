@@ -61,6 +61,7 @@ func (d *OntapNASStorageDriver) CreateFollowup(
 ) error {
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
 	volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+	volConfig.FileSystem = ""
 	return nil
 }
 

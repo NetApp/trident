@@ -168,7 +168,9 @@ func getTridentPod(namespace string) (string, error) {
 	//fmt.Printf("%+v\n", tridentPod)
 
 	if len(tridentPod.Items) != 1 {
-		return "", fmt.Errorf("could not find a Trident pod in the %s namespace.", namespace)
+		return "", fmt.Errorf("could not find a Trident pod in the %s namespace. "+
+			"You may need to use the -n option to specify the correct namespace.",
+			namespace)
 	}
 
 	// Get Trident pod name & namespace

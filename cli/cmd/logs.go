@@ -145,7 +145,9 @@ func getLogs(logMap map[string][]byte) error {
 	case MODE_LOGS:
 		switch log {
 		case "trident", "etcd":
-			return fmt.Errorf("could not find a Trident pod in the %s namespace.", TridentPodNamespace)
+			return fmt.Errorf("could not find a Trident pod in the %s namespace. "+
+				"You may need to use the -n option to specify the correct namespace.",
+				TridentPodNamespace)
 		case "ephemeral":
 			err = getPodLogs(tridentLogEphemeral, logMap)
 		case "launcher":
