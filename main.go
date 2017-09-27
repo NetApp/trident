@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
@@ -30,6 +31,12 @@ var (
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
 	etcdV3 = flag.String("etcd_v3", "", "etcd server (v3 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v3=http://127.0.0.1:8001)")
+	etcdV3Cert = flag.String("etcd_v3_cert", "/root/certs/etcd-client.crt",
+		"etcdV3 client certificate")
+	etcdV3CACert = flag.String("etcd_v3_cacert", "/root/certs/etcd-client-ca.crt",
+		"etcdV3 client CA certificate")
+	etcdV3Key = flag.String("etcd_v3_key", "/root/certs/etcd-client.key",
+		"etcdV3 client private key")
 	address     = flag.String("address", "localhost", "Storage orchestrator API address")
 	port        = flag.String("port", "8000", "Storage orchestrator API port")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -38,6 +45,20 @@ var (
 	storeClient       persistent_store.Client
 	enableKubernetes  bool
 )
+
+func shouldEnableTLS() bool {
+	// Check for client certificate, client CA certificate, and client private key
+	if _, err := os.Stat(*etcdV3Cert); err != nil {
+		return false
+	}
+	if _, err := os.Stat(*etcdV3CACert); err != nil {
+		return false
+	}
+	if _, err := os.Stat(*etcdV3Key); err != nil {
+		return false
+	}
+	return true
+}
 
 func processCmdLineArgs() {
 	var err error
@@ -48,11 +69,22 @@ func processCmdLineArgs() {
 	// it's invalid during start-up.  Given that users can specify DNS names,
 	// validation would be more trouble than it's worth.
 	if *etcdV3 != "" {
-		storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
+		if shouldEnableTLS() {
+			log.Debug("Trident is configured with an etcdv3 client with TLS.")
+			storeClient, err = persistent_store.NewEtcdClientV3WithTLS(*etcdV3,
+				*etcdV3Cert, *etcdV3CACert, *etcdV3Key)
+		} else {
+			log.Debug("Trident is configured with an etcdv3 client without TLS.")
+			if !strings.Contains(*etcdV3, "127.0.0.1") {
+				log.Warn("Trident's etcdv3 client should be configured with TLS!")
+			}
+			storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
+		}
 		if err != nil {
 			panic(err)
 		}
 	} else if *etcdV2 != "" {
+		log.Debug("Trident is configured with an etcdv2 client.")
 		storeClient, err = persistent_store.NewEtcdClientV2(*etcdV2)
 		if err != nil {
 			panic(err)

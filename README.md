@@ -147,6 +147,10 @@ Kubernetes.
 	section for some advice on how to deal with some of the pitfalls that can
 	occur during this step.
 
+	If you are planning to deploy Trident with an external etcd cluster, please
+	follow the instructions in [Configuring Trident with an External etcd Cluster](https://github.com/NetApp/trident/tree/master/extras/external-etcd/README.md#configuring-trident-with-an-external-etcd-cluster)
+	instead of performing this step.
+
 7.  Make sure the `tridentctl` CLI tool, which is included in the installer
     bundle, is accessible through the `$PATH` environment variable.
 
@@ -219,7 +223,7 @@ does have the following requirements, however:
   Trident manages.  The standard deployment definition distributed as part of
   the installer includes an etcd container, so there is no need to install etcd
   separately; however, it is possible to deploy Trident with an external etcd
-  cluster.
+  cluster: [Configuring Trident with an External etcd Cluster](https://github.com/NetApp/trident/tree/master/extras/external-etcd/README.md#configuring-trident-with-an-external-etcd-cluster).
 * Kubernetes 1.4/OpenShift Enterprise 3.4/OpenShift Origin 1.4 or later:
   Optional, but necessary for the integrations with Kubernetes.  While Trident
   can be run independently and managed via its CLI or REST API, users
@@ -502,6 +506,9 @@ Trident exposes several command line options.  These are as follows:
 
 * `-etcd_v3 <address>` or `-etcd_v2 <address>`:  Required; use this to specify
   the etcd deployment that Trident should use.
+* `-etcd_v3_cert <file>`: Optional, etcdV3 client certificate.
+* `-etcd_v3_cacert <file>`: Optional, etcdV3 client CA certificate.
+* `-etcd_v3_key <file>`: Optional, etcdV3 client private key.
 * `-k8s_pod`:  Optional; however, either this or `-k8s_api_server` must be set
   to enable Kubernetes support.  Setting this will cause Trident to use its
   containing pod's Kubernetes service account credentials to contact the API

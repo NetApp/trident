@@ -45,17 +45,12 @@ func NewTridentOrchestrator(client persistent_store.Client) *tridentOrchestrator
 }
 
 func (o *tridentOrchestrator) transformPersistentState() error {
-	// Determine if Trident needs to transform the persistent state before bootstrapping:
 	// Transforming persistent state happens under two scenarios:
 	// 1) Change in the persistent store version (e.g., from etcdv2 to etcdv3)
 	// 2) Change in the Trident API version (e.g., from Trident API v1 to v2)
-	if o.storeClient.GetType() == persistent_store.MemoryStore {
-		// No persistence so no transformation
-		return nil
-	}
 	version, err := o.storeClient.GetVersion()
 	if err != nil && persistent_store.MatchKeyNotFoundErr(err) {
-		// Version should be etcdv2 and Trident API v1
+		// Persistent store and Trident API versions should be etcdv2 and v1 respectively.
 		version = &persistent_store.PersistentStateVersion{
 			string(persistent_store.EtcdV2Store),
 			config.OrchestratorAPIVersion,
@@ -64,68 +59,25 @@ func (o *tridentOrchestrator) transformPersistentState() error {
 		return fmt.Errorf("Couldn't determine the orchestrator persistent state version: %v",
 			err)
 	}
-	if config.OrchestratorAPIVersion != version.OrchestratorVersion {
+	if config.OrchestratorAPIVersion != version.OrchestratorAPIVersion {
 		log.WithFields(log.Fields{
-			"current_api_version": version.OrchestratorVersion,
+			"current_api_version": version.OrchestratorAPIVersion,
 			"desired_api_version": config.OrchestratorAPIVersion,
 		}).Info("Transforming Trident API objects on the persistent store.")
 		//TODO: transform Trident API objects
 	}
-	clientVersion := string(o.storeClient.GetType())
-	if clientVersion != version.PersistentStoreVersion {
-		log.WithFields(log.Fields{
-			"current_store_version": version.PersistentStoreVersion,
-			"desired_store_version": clientVersion,
-		}).Info("Transforming persistent state.")
-		var srcClient, destinationClient persistent_store.EtcdClient
-		switch o.storeClient.GetType() {
-		case persistent_store.EtcdV2Store:
-			destinationClient, err = persistent_store.NewEtcdClientV2(
-				o.storeClient.GetEndpoints())
-		case persistent_store.EtcdV3Store:
-			destinationClient, err = persistent_store.NewEtcdClientV3(
-				o.storeClient.GetEndpoints())
-		default:
-			return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
-				o.storeClient.GetType())
-		}
-		if err != nil {
-			return fmt.Errorf("Failed in creating the destination etcd client for data migration: %v",
-				err)
-		}
-		switch version.PersistentStoreVersion {
-		case string(persistent_store.EtcdV2Store):
-			srcClient, err = persistent_store.NewEtcdClientV2(
-				o.storeClient.GetEndpoints())
-		case string(persistent_store.EtcdV3Store):
-			srcClient, err = persistent_store.NewEtcdClientV3(
-				o.storeClient.GetEndpoints())
-		default:
-			return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
-				version.PersistentStoreVersion)
-		}
-		if err != nil {
-			return fmt.Errorf("Failed in creating the source etcd client for data migration: %v",
-				err)
-		}
-		dataMigrator := persistent_store.NewEtcdDataMigrator(srcClient,
-			destinationClient)
-		// Moving all Trident objects for all API versions
-		if err = dataMigrator.Start("/"+config.OrchestratorName, false); err != nil {
-			return fmt.Errorf("etcd data migration failed: %v", err)
-		}
-		if err = dataMigrator.Stop(); err != nil {
-			return fmt.Errorf("Failed to shut down the etcd data migrator: %v",
-				err)
-		}
+	dataMigrator := persistent_store.NewDataMigrator(o.storeClient,
+		persistent_store.StoreType(version.PersistentStoreVersion))
+	if err = dataMigrator.Run("/"+config.OrchestratorName, false); err != nil {
+		return fmt.Errorf("Data migration failed: %v", err)
+	}
 
-		// Store the persistent store and API versions
-		version.OrchestratorVersion = config.OrchestratorAPIVersion
-		version.PersistentStoreVersion = string(o.storeClient.GetType())
-		if err = o.storeClient.SetVersion(version); err != nil {
-			return fmt.Errorf("Failed to set the persistent state version after migration: %v",
-				err)
-		}
+	// Store the persistent store and API versions
+	version.OrchestratorAPIVersion = config.OrchestratorAPIVersion
+	version.PersistentStoreVersion = string(o.storeClient.GetType())
+	if err = o.storeClient.SetVersion(version); err != nil {
+		return fmt.Errorf("Failed to set the persistent state version after migration: %v",
+			err)
 	}
 	return nil
 }

@@ -3,6 +3,8 @@
 package persistent_store
 
 import (
+	"crypto/tls"
+
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
 )
@@ -17,27 +19,20 @@ const (
 
 type PersistentStateVersion struct {
 	PersistentStoreVersion string `json:"store_version"`
-	OrchestratorVersion    string `json:"orchestration_version"`
+	OrchestratorAPIVersion string `json:"orchestrator_api_version"`
 }
 
-type EtcdClient interface {
-	Create(key, value string) error
-	Read(key string) (string, error)
-	ReadKeys(keyPrefix string) ([]string, error)
-	Update(key, value string) error
-	Set(key, value string) error
-	Delete(key string) error
-	DeleteKeys(keyPrefix string) error
-	GetType() StoreType
-	Stop() error
+type ClientConfig struct {
+	endpoints string
+	TLSConfig *tls.Config
 }
 
 type Client interface {
-	EtcdClient
-
-	GetEndpoints() string
 	GetVersion() (*PersistentStateVersion, error)
 	SetVersion(version *PersistentStateVersion) error
+	GetConfig() *ClientConfig
+	GetType() StoreType
+	Stop() error
 
 	AddBackend(b *storage.StorageBackend) error
 	GetBackend(backendName string) (*storage.StorageBackendPersistent, error)
@@ -64,4 +59,15 @@ type Client interface {
 	GetStorageClass(scName string) (*storage_class.StorageClassPersistent, error)
 	GetStorageClasses() ([]*storage_class.StorageClassPersistent, error)
 	DeleteStorageClass(sc *storage_class.StorageClass) error
+}
+
+type EtcdClient interface {
+	Client
+	Create(key, value string) error
+	Read(key string) (string, error)
+	ReadKeys(keyPrefix string) ([]string, error)
+	Update(key, value string) error
+	Set(key, value string) error
+	Delete(key string) error
+	DeleteKeys(keyPrefix string) error
 }

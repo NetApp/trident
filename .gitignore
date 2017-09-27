@@ -16,6 +16,8 @@ trident-installer.tar.gz
 trident-installer/*.yaml
 trident-installer/setup
 trident
+*.pem
+*.csr
 
 ###############################################################################
 # Go

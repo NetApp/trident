@@ -1,3 +1,5 @@
+// Copyright 2017 NetApp, Inc. All Rights Reserved.
+
 package persistent_store
 
 import (

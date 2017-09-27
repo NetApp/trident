@@ -27,8 +27,6 @@ ARG K8S=""
 ENV K8S $K8S
 ENV TRIDENT_IP localhost
 
-COPY ./scripts/* /usr/local/sbin/
-COPY $BIN /usr/local/bin
-COPY $CLI_BIN /usr/local/bin
+COPY ./scripts/* $BIN $CLI_BIN ./extras/external-etcd/bin/etcd-copy /usr/local/bin/
 
 CMD ["/usr/local/bin/$BIN -port $PORT -etcd_v3 $ETCDV3 -k8s_api_server $K8S"]

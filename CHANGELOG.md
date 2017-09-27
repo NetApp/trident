@@ -2,7 +2,20 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v17.07.0
+## Changes since v17.10.0
+
+**Fixes:**
+- Volume deletion is an idempotent operation with the ontap-nas-economy driver (Issue [#65](https://github.com/NetApp/trident/issues/65)).
+
+**Enhancements:**
+- Added CHAP support for SolidFire (Issue [#42](https://github.com/NetApp/trident/issues/42)).
+- Added support for the etcdv3 API (Issue [#45](https://github.com/NetApp/trident/issues/45)).
+- Added the etcd-copy utility to migrate data between etcd clusters.
+- Enabled TLS for Trident's etcd client and the etcd-copy utility.
+- Added scripts and instructions for setting up an external etcd cluster using
+  etcd operator.
+
+## v17.10.0
 
 **Fixes:**
 - tridentctl correctly handles larger payloads using chunked encoding.

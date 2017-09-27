@@ -23,7 +23,7 @@ CLI_PKG ?= github.com/netapp/trident/cli
 
 DIST_REGISTRY?=netapp
 
-TRIDENT_VERSION ?= 17.10.0
+TRIDENT_VERSION ?= 18.01.0
 
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
@@ -60,7 +60,7 @@ DR=docker run --rm \
 
 GO=${DR} go
 
-.PHONY=default get build docker_get docker_build docker_image clean fmt install test test_core vet launcher_build launcher_start launch pod_launch prep_pod_template clear_trident
+.PHONY=default get build docker_get docker_build docker_image clean fmt install test test_core vet launcher_build launcher_start pod_launch prep_pod_template clear_trident
 
 SRCS = $(shell find . -name "*.go")
 
@@ -89,7 +89,7 @@ build:
 	@mkdir -p ${BIN_DIR}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${BIN}
 	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${BIN_DIR}/${CLI_BIN} ${CLI_PKG}
-	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o trident-installer/etcd/bin/etcd-copy github.com/netapp/trident/trident-installer/etcd/etcd-copy
+	@go ${BUILD} -ldflags $(BUILD_FLAGS) -o ${ROOT}/extras/external-etcd/bin/etcd-copy github.com/netapp/trident/extras/external-etcd/etcd-copy
 
 vendor:
 	@mkdir -p vendor
@@ -103,7 +103,7 @@ docker_build: vendor *.go
 	@chmod 777 ${BIN_DIR}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
-	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/trident-installer/etcd/bin/etcd-copy github.com/netapp/trident/trident-installer/etcd/etcd-copy
+	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/extras/external-etcd/bin/etcd-copy github.com/netapp/trident/extras/external-etcd/etcd-copy
 	
 docker_image: docker_retag docker_build
 	cp ${BIN_DIR}/${BIN} .
@@ -212,14 +212,18 @@ dist_tar:
 	-rm -rf /tmp/trident-installer
 	@cp -a trident-installer /tmp/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
-	@mkdir -p /tmp/trident-installer/bin
-	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/bin
-	@cp launcher/docker-build/launcher /tmp/trident-installer/bin
-	-rm -f /tmp/trident-installer/setup/backend.json
-	@rm -rf /tmp/trident-installer/etcd/etcd-copy
+	@cp -a extras /tmp/trident-installer/
+	@mkdir -p /tmp/trident-installer/extras/bin
+	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin
+	@cp launcher/docker-build/launcher /tmp/trident-installer/extras/bin
+	-rm -rf /tmp/trident-installer/setup/backend.json /tmp/trident-installer/extras/container-tools
+	@rm -rf /tmp/trident-installer/extras/external-etcd/etcd-copy
+	-find /tmp/trident-installer -name \*.swp | xargs rm
 	@mkdir -p /tmp/trident-installer/setup
 	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > /tmp/trident-installer/launcher-pod.yaml
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment.yaml.templ > /tmp/trident-installer/setup/trident-deployment.yaml
+	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment-external-etcd.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/trident-deployment-external-etcd.yaml
+	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/etcdcopy-job.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/etcdcopy-job.yaml
 	@cp kubernetes-yaml/trident-namespace.yaml /tmp/trident-installer/
 	@cp kubernetes-yaml/trident-serviceaccounts.yaml /tmp/trident-installer/
 	@cp kubernetes-yaml/trident-clusterrole* /tmp/trident-installer/
@@ -240,20 +244,8 @@ build_all: pod docker_launcher_build
 
 build_and_launch: clear_trident pod launcher
 
-dist: build_all dist_tar dist_tag
+build_container_tools:
+	make -C extras/container-tools container_tools
 
-launch: 
-ifndef LAUNCHER_BACKEND
-	$(error Must define LAUNCHER_BACKEND to start the launcher.)
-endif
-	-kubectl delete --ignore-not-found=true configmap trident-launcher-config
-	-kubectl delete --ignore-not-found=true pod trident-launcher
-	@mkdir -p ${LAUNCHER_CONFIG_DIR}
-	@cp ${LAUNCHER_BACKEND} ${LAUNCHER_CONFIG_DIR}/backend.json
-	@sed "s|__TRIDENT_IMAGE__|netapp/trident:latest|g" kubernetes-yaml/trident-deployment.yaml.templ > ${LAUNCHER_CONFIG_DIR}/trident-deployment.yaml
-	@echo "Usable Trident pod definition available at ./launcher/kubernetes-yaml/trident-deployment.yaml"
-	@kubectl create configmap trident-launcher-config --from-file=${LAUNCHER_CONFIG_DIR}
-	@sed "s|__LAUNCHER_TAG__|netapp/trident-launcher:latest|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > ${LAUNCHER_POD_FILE}
-	@kubectl create -f ${LAUNCHER_POD_FILE}
-	@echo "Trident Launcher started; pod definition in ${LAUNCHER_POD_FILE}"
+dist: build_all dist_tar dist_tag build_container_tools
 

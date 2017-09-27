@@ -3,9 +3,12 @@
 package persistent_store
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/coreos/etcd/clientv3"
@@ -27,6 +30,7 @@ var (
 type EtcdClientV3 struct {
 	clientV3  *clientv3.Client
 	endpoints string
+	tlsConfig *tls.Config
 }
 
 func NewEtcdClientV3(endpoints string) (*EtcdClientV3, error) {
@@ -41,6 +45,67 @@ func NewEtcdClientV3(endpoints string) (*EtcdClientV3, error) {
 		return &EtcdClientV3{
 			clientV3:  clientV3,
 			endpoints: endpoints,
+		}, nil
+	}
+	if err.Error() == grpc.ErrClientConnTimeout.Error() {
+		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+	}
+	return nil, err
+}
+
+func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key string) (*EtcdClientV3, error) {
+	//TODO: error handling if a v2 server specified (ErrOldCluster https://godoc.org/github.com/coreos/etcd/clientv3#pkg-variables)
+	// Set up etcdv3 client
+	tlsCert, err := tls.LoadX509KeyPair(etcdV3Cert, etcdV3Key)
+	if err != nil {
+		return nil, fmt.Errorf("Loading TLS certificate failed: %v", err)
+	}
+	caCertBytes, err := ioutil.ReadFile(etcdV3CACert)
+	if err != nil {
+		return nil, fmt.Errorf("Reading CA certificate failed: %v", err)
+	}
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(caCertBytes) {
+		return nil, fmt.Errorf("Parsing CA certificate failed: %v", err)
+	}
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: false,
+		Certificates:       []tls.Certificate{tlsCert},
+		RootCAs:            caCertPool,
+	}
+	clientV3, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{endpoints}, //TODO: support for multiple IP addresses
+		DialTimeout: config.PersistentStoreBootstrapTimeout,
+		TLS:         tlsConfig,
+	})
+
+	if err == nil {
+		return &EtcdClientV3{
+			clientV3:  clientV3,
+			endpoints: endpoints,
+			tlsConfig: tlsConfig,
+		}, nil
+	}
+	if err.Error() == grpc.ErrClientConnTimeout.Error() {
+		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+	}
+	return nil, err
+}
+
+func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) {
+	//TODO: error handling if a v2 server specified (ErrOldCluster https://godoc.org/github.com/coreos/etcd/clientv3#pkg-variables)
+	// Set up etcdv3 client
+	clientV3, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{etcdConfig.endpoints}, //TODO: support for multiple IP addresses
+		DialTimeout: config.PersistentStoreBootstrapTimeout,
+		TLS:         etcdConfig.TLSConfig,
+	})
+
+	if err == nil {
+		return &EtcdClientV3{
+			clientV3:  clientV3,
+			endpoints: etcdConfig.endpoints,
+			tlsConfig: etcdConfig.TLSConfig,
 		}, nil
 	}
 	if err.Error() == grpc.ErrClientConnTimeout.Error() {
@@ -163,9 +228,12 @@ func (p *EtcdClientV3) Stop() error {
 	return p.clientV3.Close()
 }
 
-// Returns etcd endpoints
-func (p *EtcdClientV3) GetEndpoints() string {
-	return p.endpoints
+// Returns the configuration for the etcd client
+func (p *EtcdClientV3) GetConfig() *ClientConfig {
+	return &ClientConfig{
+		endpoints: p.endpoints,
+		TLSConfig: p.tlsConfig,
+	}
 }
 
 // Returns the version of the persistent data

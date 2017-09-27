@@ -69,6 +69,10 @@ func NewEtcdClientV2(endpoints string) (*EtcdClientV2, error) {
 	}, nil
 }
 
+func NewEtcdClientV2FromConfig(etcdConfig *ClientConfig) (*EtcdClientV2, error) {
+	return NewEtcdClientV2(etcdConfig.endpoints)
+}
+
 // the abstract CRUD interface
 func (p *EtcdClientV2) Create(key, value string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), config.PersistentStoreTimeout)
@@ -190,9 +194,11 @@ func (p *EtcdClientV2) Stop() error {
 	return nil
 }
 
-// Returns etcd endpoints
-func (p *EtcdClientV2) GetEndpoints() string {
-	return p.endpoints
+// Returns the configuration for the etcd client
+func (p *EtcdClientV2) GetConfig() *ClientConfig {
+	return &ClientConfig{
+		endpoints: p.endpoints,
+	}
 }
 
 // Returns the version of the persistent data

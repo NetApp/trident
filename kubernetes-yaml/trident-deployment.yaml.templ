@@ -7,46 +7,46 @@ metadata:
 spec:
   replicas: 1
   template:
-      metadata:
-          labels:
-              app: trident.netapp.io
-      spec:
-          serviceAccount: trident
-          containers:
-          - name: trident-main
-            image: __TRIDENT_IMAGE__ 
-            command:
-            - /usr/local/bin/trident_orchestrator
-            args:
-            - "-etcd_v3"
-            - "http://127.0.0.1:8001"
-            - "-k8s_pod"
-            #- "-k8s_api_server"
-            #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
-            #- "-debug"
-          - name: etcd
-            image: quay.io/coreos/etcd:v3.1.5
-            command:
-            - /usr/local/bin/etcd
-            args:
-            - -name
-            - etcd1
-            - -advertise-client-urls
-            - http://127.0.0.1:8001
-            - -listen-client-urls
-            - http://127.0.0.1:8001
-            - -initial-advertise-peer-urls
-            - http://127.0.0.1:8002
-            - -listen-peer-urls
-            - http://127.0.0.1:8002
-            - -data-dir
-            - /var/etcd/data
-            - -initial-cluster
-            - etcd1=http://127.0.0.1:8002
-            volumeMounts:
-            - name: etcd-vol
-              mountPath: /var/etcd/data
-          volumes:
-          - name: etcd-vol
-            persistentVolumeClaim:
-              claimName: trident
+    metadata:
+      labels:
+        app: trident.netapp.io
+    spec:
+      serviceAccount: trident
+      containers:
+      - name: trident-main
+        image: __TRIDENT_IMAGE__
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - -etcd_v3
+        - http://127.0.0.1:8001
+        - -k8s_pod
+        #- -k8s_api_server
+        #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
+        #- -debug
+      - name: etcd
+        image: quay.io/coreos/etcd:v3.1.5
+        command:
+        - /usr/local/bin/etcd
+        args:
+        - -name
+        - etcd1
+        - -advertise-client-urls
+        - http://127.0.0.1:8001
+        - -listen-client-urls
+        - http://127.0.0.1:8001
+        - -initial-advertise-peer-urls
+        - http://127.0.0.1:8002
+        - -listen-peer-urls
+        - http://127.0.0.1:8002
+        - -data-dir
+        - /var/etcd/data
+        - -initial-cluster
+        - etcd1=http://127.0.0.1:8002
+        volumeMounts:
+        - name: etcd-vol
+          mountPath: /var/etcd/data
+      volumes:
+      - name: etcd-vol
+        persistentVolumeClaim:
+          claimName: trident

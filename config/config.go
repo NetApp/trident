@@ -16,7 +16,7 @@ type VolumeType string
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
-	orchestratorVersion              = "17.10.0"
+	orchestratorVersion              = "18.01.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second

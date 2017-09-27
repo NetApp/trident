@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: Job 
+metadata:
+  name: etcd-copy 
+  labels:
+    app: trident.netapp.io
+spec:
+  template:
+    spec:
+      containers:
+      - name: etcd-copy
+        image: __TRIDENT_IMAGE__
+        command:
+        - /usr/local/bin/etcd-copy
+        args:
+        - -etcdv3_src
+        - http://127.0.0.1:8001
+        - -etcdv3_dest
+        - https://trident-etcd-client:2379
+        - -etcdv3_dest_cacert
+        - /root/certs/etcd-client-ca.crt
+        - -etcdv3_dest_cert
+        - /root/certs/etcd-client.crt
+        - -etcdv3_dest_key
+        - /root/certs/etcd-client.key
+        - -debug
+        volumeMounts:
+        - name: etcd-certs
+          mountPath: /root/certs
+      - name: etcd
+        image: quay.io/coreos/etcd:v3.1.5
+        command:
+        - /usr/local/bin/etcd
+        args:
+        - -name
+        - etcd1
+        - -advertise-client-urls
+        - http://127.0.0.1:8001
+        - -listen-client-urls
+        - http://127.0.0.1:8001
+        - -initial-cluster
+        - default=http://127.0.0.1:8002
+        - -initial-advertise-peer-urls
+        - http://127.0.0.1:8002
+        - -listen-peer-urls
+        - http://127.0.0.1:8002
+        - -data-dir
+        - /var/etcd/data
+        - -initial-cluster
+        - etcd1=http://127.0.0.1:8002
+        volumeMounts:
+        - name: etcd-vol
+          mountPath: /var/etcd/data
+      volumes:
+      - name: etcd-certs
+        secret:
+          secretName: etcd-client-tls
+      - name: etcd-vol
+        persistentVolumeClaim:
+          claimName: trident
+      restartPolicy: Never

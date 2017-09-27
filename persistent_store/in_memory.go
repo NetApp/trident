@@ -34,34 +34,6 @@ func NewInMemoryClient() *InMemoryClient {
 	}
 }
 
-func (c *InMemoryClient) Create(key, value string) error {
-	return nil
-}
-
-func (c *InMemoryClient) Read(key string) (string, error) {
-	return "", nil
-}
-
-func (c *InMemoryClient) ReadKeys(keyPrefix string) ([]string, error) {
-	return make([]string, 0), nil
-}
-
-func (c *InMemoryClient) Update(key, value string) error {
-	return nil
-}
-
-func (c *InMemoryClient) Set(key, value string) error {
-	return nil
-}
-
-func (c *InMemoryClient) Delete(key string) error {
-	return nil
-}
-
-func (c *InMemoryClient) DeleteKeys(keyPrefix string) error {
-	return nil
-}
-
 func (p *InMemoryClient) GetType() StoreType {
 	return MemoryStore
 }
@@ -74,15 +46,15 @@ func (c *InMemoryClient) Stop() error {
 	return nil
 }
 
-func (p *InMemoryClient) GetEndpoints() string {
-	return ""
+func (c *InMemoryClient) GetConfig() *ClientConfig {
+	return &ClientConfig{}
 }
 
-func (p *InMemoryClient) GetVersion() (*PersistentStateVersion, error) {
-	return p.version, nil
+func (c *InMemoryClient) GetVersion() (*PersistentStateVersion, error) {
+	return c.version, nil
 }
 
-func (p *InMemoryClient) SetVersion(version *PersistentStateVersion) error {
+func (c *InMemoryClient) SetVersion(version *PersistentStateVersion) error {
 	return nil
 }
 
