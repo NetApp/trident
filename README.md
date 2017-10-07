@@ -650,7 +650,7 @@ deployments.
 | TenantName | string | Yes | Tenant name for created volumes. |
 | EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:sf-address/json-rpc/7.0`). |
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
-| InitiatorIFace | string | No | ISCI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
+| InitiatorIFace | string | No | ISCSI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
 | AccessGroups | Array of int | No | The list of Access Group IDs to be used by Trident (e.g., [1, 3, 9]). |
 | Types | [VolType](#voltype) array | No | JSON array of possible volume types.  Each of these will be created as a StoragePool for the SolidFire backend.  See below for the specification. |
 
