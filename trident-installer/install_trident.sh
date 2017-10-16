@@ -39,8 +39,13 @@ get_environment() {
 }
 
 get_environment_version() {
-	VERSION=$($CMD version | grep "Server Version" | grep -oP '(?<=GitVersion:")[^"]+')
-	echo $VERSION
+	TMP=$($CMD version | grep "Server Version" | grep -oP '(?<=GitVersion:")[^"]+')
+	echo $TMP
+}
+
+version_gt() {
+    # Returns true if $1 > $2
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
 # Process arguments
@@ -87,6 +92,16 @@ if [ ! -e $DIR/setup/backend.json ]; then
 	exit 1
 fi
 
+# Determine YAML files based on environment and version
+VERSION=$(get_environment_version)
+if version_gt "v1.8.0" $VERSION; then
+    CLUSTER_ROLE_BINDINGS_YAML=$DIR/trident-clusterrolebindings-${ENV}-v1alpha1.yaml
+    CLUSTER_ROLES_YAML=$DIR/trident-clusterroles-${ENV}-v1alpha1.yaml
+else
+    CLUSTER_ROLE_BINDINGS_YAML=$DIR/trident-clusterrolebindings-${ENV}.yaml
+    CLUSTER_ROLES_YAML=$DIR/trident-clusterroles-${ENV}.yaml
+fi
+
 # Determine the namespace
 if [ -z "$NAMESPACE" ]; then
 	NAMESPACE=$(get_namespace)
@@ -120,11 +135,11 @@ if [ $? -ne 0 ]; then
 	exit 1;
 fi
 if [ -z "$INSECURE" ]; then
-	$CMD --namespace=$NAMESPACE delete -f $DIR/trident-clusterrolebindings-${ENV}.yaml --ignore-not-found=true
+	$CMD --namespace=$NAMESPACE delete -f $CLUSTER_ROLE_BINDINGS_YAML --ignore-not-found=true
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
-	$CMD --namespace=$NAMESPACE delete -f $DIR/trident-clusterroles-${ENV}.yaml --ignore-not-found=true
+	$CMD --namespace=$NAMESPACE delete -f $CLUSTER_ROLES_YAML --ignore-not-found=true
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
@@ -146,16 +161,16 @@ fi
 
 if [ -z "$INSECURE" ]; then
 	# Create cluster roles
-	$CMD --namespace=$NAMESPACE create -f $DIR/trident-clusterroles-${ENV}.yaml
+	$CMD --namespace=$NAMESPACE create -f $CLUSTER_ROLES_YAML
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
 	# Create cluster role bindings
-	sed -i -r "s/namespace: [a-z0-9]([-a-z0-9]*[a-z0-9])?/namespace: $NAMESPACE/g" $DIR/trident-clusterrolebindings-${ENV}.yaml
+	sed -i -r "s/namespace: [a-z0-9]([-a-z0-9]*[a-z0-9])?/namespace: $NAMESPACE/g" $CLUSTER_ROLE_BINDINGS_YAML
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi
-	$CMD --namespace=$NAMESPACE create -f $DIR/trident-clusterrolebindings-${ENV}.yaml
+	$CMD --namespace=$NAMESPACE create -f $CLUSTER_ROLE_BINDINGS_YAML
 	if [ $? -ne 0 ]; then
 		exit 1;
 	fi

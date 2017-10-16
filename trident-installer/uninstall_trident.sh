@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#$ ./uninstall_trident.sh -h
 #Usage:
 # -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
 # -a                  Deletes almost all artifacts of Trident, including the PVC and PV used by Trident; however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!
@@ -34,6 +35,16 @@ get_environment() {
 	else
 		echo openshift
 	fi
+}
+
+get_environment_version() {
+	TMP=$($CMD version | grep "Server Version" | grep -oP '(?<=GitVersion:")[^"]+')
+	echo $TMP
+}
+
+version_gt() {
+    # Returns true if $1 > $2
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
 # Process arguments
@@ -73,6 +84,16 @@ command -v curl > /dev/null 2>&1 || \
 command -v $CMD > /dev/null || \
 	{ echo >&2 "$0 requires $CMD present in \$PATH."; exit 1; }
 
+# Determine YAML files based on environment and version
+VERSION=$(get_environment_version)
+if version_gt "v1.8.0" $VERSION; then
+    CLUSTER_ROLE_BINDINGS_YAML=$DIR/trident-clusterrolebindings-${ENV}-v1alpha1.yaml
+    CLUSTER_ROLES_YAML=$DIR/trident-clusterroles-${ENV}-v1alpha1.yaml
+else
+    CLUSTER_ROLE_BINDINGS_YAML=$DIR/trident-clusterrolebindings-${ENV}.yaml
+    CLUSTER_ROLES_YAML=$DIR/trident-clusterroles-${ENV}.yaml
+fi
+
 # Determine the namespace
 if [ -z $NAMESPACE ]; then
 	NAMESPACE=$(get_namespace)
@@ -109,12 +130,12 @@ if [ $? -ne 0 ]; then
 	exit 1;
 fi
 
-$CMD --namespace=$NAMESPACE delete -f $DIR/trident-clusterrolebindings-${ENV}.yaml --ignore-not-found=true
+$CMD --namespace=$NAMESPACE delete -f $CLUSTER_ROLE_BINDINGS_YAML --ignore-not-found=true
 if [ $? -ne 0 ]; then
 	exit 1;
 fi
 
-$CMD --namespace=$NAMESPACE delete -f $DIR/trident-clusterroles-${ENV}.yaml --ignore-not-found=true
+$CMD --namespace=$NAMESPACE delete -f $CLUSTER_ROLES_YAML --ignore-not-found=true
 if [ $? -ne 0 ]; then
 	exit 1;
 fi
