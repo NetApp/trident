@@ -4,5 +4,6 @@ metadata:
   name: solidfire-bronze
 provisioner: netapp.io/trident
 parameters:
+  backendType: "solidfire-san"
   IOPS: "1500"
 

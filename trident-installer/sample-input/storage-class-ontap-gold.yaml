@@ -4,6 +4,7 @@ metadata:
   name: ontap-gold
 provisioner: netapp.io/trident
 parameters:
+  backendType: "ontap-nas"
   media: "ssd"
   provisioningType: "thin"
   snapshots: "true"

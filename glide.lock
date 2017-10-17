@@ -1,5 +1,5 @@
-hash: b1afd0b3a9013a4b56385ab02d7413295542759cd6a7e574aef2feb5cf749161
-updated: 2017-09-21T01:09:31.224910928-04:00
+hash: 120fdc38c76f2b29a3ff7df36760980fe3c4251be088e0b956ebf37ba7c1c3a3
+updated: 2017-10-16T18:17:46.155368705-04:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -9,15 +9,15 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/blang/semver
-  version: 31b736133b98f26d5e078ec9eb591666edfd091f
+  version: b38d23b8782a487059e8fc8773e9a5b228a77cb6
 - name: github.com/coreos/etcd
-  version: 20490caaf0dcd96bb4a95e40625559def8ef5b04
+  version: 0520cb9304cb2385f7e72b8bc02d6e4d3257158a
   subpackages:
   - client
   - pkg/pathutil
   - pkg/types
 - name: github.com/coreos/go-oidc
-  version: 5644a2f50e2d2d5ba0b474bc5bc55fea1925936d
+  version: be73733bb8cc830d0205609b95d125215f8e9c70
   subpackages:
   - http
   - jose
@@ -40,7 +40,7 @@ imports:
   - digest
   - reference
 - name: github.com/dustin/go-humanize
-  version: 259d2a102b871d17f30e3cd9881a642961a1e486
+  version: 8929fe90cee4b2cb9deb468b51fb34eba64d1bf0
 - name: github.com/emicklei/go-restful
   version: 09691a3b6378b740595c1002f40c34dd5f218a22
   subpackages:
@@ -94,9 +94,9 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/mattn/go-runewidth
-  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/netapp/netappdvp
-  version: 1a434dd335ed57cfba3c7e0393b5a6b544ebcdf7
+  version: 86a4aca8800cf2663fb8b712e0e33ca6963ef2ae
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -105,7 +105,7 @@ imports:
   - storage_drivers
   - utils
 - name: github.com/olekukonko/tablewriter
-  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
+  version: cca8bbc0798408af109aaaa239cbd2634846b340
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/PuerkitoBio/purell
@@ -115,9 +115,9 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 10f801ebc38b33738c9d17d50860f484a0988ff5
 - name: github.com/spf13/cobra
-  version: 69f86e6d5d7a67467ecd43b4a3c98d9c143d11c4
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
-  version: c990990ab4981d84da820b7b00c85139ca150b5f
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -326,7 +326,7 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: ee39d359dd0896c4c0eccf23f033f158ad3d3bd7
+  version: f38e43b221d08850172a9a4ea785a86a3ffa3b3a
   subpackages:
   - pkg/util/version
 testImports: []

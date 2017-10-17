@@ -14,6 +14,7 @@
   volume (Issue [#44](https://github.com/NetApp/trident/issues/44)).
 - File system type is not set for NFS volumes in the persistent store (Issue
 [#57](https://github.com/NetApp/trident/issues/57)).
+- Deprecated the update script.
 
 **Enhancements:**
 - Controller serial numbers are reported by the REST interface and tridentctl.

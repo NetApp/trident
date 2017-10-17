@@ -30,7 +30,7 @@ exposing users to complexities of various backends.
   * [Helper Scripts](#helper-scripts)
       * [Install Script](#install-script)
       * [Uninstall Script](#uninstall-script)
-      * [Update Script](#update-script)
+	  * [Updating Trident](#updating-trident)
   * [Trident Launcher](#trident-launcher)
   * [Trident Deployment](#trident-deployment)
   * [Command-line options](#command-line-options)
@@ -91,11 +91,11 @@ Kubernetes.
 3.  Download and untar the [Trident installer bundle](https://github.com/NetApp/trident/releases)
     from the Downloads section of the latest release. Then, change into the
 	`trident-installer` directory resulted from untar. For example, to install
-	Trident v17.07.0, the following commands should be run:
+	Trident v17.10.0, the following commands should be run:
 	
 	```bash
-	$ wget https://github.com/NetApp/trident/releases/download/v17.07.0/trident-installer-17.07.0.tar.gz
-	$ tar -xf trident-installer-17.07.0.tar.gz
+	$ wget https://github.com/NetApp/trident/releases/download/v17.10.0/trident-installer-17.10.0.tar.gz
+	$ tar -xf trident-installer-17.10.0.tar.gz
 	$ cd trident-installer
 	```
 
@@ -316,8 +316,8 @@ standalone binary.
 
 ### Helper Scripts
 
-This section describes various scripts that are used to install, uninstall, or
-update Trident in Kubernetes or OpenShift. Please see [Command-line options](#command-line-options)
+This section describes various scripts that are used to install or uninstall
+Trident in Kubernetes or OpenShift. Please see [Command-line options](#command-line-options)
 if you are interested in running the Trident binary for non-Kubernetes
 deployments.
 
@@ -387,23 +387,31 @@ Example:
   ./uninstall_trident.sh -n trident		Deletes artifacts of Trident from namespace "trident".
 ```
 
-#### Update Script
+#### Updating Trident
 
-The update script can be used to update or rollback container images in the
-Trident deployment.
+The recommended procedure to update Trident is to uninstall Trident using the
+uninstall script for the version of Trident that you are currently running and
+to use the install script for the version of Trident that you are upgrading
+into. For example, if you are upgrading from v17.07 to v17.10, you can use the
+following instructions:
 ```bash
-$ ./update_trident.sh -h
-
-Usage:
- -n <namespace>      Specifies the namespace for the Trident deployment; defaults to the current namespace.
- -t <trident_image>  Specifies the new image for the "trident-main" container in the Trident deployment.
- -e <etcd_image>     Specifies the new image for the "etcd" container in the Trident deployment.
- -d <deployment>     Specifies the name of the deployment; defaults to "trident". 
- -h                  Prints this usage guide.
-
-Example:
-  ./update_trident.sh -n trident -t netapp/trident:17.07.0		Updates the Trident deployment in namespace "trident" to use image "netapp/trident:17.07.0".
+$ ./uninstall-trident.sh -n trident
+$ cd ..
+$ wget https://github.com/NetApp/trident/releases/download/v17.10.0/trident-installer-17.10.0.tar.gz
+$ tar -xf trident-installer-17.10.0.tar.gz
+$ cd trident-installer
+$ ./install_trident.sh -n trident
 ```
+
+It is important to point out that uninstalling Trident by running
+`./uninstall-trident.sh -n trident` does not delete the PVC and PV used by the
+Trident deployment. As a result, no state is lost during upgrade and the new
+version of Trident bootstraps using the state from an old deployment. 
+
+The above procedure replaces the `update_trident.sh` script included in
+releases prior to v17.10 because the update script merely updated container
+images in the Trident deployment and did not address updating other objects
+created by the installer (e.g., cluster roles, cluster role bindings).
 
 ### Trident Launcher
 
@@ -650,7 +658,7 @@ deployments.
 | TenantName | string | Yes | Tenant name for created volumes. |
 | EndPoint | string | Yes | Management endpoint for the SolidFire cluster.  Should include username and password (e.g., `https://user@password:sf-address/json-rpc/7.0`). |
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
-| InitiatorIFace | string | No | ISCI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
+| InitiatorIFace | string | No | ISCSI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
 | AccessGroups | Array of int | No | The list of Access Group IDs to be used by Trident (e.g., [1, 3, 9]). |
 | Types | [VolType](#voltype) array | No | JSON array of possible volume types.  Each of these will be created as a StoragePool for the SolidFire backend.  See below for the specification. |
 
@@ -727,7 +735,7 @@ have.
 | protocol | string | No | Class of protocol to use for the volume.  Users can specify either "file" for file-based protocols (currently NFS) or "block" for SAN protocols (currently iSCSI).  If omitted, Trident will use either. |
 | internalName | string | No | Name of volume to use on the backend.  This will be generated by Trident when the volume is created; if the user specifies something in this field, Trident will ignore it.  Its value is reported when GETing the created volume from the REST API, however. |
 | snapshotPolicy | string | No | For ONTAP backends, specifies the snapshot policy to use.  Ignored for SolidFire and E-Series. |
-| exportPolicy | string | No | For ONTAP backends, specifies the export policy to use.  Ignored for SolidFire and E-Series. |
+| exportPolicy | string | No | For ONTAP NAS backends, specifies the export policy to use.  Ignored for ONTAP SAN, SolidFire and E-Series. |
 | snapshotDirectory | bool | No | For ONTAP backends, specifies whether the snapshot directory should be visible.  Ignored for SolidFire and E-Series. |
 | unixPermissions | string | No | For ONTAP backends, initial NFS permissions to set on the created volume.  Ignored for SolidFire and E-Series. |
 | blockSize | string | No | For SolidFire backends, specifies the block/sector size for the created volume. Possible values are 512 and 4096. If not specified, 512 will be used to enable 512B sector emulation. Ignored for ONTAP and E-Series. |
@@ -775,7 +783,7 @@ a specific set of known storage pools. Therefore, for such a use case, it is
 recommended to define a storage class with just the `requiredStorage` parameter
 and with no attributes (see `sample-input/storage-class-bronze-default.yaml` in
 the installer bundle). However, it is possible to define a storage class by
-specifiying both attributes and `requiredStorage`. For such a configuration, the
+specifying both attributes and `requiredStorage`. For such a configuration, the
 set of storage pools that will be used for the storage class are all the pools
 that satisfy *all* the attributes **or** the pools included in the
 `requiredStorage` field, whether those pools satisfy the storage class
@@ -798,13 +806,13 @@ are specified as strings in storage class configurations, each attribute is
 typed, as described below; failing to conform to the type will cause an error.
 The current attributes and their possible values are below:
 
-| Attribute | Type | Values | Description for Offer | Description for Request |
-| --------- | ---- | ------ | ----------- | --- |
-| media | string | hdd, hybrid, ssd | Type of media used by the storage pool.  Hybrid indicates both HDD and SSD. | Type of media desired for the volume. |
-| provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. |
-| backendType | string | ontap-nas, ontap-nas-economy, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. |
-| snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. |
-| IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. |
+| Attribute | Type | Values | Description for Offer | Description for Request | Drivers |
+| --------- | ---- | ------ | ----------- | --- | --- |
+| media | string | hdd, hybrid, ssd | Type of media used by the storage pool.  Hybrid indicates both HDD and SSD. | Type of media desired for the volume. | All drivers |
+| provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. | thick provisioning: ontap-nas, ontap-nas-economy, ontap-san, eseries-iscsi; thin provisioning: ontap-nas, ontap-nas-economy, ontap-san, solidfire-san |
+| backendType | string | ontap-nas, ontap-nas-economy, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. | All drivers |
+| snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. | ontap-nas, ontap-san, solidfire-san |
+| IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. | solidfire-san |
 
 
 ##### Matching Storage Attributes
@@ -1059,7 +1067,7 @@ corresponding PV, Trident follows the following rules:
 | Annotation | Volume Parameter | Supported Drivers |
 | ---------- | ---------------- | ----------------- |
 | `trident.netapp.io/protocol` |  `protocol` | `ontap-nas`, `ontap-nas-economy`, `ontap-san`, `solidfire-san` |
-| `trident.netapp.io/exportPolicy` |  `exportPolicy`| `ontap-nas`, `ontap-nas-economy`, `ontap-san` |
+| `trident.netapp.io/exportPolicy` |  `exportPolicy`| `ontap-nas`, `ontap-nas-economy` |
 | `trident.netapp.io/snapshotPolicy` |  `snapshotPolicy`| `ontap-nas`, `ontap-nas-economy`, `ontap-san` |
 | `trident.netapp.io/snapshotDirectory` |  `snapshotDirectory`| `ontap-nas`, `ontap-nas-economy`  |
 | `trident.netapp.io/unixPermissions` |  `unixPermissions`| `ontap-nas`, `ontap-nas-economy` |
