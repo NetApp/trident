@@ -25,6 +25,7 @@
 - Added support for NetApp Volume Encryption to the ONTAP drivers
   (Issue [#3](https://github.com/NetApp/trident/issues/3)).
 - Trident installer now works with Kubernetes 1.8.
+- tridentctl can detect and use 'oc' in OpenShift environments.
 
 ## v17.07.0
 

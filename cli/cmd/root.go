@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,6 +24,9 @@ const (
 	MODE_TUNNEL = "tunnel"
 	MODE_LOGS   = "logs"
 
+	CLI_KUBERNETES = "kubectl"
+	CLI_OPENSHIFT  = "oc"
+
 	POD_SERVER = "127.0.0.1:8000"
 
 	EXIT_CODE_SUCCESS = 0
@@ -31,6 +35,7 @@ const (
 
 var (
 	OperatingMode       string
+	KubernetesCLI       string
 	TridentPodName      string
 	TridentPodNamespace string
 	ExitCode            int
@@ -69,10 +74,11 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		case MODE_DIRECT:
 			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
 		case MODE_TUNNEL:
-			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s\n",
-				OperatingMode, TridentPodName, TridentPodNamespace)
+			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",
+				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
 		case MODE_LOGS:
-			fmt.Printf("Operating mode = %s, Namespace = %s\n", OperatingMode, TridentPodNamespace)
+			fmt.Printf("Operating mode = %s, Namespace = %s, CLI = %s\n",
+				OperatingMode, TridentPodNamespace, KubernetesCLI)
 		}
 	}()
 
@@ -91,6 +97,12 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		Server = envServer
 		OperatingMode = MODE_DIRECT
 		return nil
+	}
+
+	// To work with pods, we need to discover which CLI to invoke
+	err = discoverKubernetesCLI()
+	if err != nil {
+		return err
 	}
 
 	// Server not specified, so try tunneling to a pod
@@ -117,10 +129,29 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 	return nil
 }
 
+func discoverKubernetesCLI() error {
+
+	// Try the OpenShift CLI first
+	_, err := exec.Command(CLI_OPENSHIFT, "version").CombinedOutput()
+	if GetExitCodeFromError(err) == EXIT_CODE_SUCCESS {
+		KubernetesCLI = CLI_OPENSHIFT
+		return nil
+	}
+
+	// Fall back to the K8S CLI
+	_, err = exec.Command(CLI_KUBERNETES, "version").CombinedOutput()
+	if GetExitCodeFromError(err) == EXIT_CODE_SUCCESS {
+		KubernetesCLI = CLI_KUBERNETES
+		return nil
+	}
+
+	return errors.New("Could not find the Kubernetes CLI.")
+}
+
 func getCurrentNamespace() (string, error) {
 
 	// Get current namespace from service account info
-	cmd := exec.Command("kubectl", "get", "serviceaccount", "default", "-o=json")
+	cmd := exec.Command(KubernetesCLI, "get", "serviceaccount", "default", "-o=json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -148,7 +179,7 @@ func getCurrentNamespace() (string, error) {
 func getTridentPod(namespace string) (string, error) {
 
 	// Get 'trident' pod info
-	cmd := exec.Command("kubectl", "get", "pod", "-n", namespace, "-l", "app=trident.netapp.io", "-o=json")
+	cmd := exec.Command(KubernetesCLI, "get", "pod", "-n", namespace, "-l", "app=trident.netapp.io", "-o=json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -192,7 +223,7 @@ func GetBaseURL() (string, error) {
 
 func TunnelCommand(commandArgs []string) {
 
-	// Build tunnel command for 'kubectl exec'
+	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
@@ -209,11 +240,11 @@ func TunnelCommand(commandArgs []string) {
 	execCommand = append(execCommand, cliCommand...)
 
 	if Debug {
-		fmt.Printf("Invoking tunneled command: kubectl %v\n", strings.Join(execCommand, " "))
+		fmt.Printf("Invoking tunneled command: %s %v\n", KubernetesCLI, strings.Join(execCommand, " "))
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	out, err := exec.Command("kubectl", execCommand...).CombinedOutput()
+	out, err := exec.Command(KubernetesCLI, execCommand...).CombinedOutput()
 
 	SetExitCodeFromError(err)
 	if err != nil {
@@ -225,7 +256,7 @@ func TunnelCommand(commandArgs []string) {
 
 func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 
-	// Build tunnel command for 'kubectl exec'
+	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
@@ -236,28 +267,33 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 	execCommand = append(execCommand, cliCommand...)
 
 	if Debug {
-		fmt.Printf("Invoking tunneled command: kubectl %v\n", strings.Join(execCommand, " "))
+		fmt.Printf("Invoking tunneled command: %s %v\n", KubernetesCLI, strings.Join(execCommand, " "))
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	output, err := exec.Command("kubectl", execCommand...).CombinedOutput()
+	output, err := exec.Command(KubernetesCLI, execCommand...).CombinedOutput()
 
 	SetExitCodeFromError(err)
 	return output, err
 }
 
 func SetExitCodeFromError(err error) {
+	ExitCode = GetExitCodeFromError(err)
+}
 
+func GetExitCodeFromError(err error) int {
 	if err == nil {
-		ExitCode = EXIT_CODE_SUCCESS
+		return EXIT_CODE_SUCCESS
 	} else {
 
 		// Default to 1 in case we can't determine a process exit code
-		ExitCode = EXIT_CODE_FAILURE
+		code := EXIT_CODE_FAILURE
 
 		if exitError, ok := err.(*exec.ExitError); ok {
 			ws := exitError.Sys().(syscall.WaitStatus)
-			ExitCode = ws.ExitStatus()
+			code = ws.ExitStatus()
 		}
+
+		return code
 	}
 }

@@ -208,16 +208,16 @@ func getTridentLogs(log string, logMap map[string][]byte) error {
 		return fmt.Errorf("%s is not a valid Trident log", log)
 	}
 
-	// Build command for 'kubectl logs'
+	// Build command to get K8S logs
 	limit := fmt.Sprintf("--limit-bytes=%d", LOG_LIMIT_BYTES)
 	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limit}
 
 	if Debug {
-		fmt.Printf("Invoking command: kubectl %v\n", strings.Join(logsCommand, " "))
+		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
 	}
 
 	// Get logs
-	logBytes, err := exec.Command("kubectl", logsCommand...).CombinedOutput()
+	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
 	if err != nil {
 		logMap["error"] = appendError(logMap["error"], logBytes)
 	} else {
@@ -239,16 +239,16 @@ func getPodLogs(log string, logMap map[string][]byte) error {
 		return fmt.Errorf("%s is not a valid Trident log", log)
 	}
 
-	// Build command for 'kubectl logs'
+	// Build command to get K8S logs
 	limit := fmt.Sprintf("--limit-bytes=%d", LOG_LIMIT_BYTES)
 	logsCommand := []string{"logs", pod, "-n", TridentPodNamespace, limit}
 
 	if Debug {
-		fmt.Printf("Invoking command: kubectl %v\n", strings.Join(logsCommand, " "))
+		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
 	}
 
 	// Get logs
-	logBytes, err := exec.Command("kubectl", logsCommand...).CombinedOutput()
+	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
 	if err != nil {
 		logMap["error"] = appendError(logMap["error"], logBytes)
 	} else {

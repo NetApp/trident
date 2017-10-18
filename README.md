@@ -818,7 +818,7 @@ The current attributes and their possible values are below:
 | provisioningType | string | thin, thick | Types of provisioning supported by the storage pool. | Whether volumes will be created with thick or thin provisioning. | thick provisioning: ontap-nas, ontap-nas-economy, ontap-san, eseries-iscsi; thin provisioning: ontap-nas, ontap-nas-economy, ontap-san, solidfire-san |
 | backendType | string | ontap-nas, ontap-nas-economy, ontap-san, solidfire-san, eseries-iscsi | Backend to which the storage pool belongs. | Specific type of backend on which to provision volumes. | All drivers |
 | snapshots | bool | true, false | Whether the backend supports snapshots. | Whether volumes must have snapshot support. | ontap-nas, ontap-san, solidfire-san |
-| encryption | bool | true, false | Whether the backend supports volume encryption. | Whether volumes must be encrypted. |
+| encryption | bool | true, false | Whether the backend supports volume encryption. | Whether volumes must be encrypted. | ontap-nas, ontap-san, ontap-nas-economy |
 | IOPS | int | positive integers | IOPS range the storage pool is capable of providing. | Target IOPS for the volume to be created. | solidfire-san |
 
 
@@ -849,7 +849,7 @@ a command-line utility, `tridentctl`, that provides simple access to Trident.
 `tridentctl` can be used to interact with Trident when deployed as a Kubernetes pod
 or as a standalone binary. Kubernetes users with sufficient privileges to
 manage the namespace that contains the Trident pod may use tridentctl.
-Here are a few examples one can use `tridentctl` for to manage Trident backends:
+Here are a few `tridentctl` examples for managing Trident backends:
 
 1. Add a new storage backend or update an existing one:
    ```bash
@@ -865,6 +865,18 @@ Here are a few examples one can use `tridentctl` for to manage Trident backends:
    obtained from step 2:
    ```bash
    $ tridentctl get backend <backend-name> -o json
+   ```
+
+4. List all backends managed by Trident, if Trident is running as a standalone
+binary.  The address and port values are set via arguments to the Trident binary.
+   ```bash
+   $ export TRIDENT_SERVER=127.0.0.1:8000
+   $ tridentctl get backend
+   ```
+
+5. Get the logs from Trident:
+   ```bash
+   $ tridentctl logs
    ```
 
 Similar commands can be used to list and retrieve the details for volumes and
@@ -1173,9 +1185,16 @@ changes since v1.0).
 
 ### Getting Help
 
-Trident is a supported NetApp project.  See the [find the support you need](http://mysupport.netapp.com/info/web/ECMLP2619434.html) page on the Support site for options available to you.  To open a support case, use the serial number of the backend storage system and select containers and Trident as the category you want help in.
+Trident is a supported NetApp project.  See the [find the support you need](http://mysupport.netapp.com/info/web/ECMLP2619434.html)
+page on the Support site for options available to you.  To open a support case,
+use the serial number of the backend storage system and select containers and
+Trident as the category you want help in.  To create a support archive containing
+all available Trident logs, use `tridentctl logs -a`.
 
-There is also a vibrant community of container users and engineers on Pub's [#containers](https://netapppub.slack.com/messages/C1E3QH84C) Slack channel. This can be a great place to get answers and discuss with like-minded peers; highly recommended!
+There is also a vibrant community of container users and engineers on the
+[#containers](https://netapppub.slack.com/messages/C1E3QH84C) Slack channel at
+[thePub](http://netapp.io). This can be a great place to get answers and discuss
+with like-minded peers; highly recommended!
 
 ## Caveats
 
