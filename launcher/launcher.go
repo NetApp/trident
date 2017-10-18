@@ -22,13 +22,13 @@ import (
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	k8srest "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
 	k8sfrontend "github.com/netapp/trident/frontend/kubernetes"
 	tridentrest "github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
+	k8s_util_version "github.com/netapp/trident/utils"
 )
 
 const (

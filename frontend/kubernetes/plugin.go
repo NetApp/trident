@@ -24,7 +24,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
-	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -33,6 +32,7 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
+	k8s_util_version "github.com/netapp/trident/utils"
 )
 
 func ValidateKubeVersion(versionInfo *k8s_version.Info) (kubeVersion *k8s_util_version.Version, err error) {

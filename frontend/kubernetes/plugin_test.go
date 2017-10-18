@@ -26,7 +26,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	framework "k8s.io/client-go/tools/cache/testing"
 	"k8s.io/client-go/tools/record"
-	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -34,6 +33,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
+	k8s_util_version "github.com/netapp/trident/utils"
 )
 
 const (

@@ -9,11 +9,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
-	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
+	k8s_util_version "github.com/netapp/trident/utils"
 )
 
 // canPVMatchWithPVC verifies that the volumeSize and volumeAccessModes
