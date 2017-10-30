@@ -192,3 +192,23 @@ func (k *FakeKubeClient) CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume
 func (k *FakeKubeClient) DeletePV(pvName string, options *metav1.DeleteOptions) error {
 	return nil
 }
+
+func (k *FakeKubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
+	return nil, nil
+}
+
+func (k *FakeKubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error) {
+	return nil, nil
+}
+
+func (k *FakeKubeClient) GetSecret(secretName string, options metav1.GetOptions) (*v1.Secret, error) {
+	return nil, nil
+}
+
+func (k *FakeKubeClient) CheckSecretExists(secretName string) (bool, error) {
+	return true, nil
+}
+
+func (k *FakeKubeClient) DeleteSecret(secretName string, options *metav1.DeleteOptions) error {
+	return nil
+}

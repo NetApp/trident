@@ -10,7 +10,7 @@ import:
 - package: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - package: github.com/Sirupsen/logrus
-  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - package: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - package: github.com/blang/semver
@@ -45,7 +45,7 @@ import:
   - digest
   - reference
 - package: github.com/emicklei/go-restful
-  version: 09691a3b6378b740595c1002f40c34dd5f218a22
+  version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
   - log
   - swagger
@@ -60,7 +60,7 @@ import:
 - package: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - package: github.com/gogo/protobuf
-  version: e18d7aa8f8c624c915db340349aad4c49b10d173
+  version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
   - proto
   - sortkeys
@@ -81,7 +81,7 @@ import:
 - package: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
 - package: github.com/howeyc/gopass
-  version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
+  version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - package: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - package: github.com/jonboulle/clockwork
@@ -93,7 +93,7 @@ import:
   - jlexer
   - jwriter
 - package: github.com/netapp/netappdvp
-  version: a93463d46ae59acabd4cb68f95d74879be9c3701
+  version: 5721dac47725b60e7e2a2a706ae5615493d1ab95
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -116,7 +116,7 @@ import:
   subpackages:
   - ssh/terminal
 - package: golang.org/x/net
-  version: e90d6d0afc4c315a0d87a568ae68577cc15149a0
+  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
   subpackages:
   - context
   - context/ctxhttp
@@ -163,7 +163,7 @@ import:
 - package: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - package: k8s.io/client-go
-  version: 3627aeb7d4f6ade38f995d2c923e459146493c7e
+  version: 2a227f04f328fe506bd562f50b4d2a175fce80c5
   subpackages:
   - discovery
   - discovery/fake
@@ -270,7 +270,7 @@ import:
   - util/homedir
   - util/integer
 - package: k8s.io/apimachinery
-  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
+  version: 917740426ad66ff818da4809990480bcc0786a77
   subpackages:
   - pkg/api/errors
   - pkg/api/meta

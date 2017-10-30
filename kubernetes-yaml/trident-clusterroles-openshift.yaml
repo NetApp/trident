@@ -15,6 +15,9 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "delete"]
 ---
 kind: ClusterRole
 apiVersion: v1
@@ -32,4 +35,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: ["extensions", "apps"]
     resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]

@@ -29,6 +29,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/drivers/fake"
+	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
@@ -55,6 +56,7 @@ func ValidateKubeVersion(versionInfo *k8s_version.Info) (kubeVersion *k8s_util_v
 type KubernetesPlugin struct {
 	orchestrator             core.Orchestrator
 	kubeClient               kubernetes.Interface
+	kubeConfig               rest.Config
 	eventRecorder            record.EventRecorder
 	claimController          cache.Controller
 	claimControllerStopChan  chan struct{}
@@ -96,6 +98,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	ret := &KubernetesPlugin{
 		orchestrator:             orchestrator,
 		kubeClient:               kubeClient,
+		kubeConfig:               *kubeConfig,
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
@@ -297,7 +300,7 @@ func (p *KubernetesPlugin) processClaim(
 		"PVC_phase":        claim.Status.Phase,
 		"PVC_size":         size.String(),
 		"PVC_uid":          claim.UID,
-		"PVC_storageClass": v1.GetPersistentVolumeClaimClass(claim),
+		"PVC_storageClass": GetPersistentVolumeClaimClass(claim),
 		"PVC_accessModes":  claim.Spec.AccessModes,
 		"PVC_annotations":  claim.Annotations,
 		"PVC_volume":       claim.Spec.VolumeName,
@@ -322,7 +325,7 @@ func (p *KubernetesPlugin) processClaim(
 		// just because no default storage class existed at the time
 		// of the PVC creation.
 		if provisioner != AnnOrchestrator &&
-			v1.GetPersistentVolumeClaimClass(claim) != "" {
+			GetPersistentVolumeClaimClass(claim) != "" {
 			log.WithFields(log.Fields{
 				"PVC":             claim.Name,
 				"PVC_provisioner": provisioner,
@@ -331,7 +334,7 @@ func (p *KubernetesPlugin) processClaim(
 			return
 		}
 		if kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")) &&
-			v1.GetPersistentVolumeClaimClass(claim) == "" &&
+			GetPersistentVolumeClaimClass(claim) == "" &&
 			claim.Spec.StorageClassName == nil {
 			// Check if the default storage class should be used.
 			p.mutex.Lock()
@@ -369,7 +372,7 @@ func (p *KubernetesPlugin) processClaim(
 	// If storage class is still empty (after considering the default storage
 	// class), ignore the PVC as Kubernetes doesn't allow a storage class with
 	// empty string as the name.
-	if v1.GetPersistentVolumeClaimClass(claim) == "" {
+	if GetPersistentVolumeClaimClass(claim) == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
 		}).Debug("Kubernetes frontend ignores this PVC as no storage class " +
@@ -630,7 +633,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		if annotations == nil {
 			annotations = make(map[string]string)
 		}
-		annotations[AnnClass] = v1.GetPersistentVolumeClaimClass(claim)
+		annotations[AnnClass] = GetPersistentVolumeClaimClass(claim)
 	}
 
 	vol, err = p.orchestrator.AddVolume(
@@ -656,7 +659,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		ObjectMeta: metav1.ObjectMeta{
 			Name: uniqueName,
 			Annotations: map[string]string{
-				AnnClass:                  v1.GetPersistentVolumeClaimClass(claim),
+				AnnClass:                  GetPersistentVolumeClaimClass(claim),
 				AnnDynamicallyProvisioned: AnnOrchestrator,
 			},
 		},
@@ -671,7 +674,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	kubeVersion, _ := ValidateKubeVersion(p.kubernetesVersion)
 	switch {
 	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
-		pv.Spec.StorageClassName = v1.GetPersistentVolumeClaimClass(claim)
+		pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
 	}
 	if getClaimReclaimPolicy(claim) ==
 		string(v1.PersistentVolumeReclaimRetain) {
@@ -680,23 +683,37 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			v1.PersistentVolumeReclaimRetain
 	}
 
+	k8sClient, newKubeClientErr := k8s_client.NewKubeClient(&p.kubeConfig, claim.Namespace)
+	if newKubeClientErr != nil {
+		log.WithFields(log.Fields{
+			"claim.Namespace": claim.Namespace,
+		}).Warnf("Kubernetes frontend couldn't create a client to namespace: %v error: %v",
+			claim.Namespace, newKubeClientErr.Error())
+	}
+
 	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch {
 	case driverType == dvp.SolidfireSANStorageDriverName ||
 		driverType == dvp.OntapSANStorageDriverName ||
 		driverType == dvp.EseriesIscsiStorageDriverName:
-		iscsiSource = CreateISCSIVolumeSource(vol.Config)
+		iscsiSource, err = CreateISCSIVolumeSource(k8sClient, kubeVersion, vol)
+		if err != nil {
+			return
+		}
 		pv.Spec.ISCSI = iscsiSource
 	case driverType == dvp.OntapNASStorageDriverName ||
 		driverType == dvp.OntapNASQtreeStorageDriverName:
-		nfsSource = CreateNFSVolumeSource(vol.Config)
+		nfsSource = CreateNFSVolumeSource(vol)
 		pv.Spec.NFS = nfsSource
 	case driverType == fake.FakeStorageDriverName:
 		if vol.Config.Protocol == config.File {
-			nfsSource = CreateNFSVolumeSource(vol.Config)
+			nfsSource = CreateNFSVolumeSource(vol)
 			pv.Spec.NFS = nfsSource
 		} else if vol.Config.Protocol == config.Block {
-			iscsiSource = CreateISCSIVolumeSource(vol.Config)
+			iscsiSource, err = CreateISCSIVolumeSource(k8sClient, kubeVersion, vol)
+			if err != nil {
+				return
+			}
 			pv.Spec.ISCSI = iscsiSource
 		}
 	default:
@@ -1167,4 +1184,19 @@ func (p *KubernetesPlugin) getDefaultStorageClasses() string {
 		classes = append(classes, class)
 	}
 	return strings.Join(classes, ",")
+}
+
+// GetPersistentVolumeClaimClass returns StorageClassName. If no storage class was
+// requested, it returns "".
+func GetPersistentVolumeClaimClass(claim *v1.PersistentVolumeClaim) string {
+	// Use beta annotation first
+	if class, found := claim.Annotations[api.BetaStorageClassAnnotation]; found {
+		return class
+	}
+
+	if claim.Spec.StorageClassName != nil {
+		return *claim.Spec.StorageClassName
+	}
+
+	return ""
 }

@@ -278,11 +278,18 @@ not configured correctly, PVCs whose storage classes require encryption may
 remain in pending state.
 
 ### SolidFire Preparation
-For SolidFire backends, Trident assigns the volumes it provisions to the Access
-Group(s) specified in the backend configuration file (see [SolidFire Configurations](#solidfire-configurations)
-for further details). These Groups must be created **before** creating volumes
-on the backend and must include the IQNs of all the hosts in the Kubernetes
-cluster that will mount Trident volumes.
+For Kubernetes 1.7 or greater, CHAP authentication can be used instead of
+volume Access Groups and requires no preparation.  To enable this, you must
+set UseCHAP to true in the backend configuration. Trident will then dynamically
+create a Kubernetes secret that contains the required CHAP settings. This secret
+is created in the namespace of the PVC and is referenced from the PV.
+
+For SolidFire backends not using CHAP authentation, Trident assigns the volumes
+it provisions to the Access Group(s) specified in the backend configuration file
+(see [SolidFire Configurations](#solidfire-configurations) for further details).
+These Groups must be created **before** creating volumes on the backend and must
+include the IQNs of all the hosts in the Kubernetes cluster that will mount
+Trident volumes.
 
 Each Access Group allows a maximum of 64 initiators and one can specify up to 4
 Access Group IDs in a backend configuration file, thereby allowing a volume to
@@ -666,9 +673,10 @@ deployments.
 | SVIP | string | Yes | SolidFire SVIP (IP address for iSCSI connections). |
 | InitiatorIFace | string | No | ISCSI interface to use for connecting to volumes via Kubernetes.  Defaults to "default" (TCP). |
 | AccessGroups | Array of int | No | The list of Access Group IDs to be used by Trident (e.g., [1, 3, 9]). |
+| UseCHAP | bool | No | Supersedes the AccessGroups setting; if set, creates PVs with CHAP authentication and ignores any AccessGroups settings. Requires Kubernetes 1.7 or higher. |
 | Types | [VolType](#voltype) array | No | JSON array of possible volume types.  Each of these will be created as a StoragePool for the SolidFire backend.  See below for the specification. |
 
-For more information about AccessGroups, please see [SolidFire Preparation](#solidfire-preparation).
+For more information about AccessGroups and CHAP, please see [SolidFire Preparation](#solidfire-preparation).
 
 We provide an example SolidFire backend configuration under
 `sample-input/backend-solidfire.json`.

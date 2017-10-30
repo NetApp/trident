@@ -32,12 +32,15 @@ type VolumeAccessInfo struct {
 }
 
 type IscsiAccessInfo struct {
-	IscsiTargetPortal string  `json:"iscsiTargetPortal,omitempty"`
-	IscsiTargetIQN    string  `json:"iscsiTargetIqn,omitempty"`
-	IscsiLunNumber    int32   `json:"iscsiLunNumber,omitempty"`
-	IscsiInterface    string  `json:"iscsiInterface,omitempty"`
-	IscsiIgroup       string  `json:"iscsiIgroup,omitempty"`
-	IscsiVAGs         []int64 `json:"iscsiVags,omitempty"`
+	IscsiTargetPortal    string  `json:"iscsiTargetPortal,omitempty"`
+	IscsiTargetIQN       string  `json:"iscsiTargetIqn,omitempty"`
+	IscsiLunNumber       int32   `json:"iscsiLunNumber,omitempty"`
+	IscsiInterface       string  `json:"iscsiInterface,omitempty"`
+	IscsiIgroup          string  `json:"iscsiIgroup,omitempty"`
+	IscsiVAGs            []int64 `json:"iscsiVags,omitempty"`
+	IscsiUsername        string  `json:"iscsiUsername,omitempty"`
+	IscsiInitiatorSecret string  `json:"iscsiInitiatorSecret,omitempty"`
+	IscsiTargetSecret    string  `json:"iscsiTargetSecret,omitempty"`
 }
 
 type NfsAccessInfo struct {

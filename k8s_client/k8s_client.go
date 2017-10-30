@@ -41,6 +41,11 @@ type Interface interface {
 	GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64, labels map[string]string) (*v1.PersistentVolumeClaim, error)
 	CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	DeletePV(pvName string, options *metav1.DeleteOptions) error
+	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
+	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
+	GetSecret(secretName string, options metav1.GetOptions) (*v1.Secret, error)
+	CheckSecretExists(secretName string) (bool, error)
+	DeleteSecret(secretName string, options *metav1.DeleteOptions) error
 }
 
 type KubeClient struct {
@@ -339,4 +344,52 @@ func CreateListOptions(timeout *int64, labels map[string]string, resourceVersion
 		listOptions.ResourceVersion = resourceVersion
 	}
 	return listOptions
+}
+
+// CreateSecret creates a new Secret
+func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
+	return k.clientset.Core().Secrets(k.namespace).Create(secret)
+}
+
+// CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
+func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error) {
+	return k.CreateSecret(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: k.namespace,
+			Name:      secretName,
+		},
+		Type: "kubernetes.io/iscsi-chap",
+		Data: map[string][]byte{
+			"discovery.sendtargets.auth.username":    []byte(accountName),
+			"discovery.sendtargets.auth.password":    []byte(initiatorSecret),
+			"discovery.sendtargets.auth.username_in": []byte(accountName),
+			"discovery.sendtargets.auth.password_in": []byte(targetSecret),
+			"node.session.auth.username":             []byte(accountName),
+			"node.session.auth.password":             []byte(initiatorSecret),
+			"node.session.auth.username_in":          []byte(accountName),
+			"node.session.auth.password_in":          []byte(targetSecret),
+		},
+	})
+}
+
+// GetSecret looks up a Secret by name
+func (k *KubeClient) GetSecret(secretName string, options metav1.GetOptions) (*v1.Secret, error) {
+	return k.clientset.Core().Secrets(k.namespace).Get(secretName, options)
+}
+
+// CheckSecretExists returns true if the Secret exists
+func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
+	var options metav1.GetOptions
+	if _, err := k.GetSecret(secretName, options); err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// DeleteSecret deletes the specified Secret
+func (k *KubeClient) DeleteSecret(secretName string, options *metav1.DeleteOptions) error {
+	return k.clientset.Core().Secrets(k.namespace).Delete(secretName, options)
 }

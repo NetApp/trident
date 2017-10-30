@@ -34,6 +34,7 @@ type SolidfireStorageDriverConfigExternal struct {
 	InitiatorIFace string //iface to use of iSCSI initiator
 	Types          *[]sfapi.VolType
 	AccessGroups   []int64
+	UseCHAP        bool
 }
 
 // Retrieve storage backend capabilities
@@ -98,24 +99,44 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 	if err != nil {
 		return fmt.Errorf("Could not find SolidFire volume %s: %s", name, err.Error())
 	}
-	volumeIDList := []int64{v.VolumeID}
-	for _, vagID := range d.Config.AccessGroups {
-		req := sfapi.AddVolumesToVolumeAccessGroupRequest{
-			VolumeAccessGroupID: vagID,
-			Volumes:             volumeIDList,
-		}
 
-		err = d.Client.AddVolumesToAccessGroup(&req)
-		if err != nil {
-			return fmt.Errorf("Could not map SolidFire volume %s to the VAG: %s", name, err.Error())
-		}
-	}
-
+	// start volConfig...
 	volConfig.AccessInfo.IscsiTargetPortal = d.Config.SVIP
 	volConfig.AccessInfo.IscsiTargetIQN = v.Iqn
 	volConfig.AccessInfo.IscsiLunNumber = 0
 	volConfig.AccessInfo.IscsiInterface = d.Config.InitiatorIFace
-	volConfig.AccessInfo.IscsiVAGs = d.Config.AccessGroups
+
+	if d.Config.UseCHAP {
+		var req sfapi.GetAccountByIDRequest
+		req.AccountID = v.AccountID
+		a, err := d.Client.GetAccountByID(&req)
+		if err != nil {
+			return fmt.Errorf("Could not lookup SolidFire account ID %v, error: %+v ", v.AccountID, err)
+		}
+
+		// finish volConfig
+		volConfig.AccessInfo.IscsiUsername = a.Username
+		volConfig.AccessInfo.IscsiInitiatorSecret = a.InitiatorSecret
+		volConfig.AccessInfo.IscsiTargetSecret = a.TargetSecret
+	} else {
+
+		volumeIDList := []int64{v.VolumeID}
+		for _, vagID := range d.Config.AccessGroups {
+			req := sfapi.AddVolumesToVolumeAccessGroupRequest{
+				VolumeAccessGroupID: vagID,
+				Volumes:             volumeIDList,
+			}
+
+			err = d.Client.AddVolumesToAccessGroup(&req)
+			if err != nil {
+				return fmt.Errorf("Could not map SolidFire volume %s to the VAG: %s", name, err.Error())
+			}
+		}
+
+		// finish volConfig
+		volConfig.AccessInfo.IscsiVAGs = d.Config.AccessGroups
+	}
+
 	log.WithFields(log.Fields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,
@@ -123,7 +144,11 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
 		"interface":       volConfig.AccessInfo.IscsiInterface,
 		"VAGs":            volConfig.AccessInfo.IscsiVAGs,
-	}).Debug("Successfully mapped SolidFire LUN.")
+		"Username":        volConfig.AccessInfo.IscsiUsername,
+		"InitiatorSecret": volConfig.AccessInfo.IscsiInitiatorSecret,
+		"TargetSecret":    volConfig.AccessInfo.IscsiTargetSecret,
+		"UseCHAP":         d.Config.UseCHAP,
+	}).Info("Successfully mapped SolidFire LUN.")
 
 	return nil
 }
@@ -168,6 +193,7 @@ func (d *SolidfireSANStorageDriver) GetExternalConfig() interface{} {
 		InitiatorIFace: d.Config.InitiatorIFace,
 		Types:          d.Config.Types,
 		AccessGroups:   d.Config.AccessGroups,
+		UseCHAP:        d.Config.UseCHAP,
 	}
 }
 

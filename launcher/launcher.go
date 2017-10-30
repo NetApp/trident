@@ -260,7 +260,7 @@ func checkVolumeExists(
 
 // getVolume retrieves a volume from a Trident pod.
 func getVolume(tridentClient tridentrest.Interface,
-	volName string) (*storage.VolumeConfig, error) {
+	volName string) (*storage.VolumeExternal, error) {
 	getVolumeResponse, err := tridentClient.GetVolume(volName)
 	if err != nil {
 		return nil, fmt.Errorf("Launcher failed in getting volume %s: %s",
@@ -269,7 +269,7 @@ func getVolume(tridentClient tridentrest.Interface,
 		return nil, fmt.Errorf("Pod %s failed in getting volume %s: %s",
 			tridentEphemeralPodName, volName, getVolumeResponse.Error)
 	}
-	return getVolumeResponse.Volume.Config, nil
+	return getVolumeResponse.Volume, nil
 }
 
 // addVolume adds a volume to a Trident pod.
@@ -361,8 +361,9 @@ func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentV
 
 // createPV creates a PV in the Kubernetes cluster.
 func createPV(kubeClient k8s_client.Interface, pvName string,
-	volConfig *storage.VolumeConfig,
+	vol *storage.VolumeExternal,
 	pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
+	volConfig := vol.Config
 	pv := &v1.PersistentVolume{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
@@ -389,9 +390,24 @@ func createPV(kubeClient k8s_client.Interface, pvName string,
 	}
 	switch {
 	case volConfig.AccessInfo.NfsAccessInfo.NfsServerIP != "":
-		pv.Spec.NFS = k8sfrontend.CreateNFSVolumeSource(volConfig)
+		pv.Spec.NFS = k8sfrontend.CreateNFSVolumeSource(vol)
 	case volConfig.AccessInfo.IscsiAccessInfo.IscsiTargetPortal != "":
-		pv.Spec.ISCSI = k8sfrontend.CreateISCSIVolumeSource(volConfig)
+		kubeVersion, err := k8sfrontend.ValidateKubeVersion(kubeClient.Version())
+		if err != nil {
+			return nil, fmt.Errorf("Error validating Kubernetes version %v", err.Error())
+		}
+		pv.Spec.ISCSI, err = k8sfrontend.CreateISCSIVolumeSource(kubeClient, kubeVersion, vol)
+		if err != nil {
+			return nil, fmt.Errorf("Error creating ISCSI volume source %v", err.Error())
+		}
+		log.WithFields(log.Fields{
+			"pvName":            pvName,
+			"volumeExternal":    vol,
+			"volConfig":         volConfig,
+			"kubeVersion":       kubeVersion,
+			"iSCSIVolumeSource": pv.Spec.ISCSI,
+		}).Info("Created iSCSIVolumeSource with fields")
+
 	default:
 		return nil, fmt.Errorf("Unrecognized volume type")
 	}
@@ -697,11 +713,13 @@ func (launcher *Launcher) Run() (errors []error) {
 	if !pvExists {
 		// Create the pre-bound PV
 		// Get the volume information
-		if volConfig, err = getVolume(launcher.tridentEphemeralClient, *tridentVolumeName); err != nil {
+		var volumeExternal *storage.VolumeExternal
+		if volumeExternal, err = getVolume(launcher.tridentEphemeralClient, *tridentVolumeName); err != nil {
 			launcherErr = err
 			return
 		}
-		if pv, err = createPV(launcher.kubeClient, *tridentPVName, volConfig, pvc); err != nil {
+		volConfig = volumeExternal.Config
+		if pv, err = createPV(launcher.kubeClient, *tridentPVName, volumeExternal, pvc); err != nil {
 			launcherErr = fmt.Errorf("Launcher failed in creating PV %s: %s. "+
 				"Either use -pv_name in launcher-pod.yaml to create a volume "+
 				"and a PV with a different name, or delete PV %s so that "+

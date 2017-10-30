@@ -4,12 +4,15 @@ package kubernetes
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
+	k8s_util_version "k8s.io/kubernetes/pkg/util/version"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 )
 
@@ -95,19 +98,77 @@ func getVolumeConfig(
 	}
 }
 
-func CreateNFSVolumeSource(volConfig *storage.VolumeConfig) *v1.NFSVolumeSource {
+func CreateNFSVolumeSource(vol *storage.VolumeExternal) *v1.NFSVolumeSource {
+	volConfig := vol.Config
 	return &v1.NFSVolumeSource{
 		Server: volConfig.AccessInfo.NfsServerIP,
 		Path:   volConfig.AccessInfo.NfsPath,
 	}
 }
 
-func CreateISCSIVolumeSource(volConfig *storage.VolumeConfig) *v1.ISCSIVolumeSource {
-	return &v1.ISCSIVolumeSource{
-		TargetPortal:   volConfig.AccessInfo.IscsiTargetPortal,
-		IQN:            volConfig.AccessInfo.IscsiTargetIQN,
-		Lun:            volConfig.AccessInfo.IscsiLunNumber,
-		ISCSIInterface: volConfig.AccessInfo.IscsiInterface,
-		FSType:         volConfig.FileSystem,
+func getCHAPSecretName(vol *storage.VolumeExternal) string {
+	secretName := fmt.Sprintf("trident-chap-%v-%v", vol.Backend, vol.Config.AccessInfo.IscsiUsername)
+	secretName = strings.Replace(secretName, "_", "-", -1)
+	secretName = strings.Replace(secretName, ".", "-", -1)
+	secretName = strings.ToLower(secretName)
+	return secretName
+}
+
+func findOrCreateCHAPSecret(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (string, error) {
+	volConfig := vol.Config
+	secretName := getCHAPSecretName(vol)
+	log.Debugf("Using secret: %v", secretName)
+
+	if !kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.7.0")) {
+		versionErr := fmt.Errorf("Cannot use CHAP with Kubernetes version < v1.7.0")
+		return secretName, versionErr
+	}
+
+	secretExists, _ := k8sClient.CheckSecretExists(secretName)
+	if !secretExists {
+		log.Infof("Creating secret: %v", secretName)
+		_, creationErr := k8sClient.CreateCHAPSecret(
+			secretName,
+			volConfig.AccessInfo.IscsiUsername,
+			volConfig.AccessInfo.IscsiInitiatorSecret,
+			volConfig.AccessInfo.IscsiTargetSecret)
+		if creationErr != nil {
+			return secretName, creationErr
+		} else {
+			log.Infof("Created secret: %v", secretName)
+		}
+	}
+	return secretName, nil
+}
+
+func CreateISCSIVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (*v1.ISCSIVolumeSource, error) {
+	volConfig := vol.Config
+	if volConfig.AccessInfo.IscsiTargetSecret != "" {
+		// CHAP logic
+		secretName, chapError := findOrCreateCHAPSecret(k8sClient, kubeVersion, vol)
+		if chapError != nil {
+			log.Errorf("Could not create secret: %v error: %v", secretName, chapError.Error())
+			return nil, chapError
+		}
+
+		return &v1.ISCSIVolumeSource{
+			TargetPortal:      volConfig.AccessInfo.IscsiTargetPortal,
+			IQN:               volConfig.AccessInfo.IscsiTargetIQN,
+			Lun:               volConfig.AccessInfo.IscsiLunNumber,
+			ISCSIInterface:    volConfig.AccessInfo.IscsiInterface,
+			FSType:            volConfig.FileSystem,
+			DiscoveryCHAPAuth: true,
+			SessionCHAPAuth:   true,
+			SecretRef:         &v1.LocalObjectReference{Name: secretName},
+		}, nil
+	} else {
+		// non-CHAP logic
+		return &v1.ISCSIVolumeSource{
+			TargetPortal:   volConfig.AccessInfo.IscsiTargetPortal,
+			IQN:            volConfig.AccessInfo.IscsiTargetIQN,
+			Lun:            volConfig.AccessInfo.IscsiLunNumber,
+			ISCSIInterface: volConfig.AccessInfo.IscsiInterface,
+			FSType:         volConfig.FileSystem,
+		}, nil
 	}
 }
