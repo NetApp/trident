@@ -93,7 +93,7 @@ import:
   - jlexer
   - jwriter
 - package: github.com/netapp/netappdvp
-  version: a93463d46ae59acabd4cb68f95d74879be9c3701
+  version: c6c608f6b499523388ef576ed502571701790a9a
   subpackages:
   - apis/eseries
   - apis/ontap
@@ -318,3 +318,7 @@ import:
   version: f38e43b221d08850172a9a4ea785a86a3ffa3b3a
   subpackages:
   - pkg/util/version
+- package: github.com/dustin/go-humanize
+  version: 259d2a102b871d17f30e3cd9881a642961a1e486
+- package: github.com/olekukonko/tablewriter
+  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
