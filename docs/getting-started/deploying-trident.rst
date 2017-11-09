@@ -142,9 +142,10 @@ It will look like this when the installer is complete:
 If that's what you see, you're done with this step, but **Trident is not
 yet fully configured.** Go ahead and continue to the next step.
 
-However, if you see pods called ``trident-launcher`` or ``trident-ephemeral``
-and a ``trident-<generated id>`` pod does not appear after a few minutes,
-Trident had a problem and the platform was *not* installed.
+However, if you continue to see pods called ``trident-launcher`` or
+``trident-ephemeral`` and a **Running** ``trident-<generated id>`` pod does not
+appear after a few minutes, Trident had a problem and the platform was *not*
+installed.
 
 To help figure out what went wrong, you can view the logs by running:
 
@@ -153,7 +154,7 @@ To help figure out what went wrong, you can view the logs by running:
   ./tridentctl -n trident logs
 
 After addressing the problem, you can clean up the installation and go back to
-the beginning of this by first running:
+the beginning of this step by first running:
 
 .. code-block:: console
 
@@ -166,13 +167,13 @@ If you continue to have trouble, visit the
 =========================
 
 You already created a *temporary* :ref:`backend <Backend configuration>` in
-3 to provision a volume for that Trident uses for its own metadata.
+step 3 to provision a volume for that Trident uses for its own metadata.
 
 The installer does not assume that you want to use that backend configuration
 for the rest of the volumes that Trident provisions. So Trident forgot about it.
 
 Create a storage backend configuration that Trident will provision volumes
-from. This can be the same backend configuration that you used in 3, or
+from. This can be the same backend configuration that you used in step 3, or
 something completely different. It's up to you.
 
 .. code-block:: bash
@@ -184,9 +185,8 @@ something completely different. It's up to you.
     | ontapnas_10.0.0.1     | ontap-nas      | true   |       0 |
     +-----------------------+----------------+--------+---------+
 
-If the storage driver is *not* online, something was wrong with the
-backend configuration. You can view the logs to determine the cause by
-running:
+If the creation fails, something was wrong with the backend configuration. You
+can view the logs to determine the cause by running:
 
 .. code-block:: console
 
@@ -240,7 +240,7 @@ Kubernetes.
 
     kubectl create -f sample-input/storage-class-basic.yaml
 
-You should now see a 'basic' storage class in both Kubernetes and Trident,
+You should now see a **basic** storage class in both Kubernetes and Trident,
 and Trident should have discovered the pools on the backend.
 
 .. code-block:: bash

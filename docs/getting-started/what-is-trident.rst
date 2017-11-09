@@ -3,11 +3,11 @@ What is Trident?
 ################
 
 Trident is a fully supported `open source project`_ maintained by `NetApp`_. It
-provides storage orchestration for `Kubernetes`_ by natively integrating with
-its `Persistent Volume framework`_ to seamlessly provision and manage volumes
-from systems running one of NetApp's `ONTAP`_, `Element`_ (SolidFire), or
-`SANtricity`_ (E/EF-Series) data management platforms, to meet the
-sophisticated persistence demands of Kubernetes applications.
+helps meet the sophisticated persistence demands of `Kubernetes`_ applications
+by natively integrating with its `Persistent Volume framework`_ to seamlessly
+provision and manage volumes from systems running any combination of NetApp's
+`ONTAP`_ (AFF/FAS/Select/Cloud), `Element`_ (SolidFire), or `SANtricity`_
+(E/EF-Series) data management platforms.
 
 Relative to other Kubernetes provisioners, Trident is novel in the following
 respects:
