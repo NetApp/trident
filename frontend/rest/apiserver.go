@@ -12,7 +12,7 @@ import (
 	"github.com/netapp/trident/core"
 )
 
-const httpTimeout = 10 * time.Second
+const httpTimeout = 30 * time.Second
 
 var orchestrator core.Orchestrator
 
