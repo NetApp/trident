@@ -2,6 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v17.10.0
+
+**Fixes:**
+- Added delete idempotency to the ontap-nas-economy driver.
+- Fixed an issue where qtrees with names near the 64-character limit could not be deleted.
+
+**Enhancements:**
+
 ## Changes since v17.07.0
 
 **Fixes:**
