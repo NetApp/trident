@@ -101,6 +101,8 @@ vendor:
 docker_build: vendor *.go
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
+	@mkdir -p ${ROOT}/extras/external-etcd/bin
+	@chmod 777 ${ROOT}/extras/external-etcd/bin
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/extras/external-etcd/bin/etcd-copy github.com/netapp/trident/extras/external-etcd/etcd-copy
