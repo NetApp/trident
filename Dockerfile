@@ -1,18 +1,21 @@
-FROM debian:jessie
+FROM alpine:3.6
 
 LABEL maintainer="Ardalan.Kangarlou@netapp.com" \
       app="trident.netapp.io" \
       description="Trident Storage Orchestrator"
 
-RUN apt-get update && apt-get install -y \
-	open-iscsi \
+RUN apk update &&  \
+	apk add coreutils util-linux blkid \
 	lsscsi \
-	sg3-utils \
-	scsitools \
+	e2fsprogs \
+	bash \
 	kmod \
 	curl \
 	jq \
 	ca-certificates
+
+# for go binaries to work inside an alpine container
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
 ARG PORT=8000
 ENV PORT $PORT

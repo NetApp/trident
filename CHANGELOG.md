@@ -14,6 +14,7 @@
 - Enabled TLS for Trident's etcd client and the etcd-copy utility.
 - Added scripts and instructions for setting up an external etcd cluster using
   etcd operator.
+- Significantly reduced Trident and Trident-Launcher Docker image sizes.
 
 ## v17.10.0
 
