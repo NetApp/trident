@@ -648,9 +648,10 @@ func (o *tridentOrchestrator) CloneVolume(
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
 	// Get the source volume
-	sourceVolume, found := o.volumes[volumeConfig.SourceName]
+	sourceVolume, found := o.volumes[volumeConfig.CloneSourceVolume]
 	if !found {
-		return nil, fmt.Errorf("Source volume not found: %s", volumeConfig.SourceName)
+		return nil, fmt.Errorf("Source volume not found: %s",
+			volumeConfig.CloneSourceVolume)
 	}
 	sourceVolumeConfig := sourceVolume.Config
 
@@ -661,8 +662,8 @@ func (o *tridentOrchestrator) CloneVolume(
 	// Copy a few attributes from the request that will affect clone creation
 	cloneConfig.Name = volumeConfig.Name
 	cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
-	cloneConfig.SourceName = volumeConfig.SourceName
-	cloneConfig.SourceSnapshotName = volumeConfig.SourceSnapshotName
+	cloneConfig.CloneSourceVolume = volumeConfig.CloneSourceVolume
+	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
 
 	// Add transaction in case the operation must be rolled back later
 	volTxn, err := o.addVolumeTransaction(volumeConfig)

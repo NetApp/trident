@@ -73,6 +73,7 @@ func getVolumeConfig(
 	annotations map[string]string,
 ) *storage.VolumeConfig {
 	var accessMode config.AccessMode
+
 	if len(accessModes) > 1 {
 		accessMode = config.ReadWriteMany
 	} else if len(accessModes) == 0 {
@@ -80,21 +81,25 @@ func getVolumeConfig(
 	} else {
 		accessMode = config.AccessMode(accessModes[0])
 	}
+
 	if getAnnotation(annotations, AnnFileSystem) == "" {
 		annotations[AnnFileSystem] = "ext4"
 	}
+
 	return &storage.VolumeConfig{
-		Name:            name,
-		Size:            fmt.Sprintf("%d", size.Value()),
-		Protocol:        config.Protocol(getAnnotation(annotations, AnnProtocol)),
-		SnapshotPolicy:  getAnnotation(annotations, AnnSnapshotPolicy),
-		ExportPolicy:    getAnnotation(annotations, AnnExportPolicy),
-		SnapshotDir:     getAnnotation(annotations, AnnSnapshotDir),
-		UnixPermissions: getAnnotation(annotations, AnnUnixPermissions),
-		StorageClass:    getAnnotation(annotations, AnnClass),
-		BlockSize:       getAnnotation(annotations, AnnBlockSize),
-		FileSystem:      getAnnotation(annotations, AnnFileSystem),
-		AccessMode:      accessMode,
+		Name:              name,
+		Size:              fmt.Sprintf("%d", size.Value()),
+		Protocol:          config.Protocol(getAnnotation(annotations, AnnProtocol)),
+		SnapshotPolicy:    getAnnotation(annotations, AnnSnapshotPolicy),
+		ExportPolicy:      getAnnotation(annotations, AnnExportPolicy),
+		SnapshotDir:       getAnnotation(annotations, AnnSnapshotDir),
+		UnixPermissions:   getAnnotation(annotations, AnnUnixPermissions),
+		StorageClass:      getAnnotation(annotations, AnnClass),
+		BlockSize:         getAnnotation(annotations, AnnBlockSize),
+		FileSystem:        getAnnotation(annotations, AnnFileSystem),
+		CloneSourceVolume: getAnnotation(annotations, AnnCloneFromPVC),
+		SplitOnClone:      getAnnotation(annotations, AnnSplitOnClone),
+		AccessMode:        accessMode,
 	}
 }
 

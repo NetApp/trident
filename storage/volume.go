@@ -12,27 +12,27 @@ import (
 )
 
 type VolumeConfig struct {
-	Version            string            `json:"version"`
-	Name               string            `json:"name"`
-	InternalName       string            `json:"internalName"`
-	Size               string            `json:"size"`
-	Protocol           config.Protocol   `json:"protocol"`
-	SpaceReserve       string            `json:"spaceReserve"`
-	SecurityStyle      string            `json:"securityStyle"`
-	SplitOnClone       string            `json:"splitOnClone"`
-	SnapshotPolicy     string            `json:"snapshotPolicy,omitempty"`
-	ExportPolicy       string            `json:"exportPolicy,omitempty"`
-	SnapshotDir        string            `json:"snapshotDirectory,omitempty"`
-	UnixPermissions    string            `json:"unixPermissions,omitempty"`
-	StorageClass       string            `json:"storageClass,omitempty"`
-	AccessMode         config.AccessMode `json:"accessMode,omitempty"`
-	AccessInfo         VolumeAccessInfo  `json:"accessInformation"`
-	BlockSize          string            `json:"blockSize"`
-	FileSystem         string            `json:"fileSystem"`
-	Encryption         string            `json:"encryption"`
-	SourceName         string            `json:"sourceName"`
-	SourceInternalName string            `json:"sourceInternalName"`
-	SourceSnapshotName string            `json:"sourceSnapshotName"`
+	Version                   string            `json:"version"`
+	Name                      string            `json:"name"`
+	InternalName              string            `json:"internalName"`
+	Size                      string            `json:"size"`
+	Protocol                  config.Protocol   `json:"protocol"`
+	SpaceReserve              string            `json:"spaceReserve"`
+	SecurityStyle             string            `json:"securityStyle"`
+	SnapshotPolicy            string            `json:"snapshotPolicy,omitempty"`
+	ExportPolicy              string            `json:"exportPolicy,omitempty"`
+	SnapshotDir               string            `json:"snapshotDirectory,omitempty"`
+	UnixPermissions           string            `json:"unixPermissions,omitempty"`
+	StorageClass              string            `json:"storageClass,omitempty"`
+	AccessMode                config.AccessMode `json:"accessMode,omitempty"`
+	AccessInfo                VolumeAccessInfo  `json:"accessInformation"`
+	BlockSize                 string            `json:"blockSize"`
+	FileSystem                string            `json:"fileSystem"`
+	Encryption                string            `json:"encryption"`
+	CloneSourceVolume         string            `json:"cloneSourceVolume"`
+	CloneSourceVolumeInternal string            `json:"cloneSourceVolumeInternal"`
+	CloneSourceSnapshot       string            `json:"cloneSourceSnapshot"`
+	SplitOnClone              string            `json:"splitOnClone"`
 }
 
 type VolumeAccessInfo struct {

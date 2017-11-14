@@ -72,7 +72,7 @@ func makeStorageClass(options map[string]string, o core.Orchestrator) (*storage_
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
 	for k, v := range options {
 		// format: attribute: "type:value"
-		req, err := storage_attribute.CreateAttributeRequestFromTypedValue(k, v)
+		req, err := storage_attribute.CreateAttributeRequestFromAttributeValue(k, v)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"storageClass":            scConfig.Name,
@@ -108,22 +108,22 @@ func getVolumeConfig(name, storageClass string, opts map[string]string) (*storag
 	delete(opts, "size")
 
 	return &storage.VolumeConfig{
-		Name:               name,
-		Size:               fmt.Sprintf("%d", sizeBytes),
-		StorageClass:       storageClass,
-		Protocol:           config.ProtocolAny,
-		AccessMode:         config.ModeAny,
-		SpaceReserve:       dvp_utils.GetV(opts, "spaceReserve", ""),
-		SecurityStyle:      dvp_utils.GetV(opts, "securityStyle", ""),
-		SplitOnClone:       dvp_utils.GetV(opts, "splitOnClone", ""),
-		SnapshotPolicy:     dvp_utils.GetV(opts, "snapshotPolicy", ""),
-		ExportPolicy:       dvp_utils.GetV(opts, "exportPolicy", ""),
-		SnapshotDir:        dvp_utils.GetV(opts, "snapshotDir", ""),
-		UnixPermissions:    dvp_utils.GetV(opts, "unixPermissions", ""),
-		BlockSize:          dvp_utils.GetV(opts, "blocksize", ""),
-		FileSystem:         dvp_utils.GetV(opts, "fstype|fileSystemType", ""),
-		Encryption:         dvp_utils.GetV(opts, "encryption", ""),
-		SourceName:         dvp_utils.GetV(opts, "from", ""),
-		SourceSnapshotName: dvp_utils.GetV(opts, "fromSnapshot", ""),
+		Name:                name,
+		Size:                fmt.Sprintf("%d", sizeBytes),
+		StorageClass:        storageClass,
+		Protocol:            config.ProtocolAny,
+		AccessMode:          config.ModeAny,
+		SpaceReserve:        dvp_utils.GetV(opts, "spaceReserve", ""),
+		SecurityStyle:       dvp_utils.GetV(opts, "securityStyle", ""),
+		SplitOnClone:        dvp_utils.GetV(opts, "splitOnClone", ""),
+		SnapshotPolicy:      dvp_utils.GetV(opts, "snapshotPolicy", ""),
+		ExportPolicy:        dvp_utils.GetV(opts, "exportPolicy", ""),
+		SnapshotDir:         dvp_utils.GetV(opts, "snapshotDir", ""),
+		UnixPermissions:     dvp_utils.GetV(opts, "unixPermissions", ""),
+		BlockSize:           dvp_utils.GetV(opts, "blocksize", ""),
+		FileSystem:          dvp_utils.GetV(opts, "fstype|fileSystemType", ""),
+		Encryption:          dvp_utils.GetV(opts, "encryption", ""),
+		CloneSourceVolume:   dvp_utils.GetV(opts, "from", ""),
+		CloneSourceSnapshot: dvp_utils.GetV(opts, "fromSnapshot", ""),
 	}, nil
 }

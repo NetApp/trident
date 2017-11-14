@@ -8,6 +8,7 @@ const (
 
 	// Constants for boolean storage category attributes
 	Snapshots  = "snapshots"
+	Clones     = "clones"
 	Encryption = "encryption"
 
 	// Constants for string list attributes
@@ -32,6 +33,7 @@ const (
 var attrTypes = map[string]StorageAttributeType{
 	IOPS:             intType,
 	Snapshots:        boolType,
+	Clones:           boolType,
 	Encryption:       boolType,
 	ProvisioningType: stringType,
 	BackendType:      stringType,

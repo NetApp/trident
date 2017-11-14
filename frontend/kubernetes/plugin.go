@@ -636,8 +636,59 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		annotations[AnnClass] = GetPersistentVolumeClaimClass(claim)
 	}
 
-	vol, err = p.orchestrator.AddVolume(
-		getVolumeConfig(accessModes, uniqueName, size, annotations))
+	k8sClient, newKubeClientErr := k8s_client.NewKubeClient(&p.kubeConfig, claim.Namespace)
+	if newKubeClientErr != nil {
+		log.WithFields(log.Fields{
+			"claim.Namespace": claim.Namespace,
+		}).Warnf("Kubernetes frontend couldn't create a client to namespace: %v error: %v",
+			claim.Namespace, newKubeClientErr.Error())
+	}
+
+	// Create the volume configuration object
+	volConfig := getVolumeConfig(accessModes, uniqueName, size, annotations)
+	if volConfig.CloneSourceVolume == "" {
+		vol, err = p.orchestrator.AddVolume(volConfig)
+	} else {
+		var (
+			options metav1.GetOptions
+			pvc     *v1.PersistentVolumeClaim
+		)
+
+		// If cloning an existing PVC, process the source PVC name:
+		// 1) Validate that the source PVC is in the same namespace.
+		//    TODO: Explore the security and management ramifications of cloning
+		//          from a PVC in a different namespace.
+		if pvc, err = k8sClient.GetPVC(volConfig.CloneSourceVolume, options); err != nil {
+			err = fmt.Errorf("Cloning from a PVC requires both PVCs be in " +
+				"the same namespace!")
+			log.WithFields(log.Fields{
+				"sourcePVC":     volConfig.CloneSourceVolume,
+				"PVC":           claim.Name,
+				"PVC_namespace": claim.Namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for cloning from a PVC: %v", err.Error())
+			return
+		}
+
+		// 2) Validate that storage classes match for the two PVCs
+		if GetPersistentVolumeClaimClass(pvc) != GetPersistentVolumeClaimClass(claim) {
+			err = fmt.Errorf("Cloning from a PVC requires matching storage classes!")
+			log.WithFields(log.Fields{
+				"PVC":                    claim.Name,
+				"PVC_storageClass":       GetPersistentVolumeClaimClass(claim),
+				"sourcePVC":              volConfig.CloneSourceVolume,
+				"sourcePVC_storageClass": GetPersistentVolumeClaimClass(pvc),
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for cloning from a PVC: %v", err.Error())
+			return
+		}
+
+		// 3) Set the source PVC name as it's understood by Trident.
+		volConfig.CloneSourceVolume = getUniqueClaimName(pvc)
+
+		// 4) Clone the existing volume
+		vol, err = p.orchestrator.CloneVolume(volConfig)
+	}
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume": uniqueName,
@@ -681,14 +732,6 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		// Extra flexibility in our implementation.
 		pv.Spec.PersistentVolumeReclaimPolicy =
 			v1.PersistentVolumeReclaimRetain
-	}
-
-	k8sClient, newKubeClientErr := k8s_client.NewKubeClient(&p.kubeConfig, claim.Namespace)
-	if newKubeClientErr != nil {
-		log.WithFields(log.Fields{
-			"claim.Namespace": claim.Namespace,
-		}).Warnf("Kubernetes frontend couldn't create a client to namespace: %v error: %v",
-			claim.Namespace, newKubeClientErr.Error())
 	}
 
 	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
@@ -1049,7 +1092,7 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 	for k, v := range class.Parameters {
 		if k == storage_attribute.BackendStoragePools {
 			// format:     backendStoragePools: "backend1:pool1,pool2;backend2:pool1"
-			backendVCs, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
+			backendPools, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"storageClass":             class.Name,
@@ -1058,11 +1101,11 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 				}).Error("Kubernetes frontend couldn't process %s parameter: ",
 					storage_attribute.BackendStoragePools, err)
 			}
-			scConfig.BackendStoragePools = backendVCs
+			scConfig.BackendStoragePools = backendPools
 			continue
 		}
-		// format:     attribute: "type:value"
-		req, err := storage_attribute.CreateAttributeRequestFromTypedValue(k, v)
+		// format:     attribute: "value"
+		req, err := storage_attribute.CreateAttributeRequestFromAttributeValue(k, v)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"storageClass":             class.Name,

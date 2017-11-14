@@ -31,6 +31,7 @@ func (d *OntapNASStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsApiFeature(ontap.NETAPP_VOLUME_ENCRYPTION)),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}

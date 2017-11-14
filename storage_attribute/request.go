@@ -23,7 +23,7 @@ func UnmarshalRequestMap(mapJSON json.RawMessage) (
 		return nil, fmt.Errorf("Unable to unmarshal map:  %v", err)
 	}
 	for name, stringVal := range tmp {
-		ret[name], err = CreateAttributeRequestFromTypedValue(name, stringVal)
+		ret[name], err = CreateAttributeRequestFromAttributeValue(name, stringVal)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +42,7 @@ func MarshalRequestMap(requestMap map[string]Request) ([]byte, error) {
 	return json.Marshal(genericMap)
 }
 
-func CreateAttributeRequestFromTypedValue(name, val string) (Request, error) {
+func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error) {
 	var req Request
 	valType, ok := attrTypes[name]
 	if !ok {

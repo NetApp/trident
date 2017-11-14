@@ -66,14 +66,16 @@ defaults that you set in the backend configuration:
 =================================== ================= ======================================================
 Annotation                          Volume Option     Supported Drivers
 =================================== ================= ======================================================
+trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi
+trident.netapp.io/reclaimPolicy     N/A               any
+trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san
+trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
 trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-economy
 trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-economy, ontap-san
 trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy
 trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy
 trident.netapp.io/blockSize         blockSize         solidfire-san
-trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi
-trident.netapp.io/reclaimPolicy     N/A               any
 =================================== ================= ======================================================
 
 The reclaim policy for the created PV can be determined by setting the
@@ -88,12 +90,35 @@ manually deleted.  If the PV uses the ``Retain`` policy, Trident ignores it and
 assumes the administrator will clean it up from Kubernetes and the backend,
 allowing the volume to be backed up or inspected before its removal.  Note that
 deleting the PV will not cause Trident to delete the backing volume; it must be
-removed manually via the REST API.
+removed manually via the REST API (i.e., ``tridentctl``).
 
-``sample-input/pvc-basic.yaml`` and ``sample-input/pvc-full.yaml`` contain
-examples of PVC definitions for use with Trident.  See
-:ref:`Trident Volume objects` for a full description of the parameters and
-settings associated with Trident volumes.
+One novel aspect of Trident is that users can provision new volumes by cloning
+existing volumes. Trident enables this functionality via the PVC annotation
+``trident.netapp.io/cloneFromPVC``. For example, if a user already has a PVC
+called ``mysql``, she can create a new PVC called ``mysqlclone`` by referring
+to the ``mysql`` PVC: ``trident.netapp.io/cloneFromPVC: mysql``. With this
+annotation set, Trident clones the volume corresponding to the ``mysql`` PVC,
+instead of provisioning a volume from scratch. A few points worth considering
+are the following: (1) We recommend cloning an idle volume, (2) a PVC and its
+clone must be in the same Kubernetes namespace and have the same storage class,
+and (3) with ``ontap-\*`` drivers, it might be desirable to set the PVC
+annotation ``trident.netapp.io/splitOnClone`` in conjunction with
+``trident.netapp.io/cloneFromPVC``. With ``trident.netapp.io/splitOnClone`` set
+to ``true``, Trident splits the cloned volume from the parent volume; thus,
+completely decoupling the life cycle of the cloned volume from its parent at
+the expense of losing some storage efficiency. Not setting
+``trident.netapp.io/splitOnClone`` or setting it to ``false`` results in
+reduced space consumption on the backend at the expense of creating
+dependencies between the parent and clone volumes such that the parent volume
+cannot be deleted unless the clone is deleted first. A scenario where splitting
+the clone makes sense is cloning an empty database volume where it's expected
+for the volume and its clone to greatly diverge and not benefit from storage
+efficiencies offered by ONTAP.
+
+``sample-input/pvc-basic.yaml``, ``sample-input/pvc-basic-clone.yaml``, and
+``sample-input/pvc-full.yaml`` contain examples of PVC definitions for use with
+Trident.  See :ref:`Trident Volume objects` for a full description of the
+parameters and settings associated with Trident volumes.
 
 Kubernetes PersistentVolume objects
 -----------------------------------
@@ -165,6 +190,7 @@ provisioningType  string thin, thick                             Pool supports t
 backendType       string ontap-nas, ontap-nas-economy,           Pool belongs to this type of backend                       Backend specified              All drivers
                          ontap-san, solidfire-san, eseries-iscsi
 snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san
+clones            bool   true, false                             Pool supports cloning volumes                              Volume with clones enabled     ontap-nas, ontap-san, solidfire-san
 encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-san
 IOPS              int    positive integer                        Pool is capable of guaranteeing IOPS in this range         Volume guaranteed these IOPS   solidfire-san
 ================= ====== ======================================= ========================================================== ============================== =========================================================
@@ -264,9 +290,9 @@ determines where that volume can be provisioned, along with a size.
 A volume configuration defines the properties that a provisioned volume should
 have.
 
-================= ====== ======== ==============================================================
+================= ====== ======== ================================================================
 Attribute         Type   Required Description
-================= ====== ======== ==============================================================
+================= ====== ======== ================================================================
 version           string no       Version of the Trident API ("1")
 name              string yes      Name of volume to create
 storageClass      string yes      Storage class to use when provisioning the volume
@@ -279,7 +305,9 @@ snapshotDirectory bool   no       ontap-nas\*: Whether the snapshot directory is
 unixPermissions   string no       ontap-nas\*: Initial UNIX permissions
 blockSize         string no       solidfire-\*: Block/sector size
 fileSystem        string no       File system type
-================= ====== ======== ==============================================================
+cloneSourceVolume string no       ontap-{nas|san} & solidfire-\*: Name of the volume to clone from
+splitOnClone      string no       ontap-{nas|san}: Split the clone from its parent
+================= ====== ======== ================================================================
 
 As mentioned, Trident generates ``internalName`` when creating the volume. This
 consists of two steps.  First, it prepends the storage prefix -- either the

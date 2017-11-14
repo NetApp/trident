@@ -296,8 +296,9 @@ func createPrepareCommon(d storage.TridentDriver, volConfig *storage.VolumeConfi
 
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 
-	if volConfig.SourceName != "" {
-		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	if volConfig.CloneSourceVolume != "" {
+		volConfig.CloneSourceVolumeInternal =
+			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 
 	return true

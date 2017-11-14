@@ -1006,9 +1006,9 @@ func TestCloneVolumes(t *testing.T) {
 		// Now clone the volume and ensure everything looks fine
 		cloneName := s.config.Name + "_clone"
 		cloneConfig := &storage.VolumeConfig{
-			Name:         cloneName,
-			StorageClass: s.config.StorageClass,
-			SourceName:   s.config.Name,
+			Name:              cloneName,
+			StorageClass:      s.config.StorageClass,
+			CloneSourceVolume: s.config.Name,
 		}
 		cloneResult, err := orchestrator.CloneVolume(cloneConfig)
 		if err != nil {

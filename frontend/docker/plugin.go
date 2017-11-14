@@ -101,11 +101,10 @@ func (p *DockerPlugin) Version() string {
 func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
 
 	log.WithFields(log.Fields{
-		"Method":  "Create",
-		"Type":    "DockerPlugin",
+		"method":  "Create",
 		"name":    request.Name,
 		"options": request.Options,
-	}).Debug("Create")
+	}).Debug("Docker frontend method is invoked.")
 
 	// Find a matching storage class, or register a new one
 	scConfig, err := getStorageClass(request.Options, p.orchestrator)
@@ -120,7 +119,7 @@ func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
 	}
 
 	// Invoke the orchestrator to create or clone the new volume
-	if volConfig.SourceName != "" {
+	if volConfig.CloneSourceVolume != "" {
 		_, err = p.orchestrator.CloneVolume(volConfig)
 	} else {
 		_, err = p.orchestrator.AddVolume(volConfig)
@@ -131,9 +130,8 @@ func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
 func (p *DockerPlugin) List() (*volume.ListResponse, error) {
 
 	log.WithFields(log.Fields{
-		"Method": "List",
-		"Type":   "DockerPlugin",
-	}).Debug("List")
+		"method": "List",
+	}).Debug("Docker frontend method is invoked.")
 
 	tridentVols := p.orchestrator.ListVolumes()
 	var dockerVols []*volume.Volume
@@ -149,10 +147,9 @@ func (p *DockerPlugin) List() (*volume.ListResponse, error) {
 func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 
 	log.WithFields(log.Fields{
-		"Method": "Get",
-		"Type":   "DockerPlugin",
+		"method": "Get",
 		"name":   request.Name,
-	}).Debug("Get")
+	}).Debug("Docker frontend method is invoked")
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
@@ -177,10 +174,9 @@ func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, err
 func (p *DockerPlugin) Remove(request *volume.RemoveRequest) error {
 
 	log.WithFields(log.Fields{
-		"Method": "Remove",
-		"Type":   "DockerPlugin",
+		"method": "Remove",
 		"name":   request.Name,
-	}).Debug("Remove")
+	}).Debug("Docker frontend method is invoked.")
 
 	found, err := p.orchestrator.DeleteVolume(request.Name)
 	if !found {
@@ -192,10 +188,9 @@ func (p *DockerPlugin) Remove(request *volume.RemoveRequest) error {
 func (p *DockerPlugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 
 	log.WithFields(log.Fields{
-		"Method": "Path",
-		"Type":   "DockerPlugin",
+		"method": "Path",
 		"name":   request.Name,
-	}).Debug("Path")
+	}).Debug("Docker frontend method is invoked.")
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
@@ -213,11 +208,10 @@ func (p *DockerPlugin) Path(request *volume.PathRequest) (*volume.PathResponse, 
 func (p *DockerPlugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 
 	log.WithFields(log.Fields{
-		"Method": "Mount",
-		"Type":   "DockerPlugin",
+		"method": "Mount",
 		"name":   request.Name,
 		"id":     request.ID,
-	}).Debug("Mount")
+	}).Debug("Docker frontend method is invoked.")
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
@@ -240,11 +234,10 @@ func (p *DockerPlugin) Mount(request *volume.MountRequest) (*volume.MountRespons
 func (p *DockerPlugin) Unmount(request *volume.UnmountRequest) error {
 
 	log.WithFields(log.Fields{
-		"Method": "Unmount",
-		"Type":   "DockerPlugin",
+		"method": "Unmount",
 		"name":   request.Name,
 		"id":     request.ID,
-	}).Debug("Unmount")
+	}).Debug("Docker frontend method is invoked.")
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
@@ -265,9 +258,8 @@ func (p *DockerPlugin) Unmount(request *volume.UnmountRequest) error {
 func (p *DockerPlugin) Capabilities() *volume.CapabilitiesResponse {
 
 	log.WithFields(log.Fields{
-		"Method": "Capabilities",
-		"Type":   "DockerPlugin",
-	}).Debug("Capabilities")
+		"method": "Capabilities",
+	}).Debug("Docker frontend method is invoked.")
 
 	return &volume.CapabilitiesResponse{Capabilities: volume.Capability{Scope: "global"}}
 }

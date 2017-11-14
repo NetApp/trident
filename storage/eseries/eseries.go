@@ -55,8 +55,9 @@ func (d *EseriesStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBa
 			vc.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
 		}
 
-		// No snapshots or thin provisioning on E-series
+		// No snapshots, clones or thin provisioning on E-series
 		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
+		vc.Attributes[sa.Clones] = sa.NewBoolOffer(false)
 		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thick")
 

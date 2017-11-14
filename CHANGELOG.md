@@ -9,6 +9,7 @@
 - Enabled Trident installation on an EF-series (all-flash) array.
 
 **Enhancements:**
+- Enabled cloning volumes via a new PVC annotation.
 - Added CHAP support for SolidFire (Issue [#42](https://github.com/NetApp/trident/issues/42)).
 - Added support for the etcdv3 API (Issue [#45](https://github.com/NetApp/trident/issues/45)).
 - Added the etcd-copy utility to migrate data between etcd clusters.

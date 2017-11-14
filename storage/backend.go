@@ -171,8 +171,8 @@ func (b *StorageBackend) CloneVolume(
 	log.WithFields(log.Fields{
 		"storagePool":    storagePool.Name,
 		"storageClass":   volConfig.StorageClass,
-		"sourceVolume":   volConfig.SourceName,
-		"sourceSnapshot": volConfig.SourceSnapshotName,
+		"sourceVolume":   volConfig.CloneSourceVolume,
+		"sourceSnapshot": volConfig.CloneSourceSnapshot,
 		"cloneVolume":    volConfig.Name,
 	}).Debug("Attempting volume clone.")
 
@@ -193,7 +193,8 @@ func (b *StorageBackend) CloneVolume(
 	}
 
 	err = b.Driver.CreateClone(volConfig.InternalName,
-		volConfig.SourceInternalName, volConfig.SourceSnapshotName, args)
+		volConfig.CloneSourceVolumeInternal, volConfig.CloneSourceSnapshot,
+		args)
 	if err != nil {
 		return nil, err
 	}

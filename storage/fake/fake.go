@@ -50,8 +50,9 @@ func (d *FakeStorageDriver) GetInternalVolumeName(name string) string {
 
 func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-	if volConfig.SourceName != "" {
-		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	if volConfig.CloneSourceVolume != "" {
+		volConfig.CloneSourceVolumeInternal =
+			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 	return true
 }

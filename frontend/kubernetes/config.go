@@ -32,6 +32,8 @@ const (
 	AnnExportPolicy    = AnnPrefix + "/exportPolicy"
 	AnnBlockSize       = AnnPrefix + "/blockSize"
 	AnnFileSystem      = AnnPrefix + "/fileSystem"
+	AnnCloneFromPVC    = AnnPrefix + "/cloneFromPVC"
+	AnnSplitOnClone    = AnnPrefix + "/splitOnClone"
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.4.0"

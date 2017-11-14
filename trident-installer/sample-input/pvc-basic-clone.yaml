@@ -1,7 +1,9 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: basic
+  name: basicclone
+  annotations:
+    trident.netapp.io/cloneFromPVC: basic
 spec:
   accessModes:
     - ReadWriteOnce

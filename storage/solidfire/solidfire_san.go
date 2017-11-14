@@ -64,6 +64,7 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(
 		vc.Attributes[sa.IOPS] = sa.NewIntOffer(int(volType.QOS.MinIOPS),
 			int(volType.QOS.MaxIOPS))
 		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
+		vc.Attributes[sa.Clones] = sa.NewBoolOffer(true)
 		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thin")
 		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
@@ -86,8 +87,9 @@ func (d *SolidfireSANStorageDriver) CreatePrepare(
 	// 1. Sanitize the volume name
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 
-	if volConfig.SourceName != "" {
-		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	if volConfig.CloneSourceVolume != "" {
+		volConfig.CloneSourceVolumeInternal =
+			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 
 	return true
