@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
 
@@ -84,6 +85,9 @@ var (
 	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
 	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
 	StoreURL        = "/" + OrchestratorName + "/store"
+
+	UsingPassthroughStore bool
+	DriverContext         dvp.DriverContext
 )
 
 func IsValidProtocol(p Protocol) bool {

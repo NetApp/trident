@@ -76,7 +76,7 @@ func NewStorageBackendForConfig(configJSON string) (
 	}
 
 	if initializeErr := storageDriver.Initialize(
-		dvp.ContextTrident, configJSON, commonConfig); initializeErr != nil {
+		config.DriverContext, configJSON, commonConfig); initializeErr != nil {
 		err = fmt.Errorf("Problem initializing storage driver: '%v' error: %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return

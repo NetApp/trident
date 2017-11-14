@@ -50,6 +50,9 @@ func (d *FakeStorageDriver) GetInternalVolumeName(name string) string {
 
 func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
+	if volConfig.SourceName != "" {
+		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	}
 	return true
 }
 
@@ -107,6 +110,26 @@ func (d *FakeStorageDriver) GetExternalConfig() interface{} {
 		d.Config.Pools,
 		d.Config.InstanceName,
 	}
+}
+
+func (d *FakeStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+
+	internalName := d.GetInternalVolumeName(name)
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:      "1",
+		Name:         name,
+		InternalName: internalName,
+		Size:         "1",
+	}
+
+	volume := &storage.VolumeExternal{
+		Config:  volumeConfig,
+		Backend: d.Name(),
+		Pool:    "fakePool",
+	}
+
+	return volume, nil
 }
 
 func Clone(a, b interface{}) {

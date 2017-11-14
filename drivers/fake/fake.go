@@ -70,6 +70,14 @@ type FakeStorageDriver struct {
 	DestroyedVolumes map[string]bool
 }
 
+func NewFakeStorageDriver(config FakeStorageDriverConfig) *FakeStorageDriver {
+	return &FakeStorageDriver{
+		Config:           config,
+		volumes:          make(map[string]FakeVolume),
+		DestroyedVolumes: make(map[string]bool),
+	}
+}
+
 func newFakeStorageDriverConfigJSON(
 	name string,
 	protocol config.Protocol,
@@ -171,7 +179,50 @@ func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[strin
 }
 
 func (d *FakeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
-	return errors.New("Fake driver does not support CreateClone")
+
+	// Ensure source volume exists
+	sourceVolume, ok := d.volumes[source]
+	if !ok {
+		return fmt.Errorf("Source volume %s not found", name)
+	}
+
+	// Ensure clone volume doesn't exist
+	if _, ok := d.volumes[name]; ok {
+		return fmt.Errorf("Volume %s already exists", name)
+	}
+
+	// Use the same pool as the source
+	poolName := sourceVolume.poolName
+	pool, ok := d.Config.Pools[poolName]
+	if !ok {
+		return fmt.Errorf("Could not find pool %s.", pool)
+	}
+
+	// Use the same size as the source
+	sizeBytes := sourceVolume.sizeBytes
+	if sizeBytes > pool.Bytes {
+		return fmt.Errorf("Requested clone is too large.  Requested %d bytes; "+
+			"have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
+	}
+
+	d.volumes[name] = FakeVolume{
+		name:      name,
+		poolName:  poolName,
+		sizeBytes: sizeBytes,
+	}
+	d.DestroyedVolumes[name] = false
+	pool.Bytes -= sizeBytes
+
+	log.WithFields(log.Fields{
+		"backend":   d.Config.InstanceName,
+		"name":      name,
+		"source":    sourceVolume.name,
+		"snapshot":  snapshot,
+		"poolName":  poolName,
+		"sizeBytes": sizeBytes,
+	}).Debug("Cloned fake volume.")
+
+	return nil
 }
 
 func (d *FakeStorageDriver) Destroy(name string) error {

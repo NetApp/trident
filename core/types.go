@@ -20,6 +20,7 @@ type Orchestrator interface {
 	OfflineBackend(backend string) (bool, error)
 
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	GetVolume(volume string) *storage.VolumeExternal
 	GetDriverTypeForVolume(vol *storage.VolumeExternal) string
 	GetVolumeType(vol *storage.VolumeExternal) config.VolumeType

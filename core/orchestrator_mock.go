@@ -202,6 +202,11 @@ func (m *MockOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (*stora
 	return volume.ConstructExternal(), nil
 }
 
+func (m *MockOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error) {
+	// TODO: write this method to enable CloneVolume unit tests
+	return nil, nil
+}
+
 func (m *MockOrchestrator) ValidateVolumes(
 	t *testing.T,
 	expectedConfigs []*storage.VolumeConfig,

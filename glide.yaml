@@ -78,3 +78,7 @@ import:
   - volume
 - package: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
+- package: github.com/dustin/go-humanize
+  version: 6d15c0ae71e55ed645c21ac4945aaadbc0e9a590
+- package: github.com/olekukonko/tablewriter
+  version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4

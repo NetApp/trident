@@ -1,5 +1,5 @@
-hash: b3ccf56738b1f933c6e6306a37625b77d1093c9e150be11091da806523db1e97
-updated: 2017-11-03T09:51:07.213565884-04:00
+hash: a640e565d2c3fc7f30d14696a1ad3ca013fff8652d3c01d814102f2edf95adcb
+updated: 2017-11-09T13:57:39.429393116-05:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -46,7 +46,7 @@ imports:
   - sdk
   - volume
 - name: github.com/dustin/go-humanize
-  version: 8929fe90cee4b2cb9deb468b51fb34eba64d1bf0
+  version: 6d15c0ae71e55ed645c21ac4945aaadbc0e9a590
 - name: github.com/emicklei/go-restful
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
@@ -116,7 +116,7 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/mattn/go-runewidth
-  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
 - name: github.com/matttproud/golang_protobuf_extensions
   version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
   subpackages:
@@ -135,7 +135,7 @@ imports:
   - storage_drivers
   - utils
 - name: github.com/olekukonko/tablewriter
-  version: cca8bbc0798408af109aaaa239cbd2634846b340
+  version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/prometheus/client_golang

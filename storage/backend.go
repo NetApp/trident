@@ -4,6 +4,7 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -40,6 +41,7 @@ type TridentDriver interface {
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
 	GetExternalConfig() interface{}
+	GetExternalVolume(name string) (*VolumeExternal, error)
 }
 
 // This shadows the dvp.StorageDriver interface, combining it with the Trident
@@ -160,6 +162,60 @@ func (b *StorageBackend) AddVolume(
 		}).Debug("Storage pool does not match volume request.")
 	}
 	return nil, nil
+}
+
+func (b *StorageBackend) CloneVolume(
+	volConfig *VolumeConfig, storagePool *StoragePool,
+) (*Volume, error) {
+
+	log.WithFields(log.Fields{
+		"storagePool":    storagePool.Name,
+		"storageClass":   volConfig.StorageClass,
+		"sourceVolume":   volConfig.SourceName,
+		"sourceSnapshot": volConfig.SourceSnapshotName,
+		"cloneVolume":    volConfig.Name,
+	}).Debug("Attempting volume clone.")
+
+	// CreatePrepare should perform the following tasks:
+	// 1. Sanitize the volume name
+	// 2. Ensure no volume with the same name exists on that backend
+	if !b.Driver.CreatePrepare(volConfig) {
+		return nil, errors.New("Failed to prepare clone create.")
+	}
+
+	nilAttributes := make(map[string]storage_attribute.Request)
+	args, err := b.Driver.GetVolumeOpts(volConfig, storagePool, nilAttributes)
+	if err != nil {
+		// An error on GetVolumeOpts is almost certainly going to indicate
+		// a formatting mistake, so go ahead and return an error, rather
+		// than just log a warning.
+		return nil, err
+	}
+
+	err = b.Driver.CreateClone(volConfig.InternalName,
+		volConfig.SourceInternalName, volConfig.SourceSnapshotName, args)
+	if err != nil {
+		return nil, err
+	}
+
+	err = b.Driver.CreateFollowup(volConfig)
+	if err != nil {
+		errDestroy := b.Driver.Destroy(volConfig.InternalName)
+		if errDestroy != nil {
+			log.WithFields(log.Fields{
+				"backend": b.Name,
+				"volume":  volConfig.InternalName,
+			}).Warnf("Mapping the created volume failed "+
+				"and %s wasn't able to delete it afterwards: %s. "+
+				"Volume needs to be manually deleted.",
+				config.OrchestratorName, errDestroy)
+		}
+		return nil, err
+	}
+
+	vol := NewVolume(volConfig, b, storagePool)
+	storagePool.AddVolume(vol, false)
+	return vol, nil
 }
 
 // HasVolumes returns true if the StorageBackend has one or more volumes

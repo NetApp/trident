@@ -3,6 +3,8 @@
 package storage
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"strings"
 
@@ -10,20 +12,27 @@ import (
 )
 
 type VolumeConfig struct {
-	Version         string            `json:"version"`
-	Name            string            `json:"name"`
-	InternalName    string            `json:"internalName"`
-	Size            string            `json:"size"`
-	Protocol        config.Protocol   `json:"protocol"`
-	SnapshotPolicy  string            `json:"snapshotPolicy,omitempty"`
-	ExportPolicy    string            `json:"exportPolicy,omitempty"`
-	SnapshotDir     string            `json:"snapshotDirectory,omitempty"`
-	UnixPermissions string            `json:"unixPermissions,omitempty"`
-	StorageClass    string            `json:"storageClass,omitempty"`
-	AccessMode      config.AccessMode `json:"accessMode,omitempty"`
-	AccessInfo      VolumeAccessInfo  `json:"accessInformation"`
-	BlockSize       string            `json:"blockSize"`
-	FileSystem      string            `json:"fileSystem"`
+	Version            string            `json:"version"`
+	Name               string            `json:"name"`
+	InternalName       string            `json:"internalName"`
+	Size               string            `json:"size"`
+	Protocol           config.Protocol   `json:"protocol"`
+	SpaceReserve       string            `json:"spaceReserve"`
+	SecurityStyle      string            `json:"securityStyle"`
+	SplitOnClone       string            `json:"splitOnClone"`
+	SnapshotPolicy     string            `json:"snapshotPolicy,omitempty"`
+	ExportPolicy       string            `json:"exportPolicy,omitempty"`
+	SnapshotDir        string            `json:"snapshotDirectory,omitempty"`
+	UnixPermissions    string            `json:"unixPermissions,omitempty"`
+	StorageClass       string            `json:"storageClass,omitempty"`
+	AccessMode         config.AccessMode `json:"accessMode,omitempty"`
+	AccessInfo         VolumeAccessInfo  `json:"accessInformation"`
+	BlockSize          string            `json:"blockSize"`
+	FileSystem         string            `json:"fileSystem"`
+	Encryption         string            `json:"encryption"`
+	SourceName         string            `json:"sourceName"`
+	SourceInternalName string            `json:"sourceInternalName"`
+	SourceSnapshotName string            `json:"sourceSnapshotName"`
 }
 
 type VolumeAccessInfo struct {
@@ -59,6 +68,14 @@ func (c *VolumeConfig) Validate() error {
 		)
 	}
 	return nil
+}
+
+func (c *VolumeConfig) ConstructClone(clone *VolumeConfig) {
+	buff := new(bytes.Buffer)
+	enc := gob.NewEncoder(buff)
+	dec := gob.NewDecoder(buff)
+	enc.Encode(c)
+	dec.Decode(clone)
 }
 
 type Volume struct {

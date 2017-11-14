@@ -5,6 +5,7 @@ package ontap
 import (
 	"fmt"
 	"os/exec"
+	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
@@ -50,16 +51,8 @@ func (d *OntapSANStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *OntapSANStorageDriver) CreatePrepare(
-	volConfig *storage.VolumeConfig,
-) bool {
-	// Sanitize the volume name
-	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-
-	// Because the storage prefix specified in the backend config must create
-	// a unique set of volume names, we do not need to check whether volumes
-	// exist in the backend here.
-	return true
+func (d *OntapSANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+	return createPrepareCommon(d, volConfig)
 }
 
 func (d *OntapSANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
@@ -147,4 +140,44 @@ func DiscoverIscsiTarget(targetIP string) error {
 		return err
 	}
 	return nil
+}
+
+func (d *OntapSANStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+
+	internalName := d.GetInternalVolumeName(name)
+	volumeAttributes, err := d.API.VolumeGet(internalName)
+	if err != nil {
+		return nil, err
+	}
+	volumeExportAttrs := volumeAttributes.VolumeExportAttributes()
+	volumeIdAttrs := volumeAttributes.VolumeIdAttributes()
+	volumeSecurityAttrs := volumeAttributes.VolumeSecurityAttributes()
+	volumeSecurityUnixAttributes := volumeSecurityAttrs.VolumeSecurityUnixAttributes()
+	volumeSpaceAttrs := volumeAttributes.VolumeSpaceAttributes()
+	volumeSnapshotAttrs := volumeAttributes.VolumeSnapshotAttributes()
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:         "1",
+		Name:            name,
+		InternalName:    internalName,
+		Size:            string(volumeSpaceAttrs.SizeTotal()),
+		Protocol:        config.Block,
+		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
+		ExportPolicy:    volumeExportAttrs.Policy(),
+		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
+		UnixPermissions: volumeSecurityUnixAttributes.Permissions(),
+		StorageClass:    "",
+		AccessMode:      config.ReadWriteOnce,
+		AccessInfo:      storage.VolumeAccessInfo{},
+		BlockSize:       "",
+		FileSystem:      "ext4",
+	}
+
+	volume := &storage.VolumeExternal{
+		Config:  volumeConfig,
+		Backend: d.Name(),
+		Pool:    volumeIdAttrs.ContainingAggregateName(),
+	}
+
+	return volume, nil
 }

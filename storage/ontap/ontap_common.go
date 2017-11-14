@@ -11,6 +11,7 @@ import (
 	"github.com/netapp/netappdvp/apis/ontap"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 )
@@ -257,25 +258,50 @@ func getVolumeOptsCommon(
 	if volConfig.ExportPolicy != "" {
 		opts["exportPolicy"] = volConfig.ExportPolicy
 	}
+	if volConfig.SpaceReserve != "" {
+		opts["spaceReserve"] = volConfig.SpaceReserve
+	}
+	if volConfig.SecurityStyle != "" {
+		opts["securityStyle"] = volConfig.SecurityStyle
+	}
+	if volConfig.SplitOnClone != "" {
+		opts["splitOnClone"] = volConfig.SplitOnClone
+	}
+
 	return opts
 }
 
-func getInternalVolumeNameCommon(config *dvp.CommonStorageDriverConfig, name string) string {
-	s1 := storage.GetCommonInternalVolumeName(config, name)
-	s2 := strings.Replace(s1, "-", "_", -1)
-	s3 := strings.Replace(s2, ".", "_", -1)
-	return s3
+func getInternalVolumeNameCommon(common_config *dvp.CommonStorageDriverConfig, name string) string {
+
+	log.WithFields(log.Fields{
+		"prefix":           *common_config.StoragePrefix,
+		"name":             name,
+		"passthroughStore": config.UsingPassthroughStore,
+	}).Debugf("getInternalVolumeNameCommon")
+
+	if config.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
+		return *common_config.StoragePrefix + name
+	} else {
+		// With an external store, any transformation of the name is fine
+		internal := storage.GetCommonInternalVolumeName(common_config, name)
+		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
+		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
+		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+		return internal
+	}
 }
 
-/*func createPrepareCommon(volConfig *storage.VolumeConfig) bool {
-	// 1. Sanitize the volume name
-	volConfig.InternalName = getInternalVolumeNameCommon(volConfig.Name)
+func createPrepareCommon(d storage.TridentDriver, volConfig *storage.VolumeConfig) bool {
 
-	// Because the storage prefix specified in the backend config must create
-	// a unique set of volume names, we do not need to check whether volumes
-	// exist in the backend here.
+	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
+
+	if volConfig.SourceName != "" {
+		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	}
+
 	return true
-}*/
+}
 
 func getExternalConfig(config dvp.OntapStorageDriverConfig) interface{} {
 	storage.SanitizeCommonStorageDriverConfig(

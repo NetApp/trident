@@ -12,9 +12,10 @@ import (
 type StoreType string
 
 const (
-	MemoryStore StoreType = "memory"
-	EtcdV2Store StoreType = "etcdv2"
-	EtcdV3Store StoreType = "etcdv3"
+	MemoryStore      StoreType = "memory"
+	EtcdV2Store      StoreType = "etcdv2"
+	EtcdV3Store      StoreType = "etcdv3"
+	PassthroughStore StoreType = "passthrough"
 )
 
 type PersistentStateVersion struct {

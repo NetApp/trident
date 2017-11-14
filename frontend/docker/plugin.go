@@ -71,16 +71,22 @@ func registerDockerVolumePlugin(root string) error {
 
 func (p *DockerPlugin) Activate() error {
 	handler := volume.NewHandler(p)
-	if p.driverPort != "" {
-		go handler.ServeTCP(p.driverName, ":"+p.driverPort, "", &tls.Config{InsecureSkipVerify: true})
-	} else {
-		go handler.ServeUnix(p.driverName, 0) // 0 is the unix group to start as (root gid)
-	}
+	go func() {
+		var err error
+		if p.driverPort != "" {
+			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
+				&tls.Config{InsecureSkipVerify: true})
+		} else {
+			err = handler.ServeUnix(p.driverName, 0) // start as root unix group
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	return nil
 }
 
 func (p *DockerPlugin) Deactivate() error {
-
 	return nil
 }
 
@@ -113,8 +119,12 @@ func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
 		return err
 	}
 
-	// Invoke the orchestrator to create the new volume
-	_, err = p.orchestrator.AddVolume(volConfig)
+	// Invoke the orchestrator to create or clone the new volume
+	if volConfig.SourceName != "" {
+		_, err = p.orchestrator.CloneVolume(volConfig)
+	} else {
+		_, err = p.orchestrator.AddVolume(volConfig)
+	}
 	return err
 }
 

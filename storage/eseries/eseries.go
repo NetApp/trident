@@ -266,3 +266,20 @@ func (d *EseriesStorageDriver) base64ToUuid(b64 string) (string, error) {
 
 	return UUID, nil
 }
+
+func (d *EseriesStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:      "1",
+		Name:         name,
+		InternalName: name,
+	}
+
+	volume := &storage.VolumeExternal{
+		Config:  volumeConfig,
+		Backend: d.Name(),
+		Pool:    "",
+	}
+
+	return volume, nil
+}

@@ -786,6 +786,278 @@ func TestAddStorageClassVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// This test is modeled after TestAddStorageClassVolumes, but we don't need all the
+// tests around storage class deletion, etc.
+func TestCloneVolumes(t *testing.T) {
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator()
+
+	errored := false
+	for _, c := range []struct {
+		name      string
+		protocol  config.Protocol
+		poolNames []string
+	}{
+		{
+			name:      "fast-a",
+			protocol:  config.File,
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
+		},
+		{
+			name:      "fast-b",
+			protocol:  config.File,
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr},
+		},
+		{
+			name:      "slow-file",
+			protocol:  config.File,
+			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots},
+		},
+		{
+			name:      "slow-block",
+			protocol:  config.Block,
+			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
+		},
+	} {
+		pools := make(map[string]*fake.FakeStoragePool, len(c.poolNames))
+		for _, poolName := range c.poolNames {
+			pools[poolName] = mockPools[poolName]
+		}
+		config, err := fake.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+			pools)
+		if err != nil {
+			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
+		}
+		_, err = orchestrator.AddStorageBackend(config)
+		if err != nil {
+			t.Errorf("Unable to add backend %s:  %v", c.name, err)
+			errored = true
+		}
+		orchestrator.mutex.Lock()
+		backend, ok := orchestrator.backends[c.name]
+		if !ok {
+			t.Fatalf("Backend %s not stored in orchestrator", c.name)
+		}
+		persistentBackend, err := orchestrator.storeClient.GetBackend(
+			c.name)
+		if err != nil {
+			t.Fatalf("Unable to get backend %s from persistent store:  %v",
+				c.name, err)
+		} else if !reflect.DeepEqual(backend.ConstructPersistent(),
+			persistentBackend) {
+			t.Error("Wrong data stored for backend ", c.name)
+		}
+		orchestrator.mutex.Unlock()
+	}
+	if errored {
+		t.Fatal("Failed to add all backends; aborting remaining tests.")
+	}
+
+	// Add storage classes
+	storageClasses := []storageClassTest{
+		{
+			config: &storage_class.Config{
+				Name: "slow",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(40),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "slow-file", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "fast",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "fast-unique",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+					sa.UniqueOptions:    sa.NewStringRequest("baz"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "specific",
+				BackendStoragePools: map[string][]string{
+					"fast-a":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "specificNoMatch",
+				BackendStoragePools: map[string][]string{
+					"unknown": {tu.FastThinOnly},
+				},
+			},
+			expected: []*tu.PoolMatch{},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "mixed",
+				BackendStoragePools: map[string][]string{
+					"slow-file": {tu.SlowNoSnapshots},
+					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
+				},
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "emptyStorageClass",
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-file", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
+			},
+		},
+	}
+	for _, s := range storageClasses {
+		_, err := orchestrator.AddStorageClass(s.config)
+		if err != nil {
+			t.Errorf("Unable to add storage class %s:  %v", s.config.Name, err)
+			continue
+		}
+		validateStorageClass(t, orchestrator, s.config.Name, s.expected)
+	}
+
+	for _, s := range []struct {
+		name            string
+		config          *storage.VolumeConfig
+		expectedSuccess bool
+		expectedMatches []*tu.PoolMatch
+	}{
+		{
+			name:            "file",
+			config:          generateVolumeConfig("file", 1, "fast", config.File),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			name:            "block",
+			config:          generateVolumeConfig("block", 1, "specific", config.Block),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
+			},
+		},
+	} {
+		// Create the source volume
+		_, err := orchestrator.AddVolume(s.config)
+		if err != nil {
+			t.Errorf("%s:  got unexpected error %v", s.name, err)
+			continue
+		}
+
+		// Now clone the volume and ensure everything looks fine
+		cloneName := s.config.Name + "_clone"
+		cloneConfig := &storage.VolumeConfig{
+			Name:         cloneName,
+			StorageClass: s.config.StorageClass,
+			SourceName:   s.config.Name,
+		}
+		cloneResult, err := orchestrator.CloneVolume(cloneConfig)
+		if err != nil {
+			t.Errorf("%s:  got unexpected error %v", s.name, err)
+			continue
+		}
+
+		orchestrator.mutex.Lock()
+
+		volume, found := orchestrator.volumes[s.config.Name]
+		if !found {
+			t.Errorf("%s:  did not get volume where expected.", s.name)
+		}
+		clone, found := orchestrator.volumes[cloneName]
+		if !found {
+			t.Errorf("%s:  did not get volume clone where expected.", cloneName)
+		}
+
+		// Clone must reside in the same place as the source
+		if clone.Backend.Name != volume.Backend.Name || clone.Pool.Name != volume.Pool.Name {
+			t.Errorf("%s: Clone placed on unexpected backend and storage "+
+				"pool:  %s, %s", cloneName, clone.Backend.Name, clone.Pool.Name)
+		}
+
+		// Clone should be registered in the store just like any other volume
+		externalClone, err := orchestrator.storeClient.GetVolume(cloneName)
+		if err != nil {
+			t.Errorf("%s:  unable to communicate with backing store:  %v", cloneName, err)
+		}
+		if !reflect.DeepEqual(externalClone, cloneResult) {
+			t.Errorf("%s:  external volume %s stored in backend does not match"+
+				" created volume.", cloneName, externalClone.Config.Name)
+			externalCloneJSON, err := json.Marshal(externalClone)
+			if err != nil {
+				t.Fatal("Unable to remarshal JSON:  ", err)
+			}
+			origCloneJSON, err := json.Marshal(cloneResult)
+			if err != nil {
+				t.Fatal("Unable to remarshal JSON:  ", err)
+			}
+			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalCloneJSON), string(origCloneJSON))
+		}
+
+		orchestrator.mutex.Unlock()
+	}
+
+	cleanup(t, orchestrator)
+}
+
 func addBackend(
 	t *testing.T, orchestrator *tridentOrchestrator, backendName string,
 ) {

@@ -85,6 +85,11 @@ func (d *SolidfireSANStorageDriver) CreatePrepare(
 ) bool {
 	// 1. Sanitize the volume name
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
+
+	if volConfig.SourceName != "" {
+		volConfig.SourceInternalName = d.GetInternalVolumeName(volConfig.SourceName)
+	}
+
 	return true
 }
 
@@ -241,4 +246,21 @@ func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []i
 	addReq.Volumes = missingVolIDs
 
 	return d.Client.AddVolumesToAccessGroup(&addReq)
+}
+
+func (d *SolidfireSANStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:      "1",
+		Name:         name,
+		InternalName: name,
+	}
+
+	volume := &storage.VolumeExternal{
+		Config:  volumeConfig,
+		Backend: d.Name(),
+		Pool:    "",
+	}
+
+	return volume, nil
 }
