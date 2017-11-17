@@ -6,6 +6,7 @@
 
 **Fixes:**
 - Volume deletion is an idempotent operation with the ontap-nas-economy driver (Issue [#65](https://github.com/NetApp/trident/issues/65)).
+- Enabled Trident installation on an EF-series (all-flash) array.
 
 **Enhancements:**
 - Added CHAP support for SolidFire (Issue [#42](https://github.com/NetApp/trident/issues/42)).
