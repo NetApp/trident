@@ -11,12 +11,16 @@ import (
 const (
 	KubernetesSyncPeriod = 60 * time.Second
 
+	// Kubernetes-defined storage class parameters
+	K8sFsType = "fsType"
+
 	// Kubernetes-defined annotations
 	// (Based on kubernetes/pkg/controller/volume/persistentvolume/controller.go)
 	AnnClass                  = "volume.beta.kubernetes.io/storage-class"
 	AnnDynamicallyProvisioned = "pv.kubernetes.io/provisioned-by"
 	AnnStorageProvisioner     = "volume.beta.kubernetes.io/storage-provisioner"
 	AnnDefaultStorageClass    = "storageclass.kubernetes.io/is-default-class"
+	AnnMountOptions           = "volume.beta.kubernetes.io/mount-options"
 
 	// Orchestrator-defined annotations
 	AnnOrchestrator    = "netapp.io/" + config.OrchestratorName
@@ -36,6 +40,6 @@ const (
 	AnnSplitOnClone    = AnnPrefix + "/splitOnClone"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.4.0"
-	KubernetesVersionMax = "v1.6.0"
+	KubernetesVersionMin = "v1.5.0"
+	KubernetesVersionMax = "v1.8.0"
 )

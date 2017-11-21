@@ -11,7 +11,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
-	k8s "k8s.io/client-go/pkg/api/v1"
+	k8s "k8s.io/api/core/v1"
 )
 
 const (

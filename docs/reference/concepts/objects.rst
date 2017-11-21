@@ -171,8 +171,6 @@ A Kubernetes StorageClass object that uses Trident looks like this:
 These parameters are Trident-specific and tell Trident how to provision volumes
 for the class.
 
-The storage class parameters are:
-
 ================= ===================== ======== =====================================================
 Attribute         Type                  Required Description
 ================= ===================== ======== =====================================================
@@ -180,7 +178,11 @@ attributes        map[string]string     no       See the attributes section belo
 requiredStorage   map[string]StringList no       Map of backend names to lists of storage pools within
 ================= ===================== ======== =====================================================
 
-The current attributes and their possible values are:
+Storage attributes and their possible values can be classified into two groups:
+
+1. Storage pool selection attributes: These parameters determine which
+   Trident-managed storage pools should be utilized to provision volumes of a
+   given type.
 
 ================= ====== ======================================= ========================================================== ============================== =========================================================
 Attribute         Type   Values                                  Offer                                                      Request                        Supported by
@@ -220,6 +222,18 @@ use ``tridentctl get backend`` to get the list of backends and their pools.
   Trident treats ``attributes`` and ``requiredStorage`` separately. They do not
   influence one another. If you specify both, Trident will select pools that
   match all of the ``attributes`` **and** pools that match ``requiredStorage``.
+
+
+2. Kubernetes attributes: These attributes have no impact on the selection of
+   storage pools/backends by Trident during dynamic provisioning. Instead,
+   these attributes simply supply parameters supported by Kubernetes Persistent
+   Volumes.
+
+================= ======= ======================================= ================================================= ======================================================= ===================
+Attribute         Type    Values                                  Description                                       Relevant Drivers                                        Kubernetes Version
+================= ======= ======================================= ================================================= ======================================================= ===================
+fsType            string  ext4, ext3, xfs, etc.                   The file system type for block volumes            solidfire-san, ontap-san, eseries-iscsi                 All
+================= ======= ======================================= ================================================= ======================================================= ===================
 
 The Trident installer bundle provides several example storage class definitions
 for use with Trident in ``sample-input/storage-class-*.yaml``. Deleting a

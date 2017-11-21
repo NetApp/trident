@@ -11,18 +11,18 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"k8s.io/api/core/v1"
+	k8s_storage_v1 "k8s.io/api/storage/v1"
+	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/diff"
 	k8s_version "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes/fake"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
-	k8s_storage_v1 "k8s.io/client-go/pkg/apis/storage/v1"
-	k8s_storage_v1beta "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	framework "k8s.io/client-go/tools/cache/testing"
 	"k8s.io/client-go/tools/record"
@@ -216,6 +216,7 @@ func newTestPlugin(
 		mutex:                 &sync.Mutex{},
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
+		storageClassCache:     make(map[string]*StorageClassSummary),
 	}
 	ret.kubernetesVersion = kubeVersion
 	ret.claimSource = claimSource
@@ -272,12 +273,13 @@ func newTestPlugin(
 		)
 	}
 	ret.kubeClient = client
+	ret.getNamespacedKubeClient = k8s_client.NewFakeKubeClientBasic
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(
 		&core_v1.EventSinkImpl{
 			Interface: client.Core().Events(""),
 		})
-	ret.eventRecorder = broadcaster.NewRecorder(api.Scheme,
+	ret.eventRecorder = broadcaster.NewRecorder(runtime.NewScheme(),
 		v1.EventSource{Component: AnnOrchestrator})
 	// Note that at the moment we can only actually support NFS here; the
 	// iSCSI backends all trigger interactions with a real backend to map

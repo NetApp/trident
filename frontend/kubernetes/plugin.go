@@ -9,6 +9,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+	"k8s.io/api/core/v1"
+	k8s_storage_v1 "k8s.io/api/storage/v1"
+	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,10 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
-	k8s_storage_v1 "k8s.io/client-go/pkg/apis/storage/v1"
-	k8s_storage_v1beta "k8s.io/client-go/pkg/apis/storage/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -53,9 +52,18 @@ func ValidateKubeVersion(versionInfo *k8s_version.Info) (kubeVersion *k8s_util_v
 	return
 }
 
+// This object captures relevant fields in the storage class that are needed
+// during PV creation.
+type StorageClassSummary struct {
+	Parameters                    map[string]string
+	MountOptions                  []string
+	PersistentVolumeReclaimPolicy *v1.PersistentVolumeReclaimPolicy
+}
+
 type KubernetesPlugin struct {
 	orchestrator             core.Orchestrator
 	kubeClient               kubernetes.Interface
+	getNamespacedKubeClient  func(*rest.Config, string) (k8s_client.Interface, error)
 	kubeConfig               rest.Config
 	eventRecorder            record.EventRecorder
 	claimController          cache.Controller
@@ -71,6 +79,7 @@ type KubernetesPlugin struct {
 	pendingClaimMatchMap     map[string]*v1.PersistentVolume
 	kubernetesVersion        *k8s_version.Info
 	defaultStorageClasses    map[string]bool
+	storageClassCache        map[string]*StorageClassSummary
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*KubernetesPlugin, error) {
@@ -98,6 +107,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	ret := &KubernetesPlugin{
 		orchestrator:             orchestrator,
 		kubeClient:               kubeClient,
+		getNamespacedKubeClient:  k8s_client.NewKubeClient,
 		kubeConfig:               *kubeConfig,
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
@@ -105,6 +115,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		mutex:                 &sync.Mutex{},
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
+		storageClassCache:     make(map[string]*StorageClassSummary),
 	}
 
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
@@ -141,7 +152,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		&core_v1.EventSinkImpl{
 			Interface: kubeClient.Core().Events(""),
 		})
-	ret.eventRecorder = broadcaster.NewRecorder(api.Scheme,
+	ret.eventRecorder = broadcaster.NewRecorder(runtime.NewScheme(),
 		v1.EventSource{Component: AnnOrchestrator})
 
 	// Setting up a watch for PVCs
@@ -600,9 +611,10 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	claim *v1.PersistentVolumeClaim,
 ) (pv *v1.PersistentVolume, err error) {
 	var (
-		nfsSource   *v1.NFSVolumeSource
-		iscsiSource *v1.ISCSIVolumeSource
-		vol         *storage.VolumeExternal
+		nfsSource          *v1.NFSVolumeSource
+		iscsiSource        *v1.ISCSIVolumeSource
+		vol                *storage.VolumeExternal
+		storageClassParams map[string]string
 	)
 
 	defer func() {
@@ -627,6 +639,10 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	accessModes := claim.Spec.AccessModes
 	annotations := claim.Annotations
+	storageClass := GetPersistentVolumeClaimClass(claim)
+	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
+		storageClassParams = storageClassSummary.Parameters
+	}
 
 	// TODO: A quick way to support v1 storage classes before changing unit tests
 	if _, found := annotations[AnnClass]; !found {
@@ -636,12 +652,19 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 		annotations[AnnClass] = GetPersistentVolumeClaimClass(claim)
 	}
 
-	k8sClient, newKubeClientErr := k8s_client.NewKubeClient(&p.kubeConfig, claim.Namespace)
-	if newKubeClientErr != nil {
+	// Set the file system type based on the value in the storage class
+	if _, found := annotations[AnnFileSystem]; !found && storageClassParams != nil {
+		if fsType, found := storageClassParams[K8sFsType]; found {
+			annotations[AnnFileSystem] = fsType
+		}
+	}
+
+	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, claim.Namespace)
+	if err != nil {
 		log.WithFields(log.Fields{
 			"claim.Namespace": claim.Namespace,
 		}).Warnf("Kubernetes frontend couldn't create a client to namespace: %v error: %v",
-			claim.Namespace, newKubeClientErr.Error())
+			claim.Namespace, err.Error())
 	}
 
 	// Create the volume configuration object
@@ -722,11 +745,22 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
 		},
 	}
+
 	kubeVersion, _ := ValidateKubeVersion(p.kubernetesVersion)
 	switch {
+	//TODO: Set StorageClassName when we create the PV once the support for
+	//      k8s 1.5 is dropped.
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.8.0")):
+		pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
+		// Apply Storage Class mount options and reclaim policy
+		pv.Spec.MountOptions = p.storageClassCache[storageClass].MountOptions
+		pv.Spec.PersistentVolumeReclaimPolicy =
+			*p.storageClassCache[storageClass].PersistentVolumeReclaimPolicy
 	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
 		pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
 	}
+
+	// PVC annotation takes precedence over the storage class field
 	if getClaimReclaimPolicy(claim) ==
 		string(v1.PersistentVolumeReclaimRetain) {
 		// Extra flexibility in our implementation.
@@ -1087,11 +1121,16 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 	scConfig := new(storage_class.Config)
 	scConfig.Name = class.Name
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
+	k8sStorageClassParams := make(map[string]string)
 
 	// Populate storage class config attributes and backend storage pools
 	for k, v := range class.Parameters {
-		if k == storage_attribute.BackendStoragePools {
-			// format:     backendStoragePools: "backend1:pool1,pool2;backend2:pool1"
+		switch k {
+		case K8sFsType:
+			// Process Kubernetes-defined storage class parameters
+			k8sStorageClassParams[k] = v
+		case storage_attribute.BackendStoragePools:
+			// format:    backendStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			backendPools, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -1102,20 +1141,33 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 					storage_attribute.BackendStoragePools, err)
 			}
 			scConfig.BackendStoragePools = backendPools
-			continue
+
+		default:
+			// format:     attribute: "value"
+			req, err := storage_attribute.CreateAttributeRequestFromAttributeValue(k, v)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"storageClass":             class.Name,
+					"storageClass_provisioner": class.Provisioner,
+					"storageClass_parameters":  class.Parameters,
+				}).Error("Kubernetes frontend couldn't process the encoded storage class attribute: ", err)
+				return
+			}
+			scConfig.Attributes[k] = req
 		}
-		// format:     attribute: "value"
-		req, err := storage_attribute.CreateAttributeRequestFromAttributeValue(k, v)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"storageClass":             class.Name,
-				"storageClass_provisioner": class.Provisioner,
-				"storageClass_parameters":  class.Parameters,
-			}).Error("Kubernetes frontend couldn't process the encoded storage class attribute: ", err)
-			return
-		}
-		scConfig.Attributes[k] = req
 	}
+
+	// Update Kubernetes-defined storage class parameters maintained by the
+	// frontend. Note that these parameters are only processed by the frontend
+	// and not by Trident core.
+	p.mutex.Lock()
+	storageClassSummary := &StorageClassSummary{
+		Parameters:                    k8sStorageClassParams,
+		MountOptions:                  class.MountOptions,
+		PersistentVolumeReclaimPolicy: class.ReclaimPolicy,
+	}
+	p.storageClassCache[class.Name] = storageClassSummary
+	p.mutex.Unlock()
 
 	// Add the storage class
 	sc, err := p.orchestrator.AddStorageClass(scConfig)
@@ -1233,7 +1285,7 @@ func (p *KubernetesPlugin) getDefaultStorageClasses() string {
 // requested, it returns "".
 func GetPersistentVolumeClaimClass(claim *v1.PersistentVolumeClaim) string {
 	// Use beta annotation first
-	if class, found := claim.Annotations[api.BetaStorageClassAnnotation]; found {
+	if class, found := claim.Annotations[AnnClass]; found {
 		return class
 	}
 

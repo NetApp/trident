@@ -35,24 +35,25 @@ import:
 - package: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - package: golang.org/x/net
-  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
   - context
 - package: google.golang.org/grpc
   version: v1.0.4
+- package: k8s.io/api
+  version: 6c6dac0277229b9e9578c5ca3f74a4345d35cdc2
+  subpackages:
+  - core/v1
+  - extensions/v1beta1
+  - storage/v1
+  - storage/v1beta1
 - package: k8s.io/client-go
-  version: 2a227f04f328fe506bd562f50b4d2a175fce80c5
+  version: 2ae454230481a7cb5544325e12ad7658ecccd19b
   subpackages:
   - kubernetes
   - kubernetes/fake
   - kubernetes/typed/core/v1
-  - pkg/api
-  - pkg/api/v1
-  - pkg/apis/extensions
-  - pkg/apis/extensions/v1beta1
   - pkg/apis/storage
-  - pkg/apis/storage/v1
-  - pkg/apis/storage/v1beta1
   - rest
   - testing
   - tools/cache
@@ -60,7 +61,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 917740426ad66ff818da4809990480bcc0786a77
+  version: 019ae5ada31de202164b118aee88ee2d14075c31
   subpackages:
   - pkg/api/errors
   - pkg/api/resource

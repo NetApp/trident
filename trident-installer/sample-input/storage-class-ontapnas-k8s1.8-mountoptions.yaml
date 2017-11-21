@@ -1,10 +1,8 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: solidfire-bronze
+  name: ontapnasudp
 provisioner: netapp.io/trident
+mountOptions: ["rw", "nfsvers=3", "proto=udp"]
 parameters:
-  backendType: "solidfire-san"
-  IOPS: "1500"
-  fsType: "ext4"
-
+  backendType: "ontap-nas"
