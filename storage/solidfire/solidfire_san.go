@@ -4,12 +4,12 @@ package solidfire
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/netappdvp/apis/sfapi"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
-
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -58,27 +58,39 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(
 		}
 	}
 	for _, volType := range volTypes {
-		vc := storage.NewStoragePool(backend, volType.Type)
+		pool := storage.NewStoragePool(backend, volType.Type)
 
-		vc.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
-		vc.Attributes[sa.IOPS] = sa.NewIntOffer(int(volType.QOS.MinIOPS),
+		pool.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+		pool.Attributes[sa.IOPS] = sa.NewIntOffer(int(volType.QOS.MinIOPS),
 			int(volType.QOS.MaxIOPS))
-		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-		vc.Attributes[sa.Clones] = sa.NewBoolOffer(true)
-		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thin")
-		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		backend.AddStoragePool(vc)
+		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
+		pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
+		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thin")
+		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		backend.AddStoragePool(pool)
+
+		log.WithFields(log.Fields{
+			"attributes": fmt.Sprintf("%+v", pool.Attributes),
+			"pool":       pool.Name,
+			"backend":    backend.Name,
+		}).Debug("Added pool for SolidFire backend.")
 	}
 
 	return nil
 }
 
 func (d *SolidfireSANStorageDriver) GetInternalVolumeName(name string) string {
-	s1 := storage.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
-	s2 := strings.Replace(s1, "_", "-", -1)
-	s3 := strings.Replace(s2, ".", "-", -1)
-	return s3
+
+	if config.UsingPassthroughStore {
+		return strings.Replace(name, "_", "-", -1)
+	} else {
+		internal := storage.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+		internal = strings.Replace(internal, "_", "-", -1)
+		internal = strings.Replace(internal, ".", "-", -1)
+		internal = strings.Replace(internal, "--", "-", -1) // Remove any double hyphens
+		return internal
+	}
 }
 
 func (d *SolidfireSANStorageDriver) CreatePrepare(
@@ -165,11 +177,32 @@ func (d *SolidfireSANStorageDriver) GetVolumeOpts(
 	pool *storage.StoragePool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
+
 	opts := make(map[string]string)
-	opts["type"] = pool.Name
+
+	if volConfig.FileSystem != "" {
+		opts["fileSystemType"] = volConfig.FileSystem
+	}
 	if volConfig.BlockSize != "" {
 		opts["blocksize"] = volConfig.BlockSize
 	}
+	if volConfig.QoS != "" {
+		opts["qos"] = volConfig.QoS
+	}
+
+	if volConfig.QoSType != "" {
+		opts["type"] = volConfig.QoSType
+	} else if volConfig.QoS != "" {
+		opts["type"] = ""
+	} else {
+		// Default to "pool" name only if we aren't cloning
+		if volConfig.CloneSourceVolume != "" {
+			opts["type"] = ""
+		} else {
+			opts["type"] = pool.Name
+		}
+	}
+
 	return opts, nil
 }
 
@@ -250,24 +283,108 @@ func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []i
 	return d.Client.AddVolumesToAccessGroup(&addReq)
 }
 
+// GetVolumeExternal queries the storage backend for all relevant info about
+// a single container volume managed by this driver and returns a VolumeExternal
+// representation of the volume.
 func (d *SolidfireSANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
-	volumeConfig := &storage.VolumeConfig{
-		Version:      "1",
-		Name:         name,
-		InternalName: name,
+	volume, err := d.GetVolume(name)
+	if err != nil {
+		return nil, err
 	}
 
-	volume := &storage.VolumeExternal{
-		Config:  volumeConfig,
-		Backend: d.Name(),
-		Pool:    "",
-	}
-
-	return volume, nil
+	return d.getVolumeExternal(name, &volume), nil
 }
 
+// GetVolumeExternalWrappers queries the storage backend for all relevant info about
+// container volumes managed by this driver.  It then writes a VolumeExternal
+// representation of each volume to the supplied channel, closing the channel
+// when finished.
 func (d *SolidfireSANStorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
-	close(channel)
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Get all volumes
+	volumes, err := d.GetVolumes()
+	if err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Convert all volumes to VolumeExternal and write them to the channel
+	for externalName, volume := range volumes {
+		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(externalName, &volume), nil}
+	}
+}
+
+// getExternalVolume is a private method that accepts info about a volume
+// as returned by the storage backend and formats it as a VolumeExternal
+// object.
+func (d *SolidfireSANStorageDriver) getVolumeExternal(
+	externalName string, volumeAttrs *sfapi.Volume) *storage.VolumeExternal {
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:         config.OrchestratorAPIVersion,
+		Name:            externalName,
+		InternalName:    string(volumeAttrs.Name),
+		Size:            strconv.FormatInt(volumeAttrs.TotalSize, 10),
+		Protocol:        config.Block,
+		SnapshotPolicy:  "",
+		ExportPolicy:    "",
+		SnapshotDir:     "false",
+		UnixPermissions: "",
+		StorageClass:    "",
+		AccessMode:      config.ReadWriteOnce,
+		AccessInfo:      storage.VolumeAccessInfo{},
+		BlockSize:       strconv.FormatInt(volumeAttrs.BlockSize, 10),
+		FileSystem:      "",
+	}
+
+	return &storage.VolumeExternal{
+		Config: volumeConfig,
+		Pool:   d.getPoolNameFromQoS(volumeAttrs),
+	}
+}
+
+// getPoolNameFromQoS attempts to map the min/max QoS levels for a volume
+// back to the levels defined in the backend config file.  If a match is not
+// found, a partial match is sought; failing that, one of the existing "pools"
+// is chosen.
+func (d *SolidfireSANStorageDriver) getPoolNameFromQoS(volumeAttrs *sfapi.Volume) string {
+
+	volTypes := *d.Client.VolumeTypes
+	if len(volTypes) == 0 {
+		return sfDefaultVolTypeName
+	}
+
+	// Try min/max matches
+	for _, volType := range volTypes {
+		if volType.QOS.MaxIOPS == volumeAttrs.Qos.MaxIOPS &&
+			volType.QOS.MinIOPS == volumeAttrs.Qos.MinIOPS {
+			return volType.Type
+		}
+	}
+
+	// Try min matches
+	for _, volType := range volTypes {
+		if volType.QOS.MinIOPS == volumeAttrs.Qos.MinIOPS {
+			return volType.Type
+		}
+	}
+
+	// Try max matches
+	for _, volType := range volTypes {
+		if volType.QOS.MaxIOPS == volumeAttrs.Qos.MaxIOPS {
+			return volType.Type
+		}
+	}
+
+	// Nothing matched, so just return something.
+	log.WithFields(log.Fields{
+		"volume": volumeAttrs.Name,
+		"pool":   volTypes[0].Type,
+	}).Debug("Matching QoS type not found, reporting first type for volume.")
+	return volTypes[0].Type
 }

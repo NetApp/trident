@@ -92,11 +92,6 @@ func NewStorageBackendForConfig(configJSON string) (
 
 	case dvp.OntapSANStorageDriverName:
 		driver := storageDriver.(*ontap.OntapSANStorageDriver)
-		if driver.Config.IgroupName == "netappdvp" {
-			// If 'netappdvp' is intended to be the default igroup,
-			// config.DefaultOntapIgroup should be set to 'netappdvp'.
-			driver.Config.IgroupName = config.DefaultOntapIgroup
-		}
 
 		response, errIgroupList := driver.API.IgroupList()
 		if !isPassed(response.Result.ResultStatusAttr) {
@@ -285,12 +280,6 @@ func NewStorageBackendForConfig(configJSON string) (
 
 	case dvp.EseriesIscsiStorageDriverName:
 		driver := storageDriver.(*eseries.EseriesStorageDriver)
-
-		// Override default HostGroup name if it is "netappdvp"
-		if driver.Config.AccessGroup == "netappdvp" {
-			driver.Config.AccessGroup = config.DefaultEseriesHostGroup
-			log.Debugf("Set default E-series HostGroup to %s", config.DefaultEseriesHostGroup)
-		}
 
 		// Make sure the Trident Host Group exists
 		hostGroup, err := driver.API.GetHostGroup(driver.Config.AccessGroup)

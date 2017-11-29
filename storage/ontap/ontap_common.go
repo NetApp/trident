@@ -40,14 +40,6 @@ func getStorageBackendSpecsCommon(
 	config := d.GetConfig()
 	driverName := d.Name()
 
-	// We will examine all assigned aggregates, so warn if one is set in the config.
-	if config.Aggregate != "" {
-		log.WithFields(log.Fields{
-			"driverName": driverName,
-			"aggregate":  config.Aggregate,
-		}).Warn("aggregate set in backend config.  This will be ignored.")
-	}
-
 	// Handle panics from the API layer
 	defer func() {
 		if r := recover(); r != nil {
@@ -65,16 +57,35 @@ func getStorageBackendSpecsCommon(
 		return
 	}
 
+	log.WithFields(log.Fields{
+		"svm":   config.SVM,
+		"pools": vserverAggrs,
+	}).Debug("Read storage pools assigned to SVM.")
+
 	// Define a storage pool for each of the SVM's aggregates
 	storagePools := make(map[string]*storage.StoragePool)
 	for _, aggrName := range vserverAggrs {
 		storagePools[aggrName] = storage.NewStoragePool(backend, aggrName)
 	}
 
-	log.WithFields(log.Fields{
-		"svm":   config.SVM,
-		"pools": vserverAggrs,
-	}).Debug("Read storage pools assigned to SVM.")
+	// Use all assigned aggregates unless 'aggregate' is set in the config
+	if config.Aggregate != "" {
+
+		// Make sure the configured aggregate is available to the SVM
+		if _, ok := storagePools[config.Aggregate]; !ok {
+			err = fmt.Errorf("The assigned aggregates for SVM %s do not "+
+				"include the configured aggregate %s.", config.SVM, config.Aggregate)
+			return
+		}
+
+		log.WithFields(log.Fields{
+			"driverName": driverName,
+			"aggregate":  config.Aggregate,
+		}).Warn("Provisioning will be restricted to the aggregate set in the backend config.")
+
+		storagePools = make(map[string]*storage.StoragePool)
+		storagePools[config.Aggregate] = storage.NewStoragePool(backend, config.Aggregate)
+	}
 
 	// Update pools with aggregate info (i.e. MediaType) using the best means possible
 	var aggr_err error
@@ -89,9 +100,9 @@ func getStorageBackendSpecsCommon(
 			"username": config.Username,
 		}).Warn("User has insufficient privileges to obtain aggregate info. Storage classes with physical attributes " +
 			"such as 'media' will not match pools on this backend.")
-	} else if err != nil {
+	} else if aggr_err != nil {
 		log.Errorf("Could not obtain aggregate info. Storage classes with physical attributes "+
-			"such as 'media' will not match pools on this backend. %v", err)
+			"such as 'media' will not match pools on this backend. %v", aggr_err)
 	}
 
 	// Add attributes common to each pool and register pools with backend

@@ -132,13 +132,6 @@ func (d *OntapNASQtreeStorageDriver) GetVolumeExternalWrappers(
 		return
 	}
 
-	// Make a map of volumes for faster correlation with qtrees
-	volumeMap := make(map[string]azgo.VolumeAttributesType)
-	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
-		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
-		volumeMap[internalName] = volumeAttrs
-	}
-
 	// Get all quotas in all Flexvols matching the storage prefix
 	quotasResponse, err := d.API.QuotaEntryList(d.FlexvolNamePrefix() + "*")
 	if err = ontap.GetError(quotasResponse, err); err != nil {
@@ -146,17 +139,24 @@ func (d *OntapNASQtreeStorageDriver) GetVolumeExternalWrappers(
 		return
 	}
 
-	// Make a map of quotas for faster correlation with qtrees
-	quotaMap := make(map[string]azgo.QuotaEntryType)
-	for _, quotaAttrs := range quotasResponse.Result.AttributesList() {
-		quotaMap[quotaAttrs.QuotaTarget()] = quotaAttrs
-	}
-
 	// Get all qtrees in all Flexvols matching the storage prefix
 	qtreesResponse, err := d.API.QtreeGetAll(d.FlexvolNamePrefix())
 	if err = ontap.GetError(qtreesResponse, err); err != nil {
 		channel <- &storage.VolumeExternalWrapper{nil, err}
 		return
+	}
+
+	// Make a map of volumes for faster correlation with qtrees
+	volumeMap := make(map[string]azgo.VolumeAttributesType)
+	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
+		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+		volumeMap[internalName] = volumeAttrs
+	}
+
+	// Make a map of quotas for faster correlation with qtrees
+	quotaMap := make(map[string]azgo.QuotaEntryType)
+	for _, quotaAttrs := range quotasResponse.Result.AttributesList() {
+		quotaMap[quotaAttrs.QuotaTarget()] = quotaAttrs
 	}
 
 	// Convert all qtrees to VolumeExternal and write them to the channel

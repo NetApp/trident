@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"regexp"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -86,29 +87,34 @@ func (d *EseriesStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bo
 
 func (d *EseriesStorageDriver) GetInternalVolumeName(name string) string {
 
-	// E-series has a 30-character limitation on volume names, so no combination
-	// of the usual namespace, PVC name, and PVC UID characters is likely to
-	// fit, nor is some Base64 encoding of the same. And unfortunately, the PVC
-	// UID is not persisted past the highest levels of Trident. So we borrow a
-	// page from the E-series OpenStack driver and return a Base64-encoded form
-	// of a new random (version 4) UUID.
-	uuid4string := uuid.New()
-	b64string, err := d.uuidToBase64(uuid4string)
-	if err != nil {
-		// This is unlikely, but if the UUID encoding fails, just return the original string (capped to 30 chars)
-		if len(name) > 30 {
-			return name[0:30]
+	if config.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
+		return *d.Config.StoragePrefix + name
+	} else {
+		// E-series has a 30-character limitation on volume names, so no combination
+		// of the usual namespace, PVC name, and PVC UID characters is likely to
+		// fit, nor is some Base64 encoding of the same. And unfortunately, the PVC
+		// UID is not persisted past the highest levels of Trident. So we borrow a
+		// page from the E-series OpenStack driver and return a Base64-encoded form
+		// of a new random (version 4) UUID.
+		uuid4string := uuid.New()
+		b64string, err := d.uuidToBase64(uuid4string)
+		if err != nil {
+			// This is unlikely, but if the UUID encoding fails, just return the original string (capped to 30 chars)
+			if len(name) > 30 {
+				return name[0:30]
+			}
+			return name
 		}
-		return name
+
+		log.WithFields(log.Fields{
+			"Name":   name,
+			"UUID":   uuid4string,
+			"Base64": b64string,
+		}).Debug("EseriesStorageDriver#GetInternalVolumeName : Created Base64 UUID for E-series volume name.")
+
+		return b64string
 	}
-
-	log.WithFields(log.Fields{
-		"Name":   name,
-		"UUID":   uuid4string,
-		"Base64": b64string,
-	}).Debug("EseriesStorageDriver#GetInternalVolumeName : Created Base64 UUID for E-series volume name.")
-
-	return b64string
 }
 
 func (d *EseriesStorageDriver) GetVolumeOpts(
@@ -143,6 +149,10 @@ func (d *EseriesStorageDriver) GetVolumeOpts(
 				"provisioningType": mediaTypeReq.Value(),
 			}).Warnf("Expected string for %s; ignoring.", sa.Media)
 		}
+	}
+
+	if volConfig.FileSystem != "" {
+		opts["fileSystemType"] = volConfig.FileSystem
 	}
 
 	log.WithFields(log.Fields{
@@ -268,24 +278,111 @@ func (d *EseriesStorageDriver) base64ToUuid(b64 string) (string, error) {
 	return UUID, nil
 }
 
+// GetVolumeExternal queries the storage backend for all relevant info about
+// a single container volume managed by this driver and returns a VolumeExternal
+// representation of the volume.
 func (d *EseriesStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
-	volumeConfig := &storage.VolumeConfig{
-		Version:      "1",
-		Name:         name,
-		InternalName: name,
+	volumeAttrs, err := d.API.GetVolume(name)
+	if err != nil {
+		return nil, err
+	}
+	if volumeAttrs.Label == "" {
+		return nil, fmt.Errorf("Volume %s not found.", name)
 	}
 
-	volume := &storage.VolumeExternal{
-		Config:  volumeConfig,
-		Backend: d.Name(),
-		Pool:    "",
+	poolAttrs, err := d.API.GetVolumePoolByRef(volumeAttrs.VolumeGroupRef)
+	if err != nil {
+		return nil, err
 	}
 
-	return volume, nil
+	return d.getVolumeExternal(&volumeAttrs, &poolAttrs), nil
 }
 
+// GetVolumeExternalWrappers queries the storage backend for all relevant info about
+// container volumes managed by this driver.  It then writes a VolumeExternal
+// representation of each volume to the supplied channel, closing the channel
+// when finished.
 func (d *EseriesStorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
-	close(channel)
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Get all volumes
+	volumes, err := d.API.GetVolumes()
+	if err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Get all pools
+	pools, err := d.API.GetVolumePools("", 0, "")
+	if err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Make a map of pools for faster correlation with volumes
+	poolMap := make(map[string]eseries.VolumeGroupEx)
+	for _, pool := range pools {
+		poolMap[pool.VolumeGroupRef] = pool
+	}
+
+	prefix := *d.Config.StoragePrefix
+	repos_regex, _ := regexp.Compile("^repos_\\d{4}$")
+
+	// Convert all volumes to VolumeExternal and write them to the channel
+	for _, volume := range volumes {
+
+		// Filter out internal volumes
+		if repos_regex.MatchString(volume.Label) {
+			continue
+		}
+
+		// Filter out volumes without the prefix (pass all if prefix is empty)
+		if !strings.HasPrefix(volume.Label, prefix) {
+			continue
+		}
+
+		pool, ok := poolMap[volume.VolumeGroupRef]
+		if !ok {
+			log.WithField("volume", volume.Label).Warning("Pool not found for volume.")
+			continue
+		}
+
+		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&volume, &pool), nil}
+	}
+}
+
+// getExternalVolume is a private method that accepts info about a volume
+// as returned by the storage backend and formats it as a VolumeExternal
+// object.
+func (d *EseriesStorageDriver) getVolumeExternal(
+	volumeAttrs *eseries.VolumeEx, poolAttrs *eseries.VolumeGroupEx) *storage.VolumeExternal {
+
+	internalName := volumeAttrs.Label
+	name := internalName[len(*d.Config.StoragePrefix):]
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:         config.OrchestratorAPIVersion,
+		Name:            name,
+		InternalName:    internalName,
+		Size:            volumeAttrs.VolumeSize,
+		Protocol:        config.Block,
+		SnapshotPolicy:  "",
+		ExportPolicy:    "",
+		SnapshotDir:     "false",
+		UnixPermissions: "",
+		StorageClass:    "",
+		AccessMode:      config.ReadWriteOnce,
+		AccessInfo:      storage.VolumeAccessInfo{},
+		BlockSize:       "",
+		FileSystem:      "",
+	}
+
+	return &storage.VolumeExternal{
+		Config: volumeConfig,
+		Pool:   poolAttrs.Label,
+	}
 }

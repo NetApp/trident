@@ -199,7 +199,7 @@ func (c *PassthroughClient) AddBackend(backend *storage.StorageBackend) error {
 	// the storage controllers.  If the store ever needs to write backends
 	// back to a file system for subsequent bootstrapping, that logic will live
 	// here and in UpdateBackend().
-	log.Debugf("Passthrough store adding backend: %s", backend.Name)
+	log.WithField("backend", backend.Name).Debugf("Passthrough store adding backend.")
 	c.liveBackends[backend.Name] = backend
 	return nil
 }
@@ -277,8 +277,10 @@ func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) erro
 }
 
 // GetVolumes gets up-to-date volume info from each storage backend.  To increase
-// efficiency, it contacts each backend in a separate goroutine.  If any error occurs,
-// only the error is returned; otherwise, all discovered volumes are returned.
+// efficiency, it contacts each backend in a separate goroutine.  Because multiple
+// backends may be managed by the orchestrator, the passthrough layer should remain
+// as responsive as possible even if a backend is unavailable or returns an error
+// during volume discovery.
 func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 
 	volumeChannel := make(chan *storage.VolumeExternalWrapper)
@@ -298,20 +300,15 @@ func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 	}()
 
 	// Read the volumes as they come in from the goroutines
-	var err error = nil
 	volumes := make([]*storage.VolumeExternal, 0)
 	for wrapper := range volumeChannel {
 		if wrapper.Error != nil {
-			err = wrapper.Error
+			log.Error(wrapper.Error)
 		} else {
 			volumes = append(volumes, wrapper.Volume)
 		}
 	}
 
-	// If any number of errors occurred, return one of those instead
-	if err != nil {
-		return nil, err
-	}
 	return volumes, nil
 }
 

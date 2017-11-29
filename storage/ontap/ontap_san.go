@@ -180,19 +180,19 @@ func (d *OntapSANStorageDriver) GetVolumeExternalWrappers(
 		return
 	}
 
-	// Make a map of volumes for faster correlation with LUNs
-	volumeMap := make(map[string]azgo.VolumeAttributesType)
-	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
-		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
-		volumeMap[internalName] = volumeAttrs
-	}
-
 	// Get all LUNs named 'lun0' in volumes matching the storage prefix
 	lunPathPattern := fmt.Sprintf("/vol/%v/lun0", *d.Config.StoragePrefix+"*")
 	lunsResponse, err := d.API.LunGetAll(lunPathPattern)
 	if err = ontap.GetError(lunsResponse, err); err != nil {
 		channel <- &storage.VolumeExternalWrapper{nil, err}
 		return
+	}
+
+	// Make a map of volumes for faster correlation with LUNs
+	volumeMap := make(map[string]azgo.VolumeAttributesType)
+	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
+		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+		volumeMap[internalName] = volumeAttrs
 	}
 
 	// Convert all LUNs to VolumeExternal and write them to the channel

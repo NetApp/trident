@@ -661,6 +661,8 @@ func (o *tridentOrchestrator) CloneVolume(
 	cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
 	cloneConfig.CloneSourceVolume = volumeConfig.CloneSourceVolume
 	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
+	cloneConfig.QoS = volumeConfig.QoS
+	cloneConfig.QoSType = volumeConfig.QoSType
 
 	// Add transaction in case the operation must be rolled back later
 	volTxn, err := o.addVolumeTransaction(volumeConfig)
@@ -1045,6 +1047,7 @@ func (o *tridentOrchestrator) ReloadVolumes() error {
 
 	// If anything went wrong, reinstate the original volumes
 	if err != nil {
+		log.Errorf("Volume reload failed, restoring original volume list: %v", err)
 		o.volumes = tempVolumes
 	}
 

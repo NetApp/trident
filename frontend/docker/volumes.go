@@ -53,22 +53,7 @@ func makeStorageClass(options map[string]string, o core.Orchestrator) (*storage_
 
 	scConfig := new(storage_class.Config)
 
-	// Map aggregate/pool option to storagePools
-	requiredPool := dvp_utils.GetV(options, "aggregate|pool", "")
-	if requiredPool != "" {
-	aggrLoop:
-		for _, backend := range o.ListBackends() {
-			for poolName := range backend.Storage {
-				if poolName == requiredPool {
-					scConfig.Pools = make(map[string][]string)
-					scConfig.Pools[backend.Name] = []string{poolName}
-					break aggrLoop
-				}
-			}
-		}
-	}
-
-	// Map remaining options to storage class attributes
+	// Map options to storage class attributes
 	scConfig.Attributes = make(map[string]storage_attribute.Request)
 	for k, v := range options {
 		// format: attribute: "type:value"
@@ -121,6 +106,8 @@ func getVolumeConfig(name, storageClass string, opts map[string]string) (*storag
 		SnapshotDir:         dvp_utils.GetV(opts, "snapshotDir", ""),
 		UnixPermissions:     dvp_utils.GetV(opts, "unixPermissions", ""),
 		BlockSize:           dvp_utils.GetV(opts, "blocksize", ""),
+		QoS:                 dvp_utils.GetV(opts, "qos", ""),
+		QoSType:             dvp_utils.GetV(opts, "type", ""),
 		FileSystem:          dvp_utils.GetV(opts, "fstype|fileSystemType", ""),
 		Encryption:          dvp_utils.GetV(opts, "encryption", ""),
 		CloneSourceVolume:   dvp_utils.GetV(opts, "from", ""),
