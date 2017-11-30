@@ -267,17 +267,17 @@ func getVolumeOptsCommon(
 	if volConfig.SplitOnClone != "" {
 		opts["splitOnClone"] = volConfig.SplitOnClone
 	}
+	if volConfig.FileSystem != "" {
+		opts["fileSystemType"] = volConfig.FileSystem
+	}
+	if volConfig.Encryption != "" {
+		opts["encryption"] = volConfig.Encryption
+	}
 
 	return opts
 }
 
 func getInternalVolumeNameCommon(common_config *dvp.CommonStorageDriverConfig, name string) string {
-
-	log.WithFields(log.Fields{
-		"prefix":           *common_config.StoragePrefix,
-		"name":             name,
-		"passthroughStore": config.UsingPassthroughStore,
-	}).Debugf("getInternalVolumeNameCommon")
 
 	if config.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible

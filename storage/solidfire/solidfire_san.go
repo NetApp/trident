@@ -250,7 +250,7 @@ func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []i
 	return d.Client.AddVolumesToAccessGroup(&addReq)
 }
 
-func (d *SolidfireSANStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+func (d *SolidfireSANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:      "1",
@@ -265,4 +265,9 @@ func (d *SolidfireSANStorageDriver) GetExternalVolume(name string) (*storage.Vol
 	}
 
 	return volume, nil
+}
+
+func (d *SolidfireSANStorageDriver) GetVolumeExternalWrappers(
+	channel chan *storage.VolumeExternalWrapper) {
+	close(channel)
 }

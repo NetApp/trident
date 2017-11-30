@@ -29,6 +29,8 @@ type Orchestrator interface {
 	ListVolumesByPlugin(pluginName string) []*storage.VolumeExternal
 	AttachVolume(volumeName, mountpoint string, options map[string]string) error
 	DetachVolume(volumeName, mountpoint string) error
+	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
+	ReloadVolumes() error
 
 	AddStorageClass(scConfig *storage_class.Config) (*storage_class.StorageClassExternal, error)
 	GetStorageClass(scName string) *storage_class.StorageClassExternal

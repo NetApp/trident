@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"strconv"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/netappdvp/apis/ontap"
+	"github.com/netapp/netappdvp/azgo"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -88,42 +91,138 @@ func (d *OntapNASQtreeStorageDriver) GetExternalConfig() interface{} {
 	return getExternalConfig(d.Config)
 }
 
-func (d *OntapNASQtreeStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+// GetVolumeExternal queries the storage backend for all relevant info about
+// a single container volume managed by this driver and returns a VolumeExternal
+// representation of the volume.
+func (d *OntapNASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
-	internalName := d.GetInternalVolumeName(name)
-	volumeAttributes, err := d.API.VolumeGet(internalName)
+	qtree, err := d.API.QtreeGet(name, d.FlexvolNamePrefix())
 	if err != nil {
 		return nil, err
 	}
-	volumeExportAttrs := volumeAttributes.VolumeExportAttributes()
-	volumeIdAttrs := volumeAttributes.VolumeIdAttributes()
-	volumeSecurityAttrs := volumeAttributes.VolumeSecurityAttributes()
-	volumeSecurityUnixAttributes := volumeSecurityAttrs.VolumeSecurityUnixAttributes()
-	volumeSpaceAttrs := volumeAttributes.VolumeSpaceAttributes()
-	volumeSnapshotAttrs := volumeAttributes.VolumeSnapshotAttributes()
+
+	volume, err := d.API.VolumeGet(qtree.Volume())
+	if err != nil {
+		return nil, err
+	}
+
+	quotaTarget := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
+	quota, err := d.API.QuotaEntryGet(quotaTarget)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.getVolumeExternal(&qtree, &volume, &quota), nil
+}
+
+// GetVolumeExternalWrappers queries the storage backend for all relevant info about
+// container volumes managed by this driver.  It then writes a VolumeExternal
+// representation of each volume to the supplied channel, closing the channel
+// when finished.
+func (d *OntapNASQtreeStorageDriver) GetVolumeExternalWrappers(
+	channel chan *storage.VolumeExternalWrapper) {
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Get all volumes matching the storage prefix
+	volumesResponse, err := d.API.VolumeGetAll(d.FlexvolNamePrefix())
+	if err = ontap.GetError(volumesResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Make a map of volumes for faster correlation with qtrees
+	volumeMap := make(map[string]azgo.VolumeAttributesType)
+	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
+		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+		volumeMap[internalName] = volumeAttrs
+	}
+
+	// Get all quotas in all Flexvols matching the storage prefix
+	quotasResponse, err := d.API.QuotaEntryList(d.FlexvolNamePrefix() + "*")
+	if err = ontap.GetError(quotasResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Make a map of quotas for faster correlation with qtrees
+	quotaMap := make(map[string]azgo.QuotaEntryType)
+	for _, quotaAttrs := range quotasResponse.Result.AttributesList() {
+		quotaMap[quotaAttrs.QuotaTarget()] = quotaAttrs
+	}
+
+	// Get all qtrees in all Flexvols matching the storage prefix
+	qtreesResponse, err := d.API.QtreeGetAll(d.FlexvolNamePrefix())
+	if err = ontap.GetError(qtreesResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Convert all qtrees to VolumeExternal and write them to the channel
+	for _, qtree := range qtreesResponse.Result.AttributesList() {
+
+		// Ignore Flexvol-level qtrees
+		if qtree.Qtree() == "" {
+			continue
+		}
+
+		volume, ok := volumeMap[qtree.Volume()]
+		if !ok {
+			log.WithField("qtree", qtree.Qtree()).Warning("Flexvol not found for qtree.")
+			continue
+		}
+
+		quotaTarget := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
+		quota, ok := quotaMap[quotaTarget]
+		if !ok {
+			log.WithField("qtree", qtree.Qtree()).Warning("Quota rule not found for qtree.")
+			continue
+		}
+
+		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&qtree, &volume, &quota), nil}
+	}
+}
+
+// getExternalVolume is a private method that accepts info about a volume
+// as returned by the storage backend and formats it as a VolumeExternal
+// object.
+func (d *OntapNASQtreeStorageDriver) getVolumeExternal(
+	qtreeAttrs *azgo.QtreeInfoType, volumeAttrs *azgo.VolumeAttributesType,
+	quotaAttrs *azgo.QuotaEntryType) *storage.VolumeExternal {
+
+	volumeIdAttrs := volumeAttrs.VolumeIdAttributesPtr
+	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
+
+	internalName := qtreeAttrs.Qtree()
+	name := internalName[len(*d.Config.StoragePrefix):]
+
+	size, err := strconv.ParseInt(quotaAttrs.DiskLimit(), 10, 64)
+	if err != nil {
+		size = 0
+	} else {
+		size *= 1024 // convert KB to bytes
+	}
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         "1",
+		Version:         config.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
-		Size:            string(volumeSpaceAttrs.Size()),
+		Size:            strconv.FormatInt(size, 10),
 		Protocol:        config.File,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
-		ExportPolicy:    volumeExportAttrs.Policy(),
+		ExportPolicy:    qtreeAttrs.ExportPolicy(),
 		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
-		UnixPermissions: volumeSecurityUnixAttributes.Permissions(),
+		UnixPermissions: qtreeAttrs.Mode(),
 		StorageClass:    "",
 		AccessMode:      config.ReadWriteMany,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
-		FileSystem:      "NFS",
+		FileSystem:      "",
 	}
 
-	volume := &storage.VolumeExternal{
-		Config:  volumeConfig,
-		Backend: d.Name(),
-		Pool:    volumeIdAttrs.ContainingAggregateName(),
+	return &storage.VolumeExternal{
+		Config: volumeConfig,
+		Pool:   volumeIdAttrs.ContainingAggregateName(),
 	}
-
-	return volume, nil
 }

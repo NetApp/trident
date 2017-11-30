@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	dvp "github.com/netapp/netappdvp/storage_drivers"
@@ -275,29 +276,64 @@ func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) erro
 	return nil
 }
 
+// GetVolumes gets up-to-date volume info from each storage backend.  To increase
+// efficiency, it contacts each backend in a separate goroutine.  If any error occurs,
+// only the error is returned; otherwise, all discovered volumes are returned.
 func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 
-	volumes := make([]*storage.VolumeExternal, 0)
+	volumeChannel := make(chan *storage.VolumeExternalWrapper)
 
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(c.liveBackends))
+
+	// Get volumes from each backend in a goroutine
 	for _, backend := range c.liveBackends {
-		volumeNames, err := backend.Driver.List()
-		if err != nil {
-			return nil, err
-		}
+		go c.getVolumesFromBackend(backend, volumeChannel, &waitGroup)
+	}
 
-		for _, volumeName := range volumeNames {
-			// TODO: replace GetExternalVolume with a method that returns everything at once,
-			// which will be vastly more efficient for some backends
-			volume, err := backend.Driver.GetExternalVolume(volumeName)
-			if err != nil {
-				return nil, err
-			}
-			volume.Backend = backend.Name
-			volumes = append(volumes, volume)
+	// Close the channel when all other goroutines are done
+	go func() {
+		waitGroup.Wait()
+		close(volumeChannel)
+	}()
+
+	// Read the volumes as they come in from the goroutines
+	var err error = nil
+	volumes := make([]*storage.VolumeExternal, 0)
+	for wrapper := range volumeChannel {
+		if wrapper.Error != nil {
+			err = wrapper.Error
+		} else {
+			volumes = append(volumes, wrapper.Volume)
 		}
 	}
 
+	// If any number of errors occurred, return one of those instead
+	if err != nil {
+		return nil, err
+	}
 	return volumes, nil
+}
+
+// getVolumesFromBackend reads all of the volumes managed by a single backend.
+// This method is designed to run in a goroutine, so it passes its results back
+// via a channel that is shared by all such goroutines.
+func (c *PassthroughClient) getVolumesFromBackend(
+	backend *storage.StorageBackend, volumeChannel chan *storage.VolumeExternalWrapper,
+	waitGroup *sync.WaitGroup,
+) {
+	defer waitGroup.Done()
+
+	// Create a channel that each backend can use, then copy values from
+	// there to the common channel until the backend channel is closed.
+	backendChannel := make(chan *storage.VolumeExternalWrapper)
+	go backend.Driver.GetVolumeExternalWrappers(backendChannel)
+	for volume := range backendChannel {
+		if volume.Volume != nil {
+			volume.Volume.Backend = backend.Name
+		}
+		volumeChannel <- volume
+	}
 }
 
 func (c *PassthroughClient) DeleteVolumes() error {

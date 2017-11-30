@@ -268,7 +268,7 @@ func (d *EseriesStorageDriver) base64ToUuid(b64 string) (string, error) {
 	return UUID, nil
 }
 
-func (d *EseriesStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+func (d *EseriesStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:      "1",
@@ -283,4 +283,9 @@ func (d *EseriesStorageDriver) GetExternalVolume(name string) (*storage.VolumeEx
 	}
 
 	return volume, nil
+}
+
+func (d *EseriesStorageDriver) GetVolumeExternalWrappers(
+	channel chan *storage.VolumeExternalWrapper) {
+	close(channel)
 }

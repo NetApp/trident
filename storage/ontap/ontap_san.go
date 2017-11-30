@@ -11,6 +11,7 @@ import (
 	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/netappdvp/apis/ontap"
+	"github.com/netapp/netappdvp/azgo"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -143,42 +144,102 @@ func DiscoverIscsiTarget(targetIP string) error {
 	return nil
 }
 
-func (d *OntapSANStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+// GetVolumeExternal queries the storage backend for all relevant info about
+// a single container volume managed by this driver and returns a VolumeExternal
+// representation of the volume.
+func (d *OntapSANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
-	internalName := d.GetInternalVolumeName(name)
-	volumeAttributes, err := d.API.VolumeGet(internalName)
+	volumeAttrs, err := d.API.VolumeGet(name)
 	if err != nil {
 		return nil, err
 	}
-	volumeExportAttrs := volumeAttributes.VolumeExportAttributes()
-	volumeIdAttrs := volumeAttributes.VolumeIdAttributes()
-	volumeSecurityAttrs := volumeAttributes.VolumeSecurityAttributes()
-	volumeSecurityUnixAttributes := volumeSecurityAttrs.VolumeSecurityUnixAttributes()
-	volumeSpaceAttrs := volumeAttributes.VolumeSpaceAttributes()
-	volumeSnapshotAttrs := volumeAttributes.VolumeSnapshotAttributes()
+
+	lunPath := fmt.Sprintf("/vol/%v/lun0", name)
+	lunAttrs, err := d.API.LunGet(lunPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.getVolumeExternal(&lunAttrs, &volumeAttrs), nil
+}
+
+// GetVolumeExternalWrappers queries the storage backend for all relevant info about
+// container volumes managed by this driver.  It then writes a VolumeExternal
+// representation of each volume to the supplied channel, closing the channel
+// when finished.
+func (d *OntapSANStorageDriver) GetVolumeExternalWrappers(
+	channel chan *storage.VolumeExternalWrapper) {
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Get all volumes matching the storage prefix
+	volumesResponse, err := d.API.VolumeGetAll(*d.Config.StoragePrefix)
+	if err = ontap.GetError(volumesResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Make a map of volumes for faster correlation with LUNs
+	volumeMap := make(map[string]azgo.VolumeAttributesType)
+	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
+		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+		volumeMap[internalName] = volumeAttrs
+	}
+
+	// Get all LUNs named 'lun0' in volumes matching the storage prefix
+	lunPathPattern := fmt.Sprintf("/vol/%v/lun0", *d.Config.StoragePrefix+"*")
+	lunsResponse, err := d.API.LunGetAll(lunPathPattern)
+	if err = ontap.GetError(lunsResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Convert all LUNs to VolumeExternal and write them to the channel
+	for _, lun := range lunsResponse.Result.AttributesList() {
+
+		volume, ok := volumeMap[lun.Volume()]
+		if !ok {
+			log.WithField("path", lun.Path()).Warning("Flexvol not found for LUN.")
+			continue
+		}
+
+		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&lun, &volume), nil}
+	}
+}
+
+// getExternalVolume is a private method that accepts info about a volume
+// as returned by the storage backend and formats it as a VolumeExternal
+// object.
+func (d *OntapSANStorageDriver) getVolumeExternal(
+	lunAttrs *azgo.LunInfoType, volumeAttrs *azgo.VolumeAttributesType,
+) *storage.VolumeExternal {
+
+	volumeIdAttrs := volumeAttrs.VolumeIdAttributesPtr
+	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
+
+	internalName := string(volumeIdAttrs.Name())
+	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         "1",
+		Version:         config.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
-		Size:            string(volumeSpaceAttrs.SizeTotal()),
+		Size:            strconv.FormatInt(int64(lunAttrs.Size()), 10),
 		Protocol:        config.Block,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
-		ExportPolicy:    volumeExportAttrs.Policy(),
-		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
-		UnixPermissions: volumeSecurityUnixAttributes.Permissions(),
+		ExportPolicy:    "",
+		SnapshotDir:     "false",
+		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      config.ReadWriteOnce,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
-		FileSystem:      "ext4",
+		FileSystem:      "",
 	}
 
-	volume := &storage.VolumeExternal{
-		Config:  volumeConfig,
-		Backend: d.Name(),
-		Pool:    volumeIdAttrs.ContainingAggregateName(),
+	return &storage.VolumeExternal{
+		Config: volumeConfig,
+		Pool:   volumeIdAttrs.ContainingAggregateName(),
 	}
-
-	return volume, nil
 }

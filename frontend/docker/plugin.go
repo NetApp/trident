@@ -133,6 +133,11 @@ func (p *DockerPlugin) List() (*volume.ListResponse, error) {
 		"method": "List",
 	}).Debug("Docker frontend method is invoked.")
 
+	err := p.orchestrator.ReloadVolumes()
+	if err != nil {
+		return &volume.ListResponse{}, err
+	}
+
 	tridentVols := p.orchestrator.ListVolumes()
 	var dockerVols []*volume.Volume
 
@@ -151,16 +156,30 @@ func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, err
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked")
 
+	// Get is called at the start of every 'docker volume' workflow except List & Unmount,
+	// so refresh the volume list here.
+	err := p.orchestrator.ReloadVolumes()
+	if err != nil {
+		return &volume.GetResponse{}, err
+	}
+
+	// Get the requested volume
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
 		return &volume.GetResponse{}, fmt.Errorf("Volume %s not found.", request.Name)
 	}
 
+	// Get the volume's snapshots
+	snapshots, err := p.orchestrator.ListVolumeSnapshots(request.Name)
+	if err != nil {
+		return &volume.GetResponse{}, err
+	}
+	status := map[string]interface{}{
+		"Snapshots": snapshots,
+	}
+
 	// Get the mountpoint, if this volume is mounted
 	mountpoint, _ := p.getPath(tridentVol)
-	status := map[string]interface{}{
-		"Snapshots": make([]dvp.CommonSnapshot, 0),
-	}
 
 	vol := &volume.Volume{
 		Name:       tridentVol.Config.Name,

@@ -52,16 +52,16 @@ type FakeStorageDriverConfig struct {
 }
 
 type FakeVolume struct {
-	name      string
-	poolName  string
-	sizeBytes uint64
+	Name      string
+	PoolName  string
+	SizeBytes uint64
 }
 
 type FakeStorageDriver struct {
 	Config FakeStorageDriverConfig
 
-	// volumes saves info about volumes created on this driver
-	volumes map[string]FakeVolume
+	// Volumes saves info about Volumes created on this driver
+	Volumes map[string]FakeVolume
 
 	// DestroyedVolumes is here so that tests can check whether destroy
 	// has been called on a volume during or after bootstrapping, since
@@ -73,7 +73,7 @@ type FakeStorageDriver struct {
 func NewFakeStorageDriver(config FakeStorageDriverConfig) *FakeStorageDriver {
 	return &FakeStorageDriver{
 		Config:           config,
-		volumes:          make(map[string]FakeVolume),
+		Volumes:          make(map[string]FakeVolume),
 		DestroyedVolumes: make(map[string]bool),
 	}
 }
@@ -125,7 +125,7 @@ func (d *FakeStorageDriver) Initialize(
 		return fmt.Errorf("Unable to initialize fake driver: %v", err)
 	}
 
-	d.volumes = make(map[string]FakeVolume)
+	d.Volumes = make(map[string]FakeVolume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 
@@ -151,7 +151,7 @@ func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[strin
 		return fmt.Errorf("Could not find pool %s.", pool)
 	}
 
-	if _, ok = d.volumes[name]; ok {
+	if _, ok = d.Volumes[name]; ok {
 		return fmt.Errorf("Volume %s already exists", name)
 	}
 
@@ -160,19 +160,19 @@ func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[strin
 			"have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
 	}
 
-	d.volumes[name] = FakeVolume{
-		name:      name,
-		poolName:  poolName,
-		sizeBytes: sizeBytes,
+	d.Volumes[name] = FakeVolume{
+		Name:      name,
+		PoolName:  poolName,
+		SizeBytes: sizeBytes,
 	}
 	d.DestroyedVolumes[name] = false
 	pool.Bytes -= sizeBytes
 
 	log.WithFields(log.Fields{
 		"backend":   d.Config.InstanceName,
-		"name":      name,
-		"poolName":  poolName,
-		"sizeBytes": sizeBytes,
+		"Name":      name,
+		"PoolName":  poolName,
+		"SizeBytes": sizeBytes,
 	}).Debug("Created fake volume.")
 
 	return nil
@@ -181,45 +181,45 @@ func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[strin
 func (d *FakeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 
 	// Ensure source volume exists
-	sourceVolume, ok := d.volumes[source]
+	sourceVolume, ok := d.Volumes[source]
 	if !ok {
 		return fmt.Errorf("Source volume %s not found", name)
 	}
 
 	// Ensure clone volume doesn't exist
-	if _, ok := d.volumes[name]; ok {
+	if _, ok := d.Volumes[name]; ok {
 		return fmt.Errorf("Volume %s already exists", name)
 	}
 
 	// Use the same pool as the source
-	poolName := sourceVolume.poolName
+	poolName := sourceVolume.PoolName
 	pool, ok := d.Config.Pools[poolName]
 	if !ok {
 		return fmt.Errorf("Could not find pool %s.", pool)
 	}
 
 	// Use the same size as the source
-	sizeBytes := sourceVolume.sizeBytes
+	sizeBytes := sourceVolume.SizeBytes
 	if sizeBytes > pool.Bytes {
 		return fmt.Errorf("Requested clone is too large.  Requested %d bytes; "+
 			"have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
 	}
 
-	d.volumes[name] = FakeVolume{
-		name:      name,
-		poolName:  poolName,
-		sizeBytes: sizeBytes,
+	d.Volumes[name] = FakeVolume{
+		Name:      name,
+		PoolName:  poolName,
+		SizeBytes: sizeBytes,
 	}
 	d.DestroyedVolumes[name] = false
 	pool.Bytes -= sizeBytes
 
 	log.WithFields(log.Fields{
 		"backend":   d.Config.InstanceName,
-		"name":      name,
-		"source":    sourceVolume.name,
+		"Name":      name,
+		"source":    sourceVolume.Name,
 		"snapshot":  snapshot,
-		"poolName":  poolName,
-		"sizeBytes": sizeBytes,
+		"PoolName":  poolName,
+		"SizeBytes": sizeBytes,
 	}).Debug("Cloned fake volume.")
 
 	return nil
@@ -229,24 +229,24 @@ func (d *FakeStorageDriver) Destroy(name string) error {
 
 	d.DestroyedVolumes[name] = true
 
-	volume, ok := d.volumes[name]
+	volume, ok := d.Volumes[name]
 	if !ok {
 		return nil
 	}
 
-	pool, ok := d.Config.Pools[volume.poolName]
+	pool, ok := d.Config.Pools[volume.PoolName]
 	if !ok {
-		return fmt.Errorf("Could not find pool %s.", volume.poolName)
+		return fmt.Errorf("Could not find pool %s.", volume.PoolName)
 	}
 
-	pool.Bytes += volume.sizeBytes
-	delete(d.volumes, name)
+	pool.Bytes += volume.SizeBytes
+	delete(d.Volumes, name)
 
 	log.WithFields(log.Fields{
 		"backend":   d.Config.InstanceName,
-		"name":      name,
-		"poolName":  volume.poolName,
-		"sizeBytes": volume.sizeBytes,
+		"Name":      name,
+		"PoolName":  volume.PoolName,
+		"SizeBytes": volume.SizeBytes,
 	}).Debug("Deleted fake volume.")
 
 	return nil
@@ -266,7 +266,7 @@ func (d *FakeStorageDriver) SnapshotList(name string) ([]dvp.CommonSnapshot, err
 
 func (d *FakeStorageDriver) List() ([]string, error) {
 	vols := []string{}
-	for vol := range d.volumes {
+	for vol := range d.Volumes {
 		vols = append(vols, vol)
 	}
 	return vols, nil
@@ -274,7 +274,7 @@ func (d *FakeStorageDriver) List() ([]string, error) {
 
 func (d *FakeStorageDriver) Get(name string) error {
 
-	_, ok := d.volumes[name]
+	_, ok := d.Volumes[name]
 	if !ok {
 		return fmt.Errorf("Could not find volume %s.", name)
 	}

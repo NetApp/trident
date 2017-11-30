@@ -5,8 +5,11 @@ package fake
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"strconv"
 
 	dvp "github.com/netapp/netappdvp/storage_drivers"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
@@ -113,24 +116,44 @@ func (d *FakeStorageDriver) GetExternalConfig() interface{} {
 	}
 }
 
-func (d *FakeStorageDriver) GetExternalVolume(name string) (*storage.VolumeExternal, error) {
+func (d *FakeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
-	internalName := d.GetInternalVolumeName(name)
+	volume, ok := d.Volumes[name]
+	if !ok {
+		return nil, fmt.Errorf("Fake volume %s not found.", name)
+	}
+
+	return d.getVolumeExternal(volume), nil
+}
+
+func (d *FakeStorageDriver) GetVolumeExternalWrappers(
+	channel chan *storage.VolumeExternalWrapper) {
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Convert all volumes to VolumeExternal and write them to the channel
+	for _, volume := range d.Volumes {
+		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(volume), nil}
+	}
+}
+
+func (d *FakeStorageDriver) getVolumeExternal(volume fake.FakeVolume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:      "1",
-		Name:         name,
-		InternalName: internalName,
-		Size:         "1",
+		Version:      config.OrchestratorAPIVersion,
+		Name:         volume.Name,
+		InternalName: volume.Name,
+		Size:         strconv.FormatUint(volume.SizeBytes, 10),
 	}
 
-	volume := &storage.VolumeExternal{
+	volumeExternal := &storage.VolumeExternal{
 		Config:  volumeConfig,
 		Backend: d.Name(),
-		Pool:    "fakePool",
+		Pool:    volume.PoolName,
 	}
 
-	return volume, nil
+	return volumeExternal
 }
 
 func Clone(a, b interface{}) {

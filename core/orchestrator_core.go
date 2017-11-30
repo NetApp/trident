@@ -165,14 +165,6 @@ func (o *tridentOrchestrator) bootstrapVolumes() error {
 	}
 	for _, v := range volumes {
 
-		log.WithFields(log.Fields{
-			"name":         v.Config.Name,
-			"internalName": v.Config.InternalName,
-			"size":         v.Config.Size,
-			"backend":      v.Backend,
-			"pool":         v.Pool,
-		}).Debug("Bootstrapping volume.")
-
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.StorageBackend
 		var ok bool
@@ -189,9 +181,14 @@ func (o *tridentOrchestrator) bootstrapVolumes() error {
 		vol := storage.NewVolume(v.Config, backend, storagePool)
 		vol.Pool.AddVolume(vol, true)
 		o.volumes[vol.Config.Name] = vol
+
 		log.WithFields(log.Fields{
-			"volume":  vol.Config.Name,
-			"handler": "Bootstrap",
+			"volume":       vol.Config.Name,
+			"internalName": vol.Config.InternalName,
+			"size":         vol.Config.Size,
+			"backend":      vol.Backend.Name,
+			"pool":         vol.Pool.Name,
+			"handler":      "Bootstrap",
 		}).Info("Added an existing volume.")
 	}
 	return nil
@@ -1009,6 +1006,49 @@ func (o *tridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 	// Best effort removal of the mount point
 	os.Remove(mountpoint)
 	return nil
+}
+
+func (o *tridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error) {
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return nil, fmt.Errorf("Volume %s not found.", volumeName)
+	}
+
+	snapshots, err := volume.Backend.Driver.SnapshotList(volume.Config.InternalName)
+	if err != nil {
+		return nil, err
+	}
+
+	externalSnapshots := make([]*storage.SnapshotExternal, 0)
+	for _, snapshot := range snapshots {
+		externalSnapshots = append(externalSnapshots, &storage.SnapshotExternal{snapshot})
+	}
+	return externalSnapshots, nil
+}
+
+func (o *tridentOrchestrator) ReloadVolumes() error {
+
+	// Lock out all other workflows while we reload the volumes
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	// Make a temporary copy of volumes in case anything goes wrong
+	tempVolumes := make(map[string]*storage.Volume)
+	for k, v := range o.volumes {
+		tempVolumes[k] = v
+	}
+
+	// Re-run the volume bootstrapping code
+	o.volumes = make(map[string]*storage.Volume)
+	err := o.bootstrapVolumes()
+
+	// If anything went wrong, reinstate the original volumes
+	if err != nil {
+		o.volumes = tempVolumes
+	}
+
+	return err
 }
 
 // getProtocol returns the appropriate protocol name based on volume access mode

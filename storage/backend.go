@@ -41,7 +41,8 @@ type TridentDriver interface {
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
 	GetExternalConfig() interface{}
-	GetExternalVolume(name string) (*VolumeExternal, error)
+	GetVolumeExternal(name string) (*VolumeExternal, error)
+	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 }
 
 // This shadows the dvp.StorageDriver interface, combining it with the Trident

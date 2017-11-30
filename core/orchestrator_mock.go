@@ -312,6 +312,14 @@ func (m *MockOrchestrator) DetachVolume(volumeName, mountpoint string) error {
 	return nil
 }
 
+func (m *MockOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error) {
+	return make([]*storage.SnapshotExternal, 0), nil
+}
+
+func (m *MockOrchestrator) ReloadVolumes() error {
+	return nil
+}
+
 func NewMockOrchestrator() *MockOrchestrator {
 	return &MockOrchestrator{
 		backends:       make(map[string]*storage.StorageBackend),

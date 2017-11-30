@@ -105,3 +105,9 @@ func (v *Volume) ConstructExternal() *VolumeExternal {
 		Pool:    v.Pool.Name,
 	}
 }
+
+// VolumeExternalWrapper is used to return volumes and errors via channels between goroutines
+type VolumeExternalWrapper struct {
+	Volume *VolumeExternal
+	Error  error
+}

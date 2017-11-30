@@ -1,5 +1,5 @@
-hash: e89ef36bb5650a185b42c5fc9f003a877ce289633343fbab868762375753530f
-updated: 2017-11-20T19:26:52.954593142-05:00
+hash: efc893e8c983268e52ccb4bc18b3774c6bb3fea15544a80f06c4e3be340041b0
+updated: 2017-11-30T14:48:37.036685649-05:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -126,7 +126,7 @@ imports:
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/netapp/netappdvp
-  version: 434e31cf7382d5d04f28fa20870876a779dafb9c
+  version: 2090614975c7f48384783d7a2c971b15807f12af
   subpackages:
   - apis/eseries
   - apis/ontap
