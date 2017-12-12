@@ -204,9 +204,9 @@ fi
 
 # Associate security context constraint 'anyuid' with service account 'trident' for OpenShift
 if [ "$ENV" == "openshift" ]; then
-	$CMD describe scc anyuid | grep trident > /dev/null
+	$CMD --namespace=$NAMESPACE describe scc anyuid | grep trident > /dev/null
 	if [ $? -ne 0 ]; then
-		$CMD adm policy add-scc-to-user anyuid -z trident
+		$CMD --namespace=$NAMESPACE adm policy add-scc-to-user anyuid -z trident
 		if [ $? -ne 0 ]; then
 			exit 1;
 		fi

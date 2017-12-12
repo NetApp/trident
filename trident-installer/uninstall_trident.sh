@@ -141,9 +141,9 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ "$ENV" == "openshift" ]; then
-	$CMD describe scc anyuid | grep trident > /dev/null
+	$CMD --namespace=$NAMESPACE describe scc anyuid | grep trident > /dev/null
 	if [ $? -eq 0 ]; then
-		$CMD adm policy remove-scc-from-user anyuid -z trident
+		$CMD --namespace=$NAMESPACE adm policy remove-scc-from-user anyuid -z trident
 		if [ $? -ne 0 ]; then
 			exit 1;
 		fi
