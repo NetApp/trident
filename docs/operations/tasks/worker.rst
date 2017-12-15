@@ -12,6 +12,10 @@ require the :ref:`iSCSI` tools.
 .. note::
   Recent versions of CoreOS have both installed by default.
 
+.. warning::
+  You should always reboot your worker nodes after installing the NFS or iSCSI
+  tools, or attaching volumes to containers may fail.
+
 NFS
 ===
 
