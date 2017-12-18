@@ -27,7 +27,9 @@ const (
 	SSD    = "ssd"
 	Hybrid = "hybrid"
 
-	BackendStoragePools = "requiredStorage"
+	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
+	StoragePools           = "storagePools"
+	AdditionalStoragePools = "additionalStoragePools"
 )
 
 var attrTypes = map[string]StorageAttributeType{

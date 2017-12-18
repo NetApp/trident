@@ -311,9 +311,9 @@ func provisionVolume(tridentClient tridentrest.Interface) error {
 
 	// Create the storage class
 	storageClassConfig := &storage_class.Config{
-		Version:             "v1",
-		Name:                tridentStorageClassName,
-		BackendStoragePools: map[string][]string{backendID: pools},
+		Version:         "v1",
+		Name:            tridentStorageClassName,
+		AdditionalPools: map[string][]string{backendID: pools},
 	}
 
 	// Add the storage class

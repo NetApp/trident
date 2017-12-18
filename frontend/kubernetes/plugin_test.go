@@ -1407,11 +1407,11 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 		{
 			name: "other-provisioner",
 			classToPost: testStorageClassV1_5("other-sc", false, map[string]string{
-				sa.Media:               "hdd",
-				sa.ProvisioningType:    "thin",
-				sa.Snapshots:           "true",
-				sa.IOPS:                "500",
-				sa.BackendStoragePools: "solidfire_10.63.171.153:Bronze",
+				sa.Media:            "hdd",
+				sa.ProvisioningType: "thin",
+				sa.Snapshots:        "true",
+				sa.IOPS:             "500",
+				sa.RequiredStorage:  "solidfire_10.63.171.153:Bronze",
 			}),
 			expectedClass: nil,
 		},
@@ -1438,14 +1438,14 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 			name: "backends-only",
 			classToPost: testStorageClassV1_5("backends-only", true,
 				map[string]string{
-					sa.BackendStoragePools: "sampleBackend:vc1,vc2;otherBackend:vc1",
+					sa.RequiredStorage: "sampleBackend:vc1,vc2;otherBackend:vc1",
 				}),
 			expectedClass: sc.New(&sc.Config{
 				Name:       "backends-only",
 				Attributes: make(map[string]sa.Request),
-				BackendStoragePools: map[string][]string{
-					"sampleBackend": []string{"vc1", "vc2"},
-					"otherBackend":  []string{"vc1"},
+				AdditionalPools: map[string][]string{
+					"sampleBackend": {"vc1", "vc2"},
+					"otherBackend":  {"vc1"},
 				},
 			}),
 		},
@@ -1453,11 +1453,11 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 			name: "backends-and-attributes",
 			classToPost: testStorageClassV1_5("backends-and-attributes", true,
 				map[string]string{
-					sa.Media:               "hdd",
-					sa.ProvisioningType:    "thin",
-					sa.Snapshots:           "true",
-					sa.IOPS:                "500",
-					sa.BackendStoragePools: "sampleBackend:vc1,vc2;otherBackend:vc1",
+					sa.Media:            "hdd",
+					sa.ProvisioningType: "thin",
+					sa.Snapshots:        "true",
+					sa.IOPS:             "500",
+					sa.RequiredStorage:  "sampleBackend:vc1,vc2;otherBackend:vc1",
 				}),
 			expectedClass: sc.New(&sc.Config{
 				Name: "backends-and-attributes",
@@ -1467,9 +1467,9 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 					sa.Snapshots:        sa.NewBoolRequest(true),
 					sa.IOPS:             sa.NewIntRequest(500),
 				},
-				BackendStoragePools: map[string][]string{
-					"sampleBackend": []string{"vc1", "vc2"},
-					"otherBackend":  []string{"vc1"},
+				AdditionalPools: map[string][]string{
+					"sampleBackend": {"vc1", "vc2"},
+					"otherBackend":  {"vc1"},
 				},
 			}),
 		},
@@ -1478,9 +1478,9 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 			classToPost: testStorageClassV1_5("empty", true,
 				map[string]string{}),
 			expectedClass: sc.New(&sc.Config{
-				Name:                "empty",
-				Attributes:          make(map[string]sa.Request),
-				BackendStoragePools: nil,
+				Name:            "empty",
+				Attributes:      make(map[string]sa.Request),
+				AdditionalPools: nil,
 			}),
 		},
 	} {

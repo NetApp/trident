@@ -11,17 +11,17 @@ of these phases and the considerations involved in them, so that users can
 better understand how Trident handles their storage.
 
 Associating backend storage pools with a storage class relies on both the
-storage class's requested attributes and its ``requiredStorage`` list.  When a
-user creates a storage class, Trident compares the attributes offered by each
-of its backends to those requested by the storage class.  If a storage pool's
-attributes match all of the requested attributes, Trident adds that storage
+storage class's requested attributes and its ``storagePools`` and
+``additionalStoragePools`` lists.  When a user creates a storage class, Trident
+compares the attributes and pools offered by each of its backends to those
+requested by the storage class.  If a storage pool's attributes and name match
+all of the requested attributes and pool names, Trident adds that storage
 pool to the set of suitable storage pools for that storage class.  In addition,
-Trident adds all storage pools listed in the ``requiredStorage`` list to that
-set, even if their attributes do not fulfill all or any of the storage classes
-requested attributes.  Trident performs a similar process every time a user
-adds a new backend, checking whether its storage pools satisfy those of the
-existing storage classes and whether any of its storage pools are present in
-the ``requiredStorage`` list of any of the existing storage classes.
+Trident adds all storage pools listed in the ``additionalStoragePools`` list to
+that set, even if their attributes do not fulfill all or any of the storage
+class's requested attributes.  Trident performs a similar process every time a
+user adds a new backend, checking whether its storage pools satisfy those of
+the existing storage classes.
 
 Trident then uses the associations between storage classes and storage pools to
 determine where to provision volumes.  When a user creates a volume, Trident

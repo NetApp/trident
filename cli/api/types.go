@@ -26,11 +26,11 @@ type MultipleBackendResponse struct {
 
 type StorageClass struct {
 	Config struct {
-		Version    string `json:"version"`
-		Name       string `json:"name"`
-		Attributes struct {
-			BackendType interface{} `json:"backendType"`
-		} `json:"attributes"`
+		Version         string              `json:"version"`
+		Name            string              `json:"name"`
+		Attributes      interface{}         `json:"attributes"`
+		Pools           map[string][]string `json:"storagePools"`
+		AdditionalPools map[string][]string `json:"additionalStoragePools"`
 	} `json:"Config"`
 	Storage interface{} `json:"storage"`
 }

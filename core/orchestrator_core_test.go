@@ -501,8 +501,22 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			config: &storage_class.Config{
-				Name: "specific",
-				BackendStoragePools: map[string][]string{
+				Name: "pools",
+				Pools: map[string][]string{
+					"fast-a":     {tu.FastSmall},
+					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "additionalPools",
+				AdditionalPools: map[string][]string{
 					"fast-a":     {tu.FastThinOnly},
 					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
 				},
@@ -515,8 +529,66 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			config: &storage_class.Config{
-				Name: "specificNoMatch",
-				BackendStoragePools: map[string][]string{
+				Name: "poolsWithAttributes",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:      sa.NewIntRequest(2000),
+					sa.Snapshots: sa.NewBoolRequest(true),
+				},
+				Pools: map[string][]string{
+					"fast-a":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "additionalPoolsWithAttributes",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:      sa.NewIntRequest(2000),
+					sa.Snapshots: sa.NewBoolRequest(true),
+				},
+				AdditionalPools: map[string][]string{
+					"fast-a":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots},
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "additionalPoolsWithAttributesAndPools",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:      sa.NewIntRequest(2000),
+					sa.Snapshots: sa.NewBoolRequest(true),
+				},
+				Pools: map[string][]string{
+					"fast-a":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
+				},
+				AdditionalPools: map[string][]string{
+					"fast-b":     {tu.FastThinOnly},
+					"slow-block": {tu.SlowNoSnapshots},
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+			},
+		},
+		{
+			config: &storage_class.Config{
+				Name: "additionalPoolsNoMatch",
+				AdditionalPools: map[string][]string{
 					"unknown": {tu.FastThinOnly},
 				},
 			},
@@ -525,7 +597,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		{
 			config: &storage_class.Config{
 				Name: "mixed",
-				BackendStoragePools: map[string][]string{
+				AdditionalPools: map[string][]string{
 					"slow-file": {tu.SlowNoSnapshots},
 					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
 				},
@@ -603,7 +675,19 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "block",
-			config: generateVolumeConfig("block", 1, "specific",
+			config: generateVolumeConfig("block", 1, "pools",
+				config.Block),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow-block", Pool: tu.MediumOverlap},
+			},
+			expectedCount: 1,
+			deleteAfterSC: false,
+		},
+		{
+			name: "block2",
+			config: generateVolumeConfig("block2", 1, "additionalPools",
 				config.Block),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
@@ -902,7 +986,7 @@ func TestCloneVolumes(t *testing.T) {
 		{
 			config: &storage_class.Config{
 				Name: "specific",
-				BackendStoragePools: map[string][]string{
+				AdditionalPools: map[string][]string{
 					"fast-a":     {tu.FastThinOnly},
 					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
 				},
@@ -916,7 +1000,7 @@ func TestCloneVolumes(t *testing.T) {
 		{
 			config: &storage_class.Config{
 				Name: "specificNoMatch",
-				BackendStoragePools: map[string][]string{
+				AdditionalPools: map[string][]string{
 					"unknown": {tu.FastThinOnly},
 				},
 			},
@@ -925,7 +1009,7 @@ func TestCloneVolumes(t *testing.T) {
 		{
 			config: &storage_class.Config{
 				Name: "mixed",
-				BackendStoragePools: map[string][]string{
+				AdditionalPools: map[string][]string{
 					"slow-file": {tu.SlowNoSnapshots},
 					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
 				},

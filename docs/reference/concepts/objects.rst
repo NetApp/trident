@@ -171,12 +171,15 @@ A Kubernetes StorageClass object that uses Trident looks like this:
 These parameters are Trident-specific and tell Trident how to provision volumes
 for the class.
 
-================= ===================== ======== =====================================================
-Attribute         Type                  Required Description
-================= ===================== ======== =====================================================
-attributes        map[string]string     no       See the attributes section below
-requiredStorage   map[string]StringList no       Map of backend names to lists of storage pools within
-================= ===================== ======== =====================================================
+The storage class parameters are:
+
+======================= ===================== ======== =====================================================
+Attribute               Type                  Required Description
+======================= ===================== ======== =====================================================
+attributes              map[string]string     no       See the attributes section below
+storagePools            map[string]StringList no       Map of backend names to lists of storage pools within
+additionalStoragePools  map[string]StringList no       Map of backend names to lists of storage pools within
+======================= ===================== ======== =====================================================
 
 Storage attributes and their possible values can be classified into two groups:
 
@@ -209,20 +212,26 @@ automatically discover and select storage pools that match *all* of the
 ``attributes`` that you specify.
 
 If you find yourself unable to use ``attributes`` to automatically select the
-right pools for a class, you can use the ``requiredStorage`` parameter instead
+right pools for a class, you can use the ``storagePools`` and
+``additionalStoragePools`` parameters to further refine the pools or even
 to select a specific set of pools manually.
 
-Each entry is of the form ``<backend>:<storagePoolList>``, where
-``<storagePoolList>`` is a comma-separated list of storage pools for the
-specified backend. For example, a value for ``requiredStorage`` might look like
+The ``storagePools`` parameter is used to further restrict the set of pools
+that match any specified ``attributes``.  In other words, Trident will use the
+intersection of pools identified by the ``attributes`` and ``storagePools``
+parameters for provisioning.  You can use either parameter alone or both
+together.
+
+The ``additionalStoragePools`` parameter is used to extend the set of pools
+that Trident will use for provisioning, regardless of any pools selected by
+the ``attributes`` and ``storagePools`` parameters.
+
+In the ``storagePools`` and ``additionalStoragePools`` parameters, each entry
+takes the form ``<backend>:<storagePoolList>``, where ``<storagePoolList>`` is
+a comma-separated list of storage pools for the specified backend. For example,
+a value for ``additionalStoragePools`` might look like
 ``ontapnas_192.168.1.100:aggr1,aggr2;solidfire_192.168.1.101:bronze``. You can
 use ``tridentctl get backend`` to get the list of backends and their pools.
-
-.. warning::
-  Trident treats ``attributes`` and ``requiredStorage`` separately. They do not
-  influence one another. If you specify both, Trident will select pools that
-  match all of the ``attributes`` **and** pools that match ``requiredStorage``.
-
 
 2. Kubernetes attributes: These attributes have no impact on the selection of
    storage pools/backends by Trident during dynamic provisioning. Instead,

@@ -678,15 +678,13 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 func TestEtcdv2AddStorageClass(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
 	bronzeConfig := &storage_class.Config{
-		Name:                "bronze",
-		Attributes:          make(map[string]storage_attribute.Request),
-		BackendStoragePools: make(map[string][]string),
+		Name:            "bronze",
+		Attributes:      make(map[string]storage_attribute.Request),
+		AdditionalPools: make(map[string][]string),
 	}
 	bronzeConfig.Attributes["media"] = storage_attribute.NewStringRequest("hdd")
-	bronzeConfig.BackendStoragePools["ontapnas_10.0.207.101"] =
-		[]string{"aggr1"}
-	bronzeConfig.BackendStoragePools["ontapsan_10.0.207.103"] =
-		[]string{"aggr1"}
+	bronzeConfig.AdditionalPools["ontapnas_10.0.207.101"] = []string{"aggr1"}
+	bronzeConfig.AdditionalPools["ontapsan_10.0.207.103"] = []string{"aggr1"}
 	bronzeClass := storage_class.New(bronzeConfig)
 
 	if err := p.AddStorageClass(bronzeClass); err != nil {
@@ -709,8 +707,8 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 	}
 
 	// Validating correct retrieval of storage pools in a storage class
-	backendVCs := sc.GetBackendStoragePools()
-	for k, v := range bronzeConfig.BackendStoragePools {
+	backendVCs := sc.GetAdditionalStoragePools()
+	for k, v := range bronzeConfig.AdditionalPools {
 		if vcs, ok := backendVCs[k]; !ok {
 			t.Errorf("Could not find backend %s for the storage class!", k)
 		} else {

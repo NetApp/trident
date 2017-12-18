@@ -225,9 +225,9 @@ func TestSpecificBackends(t *testing.T) {
 			name: "Specific backends",
 			sc: New(&Config{
 				Name: "specific",
-				BackendStoragePools: map[string][]string{
-					"fast-a": []string{tu.FastThinOnly},
-					"slow":   []string{tu.SlowNoSnapshots, tu.MediumOverlap},
+				AdditionalPools: map[string][]string{
+					"fast-a": {tu.FastThinOnly},
+					"slow":   {tu.SlowNoSnapshots, tu.MediumOverlap},
 				},
 			}),
 			expected: []*tu.PoolMatch{
@@ -240,9 +240,9 @@ func TestSpecificBackends(t *testing.T) {
 			name: "Mixed attributes, backends",
 			sc: New(&Config{
 				Name: "mixed",
-				BackendStoragePools: map[string][]string{
-					"slow":   []string{tu.SlowNoSnapshots},
-					"fast-b": []string{tu.FastThinOnly, tu.FastUniqueAttr},
+				AdditionalPools: map[string][]string{
+					"slow":   {tu.SlowNoSnapshots},
+					"fast-b": {tu.FastThinOnly, tu.FastUniqueAttr},
 				},
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),

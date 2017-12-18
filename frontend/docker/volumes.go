@@ -53,15 +53,15 @@ func makeStorageClass(options map[string]string, o core.Orchestrator) (*storage_
 
 	scConfig := new(storage_class.Config)
 
-	// Map aggregate/pool option to requiredStorage
+	// Map aggregate/pool option to storagePools
 	requiredPool := dvp_utils.GetV(options, "aggregate|pool", "")
 	if requiredPool != "" {
 	aggrLoop:
 		for _, backend := range o.ListBackends() {
-			for poolName, _ := range backend.Storage {
+			for poolName := range backend.Storage {
 				if poolName == requiredPool {
-					scConfig.BackendStoragePools = make(map[string][]string)
-					scConfig.BackendStoragePools[backend.Name] = []string{poolName}
+					scConfig.Pools = make(map[string][]string)
+					scConfig.Pools[backend.Name] = []string{poolName}
 					break aggrLoop
 				}
 			}

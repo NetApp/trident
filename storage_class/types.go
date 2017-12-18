@@ -15,10 +15,11 @@ type StorageClass struct {
 type Config struct {
 	//NOTE:  Ensure that any changes made to this data structure are reflected
 	// in the Unmarshal method of config.go
-	Version             string                               `json:"version" hash:"ignore"`
-	Name                string                               `json:"name" hash:"ignore"`
-	Attributes          map[string]storage_attribute.Request `json:"attributes,omitempty"`
-	BackendStoragePools map[string][]string                  `json:"requiredStorage,omitempty"`
+	Version         string                               `json:"version" hash:"ignore"`
+	Name            string                               `json:"name" hash:"ignore"`
+	Attributes      map[string]storage_attribute.Request `json:"attributes,omitempty"`
+	Pools           map[string][]string                  `json:"storagePools,omitempty"`
+	AdditionalPools map[string][]string                  `json:"additionalStoragePools,omitempty"`
 }
 
 type StorageClassExternal struct {

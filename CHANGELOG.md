@@ -17,6 +17,8 @@
 - Added scripts and instructions for setting up an external etcd cluster using
   etcd operator.
 - Significantly reduced Trident and Trident-Launcher Docker image sizes.
+- Clarified and enhanced storage class pool selection by introducing storagePools and renaming
+  requiredStorage to additionalStoragePools.
 
 ## v17.10.0
 

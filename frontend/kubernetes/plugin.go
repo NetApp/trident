@@ -1129,28 +1129,43 @@ func (p *KubernetesPlugin) processAddedClass(class *k8s_storage_v1.StorageClass)
 		case K8sFsType:
 			// Process Kubernetes-defined storage class parameters
 			k8sStorageClassParams[k] = v
-		case storage_attribute.BackendStoragePools:
-			// format:    backendStoragePools: "backend1:pool1,pool2;backend2:pool1"
-			backendPools, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
+
+		case storage_attribute.RequiredStorage, storage_attribute.AdditionalStoragePools:
+			// format:  additionalStoragePools: "backend1:pool1,pool2;backend2:pool1"
+			additionalPools, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"storageClass":             class.Name,
 					"storageClass_provisioner": class.Provisioner,
 					"storageClass_parameters":  class.Parameters,
-				}).Error("Kubernetes frontend couldn't process %s parameter: ",
-					storage_attribute.BackendStoragePools, err)
+					"error":                    err,
+				}).Errorf("Kubernetes frontend couldn't process the storage class parameter %s", k)
 			}
-			scConfig.BackendStoragePools = backendPools
+			scConfig.AdditionalPools = additionalPools
+
+		case storage_attribute.StoragePools:
+			// format:  storagePools: "backend1:pool1,pool2;backend2:pool1"
+			pools, err := storage_attribute.CreateBackendStoragePoolsMapFromEncodedString(v)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"storageClass":             class.Name,
+					"storageClass_provisioner": class.Provisioner,
+					"storageClass_parameters":  class.Parameters,
+					"error":                    err,
+				}).Errorf("Kubernetes frontend couldn't process the storage class parameter %s", k)
+			}
+			scConfig.Pools = pools
 
 		default:
-			// format:     attribute: "value"
+			// format:  attribute: "value"
 			req, err := storage_attribute.CreateAttributeRequestFromAttributeValue(k, v)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"storageClass":             class.Name,
 					"storageClass_provisioner": class.Provisioner,
 					"storageClass_parameters":  class.Parameters,
-				}).Error("Kubernetes frontend couldn't process the encoded storage class attribute: ", err)
+					"error":                    err,
+				}).Errorf("Kubernetes frontend couldn't process the storage class attribute %s", k)
 				return
 			}
 			scConfig.Attributes[k] = req

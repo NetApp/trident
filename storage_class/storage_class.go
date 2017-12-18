@@ -39,40 +39,36 @@ func NewFromPersistent(persistent *StorageClassPersistent) *StorageClass {
 
 func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
 
-	log.WithFields(log.Fields{
-		"pool":         storagePool.Name,
-		"storageClass": s.GetName(),
-	}).Debug("Checking pool for storage class")
-
-	// First consider requiredStorage, since a match of the pool name will always return true
-	// regardless of the storage pool attributes.
-	if len(s.config.BackendStoragePools) > 0 {
-		if storagePoolList, ok := s.config.BackendStoragePools[storagePool.Backend.Name]; ok {
+	// Check additionalStoragePools first, since it can yield a match result by itself
+	if len(s.config.AdditionalPools) > 0 {
+		if storagePoolList, ok := s.config.AdditionalPools[storagePool.Backend.Name]; ok {
 			for _, storagePoolName := range storagePoolList {
 				if storagePoolName == storagePool.Name {
-					log.WithField("pool", storagePoolName).Debug("Matched by pool name.")
+					log.WithFields(log.Fields{
+						"storageClass": s.GetName(),
+						"pool":         storagePool.Name,
+					}).Debug("Matched by additionalStoragePools attribute.")
 					return true
 				}
 			}
 		}
 
-		// Handle the sub-case where requiredStorage is specified (but didn't match) and
-		// there are no attributes specified in the storage class.  This should always return
-		// false.
-		if len(s.config.Attributes) == 0 {
+		// Handle the sub-case where additionalStoragePools is specified (but didn't match) and
+		// there are no attributes or storagePools specified in the storage class.  This should
+		// always return false.
+		if len(s.config.Attributes) == 0 && len(s.config.Pools) == 0 {
 			log.WithFields(log.Fields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
-			}).Debug("Pool failed to match storage class requiredStorage attribute.")
+			}).Debug("Pool failed to match storage class additionalStoragePools attribute.")
 			return false
 		}
 	}
 
-	// Now handle the case where requiredStorage produced no match, so it's up to the storage
-	// class attributes to determine whether a pool matches.  Because storage class attributes
-	// are used to restrict the set of matching pools, it follows that a storage class without
-	// any attributes (or requiredStorage!) should match all pools.
-	matches := true
+	// Attributes are used to narrow the pool selection.  Therefore if no attributes are
+	// specified, then all pools can match.  If one or more attributes are specified in the
+	// storage class, then all must match.
+	attributesMatch := true
 	for name, request := range s.config.Attributes {
 		if offer, ok := storagePool.Attributes[name]; !ok || !offer.Matches(request) {
 			log.WithFields(log.Fields{
@@ -83,11 +79,37 @@ func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
 				"attribute":    name,
 				"found":        ok,
 			}).Debug("Attribute for storage pool failed to match storage class.")
-			matches = false
+			attributesMatch = false
 			break
 		}
 	}
-	return matches
+
+	// The storagePools list is used to narrow the pool selection.  Therefore if no pools are
+	// specified, then all pools can match.  If one or more pools are listed in the storage
+	// class, then the pool must be in the list.
+	poolsMatch := true
+	if len(s.config.Pools) > 0 {
+		poolsMatch = false
+		if storagePoolList, ok := s.config.Pools[storagePool.Backend.Name]; ok {
+			for _, storagePoolName := range storagePoolList {
+				if storagePoolName == storagePool.Name {
+					poolsMatch = true
+				}
+			}
+		}
+	}
+
+	result := attributesMatch && poolsMatch
+
+	log.WithFields(log.Fields{
+		"attributesMatch": attributesMatch,
+		"poolsMatch":      poolsMatch,
+		"match":           result,
+		"pool":            storagePool.Name,
+		"storageClass":    s.GetName(),
+	}).Debug("Result of pool match for storage class.")
+
+	return result
 }
 
 // CheckAndAddBackend iterates through each of the storage pools
@@ -153,8 +175,12 @@ func (s *StorageClass) GetName() string {
 	return s.config.Name
 }
 
-func (s *StorageClass) GetBackendStoragePools() map[string][]string {
-	return s.config.BackendStoragePools
+func (s *StorageClass) GetStoragePools() map[string][]string {
+	return s.config.Pools
+}
+
+func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
+	return s.config.AdditionalPools
 }
 
 func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.StoragePool {
@@ -197,7 +223,10 @@ func (s *StorageClass) ConstructExternal() *StorageClassExternal {
 	for _, list := range ret.StoragePools {
 		sort.Strings(list)
 	}
-	for _, list := range ret.Config.BackendStoragePools {
+	for _, list := range ret.Config.Pools {
+		sort.Strings(list)
+	}
+	for _, list := range ret.Config.AdditionalPools {
 		sort.Strings(list)
 	}
 	return ret
@@ -209,7 +238,10 @@ func (s *StorageClassExternal) GetName() string {
 
 func (s *StorageClass) ConstructPersistent() *StorageClassPersistent {
 	ret := &StorageClassPersistent{Config: s.config}
-	for _, list := range ret.Config.BackendStoragePools {
+	for _, list := range ret.Config.Pools {
+		sort.Strings(list)
+	}
+	for _, list := range ret.Config.AdditionalPools {
 		sort.Strings(list)
 	}
 	return ret
