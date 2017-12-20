@@ -164,7 +164,6 @@ func (o *tridentOrchestrator) bootstrapVolumes() error {
 		return err
 	}
 	for _, v := range volumes {
-
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.StorageBackend
 		var ok bool
@@ -173,21 +172,16 @@ func (o *tridentOrchestrator) bootstrapVolumes() error {
 			return fmt.Errorf("Couldn't find backend %s for volume %s!",
 				v.Backend, v.Config.Name)
 		}
-		storagePool, ok := backend.Storage[v.Pool]
-		if !ok {
-			return fmt.Errorf("Couldn't find storage pool %s on backend %s!",
-				v.Pool, v.Backend)
-		}
-		vol := storage.NewVolume(v.Config, backend, storagePool)
-		vol.Pool.AddVolume(vol, true)
-		o.volumes[vol.Config.Name] = vol
+		vol := storage.NewVolume(v.Config, backend.Name, v.Pool, v.Orphaned)
+		backend.Volumes[vol.Config.Name], o.volumes[vol.Config.Name] = vol, vol
 
 		log.WithFields(log.Fields{
 			"volume":       vol.Config.Name,
 			"internalName": vol.Config.InternalName,
 			"size":         vol.Config.Size,
-			"backend":      vol.Backend.Name,
-			"pool":         vol.Pool.Name,
+			"backend":      vol.Backend,
+			"pool":         vol.Pool,
+			"orphaned":     vol.Orphaned,
 			"handler":      "Bootstrap",
 		}).Info("Added an existing volume.")
 	}
@@ -346,83 +340,14 @@ func (o *tridentOrchestrator) AddFrontend(f frontend.FrontendPlugin) {
 func (o *tridentOrchestrator) validateBackendUpdate(
 	oldBackend *storage.StorageBackend, newBackend *storage.StorageBackend,
 ) error {
-	var err error
-	err = nil
-	errorList := make([]string, 0)
-
-	// In case Trident supports custom backend names in the future, validate
-	// that backend type isn't being changed as backend type has implications
-	// for the internal volume name.
+	// Validate that backend type isn't being changed as backend type has
+	// implications for the internal volume names.
 	if oldBackend.GetDriverName() != newBackend.GetDriverName() {
-		errorList = append(errorList, "Cannot update the backend type")
+		return fmt.Errorf("Cannot update the backend as the old backend is "+
+			"of type %s and the new backend is of type %s!",
+			oldBackend.GetDriverName(), newBackend.GetDriverName())
 	}
-
-	// Identifying all storage pools in the old backend that have been used for
-	// provisioning volumes.
-	usedPools := make([]string, 0)
-	for name, storagePool := range oldBackend.Storage {
-		if len(storagePool.Volumes) > 0 {
-			usedPools = append(usedPools, name)
-		}
-	}
-	for _, storagePoolName := range usedPools {
-		if _, ok := newBackend.Storage[storagePoolName]; !ok {
-			// If a storage pool that contained volumes isn't present in
-			// the new config, we can't use the new config.
-			errorList = append(errorList,
-				fmt.Sprintf("In-use storage pool %s not present in the "+
-					"updated backend", storagePoolName))
-		}
-	}
-
-	// Now validate that all of the previous storage classes work.
-	storagePoolsForStorageClasses := make(map[string][]string)
-	for storagePoolName, storagePool := range oldBackend.Storage {
-		// We could just process the storage class list, but this way
-		// we only care about the storage classes in use.
-		for _, volume := range storagePool.Volumes {
-			scName := volume.Config.StorageClass
-			if _, found := storagePoolsForStorageClasses[scName]; !found {
-				storagePoolsForStorageClasses[scName] = make([]string, 0, 1)
-			}
-			storagePoolsForStorageClasses[scName] =
-				append(storagePoolsForStorageClasses[scName], storagePoolName)
-		}
-	}
-	for scName, storagePoolList := range storagePoolsForStorageClasses {
-		sc, found := o.storageClasses[scName]
-		if !found {
-			// The storage class for the volume was deleted. The volume remains
-			// associated with the storage pool of the same name in the new
-			// backend.
-			continue
-		}
-		for _, storagePoolName := range storagePoolList {
-			if newStoragePool, ok := newBackend.Storage[storagePoolName]; ok && !sc.Matches(newStoragePool) {
-				log.WithFields(log.Fields{
-					"backend":      newBackend.Name,
-					"storagePool":  storagePoolName,
-					"storageClass": scName,
-				}).Debug("The storage pool in the new backend doesn't satisfy " +
-					"the storage class.")
-				errorList = append(errorList, fmt.Sprintf("Storage pool "+
-					"%s has volumes with storage class %s, but it no longer "+
-					"satisfies that storage class", storagePoolName, scName))
-			} else if ok {
-				log.WithFields(log.Fields{
-					"backend":      newBackend.Name,
-					"storagePool":  storagePoolName,
-					"storageClass": scName,
-				}).Debug("The storage pool in the new backend satisfies the " +
-					"storage class.")
-			}
-		}
-	}
-	if len(errorList) > 0 {
-		err = fmt.Errorf("Cannot update backend: %s", strings.Join(errorList,
-			"; "))
-	}
-	return err
+	return nil
 }
 
 func (o *tridentOrchestrator) GetVersion() string {
@@ -447,6 +372,7 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 		}
 	}
 
+	// Update backend information
 	log.WithFields(log.Fields{
 		"backend":       storageBackend.Name,
 		"backendUpdate": !newBackend,
@@ -456,6 +382,42 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 	}
 	o.backends[storageBackend.Name] = storageBackend
 
+	// Update volume information
+	// Identify orphaned volumes (i.e., volumes that are not present on the
+	// new backend). Such a scenario can happen if a subset of volumes are
+	// replicated for DR or volumes get deleted out of band. Operations on
+	// such volumes are likely to fail, so here we just warn the users about
+	// such volumes and mark them as orphaned.
+	for volName, vol := range o.volumes {
+		updatePersistentStore := false
+		volExternal, _ := storageBackend.Driver.GetVolumeExternal(vol.Config.InternalName)
+		if volExternal == nil {
+			if vol.Orphaned == false {
+				vol.Orphaned = true
+				updatePersistentStore = true
+				log.WithFields(log.Fields{
+					"volume":  volName,
+					"backend": storageBackend.Name,
+				}).Warn("Backend update resulted in an orphaned volume!")
+			}
+		} else {
+			if vol.Orphaned == true {
+				vol.Orphaned = false
+				updatePersistentStore = true
+				log.WithFields(log.Fields{
+					"volume":  volName,
+					"backend": storageBackend.Name,
+				}).Info("The volume is no longer orphaned as a result of the " +
+					"backend update.")
+			}
+		}
+		if updatePersistentStore {
+			o.updateVolumeOnPersistentStore(vol)
+		}
+		o.backends[storageBackend.Name].Volumes[volName] = vol
+	}
+
+	// Update storage class information
 	classes := make([]string, 0, len(o.storageClasses))
 	for _, storageClass := range o.storageClasses {
 		if !newBackend {
@@ -475,17 +437,7 @@ func (o *tridentOrchestrator) AddStorageBackend(configJSON string) (
 		}).Infof("Newly added backend satisfies storage classes %s.",
 			strings.Join(classes, ", "))
 	}
-	if !newBackend {
-		for storagePoolName, storagePool := range originalBackend.Storage {
-			for volName, vol := range storagePool.Volumes {
-				vol.Backend = storageBackend
-				// Note that the validation ensures that the storage pool
-				// will exist in the new backend, as well.
-				vol.Pool = storageBackend.Storage[storagePoolName]
-				storageBackend.Storage[storagePoolName].Volumes[volName] = vol
-			}
-		}
-	}
+
 	return storageBackend.ConstructExternal(), nil
 }
 
@@ -633,6 +585,7 @@ func (o *tridentOrchestrator) CloneVolume(
 ) (*storage.VolumeExternal, error) {
 
 	var (
+		found   bool
 		backend *storage.StorageBackend
 		vol     *storage.Volume
 	)
@@ -650,11 +603,18 @@ func (o *tridentOrchestrator) CloneVolume(
 		return nil, fmt.Errorf("Source volume not found: %s",
 			volumeConfig.CloneSourceVolume)
 	}
-	sourceVolumeConfig := sourceVolume.Config
+	if sourceVolume.Orphaned {
+		log.WithFields(log.Fields{
+			"source_volume": sourceVolume.Config.Name,
+			"volume":        volumeConfig.Name,
+			"backend":       sourceVolume.Backend,
+		}).Warnf("Clone operation is likely to fail with an orphaned " +
+			"source volume!")
+	}
 
 	// Clone the source config, as most of its attributes will apply to the clone
 	cloneConfig := &storage.VolumeConfig{}
-	sourceVolumeConfig.ConstructClone(cloneConfig)
+	sourceVolume.Config.ConstructClone(cloneConfig)
 
 	// Copy a few attributes from the request that will affect clone creation
 	cloneConfig.Name = volumeConfig.Name
@@ -673,12 +633,19 @@ func (o *tridentOrchestrator) CloneVolume(
 	// Recovery function in case of error
 	defer func() { o.addVolumeCleanup(err, backend, vol, volTxn, volumeConfig) }()
 
-	backend = sourceVolume.Pool.Backend
-	vol, err = backend.CloneVolume(cloneConfig, sourceVolume.Pool)
+	backend, found = o.backends[sourceVolume.Backend]
+	if !found {
+		// Should never get here but just to be safe
+		return nil,
+			fmt.Errorf("Backend %s for the source volume was not found: %s",
+				sourceVolume.Backend,
+				volumeConfig.CloneSourceVolume)
+	}
+
+	vol, err = backend.CloneVolume(cloneConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create cloned volume %s "+
-			"on storage pool %s from backend %s: %v",
-			cloneConfig.Name, sourceVolume.Pool.Name, backend.Name, err)
+			"on backend %s: %v", cloneConfig.Name, backend.Name, err)
 	}
 
 	// Save references to new volume
@@ -841,16 +808,16 @@ func (o *tridentOrchestrator) ListVolumes() []*storage.VolumeExternal {
 // caller will take care of both of these.  It also assumes that the volume
 // exists in memory.
 func (o *tridentOrchestrator) deleteVolume(volumeName string) error {
-
 	volume := o.volumes[volumeName]
+	volumeBackend := o.backends[volume.Backend]
 
 	// Note that this call will only return an error if the backend actually
 	// fails to delete the volume.  If the volume does not exist on the backend,
 	// the nDVP will not return an error.  Thus, we're fine.
-	if err := volume.Backend.RemoveVolume(volume); err != nil {
+	if err := volumeBackend.RemoveVolume(volume); err != nil {
 		log.WithFields(log.Fields{
 			"volume":  volumeName,
-			"backend": volume.Backend.Name,
+			"backend": volume.Backend,
 		}).Error("Unable to delete volume from backend.")
 		return err
 	}
@@ -864,17 +831,17 @@ func (o *tridentOrchestrator) deleteVolume(volumeName string) error {
 		}).Error("Unable to delete volume from persistent store.")
 		return err
 	}
-	if !volume.Backend.Online && !volume.Backend.HasVolumes() {
-		if err := o.storeClient.DeleteBackend(volume.Backend); err != nil {
+	if !volumeBackend.Online && !volumeBackend.HasVolumes() {
+		if err := o.storeClient.DeleteBackend(volumeBackend); err != nil {
 			log.WithFields(log.Fields{
-				"backend": volume.Backend.Name,
+				"backend": volume.Backend,
 				"volume":  volumeName,
 			}).Error("Unable to delete offline backend from the backing store" +
 				" after its last volume was deleted.  Delete the volume again" +
 				" to remove the backend.")
 			return err
 		}
-		delete(o.backends, volume.Backend.Name)
+		delete(o.backends, volume.Backend)
 	}
 	delete(o.volumes, volumeName)
 	return nil
@@ -930,10 +897,8 @@ func (o *tridentOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.
 		if backendName := backend.GetDriverName(); pluginName != backendName {
 			continue
 		}
-		for _, pool := range backend.Storage {
-			for _, vol := range pool.Volumes {
-				volumes = append(volumes, vol.ConstructExternal())
-			}
+		for _, vol := range backend.Volumes {
+			volumes = append(volumes, vol.ConstructExternal())
 		}
 	}
 	return volumes
@@ -977,7 +942,8 @@ func (o *tridentOrchestrator) AttachVolume(volumeName, mountpoint string, option
 		}
 	}
 
-	return volume.Backend.Driver.Attach(volume.Config.InternalName, mountpoint, options)
+	return o.backends[volume.Backend].Driver.Attach(volume.Config.InternalName, mountpoint,
+		options)
 }
 
 // DetachVolume unmounts a volume from the local host.  It ensures the volume is already
@@ -1000,7 +966,8 @@ func (o *tridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 	}
 
 	// Unmount the volume
-	err = volume.Backend.Driver.Detach(volume.Config.InternalName, mountpoint)
+	err = o.backends[volume.Backend].Driver.Detach(volume.Config.InternalName,
+		mountpoint)
 	if err != nil {
 		return err
 	}
@@ -1017,7 +984,7 @@ func (o *tridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage
 		return nil, fmt.Errorf("Volume %s not found.", volumeName)
 	}
 
-	snapshots, err := volume.Backend.Driver.SnapshotList(volume.Config.InternalName)
+	snapshots, err := o.backends[volume.Backend].Driver.SnapshotList(volume.Config.InternalName)
 	if err != nil {
 		return nil, err
 	}
@@ -1122,25 +1089,12 @@ func (o *tridentOrchestrator) ListStorageClasses() []*storage_class.StorageClass
 	return ret
 }
 
-// Delete storage class deletes a storage class from the orchestrator iff
-// no volumes exist that use that storage class.
 func (o *tridentOrchestrator) DeleteStorageClass(scName string) (bool, error) {
 	sc, found := o.storageClasses[scName]
 	if !found {
 		return found, fmt.Errorf("Storage class %s not found.", scName)
 	}
-	volumes := sc.GetVolumes()
-	if len(volumes) > 0 {
-		volNames := make([]string, len(volumes))
-		for i, vol := range volumes {
-			volNames[i] = vol.Config.Name
-		}
-		log.WithFields(log.Fields{
-			"storageClass": scName,
-			"volumes":      strings.Join(volNames, ","),
-		}).Warn("The storage class being removed still has volumes in use. " +
-			"These volumes will continue to refer to the storage class.")
-	}
+
 	// Note that we don't need a tranasaction here.  If this crashes prior
 	// to successful deletion, the storage class will be reloaded upon reboot
 	// automatically, which is consistent with the method never having returned
@@ -1171,6 +1125,22 @@ func (o *tridentOrchestrator) updateBackendOnPersistentStore(
 			err = o.storeClient.UpdateBackend(backend)
 		}
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (o *tridentOrchestrator) updateVolumeOnPersistentStore(
+	vol *storage.Volume) error {
+	// Update the persistent store with the volume information
+	if o.bootstrapped {
+		var err error
+		log.WithFields(log.Fields{
+			"volume":          vol.Config.Name,
+			"volume_orphaned": vol.Orphaned,
+		}).Debug("Updating an existing volume.")
+		if err = o.storeClient.UpdateVolume(vol); err != nil {
 			return err
 		}
 	}

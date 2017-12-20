@@ -5,8 +5,8 @@ Building Trident has following requirements:
 * Docker 1.10 or greater when using the Makefile targets.
 * Go 1.7 or greater is optionally required when building Trident natively.
 
-Use `make install` to fetch dependencies, run a containerized build, and
-install Trident. This is the simplest and the recommended way to install Trident.
+Use `make build` to fetch dependencies, run a containerized build, and generate
+Trident images. This is the simplest and the recommended way to build Trident.
 
 ## Building Trident Natively 
 

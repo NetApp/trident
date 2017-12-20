@@ -42,7 +42,6 @@ func init() {
 
 type deleteTest struct {
 	name            string
-	pool            *storage.StoragePool
 	expectedSuccess bool
 }
 
@@ -179,7 +178,7 @@ func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExt
 			if err != nil {
 				t.Fatal("Unable to marshal got JSON for VC ", name)
 			}
-			diffs = append(diffs, fmt.Sprintf("Storage:  vc %s differs:\n\t\t"+
+			diffs = append(diffs, fmt.Sprintf("Storage:  pool %s differs:\n\t\t"+
 				"Expected: %s\n\t\tGot: %s", name, string(expectedJSON), string(gotJSON)))
 		}
 	}
@@ -216,6 +215,23 @@ func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExt
 func runDeleteTest(
 	t *testing.T, d *deleteTest, orchestrator *tridentOrchestrator,
 ) {
+	var (
+		backendName string
+		backend     *storage.StorageBackend
+		found       bool
+	)
+	if d.expectedSuccess {
+		orchestrator.mutex.Lock()
+		backendName = orchestrator.volumes[d.name].Backend
+		backend, found = orchestrator.backends[backendName]
+		if !found {
+			t.Errorf("Backend %v isn't managed by the orchestrator!", backendName)
+		}
+		if _, found = backend.Volumes[d.name]; !found {
+			t.Errorf("Volume %s doesn't exist on backend!", d.name, backendName)
+		}
+		orchestrator.mutex.Unlock()
+	}
 	found, err := orchestrator.DeleteVolume(d.name)
 	if err == nil && !d.expectedSuccess {
 		t.Errorf("%s:  volume delete succeeded when it should not have.",
@@ -228,12 +244,10 @@ func runDeleteTest(
 		if volume != nil {
 			t.Errorf("%s:  got volume where none expected.", d.name)
 		}
-		// d.pool is protected by the orchestrator mutex, so we need to
-		// acquire it
 		orchestrator.mutex.Lock()
-		if _, ok := d.pool.Volumes[d.name]; ok {
-			t.Errorf("%s:  volume not removed from parent pool.",
-				d.name)
+		if _, found = backend.Volumes[d.name]; found {
+			t.Errorf("Volume %s shouldn't exist on backend %s!", d.name,
+				backendName)
 		}
 		externalVol, err := orchestrator.storeClient.GetVolume(d.name)
 		if err != nil {
@@ -325,9 +339,9 @@ func validateStorageClass(
 		remaining[i] = match
 	}
 	for _, protocol := range []config.Protocol{config.File, config.Block} {
-		for _, vc := range sc.GetStoragePoolsForProtocol(protocol) {
+		for _, pool := range sc.GetStoragePoolsForProtocol(protocol) {
 			nameFound := false
-			for _, scName := range vc.StorageClasses {
+			for _, scName := range pool.StorageClasses {
 				if scName == name {
 					nameFound = true
 					break
@@ -335,11 +349,11 @@ func validateStorageClass(
 			}
 			if !nameFound {
 				t.Errorf("%s: Storage class name not found in storage "+
-					"pool %s", name, vc.Name)
+					"pool %s", name, pool.Name)
 			}
 			matchIndex := -1
 			for i, r := range remaining {
-				if r.Matches(vc) {
+				if r.Matches(pool) {
 					matchIndex = i
 					break
 				}
@@ -351,7 +365,7 @@ func validateStorageClass(
 				remaining = remaining[:len(remaining)-1]
 			} else {
 				t.Errorf("%s:  Found unexpected match for storage class:  "+
-					"%s:%s", name, vc.Backend.Name, vc.Name)
+					"%s:%s", name, pool.Backend.Name, pool.Name)
 			}
 		}
 	}
@@ -748,7 +762,6 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		if !s.expectedSuccess {
 			deleteTest := &deleteTest{
 				name:            s.config.Name,
-				pool:            nil,
 				expectedSuccess: false,
 			}
 			if s.deleteAfterSC {
@@ -761,11 +774,11 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		}
 		matched := false
 		for _, potentialMatch := range s.expectedMatches {
-			if potentialMatch.Backend == volume.Backend.Name && potentialMatch.Pool == volume.Pool.Name {
+			if potentialMatch.Backend == volume.Backend &&
+				potentialMatch.Pool == volume.Pool {
 				matched = true
 				deleteTest := &deleteTest{
 					name:            s.config.Name,
-					pool:            volume.Pool,
 					expectedSuccess: true,
 				}
 				if s.deleteAfterSC {
@@ -778,13 +791,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		}
 		if !matched {
 			t.Errorf("%s: Volume placed on unexpected backend and storage "+
-				"pool:  %s, %s", s.name, volume.Backend.Name,
-				volume.Pool.Name)
-		}
-		if poolVol, ok := volume.Pool.Volumes[s.config.Name]; !ok {
-			t.Errorf("%s: Parent pool does not point to volume.", s.name)
-		} else if !reflect.DeepEqual(poolVol, volume) {
-			t.Errorf("%s: Parent pool points to different volume.", s.name)
+				"pool:  %s, %s", s.name, volume.Backend, volume.Pool)
 		}
 
 		externalVolume, err := orchestrator.storeClient.GetVolume(s.config.Name)
@@ -812,7 +819,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		runDeleteTest(t, d, orchestrator)
 	}
 
-	// Delete service classes.  Note:  there are currently no error cases.
+	// Delete storage classes.  Note:  there are currently no error cases.
 	for _, s := range scTests {
 		found, err := orchestrator.DeleteStorageClass(s.config.Name)
 		if err != nil {
@@ -1112,9 +1119,9 @@ func TestCloneVolumes(t *testing.T) {
 		}
 
 		// Clone must reside in the same place as the source
-		if clone.Backend.Name != volume.Backend.Name || clone.Pool.Name != volume.Pool.Name {
-			t.Errorf("%s: Clone placed on unexpected backend and storage "+
-				"pool:  %s, %s", cloneName, clone.Backend.Name, clone.Pool.Name)
+		if clone.Backend != volume.Backend {
+			t.Errorf("%s: Clone placed on unexpected backend: %s", cloneName,
+				clone.Backend)
 		}
 
 		// Clone should be registered in the store just like any other volume
@@ -1221,7 +1228,11 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	orchestrator.mutex.Lock()
 	volume, ok := orchestrator.volumes[volumeName]
 	if !ok {
-		t.Fatal("Volume name found in orchestrator map.")
+		t.Fatalf("Volume %s not tracked by the orchestrator!", volumeName)
+	}
+	if _, ok = orchestrator.backends[backendName].Volumes[volumeName]; !ok {
+		t.Fatalf("Volume %s not tracked by the backend %s!", volumeName,
+			backendName)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1295,15 +1306,15 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		}
 		orchestrator.mutex.Lock()
 		newBackend := orchestrator.backends[backendName]
-		vcs := sc.GetStoragePoolsForProtocol(config.File)
+		pools := sc.GetStoragePoolsForProtocol(config.File)
 		foundNewBackend := false
-		for _, vc := range vcs {
+		for _, pool := range pools {
 			for i, b := range previousBackends {
-				if vc.Backend == b {
+				if pool.Backend == b {
 					t.Errorf("%s:  backend %d not cleared from storage class",
 						c.name, i+1)
 				}
-				if vc.Backend == newBackend {
+				if pool.Backend == newBackend {
 					foundNewBackend = true
 				}
 			}
@@ -1312,27 +1323,20 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("%s:  Storage class does not point to new backend.",
 				c.name)
 		}
-		matchingVC, ok := newBackend.Storage["primary"]
+		matchingPool, ok := newBackend.Storage["primary"]
 		if !ok {
 			t.Errorf("%s: storage pool for volume not found", c.name)
 			continue
 		}
-		if len(matchingVC.Volumes) != 1 {
-			t.Errorf("%s: unexpected number of volumes found in main "+
-				"storage pool: %d", c.name, len(matchingVC.Volumes))
-		}
-		if len(matchingVC.StorageClasses) != 1 {
+		if len(matchingPool.StorageClasses) != 1 {
 			t.Errorf("%s: unexpected number of storage classes for main "+
-				"storage pool: %d", c.name, len(matchingVC.StorageClasses))
+				"storage pool: %d", c.name, len(matchingPool.StorageClasses))
 		}
-		if _, ok := matchingVC.Volumes[volumeName]; !ok {
-			t.Errorf("%s: volume not found in expected storage pool.", c.name)
-		}
-		if volume.Backend != newBackend {
+		if orchestrator.backends[volume.Backend] != newBackend {
 			t.Errorf("%s:  volume backend does not point to the new backend",
 				c.name)
 		}
-		if volume.Pool != matchingVC {
+		if volume.Pool != matchingPool.Name {
 			t.Errorf("%s: volume does not point to the right storage pool.",
 				c.name)
 		}
@@ -1350,79 +1354,6 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	backend := previousBackends[len(previousBackends)-1]
 	pool := volume.Pool
 
-	// Test updates that should fail.
-	for _, c := range []struct {
-		name     string
-		pools    map[string]*fake.FakeStoragePool
-		protocol config.Protocol
-	}{
-		{
-			name: "Renamed pool",
-			pools: map[string]*fake.FakeStoragePool{
-				"disk": &fake.FakeStoragePool{
-					Attrs: map[string]sa.Offer{
-						sa.Media:            sa.NewStringOffer("hdd"),
-						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
-						sa.TestingAttribute: sa.NewBoolOffer(true),
-					},
-					Bytes: 100 * 1024 * 1024 * 1024,
-				},
-			},
-			protocol: config.File,
-		},
-		{
-			name: "Wrong attributes",
-			pools: map[string]*fake.FakeStoragePool{
-				"primary": &fake.FakeStoragePool{
-					Attrs: map[string]sa.Offer{
-						sa.Media:            sa.NewStringOffer("hdd"),
-						sa.ProvisioningType: sa.NewStringOffer("thin"),
-						sa.TestingAttribute: sa.NewBoolOffer(true),
-					},
-					Bytes: 100 * 1024 * 1024 * 1024,
-				},
-			},
-			protocol: config.File,
-		},
-	} {
-		newConfigJSON, err := fake.NewFakeStorageDriverConfigJSON(backendName,
-			c.protocol, c.pools)
-		if err != nil {
-			t.Errorf("%s:  unable to generate new backend config:  %v", c.name,
-				err)
-			continue
-		}
-		_, err = orchestrator.AddStorageBackend(newConfigJSON)
-		if err == nil {
-			t.Errorf("%s:  invalid backend update completed successfully.",
-				c.name)
-		}
-		orchestrator.mutex.Lock()
-		if volume.Backend != backend {
-			t.Errorf("%s: backend changed for volume.", c.name)
-		}
-		if volume.Pool != pool {
-			t.Errorf("%s: storage pool changed for volume.", c.name)
-		}
-		vcs := sc.GetStoragePoolsForProtocol(config.File)
-		if len(vcs) != 1 {
-			t.Errorf("%s:  %d storage pools found for storage class; "+
-				"expected 1", c.name, len(vcs))
-		} else if vcs[0] != pool {
-			t.Errorf("%s:  found wrong storage pool in storage class.",
-				c.name)
-		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(
-			backendName)
-		if err != nil {
-			t.Error("Unable to retrieve backend from store client:  ", err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(),
-			persistentBackend) {
-			t.Errorf("Backend erroneously updated in persistent store.")
-		}
-		orchestrator.mutex.Unlock()
-	}
-
 	// Test backend offlining.
 	found, err := orchestrator.OfflineBackend(backendName)
 	if !found {
@@ -1437,12 +1368,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		t.Error("Created volume volume on offline backend.")
 	}
 	orchestrator.mutex.Lock()
-	vcs := sc.GetStoragePoolsForProtocol(config.File)
-	if len(vcs) == 1 {
+	pools := sc.GetStoragePoolsForProtocol(config.File)
+	if len(pools) == 1 {
 		t.Error("Offline backend not removed from storage pool in " +
 			"storage class.")
 	}
-	if volume.Backend != backend {
+	if orchestrator.backends[volume.Backend] != backend {
 		t.Error("Backend changed for volume after offlining.")
 	}
 	if volume.Pool != pool {
@@ -1496,8 +1427,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Fatalf("Unable to find storage class %s after bootstrapping.",
 				name)
 		}
-		vcs = newSC.GetStoragePoolsForProtocol(config.File)
-		if len(vcs) == 1 {
+		pools = newSC.GetStoragePoolsForProtocol(config.File)
+		if len(pools) == 1 {
 			t.Errorf("Offline backend readded to storage class %s after "+
 				"bootstrapping.", name)
 		}

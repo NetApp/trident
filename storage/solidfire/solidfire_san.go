@@ -183,6 +183,9 @@ func (d *SolidfireSANStorageDriver) GetVolumeOpts(
 	if volConfig.FileSystem != "" {
 		opts["fileSystemType"] = volConfig.FileSystem
 	}
+	if pool != nil {
+		opts["type"] = pool.Name
+	}
 	if volConfig.BlockSize != "" {
 		opts["blocksize"] = volConfig.BlockSize
 	}
@@ -344,47 +347,6 @@ func (d *SolidfireSANStorageDriver) getVolumeExternal(
 
 	return &storage.VolumeExternal{
 		Config: volumeConfig,
-		Pool:   d.getPoolNameFromQoS(volumeAttrs),
+		Pool:   storage.UnsetPool,
 	}
-}
-
-// getPoolNameFromQoS attempts to map the min/max QoS levels for a volume
-// back to the levels defined in the backend config file.  If a match is not
-// found, a partial match is sought; failing that, one of the existing "pools"
-// is chosen.
-func (d *SolidfireSANStorageDriver) getPoolNameFromQoS(volumeAttrs *sfapi.Volume) string {
-
-	volTypes := *d.Client.VolumeTypes
-	if len(volTypes) == 0 {
-		return sfDefaultVolTypeName
-	}
-
-	// Try min/max matches
-	for _, volType := range volTypes {
-		if volType.QOS.MaxIOPS == volumeAttrs.Qos.MaxIOPS &&
-			volType.QOS.MinIOPS == volumeAttrs.Qos.MinIOPS {
-			return volType.Type
-		}
-	}
-
-	// Try min matches
-	for _, volType := range volTypes {
-		if volType.QOS.MinIOPS == volumeAttrs.Qos.MinIOPS {
-			return volType.Type
-		}
-	}
-
-	// Try max matches
-	for _, volType := range volTypes {
-		if volType.QOS.MaxIOPS == volumeAttrs.Qos.MaxIOPS {
-			return volType.Type
-		}
-	}
-
-	// Nothing matched, so just return something.
-	log.WithFields(log.Fields{
-		"volume": volumeAttrs.Name,
-		"pool":   volTypes[0].Type,
-	}).Debug("Matching QoS type not found, reporting first type for volume.")
-	return volTypes[0].Type
 }

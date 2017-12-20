@@ -126,7 +126,9 @@ func (d *EseriesStorageDriver) GetVolumeOpts(
 	opts := make(map[string]string)
 
 	// Include the pool so that Trident's pool selection is honored by nDVP
-	opts["pool"] = pool.Name
+	if pool != nil {
+		opts["pool"] = pool.Name
+	}
 
 	// Include mediaType request if present
 	if mediaTypeReq, ok := requests[sa.Media]; ok {

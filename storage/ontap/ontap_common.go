@@ -220,7 +220,9 @@ func getVolumeOptsCommon(
 	requests map[string]sa.Request,
 ) map[string]string {
 	opts := make(map[string]string)
-	opts["aggregate"] = pool.Name
+	if pool != nil {
+		opts["aggregate"] = pool.Name
+	}
 	if provisioningTypeReq, ok := requests[sa.ProvisioningType]; ok {
 		if p, ok := provisioningTypeReq.Value().(string); ok {
 			if p == "thin" {

@@ -179,20 +179,20 @@ fi
 # Enable or disable the debug mode
 if [ -z "$DEBUG" ]; then
 	# Disable the debug mode for Trident launcher and trident-ephemeral pods
-	sed -r -i 's/([[:space:]]+)- "-debug"/\1#- "-debug"/g' $DIR/launcher-pod.yaml
+	sed -r -i 's/([[:space:]]+)- -debug/\1#- -debug/g' $DIR/launcher-pod.yaml
 	# Disable the debug mode for the Trident deployment
-	sed -r -i 's/([[:space:]]+)- "-debug"/\1#- "-debug"/g' $DIR/setup/trident-deployment.yaml
+	sed -r -i 's/([[:space:]]+)- -debug/\1#- -debug/g' $DIR/setup/trident-deployment.yaml
 else
 	# Enable the debug mode for Trident launcher and trident-ephemeral pods
-	sed -r -i 's/([[:space:]]+)#- "-debug"/\1- "-debug"/g' $DIR/launcher-pod.yaml
+	sed -r -i 's/([[:space:]]+)#- -debug/\1- -debug/g' $DIR/launcher-pod.yaml
 	# Enable the debug mode for the Trident deployment
-	sed -r -i 's/([[:space:]]+)#- "-debug"/\1- "-debug"/g' $DIR/setup/trident-deployment.yaml
+	sed -r -i 's/([[:space:]]+)#- -debug/\1- -debug/g' $DIR/setup/trident-deployment.yaml
 fi
 
 # Create configmap
-TMP=$(grep -E -A1 '^[[:space:]]+\- "-pvc_name"' $DIR/launcher-pod.yaml | grep -v pvc_name)
+TMP=$(grep -E -A1 '^[[:space:]]+\- -pvc_name' $DIR/launcher-pod.yaml | grep -v pvc_name)
 if [ -n "$TMP" ]; then
-	PVC=$(echo $TMP | grep -oP '(?<=")[^"]*')
+	PVC=$(echo $TMP | grep -oP '(?<=)[^- ]*')
 	sed -i "s/claimName: .*$/claimName: $PVC/g" $DIR/setup/trident-deployment.yaml
 else
 	sed -i "s/claimName: .*$/claimName: trident/g" $DIR/setup/trident-deployment.yaml

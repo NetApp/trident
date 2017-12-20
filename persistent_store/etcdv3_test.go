@@ -408,8 +408,8 @@ func TestEtcdv3Volume(t *testing.T) {
 	}
 	vol1 := &storage.Volume{
 		Config:  &vol1Config,
-		Backend: nfsServer,
-		Pool:    &storagePool,
+		Backend: nfsServer.Name,
+		Pool:    storagePool,
 	}
 	err = p.AddVolume(vol1)
 	if err != nil {
@@ -423,7 +423,7 @@ func TestEtcdv3Volume(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if recoveredVolume.Backend != vol1.Backend.Name || recoveredVolume.Config.Size != vol1.Config.Size {
+	if recoveredVolume.Backend != vol1.Backend || recoveredVolume.Config.Size != vol1.Config.Size {
 		t.Error("Recovered volume does not match!")
 	}
 
@@ -493,8 +493,7 @@ func TestEtcdv3Volumes(t *testing.T) {
 		}
 		vol := &storage.Volume{
 			Config:  &volConfig,
-			Backend: nfsServer,
-			Pool:    &storagePool,
+			Backend: nfsServer.Name,
 		}
 		err = p.AddVolume(vol)
 		if err != nil {

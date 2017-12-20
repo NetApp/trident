@@ -25,9 +25,7 @@ var (
 	etcdV2 = flag.String("etcd_v2", "http://127.0.0.1:8001", "etcd server (v2 API)")
 	debug  = flag.Bool("debug", false, "Enable debugging output")
 
-	storagePool = storage.StoragePool{
-		Name: "aggr1",
-	}
+	storagePool = "aggr1"
 )
 
 func init() {
@@ -413,8 +411,8 @@ func TestEtcdv2Volume(t *testing.T) {
 	}
 	vol1 := &storage.Volume{
 		Config:  &vol1Config,
-		Backend: nfsServer,
-		Pool:    &storagePool,
+		Backend: nfsServer.Name,
+		Pool:    storagePool,
 	}
 	err = p.AddVolume(vol1)
 	if err != nil {
@@ -428,7 +426,8 @@ func TestEtcdv2Volume(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if recoveredVolume.Backend != vol1.Backend.Name || recoveredVolume.Config.Size != vol1.Config.Size {
+	if recoveredVolume.Backend != vol1.Backend ||
+		recoveredVolume.Config.Size != vol1.Config.Size {
 		t.Error("Recovered volume does not match!")
 	}
 
@@ -498,8 +497,8 @@ func TestEtcdv2Volumes(t *testing.T) {
 		}
 		vol := &storage.Volume{
 			Config:  &volConfig,
-			Backend: nfsServer,
-			Pool:    &storagePool,
+			Backend: nfsServer.Name,
+			Pool:    storagePool,
 		}
 		err = p.AddVolume(vol)
 		if err != nil {

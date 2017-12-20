@@ -194,8 +194,8 @@ func (m *MockOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (*stora
 		GetFakeInternalName(volumeConfig.Name))
 	volume := &storage.Volume{
 		Config:  volumeConfig,
-		Backend: m.backends[backendName],
-		Pool:    &storage.StoragePool{Name: "fake"},
+		Backend: backendName,
+		Pool:    "fake",
 	}
 	mockBackend.volumes[volumeConfig.Name] = volume
 	m.volumes[volumeConfig.Name] = volume
@@ -293,7 +293,7 @@ func (m *MockOrchestrator) DeleteVolume(volumeName string) (found bool, err erro
 		return false, fmt.Errorf("Volume %s not found.", volumeName)
 	}
 
-	delete(m.mockBackends[volume.Backend.Name].volumes, volume.Config.Name)
+	delete(m.mockBackends[volume.Backend].volumes, volume.Config.Name)
 	delete(m.volumes, volume.Config.Name)
 	return true, nil
 }

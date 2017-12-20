@@ -68,7 +68,8 @@ func getFakeVolume() *storage.Volume {
 		InternalName: "really_fake_volume",
 	}
 
-	return storage.NewVolume(volumeConfig, fakeBackend, fakeBackend.Storage["pool-0"])
+	return storage.NewVolume(volumeConfig, fakeBackend.Name,
+		fakeBackend.Storage["pool-0"].Name, false)
 }
 
 func getFakeVolumeTransaction() *VolumeTransaction {

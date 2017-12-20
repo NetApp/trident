@@ -152,21 +152,6 @@ func (s *StorageClass) RemovePoolsForBackend(backend *storage.StorageBackend) {
 	s.pools = newStoragePools
 }
 
-func (s *StorageClass) GetVolumes() []*storage.Volume {
-	ret := make([]*storage.Volume, 0)
-	for _, storagePool := range s.pools {
-		for _, vol := range storagePool.Volumes {
-			// Because storage pools can fulfill more than one storage
-			// class, we have to check each volume for that pool to see
-			// if it uses this storage class.
-			if vol.Config.StorageClass == s.GetName() {
-				ret = append(ret, vol)
-			}
-		}
-	}
-	return ret
-}
-
 func (s *StorageClass) GetAttributes() map[string]storage_attribute.Request {
 	return s.config.Attributes
 }

@@ -10,21 +10,21 @@ spec:
       command:
       - /usr/local/bin/launcher
       args:
-      - "-volume_size"
+      - -volume_size
       - "2"
-      #- "-volume_name"
-      #- "trident"
-      #- "-pvc_name"
-      #- "trident"
-      #- "-pv_name"
-      #- "trident"
-      #- "-apiserver"
-      #- "__KUBERNETES_SERVER__:__KUBERNETES_PORT__"
-      #- "-trident_timeout"
+      #- -volume_name
+      #- trident
+      #- -pvc_name
+      #- trident
+      #- -pv_name
+      #- trident
+      #- -apiserver
+      #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
+      #- -trident_timeout
       #- "10"
-      #- "-k8s_timeout"
-      #- "60"	  
-      #- "-debug"
+      #- -k8s_timeout
+      #- "60"
+      #- -debug
       volumeMounts:
       - name: config-volume
         mountPath: /etc/config

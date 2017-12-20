@@ -59,6 +59,7 @@ type StorageBackend struct {
 	//TODO: the granualarity of online should probably be a StoragePool, not the whole backend, which in the case of ONTAP can be the whole cluster.
 	Online  bool
 	Storage map[string]*StoragePool
+	Volumes map[string]*Volume
 }
 
 func NewStorageBackend(driver StorageDriver) (*StorageBackend, error) {
@@ -66,6 +67,7 @@ func NewStorageBackend(driver StorageDriver) (*StorageBackend, error) {
 		Driver:  driver,
 		Online:  true,
 		Storage: make(map[string]*StoragePool),
+		Volumes: make(map[string]*Volume),
 	}
 
 	// retrieve backend specs
@@ -152,8 +154,8 @@ func (b *StorageBackend) AddVolume(
 			}
 			return nil, err
 		}
-		vol := NewVolume(volConfig, b, storagePool)
-		storagePool.AddVolume(vol, false)
+		vol := NewVolume(volConfig, b.Name, storagePool.Name, false)
+		b.Volumes[vol.Config.Name] = vol
 		return vol, err
 	} else {
 		log.WithFields(log.Fields{
@@ -165,12 +167,9 @@ func (b *StorageBackend) AddVolume(
 	return nil, nil
 }
 
-func (b *StorageBackend) CloneVolume(
-	volConfig *VolumeConfig, storagePool *StoragePool,
-) (*Volume, error) {
+func (b *StorageBackend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
-		"storagePool":    storagePool.Name,
 		"storageClass":   volConfig.StorageClass,
 		"sourceVolume":   volConfig.CloneSourceVolume,
 		"sourceSnapshot": volConfig.CloneSourceSnapshot,
@@ -185,7 +184,7 @@ func (b *StorageBackend) CloneVolume(
 	}
 
 	nilAttributes := make(map[string]storage_attribute.Request)
-	args, err := b.Driver.GetVolumeOpts(volConfig, storagePool, nilAttributes)
+	args, err := b.Driver.GetVolumeOpts(volConfig, nil, nilAttributes)
 	if err != nil {
 		// An error on GetVolumeOpts is almost certainly going to indicate
 		// a formatting mistake, so go ahead and return an error, rather
@@ -214,21 +213,15 @@ func (b *StorageBackend) CloneVolume(
 		}
 		return nil, err
 	}
-
-	vol := NewVolume(volConfig, b, storagePool)
-	storagePool.AddVolume(vol, false)
+	vol := NewVolume(volConfig, b.Name, UnsetPool, false)
+	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
 }
 
 // HasVolumes returns true if the StorageBackend has one or more volumes
 // provisioned on it.
 func (b *StorageBackend) HasVolumes() bool {
-	for _, vc := range b.Storage {
-		if len(vc.Volumes) > 0 {
-			return true
-		}
-	}
-	return false
+	return len(b.Volumes) > 0
 }
 
 func (b *StorageBackend) RemoveVolume(vol *Volume) error {
@@ -237,9 +230,9 @@ func (b *StorageBackend) RemoveVolume(vol *Volume) error {
 		// for volumes that aren't found.
 		return err
 	}
-	// Don't bother checking whether the volume exists in the pool, as
-	// this has to be idempotent.
-	vol.Pool.DeleteVolume(vol)
+	if _, ok := b.Volumes[vol.Config.Name]; ok {
+		delete(b.Volumes, vol.Config.Name)
+	}
 	return nil
 }
 
@@ -260,13 +253,11 @@ func (b *StorageBackend) ConstructExternal() *StorageBackendExternal {
 		Volumes: make([]string, 0),
 	}
 
-	// TODO: Consider reporting the aggregate space occupied by the provisioned
-	// volumes here.
-	for name, vc := range b.Storage {
-		backendExternal.Storage[name] = vc.ConstructExternal()
-		for name, _ := range vc.Volumes {
-			backendExternal.Volumes = append(backendExternal.Volumes, name)
-		}
+	for name, pool := range b.Storage {
+		backendExternal.Storage[name] = pool.ConstructExternal()
+	}
+	for volName, _ := range b.Volumes {
+		backendExternal.Volumes = append(backendExternal.Volumes, volName)
 	}
 	return &backendExternal
 }

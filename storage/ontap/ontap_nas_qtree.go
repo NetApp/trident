@@ -42,10 +42,10 @@ func (d *OntapNASQtreeStorageDriver) GetStoragePoolAttributes() map[string]sa.Of
 
 func (d *OntapNASQtreeStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	vc *storage.StoragePool,
+	pool *storage.StoragePool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
-	return getVolumeOptsCommon(volConfig, vc, requests), nil
+	return getVolumeOptsCommon(volConfig, pool, requests), nil
 }
 
 func (d *OntapNASQtreeStorageDriver) GetInternalVolumeName(name string) string {

@@ -81,30 +81,34 @@ func (c *VolumeConfig) ConstructClone(clone *VolumeConfig) {
 }
 
 type Volume struct {
-	Config  *VolumeConfig
-	Backend *StorageBackend
-	Pool    *StoragePool
+	Config   *VolumeConfig
+	Backend  string // Name of the storage backend
+	Pool     string // Name of the pool on which this volume was first provisioned
+	Orphaned bool   // An Orphaned volume isn't currently tracked by the storage backend
 }
 
-func NewVolume(conf *VolumeConfig, backend *StorageBackend, pool *StoragePool) *Volume {
+func NewVolume(conf *VolumeConfig, backend string, pool string, orphaned bool) *Volume {
 	return &Volume{
-		Config:  conf,
-		Backend: backend,
-		Pool:    pool,
+		Config:   conf,
+		Backend:  backend,
+		Pool:     pool,
+		Orphaned: orphaned,
 	}
 }
 
 type VolumeExternal struct {
-	Config  *VolumeConfig
-	Backend string `json:"backend"`
-	Pool    string `json:"pool"`
+	Config   *VolumeConfig
+	Backend  string `json:"backend"`
+	Pool     string `json:"pool"`
+	Orphaned bool   `json:"orphaned"`
 }
 
 func (v *Volume) ConstructExternal() *VolumeExternal {
 	return &VolumeExternal{
-		Config:  v.Config,
-		Backend: v.Backend.Name,
-		Pool:    v.Pool.Name,
+		Config:   v.Config,
+		Backend:  v.Backend,
+		Pool:     v.Pool,
+		Orphaned: v.Orphaned,
 	}
 }
 

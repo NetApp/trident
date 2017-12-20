@@ -26,7 +26,6 @@ func (d *FakeStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBacke
 		vc := &storage.StoragePool{
 			Name:           name,
 			StorageClasses: make([]string, 0),
-			Volumes:        make(map[string]*storage.Volume, 0),
 			Backend:        backend,
 			Attributes:     pool.Attrs,
 		}
@@ -42,7 +41,9 @@ func (d *FakeStorageDriver) GetVolumeOpts(
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 	opts := make(map[string]string)
-	opts[fake.FakePoolAttribute] = pool.Name
+	if pool != nil {
+		opts[fake.FakePoolAttribute] = pool.Name
+	}
 	return opts, nil
 }
 

@@ -12,6 +12,10 @@ import (
 	"github.com/netapp/trident/config"
 )
 
+const (
+	UnsetPool string = ""
+)
+
 type CommonStorageDriverConfigExternal struct {
 	Version           int      `json:"version"`
 	StorageDriverName string   `json:"storageDriverName"`

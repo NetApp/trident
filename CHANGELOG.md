@@ -10,7 +10,10 @@
 
 **Enhancements:**
 - Enabled cloning volumes via a new PVC annotation.
+- Added support for Kubernetes 1.8 Storage Classes to set the mount options and reclaim policy of PVs (Issue [#49](https://github.com/NetApp/trident/issues/49)).
+- Introduced the fsType parameter in the Kubernetes Storage Class to set the file system type of iSCSI PVs.
 - Added CHAP support for SolidFire (Issue [#42](https://github.com/NetApp/trident/issues/42)).
+- Decoupled Trident storage pools from volumes to facilitate "vol move" and SVM-DR with ONTAP backends.
 - Added support for the etcdv3 API (Issue [#45](https://github.com/NetApp/trident/issues/45)).
 - Added the etcd-copy utility to migrate data between etcd clusters.
 - Enabled TLS for Trident's etcd client and the etcd-copy utility.

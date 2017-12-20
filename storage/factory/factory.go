@@ -270,7 +270,6 @@ func NewStorageBackendForConfig(configJSON string) (
 
 		} else {
 			// CHAP logic
-
 			log.WithFields(log.Fields{
 				"driver":  dvp.SolidfireSANStorageDriverName,
 				"SVIP":    driver.Config.SVIP,
