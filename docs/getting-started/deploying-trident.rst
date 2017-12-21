@@ -70,7 +70,7 @@ For example, if the latest version is 17.10.0:
 
 .. code-block:: bash
 
-   wget https://github.com/NetApp/trident/releases/download/v17.07.0/trident-installer-17.10.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v17.10.0/trident-installer-17.10.0.tar.gz
    tar -xf trident-installer-17.10.0.tar.gz
    cd trident-installer
 
