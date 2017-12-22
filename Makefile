@@ -148,6 +148,7 @@ test_core:
 	-docker kill etcd-test > /dev/null
 	-docker rm etcd-test > /dev/null
 	@docker run -d -p ${ETCD_PORT}:${ETCD_PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${ETCD_PORT} -listen-client-urls http://0.0.0.0:${ETCD_PORT} > /dev/null
+	@sleep 5
 	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCD_SERVER} -etcd_v3=${ETCD_SERVER} -etcd_src=${ETCD_SERVER} -etcd_dest=${ETCD_SERVER}
 	@sleep 1
 	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCD_SERVER}
