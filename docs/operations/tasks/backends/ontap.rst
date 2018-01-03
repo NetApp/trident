@@ -101,6 +101,7 @@ storageDriverName  "ontap-nas", "ontap-nas-economy" or "ontap-san"
 managementLIF      IP address of a cluster or SVM management LIF                   "10.0.0.1"
 dataLIF            IP address of protocol LIF                                      Derived by the SVM unless specified
 svm                Storage virtual machine to use                                  Derived if an SVM managementLIF is specified
+igroupName         Name of the igroup for SAN volumes to use                       "trident"
 username           Username to connect to the cluster/SVM
 password           Password to connect to the cluster/SVM
 storagePrefix      Prefix used when provisioning new volumes in the SVM            "trident"
@@ -168,6 +169,7 @@ Example configuration
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
+        "igroupName": "trident",
         "username": "vsadmin",
         "password": "netapp123"
     }
