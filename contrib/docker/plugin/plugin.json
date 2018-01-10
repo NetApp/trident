@@ -1,0 +1,67 @@
+{
+        "description": "Trident - NetApp Docker Volume Plugin",
+        "documentation": "https://github.com/NetApp/trident",
+        "entrypoint": ["/netapp/container-launch.sh"],
+        "Env": [
+		{
+			"Description": "Enable debug logging",
+			"Name": "debug",
+			"Settable": [
+				"value"
+			],
+			"Value": "false"
+		},
+		{
+			"Description": "Enable rest api server",
+			"Name": "rest",
+			"Settable": [
+				"value"
+			],
+			"Value": "false"
+		},
+		{
+			"Description": "Config file from /etc/netappdvp on host",
+			"Name": "config",
+			"Settable": [
+				"value"
+			],
+			"Value": "config.json"
+		}
+        ],
+        "network": {
+                   "type": "host"
+                   },
+        "ipc": {
+                   "type": "host"
+                   },
+        "interface" : {
+                   "socket": "netapp.sock",
+                   "types": ["docker.volumedriver/1.0"]
+        },
+        "mounts": [
+            {
+                "type": "bind",
+                "source": "/",
+                "destination": "/host",
+                "options": ["rbind"]
+            },
+            {
+                "type": "bind",
+                "source": "/dev",
+                "destination": "/dev",
+                "options": ["rbind"]
+            },
+            {
+                "type": "bind",
+                "source": "/etc/netappdvp",
+                "destination": "/etc/netappdvp",
+                "options": ["rbind"]
+            }
+        ],
+        "PropagatedMount": "/var/lib/docker-volumes/netapp",
+        "linux": {
+            "capabilities": ["CAP_SYS_ADMIN"],
+            "allowalldevices": true
+        }
+}
+

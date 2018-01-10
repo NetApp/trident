@@ -86,7 +86,6 @@ func (o *tridentOrchestrator) transformPersistentState() error {
 
 func (o *tridentOrchestrator) Bootstrap() error {
 	var err error = nil
-	dvp.DefaultStoragePrefix = config.OrchestratorName
 	dvp.ExtendedDriverVersion = config.OrchestratorName + "-" + config.OrchestratorVersion.String()
 	if kubeFrontend, found := o.frontends["kubernetes"]; found {
 		dvp.ExtendedDriverVersion =
@@ -1002,10 +1001,20 @@ func (o *tridentOrchestrator) ReloadVolumes() error {
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	// Make a temporary copy of backends in case anything goes wrong
+	tempBackends := make(map[string]*storage.StorageBackend)
+	for k, v := range o.backends {
+		tempBackends[k] = v
+	}
 	// Make a temporary copy of volumes in case anything goes wrong
 	tempVolumes := make(map[string]*storage.Volume)
 	for k, v := range o.volumes {
 		tempVolumes[k] = v
+	}
+
+	// Clear out cached volumes in the backends
+	for _, backend := range o.backends {
+		backend.Volumes = make(map[string]*storage.Volume)
 	}
 
 	// Re-run the volume bootstrapping code
@@ -1015,6 +1024,7 @@ func (o *tridentOrchestrator) ReloadVolumes() error {
 	// If anything went wrong, reinstate the original volumes
 	if err != nil {
 		log.Errorf("Volume reload failed, restoring original volume list: %v", err)
+		o.backends = tempBackends
 		o.volumes = tempVolumes
 	}
 

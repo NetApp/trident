@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+sudo rm -rf ./myplugin
+
+docker build -t rootfsimage .
+id=$(docker create rootfsimage true) 
+sudo mkdir -p myplugin/rootfs
+sudo docker export "$id" | sudo tar -x -C myplugin/rootfs
+docker rm -vf "$id"
+docker rmi rootfsimage
+

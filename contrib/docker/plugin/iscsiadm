@@ -1,0 +1,4 @@
+#!/bin/bash
+
+chroot /host /usr/bin/env -i PATH="/sbin:/bin:/usr/bin" iscsiadm "${@:1}"
+

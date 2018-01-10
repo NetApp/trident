@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+PN=$(cat ./pluginname)
+
+echo docker plugin push ${PN}
+docker plugin push ${PN}
+
