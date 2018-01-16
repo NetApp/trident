@@ -18,6 +18,7 @@ import (
 	k8s_version "k8s.io/apimachinery/pkg/version"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -152,7 +153,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		&core_v1.EventSinkImpl{
 			Interface: kubeClient.Core().Events(""),
 		})
-	ret.eventRecorder = broadcaster.NewRecorder(runtime.NewScheme(),
+	ret.eventRecorder = broadcaster.NewRecorder(scheme.Scheme,
 		v1.EventSource{Component: AnnOrchestrator})
 
 	// Setting up a watch for PVCs

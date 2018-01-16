@@ -202,6 +202,7 @@ clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
 	-docker rmi ${TRIDENT_TAG} ${TRIDENT_DIST_TAG} || true
 	-docker rmi ${LAUNCHER_TAG} ${LAUNCHER_DIST_TAG} || true
+	-docker rmi netapp/container-tools || true
 	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
 
 fmt:

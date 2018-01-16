@@ -131,12 +131,6 @@ func (b *StorageBackend) AddVolume(
 			// Implement idempotency at the Trident layer
 			// Ignore the error if the volume exists already
 			if b.Driver.Get(volConfig.InternalName) != nil {
-				log.WithFields(log.Fields{
-					"backend":     b.Name,
-					"storagePool": storagePool.Name,
-					"volume":      volConfig.Name,
-					"error":       err,
-				}).Warn("Failed to create the volume on this backend.")
 				return nil, err
 			}
 		}
