@@ -20,7 +20,7 @@ import:
 - package: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
 - package: github.com/netapp/netappdvp
-  version: 0926f1db9775989a17c5e8762d54dce7c834f50f
+  version: ee8b6a3f0bf1b5a05ab2a143daad2f3e61cc6ffb
   subpackages:
   - apis/eseries
   - apis/ontap

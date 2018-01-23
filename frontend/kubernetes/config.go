@@ -41,5 +41,5 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.5.0"
-	KubernetesVersionMax = "v1.8.0"
+	KubernetesVersionMax = "v1.9.0"
 )
