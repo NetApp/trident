@@ -21,6 +21,7 @@ PORT ?= 8000
 ROOT = $(shell pwd)
 BIN_DIR = ${ROOT}/bin
 BIN ?= trident_orchestrator
+TARBALL_BIN ?= trident
 CLI_BIN ?= tridentctl
 CLI_PKG ?= github.com/netapp/trident/cli
 K8S ?= ""
@@ -149,7 +150,7 @@ dist_tar:
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
 	@cp -a extras /tmp/trident-installer/
 	@mkdir -p /tmp/trident-installer/extras/bin
-	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin
+	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
 	@cp launcher/docker-build/launcher /tmp/trident-installer/extras/bin
 	-rm -rf /tmp/trident-installer/setup/backend.json /tmp/trident-installer/extras/container-tools
 	@rm -rf /tmp/trident-installer/extras/external-etcd/etcd-copy
