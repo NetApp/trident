@@ -7,8 +7,15 @@
 **Fixes:**
 - Volume deletion is an idempotent operation with the ontap-nas-economy driver (Issue [#65](https://github.com/NetApp/trident/issues/65)).
 - Enabled Trident installation on an EF-series (all-flash) array.
+- Fixed an issue where qtrees with names near the 64-character limit could not
+  be deleted.
+- Enforced fencing of ONTAP aggregates and E-series pools to match config file values.
+- Fixed an issue where deleting volumes using the ONTAP SAN driver could leave
+  volumes stuck in a partially deleted state.
+- Fixed an issue where the ONTAP SAN driver would create junction paths for cloned iSCSI volumes
 
 **Enhancements:**
+- Trident can now serve as a Docker Volume Plugin.
 - Enabled cloning volumes via a new PVC annotation.
 - Added support for Kubernetes 1.8 Storage Classes to set the mount options and reclaim policy of PVs (Issue [#49](https://github.com/NetApp/trident/issues/49)).
 - Introduced the fsType parameter in the Kubernetes Storage Class to set the file system type of iSCSI PVs.
@@ -22,6 +29,9 @@
 - Significantly reduced Trident and Trident-Launcher Docker image sizes.
 - Clarified and enhanced storage class pool selection by introducing storagePools and renaming
   requiredStorage to additionalStoragePools.
+- Added hostname support to the dataLIF option in the config file for ontap-nas and ontap-nas-economy drivers.
+- Added minimum volume size checks to all plugins.
+- **Docker:** Improved iSCSI rescan performance for ONTAP SAN and E-series plugins.
 
 ## v17.10.0
 
