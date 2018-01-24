@@ -1,30 +1,33 @@
 Trident
 =======
 
-Kubernetes storage orchestrator
+Storage Orchestrator for Containers
 
 .. toctree::
-   :caption: Getting started
+    :caption: Introduction
 
-   getting-started/what-is-trident
-   getting-started/deploying-trident
+    introduction
 
 .. toctree::
-   :caption: Operations
+   :caption: Kubernetes
 
-   operations/requirements
-   operations/tasks/index
-   operations/production/index
+   kubernetes/index
+
+.. toctree::
+   :caption: Docker
+
+   docker/index
 
 .. toctree::
    :caption: Support
 
+   support/requirements
    support/support
 
 .. toctree::
    :caption: Reference
 
+   reference/trident
    reference/tridentctl
-   reference/concepts/index
    reference/rest
    reference/simple-kubernetes

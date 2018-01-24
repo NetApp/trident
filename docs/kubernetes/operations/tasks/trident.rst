@@ -5,7 +5,7 @@ Managing Trident
 Installing Trident
 ------------------
 
-Follow the extensive :ref:`Deploying Trident` guide.
+Follow the extensive :ref:`deployment <deploying-in-kubernetes>` guide.
 
 Updating Trident
 ----------------

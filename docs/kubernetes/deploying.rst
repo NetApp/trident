@@ -1,6 +1,7 @@
-#################
-Deploying Trident
-#################
+.. _deploying-in-kubernetes:
+
+Deploying
+^^^^^^^^^
 
 This guide will take you through the process of deploying Trident and
 provisioning your first volume automatically.

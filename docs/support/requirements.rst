@@ -5,14 +5,14 @@ Requirements
 Supported frontends (orchestrators)
 ===================================
 
-Trident is designed to operate in and integrate with Kubernetes, and it
-currently supports:
+Trident supports multiple container engines and orchestrators, including:
 
-* Kubernetes 1.5, 1.6, 1.7 and 1.8
-* OpenShift 1.5/3.5 and 3.6
+* Docker (CE and EE) 17.03, 17.06, 17.09, and 17.12
+* Kubernetes 1.6, 1.7, 1.8, and 1.9
+* OpenShift 3.6 and 3.7
 
-In addition, Trident should work with any distribution of Kubernetes that uses
-one of the supported Kubernetes versions as a base, such as Tectonic.
+In addition, Trident should work with any distribution of Docker or Kubernetes
+that uses one of the supported versions as a base, such as Rancher or Tectonic.
 
 Supported backends (storage)
 ============================
@@ -26,14 +26,14 @@ To use Trident, you need one or more of the following supported backends:
 Supported host operating systems
 ================================
 
-By default Trident itself runs in a container, in a pod, as part of a Kubernetes
-deployment, therefore it will run on any Linux worker.
+By default Trident itself runs in a container, therefore it will run on any
+Linux worker.
 
-However, Kubernetes itself does need to be able to mount the volumes that
-Trident provides using the standard NFS client or iSCSI initiator, depending on
-the backend(s) you're using.
+However, those workers do need to be able to mount the volumes that Trident
+provides using the standard NFS client or iSCSI initiator, depending on the
+backend(s) you're using.
 
-These are the distributions that are known to work:
+These are the Linux distributions that are known to work:
 
 * Debian 8 and above
 * Ubuntu 14.04 and above, 15.10 and above if using iSCSI multipathing

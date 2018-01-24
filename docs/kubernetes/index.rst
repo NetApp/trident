@@ -1,12 +1,10 @@
-################
-What is Trident?
-################
+Trident for Kubernetes
+----------------------
 
-Trident is a fully supported `open source project`_ maintained by `NetApp`_. It
-helps meet the sophisticated persistence demands of `Kubernetes`_ applications
-by natively integrating with its `Persistent Volume framework`_ to seamlessly
-provision and manage volumes from systems running any combination of NetApp's
-`ONTAP`_ (AFF/FAS/Select/Cloud), `Element`_ (SolidFire), or `SANtricity`_
+Trident integrates natively with `Kubernetes`_ and its
+`Persistent Volume framework`_ to seamlessly provision and manage volumes
+from systems running any combination of NetApp's `ONTAP`_
+(AFF/FAS/Select/Cloud), `Element`_ (SolidFire), or `SANtricity`_
 (E/EF-Series) data management platforms.
 
 Relative to other Kubernetes provisioners, Trident is novel in the following
@@ -20,9 +18,6 @@ visibility and flexibility that cannot otherwise be achieved.
 through a unified interface. Rather than tying a request for a persistent
 volume to a particular system, Trident selects one from those it manages based
 on the higher-level qualities that the user is looking for in their volume.
-
-What does it do?
-----------------
 
 Trident tightly integrates with Kubernetes to allow your users to request and
 manage persistent volumes using native Kubernetes interfaces and constructs.
@@ -43,9 +38,6 @@ While some details about Trident and NetApp storage systems are shown in the
 video to help you see what's going on behind-the-scenes, in standard
 deployments Trident and the rest of the infrastructure is completely hidden
 from the user.
-
-How does it work?
------------------
 
 Let's lift up the covers a bit to better understand Trident and what it is
 doing. This `introductory video`_ provides a great way to do just that.
@@ -95,8 +87,18 @@ doing. This `introductory video`_ provides a great way to do just that.
   </font>
   -->
 
-.. _open source project: https://github.com/netapp/trident
-.. _NetApp: https://www.netapp.com
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    deploying
+    operations/tasks/index
+    operations/production/index
+    concepts/index
+    known-issues
+    troubleshooting
+
 .. _Kubernetes: https://kubernetes.io
 .. _Persistent Volume framework: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 .. _ONTAP: https://www.netapp.com/us/products/data-management-software/ontap.aspx
