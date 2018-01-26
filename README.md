@@ -1,5 +1,10 @@
 # Trident
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/netapp/trident.svg)](https://hub.docker.com/r/netapp/trident)
+[![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)]()
+[![license](https://img.shields.io/github/license/netapp/trident.svg)](LICENSE)
+[![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=latest)](https://netappdvp.readthedocs.io)
+
 Trident is a fully supported open source project maintained by
 [NetApp](https://www.netapp.com). It helps meet the sophisticated persistence
 demands of [Kubernetes](https://kubernetes.io) applications by natively
