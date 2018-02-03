@@ -15,7 +15,7 @@ combination of NetApp’s
 [ONTAP](https://www.netapp.com/us/products/data-management-software/ontap.aspx)
 (AFF/FAS/Select/Cloud),
 [Element](https://www.netapp.com/us/products/data-management-software/element-os.aspx)
-(SolidFire), or
+(HCI/SolidFire), or
 [SANtricity](https://www.netapp.com/us/products/data-management-software/santricity-os.aspx)
 (E/EF-Series) data management platforms.
 
