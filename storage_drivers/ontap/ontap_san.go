@@ -114,46 +114,27 @@ func (d *OntapSANStorageDriver) validate() error {
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
-	lifResponse, err := d.API.NetInterfaceGet()
-	if err = api.GetError(lifResponse, err); err != nil {
-		return fmt.Errorf("Error checking network interfaces. %v", err)
+	dataLIFs, err := d.API.NetInterfaceGetDataLIFs("iscsi")
+	if err != nil {
+		return err
+	}
+
+	if len(dataLIFs) == 0 {
+		return fmt.Errorf("No iSCSI data LIFs found on SVM %s.", d.Config.SVM)
+	} else {
+		log.WithField("dataLIFs", dataLIFs).Debug("Found iSCSI LIFs.")
 	}
 
 	// If they didn't set a LIF to use in the config, we'll set it to the first iSCSI LIF we happen to find
 	if d.Config.DataLIF == "" {
-	loop:
-		for _, attrs := range lifResponse.Result.AttributesList() {
-			for _, protocol := range attrs.DataProtocols() {
-				if protocol == "iscsi" {
-					log.WithField("address", attrs.Address()).Debug("Choosing LIF for iSCSI.")
-					d.Config.DataLIF = string(attrs.Address())
-					break loop
-				}
-			}
+		d.Config.DataLIF = dataLIFs[0]
+	} else {
+		err := ValidateDataLIFs(&d.Config, dataLIFs)
+		if err != nil {
+			return fmt.Errorf("Data LIF validation failed. %v", err)
 		}
-	}
 
-	// Validate our settings
-	foundIscsi := false
-	iscsiLifCount := 0
-	for _, attrs := range lifResponse.Result.AttributesList() {
-		for _, protocol := range attrs.DataProtocols() {
-			if protocol == "iscsi" {
-				log.Debugf("Comparing iSCSI protocol access on %v vs. %v", attrs.Address(), d.Config.DataLIF)
-				if string(attrs.Address()) == d.Config.DataLIF {
-					foundIscsi = true
-					iscsiLifCount++
-				}
-			}
-		}
-	}
-
-	if iscsiLifCount > 1 {
-		log.Debugf("Found multiple iSCSI LIFs.")
-	}
-
-	if !foundIscsi {
-		return fmt.Errorf("Could not find iSCSI data LIF.")
+		d.Config.DataLIF = dataLIFs[0]
 	}
 
 	if d.Config.DriverContext == trident.ContextDocker {

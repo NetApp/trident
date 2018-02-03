@@ -53,8 +53,9 @@ In addition to the global configuration values above, when using ONTAP these top
 | ``aggregate``         | Aggregate to use for provisioning; it must be assigned to the SVM        | aggr1      |
 +-----------------------+--------------------------------------------------------------------------+------------+
 
-For the ontap-nas and ontap-nas-economy drivers a fully-qualified domain name can be specified for the
-'dataLIF' option.
+A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
+selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas and ontap-nas-economy drivers use the
+provided FQDN as the dataLIF for NFS mount operations.
 
 For the ontap-nas and ontap-nas-economy drivers, an additional top level option is available.
 For NFS host configuration, see also: http://www.netapp.com/us/media/tr-4067.pdf

@@ -107,6 +107,10 @@ password           Password to connect to the cluster/SVM
 storagePrefix      Prefix used when provisioning new volumes in the SVM            "trident"
 ================== =============================================================== ================================================
 
+A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
+selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas and ontap-nas-economy drivers use the
+provided FQDN as the dataLIF for NFS mount operations.
+
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
 configuration examples below.
