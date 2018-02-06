@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package api
 
 import "github.com/netapp/trident/storage"

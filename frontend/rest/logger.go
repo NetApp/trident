@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func Logger(inner http.Handler, name string) http.Handler {

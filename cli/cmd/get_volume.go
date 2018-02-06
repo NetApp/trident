@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -24,7 +26,7 @@ var getVolumeCmd = &cobra.Command{
 	Short:   "Get one or more volumes from Trident",
 	Aliases: []string{"v", "volumes"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"get", "volume"}
 			TunnelCommand(append(command, args...))
 			return nil
@@ -70,7 +72,7 @@ func GetVolumes(baseURL string) ([]string, error) {
 
 	url := baseURL + "/volume"
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -90,7 +92,7 @@ func GetVolume(baseURL, volumeName string) (storage.VolumeExternal, error) {
 
 	url := baseURL + "/volume/" + volumeName
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return storage.VolumeExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -108,13 +110,13 @@ func GetVolume(baseURL, volumeName string) (storage.VolumeExternal, error) {
 
 func WriteVolumes(volumes []storage.VolumeExternal) {
 	switch OutputFormat {
-	case FORMAT_JSON:
+	case FormatJSON:
 		WriteJSON(api.MultipleVolumeResponse{volumes})
-	case FORMAT_YAML:
+	case FormatYAML:
 		WriteYAML(api.MultipleVolumeResponse{volumes})
-	case FORMAT_NAME:
+	case FormatName:
 		writeVolumeNames(volumes)
-	case FORMAT_WIDE:
+	case FormatWide:
 		writeWideVolumeTable(volumes)
 	default:
 		writeVolumeTable(volumes)

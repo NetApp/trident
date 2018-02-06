@@ -1,11 +1,11 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package api
 
 import "fmt"
 
-// APIError wrapper
-type APIError struct {
+// Error wrapper
+type Error struct {
 	ID     int `json:"id"`
 	Fields struct {
 		Code    int    `json:"code"`
@@ -14,7 +14,7 @@ type APIError struct {
 	} `json:"error"`
 }
 
-func (e APIError) Error() string {
+func (e Error) Error() string {
 	return fmt.Sprintf("device API error: %+v", e.Fields.Name)
 }
 
@@ -124,7 +124,7 @@ type CloneVolumeRequest struct {
 }
 
 type CloneVolumeResult struct {
-	Id     int `json:"id"`
+	ID     int `json:"id"`
 	Result struct {
 		CloneID     int64 `json:"cloneID"`
 		VolumeID    int64 `json:"volumeID"`
@@ -142,7 +142,7 @@ type CreateSnapshotRequest struct {
 }
 
 type CreateSnapshotResult struct {
-	Id     int `json:"id"`
+	ID     int `json:"id"`
 	Result struct {
 		SnapshotID int64  `json:"snapshotID"`
 		Checksum   string `json:"checksum"`
@@ -312,14 +312,14 @@ type GetClusterCapacityRequest struct {
 }
 
 type GetClusterCapacityResult struct {
-	Id     int `json:"id"`
+	ID     int `json:"id"`
 	Result struct {
 		ClusterCapacity ClusterCapacity `json:"clusterCapacity"`
 	} `json:"result"`
 }
 
 type GetClusterHardwareInfoResult struct {
-	Id     int `json:"id"`
+	ID     int `json:"id"`
 	Result struct {
 		ClusterHardwareInfo ClusterHardwareInfo `json:"clusterHardwareInfo"`
 	} `json:"result"`

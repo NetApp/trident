@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -14,7 +16,7 @@ import (
 )
 
 const (
-	LOG_LIMIT_BYTES         = 10485760 // 10 MiB
+	LogLimitBytes           = 10485760 // 10 MiB
 	tridentLauncherPodName  = "trident-launcher"
 	tridentEphemeralPodName = "trident-ephemeral"
 	tridentLogLauncher      = "launcher"
@@ -73,7 +75,7 @@ func archiveLogs() error {
 		}
 	}
 	if !anyLogs {
-		return errors.New("no Trident-related logs found.")
+		return errors.New("no Trident-related logs found")
 	}
 
 	// Create archive file.
@@ -114,7 +116,7 @@ func consoleLogs() error {
 		logMessage := strings.TrimSuffix(strings.TrimSpace(string(logMap["error"])), ".")
 		if len(logMessage) > 0 {
 			errMessage := strings.TrimSuffix(strings.TrimSpace(err.Error()), ".")
-			return fmt.Errorf("%s. %s.", errMessage, logMessage)
+			return fmt.Errorf("%s. %s", errMessage, logMessage)
 		} else {
 			return err
 		}
@@ -130,7 +132,7 @@ func consoleLogs() error {
 		}
 	}
 	if !anyLogs {
-		return errors.New("no Trident-related logs found.")
+		return errors.New("no Trident-related logs found")
 	}
 
 	return nil
@@ -138,15 +140,15 @@ func consoleLogs() error {
 
 func getLogs(logMap map[string][]byte) error {
 
-	var err error = nil
+	var err error
 
 	switch OperatingMode {
 
-	case MODE_LOGS:
+	case ModeLogs:
 		switch log {
 		case "trident", "etcd":
 			return fmt.Errorf("could not find a Trident pod in the %s namespace. "+
-				"You may need to use the -n option to specify the correct namespace.",
+				"You may need to use the -n option to specify the correct namespace",
 				TridentPodNamespace)
 		case "ephemeral":
 			err = getPodLogs(tridentLogEphemeral, logMap)
@@ -162,7 +164,7 @@ func getLogs(logMap map[string][]byte) error {
 			getPodLogs(tridentLogLauncher, logMap)
 		}
 
-	case MODE_TUNNEL:
+	case ModeTunnel:
 		switch log {
 		case "ephemeral":
 			err = getPodLogs(tridentLogEphemeral, logMap)
@@ -179,8 +181,8 @@ func getLogs(logMap map[string][]byte) error {
 			getTridentLogs(tridentLogEtcd, logMap)
 		}
 
-	case MODE_DIRECT:
-		err = errors.New("'tridentctl logs' only supports Trident running in a Kubernetes pod.")
+	case ModeDirect:
+		err = errors.New("'tridentctl logs' only supports Trident running in a Kubernetes pod")
 	}
 
 	return err
@@ -209,7 +211,7 @@ func getTridentLogs(log string, logMap map[string][]byte) error {
 	}
 
 	// Build command to get K8S logs
-	limit := fmt.Sprintf("--limit-bytes=%d", LOG_LIMIT_BYTES)
+	limit := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
 	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limit}
 
 	if Debug {
@@ -240,7 +242,7 @@ func getPodLogs(log string, logMap map[string][]byte) error {
 	}
 
 	// Build command to get K8S logs
-	limit := fmt.Sprintf("--limit-bytes=%d", LOG_LIMIT_BYTES)
+	limit := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
 	logsCommand := []string{"logs", pod, "-n", TridentPodNamespace, limit}
 
 	if Debug {

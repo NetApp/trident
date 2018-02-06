@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -9,20 +9,20 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
-	k8s_storage_v1 "k8s.io/api/storage/v1"
-	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
+	k8sstoragev1 "k8s.io/api/storage/v1"
+	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/diff"
-	k8s_version "k8s.io/apimachinery/pkg/version"
+	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes/fake"
-	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
-	framework "k8s.io/client-go/tools/cache/testing"
+	"k8s.io/client-go/tools/cache/testing"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/netapp/trident/config"
@@ -31,7 +31,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
-	k8s_util_version "github.com/netapp/trident/utils"
+	k8sutilversion "github.com/netapp/trident/utils"
 )
 
 const (
@@ -44,14 +44,14 @@ type pluginTest struct {
 	expectedVols          []*v1.PersistentVolume
 	expectedVolumeConfigs []*storage.VolumeConfig
 	storageClassConfigs   []*sc.Config
-	v1betaStorageClasses  []*k8s_storage_v1beta.StorageClass
-	v1StorageClasses      []*k8s_storage_v1.StorageClass
+	v1betaStorageClasses  []*k8sstoragev1beta.StorageClass
+	v1StorageClasses      []*k8sstoragev1.StorageClass
 	protocols             []config.Protocol
 	action                testAction
 }
 
 type testAction func(
-	ctrl *KubernetesPlugin,
+	ctrl *Plugin,
 	reactor *orchestratorReactor,
 	cs *framework.FakePVCControllerSource,
 	vs *framework.FakePVControllerSource,
@@ -66,7 +66,7 @@ func testVolume(
 	protocol config.Protocol,
 	reclaimPolicy v1.PersistentVolumeReclaimPolicy,
 	storageClass string,
-	kubeVersion *k8s_version.Info,
+	kubeVersion *k8sversion.Info,
 ) *v1.PersistentVolume {
 	claimRef := v1.ObjectReference{
 		Namespace: testNamespace,
@@ -105,7 +105,7 @@ func testVolume(
 		panic("Invalid Kubernetes version")
 	}
 	switch {
-	case version.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
+	case version.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
 		pv.Spec.StorageClassName = storageClass
 	}
 
@@ -129,7 +129,7 @@ func testClaim(
 	accessModes []v1.PersistentVolumeAccessMode,
 	phase v1.PersistentVolumeClaimPhase,
 	annotations map[string]string,
-	kubeVersion *k8s_version.Info,
+	kubeVersion *k8sversion.Info,
 ) *v1.PersistentVolumeClaim {
 	pvc := &v1.PersistentVolumeClaim{
 		TypeMeta: metav1.TypeMeta{
@@ -160,7 +160,7 @@ func testClaim(
 		panic("Invalid Kubernetes version")
 	}
 	switch {
-	case version.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
+	case version.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
 		if storageClass, found := annotations[AnnClass]; found {
 			pvc.Spec.StorageClassName = &storageClass
 		}
@@ -174,7 +174,7 @@ func testVolumeConfig(
 	pvcUID types.UID,
 	size string,
 	annotations map[string]string,
-	kubeVersion *k8s_version.Info,
+	kubeVersion *k8sversion.Info,
 ) *storage.VolumeConfig {
 	ret := getVolumeConfig(accessModes,
 		getUniqueClaimName(testClaim(name, pvcUID, size, accessModes,
@@ -204,9 +204,9 @@ func newTestPlugin(
 	volumeSource *framework.FakePVControllerSource,
 	classSource *framework.FakeControllerSource,
 	protocols []config.Protocol,
-	kubeVersion *k8s_version.Info,
-) (*KubernetesPlugin, error) {
-	ret := &KubernetesPlugin{
+	kubeVersion *k8sversion.Info,
+) (*Plugin, error) {
+	ret := &Plugin{
 		orchestrator:             orchestrator,
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
@@ -245,11 +245,11 @@ func newTestPlugin(
 	}
 
 	switch {
-	case version.AtLeast(k8s_util_version.MustParseSemantic("v1.6.0")):
+	case version.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
 		ret.classSource = classSource
 		_, ret.classController = cache.NewInformer(
 			ret.classSource,
-			&k8s_storage_v1.StorageClass{},
+			&k8sstoragev1.StorageClass{},
 			KubernetesSyncPeriod,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc:    ret.addClass,
@@ -257,11 +257,11 @@ func newTestPlugin(
 				DeleteFunc: ret.deleteClass,
 			},
 		)
-	case version.AtLeast(k8s_util_version.MustParseSemantic("v1.4.0")):
+	case version.AtLeast(k8sutilversion.MustParseSemantic("v1.4.0")):
 		ret.classSource = classSource
 		_, ret.classController = cache.NewInformer(
 			ret.classSource,
-			&k8s_storage_v1beta.StorageClass{},
+			&k8sstoragev1beta.StorageClass{},
 			KubernetesSyncPeriod,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc:    ret.addClass,
@@ -271,10 +271,10 @@ func newTestPlugin(
 		)
 	}
 	ret.kubeClient = client
-	ret.getNamespacedKubeClient = k8s_client.NewFakeKubeClientBasic
+	ret.getNamespacedKubeClient = k8sclient.NewFakeKubeClientBasic
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(
-		&core_v1.EventSinkImpl{
+		&corev1.EventSinkImpl{
 			Interface: client.Core().Events(""),
 		})
 	ret.eventRecorder = broadcaster.NewRecorder(runtime.NewScheme(),
@@ -307,7 +307,7 @@ func cloneClaim(claim *v1.PersistentVolumeClaim) *v1.PersistentVolumeClaim {
 }
 
 func TestVolumeControllerKubeVersion1_5(t *testing.T) {
-	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "5").Version()
+	kubeVersion := k8sclient.NewFakeKubeClient(nil, "1", "5").Version()
 	tests := []pluginTest{
 		{
 			name: "Basic bind",
@@ -333,7 +333,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -366,7 +366,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -414,7 +414,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -465,7 +465,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -517,7 +517,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -549,7 +549,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -577,7 +577,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -635,7 +635,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -681,7 +681,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -748,7 +748,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -829,8 +829,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 
 func testStorageClassV1_5(
 	name string, useTrident bool, parameters map[string]string,
-) *k8s_storage_v1beta.StorageClass {
-	ret := k8s_storage_v1beta.StorageClass{
+) *k8sstoragev1beta.StorageClass {
+	ret := k8sstoragev1beta.StorageClass{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StorageClass",
 			APIVersion: "v1",
@@ -850,8 +850,8 @@ func testStorageClassV1_5(
 
 func testStorageClassV1_6(
 	name string, useTrident, defaultClass bool, parameters map[string]string,
-) *k8s_storage_v1.StorageClass {
-	ret := k8s_storage_v1.StorageClass{
+) *k8sstoragev1.StorageClass {
+	ret := k8sstoragev1.StorageClass{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StorageClass",
 			APIVersion: "v1",
@@ -874,7 +874,7 @@ func testStorageClassV1_6(
 }
 
 func TestVolumeControllerKubeVersion1_6(t *testing.T) {
-	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "6").Version()
+	kubeVersion := k8sclient.NewFakeKubeClient(nil, "1", "6").Version()
 	tests := []pluginTest{
 		{
 			name: "Basic bind",
@@ -900,7 +900,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -933,7 +933,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -981,7 +981,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1032,7 +1032,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1084,7 +1084,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1116,7 +1116,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1144,7 +1144,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1202,7 +1202,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1248,7 +1248,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs:   storageClassConfigs("silver"),
 			protocols:             []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1315,7 +1315,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 			storageClassConfigs: storageClassConfigs("silver"),
 			protocols:           []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				cs *framework.FakePVCControllerSource,
 				vs *framework.FakePVControllerSource,
@@ -1395,10 +1395,10 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 }
 
 func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
-	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "5").Version()
+	kubeVersion := k8sclient.NewFakeKubeClient(nil, "1", "5").Version()
 	for _, test := range []struct {
 		name          string
-		classToPost   *k8s_storage_v1beta.StorageClass
+		classToPost   *k8sstoragev1beta.StorageClass
 		expectedClass *sc.StorageClass
 	}{
 		{
@@ -1521,7 +1521,7 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 }
 
 func TestV1betaStorageClassKube1_5(t *testing.T) {
-	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "5").Version()
+	kubeVersion := k8sclient.NewFakeKubeClient(nil, "1", "5").Version()
 	tests := []pluginTest{
 		{
 			name: "Basic v1beta storage class provisioning",
@@ -1544,11 +1544,11 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 					kubeVersion,
 				),
 			},
-			v1betaStorageClasses: []*k8s_storage_v1beta.StorageClass{
+			v1betaStorageClasses: []*k8sstoragev1beta.StorageClass{
 				testStorageClassV1_5("silver", true, map[string]string{})},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1578,11 +1578,11 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 			name:                  "Unsupported default storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{
+			v1StorageClasses: []*k8sstoragev1.StorageClass{
 				testStorageClassV1_6("silver", true, true, map[string]string{})},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1657,7 +1657,7 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 }
 
 func TestV1StorageClassKube1_6(t *testing.T) {
-	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "6").Version()
+	kubeVersion := k8sclient.NewFakeKubeClient(nil, "1", "6").Version()
 	tests := []pluginTest{
 		{
 			name: "Basic v1 storage class provisioning",
@@ -1680,12 +1680,12 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 					kubeVersion,
 				),
 			},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{
+			v1StorageClasses: []*k8sstoragev1.StorageClass{
 				testStorageClassV1_6("silver", true, false, map[string]string{}),
 			},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1731,12 +1731,12 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 					kubeVersion,
 				),
 			},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{
+			v1StorageClasses: []*k8sstoragev1.StorageClass{
 				testStorageClassV1_6("silver", true, true, map[string]string{}),
 			},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1765,11 +1765,11 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			name:                  "No provisioning without the default storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{testStorageClassV1_6("silver", true, false,
+			v1StorageClasses: []*k8sstoragev1.StorageClass{testStorageClassV1_6("silver", true, false,
 				map[string]string{})},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1798,7 +1798,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			name:                  "Provisioning with two default storage classes",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{
+			v1StorageClasses: []*k8sstoragev1.StorageClass{
 				testStorageClassV1_6("silver", true, true,
 					map[string]string{}),
 				testStorageClassV1_6("bronze", true, true,
@@ -1806,7 +1806,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,
@@ -1835,13 +1835,13 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			name:                  "No dynamic provisioning for unset storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
-			v1StorageClasses: []*k8s_storage_v1.StorageClass{
+			v1StorageClasses: []*k8sstoragev1.StorageClass{
 				testStorageClassV1_6("bronze", true, true,
 					map[string]string{}),
 			},
 			protocols: []config.Protocol{config.File},
 			action: func(
-				ctrl *KubernetesPlugin,
+				ctrl *Plugin,
 				reactor *orchestratorReactor,
 				claimSource *framework.FakePVCControllerSource,
 				pvSource *framework.FakePVControllerSource,

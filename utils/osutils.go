@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const IscsiErrNoObjsFound = 21
@@ -195,8 +195,10 @@ func GetDeviceInfoForLuns() ([]ScsiDeviceInfo, error) {
 			} else {
 				md := strings.Split(strings.TrimSpace(string(out2)), " ")
 				if md != nil && len(md) > 0 && len(md[0]) > 0 {
-					if strings.HasPrefix(md[0], "lsblk") || strings.HasSuffix(string(out2), "failed to get device path") {
-						return nil, fmt.Errorf("Problem checking device path while running multipath check for device: %v: output: %v", devFile, string(out2))
+					if strings.HasPrefix(md[0], "lsblk") || strings.HasSuffix(string(out2),
+						"failed to get device path") {
+						return nil, fmt.Errorf("problem checking device path while running multipath check for"+
+							" device: %v: output: %v", devFile, string(out2))
 					}
 					log.WithField("md", md).Debug("Found multipath device path.")
 
@@ -525,7 +527,7 @@ func IscsiRescan(remove bool) (err error) {
 	}
 
 	// look for version of rescan-scsi-bus in known locations
-	var rescanCommands []string = []string{
+	var rescanCommands = []string{
 		"/usr/bin/rescan-scsi-bus.sh",
 		"/sbin/rescan-scsi-bus",
 		"/sbin/rescan-scsi-bus.sh",
@@ -679,7 +681,7 @@ func FormatVolume(device, fstype string) error {
 	case "ext4":
 		_, err = InvokeShellCommand("mkfs.ext4", "-F", device)
 	default:
-		return fmt.Errorf("Unsupported file system type: %s.", fstype)
+		return fmt.Errorf("unsupported file system type: %s", fstype)
 	}
 
 	return err
@@ -794,23 +796,23 @@ func EnsureIscsiSession(hostDataIP string) error {
 
 	// Ensure iSCSI is supported on system
 	if !IscsiSupported() {
-		return errors.New("iSCSI support not detected.")
+		return errors.New("iSCSI support not detected")
 	}
 
 	// Ensure iSCSI session exists for the specified iSCSI portal
 	sessionExists, err := IscsiSessionExists(hostDataIP)
 	if err != nil {
-		return fmt.Errorf("Could not check for iSCSI session. %v", err)
+		return fmt.Errorf("could not check for iSCSI session: %v", err)
 	}
 	if !sessionExists {
 
 		// Run discovery in case we haven't seen this target from this host
 		targets, err := IscsiDiscovery(hostDataIP)
 		if err != nil {
-			return fmt.Errorf("Could not run iSCSI discovery. %v", err)
+			return fmt.Errorf("could not run iSCSI discovery: %v", err)
 		}
 		if len(targets) == 0 {
-			return errors.New("iSCSI discovery found no targets.")
+			return errors.New("iSCSI discovery found no targets")
 		}
 
 		log.WithFields(log.Fields{
@@ -827,7 +829,7 @@ func EnsureIscsiSession(hostDataIP string) error {
 		}
 
 		if targetIndex == -1 {
-			return fmt.Errorf("iSCSI discovery found no targets with portal %s.", hostDataIP)
+			return fmt.Errorf("iSCSI discovery found no targets with portal %s", hostDataIP)
 		}
 
 		// To enable multipath, log in to each discovered target with the same IQN (target name)
@@ -838,7 +840,7 @@ func EnsureIscsiSession(hostDataIP string) error {
 				// Log in to target
 				err = LoginIscsiTarget(target.TargetName, target.PortalIP)
 				if err != nil {
-					return fmt.Errorf("Login to iSCSI target failed. %v", err)
+					return fmt.Errorf("login to iSCSI target failed: %v", err)
 				}
 			}
 		}
@@ -846,10 +848,10 @@ func EnsureIscsiSession(hostDataIP string) error {
 		// Recheck to ensure a session is now open
 		sessionExists, err = IscsiSessionExists(hostDataIP)
 		if err != nil {
-			return fmt.Errorf("Could not recheck for iSCSI session. %v", err)
+			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
 		}
 		if !sessionExists {
-			return fmt.Errorf("Expected iSCSI session %v NOT found, please login to the iSCSI portal.", hostDataIP)
+			return fmt.Errorf("expected iSCSI session %v NOT found, please login to the iSCSI portal", hostDataIP)
 		}
 	}
 

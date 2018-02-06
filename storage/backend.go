@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage_attribute"
@@ -16,8 +16,8 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-// StorageDriver provides a common interface for storage related operations
-type StorageDriver interface {
+// Driver provides a common interface for storage related operations
+type Driver interface {
 	Name() string
 	Initialize(config.DriverContext, string, *drivers.CommonStorageDriverConfig) error
 	Initialized() bool
@@ -39,11 +39,11 @@ type StorageDriver interface {
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
 	GetInternalVolumeName(name string) string
-	GetStorageBackendSpecs(backend *StorageBackend) error
+	GetStorageBackendSpecs(backend *Backend) error
 	GetVolumeOpts(
 		volConfig *VolumeConfig,
-		pool *StoragePool,
-		requests map[string]storage_attribute.Request,
+		pool *Pool,
+		requests map[string]storageattribute.Request,
 	) (map[string]string, error)
 	GetProtocol() config.Protocol
 	StoreConfig(b *PersistentStorageBackendConfig)
@@ -54,19 +54,19 @@ type StorageDriver interface {
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 }
 
-type StorageBackend struct {
-	Driver  StorageDriver
+type Backend struct {
+	Driver  Driver
 	Name    string
 	Online  bool
-	Storage map[string]*StoragePool
+	Storage map[string]*Pool
 	Volumes map[string]*Volume
 }
 
-func NewStorageBackend(driver StorageDriver) (*StorageBackend, error) {
-	backend := StorageBackend{
+func NewStorageBackend(driver Driver) (*Backend, error) {
+	backend := Backend{
 		Driver:  driver,
 		Online:  true,
-		Storage: make(map[string]*StoragePool),
+		Storage: make(map[string]*Pool),
 		Volumes: make(map[string]*Volume),
 	}
 
@@ -78,28 +78,28 @@ func NewStorageBackend(driver StorageDriver) (*StorageBackend, error) {
 	return &backend, nil
 }
 
-func (b *StorageBackend) AddStoragePool(pool *StoragePool) {
+func (b *Backend) AddStoragePool(pool *Pool) {
 	b.Storage[pool.Name] = pool
 }
 
-func (b *StorageBackend) GetDriverName() string {
+func (b *Backend) GetDriverName() string {
 	return b.Driver.Name()
 }
 
-func (b *StorageBackend) GetProtocol() config.Protocol {
+func (b *Backend) GetProtocol() config.Protocol {
 	return b.Driver.GetProtocol()
 }
 
-func (b *StorageBackend) AddVolume(
+func (b *Backend) AddVolume(
 	volConfig *VolumeConfig,
-	storagePool *StoragePool,
-	volumeAttributes map[string]storage_attribute.Request,
+	storagePool *Pool,
+	volumeAttributes map[string]storageattribute.Request,
 ) (*Volume, error) {
 
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
-		return nil, fmt.Errorf("Could not convert volume size %s: %v", volConfig.Size, err)
+		return nil, fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
 	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
 	if err != nil {
@@ -161,7 +161,7 @@ func (b *StorageBackend) AddVolume(
 	return nil, nil
 }
 
-func (b *StorageBackend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
+func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
 		"storageClass":   volConfig.StorageClass,
@@ -174,10 +174,10 @@ func (b *StorageBackend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 	// 1. Sanitize the volume name
 	// 2. Ensure no volume with the same name exists on that backend
 	if !b.Driver.CreatePrepare(volConfig) {
-		return nil, errors.New("Failed to prepare clone create.")
+		return nil, errors.New("failed to prepare clone create")
 	}
 
-	nilAttributes := make(map[string]storage_attribute.Request)
+	nilAttributes := make(map[string]storageattribute.Request)
 	args, err := b.Driver.GetVolumeOpts(volConfig, nil, nilAttributes)
 	if err != nil {
 		// An error on GetVolumeOpts is almost certainly going to indicate
@@ -212,13 +212,13 @@ func (b *StorageBackend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 	return vol, nil
 }
 
-// HasVolumes returns true if the StorageBackend has one or more volumes
+// HasVolumes returns true if the Backend has one or more volumes
 // provisioned on it.
-func (b *StorageBackend) HasVolumes() bool {
+func (b *Backend) HasVolumes() bool {
 	return len(b.Volumes) > 0
 }
 
-func (b *StorageBackend) RemoveVolume(vol *Volume) error {
+func (b *Backend) RemoveVolume(vol *Volume) error {
 	if err := b.Driver.Destroy(vol.Config.InternalName); err != nil {
 		// TODO:  Check the error being returned once the nDVP throws errors
 		// for volumes that aren't found.
@@ -233,7 +233,7 @@ func (b *StorageBackend) RemoveVolume(vol *Volume) error {
 // Terminate informs the backend that it is being deleted from the core
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
-func (b *StorageBackend) Terminate() {
+func (b *Backend) Terminate() {
 
 	log.WithFields(log.Fields{
 		"backendName": b.Name,
@@ -243,19 +243,19 @@ func (b *StorageBackend) Terminate() {
 	b.Driver.Terminate()
 }
 
-type StorageBackendExternal struct {
-	Name    string                          `json:"name"`
-	Config  interface{}                     `json:"config"`
-	Storage map[string]*StoragePoolExternal `json:"storage"`
-	Online  bool                            `json:"online"`
-	Volumes []string                        `json:"volumes"`
+type BackendExternal struct {
+	Name    string                   `json:"name"`
+	Config  interface{}              `json:"config"`
+	Storage map[string]*PoolExternal `json:"storage"`
+	Online  bool                     `json:"online"`
+	Volumes []string                 `json:"volumes"`
 }
 
-func (b *StorageBackend) ConstructExternal() *StorageBackendExternal {
-	backendExternal := StorageBackendExternal{
+func (b *Backend) ConstructExternal() *BackendExternal {
+	backendExternal := BackendExternal{
 		Name:    b.Name,
 		Config:  b.Driver.GetExternalConfig(),
-		Storage: make(map[string]*StoragePoolExternal),
+		Storage: make(map[string]*PoolExternal),
 		Online:  b.Online,
 		Volumes: make([]string, 0),
 	}
@@ -280,15 +280,15 @@ type PersistentStorageBackendConfig struct {
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
-type StorageBackendPersistent struct {
+type BackendPersistent struct {
 	Version string                         `json:"version"`
 	Config  PersistentStorageBackendConfig `json:"config"`
 	Name    string                         `json:"name"`
 	Online  bool                           `json:"online"`
 }
 
-func (b *StorageBackend) ConstructPersistent() *StorageBackendPersistent {
-	persistentBackend := &StorageBackendPersistent{
+func (b *Backend) ConstructPersistent() *BackendPersistent {
+	persistentBackend := &BackendPersistent{
 		Version: config.OrchestratorAPIVersion,
 		Config:  PersistentStorageBackendConfig{},
 		Name:    b.Name,
@@ -300,9 +300,9 @@ func (b *StorageBackend) ConstructPersistent() *StorageBackendPersistent {
 
 // Unfortunately, this method appears to be necessary to avoid arbitrary values
 // ending up in the json.RawMessage fields of CommonStorageDriverConfig.
-// Ideally, StorageBackendPersistent would just store a serialized config, but
+// Ideally, BackendPersistent would just store a serialized config, but
 // doing so appears to cause problems with the json.RawMessage fields.
-func (p *StorageBackendPersistent) MarshalConfig() (string, error) {
+func (p *BackendPersistent) MarshalConfig() (string, error) {
 	var (
 		bytes []byte
 		err   error
@@ -317,7 +317,7 @@ func (p *StorageBackendPersistent) MarshalConfig() (string, error) {
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
-		return "", fmt.Errorf("No recognized config found for backend %s.", p.Name)
+		return "", fmt.Errorf("no recognized config found for backend %s", p.Name)
 	}
 	if err != nil {
 		return "", err

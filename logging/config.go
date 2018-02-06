@@ -1,4 +1,4 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package logging
 

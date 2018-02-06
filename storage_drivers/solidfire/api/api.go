@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/utils"
 )
@@ -101,7 +101,7 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	// Log the request
 	if c.Config.DebugTraceFlags["api"] {
 		json.Indent(&prettyJSON, requestBody, "", "  ")
-		utils.LogHttpRequest(request, prettyJSON.Bytes())
+		utils.LogHTTPRequest(request, prettyJSON.Bytes())
 	}
 
 	// Send the request
@@ -114,7 +114,7 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	}
 	response, err = httpClient.Do(request)
 	if err != nil {
-		log.Errorf("error response from SolidFire API request: %v", err)
+		log.Errorf("Error response from SolidFire API request: %v", err)
 		return nil, errors.New("device API error")
 	}
 
@@ -139,15 +139,15 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	if c.Config.DebugTraceFlags["api"] {
 		if c.shouldLogResponseBody(method) {
 			json.Indent(&prettyJSON, responseBody, "", "  ")
-			utils.LogHttpResponse(response, prettyJSON.Bytes())
+			utils.LogHTTPResponse(response, prettyJSON.Bytes())
 
 		} else {
-			utils.LogHttpResponse(response, []byte("<suppressed>"))
+			utils.LogHTTPResponse(response, []byte("<suppressed>"))
 		}
 	}
 
 	// Look for any errors returned from the controller
-	apiError := APIError{}
+	apiError := Error{}
 	json.Unmarshal([]byte(responseBody), &apiError)
 	if apiError.Fields.Code != 0 {
 		log.WithFields(log.Fields{

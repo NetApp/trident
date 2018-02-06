@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -18,38 +18,38 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-// OntapNASStorageDriver is for NFS storage provisioning
-type OntapNASStorageDriver struct {
+// NASStorageDriver is for NFS storage provisioning
+type NASStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
-	API         *api.APIClient
+	API         *api.Client
 	Telemetry   *Telemetry
 }
 
-func (d *OntapNASStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NASStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
-func (d *OntapNASStorageDriver) GetAPI() *api.APIClient {
+func (d *NASStorageDriver) GetAPI() *api.Client {
 	return d.API
 }
 
-func (d *OntapNASStorageDriver) GetTelemetry() *Telemetry {
+func (d *NASStorageDriver) GetTelemetry() *Telemetry {
 	return d.Telemetry
 }
 
 // Name is for returning the name of this driver
-func (d *OntapNASStorageDriver) Name() string {
+func (d *NASStorageDriver) Name() string {
 	return drivers.OntapNASStorageDriverName
 }
 
 // Initialize from the provided config
-func (d *OntapNASStorageDriver) Initialize(
+func (d *NASStorageDriver) Initialize(
 	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "OntapNASStorageDriver"}
+		fields := log.Fields{"Method": "Initialize", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Initialize")
 		defer log.WithFields(fields).Debug("<<<< Initialize")
 	}
@@ -57,18 +57,18 @@ func (d *OntapNASStorageDriver) Initialize(
 	// Parse the config
 	config, err := InitializeOntapConfig(context, configJSON, commonConfig)
 	if err != nil {
-		return fmt.Errorf("Error initializing %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
-		return fmt.Errorf("Error initializing %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 	d.Config = *config
 
 	err = d.validate()
 	if err != nil {
-		return fmt.Errorf("Error validating %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
 
 	// Set up the autosupport heartbeat
@@ -79,14 +79,14 @@ func (d *OntapNASStorageDriver) Initialize(
 	return nil
 }
 
-func (d *OntapNASStorageDriver) Initialized() bool {
+func (d *NASStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *OntapNASStorageDriver) Terminate() {
+func (d *NASStorageDriver) Terminate() {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "OntapNASStorageDriver"}
+		fields := log.Fields{"Method": "Terminate", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
@@ -95,29 +95,29 @@ func (d *OntapNASStorageDriver) Terminate() {
 }
 
 // Validate the driver configuration and execution environment
-func (d *OntapNASStorageDriver) validate() error {
+func (d *NASStorageDriver) validate() error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "OntapNASStorageDriver"}
+		fields := log.Fields{"Method": "validate", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> validate")
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
 	err := ValidateNASDriver(d.API, &d.Config)
 	if err != nil {
-		return fmt.Errorf("Driver validation failed. %v", err)
+		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
 	return nil
 }
 
 // Create a volume with the specified options
-func (d *OntapNASStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Create",
-			"Type":      "OntapNASStorageDriver",
+			"Type":      "NASStorageDriver",
 			"name":      name,
 			"sizeBytes": sizeBytes,
 			"opts":      opts,
@@ -129,15 +129,15 @@ func (d *OntapNASStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	// If the volume already exists, bail out
 	volExists, err := d.API.VolumeExists(name)
 	if err != nil {
-		return fmt.Errorf("Error checking for existing volume. %v", err)
+		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volExists {
-		return fmt.Errorf("Volume %s already exists.", name)
+		return fmt.Errorf("volume %s already exists", name)
 	}
 
-	if sizeBytes < OntapMinimumVolumeSizeBytes {
-		return fmt.Errorf("Requested volume size (%d bytes) is too small.  The minimum volume size is %d bytes.",
-			sizeBytes, OntapMinimumVolumeSizeBytes)
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
 	// get options with default fallback values
@@ -154,7 +154,7 @@ func (d *OntapNASStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
-		return fmt.Errorf("Invalid boolean value for snapshotDir. %v", err)
+		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
 	encrypt, err := ValidateEncryptionAttribute(encryption, d.API)
@@ -188,21 +188,21 @@ func (d *OntapNASStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 				return nil
 			}
 		}
-		return fmt.Errorf("Error creating volume. %v", err)
+		return fmt.Errorf("error creating volume: %v", err)
 	}
 
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
 		snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(name)
 		if err = api.GetError(snapDirResponse, err); err != nil {
-			return fmt.Errorf("Error disabling snapshot directory access. %v", err)
+			return fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
 
 	// Mount the volume at the specified junction
 	mountResponse, err := d.API.VolumeMount(name, "/"+name)
 	if err = api.GetError(mountResponse, err); err != nil {
-		return fmt.Errorf("Error mounting volume to junction. %v", err)
+		return fmt.Errorf("error mounting volume to junction: %v", err)
 	}
 
 	// If LS mirrors are present on the SVM root volume, update them
@@ -212,12 +212,12 @@ func (d *OntapNASStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 }
 
 // Create a volume clone
-func (d *OntapNASStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *NASStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateClone",
-			"Type":     "OntapNASStorageDriver",
+			"Type":     "NASStorageDriver",
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
@@ -229,7 +229,7 @@ func (d *OntapNASStorageDriver) CreateClone(name, source, snapshot string, opts 
 
 	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", d.Config.SplitOnClone))
 	if err != nil {
-		return fmt.Errorf("Invalid boolean value for splitOnClone. %v", err)
+		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
 
 	log.WithField("splitOnClone", split).Debug("Creating volume clone.")
@@ -237,12 +237,12 @@ func (d *OntapNASStorageDriver) CreateClone(name, source, snapshot string, opts 
 }
 
 // Destroy the volume
-func (d *OntapNASStorageDriver) Destroy(name string) error {
+func (d *NASStorageDriver) Destroy(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Destroy",
-			"Type":   "OntapNASStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> Destroy")
@@ -258,7 +258,7 @@ func (d *OntapNASStorageDriver) Destroy(name string) error {
 
 	volDestroyResponse, err := d.API.VolumeDestroy(name, true)
 	if err != nil {
-		return fmt.Errorf("Error destroying volume %v. %v", name, err)
+		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}
 	if zerr := api.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
 
@@ -266,7 +266,7 @@ func (d *OntapNASStorageDriver) Destroy(name string) error {
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			log.WithField("volume", name).Warn("Volume already deleted.")
 		} else {
-			return fmt.Errorf("Error destroying volume %v. %v", name, zerr)
+			return fmt.Errorf("error destroying volume %v: %v", name, zerr)
 		}
 	}
 
@@ -274,12 +274,12 @@ func (d *OntapNASStorageDriver) Destroy(name string) error {
 }
 
 // Attach the volume
-func (d *OntapNASStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+func (d *NASStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Attach",
-			"Type":       "OntapNASStorageDriver",
+			"Type":       "NASStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 			"opts":       opts,
@@ -294,12 +294,12 @@ func (d *OntapNASStorageDriver) Attach(name, mountpoint string, opts map[string]
 }
 
 // Detach the volume
-func (d *OntapNASStorageDriver) Detach(name, mountpoint string) error {
+func (d *NASStorageDriver) Detach(name, mountpoint string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Detach",
-			"Type":       "OntapNASStorageDriver",
+			"Type":       "NASStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 		}
@@ -311,12 +311,12 @@ func (d *OntapNASStorageDriver) Detach(name, mountpoint string) error {
 }
 
 // Return the list of snapshots associated with the named volume
-func (d *OntapNASStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+func (d *NASStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "SnapshotList",
-			"Type":   "OntapNASStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> SnapshotList")
@@ -327,10 +327,10 @@ func (d *OntapNASStorageDriver) SnapshotList(name string) ([]storage.Snapshot, e
 }
 
 // Return the list of volumes associated with this tenant
-func (d *OntapNASStorageDriver) List() ([]string, error) {
+func (d *NASStorageDriver) List() ([]string, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "OntapNASStorageDriver"}
+		fields := log.Fields{"Method": "List", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> List")
 		defer log.WithFields(fields).Debug("<<<< List")
 	}
@@ -339,10 +339,10 @@ func (d *OntapNASStorageDriver) List() ([]string, error) {
 }
 
 // Test for the existence of a volume
-func (d *OntapNASStorageDriver) Get(name string) error {
+func (d *NASStorageDriver) Get(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "OntapNASStorageDriver"}
+		fields := log.Fields{"Method": "Get", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Get")
 		defer log.WithFields(fields).Debug("<<<< Get")
 	}
@@ -351,41 +351,41 @@ func (d *OntapNASStorageDriver) Get(name string) error {
 }
 
 // Retrieve storage backend capabilities
-func (d *OntapNASStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
+func (d *NASStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 
 	backend.Name = "ontapnas_" + d.Config.DataLIF
 	poolAttrs := d.GetStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *OntapNASStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Clones:           sa.NewBoolOffer(true),
-		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsApiFeature(api.NETAPP_VOLUME_ENCRYPTION)),
+		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }
 
-func (d *OntapNASStorageDriver) GetVolumeOpts(
+func (d *NASStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	pool *storage.StoragePool,
+	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 	return getVolumeOptsCommon(volConfig, pool, requests), nil
 }
 
-func (d *OntapNASStorageDriver) GetInternalVolumeName(name string) string {
+func (d *NASStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *OntapNASStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *NASStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	return createPrepareCommon(d, volConfig)
 }
 
-func (d *OntapNASStorageDriver) CreateFollowup(
+func (d *NASStorageDriver) CreateFollowup(
 	volConfig *storage.VolumeConfig,
 ) error {
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
@@ -394,25 +394,25 @@ func (d *OntapNASStorageDriver) CreateFollowup(
 	return nil
 }
 
-func (d *OntapNASStorageDriver) GetProtocol() trident.Protocol {
+func (d *NASStorageDriver) GetProtocol() trident.Protocol {
 	return trident.File
 }
 
-func (d *OntapNASStorageDriver) StoreConfig(
+func (d *NASStorageDriver) StoreConfig(
 	b *storage.PersistentStorageBackendConfig,
 ) {
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 	b.OntapConfig = &d.Config
 }
 
-func (d *OntapNASStorageDriver) GetExternalConfig() interface{} {
+func (d *NASStorageDriver) GetExternalConfig() interface{} {
 	return getExternalConfig(d.Config)
 }
 
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *OntapNASStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
+func (d *NASStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	volumeAttributes, err := d.API.VolumeGet(name)
 	if err != nil {
@@ -426,7 +426,7 @@ func (d *OntapNASStorageDriver) GetVolumeExternal(name string) (*storage.VolumeE
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *OntapNASStorageDriver) GetVolumeExternalWrappers(
+func (d *NASStorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
 
 	// Let the caller know we're done by closing the channel
@@ -448,17 +448,17 @@ func (d *OntapNASStorageDriver) GetVolumeExternalWrappers(
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *OntapNASStorageDriver) getVolumeExternal(
+func (d *NASStorageDriver) getVolumeExternal(
 	volumeAttrs *azgo.VolumeAttributesType) *storage.VolumeExternal {
 
 	volumeExportAttrs := volumeAttrs.VolumeExportAttributesPtr
-	volumeIdAttrs := volumeAttrs.VolumeIdAttributesPtr
+	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
 	volumeSecurityAttrs := volumeAttrs.VolumeSecurityAttributesPtr
 	volumeSecurityUnixAttrs := volumeSecurityAttrs.VolumeSecurityUnixAttributesPtr
 	volumeSpaceAttrs := volumeAttrs.VolumeSpaceAttributesPtr
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
-	internalName := string(volumeIdAttrs.Name())
+	internalName := string(volumeIDAttrs.Name())
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
@@ -480,6 +480,6 @@ func (d *OntapNASStorageDriver) getVolumeExternal(
 
 	return &storage.VolumeExternal{
 		Config: volumeConfig,
-		Pool:   volumeIdAttrs.ContainingAggregateName(),
+		Pool:   volumeIDAttrs.ContainingAggregateName(),
 	}
 }

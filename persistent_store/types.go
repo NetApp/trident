@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"crypto/tls"
@@ -35,11 +35,11 @@ type Client interface {
 	GetType() StoreType
 	Stop() error
 
-	AddBackend(b *storage.StorageBackend) error
-	GetBackend(backendName string) (*storage.StorageBackendPersistent, error)
-	UpdateBackend(b *storage.StorageBackend) error
-	DeleteBackend(backend *storage.StorageBackend) error
-	GetBackends() ([]*storage.StorageBackendPersistent, error)
+	AddBackend(b *storage.Backend) error
+	GetBackend(backendName string) (*storage.BackendPersistent, error)
+	UpdateBackend(b *storage.Backend) error
+	DeleteBackend(backend *storage.Backend) error
+	GetBackends() ([]*storage.BackendPersistent, error)
 	DeleteBackends() error
 
 	AddVolume(vol *storage.Volume) error
@@ -56,10 +56,10 @@ type Client interface {
 		error)
 	DeleteVolumeTransaction(volTxn *VolumeTransaction) error
 
-	AddStorageClass(sc *storage_class.StorageClass) error
-	GetStorageClass(scName string) (*storage_class.StorageClassPersistent, error)
-	GetStorageClasses() ([]*storage_class.StorageClassPersistent, error)
-	DeleteStorageClass(sc *storage_class.StorageClass) error
+	AddStorageClass(sc *storageclass.StorageClass) error
+	GetStorageClass(scName string) (*storageclass.Persistent, error)
+	GetStorageClasses() ([]*storageclass.Persistent, error)
+	DeleteStorageClass(sc *storageclass.StorageClass) error
 }
 
 type EtcdClient interface {

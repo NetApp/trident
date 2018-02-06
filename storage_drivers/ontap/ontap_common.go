@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -26,8 +26,8 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-const LS_MIRROR_IDLE_TIMEOUT_SECS = 30
-const OntapMinimumVolumeSizeBytes = 20971520 // 20 MiB
+const LSMirrorIdleTimeoutSecs = 30
+const MinimumVolumeSizeBytes = 20971520 // 20 MiB
 
 type Telemetry struct {
 	trident.Telemetry
@@ -36,9 +36,9 @@ type Telemetry struct {
 	StoragePrefix string `json:"storagePrefix"`
 }
 
-type OntapStorageDriver interface {
+type StorageDriver interface {
 	GetConfig() *drivers.OntapStorageDriverConfig
-	GetAPI() *api.APIClient
+	GetAPI() *api.Client
 	GetTelemetry() *Telemetry
 	Name() string
 }
@@ -62,13 +62,13 @@ func InitializeOntapConfig(
 	// decode configJSON into OntapStorageDriverConfig object
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
-		return nil, fmt.Errorf("Could not decode JSON configuration. %v", err)
+		return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
 
 	return config, nil
 }
 
-func InitializeOntapTelemetry(d OntapStorageDriver) *Telemetry {
+func InitializeOntapTelemetry(d StorageDriver) *Telemetry {
 	return &Telemetry{
 		Telemetry:     trident.OrchestratorTelemetry,
 		Plugin:        d.Name(),
@@ -79,7 +79,7 @@ func InitializeOntapTelemetry(d OntapStorageDriver) *Telemetry {
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
 // that are common to all the ONTAP drivers.
-func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.APIClient, error) {
+func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
@@ -101,18 +101,18 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.APICl
 	// Get the API client
 	client, err := InitializeOntapAPI(config)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Data ONTAP API client. %v", err)
+		return nil, fmt.Errorf("could not create Data ONTAP API client: %v", err)
 	}
 
 	// Make sure we're using a valid ONTAP version
 	ontapi, err := client.SystemGetOntapiVersion()
 	if err != nil {
-		return nil, fmt.Errorf("Could not determine Data ONTAP API version. %v", err)
+		return nil, fmt.Errorf("could not determine Data ONTAP API version: %v", err)
 	}
-	if !client.SupportsApiFeature(api.MINIMUM_ONTAPI_VERSION) {
-		return nil, errors.New("Data ONTAP 8.3 or later is required.")
+	if !client.SupportsFeature(api.MinimumONTAPIVersion) {
+		return nil, errors.New("ONTAP 8.3 or later is required")
 	}
-	log.WithField("Ontapi", ontapi).Debug("Data ONTAP API version.")
+	log.WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
 	// Log cluster node serial numbers if we can get them
 	config.SerialNumbers, err = client.ListNodeSerialNumbers()
@@ -127,15 +127,15 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.APICl
 	// Load default config parameters
 	err = PopulateConfigurationDefaults(config)
 	if err != nil {
-		return nil, fmt.Errorf("Could not populate configuration defaults. %v", err)
+		return nil, fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
 	return client, nil
 }
 
-// InitializeOntapAPI returns an ontap.APIClient ZAPI client.  If the SVM isn't specified in the config
+// InitializeOntapAPI returns an ontap.Client ZAPI client.  If the SVM isn't specified in the config
 // file, this method attempts to derive the one to use.
-func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.APIClient, error) {
+func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapAPI", "Type": "ontap_common"}
@@ -143,7 +143,7 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.APIClien
 		defer log.WithFields(fields).Debug("<<<< InitializeOntapAPI")
 	}
 
-	client := api.NewAPIClient(api.APIClientConfig{
+	client := api.NewClient(api.ClientConfig{
 		ManagementLIF:   config.ManagementLIF,
 		SVM:             config.SVM,
 		Username:        config.Username,
@@ -159,16 +159,16 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.APIClien
 	// Use VserverGetIterRequest to populate config.SVM if it wasn't specified and we can derive it
 	vserverResponse, err := client.VserverGetIterRequest()
 	if err = api.GetError(vserverResponse, err); err != nil {
-		return nil, fmt.Errorf("Error enumerating SVMs. %v", err)
+		return nil, fmt.Errorf("error enumerating SVMs: %v", err)
 	}
 
 	if vserverResponse.Result.NumRecords() != 1 {
-		return nil, errors.New("Cannot derive SVM to use, please specify SVM in config file.")
+		return nil, errors.New("cannot derive SVM to use; please specify SVM in config file")
 	}
 
 	// Update everything to use our derived SVM
 	config.SVM = vserverResponse.Result.AttributesList()[0].VserverName()
-	client = api.NewAPIClient(api.APIClientConfig{
+	client = api.NewClient(api.ClientConfig{
 		ManagementLIF:   config.ManagementLIF,
 		SVM:             config.SVM,
 		Username:        config.Username,
@@ -181,7 +181,7 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.APIClien
 }
 
 // ValidateAggregate returns an error if the configured aggregate is not available to the Vserver.
-func ValidateAggregate(api *api.APIClient, config *drivers.OntapStorageDriverConfig) error {
+func ValidateAggregate(api *api.Client, config *drivers.OntapStorageDriverConfig) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateAggregate", "Type": "ontap_common"}
@@ -190,7 +190,7 @@ func ValidateAggregate(api *api.APIClient, config *drivers.OntapStorageDriverCon
 	}
 
 	if config.Aggregate == "" {
-		return errors.New("No aggregate was specified in the config file.")
+		return errors.New("no aggregate was specified in the config file")
 	}
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
@@ -199,7 +199,7 @@ func ValidateAggregate(api *api.APIClient, config *drivers.OntapStorageDriverCon
 		return err
 	}
 	if len(vserverAggrs) == 0 {
-		return fmt.Errorf("SVM %s has no assigned aggregates.", config.SVM)
+		return fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
 	}
 
 	for _, aggrName := range vserverAggrs {
@@ -212,11 +212,11 @@ func ValidateAggregate(api *api.APIClient, config *drivers.OntapStorageDriverCon
 		}
 	}
 
-	return fmt.Errorf("Aggregate %s does not exist or is not assigned to SVM %s.", config.Aggregate, config.SVM)
+	return fmt.Errorf("aggregate %s does not exist or is not assigned to SVM %s", config.Aggregate, config.SVM)
 }
 
 // ValidateNASDriver contains the validation logic shared between ontap-nas and ontap-nas-economy.
-func ValidateNASDriver(api *api.APIClient, config *drivers.OntapStorageDriverConfig) error {
+func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
@@ -230,7 +230,7 @@ func ValidateNASDriver(api *api.APIClient, config *drivers.OntapStorageDriverCon
 	}
 
 	if len(dataLIFs) == 0 {
-		return fmt.Errorf("No NAS data LIFs found on SVM %s.", config.SVM)
+		return fmt.Errorf("no NAS data LIFs found on SVM %s", config.SVM)
 	} else {
 		log.WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
@@ -241,7 +241,7 @@ func ValidateNASDriver(api *api.APIClient, config *drivers.OntapStorageDriverCon
 	} else {
 		err := ValidateDataLIFs(config, dataLIFs)
 		if err != nil {
-			return fmt.Errorf("Data LIF validation failed. %v", err)
+			return fmt.Errorf("data LIF validation failed: %v", err)
 		}
 
 	}
@@ -350,7 +350,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	} else {
 		_, err := strconv.ParseBool(config.SplitOnClone)
 		if err != nil {
-			return fmt.Errorf("Invalid boolean value for splitOnClone. %v", err)
+			return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 		}
 	}
 
@@ -382,18 +382,18 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 // ValidateEncryptionAttribute returns true/false if encryption is being requested of a backend that
 // supports NetApp Volume Encryption, and nil otherwise so that the ZAPIs may be sent without
 // any reference to encryption.
-func ValidateEncryptionAttribute(encryption string, client *api.APIClient) (*bool, error) {
+func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, error) {
 
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid boolean value for encryption. %v", err)
+		return nil, fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
 
-	if client.SupportsApiFeature(api.NETAPP_VOLUME_ENCRYPTION) {
+	if client.SupportsFeature(api.NetAppVolumeEncryption) {
 		return &enableEncryption, nil
 	} else {
 		if enableEncryption {
-			return nil, errors.New("Encrypted volumes are not supported on this storage backend.")
+			return nil, errors.New("encrypted volumes are not supported on this storage backend")
 		} else {
 			return nil, nil
 		}
@@ -402,7 +402,7 @@ func ValidateEncryptionAttribute(encryption string, client *api.APIClient) (*boo
 
 // EmsHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
-func EmsHeartbeat(driver OntapStorageDriver) {
+func EmsHeartbeat(driver StorageDriver) {
 
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
@@ -422,9 +422,9 @@ func EmsHeartbeat(driver OntapStorageDriver) {
 	}
 }
 
-const MSEC_PER_HOUR = 1000 * 60 * 60 // millis * seconds * minutes
+const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
 
-func StartEmsHeartbeat(d OntapStorageDriver) {
+func StartEmsHeartbeat(d StorageDriver) {
 
 	usageHeartbeat := d.GetConfig().UsageHeartbeat
 	heartbeatIntervalInHours := 24.0 // default to 24 hours
@@ -438,7 +438,7 @@ func StartEmsHeartbeat(d OntapStorageDriver) {
 	}
 	log.WithField("intervalHours", heartbeatIntervalInHours).Debug("Configured EMS heartbeat.")
 
-	durationInHours := time.Millisecond * time.Duration(MSEC_PER_HOUR*heartbeatIntervalInHours)
+	durationInHours := time.Millisecond * time.Duration(MSecPerHour*heartbeatIntervalInHours)
 	if durationInHours > 0 {
 		EmsHeartbeat(d)
 		ticker := time.NewTicker(durationInHours)
@@ -453,7 +453,7 @@ func StartEmsHeartbeat(d OntapStorageDriver) {
 
 // Create a volume clone
 func CreateOntapClone(
-	name, source, snapshot string, split bool, config *drivers.OntapStorageDriverConfig, client *api.APIClient,
+	name, source, snapshot string, split bool, config *drivers.OntapStorageDriverConfig, client *api.Client,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -472,10 +472,10 @@ func CreateOntapClone(
 	// If the specified volume already exists, return an error
 	volExists, err := client.VolumeExists(name)
 	if err != nil {
-		return fmt.Errorf("Error checking for existing volume. %v", err)
+		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volExists {
-		return fmt.Errorf("Volume %s already exists.", name)
+		return fmt.Errorf("volume %s already exists", name)
 	}
 
 	// If no specific snapshot was requested, create one
@@ -484,20 +484,20 @@ func CreateOntapClone(
 		snapshot = time.Now().UTC().Format("20060102T150405Z")
 		snapResponse, err := client.SnapshotCreate(snapshot, source)
 		if err = api.GetError(snapResponse, err); err != nil {
-			return fmt.Errorf("Error creating snapshot. %v", err)
+			return fmt.Errorf("error creating snapshot: %v", err)
 		}
 	}
 
 	// Create the clone based on a snapshot
 	cloneResponse, err := client.VolumeCloneCreate(name, source, snapshot)
 	if err != nil {
-		return fmt.Errorf("Error creating clone. %v", err)
+		return fmt.Errorf("error creating clone: %v", err)
 	}
 	if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
-			return fmt.Errorf("Snapshot %s does not exist in volume %s.", snapshot, source)
+			return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
 		} else {
-			return fmt.Errorf("Error creating clone. %v", zerr)
+			return fmt.Errorf("error creating clone: %v", zerr)
 		}
 	}
 
@@ -505,7 +505,7 @@ func CreateOntapClone(
 		// Mount the new volume
 		mountResponse, err := client.VolumeMount(name, "/"+name)
 		if err = api.GetError(mountResponse, err); err != nil {
-			return fmt.Errorf("Error mounting volume to junction. %v", err)
+			return fmt.Errorf("error mounting volume to junction: %v", err)
 		}
 	}
 
@@ -513,7 +513,7 @@ func CreateOntapClone(
 	if split {
 		splitResponse, err := client.VolumeCloneSplitStart(name)
 		if err = api.GetError(splitResponse, err); err != nil {
-			return fmt.Errorf("Error splitting clone. %v", err)
+			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}
 
@@ -521,7 +521,7 @@ func CreateOntapClone(
 }
 
 // Return the list of snapshots associated with the named volume
-func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, client *api.APIClient) ([]storage.Snapshot, error) {
+func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, client *api.Client) ([]storage.Snapshot, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -535,7 +535,7 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 
 	snapResponse, err := client.SnapshotGetByVolume(name)
 	if err = api.GetError(snapResponse, err); err != nil {
-		return nil, fmt.Errorf("Error enumerating snapshots. %v", err)
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
 	log.Debugf("Returned %v snapshots.", snapResponse.Result.NumRecords())
@@ -559,7 +559,7 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 }
 
 // Return the list of volumes associated with the tenant
-func GetVolumeList(client *api.APIClient, config *drivers.OntapStorageDriverConfig) ([]string, error) {
+func GetVolumeList(client *api.Client, config *drivers.OntapStorageDriverConfig) ([]string, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "GetVolumeList", "Type": "ontap_common"}
@@ -571,15 +571,15 @@ func GetVolumeList(client *api.APIClient, config *drivers.OntapStorageDriverConf
 
 	volResponse, err := client.VolumeList(prefix)
 	if err = api.GetError(volResponse, err); err != nil {
-		return nil, fmt.Errorf("Error enumerating volumes. %v", err)
+		return nil, fmt.Errorf("error enumerating volumes: %v", err)
 	}
 
 	var volumes []string
 
 	// AttributesList() returns []VolumeAttributesType
 	for _, volume := range volResponse.Result.AttributesList() {
-		vol_id_attrs := volume.VolumeIdAttributes()
-		volName := string(vol_id_attrs.Name())[len(prefix):]
+		volIDAttrs := volume.VolumeIdAttributes()
+		volName := string(volIDAttrs.Name())[len(prefix):]
 		volumes = append(volumes, volName)
 	}
 
@@ -588,7 +588,7 @@ func GetVolumeList(client *api.APIClient, config *drivers.OntapStorageDriverConf
 
 // GetVolume checks for the existence of a volume.  It returns nil if the volume
 // exists and an error if it does not (or the API call fails).
-func GetVolume(name string, client *api.APIClient, config *drivers.OntapStorageDriverConfig) error {
+func GetVolume(name string, client *api.Client, config *drivers.OntapStorageDriverConfig) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "GetVolume", "Type": "ontap_common"}
@@ -598,11 +598,11 @@ func GetVolume(name string, client *api.APIClient, config *drivers.OntapStorageD
 
 	volExists, err := client.VolumeExists(name)
 	if err != nil {
-		return fmt.Errorf("Error checking for existing volume. %v", err)
+		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if !volExists {
 		log.WithField("flexvol", name).Debug("Flexvol not found.")
-		return fmt.Errorf("Volume %s does not exist.", name)
+		return fmt.Errorf("volume %s does not exist", name)
 	}
 
 	return nil
@@ -632,14 +632,14 @@ func MountVolume(exportPath, mountpoint string, config *drivers.OntapStorageDriv
 	case utils.Darwin:
 		cmd = fmt.Sprintf("mount -v -o rw %s -t nfs %s %s", nfsMountOptions, exportPath, mountpoint)
 	default:
-		return fmt.Errorf("Unsupported operating system: %v", runtime.GOOS)
+		return fmt.Errorf("unsupported operating system: %v", runtime.GOOS)
 	}
 
 	log.WithField("command", cmd).Debug("Mounting volume.")
 
 	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
 		log.WithField("output", string(out)).Debug("Mount failed.")
-		return fmt.Errorf("Error mounting NFS volume %v on mountpoint %v. %v", exportPath, mountpoint, err)
+		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
 	}
 
 	return nil
@@ -663,7 +663,7 @@ func UnmountVolume(mountpoint string, config *drivers.OntapStorageDriverConfig) 
 
 	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
 		log.WithField("output", string(out)).Debug("Unmount failed.")
-		return fmt.Errorf("Error unmounting NFS volume from mountpoint %v. %v", mountpoint, err)
+		return fmt.Errorf("error unmounting NFS volume from mountpoint %v: %v", mountpoint, err)
 	}
 
 	return nil
@@ -671,7 +671,7 @@ func UnmountVolume(mountpoint string, config *drivers.OntapStorageDriverConfig) 
 
 // UpdateLoadSharingMirrors checks for the present of LS mirrors on the SVM root volume, and if
 // present, starts an update and waits for them to become idle.
-func UpdateLoadSharingMirrors(client *api.APIClient) {
+func UpdateLoadSharingMirrors(client *api.Client) {
 
 	// We care about LS mirrors on the SVM root volume, so get the root volume name
 	rootVolumeResponse, err := client.VolumeGetRootName()
@@ -702,7 +702,7 @@ func UpdateLoadSharingMirrors(client *api.APIClient) {
 	}
 
 	// Wait for LS mirrors to become idle
-	timeout := time.Now().Add(LS_MIRROR_IDLE_TIMEOUT_SECS * time.Second)
+	timeout := time.Now().Add(LSMirrorIdleTimeoutSecs * time.Second)
 	for {
 		time.Sleep(1 * time.Second)
 		log.Debug("Load-sharing mirrors not yet idle, polling...")
@@ -751,10 +751,10 @@ var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
 	ontapSSD:    {sa.Media: sa.NewStringOffer(sa.SSD)},
 }
 
-// getStorageBackendSpecsCommon discovers the aggregates assigned to the configured SVM, and it updates the specified StorageBackend
+// getStorageBackendSpecsCommon discovers the aggregates assigned to the configured SVM, and it updates the specified Backend
 // object with StoragePools and their associated attributes.
 func getStorageBackendSpecsCommon(
-	d OntapStorageDriver, backend *storage.StorageBackend, poolAttributes map[string]sa.Offer,
+	d StorageDriver, backend *storage.Backend, poolAttributes map[string]sa.Offer,
 ) (err error) {
 
 	client := d.GetAPI()
@@ -764,7 +764,7 @@ func getStorageBackendSpecsCommon(
 	// Handle panics from the API layer
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Unable to inspect ONTAP backend:  %v\nStack trace:\n%s", r, debug.Stack())
+			err = fmt.Errorf("unable to inspect ONTAP backend: %v\nStack trace:\n%s", r, debug.Stack())
 		}
 	}()
 
@@ -774,7 +774,7 @@ func getStorageBackendSpecsCommon(
 		return
 	}
 	if len(vserverAggrs) == 0 {
-		err = fmt.Errorf("SVM %s has no assigned aggregates.", config.SVM)
+		err = fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
 		return
 	}
 
@@ -784,7 +784,7 @@ func getStorageBackendSpecsCommon(
 	}).Debug("Read storage pools assigned to SVM.")
 
 	// Define a storage pool for each of the SVM's aggregates
-	storagePools := make(map[string]*storage.StoragePool)
+	storagePools := make(map[string]*storage.Pool)
 	for _, aggrName := range vserverAggrs {
 		storagePools[aggrName] = storage.NewStoragePool(backend, aggrName)
 	}
@@ -794,8 +794,8 @@ func getStorageBackendSpecsCommon(
 
 		// Make sure the configured aggregate is available to the SVM
 		if _, ok := storagePools[config.Aggregate]; !ok {
-			err = fmt.Errorf("The assigned aggregates for SVM %s do not "+
-				"include the configured aggregate %s.", config.SVM, config.Aggregate)
+			err = fmt.Errorf("the assigned aggregates for SVM %s do not include the configured aggregate %s",
+				config.SVM, config.Aggregate)
 			return
 		}
 
@@ -804,26 +804,26 @@ func getStorageBackendSpecsCommon(
 			"aggregate":  config.Aggregate,
 		}).Warn("Provisioning will be restricted to the aggregate set in the backend config.")
 
-		storagePools = make(map[string]*storage.StoragePool)
+		storagePools = make(map[string]*storage.Pool)
 		storagePools[config.Aggregate] = storage.NewStoragePool(backend, config.Aggregate)
 	}
 
 	// Update pools with aggregate info (i.e. MediaType) using the best means possible
-	var aggr_err error
-	if client.SupportsApiFeature(api.VSERVER_SHOW_AGGR) {
-		aggr_err = getVserverAggregateAttributes(d, &storagePools)
+	var aggrErr error
+	if client.SupportsFeature(api.VServerShowAggr) {
+		aggrErr = getVserverAggregateAttributes(d, &storagePools)
 	} else {
-		aggr_err = getClusterAggregateAttributes(d, &storagePools)
+		aggrErr = getClusterAggregateAttributes(d, &storagePools)
 	}
 
-	if zerr, ok := aggr_err.(api.ZapiError); ok && zerr.IsScopeError() {
+	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
 		log.WithFields(log.Fields{
 			"username": config.Username,
-		}).Warn("User has insufficient privileges to obtain aggregate info. Storage classes with physical attributes " +
-			"such as 'media' will not match pools on this backend.")
-	} else if aggr_err != nil {
-		log.Errorf("Could not obtain aggregate info. Storage classes with physical attributes "+
-			"such as 'media' will not match pools on this backend. %v", aggr_err)
+		}).Warn("User has insufficient privileges to obtain aggregate info. " +
+			"Storage classes with physical attributes such as 'media' will not match pools on this backend.")
+	} else if aggrErr != nil {
+		log.Errorf("Could not obtain aggregate info; storage classes with physical attributes such as 'media' will"+
+			" not match pools on this backend: %v.", aggrErr)
 	}
 
 	// Add attributes common to each pool and register pools with backend
@@ -841,7 +841,7 @@ func getStorageBackendSpecsCommon(
 
 // getVserverAggregateAttributes gets pool attributes using vserver-show-aggr-get-iter, which will only succeed on Data ONTAP 9 and later.
 // If the aggregate attributes are read successfully, the pools passed to this function are updated accordingly.
-func getVserverAggregateAttributes(d OntapStorageDriver, storagePools *map[string]*storage.StoragePool) error {
+func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*storage.Pool) error {
 
 	result, err := d.GetAPI().VserverShowAggrGetIterRequest()
 	if err != nil {
@@ -889,7 +889,7 @@ func getVserverAggregateAttributes(d OntapStorageDriver, storagePools *map[strin
 // getClusterAggregateAttributes gets pool attributes using aggr-get-iter, which will only succeed for cluster-scoped users
 // with adequate permissions.  If the aggregate attributes are read successfully, the pools passed to this function are updated
 // accordingly.
-func getClusterAggregateAttributes(d OntapStorageDriver, storagePools *map[string]*storage.StoragePool) error {
+func getClusterAggregateAttributes(d StorageDriver, storagePools *map[string]*storage.Pool) error {
 
 	result, err := d.GetAPI().AggrGetIterRequest()
 	if err != nil {
@@ -937,7 +937,7 @@ func getClusterAggregateAttributes(d OntapStorageDriver, storagePools *map[strin
 
 func getVolumeOptsCommon(
 	volConfig *storage.VolumeConfig,
-	pool *storage.StoragePool,
+	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) map[string]string {
 	opts := make(map[string]string)
@@ -1011,14 +1011,14 @@ func getVolumeOptsCommon(
 	return opts
 }
 
-func getInternalVolumeNameCommon(common_config *drivers.CommonStorageDriverConfig, name string) string {
+func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {
 
 	if trident.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
-		return *common_config.StoragePrefix + name
+		return *commonConfig.StoragePrefix + name
 	} else {
 		// With an external store, any transformation of the name is fine
-		internal := drivers.GetCommonInternalVolumeName(common_config, name)
+		internal := drivers.GetCommonInternalVolumeName(commonConfig, name)
 		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
 		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
 		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
@@ -1026,7 +1026,7 @@ func getInternalVolumeNameCommon(common_config *drivers.CommonStorageDriverConfi
 	}
 }
 
-func createPrepareCommon(d storage.StorageDriver, volConfig *storage.VolumeConfig) bool {
+func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) bool {
 
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 

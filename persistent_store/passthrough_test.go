@@ -1,6 +1,6 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
-	fake_driver "github.com/netapp/trident/storage_drivers/fake"
+	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 func getFakePools(count int) map[string]*fake.StoragePool {
@@ -36,7 +36,7 @@ func getFakePools(count int) map[string]*fake.StoragePool {
 	return ret
 }
 
-func getFakeBackend() *storage.StorageBackend {
+func getFakeBackend() *storage.Backend {
 
 	fakeConfig := drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -48,7 +48,7 @@ func getFakeBackend() *storage.StorageBackend {
 		InstanceName: "fake_backend",
 	}
 
-	fakeStorageDriver := fake_driver.NewFakeStorageDriver(fakeConfig)
+	fakeStorageDriver := fakedriver.NewFakeStorageDriver(fakeConfig)
 	fakeBackend, _ := storage.NewStorageBackend(fakeStorageDriver)
 	return fakeBackend
 }
@@ -92,8 +92,8 @@ func getFakeStorageClass() *sc.StorageClass {
 
 func newPassthroughClient() *PassthroughClient {
 	return &PassthroughClient{
-		bootBackends: make([]*storage.StorageBackendPersistent, 0),
-		liveBackends: make(map[string]*storage.StorageBackend),
+		bootBackends: make([]*storage.BackendPersistent, 0),
+		liveBackends: make(map[string]*storage.Backend),
 		version: &PersistentStateVersion{
 			"passthrough",
 			config.OrchestratorAPIVersion,
@@ -158,9 +158,9 @@ func TestPassthroughClient_NewPassthroughClientDirectory(t *testing.T) {
 func TestPassthroughClient_GetType(t *testing.T) {
 	p := newPassthroughClient()
 
-	store_type := p.GetType()
+	storeType := p.GetType()
 
-	if store_type != PassthroughStore {
+	if storeType != PassthroughStore {
 		t.Error("Passthrough client returned the wrong type!")
 	}
 }
@@ -233,7 +233,7 @@ func TestPassthroughClient_AddBackend(t *testing.T) {
 		t.Error("Could not add backend to passthrough client!")
 	}
 
-	err = p.AddBackend(fakeBackend)
+	p.AddBackend(fakeBackend)
 
 	if len(p.liveBackends) != 1 {
 		t.Error("Added backend a second time to passthrough client!")

@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -21,7 +23,7 @@ var deleteBackendCmd = &cobra.Command{
 	Short:   "Delete one or more storage backends from Trident",
 	Aliases: []string{"b", "backends"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "backend"}
 			if AllBackends {
 				command = append(command, "--all")
@@ -44,7 +46,7 @@ func backendDelete(backendNames []string) error {
 	if AllBackends {
 		// Make sure --all isn't being used along with specific backends
 		if len(backendNames) > 0 {
-			return errors.New("cannot use --all switch and specify individual backends.")
+			return errors.New("cannot use --all switch and specify individual backends")
 		}
 
 		// Get list of backend names so we can delete them all
@@ -55,14 +57,14 @@ func backendDelete(backendNames []string) error {
 	} else {
 		// Not using --all, so make sure one or more backends were specified
 		if len(backendNames) == 0 {
-			return errors.New("backend name not specified.")
+			return errors.New("backend name not specified")
 		}
 	}
 
 	for _, backendName := range backendNames {
 		url := baseURL + "/backend/" + backendName
 
-		response, _, err := api.InvokeRestApi("DELETE", url, nil, Debug)
+		response, _, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {

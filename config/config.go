@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -30,10 +30,9 @@ const (
 	PersistentStoreTimeout           = 10 * time.Second
 
 	/* Protocol constants */
-	File                Protocol = "file"
-	Block               Protocol = "block"
-	ProtocolAny         Protocol = ""
-	ProtocolUnsupported Protocol = "unsupported"
+	File        Protocol = "file"
+	Block       Protocol = "block"
+	ProtocolAny Protocol = ""
 
 	/* Access mode constants */
 	ReadWriteOnce AccessMode = "ReadWriteOnce"
@@ -42,10 +41,10 @@ const (
 	ModeAny       AccessMode = ""
 
 	/* Volume type constants */
-	ONTAP_NFS         VolumeType = "ONTAP_NFS"
-	ONTAP_iSCSI       VolumeType = "ONTAP_iSCSI"
-	SolidFire_iSCSI   VolumeType = "SolidFire_iSCSI"
-	Eseries_iSCSI     VolumeType = "Eseries_iSCSI"
+	OntapNFS          VolumeType = "ONTAP_NFS"
+	OntapISCSI        VolumeType = "ONTAP_iSCSI"
+	SolidFireISCSI    VolumeType = "SolidFire_iSCSI"
+	ESeriesISCSI      VolumeType = "Eseries_iSCSI"
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */

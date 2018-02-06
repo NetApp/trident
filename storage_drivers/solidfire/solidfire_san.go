@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -25,10 +25,10 @@ const (
 	sfDefaultMaxIOPS     = 10000
 )
 
-const SolidfireMinimumVolumeSizeBytes = 1000000000 // 1 GB
+const MinimumVolumeSizeBytes = 1000000000 // 1 GB
 
-// SolidfireSANStorageDriver is for iSCSI storage provisioning
-type SolidfireSANStorageDriver struct {
+// SANStorageDriver is for iSCSI storage provisioning
+type SANStorageDriver struct {
 	initialized      bool
 	Config           drivers.SolidfireStorageDriverConfig
 	Client           *api.Client
@@ -39,7 +39,7 @@ type SolidfireSANStorageDriver struct {
 	Telemetry        *Telemetry
 }
 
-type SolidfireStorageDriverConfigExternal struct {
+type StorageDriverConfigExternal struct {
 	*drivers.CommonStorageDriverConfigExternal
 	TenantName     string
 	EndPoint       string
@@ -55,8 +55,8 @@ type Telemetry struct {
 	Plugin string `json:"plugin"`
 }
 
-func parseQOS(qos_opt string) (qos api.QoS, err error) {
-	iops := strings.Split(qos_opt, ",")
+func parseQOS(qosOpt string) (qos api.QoS, err error) {
+	iops := strings.Split(qosOpt, ",")
 	qos.MinIOPS, err = strconv.ParseInt(iops[0], 10, 64)
 	qos.MaxIOPS, err = strconv.ParseInt(iops[1], 10, 64)
 	qos.BurstIOPS, err = strconv.ParseInt(iops[2], 10, 64)
@@ -74,24 +74,24 @@ func parseType(vTypes []api.VolType, typeName string) (qos api.QoS, err error) {
 		}
 	}
 	if foundType == false {
-		log.Errorf("specified type label not found: %v", typeName)
+		log.Errorf("Specified type label not found: %v", typeName)
 		err = errors.New("specified type not found")
 	}
 	return qos, err
 }
 
 // Name is for returning the name of this driver
-func (d SolidfireSANStorageDriver) Name() string {
+func (d SANStorageDriver) Name() string {
 	return drivers.SolidfireSANStorageDriverName
 }
 
 // Initialize from the provided config
-func (d *SolidfireSANStorageDriver) Initialize(
+func (d *SANStorageDriver) Initialize(
 	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "SolidfireSANStorageDriver"}
+		fields := log.Fields{"Method": "Initialize", "Type": "SANStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Initialize")
 		defer log.WithFields(fields).Debug("<<<< Initialize")
 	}
@@ -104,14 +104,14 @@ func (d *SolidfireSANStorageDriver) Initialize(
 	// decode supplied configJSON string into SolidfireStorageDriverConfig object
 	err := json.Unmarshal([]byte(configJSON), &c)
 	if err != nil {
-		return fmt.Errorf("could not decode JSON configuration. %v", err)
+		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
 
 	log.WithFields(log.Fields{
 		"Version":           c.Version,
 		"StorageDriverName": c.StorageDriverName,
 		"DisableDelete":     c.DisableDelete,
-	}).Debugf("Reparsed into solidfireConfig")
+	}).Debugf("Parsed into solidfireConfig")
 
 	// SF prefix is always empty
 	prefix := ""
@@ -216,7 +216,7 @@ func (d *SolidfireSANStorageDriver) Initialize(
 
 	validationErr := d.validate()
 	if validationErr != nil {
-		log.Errorf("problem validating SolidfireSANStorageDriver error: %+v", validationErr)
+		log.Errorf("Problem validating SANStorageDriver error: %+v", validationErr)
 		return errors.New("error encountered validating SolidFire driver on init")
 	}
 
@@ -232,14 +232,14 @@ func (d *SolidfireSANStorageDriver) Initialize(
 	return nil
 }
 
-func (d *SolidfireSANStorageDriver) Initialized() bool {
+func (d *SANStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *SolidfireSANStorageDriver) Terminate() {
+func (d *SANStorageDriver) Terminate() {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "SolidfireSANStorageDriver"}
+		fields := log.Fields{"Method": "Terminate", "Type": "SANStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
@@ -247,11 +247,11 @@ func (d *SolidfireSANStorageDriver) Terminate() {
 	d.initialized = false
 }
 
-func (d *SolidfireSANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorageDriverConfig) {
+func (d *SANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorageDriverConfig) {
 	c.SerialNumbers = make([]string, 0, 0)
 	hwInfo, err := d.Client.GetClusterHardwareInfo()
 	if err != nil {
-		log.Errorf("unable to determine controller serial numbers: %+v ", err)
+		log.Errorf("Unable to determine controller serial numbers: %+v ", err)
 	} else {
 		if nodes, ok := hwInfo.Nodes.(map[string]interface{}); ok {
 			for _, node := range nodes {
@@ -268,10 +268,10 @@ func (d *SolidfireSANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorag
 }
 
 // Validate the driver configuration and execution environment
-func (d *SolidfireSANStorageDriver) validate() error {
+func (d *SANStorageDriver) validate() error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "SolidfireSANStorageDriver"}
+		fields := log.Fields{"Method": "validate", "Type": "SANStorageDriver"}
 		log.WithFields(fields).Debug(">>>> validate")
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
@@ -305,12 +305,12 @@ func MakeSolidFireName(name string) string {
 }
 
 // Create a SolidFire volume
-func (d *SolidfireSANStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Create",
-			"Type":      "SolidfireSANStorageDriver",
+			"Type":      "SANStorageDriver",
 			"name":      name,
 			"sizeBytes": sizeBytes,
 			"opts":      opts,
@@ -333,26 +333,26 @@ func (d *SolidfireSANStorageDriver) Create(name string, sizeBytes uint64, opts m
 		return errors.New("volume with requested name already exists")
 	}
 
-	if sizeBytes < SolidfireMinimumVolumeSizeBytes {
-		return fmt.Errorf("Requested volume size (%d bytes) is too small.  The minimum volume size is %d bytes.",
-			sizeBytes, SolidfireMinimumVolumeSizeBytes)
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
-	qos_opt := utils.GetV(opts, "qos", "")
-	if qos_opt != "" {
-		qos, err = parseQOS(qos_opt)
+	qosOpt := utils.GetV(opts, "qos", "")
+	if qosOpt != "" {
+		qos, err = parseQOS(qosOpt)
 		if err != nil {
 			return err
 		}
 	}
 
-	type_opt := utils.GetV(opts, "type", "")
-	if type_opt != "" {
+	typeOpt := utils.GetV(opts, "type", "")
+	if typeOpt != "" {
 		if qos.MinIOPS != 0 {
 			log.Warningf("QoS values appear to have been set using -o qos, but " +
 				"type is set as well, overriding with type option.")
 		}
-		qos, err = parseType(*d.Client.VolumeTypes, type_opt)
+		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
 		if err != nil {
 			return err
 		}
@@ -386,7 +386,7 @@ func (d *SolidfireSANStorageDriver) Create(name string, sizeBytes uint64, opts m
 		log.WithFields(log.Fields{"fileSystemType": fstype, "name": name}).Debug("Filesystem format.")
 		meta["fstype"] = fstype
 	default:
-		return fmt.Errorf("unsupported fileSystemType option: %s.", fstype)
+		return fmt.Errorf("unsupported fileSystemType option: %s", fstype)
 	}
 
 	req.Qos = qos
@@ -402,12 +402,12 @@ func (d *SolidfireSANStorageDriver) Create(name string, sizeBytes uint64, opts m
 }
 
 // Create a volume clone
-func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateClone",
-			"Type":     "SolidfireSANStorageDriver",
+			"Type":     "SANStorageDriver",
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
@@ -434,7 +434,7 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 	// Get the volume ID for the source volume
 	v, err = d.GetVolume(source)
 	if err != nil || v.VolumeID == 0 {
-		log.Errorf("unable to locate requested source volume: %+v", err)
+		log.Errorf("Unable to locate requested source volume: %+v", err)
 		return errors.New("error performing clone operation, source volume not found")
 	}
 
@@ -442,7 +442,7 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 	if snapshot != "" {
 		s, err := d.Client.GetSnapshot(0, v.VolumeID, snapshot)
 		if err != nil || s.SnapshotID == 0 {
-			log.Errorf("unable to locate requested source snapshot: %+v", err)
+			log.Errorf("Unable to locate requested source snapshot: %+v", err)
 			return errors.New("error performing clone operation, source snapshot not found")
 		}
 		req.SnapshotID = s.SnapshotID
@@ -454,7 +454,7 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 	req.Attributes = meta
 	vol, err := d.Client.CloneVolume(&req)
 	if err != nil {
-		log.Errorf("failed to create clone: %+v", err)
+		log.Errorf("Failed to create clone: %+v", err)
 		return errors.New("error performing clone operation")
 	}
 
@@ -463,22 +463,23 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 	modifyReq.VolumeID = vol.VolumeID
 	doModify := false
 
-	qos_opt := utils.GetV(opts, "qos", "")
-	if qos_opt != "" {
+	qosOpt := utils.GetV(opts, "qos", "")
+	if qosOpt != "" {
 		doModify = true
-		qos, err = parseQOS(qos_opt)
+		qos, err = parseQOS(qosOpt)
 		if err != nil {
 			return err
 		}
 	}
 
-	type_opt := utils.GetV(opts, "type", "")
-	if type_opt != "" {
+	typeOpt := utils.GetV(opts, "type", "")
+	if typeOpt != "" {
 		doModify = true
 		if qos.MinIOPS != 0 {
-			log.Warningf("qos values appear to have been set using -o qos, but type is set as well, overriding with type option")
+			log.Warningf("qos values appear to have been set using -o qos, but type is set as well, " +
+				"overriding with type option")
 		}
-		qos, err = parseType(*d.Client.VolumeTypes, type_opt)
+		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
 		if err != nil {
 			return err
 		}
@@ -488,7 +489,7 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 		modifyReq.Qos = qos
 		err = d.Client.ModifyVolume(&modifyReq)
 		if err != nil {
-			log.Errorf("failed to update QoS on clone: %+v", err)
+			log.Errorf("Failed to update QoS on clone: %+v", err)
 			return errors.New("error performing clone operation")
 		}
 	}
@@ -496,12 +497,12 @@ func (d *SolidfireSANStorageDriver) CreateClone(name, source, snapshot string, o
 }
 
 // Destroy the requested docker volume
-func (d *SolidfireSANStorageDriver) Destroy(name string) error {
+func (d *SANStorageDriver) Destroy(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Destroy",
-			"Type":   "SolidfireSANStorageDriver",
+			"Type":   "SANStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> Destroy")
@@ -510,7 +511,7 @@ func (d *SolidfireSANStorageDriver) Destroy(name string) error {
 
 	v, err := d.GetVolume(name)
 	if err != nil && err.Error() != "volume not found" {
-		log.Errorf("unable to locate volume for delete operation: %+v", err)
+		log.Errorf("Unable to locate volume for delete operation: %+v", err)
 		return err
 	} else if err != nil {
 		// Volume wasn't found. No action needs to be taken.
@@ -520,7 +521,7 @@ func (d *SolidfireSANStorageDriver) Destroy(name string) error {
 	d.Client.DetachVolume(v)
 	err = d.Client.DeleteVolume(v.VolumeID)
 	if err != nil {
-		log.Errorf("error during delete operation: %+v", err)
+		log.Errorf("Error during delete operation: %+v", err)
 		return err
 	}
 
@@ -528,12 +529,12 @@ func (d *SolidfireSANStorageDriver) Destroy(name string) error {
 }
 
 // Attach the lun
-func (d *SolidfireSANStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Attach",
-			"Type":       "SolidfireSANStorageDriver",
+			"Type":       "SANStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 			"opts":       opts,
@@ -544,19 +545,19 @@ func (d *SolidfireSANStorageDriver) Attach(name, mountpoint string, opts map[str
 
 	v, err := d.GetVolume(name)
 	if err != nil {
-		log.Errorf("unable to locate volume for mount operation: %+v", err)
+		log.Errorf("Unable to locate volume for mount operation: %+v", err)
 		return errors.New("volume not found")
 	}
 	path, device, err := d.Client.AttachVolume(&v, d.InitiatorIFace)
 	if path == "" || device == "" && err == nil {
-		log.Errorf("path not found on attach: (path: %s, device: %s)", path, device)
+		log.Errorf("Path not found on attach: (path: %s, device: %s)", path, device)
 		return errors.New("path not found")
 	}
 	if err != nil {
-		log.Errorf("error on iSCSI attach: %+v", err)
+		log.Errorf("Error on iSCSI attach: %+v", err)
 		return errors.New("iSCSI attach error")
 	}
-	log.Debugf("Attached volume at (path, devfile): %s, %s", path, device)
+	log.Debugf("Attached volume: (path: %s, device: %s)", path, device)
 
 	// NOTE(jdg): Check for device including multipath/DM device)
 	info, err := utils.GetDeviceInfoForLuns()
@@ -582,7 +583,7 @@ func (d *SolidfireSANStorageDriver) Attach(name, mountpoint string, opts map[str
 		log.WithFields(log.Fields{"LUN": path, "fstype": fstype}).Debug("Formatting LUN.")
 		err := utils.FormatVolume(device, fstype)
 		if err != nil {
-			log.Errorf("error on formatting volume: %+v", err)
+			log.Errorf("Error on formatting volume: %+v", err)
 			return errors.New("format (mkfs) error")
 		}
 	} else if existingFstype != fstype {
@@ -596,7 +597,7 @@ func (d *SolidfireSANStorageDriver) Attach(name, mountpoint string, opts map[str
 	}
 
 	if mountErr := utils.Mount(device, mountpoint); mountErr != nil {
-		log.Errorf("unable to mount device: (device: %s, mountpoint: %s, error: %+v", device, mountpoint, err)
+		log.Errorf("Unable to mount device: (device: %s, mountpoint: %s, error: %+v", device, mountpoint, err)
 		return errors.New("unable to mount device")
 	}
 
@@ -604,12 +605,12 @@ func (d *SolidfireSANStorageDriver) Attach(name, mountpoint string, opts map[str
 }
 
 // Detach the volume
-func (d *SolidfireSANStorageDriver) Detach(name, mountpoint string) error {
+func (d *SANStorageDriver) Detach(name, mountpoint string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Detach",
-			"Type":       "SolidfireSANStorageDriver",
+			"Type":       "SANStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 		}
@@ -619,13 +620,13 @@ func (d *SolidfireSANStorageDriver) Detach(name, mountpoint string) error {
 
 	umountErr := utils.Umount(mountpoint)
 	if umountErr != nil {
-		log.Errorf("unable to unmount device: (name: %s, mountpoint: %s, error: %+v", name, mountpoint, umountErr)
+		log.Errorf("Unable to unmount device: (name: %s, mountpoint: %s, error: %+v", name, mountpoint, umountErr)
 		return errors.New("unable to unmount device")
 	}
 
 	v, err := d.GetVolume(name)
 	if err != nil {
-		log.WithField("volume", v).Errorf("unable to locate volume: %+v", err)
+		log.WithField("volume", v).Errorf("Unable to locate volume: %+v", err)
 		return errors.New("volume not found")
 	}
 	// no longer detaching and removing iSCSI session here because it was causing issues with 'docker cp'
@@ -635,11 +636,11 @@ func (d *SolidfireSANStorageDriver) Detach(name, mountpoint string) error {
 	return nil
 }
 
-// Return the list of volumes according to backend device
-func (d *SolidfireSANStorageDriver) List() (vols []string, err error) {
+// List of volumes according to backend device
+func (d *SANStorageDriver) List() (vols []string, err error) {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "SolidfireSANStorageDriver"}
+		fields := log.Fields{"Method": "List", "Type": "SANStorageDriver"}
 		log.WithFields(fields).Debug(">>>> List")
 		defer log.WithFields(fields).Debug("<<<< List")
 	}
@@ -660,13 +661,13 @@ func (d *SolidfireSANStorageDriver) List() (vols []string, err error) {
 	return vols, err
 }
 
-// Return the list of snapshots associated with the named volume
-func (d *SolidfireSANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// SnapshotList returns the list of snapshots associated with the named volume
+func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "SnapshotList",
-			"Type":   "SolidfireSANStorageDriver",
+			"Type":   "SANStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> SnapshotList")
@@ -675,7 +676,7 @@ func (d *SolidfireSANStorageDriver) SnapshotList(name string) ([]storage.Snapsho
 
 	v, err := d.GetVolume(name)
 	if err != nil {
-		log.Errorf("unable to locate parent volume in snapshotlist: %+v", err)
+		log.Errorf("Unable to locate parent volume in snapshot list: %+v", err)
 		return nil, errors.New("volume not found")
 	}
 
@@ -684,26 +685,26 @@ func (d *SolidfireSANStorageDriver) SnapshotList(name string) ([]storage.Snapsho
 
 	s, err := d.Client.ListSnapshots(&req)
 	if err != nil {
-		log.Errorf("unable to locate snapshot: %+v", err)
+		log.Errorf("Unable to locate snapshot: %+v", err)
 		return nil, errors.New("snapshot not found")
 	}
 
-	log.Debugf("returned %d snapshots", len(s))
+	log.Debugf("Returned %d snapshots", len(s))
 	var snapshots []storage.Snapshot
 
 	for _, snap := range s {
-		log.Debugf("snapshot name: %s, date: %s", snap.Name, snap.CreateTime)
-		snapshots = append(snapshots, storage.Snapshot{snap.Name, snap.CreateTime})
+		log.Debugf("Snapshot name: %s, date: %s", snap.Name, snap.CreateTime)
+		snapshots = append(snapshots, storage.Snapshot{Name: snap.Name, Created: snap.CreateTime})
 	}
 
 	return snapshots, nil
 }
 
-// Test for the existence of a volume
-func (d *SolidfireSANStorageDriver) Get(name string) error {
+// Get tests for the existence of a volume
+func (d *SANStorageDriver) Get(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "SolidfireSANStorageDriver"}
+		fields := log.Fields{"Method": "Get", "Type": "SANStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Get")
 		defer log.WithFields(fields).Debug("<<<< Get")
 	}
@@ -714,7 +715,7 @@ func (d *SolidfireSANStorageDriver) Get(name string) error {
 
 // getVolumes returns all volumes for the configured tenant.  The
 // keys are the volume names as reported to Docker.
-func (d *SolidfireSANStorageDriver) getVolumes() (map[string]api.Volume, error) {
+func (d *SANStorageDriver) getVolumes() (map[string]api.Volume, error) {
 	var req api.ListVolumesForAccountRequest
 	req.AccountID = d.TenantID
 	volumes, err := d.Client.ListVolumesForAccount(&req)
@@ -736,7 +737,7 @@ func (d *SolidfireSANStorageDriver) getVolumes() (map[string]api.Volume, error) 
 	return volMap, nil
 }
 
-func (d *SolidfireSANStorageDriver) GetVolume(name string) (api.Volume, error) {
+func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
 	var vols []api.Volume
 	var req api.ListVolumesForAccountRequest
 
@@ -750,7 +751,7 @@ func (d *SolidfireSANStorageDriver) GetVolume(name string) (api.Volume, error) {
 	req.AccountID = d.TenantID
 	volumes, err := d.Client.ListVolumesForAccount(&req)
 	if err != nil {
-		log.Errorf("error encountered requesting volumes in SolidFire:getVolume: %+v", err)
+		log.Errorf("Error encountered requesting volumes in SolidFire:getVolume: %+v", err)
 		return api.Volume{}, errors.New("device reported API error")
 	}
 
@@ -762,10 +763,10 @@ func (d *SolidfireSANStorageDriver) GetVolume(name string) (api.Volume, error) {
 		// We prefer attributes, so check that first, then pick up legacy
 		// volumes using Volume Name
 		if attrs["docker-name"] == name && v.Status == "active" {
-			log.Debugf("found volume by attributes: %+v", v)
+			log.Debugf("Found volume by attributes: %+v", v)
 			vols = append(vols, v)
 		} else if (v.Name == legacyName || v.Name == baseSFName) && v.Status == "active" {
-			log.Warningf("found volume by name using deprecated Volume.Name mapping: %+v", v)
+			log.Warningf("Found volume by name using deprecated Volume.Name mapping: %+v", v)
 			vols = append(vols, v)
 		}
 	}
@@ -775,8 +776,8 @@ func (d *SolidfireSANStorageDriver) GetVolume(name string) (api.Volume, error) {
 	return vols[0], nil
 }
 
-// Retrieve storage backend capabilities
-func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
+// GetStorageBackendSpecs retrieves storage backend capabilities
+func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 
 	backend.Name = "solidfire_" + strings.Split(d.Config.SVIP, ":")[0]
 
@@ -817,7 +818,7 @@ func (d *SolidfireSANStorageDriver) GetStorageBackendSpecs(backend *storage.Stor
 	return nil
 }
 
-func (d *SolidfireSANStorageDriver) GetInternalVolumeName(name string) string {
+func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
 	if trident.UsingPassthroughStore {
 		return strings.Replace(name, "_", "-", -1)
@@ -830,7 +831,7 @@ func (d *SolidfireSANStorageDriver) GetInternalVolumeName(name string) string {
 	}
 }
 
-func (d *SolidfireSANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 
 	// 1. Sanitize the volume name
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
@@ -843,16 +844,16 @@ func (d *SolidfireSANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfi
 	return true
 }
 
-func (d *SolidfireSANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 	return d.mapSolidfireLun(volConfig)
 }
 
-func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeConfig) error {
 	// Add the newly created volume to the default VAG
 	name := volConfig.InternalName
 	v, err := d.GetVolume(name)
 	if err != nil {
-		return fmt.Errorf("Could not find SolidFire volume %s: %s", name, err.Error())
+		return fmt.Errorf("could not find SolidFire volume %s: %s", name, err.Error())
 	}
 
 	// start volConfig...
@@ -866,7 +867,7 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 		req.AccountID = v.AccountID
 		a, err := d.Client.GetAccountByID(&req)
 		if err != nil {
-			return fmt.Errorf("Could not lookup SolidFire account ID %v, error: %+v ", v.AccountID, err)
+			return fmt.Errorf("could not lookup SolidFire account ID %v, error: %+v ", v.AccountID, err)
 		}
 
 		// finish volConfig
@@ -884,7 +885,7 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 
 			err = d.Client.AddVolumesToAccessGroup(&req)
 			if err != nil {
-				return fmt.Errorf("Could not map SolidFire volume %s to the VAG: %s", name, err.Error())
+				return fmt.Errorf("could not map SolidFire volume %s to the VAG: %s", name, err.Error())
 			}
 		}
 
@@ -908,9 +909,9 @@ func (d *SolidfireSANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeCon
 	return nil
 }
 
-func (d *SolidfireSANStorageDriver) GetVolumeOpts(
+func (d *SANStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	pool *storage.StoragePool,
+	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 
@@ -945,20 +946,20 @@ func (d *SolidfireSANStorageDriver) GetVolumeOpts(
 	return opts, nil
 }
 
-func (d *SolidfireSANStorageDriver) GetProtocol() trident.Protocol {
+func (d *SANStorageDriver) GetProtocol() trident.Protocol {
 	return trident.Block
 }
 
-func (d *SolidfireSANStorageDriver) StoreConfig(
+func (d *SANStorageDriver) StoreConfig(
 	b *storage.PersistentStorageBackendConfig,
 ) {
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 	b.SolidfireConfig = &d.Config
 }
 
-func (d *SolidfireSANStorageDriver) GetExternalConfig() interface{} {
+func (d *SANStorageDriver) GetExternalConfig() interface{} {
 	endpointHalves := strings.Split(d.Config.EndPoint, "@")
-	return &SolidfireStorageDriverConfigExternal{
+	return &StorageDriverConfigExternal{
 		CommonStorageDriverConfigExternal: drivers.GetCommonStorageDriverConfigExternal(
 			d.Config.CommonStorageDriverConfig),
 		TenantName:     d.Config.TenantName,
@@ -986,8 +987,8 @@ func diffSlices(a, b []int64) []int64 {
 	return r
 }
 
-// Verify that the provided list of VAG ID's exist, return list of those that don't
-func (d *SolidfireSANStorageDriver) VerifyVags(vags []int64) ([]int64, error) {
+// VerifyVags verifies that the provided list of VAG ID's exist, return list of those that don't
+func (d *SANStorageDriver) VerifyVags(vags []int64) ([]int64, error) {
 	var vagIDs []int64
 
 	discovered, err := d.Client.ListVolumeAccessGroups(&api.ListVolumeAccessGroupsRequest{})
@@ -1001,8 +1002,8 @@ func (d *SolidfireSANStorageDriver) VerifyVags(vags []int64) ([]int64, error) {
 	return diffSlices(vagIDs, vags), nil
 }
 
-// Add volume ID's in the provided list that aren't already a member of the specified VAG
-func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []int64) error {
+// AddMissingVolumesToVag adds volume ID's in the provided list that aren't already a member of the specified VAG
+func (d *SANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []int64) error {
 	var req api.ListVolumeAccessGroupsRequest
 	req.StartVAGID = vagID
 	req.Limit = 1
@@ -1020,7 +1021,7 @@ func (d *SolidfireSANStorageDriver) AddMissingVolumesToVag(vagID int64, vols []i
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *SolidfireSANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
+func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	volume, err := d.GetVolume(name)
 	if err != nil {
@@ -1034,7 +1035,7 @@ func (d *SolidfireSANStorageDriver) GetVolumeExternal(name string) (*storage.Vol
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *SolidfireSANStorageDriver) GetVolumeExternalWrappers(
+func (d *SANStorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
 
 	// Let the caller know we're done by closing the channel
@@ -1056,7 +1057,7 @@ func (d *SolidfireSANStorageDriver) GetVolumeExternalWrappers(
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *SolidfireSANStorageDriver) getVolumeExternal(
+func (d *SANStorageDriver) getVolumeExternal(
 	externalName string, volumeAttrs *api.Volume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{

@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -11,12 +11,12 @@ import (
 
 type Orchestrator interface {
 	Bootstrap() error
-	AddFrontend(f frontend.FrontendPlugin)
+	AddFrontend(f frontend.Plugin)
 	GetVersion() string
 
-	AddStorageBackend(configJSON string) (*storage.StorageBackendExternal, error)
-	GetBackend(backend string) *storage.StorageBackendExternal
-	ListBackends() []*storage.StorageBackendExternal
+	AddStorageBackend(configJSON string) (*storage.BackendExternal, error)
+	GetBackend(backend string) *storage.BackendExternal
+	ListBackends() []*storage.BackendExternal
 	OfflineBackend(backend string) (bool, error)
 
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
@@ -32,8 +32,8 @@ type Orchestrator interface {
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	ReloadVolumes() error
 
-	AddStorageClass(scConfig *storage_class.Config) (*storage_class.StorageClassExternal, error)
-	GetStorageClass(scName string) *storage_class.StorageClassExternal
-	ListStorageClasses() []*storage_class.StorageClassExternal
+	AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error)
+	GetStorageClass(scName string) *storageclass.External
+	ListStorageClasses() []*storageclass.External
 	DeleteStorageClass(scName string) (bool, error)
 }

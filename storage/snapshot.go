@@ -1,4 +1,4 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -13,7 +13,5 @@ type SnapshotExternal struct {
 }
 
 func (s *Snapshot) ConstructExternal() *SnapshotExternal {
-	return &SnapshotExternal{
-		*s,
-	}
+	return &SnapshotExternal{*s}
 }

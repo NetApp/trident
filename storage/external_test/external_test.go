@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package external_test
+package externaltest
 
 import (
 	"encoding/json"
@@ -11,11 +11,11 @@ import (
 	"github.com/netapp/trident/storage/factory"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
-	fake_driver "github.com/netapp/trident/storage_drivers/fake"
+	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 func TestConstructExternalBackend(t *testing.T) {
-	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		"external-test",
 		config.File,
 		map[string]*fake.StoragePool{

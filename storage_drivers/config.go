@@ -1,4 +1,4 @@
-package storage_drivers
+package storagedrivers
 
 // ConfigVersion is the expected version specified in the config file
 const ConfigVersion = 1

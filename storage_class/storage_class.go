@@ -1,13 +1,13 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_class
+package storageclass
 
 import (
 	"encoding/json"
 	"fmt"
 	"sort"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -20,24 +20,24 @@ func New(c *Config) *StorageClass {
 	}
 	return &StorageClass{
 		config: c,
-		pools:  make([]*storage.StoragePool, 0),
+		pools:  make([]*storage.Pool, 0),
 	}
 }
 
 func NewForConfig(configJSON string) (*StorageClass, error) {
-	var config Config
-	err := json.Unmarshal([]byte(configJSON), &config)
+	var scConfig Config
+	err := json.Unmarshal([]byte(configJSON), &scConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal config:  %v", err)
+		return nil, fmt.Errorf("unable to unmarshal config: %v", err)
 	}
-	return New(&config), nil
+	return New(&scConfig), nil
 }
 
-func NewFromPersistent(persistent *StorageClassPersistent) *StorageClass {
+func NewFromPersistent(persistent *Persistent) *StorageClass {
 	return New(persistent.Config)
 }
 
-func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
+func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 
 	// Check additionalStoragePools first, since it can yield a match result by itself
 	if len(s.config.AdditionalPools) > 0 {
@@ -115,7 +115,7 @@ func (s *StorageClass) Matches(storagePool *storage.StoragePool) bool {
 // CheckAndAddBackend iterates through each of the storage pools
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
-func (s *StorageClass) CheckAndAddBackend(b *storage.StorageBackend) int {
+func (s *StorageClass) CheckAndAddBackend(b *storage.Backend) int {
 
 	log.WithFields(log.Fields{
 		"backend":      b.Name,
@@ -142,8 +142,8 @@ func (s *StorageClass) CheckAndAddBackend(b *storage.StorageBackend) int {
 	return added
 }
 
-func (s *StorageClass) RemovePoolsForBackend(backend *storage.StorageBackend) {
-	newStoragePools := make([]*storage.StoragePool, 0)
+func (s *StorageClass) RemovePoolsForBackend(backend *storage.Backend) {
+	newStoragePools := make([]*storage.Pool, 0)
 	for _, storagePool := range s.pools {
 		if storagePool.Backend != backend {
 			newStoragePools = append(newStoragePools, storagePool)
@@ -152,7 +152,7 @@ func (s *StorageClass) RemovePoolsForBackend(backend *storage.StorageBackend) {
 	s.pools = newStoragePools
 }
 
-func (s *StorageClass) GetAttributes() map[string]storage_attribute.Request {
+func (s *StorageClass) GetAttributes() map[string]storageattribute.Request {
 	return s.config.Attributes
 }
 
@@ -168,8 +168,8 @@ func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
 	return s.config.AdditionalPools
 }
 
-func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.StoragePool {
-	ret := make([]*storage.StoragePool, 0, len(s.pools))
+func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.Pool {
+	ret := make([]*storage.Pool, 0, len(s.pools))
 	// TODO:  Change this to work with indices of backends?
 	for _, storagePool := range s.pools {
 		if p == config.ProtocolAny || storagePool.Backend.GetProtocol() == p {
@@ -179,8 +179,8 @@ func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.
 	return ret
 }
 
-func (s *StorageClass) ConstructExternal() *StorageClassExternal {
-	ret := &StorageClassExternal{
+func (s *StorageClass) ConstructExternal() *External {
+	ret := &External{
 		Config:       s.config,
 		StoragePools: make(map[string][]string),
 	}
@@ -217,12 +217,12 @@ func (s *StorageClass) ConstructExternal() *StorageClassExternal {
 	return ret
 }
 
-func (s *StorageClassExternal) GetName() string {
+func (s *External) GetName() string {
 	return s.Config.Name
 }
 
-func (s *StorageClass) ConstructPersistent() *StorageClassPersistent {
-	ret := &StorageClassPersistent{Config: s.config}
+func (s *StorageClass) ConstructPersistent() *Persistent {
+	ret := &Persistent{Config: s.config}
 	for _, list := range ret.Config.Pools {
 		sort.Strings(list)
 	}
@@ -232,6 +232,6 @@ func (s *StorageClass) ConstructPersistent() *StorageClassPersistent {
 	return ret
 }
 
-func (s *StorageClassPersistent) GetName() string {
+func (s *Persistent) GetName() string {
 	return s.Config.Name
 }

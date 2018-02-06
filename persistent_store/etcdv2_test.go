@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"testing"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -116,7 +116,7 @@ func TestEtcdv2ReadDeleteKeys(t *testing.T) {
 	if err = p.DeleteKeys("/volume"); err != nil {
 		t.Error("Deleting the keys failed!")
 	}
-	keys, err = p.ReadKeys("/volume")
+	_, err = p.ReadKeys("/volume")
 	if err != nil && MatchKeyNotFoundErr(err) {
 	} else {
 		t.Error(err.Error())
@@ -167,7 +167,7 @@ func TestEtcdv2RecursiveReadDelete(t *testing.T) {
 	}
 
 	// Validate delete
-	keys, err = p.ReadKeys("/trident_etcd")
+	_, err = p.ReadKeys("/trident_etcd")
 	if err != nil && MatchKeyNotFoundErr(err) {
 	} else {
 		t.Fatal("Failed to delete the keys: ", err)
@@ -224,10 +224,10 @@ func TestEtcdv2Backend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsDriver := ontap.OntapNASStorageDriver{
+	nfsDriver := ontap.NASStorageDriver{
 		Config: nfsServerConfig,
 	}
-	nfsServer := &storage.StorageBackend{
+	nfsServer := &storage.Backend{
 		Driver: &nfsDriver,
 		Name:   "nfs_server_1-" + nfsServerConfig.ManagementLIF,
 	}
@@ -238,7 +238,7 @@ func TestEtcdv2Backend(t *testing.T) {
 	}
 
 	// Getting a storage backend
-	//var recoveredBackend *storage.StorageBackendPersistent
+	//var recoveredBackend *storage.BackendPersistent
 	var ontapConfig drivers.OntapStorageDriverConfig
 	recoveredBackend, err := p.GetBackend(nfsServer.Name)
 	if err != nil {
@@ -292,7 +292,7 @@ func TestEtcdv2Backend(t *testing.T) {
 }
 
 func TestEtcdv2Backends(t *testing.T) {
-	var backends []*storage.StorageBackendPersistent
+	var backends []*storage.BackendPersistent
 	p, err := NewEtcdClientV2(*etcdV2)
 	if backends, err = p.GetBackends(); err != nil {
 		t.Fatal("Unable to list backends at test start: ", err)
@@ -311,8 +311,8 @@ func TestEtcdv2Backends(t *testing.T) {
 			Username:      "admin",
 			Password:      "netapp",
 		}
-		nfsServer := &storage.StorageBackend{
-			Driver: &ontap.OntapNASStorageDriver{
+		nfsServer := &storage.Backend{
+			Driver: &ontap.NASStorageDriver{
 				Config: nfsServerConfig,
 			},
 			Name: "nfs_server_" + strconv.Itoa(i) + "-" + nfsServerConfig.ManagementLIF,
@@ -353,8 +353,8 @@ func TestEtcdv2DuplicateBackend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.StorageBackend{
-		Driver: &ontap.OntapNASStorageDriver{
+	nfsServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
 			Config: nfsServerConfig,
 		},
 		Name: "nfs_server_1-" + nfsServerConfig.ManagementLIF,
@@ -388,8 +388,8 @@ func TestEtcdv2Volume(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.StorageBackend{
-		Driver: &ontap.OntapNASStorageDriver{
+	nfsServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
 			Config: nfsServerConfig,
 		},
 		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
@@ -470,8 +470,8 @@ func TestEtcdv2Volumes(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.StorageBackend{
-		Driver: &ontap.OntapNASStorageDriver{
+	nfsServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
 			Config: nfsServerConfig,
 		},
 		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
@@ -633,8 +633,8 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 		},
 		TenantName: "docker",
 	}
-	sfBackend := &storage.StorageBackend{
-		Driver: &solidfire.SolidfireSANStorageDriver{
+	sfBackend := &storage.Backend{
+		Driver: &solidfire.SANStorageDriver{
 			Config: sfConfig,
 		},
 		Name: "solidfire" + "_10.0.0.9",
@@ -666,15 +666,15 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 
 func TestEtcdv2AddStorageClass(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
-	bronzeConfig := &storage_class.Config{
+	bronzeConfig := &storageclass.Config{
 		Name:            "bronze",
-		Attributes:      make(map[string]storage_attribute.Request),
+		Attributes:      make(map[string]storageattribute.Request),
 		AdditionalPools: make(map[string][]string),
 	}
-	bronzeConfig.Attributes["media"] = storage_attribute.NewStringRequest("hdd")
+	bronzeConfig.Attributes["media"] = storageattribute.NewStringRequest("hdd")
 	bronzeConfig.AdditionalPools["ontapnas_10.0.207.101"] = []string{"aggr1"}
 	bronzeConfig.AdditionalPools["ontapsan_10.0.207.103"] = []string{"aggr1"}
-	bronzeClass := storage_class.New(bronzeConfig)
+	bronzeClass := storageclass.New(bronzeConfig)
 
 	if err := p.AddStorageClass(bronzeClass); err != nil {
 		t.Fatal(err.Error())
@@ -685,7 +685,7 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	sc := storage_class.NewFromPersistent(retrievedSC)
+	sc := storageclass.NewFromPersistent(retrievedSC)
 	// Validating correct retrieval of storage class attributes
 	retrievedAttrs := sc.GetAttributes()
 	if _, ok := retrievedAttrs["media"]; !ok {

@@ -1,4 +1,4 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package docker
 
@@ -12,14 +12,14 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
 )
 
-type DockerPlugin struct {
+type Plugin struct {
 	orchestrator core.Orchestrator
 	driverName   string
 	driverPort   string
@@ -28,7 +28,7 @@ type DockerPlugin struct {
 	mutex        *sync.Mutex
 }
 
-func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*DockerPlugin, error) {
+func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*Plugin, error) {
 
 	// Get the Docker version
 	version, err := getDockerVersion()
@@ -39,7 +39,7 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 	}
 
 	// Create the plugin object
-	plugin := &DockerPlugin{
+	plugin := &Plugin{
 		orchestrator: orchestrator,
 		driverName:   driverName,
 		driverPort:   driverPort,
@@ -111,7 +111,7 @@ func getDockerVersion() (*Version, error) {
 	return &version, nil
 }
 
-func (p *DockerPlugin) Activate() error {
+func (p *Plugin) Activate() error {
 	handler := volume.NewHandler(p)
 	go func() {
 		var err error
@@ -128,15 +128,15 @@ func (p *DockerPlugin) Activate() error {
 	return nil
 }
 
-func (p *DockerPlugin) Deactivate() error {
+func (p *Plugin) Deactivate() error {
 	return nil
 }
 
-func (p *DockerPlugin) GetName() string {
+func (p *Plugin) GetName() string {
 	return pluginName
 }
 
-func (p *DockerPlugin) Version() string {
+func (p *Plugin) Version() string {
 	if p.version == nil {
 		return "unknown"
 	} else {
@@ -144,7 +144,7 @@ func (p *DockerPlugin) Version() string {
 	}
 }
 
-func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
+func (p *Plugin) Create(request *volume.CreateRequest) error {
 
 	log.WithFields(log.Fields{
 		"method":  "Create",
@@ -173,7 +173,7 @@ func (p *DockerPlugin) Create(request *volume.CreateRequest) error {
 	return err
 }
 
-func (p *DockerPlugin) List() (*volume.ListResponse, error) {
+func (p *Plugin) List() (*volume.ListResponse, error) {
 
 	log.WithFields(log.Fields{
 		"method": "List",
@@ -195,7 +195,7 @@ func (p *DockerPlugin) List() (*volume.ListResponse, error) {
 	return &volume.ListResponse{Volumes: dockerVols}, nil
 }
 
-func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
+func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 
 	log.WithFields(log.Fields{
 		"method": "Get",
@@ -212,7 +212,7 @@ func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, err
 	// Get the requested volume
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
-		return &volume.GetResponse{}, fmt.Errorf("Volume %s not found.", request.Name)
+		return &volume.GetResponse{}, fmt.Errorf("volume %s not found", request.Name)
 	}
 
 	// Get the volume's snapshots
@@ -236,7 +236,7 @@ func (p *DockerPlugin) Get(request *volume.GetRequest) (*volume.GetResponse, err
 	return &volume.GetResponse{Volume: vol}, nil
 }
 
-func (p *DockerPlugin) Remove(request *volume.RemoveRequest) error {
+func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 
 	log.WithFields(log.Fields{
 		"method": "Remove",
@@ -250,7 +250,7 @@ func (p *DockerPlugin) Remove(request *volume.RemoveRequest) error {
 	return err
 }
 
-func (p *DockerPlugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
+func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 
 	log.WithFields(log.Fields{
 		"method": "Path",
@@ -259,7 +259,7 @@ func (p *DockerPlugin) Path(request *volume.PathRequest) (*volume.PathResponse, 
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
-		return &volume.PathResponse{}, fmt.Errorf("Volume %s not found.", request.Name)
+		return &volume.PathResponse{}, fmt.Errorf("volume %s not found", request.Name)
 	}
 
 	mountpoint, err := p.getPath(tridentVol)
@@ -270,7 +270,7 @@ func (p *DockerPlugin) Path(request *volume.PathRequest) (*volume.PathResponse, 
 	return &volume.PathResponse{Mountpoint: mountpoint}, nil
 }
 
-func (p *DockerPlugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
+func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 
 	log.WithFields(log.Fields{
 		"method": "Mount",
@@ -280,7 +280,7 @@ func (p *DockerPlugin) Mount(request *volume.MountRequest) (*volume.MountRespons
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
-		return &volume.MountResponse{}, fmt.Errorf("Volume %s not found.", request.Name)
+		return &volume.MountResponse{}, fmt.Errorf("volume %s not found", request.Name)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
@@ -289,14 +289,14 @@ func (p *DockerPlugin) Mount(request *volume.MountRequest) (*volume.MountRespons
 	err := p.orchestrator.AttachVolume(request.Name, mountpoint, options)
 	if err != nil {
 		log.Error(err)
-		err = fmt.Errorf("Error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
+		err = fmt.Errorf("error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
 		return &volume.MountResponse{}, err
 	}
 
 	return &volume.MountResponse{Mountpoint: mountpoint}, nil
 }
 
-func (p *DockerPlugin) Unmount(request *volume.UnmountRequest) error {
+func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 
 	log.WithFields(log.Fields{
 		"method": "Unmount",
@@ -306,7 +306,7 @@ func (p *DockerPlugin) Unmount(request *volume.UnmountRequest) error {
 
 	tridentVol := p.orchestrator.GetVolume(request.Name)
 	if tridentVol == nil {
-		return fmt.Errorf("Volume %s not found.", request.Name)
+		return fmt.Errorf("volume %s not found", request.Name)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
@@ -314,13 +314,13 @@ func (p *DockerPlugin) Unmount(request *volume.UnmountRequest) error {
 	err := p.orchestrator.DetachVolume(request.Name, mountpoint)
 	if err != nil {
 		log.Error(err)
-		return fmt.Errorf("Error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
+		return fmt.Errorf("error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
 	}
 
 	return nil
 }
 
-func (p *DockerPlugin) Capabilities() *volume.CapabilitiesResponse {
+func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 
 	log.WithFields(log.Fields{
 		"method": "Capabilities",
@@ -330,7 +330,7 @@ func (p *DockerPlugin) Capabilities() *volume.CapabilitiesResponse {
 }
 
 // getPath returns the mount point if the path exists.
-func (p *DockerPlugin) getPath(vol *storage.VolumeExternal) (string, error) {
+func (p *Plugin) getPath(vol *storage.VolumeExternal) (string, error) {
 
 	mountpoint := p.mountpoint(vol.Config.InternalName)
 
@@ -345,12 +345,12 @@ func (p *DockerPlugin) getPath(vol *storage.VolumeExternal) (string, error) {
 		return "", err
 	}
 	if fi == nil {
-		return "", fmt.Errorf("Could not stat %v", mountpoint)
+		return "", fmt.Errorf("could not stat %v", mountpoint)
 	}
 
 	return mountpoint, nil
 }
 
-func (p *DockerPlugin) mountpoint(name string) string {
+func (p *Plugin) mountpoint(name string) string {
 	return filepath.Join(p.volumePath, name)
 }

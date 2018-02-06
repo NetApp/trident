@@ -1,4 +1,4 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -34,11 +34,11 @@ const (
 	artifactPrefixKubernetes = "trident"
 )
 
-// OntapNASQtreeStorageDriver is for NFS storage provisioning of qtrees
-type OntapNASQtreeStorageDriver struct {
+// NASQtreeStorageDriver is for NFS storage provisioning of qtrees
+type NASQtreeStorageDriver struct {
 	initialized         bool
 	Config              drivers.OntapStorageDriverConfig
-	API                 *api.APIClient
+	API                 *api.Client
 	Telemetry           *Telemetry
 	quotaResizeMap      map[string]bool
 	provMutex           *sync.Mutex
@@ -47,34 +47,34 @@ type OntapNASQtreeStorageDriver struct {
 	housekeepingTasks   map[string]*time.Ticker
 }
 
-func (d *OntapNASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
-func (d *OntapNASQtreeStorageDriver) GetAPI() *api.APIClient {
+func (d *NASQtreeStorageDriver) GetAPI() *api.Client {
 	return d.API
 }
 
-func (d *OntapNASQtreeStorageDriver) GetTelemetry() *Telemetry {
+func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
 	return d.Telemetry
 }
 
 // Name is for returning the name of this driver
-func (d *OntapNASQtreeStorageDriver) Name() string {
+func (d *NASQtreeStorageDriver) Name() string {
 	return drivers.OntapNASQtreeStorageDriverName
 }
 
-func (d *OntapNASQtreeStorageDriver) FlexvolNamePrefix() string {
+func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 	return d.flexvolNamePrefix
 }
 
 // Initialize from the provided config
-func (d *OntapNASQtreeStorageDriver) Initialize(
+func (d *NASQtreeStorageDriver) Initialize(
 	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "OntapNASQtreeStorageDriver"}
+		fields := log.Fields{"Method": "Initialize", "Type": "NASQtreeStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Initialize")
 		defer log.WithFields(fields).Debug("<<<< Initialize")
 	}
@@ -82,12 +82,12 @@ func (d *OntapNASQtreeStorageDriver) Initialize(
 	// Parse the config
 	config, err := InitializeOntapConfig(context, configJSON, commonConfig)
 	if err != nil {
-		return fmt.Errorf("Error initializing %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
-		return fmt.Errorf("Error initializing %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 	d.Config = *config
 
@@ -114,7 +114,7 @@ func (d *OntapNASQtreeStorageDriver) Initialize(
 
 	err = d.validate()
 	if err != nil {
-		return fmt.Errorf("Error validating %s driver. %v", d.Name(), err)
+		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
 
 	// Ensure all quotas are in force after a driver restart
@@ -127,14 +127,14 @@ func (d *OntapNASQtreeStorageDriver) Initialize(
 	return nil
 }
 
-func (d *OntapNASQtreeStorageDriver) Initialized() bool {
+func (d *NASQtreeStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *OntapNASQtreeStorageDriver) Terminate() {
+func (d *NASQtreeStorageDriver) Terminate() {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "OntapNASQtreeStorageDriver"}
+		fields := log.Fields{"Method": "Terminate", "Type": "NASQtreeStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
@@ -154,29 +154,29 @@ func (d *OntapNASQtreeStorageDriver) Terminate() {
 }
 
 // Validate the driver configuration and execution environment
-func (d *OntapNASQtreeStorageDriver) validate() error {
+func (d *NASQtreeStorageDriver) validate() error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "OntapNASQtreeStorageDriver"}
+		fields := log.Fields{"Method": "validate", "Type": "NASQtreeStorageDriver"}
 		log.WithFields(fields).Debug(">>>> validate")
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
 	err := ValidateNASDriver(d.API, &d.Config)
 	if err != nil {
-		return fmt.Errorf("Driver validation failed. %v", err)
+		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
 	// Make sure we have an export policy for all the Flexvols we create
 	err = d.ensureDefaultExportPolicy()
 	if err != nil {
-		return fmt.Errorf("Error configuring export policy. %v", err)
+		return fmt.Errorf("error configuring export policy: %v", err)
 	}
 
 	return nil
 }
 
-func (d *OntapNASQtreeStorageDriver) startHousekeepingTasks() {
+func (d *NASQtreeStorageDriver) startHousekeepingTasks() {
 
 	d.housekeepingTasks = make(map[string]*time.Ticker)
 
@@ -237,12 +237,12 @@ func (d *OntapNASQtreeStorageDriver) startHousekeepingTasks() {
 }
 
 // Create a qtree-backed volume with the specified options
-func (d *OntapNASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Create",
-			"Type":      "OntapNASQtreeStorageDriver",
+			"Type":      "NASQtreeStorageDriver",
 			"name":      name,
 			"sizeBytes": sizeBytes,
 			"opts":      opts,
@@ -256,27 +256,27 @@ func (d *OntapNASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts 
 	defer d.provMutex.Unlock()
 
 	// Generic user-facing message
-	createError := errors.New("Volume creation failed.")
+	createError := errors.New("volume creation failed")
 
 	// Ensure volume doesn't already exist
 	exists, existsInFlexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
 	if err != nil {
-		log.Errorf("Error checking for existing volume. %v", err)
+		log.Errorf("Error checking for existing volume: %v.", err)
 		return createError
 	}
 	if exists {
 		log.WithFields(log.Fields{"qtree": name, "flexvol": existsInFlexvol}).Debug("Qtree already exists.")
-		return fmt.Errorf("Volume %s already exists.", name)
+		return fmt.Errorf("volume %s already exists", name)
 	}
 
-	if sizeBytes < OntapMinimumVolumeSizeBytes {
-		return fmt.Errorf("Requested volume size (%d bytes) is too small.  The minimum volume size is %d bytes.",
-			sizeBytes, OntapMinimumVolumeSizeBytes)
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
 	// Ensure qtree name isn't too long
 	if len(name) > maxQtreeNameLength {
-		return fmt.Errorf("Volume %s name exceeds the limit of %d characters.", name, maxQtreeNameLength)
+		return fmt.Errorf("volume %s name exceeds the limit of %d characters", name, maxQtreeNameLength)
 	}
 
 	// Get Flexvol options with default fallback values
@@ -290,7 +290,7 @@ func (d *OntapNASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts 
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
-		return fmt.Errorf("Invalid boolean value for snapshotDir. %v", err)
+		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
 	encrypt, err := ValidateEncryptionAttribute(encryption, d.API)
@@ -351,12 +351,12 @@ func (d *OntapNASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts 
 }
 
 // Create a volume clone
-func (d *OntapNASQtreeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *NASQtreeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateClone",
-			"Type":     "OntapNASQtreeStorageDriver",
+			"Type":     "NASQtreeStorageDriver",
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
@@ -366,16 +366,16 @@ func (d *OntapNASQtreeStorageDriver) CreateClone(name, source, snapshot string, 
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	return errors.New("Cloning with the ONTAP NAS Qtree driver is not supported.")
+	return errors.New("cloning with the ONTAP NAS Economy driver is not supported")
 }
 
 // Destroy the volume
-func (d *OntapNASQtreeStorageDriver) Destroy(name string) error {
+func (d *NASQtreeStorageDriver) Destroy(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Destroy",
-			"Type":   "OntapNASQtreeStorageDriver",
+			"Type":   "NASQtreeStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> Destroy")
@@ -387,7 +387,7 @@ func (d *OntapNASQtreeStorageDriver) Destroy(name string) error {
 	defer d.provMutex.Unlock()
 
 	// Generic user-facing message
-	deleteError := errors.New("Volume deletion failed.")
+	deleteError := errors.New("volume deletion failed")
 
 	exists, flexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
 	if err != nil {
@@ -427,12 +427,12 @@ func (d *OntapNASQtreeStorageDriver) Destroy(name string) error {
 }
 
 // Attach the volume
-func (d *OntapNASQtreeStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+func (d *NASQtreeStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Attach",
-			"Type":       "OntapNASQtreeStorageDriver",
+			"Type":       "NASQtreeStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 			"opts":       opts,
@@ -445,11 +445,11 @@ func (d *OntapNASQtreeStorageDriver) Attach(name, mountpoint string, opts map[st
 	exists, flexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
 	if err != nil {
 		log.Errorf("Error checking for existing qtree. %v", err)
-		return errors.New("Volume mount failed.")
+		return errors.New("volume mount failed")
 	}
 	if !exists {
 		log.WithField("qtree", name).Debug("Qtree not found.")
-		return fmt.Errorf("Volume %s not found.", name)
+		return fmt.Errorf("volume %s not found", name)
 	}
 
 	exportPath := fmt.Sprintf("%s:/%s/%s", d.Config.DataLIF, flexvol, name)
@@ -458,12 +458,12 @@ func (d *OntapNASQtreeStorageDriver) Attach(name, mountpoint string, opts map[st
 }
 
 // Detach the volume
-func (d *OntapNASQtreeStorageDriver) Detach(name, mountpoint string) error {
+func (d *NASQtreeStorageDriver) Detach(name, mountpoint string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "Detach",
-			"Type":       "OntapNASQtreeStorageDriver",
+			"Type":       "NASQtreeStorageDriver",
 			"name":       name,
 			"mountpoint": mountpoint,
 		}
@@ -483,12 +483,12 @@ func (d *OntapNASQtreeStorageDriver) Detach(name, mountpoint string) error {
 }
 
 // Return the list of snapshots associated with the named volume
-func (d *OntapNASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+func (d *NASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "SnapshotList",
-			"Type":   "OntapNASQtreeStorageDriver",
+			"Type":   "NASQtreeStorageDriver",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> SnapshotList")
@@ -500,16 +500,16 @@ func (d *OntapNASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapsh
 }
 
 // Return the list of volumes associated with this tenant
-func (d *OntapNASQtreeStorageDriver) List() ([]string, error) {
+func (d *NASQtreeStorageDriver) List() ([]string, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "OntapNASQtreeStorageDriver"}
+		fields := log.Fields{"Method": "List", "Type": "NASQtreeStorageDriver"}
 		log.WithFields(fields).Debug(">>>> List")
 		defer log.WithFields(fields).Debug("<<<< List")
 	}
 
 	// Generic user-facing message
-	listError := errors.New("Volume list failed.")
+	listError := errors.New("volume list failed")
 
 	prefix := *d.Config.StoragePrefix
 	volumes := make([]string, 0)
@@ -531,16 +531,16 @@ func (d *OntapNASQtreeStorageDriver) List() ([]string, error) {
 }
 
 // Test for the existence of a volume
-func (d *OntapNASQtreeStorageDriver) Get(name string) error {
+func (d *NASQtreeStorageDriver) Get(name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "OntapNASQtreeStorageDriver"}
+		fields := log.Fields{"Method": "Get", "Type": "NASQtreeStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Get")
 		defer log.WithFields(fields).Debug("<<<< Get")
 	}
 
 	// Generic user-facing message
-	getError := fmt.Errorf("Volume %s not found.", name)
+	getError := fmt.Errorf("volume %s not found", name)
 
 	exists, flexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
 	if err != nil {
@@ -559,14 +559,14 @@ func (d *OntapNASQtreeStorageDriver) Get(name string) error {
 
 // ensureFlexvolForQtree accepts a set of Flexvol characteristics and either finds one to contain a new
 // qtree or it creates a new Flexvol with the needed attributes.
-func (d *OntapNASQtreeStorageDriver) ensureFlexvolForQtree(
+func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt *bool,
 ) (string, error) {
 
 	// Check if a suitable Flexvol already exists
 	flexvol, err := d.getFlexvolForQtree(aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt)
 	if err != nil {
-		return "", fmt.Errorf("Error finding Flexvol for qtree. %v", err)
+		return "", fmt.Errorf("error finding Flexvol for qtree: %v", err)
 	}
 
 	// Found one!
@@ -577,7 +577,7 @@ func (d *OntapNASQtreeStorageDriver) ensureFlexvolForQtree(
 	// Nothing found, so create a suitable Flexvol
 	flexvol, err = d.createFlexvolForQtree(aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt)
 	if err != nil {
-		return "", fmt.Errorf("Error creating Flexvol for qtree. %v", err)
+		return "", fmt.Errorf("error creating Flexvol for qtree: %v", err)
 	}
 
 	return flexvol, nil
@@ -587,7 +587,7 @@ func (d *OntapNASQtreeStorageDriver) ensureFlexvolForQtree(
 // the purpose of containing qtrees supplied as container volumes by this driver.
 // Once this method returns, the Flexvol exists, is mounted, and has a default tree
 // quota.
-func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
+func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt *bool,
 ) (string, error) {
 
@@ -620,7 +620,7 @@ func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
 		flexvol, aggregate, size, spaceReserve, snapshotPolicy,
 		unixPermissions, exportPolicy, securityStyle, encrypt)
 	if err = api.GetError(createResponse, err); err != nil {
-		return "", fmt.Errorf("Error creating Flexvol. %v", err)
+		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}
 
 	// Disable '.snapshot' as needed
@@ -628,7 +628,7 @@ func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
 		snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(flexvol)
 		if err = api.GetError(snapDirResponse, err); err != nil {
 			defer d.API.VolumeDestroy(flexvol, true)
-			return "", fmt.Errorf("Error disabling snapshot directory access. %v", err)
+			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
 
@@ -636,7 +636,7 @@ func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
 	mountResponse, err := d.API.VolumeMount(flexvol, "/"+flexvol)
 	if err = api.GetError(mountResponse, err); err != nil {
 		defer d.API.VolumeDestroy(flexvol, true)
-		return "", fmt.Errorf("Error mounting Flexvol. %v", err)
+		return "", fmt.Errorf("error mounting Flexvol: %v", err)
 	}
 
 	// If LS mirrors are present on the SVM root volume, update them
@@ -646,7 +646,7 @@ func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
 	err = d.addDefaultQuotaForFlexvol(flexvol)
 	if err != nil {
 		defer d.API.VolumeDestroy(flexvol, true)
-		return "", fmt.Errorf("Error adding default quota to Flexvol. %v", err)
+		return "", fmt.Errorf("error adding default quota to Flexvol: %v", err)
 	}
 
 	return flexvol, nil
@@ -657,7 +657,7 @@ func (d *OntapNASQtreeStorageDriver) createFlexvolForQtree(
 // than the maximum configured number of qtrees.  No matching Flexvols is not
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
-func (d *OntapNASQtreeStorageDriver) getFlexvolForQtree(
+func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt *bool,
 ) (string, error) {
 
@@ -666,18 +666,18 @@ func (d *OntapNASQtreeStorageDriver) getFlexvolForQtree(
 		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt)
 
 	if err = api.GetError(volListResponse, err); err != nil {
-		return "", fmt.Errorf("Error enumerating Flexvols. %v", err)
+		return "", fmt.Errorf("error enumerating Flexvols: %v", err)
 	}
 
 	// Weed out the Flexvols already having too many qtrees
 	var volumes []string
 	for _, volAttrs := range volListResponse.Result.AttributesList() {
-		volIdAttrs := volAttrs.VolumeIdAttributes()
-		volName := string(volIdAttrs.Name())
+		volIDAttrs := volAttrs.VolumeIdAttributes()
+		volName := string(volIDAttrs.Name())
 
 		count, err := d.API.QtreeCount(volName)
 		if err != nil {
-			return "", fmt.Errorf("Error enumerating qtrees. %v", err)
+			return "", fmt.Errorf("error enumerating qtrees: %v", err)
 		}
 
 		if count < maxQtreesPerFlexvol {
@@ -700,7 +700,7 @@ func (d *OntapNASQtreeStorageDriver) getFlexvolForQtree(
 // getOptimalSizeForFlexvol sums up all the disk limit quota rules on a Flexvol and adds the size of
 // the new qtree being added as well as the current Flexvol snapshot reserve.  This value may be used
 // to grow (or shrink) the Flexvol as new qtrees are being added.
-func (d *OntapNASQtreeStorageDriver) getOptimalSizeForFlexvol(
+func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	flexvol string, newQtreeSizeBytes uint64,
 ) (uint64, error) {
 
@@ -734,35 +734,35 @@ func (d *OntapNASQtreeStorageDriver) getOptimalSizeForFlexvol(
 // addDefaultQuotaForFlexvol adds a default quota rule to a Flexvol so that quotas for
 // new qtrees may be added on demand with simple quota resize instead of a heavyweight
 // quota reinitialization.
-func (d *OntapNASQtreeStorageDriver) addDefaultQuotaForFlexvol(flexvol string) error {
+func (d *NASQtreeStorageDriver) addDefaultQuotaForFlexvol(flexvol string) error {
 
 	response, err := d.API.QuotaSetEntry("", flexvol, "", "tree", "-")
 	if err = api.GetError(response, err); err != nil {
-		return fmt.Errorf("Error adding default quota. %v", err)
+		return fmt.Errorf("error adding default quota: %v", err)
 	}
 
 	d.disableQuotas(flexvol, true)
 	if err != nil {
-		return fmt.Errorf("Error adding default quota. %v", err)
+		return fmt.Errorf("error adding default quota: %v", err)
 	}
 
 	d.enableQuotas(flexvol, true)
 	if err != nil {
-		return fmt.Errorf("Error adding default quota. %v", err)
+		return fmt.Errorf("error adding default quota: %v", err)
 	}
 
 	return nil
 }
 
 // addQuotaForQtree adds a tree quota to a Flexvol/qtree with a hard disk size limit.
-func (d *OntapNASQtreeStorageDriver) addQuotaForQtree(qtree, flexvol string, sizeBytes uint64) error {
+func (d *NASQtreeStorageDriver) addQuotaForQtree(qtree, flexvol string, sizeBytes uint64) error {
 
 	target := fmt.Sprintf("/vol/%s/%s", flexvol, qtree)
 	sizeKB := strconv.FormatUint(sizeBytes/1024, 10)
 
 	response, err := d.API.QuotaSetEntry("", flexvol, target, "tree", sizeKB)
 	if err = api.GetError(response, err); err != nil {
-		return fmt.Errorf("Error adding qtree quota. %v", err)
+		return fmt.Errorf("error adding qtree quota: %v", err)
 	}
 
 	// Mark this Flexvol as needing a quota resize
@@ -772,20 +772,20 @@ func (d *OntapNASQtreeStorageDriver) addQuotaForQtree(qtree, flexvol string, siz
 }
 
 // enableQuotas disables quotas on a Flexvol, optionally waiting for the operation to finish.
-func (d *OntapNASQtreeStorageDriver) disableQuotas(flexvol string, wait bool) error {
+func (d *NASQtreeStorageDriver) disableQuotas(flexvol string, wait bool) error {
 
 	status, err := d.getQuotaStatus(flexvol)
 	if err != nil {
-		return fmt.Errorf("Error disabling quotas. %v.", err)
+		return fmt.Errorf("error disabling quotas: %v", err)
 	}
 	if status == "corrupt" {
-		return fmt.Errorf("Error disabling quotas. Quotas are corrupt on Flexvol %s.", flexvol)
+		return fmt.Errorf("error disabling quotas: quotas are corrupt on Flexvol %s", flexvol)
 	}
 
 	if status != "off" {
 		offResponse, err := d.API.QuotaOff(flexvol)
 		if err = api.GetError(offResponse, err); err != nil {
-			return fmt.Errorf("Error disabling quotas. %v.", err)
+			return fmt.Errorf("error disabling quotas: %v", err)
 		}
 	}
 
@@ -795,10 +795,10 @@ func (d *OntapNASQtreeStorageDriver) disableQuotas(flexvol string, wait bool) er
 
 			status, err = d.getQuotaStatus(flexvol)
 			if err != nil {
-				return fmt.Errorf("Error disabling quotas. %v.", err)
+				return fmt.Errorf("error disabling quotas: %v", err)
 			}
 			if status == "corrupt" {
-				return fmt.Errorf("Error disabling quotas. Quotas are corrupt on Flexvol %s.", flexvol)
+				return fmt.Errorf("error disabling quotas: quotas are corrupt on flexvol %s", flexvol)
 			}
 		}
 	}
@@ -807,20 +807,20 @@ func (d *OntapNASQtreeStorageDriver) disableQuotas(flexvol string, wait bool) er
 }
 
 // enableQuotas enables quotas on a Flexvol, optionally waiting for the operation to finish.
-func (d *OntapNASQtreeStorageDriver) enableQuotas(flexvol string, wait bool) error {
+func (d *NASQtreeStorageDriver) enableQuotas(flexvol string, wait bool) error {
 
 	status, err := d.getQuotaStatus(flexvol)
 	if err != nil {
-		return fmt.Errorf("Error enabling quotas. %v.", err)
+		return fmt.Errorf("error enabling quotas: %v", err)
 	}
 	if status == "corrupt" {
-		return fmt.Errorf("Error enabling quotas. Quotas are corrupt on Flexvol %s.", flexvol)
+		return fmt.Errorf("error enabling quotas: quotas are corrupt on flexvol %s", flexvol)
 	}
 
 	if status == "off" {
 		onResponse, err := d.API.QuotaOn(flexvol)
 		if err = api.GetError(onResponse, err); err != nil {
-			return fmt.Errorf("Error enabling quotas. %v.", err)
+			return fmt.Errorf("error enabling quotas: %v", err)
 		}
 	}
 
@@ -830,10 +830,10 @@ func (d *OntapNASQtreeStorageDriver) enableQuotas(flexvol string, wait bool) err
 
 			status, err = d.getQuotaStatus(flexvol)
 			if err != nil {
-				return fmt.Errorf("Error enabling quotas. %v.", err)
+				return fmt.Errorf("error enabling quotas: %v", err)
 			}
 			if status == "corrupt" {
-				return fmt.Errorf("Error enabling quotas. Quotas are corrupt on Flexvol %s.", flexvol)
+				return fmt.Errorf("error enabling quotas: quotas are corrupt on flexvol %s", flexvol)
 			}
 		}
 	}
@@ -844,17 +844,17 @@ func (d *OntapNASQtreeStorageDriver) enableQuotas(flexvol string, wait bool) err
 // queueAllFlexvolsForQuotaResize flags every Flexvol managed by this driver as
 // needing a quota resize.  This is called once on driver startup to handle the
 // case where the driver was shut down with pending quota resize operations.
-func (d *OntapNASQtreeStorageDriver) queueAllFlexvolsForQuotaResize() {
+func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize() {
 
 	// Get list of Flexvols managed by this driver
 	volumeListResponse, err := d.API.VolumeList(d.FlexvolNamePrefix())
 	if err = api.GetError(volumeListResponse, err); err != nil {
-		log.Errorf("Error listing Flexvols. %v", err)
+		log.Errorf("Error listing Flexvols: %v", err)
 	}
 
 	for _, volAttrs := range volumeListResponse.Result.AttributesList() {
-		volIdAttrs := volAttrs.VolumeIdAttributes()
-		flexvol := string(volIdAttrs.Name())
+		volIDAttrs := volAttrs.VolumeIdAttributes()
+		flexvol := string(volIDAttrs.Name())
 		d.quotaResizeMap[flexvol] = true
 	}
 }
@@ -863,7 +863,7 @@ func (d *OntapNASQtreeStorageDriver) queueAllFlexvolsForQuotaResize() {
 // the qtree population on a Flexvol.  Flexvols needing an update must be flagged
 // in quotaResizeMap.  Any failures that occur are simply logged, and the resize
 // operation will be attempted each time this method is called until it succeeds.
-func (d *OntapNASQtreeStorageDriver) resizeQuotas() {
+func (d *NASQtreeStorageDriver) resizeQuotas() {
 
 	// Ensure we don't forget any Flexvol that is involved in a qtree provisioning workflow
 	d.provMutex.Lock()
@@ -901,11 +901,11 @@ func (d *OntapNASQtreeStorageDriver) resizeQuotas() {
 }
 
 // getQuotaStatus returns the status of the quotas on a Flexvol
-func (d *OntapNASQtreeStorageDriver) getQuotaStatus(flexvol string) (string, error) {
+func (d *NASQtreeStorageDriver) getQuotaStatus(flexvol string) (string, error) {
 
 	statusResponse, err := d.API.QuotaStatus(flexvol)
 	if err = api.GetError(statusResponse, err); err != nil {
-		return "", fmt.Errorf("Error getting quota status for Flexvol %s. %v", flexvol, err)
+		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", flexvol, err)
 	}
 
 	return statusResponse.Result.Status(), nil
@@ -913,14 +913,14 @@ func (d *OntapNASQtreeStorageDriver) getQuotaStatus(flexvol string) (string, err
 }
 
 // getTotalHardDiskLimitQuota returns the sum of all disk limit quota rules on a Flexvol
-func (d *OntapNASQtreeStorageDriver) getTotalHardDiskLimitQuota(flexvol string) (uint64, error) {
+func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(flexvol string) (uint64, error) {
 
 	listResponse, err := d.API.QuotaEntryList(flexvol)
 	if err != nil {
 		return 0, err
 	}
 
-	var totalDiskLimitKB uint64 = 0
+	var totalDiskLimitKB uint64
 
 	for _, rule := range listResponse.Result.AttributesList() {
 		diskLimitKB, err := strconv.ParseUint(rule.DiskLimit(), 10, 64)
@@ -936,7 +936,7 @@ func (d *OntapNASQtreeStorageDriver) getTotalHardDiskLimitQuota(flexvol string) 
 // pruneUnusedFlexvols is called periodically by a background task.  Any Flexvols
 // that are managed by this driver (discovered by virtue of having a well-known
 // hardcoded prefix on their names) that have no qtrees are deleted.
-func (d *OntapNASQtreeStorageDriver) pruneUnusedFlexvols() {
+func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 
 	// Ensure we don't prune any Flexvol that is involved in a qtree provisioning workflow
 	d.provMutex.Lock()
@@ -952,8 +952,8 @@ func (d *OntapNASQtreeStorageDriver) pruneUnusedFlexvols() {
 
 	var flexvols []string
 	for _, volAttrs := range volumeListResponse.Result.AttributesList() {
-		volIdAttrs := volAttrs.VolumeIdAttributes()
-		volName := string(volIdAttrs.Name())
+		volIDAttrs := volAttrs.VolumeIdAttributes()
+		volName := string(volIDAttrs.Name())
 		flexvols = append(flexvols, volName)
 	}
 
@@ -972,7 +972,7 @@ func (d *OntapNASQtreeStorageDriver) pruneUnusedFlexvols() {
 // prefix on their names) are destroyed.  This is only needed for the exceptional case
 // in which a qtree was renamed (prior to being destroyed) but the subsequent
 // destroy call failed or was never made due to a process interruption.
-func (d *OntapNASQtreeStorageDriver) reapDeletedQtrees() {
+func (d *NASQtreeStorageDriver) reapDeletedQtrees() {
 
 	// Ensure we don't reap any qtree that is involved in a qtree delete workflow
 	d.provMutex.Lock()
@@ -1000,17 +1000,17 @@ func (d *OntapNASQtreeStorageDriver) reapDeletedQtrees() {
 // method assumes it created the policy itself and that all is good.  If the policy does not exist,
 // it is created and populated with a rule that allows access to NFS qtrees.  This method should be
 // called once during driver initialization.
-func (d *OntapNASQtreeStorageDriver) ensureDefaultExportPolicy() error {
+func (d *NASQtreeStorageDriver) ensureDefaultExportPolicy() error {
 
 	policyResponse, err := d.API.ExportPolicyCreate(d.flexvolExportPolicy)
 	if err != nil {
-		return fmt.Errorf("Error creating export policy %s. %v", d.flexvolExportPolicy, err)
+		return fmt.Errorf("error creating export policy %s: %v", d.flexvolExportPolicy, err)
 	}
 	if zerr := api.NewZapiError(policyResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EDUPLICATEENTRY {
 			log.WithField("exportPolicy", d.flexvolExportPolicy).Debug("Export policy already exists.")
 		} else {
-			return fmt.Errorf("Error creating export policy %s. %v", d.flexvolExportPolicy, zerr)
+			return fmt.Errorf("error creating export policy %s: %v", d.flexvolExportPolicy, zerr)
 		}
 	}
 
@@ -1020,11 +1020,11 @@ func (d *OntapNASQtreeStorageDriver) ensureDefaultExportPolicy() error {
 // ensureDefaultExportPolicyRule guarantees that the export policy used on Flexvols managed by this
 // driver has at least one rule, which is necessary (but not always sufficient) to enable qtrees
 // to be mounted by clients.
-func (d *OntapNASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
+func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 
 	ruleListResponse, err := d.API.ExportRuleGetIterRequest(d.flexvolExportPolicy)
 	if err = api.GetError(ruleListResponse, err); err != nil {
-		return fmt.Errorf("Error listing export policy rules. %v", err)
+		return fmt.Errorf("error listing export policy rules: %v", err)
 	}
 
 	if ruleListResponse.Result.NumRecords() == 0 {
@@ -1034,7 +1034,7 @@ func (d *OntapNASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 			d.flexvolExportPolicy, "0.0.0.0/0",
 			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
 		if err = api.GetError(ruleResponse, err); err != nil {
-			return fmt.Errorf("Error creating export rule. %v", err)
+			return fmt.Errorf("error creating export rule: %v", err)
 		}
 	} else {
 		log.WithField("exportPolicy", d.flexvolExportPolicy).Debug("Export policy has at least one rule.")
@@ -1044,49 +1044,49 @@ func (d *OntapNASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 }
 
 // Retrieve storage backend capabilities
-func (d *OntapNASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
+func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 
 	backend.Name = "ontapnaseco_" + d.Config.DataLIF
 	poolAttrs := d.GetStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *OntapNASQtreeStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASQtreeStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(false),
 		sa.Clones:           sa.NewBoolOffer(false),
-		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsApiFeature(api.NETAPP_VOLUME_ENCRYPTION)),
+		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }
 
-func (d *OntapNASQtreeStorageDriver) GetVolumeOpts(
+func (d *NASQtreeStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	pool *storage.StoragePool,
+	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 	return getVolumeOptsCommon(volConfig, pool, requests), nil
 }
 
-func (d *OntapNASQtreeStorageDriver) GetInternalVolumeName(name string) string {
+func (d *NASQtreeStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *OntapNASQtreeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *NASQtreeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	return createPrepareCommon(d, volConfig)
 }
 
-func (d *OntapNASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+func (d *NASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 
 	// Determine which Flexvol contains the qtree
 	exists, flexvol, err := d.API.QtreeExists(volConfig.InternalName, d.FlexvolNamePrefix())
 	if err != nil {
-		return fmt.Errorf("Could not determine if qtree %s exists. %v", volConfig.InternalName, err)
+		return fmt.Errorf("could not determine if qtree %s exists: %v", volConfig.InternalName, err)
 	}
 	if !exists {
-		return fmt.Errorf("Could not find qtree %s", volConfig.InternalName)
+		return fmt.Errorf("could not find qtree %s", volConfig.InternalName)
 	}
 
 	// Set export path info on the volume config
@@ -1096,23 +1096,23 @@ func (d *OntapNASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeCon
 	return nil
 }
 
-func (d *OntapNASQtreeStorageDriver) GetProtocol() trident.Protocol {
+func (d *NASQtreeStorageDriver) GetProtocol() trident.Protocol {
 	return trident.File
 }
 
-func (d *OntapNASQtreeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
+func (d *NASQtreeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 	b.OntapConfig = &d.Config
 }
 
-func (d *OntapNASQtreeStorageDriver) GetExternalConfig() interface{} {
+func (d *NASQtreeStorageDriver) GetExternalConfig() interface{} {
 	return getExternalConfig(d.Config)
 }
 
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *OntapNASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
+func (d *NASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	qtree, err := d.API.QtreeGet(name, d.FlexvolNamePrefix())
 	if err != nil {
@@ -1137,7 +1137,7 @@ func (d *OntapNASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.Vo
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *OntapNASQtreeStorageDriver) GetVolumeExternalWrappers(
+func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
 
 	// Let the caller know we're done by closing the channel
@@ -1205,11 +1205,11 @@ func (d *OntapNASQtreeStorageDriver) GetVolumeExternalWrappers(
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *OntapNASQtreeStorageDriver) getVolumeExternal(
+func (d *NASQtreeStorageDriver) getVolumeExternal(
 	qtreeAttrs *azgo.QtreeInfoType, volumeAttrs *azgo.VolumeAttributesType,
 	quotaAttrs *azgo.QuotaEntryType) *storage.VolumeExternal {
 
-	volumeIdAttrs := volumeAttrs.VolumeIdAttributesPtr
+	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
 	internalName := qtreeAttrs.Qtree()
@@ -1241,6 +1241,6 @@ func (d *OntapNASQtreeStorageDriver) getVolumeExternal(
 
 	return &storage.VolumeExternal{
 		Config: volumeConfig,
-		Pool:   volumeIdAttrs.ContainingAggregateName(),
+		Pool:   volumeIDAttrs.ContainingAggregateName(),
 	}
 }

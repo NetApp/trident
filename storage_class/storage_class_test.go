@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_class
+package storageclass
 
 import (
 	"strings"
@@ -190,7 +190,7 @@ func TestAttributeMatches(t *testing.T) {
 }
 
 func TestSpecificBackends(t *testing.T) {
-	backends := make(map[string]*storage.StorageBackend)
+	backends := make(map[string]*storage.Backend)
 	mockPools := tu.GetFakePools()
 	for _, c := range []struct {
 		name      string

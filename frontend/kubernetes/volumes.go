@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
-	k8s_util_version "github.com/netapp/trident/utils"
+	k8sutilversion "github.com/netapp/trident/utils"
 )
 
 // canPVMatchWithPVC verifies that the volumeSize and volumeAccessModes
@@ -34,7 +34,7 @@ func canPVMatchWithPVC(pv *v1.PersistentVolume,
 		log.WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": claim.Name,
-		}).Error("Kubernetes frontend detected a corrupted PV with no size.")
+		}).Error("Kubernetes frontend detected a corrupted PV with no size!")
 		return false
 	}
 	// Do the easy check first.  These should be whole numbers, so value
@@ -119,13 +119,13 @@ func getCHAPSecretName(vol *storage.VolumeExternal) string {
 	return secretName
 }
 
-func findOrCreateCHAPSecret(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (string, error) {
+func findOrCreateCHAPSecret(k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal) (string, error) {
 	volConfig := vol.Config
 	secretName := getCHAPSecretName(vol)
 	log.Debugf("Using secret: %v", secretName)
 
-	if !kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.7.0")) {
-		versionErr := fmt.Errorf("Cannot use CHAP with Kubernetes version < v1.7.0")
+	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.7.0")) {
+		versionErr := fmt.Errorf("cannot use CHAP with Kubernetes version < v1.7.0")
 		return secretName, versionErr
 	}
 
@@ -146,14 +146,13 @@ func findOrCreateCHAPSecret(k8sClient k8s_client.Interface, kubeVersion *k8s_uti
 	return secretName, nil
 }
 
-func CreateISCSIPersistentVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (*v1.ISCSIPersistentVolumeSource, error) {
+func CreateISCSIPersistentVolumeSource(k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal) (*v1.ISCSIPersistentVolumeSource, error) {
 
 	namespace := ""
 	switch {
-	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.9.0")):
+	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.9.0")):
 		namespace = k8sClient.Namespace()
 	}
-
 	volConfig := vol.Config
 	if volConfig.AccessInfo.IscsiTargetSecret != "" {
 		// CHAP logic

@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 // This package provides a high-level interface to the E-series Web Services Proxy REST API.
 package api
@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/utils"
 )
@@ -30,8 +30,8 @@ const hostMappingType = "host"
 const hostGroupMappingType = "cluster"
 const defaultPoolSearchPattern = ".+"
 
-// APIClientConfig holds configuration data for the API driver object.
-type APIClientConfig struct {
+// ClientConfig holds configuration data for the API driver object.
+type ClientConfig struct {
 	// Web Proxy Services Info
 	WebProxyHostname  string
 	WebProxyPort      string
@@ -66,15 +66,15 @@ type APIClientConfig struct {
 	ConfigVersion int
 }
 
-// Driver is the object to use for interacting with the E-series API.
-type APIClient struct {
-	config *APIClientConfig
+// Client is the object to use for interacting with the E-series API.
+type Client struct {
+	config *ClientConfig
 	m      *sync.Mutex
 }
 
 // NewAPIClient is a factory method for creating a new instance.
-func NewAPIClient(config APIClientConfig) *APIClient {
-	c := &APIClient{
+func NewAPIClient(config ClientConfig) *Client {
+	c := &Client{
 		config: &config,
 		m:      &sync.Mutex{},
 	}
@@ -110,7 +110,7 @@ var volumeTags []VolumeTag
 // InvokeAPI makes a REST call to the Web Services Proxy. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to identify
 // the desired server resource; it should start with '/'.
-func (d APIClient) InvokeAPI(requestBody []byte, method string, resourcePath string) (*http.Response, []byte, error) {
+func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string) (*http.Response, []byte, error) {
 
 	// Default to secure connection
 	scheme, port := "https", "8443"
@@ -149,10 +149,10 @@ func (d APIClient) InvokeAPI(requestBody []byte, method string, resourcePath str
 	if d.config.DebugTraceFlags["api"] {
 		if method == "POST" && resourcePath == "" && !d.config.DebugTraceFlags["sensitive"] {
 			// Suppress the empty POST body since it contains the array password
-			utils.LogHttpRequest(request, []byte("<suppressed>"))
+			utils.LogHTTPRequest(request, []byte("<suppressed>"))
 		} else {
 			json.Indent(&prettyJSON, requestBody, "", "  ")
-			utils.LogHttpRequest(request, prettyJSON.Bytes())
+			utils.LogHTTPRequest(request, prettyJSON.Bytes())
 		}
 	}
 
@@ -182,14 +182,14 @@ func (d APIClient) InvokeAPI(requestBody []byte, method string, resourcePath str
 			// Suppress the potentially huge GET /volumes body unless asked for explicitly
 			if d.config.DebugTraceFlags["api_get_volumes"] {
 				json.Indent(&prettyJSON, responseBody, "", "  ")
-				utils.LogHttpResponse(response, prettyJSON.Bytes())
+				utils.LogHTTPResponse(response, prettyJSON.Bytes())
 			} else if d.config.DebugTraceFlags["api"] {
-				utils.LogHttpResponse(response, []byte("<suppressed>"))
+				utils.LogHTTPResponse(response, []byte("<suppressed>"))
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
 				json.Indent(&prettyJSON, responseBody, "", "  ")
-				utils.LogHttpResponse(response, prettyJSON.Bytes())
+				utils.LogHTTPResponse(response, prettyJSON.Bytes())
 			}
 		}
 	}
@@ -198,12 +198,12 @@ func (d APIClient) InvokeAPI(requestBody []byte, method string, resourcePath str
 }
 
 // Connect connects to the Web Services Proxy and registers the array with it.
-func (d APIClient) Connect() (string, error) {
+func (d Client) Connect() (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Connect",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> Connect")
 		defer log.WithFields(fields).Debug("<<<< Connect")
@@ -214,27 +214,28 @@ func (d APIClient) Connect() (string, error) {
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return "", fmt.Errorf("Could not marshal JSON request: %v. %v", request, err)
+		return "", fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	// Send the message
 	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "")
 	if err != nil {
-		return "", fmt.Errorf("Could not log into the Web Services Proxy. %v", err)
+		return "", fmt.Errorf("could not log into the Web Services Proxy: %v", err)
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Could not add storage array to Web Services Proxy. Status code: %d", response.StatusCode)
+		return "", fmt.Errorf("could not add storage array to Web Services Proxy; Status code: %d",
+			response.StatusCode)
 	}
 
 	// Parse JSON data
 	responseData := MsgConnectResponse{}
 	if err := json.Unmarshal(responseBody, &responseData); err != nil {
-		return "", fmt.Errorf("Could not parse connect response: %s. %v", string(responseBody), err)
+		return "", fmt.Errorf("could not parse connect response: %s; %v", string(responseBody), err)
 	}
 
 	if responseData.ArrayID == "" {
-		return "", errors.New("Invalid ArrayID received from Web Services Proxy.")
+		return "", errors.New("invalid ArrayID received from Web Services Proxy")
 	}
 
 	d.config.ArrayID = responseData.ArrayID
@@ -249,12 +250,12 @@ func (d APIClient) Connect() (string, error) {
 }
 
 // GetControllers returns an array containing all the controllers in the storage system.
-func (d APIClient) GetControllers() ([]Controller, error) {
+func (d Client) GetControllers() ([]Controller, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetControllers",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> GetControllers")
 		defer log.WithFields(fields).Debug("<<<< GetControllers")
@@ -263,17 +264,17 @@ func (d APIClient) GetControllers() ([]Controller, error) {
 	// Query volumes on array
 	response, responseBody, err := d.InvokeAPI(nil, "GET", "/controllers")
 	if err != nil {
-		return nil, errors.New("Failed to read controllers.")
+		return nil, errors.New("failed to read controllers")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Failed to read controllers. Status code: %d", response.StatusCode)
+		return nil, fmt.Errorf("failed to read controllers. Status code: %d", response.StatusCode)
 	}
 
 	controllers := make([]Controller, 0)
 	err = json.Unmarshal(responseBody, &controllers)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse controller data: %s. %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse controller data: %s. %v", string(responseBody), err)
 	}
 
 	log.WithField("Count", len(controllers)).Debug("Read controllers.")
@@ -282,12 +283,12 @@ func (d APIClient) GetControllers() ([]Controller, error) {
 }
 
 // ListNodeSerialNumbers returns an array containing the controller serial numbers for this storage system.
-func (d APIClient) ListNodeSerialNumbers() ([]string, error) {
+func (d Client) ListNodeSerialNumbers() ([]string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ListNodeSerialNumbers",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> ListNodeSerialNumbers")
 		defer log.WithFields(fields).Debug("<<<< ListNodeSerialNumbers")
@@ -318,12 +319,12 @@ func (d APIClient) ListNodeSerialNumbers() ([]string, error) {
 
 // GetVolumePools reads all pools on the array, including volume groups and dynamic disk pools. It then
 // filters them based on several selection parameters and returns the ones that match.
-func (d APIClient) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolName string) ([]VolumeGroupEx, error) {
+func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolName string) ([]VolumeGroupEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":            "GetVolumePools",
-			"Type":              "APIClient",
+			"Type":              "Client",
 			"mediaType":         mediaType,
 			"minFreeSpaceBytes": minFreeSpaceBytes,
 			"poolName":          poolName,
@@ -335,17 +336,17 @@ func (d APIClient) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, po
 	// Get the storage pools (includes volume RAID groups and dynamic disk pools)
 	response, responseBody, err := d.InvokeAPI(nil, "GET", "/storage-pools")
 	if err != nil {
-		return nil, fmt.Errorf("Could not get storage pools. %v", err)
+		return nil, fmt.Errorf("could not get storage pools: %v", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Could not get storage pools. Status code: %d", response.StatusCode)
+		return nil, fmt.Errorf("could not get storage pools; Status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
 	allPools := make([]VolumeGroupEx, 0)
 	if err := json.Unmarshal(responseBody, &allPools); err != nil {
-		return nil, fmt.Errorf("Could not parse storage pool data: %s. %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse storage pool data: %s; %v", string(responseBody), err)
 	}
 
 	// Return only pools that match the requested criteria
@@ -420,12 +421,12 @@ func (d APIClient) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, po
 }
 
 // GetVolumePoolByRef returns the pool with the specified volumeGroupRef.
-func (d APIClient) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error) {
+func (d Client) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":         "GetVolumePoolByRef",
-			"Type":           "APIClient",
+			"Type":           "Client",
 			"volumeGroupRef": volumeGroupRef,
 		}
 		log.WithFields(fields).Debug(">>>> GetVolumePoolByRef")
@@ -436,29 +437,29 @@ func (d APIClient) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, err
 	resourcePath := "/storage-pools/" + volumeGroupRef
 	response, responseBody, err := d.InvokeAPI(nil, "GET", resourcePath)
 	if err != nil {
-		return VolumeGroupEx{}, fmt.Errorf("Could not get storage pool. %v", err)
+		return VolumeGroupEx{}, fmt.Errorf("could not get storage pool: %v", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return VolumeGroupEx{}, fmt.Errorf("Could not get storage pool. Status code: %d", response.StatusCode)
+		return VolumeGroupEx{}, fmt.Errorf("could not get storage pool; status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
 	pool := VolumeGroupEx{}
 	if err := json.Unmarshal(responseBody, &pool); err != nil {
-		return VolumeGroupEx{}, fmt.Errorf("Could not parse storage pool data: %s. %v", string(responseBody), err)
+		return VolumeGroupEx{}, fmt.Errorf("could not parse storage pool data: %s; %v", string(responseBody), err)
 	}
 
 	return pool, nil
 }
 
 // GetVolumes returns an array containing all the volumes on the array.
-func (d APIClient) GetVolumes() ([]VolumeEx, error) {
+func (d Client) GetVolumes() ([]VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetVolumes",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> GetVolumes")
 		defer log.WithFields(fields).Debug("<<<< GetVolumes")
@@ -467,17 +468,17 @@ func (d APIClient) GetVolumes() ([]VolumeEx, error) {
 	// Query volumes on array
 	response, responseBody, err := d.InvokeAPI(nil, "GET", "/volumes")
 	if err != nil {
-		return nil, errors.New("Failed to read volumes.")
+		return nil, errors.New("failed to read volumes")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Failed to read volumes. Status code: %d", response.StatusCode)
+		return nil, fmt.Errorf("failed to read volumes. Status code: %d", response.StatusCode)
 	}
 
 	volumes := make([]VolumeEx, 0)
 	err = json.Unmarshal(responseBody, &volumes)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse volume data: %s. %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s. %v", string(responseBody), err)
 	}
 
 	log.WithField("Count", len(volumes)).Debug("Read volumes.")
@@ -486,12 +487,12 @@ func (d APIClient) GetVolumes() ([]VolumeEx, error) {
 }
 
 // ListVolumes returns an array containing all the volume names on the array.
-func (d APIClient) ListVolumes() ([]string, error) {
+func (d Client) ListVolumes() ([]string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ListVolumes",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> ListVolumes")
 		defer log.WithFields(fields).Debug("<<<< ListVolumes")
@@ -517,12 +518,12 @@ func (d APIClient) ListVolumes() ([]string, error) {
 // at most once per workflow, because the Web Services Proxy does not support server-side filtering so the only choice is to
 // read all volumes to find the one of interest. Most methods in this module operate on the returned VolumeEx structure, not
 // the volume name, to minimize the need for calling this method.
-func (d APIClient) GetVolume(name string) (VolumeEx, error) {
+func (d Client) GetVolume(name string) (VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetVolume",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> GetVolume")
@@ -544,14 +545,14 @@ func (d APIClient) GetVolume(name string) (VolumeEx, error) {
 }
 
 // CreateVolume creates a volume (i.e. a LUN) on the array, and it returns the resulting VolumeEx structure.
-func (d APIClient) CreateVolume(
+func (d Client) CreateVolume(
 	name string, volumeGroupRef string, size uint64, mediaType, fstype string,
 ) (VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":         "CreateVolume",
-			"Type":           "APIClient",
+			"Type":           "Client",
 			"name":           name,
 			"volumeGroupRef": volumeGroupRef,
 			"size":           size,
@@ -563,7 +564,8 @@ func (d APIClient) CreateVolume(
 
 	// Ensure that we do not exceed the maximum allowed volume length
 	if len(name) > maxNameLength {
-		return VolumeEx{}, fmt.Errorf("The volume name %v exceeds the maximum length of %d characters", name, maxNameLength)
+		return VolumeEx{}, fmt.Errorf("the volume name %v exceeds the maximum length of %d characters", name,
+			maxNameLength)
 	}
 
 	// Copy static volume metadata and add fstype
@@ -582,7 +584,7 @@ func (d APIClient) CreateVolume(
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return VolumeEx{}, fmt.Errorf("Could not marshal JSON request: %v. %v", request, err)
+		return VolumeEx{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	// Create the volume
@@ -594,14 +596,14 @@ func (d APIClient) CreateVolume(
 	if response.StatusCode != http.StatusOK {
 
 		err = d.getErrorFromHTTPResponse(response, responseBody)
-		return VolumeEx{}, fmt.Errorf("Could not create volume %s. %v", name, err)
+		return VolumeEx{}, fmt.Errorf("could not create volume %s: %v", name, err)
 
 	} else {
 
 		// Parse JSON volume data
 		vol := VolumeEx{}
 		if err := json.Unmarshal(responseBody, &vol); err != nil {
-			return VolumeEx{}, fmt.Errorf("Could not parse API response: %s. %v", string(responseBody), err)
+			return VolumeEx{}, fmt.Errorf("could not parse API response: %s; %v", string(responseBody), err)
 		}
 
 		log.WithFields(log.Fields{
@@ -615,12 +617,12 @@ func (d APIClient) CreateVolume(
 }
 
 // DeleteVolume deletes a volume from the array.
-func (d APIClient) DeleteVolume(volume VolumeEx) error {
+func (d Client) DeleteVolume(volume VolumeEx) error {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "DeleteVolume",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"name":   volume.Label,
 		}
 		log.WithFields(fields).Debug(">>>> DeleteVolume")
@@ -636,7 +638,7 @@ func (d APIClient) DeleteVolume(volume VolumeEx) error {
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
 
 		err = d.getErrorFromHTTPResponse(response, responseBody)
-		return fmt.Errorf("Could not destroy volume %s. %v", volume.Label, err)
+		return fmt.Errorf("could not destroy volume %s: %v", volume.Label, err)
 	}
 
 	log.WithFields(log.Fields{
@@ -652,12 +654,12 @@ func (d APIClient) DeleteVolume(volume VolumeEx) error {
 // verifies whether a Host is already configured on the array. If so, the Host info is returned and no further action is
 // taken. If not, this method chooses a unique name for the Host and creates it on the array. Once the Host is created,
 // it is placed in the Host Group used for nDVP volumes.
-func (d APIClient) EnsureHostForIQN(iqn string) (HostEx, error) {
+func (d Client) EnsureHostForIQN(iqn string) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "EnsureHostForIQN",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"iqn":    iqn,
 		}
 		log.WithFields(fields).Debug(">>>> EnsureHostForIQN")
@@ -667,7 +669,7 @@ func (d APIClient) EnsureHostForIQN(iqn string) (HostEx, error) {
 	// See if there is already a host for the specified IQN
 	host, err := d.GetHostForIQN(iqn)
 	if err != nil {
-		return HostEx{}, fmt.Errorf("Could not ensure host for IQN %s. %v", iqn, err)
+		return HostEx{}, fmt.Errorf("could not ensure host for IQN %s: %v", iqn, err)
 	}
 
 	// If we found a host, return it and leave well enough alone, since the host could have been defined
@@ -696,7 +698,7 @@ func (d APIClient) EnsureHostForIQN(iqn string) (HostEx, error) {
 	return d.CreateHost(hostname, iqn, d.config.HostType, hostGroup)
 }
 
-func (d APIClient) createNameForHost(iqn string) string {
+func (d Client) createNameForHost(iqn string) string {
 
 	// Get unique hostname suffix up to 10 chars, either the last part of the IQN or a random sequence
 	var uniqueSuffix = utils.RandomString(10)
@@ -723,7 +725,7 @@ func (d APIClient) createNameForHost(iqn string) string {
 	return hostname + "_" + uniqueSuffix
 }
 
-func (d APIClient) createNameForPort(host string) string {
+func (d Client) createNameForPort(host string) string {
 
 	suffix := "_port"
 	hostname := host
@@ -738,12 +740,12 @@ func (d APIClient) createNameForPort(host string) string {
 
 // GetHostForIQN queries the Host objects on the array an returns one matching the supplied IQN. An empty struct is
 // returned if a matching host is not found, so the caller should check for empty values in the result.
-func (d APIClient) GetHostForIQN(iqn string) (HostEx, error) {
+func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetHostForIQN",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"iqn":    iqn,
 		}
 		log.WithFields(fields).Debug(">>>> GetHostForIQN")
@@ -757,13 +759,13 @@ func (d APIClient) GetHostForIQN(iqn string) (HostEx, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return HostEx{}, fmt.Errorf("Could not get hosts from array. Status code %d", response.StatusCode)
+		return HostEx{}, fmt.Errorf("could not get hosts from array; status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
 	hosts := make([]HostEx, 0)
 	if err := json.Unmarshal(responseBody, &hosts); err != nil {
-		return HostEx{}, fmt.Errorf("Could not parse host data: %s. %v", string(responseBody), err)
+		return HostEx{}, fmt.Errorf("could not parse host data: %s; %v", string(responseBody), err)
 	}
 
 	// Find initiator with matching IQN
@@ -787,12 +789,12 @@ func (d APIClient) GetHostForIQN(iqn string) (HostEx, error) {
 }
 
 // CreateHost creates a Host on the array. If a HostGroup is specified, the Host is placed in that group.
-func (d APIClient) CreateHost(name string, iqn string, hostType string, hostGroup HostGroup) (HostEx, error) {
+func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup HostGroup) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "CreateHost",
-			"Type":      "APIClient",
+			"Type":      "Client",
 			"name":      name,
 			"iqn":       iqn,
 			"hostType":  hostType,
@@ -814,7 +816,7 @@ func (d APIClient) CreateHost(name string, iqn string, hostType string, hostGrou
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return HostEx{}, fmt.Errorf("Could not marshal JSON request: %v. %v", request, err)
+		return HostEx{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	log.WithFields(log.Fields{
@@ -830,13 +832,13 @@ func (d APIClient) CreateHost(name string, iqn string, hostType string, hostGrou
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return HostEx{}, fmt.Errorf("Could not create host %s. Status code %d", name, response.StatusCode)
+		return HostEx{}, fmt.Errorf("could not create host %s; status code: %d", name, response.StatusCode)
 	}
 
 	// Parse JSON data
 	host := HostEx{}
 	if err := json.Unmarshal(responseBody, &host); err != nil {
-		return HostEx{}, fmt.Errorf("Could not parse host data: %s. %v", string(responseBody), err)
+		return HostEx{}, fmt.Errorf("could not parse host data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -849,14 +851,14 @@ func (d APIClient) CreateHost(name string, iqn string, hostType string, hostGrou
 	return host, nil
 }
 
-func (d APIClient) getBestIndexForHostType(hostType string) int {
+func (d Client) getBestIndexForHostType(hostType string) int {
 
 	hostTypeIndex := -1
 
 	// Try the mapped values first
-	_, ok := HOST_TYPES[hostType]
+	_, ok := HostTypes[hostType]
 	if ok {
-		hostTypeIndex, _ = d.getIndexForHostType(HOST_TYPES[hostType])
+		hostTypeIndex, _ = d.getIndexForHostType(HostTypes[hostType])
 	}
 
 	// If not found, try matching the E-series host type codes directly
@@ -879,12 +881,12 @@ func (d APIClient) getBestIndexForHostType(hostType string) int {
 
 // getIndexForHostType queries the array for a host type matching the specified value. If found, it returns the
 // index by which the type is known on the array. If not found, it returns -1.
-func (d APIClient) getIndexForHostType(hostTypeCode string) (int, error) {
+func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "getIndexForHostType",
-			"Type":         "APIClient",
+			"Type":         "Client",
 			"hostTypeCode": hostTypeCode,
 		}
 		log.WithFields(fields).Debug(">>>> getIndexForHostType")
@@ -898,13 +900,13 @@ func (d APIClient) getIndexForHostType(hostTypeCode string) (int, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return -1, fmt.Errorf("Could not get host types from array. Status code %d", response.StatusCode)
+		return -1, fmt.Errorf("could not get host types from array; status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
 	hostTypes := make([]HostType, 0)
 	if err := json.Unmarshal(responseBody, &hostTypes); err != nil {
-		return -1, fmt.Errorf("Could not parse host type data: %s. %v", string(responseBody), err)
+		return -1, fmt.Errorf("could not parse host type data: %s; %v", string(responseBody), err)
 	}
 
 	// Find host type with matching code
@@ -928,12 +930,12 @@ func (d APIClient) getIndexForHostType(hostTypeCode string) (int, error) {
 // EnsureHostGroup ensures that an E-series HostGroup exists to contain all Host objects created by the nDVP E-series driver.
 // The group name is taken from the config structure. If the group exists, the group structure is returned and no further
 // action is taken. If not, this method creates the group and returns the resulting group structure.
-func (d APIClient) EnsureHostGroup() (HostGroup, error) {
+func (d Client) EnsureHostGroup() (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "EnsureHostGroup",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> EnsureHostGroup")
 		defer log.WithFields(fields).Debug("<<<< EnsureHostGroup")
@@ -947,7 +949,7 @@ func (d APIClient) EnsureHostGroup() (HostGroup, error) {
 	// Get the group with the preconfigured name
 	hostGroup, err := d.GetHostGroup(hostGroupName)
 	if err != nil {
-		return HostGroup{}, fmt.Errorf("Could not ensure host group %s. %v", hostGroupName, err)
+		return HostGroup{}, fmt.Errorf("could not ensure host group %s: %v", hostGroupName, err)
 	}
 
 	// Group found, so use it for host creation
@@ -959,7 +961,7 @@ func (d APIClient) EnsureHostGroup() (HostGroup, error) {
 	// Create the group
 	hostGroup, err = d.CreateHostGroup(hostGroupName)
 	if err != nil {
-		return HostGroup{}, fmt.Errorf("Could not create host group %s. %v", hostGroupName, err)
+		return HostGroup{}, fmt.Errorf("could not create host group %s: %v", hostGroupName, err)
 	}
 
 	log.WithFields(log.Fields{
@@ -972,12 +974,12 @@ func (d APIClient) EnsureHostGroup() (HostGroup, error) {
 
 // GetHostGroup returns an E-series HostGroup structure with the specified name. If no matching group is found, an
 // empty structure is returned, so the caller should check for empty values in the result.
-func (d APIClient) GetHostGroup(name string) (HostGroup, error) {
+func (d Client) GetHostGroup(name string) (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetHostGroup",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> GetHostGroup")
@@ -991,13 +993,13 @@ func (d APIClient) GetHostGroup(name string) (HostGroup, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return HostGroup{}, fmt.Errorf("Could not get host groups from array. Status code %d", response.StatusCode)
+		return HostGroup{}, fmt.Errorf("could not get host groups from array; status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
 	hostGroups := make([]HostGroup, 0)
 	if err := json.Unmarshal(responseBody, &hostGroups); err != nil {
-		return HostGroup{}, fmt.Errorf("Could not parse host group data: %s. %v", string(responseBody), err)
+		return HostGroup{}, fmt.Errorf("could not parse host group data: %s; %v", string(responseBody), err)
 	}
 
 	for _, hostGroup := range hostGroups {
@@ -1011,12 +1013,12 @@ func (d APIClient) GetHostGroup(name string) (HostGroup, error) {
 }
 
 // CreateHostGroup creates an E-series HostGroup object with the specified name and returns the resulting HostGroup structure.
-func (d APIClient) CreateHostGroup(name string) (HostGroup, error) {
+func (d Client) CreateHostGroup(name string) (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "CreateHostGroup",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"name":   name,
 		}
 		log.WithFields(fields).Debug(">>>> CreateHostGroup")
@@ -1031,7 +1033,7 @@ func (d APIClient) CreateHostGroup(name string) (HostGroup, error) {
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return HostGroup{}, fmt.Errorf("Could not marshal JSON request: %v. %v", request, err)
+		return HostGroup{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	// Create the host group
@@ -1041,13 +1043,13 @@ func (d APIClient) CreateHostGroup(name string) (HostGroup, error) {
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return HostGroup{}, fmt.Errorf("Could not create host group %s. Status code %d", name, response.StatusCode)
+		return HostGroup{}, fmt.Errorf("could not create host group %s; status code: %d", name, response.StatusCode)
 	}
 
 	// Parse JSON data
 	hostGroup := HostGroup{}
 	if err := json.Unmarshal(responseBody, &hostGroup); err != nil {
-		return HostGroup{}, fmt.Errorf("Could not parse host data: %s. %v", string(responseBody), err)
+		return HostGroup{}, fmt.Errorf("could not parse host data: %s; %v", string(responseBody), err)
 	}
 
 	return hostGroup, nil
@@ -1057,12 +1059,12 @@ func (d APIClient) CreateHostGroup(name string) (HostGroup, error) {
 // specified host, either directly or to the containing host group, no action is taken. If the volume is mapped to a different host,
 // the method returns an error. Note that if the host is in a group, the volume will actually be mapped to the group instead of the
 // individual host.
-func (d APIClient) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
+func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "MapVolume",
-			"Type":       "APIClient",
+			"Type":       "Client",
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
@@ -1093,19 +1095,20 @@ func (d APIClient) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 		} else {
 
 			// Mapped elsewhere, so return an error
-			return LUNMapping{}, fmt.Errorf("Volume %s is already mapped to a different host or host group", volume.Label)
+			return LUNMapping{}, fmt.Errorf("volume %s is already mapped to a different host or host group",
+				volume.Label)
 		}
 	}
 }
 
 // mapVolume maps a volume to a host with no checks for an existing mapping. If the host is in a host group, the volume is
 // mapped to the group instead. The resulting mapping structure is returned.
-func (d APIClient) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
+func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "mapVolume",
-			"Type":       "APIClient",
+			"Type":       "Client",
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
@@ -1127,7 +1130,7 @@ func (d APIClient) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return LUNMapping{}, fmt.Errorf("Could not marshal JSON request: %v. %v", request, err)
+		return LUNMapping{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	// Create the mapping
@@ -1137,13 +1140,13 @@ func (d APIClient) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return LUNMapping{}, fmt.Errorf("Could not map volume %s. Status code %d", volume.Label, response.StatusCode)
+		return LUNMapping{}, fmt.Errorf("could not map volume %s; status code: %d", volume.Label, response.StatusCode)
 	}
 
 	// Parse JSON data
 	mapping := LUNMapping{}
 	if err := json.Unmarshal(responseBody, &mapping); err != nil {
-		return LUNMapping{}, fmt.Errorf("Could not parse volume mapping data: %s. %v", string(responseBody), err)
+		return LUNMapping{}, fmt.Errorf("could not parse volume mapping data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -1160,12 +1163,12 @@ func (d APIClient) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 // volumeIsMappedToHost checks whether a volume is mapped to the specified host (or containing host group). If the mapping
 // exists, the method returns true with the associated mapping structure. If no mapping exists, or if the volume is mapped
 // elsewhere, the method returns false with an empty structure.
-func (d APIClient) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMapping) {
+func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMapping) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "volumeIsMappedToHost",
-			"Type":       "APIClient",
+			"Type":       "Client",
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
@@ -1228,12 +1231,12 @@ func (d APIClient) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUN
 }
 
 // UnmapVolume removes a mapping from the specified volume. If no map exists, no action is taken.
-func (d APIClient) UnmapVolume(volume VolumeEx) error {
+func (d Client) UnmapVolume(volume VolumeEx) error {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "UnmapVolume",
-			"Type":   "APIClient",
+			"Type":   "Client",
 			"volume": volume.Label,
 		}
 		log.WithFields(fields).Debug(">>>> UnmapVolume")
@@ -1259,7 +1262,7 @@ func (d APIClient) UnmapVolume(volume VolumeEx) error {
 	}
 
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("Could not unmap volume %s. Status code %d", volume.Label, response.StatusCode)
+		return fmt.Errorf("could not unmap volume %s; Status code: %d", volume.Label, response.StatusCode)
 	}
 
 	log.WithFields(log.Fields{
@@ -1273,13 +1276,13 @@ func (d APIClient) UnmapVolume(volume VolumeEx) error {
 	return nil
 }
 
-// GetTargetIqn returns the IQN for the array.
-func (d *APIClient) GetTargetIQN() (string, error) {
+// GetTargetIQN returns the IQN for the array.
+func (d *Client) GetTargetIQN() (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetTargetIqn",
-			"Type":   "APIClient",
+			"Type":   "Client",
 		}
 		log.WithFields(fields).Debug(">>>> GetTargetIqn")
 		defer log.WithFields(fields).Debug("<<<< GetTargetIqn")
@@ -1292,13 +1295,13 @@ func (d *APIClient) GetTargetIQN() (string, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Could not read iSCSI settings. Status code %d", response.StatusCode)
+		return "", fmt.Errorf("could not read iSCSI settings; status code: %d", response.StatusCode)
 	}
 
 	var settings IscsiTargetSettings
 	err = json.Unmarshal(responseBody, &settings)
 	if err != nil {
-		return "", fmt.Errorf("Could not parse iSCSI settings data: %s. %v", string(responseBody), err)
+		return "", fmt.Errorf("could not parse iSCSI settings data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -1308,9 +1311,9 @@ func (d *APIClient) GetTargetIQN() (string, error) {
 	return settings.NodeName.IscsiNodeName, nil
 }
 
-// isRefValid checks whether the supplied string is a valid E-series object reference as used by its REST API.
+// IsRefValid checks whether the supplied string is a valid E-series object reference as used by its REST API.
 // Ref values are strings of all numerical digits that aren't all zeros (i.e. the null ref).
-func (d APIClient) IsRefValid(ref string) bool {
+func (d Client) IsRefValid(ref string) bool {
 
 	switch ref {
 	case "", NullRef:
@@ -1322,18 +1325,18 @@ func (d APIClient) IsRefValid(ref string) bool {
 
 // getErrorFromHTTPResponse converts error information from some E-series API responses into GoLang error objects that
 // embed the additional error text.
-func (d APIClient) getErrorFromHTTPResponse(response *http.Response, responseBody []byte) error {
+func (d Client) getErrorFromHTTPResponse(response *http.Response, responseBody []byte) error {
 
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == HTTP_UNPROCESSABLE_ENTITY {
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == HTTPUnprocessableEntity {
 
 		// Parse JSON error data
 		responseData := CallResponseError{}
 		if err := json.Unmarshal(responseBody, &responseData); err != nil {
-			return fmt.Errorf("Could not parse API error response: %s. %v", string(responseBody), err)
+			return fmt.Errorf("could not parse API error response: %s; %v", string(responseBody), err)
 		}
 
-		return fmt.Errorf("API failed. Status code: %d. Error: %s Localized: %s",
-			response.StatusCode, responseData.ErrorMsg, responseData.LocalizedMsg)
+		return fmt.Errorf("API failed. Status code: %d. Error: %s Localized: %s", response.StatusCode,
+			responseData.ErrorMsg, responseData.LocalizedMsg)
 	} else {
 
 		// Other error

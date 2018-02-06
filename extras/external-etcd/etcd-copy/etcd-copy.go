@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/persistent_store"
 )
@@ -33,8 +33,8 @@ var (
 		"etcdV3 destination private key")
 	keyPrefix     = flag.String("key_prefix", "/trident/v1/", "The prefix of keys to migrate.")
 	deleteSrcData = flag.Bool("delete_src", false, "Delete source cluster data after migration")
-	etcdSrc       persistent_store.EtcdClient
-	etcdDest      persistent_store.EtcdClient
+	etcdSrc       persistentstore.EtcdClient
+	etcdDest      persistentstore.EtcdClient
 )
 
 func processCmdLineArgs() {
@@ -72,12 +72,12 @@ func main() {
 
 	switch {
 	case *etcdV2Src != "":
-		etcdSrc, err = persistent_store.NewEtcdClientV2(*etcdV2Src)
+		etcdSrc, err = persistentstore.NewEtcdClientV2(*etcdV2Src)
 	case *etcdV3Src != "":
 		if shouldEnableTLS(*etcdV3SrcCert, *etcdV3SrcCACert, *etcdV3SrcKey) {
-			etcdSrc, err = persistent_store.NewEtcdClientV3WithTLS(*etcdV3Src, *etcdV3SrcCert, *etcdV3SrcCACert, *etcdV3SrcKey)
+			etcdSrc, err = persistentstore.NewEtcdClientV3WithTLS(*etcdV3Src, *etcdV3SrcCert, *etcdV3SrcCACert, *etcdV3SrcKey)
 		} else {
-			etcdSrc, err = persistent_store.NewEtcdClientV3(*etcdV3Src)
+			etcdSrc, err = persistentstore.NewEtcdClientV3(*etcdV3Src)
 		}
 	}
 	if err != nil {
@@ -86,19 +86,19 @@ func main() {
 	}
 	switch {
 	case *etcdV2Dest != "":
-		etcdDest, err = persistent_store.NewEtcdClientV2(*etcdV2Dest)
+		etcdDest, err = persistentstore.NewEtcdClientV2(*etcdV2Dest)
 	case *etcdV3Dest != "":
 		if shouldEnableTLS(*etcdV3DestCert, *etcdV3DestCACert, *etcdV3DestKey) {
-			etcdDest, err = persistent_store.NewEtcdClientV3WithTLS(*etcdV3Dest, *etcdV3DestCert, *etcdV3DestCACert, *etcdV3DestKey)
+			etcdDest, err = persistentstore.NewEtcdClientV3WithTLS(*etcdV3Dest, *etcdV3DestCert, *etcdV3DestCACert, *etcdV3DestKey)
 		} else {
-			etcdDest, err = persistent_store.NewEtcdClientV3(*etcdV3Dest)
+			etcdDest, err = persistentstore.NewEtcdClientV3(*etcdV3Dest)
 		}
 	}
 	if err != nil {
 		log.Fatalf("Creating etcd client for the destination cluster failed: %v",
 			err)
 	}
-	dataMigrator := persistent_store.NewEtcdDataMigrator(etcdSrc, etcdDest)
+	dataMigrator := persistentstore.NewEtcdDataMigrator(etcdSrc, etcdDest)
 	if err = dataMigrator.Start(*keyPrefix, *deleteSrcData); err != nil {
 		log.Error("etcd data migration failed: ", err)
 	}

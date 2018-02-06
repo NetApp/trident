@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 import (
 	"fmt"
@@ -13,12 +13,12 @@ func NewIntOffer(min, max int) Offer {
 	}
 }
 
-func (a *intOffer) Matches(r Request) bool {
+func (o *intOffer) Matches(r Request) bool {
 	ir, ok := r.(*intRequest)
 	if !ok {
 		return false
 	}
-	return ir.Request >= a.Min && ir.Request <= a.Max
+	return ir.Request >= o.Min && ir.Request <= o.Max
 }
 
 func (o *intOffer) String() string {
@@ -35,7 +35,7 @@ func (r *intRequest) Value() interface{} {
 	return r.Request
 }
 
-func (r *intRequest) GetType() StorageAttributeType {
+func (r *intRequest) GetType() Type {
 	return intType
 }
 

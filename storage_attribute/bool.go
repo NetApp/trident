@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 import (
 	"fmt"
@@ -12,18 +12,18 @@ func NewBoolOffer(offer bool) Offer {
 	}
 }
 
-// A boolean offer of true matches any request; a boolean offer of false
+// Matches is a boolean offer of true matches any request; a boolean offer of false
 // only matches a false request.  This assumes that the requested parameter
 // will be passed into the driver.
-func (a *boolOffer) Matches(r Request) bool {
+func (o *boolOffer) Matches(r Request) bool {
 	br, ok := r.(*boolRequest)
 	if !ok {
 		return false
 	}
-	if a.Offer {
+	if o.Offer {
 		return true
 	}
-	return br.Request == a.Offer
+	return br.Request == o.Offer
 }
 
 func (o *boolOffer) String() string {
@@ -40,7 +40,7 @@ func (r *boolRequest) Value() interface{} {
 	return r.Request
 }
 
-func (r *boolRequest) GetType() StorageAttributeType {
+func (r *boolRequest) GetType() Type {
 	return boolType
 }
 

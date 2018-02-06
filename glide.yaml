@@ -1,6 +1,6 @@
 package: github.com/netapp/trident
 import:
-- package: github.com/Sirupsen/logrus
+- package: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/coreos/etcd
   version: 0520cb9304cb2385f7e72b8bc02d6e4d3257158a

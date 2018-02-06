@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetExternalConfig(t *testing.T) {
-	driver := SolidfireSANStorageDriver{
+	driver := SANStorageDriver{
 		Config: drivers.SolidfireStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -50,7 +50,7 @@ func TestGetExternalConfig(t *testing.T) {
 			},
 		},
 	}
-	newConfig := driver.GetExternalConfig().(*SolidfireStorageDriverConfigExternal)
+	newConfig := driver.GetExternalConfig().(*StorageDriverConfigExternal)
 	if newConfig.EndPoint == driver.Config.EndPoint {
 		t.Error("EndPoints are equal; expected different.  Got:  ",
 			newConfig.EndPoint)

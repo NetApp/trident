@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Linux is a constant value for the runtime.GOOS that represents the Linux OS
@@ -195,7 +195,7 @@ func GetVolumeSizeBytes(opts map[string]string, defaultVolumeSize string) (uint6
 	// Ensure the size is valid
 	sizeBytesStr, err := ConvertSizeToBytes(size)
 	if err != nil {
-		return 0, fmt.Errorf("Invalid size value '%s' : %v", size, err)
+		return 0, fmt.Errorf("invalid size value '%s': %v", size, err)
 	}
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
@@ -249,9 +249,9 @@ func GetV(opts map[string]string, keys string, defaultValue string) string {
 }
 
 // RandomString returns a string of the specified length consisting only of alphabetic characters.
-func RandomString(str_size int) string {
+func RandomString(strSize int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	var bytes = make([]byte, str_size)
+	var bytes = make([]byte, strSize)
 	rand.Seed(time.Now().UnixNano())
 	rand.Read(bytes)
 	for i, b := range bytes {
@@ -260,7 +260,7 @@ func RandomString(str_size int) string {
 	return string(bytes)
 }
 
-func LogHttpRequest(request *http.Request, requestBody []byte) {
+func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
 	var body string
@@ -273,7 +273,7 @@ func LogHttpRequest(request *http.Request, requestBody []byte) {
 		header, request.Method, request.URL, request.Header, body, footer)
 }
 
-func LogHttpResponse(response *http.Response, responseBody []byte) {
+func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 	var body string

@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -15,22 +17,22 @@ import (
 )
 
 const (
-	FORMAT_JSON = "json"
-	FORMAT_NAME = "name"
-	FORMAT_WIDE = "wide"
-	FORMAT_YAML = "yaml"
+	FormatJSON = "json"
+	FormatName = "name"
+	FormatWide = "wide"
+	FormatYAML = "yaml"
 
-	MODE_DIRECT = "direct"
-	MODE_TUNNEL = "tunnel"
-	MODE_LOGS   = "logs"
+	ModeDirect = "direct"
+	ModeTunnel = "tunnel"
+	ModeLogs   = "logs"
 
-	CLI_KUBERNETES = "kubectl"
-	CLI_OPENSHIFT  = "oc"
+	CLIKubernetes = "kubectl"
+	CLIOpenshift  = "oc"
 
-	POD_SERVER = "127.0.0.1:8000"
+	PodServer = "127.0.0.1:8000"
 
-	EXIT_CODE_SUCCESS = 0
-	EXIT_CODE_FAILURE = 1
+	ExitCodeSuccess = 0
+	ExitCodeFailure = 1
 )
 
 var (
@@ -71,12 +73,12 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		}
 
 		switch OperatingMode {
-		case MODE_DIRECT:
+		case ModeDirect:
 			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
-		case MODE_TUNNEL:
+		case ModeTunnel:
 			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",
 				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
-		case MODE_LOGS:
+		case ModeLogs:
 			fmt.Printf("Operating mode = %s, Namespace = %s, CLI = %s\n",
 				OperatingMode, TridentPodNamespace, KubernetesCLI)
 		}
@@ -89,13 +91,13 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 	if Server != "" {
 
 		// Server specified on command line takes precedence
-		OperatingMode = MODE_DIRECT
+		OperatingMode = ModeDirect
 		return nil
 	} else if envServer != "" {
 
 		// Consider environment variable next
 		Server = envServer
-		OperatingMode = MODE_DIRECT
+		OperatingMode = ModeDirect
 		return nil
 	}
 
@@ -118,34 +120,34 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		// If we're running 'logs', and there isn't a Trident pod, set a special mode
 		// so we don't terminate execution before we even start.
 		if cmd.Name() == "logs" {
-			OperatingMode = MODE_LOGS
+			OperatingMode = ModeLogs
 			return nil
 		}
 		return err
 	}
 
-	OperatingMode = MODE_TUNNEL
-	Server = POD_SERVER
+	OperatingMode = ModeTunnel
+	Server = PodServer
 	return nil
 }
 
 func discoverKubernetesCLI() error {
 
 	// Try the OpenShift CLI first
-	_, err := exec.Command(CLI_OPENSHIFT, "version").CombinedOutput()
-	if GetExitCodeFromError(err) == EXIT_CODE_SUCCESS {
-		KubernetesCLI = CLI_OPENSHIFT
+	_, err := exec.Command(CLIOpenshift, "version").CombinedOutput()
+	if GetExitCodeFromError(err) == ExitCodeSuccess {
+		KubernetesCLI = CLIOpenshift
 		return nil
 	}
 
 	// Fall back to the K8S CLI
-	_, err = exec.Command(CLI_KUBERNETES, "version").CombinedOutput()
-	if GetExitCodeFromError(err) == EXIT_CODE_SUCCESS {
-		KubernetesCLI = CLI_KUBERNETES
+	_, err = exec.Command(CLIKubernetes, "version").CombinedOutput()
+	if GetExitCodeFromError(err) == ExitCodeSuccess {
+		KubernetesCLI = CLIKubernetes
 		return nil
 	}
 
-	return errors.New("Could not find the Kubernetes CLI.")
+	return errors.New("could not find the Kubernetes CLI")
 }
 
 // GetCurrentNamespace returns the default namespace from service account info
@@ -284,11 +286,11 @@ func SetExitCodeFromError(err error) {
 
 func GetExitCodeFromError(err error) int {
 	if err == nil {
-		return EXIT_CODE_SUCCESS
+		return ExitCodeSuccess
 	} else {
 
 		// Default to 1 in case we can't determine a process exit code
-		code := EXIT_CODE_FAILURE
+		code := ExitCodeFailure
 
 		if exitError, ok := err.(*exec.ExitError); ok {
 			ws := exitError.Sys().(syscall.WaitStatus)

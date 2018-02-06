@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/netapp/trident/config"
@@ -31,7 +31,7 @@ func InitLogging(logName string) error {
 	// Write to the log file
 	logFileHook, err := NewFileHook(logName)
 	if err != nil {
-		return fmt.Errorf("Could not initialize logging to file %s. %v", logFileHook.GetLocation(), err)
+		return fmt.Errorf("could not initialize logging to file %s: %v", logFileHook.GetLocation(), err)
 	}
 	log.AddHook(logFileHook)
 
@@ -132,12 +132,12 @@ func NewFileHook(logName string) (*FileHook, error) {
 	dir, err := os.Lstat(LogRoot)
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(LogRoot, 0755); err != nil {
-			return nil, fmt.Errorf("Could not create log directory %v. %v", LogRoot, err)
+			return nil, fmt.Errorf("could not create log directory %v. %v", LogRoot, err)
 		}
 	}
 	// If config.LogRoot isn't a directory, return an error
 	if dir != nil && !dir.IsDir() {
-		return nil, fmt.Errorf("Log path %v exists and is not a directory, please remove.", LogRoot)
+		return nil, fmt.Errorf("log path %v exists and is not a directory, please remove it", LogRoot)
 	}
 
 	// Build log file path
@@ -244,7 +244,7 @@ type PlainTextFormatter struct {
 func (f *PlainTextFormatter) Format(entry *log.Entry) ([]byte, error) {
 
 	var b *bytes.Buffer
-	var keys []string = make([]string, 0, len(entry.Data))
+	var keys = make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
 	}

@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -21,7 +23,7 @@ var deleteVolumeCmd = &cobra.Command{
 	Short:   "Delete one or more storage volumes from Trident",
 	Aliases: []string{"b", "volumes"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "volume"}
 			if AllVolumes {
 				command = append(command, "--all")
@@ -44,7 +46,7 @@ func volumeDelete(volumeNames []string) error {
 	if AllVolumes {
 		// Make sure --all isn't being used along with specific volumes
 		if len(volumeNames) > 0 {
-			return errors.New("cannot use --all switch and specify individual volumes.")
+			return errors.New("cannot use --all switch and specify individual volumes")
 		}
 
 		// Get list of volume names so we can delete them all
@@ -55,14 +57,14 @@ func volumeDelete(volumeNames []string) error {
 	} else {
 		// Not using --all, so make sure one or more volumes were specified
 		if len(volumeNames) == 0 {
-			return errors.New("volume name not specified.")
+			return errors.New("volume name not specified")
 		}
 	}
 
 	for _, volumeName := range volumeNames {
 		url := baseURL + "/volume/" + volumeName
 
-		response, _, err := api.InvokeRestApi("DELETE", url, nil, Debug)
+		response, _, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {

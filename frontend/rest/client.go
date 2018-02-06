@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -32,7 +32,7 @@ type Interface interface {
 	GetBackend(backendID string) (*GetBackendResponse, error)
 	PostBackend(backendFile string) (*AddBackendResponse, error)
 	ListBackends() (*ListBackendsResponse, error)
-	AddStorageClass(storageClassConfig *storage_class.Config) (*AddStorageClassResponse, error)
+	AddStorageClass(storageClassConfig *storageclass.Config) (*AddStorageClassResponse, error)
 	GetVolume(volName string) (*GetVolumeResponse, error)
 	AddVolume(volConfig *storage.VolumeConfig) (*AddVolumeResponse, error)
 	DeleteVolume(volName string) (*DeleteResponse, error)
@@ -123,7 +123,7 @@ func (client *TridentClient) PostBackend(backendFile string) (*AddBackendRespons
 	if jsonBytes, err = ioutil.ReadAll(resp.Body); err != nil {
 		return nil, err
 	}
-	//TODO: Fix the unmarshaling problem with  StorageBackendExternal.Storage.Attributes
+	//TODO: Fix the unmarshaling problem with  BackendExternal.Storage.Attributes
 	if err = json.Unmarshal(jsonBytes, &addBackendResponse); err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (client *TridentClient) ListBackends() (*ListBackendsResponse, error) {
 	return &listBackendsResponse, nil
 }
 
-func (client *TridentClient) AddStorageClass(storageClassConfig *storage_class.Config) (*AddStorageClassResponse, error) {
+func (client *TridentClient) AddStorageClass(storageClassConfig *storageclass.Config) (*AddStorageClassResponse, error) {
 	var (
 		resp                    *http.Response
 		err                     error

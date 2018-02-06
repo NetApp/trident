@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 import (
 	"encoding/json"
@@ -20,7 +20,7 @@ func UnmarshalRequestMap(mapJSON json.RawMessage) (
 	}
 	err := json.Unmarshal(mapJSON, &tmp)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal map:  %v", err)
+		return nil, fmt.Errorf("unable to unmarshal map: %v", err)
 	}
 	for name, stringVal := range tmp {
 		ret[name], err = CreateAttributeRequestFromAttributeValue(name, stringVal)
@@ -46,28 +46,25 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 	var req Request
 	valType, ok := attrTypes[name]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized storage attribute:  %s", name)
+		return nil, fmt.Errorf("unrecognized storage attribute: %s", name)
 	}
 	switch valType {
 	case boolType:
 		v, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("Storage attribute value (%s)"+
-				" doesn't match the specified type (%s)!", val, valType)
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s)", val, valType)
 		}
 		req = NewBoolRequest(v)
 	case intType:
 		v, err := strconv.ParseInt(val, 10, 0)
 		if err != nil {
-			return nil, fmt.Errorf("Storage attribute value (%s)"+
-				" doesn't match the specified type (%s)!", val, valType)
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s)", val, valType)
 		}
 		req = NewIntRequest(int(v))
 	case stringType:
 		req = NewStringRequest(val)
 	default:
-		return nil, fmt.Errorf("Unrecognized type for a storage attribute "+
-			"request: %s", valType)
+		return nil, fmt.Errorf("unrecognized type for a storage attribute request: %s", valType)
 	}
 	return req, nil
 }
@@ -80,8 +77,7 @@ func CreateBackendStoragePoolsMapFromEncodedString(
 	for _, backendPools := range backendPoolsList {
 		vals := strings.SplitN(backendPools, ":", 2)
 		if len(vals) != 2 || vals[0] == "" || vals[1] == "" {
-			return nil, fmt.Errorf("The encoded backend-storage pool string " +
-				"does not have the right format!")
+			return nil, fmt.Errorf("the encoded backend-storage pool string does not have the right format")
 		}
 		backend := vals[0]
 		Pools := strings.Split(vals[1], ",")

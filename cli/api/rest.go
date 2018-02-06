@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package api
 
 import (
@@ -9,9 +11,9 @@ import (
 	"time"
 )
 
-const HTTP_TIMEOUT = time.Second * 30
+const HTTPTimeout = time.Second * 30
 
-func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
+func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
 
 	var request *http.Request
 	var err error
@@ -28,10 +30,10 @@ func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*
 	request.Header.Set("Content-Type", "application/json")
 
 	if debug {
-		LogHttpRequest(request, requestBody)
+		LogHTTPRequest(request, requestBody)
 	}
 
-	client := &http.Client{Timeout: HTTP_TIMEOUT}
+	client := &http.Client{Timeout: HTTPTimeout}
 	response, err := client.Do(request)
 
 	responseBody := []byte{}
@@ -41,14 +43,14 @@ func InvokeRestApi(method string, url string, requestBody []byte, debug bool) (*
 		response.Body.Close()
 
 		if debug {
-			LogHttpResponse(response, responseBody)
+			LogHTTPResponse(response, responseBody)
 		}
 	}
 
 	return response, responseBody, err
 }
 
-func LogHttpRequest(request *http.Request, requestBody []byte) {
+func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	fmt.Fprint(os.Stdout, "--------------------------------------------------------------------------------\n")
 	fmt.Fprintf(os.Stdout, "Request Method: %s\n", request.Method)
 	fmt.Fprintf(os.Stdout, "Request URL: %v\n", request.URL)
@@ -60,7 +62,7 @@ func LogHttpRequest(request *http.Request, requestBody []byte) {
 	fmt.Fprint(os.Stdout, "................................................................................\n")
 }
 
-func LogHttpResponse(response *http.Response, responseBody []byte) {
+func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	fmt.Fprintf(os.Stdout, "Response status: %s\n", response.Status)
 	fmt.Fprintf(os.Stdout, "Response headers: %v\n", response.Header)
 	if responseBody == nil {

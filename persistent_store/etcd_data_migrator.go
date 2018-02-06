@@ -1,11 +1,11 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type EtcdDataMigrator struct {
@@ -27,12 +27,12 @@ func (m *EtcdDataMigrator) Start(keyPrefix string, deleteSrc bool) error {
 			log.Infof("No key with prefix %v to migrate.", keyPrefix)
 			return nil
 		}
-		return fmt.Errorf("Reading keys from the source client failed: %v", err)
+		return fmt.Errorf("reading keys from the source client failed: %v", err)
 	}
 	for _, key := range keys {
 		val, err := m.SourceClient.Read(key)
 		if err != nil {
-			return fmt.Errorf("Reading key %v by the source client failed: %v",
+			return fmt.Errorf("reading key %v by the source client failed: %v",
 				key, err)
 		}
 		log.WithFields(log.Fields{
@@ -40,7 +40,7 @@ func (m *EtcdDataMigrator) Start(keyPrefix string, deleteSrc bool) error {
 		}).Debug("Read key from the source.")
 		err = m.DestClient.Set(key, val)
 		if err != nil {
-			return fmt.Errorf("Setting key %v by the destination client failed: %v",
+			return fmt.Errorf("setting key %v by the destination client failed: %v",
 				key, err)
 		}
 		log.WithFields(log.Fields{
@@ -49,7 +49,7 @@ func (m *EtcdDataMigrator) Start(keyPrefix string, deleteSrc bool) error {
 		if deleteSrc {
 			err = m.SourceClient.Delete(key)
 			if err != nil {
-				return fmt.Errorf("Deleting key %v by the source client failed: %v",
+				return fmt.Errorf("deleting key %v by the source client failed: %v",
 					key, err)
 			}
 			log.WithFields(log.Fields{
@@ -62,10 +62,10 @@ func (m *EtcdDataMigrator) Start(keyPrefix string, deleteSrc bool) error {
 
 func (m *EtcdDataMigrator) Stop() error {
 	if err := m.SourceClient.Stop(); err != nil {
-		return fmt.Errorf("Closing the source etcd client failed: %v", err)
+		return fmt.Errorf("closing the source etcd client failed: %v", err)
 	}
 	if err := m.DestClient.Stop(); err != nil {
-		return fmt.Errorf("Closing the destination etcd client failed: %v",
+		return fmt.Errorf("closing the destination etcd client failed: %v",
 			err)
 	}
 	return nil

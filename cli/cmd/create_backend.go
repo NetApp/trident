@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -36,7 +38,7 @@ var createBackendCmd = &cobra.Command{
 			return err
 		}
 
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"create", "backend", "--base64", base64.StdEncoding.EncodeToString(jsonData)}
 			TunnelCommand(append(command, args...))
 			return nil
@@ -52,7 +54,7 @@ func getBackendCreateData() ([]byte, error) {
 	var rawData []byte
 
 	if b64Data == "" && filename == "" {
-		return nil, errors.New("no input file was specified.")
+		return nil, errors.New("no input file was specified")
 	}
 
 	// Read from file or stdin or b64 data
@@ -86,7 +88,7 @@ func backendCreate(postData []byte) error {
 	// Send the file to Trident
 	url := baseURL + "/backend"
 
-	response, responseBody, err := api.InvokeRestApi("POST", url, postData, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("POST", url, postData, Debug)
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusCreated {

@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -9,8 +9,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -84,7 +84,7 @@ func AddGeneric(
 	response addResponse,
 	add func([]byte),
 ) {
-	var err error = nil
+	var err error
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	defer func() {
@@ -234,8 +234,8 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetBackendResponse struct {
-	Backend *storage.StorageBackendExternal `json:"backend"`
-	Error   string                          `json:"error,omitempty"`
+	Backend *storage.BackendExternal `json:"backend"`
+	Error   string                   `json:"error,omitempty"`
 }
 
 func GetBackend(w http.ResponseWriter, r *http.Request) {
@@ -398,7 +398,7 @@ func AddStorageClass(w http.ResponseWriter, r *http.Request) {
 	}
 	AddGeneric(w, r, response,
 		func(body []byte) {
-			scConfig := new(storage_class.Config)
+			scConfig := new(storageclass.Config)
 			err := json.Unmarshal(body, scConfig)
 			if err != nil {
 				response.Error = "Invalid JSON: " + err.Error()
@@ -439,8 +439,8 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetStorageClassResponse struct {
-	StorageClass *storage_class.StorageClassExternal `json:"storageClass"`
-	Error        string                              `json:"error,omitempty"`
+	StorageClass *storageclass.External `json:"storageClass"`
+	Error        string                 `json:"error,omitempty"`
 }
 
 func GetStorageClass(w http.ResponseWriter, r *http.Request) {

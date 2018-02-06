@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"crypto/tls"
@@ -58,15 +58,15 @@ func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key strin
 	// Set up etcdv3 client
 	tlsCert, err := tls.LoadX509KeyPair(etcdV3Cert, etcdV3Key)
 	if err != nil {
-		return nil, fmt.Errorf("Loading TLS certificate failed: %v", err)
+		return nil, fmt.Errorf("loading TLS certificate failed: %v", err)
 	}
 	caCertBytes, err := ioutil.ReadFile(etcdV3CACert)
 	if err != nil {
-		return nil, fmt.Errorf("Reading CA certificate failed: %v", err)
+		return nil, fmt.Errorf("reading CA certificate failed: %v", err)
 	}
 	caCertPool := x509.NewCertPool()
 	if !caCertPool.AppendCertsFromPEM(caCertBytes) {
-		return nil, fmt.Errorf("Parsing CA certificate failed: %v", err)
+		return nil, fmt.Errorf("parsing CA certificate failed: %v", err)
 	}
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: false,
@@ -114,7 +114,7 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 	return nil, err
 }
 
-// the abstract CRUD interface
+// Create is the abstract CRUD interface
 func (p *EtcdClientV3) Create(key, value string) error {
 	_, err := p.Read(key)
 	if err != nil && !MatchKeyNotFoundErr(err) {
@@ -138,7 +138,7 @@ func (p *EtcdClientV3) Read(key string) (string, error) {
 		return "", err
 	}
 	if len(resp.Kvs) > 1 {
-		return "", fmt.Errorf("Too many keys were returned!")
+		return "", fmt.Errorf("too many keys were returned")
 	}
 	// TODO: Validate for the later versions of etcd
 	// This version of etcd doesn't return any error for nonexistent keys
@@ -148,7 +148,7 @@ func (p *EtcdClientV3) Read(key string) (string, error) {
 	return string(resp.Kvs[0].Value[:]), nil
 }
 
-// This method returns all the keys with the designated prefix
+// ReadKeys returns all the keys with the designated prefix
 func (p *EtcdClientV3) ReadKeys(keyPrefix string) ([]string, error) {
 	keys := make([]string, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), config.PersistentStoreTimeout)
@@ -204,7 +204,7 @@ func (p *EtcdClientV3) Delete(key string) error {
 	return nil
 }
 
-// This method deletes all the keys with the designated prefix
+// DeleteKeys deletes all the keys with the designated prefix
 func (p *EtcdClientV3) DeleteKeys(keyPrefix string) error {
 	keys, err := p.ReadKeys(keyPrefix)
 	if err != nil {
@@ -218,17 +218,17 @@ func (p *EtcdClientV3) DeleteKeys(keyPrefix string) error {
 	return nil
 }
 
-// Returns the persistent store type
+// GetType returns the persistent store type
 func (p *EtcdClientV3) GetType() StoreType {
 	return EtcdV3Store
 }
 
-// Shuts down the etcd client
+// Stop shuts down the etcd client
 func (p *EtcdClientV3) Stop() error {
 	return p.clientV3.Close()
 }
 
-// Returns the configuration for the etcd client
+// GetConfig returns the configuration for the etcd client
 func (p *EtcdClientV3) GetConfig() *ClientConfig {
 	return &ClientConfig{
 		endpoints: p.endpoints,
@@ -236,7 +236,7 @@ func (p *EtcdClientV3) GetConfig() *ClientConfig {
 	}
 }
 
-// Returns the version of the persistent data
+// GetVersion returns the version of the persistent data
 func (p *EtcdClientV3) GetVersion() (*PersistentStateVersion, error) {
 	versionJSON, err := p.Read(config.StoreURL)
 	if err != nil {
@@ -250,20 +250,17 @@ func (p *EtcdClientV3) GetVersion() (*PersistentStateVersion, error) {
 	return version, nil
 }
 
-// Sets the version of the persistent data
+// SetVersion sets the version of the persistent data
 func (p *EtcdClientV3) SetVersion(version *PersistentStateVersion) error {
 	versionJSON, err := json.Marshal(version)
 	if err != nil {
 		return err
 	}
-	if err = p.Set(config.StoreURL, string(versionJSON)); err != nil {
-		return err
-	}
-	return nil
+	return p.Set(config.StoreURL, string(versionJSON))
 }
 
-// This method saves the minimally required backend state to the persistent store
-func (p *EtcdClientV3) AddBackend(b *storage.StorageBackend) error {
+// AddBackend saves the minimally required backend state to the persistent store
+func (p *EtcdClientV3) AddBackend(b *storage.Backend) error {
 	backend := b.ConstructPersistent()
 	backendJSON, err := json.Marshal(backend)
 	if err != nil {
@@ -276,9 +273,9 @@ func (p *EtcdClientV3) AddBackend(b *storage.StorageBackend) error {
 	return nil
 }
 
-// This method retrieves a backend from the persistent store
-func (p *EtcdClientV3) GetBackend(backendName string) (*storage.StorageBackendPersistent, error) {
-	var backend storage.StorageBackendPersistent
+// GetBackend retrieves a backend from the persistent store
+func (p *EtcdClientV3) GetBackend(backendName string) (*storage.BackendPersistent, error) {
+	var backend storage.BackendPersistent
 	backendJSON, err := p.Read(config.BackendURL + "/" + backendName)
 	if err != nil {
 		return nil, err
@@ -290,8 +287,8 @@ func (p *EtcdClientV3) GetBackend(backendName string) (*storage.StorageBackendPe
 	return &backend, nil
 }
 
-// This method updates the backend state on the persistent store
-func (p *EtcdClientV3) UpdateBackend(b *storage.StorageBackend) error {
+// UpdateBackend updates the backend state on the persistent store
+func (p *EtcdClientV3) UpdateBackend(b *storage.Backend) error {
 	backend := b.ConstructPersistent()
 	backendJSON, err := json.Marshal(backend)
 	if err != nil {
@@ -304,8 +301,8 @@ func (p *EtcdClientV3) UpdateBackend(b *storage.StorageBackend) error {
 	return nil
 }
 
-// This method deletes the backend state on the persistent store
-func (p *EtcdClientV3) DeleteBackend(backend *storage.StorageBackend) error {
+// DeleteBackend deletes the backend state on the persistent store
+func (p *EtcdClientV3) DeleteBackend(backend *storage.Backend) error {
 	err := p.Delete(config.BackendURL + "/" + backend.Name)
 	if err != nil {
 		return err
@@ -313,9 +310,9 @@ func (p *EtcdClientV3) DeleteBackend(backend *storage.StorageBackend) error {
 	return nil
 }
 
-// This method retrieves all backends
-func (p *EtcdClientV3) GetBackends() ([]*storage.StorageBackendPersistent, error) {
-	backendList := make([]*storage.StorageBackendPersistent, 0)
+// GetBackends retrieves all backends
+func (p *EtcdClientV3) GetBackends() ([]*storage.BackendPersistent, error) {
+	backendList := make([]*storage.BackendPersistent, 0)
 	keys, err := p.ReadKeys(config.BackendURL)
 	if err != nil && MatchKeyNotFoundErr(err) {
 		return backendList, nil
@@ -332,7 +329,7 @@ func (p *EtcdClientV3) GetBackends() ([]*storage.StorageBackendPersistent, error
 	return backendList, nil
 }
 
-// This method deletes all backends
+// DeleteBackends deletes all backends
 func (p *EtcdClientV3) DeleteBackends() error {
 	backends, err := p.ReadKeys(config.BackendURL)
 	if err != nil {
@@ -346,7 +343,7 @@ func (p *EtcdClientV3) DeleteBackends() error {
 	return nil
 }
 
-// This method saves a volume's state to the persistent store
+// AddVolume saves a volume's state to the persistent store
 func (p *EtcdClientV3) AddVolume(vol *storage.Volume) error {
 	volExternal := vol.ConstructExternal()
 	volJSON, err := json.Marshal(volExternal)
@@ -360,7 +357,7 @@ func (p *EtcdClientV3) AddVolume(vol *storage.Volume) error {
 	return nil
 }
 
-// This method retrieves a volume's state from the persistent store
+// GetVolume retrieves a volume's state from the persistent store
 func (p *EtcdClientV3) GetVolume(volName string) (*storage.VolumeExternal, error) {
 	volJSON, err := p.Read(config.VolumeURL + "/" + volName)
 	if err != nil {
@@ -374,7 +371,7 @@ func (p *EtcdClientV3) GetVolume(volName string) (*storage.VolumeExternal, error
 	return volExternal, nil
 }
 
-// This method updates a volume's state on the persistent store
+// UpdateVolume updates a volume's state on the persistent store
 func (p *EtcdClientV3) UpdateVolume(vol *storage.Volume) error {
 	volExternal := vol.ConstructExternal()
 	volJSON, err := json.Marshal(volExternal)
@@ -388,7 +385,7 @@ func (p *EtcdClientV3) UpdateVolume(vol *storage.Volume) error {
 	return nil
 }
 
-// This method deletes a volume's state from the persistent store
+// DeleteVolume deletes a volume's state from the persistent store
 func (p *EtcdClientV3) DeleteVolume(vol *storage.Volume) error {
 	err := p.Delete(config.VolumeURL + "/" + vol.Config.Name)
 	if err != nil {
@@ -405,7 +402,7 @@ func (p *EtcdClientV3) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error {
 	return err
 }
 
-// This method retrieves all volumes
+// GetVolumes retrieves all volumes
 func (p *EtcdClientV3) GetVolumes() ([]*storage.VolumeExternal, error) {
 	volumeList := make([]*storage.VolumeExternal, 0)
 	keys, err := p.ReadKeys(config.VolumeURL)
@@ -424,7 +421,7 @@ func (p *EtcdClientV3) GetVolumes() ([]*storage.VolumeExternal, error) {
 	return volumeList, nil
 }
 
-// This method deletes all volumes
+// DeleteVolumes deletes all volumes
 func (p *EtcdClientV3) DeleteVolumes() error {
 	volumes, err := p.ReadKeys(config.VolumeURL)
 	if err != nil {
@@ -438,7 +435,7 @@ func (p *EtcdClientV3) DeleteVolumes() error {
 	return nil
 }
 
-// This method logs an AddVolume operation
+// AddVolumeTransaction logs an AddVolume operation
 func (p *EtcdClientV3) AddVolumeTransaction(volTxn *VolumeTransaction) error {
 	volTxnJSON, err := json.Marshal(volTxn)
 	if err != nil {
@@ -452,7 +449,7 @@ func (p *EtcdClientV3) AddVolumeTransaction(volTxn *VolumeTransaction) error {
 	return nil
 }
 
-// This method retrieves AddVolume logs
+// GetVolumeTransactions retrieves AddVolume logs
 func (p *EtcdClientV3) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 	volTxnList := make([]*VolumeTransaction, 0)
 	keys, err := p.ReadKeys(config.TransactionURL)
@@ -488,20 +485,18 @@ func (p *EtcdClientV3) GetExistingVolumeTransaction(
 	txnJSON, err := p.Read(config.TransactionURL + "/" + key)
 	if err != nil {
 		if !MatchKeyNotFoundErr(err) {
-			return nil, fmt.Errorf("Unable to read volume transaction key %s "+
-				"from etcd: %v", key, err)
+			return nil, fmt.Errorf("unable to read volume transaction key %s from etcd: %v", key, err)
 		} else {
 			return nil, nil
 		}
 	}
 	if err = json.Unmarshal([]byte(txnJSON), &ret); err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal volume transaction JSON "+
-			"for %s: %v", key, err)
+		return nil, fmt.Errorf("unable to unmarshal volume transaction JSON for %s: %v", key, err)
 	}
 	return &ret, nil
 }
 
-// This method deletes an AddVolume log
+// DeleteVolumeTransaction deletes an AddVolume log
 func (p *EtcdClientV3) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
 	err := p.Delete(config.TransactionURL + "/" + volTxn.getKey())
 	if err != nil {
@@ -510,13 +505,13 @@ func (p *EtcdClientV3) DeleteVolumeTransaction(volTxn *VolumeTransaction) error 
 	return nil
 }
 
-func (p *EtcdClientV3) AddStorageClass(sc *storage_class.StorageClass) error {
-	storageClass := sc.ConstructPersistent()
-	storageClassJSON, err := json.Marshal(storageClass)
+func (p *EtcdClientV3) AddStorageClass(sc *storageclass.StorageClass) error {
+	sClass := sc.ConstructPersistent()
+	storageClassJSON, err := json.Marshal(sClass)
 	if err != nil {
 		return err
 	}
-	err = p.Create(config.StorageClassURL+"/"+storageClass.GetName(),
+	err = p.Create(config.StorageClassURL+"/"+sClass.GetName(),
 		string(storageClassJSON))
 	if err != nil {
 		return err
@@ -524,8 +519,8 @@ func (p *EtcdClientV3) AddStorageClass(sc *storage_class.StorageClass) error {
 	return nil
 }
 
-func (p *EtcdClientV3) GetStorageClass(scName string) (*storage_class.StorageClassPersistent, error) {
-	var persistent storage_class.StorageClassPersistent
+func (p *EtcdClientV3) GetStorageClass(scName string) (*storageclass.Persistent, error) {
+	var persistent storageclass.Persistent
 	scJSON, err := p.Read(config.StorageClassURL + "/" + scName)
 	if err != nil {
 		return nil, err
@@ -537,8 +532,8 @@ func (p *EtcdClientV3) GetStorageClass(scName string) (*storage_class.StorageCla
 	return &persistent, nil
 }
 
-func (p *EtcdClientV3) GetStorageClasses() ([]*storage_class.StorageClassPersistent, error) {
-	storageClassList := make([]*storage_class.StorageClassPersistent, 0)
+func (p *EtcdClientV3) GetStorageClasses() ([]*storageclass.Persistent, error) {
+	storageClassList := make([]*storageclass.Persistent, 0)
 	keys, err := p.ReadKeys(config.StorageClassURL)
 	if err != nil && MatchKeyNotFoundErr(err) {
 		return storageClassList, nil
@@ -557,7 +552,7 @@ func (p *EtcdClientV3) GetStorageClasses() ([]*storage_class.StorageClassPersist
 }
 
 // DeleteStorageClass deletes a storage class's state from the persistent store
-func (p *EtcdClientV3) DeleteStorageClass(sc *storage_class.StorageClass) error {
+func (p *EtcdClientV3) DeleteStorageClass(sc *storageclass.StorageClass) error {
 	err := p.Delete(config.StorageClassURL + "/" + sc.GetName())
 	if err != nil {
 		return err

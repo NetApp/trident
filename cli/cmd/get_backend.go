@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -22,7 +24,7 @@ var getBackendCmd = &cobra.Command{
 	Short:   "Get one or more storage backends from Trident",
 	Aliases: []string{"b", "backends"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"get", "backend"}
 			TunnelCommand(append(command, args...))
 			return nil
@@ -68,7 +70,7 @@ func GetBackends(baseURL string) ([]string, error) {
 
 	url := baseURL + "/backend"
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -88,7 +90,7 @@ func GetBackend(baseURL, backendName string) (api.Backend, error) {
 
 	url := baseURL + "/backend/" + backendName
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return api.Backend{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -106,11 +108,11 @@ func GetBackend(baseURL, backendName string) (api.Backend, error) {
 
 func WriteBackends(backends []api.Backend) {
 	switch OutputFormat {
-	case FORMAT_JSON:
+	case FormatJSON:
 		WriteJSON(api.MultipleBackendResponse{backends})
-	case FORMAT_YAML:
+	case FormatYAML:
 		WriteYAML(api.MultipleBackendResponse{backends})
-	case FORMAT_NAME:
+	case FormatName:
 		writeBackendNames(backends)
 	default:
 		writeBackendTable(backends)

@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package k8s_client
+package k8sclient
 
 import (
 	"fmt"
@@ -160,7 +160,7 @@ func (k *FakeKubeClient) GetPVCPhase(pvcName string,
 	options metav1.GetOptions) (v1.PersistentVolumeClaimPhase, error) {
 	pvc, err := k.GetPVC(pvcName, options)
 	if err != nil {
-		var phase v1.PersistentVolumeClaimPhase = ""
+		var phase v1.PersistentVolumeClaimPhase
 		return phase, err
 	}
 	return pvc.Status.Phase, nil
@@ -211,7 +211,8 @@ func (k *FakeKubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 	return nil, nil
 }
 
-func (k *FakeKubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error) {
+func (k *FakeKubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret,
+	error) {
 	return nil, nil
 }
 

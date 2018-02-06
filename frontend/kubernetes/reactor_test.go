@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
-	k8s_testing "k8s.io/client-go/testing"
-	framework "k8s.io/client-go/tools/cache/testing"
+	k8stesting "k8s.io/client-go/testing"
+	"k8s.io/client-go/tools/cache/testing"
 )
 
-// This file defines a k8s_testing.Reactor used for testing purposes (see below).
+// This file defines a k8stesting.Reactor used for testing purposes (see below).
 // It contains no unit tests of its own and was adapted from
 // k8s.io/kubernetes/pkg/controller/persistentvolume/framework_test.go,
 // in the master branch as of 7/1/2016.
@@ -32,7 +32,7 @@ type orchestratorReactor struct {
 	sync.Mutex
 }
 
-func (r *orchestratorReactor) React(action k8s_testing.Action) (handled bool, ret runtime.Object, err error) {
+func (r *orchestratorReactor) React(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 	r.Lock()
 	defer r.Unlock()
 
@@ -40,18 +40,18 @@ func (r *orchestratorReactor) React(action k8s_testing.Action) (handled bool, re
 	r.events++
 	switch {
 	case action.Matches("create", "persistentvolumes"):
-		volume := action.(k8s_testing.UpdateAction).GetObject().(*v1.PersistentVolume)
+		volume := action.(k8stesting.UpdateAction).GetObject().(*v1.PersistentVolume)
 
 		// FakeClient does no validation, so we need to verify that the volume
 		// wasn't already created.  That said, this is unlikely to fail.
 		if _, found := r.volumes[volume.Name]; found {
 			return true, nil, fmt.Errorf(
-				"Unable to create volume %s:  already exists.", volume.Name)
+				"unable to create volume: %s already exists", volume.Name)
 		}
 		r.volumes[volume.Name] = volume
 		return true, volume, nil
 	case action.Matches("delete", "persistentvolumes"):
-		name := action.(k8s_testing.DeleteAction).GetName()
+		name := action.(k8stesting.DeleteAction).GetName()
 
 		if _, found := r.volumes[name]; !found {
 			return true, nil, fmt.Errorf("Unable to delete volume %s:  not "+

@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 const (
 	KeyNotFoundErr        = "Unable to find key"
@@ -8,21 +8,21 @@ const (
 	UnavailableClusterErr = "Unavailable etcd cluster"
 )
 
-// Used to turn etcd errors into something that callers can understand without
+// Error is used to turn etcd errors into something that callers can understand without
 // having to import the client library
-type PersistentStoreError struct {
+type Error struct {
 	Message string
 	Key     string
 }
 
-func NewPersistentStoreError(message, key string) *PersistentStoreError {
-	return &PersistentStoreError{
+func NewPersistentStoreError(message, key string) *Error {
+	return &Error{
 		Message: message,
 		Key:     key,
 	}
 }
 
-func (e *PersistentStoreError) Error() string {
+func (e *Error) Error() string {
 	return e.Message
 }
 

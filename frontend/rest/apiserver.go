@@ -1,4 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+/*
+ * Copyright 2018 NetApp, Inc. All Rights Reserved.
+ */
 
 package rest
 
@@ -7,7 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 )
@@ -24,12 +27,12 @@ func NewAPIServer(p core.Orchestrator, address, port string) *APIServer {
 
 	orchestrator = p
 
-	address_port := address + ":" + port
-	log.Infof("Starting REST interface on %s", address_port)
+	addressPort := address + ":" + port
+	log.Infof("Starting REST interface on %s", addressPort)
 
 	return &APIServer{
 		server: &http.Server{
-			Addr:         address_port,
+			Addr:         addressPort,
 			Handler:      NewRouter(),
 			ReadTimeout:  httpTimeout,
 			WriteTimeout: httpTimeout,

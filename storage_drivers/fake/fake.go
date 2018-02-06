@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -24,7 +24,7 @@ const (
 	FakeMinimumVolumeSizeBytes = 1048576 // 1 MiB
 )
 
-type FakeStorageDriver struct {
+type StorageDriver struct {
 	initialized bool
 	Config      drivers.FakeStorageDriverConfig
 
@@ -38,8 +38,8 @@ type FakeStorageDriver struct {
 	DestroyedVolumes map[string]bool
 }
 
-func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *FakeStorageDriver {
-	return &FakeStorageDriver{
+func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver {
+	return &StorageDriver{
 		initialized:      true,
 		Config:           config,
 		Volumes:          make(map[string]fake.Volume),
@@ -51,7 +51,6 @@ func newFakeStorageDriverConfigJSON(
 	name string,
 	protocol config.Protocol,
 	pools map[string]*fake.StoragePool,
-	destroyIgnoreNotPresent bool,
 ) (string, error) {
 	prefix := ""
 	jsonBytes, err := json.Marshal(
@@ -78,65 +77,65 @@ func NewFakeStorageDriverConfigJSON(
 	protocol config.Protocol,
 	pools map[string]*fake.StoragePool,
 ) (string, error) {
-	return newFakeStorageDriverConfigJSON(name, protocol, pools, false)
+	return newFakeStorageDriverConfigJSON(name, protocol, pools)
 }
 
-func (d *FakeStorageDriver) Name() string {
+func (d *StorageDriver) Name() string {
 	return drivers.FakeStorageDriverName
 }
 
-func (d *FakeStorageDriver) Initialize(
+func (d *StorageDriver) Initialize(
 	context config.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
 	if err != nil {
-		return fmt.Errorf("Unable to initialize fake driver: %v", err)
+		return fmt.Errorf("unable to initialize fake driver: %v", err)
 	}
 
 	d.Volumes = make(map[string]fake.Volume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 
-	s, err := json.Marshal(d.Config)
+	s, _ := json.Marshal(d.Config)
 	log.Debugf("FakeStorageDriverConfig: %s", string(s))
 
 	d.initialized = true
 	return nil
 }
 
-func (d *FakeStorageDriver) Initialized() bool {
+func (d *StorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *FakeStorageDriver) Terminate() {
+func (d *StorageDriver) Terminate() {
 	d.initialized = false
 }
 
-func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	poolName, ok := opts[FakePoolAttribute]
 	if !ok {
-		return fmt.Errorf("No pool specified.  Expected %s in opts map", FakePoolAttribute)
+		return fmt.Errorf("no pool specified; expected %s in opts map", FakePoolAttribute)
 	}
 
 	pool, ok := d.Config.Pools[poolName]
 	if !ok {
-		return fmt.Errorf("Could not find pool %s.", pool)
+		return fmt.Errorf("could not find pool %s", pool)
 	}
 
 	if _, ok = d.Volumes[name]; ok {
-		return fmt.Errorf("Volume %s already exists", name)
+		return fmt.Errorf("volume %s already exists", name)
 	}
 
 	if sizeBytes < FakeMinimumVolumeSizeBytes {
-		return fmt.Errorf("Requested volume size (%d bytes) is too small.  The minimum volume size is %d bytes.",
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, FakeMinimumVolumeSizeBytes)
 	}
 
 	if sizeBytes > pool.Bytes {
-		return fmt.Errorf("Requested volume is too large.  Requested %d bytes; "+
-			"have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
+		return fmt.Errorf("requested volume is too large; requested %d bytes; have %d available in pool %s",
+			sizeBytes, pool.Bytes, poolName)
 	}
 
 	d.Volumes[name] = fake.Volume{
@@ -157,31 +156,31 @@ func (d *FakeStorageDriver) Create(name string, sizeBytes uint64, opts map[strin
 	return nil
 }
 
-func (d *FakeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *StorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]
 	if !ok {
-		return fmt.Errorf("Source volume %s not found", name)
+		return fmt.Errorf("source volume %s not found", name)
 	}
 
 	// Ensure clone volume doesn't exist
 	if _, ok := d.Volumes[name]; ok {
-		return fmt.Errorf("Volume %s already exists", name)
+		return fmt.Errorf("volume %s already exists", name)
 	}
 
 	// Use the same pool as the source
 	poolName := sourceVolume.PoolName
 	pool, ok := d.Config.Pools[poolName]
 	if !ok {
-		return fmt.Errorf("Could not find pool %s.", pool)
+		return fmt.Errorf("could not find pool %s", pool)
 	}
 
 	// Use the same size as the source
 	sizeBytes := sourceVolume.SizeBytes
 	if sizeBytes > pool.Bytes {
-		return fmt.Errorf("Requested clone is too large.  Requested %d bytes; "+
-			"have %d available in pool %s.", sizeBytes, pool.Bytes, poolName)
+		return fmt.Errorf("requested clone is too large: requested %d bytes; have %d available in pool %s",
+			sizeBytes, pool.Bytes, poolName)
 	}
 
 	d.Volumes[name] = fake.Volume{
@@ -204,7 +203,7 @@ func (d *FakeStorageDriver) CreateClone(name, source, snapshot string, opts map[
 	return nil
 }
 
-func (d *FakeStorageDriver) Destroy(name string) error {
+func (d *StorageDriver) Destroy(name string) error {
 
 	d.DestroyedVolumes[name] = true
 
@@ -215,7 +214,7 @@ func (d *FakeStorageDriver) Destroy(name string) error {
 
 	pool, ok := d.Config.Pools[volume.PoolName]
 	if !ok {
-		return fmt.Errorf("Could not find pool %s.", volume.PoolName)
+		return fmt.Errorf("could not find pool %s", volume.PoolName)
 	}
 
 	pool.Bytes += volume.SizeBytes
@@ -231,19 +230,19 @@ func (d *FakeStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-func (d *FakeStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
-	return errors.New("Fake driver does not support attaching.")
+func (d *StorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+	return errors.New("fake driver does not support attaching")
 }
 
-func (d *FakeStorageDriver) Detach(name, mountpoint string) error {
-	return errors.New("Fake driver does not support detaching.")
+func (d *StorageDriver) Detach(name, mountpoint string) error {
+	return errors.New("fake driver does not support detaching")
 }
 
-func (d *FakeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
-	return nil, errors.New("Fake driver does not support SnapshotList")
+func (d *StorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+	return nil, errors.New("fake driver does not support SnapshotList")
 }
 
-func (d *FakeStorageDriver) List() ([]string, error) {
+func (d *StorageDriver) List() ([]string, error) {
 	vols := []string{}
 	for vol := range d.Volumes {
 		vols = append(vols, vol)
@@ -251,20 +250,20 @@ func (d *FakeStorageDriver) List() ([]string, error) {
 	return vols, nil
 }
 
-func (d *FakeStorageDriver) Get(name string) error {
+func (d *StorageDriver) Get(name string) error {
 
 	_, ok := d.Volumes[name]
 	if !ok {
-		return fmt.Errorf("Could not find volume %s.", name)
+		return fmt.Errorf("could not find volume %s", name)
 	}
 
 	return nil
 }
 
-func (d *FakeStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBackend) error {
+func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	backend.Name = d.Config.InstanceName
 	for name, pool := range d.Config.Pools {
-		vc := &storage.StoragePool{
+		vc := &storage.Pool{
 			Name:           name,
 			StorageClasses: make([]string, 0),
 			Backend:        backend,
@@ -276,9 +275,9 @@ func (d *FakeStorageDriver) GetStorageBackendSpecs(backend *storage.StorageBacke
 	return nil
 }
 
-func (d *FakeStorageDriver) GetVolumeOpts(
+func (d *StorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	pool *storage.StoragePool,
+	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 	opts := make(map[string]string)
@@ -288,11 +287,11 @@ func (d *FakeStorageDriver) GetVolumeOpts(
 	return opts, nil
 }
 
-func (d *FakeStorageDriver) GetInternalVolumeName(name string) string {
+func (d *StorageDriver) GetInternalVolumeName(name string) string {
 	return drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 	if volConfig.CloneSourceVolume != "" {
 		volConfig.CloneSourceVolumeInternal =
@@ -301,7 +300,7 @@ func (d *FakeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool 
 	return true
 }
 
-func (d *FakeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 
 	switch d.Config.Protocol {
 	case config.File:
@@ -315,11 +314,11 @@ func (d *FakeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) erro
 	return nil
 }
 
-func (d *FakeStorageDriver) GetProtocol() config.Protocol {
+func (d *StorageDriver) GetProtocol() config.Protocol {
 	return d.Config.Protocol
 }
 
-func (d *FakeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
+func (d *StorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
 
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 
@@ -336,7 +335,7 @@ func (d *FakeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfi
 	}
 }
 
-func (d *FakeStorageDriver) GetExternalConfig() interface{} {
+func (d *StorageDriver) GetExternalConfig() interface{} {
 
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 
@@ -354,17 +353,17 @@ func (d *FakeStorageDriver) GetExternalConfig() interface{} {
 	}
 }
 
-func (d *FakeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
+func (d *StorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
 
 	volume, ok := d.Volumes[name]
 	if !ok {
-		return nil, fmt.Errorf("Fake volume %s not found.", name)
+		return nil, fmt.Errorf("fake volume %s not found", name)
 	}
 
 	return d.getVolumeExternal(volume), nil
 }
 
-func (d *FakeStorageDriver) GetVolumeExternalWrappers(
+func (d *StorageDriver) GetVolumeExternalWrappers(
 	channel chan *storage.VolumeExternalWrapper) {
 
 	// Let the caller know we're done by closing the channel
@@ -376,7 +375,7 @@ func (d *FakeStorageDriver) GetVolumeExternalWrappers(
 	}
 }
 
-func (d *FakeStorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
+func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:      config.OrchestratorAPIVersion,

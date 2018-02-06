@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -28,7 +30,7 @@ var versionCmd = &cobra.Command{
 		var err error
 
 		// Get the server version
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			serverVersion, err = getVersionFromTunnel()
 
 		} else {
@@ -63,7 +65,7 @@ func getVersionFromRest() (rest.GetVersionResponse, error) {
 
 	url := baseURL + "/version"
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return rest.GetVersionResponse{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -83,17 +85,17 @@ func getVersionFromRest() (rest.GetVersionResponse, error) {
 func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 
 	command := []string{"version", "-o", "json"}
-	versionJson, err := TunnelCommandRaw(command)
+	versionJSON, err := TunnelCommandRaw(command)
 	if err != nil {
 		return rest.GetVersionResponse{}, err
 	}
 
 	if Debug {
-		fmt.Printf("Version JSON: %s\n", versionJson)
+		fmt.Printf("Version JSON: %s\n", versionJSON)
 	}
 
 	var tunnelVersionResponse api.VersionResponse
-	err = json.Unmarshal(versionJson, &tunnelVersionResponse)
+	err = json.Unmarshal(versionJSON, &tunnelVersionResponse)
 	if err != nil {
 		return rest.GetVersionResponse{}, err
 	}
@@ -130,11 +132,11 @@ func addClientVersion(serverVersion *utils.Version) api.VersionResponse {
 
 func writeVersions(versions api.VersionResponse) {
 	switch OutputFormat {
-	case FORMAT_JSON:
+	case FormatJSON:
 		WriteJSON(versions)
-	case FORMAT_YAML:
+	case FormatYAML:
 		WriteYAML(versions)
-	case FORMAT_WIDE:
+	case FormatWide:
 		writeWideVersionTable(versions)
 	default:
 		writeVersionTable(versions)

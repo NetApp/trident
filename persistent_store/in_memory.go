@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"fmt"
@@ -11,11 +11,11 @@ import (
 )
 
 type InMemoryClient struct {
-	backends            map[string]*storage.StorageBackendPersistent
+	backends            map[string]*storage.BackendPersistent
 	backendsAdded       int
 	volumes             map[string]*storage.VolumeExternal
 	volumesAdded        int
-	storageClasses      map[string]*sc.StorageClassPersistent
+	storageClasses      map[string]*sc.Persistent
 	storageClassesAdded int
 	volumeTxns          map[string]*VolumeTransaction
 	volumeTxnsAdded     int
@@ -24,9 +24,9 @@ type InMemoryClient struct {
 
 func NewInMemoryClient() *InMemoryClient {
 	return &InMemoryClient{
-		backends:       make(map[string]*storage.StorageBackendPersistent),
+		backends:       make(map[string]*storage.BackendPersistent),
 		volumes:        make(map[string]*storage.VolumeExternal),
-		storageClasses: make(map[string]*sc.StorageClassPersistent),
+		storageClasses: make(map[string]*sc.Persistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
 		version: &PersistentStateVersion{
 			"memory", config.OrchestratorAPIVersion,
@@ -34,7 +34,7 @@ func NewInMemoryClient() *InMemoryClient {
 	}
 }
 
-func (p *InMemoryClient) GetType() StoreType {
+func (c *InMemoryClient) GetType() StoreType {
 	return MemoryStore
 }
 
@@ -58,17 +58,17 @@ func (c *InMemoryClient) SetVersion(version *PersistentStateVersion) error {
 	return nil
 }
 
-func (c *InMemoryClient) AddBackend(b *storage.StorageBackend) error {
+func (c *InMemoryClient) AddBackend(b *storage.Backend) error {
 	backend := b.ConstructPersistent()
 	if _, ok := c.backends[backend.Name]; ok {
-		return fmt.Errorf("Backend %s already exists.", backend.Name)
+		return fmt.Errorf("backend %s already exists", backend.Name)
 	}
 	c.backends[backend.Name] = backend
 	c.backendsAdded++
 	return nil
 }
 
-func (c *InMemoryClient) GetBackend(backendName string) (*storage.StorageBackendPersistent, error) {
+func (c *InMemoryClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
 	ret, ok := c.backends[backendName]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, backendName)
@@ -76,7 +76,7 @@ func (c *InMemoryClient) GetBackend(backendName string) (*storage.StorageBackend
 	return ret, nil
 }
 
-func (c *InMemoryClient) UpdateBackend(b *storage.StorageBackend) error {
+func (c *InMemoryClient) UpdateBackend(b *storage.Backend) error {
 	// UpdateBackend requires the backend to already exist.
 	if _, ok := c.backends[b.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
@@ -85,7 +85,7 @@ func (c *InMemoryClient) UpdateBackend(b *storage.StorageBackend) error {
 	return nil
 }
 
-func (c *InMemoryClient) DeleteBackend(b *storage.StorageBackend) error {
+func (c *InMemoryClient) DeleteBackend(b *storage.Backend) error {
 	if _, ok := c.backends[b.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
 	}
@@ -93,8 +93,8 @@ func (c *InMemoryClient) DeleteBackend(b *storage.StorageBackend) error {
 	return nil
 }
 
-func (c *InMemoryClient) GetBackends() ([]*storage.StorageBackendPersistent, error) {
-	backendList := make([]*storage.StorageBackendPersistent, 0)
+func (c *InMemoryClient) GetBackends() ([]*storage.BackendPersistent, error) {
+	backendList := make([]*storage.BackendPersistent, 0)
 	if c.backendsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
 		return backendList, nil
@@ -110,14 +110,14 @@ func (c *InMemoryClient) DeleteBackends() error {
 		// Try to match etcd semantics as closely as possible.
 		return NewPersistentStoreError(KeyNotFoundErr, "Backends")
 	}
-	c.backends = make(map[string]*storage.StorageBackendPersistent)
+	c.backends = make(map[string]*storage.BackendPersistent)
 	return nil
 }
 
 func (c *InMemoryClient) AddVolume(vol *storage.Volume) error {
 	volume := vol.ConstructExternal()
 	if _, ok := c.volumes[volume.Config.Name]; ok {
-		return fmt.Errorf("Volume %s already exists.", volume.Config.Name)
+		return fmt.Errorf("volume %s already exists", volume.Config.Name)
 	}
 	c.volumes[volume.Config.Name] = volume
 	c.volumesAdded++
@@ -217,7 +217,7 @@ func (c *InMemoryClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) erro
 func (c *InMemoryClient) AddStorageClass(s *sc.StorageClass) error {
 	storageClass := s.ConstructPersistent()
 	if _, ok := c.storageClasses[storageClass.GetName()]; ok {
-		return fmt.Errorf("Storage class %s already exists.", storageClass.GetName())
+		return fmt.Errorf("storage class %s already exists", storageClass.GetName())
 	}
 	c.storageClasses[storageClass.GetName()] = storageClass
 	c.storageClassesAdded++
@@ -225,7 +225,7 @@ func (c *InMemoryClient) AddStorageClass(s *sc.StorageClass) error {
 }
 
 func (c *InMemoryClient) GetStorageClass(scName string) (
-	*sc.StorageClassPersistent, error,
+	*sc.Persistent, error,
 ) {
 	ret, ok := c.storageClasses[scName]
 	if !ok {
@@ -235,9 +235,9 @@ func (c *InMemoryClient) GetStorageClass(scName string) (
 }
 
 func (c *InMemoryClient) GetStorageClasses() (
-	[]*sc.StorageClassPersistent, error,
+	[]*sc.Persistent, error,
 ) {
-	ret := make([]*sc.StorageClassPersistent, 0, len(c.storageClasses))
+	ret := make([]*sc.Persistent, 0, len(c.storageClasses))
 	if c.storageClassesAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
 		return ret, nil

@@ -1,13 +1,13 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"flag"
 	"fmt"
 	"testing"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -35,19 +35,18 @@ func PopulateSourceCluster(client EtcdClient, prefix string) error {
 		}
 	}
 	for i := 1; i <= 2; i++ {
-		if err := client.Create(fmt.Sprintf("%s/storageclass/s%d", prefix, i), fmt.Sprintf("CLASS%d", i)); err != nil {
+		if err := client.Create(fmt.Sprintf("%s/storageclass/s%d", prefix, i), fmt.Sprintf("CLASS%d",
+			i)); err != nil {
 			return err
 		}
 	}
 	for i := 1; i <= 4; i++ {
-		if err := client.Create(fmt.Sprintf("%s/parent/child/grandchild%d", prefix, i), fmt.Sprintf("GCHILD%d", i)); err != nil {
+		if err := client.Create(fmt.Sprintf("%s/parent/child/grandchild%d", prefix, i), fmt.Sprintf("GCHILD%d",
+			i)); err != nil {
 			return err
 		}
 	}
-	if err := client.Create(fmt.Sprintf("%s/version", prefix), fmt.Sprintf("V1")); err != nil {
-		return err
-	}
-	return nil
+	return client.Create(fmt.Sprintf("%s/version", prefix), fmt.Sprintf("V1"))
 }
 
 func TestEtcdV2ToEtcdV3Migration(t *testing.T) {
@@ -110,7 +109,7 @@ func TestEtcdV2ToEtcdV3Migration(t *testing.T) {
 	keysDest, err = destClient.ReadKeys(*keyPrefix)
 	if err != nil && MatchKeyNotFoundErr(err) {
 	} else {
-		log.Debug("Destination keys after delete: ", keysSrc)
+		log.Debug("Destination keys after delete: ", keysDest)
 		t.Fatalf("Deleting the keys from the destination cluster failed: %v", err)
 	}
 

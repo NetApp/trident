@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 
 	err := json.Unmarshal(mapJSON, &tmp)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal map:  %v", err)
+		return nil, fmt.Errorf("unable to unmarshal map: %v", err)
 	}
 	for name, rawAttr := range tmp {
 		var (
@@ -23,7 +23,7 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 		)
 		baseType, ok := attrTypes[name]
 		if !ok {
-			return nil, fmt.Errorf("Unknown storage attribute:  %s", name)
+			return nil, fmt.Errorf("unknown storage attribute: %s", name)
 		}
 		switch {
 		case baseType == boolType:
@@ -33,12 +33,12 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 		case baseType == stringType:
 			final = new(stringOffer)
 		default:
-			return nil, fmt.Errorf("Offer %s has unrecognized type %s", name,
+			return nil, fmt.Errorf("offer %s has unrecognized type %s", name,
 				baseType)
 		}
 		err = json.Unmarshal(rawAttr, final)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to fully unmarshal request %s:  %v",
+			return nil, fmt.Errorf("unable to fully unmarshal request %s: %v",
 				name, err)
 		}
 		ret[name] = final

@@ -1,4 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+/*
+ * Copyright 2018 NetApp, Inc. All Rights Reserved.
+ */
 
 package factory
 
@@ -6,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -20,22 +22,22 @@ import (
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
 )
 
-func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, err error) {
+func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err error) {
 
-	var storageDriver storage.StorageDriver
+	var storageDriver storage.Driver
 
 	// Some drivers may panic during initialize if given invalid parameters,
 	// so catch any panics that might occur and return an error.
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Unable to instantiate backend: %v", r)
+			err = fmt.Errorf("unable to instantiate backend: %v", r)
 		}
 	}()
 
 	// Convert config (JSON or YAML) to JSON
 	configJSONBytes, err := yaml.YAMLToJSON([]byte(configJSON))
 	if err != nil {
-		err = fmt.Errorf("Invalid config format: %v", err)
+		err = fmt.Errorf("invalid config format: %v", err)
 		return
 	}
 	configJSON = string(configJSONBytes)
@@ -43,33 +45,33 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 	// Parse the common config struct from JSON
 	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
 	if err != nil {
-		err = fmt.Errorf("Input failed validation: %v", err)
+		err = fmt.Errorf("input failed validation: %v", err)
 		return
 	}
 
 	// Pre-driver initialization setup
 	switch commonConfig.StorageDriverName {
 	case drivers.OntapNASStorageDriverName:
-		storageDriver = &ontap.OntapNASStorageDriver{}
+		storageDriver = &ontap.NASStorageDriver{}
 	case drivers.OntapNASQtreeStorageDriverName:
-		storageDriver = &ontap.OntapNASQtreeStorageDriver{}
+		storageDriver = &ontap.NASQtreeStorageDriver{}
 	case drivers.OntapSANStorageDriverName:
-		storageDriver = &ontap.OntapSANStorageDriver{}
+		storageDriver = &ontap.SANStorageDriver{}
 	case drivers.SolidfireSANStorageDriverName:
-		storageDriver = &solidfire.SolidfireSANStorageDriver{}
+		storageDriver = &solidfire.SANStorageDriver{}
 	case drivers.EseriesIscsiStorageDriverName:
-		storageDriver = &eseries.ESeriesStorageDriver{}
+		storageDriver = &eseries.SANStorageDriver{}
 	case drivers.FakeStorageDriverName:
-		storageDriver = &fake.FakeStorageDriver{}
+		storageDriver = &fake.StorageDriver{}
 	default:
-		err = fmt.Errorf("Unknown storage driver: %v",
+		err = fmt.Errorf("unknown storage driver: %v",
 			commonConfig.StorageDriverName)
 		return
 	}
 
 	if initializeErr := storageDriver.Initialize(
 		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
-		err = fmt.Errorf("Problem initializing storage driver: '%v' error: %v",
+		err = fmt.Errorf("problem initializing storage driver: '%v' error: %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return
 	}
@@ -83,7 +85,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 		break
 
 	case drivers.OntapSANStorageDriverName:
-		driver := storageDriver.(*ontap.OntapSANStorageDriver)
+		driver := storageDriver.(*ontap.SANStorageDriver)
 
 		iGroupResponse, err := driver.API.IgroupList()
 		if err = ontapi.GetError(iGroupResponse, err); err != nil {
@@ -105,48 +107,18 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("Initiator group %v doesn't exist for SVM %v "+
-				"and needs to be manually created! Please also ensure all "+
-				"relevant hosts are added to the igroup.",
-				driver.Config.IgroupName, driver.Config.SVM)
+			return nil, fmt.Errorf("initiator group %v doesn't exist for SVM %v and needs to be manually created"+
+				"; please also ensure all relevant hosts are added to the igroup", driver.Config.IgroupName, driver.Config.SVM)
 		} else {
 			log.WithFields(log.Fields{
 				"driver":     drivers.OntapSANStorageDriverName,
 				"SVM":        driver.Config.SVM,
 				"igroup":     driver.Config.IgroupName,
 				"initiators": initiators,
-			}).Warn("Please ensure all relevant hosts are added to the ",
-				"initiator group.")
+			}).Warn("Please ensure all relevant hosts are added to the initiator group.")
 		}
-
-		/* TODO: DON'T DELETE
-		// Create igroup automatically and use a REST endpoint for adding hosts
-		// (code from nDVP's ontap_san.go)
-		driver := storageDriver.(*ontap.OntapSANStorageDriver)
-		response, err := driver.API.IgroupCreate(config.DefaultOntapIgroup, "iscsi", "linux")
-		if !isPassed(response.Result.ResultStatusAttr) {
-			if response.Result.ResultErrnoAttr != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
-				return nil, fmt.Errorf("Problem creating igroup %v: %v, %v",
-					config.DefaultOntapIgroup, response.Result, err)
-			}
-		}
-
-		// Not required for Trident but harmless to add host IQNs to the igroup
-		iqns, errIqn := utils.GetInitiatorIqns()
-		if errIqn != nil {
-			return nil, fmt.Errorf("Problem determining host initiator IQNs: %v", errIqn)
-		}
-		// Add each IQN we found to the igroup
-		for _, iqn := range iqns {
-			response2, err2 := driver.API.IgroupAdd(config.DefaultOntapIgroup, iqn)
-			if !isPassed(response2.Result.ResultStatusAttr) {
-				if response2.Result.ResultErrnoAttr != azgo.EVDISK_ERROR_INITGROUP_HAS_NODE {
-					return nil, fmt.Errorf("Problem adding IQN: %v to igroup: %v\n%verror: %v", iqn, config.DefaultOntapIgroup, response2.Result, err2)
-				}
-			}
-		}*/
 	case drivers.SolidfireSANStorageDriverName:
-		driver := storageDriver.(*solidfire.SolidfireSANStorageDriver)
+		driver := storageDriver.(*solidfire.SANStorageDriver)
 
 		if !driver.Config.UseCHAP {
 			// VolumeAccessGroup logic
@@ -164,7 +136,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 				}
 				vags, vagErr := driver.Client.ListVolumeAccessGroups(listVAGReq)
 				if vagErr != nil {
-					err = fmt.Errorf("Could not list VAGs for backend %s: %s",
+					err = fmt.Errorf("could not list VAGs for backend %s: %s",
 						driver.Config.SVIP, vagErr.Error())
 					return
 				}
@@ -186,15 +158,13 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 					}
 				}
 				if !found {
-					err = fmt.Errorf("Volume Access Group %v doesn't exist at %v "+
-						"and needs to be manually created! Please also ensure all "+
-						"relevant hosts are added to the VAG.",
-						config.DefaultSolidFireVAG, driver.Config.SVIP)
+					err = fmt.Errorf("volume Access Group %v doesn't exist at %v and needs to be manually created"+
+						"; please also ensure all relevant hosts are added to the VAG", config.DefaultSolidFireVAG, driver.Config.SVIP)
 					return
 				}
 			} else if len(driver.Config.AccessGroups) > 4 {
-				err = fmt.Errorf("The maximum number of allowed Volume Access Groups per config is 4 "+
-					"but your config has specified %v!", len(driver.Config.AccessGroups))
+				err = fmt.Errorf("the maximum number of allowed Volume Access Groups per config is 4 but your config"+
+					" has specified %v", len(driver.Config.AccessGroups))
 				return
 			} else {
 				// We only need this in the case that AccessGroups were specified, if it was zero and we
@@ -205,8 +175,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 					return
 				}
 				if len(missingVags) != 0 {
-					err = fmt.Errorf("Failed to discover 1 or more of the specified VAG ID's! "+
-						"Missing VAG IDS from Cluster discovery: %+v", missingVags)
+					err = fmt.Errorf("failed to discover the following specified VAG ID's: %+v", missingVags)
 					return
 				}
 			}
@@ -232,35 +201,10 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 			for _, vag := range driver.Config.AccessGroups {
 				addAGErr := driver.AddMissingVolumesToVag(vag, vIDs)
 				if addAGErr != nil {
-					err = fmt.Errorf("Failed to update AccessGroup membership of volume "+
-						"%+v", addAGErr)
+					err = fmt.Errorf("failed to update AccessGroup membership of volume %+v", addAGErr)
 					return
 				}
 			}
-
-			/* TODO: DON'T DELETE
-			// Create VAG automatically and use a REST endpoint for adding hosts
-			if !found {
-				// Add the orchestrator Volume Access Group (VAG)
-				// lookp host iqns
-				iqns, errIqn := utils.GetInitiatorIqns()
-				if errIqn != nil {
-					err = fmt.Errorf("Problem determining host initiator IQNs: %v", errIqn)
-					return
-				}
-				createVAGReq := &sfapi.CreateVolumeAccessGroupRequest{
-					Name:       config.DefaultSolidFireVAG,
-					Initiators: iqns,
-				}
-				vagID, vagErr := driver.Client.CreateVolumeAccessGroup(createVAGReq)
-				if vagErr != nil {
-					err = fmt.Errorf("Problem creating Volume Access Group %s: %v",
-						config.DefaultSolidFireVAG, vagErr)
-					return
-				}
-				driver.VagID = vagID
-			}*/
-
 		} else {
 			// CHAP logic
 			log.WithFields(log.Fields{
@@ -271,16 +215,15 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 		}
 
 	case drivers.EseriesIscsiStorageDriverName:
-		driver := storageDriver.(*eseries.ESeriesStorageDriver)
+		driver := storageDriver.(*eseries.SANStorageDriver)
 
 		// Make sure the Trident Host Group exists
 		hostGroup, err := driver.API.GetHostGroup(driver.Config.AccessGroup)
 		if err != nil {
 			return nil, err
 		} else if hostGroup.ClusterRef == "" {
-			return nil, fmt.Errorf("Host Group %s doesn't exist for E-Series array %s "+
-				"and needs to be manually created! Please also ensure all "+
-				"relevant Hosts are defined on the array and added to the Host Group.",
+			return nil, fmt.Errorf("host Group %s doesn't exist for E-Series array %s and needs to be manually"+
+				" created; please also ensure all relevant Hosts are defined on the array and added to the Host Group",
 				driver.Config.AccessGroup, driver.Config.ControllerA)
 		} else {
 			log.WithFields(log.Fields{
@@ -294,7 +237,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, 
 		break
 
 	default:
-		err = fmt.Errorf("Unknown storage driver: %v", commonConfig.StorageDriverName)
+		err = fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)
 		return
 	}
 

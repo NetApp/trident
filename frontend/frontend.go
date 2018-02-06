@@ -1,8 +1,8 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package frontend
 
-type FrontendPlugin interface {
+type Plugin interface {
 	Activate() error
 	Deactivate() error
 	GetName() string

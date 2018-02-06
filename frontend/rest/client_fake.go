@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -30,21 +30,21 @@ func (client *FakeTridentClient) Configure(ip string, port, timeout int) Interfa
 
 func (client *FakeTridentClient) Get(endpoint string) (*http.Response, error) {
 	if fail, ok := client.failMatrix["Get"]; fail && ok {
-		return nil, fmt.Errorf("Get failed")
+		return nil, fmt.Errorf("GET failed")
 	}
 	return nil, nil
 }
 
 func (client *FakeTridentClient) Post(endpoint string, body io.Reader) (*http.Response, error) {
 	if fail, ok := client.failMatrix["Post"]; fail && ok {
-		return nil, fmt.Errorf("Post failed")
+		return nil, fmt.Errorf("POST failed")
 	}
 	return nil, nil
 }
 
 func (client *FakeTridentClient) Delete(endpoint string) (*http.Response, error) {
 	if fail, ok := client.failMatrix["Delete"]; fail && ok {
-		return nil, fmt.Errorf("Delete failed")
+		return nil, fmt.Errorf("DELETE failed")
 	}
 	return nil, nil
 }
@@ -61,7 +61,7 @@ func (client *FakeTridentClient) ListBackends() (*ListBackendsResponse, error) {
 	return nil, nil
 }
 
-func (client *FakeTridentClient) AddStorageClass(storageClassConfig *storage_class.Config) (*AddStorageClassResponse, error) {
+func (client *FakeTridentClient) AddStorageClass(storageClassConfig *storageclass.Config) (*AddStorageClassResponse, error) {
 	return nil, nil
 }
 
@@ -83,13 +83,13 @@ func (client *FakeTridentClient) GetVolume(volName string) (*GetVolumeResponse, 
 	getVolumeResponse.Volume = &vol
 	if fail, ok := client.failMatrix["GetVolume"]; fail && ok {
 		getVolumeResponse.Error = "GetVolume failed"
-		return nil, fmt.Errorf("GetVolume failed.")
+		return nil, fmt.Errorf("GetVolume failed")
 	}
 	return &getVolumeResponse, nil
 }
 
 func (client *FakeTridentClient) AddVolume(volConfig *storage.VolumeConfig) (*AddVolumeResponse, error) {
-	var err error = nil
+	var err error
 	if _, err = client.Post("", bytes.NewBuffer(make([]byte, 0))); err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (client *FakeTridentClient) AddVolume(volConfig *storage.VolumeConfig) (*Ad
 	}
 	if fail, ok := client.failMatrix["AddVolume"]; fail && ok {
 		addVolumeResponse.Error = "AddVolume failed"
-		return nil, fmt.Errorf("AddVolume failed.")
+		return nil, fmt.Errorf("AddVolume failed")
 	}
 	return addVolumeResponse, nil
 }
@@ -124,7 +124,7 @@ func (client *FakeTridentClient) DeleteVolume(volName string) (*DeleteResponse, 
 	delete(client.volumes, volName)
 	if fail, ok := client.failMatrix["DeleteVolume"]; fail && ok {
 		deleteResponse.Error = "DeleteVolume failed"
-		return nil, fmt.Errorf("DeleteVolume failed.")
+		return nil, fmt.Errorf("DeleteVolume failed")
 	}
 	return &deleteResponse, nil
 }

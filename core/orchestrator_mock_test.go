@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -54,12 +54,12 @@ func addAndRetrieveVolume(
 ) {
 	_, err := m.AddStorageClass(&sc.Config{Name: vc.StorageClass})
 	if err != nil {
-		t.Fatalf("Unable to add storage class %s (%s):  %v", vc.Name,
+		t.Fatalf("Unable to add storage class %s (%s): %v", vc.Name,
 			vc.Protocol, err)
 	}
 	vol, err := m.AddVolume(vc)
 	if err != nil {
-		t.Fatalf("Unable to add volume %s (%s):  %s", vc.Name, vc.Protocol, err)
+		t.Fatalf("Unable to add volume %s (%s): %s", vc.Name, vc.Protocol, err)
 	}
 	if vol.Config != vc {
 		t.Fatalf("Wrong config returned for volume %s (%s)", vc.Name,

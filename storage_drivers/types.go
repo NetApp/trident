@@ -1,4 +1,4 @@
-package storage_drivers
+package storagedrivers
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
@@ -53,10 +53,10 @@ type ESeriesStorageDriverConfig struct {
 	PoolNameSearchPattern string `json:"poolNameSearchPattern"` //optional
 
 	// Host Networking
-	HostData_IP string `json:"hostData_IP,omitempty"` // for backward compatibility only
-	HostDataIP  string `json:"hostDataIP"`            // for iSCSI can be either port if multipathing is setup
-	AccessGroup string `json:"accessGroupName"`       // name for host group
-	HostType    string `json:"hostType"`              // host type, default is 'linux_dm_mp'
+	HostDataIPDeprecated string `json:"hostData_IP,omitempty"` // for backward compatibility only
+	HostDataIP           string `json:"hostDataIP"`            // for iSCSI can be either port if multipathing is setup
+	AccessGroup          string `json:"accessGroupName"`       // name for host group
+	HostType             string `json:"hostType"`              // host type, default is 'linux_dm_mp'
 }
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
@@ -117,18 +117,17 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 	// Decode configJSON into config object
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse JSON configuration: %v", err)
+		return nil, fmt.Errorf("could not parse JSON configuration: %v", err)
 	}
 
 	// Load storage drivers and validate the one specified actually exists
 	if config.StorageDriverName == "" {
-		return nil, errors.New("Missing storage driver name in configuration file.")
+		return nil, errors.New("missing storage driver name in configuration file")
 	}
 
 	// Validate config file version information
 	if config.Version != ConfigVersion {
-		return nil, fmt.Errorf("Unexpected config file version; "+
-			"found %s, expected %s.", config.Version, ConfigVersion)
+		return nil, fmt.Errorf("unexpected config file version; found %d, expected %d", config.Version, ConfigVersion)
 	}
 
 	// Warn about ignored fields in common config if any are set
@@ -149,7 +148,7 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 	} else {
 		_, err = utils.ConvertSizeToBytes(config.Size)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid config value for default volume size: %v", err)
+			return nil, fmt.Errorf("invalid config value for default volume size: %v", err)
 		}
 	}
 
@@ -178,7 +177,7 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 			config.StoragePrefix = &prefix
 			log.WithField("storagePrefix", prefix).Debug("Parsed storage prefix.")
 		} else {
-			return nil, fmt.Errorf("Invalid value for storage prefix: %v", config.StoragePrefixRaw)
+			return nil, fmt.Errorf("invalid value for storage prefix: %v", config.StoragePrefixRaw)
 		}
 	} else {
 		config.StoragePrefix = nil
@@ -225,9 +224,6 @@ func SanitizeCommonStorageDriverConfig(c *CommonStorageDriverConfig) {
 	}
 }
 
-// SanitizeCommonConfig makes sure none of the fields in
-// dvp.CommonStorageDriverConfig are nil. If this is not done, any
-// attempts to marshal the config object will error.
 func GetCommonStorageDriverConfigExternal(
 	c *CommonStorageDriverConfig,
 ) *CommonStorageDriverConfigExternal {

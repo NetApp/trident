@@ -1,6 +1,6 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"encoding/json"
@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -22,8 +22,8 @@ import (
 )
 
 type PassthroughClient struct {
-	liveBackends map[string]*storage.StorageBackend
-	bootBackends []*storage.StorageBackendPersistent
+	liveBackends map[string]*storage.Backend
+	bootBackends []*storage.BackendPersistent
 	version      *PersistentStateVersion
 }
 
@@ -42,8 +42,8 @@ type PassthroughClient struct {
 func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 
 	client := &PassthroughClient{
-		liveBackends: make(map[string]*storage.StorageBackend),
-		bootBackends: make([]*storage.StorageBackendPersistent, 0),
+		liveBackends: make(map[string]*storage.Backend),
+		bootBackends: make([]*storage.BackendPersistent, 0),
 		version: &PersistentStateVersion{
 			"passthrough",
 			config.OrchestratorAPIVersion,
@@ -62,14 +62,14 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 func (c *PassthroughClient) initialize(configPath string) error {
 
 	if configPath == "" {
-		return errors.New("Passthrough store initialization failed, config path must be specified.")
+		return errors.New("passthrough store initialization failed, config path must be specified")
 	}
 
 	// Check path
 	configPathInfo, err := os.Stat(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return errors.New("Passthrough store initialization failed, config path does not exist.")
+			return errors.New("passthrough store initialization failed, config path does not exist")
 		} else {
 			return err
 		}
@@ -103,7 +103,7 @@ func (c *PassthroughClient) initialize(configPath string) error {
 		return c.loadBackend(configPath)
 
 	} else {
-		return errors.New("Passthrough store initialization failed, invalid config path.")
+		return errors.New("passthrough store initialization failed, invalid config path")
 	}
 }
 
@@ -124,7 +124,7 @@ func (c *PassthroughClient) loadBackend(configPath string) error {
 	// Convert config file to persistent backend JSON
 	backendJSON, err := c.unmarshalConfig(fileContents)
 
-	var backend storage.StorageBackendPersistent
+	var backend storage.BackendPersistent
 	err = json.Unmarshal([]byte(backendJSON), &backend)
 	if err != nil {
 		return err
@@ -147,7 +147,7 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 
 	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
 	if err != nil {
-		return "", fmt.Errorf("Input failed validation: %v", err)
+		return "", fmt.Errorf("input failed validation: %v", err)
 	}
 
 	var configType string
@@ -161,10 +161,10 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 	case drivers.FakeStorageDriverName:
 		configType = "fake_config"
 	default:
-		return "", fmt.Errorf("Unknown storage driver: %v", commonConfig.StorageDriverName)
+		return "", fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)
 	}
 
-	persistentBackend := &storage.StorageBackendPersistent{
+	persistentBackend := &storage.BackendPersistent{
 		Version: config.OrchestratorAPIVersion,
 		Config:  storage.PersistentStorageBackendConfig{},
 		Name:    "",
@@ -182,8 +182,8 @@ func (c *PassthroughClient) GetType() StoreType {
 }
 
 func (c *PassthroughClient) Stop() error {
-	c.liveBackends = make(map[string]*storage.StorageBackend)
-	c.bootBackends = make([]*storage.StorageBackendPersistent, 0)
+	c.liveBackends = make(map[string]*storage.Backend)
+	c.bootBackends = make([]*storage.BackendPersistent, 0)
 	return nil
 }
 
@@ -199,7 +199,7 @@ func (c *PassthroughClient) SetVersion(version *PersistentStateVersion) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddBackend(backend *storage.StorageBackend) error {
+func (c *PassthroughClient) AddBackend(backend *storage.Backend) error {
 
 	// The passthrough store persists backends for the purpose of contacting
 	// the storage controllers.  If the store ever needs to write backends
@@ -210,7 +210,7 @@ func (c *PassthroughClient) AddBackend(backend *storage.StorageBackend) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetBackend(backendName string) (*storage.StorageBackendPersistent, error) {
+func (c *PassthroughClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
 
 	existingBackend, ok := c.liveBackends[backendName]
 	if !ok {
@@ -220,7 +220,7 @@ func (c *PassthroughClient) GetBackend(backendName string) (*storage.StorageBack
 	return existingBackend.ConstructPersistent(), nil
 }
 
-func (c *PassthroughClient) UpdateBackend(backend *storage.StorageBackend) error {
+func (c *PassthroughClient) UpdateBackend(backend *storage.Backend) error {
 
 	if _, ok := c.liveBackends[backend.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
@@ -231,7 +231,7 @@ func (c *PassthroughClient) UpdateBackend(backend *storage.StorageBackend) error
 	return nil
 }
 
-func (c *PassthroughClient) DeleteBackend(backend *storage.StorageBackend) error {
+func (c *PassthroughClient) DeleteBackend(backend *storage.Backend) error {
 
 	if _, ok := c.liveBackends[backend.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
@@ -244,9 +244,9 @@ func (c *PassthroughClient) DeleteBackend(backend *storage.StorageBackend) error
 // GetBackends is called by the orchestrator during bootstrapping, so the
 // passthrough store returns the persistent backend objects it read from config
 // files.
-func (c *PassthroughClient) GetBackends() ([]*storage.StorageBackendPersistent, error) {
+func (c *PassthroughClient) GetBackends() ([]*storage.BackendPersistent, error) {
 
-	backendList := make([]*storage.StorageBackendPersistent, 0)
+	backendList := make([]*storage.BackendPersistent, 0)
 
 	for _, backend := range c.bootBackends {
 		backendList = append(backendList, backend)
@@ -256,7 +256,7 @@ func (c *PassthroughClient) GetBackends() ([]*storage.StorageBackendPersistent, 
 }
 
 func (c *PassthroughClient) DeleteBackends() error {
-	c.liveBackends = make(map[string]*storage.StorageBackend)
+	c.liveBackends = make(map[string]*storage.Backend)
 	return nil
 }
 
@@ -322,7 +322,7 @@ func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 // This method is designed to run in a goroutine, so it passes its results back
 // via a channel that is shared by all such goroutines.
 func (c *PassthroughClient) getVolumesFromBackend(
-	backend *storage.StorageBackend, volumeChannel chan *storage.VolumeExternalWrapper,
+	backend *storage.Backend, volumeChannel chan *storage.VolumeExternalWrapper,
 	waitGroup *sync.WaitGroup,
 ) {
 	defer waitGroup.Done()
@@ -363,12 +363,12 @@ func (c *PassthroughClient) AddStorageClass(sc *sc.StorageClass) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetStorageClass(scName string) (*sc.StorageClassPersistent, error) {
+func (c *PassthroughClient) GetStorageClass(scName string) (*sc.Persistent, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, scName)
 }
 
-func (c *PassthroughClient) GetStorageClasses() ([]*sc.StorageClassPersistent, error) {
-	return make([]*sc.StorageClassPersistent, 0), nil
+func (c *PassthroughClient) GetStorageClasses() ([]*sc.Persistent, error) {
+	return make([]*sc.Persistent, 0), nil
 }
 
 func (c *PassthroughClient) DeleteStorageClass(sc *sc.StorageClass) error {

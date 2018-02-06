@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -8,17 +8,17 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
-type StoragePool struct {
+type Pool struct {
 	Name string
 	// A Trident storage pool can potentially satisfy more than one storage
 	// class.
 	StorageClasses []string
-	Backend        *StorageBackend
+	Backend        *Backend
 	Attributes     map[string]sa.Offer
 }
 
-func NewStoragePool(backend *StorageBackend, name string) *StoragePool {
-	return &StoragePool{
+func NewStoragePool(backend *Backend, name string) *Pool {
+	return &Pool{
 		Name:           name,
 		StorageClasses: make([]string, 0),
 		Backend:        backend,
@@ -26,13 +26,13 @@ func NewStoragePool(backend *StorageBackend, name string) *StoragePool {
 	}
 }
 
-func (pool *StoragePool) AddStorageClass(class string) {
+func (pool *Pool) AddStorageClass(class string) {
 	// Note that this function should get called once per storage class
 	// affecting the volume; thus, we don't need to check for duplicates.
 	pool.StorageClasses = append(pool.StorageClasses, class)
 }
 
-func (pool *StoragePool) RemoveStorageClass(class string) bool {
+func (pool *Pool) RemoveStorageClass(class string) bool {
 	found := false
 	for i, name := range pool.StorageClasses {
 		if name == class {
@@ -45,15 +45,15 @@ func (pool *StoragePool) RemoveStorageClass(class string) bool {
 	return found
 }
 
-type StoragePoolExternal struct {
+type PoolExternal struct {
 	Name           string   `json:"name"`
 	StorageClasses []string `json:"storageClasses"`
 	//TODO: can't have an interface here for unmarshalling
 	Attributes map[string]sa.Offer `json:"storageAttributes"`
 }
 
-func (pool *StoragePool) ConstructExternal() *StoragePoolExternal {
-	external := &StoragePoolExternal{
+func (pool *Pool) ConstructExternal() *PoolExternal {
+	external := &PoolExternal{
 		Name:           pool.Name,
 		StorageClasses: pool.StorageClasses,
 		Attributes:     make(map[string]sa.Offer),

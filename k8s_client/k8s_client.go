@@ -1,13 +1,13 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package k8s_client
+package k8sclient
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -38,7 +38,8 @@ type Interface interface {
 	CreatePVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
 	DeletePVC(pvcName string, options *metav1.DeleteOptions) error
 	WatchPVC(listOptions *metav1.ListOptions) (watch.Interface, error)
-	GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64, labels map[string]string) (*v1.PersistentVolumeClaim, error)
+	GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64,
+		labels map[string]string) (*v1.PersistentVolumeClaim, error)
 	CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	DeletePV(pvName string, options *metav1.DeleteOptions) error
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
@@ -58,7 +59,7 @@ type KubeClient struct {
 func NewKubeClient(config *rest.Config, namespace string) (Interface, error) {
 	var versionInfo *version.Info
 	if namespace == "" {
-		return nil, fmt.Errorf("An empty namespace is not acceptable!")
+		return nil, fmt.Errorf("an empty namespace is not acceptable")
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -66,7 +67,7 @@ func NewKubeClient(config *rest.Config, namespace string) (Interface, error) {
 	}
 	versionInfo, err = clientset.Discovery().ServerVersion()
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't retrieve API server's version: %v", err)
+		return nil, fmt.Errorf("couldn't retrieve API server's version: %v", err)
 	}
 	kubeClient := &KubeClient{
 		clientset:   clientset,
@@ -119,7 +120,7 @@ func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, e
 	if len(pods.Items) == 1 {
 		return &pods.Items[0], nil
 	} else if len(pods.Items) > 1 {
-		return nil, fmt.Errorf("Multiple pods have the label %s: %v",
+		return nil, fmt.Errorf("multiple pods have the label %s: %v",
 			listOptions.LabelSelector, pods.Items)
 	}
 	listOptions.TimeoutSeconds = &timeout
@@ -134,16 +135,14 @@ func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, e
 		switch event.Type {
 		case watch.Error:
 			//TODO: Validate error handling.
-			return nil, fmt.Errorf("Received error when watching pod: %s",
+			return nil, fmt.Errorf("received error while watching pod: %s",
 				event.Object.GetObjectKind().GroupVersionKind().String())
 		case watch.Deleted:
-			return nil, fmt.Errorf("Pod got deleted before becoming available!")
+			return nil, fmt.Errorf("pod was deleted before becoming available")
 		case watch.Added, watch.Modified:
 			watchedPod = event.Object.(*v1.Pod)
 		default:
-			return nil, fmt.Errorf(
-				"Got unknown event type %s while watching pod!",
-				event.Type)
+			return nil, fmt.Errorf("received unknown event type %s while watching pod", event.Type)
 		}
 	}
 	log.Debugf("KubeClient took %v to retrieve pod %v.",
@@ -154,7 +153,7 @@ func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, e
 func (k *KubeClient) GetPodPhase(podName string, options metav1.GetOptions) (v1.PodPhase, error) {
 	pod, err := k.GetPod(podName, options)
 	if err != nil {
-		var phase v1.PodPhase = ""
+		var phase v1.PodPhase
 		return phase, err
 	}
 	return pod.Status.Phase, nil
@@ -199,39 +198,33 @@ func (k *KubeClient) GetRunningPod(pod *v1.Pod, timeout *int64, labels map[strin
 		switch event.Type {
 		case watch.Error:
 			//TODO: Validate error handling.
-			return pod, fmt.Errorf("Received error when watching pod %s: %s",
-				pod.Name,
+			return pod, fmt.Errorf("received error while watching pod %s: %s", pod.Name,
 				event.Object.GetObjectKind().GroupVersionKind().String())
 		case watch.Deleted, watch.Added, watch.Modified:
 			watchedPod = event.Object.(*v1.Pod)
 		default:
-			return pod, fmt.Errorf(
-				"Got unknown event type %s while watching pod %s!",
-				event.Type, pod.Name)
+			return pod, fmt.Errorf("received unknown event type %s while watching pod %s", event.Type, pod.Name)
 		}
 		if watchedPod.Name != pod.Name {
 			continue
 		}
 		if event.Type == watch.Deleted {
-			return pod, fmt.Errorf("Pod %s got deleted before becoming available!",
-				pod.Name)
+			return pod, fmt.Errorf("pod %s was deleted before becoming available", pod.Name)
 		}
 		switch watchedPod.Status.Phase {
 		case v1.PodPending:
 			continue
 		case v1.PodSucceeded, v1.PodFailed:
-			return pod, fmt.Errorf("Pod %s exited early with status %s!",
-				pod.Name, pod.Status.Phase)
+			return pod, fmt.Errorf("pod %s exited early with status %s", pod.Name, pod.Status.Phase)
 		case v1.PodRunning:
 			return watchedPod, nil
 		case v1.PodUnknown:
-			return pod, fmt.Errorf("Couldn't obtain Pod %s's state!", pod.Name)
+			return pod, fmt.Errorf("couldn't obtain pod %s's state", pod.Name)
 		default:
-			return pod, fmt.Errorf("Pod %s has unknown status (%s)!", pod.Name)
+			return pod, fmt.Errorf("pod %s has unknown status (%s)", pod.Name, pod.Name)
 		}
 	}
-	return pod, fmt.Errorf("Pod %s wasn't running within %d seconds!",
-		pod.Name, *timeout)
+	return pod, fmt.Errorf("pod %s wasn't running within %d seconds", pod.Name, *timeout)
 }
 
 func (k *KubeClient) GetPVC(pvcName string,
@@ -244,7 +237,7 @@ func (k *KubeClient) GetPVCPhase(pvcName string,
 	options metav1.GetOptions) (v1.PersistentVolumeClaimPhase, error) {
 	pvc, err := k.GetPVC(pvcName, options)
 	if err != nil {
-		var phase v1.PersistentVolumeClaimPhase = ""
+		var phase v1.PersistentVolumeClaimPhase
 		return phase, err
 	}
 	return pvc.Status.Phase, nil
@@ -273,7 +266,8 @@ func (k *KubeClient) WatchPVC(listOptions *metav1.ListOptions) (watch.Interface,
 	return k.clientset.Core().PersistentVolumeClaims(k.namespace).Watch(*listOptions)
 }
 
-func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64, labels map[string]string) (*v1.PersistentVolumeClaim, error) {
+func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64,
+	labels map[string]string) (*v1.PersistentVolumeClaim, error) {
 	var watchedPVC *v1.PersistentVolumeClaim
 	pvcWatch, err := k.WatchPVC(CreateListOptions(
 		timeout, labels, pvc.ResourceVersion))
@@ -284,18 +278,17 @@ func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.Persisten
 	for event := range pvcWatch.ResultChan() {
 		switch event.Type {
 		case watch.Deleted:
-			return pvc, fmt.Errorf("PVC deleted before becoming bound.")
+			return pvc, fmt.Errorf("PVC deleted before becoming bound")
 		case watch.Error:
 			//TODO: Validate error handling.
-			return pvc, fmt.Errorf("Received error when watching PVC %s: %s",
+			return pvc, fmt.Errorf("received error while watching PVC %s: %s",
 				pvc.Name,
 				event.Object.GetObjectKind().GroupVersionKind().String())
 		case watch.Added, watch.Modified:
 			watchedPVC = event.Object.(*v1.PersistentVolumeClaim)
 		default:
 			return pvc,
-				fmt.Errorf("Got unknown event type %s while watching PVC %s!",
-					event.Type, pvc.Name)
+				fmt.Errorf("received unknown event type %s while watching PVC %s", event.Type, pvc.Name)
 		}
 		if watchedPVC.Name != pvc.Name {
 			continue
@@ -304,14 +297,14 @@ func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.Persisten
 		case v1.ClaimPending:
 			continue
 		case v1.ClaimLost:
-			return pvc, fmt.Errorf("PVC is in the lost phase!")
+			return pvc, fmt.Errorf("PVC is in the lost phase")
 		case v1.ClaimBound:
 			if watchedPVC.Spec.VolumeName == pv.Name {
 				return watchedPVC, nil
 			}
 		}
 	}
-	return pvc, fmt.Errorf("PVC %s wasn't bound to PV %s within %d seconds!",
+	return pvc, fmt.Errorf("PVC %s wasn't bound to PV %s within %d seconds",
 		pvc.Name, pv.Name, *timeout)
 }
 
@@ -353,7 +346,8 @@ func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
-func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error) {
+func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret,
+	error) {
 	return k.CreateSecret(&v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: k.namespace,

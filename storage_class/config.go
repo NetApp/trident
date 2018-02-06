@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_class
+package storageclass
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	}
 	c.Version = tmp.Version
 	c.Name = tmp.Name
-	c.Attributes, err = storage_attribute.UnmarshalRequestMap(tmp.Attributes)
+	c.Attributes, err = storageattribute.UnmarshalRequestMap(tmp.Attributes)
 	c.Pools = tmp.Pools
 
 	// Handle the renaming of "requiredStorage" to "additionalStoragePools"
@@ -50,7 +50,7 @@ func (c *Config) MarshalJSON() ([]byte, error) {
 	tmp.Name = c.Name
 	tmp.Pools = c.Pools
 	tmp.AdditionalPools = c.AdditionalPools
-	attrs, err := storage_attribute.MarshalRequestMap(c.Attributes)
+	attrs, err := storageattribute.MarshalRequestMap(c.Attributes)
 	if err != nil {
 		return nil, err
 	}

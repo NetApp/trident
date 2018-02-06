@@ -1,4 +1,4 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // ExportRuleCreateRequest is a structure to represent a export-rule-create ZAPI request object

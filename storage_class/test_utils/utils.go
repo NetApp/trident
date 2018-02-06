@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package test_utils
+package testutils
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ type PoolMatch struct {
 	Pool    string
 }
 
-func (p *PoolMatch) Matches(pool *storage.StoragePool) bool {
+func (p *PoolMatch) Matches(pool *storage.Pool) bool {
 	return pool.Name == p.Pool && pool.Backend.Name == p.Backend
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/persistent_store"
@@ -19,7 +19,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
 	tu "github.com/netapp/trident/storage_class/test_utils"
-	fake_driver "github.com/netapp/trident/storage_drivers/fake"
+	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 	etcdV3 = flag.String("etcd_v3", "", "etcd server (v3 API)")
 	debug  = flag.Bool("debug", false, "Enable debugging output")
 
-	inMemoryClient *persistent_store.InMemoryClient
+	inMemoryClient *persistentstore.InMemoryClient
 )
 
 func init() {
@@ -36,7 +36,7 @@ func init() {
 		log.SetLevel(log.DebugLevel)
 	}
 	if *etcdV2 == "" && *etcdV3 == "" {
-		inMemoryClient = persistent_store.NewInMemoryClient()
+		inMemoryClient = persistentstore.NewInMemoryClient()
 	}
 }
 
@@ -53,15 +53,15 @@ type recoveryTest struct {
 
 func cleanup(t *testing.T, o *TridentOrchestrator) {
 	err := o.storeClient.DeleteBackends()
-	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up backends:  ", err)
 	}
 	storageClasses, err := o.storeClient.GetStorageClasses()
-	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to retrieve storage classes:  ", err)
 	} else if err == nil {
 		for _, psc := range storageClasses {
-			sc := storage_class.NewFromPersistent(psc)
+			sc := storageclass.NewFromPersistent(psc)
 			err := o.storeClient.DeleteStorageClass(sc)
 			if err != nil {
 				t.Fatalf("Unable to clean up storage class %s:  %v", sc.GetName(),
@@ -70,7 +70,7 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 		}
 	}
 	err = o.storeClient.DeleteVolumes()
-	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up volumes:  ", err)
 	}
 	if *etcdV2 == "" && *etcdV3 == "" {
@@ -82,22 +82,22 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 
 func cleanupStoreVersion(t *testing.T, etcd string) {
 	// Deleting etcdv2 persistent state version
-	etcdv2Client, err := persistent_store.NewEtcdClientV2(etcd)
+	etcdv2Client, err := persistentstore.NewEtcdClientV2(etcd)
 	if err != nil {
 		t.Fatalf("Creating etcdv2 client failed: %v", err)
 	}
-	if err = etcdv2Client.Delete(config.StoreURL); err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+	if err = etcdv2Client.Delete(config.StoreURL); err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatalf("Couldn't delete etcdv2 persistent state version: %v", err)
 	}
 	if err = etcdv2Client.Stop(); err != nil {
 		t.Fatalf("Couldn't shut down etcdv2 client: %v", err)
 	}
 	// Deleting etcdv3 persistent state version
-	etcdv3Client, err := persistent_store.NewEtcdClientV3(etcd)
+	etcdv3Client, err := persistentstore.NewEtcdClientV3(etcd)
 	if err != nil {
 		t.Fatalf("Creating etcdv3 client failed: %v", err)
 	}
-	if err = etcdv3Client.Delete(config.StoreURL); err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
+	if err = etcdv3Client.Delete(config.StoreURL); err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatalf("Couldn't delete etcdv3 persistent state version: %v", err)
 	}
 	if err = etcdv3Client.Stop(); err != nil {
@@ -132,7 +132,7 @@ func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 }
 
 // To be called after reflect.DeepEqual has failed.
-func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExternal) {
+func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) {
 
 	diffs := make([]string, 0)
 
@@ -217,7 +217,7 @@ func runDeleteTest(
 ) {
 	var (
 		backendName string
-		backend     *storage.StorageBackend
+		backend     *storage.Backend
 		found       bool
 	)
 	if d.expectedSuccess {
@@ -251,7 +251,7 @@ func runDeleteTest(
 		}
 		externalVol, err := orchestrator.storeClient.GetVolume(d.name)
 		if err != nil {
-			if !persistent_store.MatchKeyNotFoundErr(err) {
+			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", d.name, err)
 			}
@@ -266,13 +266,13 @@ func runDeleteTest(
 }
 
 type storageClassTest struct {
-	config   *storage_class.Config
+	config   *storageclass.Config
 	expected []*tu.PoolMatch
 }
 
 func getOrchestrator() *TridentOrchestrator {
 	var (
-		storeClient persistent_store.Client
+		storeClient persistentstore.Client
 		err         error
 	)
 
@@ -283,14 +283,14 @@ func getOrchestrator() *TridentOrchestrator {
 	if *etcdV2 != "" {
 		log.Debug("Creating new etcdv2 client.")
 		// Note that this will panic if the etcd connection fails.
-		storeClient, err = persistent_store.NewEtcdClientV2(*etcdV2)
+		storeClient, err = persistentstore.NewEtcdClientV2(*etcdV2)
 		if err != nil {
 			panic(err)
 		}
 	} else if *etcdV3 != "" {
 		log.Debug("Creating new etcdv3 client.")
 		// Note that this will panic if the etcd connection fails.
-		storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
+		storeClient, err = persistentstore.NewEtcdClientV3(*etcdV3)
 		if err != nil {
 			panic(err)
 		}
@@ -437,7 +437,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+		config, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
 			pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
@@ -470,7 +470,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 	// Add storage classes
 	scTests := []storageClassTest{
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "slow",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(40),
@@ -484,7 +484,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "fast",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -500,7 +500,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "fast-unique",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -514,7 +514,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "pools",
 				Pools: map[string][]string{
 					"fast-a":     {tu.FastSmall},
@@ -528,7 +528,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "additionalPools",
 				AdditionalPools: map[string][]string{
 					"fast-a":     {tu.FastThinOnly},
@@ -542,7 +542,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "poolsWithAttributes",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:      sa.NewIntRequest(2000),
@@ -558,7 +558,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "additionalPoolsWithAttributes",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:      sa.NewIntRequest(2000),
@@ -578,7 +578,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "additionalPoolsWithAttributesAndPools",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:      sa.NewIntRequest(2000),
@@ -600,7 +600,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "additionalPoolsNoMatch",
 				AdditionalPools: map[string][]string{
 					"unknown": {tu.FastThinOnly},
@@ -609,7 +609,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			expected: []*tu.PoolMatch{},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "mixed",
 				AdditionalPools: map[string][]string{
 					"slow-file": {tu.SlowNoSnapshots},
@@ -630,7 +630,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "emptyStorageClass",
 			},
 			expected: []*tu.PoolMatch{
@@ -847,7 +847,6 @@ func TestAddStorageClassVolumes(t *testing.T) {
 					" %s", s.config.Name, poolMatch.Pool, poolMatch.Backend)
 				continue
 			}
-			found = false
 			for _, sc := range p.StorageClasses {
 				if sc == s.config.Name {
 					t.Errorf("%s delete:  storage class name not removed "+
@@ -859,7 +858,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		externalSC, err := orchestrator.storeClient.GetStorageClass(
 			s.config.Name)
 		if err != nil {
-			if !persistent_store.MatchKeyNotFoundErr(err) {
+			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", s.config.Name, err)
 			}
@@ -914,12 +913,12 @@ func TestCloneVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
 			pools)
 		if err != nil {
-			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
+			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddStorageBackend(config)
+		_, err = orchestrator.AddStorageBackend(cfg)
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true
@@ -947,7 +946,7 @@ func TestCloneVolumes(t *testing.T) {
 	// Add storage classes
 	storageClasses := []storageClassTest{
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "slow",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(40),
@@ -961,7 +960,7 @@ func TestCloneVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "fast",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -977,7 +976,7 @@ func TestCloneVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "fast-unique",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -991,7 +990,7 @@ func TestCloneVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "specific",
 				AdditionalPools: map[string][]string{
 					"fast-a":     {tu.FastThinOnly},
@@ -1005,7 +1004,7 @@ func TestCloneVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "specificNoMatch",
 				AdditionalPools: map[string][]string{
 					"unknown": {tu.FastThinOnly},
@@ -1014,7 +1013,7 @@ func TestCloneVolumes(t *testing.T) {
 			expected: []*tu.PoolMatch{},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "mixed",
 				AdditionalPools: map[string][]string{
 					"slow-file": {tu.SlowNoSnapshots},
@@ -1035,7 +1034,7 @@ func TestCloneVolumes(t *testing.T) {
 			},
 		},
 		{
-			config: &storage_class.Config{
+			config: &storageclass.Config{
 				Name: "emptyStorageClass",
 			},
 			expected: []*tu.PoolMatch{
@@ -1152,7 +1151,7 @@ func TestCloneVolumes(t *testing.T) {
 func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string,
 ) {
-	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
 		map[string]*fake.StoragePool{
@@ -1187,7 +1186,7 @@ func addBackendStorageClass(
 ) {
 	addBackend(t, orchestrator, backendName)
 	_, err := orchestrator.AddStorageClass(
-		&storage_class.Config{
+		&storageclass.Config{
 			Name: scName,
 			Attributes: map[string]sa.Request{
 				sa.Media:            sa.NewStringRequest("hdd"),
@@ -1237,7 +1236,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	orchestrator.mutex.Unlock()
 
 	// Test updates that should succeed
-	previousBackends := make([]*storage.StorageBackend, 1)
+	previousBackends := make([]*storage.Backend, 1)
 	previousBackends[0] = orchestrator.backends[backendName]
 	for _, c := range []struct {
 		name  string
@@ -1297,7 +1296,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("Backend %s is not initialized", backendName)
 		}
 
-		newConfigJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(backendName,
+		newConfigJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(backendName,
 			config.File, c.pools)
 		if err != nil {
 			t.Errorf("%s:  unable to generate new backend config:  %v", c.name, err)
@@ -1402,7 +1401,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	// Ensure that new storage classes do not get the offline backend assigned
 	// to them.
 	newSCExternal, err := orchestrator.AddStorageClass(
-		&storage_class.Config{
+		&storageclass.Config{
 			Name: newSCName,
 			Attributes: map[string]sa.Request{
 				sa.Media:            sa.NewStringRequest("hdd"),
@@ -1554,7 +1553,7 @@ func TestLoadBackend(t *testing.T) {
 		backendName = "load-backend-test"
 	)
 	orchestrator := getOrchestrator()
-	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
 		map[string]*fake.StoragePool{
@@ -1601,7 +1600,7 @@ func TestLoadBackend(t *testing.T) {
 func prepRecoveryTest(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName, scName string,
 ) {
-	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
 		map[string]*fake.StoragePool{
@@ -1620,7 +1619,7 @@ func prepRecoveryTest(
 		t.Fatal("Unable to initialize backend: ", err)
 	}
 	_, err = orchestrator.AddStorageClass(
-		&storage_class.Config{
+		&storageclass.Config{
 			Name: scName,
 			Attributes: map[string]sa.Request{
 				sa.Media:            sa.NewStringRequest("hdd"),
@@ -1638,14 +1637,14 @@ func runRecoveryTests(
 	t *testing.T,
 	orchestrator *TridentOrchestrator,
 	backendName string,
-	op persistent_store.VolumeOperation,
+	op persistentstore.VolumeOperation,
 	testCases []recoveryTest,
 ) {
 	for _, c := range testCases {
 		// Manipulate the persistent store directly, since it's
 		// easier to store the results of a partially completed volume addition
 		// than to actually inject a failure.
-		volTxn := &persistent_store.VolumeTransaction{
+		volTxn := &persistentstore.VolumeTransaction{
 			Config: c.volumeConfig,
 			Op:     op,
 		}
@@ -1666,7 +1665,7 @@ func runRecoveryTests(
 		if !ok {
 			t.Fatalf("%s:  Backend not found after bootstrapping.", c.name)
 		}
-		f := backend.Driver.(*fake_driver.FakeStorageDriver)
+		f := backend.Driver.(*fakedriver.StorageDriver)
 		// Destroy should be always called on the backend
 		if _, ok = f.DestroyedVolumes[f.GetInternalVolumeName(
 			c.volumeConfig.Name)]; !ok && c.expectDestroy {
@@ -1674,7 +1673,7 @@ func runRecoveryTests(
 		}
 		_, err = newOrchestrator.storeClient.GetVolume(c.volumeConfig.Name)
 		if err != nil {
-			if !persistent_store.MatchKeyNotFoundErr(err) {
+			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
 					"%v", c.name, err)
 			}
@@ -1712,7 +1711,7 @@ func TestAddVolumeRecovery(t *testing.T) {
 	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
-	runRecoveryTests(t, orchestrator, backendName, persistent_store.AddVolume,
+	runRecoveryTests(t, orchestrator, backendName, persistentstore.AddVolume,
 		[]recoveryTest{
 			{name: "full", volumeConfig: fullVolumeConfig, expectDestroy: true},
 			{name: "txOnly", volumeConfig: txOnlyVolumeConfig, expectDestroy: true},
@@ -1748,7 +1747,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	}
 	// BEGIN actual test
 	runRecoveryTests(t, orchestrator, backendName,
-		persistent_store.DeleteVolume, []recoveryTest{
+		persistentstore.DeleteVolume, []recoveryTest{
 			{name: "full", volumeConfig: fullVolumeConfig,
 				expectDestroy: false},
 			{name: "txOnly", volumeConfig: txOnlyVolumeConfig,
@@ -1761,10 +1760,10 @@ func TestBadBootstrapEtcdV2(t *testing.T) {
 	if *etcdV2 == "" {
 		t.SkipNow()
 	}
-	_, err := persistent_store.NewEtcdClientV2("invalidIPAddress")
-	if err != nil && persistent_store.MatchUnavailableClusterErr(err) {
+	_, err := persistentstore.NewEtcdClientV2("invalidIPAddress")
+	if err != nil && persistentstore.MatchUnavailableClusterErr(err) {
 	} else {
-		panic(fmt.Errorf("Didn't catch invalid etcdv2 client!"))
+		panic(fmt.Errorf("didn't catch invalid etcdv2 client"))
 	}
 }
 
@@ -1772,10 +1771,10 @@ func TestBadBootstrapEtcdV3(t *testing.T) {
 	if *etcdV3 == "" {
 		t.SkipNow()
 	}
-	_, err := persistent_store.NewEtcdClientV3("invalidIPAddress")
-	if err != nil && persistent_store.MatchUnavailableClusterErr(err) {
+	_, err := persistentstore.NewEtcdClientV3("invalidIPAddress")
+	if err != nil && persistentstore.MatchUnavailableClusterErr(err) {
 	} else {
-		panic(fmt.Errorf("Didn't catch invalid etcdv3 client!"))
+		panic(fmt.Errorf("didn't catch invalid etcdv3 client"))
 	}
 }
 
@@ -1837,7 +1836,7 @@ func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
 		t.Fatalf("etcdv2 volume (%v) doesn't match the etcdv3 volume (%v)!",
 			v2Volume, v3Volume)
 	}
-	etcdv3Client, err := persistent_store.NewEtcdClientV3(*etcdV3)
+	etcdv3Client, err := persistentstore.NewEtcdClientV3(*etcdV3)
 	if err != nil {
 		t.Fatalf("Creating etcdv3 client failed: %v", err)
 	}
@@ -1846,7 +1845,7 @@ func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
 		t.Fatalf("Couldn't determine the orchestrator persistent state version: %v",
 			err)
 	}
-	version := &persistent_store.PersistentStateVersion{}
+	version := &persistentstore.PersistentStateVersion{}
 	err = json.Unmarshal([]byte(versionJSON), version)
 	if err != nil {
 		t.Fatalf("Couldn't unmarshal the orchestrator persistent state version: %v", err)
@@ -1873,7 +1872,7 @@ func TestStorageClassOnlyBootstrap(t *testing.T) {
 
 	orchestrator := getOrchestrator()
 	originalSC, err := orchestrator.AddStorageClass(
-		&storage_class.Config{
+		&storageclass.Config{
 			Name: scName,
 			Attributes: map[string]sa.Request{
 				sa.Media:            sa.NewStringRequest("hdd"),
@@ -1907,7 +1906,7 @@ func TestFirstVolumeRecovery(t *testing.T) {
 	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
-	runRecoveryTests(t, orchestrator, backendName, persistent_store.AddVolume,
+	runRecoveryTests(t, orchestrator, backendName, persistentstore.AddVolume,
 		[]recoveryTest{
 			{name: "firstTXOnly", volumeConfig: txOnlyVolumeConfig,
 				expectDestroy: true},

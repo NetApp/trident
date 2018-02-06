@@ -1,10 +1,10 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package api
 
-const HTTP_UNPROCESSABLE_ENTITY int = 422 // Not defined in net/http package
+const HTTPUnprocessableEntity = 422 // Not defined in net/http package
 
-var HOST_TYPES = map[string]string{
+var HostTypes = map[string]string{
 	"linux_atto":        "LnxTPGSALUA",
 	"linux_dm_mp":       "LnxALUA",
 	"linux_mpp_rdac":    "LNX",

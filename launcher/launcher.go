@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -9,11 +9,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/netapp/trident/k8s_client"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -28,7 +27,7 @@ import (
 	tridentrest "github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
-	k8s_util_version "github.com/netapp/trident/utils"
+	k8sutilversion "github.com/netapp/trident/utils"
 )
 
 const (
@@ -77,16 +76,16 @@ func createTridentDeploymentFromFile(deploymentFile string) (*v1beta1.Deployment
 }
 
 // createTridentEphemeralPod creates the ephemeral Trident pod.
-func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error) {
+func createTridentEphemeralPod(kubeClient k8sclient.Interface) (*v1.Pod, error) {
 	// Check if the pod already exists
 	exists, err := kubeClient.CheckPodExists(tridentEphemeralPodName)
 	if err != nil {
 		return nil,
-			fmt.Errorf("Launcher couldn't detect the presence of %s pod: %s",
+			fmt.Errorf("launcher couldn't detect the presence of %s pod: %s",
 				tridentEphemeralPodName, err)
 	}
 	if exists {
-		return nil, fmt.Errorf("Please run 'kubectl delete pod %s' and try again!",
+		return nil, fmt.Errorf("please run 'kubectl delete pod %s' and try again",
 			tridentEphemeralPodName)
 	}
 
@@ -127,8 +126,8 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 }
 
 // stopTridentEphemeralPod stops the ephemeral Trident pod.
-func stopTridentEphemeralPod(kubeClient k8s_client.Interface) error {
-	var gracePeriod int64 = 0
+func stopTridentEphemeralPod(kubeClient k8sclient.Interface) error {
+	var gracePeriod int64
 	options := &metav1.DeleteOptions{
 		GracePeriodSeconds: &gracePeriod,
 	}
@@ -152,7 +151,7 @@ func checkTridentAPI(tridentClient tridentrest.Interface, podName string) error 
 		}
 		time.Sleep(time.Second)
 	}
-	return fmt.Errorf("Pod %s isn't running after %v (%s).",
+	return fmt.Errorf("pod %s isn't running after %v (%s)",
 		podName, time.Since(startTime), err)
 }
 
@@ -162,10 +161,10 @@ func addBackend(tridentClient tridentrest.Interface,
 	addBackendResponse, err := tridentClient.PostBackend(fileName)
 	if err != nil {
 		return "",
-			fmt.Errorf("Launcher failed in communication with Pod %s: %s",
+			fmt.Errorf("launcher failed to communicate with pod %s: %s",
 				tridentEphemeralPodName, err)
 	} else if addBackendResponse.Error != "" {
-		return "", fmt.Errorf("Pod %s failed in adding a backend: %s",
+		return "", fmt.Errorf("pod %s failed to add backend: %s",
 			tridentEphemeralPodName, addBackendResponse.Error)
 	}
 	log.Infof("Launcher successfully added backend %s to pod %s.",
@@ -176,7 +175,7 @@ func addBackend(tridentClient tridentrest.Interface,
 // getStoragePools retrieves the storage pools from a given backend added to a Trident pod.
 func getStoragePools(tridentClient tridentrest.Interface,
 	backendID string) ([]string, error) {
-	/* //TODO: Fix the unmarshaling problem with  StorageBackendExternal.Storage.Attributes
+	/* //TODO: Fix the unmarshaling problem with  BackendExternal.Storage.Attributes
 	getBackendResponse, err := tridentClient.GetBackend(addBackendResponse.BackendID)
 	if err != nil {
 		return nil, fmt.Errorf("Launcher failed in communication with Pod %s: %s",
@@ -200,18 +199,18 @@ func getStoragePools(tridentClient tridentrest.Interface,
 		resp            *http.Response
 		backendResponse partialBackend
 		err             error
-		bytes           []byte
-		storagePools    []string = make([]string, 0)
+		responseBytes   []byte
+		storagePools    = make([]string, 0)
 	)
 
 	if resp, err = tridentClient.Get("backend/" + backendID); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if bytes, err = ioutil.ReadAll(resp.Body); err != nil {
+	if responseBytes, err = ioutil.ReadAll(resp.Body); err != nil {
 		return nil, err
 	}
-	if err = json.Unmarshal(bytes, &backendResponse); err != nil {
+	if err = json.Unmarshal(responseBytes, &backendResponse); err != nil {
 		return nil, err
 	}
 	if backendResponse.Error != "" {
@@ -225,13 +224,13 @@ func getStoragePools(tridentClient tridentrest.Interface,
 
 // addStorageClass adds a storage class to a Trident pod.
 func addStorageClass(tridentClient tridentrest.Interface,
-	storageClassConfig *storage_class.Config) error {
+	storageClassConfig *storageclass.Config) error {
 	addStorageClassResponse,
 		err := tridentClient.AddStorageClass(storageClassConfig)
 	if err != nil {
 		return err
 	} else if addStorageClassResponse.Error != "" {
-		return fmt.Errorf("Pod %s failed in adding storage class %s: %s",
+		return fmt.Errorf("pod %s failed in adding storage class %s: %s",
 			tridentEphemeralPodName, storageClassConfig.Name,
 			addStorageClassResponse.Error)
 	}
@@ -240,33 +239,15 @@ func addStorageClass(tridentClient tridentrest.Interface,
 	return nil
 }
 
-// checkVolumeExists checks whether a Trident pod has created a volume with
-// the given name.
-func checkVolumeExists(
-	tridentClient tridentrest.Interface,
-	volName string) (bool, error) {
-	getVolResponse, err := tridentClient.GetVolume(volName)
-	if err != nil {
-		return false, err
-	} else if strings.Contains(getVolResponse.Error, "not found") {
-		return false, nil
-	} else if getVolResponse.Error == "" {
-		if getVolResponse.Volume.Config.Name == volName {
-			return true, nil
-		}
-	}
-	return false, fmt.Errorf(getVolResponse.Error)
-}
-
 // getVolume retrieves a volume from a Trident pod.
 func getVolume(tridentClient tridentrest.Interface,
 	volName string) (*storage.VolumeExternal, error) {
 	getVolumeResponse, err := tridentClient.GetVolume(volName)
 	if err != nil {
-		return nil, fmt.Errorf("Launcher failed in getting volume %s: %s",
+		return nil, fmt.Errorf("launcher failed in getting volume %s: %s",
 			volName, err)
 	} else if getVolumeResponse.Error != "" {
-		return nil, fmt.Errorf("Pod %s failed in getting volume %s: %s",
+		return nil, fmt.Errorf("pod %s failed in getting volume %s: %s",
 			tridentEphemeralPodName, volName, getVolumeResponse.Error)
 	}
 	return getVolumeResponse.Volume, nil
@@ -310,7 +291,7 @@ func provisionVolume(tridentClient tridentrest.Interface) error {
 	}
 
 	// Create the storage class
-	storageClassConfig := &storage_class.Config{
+	storageClassConfig := &storageclass.Config{
 		Version:         "v1",
 		Name:            tridentStorageClassName,
 		AdditionalPools: map[string][]string{backendID: pools},
@@ -331,7 +312,7 @@ func provisionVolume(tridentClient tridentrest.Interface) error {
 }
 
 // createPVC creates a PVC in the Kubernetes cluster.
-func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentVolumeClaim, error) {
+func createPVC(kubeClient k8sclient.Interface, pvcName string) (*v1.PersistentVolumeClaim, error) {
 	noStorageClass := ""
 	pvc := &v1.PersistentVolumeClaim{
 		TypeMeta: metav1.TypeMeta{
@@ -362,7 +343,7 @@ func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentV
 }
 
 // createPV creates a PV in the Kubernetes cluster.
-func createPV(kubeClient k8s_client.Interface, pvName string,
+func createPV(kubeClient k8sclient.Interface, pvName string,
 	vol *storage.VolumeExternal,
 	pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
 	volConfig := vol.Config
@@ -396,11 +377,11 @@ func createPV(kubeClient k8s_client.Interface, pvName string,
 	case volConfig.AccessInfo.IscsiAccessInfo.IscsiTargetPortal != "":
 		kubeVersion, err := k8sfrontend.ValidateKubeVersion(kubeClient.Version())
 		if err != nil {
-			return nil, fmt.Errorf("Error validating Kubernetes version %v", err.Error())
+			return nil, fmt.Errorf("error validating Kubernetes version %v", err.Error())
 		}
 		pv.Spec.ISCSI, err = k8sfrontend.CreateISCSIPersistentVolumeSource(kubeClient, kubeVersion, vol)
 		if err != nil {
-			return nil, fmt.Errorf("Error creating ISCSI volume source %v", err.Error())
+			return nil, fmt.Errorf("error creating ISCSI volume source %v", err.Error())
 		}
 		log.WithFields(log.Fields{
 			"pvName":            pvName,
@@ -411,20 +392,20 @@ func createPV(kubeClient k8s_client.Interface, pvName string,
 		}).Info("Created iSCSIVolumeSource with fields")
 
 	default:
-		return nil, fmt.Errorf("Unrecognized volume type")
+		return nil, fmt.Errorf("unrecognized volume type")
 	}
 	return kubeClient.CreatePV(pv)
 }
 
 type Launcher struct {
-	kubeClient             k8s_client.Interface
+	kubeClient             k8sclient.Interface
 	tridentClient          tridentrest.Interface
 	tridentEphemeralClient tridentrest.Interface
 	tridentDeployment      *v1beta1.Deployment
 }
 
 // NewLauncher creates a new launcher object.
-func NewLauncher(kubeClient k8s_client.Interface, tridentClient tridentrest.Interface,
+func NewLauncher(kubeClient k8sclient.Interface, tridentClient tridentrest.Interface,
 	tridentEphemeralClient tridentrest.Interface,
 	tridentDeployment *v1beta1.Deployment) *Launcher {
 	return &Launcher{
@@ -437,25 +418,25 @@ func NewLauncher(kubeClient k8s_client.Interface, tridentClient tridentrest.Inte
 
 // ValidateVersion checks whether the container orchestrator version is
 // supported or not.
-func (launcher *Launcher) ValidateKubeVersion(versionInfo *version.Info) (*k8s_util_version.Version, error) {
+func (launcher *Launcher) ValidateKubeVersion(versionInfo *version.Info) (*k8sutilversion.Version, error) {
 	return k8sfrontend.ValidateKubeVersion(versionInfo)
 }
 
 // Run runs the launcher.
 func (launcher *Launcher) Run() (errors []error) {
 	var (
-		deleteTridentEphemeral                            = false
-		deploymentExists                                  = false
-		deploymentCreated                                 = false
-		err                     error                     = nil
-		launcherErr             error                     = nil
-		pv                      *v1.PersistentVolume      = nil
-		pvExists                                          = false
-		pvcExists                                         = false
-		pvcCreated                                        = false
-		pvc                     *v1.PersistentVolumeClaim = nil
-		pvCreated                                         = false
-		tridentEphemeralCreated                           = false
+		deleteTridentEphemeral  = false
+		deploymentExists        = false
+		deploymentCreated       = false
+		err                     error
+		launcherErr             error
+		pv                      *v1.PersistentVolume
+		pvExists                = false
+		pvcExists               = false
+		pvcCreated              = false
+		pvc                     *v1.PersistentVolumeClaim
+		pvCreated               = false
+		tridentEphemeralCreated = false
 		tridentEphemeralPod     *v1.Pod
 		tridentPod              *v1.Pod
 		volConfig               *storage.VolumeConfig
@@ -475,8 +456,7 @@ func (launcher *Launcher) Run() (errors []error) {
 				}).Error("Launcher failed to delete the pod, so it needs " +
 					"to be manually deleted!")
 				errors = append(errors,
-					fmt.Errorf("Launcher failed to delete pod %s: %s. "+
-						"Manual deletion is required!",
+					fmt.Errorf("launcher failed to delete pod %s: %s; manual deletion is required",
 						tridentEphemeralPodName, errCleanup))
 			} else {
 				log.WithFields(log.Fields{
@@ -488,7 +468,7 @@ func (launcher *Launcher) Run() (errors []error) {
 			errors = append(errors, launcherErr)
 
 			// Cleanup after failure (err != nil)
-			var gracePeriod int64 = 0
+			var gracePeriod int64
 			options := &metav1.DeleteOptions{
 				GracePeriodSeconds: &gracePeriod,
 			}
@@ -509,8 +489,8 @@ func (launcher *Launcher) Run() (errors []error) {
 					}).Error("Launcher failed to delete the PVC during cleanup. " +
 						"Manual deletion is required!")
 					errors = append(errors,
-						fmt.Errorf("Launcher failed to delete PVC %s during cleanup: %s. "+
-							"Manual deletion is required!", *tridentPVCName, errCleanup))
+						fmt.Errorf("launcher failed to delete PVC %s during cleanup: %s; "+
+							"manual deletion is required", *tridentPVCName, errCleanup))
 				} else {
 					log.WithFields(log.Fields{
 						"pvc": *tridentPVCName,
@@ -526,8 +506,8 @@ func (launcher *Launcher) Run() (errors []error) {
 					}).Error("Launcher failed to delete the PV during cleanup! " +
 						"Manual deletion is required!")
 					errors = append(errors,
-						fmt.Errorf("Launcher failed to delete PV %s during cleanup: %s. "+
-							"Manual deletion is required!", *tridentPVName, errCleanup))
+						fmt.Errorf("launcher failed to delete PV %s during cleanup: %s; "+
+							"manual deletion is required", *tridentPVName, errCleanup))
 				} else {
 					log.WithFields(log.Fields{
 						"pv": *tridentPVName,
@@ -545,8 +525,8 @@ func (launcher *Launcher) Run() (errors []error) {
 						"Run 'kubectl logs %s' for more information.",
 						tridentEphemeralPodName)
 					errors = append(errors,
-						fmt.Errorf("Launcher failed to delete volume %s during cleanup: %s. "+
-							"Manual deletion is required! Run 'kubectl logs %s' for more information.",
+						fmt.Errorf("launcher failed to delete volume %s during cleanup: %s; "+
+							"manual deletion is required; run 'kubectl logs %s' for more information",
 							*tridentVolumeName, errCleanup, tridentEphemeralPodName))
 					deleteTridentEphemeral = false
 				} else {
@@ -569,8 +549,7 @@ func (launcher *Launcher) Run() (errors []error) {
 					}).Error("Launcher failed to delete the pod. " +
 						"Manual deletion is required!")
 					errors = append(errors,
-						fmt.Errorf("Launcher failed to delete pod %s: %s. "+
-							"Manual deletion is required!",
+						fmt.Errorf("launcher failed to delete pod %s: %s; manual deletion is required",
 							tridentEphemeralPodName, errCleanup))
 				} else {
 					log.Infof("Launcher successfully deleted pod %s during cleanup.",
@@ -582,13 +561,12 @@ func (launcher *Launcher) Run() (errors []error) {
 
 	// Check for an existing Trident deployment
 	if deploymentExists, err = launcher.kubeClient.CheckDeploymentExists(launcher.tridentDeployment.Name); deploymentExists {
-		launcherErr = fmt.Errorf("Launcher detected a preexisting deployment "+
-			"called %s, so it will quit!", launcher.tridentDeployment.Name)
+		launcherErr = fmt.Errorf("launcher detected a preexisting deployment called %s, so it will quit",
+			launcher.tridentDeployment.Name)
 		return
 	} else if err != nil {
-		launcherErr = fmt.Errorf("Launcher couldn't establish the presence "+
-			"of deployment %s: %s. Please check your service account setup.",
-			launcher.tridentDeployment.Name, err)
+		launcherErr = fmt.Errorf("launcher couldn't establish the presence of deployment %s: %s; please check your"+
+			" service account setup", launcher.tridentDeployment.Name, err)
 		return
 	}
 
@@ -604,9 +582,7 @@ func (launcher *Launcher) Run() (errors []error) {
 			"this PVC was created for the Trident deployment.")
 		phase, err = launcher.kubeClient.GetPVCPhase(*tridentPVCName, options)
 		if err != nil {
-			launcherErr = fmt.Errorf(
-				"Launcher couldn't detect the phase for PVC %s: %s",
-				*tridentPVCName, err)
+			launcherErr = fmt.Errorf("launcher couldn't detect the phase for PVC %s: %s", *tridentPVCName, err)
 			return
 		}
 		switch phase {
@@ -622,20 +598,18 @@ func (launcher *Launcher) Run() (errors []error) {
 			}).Info("Launcher detected that the PVC is bound; proceeding " +
 				"with the creation of the Trident deployment.")
 		case v1.ClaimLost:
-			launcherErr = fmt.Errorf("Please delete the preexisting PVC %s "+
-				"and try again.", *tridentPVCName)
+			launcherErr = fmt.Errorf("please delete the preexisting PVC %s and try again", *tridentPVCName)
 			return
 		}
 	} else if err != nil {
-		launcherErr = fmt.Errorf("Launcher couldn't establish the presence "+
-			"of PVC %s: %s", *tridentPVCName, err)
+		launcherErr = fmt.Errorf("launcher couldn't establish the presence of PVC %s: %s", *tridentPVCName, err)
 		return
 	}
 
 	if !pvExists {
 		// Start ephemeral Trident
 		if tridentEphemeralPod, err = createTridentEphemeralPod(launcher.kubeClient); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed to launch pod %s: %s",
+			launcherErr = fmt.Errorf("launcher failed to launch pod %s: %s",
 				tridentEphemeralPodName, err)
 			return
 		}
@@ -654,7 +628,7 @@ func (launcher *Launcher) Run() (errors []error) {
 
 		// Create Trident client
 		if tridentEphemeralPod.Status.PodIP == "" {
-			launcherErr = fmt.Errorf("Pod %s doesn't have an IP address!",
+			launcherErr = fmt.Errorf("pod %s doesn't have an IP address",
 				tridentEphemeralPod.Name)
 			return
 		}
@@ -668,15 +642,15 @@ func (launcher *Launcher) Run() (errors []error) {
 		// Check the pod is functional
 		if err = checkTridentAPI(launcher.tridentEphemeralClient, tridentEphemeralPod.Name); err != nil {
 			launcherErr = fmt.Errorf(
-				"Launcher failed to bring up a functional pod: %s "+
-					"Try 'kubectl logs %s' to diagnose the problem.",
+				"launcher failed to bring up a functional pod: %s "+
+					"try 'kubectl logs %s' to diagnose the problem",
 				err, tridentEphemeralPod.Name)
 			return
 		}
 
 		// Provision the volume
 		if err = provisionVolume(launcher.tridentEphemeralClient); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed in adding volume %s: %s",
+			launcherErr = fmt.Errorf("launcher failed to add volume %s: %s",
 				*tridentVolumeName, err.Error())
 			return
 		}
@@ -691,8 +665,7 @@ func (launcher *Launcher) Run() (errors []error) {
 	if !pvcExists {
 		// Create the PVC
 		if pvc, err = createPVC(launcher.kubeClient, *tridentPVCName); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed in creating PVC %s: %s",
-				*tridentPVCName, err)
+			launcherErr = fmt.Errorf("launcher failed in creating PVC %s: %s", *tridentPVCName, err)
 			return
 		}
 		pvcCreated = true
@@ -703,7 +676,7 @@ func (launcher *Launcher) Run() (errors []error) {
 		// Retrieve the preexisting PVC
 		var options metav1.GetOptions
 		if pvc, err = launcher.kubeClient.GetPVC(*tridentPVCName, options); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed in getting PVC %s: %s",
+			launcherErr = fmt.Errorf("launcher failed in getting PVC %s: %s",
 				*tridentPVCName, err)
 			return
 		}
@@ -721,7 +694,7 @@ func (launcher *Launcher) Run() (errors []error) {
 		}
 		volConfig = volumeExternal.Config
 		if pv, err = createPV(launcher.kubeClient, *tridentPVName, volumeExternal, pvc); err != nil {
-			launcherErr = fmt.Errorf("Launcher failed in creating PV %s: %s. "+
+			launcherErr = fmt.Errorf("launcher failed in creating PV %s: %s. "+
 				"Either use -pv_name in launcher-pod.yaml to create a volume "+
 				"and a PV with a different name, or delete PV %s so that "+
 				"launcher can create a new PV with the same name. "+
@@ -747,7 +720,7 @@ func (launcher *Launcher) Run() (errors []error) {
 
 	// Start the stateful Trident
 	if launcher.tridentDeployment, err = launcher.kubeClient.CreateDeployment(launcher.tridentDeployment); err != nil {
-		launcherErr = fmt.Errorf("Launcher failed in creating deployment %s: %s",
+		launcherErr = fmt.Errorf("launcher failed in creating deployment %s: %s",
 			launcher.tridentDeployment.Name, err)
 		return
 	}
@@ -755,7 +728,7 @@ func (launcher *Launcher) Run() (errors []error) {
 
 	// Get the stateful Trident pod
 	if tridentPod, err = launcher.kubeClient.GetPodByLabels(
-		k8s_client.CreateListOptions(k8sTimeout,
+		k8sclient.CreateListOptions(k8sTimeout,
 			tridentLabels, launcher.tridentDeployment.ResourceVersion)); err != nil {
 		launcherErr = err
 		return
@@ -770,8 +743,7 @@ func (launcher *Launcher) Run() (errors []error) {
 	if tridentPod.Status.Phase != v1.PodRunning {
 		if tridentPod, err = launcher.kubeClient.GetRunningPod(
 			tridentPod, k8sTimeout, tridentLabels); err != nil {
-			launcherErr = fmt.Errorf("%s "+
-				"Try 'kubectl describe pod %s' for more information.",
+			launcherErr = fmt.Errorf("%s; try 'kubectl describe pod %s' for more information",
 				err, tridentPod.Name)
 			return
 		} else {
@@ -785,7 +757,7 @@ func (launcher *Launcher) Run() (errors []error) {
 
 	// Create the client for the stateful pod
 	if tridentPod.Status.PodIP == "" {
-		launcherErr = fmt.Errorf("Pod %s doesn't have an IP address!",
+		launcherErr = fmt.Errorf("pod %s doesn't have an IP address",
 			tridentPod.Name)
 		return
 	}
@@ -807,9 +779,9 @@ func (launcher *Launcher) Run() (errors []error) {
 
 func main() {
 	var (
-		config            *k8srest.Config
-		err               error = nil
-		kubeClient        k8s_client.Interface
+		kubeConfig        *k8srest.Config
+		err               error
+		kubeClient        k8sclient.Interface
 		tridentDeployment *v1beta1.Deployment
 	)
 
@@ -819,14 +791,14 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 	if *apiServerIP != "" {
-		config, err = clientcmd.BuildConfigFromFlags(*apiServerIP, "")
+		kubeConfig, err = clientcmd.BuildConfigFromFlags(*apiServerIP, "")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
 			}).Fatal("Launcher is unable to get the config for the API server client!")
 		}
 	} else {
-		config, err = k8srest.InClusterConfig()
+		kubeConfig, err = k8srest.InClusterConfig()
 		if err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
@@ -853,14 +825,14 @@ func main() {
 	for _, container := range tridentDeployment.Spec.Template.Spec.Containers {
 		if container.Name == tridentContainerName {
 			tridentImage = container.Image
-			bytes, err := ioutil.ReadFile(tridentNamespaceFile)
+			namespaceBytes, err := ioutil.ReadFile(tridentNamespaceFile)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"error":         err,
 					"namespaceFile": tridentNamespaceFile,
 				}).Fatal("Launcher failed to obtain the namespace for the launcher pod!")
 			}
-			tridentNamespace = string(bytes)
+			tridentNamespace = string(namespaceBytes)
 			break
 		}
 	}
@@ -878,16 +850,16 @@ func main() {
 	}
 
 	// Set up the Kubernetes API server client
-	if kubeClient, err = k8s_client.NewKubeClient(config, tridentNamespace); err != nil {
+	if kubeClient, err = k8sclient.NewKubeClient(kubeConfig, tridentNamespace); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Fatal("Launcher was unable to create an API client!")
 	}
-	k8sVersion := kubeClient.Version()
+	k8sversion := kubeClient.Version()
 	log.WithFields(log.Fields{
-		"major":     k8sVersion.Major,
-		"minor":     k8sVersion.Minor,
-		"gitCommit": k8sVersion.GitCommit,
+		"major":     k8sversion.Major,
+		"minor":     k8sversion.Minor,
+		"gitCommit": k8sversion.GitCommit,
 	}).Infof("Launcher successfully retrieved the version of Kubernetes.")
 
 	// Set up clients for the ephemeral and stateful Trident pods
@@ -899,13 +871,13 @@ func main() {
 		tridentDeployment)
 
 	// Check whether this version of Kubernetes is supported by Trident
-	if _, err := launcher.ValidateKubeVersion(k8sVersion); err != nil {
+	if _, err := launcher.ValidateKubeVersion(k8sversion); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Warn("Launcher encountered an error in checking the version of " +
 			"the container orchestrator!")
 		log.WithFields(log.Fields{
-			"yourVersion":         k8sVersion.GitVersion,
+			"yourVersion":         k8sversion.GitVersion,
 			"minSupportedVersion": k8sfrontend.KubernetesVersionMin,
 			"maxSupportedVersion": k8sfrontend.KubernetesVersionMax,
 		}).Warn("Launcher may not support this version of the container " +

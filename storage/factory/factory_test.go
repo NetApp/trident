@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package factory
 
@@ -28,11 +28,11 @@ func TestInitializeRecovery(t *testing.T) {
 		Username:      "none",
 		Password:      "none",
 	}
-	json, err := json.Marshal(config)
+	marshaledJSON, err := json.Marshal(config)
 	if err != nil {
 		t.Fatal("Unable to marshal ONTAP config:  ", err)
 	}
-	_, err = NewStorageBackendForConfig(string(json))
+	_, err = NewStorageBackendForConfig(string(marshaledJSON))
 	if err == nil {
 		t.Error("Failed to get error for invalid configuration.")
 	}

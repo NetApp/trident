@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -17,46 +17,46 @@ import (
 )
 
 func TestSupportedKubeVersion(t *testing.T) {
-	k8sVersion := &version.Info{
+	k8sversion := &version.Info{
 		Major:      "1",
 		Minor:      "6",
 		GitVersion: "v1.6.0-beta+exp.sha.5114f85",
 	}
 	launcher := &Launcher{}
-	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	_, err := launcher.ValidateKubeVersion(k8sversion)
 	if err != nil {
 		t.Fatalf("%s.%s (%s) is a supported Kubernetes version!",
-			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
+			k8sversion.Major, k8sversion.Minor, k8sversion.GitVersion)
 	}
 }
 
 func TestUnsupportedKubeVersion(t *testing.T) {
-	k8sVersion := &version.Info{
+	k8sversion := &version.Info{
 		Major:      "1",
 		Minor:      "3+",
 		GitVersion: "v1.3.4-rancher1",
 	}
 	launcher := &Launcher{}
-	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	_, err := launcher.ValidateKubeVersion(k8sversion)
 	if !strings.Contains(err.Error(),
-		"Kubernetes frontend only works with Kubernetes") {
+		"kubernetes frontend only works with Kubernetes") {
 		t.Fatalf("%s.%s (%s) is an unsupported Kubernetes version!",
-			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
+			k8sversion.Major, k8sversion.Minor, k8sversion.GitVersion)
 	}
 }
 
 func TestInvalidKubeVersion(t *testing.T) {
-	k8sVersion := &version.Info{
+	k8sversion := &version.Info{
 		Major:      "1",
 		Minor:      "6",
 		GitVersion: "v1.6",
 	}
 	launcher := &Launcher{}
-	_, err := launcher.ValidateKubeVersion(k8sVersion)
+	_, err := launcher.ValidateKubeVersion(k8sversion)
 	if !strings.Contains(err.Error(),
-		"Kubernetes frontend recovered from a panic") {
+		"kubernetes frontend recovered from a panic") {
 		t.Fatalf("%s.%s (%s) is an invalid Kubernetes version!",
-			k8sVersion.Major, k8sVersion.Minor, k8sVersion.GitVersion)
+			k8sversion.Major, k8sversion.Minor, k8sversion.GitVersion)
 	}
 }
 
@@ -89,7 +89,7 @@ func TestTridentClientVolume(t *testing.T) {
 
 func TestKubeSnapshotStateValid(t *testing.T) {
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	snapshotBefore := kubeClient.SnapshotState()
 	snapshotAfter := kubeClient.SnapshotState()
 	if !reflect.DeepEqual(snapshotBefore, snapshotAfter) {
@@ -100,7 +100,7 @@ func TestKubeSnapshotStateValid(t *testing.T) {
 func TestKubeSnapshotStateInvalid(t *testing.T) {
 	var err error
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	snapshotBefore := kubeClient.SnapshotState()
 
 	tridentDeployment := &v1beta1.Deployment{}
@@ -121,7 +121,7 @@ func TestExistingDeployment(t *testing.T) {
 	// Creating the parameters for launcher
 	tridentClientFailMatrix := map[string]bool{}
 	kubeClientFailMatrix := make(map[string]bool, 0)
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -144,7 +144,7 @@ func TestExistingDeployment(t *testing.T) {
 		t.Fatal("Launcher should have failed with the preexisting deployment!")
 	}
 	if !strings.Contains(errors[0].Error(),
-		"Launcher detected a preexisting deployment") {
+		"launcher detected a preexisting deployment") {
 		t.Fatal("Launcher returned an incorrect error!")
 	}
 
@@ -162,7 +162,7 @@ func TestExistingDeploymentFailure(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"GetDeployment": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -185,7 +185,7 @@ func TestExistingDeploymentFailure(t *testing.T) {
 		t.Fatal("Launcher should have failed!")
 	}
 	if !strings.Contains(errors[0].Error(),
-		"Launcher couldn't establish the presence of deployment") {
+		"launcher couldn't establish the presence of deployment") {
 		t.Fatal("Launcher returned an incorrect error!")
 	}
 
@@ -203,7 +203,7 @@ func TestExistingPVCFailure(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"GetPVC": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}
@@ -228,7 +228,7 @@ func TestExistingPVCFailure(t *testing.T) {
 		t.Fatal("Launcher should have failed!")
 	}
 	if !strings.Contains(errors[0].Error(),
-		"Launcher couldn't establish the presence of PVC") {
+		"launcher couldn't establish the presence of PVC") {
 		t.Fatal("Launcher returned an incorrect error!")
 	}
 
@@ -246,7 +246,7 @@ func TestPrexistingBoundPVCFailedDeployment(t *testing.T) {
 	kubeClientFailMatrix := map[string]bool{
 		"CreateDeployment": true,
 	}
-	kubeClient := k8s_client.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
+	kubeClient := k8sclient.NewFakeKubeClient(kubeClientFailMatrix, "1", "5")
 	tridentClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentEphemeralClient := tridentrest.NewFakeTridentClient(tridentClientFailMatrix)
 	tridentDeployment := &v1beta1.Deployment{}

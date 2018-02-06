@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/utils"
 )
@@ -18,12 +18,12 @@ import (
 func (c *Client) ListVolumesForAccount(listReq *ListVolumesForAccountRequest) (volumes []Volume, err error) {
 	response, err := c.Request("ListVolumesForAccount", listReq, NewReqID())
 	if err != nil {
-		log.Errorf("error detected in ListVolumesForAccount API response: %+v", err)
+		log.Errorf("Error detected in ListVolumesForAccount API response: %+v", err)
 		return nil, errors.New("device API error")
 	}
 	var result ListVolumesResult
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("error detected unmarshalling ListVolumesForAccount API response: %+v", err)
+		log.Errorf("Error detected unmarshalling ListVolumesForAccount API response: %+v", err)
 		return nil, errors.New("json-decode error")
 	}
 	volumes = result.Result.Volumes
@@ -40,7 +40,7 @@ func (c *Client) GetVolumeByID(volID int64) (v Volume, err error) {
 		return v, err
 	}
 	if len(volumes) < 1 {
-		return Volume{}, fmt.Errorf("Failed to find volume with ID: %d", volID)
+		return Volume{}, fmt.Errorf("failed to find volume with ID: %d", volID)
 	}
 	return volumes[0], nil
 }
@@ -49,12 +49,12 @@ func (c *Client) GetVolumeByID(volID int64) (v Volume, err error) {
 func (c *Client) ListActiveVolumes(listVolReq *ListActiveVolumesRequest) (volumes []Volume, err error) {
 	response, err := c.Request("ListActiveVolumes", listVolReq, NewReqID())
 	if err != nil {
-		log.Errorf("error response from ListActiveVolumes request: %+v ", err)
+		log.Errorf("Error response from ListActiveVolumes request: %+v ", err)
 		return nil, errors.New("device API error")
 	}
 	var result ListVolumesResult
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("error detected unmarshalling ListActiveVolumes API response: %+v", err)
+		log.Errorf("Error detected unmarshalling ListActiveVolumes API response: %+v", err)
 		return nil, errors.New("json-decode error")
 	}
 	volumes = result.Result.Volumes
@@ -77,13 +77,13 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (vol Volume, err error) {
 		if cloneError != nil {
 			errorMessage := cloneError.Error()
 			if strings.Contains(errorMessage, "SliceNotRegistered") {
-				log.Warningf("detected SliceNotRegistered on Clone operation, retrying in %+v seconds", (2 + retry))
+				log.Warningf("detected SliceNotRegistered on Clone operation, retrying in %+v seconds", 2+retry)
 				time.Sleep(time.Second * time.Duration(2+retry))
-				retry += 1
+				retry++
 			} else if strings.Contains(errorMessage, "xInvalidParameter") {
-				log.Warningf("detected xInvalidParameter on Clone operation, retrying in %+v seconds", (2 + retry))
+				log.Warningf("detected xInvalidParameter on Clone operation, retrying in %+v seconds", 2+retry)
 				time.Sleep(time.Second * time.Duration(2+retry))
-				retry += 1
+				retry++
 			} else {
 				break
 			}
@@ -93,13 +93,13 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (vol Volume, err error) {
 	}
 
 	if cloneError != nil {
-		log.Errorf("failed to clone volume: %+v", cloneError)
+		log.Errorf("Failed to clone volume: %+v", cloneError)
 		return Volume{}, cloneError
 	}
-	log.Info("clone request was succesful")
+	log.Info("clone request was successful")
 
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("error detected unmarshalling CloneVolume API response: %+v", err)
+		log.Errorf("Error detected unmarshalling CloneVolume API response: %+v", err)
 		return Volume{}, errors.New("json-decode error")
 	}
 
@@ -109,9 +109,9 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (vol Volume, err error) {
 		if err == nil {
 			break
 		}
-		log.Warningf("failed to get volume by ID, retrying in %+v seconds", (2 + retry))
+		log.Warningf("Failed to get volume by ID, retrying in %+v seconds", 2+retry)
 		time.Sleep(time.Second * time.Duration(2+retry))
-		retry += 1
+		retry++
 	}
 	return vol, err
 }
@@ -120,12 +120,12 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (vol Volume, err error) {
 func (c *Client) CreateVolume(createReq *CreateVolumeRequest) (vol Volume, err error) {
 	response, err := c.Request("CreateVolume", createReq, NewReqID())
 	if err != nil {
-		log.Errorf("error response from CreateVolume request: %+v ", err)
+		log.Errorf("Error response from CreateVolume request: %+v ", err)
 		return Volume{}, errors.New("device API error")
 	}
 	var result CreateVolumeResult
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("error detected unmarshalling CreateVolume API response: %+v", err)
+		log.Errorf("Error detected unmarshalling CreateVolume API response: %+v", err)
 		return Volume{}, errors.New("json-decode error")
 	}
 
@@ -137,7 +137,7 @@ func (c *Client) CreateVolume(createReq *CreateVolumeRequest) (vol Volume, err e
 func (c *Client) AddVolumesToAccessGroup(req *AddVolumesToVolumeAccessGroupRequest) (err error) {
 	_, err = c.Request("AddVolumesToVolumeAccessGroup", req, NewReqID())
 	if err != nil {
-		log.Errorf("error response from Add to VAG request: %+v ", err)
+		log.Errorf("Error response from Add to VAG request: %+v ", err)
 		return errors.New("device API error")
 	}
 	return err
@@ -160,7 +160,7 @@ func (c *Client) DeleteVolume(volumeID int64) (err error) {
 	_, err = c.Request("DeleteVolume", req, NewReqID())
 	if err != nil {
 		// TODO: distinguish what the error was?
-		log.Errorf("error response from DeleteVolume request: %+v ", err)
+		log.Errorf("Error response from DeleteVolume request: %+v ", err)
 		return errors.New("device API error")
 	}
 	_, err = c.Request("PurgeDeletedVolume", req, NewReqID())
@@ -189,26 +189,26 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 
 	if c.SVIP == "" {
 		err = errors.New("unable to perform iSCSI actions without setting SVIP")
-		log.Errorf("unable to attach volume, SVIP is NOT set")
+		log.Errorf("Unable to attach volume: SVIP is NOT set")
 		return path, device, err
 	}
 
 	if utils.IscsiSupported() == false {
-		err := errors.New("unable to attach, open-iscsi tools not found on host")
-		log.Errorf("unable to attach volume, open-iscsi utils not found")
+		err := errors.New("unable to attach: open-iscsi tools not found on host")
+		log.Errorf("Unable to attach volume: open-iscsi utils not found")
 		return path, device, err
 	}
 
 	req.AccountID = v.AccountID
 	a, err := c.GetAccountByID(&req)
 	if err != nil {
-		log.Errorf("failed to get account %v, error: %+v ", v.AccountID, err)
+		log.Errorf("Failed to get account %v: %+v ", v.AccountID, err)
 		return path, device, errors.New("volume attach failure")
 	}
 
 	// Make sure it's not already attached
 	if utils.WaitForPathToExist(path, 1) {
-		log.Debugf("get device file from path: %s", path)
+		log.Debugf("Get device file from path: %s", path)
 		device = strings.TrimSpace(utils.GetDeviceFileFromIscsiPath(path))
 		return path, device, nil
 	}
@@ -216,7 +216,7 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 	err = utils.LoginWithChap(v.Iqn, c.SVIP, a.Username, a.InitiatorSecret, iface,
 		c.Config.DebugTraceFlags["sensitive"])
 	if err != nil {
-		log.Errorf("failed to login with CHAP credentials: %+v ", err)
+		log.Errorf("Failed to login with CHAP credentials: %+v ", err)
 		return path, device, err
 	}
 	if utils.WaitForPathToExist(path, 10) {
@@ -229,7 +229,7 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 func (c *Client) ModifyVolume(req *ModifyVolumeRequest) (err error) {
 	_, err = c.Request("ModifyVolume", req, NewReqID())
 	if err != nil {
-		log.Errorf("error response from ModifyVolume request: %+v ", err)
+		log.Errorf("Error response from ModifyVolume request: %+v ", err)
 		return errors.New("device API error")
 	}
 	return err

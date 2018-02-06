@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package main
 
 import (
@@ -7,7 +9,7 @@ import (
 )
 
 func main() {
-	cmd.ExitCode = cmd.EXIT_CODE_SUCCESS
+	cmd.ExitCode = cmd.ExitCodeSuccess
 
 	if err := cmd.RootCmd.Execute(); err != nil {
 		cmd.SetExitCodeFromError(err)

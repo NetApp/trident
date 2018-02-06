@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"syscall"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -61,9 +61,9 @@ var (
 	// REST interface
 	address    = flag.String("address", "localhost", "Storage orchestrator API address")
 	port       = flag.String("port", "8000", "Storage orchestrator API port")
-	enableRest = flag.Bool("rest", true, "Enable REST interface")
+	enableREST = flag.Bool("rest", true, "Enable REST interface")
 
-	storeClient      persistent_store.Client
+	storeClient      persistentstore.Client
 	enableKubernetes bool
 	enableDocker     bool
 )
@@ -135,36 +135,36 @@ func processCmdLineArgs() {
 	if *etcdV3 != "" {
 		if shouldEnableTLS() {
 			log.Debug("Trident is configured with an etcdv3 client with TLS.")
-			storeClient, err = persistent_store.NewEtcdClientV3WithTLS(*etcdV3,
+			storeClient, err = persistentstore.NewEtcdClientV3WithTLS(*etcdV3,
 				*etcdV3Cert, *etcdV3CACert, *etcdV3Key)
 		} else {
 			log.Debug("Trident is configured with an etcdv3 client without TLS.")
 			if !strings.Contains(*etcdV3, "127.0.0.1") {
 				log.Warn("Trident's etcdv3 client should be configured with TLS!")
 			}
-			storeClient, err = persistent_store.NewEtcdClientV3(*etcdV3)
+			storeClient, err = persistentstore.NewEtcdClientV3(*etcdV3)
 		}
 		if err != nil {
 			log.Fatalf("Unable to create the etcd V3 client. %v", err)
 		}
 	} else if *etcdV2 != "" {
 		log.Debug("Trident is configured with an etcdv2 client.")
-		storeClient, err = persistent_store.NewEtcdClientV2(*etcdV2)
+		storeClient, err = persistentstore.NewEtcdClientV2(*etcdV2)
 		if err != nil {
 			log.Fatalf("Unable to create the etcd V2 client. %v", err)
 		}
 	} else if *useInMemory {
 		log.Debug("Trident is configured with an in-memory store client.")
-		storeClient = persistent_store.NewInMemoryClient()
+		storeClient = persistentstore.NewInMemoryClient()
 	} else if *usePassthrough {
 		log.Debug("Trident is configured with passthrough store client.")
-		storeClient, err = persistent_store.NewPassthroughClient(*configPath)
+		storeClient, err = persistentstore.NewPassthroughClient(*configPath)
 		if err != nil {
 			log.Fatalf("Unable to create the passthrough store client. %v", err)
 		}
 	}
 
-	config.UsingPassthroughStore = storeClient.GetType() == persistent_store.PassthroughStore
+	config.UsingPassthroughStore = storeClient.GetType() == persistentstore.PassthroughStore
 }
 
 func main() {
@@ -173,7 +173,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
-	frontends := make([]frontend.FrontendPlugin, 0)
+	frontends := make([]frontend.Plugin, 0)
 
 	// Set log level
 	err = logging.InitLogLevel(*debug, *logLevel)
@@ -194,7 +194,7 @@ func main() {
 	// Create Kubernetes *or* Docker frontend
 	if enableKubernetes {
 
-		var kubernetesFrontend frontend.FrontendPlugin
+		var kubernetesFrontend frontend.Plugin
 		config.CurrentDriverContext = config.ContextKubernetes
 
 		if *k8sAPIServer != "" {
@@ -228,7 +228,7 @@ func main() {
 	}
 
 	// Create REST frontend
-	if *enableRest {
+	if *enableREST {
 		if *port == "" {
 			log.Warning("REST interface will not be available (port not specified).")
 		} else {

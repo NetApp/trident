@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 const (
 	// Constants for integer storage category attributes
@@ -32,7 +32,7 @@ const (
 	AdditionalStoragePools = "additionalStoragePools"
 )
 
-var attrTypes = map[string]StorageAttributeType{
+var attrTypes = map[string]Type{
 	IOPS:             intType,
 	Snapshots:        boolType,
 	Clones:           boolType,

@@ -1,4 +1,4 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -61,7 +61,7 @@ type NfsAccessInfo struct {
 
 func (c *VolumeConfig) Validate() error {
 	if c.Name == "" || c.Size == "" {
-		return fmt.Errorf("The following fields for \"Volume\" are mandatory: name and size")
+		return fmt.Errorf("the following fields for \"Volume\" are mandatory: name and size")
 	}
 	if !config.IsValidProtocol(c.Protocol) {
 		return fmt.Errorf("%v is an usupported protocol! Acceptable values:  "+

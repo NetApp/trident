@@ -1,6 +1,6 @@
-// Copyright 2016 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storage_attribute
+package storageattribute
 
 type Offer interface {
 	Matches(requested Request) bool
@@ -9,17 +9,17 @@ type Offer interface {
 // At the moment, there aren't any terribly useful methods to put here, but
 // there might be.  This is more here for symmetry at the moment.
 type Request interface {
-	GetType() StorageAttributeType
+	GetType() Type
 	Value() interface{}
 	String() string
 }
 
-type StorageAttributeType string
+type Type string
 
 const (
-	intType    StorageAttributeType = "int"
-	boolType   StorageAttributeType = "bool"
-	stringType StorageAttributeType = "string"
+	intType    Type = "int"
+	boolType   Type = "bool"
+	stringType Type = "string"
 )
 
 type intOffer struct {

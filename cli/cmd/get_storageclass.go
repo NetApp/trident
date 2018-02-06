@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -21,7 +23,7 @@ var getStorageClassCmd = &cobra.Command{
 	Short:   "Get one or more storage classes from Trident",
 	Aliases: []string{"sc", "storageclasses"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == MODE_TUNNEL {
+		if OperatingMode == ModeTunnel {
 			command := []string{"get", "storageclass"}
 			TunnelCommand(append(command, args...))
 			return nil
@@ -67,7 +69,7 @@ func GetStorageClasses(baseURL string) ([]string, error) {
 
 	url := baseURL + "/storageclass"
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -87,7 +89,7 @@ func GetStorageClass(baseURL, storageClassName string) (api.StorageClass, error)
 
 	url := baseURL + "/storageclass/" + storageClassName
 
-	response, responseBody, err := api.InvokeRestApi("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return api.StorageClass{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -105,11 +107,11 @@ func GetStorageClass(baseURL, storageClassName string) (api.StorageClass, error)
 
 func WriteStorageClasses(storageClasses []api.StorageClass) {
 	switch OutputFormat {
-	case FORMAT_JSON:
+	case FormatJSON:
 		WriteJSON(api.MultipleStorageClassResponse{storageClasses})
-	case FORMAT_YAML:
+	case FormatYAML:
 		WriteYAML(api.MultipleStorageClassResponse{storageClasses})
-	case FORMAT_NAME:
+	case FormatName:
 		writeStorageClassNames(storageClasses)
 	default:
 		writeStorageClassTable(storageClasses)

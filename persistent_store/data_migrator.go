@@ -1,11 +1,11 @@
-// Copyright 2017 NetApp, Inc. All Rights Reserved.
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package persistent_store
+package persistentstore
 
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type DataMigrator struct {
@@ -52,11 +52,11 @@ func (m *DataMigrator) Run(keyPrefix string, deleteSrc bool) error {
 		destinationClient, err = NewEtcdClientV3FromConfig(
 			m.DestClient.GetConfig())
 	default:
-		return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
+		return fmt.Errorf("%v is not a valid persistent store version",
 			m.DestClient.GetType())
 	}
 	if err != nil {
-		return fmt.Errorf("Failed in creating the destination etcd client for data migration: %v",
+		return fmt.Errorf("failed to create the destination etcd client for data migration: %v",
 			err)
 	}
 	switch m.SourceType {
@@ -64,11 +64,11 @@ func (m *DataMigrator) Run(keyPrefix string, deleteSrc bool) error {
 		srcClient, err = NewEtcdClientV2FromConfig(
 			m.DestClient.GetConfig())
 	default:
-		return fmt.Errorf("Didn't recognize %v as a valid persistent store version!",
+		return fmt.Errorf("%v is not a valid persistent store version",
 			m.SourceType)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed in creating the source etcd client for data migration: %v",
+		return fmt.Errorf("failed to create the source etcd client for data migration: %v",
 			err)
 	}
 	etcdDataMigrator := NewEtcdDataMigrator(srcClient,
@@ -78,7 +78,7 @@ func (m *DataMigrator) Run(keyPrefix string, deleteSrc bool) error {
 		return fmt.Errorf("etcd data migration failed: %v", err)
 	}
 	if err = etcdDataMigrator.Stop(); err != nil {
-		return fmt.Errorf("Failed to shut down the etcd data migrator: %v",
+		return fmt.Errorf("failed to shut down the etcd data migrator: %v",
 			err)
 	}
 	return nil
