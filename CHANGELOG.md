@@ -2,6 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v18.01.0
+
+**Fixes:**
+- **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log
+
+**Enhancements:**
+
 ## Changes since v17.10.0
 
 **Fixes:**

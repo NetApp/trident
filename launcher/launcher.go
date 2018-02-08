@@ -103,7 +103,7 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
-				v1.Container{
+				{
 					Name:    tridentContainerName,
 					Image:   tridentImage,
 					Command: []string{"/usr/local/bin/trident_orchestrator"},
@@ -113,7 +113,7 @@ func createTridentEphemeralPod(kubeClient k8s_client.Interface) (*v1.Pod, error)
 						"-no_persistence",
 					},
 					Ports: []v1.ContainerPort{
-						v1.ContainerPort{ContainerPort: tridentDefaultPort},
+						{ContainerPort: tridentDefaultPort},
 					},
 				},
 			},
@@ -217,7 +217,7 @@ func getStoragePools(tridentClient tridentrest.Interface,
 	if backendResponse.Error != "" {
 		return nil, fmt.Errorf("%s", backendResponse.Error)
 	}
-	for pool, _ := range backendResponse.Backend.Storage {
+	for pool := range backendResponse.Backend.Storage {
 		storagePools = append(storagePools, pool)
 	}
 	return storagePools, nil
@@ -544,9 +544,8 @@ func (launcher *Launcher) Run() (errors []error) {
 						tridentEphemeralPodName)
 					errors = append(errors,
 						fmt.Errorf("Launcher failed to delete volume %s during cleanup: %s. "+
-							"Manual deletion is required! "+
-							"Run 'kubectl logs %s' for more information.",
-							*tridentVolumeName, errCleanup))
+							"Manual deletion is required! Run 'kubectl logs %s' for more information.",
+							*tridentVolumeName, errCleanup, tridentEphemeralPodName))
 					deleteTridentEphemeral = false
 				} else {
 					log.WithFields(log.Fields{

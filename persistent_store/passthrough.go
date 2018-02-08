@@ -13,12 +13,12 @@ import (
 	"sync"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
+	"github.com/ghodss/yaml"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
 )
 
 type PassthroughClient struct {
@@ -120,10 +120,9 @@ func (c *PassthroughClient) loadBackend(configPath string) error {
 			"error":      err,
 		}).Fatal("Passthrough store could not read configuration file.")
 	}
-	configJSON := string(fileContents)
 
-	// Convert config JSON to persistent backend JSON
-	backendJSON, err := c.unmarshalConfig(configJSON)
+	// Convert config file to persistent backend JSON
+	backendJSON, err := c.unmarshalConfig(fileContents)
 
 	var backend storage.StorageBackendPersistent
 	err = json.Unmarshal([]byte(backendJSON), &backend)
@@ -135,24 +134,31 @@ func (c *PassthroughClient) loadBackend(configPath string) error {
 	return nil
 }
 
-// unmarshalConfig accepts a driver JSON config and converts it to a persistent backend
+// unmarshalConfig accepts a driver JSON/YAML config and converts it to a persistent backend
 // JSON config as needed by the bootstrapping process.
-func (c *PassthroughClient) unmarshalConfig(configJSON string) (string, error) {
+func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error) {
 
-	commonConfig, err := dvp.ValidateCommonSettings(configJSON)
+	// Convert config (JSON or YAML) to JSON
+	configJSONBytes, err := yaml.YAMLToJSON(fileContents)
+	if err != nil {
+		return "", err
+	}
+	configJSON := string(configJSONBytes)
+
+	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
 	if err != nil {
 		return "", fmt.Errorf("Input failed validation: %v", err)
 	}
 
 	var configType string
 	switch commonConfig.StorageDriverName {
-	case dvp.OntapNASStorageDriverName, dvp.OntapNASQtreeStorageDriverName, dvp.OntapSANStorageDriverName:
+	case drivers.OntapNASStorageDriverName, drivers.OntapNASQtreeStorageDriverName, drivers.OntapSANStorageDriverName:
 		configType = "ontap_config"
-	case dvp.SolidfireSANStorageDriverName:
+	case drivers.SolidfireSANStorageDriverName:
 		configType = "solidfire_config"
-	case dvp.EseriesIscsiStorageDriverName:
+	case drivers.EseriesIscsiStorageDriverName:
 		configType = "eseries_config"
-	case fake.FakeStorageDriverName:
+	case drivers.FakeStorageDriverName:
 		configType = "fake_config"
 	default:
 		return "", fmt.Errorf("Unknown storage driver: %v", commonConfig.StorageDriverName)

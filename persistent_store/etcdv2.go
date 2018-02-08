@@ -9,7 +9,6 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-
 	etcdclientv2 "github.com/coreos/etcd/client"
 	"golang.org/x/net/context"
 

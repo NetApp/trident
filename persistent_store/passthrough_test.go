@@ -8,22 +8,21 @@ import (
 	"os"
 	"testing"
 
-	dvp "github.com/netapp/netappdvp/storage_drivers"
-
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
-	fake_backend "github.com/netapp/trident/storage/fake"
+	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
+	fake_driver "github.com/netapp/trident/storage_drivers/fake"
 )
 
-func getFakePools(count int) map[string]*fake.FakeStoragePool {
+func getFakePools(count int) map[string]*fake.StoragePool {
 
-	ret := make(map[string]*fake.FakeStoragePool, count)
+	ret := make(map[string]*fake.StoragePool, count)
 
 	for i := 0; i < count; i++ {
-		ret[fmt.Sprintf("pool-%d", i)] = &fake.FakeStoragePool{
+		ret[fmt.Sprintf("pool-%d", i)] = &fake.StoragePool{
 			Bytes: 100 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(0, 100),
@@ -39,22 +38,17 @@ func getFakePools(count int) map[string]*fake.FakeStoragePool {
 
 func getFakeBackend() *storage.StorageBackend {
 
-	fakeConfig := fake.FakeStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			Version:           dvp.ConfigVersion,
-			StorageDriverName: fake.FakeStorageDriverName,
+	fakeConfig := drivers.FakeStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			Version:           drivers.ConfigVersion,
+			StorageDriverName: drivers.FakeStorageDriverName,
 		},
 		Protocol:     config.File,
 		Pools:        getFakePools(2),
 		InstanceName: "fake_backend",
 	}
 
-	fakeNdvpDriver := fake.NewFakeStorageDriver(fakeConfig)
-
-	fakeStorageDriver := &fake_backend.FakeStorageDriver{
-		FakeStorageDriver: *fakeNdvpDriver,
-	}
-
+	fakeStorageDriver := fake_driver.NewFakeStorageDriver(fakeConfig)
 	fakeBackend, _ := storage.NewStorageBackend(fakeStorageDriver)
 	return fakeBackend
 }

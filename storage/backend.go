@@ -9,20 +9,30 @@ import (
 	"strconv"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
-	"github.com/netapp/netappdvp/utils"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage_attribute"
+	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/utils"
 )
 
-// various backend configurations
-
-type TridentDriver interface {
+// StorageDriver provides a common interface for storage related operations
+type StorageDriver interface {
+	Name() string
+	Initialize(config.DriverContext, string, *drivers.CommonStorageDriverConfig) error
+	Initialized() bool
+	// Terminate tells the driver to clean up, as it won't be called again.
+	Terminate()
+	Create(name string, sizeBytes uint64, opts map[string]string) error
+	CreateClone(name, source, snapshot string, opts map[string]string) error
+	Destroy(name string) error
+	Attach(name, mountpoint string, opts map[string]string) error
+	Detach(name, mountpoint string) error
+	SnapshotList(name string) ([]Snapshot, error)
+	List() ([]string, error)
+	Get(name string) error
 	CreatePrepare(volConfig *VolumeConfig) bool
-	// CreateFollowup adds necessary information for accessing the volume
-	// to VolumeConfig.
+	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(volConfig *VolumeConfig) error
 	// GetInternalVolumeName will return a name that satisfies any character
 	// constraints present on the backend and that will be unique to Trident.
@@ -36,7 +46,6 @@ type TridentDriver interface {
 		requests map[string]storage_attribute.Request,
 	) (map[string]string, error)
 	GetProtocol() config.Protocol
-	GetDriverName() string
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -45,18 +54,9 @@ type TridentDriver interface {
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 }
 
-// This shadows the dvp.StorageDriver interface, combining it with the Trident
-// specific methods.  Implementing structs should in-line an instance of
-// dvp.StorageDriver
-type StorageDriver interface {
-	dvp.StorageDriver
-	TridentDriver
-}
-
 type StorageBackend struct {
-	Driver StorageDriver
-	Name   string
-	//TODO: the granualarity of online should probably be a StoragePool, not the whole backend, which in the case of ONTAP can be the whole cluster.
+	Driver  StorageDriver
+	Name    string
 	Online  bool
 	Storage map[string]*StoragePool
 	Volumes map[string]*Volume
@@ -78,12 +78,12 @@ func NewStorageBackend(driver StorageDriver) (*StorageBackend, error) {
 	return &backend, nil
 }
 
-func (b *StorageBackend) AddStoragePool(vc *StoragePool) {
-	b.Storage[vc.Name] = vc
+func (b *StorageBackend) AddStoragePool(pool *StoragePool) {
+	b.Storage[pool.Name] = pool
 }
 
 func (b *StorageBackend) GetDriverName() string {
-	return b.Driver.GetDriverName()
+	return b.Driver.Name()
 }
 
 func (b *StorageBackend) GetProtocol() config.Protocol {
@@ -207,7 +207,7 @@ func (b *StorageBackend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		}
 		return nil, err
 	}
-	vol := NewVolume(volConfig, b.Name, UnsetPool, false)
+	vol := NewVolume(volConfig, b.Name, drivers.UnsetPool, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -230,6 +230,19 @@ func (b *StorageBackend) RemoveVolume(vol *Volume) error {
 	return nil
 }
 
+// Terminate informs the backend that it is being deleted from the core
+// and will not be called again.  This may be a signal to the storage
+// driver to clean up and stop any ongoing operations.
+func (b *StorageBackend) Terminate() {
+
+	log.WithFields(log.Fields{
+		"backendName": b.Name,
+		"driverName":  b.GetDriverName(),
+	}).Debug("Terminating backend.")
+
+	b.Driver.Terminate()
+}
+
 type StorageBackendExternal struct {
 	Name    string                          `json:"name"`
 	Config  interface{}                     `json:"config"`
@@ -250,7 +263,7 @@ func (b *StorageBackend) ConstructExternal() *StorageBackendExternal {
 	for name, pool := range b.Storage {
 		backendExternal.Storage[name] = pool.ConstructExternal()
 	}
-	for volName, _ := range b.Volumes {
+	for volName := range b.Volumes {
 		backendExternal.Volumes = append(backendExternal.Volumes, volName)
 	}
 	return &backendExternal
@@ -261,10 +274,10 @@ func (b *StorageBackend) ConstructExternal() *StorageBackendExternal {
 // phase
 
 type PersistentStorageBackendConfig struct {
-	OntapConfig             *dvp.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
-	SolidfireConfig         *dvp.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
-	EseriesConfig           *dvp.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
-	FakeStorageDriverConfig *fake.FakeStorageDriverConfig     `json:"fake_config,omitempty"`
+	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
+	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
+	EseriesConfig           *drivers.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
+	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
 type StorageBackendPersistent struct {

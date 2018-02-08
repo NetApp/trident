@@ -11,14 +11,14 @@ import (
 	"testing"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/ontap"
-	"github.com/netapp/trident/storage/solidfire"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap"
+	"github.com/netapp/trident/storage_drivers/solidfire"
 )
 
 var (
@@ -214,9 +214,9 @@ func TestEtcdv2Backend(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Adding storage backend
-	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.OntapNASStorageDriverName,
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
 		DataLIF:       "10.0.0.100",
@@ -225,9 +225,7 @@ func TestEtcdv2Backend(t *testing.T) {
 		Password:      "netapp",
 	}
 	nfsDriver := ontap.OntapNASStorageDriver{
-		OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-			Config: nfsServerConfig,
-		},
+		Config: nfsServerConfig,
 	}
 	nfsServer := &storage.StorageBackend{
 		Driver: &nfsDriver,
@@ -241,7 +239,7 @@ func TestEtcdv2Backend(t *testing.T) {
 
 	// Getting a storage backend
 	//var recoveredBackend *storage.StorageBackendPersistent
-	var ontapConfig dvp.OntapStorageDriverConfig
+	var ontapConfig drivers.OntapStorageDriverConfig
 	recoveredBackend, err := p.GetBackend(nfsServer.Name)
 	if err != nil {
 		t.Error(err.Error())
@@ -257,9 +255,9 @@ func TestEtcdv2Backend(t *testing.T) {
 	}
 
 	// Updating a storage backend
-	nfsServerNewConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.OntapNASStorageDriverName,
+	nfsServerNewConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
 		DataLIF:       "10.0.0.100",
@@ -303,9 +301,9 @@ func TestEtcdv2Backends(t *testing.T) {
 
 	// Adding storage backends
 	for i := 1; i <= 5; i++ {
-		nfsServerConfig := dvp.OntapStorageDriverConfig{
-			CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-				StorageDriverName: dvp.OntapNASStorageDriverName,
+		nfsServerConfig := drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: drivers.OntapNASStorageDriverName,
 			},
 			ManagementLIF: "10.0.0." + strconv.Itoa(i),
 			DataLIF:       "10.0.0.100",
@@ -315,9 +313,7 @@ func TestEtcdv2Backends(t *testing.T) {
 		}
 		nfsServer := &storage.StorageBackend{
 			Driver: &ontap.OntapNASStorageDriver{
-				OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-					Config: nfsServerConfig,
-				},
+				Config: nfsServerConfig,
 			},
 			Name: "nfs_server_" + strconv.Itoa(i) + "-" + nfsServerConfig.ManagementLIF,
 		}
@@ -347,9 +343,9 @@ func TestEtcdv2Backends(t *testing.T) {
 func TestEtcdv2DuplicateBackend(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
 
-	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.OntapNASStorageDriverName,
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
 		DataLIF:       "10.0.0.100",
@@ -359,9 +355,7 @@ func TestEtcdv2DuplicateBackend(t *testing.T) {
 	}
 	nfsServer := &storage.StorageBackend{
 		Driver: &ontap.OntapNASStorageDriver{
-			OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-				Config: nfsServerConfig,
-			},
+			Config: nfsServerConfig,
 		},
 		Name: "nfs_server_1-" + nfsServerConfig.ManagementLIF,
 	}
@@ -384,9 +378,9 @@ func TestEtcdv2Volume(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
 
 	// Adding a volume
-	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.OntapNASStorageDriverName,
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
 		DataLIF:       "10.0.0.100",
@@ -396,9 +390,7 @@ func TestEtcdv2Volume(t *testing.T) {
 	}
 	nfsServer := &storage.StorageBackend{
 		Driver: &ontap.OntapNASStorageDriver{
-			OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-				Config: nfsServerConfig,
-			},
+			Config: nfsServerConfig,
 		},
 		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
 	}
@@ -468,9 +460,9 @@ func TestEtcdv2Volumes(t *testing.T) {
 	}
 
 	// Adding volumes
-	nfsServerConfig := dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.OntapNASStorageDriverName,
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
 		ManagementLIF: "10.0.0.4",
 		DataLIF:       "10.0.0.100",
@@ -480,9 +472,7 @@ func TestEtcdv2Volumes(t *testing.T) {
 	}
 	nfsServer := &storage.StorageBackend{
 		Driver: &ontap.OntapNASStorageDriver{
-			OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-				Config: nfsServerConfig,
-			},
+			Config: nfsServerConfig,
 		},
 		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
 	}
@@ -634,18 +624,18 @@ func TestEtcdv2DuplicateVolumeTransaction(t *testing.T) {
 
 func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 	p, err := NewEtcdClientV2(*etcdV2)
-	sfConfig := dvp.SolidfireStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-			StorageDriverName: dvp.SolidfireSANStorageDriverName,
+	sfConfig := drivers.SolidfireStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.SolidfireSANStorageDriverName,
+			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+				Size: "1GiB",
+			},
 		},
-		TenantName:   "docker",
-		DefaultVolSz: 1073741824,
+		TenantName: "docker",
 	}
 	sfBackend := &storage.StorageBackend{
 		Driver: &solidfire.SolidfireSANStorageDriver{
-			SolidfireSANStorageDriver: dvp.SolidfireSANStorageDriver{
-				Config: sfConfig,
-			},
+			Config: sfConfig,
 		},
 		Name: "solidfire" + "_10.0.0.9",
 	}
@@ -653,7 +643,7 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	var retrievedConfig dvp.SolidfireStorageDriverConfig
+	var retrievedConfig drivers.SolidfireStorageDriverConfig
 	recoveredBackend, err := p.GetBackend(sfBackend.Name)
 	if err != nil {
 		t.Error(err.Error())
@@ -664,9 +654,9 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 	}
 	if err = json.Unmarshal([]byte(configJSON), &retrievedConfig); err != nil {
 		t.Error("Unable to unmarshal backend into ontap configuration: ", err)
-	} else if retrievedConfig.DefaultVolSz != sfConfig.DefaultVolSz {
+	} else if retrievedConfig.Size != sfConfig.Size {
 		t.Errorf("Backend state doesn't match: %v != %v",
-			retrievedConfig.DefaultVolSz, sfConfig.DefaultVolSz)
+			retrievedConfig.Size, sfConfig.Size)
 	}
 
 	if err = p.DeleteBackend(sfBackend); err != nil {

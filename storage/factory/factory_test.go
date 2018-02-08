@@ -6,15 +6,15 @@ import (
 	"encoding/json"
 	"testing"
 
-	dvp "github.com/netapp/netappdvp/storage_drivers"
+	drivers "github.com/netapp/trident/storage_drivers"
 )
 
 // TestInitializeRecovery intentionally passes a bogus config to
 // NewStorageBackendForConfig to test its ability to recover.
 func TestInitializeRecovery(t *testing.T) {
 	empty := ""
-	config := &dvp.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           1,
 			StorageDriverName: "ontap-nas",
 			StoragePrefixRaw:  json.RawMessage("{}"),

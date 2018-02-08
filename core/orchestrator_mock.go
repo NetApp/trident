@@ -12,13 +12,13 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/ontap"
 	"github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap"
 )
 
 type mockBackend struct {
@@ -43,7 +43,7 @@ func newMockBackend(protocol config.Protocol) *mockBackend {
 // use in testing frontends.  Although it retains the appearance of correct
 // functionality for this purpose, all functions are effectively nops.
 // Note:  Many of the getter methods are copied verbatim from
-// tridentOrchestrator, since their functionality is not inherently interesting
+// TridentOrchestrator, since their functionality is not inherently interesting
 // or testable.
 type MockOrchestrator struct {
 	backends       map[string]*storage.StorageBackend
@@ -103,13 +103,11 @@ func (m *MockOrchestrator) addMockBackend(
 func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.StorageBackendExternal {
 	backend := m.addMockBackend(name, config.File)
 	backend.Driver = &ontap.OntapNASStorageDriver{
-		OntapNASStorageDriver: dvp.OntapNASStorageDriver{
-			Config: dvp.OntapStorageDriverConfig{
-				CommonStorageDriverConfig: &dvp.CommonStorageDriverConfig{
-					StorageDriverName: "ontap-nas",
-				},
-				DataLIF: lif,
+		Config: drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "ontap-nas",
 			},
+			DataLIF: lif,
 		},
 	}
 	mock := m.mockBackends[backend.Name]
@@ -239,7 +237,7 @@ func (m *MockOrchestrator) GetVolume(volume string) *storage.VolumeExternal {
 	return vol.ConstructExternal()
 }
 
-// Copied verbatim from tridentOrchestrator
+// Copied verbatim from TridentOrchestrator
 func (m *MockOrchestrator) GetDriverTypeForVolume(
 	vol *storage.VolumeExternal,
 ) string {
@@ -252,20 +250,20 @@ func (m *MockOrchestrator) GetDriverTypeForVolume(
 	return config.UnknownDriver
 }
 
-// Copied verbatim from tridentOrchestrator
+// Copied verbatim from TridentOrchestrator
 func (m *MockOrchestrator) GetVolumeType(vol *storage.VolumeExternal) config.VolumeType {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	driver := m.backends[vol.Backend].GetDriverName()
 	switch {
-	case driver == dvp.OntapNASStorageDriverName:
+	case driver == drivers.OntapNASStorageDriverName:
 		return config.ONTAP_NFS
-	case driver == dvp.OntapSANStorageDriverName:
+	case driver == drivers.OntapSANStorageDriverName:
 		return config.ONTAP_iSCSI
-	case driver == dvp.SolidfireSANStorageDriverName:
+	case driver == drivers.SolidfireSANStorageDriverName:
 		return config.SolidFire_iSCSI
-	case driver == dvp.EseriesIscsiStorageDriverName:
+	case driver == drivers.EseriesIscsiStorageDriverName:
 		return config.Eseries_iSCSI
 	default:
 		return config.UnknownVolumeType

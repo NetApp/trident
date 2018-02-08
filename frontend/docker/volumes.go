@@ -1,3 +1,5 @@
+// Copyright 2017 NetApp, Inc. All Rights Reserved.
+
 package docker
 
 import (
@@ -5,13 +7,13 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	hash "github.com/mitchellh/hashstructure"
-	dvp_utils "github.com/netapp/netappdvp/utils"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 // getStorageClass accepts a list of volume creation options and returns a
@@ -86,7 +88,7 @@ func makeStorageClass(options map[string]string, o core.Orchestrator) (*storage_
 // and returns a volume config structure suitable for passing to the orchestrator core.
 func getVolumeConfig(name, storageClass string, opts map[string]string) (*storage.VolumeConfig, error) {
 
-	sizeBytes, err := dvp_utils.GetVolumeSizeBytes(opts, default_volume_size)
+	sizeBytes, err := utils.GetVolumeSizeBytes(opts, default_volume_size)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating volume: %v", err)
 	}
@@ -98,19 +100,19 @@ func getVolumeConfig(name, storageClass string, opts map[string]string) (*storag
 		StorageClass:        storageClass,
 		Protocol:            config.ProtocolAny,
 		AccessMode:          config.ModeAny,
-		SpaceReserve:        dvp_utils.GetV(opts, "spaceReserve", ""),
-		SecurityStyle:       dvp_utils.GetV(opts, "securityStyle", ""),
-		SplitOnClone:        dvp_utils.GetV(opts, "splitOnClone", ""),
-		SnapshotPolicy:      dvp_utils.GetV(opts, "snapshotPolicy", ""),
-		ExportPolicy:        dvp_utils.GetV(opts, "exportPolicy", ""),
-		SnapshotDir:         dvp_utils.GetV(opts, "snapshotDir", ""),
-		UnixPermissions:     dvp_utils.GetV(opts, "unixPermissions", ""),
-		BlockSize:           dvp_utils.GetV(opts, "blocksize", ""),
-		QoS:                 dvp_utils.GetV(opts, "qos", ""),
-		QoSType:             dvp_utils.GetV(opts, "type", ""),
-		FileSystem:          dvp_utils.GetV(opts, "fstype|fileSystemType", ""),
-		Encryption:          dvp_utils.GetV(opts, "encryption", ""),
-		CloneSourceVolume:   dvp_utils.GetV(opts, "from", ""),
-		CloneSourceSnapshot: dvp_utils.GetV(opts, "fromSnapshot", ""),
+		SpaceReserve:        utils.GetV(opts, "spaceReserve", ""),
+		SecurityStyle:       utils.GetV(opts, "securityStyle", ""),
+		SplitOnClone:        utils.GetV(opts, "splitOnClone", ""),
+		SnapshotPolicy:      utils.GetV(opts, "snapshotPolicy", ""),
+		ExportPolicy:        utils.GetV(opts, "exportPolicy", ""),
+		SnapshotDir:         utils.GetV(opts, "snapshotDir", ""),
+		UnixPermissions:     utils.GetV(opts, "unixPermissions", ""),
+		BlockSize:           utils.GetV(opts, "blocksize", ""),
+		QoS:                 utils.GetV(opts, "qos", ""),
+		QoSType:             utils.GetV(opts, "type", ""),
+		FileSystem:          utils.GetV(opts, "fstype|fileSystemType", ""),
+		Encryption:          utils.GetV(opts, "encryption", ""),
+		CloneSourceVolume:   utils.GetV(opts, "from", ""),
+		CloneSourceSnapshot: utils.GetV(opts, "fromSnapshot", ""),
 	}, nil
 }

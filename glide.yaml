@@ -19,15 +19,6 @@ import:
   version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
 - package: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
-- package: github.com/netapp/netappdvp
-  version: ee8b6a3f0bf1b5a05ab2a143daad2f3e61cc6ffb
-  subpackages:
-  - apis/eseries
-  - apis/ontap
-  - apis/sfapi
-  - azgo
-  - storage_drivers
-  - utils
 - package: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - package: github.com/spf13/pflag

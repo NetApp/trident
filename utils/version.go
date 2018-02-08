@@ -202,6 +202,24 @@ func (v *Version) String() string {
 	return buffer.String()
 }
 
+// ShortString converts a Version back to a string, including only the major/minor/patch components.
+func (v *Version) ShortString() string {
+	var buffer bytes.Buffer
+
+	for i, comp := range v.components {
+		if i > 0 {
+			buffer.WriteString(".")
+		}
+		if v.datever && i == 1 {
+			buffer.WriteString(fmt.Sprintf("%02d", comp))
+		} else {
+			buffer.WriteString(fmt.Sprintf("%d", comp))
+		}
+	}
+
+	return buffer.String()
+}
+
 // compareInternal returns -1 if v is less than other, 1 if it is greater than other, or 0
 // if they are equal
 func (v *Version) compareInternal(other *Version) int {

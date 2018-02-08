@@ -10,7 +10,6 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-
 	"k8s.io/api/core/v1"
 	k8s_storage_v1 "k8s.io/api/storage/v1"
 	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
@@ -312,7 +311,7 @@ func cloneClaim(claim *v1.PersistentVolumeClaim) *v1.PersistentVolumeClaim {
 func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "5").Version()
 	tests := []pluginTest{
-		pluginTest{
+		{
 			name: "Basic bind",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("basic", "pvc1", "20M",
@@ -362,7 +361,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "Misplaced bind",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -394,7 +393,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "Larger resized PVC",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("resized-larger", "pvc1", "21M",
@@ -445,7 +444,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "Smaller resized PVC",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("resized-smaller", "pvc1", "40M",
@@ -497,7 +496,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "ReadWriteOnceNFS",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("readwriteonce-nfs", "pvc1", "20M",
@@ -545,7 +544,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "WrongStorageClass",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -573,7 +572,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteVolumeStandard",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -631,7 +630,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteVolumeMissedAdd",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -677,7 +676,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteFailedVolume",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -728,7 +727,7 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "DeleteVolumeRetain",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("delete-retain", "pvc1", "20M",
@@ -879,7 +878,7 @@ func testStorageClassV1_6(
 func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "6").Version()
 	tests := []pluginTest{
-		pluginTest{
+		{
 			name: "Basic bind",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("basic", "pvc1", "20M",
@@ -929,7 +928,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "Misplaced bind",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -961,7 +960,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "Larger resized PVC",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("resized-larger", "pvc1", "21M",
@@ -1012,7 +1011,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "Smaller resized PVC",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("resized-smaller", "pvc1", "40M",
@@ -1064,7 +1063,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "ReadWriteOnceNFS",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("readwriteonce-nfs", "pvc1", "20M",
@@ -1112,7 +1111,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "WrongStorageClass",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1140,7 +1139,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteVolumeStandard",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1198,7 +1197,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteVolumeMissedAdd",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1244,7 +1243,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "DeleteFailedVolume",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1295,7 +1294,7 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name: "DeleteVolumeRetain",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("delete-retain", "pvc1", "20M",
@@ -1526,7 +1525,7 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 func TestV1betaStorageClassKube1_5(t *testing.T) {
 	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "5").Version()
 	tests := []pluginTest{
-		pluginTest{
+		{
 			name: "Basic v1beta storage class provisioning",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("pvc-silver", "pvc1", "20M",
@@ -1577,7 +1576,7 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "Unsupported default storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1662,7 +1661,7 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 func TestV1StorageClassKube1_6(t *testing.T) {
 	kubeVersion := k8s_client.NewFakeKubeClient(nil, "1", "6").Version()
 	tests := []pluginTest{
-		pluginTest{
+		{
 			name: "Basic v1 storage class provisioning",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("pvc-silver", "pvc1", "20M",
@@ -1715,7 +1714,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			},
 		},
 
-		pluginTest{
+		{
 			name: "Provisioning using the default storage class",
 			expectedVols: []*v1.PersistentVolume{
 				testVolume("pvc-default", "pvc1", "20M",
@@ -1764,7 +1763,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "No provisioning without the default storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1797,7 +1796,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "Provisioning with two default storage classes",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},
@@ -1834,7 +1833,7 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 				return nil
 			},
 		},
-		pluginTest{
+		{
 			name:                  "No dynamic provisioning for unset storage class",
 			expectedVols:          []*v1.PersistentVolume{},
 			expectedVolumeConfigs: []*storage.VolumeConfig{},

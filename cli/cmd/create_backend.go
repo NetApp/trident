@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ghodss/yaml"
+	"github.com/spf13/cobra"
+
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/spf13/cobra"
 )
 
 var filename string
@@ -29,17 +31,17 @@ var createBackendCmd = &cobra.Command{
 	Aliases: []string{"b"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		postData, err := getBackendCreateData()
+		jsonData, err := getBackendCreateData()
 		if err != nil {
 			return err
 		}
 
 		if OperatingMode == MODE_TUNNEL {
-			command := []string{"create", "backend", "--base64", base64.StdEncoding.EncodeToString(postData)}
+			command := []string{"create", "backend", "--base64", base64.StdEncoding.EncodeToString(jsonData)}
 			TunnelCommand(append(command, args...))
 			return nil
 		} else {
-			return backendCreate(postData)
+			return backendCreate(jsonData)
 		}
 	},
 }
@@ -47,7 +49,7 @@ var createBackendCmd = &cobra.Command{
 func getBackendCreateData() ([]byte, error) {
 
 	var err error
-	var postData []byte
+	var rawData []byte
 
 	if b64Data == "" && filename == "" {
 		return nil, errors.New("no input file was specified.")
@@ -55,17 +57,23 @@ func getBackendCreateData() ([]byte, error) {
 
 	// Read from file or stdin or b64 data
 	if b64Data != "" {
-		postData, err = base64.StdEncoding.DecodeString(b64Data)
+		rawData, err = base64.StdEncoding.DecodeString(b64Data)
 	} else if filename == "-" {
-		postData, err = ioutil.ReadAll(os.Stdin)
+		rawData, err = ioutil.ReadAll(os.Stdin)
 	} else {
-		postData, err = ioutil.ReadFile(filename)
+		rawData, err = ioutil.ReadFile(filename)
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	return postData, nil
+	// Ensure the file is valid JSON/YAML, and return JSON
+	jsonData, err := yaml.YAMLToJSON(rawData)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
 }
 
 func backendCreate(postData []byte) error {

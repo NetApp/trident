@@ -4,14 +4,16 @@ package docker
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
@@ -22,10 +24,19 @@ type DockerPlugin struct {
 	driverName   string
 	driverPort   string
 	volumePath   string
+	version      *Version
 	mutex        *sync.Mutex
 }
 
 func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*DockerPlugin, error) {
+
+	// Get the Docker version
+	version, err := getDockerVersion()
+	if err != nil {
+		log.Errorf("Failed to get the Docker version: %v", err)
+	} else {
+		log.WithField("version", version.Server.Version).Info("Docker server version.")
+	}
 
 	// Create the plugin object
 	plugin := &DockerPlugin{
@@ -33,18 +44,17 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 		driverName:   driverName,
 		driverPort:   driverPort,
 		volumePath:   filepath.Join(volume.DefaultDockerRootDirectory, driverName),
+		version:      version,
 		mutex:        &sync.Mutex{},
 	}
 
 	// Register the plugin with Docker
-	err := registerDockerVolumePlugin(plugin.volumePath)
+	err = registerDockerVolumePlugin(plugin.volumePath)
 	if err != nil {
 		return nil, err
 	}
 
 	log.WithFields(log.Fields{
-		"version":      dvp.DriverVersion,
-		"mode":         dvp.ExtendedDriverVersion,
 		"volumePath":   plugin.volumePath,
 		"volumeDriver": driverName,
 	}).Info("Initializing Trident plugin for Docker.")
@@ -67,6 +77,38 @@ func registerDockerVolumePlugin(root string) error {
 	}
 
 	return nil
+}
+
+func getDockerVersion() (*Version, error) {
+
+	// Get Docker version
+	out, err := exec.Command("docker", "version", "--format", "'{{json .}}'").CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	versionJSON := string(out)
+	versionJSON = strings.TrimSpace(versionJSON)
+	versionJSON = strings.TrimPrefix(versionJSON, "'")
+	versionJSON = strings.TrimSuffix(versionJSON, "'")
+
+	var version Version
+	err = json.Unmarshal([]byte(versionJSON), &version)
+	if err != nil {
+		return nil, err
+	}
+
+	log.WithFields(log.Fields{
+		"serverVersion":    version.Server.Version,
+		"serverAPIVersion": version.Server.APIVersion,
+		"serverArch":       version.Server.Arch,
+		"serverOS":         version.Server.Os,
+		"clientVersion":    version.Server.Version,
+		"clientAPIVersion": version.Server.APIVersion,
+		"clientArch":       version.Server.Arch,
+		"clientOS":         version.Server.Os,
+	}).Debug("Docker version info.")
+
+	return &version, nil
 }
 
 func (p *DockerPlugin) Activate() error {
@@ -95,7 +137,11 @@ func (p *DockerPlugin) GetName() string {
 }
 
 func (p *DockerPlugin) Version() string {
-	return pluginVersion
+	if p.version == nil {
+		return "unknown"
+	} else {
+		return p.version.Server.Version
+	}
 }
 
 func (p *DockerPlugin) Create(request *volume.CreateRequest) error {

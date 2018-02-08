@@ -27,7 +27,7 @@ again. Under most circumstances, this is a matter of seconds.
 
    .. code-block:: bash
 
-	 docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest netapp/trident-plugin:18.01
+	 docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest netapp/trident-plugin:18.04
 
    .. note:: The 18.01 release of Trident replaces the nDVP. You should upgrade directly from the netapp/ndvp-plugin
              image to the netapp/trident-plugin image.

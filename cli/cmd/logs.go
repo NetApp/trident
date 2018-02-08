@@ -66,7 +66,7 @@ func archiveLogs() error {
 
 	// If there aren't any logs, bail out.
 	anyLogs := false
-	for log, _ := range logMap {
+	for log := range logMap {
 		if log != "error" {
 			anyLogs = true
 			break

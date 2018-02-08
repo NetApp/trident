@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"k8s.io/api/core/v1"
 	k8s_storage_v1 "k8s.io/api/storage/v1"
 	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
@@ -27,11 +26,11 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
 	k8s_util_version "github.com/netapp/trident/utils"
 )
 
@@ -353,7 +352,7 @@ func (p *KubernetesPlugin) processClaim(
 			if len(p.defaultStorageClasses) == 1 {
 				// Using the default storage class
 				var defaultStorageClassName string
-				for defaultStorageClassName, _ = range p.defaultStorageClasses {
+				for defaultStorageClassName = range p.defaultStorageClasses {
 					claim.Spec.StorageClassName = &defaultStorageClassName
 					break
 				}
@@ -771,19 +770,19 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 
 	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch {
-	case driverType == dvp.SolidfireSANStorageDriverName ||
-		driverType == dvp.OntapSANStorageDriverName ||
-		driverType == dvp.EseriesIscsiStorageDriverName:
+	case driverType == drivers.SolidfireSANStorageDriverName ||
+		driverType == drivers.OntapSANStorageDriverName ||
+		driverType == drivers.EseriesIscsiStorageDriverName:
 		iscsiSource, err = CreateISCSIVolumeSource(k8sClient, kubeVersion, vol)
 		if err != nil {
 			return
 		}
 		pv.Spec.ISCSI = iscsiSource
-	case driverType == dvp.OntapNASStorageDriverName ||
-		driverType == dvp.OntapNASQtreeStorageDriverName:
+	case driverType == drivers.OntapNASStorageDriverName ||
+		driverType == drivers.OntapNASQtreeStorageDriverName:
 		nfsSource = CreateNFSVolumeSource(vol)
 		pv.Spec.NFS = nfsSource
-	case driverType == fake.FakeStorageDriverName:
+	case driverType == drivers.FakeStorageDriverName:
 		if vol.Config.Protocol == config.File {
 			nfsSource = CreateNFSVolumeSource(vol)
 			pv.Spec.NFS = nfsSource
@@ -1291,7 +1290,7 @@ func (p *KubernetesPlugin) processUpdatedClass(class *k8s_storage_v1.StorageClas
 
 func (p *KubernetesPlugin) getDefaultStorageClasses() string {
 	classes := make([]string, 0)
-	for class, _ := range p.defaultStorageClasses {
+	for class := range p.defaultStorageClasses {
 		classes = append(classes, class)
 	}
 	return strings.Join(classes, ",")

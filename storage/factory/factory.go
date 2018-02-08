@@ -7,55 +7,59 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/netapp/netappdvp/apis/sfapi"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
-	fake_driver "github.com/netapp/trident/drivers/fake"
+	"github.com/ghodss/yaml"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/eseries"
-	"github.com/netapp/trident/storage/fake"
-	"github.com/netapp/trident/storage/ontap"
-	"github.com/netapp/trident/storage/solidfire"
+	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/eseries"
+	"github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/storage_drivers/ontap"
+	ontapi "github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/solidfire"
+	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
 )
 
-// Note:  isPassed is copied verbatim from dvp.ontap_common.
-func isPassed(s string) bool {
-	const passed = "passed"
-	return s == passed
-}
+func NewStorageBackendForConfig(configJSON string) (sb *storage.StorageBackend, err error) {
 
-func NewStorageBackendForConfig(configJSON string) (
-	sb *storage.StorageBackend, err error,
-) {
 	var storageDriver storage.StorageDriver
 
 	// Some drivers may panic during initialize if given invalid parameters,
 	// so catch any panics that might occur and return an error.
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Unable to instantiate backend:  %v", r)
+			err = fmt.Errorf("Unable to instantiate backend: %v", r)
 		}
 	}()
 
-	commonConfig, err := dvp.ValidateCommonSettings(configJSON)
+	// Convert config (JSON or YAML) to JSON
+	configJSONBytes, err := yaml.YAMLToJSON([]byte(configJSON))
+	if err != nil {
+		err = fmt.Errorf("Invalid config format: %v", err)
+		return
+	}
+	configJSON = string(configJSONBytes)
+
+	// Parse the common config struct from JSON
+	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
 	if err != nil {
 		err = fmt.Errorf("Input failed validation: %v", err)
 		return
 	}
+
 	// Pre-driver initialization setup
 	switch commonConfig.StorageDriverName {
-	case dvp.OntapNASStorageDriverName:
+	case drivers.OntapNASStorageDriverName:
 		storageDriver = &ontap.OntapNASStorageDriver{}
-	case dvp.OntapNASQtreeStorageDriverName:
+	case drivers.OntapNASQtreeStorageDriverName:
 		storageDriver = &ontap.OntapNASQtreeStorageDriver{}
-	case dvp.OntapSANStorageDriverName:
+	case drivers.OntapSANStorageDriverName:
 		storageDriver = &ontap.OntapSANStorageDriver{}
-	case dvp.SolidfireSANStorageDriverName:
+	case drivers.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SolidfireSANStorageDriver{}
-	case dvp.EseriesIscsiStorageDriverName:
-		storageDriver = &eseries.EseriesStorageDriver{}
-	case fake_driver.FakeStorageDriverName:
+	case drivers.EseriesIscsiStorageDriverName:
+		storageDriver = &eseries.ESeriesStorageDriver{}
+	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.FakeStorageDriver{}
 	default:
 		err = fmt.Errorf("Unknown storage driver: %v",
@@ -63,20 +67,8 @@ func NewStorageBackendForConfig(configJSON string) (
 		return
 	}
 
-	// Warn about ignored fields in common config if any are set
-	if commonConfig.Debug {
-		log.WithFields(log.Fields{
-			"driverName": commonConfig.StorageDriverName,
-		}).Warn("debug set in backend config.  This will be ignored.")
-	}
-	if commonConfig.DisableDelete {
-		log.WithFields(log.Fields{
-			"driverName": commonConfig.StorageDriverName,
-		}).Warn("disableDelete set in backend config.  This will be ignored.")
-	}
-
 	if initializeErr := storageDriver.Initialize(
-		config.DriverContext, configJSON, commonConfig); initializeErr != nil {
+		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
 		err = fmt.Errorf("Problem initializing storage driver: '%v' error: %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return
@@ -84,28 +76,25 @@ func NewStorageBackendForConfig(configJSON string) (
 
 	// Post-driver initialization setup
 	switch commonConfig.StorageDriverName {
-	case dvp.OntapNASStorageDriverName:
+	case drivers.OntapNASStorageDriverName:
 		break
 
-	case dvp.OntapNASQtreeStorageDriverName:
+	case drivers.OntapNASQtreeStorageDriverName:
 		break
 
-	case dvp.OntapSANStorageDriverName:
+	case drivers.OntapSANStorageDriverName:
 		driver := storageDriver.(*ontap.OntapSANStorageDriver)
 
-		response, errIgroupList := driver.API.IgroupList()
-		if !isPassed(response.Result.ResultStatusAttr) {
-			err = fmt.Errorf("Problem listing igroups for SVM %v: %v, %v",
-				driver.Config.SVM, errIgroupList, response.Result.ResultErrnoAttr)
-			return
+		iGroupResponse, err := driver.API.IgroupList()
+		if err = ontapi.GetError(iGroupResponse, err); err != nil {
+			return nil, err
 		}
 
 		found := false
 		initiators := ""
-		for _, igroupInfo := range response.Result.AttributesList() {
+		for _, igroupInfo := range iGroupResponse.Result.AttributesList() {
 			if igroupInfo.Vserver() == driver.Config.SVM &&
-				igroupInfo.InitiatorGroupName() ==
-					driver.Config.IgroupName {
+				igroupInfo.InitiatorGroupName() == driver.Config.IgroupName {
 				found = true
 				initiatorList := igroupInfo.Initiators()
 				for _, initiator := range initiatorList {
@@ -122,7 +111,7 @@ func NewStorageBackendForConfig(configJSON string) (
 				driver.Config.IgroupName, driver.Config.SVM)
 		} else {
 			log.WithFields(log.Fields{
-				"driver":     dvp.OntapSANStorageDriverName,
+				"driver":     drivers.OntapSANStorageDriverName,
 				"SVM":        driver.Config.SVM,
 				"igroup":     driver.Config.IgroupName,
 				"initiators": initiators,
@@ -156,7 +145,7 @@ func NewStorageBackendForConfig(configJSON string) (
 				}
 			}
 		}*/
-	case dvp.SolidfireSANStorageDriverName:
+	case drivers.SolidfireSANStorageDriverName:
 		driver := storageDriver.(*solidfire.SolidfireSANStorageDriver)
 
 		if !driver.Config.UseCHAP {
@@ -210,7 +199,11 @@ func NewStorageBackendForConfig(configJSON string) (
 			} else {
 				// We only need this in the case that AccessGroups were specified, if it was zero and we
 				// used the default we already verified it in that step so we're good here.
-				missingVags := driver.VerifyVags(driver.Config.AccessGroups)
+				var missingVags []int64
+				missingVags, err = driver.VerifyVags(driver.Config.AccessGroups)
+				if err != nil {
+					return
+				}
 				if len(missingVags) != 0 {
 					err = fmt.Errorf("Failed to discover 1 or more of the specified VAG ID's! "+
 						"Missing VAG IDS from Cluster discovery: %+v", missingVags)
@@ -219,7 +212,7 @@ func NewStorageBackendForConfig(configJSON string) (
 			}
 
 			log.WithFields(log.Fields{
-				"driver":       dvp.SolidfireSANStorageDriverName,
+				"driver":       drivers.SolidfireSANStorageDriverName,
 				"SVIP":         driver.Config.SVIP,
 				"AccessGroups": driver.Config.AccessGroups,
 				"UseCHAP":      driver.Config.UseCHAP,
@@ -271,14 +264,14 @@ func NewStorageBackendForConfig(configJSON string) (
 		} else {
 			// CHAP logic
 			log.WithFields(log.Fields{
-				"driver":  dvp.SolidfireSANStorageDriverName,
+				"driver":  drivers.SolidfireSANStorageDriverName,
 				"SVIP":    driver.Config.SVIP,
 				"UseCHAP": driver.Config.UseCHAP,
 			}).Warn("Using CHAP, skipping Volume Access Group logic")
 		}
 
-	case dvp.EseriesIscsiStorageDriverName:
-		driver := storageDriver.(*eseries.EseriesStorageDriver)
+	case drivers.EseriesIscsiStorageDriverName:
+		driver := storageDriver.(*eseries.ESeriesStorageDriver)
 
 		// Make sure the Trident Host Group exists
 		hostGroup, err := driver.API.GetHostGroup(driver.Config.AccessGroup)
@@ -291,18 +284,20 @@ func NewStorageBackendForConfig(configJSON string) (
 				driver.Config.AccessGroup, driver.Config.ControllerA)
 		} else {
 			log.WithFields(log.Fields{
-				"driver":     dvp.EseriesIscsiStorageDriverName,
+				"driver":     drivers.EseriesIscsiStorageDriverName,
 				"controller": driver.Config.ControllerA,
 				"hostGroup":  hostGroup.Label,
 			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", driver.Config.AccessGroup)
 		}
 
-	case fake_driver.FakeStorageDriverName:
+	case drivers.FakeStorageDriverName:
+		break
+
 	default:
-		err = fmt.Errorf("Unknown storage driver: %v",
-			commonConfig.StorageDriverName)
+		err = fmt.Errorf("Unknown storage driver: %v", commonConfig.StorageDriverName)
 		return
 	}
+
 	sb, err = storage.NewStorageBackend(storageDriver)
 	return
 }

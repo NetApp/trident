@@ -12,7 +12,6 @@ import (
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -196,7 +195,7 @@ func main() {
 	if enableKubernetes {
 
 		var kubernetesFrontend frontend.FrontendPlugin
-		config.DriverContext = dvp.ContextTrident
+		config.CurrentDriverContext = config.ContextKubernetes
 
 		if *k8sAPIServer != "" {
 			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
@@ -211,7 +210,7 @@ func main() {
 
 	} else if enableDocker {
 
-		config.DriverContext = dvp.ContextNDVP
+		config.CurrentDriverContext = config.ContextDocker
 
 		// Set up multi-output logging
 		err = logging.InitLogging(*driverName)

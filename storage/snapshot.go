@@ -2,10 +2,18 @@
 
 package storage
 
-import (
-	dvp "github.com/netapp/netappdvp/storage_drivers"
-)
+// Snapshot contains the normalized volume snapshot format we report to Docker
+type Snapshot struct {
+	Name    string // The snapshot name or other identifier you would use to reference it
+	Created string // The UTC time that the snapshot was created, in RFC3339 format
+}
 
 type SnapshotExternal struct {
-	dvp.CommonSnapshot
+	Snapshot
+}
+
+func (s *Snapshot) ConstructExternal() *SnapshotExternal {
+	return &SnapshotExternal{
+		*s,
+	}
 }

@@ -8,22 +8,23 @@ import (
 	"testing"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage/factory"
+	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
+	fake_driver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 func TestConstructExternalBackend(t *testing.T) {
-	configJSON, err := fake.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
 		"external-test",
 		config.File,
-		map[string]*fake.FakeStoragePool{
-			"test-1": &fake.FakeStoragePool{
+		map[string]*fake.StoragePool{
+			"test-1": {
 				Attrs: map[string]sa.Offer{
 					sa.Media: sa.NewStringOffer(sa.HDD),
 				},
 			},
-			"test-2": &fake.FakeStoragePool{
+			"test-2": {
 				Attrs: map[string]sa.Offer{
 					sa.Media:       sa.NewStringOffer(sa.SSD, sa.Hybrid),
 					sa.IOPS:        sa.NewIntOffer(1000, 2000),

@@ -5,8 +5,8 @@ package test_utils
 import (
 	"fmt"
 
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
@@ -32,9 +32,9 @@ func (p *PoolMatch) String() string {
 	return fmt.Sprintf("%s:%s", p.Backend, p.Pool)
 }
 
-func GetFakePools() map[string]*fake.FakeStoragePool {
-	return map[string]*fake.FakeStoragePool{
-		SlowNoSnapshots: &fake.FakeStoragePool{
+func GetFakePools() map[string]*fake.StoragePool {
+	return map[string]*fake.StoragePool{
+		SlowNoSnapshots: {
 			Bytes: 50 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(0, 100),
@@ -42,7 +42,7 @@ func GetFakePools() map[string]*fake.FakeStoragePool {
 				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 			},
 		},
-		SlowSnapshots: &fake.FakeStoragePool{
+		SlowSnapshots: {
 			Bytes: 50 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(0, 100),
@@ -50,7 +50,7 @@ func GetFakePools() map[string]*fake.FakeStoragePool {
 				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 			},
 		},
-		FastSmall: &fake.FakeStoragePool{
+		FastSmall: {
 			Bytes: 25 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(1000, 10000),
@@ -58,7 +58,7 @@ func GetFakePools() map[string]*fake.FakeStoragePool {
 				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 			},
 		},
-		FastThinOnly: &fake.FakeStoragePool{
+		FastThinOnly: {
 			Bytes: 50 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(1000, 10000),
@@ -66,7 +66,7 @@ func GetFakePools() map[string]*fake.FakeStoragePool {
 				sa.ProvisioningType: sa.NewStringOffer("thin"),
 			},
 		},
-		FastUniqueAttr: &fake.FakeStoragePool{
+		FastUniqueAttr: {
 			Bytes: 50 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(1000, 10000),
@@ -75,7 +75,7 @@ func GetFakePools() map[string]*fake.FakeStoragePool {
 				"uniqueOptions":     sa.NewStringOffer("foo", "bar", "baz"),
 			},
 		},
-		MediumOverlap: &fake.FakeStoragePool{
+		MediumOverlap: {
 			Bytes: 100 * 1024 * 1024 * 1024,
 			Attrs: map[string]sa.Offer{
 				sa.IOPS:             sa.NewIntOffer(500, 1000),

@@ -15,10 +15,12 @@ RUN mkdir -p /var/lib/docker-volumes/netapp
 RUN mkdir -p /usr/local/sbin
 ADD iscsiadm /usr/local/sbin
 ADD rescan-scsi-bus /sbin
+ADD docker /sbin
 ADD container-launch.sh /netapp
 
 ADD trident /netapp
 RUN chmod 777 /sbin/rescan-scsi-bus \
+              /sbin/docker \
               /usr/local/sbin/iscsiadm \
               /netapp/container-launch.sh \
               /netapp/trident

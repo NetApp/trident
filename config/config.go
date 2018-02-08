@@ -6,18 +6,24 @@ import (
 	"fmt"
 	"time"
 
-	dvp "github.com/netapp/netappdvp/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
 
 type Protocol string
 type AccessMode string
 type VolumeType string
+type DriverContext string
+
+type Telemetry struct {
+	TridentVersion  string `json:"version"`
+	Platform        string `json:"platform"`
+	PlatformVersion string `json:"platformVersion"`
+}
 
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
-	orchestratorVersion              = "18.01.0"
+	orchestratorVersion              = "18.04.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
@@ -43,10 +49,8 @@ const (
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */
-	DefaultOntapIgroup      = OrchestratorName
-	DefaultSolidFireVAG     = OrchestratorName
-	DefaultEseriesHostGroup = OrchestratorName
-	UnknownDriver           = "UnknownDriver"
+	DefaultSolidFireVAG = OrchestratorName
+	UnknownDriver       = "UnknownDriver"
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240
@@ -54,6 +58,9 @@ const (
 	/* Kubernetes deployment constants */
 	ContainerTrident = "trident-main"
 	ContainerEtcd    = "etcd"
+
+	ContextDocker     DriverContext = "docker"
+	ContextKubernetes DriverContext = "kubernetes"
 )
 
 var (
@@ -87,7 +94,8 @@ var (
 	StoreURL        = "/" + OrchestratorName + "/store"
 
 	UsingPassthroughStore bool
-	DriverContext         dvp.DriverContext
+	CurrentDriverContext  DriverContext
+	OrchestratorTelemetry = Telemetry{}
 )
 
 func IsValidProtocol(p Protocol) bool {
@@ -97,7 +105,7 @@ func IsValidProtocol(p Protocol) bool {
 
 func GetValidProtocolNames() []string {
 	ret := make([]string, len(validProtocols))
-	for key, _ := range validProtocols {
+	for key := range validProtocols {
 		ret = append(ret, string(key))
 	}
 	return ret

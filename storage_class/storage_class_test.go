@@ -7,16 +7,17 @@ import (
 	"testing"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/factory"
+	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	tu "github.com/netapp/trident/storage_class/test_utils"
+	fake_driver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 func TestAttributeMatches(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	config, err := fake.NewFakeStorageDriverConfigJSON("mock", config.File,
+	config, err := fake_driver.NewFakeStorageDriverConfigJSON("mock", config.File,
 		mockPools)
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
@@ -176,7 +177,7 @@ func TestAttributeMatches(t *testing.T) {
 		}
 		if len(expectedMap) > 0 {
 			expectedMatches := make([]string, 0)
-			for k, _ := range expectedMap {
+			for k := range expectedMap {
 				expectedMatches = append(expectedMatches, k)
 			}
 			t.Errorf("%s:\n\tExpected additional matches:  %s\n\tMatched: %s",
@@ -201,11 +202,11 @@ func TestSpecificBackends(t *testing.T) {
 		{name: "slow", poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots,
 			tu.MediumOverlap}},
 	} {
-		pools := make(map[string]*fake.FakeStoragePool, len(c.poolNames))
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake.NewFakeStorageDriverConfigJSON(c.name, config.File,
+		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, config.File,
 			pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)

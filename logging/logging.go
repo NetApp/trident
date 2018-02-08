@@ -15,9 +15,10 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/netapp/netappdvp/storage_drivers"
-	"github.com/netapp/netappdvp/utils"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils"
 )
 
 // InitLogging configures logging for nDVP.  Logs are written both to a log file as well as stdout/stderr.
@@ -41,9 +42,7 @@ func InitLogging(logName string) error {
 	log.WithFields(log.Fields{
 		"logLevel":        log.GetLevel().String(),
 		"logFileLocation": logFileHook.GetLocation(),
-		"driverVersion":   storage_drivers.FullDriverVersion,
-		"driverBuild":     storage_drivers.BuildVersion,
-		"buildTime":       storage_drivers.BuildTime,
+		"buildTime":       config.BuildTime,
 	}).Info("Initialized logging.")
 
 	return nil

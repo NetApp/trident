@@ -58,11 +58,11 @@ func (k *FakeKubeClient) SnapshotState() *FakeKubeClientState {
 		Deployments: make([]string, 0),
 		PVCs:        make([]string, 0),
 	}
-	for key, _ := range k.Deployments {
+	for key := range k.Deployments {
 		state.Deployments = append(state.Deployments, key)
 	}
 	sort.Strings(state.Deployments)
-	for key, _ := range k.PVCs {
+	for key := range k.PVCs {
 		state.PVCs = append(state.PVCs, key)
 	}
 	sort.Strings(state.PVCs)

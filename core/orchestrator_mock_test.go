@@ -90,13 +90,13 @@ func TestAddVolume(t *testing.T) {
 	m.addMockBackend("test-nfs", config.File)
 	m.addMockBackend("test-iscsi", config.Block)
 	for _, v := range []*storage.VolumeConfig{
-		&storage.VolumeConfig{
+		{
 			Name:         "test-nfs-vol",
 			Size:         "10MB",
 			Protocol:     config.File,
 			StorageClass: "silver",
 		},
-		&storage.VolumeConfig{
+		{
 			Name:         "test-iscsi-vol",
 			Size:         "10MB",
 			Protocol:     config.Block,

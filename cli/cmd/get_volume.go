@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	humanize "github.com/dustin/go-humanize"
+	"github.com/dustin/go-humanize"
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"

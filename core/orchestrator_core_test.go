@@ -13,13 +13,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/drivers/fake"
 	"github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
-	backend_fake "github.com/netapp/trident/storage/fake"
+	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
 	tu "github.com/netapp/trident/storage_class/test_utils"
+	fake_driver "github.com/netapp/trident/storage_drivers/fake"
 )
 
 var (
@@ -51,7 +51,7 @@ type recoveryTest struct {
 	expectDestroy bool
 }
 
-func cleanup(t *testing.T, o *tridentOrchestrator) {
+func cleanup(t *testing.T, o *TridentOrchestrator) {
 	err := o.storeClient.DeleteBackends()
 	if err != nil && !persistent_store.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up backends:  ", err)
@@ -182,7 +182,7 @@ func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExt
 				"Expected: %s\n\t\tGot: %s", name, string(expectedJSON), string(gotJSON)))
 		}
 	}
-	for name, _ := range got.Storage {
+	for name := range got.Storage {
 		if _, ok := expected.Storage[name]; !ok {
 			diffs = append(diffs, fmt.Sprintf("Storage:  got unexpected VC %s", name))
 		}
@@ -197,12 +197,12 @@ func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExt
 	for _, v := range got.Volumes {
 		gotVolMap[v] = true
 	}
-	for name, _ := range expectedVolMap {
+	for name := range expectedVolMap {
 		if _, ok := gotVolMap[name]; !ok {
 			diffs = append(diffs, fmt.Sprintf("Volumes:  did not get expected volume %s", name))
 		}
 	}
-	for name, _ := range gotVolMap {
+	for name := range gotVolMap {
 		if _, ok := expectedVolMap[name]; !ok {
 			diffs = append(diffs, fmt.Sprintf("Volumes:  got unexpected volume %s", name))
 		}
@@ -213,7 +213,7 @@ func diffExternalBackends(t *testing.T, expected, got *storage.StorageBackendExt
 }
 
 func runDeleteTest(
-	t *testing.T, d *deleteTest, orchestrator *tridentOrchestrator,
+	t *testing.T, d *deleteTest, orchestrator *TridentOrchestrator,
 ) {
 	var (
 		backendName string
@@ -228,7 +228,7 @@ func runDeleteTest(
 			t.Errorf("Backend %v isn't managed by the orchestrator!", backendName)
 		}
 		if _, found = backend.Volumes[d.name]; !found {
-			t.Errorf("Volume %s doesn't exist on backend!", d.name, backendName)
+			t.Errorf("Volume %s doesn't exist on backend %s!", d.name, backendName)
 		}
 		orchestrator.mutex.Unlock()
 	}
@@ -270,7 +270,7 @@ type storageClassTest struct {
 	expected []*tu.PoolMatch
 }
 
-func getOrchestrator() *tridentOrchestrator {
+func getOrchestrator() *TridentOrchestrator {
 	var (
 		storeClient persistent_store.Client
 		err         error
@@ -324,7 +324,7 @@ func generateVolumeConfig(
 
 func validateStorageClass(
 	t *testing.T,
-	o *tridentOrchestrator,
+	o *TridentOrchestrator,
 	name string,
 	expected []*tu.PoolMatch,
 ) {
@@ -433,11 +433,11 @@ func TestAddStorageClassVolumes(t *testing.T) {
 			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
 		},
 	} {
-		pools := make(map[string]*fake.FakeStoragePool, len(c.poolNames))
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
 			pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
@@ -910,11 +910,11 @@ func TestCloneVolumes(t *testing.T) {
 			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
 		},
 	} {
-		pools := make(map[string]*fake.FakeStoragePool, len(c.poolNames))
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
 			pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
@@ -1150,13 +1150,13 @@ func TestCloneVolumes(t *testing.T) {
 }
 
 func addBackend(
-	t *testing.T, orchestrator *tridentOrchestrator, backendName string,
+	t *testing.T, orchestrator *TridentOrchestrator, backendName string,
 ) {
-	configJSON, err := fake.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
-		map[string]*fake.FakeStoragePool{
-			"primary": &fake.FakeStoragePool{
+		map[string]*fake.StoragePool{
+			"primary": {
 				Attrs: map[string]sa.Offer{
 					sa.Media:            sa.NewStringOffer("hdd"),
 					sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1173,7 +1173,7 @@ func addBackend(
 	}
 	_, err = orchestrator.AddStorageBackend(configJSON)
 	if err != nil {
-		t.Fatal("Unable to add initial backend:  ", err)
+		t.Fatalf("Unable to add initial backend: %v", err)
 	}
 }
 
@@ -1181,7 +1181,7 @@ func addBackend(
 // that don't care deeply about this functionality.
 func addBackendStorageClass(
 	t *testing.T,
-	orchestrator *tridentOrchestrator,
+	orchestrator *TridentOrchestrator,
 	backendName string,
 	scName string,
 ) {
@@ -1241,12 +1241,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	previousBackends[0] = orchestrator.backends[backendName]
 	for _, c := range []struct {
 		name  string
-		pools map[string]*fake.FakeStoragePool
+		pools map[string]*fake.StoragePool
 	}{
 		{
 			name: "New pool",
-			pools: map[string]*fake.FakeStoragePool{
-				"primary": &fake.FakeStoragePool{
+			pools: map[string]*fake.StoragePool{
+				"primary": {
 					Attrs: map[string]sa.Offer{
 						sa.Media:            sa.NewStringOffer("hdd"),
 						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1254,7 +1254,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 					},
 					Bytes: 100 * 1024 * 1024 * 1024,
 				},
-				"secondary": &fake.FakeStoragePool{
+				"secondary": {
 					Attrs: map[string]sa.Offer{
 						sa.Media:            sa.NewStringOffer("ssd"),
 						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1266,8 +1266,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		},
 		{
 			name: "Removed pool",
-			pools: map[string]*fake.FakeStoragePool{
-				"primary": &fake.FakeStoragePool{
+			pools: map[string]*fake.StoragePool{
+				"primary": {
 					Attrs: map[string]sa.Offer{
 						sa.Media:            sa.NewStringOffer("hdd"),
 						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1279,8 +1279,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		},
 		{
 			name: "Expanded offer",
-			pools: map[string]*fake.FakeStoragePool{
-				"primary": &fake.FakeStoragePool{
+			pools: map[string]*fake.StoragePool{
+				"primary": {
 					Attrs: map[string]sa.Offer{
 						sa.Media:            sa.NewStringOffer("ssd", "hdd"),
 						sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1291,11 +1291,16 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			},
 		},
 	} {
-		newConfigJSON, err := fake.NewFakeStorageDriverConfigJSON(backendName,
+		// Make sure we're starting with an active backend
+		previousBackend := orchestrator.backends[backendName]
+		if !previousBackend.Driver.Initialized() {
+			t.Errorf("Backend %s is not initialized", backendName)
+		}
+
+		newConfigJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(backendName,
 			config.File, c.pools)
 		if err != nil {
-			t.Errorf("%s:  unable to generate new backend config:  %v", c.name,
-				err)
+			t.Errorf("%s:  unable to generate new backend config:  %v", c.name, err)
 			continue
 		}
 		_, err = orchestrator.AddStorageBackend(newConfigJSON)
@@ -1306,6 +1311,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		}
 		orchestrator.mutex.Lock()
 		newBackend := orchestrator.backends[backendName]
+		if previousBackend.Driver.Initialized() {
+			t.Errorf("Previous backend %s still initialized", backendName)
+		}
+		if !newBackend.Driver.Initialized() {
+			t.Errorf("Updated backend %s is not initialized.", backendName)
+		}
 		pools := sc.GetStoragePoolsForProtocol(config.File)
 		foundNewBackend := false
 		for _, pool := range pools {
@@ -1320,8 +1331,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			}
 		}
 		if !foundNewBackend {
-			t.Errorf("%s:  Storage class does not point to new backend.",
-				c.name)
+			t.Errorf("%s:  Storage class does not point to new backend.", c.name)
 		}
 		matchingPool, ok := newBackend.Storage["primary"]
 		if !ok {
@@ -1333,15 +1343,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 				"storage pool: %d", c.name, len(matchingPool.StorageClasses))
 		}
 		if orchestrator.backends[volume.Backend] != newBackend {
-			t.Errorf("%s:  volume backend does not point to the new backend",
-				c.name)
+			t.Errorf("%s:  volume backend does not point to the new backend", c.name)
 		}
 		if volume.Pool != matchingPool.Name {
-			t.Errorf("%s: volume does not point to the right storage pool.",
-				c.name)
+			t.Errorf("%s: volume does not point to the right storage pool.", c.name)
 		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(
-			backendName)
+		persistentBackend, err := orchestrator.storeClient.GetBackend(backendName)
 		if err != nil {
 			t.Error("Unable to retrieve backend from store client:  ", err)
 		} else if !reflect.DeepEqual(newBackend.ConstructPersistent(),
@@ -1351,6 +1358,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		previousBackends = append(previousBackends, newBackend)
 		orchestrator.mutex.Unlock()
 	}
+
 	backend := previousBackends[len(previousBackends)-1]
 	pool := volume.Pool
 
@@ -1361,6 +1369,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	}
 	if err != nil {
 		t.Fatal("Unable to offline backend:  ", err)
+	}
+	if !backend.Driver.Initialized() {
+		t.Errorf("Offlined backend with volumes %s is not initialized.", backendName)
 	}
 	_, err = orchestrator.AddVolume(generateVolumeConfig(offlineVolumeName, 50,
 		scName, config.File))
@@ -1440,6 +1451,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to delete volume for offline backend:  ", err)
 	}
+	if backend.Driver.Initialized() {
+		t.Errorf("Deleted backend %s is still initialized.", backendName)
+	}
 	persistentBackend, err = orchestrator.storeClient.GetBackend(backendName)
 	if err == nil {
 		t.Error("Backend remained on store client after deleting the last " +
@@ -1463,11 +1477,16 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	// Note that we don't care about the storage class here, but it's easier
 	// to reuse functionality.
 	addBackendStorageClass(t, orchestrator, backendName, "none")
+	backend := orchestrator.backends[backendName]
+
 	found, err := orchestrator.OfflineBackend(backendName)
 	if err != nil {
 		t.Fatal("Unable to offline backend:  ", err)
 	} else if !found {
 		t.Fatalf("Backend %s not found in orchestrator", backendName)
+	}
+	if backend.Driver.Initialized() {
+		t.Errorf("Deleted backend %s is still initialized.", backendName)
 	}
 	_, err = orchestrator.storeClient.GetBackend(backendName)
 	if err == nil {
@@ -1499,7 +1518,7 @@ func TestBackendCleanup(t *testing.T) {
 	}
 
 	// This needs to go after the volume addition to ensure that the volume
-	// ends up on the backend to be offflined.
+	// ends up on the backend to be offlined.
 	addBackend(t, orchestrator, onlineBackendName)
 
 	found, err := orchestrator.OfflineBackend(offlineBackendName)
@@ -1507,18 +1526,17 @@ func TestBackendCleanup(t *testing.T) {
 		t.Fatal("Unable to offline backend.")
 	}
 	if !found {
-		t.Fatal("Backend %s not found when trying to offline.",
-			offlineBackendName)
+		t.Fatalf("Backend %s not found when trying to offline.", offlineBackendName)
 	}
 	// Simulate deleting the existing volume and then bootstrapping
 	orchestrator.mutex.Lock()
 	vol, ok := orchestrator.volumes[volumeName]
 	if !ok {
-		t.Fatal("Unable to find volume %s in backend.", volumeName)
+		t.Fatalf("Unable to find volume %s in backend.", volumeName)
 	}
 	err = orchestrator.storeClient.DeleteVolume(vol)
 	if err != nil {
-		t.Fatal("Unable to delete volume from etcd:  ", err)
+		t.Fatalf("Unable to delete volume from etcd: %v", err)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1536,11 +1554,11 @@ func TestLoadBackend(t *testing.T) {
 		backendName = "load-backend-test"
 	)
 	orchestrator := getOrchestrator()
-	configJSON, err := fake.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
-		map[string]*fake.FakeStoragePool{
-			"primary": &fake.FakeStoragePool{
+		map[string]*fake.StoragePool{
+			"primary": {
 				Attrs: map[string]sa.Offer{
 					sa.Media:            sa.NewStringOffer("hdd"),
 					sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1581,13 +1599,13 @@ func TestLoadBackend(t *testing.T) {
 }
 
 func prepRecoveryTest(
-	t *testing.T, orchestrator *tridentOrchestrator, backendName, scName string,
+	t *testing.T, orchestrator *TridentOrchestrator, backendName, scName string,
 ) {
-	configJSON, err := fake.NewFakeStorageDriverConfigJSON(
+	configJSON, err := fake_driver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
-		map[string]*fake.FakeStoragePool{
-			"primary": &fake.FakeStoragePool{
+		map[string]*fake.StoragePool{
+			"primary": {
 				Attrs: map[string]sa.Offer{
 					sa.Media:            sa.NewStringOffer("hdd"),
 					sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
@@ -1618,7 +1636,7 @@ func prepRecoveryTest(
 
 func runRecoveryTests(
 	t *testing.T,
-	orchestrator *tridentOrchestrator,
+	orchestrator *TridentOrchestrator,
 	backendName string,
 	op persistent_store.VolumeOperation,
 	testCases []recoveryTest,
@@ -1648,7 +1666,7 @@ func runRecoveryTests(
 		if !ok {
 			t.Fatalf("%s:  Backend not found after bootstrapping.", c.name)
 		}
-		f := backend.Driver.(*backend_fake.FakeStorageDriver)
+		f := backend.Driver.(*fake_driver.FakeStorageDriver)
 		// Destroy should be always called on the backend
 		if _, ok = f.DestroyedVolumes[f.GetInternalVolumeName(
 			c.volumeConfig.Name)]; !ok && c.expectDestroy {
@@ -1831,8 +1849,7 @@ func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
 	version := &persistent_store.PersistentStateVersion{}
 	err = json.Unmarshal([]byte(versionJSON), version)
 	if err != nil {
-		t.Fatalf("Couldn't unmarshall the orchestrator persistent state version: %v",
-			err)
+		t.Fatalf("Couldn't unmarshal the orchestrator persistent state version: %v", err)
 	}
 	if config.OrchestratorAPIVersion != version.OrchestratorAPIVersion ||
 		string(orchestratorV3.storeClient.GetType()) != version.PersistentStoreVersion {

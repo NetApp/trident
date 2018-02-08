@@ -1,5 +1,5 @@
-hash: de7eb79fb1b6701793585f7d0bbf4bda2cce6ebda31be5d604b34428b1840baa
-updated: 2018-01-24T17:09:31.901576501-05:00
+hash: abaf20722355f398295d01a36e4305dac611a6a8b5f3df7b658b1def9456867f
+updated: 2018-01-30T10:39:59.264420243-05:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -134,15 +134,6 @@ imports:
   version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
-- name: github.com/netapp/netappdvp
-  version: ee8b6a3f0bf1b5a05ab2a143daad2f3e61cc6ffb
-  subpackages:
-  - apis/eseries
-  - apis/ontap
-  - apis/sfapi
-  - azgo
-  - storage_drivers
-  - utils
 - name: github.com/olekukonko/tablewriter
   version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4
 - name: github.com/pborman/uuid
