@@ -332,6 +332,7 @@ func provisionVolume(tridentClient tridentrest.Interface) error {
 
 // createPVC creates a PVC in the Kubernetes cluster.
 func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentVolumeClaim, error) {
+	noStorageClass := ""
 	pvc := &v1.PersistentVolumeClaim{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolumeClaim",
@@ -354,6 +355,7 @@ func createPVC(kubeClient k8s_client.Interface, pvcName string) (*v1.PersistentV
 			Selector: &metav1.LabelSelector{
 				MatchLabels: tridentLabels,
 			},
+			StorageClassName: &noStorageClass,
 		},
 	}
 	return kubeClient.CreatePVC(pvc)
