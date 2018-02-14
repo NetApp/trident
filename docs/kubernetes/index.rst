@@ -4,7 +4,7 @@ Trident for Kubernetes
 Trident integrates natively with `Kubernetes`_ and its
 `Persistent Volume framework`_ to seamlessly provision and manage volumes
 from systems running any combination of NetApp's `ONTAP`_
-(AFF/FAS/Select/Cloud), `Element`_ (SolidFire), or `SANtricity`_
+(AFF/FAS/Select/Cloud), `Element`_ (HCI/SolidFire), or `SANtricity`_
 (E/EF-Series) data management platforms.
 
 Relative to other Kubernetes provisioners, Trident is novel in the following

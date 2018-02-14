@@ -12,7 +12,7 @@ platforms, and translates requirements expressed or implied through them
 into an automated and orchestrated response from the infrastructure.
 
 Today, that infrastructure includes our `ONTAP`_
-(AFF/FAS/Select/Cloud), `Element`_ (SolidFire), and `SANtricity`_ (E/EF-Series)
+(AFF/FAS/Select/Cloud), `Element`_ (HCI/SolidFire), and `SANtricity`_ (E/EF-Series)
 data management software. That list continues to grow.
 
 .. _open source project: https://github.com/netapp/trident
