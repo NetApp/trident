@@ -179,10 +179,7 @@ func (hook *FileHook) Fire(entry *log.Entry) error {
 	logFile.Close()
 
 	// Rotate the file as needed
-	logEntry, _ := hook.doLogfileRotation()
-	if logEntry != nil {
-		logEntry.Info("Rotated log file.")
-	}
+	hook.doLogfileRotation()
 
 	return nil
 }
@@ -201,7 +198,7 @@ func (hook *FileHook) openFile() (*os.File, error) {
 	return logFile, nil
 }
 
-func (hook *FileHook) doLogfileRotation() (*log.Entry, error) {
+func (hook *FileHook) doLogfileRotation() error {
 
 	// Protect rotation from concurrent loggers
 	hook.mutex.Lock()
@@ -209,34 +206,27 @@ func (hook *FileHook) doLogfileRotation() (*log.Entry, error) {
 
 	logFile, err := hook.openFile()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	fileInfo, err := logFile.Stat()
 	if err != nil {
 		logFile.Close()
-		return nil, err
+		return err
 	}
 
 	size := fileInfo.Size()
 	logFile.Close()
 
 	if size < LogRotationThreshold {
-		return nil, nil
+		return nil
 	}
 
 	// Do the rotation.  The Rename call will overwrite any previous .old file.
 	oldLogFileLocation := hook.logFileLocation + ".old"
 	os.Rename(hook.logFileLocation, oldLogFileLocation)
 
-	// Don't log here, lest the mutex deadlock
-	rotationLogger := log.WithFields(log.Fields{
-		"oldLogFileLocation": oldLogFileLocation,
-		"logFileLocation":    hook.GetLocation(),
-		"logFileSize":        size,
-	})
-
-	return rotationLogger, nil
+	return nil
 }
 
 // PlainTextFormatter is a formatter than does no coloring *and* does not insist on writing logs as key/value pairs.
