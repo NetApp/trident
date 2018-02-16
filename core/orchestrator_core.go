@@ -907,6 +907,8 @@ func (o *tridentOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.
 // and it calls the underlying storage driver to perform the attach operation as appropriate
 // for the protocol and storage controller type.
 func (o *tridentOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
