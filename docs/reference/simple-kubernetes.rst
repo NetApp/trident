@@ -47,7 +47,7 @@ Install the appropriate version of kubeadm, kubectl and kubelet
   deb http://apt.kubernetes.io/ kubernetes-xenial main
   EOF
   apt-get update
-  apt-get install -y kubeadm=1.8\* kubectl=1.8\* kubelet=1.8\*
+  apt-get install -y kubeadm=1.8\* kubectl=1.8\* kubelet=1.8\* kubernetes-cni=0.5\*
 
 Configure the host
 ==================
