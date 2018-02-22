@@ -67,12 +67,12 @@ you have the necessary privileges to.
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 17.10.0:
+For example, if the latest version is 18.01.0:
 
 .. code-block:: bash
 
-   wget https://github.com/NetApp/trident/releases/download/v17.10.0/trident-installer-17.10.0.tar.gz
-   tar -xf trident-installer-17.10.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v18.01.0/trident-installer-18.01.0.tar.gz
+   tar -xf trident-installer-18.01.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -137,7 +137,7 @@ It will look like this when the installer is complete:
   +----------------+----------------+
   | SERVER VERSION | CLIENT VERSION |
   +----------------+----------------+
-  | 17.10.0        | 17.10.0        |
+  | 18.01.0        | 18.01.0        |
   +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
