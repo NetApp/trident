@@ -107,7 +107,7 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 
 	// Server not specified, so try tunneling to a pod
 	if TridentPodNamespace == "" {
-		TridentPodNamespace, err = getCurrentNamespace()
+		TridentPodNamespace, err = GetCurrentNamespace()
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,8 @@ func discoverKubernetesCLI() error {
 	return errors.New("Could not find the Kubernetes CLI.")
 }
 
-func getCurrentNamespace() (string, error) {
+// GetCurrentNamespace returns the default namespace from service account info
+func GetCurrentNamespace() (string, error) {
 
 	// Get current namespace from service account info
 	cmd := exec.Command(KubernetesCLI, "get", "serviceaccount", "default", "-o=json")

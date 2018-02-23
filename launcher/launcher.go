@@ -398,7 +398,7 @@ func createPV(kubeClient k8s_client.Interface, pvName string,
 		if err != nil {
 			return nil, fmt.Errorf("Error validating Kubernetes version %v", err.Error())
 		}
-		pv.Spec.ISCSI, err = k8sfrontend.CreateISCSIVolumeSource(kubeClient, kubeVersion, vol)
+		pv.Spec.ISCSI, err = k8sfrontend.CreateISCSIPersistentVolumeSource(kubeClient, kubeVersion, vol)
 		if err != nil {
 			return nil, fmt.Errorf("Error creating ISCSI volume source %v", err.Error())
 		}

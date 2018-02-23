@@ -226,3 +226,7 @@ func (k *FakeKubeClient) CheckSecretExists(secretName string) (bool, error) {
 func (k *FakeKubeClient) DeleteSecret(secretName string, options *metav1.DeleteOptions) error {
 	return nil
 }
+
+func (k *FakeKubeClient) Namespace() string {
+	return ""
+}

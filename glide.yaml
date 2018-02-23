@@ -9,7 +9,7 @@ import:
   - clientv3
   - etcdserver
 - package: github.com/golang/protobuf
-  version: 4bd1920723d7b7c925de087aa32e2187708897f7
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - jsonpb
   - proto
@@ -32,14 +32,14 @@ import:
 - package: google.golang.org/grpc
   version: v1.0.4
 - package: k8s.io/api
-  version: 6c6dac0277229b9e9578c5ca3f74a4345d35cdc2
+  version: 006a217681ae70cbacdd66a5e2fca1a61a8ff28e
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/client-go
-  version: 2ae454230481a7cb5544325e12ad7658ecccd19b
+  version: 9389c055a838d4f208b699b3c7c51b70f2368861
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -52,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 019ae5ada31de202164b118aee88ee2d14075c31
+  version: 68f9c3a1feb3140df59c67ced62d3a5df8e6c9c2
   subpackages:
   - pkg/api/errors
   - pkg/api/resource

@@ -4,6 +4,7 @@ package kubernetes
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"sync"
 
@@ -12,7 +13,6 @@ import (
 	k8s_storage_v1 "k8s.io/api/storage/v1"
 	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8s_version "k8s.io/apimachinery/pkg/version"
 	"k8s.io/apimachinery/pkg/watch"
@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/netapp/trident/cli/cmd"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/k8s_client"
@@ -32,6 +33,10 @@ import (
 	"github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	k8s_util_version "github.com/netapp/trident/utils"
+)
+
+const (
+	tridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 func ValidateKubeVersion(versionInfo *k8s_version.Info) (kubeVersion *k8s_util_version.Version, err error) {
@@ -80,6 +85,7 @@ type KubernetesPlugin struct {
 	kubernetesVersion        *k8s_version.Info
 	defaultStorageClasses    map[string]bool
 	storageClassCache        map[string]*StorageClassSummary
+	tridentNamespace         string
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*KubernetesPlugin, error) {
@@ -87,7 +93,13 @@ func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Kubern
 	if err != nil {
 		return nil, err
 	}
-	return newKubernetesPlugin(o, kubeConfig)
+
+	// when running in binary mode, we use the default namespace
+	tridentNamespace, err := cmd.GetCurrentNamespace()
+	if err != nil {
+		return nil, err
+	}
+	return newKubernetesPlugin(o, kubeConfig, tridentNamespace)
 }
 
 func NewPluginInCluster(o core.Orchestrator) (*KubernetesPlugin, error) {
@@ -95,10 +107,21 @@ func NewPluginInCluster(o core.Orchestrator) (*KubernetesPlugin, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newKubernetesPlugin(o, kubeConfig)
+
+	// when running in a pod, we use the Trident pod's namespace
+	bytes, err := ioutil.ReadFile(tridentNamespaceFile)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error":         err,
+			"namespaceFile": tridentNamespaceFile,
+		}).Fatal("Kubernetes frontend failed to obtain Trident's namespace!")
+	}
+	tridentNamespace := string(bytes)
+
+	return newKubernetesPlugin(o, kubeConfig, tridentNamespace)
 }
 
-func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config) (*KubernetesPlugin, error) {
+func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config, tridentNamespace string) (*KubernetesPlugin, error) {
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
@@ -116,6 +139,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
 		storageClassCache:     make(map[string]*StorageClassSummary),
+		tridentNamespace:      tridentNamespace,
 	}
 
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
@@ -238,6 +262,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 			},
 		)
 	}
+
 	return ret, nil
 }
 
@@ -612,7 +637,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 ) (pv *v1.PersistentVolume, err error) {
 	var (
 		nfsSource          *v1.NFSVolumeSource
-		iscsiSource        *v1.ISCSIVolumeSource
+		iscsiSource        *v1.ISCSIPersistentVolumeSource
 		vol                *storage.VolumeExternal
 		storageClassParams map[string]string
 	)
@@ -768,12 +793,29 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			v1.PersistentVolumeReclaimRetain
 	}
 
+	// In K8S 1.7 and 1.8 we create in the namespace of the PVC, in K8S 1.9+ we create in Trident's namespace
+	var k8sClientCHAP k8s_client.Interface
+	switch {
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.9.0")):
+		// In K8S 1.9+, we create the CHAP secret in Trident's namespace
+		k8sClientCHAP, err = p.getNamespacedKubeClient(&p.kubeConfig, p.tridentNamespace)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"p.tridentNamespace": p.tridentNamespace,
+			}).Warnf("Kubernetes frontend couldn't create a client to Trident's namespace: %v error: %v",
+				p.tridentNamespace, err.Error())
+		}
+	default:
+		// In K8S 1.7 and 1.8, we create the CHAP secret in the namespace of the PVC
+		k8sClientCHAP = k8sClient
+	}
+
 	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch {
 	case driverType == drivers.SolidfireSANStorageDriverName ||
 		driverType == drivers.OntapSANStorageDriverName ||
 		driverType == drivers.EseriesIscsiStorageDriverName:
-		iscsiSource, err = CreateISCSIVolumeSource(k8sClient, kubeVersion, vol)
+		iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, vol)
 		if err != nil {
 			return
 		}
@@ -787,7 +829,7 @@ func (p *KubernetesPlugin) createVolumeAndPV(uniqueName string,
 			nfsSource = CreateNFSVolumeSource(vol)
 			pv.Spec.NFS = nfsSource
 		} else if vol.Config.Protocol == config.Block {
-			iscsiSource, err = CreateISCSIVolumeSource(k8sClient, kubeVersion, vol)
+			iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, vol)
 			if err != nil {
 				return
 			}
@@ -998,14 +1040,7 @@ func (p *KubernetesPlugin) updateVolumePhase(volume *v1.PersistentVolume, phase 
 		return volume, nil
 	}
 
-	clone, err := conversion.NewCloner().DeepCopy(volume)
-	if err != nil {
-		return nil, fmt.Errorf("Error cloning claim: %v", err)
-	}
-	volumeClone, ok := clone.(*v1.PersistentVolume)
-	if !ok {
-		return nil, fmt.Errorf("Unexpected volume cast error : %v", volumeClone)
-	}
+	volumeClone := volume.DeepCopy()
 
 	volumeClone.Status.Phase = phase
 	volumeClone.Status.Message = message

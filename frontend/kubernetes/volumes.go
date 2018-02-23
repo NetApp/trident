@@ -146,7 +146,14 @@ func findOrCreateCHAPSecret(k8sClient k8s_client.Interface, kubeVersion *k8s_uti
 	return secretName, nil
 }
 
-func CreateISCSIVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (*v1.ISCSIVolumeSource, error) {
+func CreateISCSIPersistentVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_util_version.Version, vol *storage.VolumeExternal) (*v1.ISCSIPersistentVolumeSource, error) {
+
+	namespace := ""
+	switch {
+	case kubeVersion.AtLeast(k8s_util_version.MustParseSemantic("v1.9.0")):
+		namespace = k8sClient.Namespace()
+	}
+
 	volConfig := vol.Config
 	if volConfig.AccessInfo.IscsiTargetSecret != "" {
 		// CHAP logic
@@ -156,7 +163,7 @@ func CreateISCSIVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_ut
 			return nil, chapError
 		}
 
-		return &v1.ISCSIVolumeSource{
+		return &v1.ISCSIPersistentVolumeSource{
 			TargetPortal:      volConfig.AccessInfo.IscsiTargetPortal,
 			IQN:               volConfig.AccessInfo.IscsiTargetIQN,
 			Lun:               volConfig.AccessInfo.IscsiLunNumber,
@@ -164,11 +171,11 @@ func CreateISCSIVolumeSource(k8sClient k8s_client.Interface, kubeVersion *k8s_ut
 			FSType:            volConfig.FileSystem,
 			DiscoveryCHAPAuth: true,
 			SessionCHAPAuth:   true,
-			SecretRef:         &v1.LocalObjectReference{Name: secretName},
+			SecretRef:         &v1.SecretReference{Name: secretName, Namespace: namespace},
 		}, nil
 	} else {
 		// non-CHAP logic
-		return &v1.ISCSIVolumeSource{
+		return &v1.ISCSIPersistentVolumeSource{
 			TargetPortal:   volConfig.AccessInfo.IscsiTargetPortal,
 			IQN:            volConfig.AccessInfo.IscsiTargetIQN,
 			Lun:            volConfig.AccessInfo.IscsiLunNumber,

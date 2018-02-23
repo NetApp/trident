@@ -15,7 +15,6 @@ import (
 	k8s_storage_v1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -304,8 +303,7 @@ Cases to test:
 
 // Needed for modify events to avoid races.
 func cloneClaim(claim *v1.PersistentVolumeClaim) *v1.PersistentVolumeClaim {
-	clone, _ := conversion.NewCloner().DeepCopy(claim)
-	return clone.(*v1.PersistentVolumeClaim)
+	return claim.DeepCopy()
 }
 
 func TestVolumeControllerKubeVersion1_5(t *testing.T) {

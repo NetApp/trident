@@ -11,7 +11,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
@@ -86,8 +85,7 @@ func (r *orchestratorReactor) getVolumeClone(name string) *v1.PersistentVolume {
 	if !found {
 		return nil
 	}
-	clone, _ := conversion.NewCloner().DeepCopy(origVolume)
-	return clone.(*v1.PersistentVolume)
+	return origVolume.DeepCopy()
 }
 
 func (r *orchestratorReactor) validateVolumes(t *testing.T,
@@ -110,8 +108,7 @@ func (r *orchestratorReactor) validateVolumes(t *testing.T,
 	// I originally wasn't doing this, but we need to clear the resource version
 	// and set the phase for the DeepEqual to work.
 	for name, v := range r.volumes {
-		clone, _ := conversion.NewCloner().DeepCopy(v)
-		v = clone.(*v1.PersistentVolume)
+		v = v.DeepCopy()
 		v.ResourceVersion = ""
 		v.Status.Phase = v1.VolumeBound
 		if v.Spec.ClaimRef != nil {

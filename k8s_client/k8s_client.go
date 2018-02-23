@@ -46,6 +46,7 @@ type Interface interface {
 	GetSecret(secretName string, options metav1.GetOptions) (*v1.Secret, error)
 	CheckSecretExists(secretName string) (bool, error)
 	DeleteSecret(secretName string, options *metav1.DeleteOptions) error
+	Namespace() string
 }
 
 type KubeClient struct {
@@ -392,4 +393,8 @@ func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
 // DeleteSecret deletes the specified Secret
 func (k *KubeClient) DeleteSecret(secretName string, options *metav1.DeleteOptions) error {
 	return k.clientset.Core().Secrets(k.namespace).Delete(secretName, options)
+}
+
+func (k *KubeClient) Namespace() string {
+	return k.namespace
 }
