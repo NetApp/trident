@@ -1,0 +1,12 @@
+[Unit]
+Description=Trident - Netapp Docker Volume Plugin - <driver_name>
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=Simple
+Restart=always
+ExecStart=/usr/local/bin/trident --config=/etc/netappdvp/configuration.json
+
+[Install]
+WantedBy=multi-user.target
