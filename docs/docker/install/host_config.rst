@@ -127,13 +127,13 @@ Traditional Install Method (Docker <= 1.12)
    .. code-block:: bash
 
       # download and unpack the application
-      wget https://github.com/NetApp/trident/releases/download/v18.04.0/trident-18.04.0.tar.gz
-      tar zxf trident-18.04.0.tar.gz
+      wget https://github.com/NetApp/trident/releases/download/v18.04.0/trident-installer-18.04.0.tar.gz
+      tar zxf trident-installer-18.04.0.tar.gz
 
       # move to a location in the bin path
-      sudo mv trident /usr/local/bin
-      sudo chown root:root /usr/local/bin/netappdvp
-      sudo chmod 755 /usr/local/bin/netappdvp
+      sudo mv trident-installer/extras/bin/trident /usr/local/bin
+      sudo chown root:root /usr/local/bin/trident
+      sudo chmod 755 /usr/local/bin/trident
 
       # create a location for the config files
       sudo mkdir -p /etc/netappdvp
@@ -184,29 +184,29 @@ Traditional Install Method (Docker <= 1.12)
 Starting Trident at System Startup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A sample unit file for systemd based systems can be found at ``contrib/netappdvp.service.example`` in the git repo.  To use the file, with CentOS/RHEL:
+A sample unit file for systemd based systems can be found at ``contrib/trident.service.example`` in the git repo.  To use the file, with CentOS/RHEL:
 
 .. code-block:: bash
    
    # copy the file to the correct location.  you must use unique names for the
    # unit files if you have more than one instance running
-   cp contrib/netappdvp.service.example /usr/lib/systemd/system/netappdvp.service
+   cp contrib/trident.service.example /usr/lib/systemd/system/trident.service
    
    # edit the file, change the description (line 2) to match the driver name and the
-   # configuration file path (line 9) to reflect your envrionment.
+   # configuration file path (line 9) to reflect your environment.
    
    # reload systemd for it to ingest changes
    systemctl daemon-reload
    
    # enable the service, note this name will change depending on what you named the
    # file in the /usr/lib/systemd/system directory
-   systemctl enable netappdvp
+   systemctl enable trident
    
    # start the service, see note above about service name
-   systemctl start netappdvp
+   systemctl start trident
    
    # view the status
-   systemctl status netappdvp
+   systemctl status trident
 
 Note that anytime the unit file is modified you will need to issue the command ``systemctl daemon-reload`` for it to be aware of the changes.
 
@@ -220,7 +220,8 @@ Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 
    # stop all running instances
    pkill /usr/local/bin/netappdvp
-   
+   pkill /usr/local/bin/trident
+
    # restart docker
    systemctl restart docker
 
