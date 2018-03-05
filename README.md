@@ -1,7 +1,8 @@
 # Trident
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/netapp/trident.svg)](https://hub.docker.com/r/netapp/trident)
-[![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)]()
+[![Support](https://img.shields.io/badge/support-official-0067C5.svg)](http://mysupport.netapp.com/info/web/ECMLP2619434.html)
+[![Chat](https://img.shields.io/badge/chat-slack-4C9689.svg)](http://netapp.io/slack/)
+![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)
 [![license](https://img.shields.io/github/license/netapp/trident.svg)](LICENSE)
 [![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=latest)](https://netapp-trident.readthedocs.io)
 [![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident)](https://goreportcard.com/report/github.com/netapp/trident)

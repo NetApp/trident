@@ -3,8 +3,6 @@ Trident
 
 Storage Orchestrator for Containers
 
-.. image:: https://img.shields.io/docker/pulls/netapp/trident.svg
-   :target: https://hub.docker.com/r/netapp/trident/
 .. image:: https://img.shields.io/github/last-commit/netapp/trident.svg
    :target: https://github.com/netapp/trident
 .. image:: https://img.shields.io/github/license/netapp/trident.svg
