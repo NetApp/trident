@@ -5,11 +5,14 @@
 ## Changes since v18.01.0
 
 **Fixes:**
-- **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log
-- Clone operations are more resilient to busy storage controllers
-- **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable
+- Clone operations are more resilient to busy storage controllers.
+- Fixed cleanup of goroutines.
+- **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log.
+- **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable.
 
 **Enhancements:**
+- Added FQDN support for the management and data LIF of ONTAP backends.
+- For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace instead of the PVC's namespace.
 
 ## v18.01.0
 

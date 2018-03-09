@@ -31,9 +31,12 @@ const MinimumVolumeSizeBytes = 20971520 // 20 MiB
 
 type Telemetry struct {
 	trident.Telemetry
-	Plugin        string `json:"plugin"`
-	SVM           string `json:"svm"`
-	StoragePrefix string `json:"storagePrefix"`
+	Plugin        string        `json:"plugin"`
+	SVM           string        `json:"svm"`
+	StoragePrefix string        `json:"storagePrefix"`
+	Driver        StorageDriver `json:"-"`
+	done          chan struct{} `json:"-"`
+	ticker        *time.Ticker  `json:"-"`
 }
 
 type StorageDriver interface {
@@ -68,13 +71,63 @@ func InitializeOntapConfig(
 	return config, nil
 }
 
-func InitializeOntapTelemetry(d StorageDriver) *Telemetry {
-	return &Telemetry{
+func NewOntapTelemetry(d StorageDriver) *Telemetry {
+	t := &Telemetry{
 		Telemetry:     trident.OrchestratorTelemetry,
 		Plugin:        d.Name(),
 		SVM:           d.GetConfig().SVM,
 		StoragePrefix: *d.GetConfig().StoragePrefix,
+		Driver:        d,
+		done:          make(chan struct{}),
 	}
+
+	usageHeartbeat := d.GetConfig().UsageHeartbeat
+	heartbeatIntervalInHours := 24.0 // default to 24 hours
+	if usageHeartbeat != "" {
+		f, err := strconv.ParseFloat(usageHeartbeat, 64)
+		if err != nil {
+			log.WithField("interval", usageHeartbeat).Warnf("Invalid heartbeat interval. %v", err)
+		} else {
+			heartbeatIntervalInHours = f
+		}
+	}
+	log.WithField("intervalHours", heartbeatIntervalInHours).Debug("Configured EMS heartbeat.")
+
+	durationInHours := time.Millisecond * time.Duration(MSecPerHour*heartbeatIntervalInHours)
+	if durationInHours > 0 {
+		t.ticker = time.NewTicker(durationInHours)
+	}
+	EMSHeartbeat(t.Driver)
+	return t
+}
+
+// Start starts the flow of ASUP messages for the driver
+// These messages can be viewed via filer::> event log show -severity NOTICE.
+func (t *Telemetry) Start() {
+	go func() {
+		for {
+			select {
+			case tick := <-t.ticker.C:
+				log.WithFields(log.Fields{
+					"tick":   tick,
+					"driver": t.Driver.Name(),
+				}).Debug("Sending EMS heartbeat.")
+				EMSHeartbeat(t.Driver)
+			case <-t.done:
+				log.WithFields(log.Fields{
+					"driver": t.Driver.Name(),
+				}).Debugf("Shut down EMS logs for the driver.")
+				return
+			}
+		}
+	}()
+}
+
+func (t *Telemetry) Stop() {
+	if t.ticker != nil {
+		t.ticker.Stop()
+	}
+	close(t.done)
 }
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
@@ -400,9 +453,9 @@ func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, 
 	}
 }
 
-// EmsHeartbeat logs an ASUP message on a timer
+// EMSHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
-func EmsHeartbeat(driver StorageDriver) {
+func EMSHeartbeat(driver StorageDriver) {
 
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
@@ -423,33 +476,6 @@ func EmsHeartbeat(driver StorageDriver) {
 }
 
 const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
-
-func StartEmsHeartbeat(d StorageDriver) {
-
-	usageHeartbeat := d.GetConfig().UsageHeartbeat
-	heartbeatIntervalInHours := 24.0 // default to 24 hours
-	if usageHeartbeat != "" {
-		f, err := strconv.ParseFloat(usageHeartbeat, 64)
-		if err != nil {
-			log.WithField("interval", usageHeartbeat).Warnf("Invalid heartbeat interval. %v", err)
-		} else {
-			heartbeatIntervalInHours = f
-		}
-	}
-	log.WithField("intervalHours", heartbeatIntervalInHours).Debug("Configured EMS heartbeat.")
-
-	durationInHours := time.Millisecond * time.Duration(MSecPerHour*heartbeatIntervalInHours)
-	if durationInHours > 0 {
-		EmsHeartbeat(d)
-		ticker := time.NewTicker(durationInHours)
-		go func() {
-			for t := range ticker.C {
-				log.WithField("tick", t).Debug("Sending EMS heartbeat.")
-				EmsHeartbeat(d)
-			}
-		}()
-	}
-}
 
 // Create a volume clone
 func CreateOntapClone(

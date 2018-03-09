@@ -83,8 +83,8 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.Telemetry = InitializeOntapTelemetry(d)
-	StartEmsHeartbeat(d)
+	d.Telemetry = NewOntapTelemetry(d)
+	d.Telemetry.Start()
 
 	d.initialized = true
 	return nil
@@ -101,7 +101,7 @@ func (d *SANStorageDriver) Terminate() {
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
-
+	d.Telemetry.Stop()
 	d.initialized = false
 }
 

@@ -22,11 +22,15 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-const deletedQtreeNamePrefix = "deleted_"
-const maxQtreeNameLength = 64
-const maxQtreesPerFlexvol = 200
-const defaultPruneFlexvolsPeriodSecs = uint64(600) // default to 10 minutes
-const defaultResizeQuotasPeriodSecs = uint64(60)   // default to 1 minute
+const (
+	deletedQtreeNamePrefix         = "deleted_"
+	maxQtreeNameLength             = 64
+	maxQtreesPerFlexvol            = 200
+	defaultPruneFlexvolsPeriodSecs = uint64(600) // default to 10 minutes
+	defaultResizeQuotasPeriodSecs  = uint64(60)  // default to 1 minute
+	pruneTask                      = "prune"
+	resizeTask                     = "resize"
+)
 
 // For legacy reasons, these strings mustn't change
 const (
@@ -44,7 +48,7 @@ type NASQtreeStorageDriver struct {
 	provMutex           *sync.Mutex
 	flexvolNamePrefix   string
 	flexvolExportPolicy string
-	housekeepingTasks   map[string]*time.Ticker
+	housekeepingTasks   map[string]*HousekeepingTask
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -120,8 +124,19 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Ensure all quotas are in force after a driver restart
 	d.queueAllFlexvolsForQuotaResize()
 
-	// Do periodic housekeeping like cleaning up unused Flexvols
-	d.startHousekeepingTasks()
+	// Start periodic housekeeping tasks like cleaning up unused FlexVols
+	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
+	pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
+	d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks...)
+	resizeTasks := []func(){d.resizeQuotas}
+	d.housekeepingTasks[resizeTask] = NewResizeTask(d, resizeTasks...)
+	for _, task := range d.housekeepingTasks {
+		task.Start()
+	}
+
+	// Set up the autosupport heartbeat
+	d.Telemetry = NewOntapTelemetry(d)
+	d.Telemetry.Start()
 
 	d.initialized = true
 	return nil
@@ -139,16 +154,10 @@ func (d *NASQtreeStorageDriver) Terminate() {
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
 
-	// Stop housekeeping tasks
-	for taskName, ticker := range d.housekeepingTasks {
-		ticker.Stop()
-		log.WithField("task", taskName).Debug("Stopped housekeeping task.")
+	for _, task := range d.housekeepingTasks {
+		task.Stop()
 	}
-
-	// Run the housekeeping tasks one last time
-	d.pruneUnusedFlexvols()
-	d.reapDeletedQtrees()
-	d.resizeQuotas()
+	d.Telemetry.Stop()
 
 	d.initialized = false
 }
@@ -174,66 +183,6 @@ func (d *NASQtreeStorageDriver) validate() error {
 	}
 
 	return nil
-}
-
-func (d *NASQtreeStorageDriver) startHousekeepingTasks() {
-
-	d.housekeepingTasks = make(map[string]*time.Ticker)
-
-	// Send EMS message on a configurable schedule
-	d.Telemetry = InitializeOntapTelemetry(d)
-	StartEmsHeartbeat(d)
-
-	// Read background task timings from config file, use defaults if missing or invalid
-	pruneFlexvolsPeriodSecs := defaultPruneFlexvolsPeriodSecs
-	if d.Config.QtreePruneFlexvolsPeriod != "" {
-		i, err := strconv.ParseUint(d.Config.QtreePruneFlexvolsPeriod, 10, 64)
-		if err != nil {
-			log.WithField("interval", d.Config.QtreePruneFlexvolsPeriod).Warnf(
-				"Invalid Flexvol pruning interval. %v", err)
-		} else {
-			pruneFlexvolsPeriodSecs = i
-		}
-	}
-	log.WithFields(log.Fields{
-		"IntervalSeconds": pruneFlexvolsPeriodSecs,
-	}).Debug("Configured Flexvol pruning period.")
-
-	resizeQuotasPeriodSecs := defaultResizeQuotasPeriodSecs
-	if d.Config.QtreeQuotaResizePeriod != "" {
-		i, err := strconv.ParseUint(d.Config.QtreeQuotaResizePeriod, 10, 64)
-		if err != nil {
-			log.WithField("interval", d.Config.QtreeQuotaResizePeriod).Warnf(
-				"Invalid quota resize interval. %v", err)
-		} else {
-			resizeQuotasPeriodSecs = i
-		}
-	}
-	log.WithFields(log.Fields{
-		"IntervalSeconds": resizeQuotasPeriodSecs,
-	}).Debug("Configured quota resize period.")
-
-	// Keep the system devoid of Flexvols with no qtrees
-	d.pruneUnusedFlexvols()
-	d.reapDeletedQtrees()
-	pruneTicker := time.NewTicker(time.Duration(pruneFlexvolsPeriodSecs) * time.Second)
-	d.housekeepingTasks["pruneTask"] = pruneTicker
-	go func() {
-		for range pruneTicker.C {
-			d.pruneUnusedFlexvols()
-			d.reapDeletedQtrees()
-		}
-	}()
-
-	// Keep the quotas current
-	d.resizeQuotas()
-	resizeTicker := time.NewTicker(time.Duration(resizeQuotasPeriodSecs) * time.Second)
-	d.housekeepingTasks["resizeTask"] = resizeTicker
-	go func() {
-		for range resizeTicker.C {
-			d.resizeQuotas()
-		}
-	}()
 }
 
 // Create a qtree-backed volume with the specified options
@@ -1243,4 +1192,109 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 		Config: volumeConfig,
 		Pool:   volumeIDAttrs.ContainingAggregateName(),
 	}
+}
+
+type HousekeepingTask struct {
+	Name   string
+	Ticker *time.Ticker
+	Done   chan struct{}
+	Tasks  []func()
+	Driver *NASQtreeStorageDriver
+}
+
+func (t *HousekeepingTask) Start() {
+	go func() {
+		for {
+			select {
+			case tick := <-t.Ticker.C:
+				for i, task := range t.Tasks {
+					log.WithFields(log.Fields{
+						"tick":   tick,
+						"driver": t.Driver.Name(),
+						"task":   t.Name,
+					}).Debugf("Performing housekeeping task %v.", i)
+					task()
+				}
+			case <-t.Done:
+				log.WithFields(log.Fields{
+					"driver": t.Driver.Name(),
+					"task":   t.Name,
+				}).Debugf("Shut down housekeeping tasks for the driver.")
+				return
+			}
+		}
+	}()
+}
+
+func (t *HousekeepingTask) Stop() {
+	t.Ticker.Stop()
+	close(t.Done)
+	// Run the housekeeping tasks one last time
+	for _, task := range t.Tasks {
+		task()
+	}
+}
+
+func NewPruneTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask {
+	// Read background task timings from config file, use defaults if missing or invalid
+	pruneFlexvolsPeriodSecs := defaultPruneFlexvolsPeriodSecs
+	if d.Config.QtreePruneFlexvolsPeriod != "" {
+		i, err := strconv.ParseUint(d.Config.QtreePruneFlexvolsPeriod, 10, 64)
+		if err != nil {
+			log.WithField("interval", d.Config.QtreePruneFlexvolsPeriod).Warnf(
+				"Invalid Flexvol pruning interval. %v", err)
+		} else {
+			pruneFlexvolsPeriodSecs = i
+		}
+	}
+	log.WithFields(log.Fields{
+		"IntervalSeconds": pruneFlexvolsPeriodSecs,
+	}).Debug("Configured Flexvol pruning period.")
+
+	task := &HousekeepingTask{
+		Name:   pruneTask,
+		Ticker: time.NewTicker(time.Duration(pruneFlexvolsPeriodSecs) * time.Second),
+		Done:   make(chan struct{}),
+		Tasks:  make([]func(), 0),
+		Driver: d,
+	}
+
+	for _, t := range tasks {
+		task.Tasks = append(task.Tasks, t)
+		t()
+	}
+
+	return task
+}
+
+func NewResizeTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask {
+	// Read background task timings from config file, use defaults if missing or invalid
+	resizeQuotasPeriodSecs := defaultResizeQuotasPeriodSecs
+	if d.Config.QtreeQuotaResizePeriod != "" {
+		i, err := strconv.ParseUint(d.Config.QtreeQuotaResizePeriod, 10, 64)
+		if err != nil {
+			log.WithField("interval", d.Config.QtreeQuotaResizePeriod).Warnf(
+				"Invalid quota resize interval. %v", err)
+		} else {
+			resizeQuotasPeriodSecs = i
+		}
+	}
+	log.WithFields(log.Fields{
+		"IntervalSeconds": resizeQuotasPeriodSecs,
+	}).Debug("Configured quota resize period.")
+
+	task := &HousekeepingTask{
+		Name:   resizeTask,
+		Ticker: time.NewTicker(time.Duration(resizeQuotasPeriodSecs) * time.Second),
+		Done:   make(chan struct{}),
+		Tasks:  make([]func(), 0),
+		Driver: d,
+	}
+
+	for _, t := range tasks {
+		task.Tasks = append(task.Tasks, t)
+		t()
+	}
+
+	return task
 }
