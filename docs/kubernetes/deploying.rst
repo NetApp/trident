@@ -101,7 +101,10 @@ your backend type.
 
   Many of the backends require some
   :ref:`basic preparation <Backend configuration>`, so make sure that's been
-  done before you try to use it.
+  done before you try to use it. Also, we don't recommend an
+  ontap-nas-economy backend for this step as volumes of this type have
+  limited capabilities relative to the volumes provisioned on other types of
+  backends.
 
 .. code-block:: bash
 

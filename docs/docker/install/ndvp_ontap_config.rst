@@ -66,6 +66,14 @@ For NFS host configuration, see also: http://www.netapp.com/us/media/tr-4067.pdf
 | ``nfsMountOptions``   | Fine grained control of NFS mount options; defaults to "-o nfsvers=3"    |-o nfsvers=4|
 +-----------------------+--------------------------------------------------------------------------+------------+
 
+For the ontap-san driver, an additional top level option is available to specify an igroup.
+
++-----------------------+--------------------------------------------------------------------------+------------+
+| Option                | Description                                                              | Example    |
++=======================+==========================================================================+============+
+| ``igroupName``        | The igroup used by the plugin; defaults to "netappdvp"                   | myigroup   |
++-----------------------+--------------------------------------------------------------------------+------------+
+
 Also, when using ONTAP, these default option settings are available to avoid having to specify them on every volume create.
 
 +-----------------------+--------------------------------------------------------------------------+------------+
@@ -141,7 +149,7 @@ Example ONTAP Config Files
         "svm": "svm_nfs",
         "username": "vsadmin",
         "password": "netapp123",
-        "aggregate": "aggr1",
+        "aggregate": "aggr1"
     }
 
 **iSCSI Example for ontap-san driver**
@@ -156,5 +164,6 @@ Example ONTAP Config Files
         "svm": "svm_iscsi",
         "username": "vsadmin",
         "password": "netapp123",
-        "aggregate": "aggr1"
+        "aggregate": "aggr1",
+        "igroupName": "myigroup"
     }
