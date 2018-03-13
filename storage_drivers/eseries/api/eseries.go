@@ -24,7 +24,7 @@ import (
 )
 
 const maxNameLength = 30
-const httpTimeoutSeconds = 10
+const httpTimeoutSeconds = 30
 const NullRef = "0000000000000000000000000000000000000000"
 const hostMappingType = "host"
 const hostGroupMappingType = "cluster"
@@ -635,8 +635,14 @@ func (d Client) DeleteVolume(volume VolumeEx) error {
 		return fmt.Errorf("API invocation failed. %v", err)
 	}
 
-	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
-
+	switch response.StatusCode {
+	case http.StatusOK:
+	case http.StatusNoContent:
+	case http.StatusUnprocessableEntity:
+	case http.StatusNotFound:
+	case http.StatusGone:
+		break
+	default:
 		err = d.getErrorFromHTTPResponse(response, responseBody)
 		return fmt.Errorf("could not destroy volume %s: %v", volume.Label, err)
 	}
@@ -1075,7 +1081,8 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 	if !volume.IsMapped {
 
 		// Volume is not already mapped, so map it now
-		return d.mapVolume(volume, host)
+		mapping, err := d.mapVolume(volume, host)
+		return mapping, err
 
 	} else {
 
@@ -1086,8 +1093,12 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 			// Mapped here, so nothing to do
 			log.WithFields(log.Fields{
-				"Name": volume.Label,
-				"Host": host.Label,
+				"Host":      host.Label,
+				"Name":      volume.Label,
+				"VolumeRef": volume.VolumeRef,
+				"MapRef":    mapping.MapRef,
+				"Type":      mapping.Type,
+				"LunNumber": mapping.LunNumber,
 			}).Debug("Volume already mapped to host.")
 
 			return mapping, nil
@@ -1309,6 +1320,41 @@ func (d *Client) GetTargetIQN() (string, error) {
 	}).Debug("Got target iSCSI node name.")
 
 	return settings.NodeName.IscsiNodeName, nil
+}
+
+// GetTargetSettings returns the iSCSI target settings for the array.
+func (d *Client) GetTargetSettings() (*IscsiTargetSettings, error) {
+
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "GetTargetSettings",
+			"Type":   "Client",
+		}
+		log.WithFields(fields).Debug(">>>> GetTargetSettings")
+		defer log.WithFields(fields).Debug("<<<< GetTargetSettings")
+	}
+
+	// Query iSCSI target settings
+	response, responseBody, err := d.InvokeAPI(nil, "GET", "/iscsi/target-settings")
+	if err != nil {
+		return nil, fmt.Errorf("API invocation failed. %v", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("could not read iSCSI settings; status code: %d", response.StatusCode)
+	}
+
+	var settings IscsiTargetSettings
+	err = json.Unmarshal(responseBody, &settings)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse iSCSI settings data: %s; %v", string(responseBody), err)
+	}
+
+	log.WithFields(log.Fields{
+		"IargetIQN": settings.NodeName.IscsiNodeName,
+	}).Debug("Got target iSCSI target settings.")
+
+	return &settings, nil
 }
 
 // IsRefValid checks whether the supplied string is a valid E-series object reference as used by its REST API.

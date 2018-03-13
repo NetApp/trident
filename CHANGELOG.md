@@ -6,10 +6,12 @@
 
 **Fixes:**
 - **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log
+- Clone operations are more resilient to busy storage controllers
+- **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable
 
 **Enhancements:**
 
-## Changes since v17.10.0
+## v18.01.0
 
 **Fixes:**
 - Volume deletion is an idempotent operation with the ontap-nas-economy driver (Issue [#65](https://github.com/NetApp/trident/issues/65)).

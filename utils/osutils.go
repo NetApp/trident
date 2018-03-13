@@ -5,20 +5,37 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 )
 
-const IscsiErrNoObjsFound = 21
+const iSCSIErrNoObjsFound = 21
+const iSCSIDeviceDiscoveryTimeoutSecs = 90
+const multipathDeviceDiscoveryTimeoutSecs = 90
 
-var XtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
+var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
+var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
+var pidRegex = regexp.MustCompile(`^\d+$`)
+var chrootPathPrefix string
+
+func init() {
+
+	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
+		chrootPathPrefix = "/host"
+	} else {
+		chrootPathPrefix = ""
+	}
+}
 
 // DFInfo data structure for wrapping the parsed output from the 'df' command
 type DFInfo struct {
@@ -33,7 +50,7 @@ func GetDFOutput() ([]DFInfo, error) {
 	defer log.Debug("<<<< osutils.GetDFOutput")
 
 	var result []DFInfo
-	out, err := InvokeShellCommand("df", "--output=target,source")
+	out, err := execCommand("df", "--output=target,source")
 	if err != nil {
 		// df returns an error if there's a stale file handle that we can
 		// safely ignore. There may be other reasons. Consider it a warning if
@@ -61,12 +78,6 @@ func GetDFOutput() ([]DFInfo, error) {
 	return result, nil
 }
 
-func Stat(fileName string) (string, error) {
-	statCmd := fmt.Sprintf("stat %v", fileName)
-	out, err := InvokeShellCommand("sh", "-c", statCmd)
-	return string(out), err
-}
-
 // GetInitiatorIqns returns parsed contents of /etc/iscsi/initiatorname.iscsi
 func GetInitiatorIqns() ([]string, error) {
 
@@ -74,7 +85,7 @@ func GetInitiatorIqns() ([]string, error) {
 	defer log.Debug("<<<< osutils.GetInitiatorIqns")
 
 	var iqns []string
-	out, err := InvokeShellCommand("cat", "/etc/iscsi/initiatorname.iscsi")
+	out, err := execCommand("cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
 		log.Error("Error gathering initiator names.")
 		return nil, err
@@ -88,26 +99,86 @@ func GetInitiatorIqns() ([]string, error) {
 	return iqns, nil
 }
 
-// WaitForPathToExist retries every second, up to numTries times, with increasing backoff, for the specified fileName to show up
-func WaitForPathToExist(fileName string, numTries int) bool {
-
-	log.WithField("file", fileName).Debug(">>>> osutils.WaitForPathToExist")
-	defer log.Debug("<<<< osutils.WaitForPathToExist")
-
-	for i := 0; i < numTries; i++ {
-		_, err := Stat(fileName)
-		if err == nil {
-			log.WithFields(log.Fields{
-				"file":     fileName,
-				"attempt":  i,
-				"numTries": numTries,
-			}).Debug("Path found.")
-			return true
-		}
-		time.Sleep(time.Second * time.Duration(2+i))
+// PathExists returns true if the file/directory at the specified path exists,
+// false otherwise or if an error occurs.
+func PathExists(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
 	}
-	log.WithField("file", fileName).Warning("osutils.waitForPathToExist giving up.")
 	return false
+}
+
+// GetDevicePathsForISCSIPortals synthesizes the disk-by-path device names for an iSCSI LUN.
+func GetDevicePathsForISCSIPortals(lunID int, iSCSINodeName string, iSCSIInterfaces []string) []string {
+	paths := make([]string, 0)
+	for _, iSCSIInterface := range iSCSIInterfaces {
+		path := fmt.Sprintf("/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d", iSCSIInterface, iSCSINodeName, lunID)
+		paths = append(paths, path)
+	}
+	return paths
+}
+
+// RescanTargetAndWaitForDevice rescans all paths to a specific LUN and waits until all
+// SCSI disk-by-path devices for that LUN are present on the host.
+func RescanTargetAndWaitForDevice(lunID int, iSCSINodeName string, iSCSIInterfaces []string) error {
+
+	fields := log.Fields{
+		"lunID":           lunID,
+		"iSCSINodeName":   iSCSINodeName,
+		"iSCSIInterfaces": iSCSIInterfaces,
+	}
+	log.WithFields(fields).Debug(">>>> osutils.RescanTargetAndWaitForDevice")
+	defer log.WithFields(fields).Debug("<<<< osutils.RescanTargetAndWaitForDevice")
+
+	maxDuration := iSCSIDeviceDiscoveryTimeoutSecs * time.Second
+
+	paths := GetDevicePathsForISCSIPortals(lunID, iSCSINodeName, iSCSIInterfaces)
+
+	if err := ISCSIRescanTargetLUN(lunID, iSCSINodeName); err != nil {
+		log.WithField("rescanError", err).Error("Could not rescan for new LUN.")
+	}
+
+	checkPathsExist := func() error {
+
+		// Check if all paths present, and return nil (success) if so
+		anyMissingPaths := false
+		for _, path := range paths {
+			if !PathExists(path) {
+				anyMissingPaths = true
+			}
+		}
+		if anyMissingPaths {
+			return errors.New("one or more devices aren't yet present")
+		}
+		return nil
+	}
+
+	devicesNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Devices not yet present, waiting.")
+	}
+
+	deviceBackoff := backoff.NewExponentialBackOff()
+	deviceBackoff.InitialInterval = 1 * time.Second
+	deviceBackoff.Multiplier = 1.3
+	deviceBackoff.RandomizationFactor = 0.1
+	deviceBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check/rescan using an exponential backoff
+	if err := backoff.RetryNotify(checkPathsExist, deviceBackoff, devicesNotify); err != nil {
+		log.Warnf("Could not find all devices after %3.2f seconds.", maxDuration.Seconds())
+
+		// In the case of a failure, log info about what devices are present
+		execCommand("ls", "-al", "/dev")
+		execCommand("ls", "-al", "/dev/mapper")
+		execCommand("ls", "-al", "/dev/disk/by-path")
+		execCommand("lsscsi")
+		execCommand("lsscsi", "-t")
+		execCommand("free")
+		return err
+	}
+
+	log.Debug("All devices found.")
+	return nil
 }
 
 // ScsiDeviceInfo contains information about SCSI devices
@@ -120,163 +191,246 @@ type ScsiDeviceInfo struct {
 	MultipathDevice string
 	Filesystem      string
 	IQN             string
+	DeviceNameMap   map[string]string
+	HostSessionMap  map[int]int
 }
 
-// GetDeviceInfoForLuns executes and parses the output from the 'lsscsi' command
-func GetDeviceInfoForLuns() ([]ScsiDeviceInfo, error) {
-	/*
-		# lsscsi -t
-		[0:0:0:0]    disk    sata:                           /dev/sda
-		[5:0:0:0]    disk    iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3,t,0x404  /dev/sdb
-		[6:0:0:0]    disk    iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3,t,0x405  /dev/sdc
-		[7:0:0:0]    disk    iqn.1992-08.com.netapp:sn.d724e00bfa0311e582f8080027e22798:vs.4,t,0x407  /dev/sdd
-		[8:0:0:0]    disk    iqn.1992-08.com.netapp:sn.d724e00bfa0311e582f8080027e22798:vs.4,t,0x408  /dev/sde
-	*/
+// GetDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
+// called after calling RescanTargetAndWaitForDevice so that the device paths are known to exist.
+func GetDeviceInfoForLUN(lunID int, iSCSINodeName string, iSCSIInterfaces []string) (*ScsiDeviceInfo, error) {
 
-	log.Debug(">>>> osutils.GetDeviceInfoForLuns")
-	defer log.Debug("<<<< osutils.GetDeviceInfoForLuns")
+	fields := log.Fields{
+		"lunID":           lunID,
+		"iSCSINodeName":   iSCSINodeName,
+		"iSCSIInterfaces": iSCSIInterfaces,
+	}
+	log.WithFields(fields).Debug(">>>> osutils.GetDeviceInfoForLUN")
+	defer log.WithFields(fields).Debug("<<<< osutils.GetDeviceInfoForLUN")
 
-	multipathDetected := MultipathDetected()
-	if !multipathDetected {
-		log.Debug("Skipping multipath check, /sbin/multipath doesn't exist.")
+	if len(iSCSIInterfaces) == 0 {
+		return nil, errors.New("must specify one or more iSCSI interfaces")
 	}
 
-	out, err := InvokeShellCommand("lsscsi", "-t")
-	if err != nil {
-		return nil, err
-	}
+	paths := GetDevicePathsForISCSIPortals(lunID, iSCSINodeName, iSCSIInterfaces)
+	deviceNameMap := make(map[string]string)
 
-	var info []ScsiDeviceInfo
+	for _, path := range paths {
 
-	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-	for _, line := range lines {
-
-		d := strings.Fields(line)
-		if d == nil || len(d) < 4 {
-			log.WithField("line", line).Debug("Could not parse output, skipping line.")
-			continue
+		// Ensure all paths exist
+		if !PathExists(path) {
+			return nil, fmt.Errorf("path %s does not exist", path)
 		}
 
-		log.WithField("device", d).Debug("Processing SCSI device.")
-
-		// Host, Channel, Target, LUN
-		s := d[0]
-		s = s[1 : len(s)-1]
-		scsiBusInfo := strings.Split(s, ":")
-
-		scsiHost := scsiBusInfo[0]
-		scsiChannel := scsiBusInfo[1]
-		scsiTarget := scsiBusInfo[2]
-		scsiLun := scsiBusInfo[3]
-
-		// IQN
-		iqn := d[2]
-		log.WithField("IQN", iqn).Debug("Found IQN.")
-
-		// Device is the last field in the output
-		devFile := d[len(d)-1]
-
-		if !strings.HasPrefix(devFile, "/dev") {
-			log.WithField("line", line).Debug("Could not find device file, skipping line.")
-			continue
-		}
-		log.WithField("deviceFile", devFile).Debug("Found device file.")
-
-		// Check to see if there's a multipath device
-		multipathDevFile := ""
-		if multipathDetected {
-			log.Debug("Running multipath check.")
-
-			lsblkCmd := fmt.Sprintf("lsblk %v -n -o name,type -r | grep mpath | cut -f1 -d\\ ", devFile)
-			out2, err2 := InvokeShellCommand("sh", "-c", lsblkCmd)
-			if err2 != nil {
-				// this can be fine, for instance could be a floppy or cd-rom, later logic will error if we never find our device
-				log.WithField("deviceFile", devFile).Debug("Could not perform multipath check for device, skipping.")
-			} else {
-				md := strings.Split(strings.TrimSpace(string(out2)), " ")
-				if md != nil && len(md) > 0 && len(md[0]) > 0 {
-					if strings.HasPrefix(md[0], "lsblk") || strings.HasSuffix(string(out2),
-						"failed to get device path") {
-						return nil, fmt.Errorf("problem checking device path while running multipath check for"+
-							" device: %v: output: %v", devFile, string(out2))
-					}
-					log.WithField("md", md).Debug("Found multipath device path.")
-
-					multipathDevFileToCheck := "/dev/mapper/" + md[0]
-					_, err3 := Stat(multipathDevFileToCheck)
-					if err3 == nil {
-						multipathDevFile = multipathDevFileToCheck
-					}
-				}
-			}
-		}
-
-		fsType := ""
-		if multipathDevFile != "" {
-			fsType = GetFSType(multipathDevFile)
+		// Get the device name from the path and save it
+		if deviceName, err := findDeviceForPath(path); err != nil {
+			return nil, err
 		} else {
-			fsType = GetFSType(devFile)
+			deviceNameMap[path] = deviceName
 		}
+	}
 
-		log.WithFields(log.Fields{
-			"scsiHost":         scsiHost,
-			"scsiChannel":      scsiChannel,
-			"scsiTarget":       scsiTarget,
-			"scsiLun":          scsiLun,
-			"multipathDevFile": multipathDevFile,
-			"devFile":          devFile,
-			"fsType":           fsType,
-			"iqn":              iqn,
-		}).Debug("Found SCSI device.")
+	multipathDevFile := waitForMultipathDevice(paths)
 
-		info = append(info, ScsiDeviceInfo{
-			Host:            scsiHost,
-			Channel:         scsiChannel,
-			Target:          scsiTarget,
-			LUN:             scsiLun,
-			MultipathDevice: multipathDevFile,
-			Device:          devFile,
-			Filesystem:      fsType,
-			IQN:             iqn,
-		})
+	fsType := ""
+	if multipathDevFile != "" {
+		fsType = getFSType(multipathDevFile)
+	} else {
+		fsType = getFSType(paths[0])
+	}
+
+	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+
+	log.WithFields(log.Fields{
+		"LUN":              strconv.Itoa(lunID),
+		"multipathDevFile": multipathDevFile,
+		"devFile":          paths[0],
+		"fsType":           fsType,
+		"deviceNames":      deviceNameMap,
+		"hostSessionMap":   hostSessionMap,
+	}).Debug("Found SCSI device.")
+
+	info := &ScsiDeviceInfo{
+		LUN:             strconv.Itoa(lunID),
+		MultipathDevice: multipathDevFile,
+		Device:          paths[0],
+		Filesystem:      fsType,
+		IQN:             iSCSINodeName,
+		DeviceNameMap:   deviceNameMap,
+		HostSessionMap:  hostSessionMap,
 	}
 
 	return info, nil
 }
 
-// GetDeviceFileFromIscsiPath returns the /dev device for the supplied iscsiPath
-func GetDeviceFileFromIscsiPath(iscsiPath string) string {
+// waitForMultipathDevice accepts a list of /dev/disk/by-path device paths and waits until
+// a multipath device is present for at least one of those.  It returns the name of the
+// multipath device, or an empty string if multipathd isn't running or there is only one path.
+func waitForMultipathDevice(devices []string) string {
 
-	log.WithField("iscsiPath", iscsiPath).Debug(">>>> osutils.GetDeviceFileFromIscsiPath")
-	defer log.Debug("<<<< osutils.GetDeviceFileFromIscsiPath")
+	fields := log.Fields{"devices": devices}
+	log.WithFields(fields).Debug(">>>> osutils.waitForMultipathDevice")
+	defer log.WithFields(fields).Debug("<<<< osutils.waitForMultipathDevice")
 
-	out, err := InvokeShellCommand("ls", "-la", iscsiPath)
-	if err != nil {
-		log.WithField("iscsiPath", iscsiPath).Error("Error getting device file from iSCSI path.")
+	if len(devices) <= 1 {
+		log.Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
+		return ""
+	} else if !multipathdIsRunning() {
+		log.Debug("Skipping multipath discovery, multipathd isn't running.")
 		return ""
 	}
-	d := strings.Split(string(out), "../../")
 
-	log.WithFields(log.Fields{
-		"device":    d,
-		"iscsiPath": iscsiPath,
-	}).Debug("Found device for iSCSI path.")
+	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
+	multipathDevice := ""
 
-	devFile := "/dev/" + d[1]
-	devFile = strings.TrimSpace(devFile)
+	checkMultipathDeviceExists := func() error {
 
-	log.WithField("deviceFile", devFile).Debug("Using device file.")
+		for _, device := range devices {
+			multipathDevice = findMultipathDeviceForDevice(device)
+			if multipathDevice != "" {
+				return nil
+			}
+		}
+		if multipathDevice == "" {
+			return errors.New("multipath device not yet present")
+		}
+		return nil
+	}
 
-	return devFile
+	deviceNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
+	}
+
+	multipathDeviceBackoff := backoff.NewExponentialBackOff()
+	multipathDeviceBackoff.InitialInterval = 1 * time.Second
+	multipathDeviceBackoff.Multiplier = 1.3
+	multipathDeviceBackoff.RandomizationFactor = 0.1
+	multipathDeviceBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check/rescan using an exponential backoff
+	if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
+		log.Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
+	} else {
+		log.WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
+	}
+	return multipathDevice
 }
 
-// IscsiSupported returns true if iscsiadm is installed and in the PATH
-func IscsiSupported() bool {
+// findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
+func findMultipathDeviceForDevice(device string) string {
 
-	log.Debug(">>>> osutils.IscsiSupported")
-	defer log.Debug("<<<< osutils.IscsiSupported")
+	log.WithField("device", device).Debug(">>>> osutils.findMultipathDeviceForDevice")
+	defer log.WithField("device", device).Debug("<<<< osutils.findMultipathDeviceForDevice")
 
-	_, err := InvokeIscsiadmCommand("-V")
+	disk, err := findDeviceForPath(device)
+	if err != nil {
+		log.WithField("error", err).Debug("Could not find multipath device for device.")
+		return ""
+	}
+	sysPath := "/sys/block/"
+	if dirs, err := ioutil.ReadDir(sysPath); err == nil {
+		for _, f := range dirs {
+			name := f.Name()
+			if strings.HasPrefix(name, "dm-") {
+				if _, err1 := os.Lstat(sysPath + name + "/slaves/" + disk); err1 == nil {
+					log.WithField("device", "/dev/"+name).Debug("Found multipath device for device.")
+					return "/dev/" + name
+				}
+			}
+		}
+	}
+
+	log.WithField("device", device).Debug("Could not find multipath device for device.")
+	return ""
+}
+
+// findDeviceForPath finds the underlaying disk for a linked path such as /dev/disk/by-path/XXXX or
+// /dev/mapper/XXXX, returning sdX or hdX, etc. If /dev/sdX is passed in then sdX will be returned.
+func findDeviceForPath(path string) (string, error) {
+
+	log.Debug(">>>> osutils.findDeviceForPath")
+	defer log.Debug("<<<< osutils.findDeviceForPath")
+
+	devicePath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		log.WithField("error", err).Debug("Could not find device for path.")
+		return "", err
+	}
+	// if path /dev/hdX split into "", "dev", "hdX" then we will return just the last part
+	parts := strings.Split(devicePath, "/")
+	if len(parts) == 3 && strings.HasPrefix(parts[1], "dev") {
+		log.WithFields(log.Fields{"device": parts[2], "path": path}).Debug("Found device from path.")
+		return parts[2], nil
+	}
+	log.Debug("Illegal path for device.")
+	return "", errors.New("illegal path for device " + devicePath)
+}
+
+// PrepareDeviceForRemoval informs Linux that a device will be removed.
+func PrepareDeviceForRemoval(lunID int, iSCSINodeName string, iSCSIInterfaces []string) {
+
+	fields := log.Fields{
+		"lunID":            lunID,
+		"iSCSINodeName":    iSCSINodeName,
+		"iSCSIInterfaces":  iSCSIInterfaces,
+		"chrootPathPrefix": chrootPathPrefix,
+	}
+	log.WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
+	defer log.WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
+
+	deviceInfo, err := GetDeviceInfoForLUN(lunID, iSCSINodeName, iSCSIInterfaces)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+			"lunID": lunID,
+		}).Info("Could not get device info for removal, skipping host removal steps.")
+		return
+	}
+
+	// Flush multipath device
+	multipathFlushDevice(deviceInfo)
+
+	// Flush devices
+	flushDevice(deviceInfo)
+
+	// Remove device
+	removeDevice(deviceInfo)
+
+	// Give the host a chance to fully process the removal
+	time.Sleep(time.Second)
+}
+
+// GetDeviceFileFromISCSIPath returns the /dev device for the supplied iSCSIPath.
+func GetDeviceFileFromISCSIPath(iSCSIPath string) string {
+
+	logFields := log.Fields{"iSCSIPath": iSCSIPath}
+	log.WithFields(logFields).Debug(">>>> osutils.GetDeviceFileFromISCSIPath")
+	defer log.WithFields(logFields).Debug("<<<< osutils.GetDeviceFileFromISCSIPath")
+
+	if !strings.HasPrefix(iSCSIPath, "/dev/") {
+		log.WithFields(logFields).Warning("Not a /dev path.")
+	}
+
+	devicePath, err := filepath.EvalSymlinks(iSCSIPath)
+	if err != nil {
+		log.Errorf("%v", err)
+		return ""
+	}
+
+	log.WithFields(log.Fields{
+		"devicePath": devicePath,
+		"iSCSIPath":  iSCSIPath,
+	}).Debug("Found device for iSCSI path.")
+
+	return devicePath
+}
+
+// ISCSISupported returns true if iscsiadm is installed and in the PATH.
+func ISCSISupported() bool {
+
+	log.Debug(">>>> osutils.ISCSISupported")
+	defer log.Debug("<<<< osutils.ISCSISupported")
+
+	_, err := execIscsiadmCommand("-V")
 	if err != nil {
 		log.Debug("iscsiadm tools not found on this host.")
 		return false
@@ -284,35 +438,35 @@ func IscsiSupported() bool {
 	return true
 }
 
-// IscsiDiscoveryInfo contains information about discovered iSCSI targets
-type IscsiDiscoveryInfo struct {
+// ISCSIDiscoveryInfo contains information about discovered iSCSI targets.
+type ISCSIDiscoveryInfo struct {
 	Portal     string
 	PortalIP   string
 	TargetName string
 }
 
-// IscsiDiscovery uses the 'iscsiadm' command to perform discovery
-func IscsiDiscovery(portal string) ([]IscsiDiscoveryInfo, error) {
+// iSCSIDiscovery uses the 'iscsiadm' command to perform discovery.
+func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 
-	log.WithField("portal", portal).Debug(">>>> osutils.IscsiDiscovery")
-	defer log.Debug("<<<< osutils.IscsiDiscovery")
+	log.WithField("portal", portal).Debug(">>>> osutils.iSCSIDiscovery")
+	defer log.Debug("<<<< osutils.iSCSIDiscovery")
 
-	out, err := InvokeIscsiadmCommand("-m", "discovery", "-t", "sendtargets", "-p", portal)
+	out, err := execIscsiadmCommand("-m", "discovery", "-t", "sendtargets", "-p", portal)
 	if err != nil {
 		return nil, err
 	}
 
 	/*
-		   iscsiadm -m discovery -t st -p 10.63.152.249:3260
+	   iscsiadm -m discovery -t st -p 10.63.152.249:3260
 
-			   10.63.152.249:3260,1 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
-			   10.63.152.250:3260,2 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
+	   10.63.152.249:3260,1 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
+	   10.63.152.250:3260,2 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
 
-			   a[0]==10.63.152.249:3260,1
-			   a[1]==iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
+	   a[0]==10.63.152.249:3260,1
+	   a[1]==iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
 	*/
 
-	var discoveryInfo []IscsiDiscoveryInfo
+	var discoveryInfo []ISCSIDiscoveryInfo
 
 	lines := strings.Split(string(out), "\n")
 	for _, l := range lines {
@@ -321,7 +475,7 @@ func IscsiDiscovery(portal string) ([]IscsiDiscoveryInfo, error) {
 
 			portalIP := strings.Split(a[0], ":")[0]
 
-			discoveryInfo = append(discoveryInfo, IscsiDiscoveryInfo{
+			discoveryInfo = append(discoveryInfo, ISCSIDiscoveryInfo{
 				Portal:     a[0],
 				PortalIP:   portalIP,
 				TargetName: a[1],
@@ -337,26 +491,26 @@ func IscsiDiscovery(portal string) ([]IscsiDiscoveryInfo, error) {
 	return discoveryInfo, nil
 }
 
-// IscsiSessionInfo contains information about iSCSI sessions
-type IscsiSessionInfo struct {
+// ISCSISessionInfo contains information about iSCSI sessions.
+type ISCSISessionInfo struct {
 	SID        string
 	Portal     string
 	PortalIP   string
 	TargetName string
 }
 
-// GetIscsiSessionInfo parses output from 'iscsiadm -m session' and returns the parsed output
-func GetIscsiSessionInfo() ([]IscsiSessionInfo, error) {
+// getISCSISessionInfo parses output from 'iscsiadm -m session' and returns the parsed output.
+func getISCSISessionInfo() ([]ISCSISessionInfo, error) {
 
-	log.Debug(">>>> osutils.GetIscsiSessionInfo")
-	defer log.Debug("<<<< osutils.GetIscsiSessionInfo")
+	log.Debug(">>>> osutils.getISCSISessionInfo")
+	defer log.Debug("<<<< osutils.getISCSISessionInfo")
 
-	out, err := InvokeIscsiadmCommand("-m", "session")
+	out, err := execIscsiadmCommand("-m", "session")
 	if err != nil {
 		exitErr, ok := err.(*exec.ExitError)
-		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == IscsiErrNoObjsFound {
+		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == iSCSIErrNoObjsFound {
 			log.Debug("No iSCSI session found.")
-			return []IscsiSessionInfo{}, nil
+			return []ISCSISessionInfo{}, nil
 		} else {
 			log.WithField("error", err).Error("Problem checking iSCSI sessions.")
 			return nil, err
@@ -365,6 +519,7 @@ func GetIscsiSessionInfo() ([]IscsiSessionInfo, error) {
 
 	/*
 	   # iscsiadm -m session
+
 	   tcp: [3] 10.0.207.7:3260,1028 iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3 (non-flash)
 	   tcp: [4] 10.0.207.9:3260,1029 iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3 (non-flash)
 
@@ -375,7 +530,7 @@ func GetIscsiSessionInfo() ([]IscsiSessionInfo, error) {
 	   a[4]==(non-flash)
 	*/
 
-	var sessionInfo []IscsiSessionInfo
+	var sessionInfo []ISCSISessionInfo
 
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	for _, l := range lines {
@@ -386,7 +541,7 @@ func GetIscsiSessionInfo() ([]IscsiSessionInfo, error) {
 			sid = sid[1 : len(sid)-1]
 
 			portalIP := strings.Split(a[2], ":")[0]
-			sessionInfo = append(sessionInfo, IscsiSessionInfo{
+			sessionInfo = append(sessionInfo, ISCSISessionInfo{
 				SID:        sid,
 				Portal:     a[2],
 				PortalIP:   portalIP,
@@ -405,55 +560,8 @@ func GetIscsiSessionInfo() ([]IscsiSessionInfo, error) {
 	return sessionInfo, nil
 }
 
-// GetIscsiHostInfo parses output from 'iscsiadm -m host' and returns the parsed output
-func GetIscsiHostInfo() ([]string, error) {
-
-	log.Debug(">>>> osutils.GetIscsiHostInfo")
-	defer log.Debug("<<<< osutils.GetIscsiHostInfo")
-
-	out, err := InvokeIscsiadmCommand("-m", "host")
-	if err != nil {
-		exitErr, ok := err.(*exec.ExitError)
-		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == IscsiErrNoObjsFound {
-			log.Debug("No iSCSI hosts found.")
-			return make([]string, 0), nil
-		} else {
-			log.WithField("error", err).Error("Problem checking iSCSI hosts.")
-			return nil, err
-		}
-	}
-
-	/*
-	   # iscsiadm -m host
-	   tcp: [33] 192.168.228.16,[<empty>],<empty> <empty>
-	   tcp: [34] 192.168.228.16,[<empty>],<empty> <empty>
-
-	   a[0]==tcp:
-	   a[1]==[33]
-	   a[2]==192.168.228.16,[<empty>],<empty>
-	   a[3]==<empty>
-	*/
-
-	var hosts []string
-
-	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-	for _, l := range lines {
-
-		a := strings.Fields(l)
-		if len(a) > 3 {
-			host := a[1]
-			host = host[1 : len(host)-1]
-			hosts = append(hosts, host)
-
-			log.WithFields(log.Fields{"Host": host}).Debug("Adding iSCSI host.")
-		}
-	}
-
-	return hosts, nil
-}
-
-// IscsiTargetInfo structure for usage with the iscsiadm command
-type IscsiTargetInfo struct {
+// ISCSITargetInfo structure for usage with the iscsiadm command.
+type ISCSITargetInfo struct {
 	IP        string
 	Port      string
 	Portal    string
@@ -463,28 +571,28 @@ type IscsiTargetInfo struct {
 	Discovery string
 }
 
-// IscsiDisableDelete logout from the supplied target and remove the iSCSI device
-func IscsiDisableDelete(tgt *IscsiTargetInfo) error {
+// ISCSIDisableDelete logs out from the supplied target and removes the iSCSI device.
+func ISCSIDisableDelete(tgt *ISCSITargetInfo) error {
 
-	log.WithField("target", tgt).Debug(">>>> osutils.IscsiDisableDelete")
-	defer log.Debug("<<<< osutils.IscsiDisableDelete")
+	log.WithField("target", tgt).Debug(">>>> osutils.ISCSIDisableDelete")
+	defer log.Debug("<<<< osutils.ISCSIDisableDelete")
 
-	_, err := InvokeIscsiadmCommand("-m", "node", "-T", tgt.Iqn, "--portal", tgt.IP, "-u")
+	_, err := execIscsiadmCommand("-m", "node", "-T", tgt.Iqn, "--portal", tgt.IP, "-u")
 	if err != nil {
 		log.WithField("error", err).Debug("Error during iSCSI logout.")
 	}
 
-	_, err = InvokeIscsiadmCommand("-m", "node", "-o", "delete", "-T", tgt.Iqn)
+	_, err = execIscsiadmCommand("-m", "node", "-o", "delete", "-T", tgt.Iqn)
 	return err
 }
 
-// IscsiSessionExists checks to see if a session exists to the sepecified portal
-func IscsiSessionExists(portal string) (bool, error) {
+// ISCSISessionExists checks to see if a session exists to the specified portal.
+func ISCSISessionExists(portal string) (bool, error) {
 
-	log.Debug(">>>> osutils.IscsiSessionExists")
-	defer log.Debug("<<<< osutils.IscsiSessionExists")
+	log.Debug(">>>> osutils.ISCSISessionExists")
+	defer log.Debug("<<<< osutils.ISCSISessionExists")
 
-	sessionInfo, err := GetIscsiSessionInfo()
+	sessionInfo, err := getISCSISessionInfo()
 	if err != nil {
 		log.WithField("error", err).Error("Problem checking iSCSI sessions.")
 		return false, err
@@ -499,152 +607,236 @@ func IscsiSessionExists(portal string) (bool, error) {
 	return false, nil
 }
 
-// IscsiRescan uses the 'rescan-scsi-bus' command to perform rescanning of the SCSI bus
-func IscsiRescan(remove bool) (err error) {
+// ISCSIRescanTargetLUN rescans a single LUN on an iSCSI target.
+func ISCSIRescanTargetLUN(lunID int, iSCSINodeName string) error {
 
-	log.Debug(">>>> osutils.IscsiRescan")
-	defer log.Debug("<<<< osutils.IscsiRescan")
+	fields := log.Fields{"iSCSINodeName": iSCSINodeName, "lunID": lunID}
+	log.WithFields(fields).Debug(">>>> osutils.ISCSIRescanTargetLUN")
+	defer log.WithFields(fields).Debug("<<<< osutils.ISCSIRescanTargetLUN")
 
-	defer UdevSettle()
-
-	// Get iSCSI hosts so we don't have to rescan the entire SCSI subsystem
-	hosts, err := GetIscsiHostInfo()
-	if err != nil {
-		log.WithField("error", err).Error("Could not find iSCSI hosts, scanning everything.")
-		hosts = []string{}
+	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
 
-	// Build arguments for rescan command
-	rescanArgs := []string{"--alltargets"}
-	if remove {
-		rescanArgs = append(rescanArgs, "--remove")
-	}
-	if len(hosts) > 0 {
-		rescanArgs = append(rescanArgs, "--hosts="+strings.Join(hosts, ","))
-	}
-	if log.GetLevel() == log.DebugLevel {
-		rescanArgs = append(rescanArgs, "-d")
-	}
+	log.WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
 
-	// look for version of rescan-scsi-bus in known locations
-	var rescanCommands = []string{
-		"/usr/bin/rescan-scsi-bus.sh",
-		"/sbin/rescan-scsi-bus",
-		"/sbin/rescan-scsi-bus.sh",
-		"/bin/rescan-scsi-bus.sh",
-	}
+	var (
+		f   *os.File
+		err error
+	)
 
-	for _, rescanCommand := range rescanCommands {
-		_, err = os.Lstat(rescanCommand)
-		// The command exists in this location
-		if !os.IsNotExist(err) {
-			log.WithField("command", rescanCommand).Debug("Found SCSI rescan command.")
-			_, rescanErr := InvokeShellCommand(rescanCommand, rescanArgs...)
-			if rescanErr != nil {
-				log.Error("Could not rescan SCSI bus.")
-				return rescanErr
-			} else {
-				return
-			}
-		}
-	}
+	for hostNumber := range hostSessionMap {
 
-	// Attempt to find the binary on the path
-	_, err = InvokeShellCommand("rescan-scsi-bus.sh", rescanArgs...)
-	if err != nil {
-		log.Error("Could not rescan SCSI bus.")
-		return
-	}
-
-	log.Warn("Unable to find rescan-scsi-bus command!")
-	return
-}
-
-// UdevSettle invokes the 'udevadm settle' command
-func UdevSettle() error {
-	// creating new storage and attaching it to a host can trigger a ripple of udev activity.
-
-	log.Debug(">>>> osutils.UdevSettle")
-	defer log.Debug("<<<< osutils.UdevSettle")
-
-	// back-to-back invoke /sbin/multipath, if it exists, to make sure that device discovery has settled down post rescan
-	for i := 0; i < 2; i++ {
-		Multipath()
-		Multipath()
-
-		// attempt to wait for inflight udev events to complete (should eventually timeout if they never complete)
-		_, err := InvokeShellCommand("udevadm", "settle")
-		if err != nil {
+		filename := fmt.Sprintf("/sys/class/scsi_host/host%d/scan", hostNumber)
+		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
+			log.WithField("file", filename).Warning("Could not open file for writing.")
 			return err
 		}
+
+		scanCmd := fmt.Sprintf("0 0 %d", lunID)
+		if written, err := f.WriteString(scanCmd); err != nil {
+			log.WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+			f.Close()
+			return err
+		} else if written == 0 {
+			log.WithField("file", filename).Warning("No data written to file.")
+			f.Close()
+			return fmt.Errorf("no data written to %s", filename)
+		}
+
+		f.Close()
+
+		log.WithFields(log.Fields{
+			"scanCmd":  scanCmd,
+			"scanFile": filename,
+		}).Debug("Invoked single-LUN rescan.")
 	}
 
 	return nil
 }
 
-// Multipath invokes the 'multipath' command
-func Multipath() error {
+// getISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
+// for a given iSCSI target.
+func getISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 
-	log.Debug(">>>> osutils.Multipath")
-	defer log.Debug("<<<< osutils.Multipath")
+	fields := log.Fields{"iSCSINodeName": iSCSINodeName}
+	log.WithFields(fields).Debug(">>>> osutils.getISCSIHostSessionMapForTarget")
+	defer log.WithFields(fields).Debug("<<<< osutils.getISCSIHostSessionMapForTarget")
 
-	if !MultipathDetected() {
-		log.Debug("Skipping multipath command, /sbin/multipath doesn't exist.")
-		return nil
-	}
+	var (
+		hostNumber    int
+		sessionNumber int
+	)
 
-	_, err := InvokeShellCommand("multipath")
-	if err != nil {
-		// nothing to really do if it generates an error but log and return it
-		log.Debug("Error encountered in multipath command.")
-	}
-	return err
-}
+	hostSessionMap := make(map[int]int)
 
-// MultipathFlush invokes the 'multipath' commands to flush paths that have been removed
-func MultipathFlush() error {
+	sysPath := "/sys/class/iscsi_host/"
+	if hostDirs, err := ioutil.ReadDir(sysPath); err != nil {
+		log.WithField("error", err).Errorf("Could not read %s", sysPath)
+		return hostSessionMap
+	} else {
+		for _, hostDir := range hostDirs {
 
-	log.Debug(">>>> osutils.MultipathFlush")
-	defer log.Debug("<<<< osutils.MultipathFlush")
+			hostName := hostDir.Name()
+			if !strings.HasPrefix(hostName, "host") {
+				continue
+			} else if hostNumber, err = strconv.Atoi(strings.TrimPrefix(hostName, "host")); err != nil {
+				log.WithField("host", hostName).Error("Could not parse host number")
+				continue
+			}
 
-	_, err := InvokeShellCommand("multipath", "-F")
-	if err != nil {
-		// nothing to really do if it generates an error but log and return it
-		log.Debug("Error encountered in multipath flush unused paths command.")
-	}
-	return err
-}
+			devicePath := sysPath + hostName + "/device/"
+			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
+				log.WithField("error", err).Errorf("Could not read %f", devicePath)
+				return hostSessionMap
+			} else {
+				for _, deviceDir := range deviceDirs {
 
-var mpChecked = false
-var mpDetected = false
-var mpMutex sync.Mutex
+					sessionName := deviceDir.Name()
+					if !strings.HasPrefix(sessionName, "session") {
+						continue
+					} else if sessionNumber, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
+						log.WithField("session", sessionName).Error("Could not parse session number")
+						continue
+					}
 
-// MultipathDetected returns true if /sbin/multipath is installed and in the PATH
-func MultipathDetected() bool {
+					targetNamePath := devicePath + sessionName + "/iscsi_session/" + sessionName + "/targetname"
+					if targetName, err := ioutil.ReadFile(targetNamePath); err != nil {
 
-	mpMutex.Lock()
-	defer mpMutex.Unlock()
+						log.WithFields(log.Fields{
+							"path":  targetNamePath,
+							"error": err,
+						}).Error("Could not read targetname file")
 
-	if !mpChecked {
-		_, errStat := Stat("/sbin/multipath")
-		if errStat != nil {
-			mpDetected = false
-		} else {
-			mpDetected = true
+					} else if strings.TrimSpace(string(targetName)) == iSCSINodeName {
+
+						log.WithFields(log.Fields{
+							"hostNumber":    hostNumber,
+							"sessionNumber": sessionNumber,
+						}).Debug("Found iSCSI host/session.")
+
+						hostSessionMap[hostNumber] = sessionNumber
+					}
+				}
+			}
 		}
-		mpChecked = true
 	}
-	return mpDetected
+
+	return hostSessionMap
 }
 
-// GetFSType returns the filesystem for the supplied device
-func GetFSType(device string) string {
+// multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
+func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) {
 
-	log.WithField("device", device).Debug(">>>> osutils.GetFSType")
-	defer log.Debug("<<<< osutils.GetFSType")
+	log.WithField("device", deviceInfo.MultipathDevice).Debug(">>>> osutils.multipathFlushDevice")
+	defer log.Debug("<<<< osutils.multipathFlushDevice")
+
+	if deviceInfo.MultipathDevice == "" {
+		return
+	}
+
+	_, err := execCommandWithTimeout("multipath", 30, "-f", deviceInfo.MultipathDevice)
+	if err != nil {
+		// nothing to do if it generates an error but log it
+		log.WithFields(log.Fields{
+			"device": deviceInfo.MultipathDevice,
+			"error":  err,
+		}).Warning("Error encountered in multipath flush device command.")
+	}
+}
+
+// flushDevice flushes any outstanding I/O to all paths to a device.
+func flushDevice(deviceInfo *ScsiDeviceInfo) {
+
+	log.Debug(">>>> osutils.flushDevice")
+	defer log.Debug("<<<< osutils.flushDevice")
+
+	for diskByPath := range deviceInfo.DeviceNameMap {
+		_, err := execCommandWithTimeout("blockdev", 5, "--flushbufs", diskByPath)
+		if err != nil {
+			// nothing to do if it generates an error but log it
+			log.WithFields(log.Fields{
+				"device": diskByPath,
+				"error":  err,
+			}).Warning("Error encountered in blockdev --flushbufs command.")
+		}
+	}
+}
+
+// removeDevice tells Linux that a device will be removed.
+func removeDevice(deviceInfo *ScsiDeviceInfo) {
+
+	log.Debug(">>>> osutils.removeDevice")
+	defer log.Debug("<<<< osutils.removeDevice")
+
+	var (
+		f   *os.File
+		err error
+	)
+
+	for _, deviceName := range deviceInfo.DeviceNameMap {
+
+		filename := fmt.Sprintf("/sys/block/%s/device/delete", deviceName)
+		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
+			log.WithField("file", filename).Warning("Could not open file for writing.")
+			return
+		}
+
+		if written, err := f.WriteString("1"); err != nil {
+			log.WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+			f.Close()
+			return
+		} else if written == 0 {
+			log.WithField("file", filename).Warning("No data written to file.")
+			f.Close()
+			return
+		}
+
+		f.Close()
+
+		log.WithField("scanFile", filename).Debug("Invoked device delete.")
+	}
+}
+
+// multipathdIsRunning returns true if the multipath daemon is running.
+func multipathdIsRunning() bool {
+
+	log.Debug(">>>> osutils.multipathdIsRunning")
+	defer log.Debug("<<<< osutils.multipathdIsRunning")
+
+	out, err := execCommand("pgrep", "multipathd")
+	if err == nil {
+		pid := strings.TrimSpace(string(out))
+		if pidRegex.MatchString(pid) {
+			log.WithField("pid", pid).Debug("multipathd is running")
+			return true
+		}
+	} else {
+		log.Error(err)
+	}
+
+	out, err = execCommand("multipathd", "show", "daemon")
+	if err == nil {
+		if pidRunningRegex.MatchString(string(out)) {
+			log.Debug("multipathd is running")
+			return true
+		}
+	} else {
+		log.Error(err)
+	}
+
+	return false
+}
+
+// getFSType returns the filesystem for the supplied device.
+func getFSType(device string) string {
+
+	log.WithField("device", device).Debug(">>>> osutils.getFSType")
+	defer log.Debug("<<<< osutils.getFSType")
 
 	fsType := ""
-	out, err := InvokeShellCommand("blkid", device)
+	out, err := execCommand("blkid", device)
 	if err != nil {
 		log.WithField("device", device).Debug("Could not get FSType for device.")
 		return fsType
@@ -662,33 +854,55 @@ func GetFSType(device string) string {
 	return fsType
 }
 
-// FormatVolume creates a filesystem for the supplied device of the supplied type
+// FormatVolume creates a filesystem for the supplied device of the supplied type.
 func FormatVolume(device, fstype string) error {
 
-	log.WithFields(log.Fields{
-		"device": device,
-		"fsType": fstype,
-	}).Debug(">>>> osutils.FormatVolume")
-	defer log.Debug("<<<< osutils.FormatVolume")
+	logFields := log.Fields{"device": device, "fsType": fstype}
+	log.WithFields(logFields).Debug(">>>> osutils.FormatVolume")
+	defer log.WithFields(logFields).Debug("<<<< osutils.FormatVolume")
 
-	var err error
+	maxDuration := 30 * time.Second
 
-	switch fstype {
-	case "xfs":
-		_, err = InvokeShellCommand("mkfs.xfs", "-f", device)
-	case "ext3":
-		_, err = InvokeShellCommand("mkfs.ext3", "-F", device)
-	case "ext4":
-		_, err = InvokeShellCommand("mkfs.ext4", "-F", device)
-	default:
-		return fmt.Errorf("unsupported file system type: %s", fstype)
+	formatVolume := func() error {
+
+		var err error
+
+		switch fstype {
+		case "xfs":
+			_, err = execCommand("mkfs.xfs", "-f", device)
+		case "ext3":
+			_, err = execCommand("mkfs.ext3", "-F", device)
+		case "ext4":
+			_, err = execCommand("mkfs.ext4", "-F", device)
+		default:
+			return fmt.Errorf("unsupported file system type: %s", fstype)
+		}
+
+		return err
 	}
 
-	return err
+	formatNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Format failed, retrying.")
+	}
+
+	formatBackoff := backoff.NewExponentialBackOff()
+	formatBackoff.InitialInterval = 2 * time.Second
+	formatBackoff.Multiplier = 2
+	formatBackoff.RandomizationFactor = 0.1
+	formatBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check/rescan using an exponential backoff
+	if err := backoff.RetryNotify(formatVolume, formatBackoff, formatNotify); err != nil {
+		log.Warnf("Could not format device after %3.2f seconds.", maxDuration.Seconds())
+		return err
+	}
+
+	log.WithFields(logFields).Info("Device formatted.")
+	return nil
 }
 
-// Mount attaches the supplied device at the supplied location
-func Mount(device, mountpoint string) error {
+// Mount attaches the supplied device at the supplied location.
+func Mount(device, mountpoint string) (err error) {
 
 	log.WithFields(log.Fields{
 		"device":     device,
@@ -696,49 +910,46 @@ func Mount(device, mountpoint string) error {
 	}).Debug(">>>> osutils.Mount")
 	defer log.Debug("<<<< osutils.Mount")
 
-	_, err := InvokeShellCommand("mkdir", mountpoint)
-	if err != nil {
-		log.Warning("Mkdir failed.")
+	if _, err = execCommand("mkdir", "-p", mountpoint); err != nil {
+		log.WithField("error", err).Warning("Mkdir failed.")
 	}
-	_, err = InvokeShellCommand("mount", device, mountpoint)
-	if err != nil {
-		log.Error("Mount failed.")
+	if _, err = execCommand("mount", device, mountpoint); err != nil {
+		log.WithField("error", err).Error("Mount failed.")
 	}
-	return err
+	return
 }
 
-// Umount detaches from the supplied location
-func Umount(mountpoint string) error {
+// Umount detaches from the supplied location.
+func Umount(mountpoint string) (err error) {
 
 	log.WithField("mountpoint", mountpoint).Debug(">>>> osutils.Umount")
 	defer log.Debug("<<<< osutils.Umount")
 
-	_, err := InvokeShellCommand("umount", mountpoint)
-	if err != nil {
-		log.Error("Umount failed.")
+	if _, err = execCommand("umount", mountpoint); err != nil {
+		log.WithField("error", err).Error("Umount failed.")
 	}
-	return err
+	return
 }
 
-// Login to iSCSI target
-func LoginIscsiTarget(iqn, portal string) error {
+// LoginISCSITarget logs in to an iSCSI target.
+func LoginISCSITarget(iqn, portal string) error {
 
 	log.WithFields(log.Fields{
 		"IQN":    iqn,
 		"Portal": portal,
-	}).Debug(">>>> osutils.LoginIscsiTarget")
-	defer log.Debug("<<<< osutils.LoginIscsiTarget")
+	}).Debug(">>>> osutils.LoginISCSITarget")
+	defer log.Debug("<<<< osutils.LoginISCSITarget")
 
 	args := []string{"-m", "node", "-T", iqn, "-l", "-p", portal + ":3260"}
 
-	if _, err := InvokeIscsiadmCommand(args...); err != nil {
+	if _, err := execIscsiadmCommand(args...); err != nil {
 		log.WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
 	return nil
 }
 
-// LoginWithChap will login to the iSCSI target with the supplied credentials
+// LoginWithChap will login to the iSCSI target with the supplied credentials.
 func LoginWithChap(tiqn, portal, username, password, iface string, logSensitiveInfo bool) error {
 
 	logFields := log.Fields{
@@ -757,31 +968,31 @@ func LoginWithChap(tiqn, portal, username, password, iface string, logSensitiveI
 	args := []string{"-m", "node", "-T", tiqn, "-p", portal + ":3260"}
 
 	createArgs := append(args, []string{"--interface", iface, "--op", "new"}...)
-	if _, err := InvokeIscsiadmCommand(createArgs...); err != nil {
+	if _, err := execIscsiadmCommand(createArgs...); err != nil {
 		log.Error("Error running iscsiadm node create.")
 		return err
 	}
 
 	authMethodArgs := append(args, []string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
-	if _, err := InvokeIscsiadmCommand(authMethodArgs...); err != nil {
+	if _, err := execIscsiadmCommand(authMethodArgs...); err != nil {
 		log.Error("Error running iscsiadm set authmethod.")
 		return err
 	}
 
 	authUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
-	if _, err := InvokeIscsiadmCommand(authUserArgs...); err != nil {
+	if _, err := execIscsiadmCommand(authUserArgs...); err != nil {
 		log.Error("Error running iscsiadm set authuser.")
 		return err
 	}
 
 	authPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
-	if _, err := InvokeIscsiadmCommand(authPasswordArgs...); err != nil {
+	if _, err := execIscsiadmCommand(authPasswordArgs...); err != nil {
 		log.Error("Error running iscsiadm set authpassword.")
 		return err
 	}
 
 	loginArgs := append(args, []string{"--login"}...)
-	if _, err := InvokeIscsiadmCommand(loginArgs...); err != nil {
+	if _, err := execIscsiadmCommand(loginArgs...); err != nil {
 		log.Error("Error running iscsiadm login.")
 		return err
 	}
@@ -789,25 +1000,25 @@ func LoginWithChap(tiqn, portal, username, password, iface string, logSensitiveI
 	return nil
 }
 
-func EnsureIscsiSession(hostDataIP string) error {
+func EnsureISCSISession(hostDataIP string) error {
 
-	log.WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureIscsiSession")
-	defer log.Debug("<<<< osutils.EnsureIscsiSession")
+	log.WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureISCSISession")
+	defer log.Debug("<<<< osutils.EnsureISCSISession")
 
 	// Ensure iSCSI is supported on system
-	if !IscsiSupported() {
+	if !ISCSISupported() {
 		return errors.New("iSCSI support not detected")
 	}
 
 	// Ensure iSCSI session exists for the specified iSCSI portal
-	sessionExists, err := IscsiSessionExists(hostDataIP)
+	sessionExists, err := ISCSISessionExists(hostDataIP)
 	if err != nil {
 		return fmt.Errorf("could not check for iSCSI session: %v", err)
 	}
 	if !sessionExists {
 
 		// Run discovery in case we haven't seen this target from this host
-		targets, err := IscsiDiscovery(hostDataIP)
+		targets, err := iSCSIDiscovery(hostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not run iSCSI discovery: %v", err)
 		}
@@ -838,7 +1049,7 @@ func EnsureIscsiSession(hostDataIP string) error {
 			if target.TargetName == targetName {
 
 				// Log in to target
-				err = LoginIscsiTarget(target.TargetName, target.PortalIP)
+				err = LoginISCSITarget(target.TargetName, target.PortalIP)
 				if err != nil {
 					return fmt.Errorf("login to iSCSI target failed: %v", err)
 				}
@@ -846,7 +1057,7 @@ func EnsureIscsiSession(hostDataIP string) error {
 		}
 
 		// Recheck to ensure a session is now open
-		sessionExists, err = IscsiSessionExists(hostDataIP)
+		sessionExists, err = ISCSISessionExists(hostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
 		}
@@ -860,18 +1071,18 @@ func EnsureIscsiSession(hostDataIP string) error {
 	return nil
 }
 
-// InvokeIscsiadmCommand uses the 'iscsiadm' command to perform operations
-func InvokeIscsiadmCommand(args ...string) ([]byte, error) {
-	return InvokeShellCommand("iscsiadm", args...)
+// execIscsiadmCommand uses the 'iscsiadm' command to perform operations
+func execIscsiadmCommand(args ...string) ([]byte, error) {
+	return execCommand("iscsiadm", args...)
 }
 
-// InvokeShellCommand invokes an external shell command
-func InvokeShellCommand(name string, args ...string) ([]byte, error) {
+// execCommand invokes an external process
+func execCommand(name string, args ...string) ([]byte, error) {
 
 	log.WithFields(log.Fields{
 		"command": name,
 		"args":    args,
-	}).Debug(">>>> osutils.InvokeShellCommand.")
+	}).Debug(">>>> osutils.execCommand.")
 
 	out, err := exec.Command(name, args...).CombinedOutput()
 
@@ -879,14 +1090,67 @@ func InvokeShellCommand(name string, args ...string) ([]byte, error) {
 		"command": name,
 		"output":  sanitizeString(string(out)),
 		"error":   err,
-	}).Debug("<<<< osutils.InvokeShellCommand.")
+	}).Debug("<<<< osutils.execCommand.")
 
 	return out, err
 }
 
+// execCommandResult is used to return shell command results via channels between goroutines
+type execCommandResult struct {
+	Output []byte
+	Error  error
+}
+
+// execCommand invokes an external shell command
+func execCommandWithTimeout(name string, timeoutSeconds time.Duration, args ...string) ([]byte, error) {
+
+	timeout := timeoutSeconds * time.Second
+
+	log.WithFields(log.Fields{
+		"command":        name,
+		"timeoutSeconds": timeout,
+		"args":           args,
+	}).Debug(">>>> osutils.execCommandWithTimeout.")
+
+	cmd := exec.Command(name, args...)
+	done := make(chan execCommandResult, 1)
+	var result execCommandResult
+
+	go func() {
+		out, err := cmd.CombinedOutput()
+		done <- execCommandResult{Output: out, Error: err}
+	}()
+
+	select {
+	case <-time.After(timeout):
+		if err := cmd.Process.Kill(); err != nil {
+			log.WithFields(log.Fields{
+				"process": name,
+				"error":   err,
+			}).Error("failed to kill process")
+			result = execCommandResult{Output: nil, Error: err}
+		} else {
+			log.WithFields(log.Fields{
+				"process": name,
+			}).Error("process killed after timeout")
+			result = execCommandResult{Output: nil, Error: errors.New("process killed after timeout")}
+		}
+	case result = <-done:
+		break
+	}
+
+	log.WithFields(log.Fields{
+		"command": name,
+		"output":  sanitizeString(string(result.Output)),
+		"error":   result.Error,
+	}).Debug("<<<< osutils.execCommandWithTimeout.")
+
+	return result.Output, result.Error
+}
+
 func sanitizeString(s string) string {
 	// Strip xterm color & movement characters
-	s = XtermControlRegex.ReplaceAllString(s, "")
+	s = xtermControlRegex.ReplaceAllString(s, "")
 	// Strip trailing newline
 	s = strings.TrimSuffix(s, "\n")
 	return s

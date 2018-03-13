@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -191,6 +193,27 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		args)
 	if err != nil {
 		return nil, err
+	}
+
+	// The clone may not be fully created when the clone API returns, so wait here until it exists.
+	checkCloneExists := func() error {
+		return b.Driver.Get(volConfig.InternalName)
+	}
+	cloneExistsNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Clone not yet present, waiting.")
+	}
+	cloneBackoff := backoff.NewExponentialBackOff()
+	cloneBackoff.InitialInterval = 1 * time.Second
+	cloneBackoff.Multiplier = 2
+	cloneBackoff.RandomizationFactor = 0.1
+	cloneBackoff.MaxElapsedTime = 90 * time.Second
+
+	// Run the clone check using an exponential backoff
+	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
+		log.WithField("cloneVolume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
+			cloneBackoff.MaxElapsedTime)
+	} else {
+		log.WithField("cloneVolume", volConfig.Name).Debug("Clone found.")
 	}
 
 	err = b.Driver.CreateFollowup(volConfig)

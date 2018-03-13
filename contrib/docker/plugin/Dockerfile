@@ -27,6 +27,7 @@ RUN chmod 777 /sbin/rescan-scsi-bus \
 
 RUN ln -s /host/etc/iscsi /etc/iscsi
 
+ENV DOCKER_PLUGIN_MODE 1
 EXPOSE 8000
 
 CMD ["/netapp/container-launch.sh", "--config=/etc/netappdvp/config.json"]

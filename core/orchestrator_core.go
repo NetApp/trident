@@ -820,6 +820,7 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 		log.WithFields(log.Fields{
 			"volume":  volumeName,
 			"backend": volume.Backend,
+			"error":   err,
 		}).Error("Unable to delete volume from backend.")
 		return err
 	}

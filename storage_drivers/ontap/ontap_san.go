@@ -139,7 +139,7 @@ func (d *SANStorageDriver) validate() error {
 
 	if d.Config.DriverContext == trident.ContextDocker {
 		// Make sure this host is logged into the ONTAP iSCSI target
-		err := utils.EnsureIscsiSession(d.Config.DataLIF)
+		err := utils.EnsureISCSISession(d.Config.DataLIF)
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
 		}
@@ -301,6 +301,13 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		defer log.WithFields(fields).Debug("<<<< Destroy")
 	}
 
+	var (
+		err             error
+		iSCSINodeName   string
+		iSCSIInterfaces []string
+		lunID           int
+	)
+
 	// Validate Flexvol exists before trying to destroy
 	volExists, err := d.API.VolumeExists(name)
 	if err != nil {
@@ -309,6 +316,33 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	if !volExists {
 		log.WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
 		return nil
+	}
+
+	if d.Config.DriverContext == trident.ContextDocker {
+
+		// Get target info
+		iSCSINodeName, iSCSIInterfaces, err = d.getISCSITargetInfo()
+		if err != nil {
+			log.WithField("error", err).Error("Could not get target info.")
+			return err
+		}
+
+		// Get the LUN ID
+		lunPath := fmt.Sprintf("/vol/%s/lun0", name)
+		lunMapResponse, err := d.API.LunMapListInfo(lunPath)
+		if err != nil {
+			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
+		}
+		lunID = -1
+		for _, lunMapResponse := range lunMapResponse.Result.InitiatorGroups() {
+			if lunMapResponse.InitiatorGroupName() == d.Config.IgroupName {
+				lunID = lunMapResponse.LunId()
+			}
+		}
+		if lunID >= 0 {
+			// Inform the host about the device removal
+			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName, iSCSIInterfaces)
+		}
 	}
 
 	// Delete the Flexvol & LUN
@@ -323,12 +357,6 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		} else {
 			return fmt.Errorf("error destroying volume %v: %v", name, zerr)
 		}
-	}
-
-	// Perform rediscovery to remove the deleted LUN
-	if d.Config.DriverContext == trident.ContextDocker {
-		utils.MultipathFlush() // flush unused paths
-		utils.IscsiRescan(true)
 	}
 
 	return nil
@@ -349,13 +377,21 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		defer log.WithFields(fields).Debug("<<<< Attach")
 	}
 
+	var err error
+
 	// Error if no iSCSI session exists for the specified iscsi portal
-	sessionExists, err := utils.IscsiSessionExists(d.Config.DataLIF)
+	sessionExists, err := utils.ISCSISessionExists(d.Config.DataLIF)
 	if err != nil {
 		return fmt.Errorf("unexpected iSCSI session error: %v", err)
 	}
 	if !sessionExists {
 		return fmt.Errorf("expected iSCSI session %v not found; please login to the iSCSI portal", d.Config.DataLIF)
+	}
+
+	// Get target info
+	iSCSINodeName, iSCSIInterfaces, err := d.getISCSITargetInfo()
+	if err != nil {
+		return err
 	}
 
 	igroupName := d.Config.IgroupName
@@ -411,109 +447,94 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		return err
 	}
 
-	// Perform discovery to see the created/mapped LUN
-	utils.IscsiRescan(false)
+	// Rescan and wait for the device(s) to appear
+	err = utils.RescanTargetAndWaitForDevice(lunID, iSCSINodeName, iSCSIInterfaces)
+	if err != nil {
+		return fmt.Errorf("could not find iSCSI device: %v", err)
+	}
 
 	// Lookup all the SCSI device information
-	info, err := utils.GetDeviceInfoForLuns()
+	deviceInfo, err := utils.GetDeviceInfoForLUN(lunID, iSCSINodeName, iSCSIInterfaces)
 	if err != nil {
-		return fmt.Errorf("error getting SCSI device information: %v", err)
+		return fmt.Errorf("error getting iSCSI device information: %v", err)
+	} else if deviceInfo == nil {
+		return fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
 	}
 
-	// Lookup all the iSCSI session information
-	sessionInfo, err := utils.GetIscsiSessionInfo()
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI session information: %v", err)
+	log.WithFields(log.Fields{
+		"scsiLun":          deviceInfo.LUN,
+		"multipathDevFile": deviceInfo.MultipathDevice,
+		"devFile":          deviceInfo.Device,
+		"fsType":           deviceInfo.Filesystem,
+		"iqn":              deviceInfo.IQN,
+	}).Debug("Found device.")
+
+	// Make sure we use the proper device (multipath if in use)
+	deviceToUse := deviceInfo.Device
+	if deviceInfo.MultipathDevice != "" {
+		deviceToUse = deviceInfo.MultipathDevice
 	}
 
-	sessionInfoToUse := utils.IscsiSessionInfo{}
-	for i, e := range sessionInfo {
-		if e.PortalIP == d.Config.DataLIF {
-			sessionInfoToUse = sessionInfo[i]
-		}
+	if deviceToUse == "" {
+		return fmt.Errorf("could not determine device to use for %v", name)
 	}
 
-	for i, e := range info {
-		log.WithFields(log.Fields{
-			"i":                i,
-			"scsiHost":         e.Host,
-			"scsiChannel":      e.Channel,
-			"scsiTarget":       e.Target,
-			"scsiLun":          e.LUN,
-			"multipathDevFile": e.MultipathDevice,
-			"devFile":          e.Device,
-			"fsType":           e.Filesystem,
-			"iqn":              e.IQN,
-		}).Debug("Found")
-	}
-
-	// look for the expected mapped lun
-	for i, e := range info {
-
-		log.WithFields(log.Fields{
-			"i":                i,
-			"scsiHost":         e.Host,
-			"scsiChannel":      e.Channel,
-			"scsiTarget":       e.Target,
-			"scsiLun":          e.LUN,
-			"multipathDevFile": e.MultipathDevice,
-			"devFile":          e.Device,
-			"fsType":           e.Filesystem,
-			"iqn":              e.IQN,
-		}).Debug("Checking")
-
-		if e.LUN != strconv.Itoa(lunID) {
-			log.Debugf("Skipping... lun id %v != %v", e.LUN, lunID)
-			continue
-		}
-
-		if !strings.HasPrefix(e.IQN, sessionInfoToUse.TargetName) {
-			log.Debugf("Skipping... %v doesn't start with %v", e.IQN, sessionInfoToUse.TargetName)
-			continue
-		}
-
-		// If we're here then, we should be on the right info element:
-		// *) we have the expected LUN ID
-		// *) we have the expected iscsi session target
-		log.Debugf("Using... %v", e)
-
-		// Make sure we use the proper device (multipath if in use)
-		deviceToUse := e.Device
-		if e.MultipathDevice != "" {
-			deviceToUse = e.MultipathDevice
-		}
-
-		if deviceToUse == "" {
-			return fmt.Errorf("could not determine device to use for %v", name)
-		}
-
-		// Put a filesystem on it if there isn't one already there
-		if e.Filesystem == "" {
-			log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Formatting LUN.")
-			err := utils.FormatVolume(deviceToUse, fstype)
-			if err != nil {
-				return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
-			}
-		} else if e.Filesystem != fstype {
-			log.WithFields(log.Fields{
-				"LUN":             lunPath,
-				"existingFstype":  e.Filesystem,
-				"requestedFstype": fstype,
-			}).Warn("LUN already formatted with a different file system type.")
-		} else {
-			log.WithFields(log.Fields{"LUN": lunPath, "fstype": e.Filesystem}).Debug("LUN already formatted.")
-		}
-
-		// Mount it
-		err := utils.Mount(deviceToUse, mountpoint)
+	// Put a filesystem on it if there isn't one already there
+	if deviceInfo.Filesystem == "" {
+		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Formatting LUN.")
+		err := utils.FormatVolume(deviceToUse, fstype)
 		if err != nil {
-			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v: %v", name, deviceToUse, mountpoint,
-				err)
+			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
 		}
-		return nil
+	} else if deviceInfo.Filesystem != fstype {
+		log.WithFields(log.Fields{
+			"LUN":             lunPath,
+			"existingFstype":  deviceInfo.Filesystem,
+			"requestedFstype": fstype,
+		}).Warn("LUN already formatted with a different file system type.")
+	} else {
+		log.WithFields(log.Fields{"LUN": lunPath, "fstype": deviceInfo.Filesystem}).Debug("LUN already formatted.")
 	}
 
-	return fmt.Errorf("attach failed, device not found: %v", name)
+	// Mount it
+	err = utils.Mount(deviceToUse, mountpoint)
+	if err != nil {
+		return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v: %v",
+			name, deviceToUse, mountpoint, err)
+	}
+
+	return nil
+}
+
+func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
+
+	// Get the SVM iSCSI IQN
+	nodeNameResponse, err := d.API.IscsiNodeGetNameRequest()
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
+		return
+	}
+	iSCSINodeName = nodeNameResponse.Result.NodeName()
+
+	// Get the SVM iSCSI interfaces
+	interfaceResponse, err := d.API.IscsiInterfaceGetIterRequest()
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM iSCSI interfaces: %v", err)
+		return
+	}
+	for _, iscsiAttrs := range interfaceResponse.Result.AttributesList() {
+		if !iscsiAttrs.IsInterfaceEnabled() {
+			continue
+		}
+		iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
+		iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
+	}
+	if len(iSCSIInterfaces) == 0 {
+		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", d.Config.SVM)
+		return
+	}
+
+	return
 }
 
 // Detach the volume
@@ -617,6 +638,23 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 }
 
 func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateFollowup",
+			"Type":         "SANStorageDriver",
+			"name":         volConfig.Name,
+			"internalName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateFollowup")
+		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
+	}
+
+	if d.Config.DriverContext == trident.ContextDocker {
+		log.Debug("No follow-up create actions for Docker.")
+		return nil
+	}
+
 	return d.mapOntapSANLun(volConfig)
 }
 

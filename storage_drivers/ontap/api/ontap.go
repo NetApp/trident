@@ -1096,6 +1096,20 @@ func (d Client) IscsiServiceGetIterRequest() (response azgo.IscsiServiceGetIterR
 	return
 }
 
+// IscsiNodeGetNameRequest gets the IQN of the vserver
+func (d Client) IscsiNodeGetNameRequest() (response azgo.IscsiNodeGetNameResponse, err error) {
+	response, err = azgo.NewIscsiNodeGetNameRequest().ExecuteUsing(d.zr)
+	return
+}
+
+// IscsiInterfaceGetIterRequest returns information about the vserver's iSCSI interfaces
+func (d Client) IscsiInterfaceGetIterRequest() (response azgo.IscsiInterfaceGetIterResponse, err error) {
+	response, err = azgo.NewIscsiInterfaceGetIterRequest().
+		SetMaxRecords(defaultZapiRecords).
+		ExecuteUsing(d.zr)
+	return
+}
+
 // ISCSI operations END
 /////////////////////////////////////////////////////////////////////////////
 

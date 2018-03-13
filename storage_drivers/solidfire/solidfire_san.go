@@ -289,7 +289,7 @@ func (d *SANStorageDriver) validate() error {
 
 	if d.Config.DriverContext == trident.ContextDocker {
 		// Validate the environment
-		isIscsiSupported := utils.IscsiSupported()
+		isIscsiSupported := utils.ISCSISupported()
 		if !isIscsiSupported {
 			log.Errorf("Host doesn't appear to support iSCSI.")
 			return errors.New("no iSCSI support on this host")
@@ -518,7 +518,17 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		log.Warnf("volume doesn't exist")
 		return nil
 	}
-	d.Client.DetachVolume(v)
+
+	if d.Config.DriverContext == trident.ContextDocker {
+		// Inform the host about the device removal
+		utils.PrepareDeviceForRemoval(0, v.Iqn, []string{d.Config.SVIP})
+	}
+
+	err = d.Client.DetachVolume(v)
+	if err != nil {
+		log.Warning("Unable to detach volume, deleting anyway: %+v", err)
+	}
+
 	err = d.Client.DeleteVolume(v.VolumeID)
 	if err != nil {
 		log.Errorf("Error during delete operation: %+v", err)
@@ -557,17 +567,31 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		log.Errorf("Error on iSCSI attach: %+v", err)
 		return errors.New("iSCSI attach error")
 	}
-	log.Debugf("Attached volume: (path: %s, device: %s)", path, device)
+	log.WithFields(log.Fields{
+		"path":   path,
+		"device": device,
+	}).Debugf("Attached volume.")
 
 	// NOTE(jdg): Check for device including multipath/DM device)
-	info, err := utils.GetDeviceInfoForLuns()
-	for _, e := range info {
-		if e.Device != device {
-			continue
-		}
-		if e.MultipathDevice != "" {
-			device = e.MultipathDevice
-		}
+	deviceInfo, err := utils.GetDeviceInfoForLUN(0, v.Iqn, []string{d.Config.SVIP})
+	if err != nil {
+		return fmt.Errorf("error getting iSCSI device information: %v", err)
+	} else if deviceInfo == nil {
+		return errors.New("could not get iSCSI device information for LUN")
+	}
+
+	log.WithFields(log.Fields{
+		"scsiLun":          deviceInfo.LUN,
+		"multipathDevFile": deviceInfo.MultipathDevice,
+		"devFile":          deviceInfo.Device,
+		"fsType":           deviceInfo.Filesystem,
+		"iqn":              deviceInfo.IQN,
+	}).Debug("Found device.")
+
+	// Make sure we use the proper device (multipath if in use)
+	deviceToUse := deviceInfo.Device
+	if deviceInfo.MultipathDevice != "" {
+		deviceToUse = deviceInfo.MultipathDevice
 	}
 
 	// Get the fstype
@@ -578,13 +602,12 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	// Put a filesystem on it if there isn't one already there
-	existingFstype := utils.GetFSType(device)
+	existingFstype := deviceInfo.Filesystem
 	if existingFstype == "" {
 		log.WithFields(log.Fields{"LUN": path, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(device, fstype)
+		err := utils.FormatVolume(deviceToUse, fstype)
 		if err != nil {
-			log.Errorf("Error on formatting volume: %+v", err)
-			return errors.New("format (mkfs) error")
+			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != fstype {
 		log.WithFields(log.Fields{
@@ -596,8 +619,8 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		log.WithFields(log.Fields{"LUN": path, "fstype": existingFstype}).Debug("LUN already formatted.")
 	}
 
-	if mountErr := utils.Mount(device, mountpoint); mountErr != nil {
-		log.Errorf("Unable to mount device: (device: %s, mountpoint: %s, error: %+v", device, mountpoint, err)
+	if mountErr := utils.Mount(deviceToUse, mountpoint); mountErr != nil {
+		log.Errorf("Unable to mount device: (device: %s, mountpoint: %s, error: %+v", deviceToUse, mountpoint, err)
 		return errors.New("unable to mount device")
 	}
 
@@ -845,6 +868,23 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 }
 
 func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateFollowup",
+			"Type":         "SANStorageDriver",
+			"name":         volConfig.Name,
+			"internalName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateFollowup")
+		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
+	}
+
+	if d.Config.DriverContext == trident.ContextDocker {
+		log.Debug("No follow-up create actions for Docker.")
+		return nil
+	}
+
 	return d.mapSolidfireLun(volConfig)
 }
 

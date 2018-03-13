@@ -74,3 +74,5 @@ import:
   version: 6d15c0ae71e55ed645c21ac4945aaadbc0e9a590
 - package: github.com/olekukonko/tablewriter
   version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4
+- package: github.com/cenkalti/backoff
+  version: 2ea60e5f094469f9e65adb9cd103795b73ae743e

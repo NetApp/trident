@@ -173,19 +173,19 @@ func (c *Client) DetachVolume(v Volume) (err error) {
 		log.Errorf("error response from DetachVolume request: %+v ", err)
 		return errors.New("detach volume error")
 	}
-	tgt := &utils.IscsiTargetInfo{
+	tgt := &utils.ISCSITargetInfo{
 		IP:     c.SVIP,
 		Portal: c.SVIP,
 		Iqn:    v.Iqn,
 	}
-	err = utils.IscsiDisableDelete(tgt)
+	err = utils.ISCSIDisableDelete(tgt)
 	return
 }
 
 // AttachVolume tbd
 func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err error) {
 	var req GetAccountByIDRequest
-	path = "/dev/disk/by-path/ip-" + c.SVIP + "-iscsi-" + v.Iqn + "-lun-0"
+	path = utils.GetDevicePathsForISCSIPortals(0, v.Iqn, []string{c.SVIP})[0]
 
 	if c.SVIP == "" {
 		err = errors.New("unable to perform iSCSI actions without setting SVIP")
@@ -193,7 +193,7 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 		return path, device, err
 	}
 
-	if utils.IscsiSupported() == false {
+	if utils.ISCSISupported() == false {
 		err := errors.New("unable to attach: open-iscsi tools not found on host")
 		log.Errorf("Unable to attach volume: open-iscsi utils not found")
 		return path, device, err
@@ -207,9 +207,9 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 	}
 
 	// Make sure it's not already attached
-	if utils.WaitForPathToExist(path, 1) {
-		log.Debugf("Get device file from path: %s", path)
-		device = strings.TrimSpace(utils.GetDeviceFileFromIscsiPath(path))
+	if utils.PathExists(path) {
+		log.WithField("devicePath", path).Debug("Path already exists.")
+		device = strings.TrimSpace(utils.GetDeviceFileFromISCSIPath(path))
 		return path, device, nil
 	}
 
@@ -219,10 +219,15 @@ func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err
 		log.Errorf("Failed to login with CHAP credentials: %+v ", err)
 		return path, device, err
 	}
-	if utils.WaitForPathToExist(path, 10) {
-		device = strings.TrimSpace(utils.GetDeviceFileFromIscsiPath(path))
-		return path, device, nil
+
+	// Rescan and wait for the device(s) to appear
+	err = utils.RescanTargetAndWaitForDevice(0, v.Iqn, []string{c.SVIP})
+	if err != nil {
+		log.Errorf("could not find iSCSI device: %+v", err)
+		return path, device, err
 	}
+
+	device = strings.TrimSpace(utils.GetDeviceFileFromISCSIPath(path))
 	return path, device, nil
 }
 
