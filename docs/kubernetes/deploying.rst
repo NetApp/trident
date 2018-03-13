@@ -115,18 +115,43 @@ your backend type.
 4: Install Trident
 ==================
 
-Run the Trident installer:
+First, let's verify that Trident can be installed:
 
-.. code-block:: bash
+.. code-block:: console
 
-	./install_trident.sh -n trident
+  # ./tridentctl install --dry-run -n trident
+  INFO Starting storage driver.                backend=setup/backend.json
+  INFO Storage driver loaded.                  driver=ontap-nas
+  INFO Dry run completed, no problems found.
+
+The ``--dry-run`` argument tells the installer to inspect the current
+environment and checks that everything looks good for a Trident
+installation, but it makes no changes to the environment and will *not*
+install Trident.
 
 The ``-n`` argument specifies the namespace (project in OpenShift) that
 Trident will be installed into. We recommend installing Trident into its
 own namespace to isolate it from other applications.
 
-Provided that everything was configured correctly, Trident should be up and
-running in a few minutes.
+Provided that everything was configured correctly, you can now run the
+Trident installer and it should be running in a few minutes:
+
+.. code-block:: console
+
+  #./tridentctl install -n trident
+  INFO Starting storage driver.                backend=setup/backend.json
+  INFO Storage driver loaded.                  driver=ontap-nas
+  INFO Starting Trident installation.          namespace=trident
+  INFO Created service account.
+  INFO Created cluster role.
+  INFO Created cluster role binding.
+  INFO Created PVC.
+  INFO Created PV.                             pv=trident
+  INFO Waiting for PVC to be bound.            pvc=trident
+  INFO Created Trident deployment.
+  INFO Waiting for Trident pod to start.
+  INFO Trident pod started.                    namespace=trident pod=trident-7d5d659bd7-tzth6
+  INFO Trident installation succeeded.
 
 It will look like this when the installer is complete:
 
@@ -146,26 +171,55 @@ It will look like this when the installer is complete:
 If that's what you see, you're done with this step, but **Trident is not
 yet fully configured.** Go ahead and continue to the next step.
 
-However, if you continue to see pods called ``trident-launcher`` or
-``trident-ephemeral`` and a **Running** ``trident-<generated id>`` pod does not
-appear after a few minutes, Trident had a problem and the platform was *not*
+However, if the installer does not complete successfully or you don't see
+a **Running** ``trident-<generated id>``, then Trident had a problem and the platform was *not*
 installed.
 
-To help figure out what went wrong, you can view the logs by running:
+To help figure out what went wrong, you could run the installer again using the ``-d`` argument,
+which will turn on debug mode and help you understand what the problem is:
 
 .. code-block:: console
 
-  ./tridentctl -n trident logs
+  # ./tridentctl install -n trident -d
 
 After addressing the problem, you can clean up the installation and go back to
 the beginning of this step by first running:
 
 .. code-block:: console
 
-  ./uninstall_trident.sh -n trident
+  # ./tridentctl uninstall -n trident
+  INFO Deleted Trident deployment.
+  INFO Deleted cluster role binding.
+  INFO Deleted cluster role.
+  INFO Deleted service account.
+  INFO Removed Trident user from security context constraint.
+  INFO Trident uninstallation succeeded.
 
 If you continue to have trouble, visit the
 :ref:`troubleshooting guide <Troubleshooting>` for more advice.
+
+Customized Installation
+-----------------------
+
+Trident's installer allows you to customize attributes such as PV or PVC default names, 
+by using the installer's ``--pv`` or ``--pvc`` parameters. You can also specify a
+storage volume name and size by using ``--volume-name`` and ``--volume-size``.
+
+Users can also customize Trident's deployment files. Using the ``--generate-custom-yaml``
+parameter will create the following YAML files in the installer's ``setup`` directory:
+
+- trident-clusterrolebinding.yaml
+- trident-deployment.yaml
+- trident-pvc.yaml
+- trident-clusterrole.yaml
+- trident-namespace.yaml
+- trident-serviceaccount.yaml
+
+Once you have generated these files, you can modify them according to your needs and
+then use the ``--use-custom-yaml`` to install a customized version of Trident.
+
+.. code-block:: console
+  # ./tridentctl install -n trident --use-custom-yaml --volume-name my_volume
 
 5: Add your first backend
 =========================

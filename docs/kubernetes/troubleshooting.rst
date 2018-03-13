@@ -14,8 +14,8 @@ Troubleshooting
   (e.g., via ``journalctl -xeu kubelet``) can also be helpful here.
 * If there's not enough information in the Trident and Trident launcher logs,
   you can try enabling debug mode for Trident and Trident launcher by passing
-  the ``-d`` flag to the install script: ``./install_trident.sh -d -n trident``.
-* The :ref:`uninstall script <Uninstalling Trident>` can help with cleaning up
+  the ``-d`` flag to the install parameter: ``./tridentctl install -d -n trident``.
+* The :ref:`uninstall parameter <Uninstalling Trident>` can help with cleaning up
   after a failed run. By default the script does not touch the etcd backing
   store, making it safe to uninstall and install again even in a running
   deployment.

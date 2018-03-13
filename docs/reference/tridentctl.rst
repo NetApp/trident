@@ -3,9 +3,9 @@ tridentctl
 ##########
 
 The `Trident installer bundle`_ includes a command-line utility, ``tridentctl``,
-that provides simple access to Trident. It can be used to interact with Trident
-directly by any Kubernetes users with sufficient privileges to manage the
-namespace that contains the Trident pod.
+that provides simple access to Trident. It can be used to install Trident, as
+well as to interact with it directly by any Kubernetes users with sufficient
+privileges, to manage the namespace that contains the Trident pod.
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases
 
@@ -21,7 +21,9 @@ commands and global options:
     create      Add a resource to Trident
     delete      Remove one or more resources from Trident
     get         Get one or more resources from Trident
+    install     Install Trident
     logs        Print the logs from Trident
+    uninstall   Uninstall Trident
     version     Print the version of Trident
 
   Flags:
@@ -73,6 +75,28 @@ Get one or more resources from Trident
     storageclass Get one or more storage classes from Trident
     volume       Get one or more volumes from Trident
 
+install
+-------
+
+Install Trident
+
+.. code-block:: console
+
+  Usage:
+    tridentctl install [flags]
+
+  Flags:
+    --dry-run
+    --generate-custom-yaml   Generate YAML files, but don't install anything
+    --k8s-timeout duration   The number of seconds to wait before timing out on Kubernetes
+                             operations (default 2m0s)
+    --pv string              The name of the PV used by Trident (default "trident")
+    --pvc string             The name of the PVC used by Trident (default "trident")
+    --silent                 Disable most output during installation
+    --use-custom-yaml        Use any existing YAML files that exist in setup directory
+    --volume-name string     The name of the storage volume used by Trident (default "trident")
+    --volume-size string     The size of the storage volume used by Trident (default "2Gi")
+
 logs
 ----
 
@@ -85,7 +109,24 @@ Print the logs from Trident
 
   Flags:
     -a, --archive      Create a support archive with all logs unless otherwise specified.
-    -l, --log string   Trident log to display. One of trident|etcd|launcher|ephemeral|auto|all (default "auto")
+    -l, --log string   Trident log to display. One of trident|etcd|launcher|ephemeral|auto|all
+                       (default "auto")
+
+uninstall
+---------
+
+Uninstall Trident
+
+.. code-block:: console
+
+  Usage:
+    tridentctl uninstall [flags]
+
+  Flags:
+    -a, --all      Deletes almost all artifacts of Trident, including the PVC and PV used
+                   by Trident; however, it doesn't delete the volume used by Trident from
+                   the storage backend. Use with caution!
+        --silent   Disable most output during uninstallation.
 
 version
 -------
