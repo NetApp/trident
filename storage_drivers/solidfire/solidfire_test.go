@@ -16,6 +16,8 @@ func TestGetExternalConfig(t *testing.T) {
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: "solidfire-san",
+			},
+			SolidfireStorageDriverConfigDefaults: drivers.SolidfireStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "100GiB",
 				},

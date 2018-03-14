@@ -135,9 +135,9 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return fmt.Errorf("volume %s already exists", name)
 	}
 
-	if sizeBytes < MinimumVolumeSizeBytes {
-		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes)
+	sizeBytes, err = GetVolumeSize(sizeBytes, d.Config)
+	if err != nil {
+		return err
 	}
 
 	// get options with default fallback values

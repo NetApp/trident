@@ -3,8 +3,6 @@
 package docker
 
 const (
-	pluginName = "docker"
-
+	pluginName             = "docker"
 	autoStorageClassPrefix = "auto_sc_%d"
-	defaultVolumeSize      = "1g"
 )

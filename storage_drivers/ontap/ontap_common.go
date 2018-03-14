@@ -365,6 +365,16 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		defer log.WithFields(fields).Debug("<<<< PopulateConfigurationDefaults")
 	}
 
+	// Ensure the default volume size is valid, using a "default default" of 1G if not set
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	} else {
+		_, err := utils.ConvertSizeToBytes(config.Size)
+		if err != nil {
+			return fmt.Errorf("invalid config value for default volume size: %v", err)
+		}
+	}
+
 	if config.StoragePrefix == nil {
 		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
 		config.StoragePrefix = &prefix
@@ -427,6 +437,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		"SplitOnClone":    config.SplitOnClone,
 		"FileSystemType":  config.FileSystemType,
 		"Encryption":      config.Encryption,
+		"Size":            config.Size,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -451,6 +462,19 @@ func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, 
 			return nil, nil
 		}
 	}
+}
+
+func GetVolumeSize(sizeBytes uint64, config drivers.OntapStorageDriverConfig) (uint64, error) {
+
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(config.Size)
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return 0, fmt.Errorf("requested volume size (%d bytes) is too small; "+
+			"the minimum volume size is %d bytes", sizeBytes, MinimumVolumeSizeBytes)
+	}
+	return sizeBytes, nil
 }
 
 // EMSHeartbeat logs an ASUP message on a timer

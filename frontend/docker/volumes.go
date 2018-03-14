@@ -88,7 +88,7 @@ func makeStorageClass(options map[string]string, o core.Orchestrator) (*storagec
 // and returns a volume config structure suitable for passing to the orchestrator core.
 func getVolumeConfig(name, storageClass string, opts map[string]string) (*storage.VolumeConfig, error) {
 
-	sizeBytes, err := utils.GetVolumeSizeBytes(opts, defaultVolumeSize)
+	sizeBytes, err := utils.GetVolumeSizeBytes(opts, "0")
 	if err != nil {
 		return nil, fmt.Errorf("error creating volume: %v", err)
 	}

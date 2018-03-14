@@ -11,21 +11,19 @@ import (
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
 )
 
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
 type CommonStorageDriverConfig struct {
-	Version                           int                   `json:"version"`
-	StorageDriverName                 string                `json:"storageDriverName"`
-	Debug                             bool                  `json:"debug"`           // Unsupported!
-	DebugTraceFlags                   map[string]bool       `json:"debugTraceFlags"` // Example: {"api":false, "method":true}
-	DisableDelete                     bool                  `json:"disableDelete"`
-	StoragePrefixRaw                  json.RawMessage       `json:"storagePrefix,string"`
-	StoragePrefix                     *string               `json:"-"`
-	SerialNumbers                     []string              `json:"-"`
-	DriverContext                     trident.DriverContext `json:"-"`
-	CommonStorageDriverConfigDefaults `json:"defaults"`
+	Version           int                   `json:"version"`
+	StorageDriverName string                `json:"storageDriverName"`
+	Debug             bool                  `json:"debug"`           // Unsupported!
+	DebugTraceFlags   map[string]bool       `json:"debugTraceFlags"` // Example: {"api":false, "method":true}
+	DisableDelete     bool                  `json:"disableDelete"`
+	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
+	StoragePrefix     *string               `json:"-"`
+	SerialNumbers     []string              `json:"-"`
+	DriverContext     trident.DriverContext `json:"-"`
 }
 
 type CommonStorageDriverConfigDefaults struct {
@@ -57,6 +55,12 @@ type ESeriesStorageDriverConfig struct {
 	HostDataIP           string `json:"hostDataIP"`            // for iSCSI can be either port if multipathing is setup
 	AccessGroup          string `json:"accessGroupName"`       // name for host group
 	HostType             string `json:"hostType"`              // host type, default is 'linux_dm_mp'
+
+	EseriesStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type EseriesStorageDriverConfigDefaults struct {
+	CommonStorageDriverConfigDefaults
 }
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
@@ -86,32 +90,44 @@ type OntapStorageDriverConfigDefaults struct {
 	SplitOnClone    string `json:"splitOnClone"`
 	FileSystemType  string `json:"fileSystemType"`
 	Encryption      string `json:"encryption"`
+	CommonStorageDriverConfigDefaults
 }
 
 // SolidfireStorageDriverConfig holds settings for SolidfireStorageDrivers
 type SolidfireStorageDriverConfig struct {
-	*CommonStorageDriverConfig // embedded types replicate all fields
-	TenantName                 string
-	EndPoint                   string
-	SVIP                       string
-	InitiatorIFace             string //iface to use of iSCSI initiator
-	Types                      *[]sfapi.VolType
-	LegacyNamePrefix           string //name prefix used in earlier ndvp versions
-	AccessGroups               []int64
-	UseCHAP                    bool
-	DefaultBlockSize           int64 //blocksize to use on create when not specified  (512|4096, 512 is default)
+	*CommonStorageDriverConfig           // embedded types replicate all fields
+	TenantName                           string
+	EndPoint                             string
+	SVIP                                 string
+	InitiatorIFace                       string //iface to use of iSCSI initiator
+	Types                                *[]sfapi.VolType
+	LegacyNamePrefix                     string //name prefix used in earlier ndvp versions
+	AccessGroups                         []int64
+	UseCHAP                              bool
+	DefaultBlockSize                     int64 //blocksize to use on create when not specified  (512|4096, 512 is default)
+	SolidfireStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type SolidfireStorageDriverConfigDefaults struct {
+	CommonStorageDriverConfigDefaults
 }
 
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`
 	// pools represents the possible buckets into which a given volume should go
-	Pools        map[string]*fake.StoragePool `json:"pools"`
-	InstanceName string                       `json:"instanceName"`
+	Pools                           map[string]*fake.StoragePool `json:"pools"`
+	InstanceName                    string                       `json:"instanceName"`
+	FakeStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type FakeStorageDriverConfigDefaults struct {
+	CommonStorageDriverConfigDefaults
 }
 
 // ValidateCommonSettings attempts to "partially" decode the JSON into just the settings in CommonStorageDriverConfig
 func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, error) {
+	log.Debugf("config: %s", configJSON)
 	config := &CommonStorageDriverConfig{}
 
 	// Decode configJSON into config object
@@ -139,17 +155,6 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 	if config.Debug {
 		log.Warnf("The debug setting in the configuration file is now ignored; " +
 			"use the command line --debug switch instead.")
-	}
-
-	// Ensure the default volume size is valid, using a default of 1G if not set
-	if config.Size == "" {
-		config.Size = DefaultVolumeSize
-		log.WithField("size", config.Size).Debug("Setting default volume size.")
-	} else {
-		_, err = utils.ConvertSizeToBytes(config.Size)
-		if err != nil {
-			return nil, fmt.Errorf("invalid config value for default volume size: %v", err)
-		}
 	}
 
 	// The storage prefix may have three states: nil (no prefix specified, drivers will use

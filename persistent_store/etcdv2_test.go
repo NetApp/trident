@@ -627,6 +627,8 @@ func TestEtcdv2AddSolidFireBackend(t *testing.T) {
 	sfConfig := drivers.SolidfireStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.SolidfireSANStorageDriverName,
+		},
+		SolidfireStorageDriverConfigDefaults: drivers.SolidfireStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "1GiB",
 			},

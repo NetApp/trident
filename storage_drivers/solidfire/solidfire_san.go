@@ -98,58 +98,53 @@ func (d *SANStorageDriver) Initialize(
 
 	commonConfig.DriverContext = context
 
-	c := &drivers.SolidfireStorageDriverConfig{}
-	c.CommonStorageDriverConfig = commonConfig
+	config := &drivers.SolidfireStorageDriverConfig{}
+	config.CommonStorageDriverConfig = commonConfig
 
 	// decode supplied configJSON string into SolidfireStorageDriverConfig object
-	err := json.Unmarshal([]byte(configJSON), &c)
+	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
 
-	log.WithFields(log.Fields{
-		"Version":           c.Version,
-		"StorageDriverName": c.StorageDriverName,
-		"DisableDelete":     c.DisableDelete,
-	}).Debugf("Parsed into solidfireConfig")
-
-	// SF prefix is always empty
-	prefix := ""
-	c.StoragePrefix = &prefix
-
-	if context == trident.ContextDocker {
-		if !c.UseCHAP {
-			log.Info("Enabling CHAP for Docker volumes.")
-			c.UseCHAP = true
-		}
+	// Apply config defaults
+	err = d.populateConfigurationDefaults(config)
+	if err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
-	log.Debugf("Decoded to %+v", c)
-	d.Config = *c
+	log.WithFields(log.Fields{
+		"Version":           config.Version,
+		"StorageDriverName": config.StorageDriverName,
+		"DisableDelete":     config.DisableDelete,
+	}).Debugf("Parsed into solidfireConfig")
+
+	log.Debugf("Decoded to %+v", config)
+	d.Config = *config
 
 	var tenantID int64
 	var defaultBlockSize int64
 	defaultBlockSize = 512
-	if c.DefaultBlockSize == 4096 {
+	if config.DefaultBlockSize == 4096 {
 		defaultBlockSize = 4096
 	}
 	log.WithField("defaultBlockSize", defaultBlockSize).Info("Set default block size for SolidFire volumes.")
 
 	// create a new api.Config object from the read in json config file
-	endpoint := c.EndPoint
-	svip := c.SVIP
+	endpoint := config.EndPoint
+	svip := config.SVIP
 	cfg := api.Config{
-		TenantName:       c.TenantName,
-		EndPoint:         c.EndPoint,
-		SVIP:             c.SVIP,
-		InitiatorIFace:   c.InitiatorIFace,
-		Types:            c.Types,
-		LegacyNamePrefix: c.LegacyNamePrefix,
-		AccessGroups:     c.AccessGroups,
+		TenantName:       config.TenantName,
+		EndPoint:         config.EndPoint,
+		SVIP:             config.SVIP,
+		InitiatorIFace:   config.InitiatorIFace,
+		Types:            config.Types,
+		LegacyNamePrefix: config.LegacyNamePrefix,
+		AccessGroups:     config.AccessGroups,
 		DefaultBlockSize: defaultBlockSize,
-		DebugTraceFlags:  c.DebugTraceFlags,
+		DebugTraceFlags:  config.DebugTraceFlags,
 	}
-	defaultTenantName := c.TenantName
+	defaultTenantName := config.TenantName
 
 	log.WithFields(log.Fields{
 		"endpoint":          endpoint,
@@ -161,18 +156,18 @@ func (d *SANStorageDriver) Initialize(
 	// create a new api.Client object for interacting with the SolidFire storage system
 	client, _ := api.NewFromParameters(endpoint, svip, cfg, defaultTenantName)
 	req := api.GetAccountByNameRequest{
-		Name: c.TenantName,
+		Name: config.TenantName,
 	}
 
 	// lookup the specified account; if not found, dynamically create it
 	account, err := client.GetAccountByName(&req)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"tenantName": c.TenantName,
+			"tenantName": config.TenantName,
 			"error":      err,
 		}).Debug("Account not found, creating.")
 		req := api.AddAccountRequest{
-			Username: c.TenantName,
+			Username: config.TenantName,
 		}
 		tenantID, err = client.AddAccount(&req)
 		if err != nil {
@@ -181,28 +176,28 @@ func (d *SANStorageDriver) Initialize(
 		}
 	} else {
 		log.WithFields(log.Fields{
-			"tenantName": c.TenantName,
+			"tenantName": config.TenantName,
 			"tenantID":   account.AccountID,
 		}).Debug("Using existing account.")
 		tenantID = account.AccountID
 	}
 
 	legacyNamePrefix := "netappdvp-"
-	if c.LegacyNamePrefix != "" {
-		legacyNamePrefix = c.LegacyNamePrefix
+	if config.LegacyNamePrefix != "" {
+		legacyNamePrefix = config.LegacyNamePrefix
 	}
 
 	iscsiInterface := "default"
-	if c.InitiatorIFace != "" {
-		iscsiInterface = c.InitiatorIFace
+	if config.InitiatorIFace != "" {
+		iscsiInterface = config.InitiatorIFace
 	}
 
-	if c.Types != nil {
-		client.VolumeTypes = c.Types
+	if config.Types != nil {
+		client.VolumeTypes = config.Types
 	}
 
-	if c.AccessGroups != nil {
-		client.AccessGroups = c.AccessGroups
+	if config.AccessGroups != nil {
+		client.AccessGroups = config.AccessGroups
 	}
 
 	d.TenantID = tenantID
@@ -221,7 +216,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	// log cluster node serial numbers asynchronously since the API can take a long time
-	go d.getNodeSerialNumbers(c.CommonStorageDriverConfig)
+	go d.getNodeSerialNumbers(config.CommonStorageDriverConfig)
 
 	d.Telemetry = &Telemetry{
 		Telemetry: trident.OrchestratorTelemetry,
@@ -265,6 +260,45 @@ func (d *SANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorageDriverCo
 	log.WithFields(log.Fields{
 		"serialNumbers": strings.Join(c.SerialNumbers, ","),
 	}).Info("Controller serial numbers.")
+}
+
+// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
+func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.SolidfireStorageDriverConfig) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
+		log.WithFields(fields).Debug(">>>> populateConfigurationDefaults")
+		defer log.WithFields(fields).Debug("<<<< populateConfigurationDefaults")
+	}
+
+	// SF prefix is always empty
+	prefix := ""
+	config.StoragePrefix = &prefix
+
+	// Ensure the default volume size is valid, using a "default default" of 1G if not set
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	} else {
+		_, err := utils.ConvertSizeToBytes(config.Size)
+		if err != nil {
+			return fmt.Errorf("invalid config value for default volume size: %v", err)
+		}
+	}
+
+	if config.DriverContext == trident.ContextDocker {
+		if !config.UseCHAP {
+			log.Info("Enabling CHAP for Docker volumes.")
+			config.UseCHAP = true
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"StoragePrefix": *config.StoragePrefix,
+		"UseCHAP":       config.UseCHAP,
+		"Size":          config.Size,
+	}).Debugf("Configuration defaults")
+
+	return nil
 }
 
 // Validate the driver configuration and execution environment
@@ -333,6 +367,10 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return errors.New("volume with requested name already exists")
 	}
 
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
 	if sizeBytes < MinimumVolumeSizeBytes {
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, MinimumVolumeSizeBytes)

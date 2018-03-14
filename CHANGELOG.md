@@ -9,6 +9,7 @@
 - Fixed cleanup of goroutines.
 - **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log.
 - **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable.
+- **Docker:** Fixed default size handling (Issue [#102](https://github.com/NetApp/trident/issues/102)).
 
 **Enhancements:**
 - Added FQDN support for the management and data LIF of ONTAP backends.

@@ -144,13 +144,13 @@ func ConvertSizeToBytes(s string) (string, error) {
 	for _, unit := range units2 {
 		if strings.HasSuffix(s, unit) {
 			s = strings.TrimSuffix(s, unit)
-			i, err := strconv.ParseInt(s, 10, 0)
-			if err != nil {
-				return "", err
+			if i, err := strconv.ParseInt(s, 10, 0); err != nil {
+				return "", fmt.Errorf("invalid size value '%s': %v", s, err)
+			} else {
+				i = i * Pow(1024, lookupTable2[unit])
+				s = strconv.FormatInt(i, 10)
+				return s, nil
 			}
-			i = i * Pow(1024, lookupTable2[unit])
-			s = strconv.FormatInt(i, 10)
-			return s, nil
 		}
 	}
 
@@ -158,14 +158,19 @@ func ConvertSizeToBytes(s string) (string, error) {
 	for _, unit := range units10 {
 		if strings.HasSuffix(s, unit) {
 			s = strings.TrimSuffix(s, unit)
-			i, err := strconv.ParseInt(s, 10, 0)
-			if err != nil {
-				return "", err
+			if i, err := strconv.ParseInt(s, 10, 0); err != nil {
+				return "", fmt.Errorf("invalid size value '%s': %v", s, err)
+			} else {
+				i = i * Pow(1000, lookupTable10[unit])
+				s = strconv.FormatInt(i, 10)
+				return s, nil
 			}
-			i = i * Pow(1000, lookupTable10[unit])
-			s = strconv.FormatInt(i, 10)
-			return s, nil
 		}
+	}
+
+	// no valid units found, so ensure the value is a number
+	if _, err := strconv.ParseUint(s, 10, 64); err != nil {
+		return "", fmt.Errorf("invalid size value '%s': %v", s, err)
 	}
 
 	return s, nil
@@ -195,7 +200,7 @@ func GetVolumeSizeBytes(opts map[string]string, defaultVolumeSize string) (uint6
 	// Ensure the size is valid
 	sizeBytesStr, err := ConvertSizeToBytes(size)
 	if err != nil {
-		return 0, fmt.Errorf("invalid size value '%s': %v", size, err)
+		return 0, err
 	}
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 

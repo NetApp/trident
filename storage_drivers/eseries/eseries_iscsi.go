@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pborman/uuid"
@@ -27,7 +28,7 @@ import (
 )
 
 const DefaultHostType = "linux_dm_mp"
-const EseriesMinimumVolumeSizeBytes = 1048576 // 1 MiB
+const MinimumVolumeSizeBytes = 1048576 // 1 MiB
 
 // SANStorageDriver is for storage provisioning via the Web Services Proxy RESTful interface that communicates
 // with E-Series controllers via the SYMbol API.
@@ -78,23 +79,9 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	// Apply config defaults
-	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(context)
-		config.StoragePrefix = &prefix
-	}
-	if config.AccessGroup == "" {
-		config.AccessGroup = drivers.GetDefaultIgroupName(context)
-	}
-	if config.HostType == "" {
-		config.HostType = DefaultHostType
-	}
-	if config.PoolNameSearchPattern == "" {
-		config.PoolNameSearchPattern = ".+"
-	}
-
-	// Fix poorly-chosen config key
-	if config.HostDataIPDeprecated != "" && config.HostDataIP == "" {
-		config.HostDataIP = config.HostDataIPDeprecated
+	err = d.populateConfigurationDefaults(config)
+	if err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
 	log.WithFields(log.Fields{
@@ -190,6 +177,55 @@ func (d *SANStorageDriver) Terminate() {
 	d.initialized = false
 }
 
+// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
+func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.ESeriesStorageDriverConfig) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
+		log.WithFields(fields).Debug(">>>> populateConfigurationDefaults")
+		defer log.WithFields(fields).Debug("<<<< populateConfigurationDefaults")
+	}
+
+	if config.StoragePrefix == nil {
+		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		config.StoragePrefix = &prefix
+	}
+	if config.AccessGroup == "" {
+		config.AccessGroup = drivers.GetDefaultIgroupName(config.DriverContext)
+	}
+	if config.HostType == "" {
+		config.HostType = DefaultHostType
+	}
+	if config.PoolNameSearchPattern == "" {
+		config.PoolNameSearchPattern = ".+"
+	}
+
+	// Fix poorly-chosen config key
+	if config.HostDataIPDeprecated != "" && config.HostDataIP == "" {
+		config.HostDataIP = config.HostDataIPDeprecated
+	}
+
+	// Ensure the default volume size is valid, using a "default default" of 1G if not set
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	} else {
+		_, err := utils.ConvertSizeToBytes(config.Size)
+		if err != nil {
+			return fmt.Errorf("invalid config value for default volume size: %v", err)
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"StoragePrefix":         *config.StoragePrefix,
+		"AccessGroup":           config.AccessGroup,
+		"HostType":              config.HostType,
+		"PoolNameSearchPattern": config.PoolNameSearchPattern,
+		"Size":                  config.Size,
+	}).Debugf("Configuration defaults")
+
+	return nil
+}
+
 // Validate the driver configuration
 func (d *SANStorageDriver) validate() error {
 
@@ -231,9 +267,13 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		defer log.WithFields(fields).Debug("<<<< Create")
 	}
 
-	if sizeBytes < EseriesMinimumVolumeSizeBytes {
-		return fmt.Errorf("requested volume size (%d bytes) is too small: the minimum volume size is %d bytes",
-			sizeBytes, EseriesMinimumVolumeSizeBytes)
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
 	// Get media type, or default to "hdd" if not specified

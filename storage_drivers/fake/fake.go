@@ -17,11 +17,12 @@ import (
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/utils"
 )
 
 const (
-	FakePoolAttribute          = "pool"
-	FakeMinimumVolumeSizeBytes = 1048576 // 1 MiB
+	FakePoolAttribute      = "pool"
+	MinimumVolumeSizeBytes = 1048576 // 1 MiB
 )
 
 type StorageDriver struct {
@@ -93,6 +94,11 @@ func (d *StorageDriver) Initialize(
 		return fmt.Errorf("unable to initialize fake driver: %v", err)
 	}
 
+	err = d.populateConfigurationDefaults(&d.Config)
+	if err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
+
 	d.Volumes = make(map[string]fake.Volume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
@@ -112,6 +118,32 @@ func (d *StorageDriver) Terminate() {
 	d.initialized = false
 }
 
+// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
+func (d *StorageDriver) populateConfigurationDefaults(config *drivers.FakeStorageDriverConfig) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
+		log.WithFields(fields).Debug(">>>> populateConfigurationDefaults")
+		defer log.WithFields(fields).Debug("<<<< populateConfigurationDefaults")
+	}
+
+	// Ensure the default volume size is valid, using a "default default" of 1G if not set
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	} else {
+		_, err := utils.ConvertSizeToBytes(config.Size)
+		if err != nil {
+			return fmt.Errorf("invalid config value for default volume size: %v", err)
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"Size": config.Size,
+	}).Debugf("Configuration defaults")
+
+	return nil
+}
+
 func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
 
 	poolName, ok := opts[FakePoolAttribute]
@@ -128,9 +160,13 @@ func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]st
 		return fmt.Errorf("volume %s already exists", name)
 	}
 
-	if sizeBytes < FakeMinimumVolumeSizeBytes {
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
+	if sizeBytes < MinimumVolumeSizeBytes {
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, FakeMinimumVolumeSizeBytes)
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
 	if sizeBytes > pool.Bytes {
