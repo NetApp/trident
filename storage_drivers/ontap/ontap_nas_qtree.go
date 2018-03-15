@@ -659,7 +659,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	snapReserveMultiplier := 1.0 + (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
+	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
 
 	totalDiskLimitBytes, err := d.getTotalHardDiskLimitQuota(flexvol)
 	if err != nil {
@@ -667,14 +667,14 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	}
 
 	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
-	flexvolSizeBytes := uint64(usableSpaceBytes * snapReserveMultiplier)
+	flexvolSizeBytes := uint64(usableSpaceBytes / snapReserveDivisor)
 
 	log.WithFields(log.Fields{
-		"flexvol":               flexvol,
-		"snapReserveMultiplier": snapReserveMultiplier,
-		"totalDiskLimitBytes":   totalDiskLimitBytes,
-		"newQtreeSizeBytes":     newQtreeSizeBytes,
-		"flexvolSizeBytes":      flexvolSizeBytes,
+		"flexvol":             flexvol,
+		"snapReserveDivisor":  snapReserveDivisor,
+		"totalDiskLimitBytes": totalDiskLimitBytes,
+		"newQtreeSizeBytes":   newQtreeSizeBytes,
+		"flexvolSizeBytes":    flexvolSizeBytes,
 	}).Debug("Calculated optimal size for Flexvol with new qtree.")
 
 	return flexvolSizeBytes, nil
