@@ -26,8 +26,11 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-const LSMirrorIdleTimeoutSecs = 30
-const MinimumVolumeSizeBytes = 20971520 // 20 MiB
+const (
+	LSMirrorIdleTimeoutSecs      = 30
+	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
+	HousekeepingStartupDelaySecs = 10
+)
 
 type Telemetry struct {
 	trident.Telemetry
@@ -97,7 +100,6 @@ func NewOntapTelemetry(d StorageDriver) *Telemetry {
 	if durationInHours > 0 {
 		t.ticker = time.NewTicker(durationInHours)
 	}
-	EMSHeartbeat(t.Driver)
 	return t
 }
 
@@ -105,6 +107,8 @@ func NewOntapTelemetry(d StorageDriver) *Telemetry {
 // These messages can be viewed via filer::> event log show -severity NOTICE.
 func (t *Telemetry) Start() {
 	go func() {
+		time.Sleep(HousekeepingStartupDelaySecs * time.Second)
+		EMSHeartbeat(t.Driver)
 		for {
 			select {
 			case tick := <-t.ticker.C:
@@ -495,7 +499,12 @@ func EMSHeartbeat(driver StorageDriver) {
 		string(message), 1, trident.OrchestratorName, 5)
 
 	if err = api.GetError(emsResponse, err); err != nil {
-		log.Warnf("Error logging EMS message. %v", err)
+		log.WithFields(log.Fields{
+			"driver": driver.Name(),
+			"error":  err,
+		}).Error("Error logging EMS message.")
+	} else {
+		log.WithField("driver", driver.Name()).Info("Logged EMS message.")
 	}
 }
 

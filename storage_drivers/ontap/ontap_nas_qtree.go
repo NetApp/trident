@@ -127,9 +127,9 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Start periodic housekeeping tasks like cleaning up unused FlexVols
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
 	pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
-	d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks...)
+	d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
 	resizeTasks := []func(){d.resizeQuotas}
-	d.housekeepingTasks[resizeTask] = NewResizeTask(d, resizeTasks...)
+	d.housekeepingTasks[resizeTask] = NewResizeTask(d, resizeTasks)
 	for _, task := range d.housekeepingTasks {
 		task.Start()
 	}
@@ -1195,26 +1195,22 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 }
 
 type HousekeepingTask struct {
-	Name   string
-	Ticker *time.Ticker
-	Done   chan struct{}
-	Tasks  []func()
-	Driver *NASQtreeStorageDriver
+	Name         string
+	Ticker       *time.Ticker
+	InitialDelay time.Duration
+	Done         chan struct{}
+	Tasks        []func()
+	Driver       *NASQtreeStorageDriver
 }
 
 func (t *HousekeepingTask) Start() {
 	go func() {
+		time.Sleep(t.InitialDelay)
+		t.run(time.Now())
 		for {
 			select {
 			case tick := <-t.Ticker.C:
-				for i, task := range t.Tasks {
-					log.WithFields(log.Fields{
-						"tick":   tick,
-						"driver": t.Driver.Name(),
-						"task":   t.Name,
-					}).Debugf("Performing housekeeping task %v.", i)
-					task()
-				}
+				t.run(tick)
 			case <-t.Done:
 				log.WithFields(log.Fields{
 					"driver": t.Driver.Name(),
@@ -1235,7 +1231,18 @@ func (t *HousekeepingTask) Stop() {
 	}
 }
 
-func NewPruneTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask {
+func (t *HousekeepingTask) run(tick time.Time) {
+	for i, task := range t.Tasks {
+		log.WithFields(log.Fields{
+			"tick":   tick,
+			"driver": t.Driver.Name(),
+			"task":   t.Name,
+		}).Debugf("Performing housekeeping task %v.", i)
+		task()
+	}
+}
+
+func NewPruneTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
 	// Read background task timings from config file, use defaults if missing or invalid
 	pruneFlexvolsPeriodSecs := defaultPruneFlexvolsPeriodSecs
 	if d.Config.QtreePruneFlexvolsPeriod != "" {
@@ -1252,22 +1259,18 @@ func NewPruneTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask {
 	}).Debug("Configured Flexvol pruning period.")
 
 	task := &HousekeepingTask{
-		Name:   pruneTask,
-		Ticker: time.NewTicker(time.Duration(pruneFlexvolsPeriodSecs) * time.Second),
-		Done:   make(chan struct{}),
-		Tasks:  make([]func(), 0),
-		Driver: d,
-	}
-
-	for _, t := range tasks {
-		task.Tasks = append(task.Tasks, t)
-		t()
+		Name:         pruneTask,
+		Ticker:       time.NewTicker(time.Duration(pruneFlexvolsPeriodSecs) * time.Second),
+		InitialDelay: HousekeepingStartupDelaySecs * time.Second,
+		Done:         make(chan struct{}),
+		Tasks:        tasks,
+		Driver:       d,
 	}
 
 	return task
 }
 
-func NewResizeTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask {
+func NewResizeTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
 	// Read background task timings from config file, use defaults if missing or invalid
 	resizeQuotasPeriodSecs := defaultResizeQuotasPeriodSecs
 	if d.Config.QtreeQuotaResizePeriod != "" {
@@ -1284,16 +1287,12 @@ func NewResizeTask(d *NASQtreeStorageDriver, tasks ...func()) *HousekeepingTask 
 	}).Debug("Configured quota resize period.")
 
 	task := &HousekeepingTask{
-		Name:   resizeTask,
-		Ticker: time.NewTicker(time.Duration(resizeQuotasPeriodSecs) * time.Second),
-		Done:   make(chan struct{}),
-		Tasks:  make([]func(), 0),
-		Driver: d,
-	}
-
-	for _, t := range tasks {
-		task.Tasks = append(task.Tasks, t)
-		t()
+		Name:         resizeTask,
+		Ticker:       time.NewTicker(time.Duration(resizeQuotasPeriodSecs) * time.Second),
+		InitialDelay: HousekeepingStartupDelaySecs * time.Second,
+		Done:         make(chan struct{}),
+		Tasks:        tasks,
+		Driver:       d,
 	}
 
 	return task
