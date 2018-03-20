@@ -2,7 +2,7 @@
 
 package api
 
-const HTTPUnprocessableEntity = 422 // Not defined in net/http package
+import "fmt"
 
 var HostTypes = map[string]string{
 	"linux_atto":        "LnxTPGSALUA",
@@ -16,6 +16,16 @@ var HostTypes = map[string]string{
 	"windows":           "W2KNETNCL",
 	"windows_atto":      "WinTPGSALUA",
 	"windows_clustered": "W2KNETCL",
+}
+
+// Error wrapper
+type Error struct {
+	Code    int
+	Message string
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("device API error: %s, Status code: %d", e.Message, e.Code)
 }
 
 // Add array to Web Services Proxy
@@ -98,6 +108,10 @@ type VolumeCreateRequest struct {
 type VolumeTag struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+func (t VolumeTag) Equals(otherTag VolumeTag) bool {
+	return t.Key == otherTag.Key && t.Value == otherTag.Value
 }
 
 type VolumeEx struct {

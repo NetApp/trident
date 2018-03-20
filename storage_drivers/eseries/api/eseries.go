@@ -224,8 +224,10 @@ func (d Client) Connect() (string, error) {
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("could not add storage array to Web Services Proxy; Status code: %d",
-			response.StatusCode)
+		return "", Error{
+			Code:    response.StatusCode,
+			Message: "could not add storage array to Web Services Proxy",
+		}
 	}
 
 	// Parse JSON data
@@ -264,11 +266,14 @@ func (d Client) GetControllers() ([]Controller, error) {
 	// Query volumes on array
 	response, responseBody, err := d.InvokeAPI(nil, "GET", "/controllers")
 	if err != nil {
-		return nil, errors.New("failed to read controllers")
+		return nil, errors.New("could not read controllers")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to read controllers. Status code: %d", response.StatusCode)
+		return nil, Error{
+			Code:    response.StatusCode,
+			Message: "could not read controllers",
+		}
 	}
 
 	controllers := make([]Controller, 0)
@@ -340,7 +345,10 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get storage pools; Status code: %d", response.StatusCode)
+		return nil, Error{
+			Code:    response.StatusCode,
+			Message: "could not get storage pools",
+		}
 	}
 
 	// Parse JSON data
@@ -441,7 +449,10 @@ func (d Client) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error)
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return VolumeGroupEx{}, fmt.Errorf("could not get storage pool; status code: %d", response.StatusCode)
+		return VolumeGroupEx{}, Error{
+			Code:    response.StatusCode,
+			Message: "could not get storage pool",
+		}
 	}
 
 	// Parse JSON data
@@ -472,7 +483,10 @@ func (d Client) GetVolumes() ([]VolumeEx, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to read volumes. Status code: %d", response.StatusCode)
+		return nil, Error{
+			Code:    response.StatusCode,
+			Message: "failed to read volumes",
+		}
 	}
 
 	volumes := make([]VolumeEx, 0)
@@ -544,6 +558,41 @@ func (d Client) GetVolume(name string) (VolumeEx, error) {
 	return VolumeEx{}, nil
 }
 
+// GetVolumeByRef gets a single volume from the array.
+func (d Client) GetVolumeByRef(volumeRef string) (VolumeEx, error) {
+
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "GetVolumeByRef",
+			"Type":      "Client",
+			"volumeRef": volumeRef,
+		}
+		log.WithFields(fields).Debug(">>>> GetVolumeByRef")
+		defer log.WithFields(fields).Debug("<<<< GetVolumeByRef")
+	}
+
+	// Get a single volume by its ref ID from storage array
+	response, responseBody, err := d.InvokeAPI(nil, "GET", "/volumes/"+volumeRef)
+	if err != nil {
+		return VolumeEx{}, fmt.Errorf("API invocation failed. %v", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return VolumeEx{}, Error{
+			Code:    response.StatusCode,
+			Message: "failed to read volume",
+		}
+	}
+
+	var volume VolumeEx
+	err = json.Unmarshal(responseBody, &volume)
+	if err != nil {
+		return VolumeEx{}, fmt.Errorf("could not parse volume data: %s. %v", string(responseBody), err)
+	}
+
+	return volume, nil
+}
+
 // CreateVolume creates a volume (i.e. a LUN) on the array, and it returns the resulting VolumeEx structure.
 func (d Client) CreateVolume(
 	name string, volumeGroupRef string, size uint64, mediaType, fstype string,
@@ -593,10 +642,38 @@ func (d Client) CreateVolume(
 		return VolumeEx{}, fmt.Errorf("API invocation failed. %v", err)
 	}
 
+	// Work around Web Services Proxy bug by re-reading the volume we (hopefully) just created
+	if response.StatusCode == http.StatusUnprocessableEntity {
+
+		log.Debug("Volume created failed with 422 response, attempting to re-read volume.")
+
+		retryVolume, retryError := d.GetVolume(name)
+		if retryError != nil {
+			return VolumeEx{}, retryError
+		}
+
+		// Make sure the volume is legit by verifying it has the tag(s) we requested
+		if !d.volumeHasTags(retryVolume, tags) {
+			log.WithField("Name", retryVolume.Label).Debug("Re-read volume tags mismatch.")
+			apiError := d.getErrorFromHTTPResponse(response, responseBody)
+			apiError.Message = fmt.Sprintf("could not create volume %s; %s", name, apiError.Message)
+			return VolumeEx{}, apiError
+		}
+
+		log.WithFields(log.Fields{
+			"Name":           retryVolume.Label,
+			"VolumeRef":      retryVolume.VolumeRef,
+			"VolumeGroupRef": retryVolume.VolumeGroupRef,
+		}).Debug("Created volume (re-read after HTTP 422).")
+
+		return retryVolume, nil
+	}
+
 	if response.StatusCode != http.StatusOK {
 
-		err = d.getErrorFromHTTPResponse(response, responseBody)
-		return VolumeEx{}, fmt.Errorf("could not create volume %s: %v", name, err)
+		apiError := d.getErrorFromHTTPResponse(response, responseBody)
+		apiError.Message = fmt.Sprintf("could not create volume %s; %s", name, apiError.Message)
+		return VolumeEx{}, apiError
 
 	} else {
 
@@ -614,6 +691,27 @@ func (d Client) CreateVolume(
 
 		return vol, nil
 	}
+}
+
+func (d Client) volumeHasTags(volume VolumeEx, tags []VolumeTag) bool {
+
+	for _, tag := range tags {
+
+		tagFound := false
+
+		for _, volumeTag := range volume.VolumeTags {
+			if volumeTag.Equals(tag) {
+				tagFound = true
+				break
+			}
+		}
+
+		if !tagFound {
+			return false
+		}
+	}
+
+	return true
 }
 
 // DeleteVolume deletes a volume from the array.
@@ -643,8 +741,9 @@ func (d Client) DeleteVolume(volume VolumeEx) error {
 	case http.StatusGone:
 		break
 	default:
-		err = d.getErrorFromHTTPResponse(response, responseBody)
-		return fmt.Errorf("could not destroy volume %s: %v", volume.Label, err)
+		apiError := d.getErrorFromHTTPResponse(response, responseBody)
+		apiError.Message = fmt.Sprintf("could not destroy volume %s; %s", volume.Label, apiError.Message)
+		return apiError
 	}
 
 	log.WithFields(log.Fields{
@@ -765,6 +864,10 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
+		return HostEx{}, Error{
+			Code:    response.StatusCode,
+			Message: "could not get hosts from array",
+		}
 		return HostEx{}, fmt.Errorf("could not get hosts from array; status code: %d", response.StatusCode)
 	}
 
@@ -838,7 +941,10 @@ func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup H
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return HostEx{}, fmt.Errorf("could not create host %s; status code: %d", name, response.StatusCode)
+		return HostEx{}, Error{
+			Code:    response.StatusCode,
+			Message: fmt.Sprintf("could not create host %s", name),
+		}
 	}
 
 	// Parse JSON data
@@ -906,7 +1012,10 @@ func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return -1, fmt.Errorf("could not get host types from array; status code: %d", response.StatusCode)
+		return -1, Error{
+			Code:    response.StatusCode,
+			Message: "could not get host types from array",
+		}
 	}
 
 	// Parse JSON data
@@ -999,7 +1108,10 @@ func (d Client) GetHostGroup(name string) (HostGroup, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return HostGroup{}, fmt.Errorf("could not get host groups from array; status code: %d", response.StatusCode)
+		return HostGroup{}, Error{
+			Code:    response.StatusCode,
+			Message: "could not get host groups from array",
+		}
 	}
 
 	// Parse JSON data
@@ -1049,7 +1161,10 @@ func (d Client) CreateHostGroup(name string) (HostGroup, error) {
 	}
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return HostGroup{}, fmt.Errorf("could not create host group %s; status code: %d", name, response.StatusCode)
+		return HostGroup{}, Error{
+			Code:    response.StatusCode,
+			Message: fmt.Sprintf("could not create host group %s", name),
+		}
 	}
 
 	// Parse JSON data
@@ -1082,6 +1197,32 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 		// Volume is not already mapped, so map it now
 		mapping, err := d.mapVolume(volume, host)
+
+		// Work around Web Services Proxy bug by re-reading the map
+		if apiError, ok := err.(Error); ok && apiError.Code == http.StatusUnprocessableEntity {
+
+			log.Debug("Volume map failed with 422 response, attempting to re-read volume/map.")
+
+			retryVolume, retryError := d.GetVolumeByRef(volume.VolumeRef)
+			if retryError != nil {
+				return LUNMapping{}, retryError
+			} else if len(retryVolume.Mappings) == 0 {
+				return LUNMapping{}, err
+			}
+
+			mapping = retryVolume.Mappings[0]
+
+			log.WithFields(log.Fields{
+				"Name":      retryVolume.Label,
+				"VolumeRef": retryVolume.VolumeRef,
+				"MapRef":    mapping.MapRef,
+				"Type":      mapping.Type,
+				"LunNumber": mapping.LunNumber,
+			}).Debug("Volume mapped (re-read after HTTP 422).")
+
+			return mapping, nil
+		}
+
 		return mapping, err
 
 	} else {
@@ -1151,7 +1292,10 @@ func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return LUNMapping{}, fmt.Errorf("could not map volume %s; status code: %d", volume.Label, response.StatusCode)
+		return LUNMapping{}, Error{
+			Code:    response.StatusCode,
+			Message: fmt.Sprintf("could not map volume %s", volume.Label),
+		}
 	}
 
 	// Parse JSON data
@@ -1273,7 +1417,10 @@ func (d Client) UnmapVolume(volume VolumeEx) error {
 	}
 
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("could not unmap volume %s; Status code: %d", volume.Label, response.StatusCode)
+		return Error{
+			Code:    response.StatusCode,
+			Message: fmt.Sprintf("could not unmap volume %s", volume.Label),
+		}
 	}
 
 	log.WithFields(log.Fields{
@@ -1306,7 +1453,10 @@ func (d *Client) GetTargetIQN() (string, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("could not read iSCSI settings; status code: %d", response.StatusCode)
+		return "", Error{
+			Code:    response.StatusCode,
+			Message: "could not read iSCSI settings",
+		}
 	}
 
 	var settings IscsiTargetSettings
@@ -1341,7 +1491,10 @@ func (d *Client) GetTargetSettings() (*IscsiTargetSettings, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not read iSCSI settings; status code: %d", response.StatusCode)
+		return nil, Error{
+			Code:    response.StatusCode,
+			Message: "could not read iSCSI settings",
+		}
 	}
 
 	var settings IscsiTargetSettings
@@ -1371,21 +1524,30 @@ func (d Client) IsRefValid(ref string) bool {
 
 // getErrorFromHTTPResponse converts error information from some E-series API responses into GoLang error objects that
 // embed the additional error text.
-func (d Client) getErrorFromHTTPResponse(response *http.Response, responseBody []byte) error {
+func (d Client) getErrorFromHTTPResponse(response *http.Response, responseBody []byte) Error {
 
-	if response.StatusCode == http.StatusNotFound || response.StatusCode == HTTPUnprocessableEntity {
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusUnprocessableEntity {
 
 		// Parse JSON error data
 		responseData := CallResponseError{}
 		if err := json.Unmarshal(responseBody, &responseData); err != nil {
-			return fmt.Errorf("could not parse API error response: %s; %v", string(responseBody), err)
+			return Error{
+				Code:    response.StatusCode,
+				Message: fmt.Sprintf("could not parse API error response: %s; %v", string(responseBody), err),
+			}
 		}
 
-		return fmt.Errorf("API failed. Status code: %d. Error: %s Localized: %s", response.StatusCode,
-			responseData.ErrorMsg, responseData.LocalizedMsg)
+		return Error{
+			Code: response.StatusCode,
+			Message: fmt.Sprintf("API failed; Error: %s; Localized: %s",
+				responseData.ErrorMsg, responseData.LocalizedMsg),
+		}
 	} else {
 
 		// Other error
-		return fmt.Errorf("API failed. Status code: %d", response.StatusCode)
+		return Error{
+			Code:    response.StatusCode,
+			Message: fmt.Sprintf("API failed"),
+		}
 	}
 }
