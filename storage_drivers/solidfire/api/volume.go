@@ -183,52 +183,36 @@ func (c *Client) DetachVolume(v Volume) (err error) {
 }
 
 // AttachVolume tbd
-func (c *Client) AttachVolume(v *Volume, iface string) (path, device string, err error) {
+func (c *Client) AttachVolume(v *Volume, iface string) (err error) {
 	var req GetAccountByIDRequest
-	path = utils.GetDevicePathsForISCSIPortals(0, v.Iqn, []string{c.SVIP})[0]
 
 	if c.SVIP == "" {
 		err = errors.New("unable to perform iSCSI actions without setting SVIP")
 		log.Errorf("Unable to attach volume: SVIP is NOT set")
-		return path, device, err
+		return err
 	}
 
 	if utils.ISCSISupported() == false {
 		err := errors.New("unable to attach: open-iscsi tools not found on host")
 		log.Errorf("Unable to attach volume: open-iscsi utils not found")
-		return path, device, err
+		return err
 	}
 
 	req.AccountID = v.AccountID
 	a, err := c.GetAccountByID(&req)
 	if err != nil {
 		log.Errorf("Failed to get account %v: %+v ", v.AccountID, err)
-		return path, device, errors.New("volume attach failure")
-	}
-
-	// Make sure it's not already attached
-	if utils.PathExists(path) {
-		log.WithField("devicePath", path).Debug("Path already exists.")
-		device = strings.TrimSpace(utils.GetDeviceFileFromISCSIPath(path))
-		return path, device, nil
+		return errors.New("volume attach failure")
 	}
 
 	err = utils.LoginWithChap(v.Iqn, c.SVIP, a.Username, a.InitiatorSecret, iface,
 		c.Config.DebugTraceFlags["sensitive"])
 	if err != nil {
 		log.Errorf("Failed to login with CHAP credentials: %+v ", err)
-		return path, device, err
+		return err
 	}
 
-	// Rescan and wait for the device(s) to appear
-	err = utils.RescanTargetAndWaitForDevice(0, v.Iqn, []string{c.SVIP})
-	if err != nil {
-		log.Errorf("could not find iSCSI device: %+v", err)
-		return path, device, err
-	}
-
-	device = strings.TrimSpace(utils.GetDeviceFileFromISCSIPath(path))
-	return path, device, nil
+	return nil
 }
 
 func (c *Client) ModifyVolume(req *ModifyVolumeRequest) (err error) {

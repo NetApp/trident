@@ -302,10 +302,9 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	}
 
 	var (
-		err             error
-		iSCSINodeName   string
-		iSCSIInterfaces []string
-		lunID           int
+		err           error
+		iSCSINodeName string
+		lunID         int
 	)
 
 	// Validate Flexvol exists before trying to destroy
@@ -321,7 +320,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	if d.Config.DriverContext == trident.ContextDocker {
 
 		// Get target info
-		iSCSINodeName, iSCSIInterfaces, err = d.getISCSITargetInfo()
+		iSCSINodeName, _, err = d.getISCSITargetInfo()
 		if err != nil {
 			log.WithField("error", err).Error("Could not get target info.")
 			return err
@@ -341,7 +340,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		}
 		if lunID >= 0 {
 			// Inform the host about the device removal
-			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName, iSCSIInterfaces)
+			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName)
 		}
 	}
 
@@ -389,7 +388,7 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	// Get target info
-	iSCSINodeName, iSCSIInterfaces, err := d.getISCSITargetInfo()
+	iSCSINodeName, _, err := d.getISCSITargetInfo()
 	if err != nil {
 		return err
 	}
@@ -448,13 +447,18 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	// Rescan and wait for the device(s) to appear
-	err = utils.RescanTargetAndWaitForDevice(lunID, iSCSINodeName, iSCSIInterfaces)
+	err = utils.RescanTargetAndWaitForDevice(lunID, iSCSINodeName)
 	if err != nil {
 		return fmt.Errorf("could not find iSCSI device: %v", err)
 	}
 
+	err = utils.WaitForMultiPathDevice(lunID, iSCSINodeName)
+	if err != nil {
+		return err
+	}
+
 	// Lookup all the SCSI device information
-	deviceInfo, err := utils.GetDeviceInfoForLUN(lunID, iSCSINodeName, iSCSIInterfaces)
+	deviceInfo, err := utils.GetDeviceInfoForLUN(lunID, iSCSINodeName)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -462,15 +466,15 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	log.WithFields(log.Fields{
-		"scsiLun":          deviceInfo.LUN,
-		"multipathDevFile": deviceInfo.MultipathDevice,
-		"devFile":          deviceInfo.Device,
-		"fsType":           deviceInfo.Filesystem,
-		"iqn":              deviceInfo.IQN,
+		"scsiLun":         deviceInfo.LUN,
+		"multipathDevice": deviceInfo.MultipathDevice,
+		"devices":         deviceInfo.Devices,
+		"fsType":          deviceInfo.Filesystem,
+		"iqn":             deviceInfo.IQN,
 	}).Debug("Found device.")
 
 	// Make sure we use the proper device (multipath if in use)
-	deviceToUse := deviceInfo.Device
+	deviceToUse := deviceInfo.Devices[0]
 	if deviceInfo.MultipathDevice != "" {
 		deviceToUse = deviceInfo.MultipathDevice
 	}
@@ -478,11 +482,12 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	if deviceToUse == "" {
 		return fmt.Errorf("could not determine device to use for %v", name)
 	}
+	devicePath := "/dev/" + deviceToUse
 
 	// Put a filesystem on it if there isn't one already there
 	if deviceInfo.Filesystem == "" {
 		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(deviceToUse, fstype)
+		err := utils.FormatVolume(devicePath, fstype)
 		if err != nil {
 			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
 		}
@@ -497,7 +502,7 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	// Mount it
-	err = utils.Mount(deviceToUse, mountpoint)
+	err = utils.Mount(devicePath, mountpoint)
 	if err != nil {
 		return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v: %v",
 			name, deviceToUse, mountpoint, err)

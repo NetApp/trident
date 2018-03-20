@@ -559,7 +559,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 
 	if d.Config.DriverContext == trident.ContextDocker {
 		// Inform the host about the device removal
-		utils.PrepareDeviceForRemoval(0, v.Iqn, []string{d.Config.SVIP})
+		utils.PrepareDeviceForRemoval(0, v.Iqn)
 	}
 
 	err = d.Client.DetachVolume(v)
@@ -596,22 +596,29 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		log.Errorf("Unable to locate volume for mount operation: %+v", err)
 		return errors.New("volume not found")
 	}
-	path, device, err := d.Client.AttachVolume(&v, d.InitiatorIFace)
-	if path == "" || device == "" && err == nil {
-		log.Errorf("Path not found on attach: (path: %s, device: %s)", path, device)
-		return errors.New("path not found")
+
+	if !utils.IsAlreadyAttached(0, v.Iqn) {
+		err = d.Client.AttachVolume(&v, d.InitiatorIFace)
+		if err != nil {
+			log.Errorf("Error on iSCSI attach: %+v", err)
+			return errors.New("iSCSI attach error")
+		}
+
+		// Rescan and wait for the device(s) to appear
+		err = utils.RescanTargetAndWaitForDevice(0, v.Iqn)
+		if err != nil {
+			log.Errorf("could not find iSCSI device: %+v", err)
+			return err
+		}
 	}
+
+	err = utils.WaitForMultiPathDevice(0, v.Iqn)
 	if err != nil {
-		log.Errorf("Error on iSCSI attach: %+v", err)
-		return errors.New("iSCSI attach error")
+		return err
 	}
-	log.WithFields(log.Fields{
-		"path":   path,
-		"device": device,
-	}).Debugf("Attached volume.")
 
 	// NOTE(jdg): Check for device including multipath/DM device)
-	deviceInfo, err := utils.GetDeviceInfoForLUN(0, v.Iqn, []string{d.Config.SVIP})
+	deviceInfo, err := utils.GetDeviceInfoForLUN(0, v.Iqn)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -619,18 +626,19 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 
 	log.WithFields(log.Fields{
-		"scsiLun":          deviceInfo.LUN,
-		"multipathDevFile": deviceInfo.MultipathDevice,
-		"devFile":          deviceInfo.Device,
-		"fsType":           deviceInfo.Filesystem,
-		"iqn":              deviceInfo.IQN,
+		"scsiLun":         deviceInfo.LUN,
+		"multipathDevice": deviceInfo.MultipathDevice,
+		"devices":         deviceInfo.Devices,
+		"fsType":          deviceInfo.Filesystem,
+		"iqn":             deviceInfo.IQN,
 	}).Debug("Found device.")
 
 	// Make sure we use the proper device (multipath if in use)
-	deviceToUse := deviceInfo.Device
+	deviceToUse := deviceInfo.Devices[0]
 	if deviceInfo.MultipathDevice != "" {
 		deviceToUse = deviceInfo.MultipathDevice
 	}
+	devicePath := "/dev/" + deviceToUse
 
 	// Get the fstype
 	attrs, _ := v.Attributes.(map[string]interface{})
@@ -642,22 +650,22 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	// Put a filesystem on it if there isn't one already there
 	existingFstype := deviceInfo.Filesystem
 	if existingFstype == "" {
-		log.WithFields(log.Fields{"LUN": path, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(deviceToUse, fstype)
+		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Debug("Formatting LUN.")
+		err := utils.FormatVolume(devicePath, fstype)
 		if err != nil {
 			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != fstype {
 		log.WithFields(log.Fields{
-			"LUN":             path,
+			"LUN":             name,
 			"existingFstype":  existingFstype,
 			"requestedFstype": fstype,
 		}).Warn("LUN already formatted with a different file system type.")
 	} else {
-		log.WithFields(log.Fields{"LUN": path, "fstype": existingFstype}).Debug("LUN already formatted.")
+		log.WithFields(log.Fields{"LUN": name, "fstype": existingFstype}).Debug("LUN already formatted.")
 	}
 
-	if mountErr := utils.Mount(deviceToUse, mountpoint); mountErr != nil {
+	if mountErr := utils.Mount(devicePath, mountpoint); mountErr != nil {
 		log.Errorf("Unable to mount device: (device: %s, mountpoint: %s, error: %+v", deviceToUse, mountpoint, err)
 		return errors.New("unable to mount device")
 	}

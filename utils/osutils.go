@@ -108,64 +108,135 @@ func PathExists(path string) bool {
 	return false
 }
 
-// GetDevicePathsForISCSIPortals synthesizes the disk-by-path device names for an iSCSI LUN.
-func GetDevicePathsForISCSIPortals(lunID int, iSCSINodeName string, iSCSIInterfaces []string) []string {
+// GetSysfsBlockDirsForLUN returns the list of directories in sysfs where the block devices should appear
+// after the scan is successful. One directory is returned for each path in the host session map.
+func GetSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
+
 	paths := make([]string, 0)
-	for _, iSCSIInterface := range iSCSIInterfaces {
-		path := fmt.Sprintf("/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d", iSCSIInterface, iSCSINodeName, lunID)
+	for hostNumber, sessionNumber := range hostSessionMap {
+		path := fmt.Sprintf("/sys/class/scsi_host/host%d/device/session%d/iscsi_session/session%d/device/target%d:0:0/%d:0:0:%d",
+			hostNumber, sessionNumber, sessionNumber, hostNumber, hostNumber, lunID)
 		paths = append(paths, path)
 	}
 	return paths
 }
 
+// GetDevicesForLUN find the /dev/sd* device names for an iSCSI LUN.
+func GetDevicesForLUN(paths []string) ([]string, error) {
+
+	devices := make([]string, 0)
+	for _, path := range paths {
+		dirname := path + "/block"
+		if !PathExists(dirname) {
+			continue
+		}
+		dirFd, err := os.Open(dirname)
+		if err != nil {
+			return nil, err
+		}
+		list, err := dirFd.Readdir(1)
+		dirFd.Close()
+		if err != nil {
+			return nil, err
+		}
+		if 0 == len(list) {
+			continue
+		}
+		devices = append(devices, list[0].Name())
+	}
+	return devices, nil
+}
+
 // RescanTargetAndWaitForDevice rescans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func RescanTargetAndWaitForDevice(lunID int, iSCSINodeName string, iSCSIInterfaces []string) error {
+func RescanTargetAndWaitForDevice(lunID int, iSCSINodeName string) error {
 
 	fields := log.Fields{
-		"lunID":           lunID,
-		"iSCSINodeName":   iSCSINodeName,
-		"iSCSIInterfaces": iSCSIInterfaces,
+		"lunID":         lunID,
+		"iSCSINodeName": iSCSINodeName,
 	}
 	log.WithFields(fields).Debug(">>>> osutils.RescanTargetAndWaitForDevice")
 	defer log.WithFields(fields).Debug("<<<< osutils.RescanTargetAndWaitForDevice")
 
-	maxDuration := iSCSIDeviceDiscoveryTimeoutSecs * time.Second
+	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+	}
 
-	paths := GetDevicePathsForISCSIPortals(lunID, iSCSINodeName, iSCSIInterfaces)
+	log.WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
+	hosts := make([]int, 0)
+	for hostNumber := range hostSessionMap {
+		hosts = append(hosts, hostNumber)
+	}
 
-	if err := ISCSIRescanTargetLUN(lunID, iSCSINodeName); err != nil {
+	if err := ISCSIRescanTargetLUN(lunID, hosts); err != nil {
 		log.WithField("rescanError", err).Error("Could not rescan for new LUN.")
 	}
 
-	checkPathsExist := func() error {
+	paths := GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	log.Debugf("Scanning paths: %v", paths)
+	found := make([]string, 0)
 
-		// Check if all paths present, and return nil (success) if so
-		anyMissingPaths := false
+	checkAllDevicesExist := func() error {
+
+		found := make([]string, 0)
+		// Check if any paths present, and return nil (success) if so
 		for _, path := range paths {
-			if !PathExists(path) {
-				anyMissingPaths = true
+			dirname := path + "/block"
+			if !PathExists(dirname) {
+				return errors.New("device not present yet")
 			}
-		}
-		if anyMissingPaths {
-			return errors.New("one or more devices aren't yet present")
+			found = append(found, dirname)
 		}
 		return nil
 	}
 
 	devicesNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Devices not yet present, waiting.")
+		log.WithField("increment", duration).Debug("All devices not yet present, waiting.")
 	}
 
 	deviceBackoff := backoff.NewExponentialBackOff()
 	deviceBackoff.InitialInterval = 1 * time.Second
-	deviceBackoff.Multiplier = 1.3
+	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
 	deviceBackoff.RandomizationFactor = 0.1
-	deviceBackoff.MaxElapsedTime = maxDuration
+	deviceBackoff.MaxElapsedTime = 5 * time.Second
+
+	if err := backoff.RetryNotify(checkAllDevicesExist, deviceBackoff, devicesNotify); err == nil {
+		log.Debugf("Paths found: %v", found)
+		return nil
+	}
+
+	log.Debugf("Paths found so far: %v", found)
+
+	checkAnyDeviceExists := func() error {
+
+		found := make([]string, 0)
+		// Check if any paths present, and return nil (success) if so
+		for _, path := range paths {
+			dirname := path + "/block"
+			if PathExists(dirname) {
+				found = append(found, dirname)
+			}
+		}
+		if 0 == len(found) {
+			return errors.New("no devices present yet")
+		}
+		return nil
+	}
+
+	devicesNotify = func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("No devices present yet, waiting.")
+	}
+
+	deviceBackoff = backoff.NewExponentialBackOff()
+	deviceBackoff.InitialInterval = 1 * time.Second
+	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
+	deviceBackoff.RandomizationFactor = 0.1
+	deviceBackoff.MaxElapsedTime = (iSCSIDeviceDiscoveryTimeoutSecs - 5) * time.Second
 
 	// Run the check/rescan using an exponential backoff
-	if err := backoff.RetryNotify(checkPathsExist, deviceBackoff, devicesNotify); err != nil {
-		log.Warnf("Could not find all devices after %3.2f seconds.", maxDuration.Seconds())
+	if err := backoff.RetryNotify(checkAnyDeviceExists, deviceBackoff, devicesNotify); err != nil {
+		log.Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
 
 		// In the case of a failure, log info about what devices are present
 		execCommand("ls", "-al", "/dev")
@@ -177,7 +248,7 @@ func RescanTargetAndWaitForDevice(lunID int, iSCSINodeName string, iSCSIInterfac
 		return err
 	}
 
-	log.Debug("All devices found.")
+	log.Debugf("Paths found: %v", found)
 	return nil
 }
 
@@ -187,82 +258,99 @@ type ScsiDeviceInfo struct {
 	Channel         string
 	Target          string
 	LUN             string
-	Device          string
+	Devices         []string
 	MultipathDevice string
 	Filesystem      string
 	IQN             string
-	DeviceNameMap   map[string]string
 	HostSessionMap  map[int]int
 }
 
 // GetDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling RescanTargetAndWaitForDevice so that the device paths are known to exist.
-func GetDeviceInfoForLUN(lunID int, iSCSINodeName string, iSCSIInterfaces []string) (*ScsiDeviceInfo, error) {
+func GetDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{
-		"lunID":           lunID,
-		"iSCSINodeName":   iSCSINodeName,
-		"iSCSIInterfaces": iSCSIInterfaces,
+		"lunID":         lunID,
+		"iSCSINodeName": iSCSINodeName,
 	}
 	log.WithFields(fields).Debug(">>>> osutils.GetDeviceInfoForLUN")
 	defer log.WithFields(fields).Debug("<<<< osutils.GetDeviceInfoForLUN")
 
-	if len(iSCSIInterfaces) == 0 {
-		return nil, errors.New("must specify one or more iSCSI interfaces")
+	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
 
-	paths := GetDevicePathsForISCSIPortals(lunID, iSCSINodeName, iSCSIInterfaces)
-	deviceNameMap := make(map[string]string)
+	paths := GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
-	for _, path := range paths {
-
-		// Ensure all paths exist
-		if !PathExists(path) {
-			return nil, fmt.Errorf("path %s does not exist", path)
-		}
-
-		// Get the device name from the path and save it
-		if deviceName, err := findDeviceForPath(path); err != nil {
-			return nil, err
-		} else {
-			deviceNameMap[path] = deviceName
-		}
+	devices, err := GetDevicesForLUN(paths)
+	if nil != err {
+		return nil, err
+	} else if 0 == len(devices) {
+		return nil, fmt.Errorf("Scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
 	}
 
-	multipathDevFile := waitForMultipathDevice(paths)
+	multipathDevice := ""
+	for _, device := range devices {
+		multipathDevice = findMultipathDeviceForDevice(device)
+		if multipathDevice != "" {
+			break
+		}
+	}
 
 	fsType := ""
-	if multipathDevFile != "" {
-		fsType = getFSType(multipathDevFile)
+	if multipathDevice != "" {
+		fsType = getFSType("/dev/" + multipathDevice)
 	} else {
-		fsType = getFSType(paths[0])
+		fsType = getFSType("/dev/" + devices[0])
 	}
 
-	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
-
 	log.WithFields(log.Fields{
-		"LUN":              strconv.Itoa(lunID),
-		"multipathDevFile": multipathDevFile,
-		"devFile":          paths[0],
-		"fsType":           fsType,
-		"deviceNames":      deviceNameMap,
-		"hostSessionMap":   hostSessionMap,
+		"LUN":             strconv.Itoa(lunID),
+		"multipathDevice": multipathDevice,
+		"fsType":          fsType,
+		"deviceNames":     devices,
+		"hostSessionMap":  hostSessionMap,
 	}).Debug("Found SCSI device.")
 
 	info := &ScsiDeviceInfo{
 		LUN:             strconv.Itoa(lunID),
-		MultipathDevice: multipathDevFile,
-		Device:          paths[0],
+		MultipathDevice: multipathDevice,
+		Devices:         devices,
 		Filesystem:      fsType,
 		IQN:             iSCSINodeName,
-		DeviceNameMap:   deviceNameMap,
 		HostSessionMap:  hostSessionMap,
 	}
 
 	return info, nil
 }
 
-// waitForMultipathDevice accepts a list of /dev/disk/by-path device paths and waits until
+// WaitForMultiPathDevice
+func WaitForMultiPathDevice(lunID int, iSCSINodeName string) error {
+	fields := log.Fields{
+		"lunID":         lunID,
+		"iSCSINodeName": iSCSINodeName,
+	}
+	log.WithFields(fields).Debug(">>>> osutils.WaitForMultiPathDevice")
+	defer log.WithFields(fields).Debug("<<<< osutils.WaitForMultiPathDevice")
+
+	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+	}
+
+	paths := GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+
+	devices, err := GetDevicesForLUN(paths)
+	if nil != err {
+		return err
+	}
+
+	waitForMultipathDevice(devices)
+	return nil
+}
+
+// waitForMultipathDevice accepts a list of sd* device names and waits until
 // a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
 func waitForMultipathDevice(devices []string) string {
@@ -302,7 +390,7 @@ func waitForMultipathDevice(devices []string) string {
 
 	multipathDeviceBackoff := backoff.NewExponentialBackOff()
 	multipathDeviceBackoff.InitialInterval = 1 * time.Second
-	multipathDeviceBackoff.Multiplier = 1.3
+	multipathDeviceBackoff.Multiplier = 1.414 // approx sqrt(2)
 	multipathDeviceBackoff.RandomizationFactor = 0.1
 	multipathDeviceBackoff.MaxElapsedTime = maxDuration
 
@@ -321,20 +409,12 @@ func findMultipathDeviceForDevice(device string) string {
 	log.WithField("device", device).Debug(">>>> osutils.findMultipathDeviceForDevice")
 	defer log.WithField("device", device).Debug("<<<< osutils.findMultipathDeviceForDevice")
 
-	disk, err := findDeviceForPath(device)
-	if err != nil {
-		log.WithField("error", err).Debug("Could not find multipath device for device.")
-		return ""
-	}
-	sysPath := "/sys/block/"
-	if dirs, err := ioutil.ReadDir(sysPath); err == nil {
+	holdersDir := "/sys/block/" + device + "/holders"
+	if dirs, err := ioutil.ReadDir(holdersDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
 			if strings.HasPrefix(name, "dm-") {
-				if _, err1 := os.Lstat(sysPath + name + "/slaves/" + disk); err1 == nil {
-					log.WithField("device", "/dev/"+name).Debug("Found multipath device for device.")
-					return "/dev/" + name
-				}
+				return name
 			}
 		}
 	}
@@ -343,41 +423,18 @@ func findMultipathDeviceForDevice(device string) string {
 	return ""
 }
 
-// findDeviceForPath finds the underlaying disk for a linked path such as /dev/disk/by-path/XXXX or
-// /dev/mapper/XXXX, returning sdX or hdX, etc. If /dev/sdX is passed in then sdX will be returned.
-func findDeviceForPath(path string) (string, error) {
-
-	log.Debug(">>>> osutils.findDeviceForPath")
-	defer log.Debug("<<<< osutils.findDeviceForPath")
-
-	devicePath, err := filepath.EvalSymlinks(path)
-	if err != nil {
-		log.WithField("error", err).Debug("Could not find device for path.")
-		return "", err
-	}
-	// if path /dev/hdX split into "", "dev", "hdX" then we will return just the last part
-	parts := strings.Split(devicePath, "/")
-	if len(parts) == 3 && strings.HasPrefix(parts[1], "dev") {
-		log.WithFields(log.Fields{"device": parts[2], "path": path}).Debug("Found device from path.")
-		return parts[2], nil
-	}
-	log.Debug("Illegal path for device.")
-	return "", errors.New("illegal path for device " + devicePath)
-}
-
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(lunID int, iSCSINodeName string, iSCSIInterfaces []string) {
+func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) {
 
 	fields := log.Fields{
 		"lunID":            lunID,
 		"iSCSINodeName":    iSCSINodeName,
-		"iSCSIInterfaces":  iSCSIInterfaces,
 		"chrootPathPrefix": chrootPathPrefix,
 	}
 	log.WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
 	defer log.WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
 
-	deviceInfo, err := GetDeviceInfoForLUN(lunID, iSCSINodeName, iSCSIInterfaces)
+	deviceInfo, err := GetDeviceInfoForLUN(lunID, iSCSINodeName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
@@ -608,25 +665,18 @@ func ISCSISessionExists(portal string) (bool, error) {
 }
 
 // ISCSIRescanTargetLUN rescans a single LUN on an iSCSI target.
-func ISCSIRescanTargetLUN(lunID int, iSCSINodeName string) error {
+func ISCSIRescanTargetLUN(lunID int, hosts []int) error {
 
-	fields := log.Fields{"iSCSINodeName": iSCSINodeName, "lunID": lunID}
+	fields := log.Fields{"hosts": hosts, "lunID": lunID}
 	log.WithFields(fields).Debug(">>>> osutils.ISCSIRescanTargetLUN")
 	defer log.WithFields(fields).Debug("<<<< osutils.ISCSIRescanTargetLUN")
-
-	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-	}
-
-	log.WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
 
 	var (
 		f   *os.File
 		err error
 	)
 
-	for hostNumber := range hostSessionMap {
+	for _, hostNumber := range hosts {
 
 		filename := fmt.Sprintf("/sys/class/scsi_host/host%d/scan", hostNumber)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
@@ -654,6 +704,23 @@ func ISCSIRescanTargetLUN(lunID int, iSCSINodeName string) error {
 	}
 
 	return nil
+}
+
+func IsAlreadyAttached(lunID int, targetIqn string) bool {
+
+	hostSessionMap := getISCSIHostSessionMapForTarget(targetIqn)
+	if len(hostSessionMap) == 0 {
+		return false
+	}
+
+	paths := GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+
+	devices, err := GetDevicesForLUN(paths)
+	if nil != err {
+		return false
+	}
+
+	return 0 < len(devices)
 }
 
 // getISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
@@ -736,7 +803,7 @@ func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) {
 		return
 	}
 
-	_, err := execCommandWithTimeout("multipath", 30, "-f", deviceInfo.MultipathDevice)
+	_, err := execCommandWithTimeout("multipath", 30, "-f", "/dev/"+deviceInfo.MultipathDevice)
 	if err != nil {
 		// nothing to do if it generates an error but log it
 		log.WithFields(log.Fields{
@@ -752,12 +819,12 @@ func flushDevice(deviceInfo *ScsiDeviceInfo) {
 	log.Debug(">>>> osutils.flushDevice")
 	defer log.Debug("<<<< osutils.flushDevice")
 
-	for diskByPath := range deviceInfo.DeviceNameMap {
-		_, err := execCommandWithTimeout("blockdev", 5, "--flushbufs", diskByPath)
+	for _, device := range deviceInfo.Devices {
+		_, err := execCommandWithTimeout("blockdev", 5, "--flushbufs", "/dev/"+device)
 		if err != nil {
 			// nothing to do if it generates an error but log it
 			log.WithFields(log.Fields{
-				"device": diskByPath,
+				"device": device,
 				"error":  err,
 			}).Warning("Error encountered in blockdev --flushbufs command.")
 		}
@@ -775,7 +842,7 @@ func removeDevice(deviceInfo *ScsiDeviceInfo) {
 		err error
 	)
 
-	for _, deviceName := range deviceInfo.DeviceNameMap {
+	for _, deviceName := range deviceInfo.Devices {
 
 		filename := fmt.Sprintf("/sys/block/%s/device/delete", deviceName)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
