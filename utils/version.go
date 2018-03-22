@@ -309,3 +309,7 @@ func (v *Version) Compare(other string) (int, error) {
 	}
 	return v.compareInternal(ov), nil
 }
+
+func (v *Version) ToMajorMinorVersion() *Version {
+	return MustParseGeneric(fmt.Sprintf("%d.%d", v.MajorVersion(), v.MinorVersion()))
+}

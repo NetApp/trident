@@ -861,7 +861,7 @@ func getStorageBackendSpecsCommon(
 		log.WithFields(log.Fields{
 			"driverName": driverName,
 			"aggregate":  config.Aggregate,
-		}).Warn("Provisioning will be restricted to the aggregate set in the backend config.")
+		}).Debug("Provisioning will be restricted to the aggregate set in the backend config.")
 
 		storagePools = make(map[string]*storage.Pool)
 		storagePools[config.Aggregate] = storage.NewStoragePool(backend, config.Aggregate)

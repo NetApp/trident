@@ -104,6 +104,10 @@ func TestSemanticVersions(t *testing.T) {
 		if err != nil {
 			t.Errorf("%v", err)
 		}
+		mm := v.ToMajorMinorVersion()
+		if !v.AtLeast(mm) {
+			t.Errorf("%s is not at least %s", v.String(), mm.String())
+		}
 		prev = item
 	}
 }
@@ -208,6 +212,10 @@ func TestDateVersions(t *testing.T) {
 		err = testOne(v, item, prev)
 		if err != nil {
 			t.Errorf("%v", err)
+		}
+		mm := v.ToMajorMinorVersion()
+		if !v.AtLeast(mm) {
+			t.Errorf("%s is not at least %s", v.String(), mm.String())
 		}
 		prev = item
 	}
@@ -333,6 +341,10 @@ func TestGenericVersions(t *testing.T) {
 		err = testOne(v, item, prev)
 		if err != nil {
 			t.Errorf("%v", err)
+		}
+		mm := v.ToMajorMinorVersion()
+		if !v.AtLeast(mm) {
+			t.Errorf("%s is not at least %s", v.String(), mm.String())
 		}
 		prev = item
 	}

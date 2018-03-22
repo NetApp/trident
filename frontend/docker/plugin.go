@@ -116,13 +116,18 @@ func (p *Plugin) Activate() error {
 	go func() {
 		var err error
 		if p.driverPort != "" {
+			log.WithFields(log.Fields{
+				"driverName": p.driverName,
+				"driverPort": p.driverPort,
+			}).Info("Registering Docker plugin.")
 			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
 				&tls.Config{InsecureSkipVerify: true})
 		} else {
+			log.WithField("driverName", p.driverName).Info("Registering Docker plugin.")
 			err = handler.ServeUnix(p.driverName, 0) // start as root unix group
 		}
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Failed to register Docker plugin: %v", err)
 		}
 	}()
 	return nil

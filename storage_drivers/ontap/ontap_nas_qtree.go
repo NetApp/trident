@@ -102,6 +102,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 		artifactPrefix = artifactPrefixDocker
 	case trident.ContextKubernetes:
 		artifactPrefix = artifactPrefixKubernetes
+	default:
+		return fmt.Errorf("Unknown driver context: %s", context)
 	}
 
 	// Set up internal driver state

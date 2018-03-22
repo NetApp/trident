@@ -69,9 +69,11 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		return
 	}
 
+	log.WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
+
 	if initializeErr := storageDriver.Initialize(
 		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
-		err = fmt.Errorf("problem initializing storage driver: '%v' error: %v",
+		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return
 	}
@@ -152,7 +154,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 							initiators = initiators + initiator + ","
 						}
 						initiators = strings.TrimSuffix(initiators, ",")
-						log.Infof("no AccessGroup ID's configured, using the default group: %v, "+
+						log.Infof("No AccessGroup ID's configured, using the default group: %v, "+
 							"with initiators: %+v", vag.Name, initiators)
 						break
 					}
@@ -185,7 +187,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 				"SVIP":         driver.Config.SVIP,
 				"AccessGroups": driver.Config.AccessGroups,
 				"UseCHAP":      driver.Config.UseCHAP,
-			}).Warn("Please ensure all relevant hosts are added to one of ",
+			}).Info("Please ensure all relevant hosts are added to one of ",
 				"the specified Volume Access Groups.")
 
 			// Deal with upgrades for versions prior to handling multiple VAG ID's
@@ -211,7 +213,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 				"driver":  drivers.SolidfireSANStorageDriverName,
 				"SVIP":    driver.Config.SVIP,
 				"UseCHAP": driver.Config.UseCHAP,
-			}).Warn("Using CHAP, skipping Volume Access Group logic")
+			}).Debug("Using CHAP, skipping Volume Access Group logic.")
 		}
 
 	case drivers.EseriesIscsiStorageDriverName:
@@ -242,5 +244,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	}
 
 	sb, err = storage.NewStorageBackend(storageDriver)
+
+	log.WithField("driver", commonConfig.StorageDriverName).Debug("Storage driver initialized.")
+
 	return
 }

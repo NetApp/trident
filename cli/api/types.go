@@ -50,23 +50,31 @@ type MultipleVolumeResponse struct {
 	Items []storage.VolumeExternal `json:"items"`
 }
 
+type Version struct {
+	Version       string `json:"version"`
+	MajorVersion  uint   `json:"majorVersion"`
+	MinorVersion  uint   `json:"minorVersion"`
+	PatchVersion  uint   `json:"patchVersion"`
+	PreRelease    string `json:"preRelease"`
+	BuildMetadata string `json:"buildMetadata"`
+	APIVersion    string `json:"apiVersion"`
+}
+
 type VersionResponse struct {
-	Server struct {
-		Version       string `json:"version"`
-		MajorVersion  uint   `json:"majorVersion"`
-		MinorVersion  uint   `json:"minorVersion"`
-		PatchVersion  uint   `json:"patchVersion"`
-		PreRelease    string `json:"preRelease"`
-		BuildMetadata string `json:"buildMetadata"`
-		APIVersion    string `json:"apiVersion"`
-	} `json:"server"`
-	Client struct {
-		Version       string `json:"version"`
-		MajorVersion  uint   `json:"majorVersion"`
-		MinorVersion  uint   `json:"minorVersion"`
-		PatchVersion  uint   `json:"patchVersion"`
-		PreRelease    string `json:"preRelease"`
-		BuildMetadata string `json:"buildMetadata"`
-		APIVersion    string `json:"apiVersion"`
-	} `json:"client"`
+	Server Version `json:"server"`
+	Client Version `json:"client"`
+}
+
+type ClientVersionResponse struct {
+	Client Version `json:"client"`
+}
+
+type Metadata struct {
+	Name string `json:"name,omitempty"`
+}
+
+type KubernetesNamespace struct {
+	APIVersion string   `json:"apiVersion"`
+	Kind       string   `json:"kind"`
+	Metadata   Metadata `json:"metadata"`
 }

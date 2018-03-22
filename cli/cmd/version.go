@@ -16,40 +16,56 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	clientOnly bool
+)
+
 func init() {
 	RootCmd.AddCommand(versionCmd)
+	versionCmd.Flags().BoolVar(&clientOnly, "client", false, "Client version only (no server required).")
 }
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of Trident",
 	Long:  "Print the version of the Trident storage orchestrator for Kubernetes",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		if !clientOnly {
+			err = discoverOperatingMode(cmd)
+		}
+		return err
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		var serverVersion rest.GetVersionResponse
-		var err error
-
-		// Get the server version
-		if OperatingMode == ModeTunnel {
-			serverVersion, err = getVersionFromTunnel()
-
+		if clientOnly {
+			writeVersion(getClientVersion())
 		} else {
-			serverVersion, err = getVersionFromRest()
+
+			var serverVersion rest.GetVersionResponse
+			var err error
+
+			// Get the server version
+			if OperatingMode == ModeTunnel {
+				serverVersion, err = getVersionFromTunnel()
+
+			} else {
+				serverVersion, err = getVersionFromRest()
+			}
+
+			if err != nil {
+				return err
+			}
+
+			parsedServerVersion, err := utils.ParseDate(serverVersion.Version)
+			if err != nil {
+				return err
+			}
+
+			// Add the client version, which is always hardcoded at compile time
+			versions := addClientVersion(parsedServerVersion)
+
+			writeVersions(versions)
 		}
-
-		if err != nil {
-			return err
-		}
-
-		parsedServerVersion, err := utils.ParseDate(serverVersion.Version)
-		if err != nil {
-			return err
-		}
-
-		// Add the client version, which is always hardcoded at compile time
-		versions := addClientVersion(parsedServerVersion)
-
-		writeVersions(versions)
 
 		return nil
 	},
@@ -106,8 +122,22 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	return version, nil
 }
 
+func getClientVersion() *api.ClientVersionResponse {
+	return &api.ClientVersionResponse{
+		Client: api.Version{
+			Version:       config.OrchestratorVersion.String(),
+			MajorVersion:  config.OrchestratorVersion.MajorVersion(),
+			MinorVersion:  config.OrchestratorVersion.MinorVersion(),
+			PatchVersion:  config.OrchestratorVersion.PatchVersion(),
+			PreRelease:    config.OrchestratorVersion.PreRelease(),
+			BuildMetadata: config.OrchestratorVersion.BuildMetadata(),
+			APIVersion:    config.OrchestratorAPIVersion,
+		},
+	}
+}
+
 // addClientVersion accepts the server version and fills in the client version
-func addClientVersion(serverVersion *utils.Version) api.VersionResponse {
+func addClientVersion(serverVersion *utils.Version) *api.VersionResponse {
 
 	versions := api.VersionResponse{}
 
@@ -119,31 +149,50 @@ func addClientVersion(serverVersion *utils.Version) api.VersionResponse {
 	versions.Server.BuildMetadata = serverVersion.BuildMetadata()
 	versions.Server.APIVersion = config.OrchestratorAPIVersion
 
-	versions.Client.Version = config.OrchestratorVersion.String()
-	versions.Client.MajorVersion = config.OrchestratorVersion.MajorVersion()
-	versions.Client.MinorVersion = config.OrchestratorVersion.MinorVersion()
-	versions.Client.PatchVersion = config.OrchestratorVersion.PatchVersion()
-	versions.Client.PreRelease = config.OrchestratorVersion.PreRelease()
-	versions.Client.BuildMetadata = config.OrchestratorVersion.BuildMetadata()
-	versions.Client.APIVersion = config.OrchestratorAPIVersion
+	versions.Client = getClientVersion().Client
 
-	return versions
+	return &versions
 }
 
-func writeVersions(versions api.VersionResponse) {
+func writeVersion(version *api.ClientVersionResponse) {
+	switch OutputFormat {
+	case FormatJSON:
+		WriteJSON(version)
+	case FormatYAML:
+		WriteYAML(version)
+	case FormatWide:
+		writeWideVersionTable(version)
+	default:
+		writeVersionTable(version)
+	}
+}
+
+func writeVersions(versions *api.VersionResponse) {
 	switch OutputFormat {
 	case FormatJSON:
 		WriteJSON(versions)
 	case FormatYAML:
 		WriteYAML(versions)
 	case FormatWide:
-		writeWideVersionTable(versions)
+		writeWideVersionsTable(versions)
 	default:
-		writeVersionTable(versions)
+		writeVersionsTable(versions)
 	}
 }
 
-func writeVersionTable(versions api.VersionResponse) {
+func writeVersionTable(version *api.ClientVersionResponse) {
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Client Version"})
+
+	table.Append([]string{
+		version.Client.Version,
+	})
+
+	table.Render()
+}
+
+func writeVersionsTable(versions *api.VersionResponse) {
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Server Version", "Client Version"})
@@ -156,7 +205,20 @@ func writeVersionTable(versions api.VersionResponse) {
 	table.Render()
 }
 
-func writeWideVersionTable(versions api.VersionResponse) {
+func writeWideVersionTable(version *api.ClientVersionResponse) {
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Client Version", "Client API Version"})
+
+	table.Append([]string{
+		version.Client.Version,
+		version.Client.APIVersion,
+	})
+
+	table.Render()
+}
+
+func writeWideVersionsTable(versions *api.VersionResponse) {
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Server Version", "Server API Version", "Client Version", "Client API Version"})

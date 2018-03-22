@@ -5,6 +5,7 @@ package azgo
 import (
 	"bytes"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -76,6 +77,8 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode == 401 {
+		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
 	}
 
 	if o.DebugTraceFlags["api"] {

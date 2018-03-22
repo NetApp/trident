@@ -4,7 +4,6 @@ package kubernetes
 
 import (
 	"fmt"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -111,17 +110,9 @@ func CreateNFSVolumeSource(vol *storage.VolumeExternal) *v1.NFSVolumeSource {
 	}
 }
 
-func getCHAPSecretName(vol *storage.VolumeExternal) string {
-	secretName := fmt.Sprintf("trident-chap-%v-%v", vol.Backend, vol.Config.AccessInfo.IscsiUsername)
-	secretName = strings.Replace(secretName, "_", "-", -1)
-	secretName = strings.Replace(secretName, ".", "-", -1)
-	secretName = strings.ToLower(secretName)
-	return secretName
-}
-
 func findOrCreateCHAPSecret(k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal) (string, error) {
 	volConfig := vol.Config
-	secretName := getCHAPSecretName(vol)
+	secretName := vol.GetCHAPSecretName()
 	log.Debugf("Using secret: %v", secretName)
 
 	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.7.0")) {

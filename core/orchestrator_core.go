@@ -105,12 +105,11 @@ func (o *TridentOrchestrator) Bootstrap() error {
 
 	// Bootstrap state from persistent store
 	if err = o.bootstrap(); err != nil {
-		errMsg := fmt.Sprintf("failed during bootstrapping: %s",
-			err.Error())
+		errMsg := fmt.Sprintf("failed during bootstrapping: %s", err.Error())
 		return fmt.Errorf(errMsg)
 	}
 	o.bootstrapped = true
-	log.Infof("%s bootstrapped successfully.", config.OrchestratorName)
+	log.Infof("%s bootstrapped successfully.", strings.Title(config.OrchestratorName))
 	return err
 }
 

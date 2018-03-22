@@ -59,7 +59,7 @@ var (
 		"as the source of truth.  No data is stored anywhere else.")
 
 	// REST interface
-	address    = flag.String("address", "localhost", "Storage orchestrator API address")
+	address    = flag.String("address", "127.0.0.1", "Storage orchestrator API address")
 	port       = flag.String("port", "8000", "Storage orchestrator API port")
 	enableREST = flag.Bool("rest", true, "Enable REST interface")
 

@@ -17,6 +17,10 @@ func init() {
 var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get one or more resources from Trident",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		err := discoverOperatingMode(cmd)
+		return err
+	},
 }
 
 func WriteJSON(out interface{}) {

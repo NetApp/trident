@@ -22,9 +22,9 @@ const (
 	FormatWide = "wide"
 	FormatYAML = "yaml"
 
-	ModeDirect = "direct"
-	ModeTunnel = "tunnel"
-	ModeLogs   = "logs"
+	ModeDirect  = "direct"
+	ModeTunnel  = "tunnel"
+	ModeInstall = "install"
 
 	CLIKubernetes = "kubectl"
 	CLIOpenshift  = "oc"
@@ -52,10 +52,6 @@ var RootCmd = &cobra.Command{
 	Use:          "tridentctl",
 	Short:        "A CLI tool for NetApp Trident",
 	Long:         `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		err := discoverOperatingMode(cmd)
-		return err
-	},
 }
 
 func init() {
@@ -78,9 +74,6 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		case ModeTunnel:
 			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",
 				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
-		case ModeLogs:
-			fmt.Printf("Operating mode = %s, Namespace = %s, CLI = %s\n",
-				OperatingMode, TridentPodNamespace, KubernetesCLI)
 		}
 	}()
 
@@ -109,20 +102,13 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 
 	// Server not specified, so try tunneling to a pod
 	if TridentPodNamespace == "" {
-		TridentPodNamespace, err = GetCurrentNamespace()
-		if err != nil {
+		if TridentPodNamespace, err = getCurrentNamespace(); err != nil {
 			return err
 		}
 	}
 
-	TridentPodName, err = getTridentPod(TridentPodNamespace)
-	if err != nil {
-		// If we're running 'logs', and there isn't a Trident pod, set a special mode
-		// so we don't terminate execution before we even start.
-		if cmd.Name() == "logs" {
-			OperatingMode = ModeLogs
-			return nil
-		}
+	// Find the Trident pod
+	if TridentPodName, err = getTridentPod(TridentPodNamespace); err != nil {
 		return err
 	}
 
@@ -150,8 +136,8 @@ func discoverKubernetesCLI() error {
 	return errors.New("could not find the Kubernetes CLI")
 }
 
-// GetCurrentNamespace returns the default namespace from service account info
-func GetCurrentNamespace() (string, error) {
+// getCurrentNamespace returns the default namespace from service account info
+func getCurrentNamespace() (string, error) {
 
 	// Get current namespace from service account info
 	cmd := exec.Command(KubernetesCLI, "get", "serviceaccount", "default", "-o=json")
@@ -179,6 +165,7 @@ func GetCurrentNamespace() (string, error) {
 	return namespace, nil
 }
 
+// getTridentPod returns the name of the Trident pod in the specified namespace
 func getTridentPod(namespace string) (string, error) {
 
 	// Get 'trident' pod info
@@ -199,12 +186,9 @@ func getTridentPod(namespace string) (string, error) {
 		return "", err
 	}
 
-	//fmt.Printf("%+v\n", tridentPod)
-
 	if len(tridentPod.Items) != 1 {
 		return "", fmt.Errorf("could not find a Trident pod in the %s namespace. "+
-			"You may need to use the -n option to specify the correct namespace.",
-			namespace)
+			"You may need to use the -n option to specify the correct namespace.", namespace)
 	}
 
 	// Get Trident pod name & namespace

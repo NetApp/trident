@@ -103,6 +103,14 @@ type VolumeExternal struct {
 	Orphaned bool   `json:"orphaned"`
 }
 
+func (v *VolumeExternal) GetCHAPSecretName() string {
+	secretName := fmt.Sprintf("trident-chap-%v-%v", v.Backend, v.Config.AccessInfo.IscsiUsername)
+	secretName = strings.Replace(secretName, "_", "-", -1)
+	secretName = strings.Replace(secretName, ".", "-", -1)
+	secretName = strings.ToLower(secretName)
+	return secretName
+}
+
 func (v *Volume) ConstructExternal() *VolumeExternal {
 	return &VolumeExternal{
 		Config:   v.Config,

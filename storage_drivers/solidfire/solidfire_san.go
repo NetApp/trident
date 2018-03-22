@@ -68,7 +68,7 @@ func parseType(vTypes []api.VolType, typeName string) (qos api.QoS, err error) {
 	for _, t := range vTypes {
 		if strings.EqualFold(t.Type, typeName) {
 			qos = t.QOS
-			log.Infof("Received Type opts in Create and set QoS: %+v", qos)
+			log.Debugf("Received Type opts in Create and set QoS: %+v", qos)
 			foundType = true
 			break
 		}
@@ -128,7 +128,7 @@ func (d *SANStorageDriver) Initialize(
 	if config.DefaultBlockSize == 4096 {
 		defaultBlockSize = 4096
 	}
-	log.WithField("defaultBlockSize", defaultBlockSize).Info("Set default block size for SolidFire volumes.")
+	log.WithField("defaultBlockSize", defaultBlockSize).Debug("Set default block size.")
 
 	// create a new api.Config object from the read in json config file
 	endpoint := config.EndPoint
@@ -151,7 +151,7 @@ func (d *SANStorageDriver) Initialize(
 		"svip":              svip,
 		"cfg":               cfg,
 		"defaultTenantName": defaultTenantName,
-	}).Debug("About to call NewFromParameters")
+	}).Debug("Initializing SolidFire API client.")
 
 	// create a new api.Client object for interacting with the SolidFire storage system
 	client, _ := api.NewFromParameters(endpoint, svip, cfg, defaultTenantName)
@@ -207,7 +207,7 @@ func (d *SANStorageDriver) Initialize(
 	log.WithFields(log.Fields{
 		"TenantID":       tenantID,
 		"InitiatorIFace": iscsiInterface,
-	}).Debug("Driver initialized with the following settings")
+	}).Debug("SolidFire driver initialized.")
 
 	validationErr := d.validate()
 	if validationErr != nil {
@@ -363,7 +363,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 
 	v, err := d.GetVolume(name)
 	if err == nil && v.VolumeID != 0 {
-		log.Warningf("found existing Volume by name: %s", name)
+		log.WithField("volume", name).Warning("Found existing volume.")
 		return errors.New("volume with requested name already exists")
 	}
 
@@ -990,7 +990,7 @@ func (d *SANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeConfig) erro
 		"InitiatorSecret": volConfig.AccessInfo.IscsiInitiatorSecret,
 		"TargetSecret":    volConfig.AccessInfo.IscsiTargetSecret,
 		"UseCHAP":         d.Config.UseCHAP,
-	}).Info("Successfully mapped SolidFire LUN.")
+	}).Debug("Mapped SolidFire LUN.")
 
 	return nil
 }

@@ -60,6 +60,10 @@ const (
 
 	ContextDocker     DriverContext = "docker"
 	ContextKubernetes DriverContext = "kubernetes"
+
+	// Minimum and maximum supported Kubernetes versions
+	KubernetesVersionMin = "v1.5.0"
+	KubernetesVersionMax = "v1.9.0"
 )
 
 var (
@@ -80,6 +84,12 @@ var (
 
 	// BuildTime is the time the binary was built
 	BuildTime = "unknown"
+
+	// BuildImage is the Trident image that was built
+	BuildImage = "netapp/trident:" + orchestratorVersion + "-custom.0"
+
+	// EtcdImage is the etcd image that Trident should be deployed with
+	BuildEtcdImage = "quay.io/coreos/etcd:v3.1.5"
 
 	OrchestratorVersion = utils.MustParseDate(version())
 

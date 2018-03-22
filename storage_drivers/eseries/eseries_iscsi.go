@@ -912,7 +912,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
 		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
 		"hostGroup":       hostGroup.Label,
-	}).Debug("EseriesStorageDriver#CreateFollowup : Successfully mapped E-series LUN.")
+	}).Debug("Mapped E-series LUN.")
 
 	return nil
 }

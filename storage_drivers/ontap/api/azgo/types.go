@@ -742,9 +742,15 @@ func (o *AggrRaidAttributesType) RaidType() string {
 type VolumeModifyIterInfoType struct {
 	XMLName xml.Name `xml:"volume-modify-iter-info"`
 
-	ErrorCodePtr    *int                  `xml:"error-code"`
-	ErrorMessagePtr *string               `xml:"error-message"`
-	VolumeKeyPtr    *VolumeAttributesType `xml:"volume-key"`
+	ErrorCodePtr    *int    `xml:"error-code"`
+	ErrorMessagePtr *string `xml:"error-message"`
+
+	// TODO: Find a better XML parser so we can reenable this.
+	// If 'volume-key' is not commented out here, we get errors like this:
+	//    Error unmarshaling response body. xml: name "volume-key" in tag of
+	//    azgo.VolumeModifyIterInfoType.VolumeKeyPtr conflicts with name
+	//    "volume-attributes" in *azgo.VolumeAttributesType.XMLName
+	VolumeKeyPtr *VolumeAttributesType //`xml:"volume-key"`
 }
 
 func (o *VolumeModifyIterInfoType) ToXML() (string, error) {

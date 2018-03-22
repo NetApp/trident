@@ -38,8 +38,4 @@ const (
 	AnnFileSystem      = AnnPrefix + "/fileSystem"
 	AnnCloneFromPVC    = AnnPrefix + "/cloneFromPVC"
 	AnnSplitOnClone    = AnnPrefix + "/splitOnClone"
-
-	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.5.0"
-	KubernetesVersionMax = "v1.9.0"
 )

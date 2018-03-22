@@ -16,24 +16,20 @@ import (
 )
 
 const (
-	LogLimitBytes           = 10485760 // 10 MiB
-	tridentLauncherPodName  = "trident-launcher"
-	tridentEphemeralPodName = "trident-ephemeral"
-	tridentLogLauncher      = "launcher"
-	tridentLogEphemeral     = "ephemeral"
-	tridentLogTrident       = "trident"
-	tridentLogEtcd          = "etcd"
-	archiveFilenameFormat   = "support-2006-01-02T15-04-05-MST.zip"
+	LogLimitBytes         = 10485760 // 10 MiB
+	tridentLogTrident     = "trident"
+	tridentLogEtcd        = "etcd"
+	archiveFilenameFormat = "support-2006-01-02T15-04-05-MST.zip"
 )
 
 var (
-	log     string
+	Log     string
 	archive bool
 )
 
 func init() {
 	RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&log, "log", "l", "auto", "Trident log to display. One of trident|etcd|launcher|ephemeral|auto|all")
+	logsCmd.Flags().StringVarP(&Log, "log", "l", "auto", "Trident log to display. One of trident|etcd|auto|all")
 	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
 }
 
@@ -41,6 +37,10 @@ var logsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "Print the logs from Trident",
 	Long:  "Print the logs from the Trident storage orchestrator for Kubernetes",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		err := discoverOperatingMode(cmd)
+		return err
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		err := checkValidLog()
@@ -59,8 +59,8 @@ var logsCmd = &cobra.Command{
 func archiveLogs() error {
 
 	// In archive mode, "auto" means to attempt to get all logs.
-	if log == "auto" {
-		log = "all"
+	if Log == "auto" {
+		Log = "all"
 	}
 
 	logMap := make(map[string][]byte)
@@ -144,39 +144,13 @@ func getLogs(logMap map[string][]byte) error {
 
 	switch OperatingMode {
 
-	case ModeLogs:
-		switch log {
-		case "trident", "etcd":
-			return fmt.Errorf("could not find a Trident pod in the %s namespace. "+
-				"You may need to use the -n option to specify the correct namespace",
-				TridentPodNamespace)
-		case "ephemeral":
-			err = getPodLogs(tridentLogEphemeral, logMap)
-		case "launcher":
-			err = getPodLogs(tridentLogLauncher, logMap)
-		case "auto":
-			err = getPodLogs(tridentLogEphemeral, logMap)
-			if err != nil {
-				err = getPodLogs(tridentLogLauncher, logMap)
-			}
-		case "all":
-			getPodLogs(tridentLogEphemeral, logMap)
-			getPodLogs(tridentLogLauncher, logMap)
-		}
-
 	case ModeTunnel:
-		switch log {
-		case "ephemeral":
-			err = getPodLogs(tridentLogEphemeral, logMap)
-		case "launcher":
-			err = getPodLogs(tridentLogLauncher, logMap)
+		switch Log {
 		case "trident", "auto":
 			err = getTridentLogs(tridentLogTrident, logMap)
 		case "etcd":
 			err = getTridentLogs(tridentLogEtcd, logMap)
 		case "all":
-			getPodLogs(tridentLogEphemeral, logMap)
-			getPodLogs(tridentLogLauncher, logMap)
 			getTridentLogs(tridentLogTrident, logMap)
 			getTridentLogs(tridentLogEtcd, logMap)
 		}
@@ -189,11 +163,11 @@ func getLogs(logMap map[string][]byte) error {
 }
 
 func checkValidLog() error {
-	switch log {
-	case "trident", "etcd", "launcher", "ephemeral", "auto", "all":
+	switch Log {
+	case "trident", "etcd", "auto", "all":
 		return nil
 	default:
-		return fmt.Errorf("%s is not a valid Trident log", log)
+		return fmt.Errorf("%s is not a valid Trident log", Log)
 	}
 }
 
@@ -213,37 +187,6 @@ func getTridentLogs(log string, logMap map[string][]byte) error {
 	// Build command to get K8S logs
 	limit := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
 	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limit}
-
-	if Debug {
-		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
-	}
-
-	// Get logs
-	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
-	if err != nil {
-		logMap["error"] = appendError(logMap["error"], logBytes)
-	} else {
-		logMap[log] = logBytes
-	}
-	return err
-}
-
-func getPodLogs(log string, logMap map[string][]byte) error {
-
-	var pod string
-
-	switch log {
-	case "launcher":
-		pod = tridentLauncherPodName
-	case "ephemeral":
-		pod = tridentEphemeralPodName
-	default:
-		return fmt.Errorf("%s is not a valid Trident log", log)
-	}
-
-	// Build command to get K8S logs
-	limit := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
-	logsCommand := []string{"logs", pod, "-n", TridentPodNamespace, limit}
 
 	if Debug {
 		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))

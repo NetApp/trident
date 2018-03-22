@@ -680,7 +680,7 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 			log.WithFields(log.Fields{
 				"volume":    volConfig.Name,
 				"targetIQN": targetIQN,
-			}).Debug("Successfully discovered target IQN for the volume.")
+			}).Debug("Discovered target IQN for volume.")
 			break
 		}
 	}
@@ -702,7 +702,7 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
 		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
 		"igroup":          volConfig.AccessInfo.IscsiIgroup,
-	}).Debug("Successfully mapped ONTAP LUN.")
+	}).Debug("Mapped ONTAP LUN.")
 
 	return nil
 }

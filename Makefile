@@ -13,8 +13,6 @@ GITHASH ?= `git rev-parse HEAD || echo unknown`
 BUILD_TYPE ?= custom
 BUILD_TYPE_REV ?= 0
 BUILD_TIME = `date`
-# Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\""
 
 # common variables
 PORT ?= 8000
@@ -39,7 +37,7 @@ DR=docker run --rm \
 
 GO=${DR} go
 
-.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build launcher_build launcher_retag dist build_container_tools dist_tar dist_tag test test_core test_other clean fmt install vet
+.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other clean fmt install vet
 
 default: dist
 
@@ -51,29 +49,26 @@ TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
 else ifneq ($(BUILD_TYPE),stable)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-${BUILD_TYPE}.${BUILD_TYPE_REV}
 endif
-LAUNCHER_IMAGE ?= trident-launcher
-LAUNCHER_VERSION ?= ${TRIDENT_VERSION}
 
 ## tag variables
 TRIDENT_TAG := ${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 TRIDENT_TAG_OLD := ${TRIDENT_IMAGE}:${TRIDENT_VERSION}_old
-LAUNCHER_TAG := ${LAUNCHER_IMAGE}:${LAUNCHER_VERSION}
-LAUNCHER_TAG_OLD := ${LAUNCHER_IMAGE}:${LAUNCHER_VERSION}_old
 ifdef REGISTRY_ADDR
 TRIDENT_TAG := ${REGISTRY_ADDR}/${TRIDENT_TAG}
 TRIDENT_TAG_OLD := ${REGISTRY_ADDR}/${TRIDENT_TAG_OLD}
-LAUNCHER_TAG := ${REGISTRY_ADDR}/${LAUNCHER_TAG}
-LAUNCHER_TAG_OLD := ${REGISTRY_ADDR}/${LAUNCHER_TAG_OLD}
 endif
 DIST_REGISTRY ?= netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
-LAUNCHER_DIST_TAG := ${DIST_REGISTRY}/${LAUNCHER_IMAGE}:${LAUNCHER_VERSION}
 
 ## etcd variables
 ETCD_VERSION ?= v3.1.5
 ETCD_PORT ?= 8001
 ETCD_SERVER ?= http://localhost:${ETCD_PORT}
 ETCD_DIR ?= /tmp/etcd
+ETCD_TAG := quay.io/coreos/etcd:${ETCD_VERSION}
+
+# Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
+BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
 
 ## Trident build targets
 get:
@@ -116,21 +111,7 @@ tridentctl_build:
 
 trident_build_all: get *.go trident_build
 
-## Launcher build targets
-launcher_retag:
-	-docker tag ${LAUNCHER_TAG} ${LAUNCHER_TAG_OLD}
-	-docker rmi ${LAUNCHER_TAG}
-
-launcher_build: launcher_retag
-	@chmod 777 ./launcher/docker-build
-	@${GO} ${BUILD} -o ${TRIDENT_VOLUME_PATH}/launcher/docker-build/launcher ./launcher
-	docker build -t ${LAUNCHER_TAG} ./launcher/docker-build/
-ifdef REGISTRY_ADDR
-	docker push ${LAUNCHER_TAG}
-endif
-	-docker rmi ${LAUNCHER_TAG_OLD}
-
-## Build targets for constructing trident, launcher, and the trident installer bundle
+## Build targets for constructing trident and the trident installer bundle
 build_container_tools:
 	make -C extras/container-tools container_tools
 
@@ -138,10 +119,6 @@ dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
 	-docker rmi ${TRIDENT_DIST_TAG}
 	@docker tag ${TRIDENT_TAG} ${TRIDENT_DIST_TAG}
-endif
-ifneq ($(LAUNCHER_DIST_TAG),$(LAUNCHER_TAG))
-	-docker rmi ${LAUNCHER_DIST_TAG}
-	@docker tag ${LAUNCHER_TAG} ${LAUNCHER_DIST_TAG}
 endif
 
 dist_tar:
@@ -151,18 +128,15 @@ dist_tar:
 	@cp -a extras /tmp/trident-installer/
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
-	@cp launcher/docker-build/launcher /tmp/trident-installer/extras/bin
 	-rm -rf /tmp/trident-installer/setup/backend.json /tmp/trident-installer/extras/container-tools
 	@rm -rf /tmp/trident-installer/extras/external-etcd/etcd-copy
 	-find /tmp/trident-installer -name \*.swp | xargs rm
 	@mkdir -p /tmp/trident-installer/setup
-	@sed "s|__LAUNCHER_TAG__|${LAUNCHER_DIST_TAG}|g" ./launcher/kubernetes-yaml/launcher-pod.yaml.templ > /tmp/trident-installer/launcher-pod.yaml
-	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment.yaml.templ > /tmp/trident-installer/setup/trident-deployment.yaml
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment-external-etcd.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/trident-deployment-external-etcd.yaml
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/etcdcopy-job.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/etcdcopy-job.yaml
-	@cp kubernetes-yaml/trident-namespace.yaml /tmp/trident-installer/
-	@cp kubernetes-yaml/trident-serviceaccounts.yaml /tmp/trident-installer/
-	@cp kubernetes-yaml/trident-clusterrole* /tmp/trident-installer/
+	@cp kubernetes-yaml/trident-namespace.yaml /tmp/trident-installer/extras/external-etcd/trident/
+	@cp kubernetes-yaml/trident-serviceaccounts.yaml /tmp/trident-installer/extras/external-etcd/trident/
+	@cp kubernetes-yaml/trident-clusterrole* /tmp/trident-installer/extras/external-etcd/trident/
 	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 	-rm -rf /tmp/trident-installer
 
@@ -197,12 +171,11 @@ docker_compose_stop:
 	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose stop
 
 ## Misc. targets
-build: trident_build_all launcher_build
+build: trident_build_all
 
 clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
 	-docker rmi ${TRIDENT_TAG} ${TRIDENT_DIST_TAG} || true
-	-docker rmi ${LAUNCHER_TAG} ${LAUNCHER_DIST_TAG} || true
 	-docker rmi netapp/container-tools || true
 	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
 

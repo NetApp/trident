@@ -137,7 +137,10 @@ func (c *Client) CreateVolume(createReq *CreateVolumeRequest) (vol Volume, err e
 func (c *Client) AddVolumesToAccessGroup(req *AddVolumesToVolumeAccessGroupRequest) (err error) {
 	_, err = c.Request("AddVolumesToVolumeAccessGroup", req, NewReqID())
 	if err != nil {
-		log.Errorf("Error response from Add to VAG request: %+v ", err)
+		if apiErr, ok := err.(Error); ok && apiErr.Fields.Name == "xAlreadyInVolumeAccessGroup" {
+			return nil
+		}
+		log.Errorf("error response from Add to VAG request: %+v ", err)
 		return errors.New("device API error")
 	}
 	return err

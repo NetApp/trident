@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/netapp/trident/k8s_client"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -27,9 +26,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/netapp/trident/cli/cmd"
+	cli_k8s_client "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
@@ -52,9 +52,9 @@ func ValidateKubeVersion(versionInfo *k8sversion.Info) (kubeVersion *k8sutilvers
 		}
 	}()
 	kubeVersion = k8sutilversion.MustParseSemantic(versionInfo.GitVersion)
-	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic(KubernetesVersionMin)) {
+	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic(config.KubernetesVersionMin)) {
 		err = fmt.Errorf("kubernetes frontend only works with Kubernetes %s or later",
-			KubernetesVersionMin)
+			config.KubernetesVersionMin)
 	}
 	return
 }
@@ -96,8 +96,14 @@ func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin
 		return nil, err
 	}
 
+	// Create the CLI-based Kubernetes client
+	client, err := cli_k8s_client.NewKubectlClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
+	}
+
 	// when running in binary mode, we use the default namespace
-	tridentNamespace, err := cmd.GetCurrentNamespace()
+	tridentNamespace, err := client.GetCurrentNamespace()
 	if err != nil {
 		return nil, err
 	}
@@ -165,11 +171,11 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 			"Supported versions for Kubernetes are %s-%s.",
 			config.OrchestratorName, config.OrchestratorVersion,
 			ret.kubernetesVersion.Major, ret.kubernetesVersion.Minor,
-			ret.kubernetesVersion.GitVersion, KubernetesVersionMin,
-			KubernetesVersionMax)
+			ret.kubernetesVersion.GitVersion, config.KubernetesVersionMin,
+			config.KubernetesVersionMax)
 		log.Warnf("Kubernetes frontend proceeds as if you are running "+
-			"Kubernetes %s!", KubernetesVersionMax)
-		kubeVersion = k8sutilversion.MustParseSemantic(KubernetesVersionMax)
+			"Kubernetes %s!", config.KubernetesVersionMax)
+		kubeVersion = k8sutilversion.MustParseSemantic(config.KubernetesVersionMax)
 	}
 
 	broadcaster := record.NewBroadcaster()
