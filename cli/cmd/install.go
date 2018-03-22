@@ -563,6 +563,7 @@ func installTrident() (returnError error) {
 	TridentPodName = tridentPod.Name
 	returnError = waitForRESTInterface()
 	if returnError != nil {
+		returnError = fmt.Errorf("%v; use 'tridentctl logs' to learn more", returnError)
 		return
 	}
 
@@ -784,7 +785,7 @@ func cleanupAfterInstallError(returnError error, pvcCreated, pvCreated bool) {
 
 	if pvcCreated {
 		// Delete the PVC
-		err := client.DeleteObjectByFile(pvcPath, false)
+		err := client.DeleteObjectByName("pvc", pvcName, false)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"pvc":   pvcName,
@@ -1043,6 +1044,12 @@ func waitForRESTInterface() error {
 
 		cliCommand := []string{"tridentctl", "-s", PodServer, "version", "-o", "json"}
 		versionJSON, err := client.Exec(TridentPodName, tridentconfig.ContainerTrident, cliCommand)
+		if err != nil {
+			if versionJSON != nil && len(versionJSON) > 0 {
+				err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
+			}
+			return err
+		}
 
 		var versionResponse api.VersionResponse
 		err = json.Unmarshal(versionJSON, &versionResponse)

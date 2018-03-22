@@ -61,13 +61,13 @@ func (m *MockOrchestrator) AddFrontend(f frontend.Plugin) {
 	// NOP for the time being, since users of MockOrchestrator don't need this
 }
 
-func (m *MockOrchestrator) GetVersion() string {
-	return config.OrchestratorVersion.String()
+func (m *MockOrchestrator) GetVersion() (string, error) {
+	return config.OrchestratorVersion.String(), nil
 }
 
 // TODO:  Add extra methods to add backends without needing to provide a valid,
 // stringified JSON config.
-func (m *MockOrchestrator) AddStorageBackend(configJSON string) (*storage.BackendExternal, error) {
+func (m *MockOrchestrator) AddBackend(configJSON string) (*storage.BackendExternal, error) {
 	// We need to do this to determine if the backend is NFS or not.
 	backend := &storage.Backend{
 		Name:    fmt.Sprintf("mock-%d", len(m.backends)),
@@ -117,30 +117,30 @@ func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.Bac
 
 //TODO:  Add other mock backends here as necessary.
 
-func (m *MockOrchestrator) GetBackend(backend string) *storage.BackendExternal {
+func (m *MockOrchestrator) GetBackend(backend string) (*storage.BackendExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	b, found := m.backends[backend]
 	if !found {
-		return nil
+		return nil, notFoundError("not found")
 	}
-	return b.ConstructExternal()
+	return b.ConstructExternal(), nil
 }
 
-func (m *MockOrchestrator) ListBackends() []*storage.BackendExternal {
+func (m *MockOrchestrator) ListBackends() ([]*storage.BackendExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	backends := make([]*storage.BackendExternal, 0, len(m.backends))
 	for _, b := range m.backends {
 		backends = append(backends, b.ConstructExternal())
 	}
-	return backends
+	return backends, nil
 }
 
-func (m *MockOrchestrator) OfflineBackend(backend string) (bool, error) {
+func (m *MockOrchestrator) OfflineBackend(backend string) error {
 	// Implement this if it becomes necessary to test.
-	return false, nil
+	return nil
 }
 
 func (m *MockOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error) {
@@ -210,77 +210,77 @@ func (m *MockOrchestrator) ValidateVolumes(
 	expectedConfigs []*storage.VolumeConfig,
 ) bool {
 	correct := true
-	for _, config := range expectedConfigs {
-		vol, ok := m.volumes[config.Name]
+	for _, volConfig := range expectedConfigs {
+		vol, ok := m.volumes[volConfig.Name]
 		if !ok {
-			t.Errorf("no volumes found for %s", config.Name)
+			t.Errorf("no volumes found for %s", volConfig.Name)
 			correct = false
 			continue
 		}
-		if !reflect.DeepEqual(vol.Config, config) {
+		if !reflect.DeepEqual(vol.Config, volConfig) {
 			t.Errorf("volume configs differ for %s:\n"+
-				"\tExpected: %v\n\tActual: %v", config.Name, config,
-				vol.Config)
+				"\tExpected: %v\n\tActual: %v", volConfig.Name, volConfig, vol.Config)
 			correct = false
 		}
 	}
 	return correct
 }
 
-func (m *MockOrchestrator) GetVolume(volume string) *storage.VolumeExternal {
+func (m *MockOrchestrator) GetVolume(volume string) (*storage.VolumeExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
 	vol, found := m.volumes[volume]
 	if !found {
-		return nil
+		return nil, notFoundError("not found")
 	}
-	return vol.ConstructExternal()
+	return vol.ConstructExternal(), nil
 }
 
 // Copied verbatim from TridentOrchestrator
 func (m *MockOrchestrator) GetDriverTypeForVolume(
 	vol *storage.VolumeExternal,
-) string {
+) (string, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	if b, ok := m.backends[vol.Backend]; ok {
-		return b.Driver.Name()
+		return b.Driver.Name(), nil
 	}
-	return config.UnknownDriver
+	return config.UnknownDriver, nil
 }
 
 // Copied verbatim from TridentOrchestrator
-func (m *MockOrchestrator) GetVolumeType(vol *storage.VolumeExternal) config.VolumeType {
+func (m *MockOrchestrator) GetVolumeType(vol *storage.VolumeExternal) (config.VolumeType, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	driver := m.backends[vol.Backend].GetDriverName()
 	switch {
 	case driver == drivers.OntapNASStorageDriverName:
-		return config.OntapNFS
+		return config.OntapNFS, nil
 	case driver == drivers.OntapSANStorageDriverName:
-		return config.OntapISCSI
+		return config.OntapISCSI, nil
 	case driver == drivers.SolidfireSANStorageDriverName:
-		return config.SolidFireISCSI
+		return config.SolidFireISCSI, nil
 	case driver == drivers.EseriesIscsiStorageDriverName:
-		return config.ESeriesISCSI
+		return config.ESeriesISCSI, nil
 	default:
-		return config.UnknownVolumeType
+		return config.UnknownVolumeType, nil
 	}
 }
 
-func (m *MockOrchestrator) ListVolumes() []*storage.VolumeExternal {
+func (m *MockOrchestrator) ListVolumes() ([]*storage.VolumeExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	volumes := make([]*storage.VolumeExternal, 0, len(m.volumes))
 	for _, vol := range m.volumes {
 		volumes = append(volumes, vol.ConstructExternal())
 	}
-	return volumes
+	return volumes, nil
 }
 
-func (m *MockOrchestrator) DeleteVolume(volumeName string) (found bool, err error) {
+func (m *MockOrchestrator) DeleteVolume(volumeName string) error {
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -288,18 +288,18 @@ func (m *MockOrchestrator) DeleteVolume(volumeName string) (found bool, err erro
 	// Copied verbatim from orchestrator_core so that error returns are identical
 	volume, ok := m.volumes[volumeName]
 	if !ok {
-		return false, fmt.Errorf("volume %s not found", volumeName)
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	delete(m.mockBackends[volume.Backend].volumes, volume.Config.Name)
 	delete(m.volumes, volume.Config.Name)
-	return true, nil
+	return nil
 }
 
-func (m *MockOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.VolumeExternal {
+func (m *MockOrchestrator) ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error) {
 	// Currently returns nil, since this is backend agnostic.  Change this
 	// if we ever have non-apiserver functionality depend on this function.
-	return nil
+	return nil, nil
 }
 
 func (m *MockOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
@@ -336,26 +336,29 @@ func (m *MockOrchestrator) AddStorageClass(
 	return sc.ConstructExternal(), nil
 }
 
-func (m *MockOrchestrator) GetStorageClass(scName string) *storageclass.External {
-	if sc, ok := m.storageClasses[scName]; ok {
-		return sc.ConstructExternal()
+func (m *MockOrchestrator) GetStorageClass(scName string) (*storageclass.External, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	sc, found := m.storageClasses[scName]
+	if !found {
+		return nil, notFoundError("not found")
 	}
-	return nil
+	return sc.ConstructExternal(), nil
 }
 
-func (m *MockOrchestrator) ListStorageClasses() []*storageclass.External {
+func (m *MockOrchestrator) ListStorageClasses() ([]*storageclass.External, error) {
 	ret := make([]*storageclass.External, 0, len(m.storageClasses))
 	for _, sc := range m.storageClasses {
 		ret = append(ret, sc.ConstructExternal())
 	}
-	return ret
+	return ret, nil
 }
 
-func (m *MockOrchestrator) DeleteStorageClass(scName string) (bool, error) {
-	_, ok := m.storageClasses[scName]
-	if !ok {
-		return false, fmt.Errorf("storage class %s not found", scName)
+func (m *MockOrchestrator) DeleteStorageClass(scName string) error {
+	if _, ok := m.storageClasses[scName]; !ok {
+		return notFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
 	delete(m.storageClasses, scName)
-	return true, nil
+	return nil
 }

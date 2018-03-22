@@ -20,11 +20,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
 
 const maxNameLength = 30
-const httpTimeoutSeconds = 30
 const NullRef = "0000000000000000000000000000000000000000"
 const hostMappingType = "host"
 const hostGroupMappingType = "cluster"
@@ -164,7 +164,7 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(httpTimeoutSeconds * time.Second),
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
 	}
 	response, err := client.Do(request)
 	if err != nil {

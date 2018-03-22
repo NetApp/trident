@@ -232,16 +232,14 @@ func runDeleteTest(
 		}
 		orchestrator.mutex.Unlock()
 	}
-	found, err := orchestrator.DeleteVolume(d.name)
+	err := orchestrator.DeleteVolume(d.name)
 	if err == nil && !d.expectedSuccess {
-		t.Errorf("%s:  volume delete succeeded when it should not have.",
-			d.name)
+		t.Errorf("%s:  volume delete succeeded when it should not have.", d.name)
 	} else if err != nil && d.expectedSuccess {
-		t.Errorf("%s:  delete failed with found %t:  %v", d.name,
-			found, err)
+		t.Errorf("%s:  delete failed:  %v", d.name, err)
 	} else if d.expectedSuccess {
-		volume := orchestrator.GetVolume(d.name)
-		if volume != nil {
+		volume, err := orchestrator.GetVolume(d.name)
+		if volume != nil || err == nil {
 			t.Errorf("%s:  got volume where none expected.", d.name)
 		}
 		orchestrator.mutex.Lock()
@@ -437,12 +435,11 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
-			pools)
+		fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddStorageBackend(config)
+		_, err = orchestrator.AddBackend(fakeConfig)
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true
@@ -821,12 +818,9 @@ func TestAddStorageClassVolumes(t *testing.T) {
 
 	// Delete storage classes.  Note:  there are currently no error cases.
 	for _, s := range scTests {
-		found, err := orchestrator.DeleteStorageClass(s.config.Name)
+		err := orchestrator.DeleteStorageClass(s.config.Name)
 		if err != nil {
-			t.Errorf("%s delete: Unable to remove storage class", s.config.Name)
-		}
-		if !found {
-			t.Errorf("%s delete: Storage class not found", s.config.Name)
+			t.Errorf("%s delete: Unable to remove storage class: %v", s.config.Name, err)
 		}
 		orchestrator.mutex.Lock()
 		if _, ok := orchestrator.storageClasses[s.config.Name]; ok {
@@ -918,7 +912,7 @@ func TestCloneVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddStorageBackend(cfg)
+		_, err = orchestrator.AddBackend(cfg)
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true
@@ -1170,7 +1164,7 @@ func addBackend(
 	if err != nil {
 		t.Fatal("Unable to create mock driver config JSON: ", err)
 	}
-	_, err = orchestrator.AddStorageBackend(configJSON)
+	_, err = orchestrator.AddBackend(configJSON)
 	if err != nil {
 		t.Fatalf("Unable to add initial backend: %v", err)
 	}
@@ -1302,7 +1296,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("%s:  unable to generate new backend config:  %v", c.name, err)
 			continue
 		}
-		_, err = orchestrator.AddStorageBackend(newConfigJSON)
+		_, err = orchestrator.AddBackend(newConfigJSON)
 		if err != nil {
 			t.Errorf("%s:  unable to update backend with a nonconflicting "+
 				"change:  %v", c.name, err)
@@ -1362,12 +1356,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	pool := volume.Pool
 
 	// Test backend offlining.
-	found, err := orchestrator.OfflineBackend(backendName)
-	if !found {
-		t.Fatal("Backend not found in orchestrator.")
-	}
+	err = orchestrator.OfflineBackend(backendName)
 	if err != nil {
-		t.Fatal("Unable to offline backend:  ", err)
+		t.Fatalf("Unable to offline backend:  %v", err)
 	}
 	if !backend.Driver.Initialized() {
 		t.Errorf("Offlined backend with volumes %s is not initialized.", backendName)
@@ -1421,7 +1412,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	// We need to lock the orchestrator mutex here because we call
 	// ConstructExternal on the original backend in the else if clause.
 	orchestrator.mutex.Lock()
-	if bootstrappedBackend := newOrchestrator.GetBackend(backendName); bootstrappedBackend == nil {
+	if bootstrappedBackend, _ := newOrchestrator.GetBackend(backendName); bootstrappedBackend == nil {
 		t.Error("Unable to find backend after bootstrapping.")
 	} else if !reflect.DeepEqual(bootstrappedBackend,
 		backend.ConstructExternal()) {
@@ -1446,7 +1437,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	newOrchestrator.mutex.Unlock()
 
 	// Test that deleting the volume causes the backend to be deleted.
-	_, err = orchestrator.DeleteVolume(volumeName)
+	err = orchestrator.DeleteVolume(volumeName)
 	if err != nil {
 		t.Fatal("Unable to delete volume for offline backend:  ", err)
 	}
@@ -1478,11 +1469,9 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	addBackendStorageClass(t, orchestrator, backendName, "none")
 	backend := orchestrator.backends[backendName]
 
-	found, err := orchestrator.OfflineBackend(backendName)
+	err := orchestrator.OfflineBackend(backendName)
 	if err != nil {
-		t.Fatal("Unable to offline backend:  ", err)
-	} else if !found {
-		t.Fatalf("Backend %s not found in orchestrator", backendName)
+		t.Fatalf("Unable to offline backend: %v", err)
 	}
 	if backend.Driver.Initialized() {
 		t.Errorf("Deleted backend %s is still initialized.", backendName)
@@ -1520,12 +1509,9 @@ func TestBackendCleanup(t *testing.T) {
 	// ends up on the backend to be offlined.
 	addBackend(t, orchestrator, onlineBackendName)
 
-	found, err := orchestrator.OfflineBackend(offlineBackendName)
+	err = orchestrator.OfflineBackend(offlineBackendName)
 	if err != nil {
-		t.Fatal("Unable to offline backend.")
-	}
-	if !found {
-		t.Fatalf("Backend %s not found when trying to offline.", offlineBackendName)
+		t.Fatalf("Unable to offline backend %s: %v", offlineBackendName, err)
 	}
 	// Simulate deleting the existing volume and then bootstrapping
 	orchestrator.mutex.Lock()
@@ -1540,10 +1526,10 @@ func TestBackendCleanup(t *testing.T) {
 	orchestrator.mutex.Unlock()
 
 	newOrchestrator := getOrchestrator()
-	if bootstrappedBackend := newOrchestrator.GetBackend(offlineBackendName); bootstrappedBackend != nil {
+	if bootstrappedBackend, _ := newOrchestrator.GetBackend(offlineBackendName); bootstrappedBackend != nil {
 		t.Error("Empty offline backend not deleted during bootstrap.")
 	}
-	if bootstrappedBackend := newOrchestrator.GetBackend(onlineBackendName); bootstrappedBackend == nil {
+	if bootstrappedBackend, _ := newOrchestrator.GetBackend(onlineBackendName); bootstrappedBackend == nil {
 		t.Error("Empty online backend deleted during bootstrap.")
 	}
 }
@@ -1567,7 +1553,7 @@ func TestLoadBackend(t *testing.T) {
 			},
 		},
 	)
-	originalBackend, err := orchestrator.AddStorageBackend(configJSON)
+	originalBackend, err := orchestrator.AddBackend(configJSON)
 	if err != nil {
 		t.Fatal("Unable to initially add backend:  ", err)
 	}
@@ -1580,7 +1566,7 @@ func TestLoadBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to marshal config from stored backend:  ", err)
 	}
-	newBackend, err := orchestrator.AddStorageBackend(newConfig)
+	newBackend, err := orchestrator.AddBackend(newConfig)
 	if err != nil {
 		t.Error("Unable to add backend from config:  ", err)
 	} else if !reflect.DeepEqual(newBackend, originalBackend) {
@@ -1588,7 +1574,7 @@ func TestLoadBackend(t *testing.T) {
 	}
 
 	newOrchestrator := getOrchestrator()
-	if bootstrappedBackend := newOrchestrator.GetBackend(backendName); bootstrappedBackend == nil {
+	if bootstrappedBackend, _ := newOrchestrator.GetBackend(backendName); bootstrappedBackend == nil {
 		t.Error("Unable to find backend after bootstrapping.")
 	} else if !reflect.DeepEqual(bootstrappedBackend, originalBackend) {
 		t.Errorf("External backends differ.")
@@ -1614,7 +1600,7 @@ func prepRecoveryTest(
 			},
 		},
 	)
-	_, err = orchestrator.AddStorageBackend(configJSON)
+	_, err = orchestrator.AddBackend(configJSON)
 	if err != nil {
 		t.Fatal("Unable to initialize backend: ", err)
 	}
@@ -1735,7 +1721,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
-	_, err = orchestrator.DeleteVolume(fullVolumeName)
+	err = orchestrator.DeleteVolume(fullVolumeName)
 	if err != nil {
 		t.Fatal("Unable to remove full volume:  ", err)
 	}
@@ -1817,19 +1803,18 @@ func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
 	orchestratorV3 := getOrchestrator()
 
 	// Verify etcdv2 to etcdv3 transformation
-	if orchestratorV3.GetBackend(backendName) == nil {
+	if v3Backend, _ := orchestratorV3.GetBackend(backendName); v3Backend == nil {
 		t.Fatalf("Failed to find backend %s after bootstrapping!", backendName)
 	}
 	//TODO: Optionally we can diff etcdv2 and etcdv3 backends here
-	if orchestratorV3.GetStorageClass(scName) == nil {
-		t.Fatalf("Failed to find storage class %s after bootstrapping!",
-			scName)
+	v3StorageClass, err := orchestratorV3.GetStorageClass(scName)
+	if v3StorageClass == nil || err != nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!", scName)
 	}
 	//TODO: Optionally we can diff etcdv2 and etcdv3 storage classes here
-	v3Volume := orchestratorV3.GetVolume(volumeName)
-	if v3Volume == nil {
-		t.Fatalf("Failed to find storage class %s after bootstrapping!",
-			volumeName)
+	v3Volume, err := orchestratorV3.GetVolume(volumeName)
+	if v3Volume == nil || err != nil {
+		t.Fatalf("Failed to find storage class %s after bootstrapping!", volumeName)
 	}
 	// Verifying the same volume exists on both clusters
 	if !reflect.DeepEqual(v2Volume, v3Volume) {
@@ -1885,7 +1870,8 @@ func TestStorageClassOnlyBootstrap(t *testing.T) {
 		t.Fatal("Unable to add storage class: ", err)
 	}
 	newOrchestrator := getOrchestrator()
-	if bootstrappedSC := newOrchestrator.GetStorageClass(scName); bootstrappedSC == nil {
+	bootstrappedSC, err := newOrchestrator.GetStorageClass(scName)
+	if bootstrappedSC == nil || err != nil {
 		t.Error("Unable to find storage class after bootstrapping.")
 	} else if !reflect.DeepEqual(bootstrappedSC, originalSC) {
 		t.Errorf("External storage classs differ:\n\tOriginal:  %v\n\t."+
@@ -1898,7 +1884,6 @@ func TestFirstVolumeRecovery(t *testing.T) {
 	const (
 		backendName      = "firstRecoveryBackend"
 		scName           = "firstRecoveryBackendSC"
-		fullVolumeName   = "firstRecoveryVolumeFull"
 		txOnlyVolumeName = "firstRecoveryVolumeTxOnly"
 	)
 	orchestrator := getOrchestrator()
@@ -1912,4 +1897,122 @@ func TestFirstVolumeRecovery(t *testing.T) {
 				expectDestroy: true},
 		})
 	cleanup(t, orchestrator)
+}
+
+func TestOrchestratorNotReady(t *testing.T) {
+
+	var (
+		err            error
+		backend        *storage.BackendExternal
+		backends       []*storage.BackendExternal
+		volume         *storage.VolumeExternal
+		volumes        []*storage.VolumeExternal
+		snapshots      []*storage.SnapshotExternal
+		storageClass   *storageclass.External
+		storageClasses []*storageclass.External
+	)
+
+	orchestrator := getOrchestrator()
+	orchestrator.bootstrapped = false
+	orchestrator.bootstrapError = notReadyError()
+
+	backend, err = orchestrator.AddBackend("")
+	if backend != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected AddBackend to return an error.")
+	}
+
+	backend, err = orchestrator.GetBackend("")
+	if backend != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected GetBackend to return an error.")
+	}
+
+	backends, err = orchestrator.ListBackends()
+	if backends != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ListBackends to return an error.")
+	}
+
+	err = orchestrator.OfflineBackend("")
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected OfflineBackend to return an error.")
+	}
+
+	volume, err = orchestrator.AddVolume(nil)
+	if volume != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected AddVolume to return an error.")
+	}
+
+	volume, err = orchestrator.CloneVolume(nil)
+	if volume != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected CloneVolume to return an error.")
+	}
+
+	volume, err = orchestrator.GetVolume("")
+	if volume != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected GetVolume to return an error.")
+	}
+
+	_, err = orchestrator.GetDriverTypeForVolume(nil)
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected GetDriverTypeForVolume to return an error.")
+	}
+
+	_, err = orchestrator.GetVolumeType(nil)
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected GetVolumeType to return an error.")
+	}
+
+	volumes, err = orchestrator.ListVolumes()
+	if volumes != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ListVolumes to return an error.")
+	}
+
+	err = orchestrator.DeleteVolume("")
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected DeleteVolume to return an error.")
+	}
+
+	volumes, err = orchestrator.ListVolumesByPlugin("")
+	if volumes != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ListVolumesByPlugin to return an error.")
+	}
+
+	err = orchestrator.AttachVolume("", "", nil)
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected AttachVolume to return an error.")
+	}
+
+	err = orchestrator.DetachVolume("", "")
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected DetachVolume to return an error.")
+	}
+
+	snapshots, err = orchestrator.ListVolumeSnapshots("")
+	if snapshots != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ListVolumeSnapshots to return an error.")
+	}
+
+	err = orchestrator.ReloadVolumes()
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected ReloadVolumes to return an error.")
+	}
+
+	storageClass, err = orchestrator.AddStorageClass(nil)
+	if storageClass != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected AddStorageClass to return an error.")
+	}
+
+	storageClass, err = orchestrator.GetStorageClass("")
+	if storageClass != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected GetStorageClass to return an error.")
+	}
+
+	storageClasses, err = orchestrator.ListStorageClasses()
+	if storageClasses != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ListStorageClasses to return an error.")
+	}
+
+	err = orchestrator.DeleteStorageClass("")
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected DeleteStorageClass to return an error.")
+	}
 }

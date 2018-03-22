@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
+	tridentconfig "github.com/netapp/trident/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -73,18 +75,21 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	client := &http.Client{Transport: tr}
-	resp, err := client.Do(req)
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+	}
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
-	} else if resp.StatusCode == 401 {
+	} else if response.StatusCode == 401 {
 		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
 	}
 
 	if o.DebugTraceFlags["api"] {
-		log.Debugf("response Status: %s", resp.Status)
-		log.Debugf("response Headers: %s", resp.Header)
+		log.Debugf("response Status: %s", response.Status)
+		log.Debugf("response Headers: %s", response.Header)
 	}
 
-	return resp, err
+	return response, err
 }

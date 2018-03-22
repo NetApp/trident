@@ -153,7 +153,7 @@ func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]st
 
 	pool, ok := d.Config.Pools[poolName]
 	if !ok {
-		return fmt.Errorf("could not find pool %s", pool)
+		return fmt.Errorf("could not find pool %s", poolName)
 	}
 
 	if _, ok = d.Volumes[name]; ok {
@@ -209,7 +209,7 @@ func (d *StorageDriver) CreateClone(name, source, snapshot string, opts map[stri
 	poolName := sourceVolume.PoolName
 	pool, ok := d.Config.Pools[poolName]
 	if !ok {
-		return fmt.Errorf("could not find pool %s", pool)
+		return fmt.Errorf("could not find pool %s", poolName)
 	}
 
 	// Use the same size as the source

@@ -48,8 +48,9 @@ const (
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */
-	DefaultSolidFireVAG = OrchestratorName
-	UnknownDriver       = "UnknownDriver"
+	DefaultSolidFireVAG      = OrchestratorName
+	UnknownDriver            = "UnknownDriver"
+	StorageAPITimeoutSeconds = 90
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240

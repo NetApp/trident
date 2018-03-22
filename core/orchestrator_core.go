@@ -30,6 +30,7 @@ type TridentOrchestrator struct {
 	storageClasses map[string]*storageclass.StorageClass
 	storeClient    persistentstore.Client
 	bootstrapped   bool
+	bootstrapError error
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -42,6 +43,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		mutex:          &sync.Mutex{},
 		storeClient:    client,
 		bootstrapped:   false,
+		bootstrapError: notReadyError(),
 	}
 }
 
@@ -100,17 +102,20 @@ func (o *TridentOrchestrator) Bootstrap() error {
 
 	// Transform persistent state, if necessary
 	if err = o.transformPersistentState(); err != nil {
-		return err
+		o.bootstrapError = bootstrapError(err)
+		return o.bootstrapError
 	}
 
 	// Bootstrap state from persistent store
 	if err = o.bootstrap(); err != nil {
-		errMsg := fmt.Sprintf("failed during bootstrapping: %s", err.Error())
-		return fmt.Errorf(errMsg)
+		o.bootstrapError = bootstrapError(err)
+		return o.bootstrapError
 	}
+
 	o.bootstrapped = true
+	o.bootstrapError = nil
 	log.Infof("%s bootstrapped successfully.", strings.Title(config.OrchestratorName))
-	return err
+	return nil
 }
 
 func (o *TridentOrchestrator) bootstrapBackends() error {
@@ -125,12 +130,12 @@ func (o *TridentOrchestrator) bootstrapBackends() error {
 		if err != nil {
 			return err
 		}
-		newBackendExternal, err := o.AddStorageBackend(serializedConfig)
+		newBackendExternal, err := o.addStorageBackend(serializedConfig)
 		if err != nil {
 			return err
 		}
 
-		// Note that AddStorageBackend returns an external copy of the newly
+		// Note that addStorageBackend returns an external copy of the newly
 		// added backend, so we have to go fetch it manually.
 		newBackend := o.backends[newBackendExternal.Name]
 		newBackend.Online = b.Online
@@ -349,12 +354,19 @@ func (o *TridentOrchestrator) validateBackendUpdate(
 	return nil
 }
 
-func (o *TridentOrchestrator) GetVersion() string {
-	return config.OrchestratorVersion.String()
+func (o *TridentOrchestrator) GetVersion() (string, error) {
+	return config.OrchestratorVersion.String(), o.bootstrapError
 }
 
-func (o *TridentOrchestrator) AddStorageBackend(configJSON string) (
-	*storage.BackendExternal, error) {
+func (o *TridentOrchestrator) AddBackend(configJSON string) (*storage.BackendExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	return o.addStorageBackend(configJSON)
+}
+
+func (o *TridentOrchestrator) addStorageBackend(configJSON string) (*storage.BackendExternal, error) {
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
@@ -444,37 +456,51 @@ func (o *TridentOrchestrator) AddStorageBackend(configJSON string) (
 	return storageBackend.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetBackend(backend string) *storage.BackendExternal {
+func (o *TridentOrchestrator) GetBackend(backend string) (*storage.BackendExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
-	var storageBackend *storage.Backend
-	var found bool
-	if storageBackend, found = o.backends[backend]; !found {
-		return nil
+
+	storageBackend, found := o.backends[backend]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("backend %v was not found", backend))
 	}
-	return storageBackend.ConstructExternal()
+	return storageBackend.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) ListBackends() []*storage.BackendExternal {
+func (o *TridentOrchestrator) ListBackends() ([]*storage.BackendExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+
 	backends := make([]*storage.BackendExternal, 0)
 	for _, b := range o.backends {
 		if b.Online {
 			backends = append(backends, b.ConstructExternal())
 		}
 	}
-	return backends
+	return backends, nil
 }
 
-func (o *TridentOrchestrator) OfflineBackend(backendName string) (bool, error) {
+func (o *TridentOrchestrator) OfflineBackend(backendName string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	backend, found := o.backends[backendName]
 	if !found {
-		return false, fmt.Errorf("backend %s not found", backendName)
+		return notFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
+
 	backend.Online = false
 	storageClasses := make(map[string]*storageclass.StorageClass, 0)
 	for _, storagePool := range backend.Storage {
@@ -489,13 +515,18 @@ func (o *TridentOrchestrator) OfflineBackend(backendName string) (bool, error) {
 	if !backend.HasVolumes() {
 		backend.Terminate()
 		delete(o.backends, backendName)
-		return true, o.storeClient.DeleteBackend(backend)
+		return o.storeClient.DeleteBackend(backend)
 	}
-	return true, o.storeClient.UpdateBackend(backend)
+	return o.storeClient.UpdateBackend(backend)
 }
 
 func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	externalVol *storage.VolumeExternal, err error) {
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	var (
 		backend *storage.Backend
 		vol     *storage.Volume
@@ -580,9 +611,12 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	return nil, err
 }
 
-func (o *TridentOrchestrator) CloneVolume(
-	volumeConfig *storage.VolumeConfig,
-) (*storage.VolumeExternal, error) {
+func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
+	*storage.VolumeExternal, error) {
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
 
 	var (
 		found   bool
@@ -600,8 +634,7 @@ func (o *TridentOrchestrator) CloneVolume(
 	// Get the source volume
 	sourceVolume, found := o.volumes[volumeConfig.CloneSourceVolume]
 	if !found {
-		return nil, fmt.Errorf("source volume not found: %s",
-			volumeConfig.CloneSourceVolume)
+		return nil, notFoundError(fmt.Sprintf("source volume not found: %s", volumeConfig.CloneSourceVolume))
 	}
 	if sourceVolume.Orphaned {
 		log.WithFields(log.Fields{
@@ -636,9 +669,8 @@ func (o *TridentOrchestrator) CloneVolume(
 	backend, found = o.backends[sourceVolume.Backend]
 	if !found {
 		// Should never get here but just to be safe
-		return nil,
-			fmt.Errorf("backend %s for the source volume was not found: %s", sourceVolume.Backend,
-				volumeConfig.CloneSourceVolume)
+		return nil, notFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
+			sourceVolume.Backend, volumeConfig.CloneSourceVolume))
 	}
 
 	vol, err = backend.CloneVolume(cloneConfig)
@@ -747,30 +779,42 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 	return
 }
 
-func (o *TridentOrchestrator) GetVolume(volume string) *storage.VolumeExternal {
+func (o *TridentOrchestrator) GetVolume(volume string) (*storage.VolumeExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	vol, found := o.volumes[volume]
 	if !found {
-		return nil
+		return nil, notFoundError(fmt.Sprintf("volume %v was not found", volume))
 	}
-	return vol.ConstructExternal()
+	return vol.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetDriverTypeForVolume(
-	vol *storage.VolumeExternal,
-) string {
+func (o *TridentOrchestrator) GetDriverTypeForVolume(vol *storage.VolumeExternal) (string, error) {
+	if o.bootstrapError != nil {
+		return config.UnknownDriver, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	if b, ok := o.backends[vol.Backend]; ok {
-		return b.Driver.Name()
+		return b.Driver.Name(), nil
 	}
-	return config.UnknownDriver
+	return config.UnknownDriver, nil
 }
 
-func (o *TridentOrchestrator) GetVolumeType(vol *storage.VolumeExternal) config.VolumeType {
+func (o *TridentOrchestrator) GetVolumeType(vol *storage.VolumeExternal) (
+	volumeType config.VolumeType, err error,
+) {
+	if o.bootstrapError != nil {
+		return config.UnknownVolumeType, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
@@ -779,21 +823,27 @@ func (o *TridentOrchestrator) GetVolumeType(vol *storage.VolumeExternal) config.
 	driver := o.backends[vol.Backend].GetDriverName()
 	switch {
 	case driver == drivers.OntapNASStorageDriverName:
-		return config.OntapNFS
+		volumeType = config.OntapNFS
 	case driver == drivers.OntapNASQtreeStorageDriverName:
-		return config.OntapNFS
+		volumeType = config.OntapNFS
 	case driver == drivers.OntapSANStorageDriverName:
-		return config.OntapISCSI
+		volumeType = config.OntapISCSI
 	case driver == drivers.SolidfireSANStorageDriverName:
-		return config.SolidFireISCSI
+		volumeType = config.SolidFireISCSI
 	case driver == drivers.EseriesIscsiStorageDriverName:
-		return config.ESeriesISCSI
+		volumeType = config.ESeriesISCSI
 	default:
-		return config.UnknownVolumeType
+		volumeType = config.UnknownVolumeType
 	}
+
+	return
 }
 
-func (o *TridentOrchestrator) ListVolumes() []*storage.VolumeExternal {
+func (o *TridentOrchestrator) ListVolumes() ([]*storage.VolumeExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
@@ -801,7 +851,7 @@ func (o *TridentOrchestrator) ListVolumes() []*storage.VolumeExternal {
 	for _, v := range o.volumes {
 		volumes = append(volumes, v.ConstructExternal())
 	}
-	return volumes
+	return volumes, nil
 }
 
 // deleteVolume does the necessary work to delete a volume entirely.  It does
@@ -857,41 +907,47 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 // successfully, ensuring that the deletion will complete either upon retrying
 // the delete or upon reboot of Trident.
 // Returns true if the volume is found and false otherwise.
-func (o *TridentOrchestrator) DeleteVolume(volumeName string) (found bool, err error) {
+func (o *TridentOrchestrator) DeleteVolume(volumeName string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return false, fmt.Errorf("volume %s not found", volumeName)
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	volTxn := &persistentstore.VolumeTransaction{
 		Config: volume.Config,
 		Op:     persistentstore.DeleteVolume,
 	}
-	if err = o.storeClient.AddVolumeTransaction(volTxn); err != nil {
-		return true, err
+	if err := o.storeClient.AddVolumeTransaction(volTxn); err != nil {
+		return err
 	}
-	if err = o.deleteVolume(volumeName); err != nil {
+	if err := o.deleteVolume(volumeName); err != nil {
 		// Do not try to delete the volume transaction here; instead, if we
 		// fail, leave the transaction around and let the deletion be attempted
 		// again.
-		return true, err
+		return err
 	}
-	err = o.storeClient.DeleteVolumeTransaction(volTxn)
-	if err != nil {
+	if err := o.storeClient.DeleteVolumeTransaction(volTxn); err != nil {
 		log.WithFields(log.Fields{
 			"volume": volume,
-		}).Warn("Unable to delete volume transaction.  Repeat deletion to " +
-			"finalize.")
+		}).Warn("Unable to delete volume transaction.  Repeat deletion to finalize.")
 		// Reinsert the volume so that it can be deleted again
 		o.volumes[volumeName] = volume
 	}
-	return true, nil
+	return nil
 }
 
-func (o *TridentOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.VolumeExternal {
+func (o *TridentOrchestrator) ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
@@ -904,19 +960,23 @@ func (o *TridentOrchestrator) ListVolumesByPlugin(pluginName string) []*storage.
 			volumes = append(volumes, vol.ConstructExternal())
 		}
 	}
-	return volumes
+	return volumes, nil
 }
 
 // AttachVolume mounts a volume to the local host.  It ensures the mount point exists,
 // and it calls the underlying storage driver to perform the attach operation as appropriate
 // for the protocol and storage controller type.
 func (o *TridentOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return fmt.Errorf("volume %s not found", volumeName)
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Mounting volume.")
@@ -955,10 +1015,13 @@ func (o *TridentOrchestrator) AttachVolume(volumeName, mountpoint string, option
 // mounted, and it calls the underlying storage driver to perform the detach operation as
 // appropriate for the protocol and storage controller type.
 func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return fmt.Errorf("volume %s not found", volumeName)
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Unmounting volume.")
@@ -983,10 +1046,13 @@ func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 }
 
 func (o *TridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return nil, fmt.Errorf("volume %s not found", volumeName)
+		return nil, notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	snapshots, err := o.backends[volume.Backend].Driver.SnapshotList(volume.Config.InternalName)
@@ -1002,6 +1068,9 @@ func (o *TridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage
 }
 
 func (o *TridentOrchestrator) ReloadVolumes() error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
 
 	// Lock out all other workflows while we reload the volumes
 	o.mutex.Lock()
@@ -1056,6 +1125,10 @@ func (o *TridentOrchestrator) getProtocol(mode config.AccessMode) config.Protoco
 }
 
 func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	sc := storageclass.New(scConfig)
@@ -1083,47 +1156,60 @@ func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (*s
 	return sc.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetStorageClass(scName string) *storageclass.External {
+func (o *TridentOrchestrator) GetStorageClass(scName string) (*storageclass.External, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
-	sc, ok := o.storageClasses[scName]
-	if !ok {
-		return nil
+
+	sc, found := o.storageClasses[scName]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("storage class %v was not found", scName))
 	}
 	// Storage classes aren't threadsafe (we modify them during runtime),
 	// so return a copy, rather than the original
-	return sc.ConstructExternal()
+	return sc.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) ListStorageClasses() []*storageclass.External {
+func (o *TridentOrchestrator) ListStorageClasses() ([]*storageclass.External, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
-	ret := make([]*storageclass.External, 0, len(o.storageClasses))
+
+	storageClasses := make([]*storageclass.External, 0, len(o.storageClasses))
 	for _, sc := range o.storageClasses {
-		ret = append(ret, sc.ConstructExternal())
+		storageClasses = append(storageClasses, sc.ConstructExternal())
 	}
-	return ret
+	return storageClasses, nil
 }
 
-func (o *TridentOrchestrator) DeleteStorageClass(scName string) (bool, error) {
+func (o *TridentOrchestrator) DeleteStorageClass(scName string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
 	sc, found := o.storageClasses[scName]
 	if !found {
-		return found, fmt.Errorf("storage class %s not found", scName)
+		return notFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
 
 	// Note that we don't need a tranasaction here.  If this crashes prior
 	// to successful deletion, the storage class will be reloaded upon reboot
 	// automatically, which is consistent with the method never having returned
 	// successfully.
-	err := o.storeClient.DeleteStorageClass(sc)
-	if err != nil {
-		return found, err
+	if err := o.storeClient.DeleteStorageClass(sc); err != nil {
+		return err
 	}
 	delete(o.storageClasses, scName)
 	for _, storagePool := range sc.GetStoragePoolsForProtocol(config.ProtocolAny) {
 		storagePool.RemoveStorageClass(scName)
 	}
-	return found, nil
+	return nil
 }
 
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(
@@ -1161,4 +1247,46 @@ func (o *TridentOrchestrator) updateVolumeOnPersistentStore(
 		}
 	}
 	return nil
+}
+
+func notReadyError() error {
+	return &NotReadyError{
+		fmt.Sprintf("%s is initializing, please try again later",
+			strings.Title(config.OrchestratorName)),
+	}
+}
+
+func IsNotReadyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*NotReadyError)
+	return ok
+}
+
+func bootstrapError(err error) error {
+	return &BootstrapError{
+		fmt.Sprintf("%s initialization failed; %s",
+			strings.Title(config.OrchestratorName), err.Error()),
+	}
+}
+
+func IsBootstrapError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*BootstrapError)
+	return ok
+}
+
+func notFoundError(message string) error {
+	return &NotFoundError{message}
+}
+
+func IsNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*NotFoundError)
+	return ok
 }

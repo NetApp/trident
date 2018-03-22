@@ -15,10 +15,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
 
-const httpTimeoutSeconds = 10
 const httpContentType = "json-rpc"
 
 // Client is used to send API requests to a SolidFire system system
@@ -110,7 +110,7 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	}
 	httpClient := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(httpTimeoutSeconds * time.Second),
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
 	}
 	response, err = httpClient.Do(request)
 	if err != nil {

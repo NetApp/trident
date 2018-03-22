@@ -103,6 +103,9 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	command := []string{"version", "-o", "json"}
 	versionJSON, err := TunnelCommandRaw(command)
 	if err != nil {
+		if versionJSON != nil && len(versionJSON) > 0 {
+			err = fmt.Errorf("%v; %s", err, string(versionJSON))
+		}
 		return rest.GetVersionResponse{}, err
 	}
 

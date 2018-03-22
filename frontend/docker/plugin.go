@@ -57,7 +57,7 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 	log.WithFields(log.Fields{
 		"volumePath":   plugin.volumePath,
 		"volumeDriver": driverName,
-	}).Info("Initializing Trident plugin for Docker.")
+	}).Info("Initializing Docker frontend.")
 
 	return plugin, nil
 }
@@ -119,21 +119,26 @@ func (p *Plugin) Activate() error {
 			log.WithFields(log.Fields{
 				"driverName": p.driverName,
 				"driverPort": p.driverPort,
-			}).Info("Registering Docker plugin.")
+				"volumePath": p.volumePath,
+			}).Info("Activating Docker frontend.")
 			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
 				&tls.Config{InsecureSkipVerify: true})
 		} else {
-			log.WithField("driverName", p.driverName).Info("Registering Docker plugin.")
+			log.WithFields(log.Fields{
+				"driverName": p.driverName,
+				"volumePath": p.volumePath,
+			}).Info("Activating Docker frontend.")
 			err = handler.ServeUnix(p.driverName, 0) // start as root unix group
 		}
 		if err != nil {
-			log.Fatalf("Failed to register Docker plugin: %v", err)
+			log.Fatalf("Failed to activate Docker frontend: %v", err)
 		}
 	}()
 	return nil
 }
 
 func (p *Plugin) Deactivate() error {
+	log.Info("Deactivating Docker frontend.")
 	return nil
 }
 
@@ -160,13 +165,13 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 	// Find a matching storage class, or register a new one
 	scConfig, err := getStorageClass(request.Options, p.orchestrator)
 	if err != nil {
-		return err
+		return p.dockerError(err)
 	}
 
 	// Convert volume creation options into a Trident volume config
 	volConfig, err := getVolumeConfig(request.Name, scConfig.Name, request.Options)
 	if err != nil {
-		return err
+		return p.dockerError(err)
 	}
 
 	// Invoke the orchestrator to create or clone the new volume
@@ -175,7 +180,7 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 	} else {
 		_, err = p.orchestrator.AddVolume(volConfig)
 	}
-	return err
+	return p.dockerError(err)
 }
 
 func (p *Plugin) List() (*volume.ListResponse, error) {
@@ -186,10 +191,14 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 
 	err := p.orchestrator.ReloadVolumes()
 	if err != nil {
-		return &volume.ListResponse{}, err
+		return &volume.ListResponse{}, p.dockerError(err)
 	}
 
-	tridentVols := p.orchestrator.ListVolumes()
+	tridentVols, err := p.orchestrator.ListVolumes()
+	if err != nil {
+		return &volume.ListResponse{}, p.dockerError(err)
+	}
+
 	var dockerVols []*volume.Volume
 
 	for _, tridentVol := range tridentVols {
@@ -211,19 +220,19 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 	// so refresh the volume list here.
 	err := p.orchestrator.ReloadVolumes()
 	if err != nil {
-		return &volume.GetResponse{}, err
+		return &volume.GetResponse{}, p.dockerError(err)
 	}
 
 	// Get the requested volume
-	tridentVol := p.orchestrator.GetVolume(request.Name)
-	if tridentVol == nil {
-		return &volume.GetResponse{}, fmt.Errorf("volume %s not found", request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	if err != nil {
+		return &volume.GetResponse{}, p.dockerError(err)
 	}
 
 	// Get the volume's snapshots
 	snapshots, err := p.orchestrator.ListVolumeSnapshots(request.Name)
 	if err != nil {
-		return &volume.GetResponse{}, err
+		return &volume.GetResponse{}, p.dockerError(err)
 	}
 	status := map[string]interface{}{
 		"Snapshots": snapshots,
@@ -248,11 +257,14 @@ func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked.")
 
-	found, err := p.orchestrator.DeleteVolume(request.Name)
-	if !found {
-		log.WithField("volume", request.Name).Warn("Volume not found.")
+	err := p.orchestrator.DeleteVolume(request.Name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume": request.Name,
+			"error":  err,
+		}).Warn("Could not delete volume.")
 	}
-	return err
+	return p.dockerError(err)
 }
 
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
@@ -262,14 +274,14 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol := p.orchestrator.GetVolume(request.Name)
-	if tridentVol == nil {
-		return &volume.PathResponse{}, fmt.Errorf("volume %s not found", request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	if err != nil {
+		return &volume.PathResponse{}, p.dockerError(err)
 	}
 
 	mountpoint, err := p.getPath(tridentVol)
 	if err != nil {
-		return &volume.PathResponse{}, err
+		return &volume.PathResponse{}, p.dockerError(err)
 	}
 
 	return &volume.PathResponse{Mountpoint: mountpoint}, nil
@@ -283,19 +295,18 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 		"id":     request.ID,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol := p.orchestrator.GetVolume(request.Name)
-	if tridentVol == nil {
-		return &volume.MountResponse{}, fmt.Errorf("volume %s not found", request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	if err != nil {
+		return &volume.MountResponse{}, p.dockerError(err)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
 	options := make(map[string]string)
 
-	err := p.orchestrator.AttachVolume(request.Name, mountpoint, options)
-	if err != nil {
-		log.Error(err)
+	if err = p.orchestrator.AttachVolume(request.Name, mountpoint, options); err != nil {
 		err = fmt.Errorf("error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
-		return &volume.MountResponse{}, err
+		log.Error(err)
+		return &volume.MountResponse{}, p.dockerError(err)
 	}
 
 	return &volume.MountResponse{Mountpoint: mountpoint}, nil
@@ -309,17 +320,17 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 		"id":     request.ID,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol := p.orchestrator.GetVolume(request.Name)
-	if tridentVol == nil {
-		return fmt.Errorf("volume %s not found", request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	if err != nil {
+		return p.dockerError(err)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
 
-	err := p.orchestrator.DetachVolume(request.Name, mountpoint)
-	if err != nil {
+	if err = p.orchestrator.DetachVolume(request.Name, mountpoint); err != nil {
+		err = fmt.Errorf("error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
 		log.Error(err)
-		return fmt.Errorf("error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
+		return p.dockerError(err)
 	}
 
 	return nil
@@ -345,11 +356,11 @@ func (p *Plugin) getPath(vol *storage.VolumeExternal) (string, error) {
 		"mountpoint":   mountpoint,
 	}).Debug("Getting path for volume.")
 
-	fi, err := os.Lstat(mountpoint)
+	fileInfo, err := os.Lstat(mountpoint)
 	if os.IsNotExist(err) {
 		return "", err
 	}
-	if fi == nil {
+	if fileInfo == nil {
 		return "", fmt.Errorf("could not stat %v", mountpoint)
 	}
 
@@ -358,4 +369,12 @@ func (p *Plugin) getPath(vol *storage.VolumeExternal) (string, error) {
 
 func (p *Plugin) mountpoint(name string) string {
 	return filepath.Join(p.volumePath, name)
+}
+
+func (p *Plugin) dockerError(err error) error {
+	if berr, ok := err.(*core.BootstrapError); ok {
+		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", berr.Error())
+	} else {
+		return err
+	}
 }

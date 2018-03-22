@@ -461,7 +461,7 @@ func EMSHeartbeat(driver StorageDriver) {
 			"error":  err,
 		}).Error("Error logging EMS message.")
 	} else {
-		log.WithField("driver", driver.Name()).Info("Logged EMS message.")
+		log.WithField("driver", driver.Name()).Debug("Logged EMS message.")
 	}
 }
 

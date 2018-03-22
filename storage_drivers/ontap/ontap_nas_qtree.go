@@ -1101,16 +1101,26 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 		return
 	}
 
-	// Get all quotas in all Flexvols matching the storage prefix
-	quotasResponse, err := d.API.QuotaEntryList(d.FlexvolNamePrefix() + "*")
-	if err = api.GetError(quotasResponse, err); err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+	// Bail out early if there aren't any Flexvols
+	if len(volumesResponse.Result.AttributesList()) == 0 {
 		return
 	}
 
 	// Get all qtrees in all Flexvols matching the storage prefix
 	qtreesResponse, err := d.API.QtreeGetAll(d.FlexvolNamePrefix())
 	if err = api.GetError(qtreesResponse, err); err != nil {
+		channel <- &storage.VolumeExternalWrapper{nil, err}
+		return
+	}
+
+	// Bail out early if there aren't any qtrees
+	if len(qtreesResponse.Result.AttributesList()) == 0 {
+		return
+	}
+
+	// Get all quotas in all Flexvols matching the storage prefix
+	quotasResponse, err := d.API.QuotaEntryList(d.FlexvolNamePrefix() + "*")
+	if err = api.GetError(quotasResponse, err); err != nil {
 		channel <- &storage.VolumeExternalWrapper{nil, err}
 		return
 	}

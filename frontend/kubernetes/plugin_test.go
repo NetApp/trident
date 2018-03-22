@@ -1497,14 +1497,16 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 		classSource.Add(test.classToPost)
 		// Wait for the frontend to propagate the event to the orchestrator.
 		oldSCCount := -1
-		newSCCount := len(orchestrator.ListStorageClasses())
+		storageClasses, _ := orchestrator.ListStorageClasses()
+		newSCCount := len(storageClasses)
 		for oldSCCount != newSCCount {
 			time.Sleep(10 * time.Millisecond)
 			oldSCCount = newSCCount
-			newSCCount = len(orchestrator.ListStorageClasses())
+			storageClasses, _ = orchestrator.ListStorageClasses()
+			newSCCount = len(storageClasses)
 		}
 
-		found := orchestrator.GetStorageClass(test.classToPost.Name)
+		found, _ := orchestrator.GetStorageClass(test.classToPost.Name)
 		if found == nil && test.expectedClass != nil {
 			t.Errorf("%s:  Did not find expected storage class.", test.name)
 		} else if test.expectedClass == nil && found != nil {
@@ -1634,11 +1636,13 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 			classSource.Add(class)
 		}
 		oldSCCount := -1 //TODO: change this approach
-		newSCCount := len(orchestrator.ListStorageClasses())
+		storageClasses, _ := orchestrator.ListStorageClasses()
+		newSCCount := len(storageClasses)
 		for oldSCCount != newSCCount {
 			time.Sleep(10 * time.Millisecond)
 			oldSCCount = newSCCount
-			newSCCount = len(orchestrator.ListStorageClasses())
+			storageClasses, _ = orchestrator.ListStorageClasses()
+			newSCCount = len(storageClasses)
 		}
 
 		err = test.action(ctrl, reactor, claimSource, volumeSource, &test)
@@ -1894,11 +1898,13 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 			classSource.Add(class)
 		}
 		oldSCCount := -1 //TODO: change this approach
-		newSCCount := len(orchestrator.ListStorageClasses())
+		storageClasses, _ := orchestrator.ListStorageClasses()
+		newSCCount := len(storageClasses)
 		for oldSCCount != newSCCount {
 			time.Sleep(10 * time.Millisecond)
 			oldSCCount = newSCCount
-			newSCCount = len(orchestrator.ListStorageClasses())
+			storageClasses, _ := orchestrator.ListStorageClasses()
+			newSCCount = len(storageClasses)
 		}
 
 		err = test.action(ctrl, reactor, claimSource, volumeSource, &test)

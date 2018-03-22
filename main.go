@@ -239,11 +239,11 @@ func main() {
 	}
 
 	// Bootstrap the orchestrator and start its frontends
-	if err = orchestrator.Bootstrap(); err != nil {
-		log.Fatal(err.Error())
-	}
 	for _, f := range frontends {
 		f.Activate()
+	}
+	if err = orchestrator.Bootstrap(); err != nil {
+		log.Error(err.Error())
 	}
 
 	// Register and wait for a shutdown signal

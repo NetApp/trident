@@ -27,12 +27,14 @@ func NewAPIServer(p core.Orchestrator, address, port string) *APIServer {
 
 	orchestrator = p
 
-	addressPort := address + ":" + port
-	log.Infof("Starting REST interface on %s", addressPort)
+	log.WithFields(log.Fields{
+		"address": address,
+		"port":    port,
+	}).Info("Initializing REST frontend.")
 
 	return &APIServer{
 		server: &http.Server{
-			Addr:         addressPort,
+			Addr:         address + ":" + port,
 			Handler:      NewRouter(),
 			ReadTimeout:  httpTimeout,
 			WriteTimeout: httpTimeout,
@@ -42,6 +44,7 @@ func NewAPIServer(p core.Orchestrator, address, port string) *APIServer {
 
 func (s *APIServer) Activate() error {
 	go func() {
+		log.Info("Activating REST frontend.")
 		err := s.server.ListenAndServe()
 		if err != nil {
 			log.Fatal(err)
@@ -51,6 +54,7 @@ func (s *APIServer) Activate() error {
 }
 
 func (s *APIServer) Deactivate() error {
+	log.Info("Deactivating REST frontend.")
 	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)

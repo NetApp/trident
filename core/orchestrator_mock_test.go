@@ -73,15 +73,13 @@ func addAndRetrieveVolume(
 	if !reflect.DeepEqual(found.ConstructExternal(), vol) {
 		t.Error("Found incorrect volume in map.")
 	}
-	foundVolume := m.GetVolume(vc.Name)
+	foundVolume, _ := m.GetVolume(vc.Name)
 	if foundVolume == nil {
-		t.Errorf("Failed to find volume %s (%s)", vc.Name,
-			vc.Protocol)
+		t.Errorf("Failed to find volume %s (%s)", vc.Name, vc.Protocol)
 	} else if !reflect.DeepEqual(foundVolume, vol) {
 		// Note that both accessor methods return external copies, so we
 		// can't rely on pointer equality to validate success.
-		t.Errorf("Retrieved incorrect volume for %s (%s)", vc.Name,
-			vc.Protocol)
+		t.Errorf("Retrieved incorrect volume for %s (%s)", vc.Name, vc.Protocol)
 	}
 }
 

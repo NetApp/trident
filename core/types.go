@@ -12,28 +12,46 @@ import (
 type Orchestrator interface {
 	Bootstrap() error
 	AddFrontend(f frontend.Plugin)
-	GetVersion() string
+	GetVersion() (string, error)
 
-	AddStorageBackend(configJSON string) (*storage.BackendExternal, error)
-	GetBackend(backend string) *storage.BackendExternal
-	ListBackends() []*storage.BackendExternal
-	OfflineBackend(backend string) (bool, error)
+	AddBackend(configJSON string) (*storage.BackendExternal, error)
+	GetBackend(backend string) (*storage.BackendExternal, error)
+	ListBackends() ([]*storage.BackendExternal, error)
+	OfflineBackend(backend string) error
 
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	GetVolume(volume string) *storage.VolumeExternal
-	GetDriverTypeForVolume(vol *storage.VolumeExternal) string
-	GetVolumeType(vol *storage.VolumeExternal) config.VolumeType
-	ListVolumes() []*storage.VolumeExternal
-	DeleteVolume(volume string) (found bool, err error)
-	ListVolumesByPlugin(pluginName string) []*storage.VolumeExternal
+	GetVolume(volume string) (*storage.VolumeExternal, error)
+	GetDriverTypeForVolume(vol *storage.VolumeExternal) (string, error)
+	GetVolumeType(vol *storage.VolumeExternal) (config.VolumeType, error)
+	ListVolumes() ([]*storage.VolumeExternal, error)
+	DeleteVolume(volume string) error
+	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
 	AttachVolume(volumeName, mountpoint string, options map[string]string) error
 	DetachVolume(volumeName, mountpoint string) error
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	ReloadVolumes() error
 
 	AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error)
-	GetStorageClass(scName string) *storageclass.External
-	ListStorageClasses() []*storageclass.External
-	DeleteStorageClass(scName string) (bool, error)
+	GetStorageClass(scName string) (*storageclass.External, error)
+	ListStorageClasses() ([]*storageclass.External, error)
+	DeleteStorageClass(scName string) error
 }
+
+type NotReadyError struct {
+	message string
+}
+
+func (e *NotReadyError) Error() string { return e.message }
+
+type BootstrapError struct {
+	message string
+}
+
+func (e *BootstrapError) Error() string { return e.message }
+
+type NotFoundError struct {
+	message string
+}
+
+func (e *NotFoundError) Error() string { return e.message }

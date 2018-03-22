@@ -130,6 +130,11 @@ func NewPluginInCluster(o core.Orchestrator) (*Plugin, error) {
 }
 
 func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config, tridentNamespace string) (*Plugin, error) {
+
+	log.WithFields(log.Fields{
+		"namespace": tridentNamespace,
+	}).Info("Initializing Kubernetes frontend.")
+
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
@@ -274,6 +279,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 }
 
 func (p *Plugin) Activate() error {
+	log.Info("Activating Kubernetes frontend.")
 	go p.claimController.Run(p.claimControllerStopChan)
 	go p.volumeController.Run(p.volumeControllerStopChan)
 	go p.classController.Run(p.classControllerStopChan)
@@ -281,6 +287,7 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
+	log.Info("Deactivating Kubernetes frontend.")
 	close(p.claimControllerStopChan)
 	close(p.volumeControllerStopChan)
 	close(p.classControllerStopChan)
@@ -543,10 +550,10 @@ func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	}
 
 	// We need to delete the corresponding volume.
-	if p.orchestrator.GetVolume(volName) == nil {
+	if vol, _ := p.orchestrator.GetVolume(volName); vol == nil {
 		return
 	}
-	_, err := p.orchestrator.DeleteVolume(volName)
+	err := p.orchestrator.DeleteVolume(volName)
 	if err != nil {
 		message := "Kubernetes frontend failed to delete the provisioned " +
 			"volume for the lost PVC (will retry upon resync)."
@@ -652,7 +659,7 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		if vol != nil && err != nil {
 			err1 := err
 			// Delete the volume on the backend
-			_, err = p.orchestrator.DeleteVolume(vol.Config.Name)
+			err = p.orchestrator.DeleteVolume(vol.Config.Name)
 			if err != nil {
 				err2 := "Kubernetes frontend couldn't delete the volume " +
 					"after failed creation: " + err.Error()
@@ -815,7 +822,7 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		k8sClientCHAP = k8sClient
 	}
 
-	driverType := p.orchestrator.GetDriverTypeForVolume(vol)
+	driverType, _ := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch {
 	case driverType == drivers.SolidfireSANStorageDriverName ||
 		driverType == drivers.OntapSANStorageDriverName ||
@@ -843,9 +850,10 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 	default:
 		// Unknown driver for the frontend plugin or for Kubernetes.
 		// Provisioned volume should get deleted.
+		volType, _ := p.orchestrator.GetVolumeType(vol)
 		log.WithFields(log.Fields{
 			"volume": vol.Config.Name,
-			"type":   p.orchestrator.GetVolumeType(vol),
+			"type":   volType,
 			"driver": driverType,
 		}).Error("Kubernetes frontend doesn't recognize this type of volume; ",
 			"deleting the provisioned volume.")
@@ -857,8 +865,8 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 }
 
 func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {
-	found, err := p.orchestrator.DeleteVolume(volume.GetName())
-	if found && err != nil {
+	err := p.orchestrator.DeleteVolume(volume.GetName())
+	if err != nil && !core.IsNotFoundError(err) {
 		message := fmt.Sprintf(
 			"Kubernetes frontend failed to delete the volume "+
 				"for PV %s: %s. Volume and PV may need to be manually deleted.",
@@ -974,8 +982,8 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 		if volume.Spec.PersistentVolumeReclaimPolicy != v1.PersistentVolumeReclaimDelete {
 			return
 		}
-		found, err := p.orchestrator.DeleteVolume(volume.Name)
-		if found && err != nil {
+		err := p.orchestrator.DeleteVolume(volume.Name)
+		if err != nil && !core.IsNotFoundError(err) {
 			// Updating the PV's phase to "VolumeFailed", so that
 			// a storage admin can take action.
 			message := fmt.Sprintf(
@@ -1136,8 +1144,7 @@ func (p *Plugin) processClass(
 		p.processDeletedClass(class)
 	case "update":
 		// Make sure Trident has a record of this storage class.
-		storageClass := p.orchestrator.GetStorageClass(class.Name)
-		if storageClass == nil {
+		if storageClass, _ := p.orchestrator.GetStorageClass(class.Name); storageClass == nil {
 			log.WithFields(log.Fields{
 				"storageClass": class.Name,
 			}).Warn("Kubernetes frontend has no record of the updated " +
@@ -1271,14 +1278,13 @@ func (p *Plugin) processDeletedClass(class *k8sstoragev1.StorageClass) {
 	}
 
 	// Delete the storage class.
-	deleted, err := p.orchestrator.DeleteStorageClass(class.Name)
+	err := p.orchestrator.DeleteStorageClass(class.Name)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"storageClass": class.Name,
 		}).Error("Kubernetes frontend couldn't delete the storage class: ", err)
 		return
-	}
-	if deleted {
+	} else {
 		log.WithFields(log.Fields{
 			"storageClass": class.Name,
 		}).Info("Kubernetes frontend successfully deleted the storage class.")

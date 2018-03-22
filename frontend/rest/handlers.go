@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
 )
@@ -21,54 +22,113 @@ type listResponse interface {
 	setList([]string)
 }
 
+func httpStatusCodeForAdd(err error) int {
+	if err == nil {
+		return http.StatusCreated
+	} else {
+		switch err.(type) {
+		case *core.NotReadyError:
+			return http.StatusServiceUnavailable
+		case *core.BootstrapError:
+			return http.StatusInternalServerError
+		default:
+			return http.StatusBadRequest
+		}
+	}
+}
+
+func httpStatusCodeForGet(err error) int {
+	if err == nil {
+		return http.StatusOK
+	} else {
+		switch err.(type) {
+		case *core.NotReadyError:
+			return http.StatusServiceUnavailable
+		case *core.BootstrapError:
+			return http.StatusInternalServerError
+		case *core.NotFoundError:
+			return http.StatusNotFound
+		default:
+			return http.StatusBadRequest
+		}
+	}
+}
+
+func httpStatusCodeForDelete(err error) int {
+	if err == nil {
+		return http.StatusOK
+	} else {
+		switch err.(type) {
+		case *core.NotReadyError:
+			return http.StatusServiceUnavailable
+		case *core.BootstrapError:
+			return http.StatusInternalServerError
+		case *core.NotFoundError:
+			return http.StatusNotFound
+		default:
+			return http.StatusBadRequest
+		}
+	}
+}
+
+func writeHTTPResponse(w http.ResponseWriter, response interface{}, httpStatusCode int) {
+
+	if _, err := json.Marshal(response); err != nil {
+		log.WithFields(log.Fields{
+			"response": response,
+			"error":    err,
+		}).Error("Failed to marshal HTTP response.")
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(httpStatusCode)
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.WithFields(log.Fields{
+			"response": response,
+			"error":    err,
+		}).Error("Failed to write HTTP response.")
+	}
+}
+
 func ListGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
 	response listResponse,
-	lister func() []string,
+	lister func() int,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	payload := lister()
-	response.setList(payload)
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+
+	httpStatusCode := lister()
+
+	writeHTTPResponse(w, response, httpStatusCode)
 }
 
 func GetGeneric(w http.ResponseWriter,
 	r *http.Request,
 	varName string,
 	response interface{},
-	get func(string) int,
+	getter func(string) int,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	defer func() {
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			panic(err)
-		}
-	}()
 	vars := mux.Vars(r)
 	target := vars[varName]
-	status := get(target)
-	w.WriteHeader(status)
+	httpStatusCode := getter(target)
+
+	writeHTTPResponse(w, response, httpStatusCode)
 }
 
 func GetGenericNoArg(w http.ResponseWriter,
 	r *http.Request,
 	response interface{},
-	get func() int,
+	getter func() int,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	defer func() {
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			panic(err)
-		}
-	}()
-	status := get()
-	w.WriteHeader(status)
+	httpStatusCode := getter()
+
+	writeHTTPResponse(w, response, httpStatusCode)
 }
 
 type addResponse interface {
@@ -82,68 +142,62 @@ func AddGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
 	response addResponse,
-	add func([]byte),
+	adder func([]byte) int,
 ) {
 	var err error
+	var httpStatusCode int
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	defer func() {
 		if response.isError() {
 			response.logFailure()
-			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			response.logSuccess()
-			w.WriteHeader(http.StatusCreated)
 		}
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			panic(err)
-		}
+
+		writeHTTPResponse(w, response, httpStatusCode)
 	}()
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, config.MaxRESTRequestSize))
 	if err != nil {
 		response.setError(err)
+		httpStatusCode = httpStatusCodeForAdd(err)
 		return
 	}
 	if err := r.Body.Close(); err != nil {
 		response.setError(err)
+		httpStatusCode = httpStatusCodeForAdd(err)
 		return
 	}
-	add(body)
+	httpStatusCode = adder(body)
 }
 
 type DeleteResponse struct {
 	Error string `json:"error,omitempty"`
 }
 
-type deleteFunc func(name string) (bool, error)
+type deleteFunc func(name string) error
 
 func DeleteGeneric(
-	w http.ResponseWriter, r *http.Request, d deleteFunc, varName string,
+	w http.ResponseWriter,
+	r *http.Request,
+	deleter deleteFunc,
+	varName string,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	response := DeleteResponse{}
 
 	vars := mux.Vars(r)
 	toDelete := vars[varName]
 
-	response := DeleteResponse{
-		Error: "",
-	}
-
-	found, err := d(toDelete)
-	headerCode := http.StatusOK
+	err := deleter(toDelete)
 	if err != nil {
-		if !found {
-			headerCode = http.StatusNotFound
-		} else {
-			headerCode = http.StatusInternalServerError
-		}
 		response.Error = err.Error()
 	}
-	w.WriteHeader(headerCode)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+	httpStatusCode := httpStatusCodeForDelete(err)
+
+	writeHTTPResponse(w, response, httpStatusCode)
 }
 
 type AddBackendResponse struct {
@@ -182,30 +236,28 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 	response := &GetVersionResponse{}
 	GetGenericNoArg(w, r, response,
 		func() int {
-			version := orchestrator.GetVersion()
-			if version == "" {
-				response.Error = fmt.Sprintf("Couldn't retrieve %v's version!",
-					config.OrchestratorName)
-				return http.StatusNotFound
+			version, err := orchestrator.GetVersion()
+			if err != nil {
+				response.Error = err.Error()
 			}
 			response.Version = version
-			return http.StatusOK
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
 
 func AddBackend(w http.ResponseWriter, r *http.Request) {
-	response := &AddBackendResponse{
-		BackendID: "",
-		Error:     "",
-	}
+	response := &AddBackendResponse{}
 	AddGeneric(w, r, response,
-		func(body []byte) {
-			if backend, err := orchestrator.AddStorageBackend(string(body)); err != nil {
-				response.Error = err.Error()
-			} else if backend != nil {
+		func(body []byte) int {
+			backend, err := orchestrator.AddBackend(string(body))
+			if err != nil {
+				response.setError(err)
+			}
+			if backend != nil {
 				response.BackendID = backend.Name
 			}
+			return httpStatusCodeForAdd(err)
 		},
 	)
 }
@@ -220,15 +272,21 @@ func (l *ListBackendsResponse) setList(payload []string) {
 }
 
 func ListBackends(w http.ResponseWriter, r *http.Request) {
-	ListGeneric(w, r,
-		&ListBackendsResponse{},
-		func() []string {
-			backends := orchestrator.ListBackends()
+	response := &ListBackendsResponse{}
+	ListGeneric(w, r, response,
+		func() int {
+			backends, err := orchestrator.ListBackends()
 			backendNames := make([]string, 0, len(backends))
-			for _, b := range backends {
-				backendNames = append(backendNames, b.Name)
+			if err != nil {
+				log.Errorf("ListBackends: %v", err)
+				response.Error = err.Error()
+			} else if backends != nil {
+				for _, backend := range backends {
+					backendNames = append(backendNames, backend.Name)
+				}
 			}
-			return backendNames
+			response.setList(backendNames)
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
@@ -242,14 +300,13 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 	response := &GetBackendResponse{}
 	GetGeneric(w, r, "backend", response,
 		func(backendName string) int {
-			backend := orchestrator.GetBackend(backendName)
-			if backend == nil {
-				response.Error = fmt.Sprintf("Backend %v was not found!",
-					backendName)
-				return http.StatusNotFound
+			backend, err := orchestrator.GetBackend(backendName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Backend = backend
 			}
-			response.Backend = backend
-			return http.StatusOK
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
@@ -287,21 +344,18 @@ func (a *AddVolumeResponse) logFailure() {
 }
 
 func AddVolume(w http.ResponseWriter, r *http.Request) {
-	response := &AddVolumeResponse{
-		BackendID: "",
-		Error:     "",
-	}
+	response := &AddVolumeResponse{}
 	AddGeneric(w, r, response,
-		func(body []byte) {
+		func(body []byte) int {
 			volumeConfig := new(storage.VolumeConfig)
 			err := json.Unmarshal(body, volumeConfig)
 			if err != nil {
-				response.Error = "Invalid JSON: " + err.Error()
-				return
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
 			}
 			if err = volumeConfig.Validate(); err != nil {
 				response.setError(err)
-				return
+				return httpStatusCodeForAdd(err)
 			}
 			volume, err := orchestrator.AddVolume(volumeConfig)
 			if err != nil {
@@ -310,6 +364,7 @@ func AddVolume(w http.ResponseWriter, r *http.Request) {
 			if volume != nil {
 				response.BackendID = volume.Backend
 			}
+			return httpStatusCodeForAdd(err)
 		},
 	)
 }
@@ -324,15 +379,20 @@ func (l *ListVolumesResponse) setList(payload []string) {
 }
 
 func ListVolumes(w http.ResponseWriter, r *http.Request) {
-	ListGeneric(w, r,
-		&ListVolumesResponse{},
-		func() []string {
-			volumes := orchestrator.ListVolumes()
+	response := &ListVolumesResponse{}
+	ListGeneric(w, r, response,
+		func() int {
+			volumes, err := orchestrator.ListVolumes()
 			volumeNames := make([]string, 0, len(volumes))
-			for _, v := range volumes {
-				volumeNames = append(volumeNames, v.Config.Name)
+			if err != nil {
+				response.Error = err.Error()
+			} else if volumes != nil {
+				for _, volume := range volumes {
+					volumeNames = append(volumeNames, volume.Config.Name)
+				}
 			}
-			return volumeNames
+			response.setList(volumeNames)
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
@@ -343,20 +403,16 @@ type GetVolumeResponse struct {
 }
 
 func GetVolume(w http.ResponseWriter, r *http.Request) {
-	response := &GetVolumeResponse{
-		Volume: nil,
-		Error:  "",
-	}
+	response := &GetVolumeResponse{}
 	GetGeneric(w, r, "volume", response,
 		func(volName string) int {
-			volume := orchestrator.GetVolume(volName)
-			if volume == nil {
-				response.Error = fmt.Sprintf("Volume %v was not found!",
-					volName)
-				return http.StatusNotFound
+			volume, err := orchestrator.GetVolume(volName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Volume = volume
 			}
-			response.Volume = volume
-			return http.StatusOK
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
@@ -397,12 +453,12 @@ func AddStorageClass(w http.ResponseWriter, r *http.Request) {
 		Error:          "",
 	}
 	AddGeneric(w, r, response,
-		func(body []byte) {
+		func(body []byte) int {
 			scConfig := new(storageclass.Config)
 			err := json.Unmarshal(body, scConfig)
 			if err != nil {
-				response.Error = "Invalid JSON: " + err.Error()
-				return
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
 			}
 			sc, err := orchestrator.AddStorageClass(scConfig)
 			if err != nil {
@@ -411,6 +467,7 @@ func AddStorageClass(w http.ResponseWriter, r *http.Request) {
 			if sc != nil {
 				response.StorageClassID = sc.GetName()
 			}
+			return httpStatusCodeForAdd(err)
 		},
 	)
 }
@@ -425,15 +482,20 @@ func (l *ListStorageClassesResponse) setList(payload []string) {
 }
 
 func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
-	ListGeneric(w, r,
-		&ListStorageClassesResponse{},
-		func() []string {
-			storageClasses := orchestrator.ListStorageClasses()
+	response := &ListStorageClassesResponse{}
+	ListGeneric(w, r, response,
+		func() int {
+			storageClasses, err := orchestrator.ListStorageClasses()
 			storageClassNames := make([]string, 0, len(storageClasses))
-			for _, sc := range storageClasses {
-				storageClassNames = append(storageClassNames, sc.GetName())
+			if err != nil {
+				response.Error = err.Error()
+			} else if storageClasses != nil {
+				for _, sc := range storageClasses {
+					storageClassNames = append(storageClassNames, sc.GetName())
+				}
 			}
-			return storageClassNames
+			response.setList(storageClassNames)
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
@@ -447,14 +509,13 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 	response := &GetStorageClassResponse{}
 	GetGeneric(w, r, "storageClass", response,
 		func(scName string) int {
-			storageClass := orchestrator.GetStorageClass(scName)
-			if storageClass == nil {
-				response.Error = fmt.Sprintf("StorageClass %s was not found!",
-					scName)
-				return http.StatusNotFound
+			storageClass, err := orchestrator.GetStorageClass(scName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.StorageClass = storageClass
 			}
-			response.StorageClass = storageClass
-			return http.StatusOK
+			return httpStatusCodeForGet(err)
 		},
 	)
 }
