@@ -37,21 +37,21 @@ Configuration File Options
 
 In addition to the global configuration values above, when using ONTAP these top level options are available.
 
-+-----------------------+--------------------------------------------------------------------------+------------+
-| Option                | Description                                                              | Example    |
-+=======================+==========================================================================+============+
-| ``managementLIF``     | IP address of ONTAP management LIF                                       | 10.0.0.1   |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``dataLIF``           | IP address of protocol LIF; will be derived if not specified             | 10.0.0.2   |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``svm``               | Storage virtual machine to use (req, if management LIF is a cluster LIF) | svm_nfs    |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``username``          | Username to connect to the storage device                                | vsadmin    |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``password``          | Password to connect to the storage device                                | netapp123  |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``aggregate``         | Aggregate to use for provisioning; it must be assigned to the SVM        | aggr1      |
-+-----------------------+--------------------------------------------------------------------------+------------+
++-----------------------+----------------------------------------------------------------------------+------------+
+| Option                | Description                                                                | Example    |
++=======================+===========================================================================-+============+
+| ``managementLIF``     | IP address of ONTAP management LIF                                         | 10.0.0.1   |
++-----------------------+----------------------------------------------------------------------------+------------+
+| ``dataLIF``           | IP address of protocol LIF; will be derived if not specified               | 10.0.0.2   |
++-----------------------+----------------------------------------------------------------------------+------------+
+| ``svm``               | Storage virtual machine to use (req, if management LIF is a cluster LIF)   | svm_nfs    |
++-----------------------+----------------------------------------------------------------------------+------------+
+| ``username``          | Username to connect to the storage device                                  | vsadmin    |
++-----------------------+----------------------------------------------------------------------------+------------+
+| ``password``          | Password to connect to the storage device                                  | netapp123  |
++-----------------------+----------------------------------------------------------------------------+------------+
+| ``aggregate``         | Aggregate for provisioning (optional; if set, must be assigned to the SVM) | aggr1      |
++-----------------------+----------------------------------------------------------------------------+------------+
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
 selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas and ontap-nas-economy drivers use the

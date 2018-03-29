@@ -237,41 +237,6 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 	return client, nil
 }
 
-// ValidateAggregate returns an error if the configured aggregate is not available to the Vserver.
-func ValidateAggregate(api *api.Client, config *drivers.OntapStorageDriverConfig) error {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "ValidateAggregate", "Type": "ontap_common"}
-		log.WithFields(fields).Debug(">>>> ValidateAggregate")
-		defer log.WithFields(fields).Debug("<<<< ValidateAggregate")
-	}
-
-	if config.Aggregate == "" {
-		return errors.New("no aggregate was specified in the config file")
-	}
-
-	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := api.GetVserverAggregateNames()
-	if err != nil {
-		return err
-	}
-	if len(vserverAggrs) == 0 {
-		return fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
-	}
-
-	for _, aggrName := range vserverAggrs {
-		if aggrName == config.Aggregate {
-			log.WithFields(log.Fields{
-				"SVM":       config.SVM,
-				"Aggregate": config.Aggregate,
-			}).Debug("Found aggregate for SVM.")
-			return nil
-		}
-	}
-
-	return fmt.Errorf("aggregate %s does not exist or is not assigned to SVM %s", config.Aggregate, config.SVM)
-}
-
 // ValidateNASDriver contains the validation logic shared between ontap-nas and ontap-nas-economy.
 func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig) error {
 
@@ -299,15 +264,6 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 		err := ValidateDataLIFs(config, dataLIFs)
 		if err != nil {
 			return fmt.Errorf("data LIF validation failed: %v", err)
-		}
-
-	}
-
-	if config.DriverContext == trident.ContextDocker {
-		// Make sure the configured aggregate is available
-		err = ValidateAggregate(api, config)
-		if err != nil {
-			return err
 		}
 	}
 

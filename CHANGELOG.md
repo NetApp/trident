@@ -14,6 +14,7 @@
 **Enhancements:**
 - Added FQDN support for the management and data LIF of ONTAP backends.
 - For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace instead of the PVC's namespace.
+- **Docker:** The aggregate attribute in ONTAP config files is now optional.
 
 ## v18.01.0
 

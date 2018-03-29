@@ -143,12 +143,6 @@ func (d *SANStorageDriver) validate() error {
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
 		}
-
-		// Make sure the configured aggregate is available
-		err = ValidateAggregate(d.API, &d.Config)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
