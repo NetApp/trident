@@ -25,13 +25,17 @@ spec:
         #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
         #- -debug
         livenessProbe:
-          failureThreshold: 3
           exec:
             command:
-            - curl
-            - 127.0.0.1:8000/trident/v1/backend
-          initialDelaySeconds: 15
-          periodSeconds: 3
+            - tridentctl
+            - -s
+            - 127.0.0.1:8000
+            - get
+            - backend
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
       - name: etcd
         image: quay.io/coreos/etcd:v3.1.5
         command:
@@ -55,14 +59,15 @@ spec:
         - name: etcd-vol
           mountPath: /var/etcd/data
         livenessProbe:
-          failureThreshold: 3
           exec:
             command:
             - etcdctl
             - -endpoint=http://127.0.0.1:8001/
             - cluster-health
+          failureThreshold: 2
           initialDelaySeconds: 15
-          timeoutSeconds: 3
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
       - name: etcd-vol
         persistentVolumeClaim:

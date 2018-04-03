@@ -218,6 +218,18 @@ spec:
         #- -k8s_api_server
         #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
         {DEBUG}
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - 127.0.0.1:8000
+            - get
+            - backend
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
       - name: etcd
         image: {ETCD_IMAGE}
         command:
@@ -240,6 +252,16 @@ spec:
         volumeMounts:
         - name: etcd-vol
           mountPath: /var/etcd/data
+        livenessProbe:
+          exec:
+            command:
+            - etcdctl
+            - -endpoint=http://127.0.0.1:8001/
+            - cluster-health
+          failureThreshold: 2
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
       - name: etcd-vol
         persistentVolumeClaim:
