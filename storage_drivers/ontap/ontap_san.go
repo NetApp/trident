@@ -603,8 +603,12 @@ func (d *SANStorageDriver) Get(name string) error {
 
 // Retrieve storage backend capabilities
 func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-
-	backend.Name = "ontapsan_" + d.Config.DataLIF
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		backend.Name = "ontapsan_" + d.Config.DataLIF
+	} else {
+		backend.Name = d.Config.BackendName
+	}
 	poolAttrs := d.GetStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }

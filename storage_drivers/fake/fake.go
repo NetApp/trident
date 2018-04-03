@@ -297,7 +297,13 @@ func (d *StorageDriver) Get(name string) error {
 }
 
 func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-	backend.Name = d.Config.InstanceName
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no backend is specified
+		backend.Name = d.Config.InstanceName
+	} else {
+		backend.Name = d.Config.BackendName
+	}
+
 	for name, pool := range d.Config.Pools {
 		vc := &storage.Pool{
 			Name:           name,

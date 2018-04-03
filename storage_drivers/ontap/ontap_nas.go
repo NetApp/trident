@@ -352,8 +352,12 @@ func (d *NASStorageDriver) Get(name string) error {
 
 // Retrieve storage backend capabilities
 func (d *NASStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-
-	backend.Name = "ontapnas_" + d.Config.DataLIF
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		backend.Name = "ontapnas_" + d.Config.DataLIF
+	} else {
+		backend.Name = d.Config.BackendName
+	}
 	poolAttrs := d.GetStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }

@@ -17,6 +17,7 @@ import (
 type CommonStorageDriverConfig struct {
 	Version           int                   `json:"version"`
 	StorageDriverName string                `json:"storageDriverName"`
+	BackendName       string                `json:"backendName"`
 	Debug             bool                  `json:"debug"`           // Unsupported!
 	DebugTraceFlags   map[string]bool       `json:"debugTraceFlags"` // Example: {"api":false, "method":true}
 	DisableDelete     bool                  `json:"disableDelete"`

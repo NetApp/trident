@@ -34,6 +34,7 @@ Parameter          Description                                                  
 ================== =============================================================== ================================================
 version            Always 1
 storageDriverName  Always "solidfire-san"
+backendName        Custom name for the storage backend                             "solidfire\_" + storage (iSCSI) IP address
 Endpoint           MVIP for the SolidFire cluster with tenant credentials
 SVIP               Storage (iSCSI) IP address and port
 TenantName         Tenant name to use (created if not found)

@@ -404,32 +404,34 @@ func (o *TridentOrchestrator) addStorageBackend(configJSON string) (*storage.Bac
 	// such volumes are likely to fail, so here we just warn the users about
 	// such volumes and mark them as orphaned.
 	for volName, vol := range o.volumes {
-		updatePersistentStore := false
-		volExternal, _ := storageBackend.Driver.GetVolumeExternal(vol.Config.InternalName)
-		if volExternal == nil {
-			if vol.Orphaned == false {
-				vol.Orphaned = true
-				updatePersistentStore = true
-				log.WithFields(log.Fields{
-					"volume":  volName,
-					"backend": storageBackend.Name,
-				}).Warn("Backend update resulted in an orphaned volume!")
+		if vol.Backend == storageBackend.Name {
+			updatePersistentStore := false
+			volExternal, _ := storageBackend.Driver.GetVolumeExternal(vol.Config.InternalName)
+			if volExternal == nil {
+				if vol.Orphaned == false {
+					vol.Orphaned = true
+					updatePersistentStore = true
+					log.WithFields(log.Fields{
+						"volume":  volName,
+						"backend": storageBackend.Name,
+					}).Warn("Backend update resulted in an orphaned volume!")
+				}
+			} else {
+				if vol.Orphaned == true {
+					vol.Orphaned = false
+					updatePersistentStore = true
+					log.WithFields(log.Fields{
+						"volume":  volName,
+						"backend": storageBackend.Name,
+					}).Info("The volume is no longer orphaned as a result of the " +
+						"backend update.")
+				}
 			}
-		} else {
-			if vol.Orphaned == true {
-				vol.Orphaned = false
-				updatePersistentStore = true
-				log.WithFields(log.Fields{
-					"volume":  volName,
-					"backend": storageBackend.Name,
-				}).Info("The volume is no longer orphaned as a result of the " +
-					"backend update.")
+			if updatePersistentStore {
+				o.updateVolumeOnPersistentStore(vol)
 			}
+			o.backends[storageBackend.Name].Volumes[volName] = vol
 		}
-		if updatePersistentStore {
-			o.updateVolumeOnPersistentStore(vol)
-		}
-		o.backends[storageBackend.Name].Volumes[volName] = vol
 	}
 
 	// Update storage class information

@@ -1002,8 +1002,12 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 
 // Retrieve storage backend capabilities
 func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-
-	backend.Name = "ontapnaseco_" + d.Config.DataLIF
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		backend.Name = "ontapnaseco_" + d.Config.DataLIF
+	} else {
+		backend.Name = d.Config.BackendName
+	}
 	poolAttrs := d.GetStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }

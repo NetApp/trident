@@ -46,6 +46,7 @@ Parameter             Description                                               
 ===================== =============================================================== ================================================
 version               Always 1
 storageDriverName     Always "eseries-iscsi"
+backendName           Custom name for the storage backend                             "eseries\_" + hostDataIP
 webProxyHostname      Hostname or IP address of the web services proxy
 webProxyPort          Port number of the web services proxy                           80 for HTTP, 443 for HTTPS
 webProxyUseHTTP       Use HTTP instead of HTTPS to communicate to the proxy           false

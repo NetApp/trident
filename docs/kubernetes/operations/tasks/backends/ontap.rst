@@ -98,6 +98,7 @@ Parameter          Description                                                  
 ================== =============================================================== ================================================
 version            Always 1
 storageDriverName  "ontap-nas", "ontap-nas-economy" or "ontap-san"
+backendName        Custom name for the storage backend                             Driver name + "_" + dataLIF
 managementLIF      IP address of a cluster or SVM management LIF                   "10.0.0.1"
 dataLIF            IP address of protocol LIF                                      Derived by the SVM unless specified
 svm                Storage virtual machine to use                                  Derived if an SVM managementLIF is specified

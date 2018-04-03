@@ -719,8 +719,12 @@ func (d *SANStorageDriver) Get(name string) error {
 
 // GetStorageBackendSpecs retrieve storage capabilities and register pools with specified backend.
 func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-
-	backend.Name = "eseries_" + d.Config.HostDataIP
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		backend.Name = "eseries_" + d.Config.HostDataIP
+	} else {
+		backend.Name = d.Config.BackendName
+	}
 
 	// Get pools
 	pools, err := d.API.GetVolumePools("", 0, "")

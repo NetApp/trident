@@ -310,6 +310,11 @@ func (p *EtcdClientV3) DeleteBackend(backend *storage.Backend) error {
 	return nil
 }
 
+// RenameBackend renames a backend and updates the associated volumes on the persistent store
+func (p *EtcdClientV3) RenameBackend(backend *storage.Backend) error {
+	return nil
+}
+
 // GetBackends retrieves all backends
 func (p *EtcdClientV3) GetBackends() ([]*storage.BackendPersistent, error) {
 	backendList := make([]*storage.BackendPersistent, 0)

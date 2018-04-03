@@ -11,18 +11,26 @@
 - Prevented exit if a startup error occurs so Docker and Kubernetes don't restart Trident continuously.
 - Fixed an issue where SolidFire cloned volumes were not updated with new QoS values.
 - **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log.
+- **Kubernetes:** Fixed incorrect association of volumes with backends after backend update (Issue [#111](https://github.com/NetApp/trident/issues/111)).
 - **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable.
 - **Docker:** Fixed default size handling (Issue [#102](https://github.com/NetApp/trident/issues/102)).
 - **Docker:** Client interfaces start immediately to avoid Docker plugin timeouts.
 
 **Enhancements:**
 - Added FQDN support for the management and data LIF of ONTAP backends.
-- For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace instead of the PVC's namespace.
+- For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace
+  instead of the PVC's namespace.
 - Return new HTTP codes from REST interface to indicate Trident startup status.
 - Set the minimum supported SolidFire Element version to 8.0.
-- **Docker:** The aggregate attribute in ONTAP config files is now optional.
 - SolidFire defaults to use CHAP if Kubernetes version is >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in config overrides this behavior.
-
+- **Kubernetes:** Added the ability to define a custom name for a storage
+  backend. This enhancement enables adding multiple instances of the same
+  backend with different policies (e.g., different snapshot policies), which
+  obviates extending the Trident storage class API to support new parameters
+  (Issue [#93](https://github.com/NetApp/trident/issues/93)).
+- **Kubernetes:** Added the ability to rename an existing backend.
+- **Docker:** The aggregate attribute in ONTAP config files is now optional.
+ 
 ## v18.01.0
 
 **Fixes:**

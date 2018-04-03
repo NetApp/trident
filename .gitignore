@@ -2,20 +2,10 @@
 # Project
 ###############################################################################
 
-test-yaml
-input/backend-aws-ebs-real.json
-reset_demo.sh
 bin/trident*
 coverage/**
 vendor/
-launcher/launcher
-launcher/docker-build/launcher
-kubernetes-yaml/trident-deployment-local.yaml
-launcher/kubernetes-yaml/launcher-pod-local.yaml
-launcher/config/
 trident-installer.tar.gz
-trident-installer/*.yaml
-trident-installer/setup
 trident
 *.pem
 *.csr

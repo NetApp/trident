@@ -897,8 +897,12 @@ func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-
-	backend.Name = "solidfire_" + strings.Split(d.Config.SVIP, ":")[0]
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		backend.Name = "solidfire_" + strings.Split(d.Config.SVIP, ":")[0]
+	} else {
+		backend.Name = d.Config.BackendName
+	}
 
 	volTypes := *d.Client.VolumeTypes
 	if len(volTypes) == 0 {
