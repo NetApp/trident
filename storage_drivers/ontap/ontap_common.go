@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
@@ -466,6 +467,37 @@ func EMSHeartbeat(driver StorageDriver) {
 
 const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
 
+// probeForVolume polls for the ONTAP volume to appear, with backoff retry logic
+func probeForVolume(name string, client *api.Client) error {
+	checkVolumeExists := func() error {
+		volExists, err := client.VolumeExists(name)
+		if err != nil {
+			return err
+		}
+		if !volExists {
+			return fmt.Errorf("volume %v does not yet exist", name)
+		}
+		return nil
+	}
+	volumeExistsNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Volume not yet present, waiting.")
+	}
+	volumeBackoff := backoff.NewExponentialBackOff()
+	volumeBackoff.InitialInterval = 1 * time.Second
+	volumeBackoff.Multiplier = 2
+	volumeBackoff.RandomizationFactor = 0.1
+	volumeBackoff.MaxElapsedTime = 30 * time.Second
+
+	// Run the volume check using an exponential backoff
+	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
+		log.WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime)
+		return fmt.Errorf("volume %v does not exist", name)
+	} else {
+		log.WithField("volume", name).Debug("Volume found.")
+		return nil
+	}
+}
+
 // Create a volume clone
 func CreateOntapClone(
 	name, source, snapshot string, split bool, config *drivers.OntapStorageDriverConfig, client *api.Client,
@@ -511,6 +543,14 @@ func CreateOntapClone(
 	if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
+		} else if zerr.IsFailedToLoadJobError() {
+			fields := log.Fields{
+				"zerr": zerr,
+			}
+			log.WithFields(fields).Warn("Problem encountered during the clone create operation, attempting to verify the clone was actually created")
+			if volumeLookupError := probeForVolume(name, client); volumeLookupError != nil {
+				return volumeLookupError
+			}
 		} else {
 			return fmt.Errorf("error creating clone: %v", zerr)
 		}

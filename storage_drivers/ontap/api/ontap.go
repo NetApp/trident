@@ -119,6 +119,9 @@ func (e ZapiError) IsPrivilegeError() bool {
 func (e ZapiError) IsScopeError() bool {
 	return e.code == azgo.EAPIPRIVILEGE || e.code == azgo.EAPINOTFOUND
 }
+func (e ZapiError) IsFailedToLoadJobError() bool {
+	return e.code == azgo.EINTERNALERROR && strings.Contains(e.reason, "Failed to load job")
+}
 func (e ZapiError) Reason() string {
 	return e.reason
 }
