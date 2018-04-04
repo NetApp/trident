@@ -52,7 +52,7 @@ In the above configuration we have three policy definitions: *Bronze*, *Silver*,
    docker volume create -d solidfire --name sfBronze -o type=Bronze -o size=100G
 
 Other SolidFire Create Options
-==============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Volume create options for SolidFire:
 

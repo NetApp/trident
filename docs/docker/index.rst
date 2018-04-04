@@ -14,7 +14,6 @@ storage systems and storage types, with the ablity to customize the storage used
 
     deploying
     install/index
-    install/upgrade
     use/index
     known-issues
     troubleshooting

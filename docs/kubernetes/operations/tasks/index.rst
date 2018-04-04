@@ -4,7 +4,7 @@ Common tasks
 .. toctree::
   :glob:
 
-  trident
+  managing
   worker
   backends/index
   backends
