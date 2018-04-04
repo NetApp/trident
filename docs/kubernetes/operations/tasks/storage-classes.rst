@@ -15,7 +15,7 @@ Once you have a storage class file, run:
 
 .. code-block:: bash
 
-  kubectl create storageclass -f <storage-class-file>
+  kubectl create -f <storage-class-file>
 
 Deleting a storage class
 ------------------------
