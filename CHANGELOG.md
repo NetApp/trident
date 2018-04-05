@@ -9,6 +9,7 @@
 - Fixed cleanup of goroutines.
 - Extended timeouts for storage controller API invocations.
 - Prevented exit if a startup error occurs so Docker and Kubernetes don't restart Trident continuously.
+- Fixed an issue where SolidFire cloned volumes were not updated with new QoS values.
 - **Kubernetes:** Trident no longer emits SCSI bus rescan errors into log.
 - **Docker:** iSCSI device discovery and removal is faster, more granular, and more reliable.
 - **Docker:** Fixed default size handling (Issue [#102](https://github.com/NetApp/trident/issues/102)).
@@ -18,6 +19,7 @@
 - Added FQDN support for the management and data LIF of ONTAP backends.
 - For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace instead of the PVC's namespace.
 - Return new HTTP codes from REST interface to indicate Trident startup status.
+- Set the minimum supported SolidFire Element version to 8.0.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
 
 ## v18.01.0

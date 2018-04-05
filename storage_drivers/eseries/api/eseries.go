@@ -130,7 +130,8 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 
 	var request *http.Request
 	var err error
-	var prettyJSON bytes.Buffer
+	var prettyRequestBuffer bytes.Buffer
+	var prettyResponseBuffer bytes.Buffer
 
 	// Create the request
 	if requestBody == nil {
@@ -151,8 +152,8 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 			// Suppress the empty POST body since it contains the array password
 			utils.LogHTTPRequest(request, []byte("<suppressed>"))
 		} else {
-			json.Indent(&prettyJSON, requestBody, "", "  ")
-			utils.LogHTTPRequest(request, prettyJSON.Bytes())
+			json.Indent(&prettyRequestBuffer, requestBody, "", "  ")
+			utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
 		}
 	}
 
@@ -181,15 +182,15 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 		if method == "GET" && resourcePath == "/volumes" {
 			// Suppress the potentially huge GET /volumes body unless asked for explicitly
 			if d.config.DebugTraceFlags["api_get_volumes"] {
-				json.Indent(&prettyJSON, responseBody, "", "  ")
-				utils.LogHTTPResponse(response, prettyJSON.Bytes())
+				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
+				utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
 			} else if d.config.DebugTraceFlags["api"] {
 				utils.LogHTTPResponse(response, []byte("<suppressed>"))
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
-				json.Indent(&prettyJSON, responseBody, "", "  ")
-				utils.LogHTTPResponse(response, prettyJSON.Bytes())
+				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
+				utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
 			}
 		}
 	}

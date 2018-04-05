@@ -45,7 +45,7 @@ Example configuration
   {
       "version": 1,
       "storageDriverName": "solidfire-san",
-      "Endpoint": "https://<user>:<password>@<mvip>/json-rpc/7.0",
+      "Endpoint": "https://<user>:<password>@<mvip>/json-rpc/8.0",
       "SVIP": "<svip>:3260",
       "TenantName": "<tenant>",
       "UseCHAP": true,

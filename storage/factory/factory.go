@@ -193,7 +193,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 			// Deal with upgrades for versions prior to handling multiple VAG ID's
 			var vIDs []int64
 			var req sfapi.ListVolumesForAccountRequest
-			req.AccountID = driver.TenantID
+			req.AccountID = driver.AccountID
 			volumes, _ := driver.Client.ListVolumesForAccount(&req)
 			for _, v := range volumes {
 				if v.Status != "deleted" {

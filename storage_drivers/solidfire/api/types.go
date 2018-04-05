@@ -71,6 +71,13 @@ type Snapshot struct {
 	Attributes interface{} `json:"attributes"`
 }
 
+// ListVolumesRequest
+type ListVolumesRequest struct {
+	Accounts      []int64 `json:"accounts"`
+	StartVolumeID *int64  `json:"startVolumeID,omitempty"`
+	Limit         *int64  `json:"limit,omitempty"`
+}
+
 // ListVolumesForAccountRequest tbd
 type ListVolumesForAccountRequest struct {
 	AccountID int64 `json:"accountID"`
@@ -114,13 +121,10 @@ type DeleteVolumeRequest struct {
 }
 
 type CloneVolumeRequest struct {
-	VolumeID     int64       `json:"volumeID"`
-	Name         string      `json:"name"`
-	NewAccountID int64       `json:"newAccountID"`
-	NewSize      int64       `json:"newSize"`
-	Access       string      `json:"access"`
-	SnapshotID   int64       `json:"snapshotID"`
-	Attributes   interface{} `json:"attributes"`
+	VolumeID   int64       `json:"volumeID"`
+	Name       string      `json:"name"`
+	SnapshotID int64       `json:"snapshotID"`
+	Attributes interface{} `json:"attributes"`
 }
 
 type CloneVolumeResult struct {

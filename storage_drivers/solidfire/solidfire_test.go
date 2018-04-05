@@ -10,8 +10,14 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 )
 
-func TestGetExternalConfig(t *testing.T) {
-	driver := SANStorageDriver{
+const (
+	configEndpoint  = "https://admin:solidfire@10.63.171.151/json-rpc/7.0"
+	minimumEndpoint = "https://admin:solidfire@10.63.171.151/json-rpc/" + sfMinimumAPIVersion
+	newerEndpoint   = "https://admin:solidfire@10.63.171.151/json-rpc/9.0"
+)
+
+func getDriver() *SANStorageDriver {
+	return &SANStorageDriver{
 		Config: drivers.SolidfireStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -23,7 +29,7 @@ func TestGetExternalConfig(t *testing.T) {
 				},
 			},
 			TenantName:     "test",
-			EndPoint:       "https://admin:solidfire@10.63.171.151/json-rpc/7.0",
+			EndPoint:       configEndpoint,
 			SVIP:           "10.63.171.153:3260",
 			InitiatorIFace: "default",
 			Types: &[]api.VolType{
@@ -52,10 +58,13 @@ func TestGetExternalConfig(t *testing.T) {
 			},
 		},
 	}
+}
+
+func TestGetExternalConfig(t *testing.T) {
+	driver := getDriver()
 	newConfig := driver.GetExternalConfig().(*StorageDriverConfigExternal)
 	if newConfig.EndPoint == driver.Config.EndPoint {
-		t.Error("EndPoints are equal; expected different.  Got:  ",
-			newConfig.EndPoint)
+		t.Errorf("EndPoints are equal; expected different. Got: %s", newConfig.EndPoint)
 	}
 	if strings.Contains(newConfig.EndPoint, "admin") {
 		t.Error("Username not removed from external config endpoint.")
@@ -68,7 +77,30 @@ func TestGetExternalConfig(t *testing.T) {
 		t.Error("Username removed from main config endpoint.")
 	}
 	if !strings.Contains(driver.Config.EndPoint, "solidfire") {
-		t.Errorf("Password removed from main config endpoint.")
+		t.Error("Password removed from main config endpoint.")
 	}
 	t.Log("Main config endpoint:  ", driver.Config.EndPoint)
+}
+
+func TestUpgradeOlderEndpointAPIVersion(t *testing.T) {
+	driver := getDriver()
+	endpoint, err := driver.getEndpoint(&driver.Config)
+	if err != nil {
+		t.Errorf("Received error from getEndpoint: %v", err)
+	}
+	if endpoint != minimumEndpoint {
+		t.Error("Client endpoint not changed to minimum version.")
+	}
+}
+
+func TestNoUpgradeNewerEndpointAPIVersion(t *testing.T) {
+	driver := getDriver()
+	driver.Config.EndPoint = newerEndpoint
+	endpoint, err := driver.getEndpoint(&driver.Config)
+	if err != nil {
+		t.Errorf("Received error from getEndpoint: %v", err)
+	}
+	if endpoint != newerEndpoint {
+		t.Error("Client endpoint changed to minimum version.")
+	}
 }

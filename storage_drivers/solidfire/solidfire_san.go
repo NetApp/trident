@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -23,6 +24,7 @@ const (
 	sfDefaultVolTypeName = "SolidFire-default"
 	sfDefaultMinIOPS     = 1000
 	sfDefaultMaxIOPS     = 10000
+	sfMinimumAPIVersion  = "8.0"
 )
 
 const MinimumVolumeSizeBytes = 1000000000 // 1 GB
@@ -32,7 +34,7 @@ type SANStorageDriver struct {
 	initialized      bool
 	Config           drivers.SolidfireStorageDriverConfig
 	Client           *api.Client
-	TenantID         int64
+	AccountID        int64
 	AccessGroups     []int64
 	LegacyNamePrefix string
 	InitiatorIFace   string
@@ -101,7 +103,7 @@ func (d *SANStorageDriver) Initialize(
 	config := &drivers.SolidfireStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
 
-	// decode supplied configJSON string into SolidfireStorageDriverConfig object
+	// Decode supplied configJSON string into SolidfireStorageDriverConfig object
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
@@ -122,7 +124,7 @@ func (d *SANStorageDriver) Initialize(
 	log.Debugf("Decoded to %+v", config)
 	d.Config = *config
 
-	var tenantID int64
+	var accountID int64
 	var defaultBlockSize int64
 	defaultBlockSize = 512
 	if config.DefaultBlockSize == 4096 {
@@ -130,12 +132,17 @@ func (d *SANStorageDriver) Initialize(
 	}
 	log.WithField("defaultBlockSize", defaultBlockSize).Debug("Set default block size.")
 
-	// create a new api.Config object from the read in json config file
-	endpoint := config.EndPoint
+	// Ensure we use at least the minimum supported version of the API
+	endpoint, err := d.getEndpoint(config)
+	if err != nil {
+		return err
+	}
+
+	// Create a new api.Config object from the JSON config file
 	svip := config.SVIP
 	cfg := api.Config{
 		TenantName:       config.TenantName,
-		EndPoint:         config.EndPoint,
+		EndPoint:         endpoint,
 		SVIP:             config.SVIP,
 		InitiatorIFace:   config.InitiatorIFace,
 		Types:            config.Types,
@@ -144,22 +151,20 @@ func (d *SANStorageDriver) Initialize(
 		DefaultBlockSize: defaultBlockSize,
 		DebugTraceFlags:  config.DebugTraceFlags,
 	}
-	defaultTenantName := config.TenantName
 
 	log.WithFields(log.Fields{
-		"endpoint":          endpoint,
-		"svip":              svip,
-		"cfg":               cfg,
-		"defaultTenantName": defaultTenantName,
+		"endpoint": endpoint,
+		"svip":     svip,
+		"cfg":      cfg,
 	}).Debug("Initializing SolidFire API client.")
 
-	// create a new api.Client object for interacting with the SolidFire storage system
-	client, _ := api.NewFromParameters(endpoint, svip, cfg, defaultTenantName)
+	// Create a new api.Client object for interacting with the SolidFire storage system
+	client, _ := api.NewFromParameters(endpoint, svip, cfg)
+
+	// Lookup the specified account; if not found, dynamically create it
 	req := api.GetAccountByNameRequest{
 		Name: config.TenantName,
 	}
-
-	// lookup the specified account; if not found, dynamically create it
 	account, err := client.GetAccountByName(&req)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -169,17 +174,25 @@ func (d *SANStorageDriver) Initialize(
 		req := api.AddAccountRequest{
 			Username: config.TenantName,
 		}
-		tenantID, err = client.AddAccount(&req)
+		accountID, err = client.AddAccount(&req)
 		if err != nil {
-			log.WithField("error", err).Error("Failed to initialize SolidFire driver while creating tenant.")
+			log.WithFields(log.Fields{
+				"tenantName": config.TenantName,
+				"error":      err,
+			}).Error("Failed to initialize SolidFire driver while creating account.")
 			return err
+		} else {
+			log.WithFields(log.Fields{
+				"tenantName": config.TenantName,
+				"accountID":  account.AccountID,
+			}).Debug("Created account.")
 		}
 	} else {
 		log.WithFields(log.Fields{
 			"tenantName": config.TenantName,
-			"tenantID":   account.AccountID,
+			"accountID":  account.AccountID,
 		}).Debug("Using existing account.")
-		tenantID = account.AccountID
+		accountID = account.AccountID
 	}
 
 	legacyNamePrefix := "netappdvp-"
@@ -200,12 +213,13 @@ func (d *SANStorageDriver) Initialize(
 		client.AccessGroups = config.AccessGroups
 	}
 
-	d.TenantID = tenantID
+	d.AccountID = accountID
+	client.AccountID = accountID
 	d.Client = client
 	d.InitiatorIFace = iscsiInterface
 	d.LegacyNamePrefix = legacyNamePrefix
 	log.WithFields(log.Fields{
-		"TenantID":       tenantID,
+		"AccountID":      accountID,
 		"InitiatorIFace": iscsiInterface,
 	}).Debug("SolidFire driver initialized.")
 
@@ -240,6 +254,38 @@ func (d *SANStorageDriver) Terminate() {
 	}
 
 	d.initialized = false
+}
+
+// getEndpoint takes the SVIP from the config file (i.e. "https://admin:password@10.0.0.1/json-rpc/7.0")
+// and replaces the version portion (i.e. "7.0") with the new minimum required by Trident ("8.0") *if* it is below
+// the minimum. If the config file has a newer version (i.e. "9.0"), the version is honored as is.
+func (d *SANStorageDriver) getEndpoint(config *drivers.SolidfireStorageDriverConfig) (string, error) {
+
+	var endpointRegex = regexp.MustCompile(`(?P<endpoint>.+/json-rpc/)(?P<version>[\d.]+)$`)
+	endpointMatch := endpointRegex.FindStringSubmatch(config.EndPoint)
+	paramsMap := make(map[string]string)
+	for i, name := range endpointRegex.SubexpNames() {
+		if i > 0 && i <= len(endpointMatch) {
+			paramsMap[name] = endpointMatch[i]
+		}
+	}
+	if paramsMap["endpoint"] == "" || paramsMap["version"] == "" {
+		return "", errors.New("invalid endpoint in config file")
+	}
+
+	endpointVersion, err := utils.ParseGeneric(paramsMap["version"])
+	if err != nil {
+		return "", errors.New("invalid endpoint version in config file")
+	}
+	minimumVersion := utils.MustParseGeneric(sfMinimumAPIVersion)
+
+	if !endpointVersion.AtLeast(minimumVersion) {
+		log.WithField("minVersion", sfMinimumAPIVersion).Warn("Overriding config file with minimum SF API version.")
+		return paramsMap["endpoint"] + sfMinimumAPIVersion, nil
+	} else {
+		log.WithField("version", paramsMap["version"]).Debug("Using SF API version from config file.")
+		return paramsMap["endpoint"] + paramsMap["version"], nil
+	}
 }
 
 func (d *SANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorageDriverConfig) {
@@ -325,7 +371,7 @@ func (d *SANStorageDriver) validate() error {
 		// Validate the environment
 		isIscsiSupported := utils.ISCSISupported()
 		if !isIscsiSupported {
-			log.Errorf("Host doesn't appear to support iSCSI.")
+			log.Error("Host doesn't appear to support iSCSI.")
 			return errors.New("no iSCSI support on this host")
 		}
 	}
@@ -387,7 +433,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	typeOpt := utils.GetV(opts, "type", "")
 	if typeOpt != "" {
 		if qos.MinIOPS != 0 {
-			log.Warningf("QoS values appear to have been set using -o qos, but " +
+			log.Warning("QoS values appear to have been set using -o qos, but " +
 				"type is set as well, overriding with type option.")
 		}
 		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
@@ -429,7 +475,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 
 	req.Qos = qos
 	req.TotalSize = int64(sizeBytes)
-	req.AccountID = d.TenantID
+	req.AccountID = d.AccountID
 	req.Name = MakeSolidFireName(name)
 	req.Attributes = meta
 	_, err = d.Client.CreateVolume(&req)
@@ -440,65 +486,23 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 }
 
 // Create a volume clone
-func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, opts map[string]string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateClone",
 			"Type":     "SANStorageDriver",
 			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
+			"source":   sourceName,
+			"snapshot": snapshotName,
 			"opts":     opts,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	var req api.CloneVolumeRequest
-	telemetry, _ := json.Marshal(d.Telemetry)
-	var meta = map[string]string{
-		"trident":     string(telemetry),
-		"docker-name": name,
-	}
-
-	// Check to see if the clone already exists
-	v, err := d.GetVolume(name)
-	if err == nil && v.VolumeID != 0 {
-		log.Warningf("found existing Volume by name: %s", name)
-		return errors.New("volume with requested name already exists")
-	}
-
-	// Get the volume ID for the source volume
-	v, err = d.GetVolume(source)
-	if err != nil || v.VolumeID == 0 {
-		log.Errorf("Unable to locate requested source volume: %+v", err)
-		return errors.New("error performing clone operation, source volume not found")
-	}
-
-	// If a snapshot was specified, use that
-	if snapshot != "" {
-		s, err := d.Client.GetSnapshot(0, v.VolumeID, snapshot)
-		if err != nil || s.SnapshotID == 0 {
-			log.Errorf("Unable to locate requested source snapshot: %+v", err)
-			return errors.New("error performing clone operation, source snapshot not found")
-		}
-		req.SnapshotID = s.SnapshotID
-	}
-
-	// Create the clone of the source volume with the name specified
-	req.VolumeID = v.VolumeID
-	req.Name = MakeSolidFireName(name)
-	req.Attributes = meta
-	vol, err := d.Client.CloneVolume(&req)
-	if err != nil {
-		log.Errorf("Failed to create clone: %+v", err)
-		return errors.New("error performing clone operation")
-	}
-
-	var modifyReq api.ModifyVolumeRequest
+	var err error
 	var qos api.QoS
-	modifyReq.VolumeID = vol.VolumeID
 	doModify := false
 
 	qosOpt := utils.GetV(opts, "qos", "")
@@ -514,7 +518,7 @@ func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[s
 	if typeOpt != "" {
 		doModify = true
 		if qos.MinIOPS != 0 {
-			log.Warningf("qos values appear to have been set using -o qos, but type is set as well, " +
+			log.Warning("qos values appear to have been set using -o qos, but type is set as well, " +
 				"overriding with type option")
 		}
 		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
@@ -523,11 +527,57 @@ func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[s
 		}
 	}
 
+	var req api.CloneVolumeRequest
+	telemetry, _ := json.Marshal(d.Telemetry)
+	var meta = map[string]string{
+		"trident":     string(telemetry),
+		"docker-name": name,
+	}
+
+	// Check to see if the clone already exists
+	checkVolume, err := d.GetVolume(name)
+	if err == nil && checkVolume.VolumeID != 0 {
+		log.Warningf("Found existing volume %s, aborting clone operation.", name)
+		return errors.New("volume with requested name already exists")
+	}
+
+	// Get the volume ID for the source volume
+	sourceVolume, err := d.GetVolume(sourceName)
+	if err != nil || sourceVolume.VolumeID == 0 {
+		log.Errorf("Unable to locate requested source volume: %v", err)
+		return errors.New("error performing clone operation, source volume not found")
+	}
+
+	// If a snapshot was specified, use that
+	if snapshotName != "" {
+		s, err := d.Client.GetSnapshot(0, sourceVolume.VolumeID, snapshotName)
+		if err != nil || s.SnapshotID == 0 {
+			log.Errorf("Unable to locate requested source snapshot: %v", err)
+			return errors.New("error performing clone operation, source snapshot not found")
+		}
+		req.SnapshotID = s.SnapshotID
+	}
+
+	// Create the clone of the source volume with the name specified
+	req.VolumeID = sourceVolume.VolumeID
+	req.Name = MakeSolidFireName(name)
+	req.Attributes = meta
+
+	cloneVolume, err := d.Client.CloneVolume(&req)
+	if err != nil {
+		log.Errorf("Failed to create clone: %v", err)
+		return errors.New("error performing clone operation")
+	}
+
+	// If any QoS settings were specified, modify the clone
+	var modifyReq api.ModifyVolumeRequest
+	modifyReq.VolumeID = cloneVolume.VolumeID
+
 	if doModify {
 		modifyReq.Qos = qos
 		err = d.Client.ModifyVolume(&modifyReq)
 		if err != nil {
-			log.Errorf("Failed to update QoS on clone: %+v", err)
+			log.Errorf("Failed to update QoS on clone: %v", err)
 			return errors.New("error performing clone operation")
 		}
 	}
@@ -553,7 +603,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return err
 	} else if err != nil {
 		// Volume wasn't found. No action needs to be taken.
-		log.Warnf("volume doesn't exist")
+		log.Warnf("Volume %s doesn't exist.", name)
 		return nil
 	}
 
@@ -564,7 +614,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 
 	err = d.Client.DetachVolume(v)
 	if err != nil {
-		log.Warning("Unable to detach volume, deleting anyway: %+v", err)
+		log.Warningf("Unable to detach volume, deleting anyway: %v", err)
 	}
 
 	err = d.Client.DeleteVolume(v.VolumeID)
@@ -607,7 +657,7 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		// Rescan and wait for the device(s) to appear
 		err = utils.RescanTargetAndWaitForDevice(0, v.Iqn)
 		if err != nil {
-			log.Errorf("could not find iSCSI device: %+v", err)
+			log.Errorf("Could not find iSCSI device: %+v", err)
 			return err
 		}
 	}
@@ -715,7 +765,7 @@ func (d *SANStorageDriver) List() (vols []string, err error) {
 	}
 
 	var req api.ListVolumesForAccountRequest
-	req.AccountID = d.TenantID
+	req.AccountID = d.AccountID
 	volumes, err := d.Client.ListVolumesForAccount(&req)
 	for _, v := range volumes {
 		if v.Status != "deleted" {
@@ -786,7 +836,7 @@ func (d *SANStorageDriver) Get(name string) error {
 // keys are the volume names as reported to Docker.
 func (d *SANStorageDriver) getVolumes() (map[string]api.Volume, error) {
 	var req api.ListVolumesForAccountRequest
-	req.AccountID = d.TenantID
+	req.AccountID = d.AccountID
 	volumes, err := d.Client.ListVolumesForAccount(&req)
 	if err != nil {
 		return nil, err
@@ -817,7 +867,7 @@ func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
 	// point let's fix that and just use something efficient like Name and be
 	// done with it. Otherwise, we just get all for the account and iterate
 	// which isn't terrible.
-	req.AccountID = d.TenantID
+	req.AccountID = d.AccountID
 	volumes, err := d.Client.ListVolumesForAccount(&req)
 	if err != nil {
 		log.Errorf("Error encountered requesting volumes in SolidFire:getVolume: %+v", err)

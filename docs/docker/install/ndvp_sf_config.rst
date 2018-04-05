@@ -33,7 +33,7 @@ Example Solidfire Config File
   {
       "version": 1,
       "storageDriverName": "solidfire-san",
-      "Endpoint": "https://admin:admin@192.168.160.3/json-rpc/7.0",
+      "Endpoint": "https://admin:admin@192.168.160.3/json-rpc/8.0",
       "SVIP": "10.0.0.7:3260",
       "TenantName": "docker",
       "InitiatorIFace": "default",

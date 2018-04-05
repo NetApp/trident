@@ -23,16 +23,15 @@ const httpContentType = "json-rpc"
 
 // Client is used to send API requests to a SolidFire system system
 type Client struct {
-	SVIP              string
-	Endpoint          string
-	DefaultAPIPort    int
-	DefaultAccountID  int64
-	DefaultTenantName string
-	VolumeTypes       *[]VolType
-	Config            *Config
-	AccessGroups      []int64
-	DefaultBlockSize  int64
-	DebugTraceFlags   map[string]bool
+	SVIP             string
+	Endpoint         string
+	Config           *Config
+	DefaultAPIPort   int
+	VolumeTypes      *[]VolType
+	AccessGroups     []int64
+	DefaultBlockSize int64
+	DebugTraceFlags  map[string]bool
+	AccountID        int64
 }
 
 // Config holds the configuration data for the Client to communicate with a SolidFire storage system
@@ -56,17 +55,16 @@ type VolType struct {
 }
 
 // NewFromParameters is a factory method to create a new sfapi.Client object using the supplied parameters
-func NewFromParameters(pendpoint string, psvip string, pcfg Config, pdefaultTenantName string) (c *Client, err error) {
+func NewFromParameters(pendpoint string, psvip string, pcfg Config) (c *Client, err error) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	SFClient := &Client{
-		Endpoint:          pendpoint,
-		SVIP:              psvip,
-		Config:            &pcfg,
-		DefaultAPIPort:    443,
-		VolumeTypes:       pcfg.Types,
-		DefaultTenantName: pdefaultTenantName,
-		DefaultBlockSize:  pcfg.DefaultBlockSize,
-		DebugTraceFlags:   pcfg.DebugTraceFlags,
+		Endpoint:         pendpoint,
+		SVIP:             psvip,
+		Config:           &pcfg,
+		DefaultAPIPort:   443,
+		VolumeTypes:      pcfg.Types,
+		DefaultBlockSize: pcfg.DefaultBlockSize,
+		DebugTraceFlags:  pcfg.DebugTraceFlags,
 	}
 	return SFClient, nil
 }
@@ -77,7 +75,8 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	var err error
 	var request *http.Request
 	var response *http.Response
-	var prettyJSON bytes.Buffer
+	var prettyRequestBuffer bytes.Buffer
+	var prettyResponseBuffer bytes.Buffer
 
 	if c.Endpoint == "" {
 		log.Error("endpoint is not set, unable to issue json-rpc requests")
@@ -100,8 +99,8 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 
 	// Log the request
 	if c.Config.DebugTraceFlags["api"] {
-		json.Indent(&prettyJSON, requestBody, "", "  ")
-		utils.LogHTTPRequest(request, prettyJSON.Bytes())
+		json.Indent(&prettyRequestBuffer, requestBody, "", "  ")
+		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
 	}
 
 	// Send the request
@@ -138,8 +137,8 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	// Log the response
 	if c.Config.DebugTraceFlags["api"] {
 		if c.shouldLogResponseBody(method) {
-			json.Indent(&prettyJSON, responseBody, "", "  ")
-			utils.LogHTTPResponse(response, prettyJSON.Bytes())
+			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
+			utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
 
 		} else {
 			utils.LogHTTPResponse(response, []byte("<suppressed>"))

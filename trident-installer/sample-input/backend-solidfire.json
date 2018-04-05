@@ -1,7 +1,7 @@
 {
     "version": 1,
     "storageDriverName": "solidfire-san",
-    "Endpoint": "https://user:password@10.0.0.1/json-rpc/7.0",
+    "Endpoint": "https://user:password@10.0.0.1/json-rpc/8.0",
     "SVIP": "10.0.0.1:3260",
     "TenantName": "trident",
     "InitiatorIFace": "default",
