@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RoaringBitmap/roaring"
 	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
@@ -54,6 +55,7 @@ type Driver interface {
 	GetExternalConfig() interface{}
 	GetVolumeExternal(name string) (*VolumeExternal, error)
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
+	GetUpdateType(driver Driver) *roaring.Bitmap
 }
 
 type Backend struct {
@@ -251,6 +253,20 @@ func (b *Backend) RemoveVolume(vol *Volume) error {
 		delete(b.Volumes, vol.Config.Name)
 	}
 	return nil
+}
+
+const (
+	BackendRename = iota
+	VolumeAccessInfoChange
+	InvalidUpdate
+)
+
+func (b *Backend) GetUpdateType(origBackend *Backend) *roaring.Bitmap {
+	updateCode := b.Driver.GetUpdateType(origBackend.Driver)
+	if b.Name != origBackend.Name {
+		updateCode.Add(BackendRename)
+	}
+	return updateCode
 }
 
 // Terminate informs the backend that it is being deleted from the core

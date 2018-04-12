@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/RoaringBitmap/roaring"
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 
@@ -1087,4 +1088,20 @@ func (d *SANStorageDriver) getVolumeExternal(
 		Config: volumeConfig,
 		Pool:   poolAttrs.Label,
 	}
+}
+
+// GetUpdateType returns a bitmap populated with updates to the driver
+func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
+	bitmap := roaring.New()
+	dOrig, ok := driverOrig.(*SANStorageDriver)
+	if !ok {
+		bitmap.Add(storage.InvalidUpdate)
+		return bitmap
+	}
+
+	if d.Config.HostDataIP != dOrig.Config.HostDataIP {
+		bitmap.Add(storage.VolumeAccessInfoChange)
+	}
+
+	return bitmap
 }

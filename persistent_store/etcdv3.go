@@ -14,6 +14,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	//TODO: Change for the later versions of etcd (etcd v3.1.5 doesn't return any error for unfound keys but later versions do)
 	//"github.com/coreos/etcd/etcdserver"
+	conc "github.com/coreos/etcd/clientv3/concurrency"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
@@ -114,7 +115,7 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 	return nil, err
 }
 
-// Create is the abstract CRUD interface
+// Create creates a key in etcd
 func (p *EtcdClientV3) Create(key, value string) error {
 	_, err := p.Read(key)
 	if err != nil && !MatchKeyNotFoundErr(err) {
@@ -126,6 +127,19 @@ func (p *EtcdClientV3) Create(key, value string) error {
 	return p.Set(key, value)
 }
 
+// Create creates a key in etcd using STM
+func (p *EtcdClientV3) CreateSTM(s conc.STM, key, value string) error {
+	_, err := p.ReadSTM(s, key)
+	if err != nil && !MatchKeyNotFoundErr(err) {
+		return err
+	}
+	if err == nil {
+		return NewPersistentStoreError(KeyExistsErr, key)
+	}
+	return p.SetSTM(s, key, value)
+}
+
+// Read reads a key from etcd
 func (p *EtcdClientV3) Read(key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), config.PersistentStoreTimeout)
 	resp, err := p.clientV3.Get(ctx, key)
@@ -146,6 +160,16 @@ func (p *EtcdClientV3) Read(key string) (string, error) {
 		return "", NewPersistentStoreError(KeyNotFoundErr, key)
 	}
 	return string(resp.Kvs[0].Value[:]), nil
+}
+
+// Read reads a key from etcd using STM
+func (p *EtcdClientV3) ReadSTM(s conc.STM, key string) (string, error) {
+	value := s.Get(key)
+	if value == "" {
+		return "", NewPersistentStoreError(KeyNotFoundErr, key)
+	}
+
+	return value, nil
 }
 
 // ReadKeys returns all the keys with the designated prefix
@@ -181,6 +205,14 @@ func (p *EtcdClientV3) Update(key, value string) error {
 	return p.Set(key, value)
 }
 
+func (p *EtcdClientV3) UpdateSTM(s conc.STM, key, value string) error {
+	_, err := p.ReadSTM(s, key)
+	if err != nil {
+		return err
+	}
+	return p.SetSTM(s, key, value)
+}
+
 func (p *EtcdClientV3) Set(key, value string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), config.PersistentStoreTimeout)
 	_, err := p.clientV3.Put(ctx, key, value)
@@ -188,6 +220,11 @@ func (p *EtcdClientV3) Set(key, value string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (p *EtcdClientV3) SetSTM(s conc.STM, key, value string) error {
+	s.Put(key, value)
 	return nil
 }
 
@@ -201,6 +238,11 @@ func (p *EtcdClientV3) Delete(key string) error {
 	if err == nil && resp.Deleted == 0 {
 		return NewPersistentStoreError(KeyNotFoundErr, key)
 	}
+	return nil
+}
+
+func (p *EtcdClientV3) DeleteSTM(s conc.STM, key string) error {
+	s.Del(key)
 	return nil
 }
 
@@ -273,6 +315,20 @@ func (p *EtcdClientV3) AddBackend(b *storage.Backend) error {
 	return nil
 }
 
+// AddBackendSTM saves the minimally required backend state to the persistent store using STM
+func (p *EtcdClientV3) AddBackendSTM(s conc.STM, b *storage.Backend) error {
+	backend := b.ConstructPersistent()
+	backendJSON, err := json.Marshal(backend)
+	if err != nil {
+		return err
+	}
+	err = p.CreateSTM(s, config.BackendURL+"/"+backend.Name, string(backendJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetBackend retrieves a backend from the persistent store
 func (p *EtcdClientV3) GetBackend(backendName string) (*storage.BackendPersistent, error) {
 	var backend storage.BackendPersistent
@@ -310,8 +366,12 @@ func (p *EtcdClientV3) DeleteBackend(backend *storage.Backend) error {
 	return nil
 }
 
-// RenameBackend renames a backend and updates the associated volumes on the persistent store
-func (p *EtcdClientV3) RenameBackend(backend *storage.Backend) error {
+// DeleteBackendSTM deletes the backend state on the persistent store using STM
+func (p *EtcdClientV3) DeleteBackendSTM(s conc.STM, backend *storage.Backend) error {
+	err := p.DeleteSTM(s, config.BackendURL+"/"+backend.Name)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -348,6 +408,71 @@ func (p *EtcdClientV3) DeleteBackends() error {
 	return nil
 }
 
+// ReplaceBackendAndUpdateVolumes replaces a backend and updates all volumes to
+// reflect the new backend.
+func (p *EtcdClientV3) ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error {
+	// It's important to update the persistent store objects in an atomic way.
+	_, err := conc.NewSTMSerializable(context.TODO(), p.clientV3,
+		func(s conc.STM) error {
+
+			// First, create the new backend.
+			err := p.AddBackendSTM(s, newBackend)
+			if err != nil {
+				return err
+			}
+
+			// Second, find all the volumes.
+			volExternalList, err := p.GetVolumesSTM(s)
+			if err != nil {
+				return err
+			}
+
+			// Third, update the volumes mapped to the old backend to the new backend.
+			for _, volExternal := range volExternalList {
+				if volExternal.Backend == origBackend.Name {
+					vol := storage.NewVolume(volExternal.Config,
+						newBackend.Name, volExternal.Pool, volExternal.Orphaned)
+					err = p.UpdateVolumeSTM(s, vol)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			// Forth, delete the old backend.
+			return p.DeleteBackendSTM(s, origBackend)
+		})
+	return err
+}
+
+// failedReplaceBackendAndUpdateVolumes simulates a transaction failure in
+// replacing a backend and updating all the volumes to reflect the new backend
+// state. This method is intended to be used by unit tests only.
+func (p *EtcdClientV3) failedReplaceBackendAndUpdateVolumes(
+	origBackend, newBackend *storage.Backend) error {
+	// It's important to update the persistent store objects in an atomic way.
+	_, err := conc.NewSTMSerializable(context.TODO(), p.clientV3,
+		func(s conc.STM) error {
+			// First, create the new backend.
+			err := p.AddBackendSTM(s, newBackend)
+			if err != nil {
+				return err
+			}
+
+			// Second, find all the volumes.
+			_, err = p.GetVolumesSTM(s)
+			if err != nil {
+				return err
+			}
+
+			// Third, simulate a failure in updating the volumes or deleting
+			// the old backend. Transaction failure should undo the new backend
+			// creation.
+			return fmt.Errorf("failedReplaceBackendAndUpdateVolumes failed")
+		})
+	return err
+}
+
 // AddVolume saves a volume's state to the persistent store
 func (p *EtcdClientV3) AddVolume(vol *storage.Volume) error {
 	volExternal := vol.ConstructExternal()
@@ -376,6 +501,20 @@ func (p *EtcdClientV3) GetVolume(volName string) (*storage.VolumeExternal, error
 	return volExternal, nil
 }
 
+// GetVolumeSTM retrieves a volume's state from the persistent store using STM
+func (p *EtcdClientV3) GetVolumeSTM(s conc.STM, volName string) (*storage.VolumeExternal, error) {
+	volJSON, err := p.ReadSTM(s, config.VolumeURL+"/"+volName)
+	if err != nil {
+		return nil, err
+	}
+	volExternal := &storage.VolumeExternal{}
+	err = json.Unmarshal([]byte(volJSON), volExternal)
+	if err != nil {
+		return nil, err
+	}
+	return volExternal, nil
+}
+
 // UpdateVolume updates a volume's state on the persistent store
 func (p *EtcdClientV3) UpdateVolume(vol *storage.Volume) error {
 	volExternal := vol.ConstructExternal()
@@ -384,6 +523,20 @@ func (p *EtcdClientV3) UpdateVolume(vol *storage.Volume) error {
 		return err
 	}
 	err = p.Update(config.VolumeURL+"/"+vol.Config.Name, string(volJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateVolumeSTM updates a volume's state on the persistent store using STM
+func (p *EtcdClientV3) UpdateVolumeSTM(s conc.STM, vol *storage.Volume) error {
+	volExternal := vol.ConstructExternal()
+	volJSON, err := json.Marshal(volExternal)
+	if err != nil {
+		return err
+	}
+	err = p.UpdateSTM(s, config.VolumeURL+"/"+vol.Config.Name, string(volJSON))
 	if err != nil {
 		return err
 	}
@@ -418,6 +571,27 @@ func (p *EtcdClientV3) GetVolumes() ([]*storage.VolumeExternal, error) {
 	}
 	for _, key := range keys {
 		vol, err := p.GetVolume(strings.TrimPrefix(key, config.VolumeURL+"/"))
+		if err != nil {
+			return nil, err
+		}
+		volumeList = append(volumeList, vol)
+	}
+	return volumeList, nil
+}
+
+// GetVolumesSTM retrieves all volumes using STM
+func (p *EtcdClientV3) GetVolumesSTM(s conc.STM) ([]*storage.VolumeExternal, error) {
+	volumeList := make([]*storage.VolumeExternal, 0)
+	// TODO: The following needs to change once we remove the global lock in the core.
+	keys, err := p.ReadKeys(config.VolumeURL)
+	if err != nil && MatchKeyNotFoundErr(err) {
+		return volumeList, nil
+	} else if err != nil {
+		return nil, err
+	}
+	for _, key := range keys {
+		vol, err := p.GetVolumeSTM(s,
+			strings.TrimPrefix(key, config.VolumeURL+"/"))
 		if err != nil {
 			return nil, err
 		}

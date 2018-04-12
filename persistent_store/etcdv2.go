@@ -274,6 +274,15 @@ func (p *EtcdClientV2) DeleteBackend(backend *storage.Backend) error {
 	return nil
 }
 
+// ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
+// reflect the new backend name
+func (p *EtcdClientV2) ReplaceBackendAndUpdateVolumes(
+	origBackend, newBackend *storage.Backend) error {
+	// Because etcdv2 doesn't support atomic transactions, this method
+	// returns an error.
+	return NewPersistentStoreError(NotSupported, "")
+}
+
 // GetBackends retrieves all backends
 func (p *EtcdClientV2) GetBackends() ([]*storage.BackendPersistent, error) {
 	backendList := make([]*storage.BackendPersistent, 0)

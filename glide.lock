@@ -1,8 +1,8 @@
-hash: ed82a843195e9976764caa5dbd867d34018058269e682244b03766ad09eebb07
-updated: 2018-04-03T10:38:58.406190413-04:00
+hash: c8a576b8edfc51c84a81f7a92165940288e4f8fd73153b15ea888d27bd4c5ecf
+updated: 2018-04-18T13:07:33.546927588-04:00
 imports:
 - name: github.com/beorn7/perks
-  version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/cenkalti/backoff
@@ -13,6 +13,7 @@ imports:
   - auth/authpb
   - client
   - clientv3
+  - clientv3/concurrency
   - etcdserver
   - etcdserver/api/v3rpc/rpctypes
   - etcdserver/etcdserverpb
@@ -32,7 +33,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: 3ede32e2033de7505e6500d6c868c2b9ed9f169d
+  version: 7beb39f0b969b075d1325fecb092faf27fd357b6
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -48,6 +49,8 @@ imports:
   - log
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/glycerine/go-unsnap-stream
+  version: 9f0cb55181dd3a0a4c168d3dbc72d4aca4853126
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -77,6 +80,8 @@ imports:
   - ptypes/duration
   - ptypes/struct
   - ptypes/timestamp
+- name: github.com/golang/snappy
+  version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/gofuzz
@@ -124,43 +129,51 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/mattn/go-runewidth
-  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/matttproud/golang_protobuf_extensions
-  version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
 - name: github.com/Microsoft/go-winio
-  version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
+  version: 7da180ee92d8bd8bb8c37fc560e673e6557c392f
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
+- name: github.com/mschoch/smat
+  version: 90eadee771aeab36e8bf796039b8c261bebebe4f
 - name: github.com/olekukonko/tablewriter
   version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
+- name: github.com/philhofer/fwd
+  version: bb6d471dc95d4fe11e432687f8b70ff496cf3136
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
-  version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
+  version: 89604d197083d4781071d3c65855d24ecfb0a563
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  version: 282c8707aa210456a825798969cc27edda34992a
   subpackages:
+  - internal/util
+  - nfs
   - xfs
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/RoaringBitmap/roaring
+  version: 6f670287d7ec5bb044dc8afcc8cb904113fd581a
 - name: github.com/rs/xid
   version: 1ed2fb9d49fc2563cd7ff4afdc123b8232d9861b
 - name: github.com/sirupsen/logrus
@@ -169,12 +182,18 @@ imports:
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: github.com/tinylib/msgp
+  version: 3b5c87ab5fb00c660bf85b888445d9a01db64db4
+  subpackages:
+  - msgp
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
+- name: github.com/willf/bitset
+  version: 1a37ad96e8c1a11b20900a232874843b5174221f
 - name: golang.org/x/crypto
-  version: d172538b2cfce0c13cee31e647d0367aa8cd2486
+  version: 650f4a345ab4e5b245a3034b110ebc7299e68186
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -221,7 +240,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 - name: k8s.io/api
   version: 006a217681ae70cbacdd66a5e2fca1a61a8ff28e
   subpackages:

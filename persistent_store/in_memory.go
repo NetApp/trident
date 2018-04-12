@@ -93,6 +93,14 @@ func (c *InMemoryClient) DeleteBackend(b *storage.Backend) error {
 	return nil
 }
 
+// ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
+// reflect the new backend name
+func (c *InMemoryClient) ReplaceBackendAndUpdateVolumes(
+	origBackend, newBackend *storage.Backend) error {
+	//TODO
+	return NewPersistentStoreError(NotSupported, "")
+}
+
 func (c *InMemoryClient) GetBackends() ([]*storage.BackendPersistent, error) {
 	backendList := make([]*storage.BackendPersistent, 0)
 	if c.backendsAdded == 0 {

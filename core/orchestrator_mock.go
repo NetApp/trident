@@ -117,6 +117,13 @@ func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.Bac
 
 //TODO:  Add other mock backends here as necessary.
 
+// UpdateBackend updates an existing backend
+func (m *MockOrchestrator) UpdateBackend(backendName, configJSON string) (
+	storageBackendExternal *storage.BackendExternal, err error) {
+	//TODO
+	return nil, fmt.Errorf("operation not currently supported")
+}
+
 func (m *MockOrchestrator) GetBackend(backend string) (*storage.BackendExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

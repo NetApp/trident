@@ -15,6 +15,7 @@ type Orchestrator interface {
 	GetVersion() (string, error)
 
 	AddBackend(configJSON string) (*storage.BackendExternal, error)
+	UpdateBackend(backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
 	GetBackend(backend string) (*storage.BackendExternal, error)
 	ListBackends() ([]*storage.BackendExternal, error)
 	OfflineBackend(backend string) error

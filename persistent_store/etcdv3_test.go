@@ -211,7 +211,7 @@ func TestEtcdv3Backend(t *testing.T) {
 	p, err := NewEtcdClientV3(*etcdV3)
 
 	// Adding storage backend
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
@@ -221,14 +221,14 @@ func TestEtcdv3Backend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsDriver := ontap.NASStorageDriver{
-		Config: nfsServerConfig,
+	NFSDriver := ontap.NASStorageDriver{
+		Config: NFSServerConfig,
 	}
-	nfsServer := &storage.Backend{
-		Driver: &nfsDriver,
-		Name:   "nfs_server_1-" + nfsServerConfig.ManagementLIF,
+	NFSServer := &storage.Backend{
+		Driver: &NFSDriver,
+		Name:   "NFS_server_1-" + NFSServerConfig.ManagementLIF,
 	}
-	err = p.AddBackend(nfsServer)
+	err = p.AddBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -237,7 +237,7 @@ func TestEtcdv3Backend(t *testing.T) {
 	// Getting a storage backend
 	//var recoveredBackend *storage.BackendPersistent
 	var ontapConfig drivers.OntapStorageDriverConfig
-	recoveredBackend, err := p.GetBackend(nfsServer.Name)
+	recoveredBackend, err := p.GetBackend(NFSServer.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -247,12 +247,12 @@ func TestEtcdv3Backend(t *testing.T) {
 	}
 	if err = json.Unmarshal([]byte(configJSON), &ontapConfig); err != nil {
 		t.Error("Unable to unmarshal backend into ontap configuration: ", err)
-	} else if ontapConfig.SVM != nfsServerConfig.SVM {
+	} else if ontapConfig.SVM != NFSServerConfig.SVM {
 		t.Error("Backend state doesn't match!")
 	}
 
 	// Updating a storage backend
-	nfsServerNewConfig := drivers.OntapStorageDriverConfig{
+	NFSServerNewConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
@@ -262,12 +262,12 @@ func TestEtcdv3Backend(t *testing.T) {
 		Username:      "admin",
 		Password:      "NETAPP",
 	}
-	nfsDriver.Config = nfsServerNewConfig
-	err = p.UpdateBackend(nfsServer)
+	NFSDriver.Config = NFSServerNewConfig
+	err = p.UpdateBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	recoveredBackend, err = p.GetBackend(nfsServer.Name)
+	recoveredBackend, err = p.GetBackend(NFSServer.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -277,12 +277,12 @@ func TestEtcdv3Backend(t *testing.T) {
 	}
 	if err = json.Unmarshal([]byte(configJSON), &ontapConfig); err != nil {
 		t.Error("Unable to unmarshal backend into ontap configuration: ", err)
-	} else if ontapConfig.SVM != nfsServerConfig.SVM {
+	} else if ontapConfig.SVM != NFSServerConfig.SVM {
 		t.Error("Backend state doesn't match!")
 	}
 
 	// Deleting a storage backend
-	err = p.DeleteBackend(nfsServer)
+	err = p.DeleteBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -298,7 +298,7 @@ func TestEtcdv3Backends(t *testing.T) {
 
 	// Adding storage backends
 	for i := 1; i <= 5; i++ {
-		nfsServerConfig := drivers.OntapStorageDriverConfig{
+		NFSServerConfig := drivers.OntapStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				StorageDriverName: drivers.OntapNASStorageDriverName,
 			},
@@ -308,13 +308,13 @@ func TestEtcdv3Backends(t *testing.T) {
 			Username:      "admin",
 			Password:      "netapp",
 		}
-		nfsServer := &storage.Backend{
+		NFSServer := &storage.Backend{
 			Driver: &ontap.NASStorageDriver{
-				Config: nfsServerConfig,
+				Config: NFSServerConfig,
 			},
-			Name: "nfs_server_" + strconv.Itoa(i) + "-" + nfsServerConfig.ManagementLIF,
+			Name: "NFS_server_" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF,
 		}
-		err = p.AddBackend(nfsServer)
+		err = p.AddBackend(NFSServer)
 	}
 
 	// Retrieving all backends
@@ -340,7 +340,7 @@ func TestEtcdv3Backends(t *testing.T) {
 func TestEtcdv3DuplicateBackend(t *testing.T) {
 	p, err := NewEtcdClientV3(*etcdV3)
 
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
@@ -350,22 +350,22 @@ func TestEtcdv3DuplicateBackend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.Backend{
+	NFSServer := &storage.Backend{
 		Driver: &ontap.NASStorageDriver{
-			Config: nfsServerConfig,
+			Config: NFSServerConfig,
 		},
-		Name: "nfs_server_1-" + nfsServerConfig.ManagementLIF,
+		Name: "NFS_server_1-" + NFSServerConfig.ManagementLIF,
 	}
-	err = p.AddBackend(nfsServer)
+	err = p.AddBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
-	err = p.AddBackend(nfsServer)
+	err = p.AddBackend(NFSServer)
 	if err == nil {
 		t.Error("Second Create should have failed!")
 	}
-	err = p.DeleteBackend(nfsServer)
+	err = p.DeleteBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -375,7 +375,7 @@ func TestEtcdv3Volume(t *testing.T) {
 	p, err := NewEtcdClientV3(*etcdV3)
 
 	// Adding a volume
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
@@ -385,11 +385,11 @@ func TestEtcdv3Volume(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.Backend{
+	NFSServer := &storage.Backend{
 		Driver: &ontap.NASStorageDriver{
-			Config: nfsServerConfig,
+			Config: NFSServerConfig,
 		},
-		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
+		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
 	}
 	vol1Config := storage.VolumeConfig{
 		Version:      string(config.OrchestratorAPIVersion),
@@ -400,7 +400,7 @@ func TestEtcdv3Volume(t *testing.T) {
 	}
 	vol1 := &storage.Volume{
 		Config:  &vol1Config,
-		Backend: nfsServer.Name,
+		Backend: NFSServer.Name,
 		Pool:    storagePool,
 	}
 	err = p.AddVolume(vol1)
@@ -456,7 +456,7 @@ func TestEtcdv3Volumes(t *testing.T) {
 	}
 
 	// Adding volumes
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.OntapNASStorageDriverName,
 		},
@@ -466,11 +466,11 @@ func TestEtcdv3Volumes(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsServer := &storage.Backend{
+	NFSServer := &storage.Backend{
 		Driver: &ontap.NASStorageDriver{
-			Config: nfsServerConfig,
+			Config: NFSServerConfig,
 		},
-		Name: "nfs_server-" + nfsServerConfig.ManagementLIF,
+		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
 	}
 
 	for i := 1; i <= newVolumeCount; i++ {
@@ -483,7 +483,7 @@ func TestEtcdv3Volumes(t *testing.T) {
 		}
 		vol := &storage.Volume{
 			Config:  &volConfig,
-			Backend: nfsServer.Name,
+			Backend: NFSServer.Name,
 		}
 		err = p.AddVolume(vol)
 		if err != nil {
@@ -712,5 +712,237 @@ func TestEtcdv3AddStorageClass(t *testing.T) {
 
 	if err := p.DeleteStorageClass(bronzeClass); err != nil {
 		t.Fatal(err.Error())
+	}
+}
+
+func TestEtcdv3ReplaceBackendAndUpdateVolumes(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+
+	// Initialize the state by adding a storage backend and volumes
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	NFSDriver := ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	}
+	NFSServer := &storage.Backend{
+		Driver: &NFSDriver,
+		Name:   "ontapnas_" + NFSServerConfig.DataLIF,
+	}
+	err = p.AddBackend(NFSServer)
+	if err != nil {
+		t.Fatalf("Backend creation failed: %v\n", err)
+	}
+	for i := 0; i < 5; i++ {
+		volConfig := storage.VolumeConfig{
+			Version:      string(config.OrchestratorAPIVersion),
+			Name:         fmt.Sprintf("vol%d", i),
+			Size:         "1GB",
+			Protocol:     config.File,
+			StorageClass: "gold",
+		}
+		vol := &storage.Volume{
+			Config:  &volConfig,
+			Backend: NFSServer.Name,
+			Pool:    storagePool,
+		}
+		err = p.AddVolume(vol)
+	}
+
+	backends, err := p.GetBackends()
+	if err != nil || len(backends) != 1 {
+		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
+	}
+	log.Debugf("GetBackends: %v, %v\n", backends, err)
+	backend, err := p.GetBackend(backends[0].Name)
+	if err != nil ||
+		backend.Name != NFSServer.Name {
+		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
+	}
+	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
+	volumes, err := p.GetVolumes()
+	if err != nil || len(volumes) != 5 {
+		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
+	}
+	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
+	for i := 0; i < 5; i++ {
+		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		if err != nil ||
+			volume.Backend != NFSServer.Name {
+			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
+		}
+		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
+	}
+
+	newNFSServer := &storage.Backend{
+		Driver: &NFSDriver,
+		// Renaming the NFS server
+		Name: "AFF",
+	}
+	err = p.ReplaceBackendAndUpdateVolumes(NFSServer, newNFSServer)
+	if err != nil {
+		t.Fatalf("ReplaceBackendAndUpdateVolumes failed: %v\n", err)
+	}
+
+	// Validate successful renaming of the backend
+	backends, err = p.GetBackends()
+	if err != nil || len(backends) != 1 {
+		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
+	}
+	log.Debugf("GetBackends: %v, %v\n", backends, err)
+	backend, err = p.GetBackend(backends[0].Name)
+	if err != nil ||
+		backend.Name != newNFSServer.Name {
+		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
+	}
+	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
+
+	// Validate successful renaming of the volumes
+	volumes, err = p.GetVolumes()
+	if err != nil || len(volumes) != 5 {
+		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
+	}
+	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
+	for i := 0; i < 5; i++ {
+		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		if err != nil ||
+			volume.Backend != newNFSServer.Name {
+			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
+		}
+		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
+	}
+
+	// Deleting the storage backend
+	err = p.DeleteBackend(newNFSServer)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	// Deleting all volumes
+	if err = p.DeleteVolumes(); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+// TestEtcdv3FailedReplaceBackendAndUpdateVolumes tests that a backend doesn't
+// get updated if one of the volume updates fail.
+func TestEtcdv3FailedReplaceBackendAndUpdateVolumes(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+
+	// Initialize the state by adding a storage backend and volumes
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	NFSDriver := ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	}
+	NFSServer := &storage.Backend{
+		Driver: &NFSDriver,
+		Name:   "ontapnas_" + NFSServerConfig.DataLIF,
+	}
+	err = p.AddBackend(NFSServer)
+	if err != nil {
+		t.Fatalf("Backend creation failed: %v\n", err)
+	}
+	for i := 0; i < 5; i++ {
+		volConfig := storage.VolumeConfig{
+			Version:      string(config.OrchestratorAPIVersion),
+			Name:         fmt.Sprintf("vol%d", i),
+			Size:         "1GB",
+			Protocol:     config.File,
+			StorageClass: "gold",
+		}
+		vol := &storage.Volume{
+			Config:  &volConfig,
+			Backend: NFSServer.Name,
+			Pool:    storagePool,
+		}
+		err = p.AddVolume(vol)
+	}
+
+	backends, err := p.GetBackends()
+	if err != nil || len(backends) != 1 {
+		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
+	}
+	backend, err := p.GetBackend(backends[0].Name)
+	if err != nil ||
+		backend.Name != NFSServer.Name {
+		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
+	}
+	volumes, err := p.GetVolumes()
+	if err != nil || len(volumes) != 5 {
+		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
+	}
+	for i := 0; i < 5; i++ {
+		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		if err != nil ||
+			volume.Backend != NFSServer.Name {
+			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
+		}
+	}
+
+	// Renaming the NFS server
+	newNFSServer := &storage.Backend{
+		Driver: &NFSDriver,
+		Name:   "AFF",
+	}
+
+	// Testing a failed transaction
+	err = p.failedReplaceBackendAndUpdateVolumes(NFSServer, newNFSServer)
+	if err == nil {
+		t.Fatalf("failedReplaceBackendAndUpdateVolumes should have failed: %v\n", err)
+	}
+
+	// Validating the new backend doesn't exist
+	backends, err = p.GetBackends()
+	if err != nil || len(backends) != 1 {
+		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
+	}
+	log.Debugf("GetBackends: %v, %v\n", backends, err)
+	backend, err = p.GetBackend(backends[0].Name)
+	if err != nil ||
+		backend.Name != NFSServer.Name {
+		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
+	}
+	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
+
+	// Validating the volumes haven't been updated
+	volumes, err = p.GetVolumes()
+	if err != nil || len(volumes) != 5 {
+		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
+	}
+	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
+	for i := 0; i < 5; i++ {
+		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		if err != nil ||
+			volume.Backend != NFSServer.Name {
+			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
+		}
+		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
+	}
+
+	// Deleting the storage backend
+	err = p.DeleteBackend(NFSServer)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	// Deleting all volumes
+	if err = p.DeleteVolumes(); err != nil {
+		t.Error(err.Error())
 	}
 }

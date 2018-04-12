@@ -24,6 +24,7 @@ commands and global options:
     install     Install Trident
     logs        Print the logs from Trident
     uninstall   Uninstall Trident
+    update      Modify a resource in Trident
     version     Print the version of Trident
 
   Flags:
@@ -127,6 +128,24 @@ Uninstall Trident
                    by Trident; however, it doesn't delete the volume used by Trident from
                    the storage backend. Use with caution!
         --silent   Disable most output during uninstallation.
+
+update
+------
+
+Modify a resource in Trident
+
+.. code-block:: console
+  Usage:
+    tridentctl update [command]
+
+  Available Commands:
+    backend     Update a backend in Trident
+
+  Global Flags:
+    -d, --debug              Debug output
+    -n, --namespace string   Namespace of Trident deployment
+    -o, --output string      Output format. One of json|yaml|name|wide|ps (default)
+    -s, --server string      Address/port of Trident REST interface
 
 version
 -------

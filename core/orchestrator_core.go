@@ -130,12 +130,12 @@ func (o *TridentOrchestrator) bootstrapBackends() error {
 		if err != nil {
 			return err
 		}
-		newBackendExternal, err := o.addStorageBackend(serializedConfig)
+		newBackendExternal, err := o.addBackend(serializedConfig)
 		if err != nil {
 			return err
 		}
 
-		// Note that addStorageBackend returns an external copy of the newly
+		// Note that addBackend returns an external copy of the newly
 		// added backend, so we have to go fetch it manually.
 		newBackend := o.backends[newBackendExternal.Name]
 		newBackend.Online = b.Online
@@ -358,62 +358,174 @@ func (o *TridentOrchestrator) GetVersion() (string, error) {
 	return config.OrchestratorVersion.String(), o.bootstrapError
 }
 
+// AddBackend handles creation of a new storage backend
 func (o *TridentOrchestrator) AddBackend(configJSON string) (*storage.BackendExternal, error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
 
-	return o.addStorageBackend(configJSON)
-}
-
-func (o *TridentOrchestrator) addStorageBackend(configJSON string) (*storage.BackendExternal, error) {
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	storageBackend, err := factory.NewStorageBackendForConfig(configJSON)
+	return o.addBackend(configJSON)
+}
+
+// addBackend creates a new storage backend. It assumes the mutex lock is
+// already held or not required (e.g., during bootstrapping).
+func (o *TridentOrchestrator) addBackend(configJSON string) (backendExternal *storage.BackendExternal, err error) {
+	var (
+		newBackend = true
+		backend    *storage.Backend
+	)
+
+	defer func() {
+		if backend != nil {
+			if err != nil || !newBackend {
+				backend.Terminate()
+			}
+		}
+	}()
+
+	backend, err = factory.NewStorageBackendForConfig(configJSON)
 	if err != nil {
 		return nil, err
 	}
-	newBackend := true
-	originalBackend, ok := o.backends[storageBackend.Name]
-	if ok {
+	_, found := o.backends[backend.Name]
+	if found {
+		// Let the updateBackend method handle an existing backend
 		newBackend = false
-		if err = o.validateBackendUpdate(originalBackend, storageBackend); err != nil {
+		return o.updateBackend(backend.Name, configJSON)
+	}
+
+	log.WithFields(log.Fields{
+		"backend": backend.Name,
+	}).Debug("Adding a new backend.")
+	if err = o.updateBackendOnPersistentStore(backend, true); err != nil {
+		return nil, err
+	}
+	o.backends[backend.Name] = backend
+
+	// Update storage class information
+	classes := make([]string, 0, len(o.storageClasses))
+	for _, sc := range o.storageClasses {
+		if added := sc.CheckAndAddBackend(backend); added > 0 {
+			classes = append(classes, sc.GetName())
+		}
+	}
+	if len(classes) == 0 {
+		log.WithFields(log.Fields{
+			"backend": backend.Name,
+		}).Info("Newly added backend satisfies no storage classes.")
+	} else {
+		log.WithFields(log.Fields{
+			"backend": backend.Name,
+		}).Infof("Newly added backend satisfies storage classes %s.",
+			strings.Join(classes, ", "))
+	}
+
+	return backend.ConstructExternal(), nil
+}
+
+// UpdateBackend updates an existing backend.
+func (o *TridentOrchestrator) UpdateBackend(backendName, configJSON string) (
+	backendExternal *storage.BackendExternal, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	return o.updateBackend(backendName, configJSON)
+}
+
+// updateBackend updates an existing backend. It assumes the mutex lock is
+// already held.
+func (o *TridentOrchestrator) updateBackend(backendName, configJSON string) (
+	backendExternal *storage.BackendExternal, err error) {
+	var (
+		backend *storage.Backend
+	)
+
+	defer func() {
+		if backend != nil && err != nil {
+			backend.Terminate()
+		}
+	}()
+
+	// First, check whether the backend exists.
+	originalBackend, found := o.backends[backendName]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("backend %v was not found", backendName))
+	}
+
+	// Second, validate the update.
+	backend, err = factory.NewStorageBackendForConfig(configJSON)
+	if err != nil {
+		return nil, err
+	}
+	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
+		return nil, err
+	}
+	log.WithFields(log.Fields{
+		"backend": backend.Name,
+	}).Debug("Updating an existing backend.")
+
+	// Third, determine what type of backend update we're dealing with.
+	// Here are the major categories and their implications:
+	// 1) Backend rename
+	//    a) Affects in-memory backend, storage class, and volume objects
+	//    b) Affects backend and volume objects in the persistent store
+	// 2) Change in the data plane IP address
+	//    a) Affects in-memory backend and volume objects
+	//    b) Affects backend and volume objects in the persistent store
+	// 3) Updates to fields other than the name and IP address
+	//    This scenario is the same as the AddBackend
+	// 4) Some combination of above scenarios
+	updateCode := backend.GetUpdateType(originalBackend)
+	switch {
+	case updateCode.Contains(storage.InvalidUpdate):
+		return nil, fmt.Errorf("invalid backend update")
+	case updateCode.Contains(storage.VolumeAccessInfoChange):
+		return nil,
+			fmt.Errorf("updating the data plane IP address isn't currently supported")
+	case updateCode.Contains(storage.BackendRename):
+		err = o.replaceBackendAndUpdateVolumesOnPersistentStore(originalBackend,
+			backend)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		// Update backend information
+		if err = o.updateBackendOnPersistentStore(backend, false); err != nil {
 			return nil, err
 		}
 	}
 
-	// Update backend information
-	log.WithFields(log.Fields{
-		"backend":       storageBackend.Name,
-		"backendUpdate": !newBackend,
-	}).Debug("Adding backend.")
-	if err = o.updateBackendOnPersistentStore(storageBackend, newBackend); err != nil {
-		return nil, err
-	}
+	// Update the backend state in memory
+	delete(o.backends, originalBackend.Name)
+	originalBackend.Terminate()
+	o.backends[backend.Name] = backend
 
-	if !newBackend {
-		originalBackend.Terminate()
-	}
-	o.backends[storageBackend.Name] = storageBackend
-
-	// Update volume information
+	// Update the volume state in memory
 	// Identify orphaned volumes (i.e., volumes that are not present on the
 	// new backend). Such a scenario can happen if a subset of volumes are
 	// replicated for DR or volumes get deleted out of band. Operations on
 	// such volumes are likely to fail, so here we just warn the users about
-	// such volumes and mark them as orphaned.
+	// such volumes and mark them as orphaned. This is a best effort activity,
+	// so it doesn't have to be part of the persistent store transaction.
 	for volName, vol := range o.volumes {
-		if vol.Backend == storageBackend.Name {
+		if vol.Backend == originalBackend.Name {
+			vol.Backend = backend.Name
 			updatePersistentStore := false
-			volExternal, _ := storageBackend.Driver.GetVolumeExternal(vol.Config.InternalName)
+			volExternal, _ := backend.Driver.GetVolumeExternal(vol.Config.InternalName)
 			if volExternal == nil {
 				if vol.Orphaned == false {
 					vol.Orphaned = true
 					updatePersistentStore = true
 					log.WithFields(log.Fields{
 						"volume":  volName,
-						"backend": storageBackend.Name,
+						"backend": backend.Name,
 					}).Warn("Backend update resulted in an orphaned volume!")
 				}
 			} else {
@@ -422,7 +534,7 @@ func (o *TridentOrchestrator) addStorageBackend(configJSON string) (*storage.Bac
 					updatePersistentStore = true
 					log.WithFields(log.Fields{
 						"volume":  volName,
-						"backend": storageBackend.Name,
+						"backend": backend.Name,
 					}).Info("The volume is no longer orphaned as a result of the " +
 						"backend update.")
 				}
@@ -430,35 +542,33 @@ func (o *TridentOrchestrator) addStorageBackend(configJSON string) (*storage.Bac
 			if updatePersistentStore {
 				o.updateVolumeOnPersistentStore(vol)
 			}
-			o.backends[storageBackend.Name].Volumes[volName] = vol
+			o.backends[backend.Name].Volumes[volName] = vol
 		}
 	}
 
 	// Update storage class information
 	classes := make([]string, 0, len(o.storageClasses))
 	for _, sc := range o.storageClasses {
-		if !newBackend {
-			sc.RemovePoolsForBackend(originalBackend)
-		}
-		if added := sc.CheckAndAddBackend(storageBackend); added > 0 {
+		sc.RemovePoolsForBackend(originalBackend)
+		if added := sc.CheckAndAddBackend(backend); added > 0 {
 			classes = append(classes, sc.GetName())
 		}
 	}
 	if len(classes) == 0 {
 		log.WithFields(log.Fields{
-			"backend": storageBackend.Name,
-		}).Info("Newly added backend satisfies no storage classes.")
+			"backend": backend.Name,
+		}).Info("Updated backend satisfies no storage classes.")
 	} else {
 		log.WithFields(log.Fields{
-			"backend": storageBackend.Name,
-		}).Infof("Newly added backend satisfies storage classes %s.",
+			"backend": backend.Name,
+		}).Infof("Updated backend satisfies storage classes %s.",
 			strings.Join(classes, ", "))
 	}
 
-	return storageBackend.ConstructExternal(), nil
+	return backend.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetBackend(backend string) (*storage.BackendExternal, error) {
+func (o *TridentOrchestrator) GetBackend(backendName string) (*storage.BackendExternal, error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -466,11 +576,11 @@ func (o *TridentOrchestrator) GetBackend(backend string) (*storage.BackendExtern
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	storageBackend, found := o.backends[backend]
+	backend, found := o.backends[backendName]
 	if !found {
-		return nil, notFoundError(fmt.Sprintf("backend %v was not found", backend))
+		return nil, notFoundError(fmt.Sprintf("backend %v was not found", backendName))
 	}
-	return storageBackend.ConstructExternal(), nil
+	return backend.ConstructExternal(), nil
 }
 
 func (o *TridentOrchestrator) ListBackends() ([]*storage.BackendExternal, error) {
@@ -1237,18 +1347,22 @@ func (o *TridentOrchestrator) updateBackendOnPersistentStore(
 
 func (o *TridentOrchestrator) updateVolumeOnPersistentStore(
 	vol *storage.Volume) error {
-	// Update the persistent store with the volume information
-	if o.bootstrapped {
-		var err error
-		log.WithFields(log.Fields{
-			"volume":          vol.Config.Name,
-			"volume_orphaned": vol.Orphaned,
-		}).Debug("Updating an existing volume.")
-		if err = o.storeClient.UpdateVolume(vol); err != nil {
-			return err
-		}
-	}
-	return nil
+	// Update the volume information in persistent store
+	log.WithFields(log.Fields{
+		"volume":          vol.Config.Name,
+		"volume_orphaned": vol.Orphaned,
+	}).Debug("Updating an existing volume.")
+	return o.storeClient.UpdateVolume(vol)
+}
+
+func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
+	origBackend, newBackend *storage.Backend) error {
+	// Update both backend and volume information in persistent store
+	log.WithFields(log.Fields{
+		"newBackendName": newBackend.Name,
+		"oldBackendName": origBackend.Name,
+	}).Debug("Renaming a backend and updating volumes.")
+	return o.storeClient.ReplaceBackendAndUpdateVolumes(origBackend, newBackend)
 }
 
 func notReadyError() error {

@@ -241,6 +241,14 @@ func (c *PassthroughClient) DeleteBackend(backend *storage.Backend) error {
 	return nil
 }
 
+// ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
+// reflect the new backend name
+func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(
+	origBackend, newBackend *storage.Backend) error {
+	//TODO
+	return NewPersistentStoreError(NotSupported, "")
+}
+
 // GetBackends is called by the orchestrator during bootstrapping, so the
 // passthrough store returns the persistent backend objects it read from config
 // files.

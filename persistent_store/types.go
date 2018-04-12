@@ -41,6 +41,7 @@ type Client interface {
 	DeleteBackend(backend *storage.Backend) error
 	GetBackends() ([]*storage.BackendPersistent, error)
 	DeleteBackends() error
+	ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error
 
 	AddVolume(vol *storage.Volume) error
 	GetVolume(volName string) (*storage.VolumeExternal, error)

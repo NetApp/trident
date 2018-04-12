@@ -78,3 +78,5 @@ import:
   version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
 - package: github.com/rs/xid
   version: 1ed2fb9d49fc2563cd7ff4afdc123b8232d9861b
+- package: github.com/RoaringBitmap/roaring
+  version: 6f670287d7ec5bb044dc8afcc8cb904113fd581a

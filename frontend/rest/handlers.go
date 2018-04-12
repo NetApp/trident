@@ -37,7 +37,7 @@ func httpStatusCodeForAdd(err error) int {
 	}
 }
 
-func httpStatusCodeForGet(err error) int {
+func httpStatusCodeForGetUpdateList(err error) int {
 	if err == nil {
 		return http.StatusOK
 	} else {
@@ -131,7 +131,7 @@ func GetGenericNoArg(w http.ResponseWriter,
 	writeHTTPResponse(w, response, httpStatusCode)
 }
 
-type addResponse interface {
+type httpResponse interface {
 	setError(err error)
 	isError() bool
 	logSuccess()
@@ -141,7 +141,7 @@ type addResponse interface {
 func AddGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
-	response addResponse,
+	response httpResponse,
 	adder func([]byte) int,
 ) {
 	var err error
@@ -171,6 +171,43 @@ func AddGeneric(
 		return
 	}
 	httpStatusCode = adder(body)
+}
+
+func UpdateGeneric(
+	w http.ResponseWriter,
+	r *http.Request,
+	varName string,
+	response httpResponse,
+	updater func(string, []byte) int,
+) {
+	var err error
+	var httpStatusCode int
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	defer func() {
+		if response.isError() {
+			response.logFailure()
+		} else {
+			response.logSuccess()
+		}
+		writeHTTPResponse(w, response, httpStatusCode)
+	}()
+
+	vars := mux.Vars(r)
+	target := vars[varName]
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, config.MaxRESTRequestSize))
+	if err != nil {
+		response.setError(err)
+		httpStatusCode = httpStatusCodeForGetUpdateList(err)
+		return
+	}
+	if err := r.Body.Close(); err != nil {
+		response.setError(err)
+		httpStatusCode = httpStatusCodeForGetUpdateList(err)
+		return
+	}
+	httpStatusCode = updater(target, body)
 }
 
 type DeleteResponse struct {
@@ -205,26 +242,26 @@ type AddBackendResponse struct {
 	Error     string `json:"error,omitempty"`
 }
 
-func (a *AddBackendResponse) setError(err error) {
-	a.Error = err.Error()
+func (r *AddBackendResponse) setError(err error) {
+	r.Error = err.Error()
 }
 
-func (a *AddBackendResponse) isError() bool {
-	return a.Error != ""
+func (r *AddBackendResponse) isError() bool {
+	return r.Error != ""
 }
 
-func (a *AddBackendResponse) logSuccess() {
+func (r *AddBackendResponse) logSuccess() {
 	log.WithFields(log.Fields{
-		"backend": a.BackendID,
+		"backend": r.BackendID,
 		"handler": "AddBackend",
 	}).Info("Added a new backend.")
 }
 
-func (a *AddBackendResponse) logFailure() {
+func (r *AddBackendResponse) logFailure() {
 	log.WithFields(log.Fields{
-		"backend": a.BackendID,
+		"backend": r.BackendID,
 		"handler": "AddBackend",
-	}).Error(a.Error)
+	}).Error(r.Error)
 }
 
 type GetVersionResponse struct {
@@ -241,7 +278,7 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 				response.Error = err.Error()
 			}
 			response.Version = version
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -258,6 +295,49 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 				response.BackendID = backend.Name
 			}
 			return httpStatusCodeForAdd(err)
+		},
+	)
+}
+
+type UpdateBackendResponse struct {
+	BackendID string `json:"backend"`
+	Error     string `json:"error,omitempty"`
+}
+
+func (r *UpdateBackendResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *UpdateBackendResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *UpdateBackendResponse) logSuccess() {
+	log.WithFields(log.Fields{
+		"backend": r.BackendID,
+		"handler": "UpdateBackend",
+	}).Info("Updated a backend.")
+}
+
+func (r *UpdateBackendResponse) logFailure() {
+	log.WithFields(log.Fields{
+		"backend": r.BackendID,
+		"handler": "UpdateBackend",
+	}).Error(r.Error)
+}
+
+func UpdateBackend(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateBackendResponse{}
+	UpdateGeneric(w, r, "backend", response,
+		func(backendName string, body []byte) int {
+			backend, err := orchestrator.UpdateBackend(backendName, string(body))
+			if err != nil {
+				response.Error = err.Error()
+			}
+			if backend != nil {
+				response.BackendID = backend.Name
+			}
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -286,7 +366,7 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			response.setList(backendNames)
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -306,7 +386,7 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 			} else {
 				response.Backend = backend
 			}
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -392,7 +472,7 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			response.setList(volumeNames)
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -412,7 +492,7 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 			} else {
 				response.Volume = volume
 			}
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -495,7 +575,7 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			response.setList(storageClassNames)
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -515,7 +595,7 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 			} else {
 				response.StorageClass = storageClass
 			}
-			return httpStatusCodeForGet(err)
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }

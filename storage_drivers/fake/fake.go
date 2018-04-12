@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -433,6 +434,12 @@ func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExt
 	}
 
 	return volumeExternal
+}
+
+// GetUpdateType returns a bitmap populated with updates to the driver
+func (d *StorageDriver) GetUpdateType(dOrig storage.Driver) *roaring.Bitmap {
+	//TODO
+	return roaring.New()
 }
 
 func Clone(a, b interface{}) {

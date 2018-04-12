@@ -6,6 +6,7 @@ const (
 	KeyNotFoundErr        = "Unable to find key"
 	KeyExistsErr          = "Key already exists"
 	UnavailableClusterErr = "Unavailable etcd cluster"
+	NotSupported          = "Unsupported operation"
 )
 
 // Error is used to turn etcd errors into something that callers can understand without

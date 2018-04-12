@@ -146,7 +146,6 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 				found := false
 				initiators := ""
 				for _, vag := range vags {
-					//TODO: SolidFire backend config should support taking VAG as an arg
 					if vag.Name == config.DefaultSolidFireVAG {
 						driver.Config.AccessGroups = append(driver.Config.AccessGroups, vag.VAGID)
 						found = true

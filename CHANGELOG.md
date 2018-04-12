@@ -22,13 +22,16 @@
   instead of the PVC's namespace.
 - Return new HTTP codes from REST interface to indicate Trident startup status.
 - Set the minimum supported SolidFire Element version to 8.0.
-- SolidFire defaults to use CHAP if Kubernetes version is >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in config overrides this behavior.
+- **Kubernetes:** Simplified installing Trident with a new installer.
 - **Kubernetes:** Added the ability to define a custom name for a storage
   backend. This enhancement enables adding multiple instances of the same
   backend with different policies (e.g., different snapshot policies), which
   obviates extending the Trident storage class API to support new parameters
   (Issue [#93](https://github.com/NetApp/trident/issues/93)).
 - **Kubernetes:** Added the ability to rename an existing backend.
+- **Kubernetes:** SolidFire defaults to use CHAP if Kubernetes version is
+  >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or
+  UseCHAP in config overrides this behavior.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
  
 ## v18.01.0
