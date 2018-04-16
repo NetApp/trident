@@ -38,7 +38,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	configJSONBytes, err := yaml.YAMLToJSON([]byte(configJSON))
 	if err != nil {
 		err = fmt.Errorf("invalid config format: %v", err)
-		return
+		return nil, err
 	}
 	configJSON = string(configJSONBytes)
 
@@ -46,7 +46,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
 	if err != nil {
 		err = fmt.Errorf("input failed validation: %v", err)
-		return
+		return nil, err
 	}
 
 	// Pre-driver initialization setup
@@ -66,7 +66,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	default:
 		err = fmt.Errorf("unknown storage driver: %v",
 			commonConfig.StorageDriverName)
-		return
+		return nil, err
 	}
 
 	log.WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
@@ -75,7 +75,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
 		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)
-		return
+		return nil, err
 	}
 
 	// Post-driver initialization setup
@@ -140,7 +140,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 				if vagErr != nil {
 					err = fmt.Errorf("could not list VAGs for backend %s: %s",
 						driver.Config.SVIP, vagErr.Error())
-					return
+					return nil, err
 				}
 
 				found := false
@@ -160,25 +160,34 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 					}
 				}
 				if !found {
-					err = fmt.Errorf("volume Access Group %v doesn't exist at %v and needs to be manually created"+
-						"; please also ensure all relevant hosts are added to the VAG", config.DefaultSolidFireVAG, driver.Config.SVIP)
-					return
+					// UseCHAP was not specified in the config and no VAG was found.
+					if config.PlatformAtLeast("kubernetes", "v1.7.0") {
+						// Found a version of Kubernetes that can support CHAP
+						log.WithFields(log.Fields{
+							"platform":         config.OrchestratorTelemetry.Platform,
+							"platform version": config.OrchestratorTelemetry.PlatformVersion,
+						}).Warn("Volume Access Group use not detected. Defaulting to using CHAP.")
+						driver.Config.UseCHAP = true
+					} else {
+						err = fmt.Errorf("volume Access Group %v doesn't exist at %v and needs to be manually created"+
+							"; please also ensure all relevant hosts are added to the VAG", config.DefaultSolidFireVAG, driver.Config.SVIP)
+						return nil, err
+					}
 				}
 			} else if len(driver.Config.AccessGroups) > 4 {
 				err = fmt.Errorf("the maximum number of allowed Volume Access Groups per config is 4 but your config"+
 					" has specified %v", len(driver.Config.AccessGroups))
-				return
+				return nil, err
 			} else {
 				// We only need this in the case that AccessGroups were specified, if it was zero and we
 				// used the default we already verified it in that step so we're good here.
 				var missingVags []int64
 				missingVags, err = driver.VerifyVags(driver.Config.AccessGroups)
 				if err != nil {
-					return
+					return nil, err
 				}
 				if len(missingVags) != 0 {
-					err = fmt.Errorf("failed to discover the following specified VAG ID's: %+v", missingVags)
-					return
+					return nil, fmt.Errorf("failed to discover the following specified VAG ID's: %+v", missingVags)
 				}
 			}
 
@@ -204,7 +213,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 				addAGErr := driver.AddMissingVolumesToVag(vag, vIDs)
 				if addAGErr != nil {
 					err = fmt.Errorf("failed to update AccessGroup membership of volume %+v", addAGErr)
-					return
+					return nil, err
 				}
 			}
 		} else {
@@ -240,12 +249,12 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 
 	default:
 		err = fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)
-		return
+		return nil, err
 	}
 
 	sb, err = storage.NewStorageBackend(storageDriver)
 
 	log.WithField("driver", commonConfig.StorageDriverName).Debug("Storage driver initialized.")
 
-	return
+	return sb, err
 }

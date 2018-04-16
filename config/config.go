@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/netapp/trident/utils"
 )
 
@@ -119,6 +121,24 @@ func GetValidProtocolNames() []string {
 		ret = append(ret, string(key))
 	}
 	return ret
+}
+
+func PlatformAtLeast(platformName string, version string) bool {
+	if OrchestratorTelemetry.Platform == platformName {
+		platformVersion := utils.MustParseSemantic(OrchestratorTelemetry.PlatformVersion)
+		requiredVersion, err := utils.ParseSemantic(version)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"platform": platformName,
+				"version":  version,
+			}).Errorf("Platform version check failed. %+v", err)
+			return false
+		}
+		if platformVersion.AtLeast(requiredVersion) {
+			return true
+		}
+	}
+	return false
 }
 
 func version() string {

@@ -17,8 +17,14 @@ All of your Kubernetes worker nodes must have the appropriate iSCSI tools
 installed. See the :ref:`worker configuration guide <iSCSI>` for more details.
 
 If you're using CHAP (``UseCHAP`` is *true*), no further preparation is
-required. You do have to explicitly set that option to use CHAP. Otherwise, see
-the :ref:`access groups guide <Using access groups>` below.
+required. It is recommended to explicitly set the ``UseCHAP`` option to use CHAP.
+Otherwise, see the :ref:`access groups guide <Using access groups>` below.
+
+If neither ``AccessGroups`` or ``UseCHAP`` are set then one of the following
+rules applies:
+* If the default ``trident`` access group is detected then access groups are used.
+* If no access group is detected and Kubernetes version >= 1.7 then CHAP is used.
+
 
 Backend configuration options
 -----------------------------
@@ -32,7 +38,7 @@ Endpoint           MVIP for the SolidFire cluster with tenant credentials
 SVIP               Storage (iSCSI) IP address and port
 TenantName         Tenant name to use (created if not found)
 InitiatorIFace     Restrict iSCSI traffic to a specific host interface             "default"
-UseCHAP            Use CHAP to authenticate iSCSI (otherwise uses access groups)   false
+UseCHAP            Use CHAP to authenticate iSCSI
 AccessGroups       List of Access Group IDs to use                                 Finds the ID of an access group named "trident"
 Types              QoS specifications (see below)
 ================== =============================================================== ================================================

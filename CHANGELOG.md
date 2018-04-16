@@ -21,6 +21,7 @@
 - Return new HTTP codes from REST interface to indicate Trident startup status.
 - Set the minimum supported SolidFire Element version to 8.0.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
+- SolidFire defaults to use CHAP if Kubernetes version is >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in config overrides this behavior.
 
 ## v18.01.0
 
