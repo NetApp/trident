@@ -19,7 +19,7 @@ func init() {
 }
 
 var deleteVolumeCmd = &cobra.Command{
-	Use:     "volume",
+	Use:     "volume <name> [<name>...]",
 	Short:   "Delete one or more storage volumes from Trident",
 	Aliases: []string{"b", "volumes"},
 	RunE: func(cmd *cobra.Command, args []string) error {

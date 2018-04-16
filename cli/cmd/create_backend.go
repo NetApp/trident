@@ -17,9 +17,6 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 )
 
-var filename string
-var b64Data string
-
 func init() {
 	createCmd.AddCommand(createBackendCmd)
 	createBackendCmd.Flags().StringVarP(&filename, "filename", "f", "", "Path to YAML or JSON file")
@@ -33,7 +30,7 @@ var createBackendCmd = &cobra.Command{
 	Aliases: []string{"b"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		jsonData, err := getBackendCreateData()
+		jsonData, err := getBackendData()
 		if err != nil {
 			return err
 		}
@@ -48,7 +45,7 @@ var createBackendCmd = &cobra.Command{
 	},
 }
 
-func getBackendCreateData() ([]byte, error) {
+func getBackendData() ([]byte, error) {
 
 	var err error
 	var rawData []byte

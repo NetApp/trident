@@ -20,7 +20,7 @@ func init() {
 }
 
 var getBackendCmd = &cobra.Command{
-	Use:     "backend",
+	Use:     "backend [<name>...]",
 	Short:   "Get one or more storage backends from Trident",
 	Aliases: []string{"b", "backends"},
 	RunE: func(cmd *cobra.Command, args []string) error {

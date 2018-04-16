@@ -22,7 +22,7 @@ func init() {
 }
 
 var getVolumeCmd = &cobra.Command{
-	Use:     "volume",
+	Use:     "volume [<name>...]",
 	Short:   "Get one or more volumes from Trident",
 	Aliases: []string{"v", "volumes"},
 	RunE: func(cmd *cobra.Command, args []string) error {

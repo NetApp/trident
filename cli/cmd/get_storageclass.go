@@ -19,7 +19,7 @@ func init() {
 }
 
 var getStorageClassCmd = &cobra.Command{
-	Use:     "storageclass",
+	Use:     "storageclass [<name>...]",
 	Short:   "Get one or more storage classes from Trident",
 	Aliases: []string{"sc", "storageclasses"},
 	RunE: func(cmd *cobra.Command, args []string) error {

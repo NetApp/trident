@@ -65,7 +65,7 @@ const (
 	ContextKubernetes DriverContext = "kubernetes"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.6.0"
+	KubernetesVersionMin = "v1.5.0"
 	KubernetesVersionMax = "v1.10.0"
 )
 

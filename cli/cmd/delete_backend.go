@@ -19,7 +19,7 @@ func init() {
 }
 
 var deleteBackendCmd = &cobra.Command{
-	Use:     "backend",
+	Use:     "backend <name> [<name>...]",
 	Short:   "Delete one or more storage backends from Trident",
 	Aliases: []string{"b", "backends"},
 	RunE: func(cmd *cobra.Command, args []string) error {

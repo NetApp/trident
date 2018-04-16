@@ -19,7 +19,7 @@ func init() {
 }
 
 var deleteStorageClassCmd = &cobra.Command{
-	Use:     "storageclass",
+	Use:     "storageclass <name> [<name>...]",
 	Short:   "Delete one or more storage classes from Trident",
 	Aliases: []string{"sc", "storageclasses"},
 	RunE: func(cmd *cobra.Command, args []string) error {
