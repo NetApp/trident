@@ -210,6 +210,13 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 	})
 
 	if config.SVM != "" {
+
+		vserverResponse, err := client.VserverGetRequest()
+		if err = api.GetError(vserverResponse, err); err != nil {
+			return nil, fmt.Errorf("error reading SVM details: %v", err)
+		}
+		client.SVMUUID = string(vserverResponse.Result.AttributesPtr.Uuid())
+
 		log.WithField("SVM", config.SVM).Debug("Using specified SVM.")
 		return client, nil
 	}
@@ -226,6 +233,8 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 
 	// Update everything to use our derived SVM
 	config.SVM = vserverResponse.Result.AttributesList()[0].VserverName()
+	svmUUID := string(vserverResponse.Result.AttributesList()[0].Uuid())
+
 	client = api.NewClient(api.ClientConfig{
 		ManagementLIF:   config.ManagementLIF,
 		SVM:             config.SVM,
@@ -233,8 +242,9 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 		Password:        config.Password,
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
-	log.WithField("SVM", config.SVM).Debug("Using derived SVM.")
+	client.SVMUUID = svmUUID
 
+	log.WithField("SVM", config.SVM).Debug("Using derived SVM.")
 	return client, nil
 }
 

@@ -40,15 +40,16 @@ const (
 
 // NASQtreeStorageDriver is for NFS storage provisioning of qtrees
 type NASQtreeStorageDriver struct {
-	initialized         bool
-	Config              drivers.OntapStorageDriverConfig
-	API                 *api.Client
-	Telemetry           *Telemetry
-	quotaResizeMap      map[string]bool
-	provMutex           *sync.Mutex
-	flexvolNamePrefix   string
-	flexvolExportPolicy string
-	housekeepingTasks   map[string]*HousekeepingTask
+	initialized           bool
+	Config                drivers.OntapStorageDriverConfig
+	API                   *api.Client
+	Telemetry             *Telemetry
+	quotaResizeMap        map[string]bool
+	flexvolNamePrefix     string
+	flexvolExportPolicy   string
+	housekeepingTasks     map[string]*HousekeepingTask
+	housekeepingWaitGroup *sync.WaitGroup
+	sharedLockID          string
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -108,14 +109,15 @@ func (d *NASQtreeStorageDriver) Initialize(
 
 	// Set up internal driver state
 	d.quotaResizeMap = make(map[string]bool)
-	d.provMutex = &sync.Mutex{}
 	d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
 	d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
+	d.sharedLockID = d.API.SVMUUID + "-" + *d.Config.StoragePrefix
 
 	log.WithFields(log.Fields{
 		"FlexvolNamePrefix":   d.flexvolNamePrefix,
 		"FlexvolExportPolicy": d.flexvolExportPolicy,
+		"SharedLockID":        d.sharedLockID,
 	}).Debugf("Qtree driver settings.")
 
 	err = d.validate()
@@ -127,6 +129,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.queueAllFlexvolsForQuotaResize()
 
 	// Start periodic housekeeping tasks like cleaning up unused FlexVols
+	d.housekeepingWaitGroup = &sync.WaitGroup{}
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
 	pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
 	d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
@@ -160,6 +163,9 @@ func (d *NASQtreeStorageDriver) Terminate() {
 		task.Stop()
 	}
 	d.Telemetry.Stop()
+
+	log.Debug("Waiting for housekeeping tasks to exit.")
+	d.housekeepingWaitGroup.Wait()
 
 	d.initialized = false
 }
@@ -203,8 +209,8 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	}
 
 	// Ensure any Flexvol we create won't be pruned before we place a qtree on it
-	d.provMutex.Lock()
-	defer d.provMutex.Unlock()
+	utils.Lock("create", d.sharedLockID)
+	defer utils.Unlock("create", d.sharedLockID)
 
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
@@ -334,8 +340,8 @@ func (d *NASQtreeStorageDriver) Destroy(name string) error {
 	}
 
 	// Ensure the deleted qtree reaping job doesn't interfere with this workflow
-	d.provMutex.Lock()
-	defer d.provMutex.Unlock()
+	utils.Lock("destroy", d.sharedLockID)
+	defer utils.Unlock("destroy", d.sharedLockID)
 
 	// Generic user-facing message
 	deleteError := errors.New("volume deletion failed")
@@ -817,8 +823,8 @@ func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize() {
 func (d *NASQtreeStorageDriver) resizeQuotas() {
 
 	// Ensure we don't forget any Flexvol that is involved in a qtree provisioning workflow
-	d.provMutex.Lock()
-	defer d.provMutex.Unlock()
+	utils.Lock("resize", d.sharedLockID)
+	defer utils.Unlock("resize", d.sharedLockID)
 
 	log.Debug("Housekeeping, resizing quotas.")
 
@@ -890,8 +896,8 @@ func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(flexvol string) (uint
 func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 
 	// Ensure we don't prune any Flexvol that is involved in a qtree provisioning workflow
-	d.provMutex.Lock()
-	defer d.provMutex.Unlock()
+	utils.Lock("prune", d.sharedLockID)
+	defer utils.Unlock("prune", d.sharedLockID)
 
 	log.Debug("Housekeeping, checking for managed Flexvols with no qtrees.")
 
@@ -926,8 +932,8 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 func (d *NASQtreeStorageDriver) reapDeletedQtrees() {
 
 	// Ensure we don't reap any qtree that is involved in a qtree delete workflow
-	d.provMutex.Lock()
-	defer d.provMutex.Unlock()
+	utils.Lock("reap", d.sharedLockID)
+	defer utils.Unlock("reap", d.sharedLockID)
 
 	log.Debug("Housekeeping, checking for deleted qtrees.")
 
@@ -1217,6 +1223,8 @@ type HousekeepingTask struct {
 
 func (t *HousekeepingTask) Start() {
 	go func() {
+		t.Driver.housekeepingWaitGroup.Add(1)
+		defer t.Driver.housekeepingWaitGroup.Done()
 		time.Sleep(t.InitialDelay)
 		t.run(time.Now())
 		for {
@@ -1249,7 +1257,7 @@ func (t *HousekeepingTask) run(tick time.Time) {
 			"tick":   tick,
 			"driver": t.Driver.Name(),
 			"task":   t.Name,
-		}).Debugf("Performing housekeeping task %v.", i)
+		}).Debugf("Performing housekeeping task %d.", i)
 		task()
 	}
 }

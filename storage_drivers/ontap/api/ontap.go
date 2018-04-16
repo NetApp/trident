@@ -28,9 +28,10 @@ type ClientConfig struct {
 
 // Client is the object to use for interacting with ONTAP controllers
 type Client struct {
-	config ClientConfig
-	zr     *azgo.ZapiRunner
-	m      *sync.Mutex
+	config  ClientConfig
+	zr      *azgo.ZapiRunner
+	m       *sync.Mutex
+	SVMUUID string
 }
 
 // NewClient is a factory method for creating a new instance
@@ -603,7 +604,10 @@ func (d Client) VolumeGet(name string) (azgo.VolumeAttributesType, error) {
 	if d.SupportsFeature(FlexGroups) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
-	query := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*queryVolIDAttrs)
+	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
+	query := azgo.NewVolumeAttributesType().
+		SetVolumeIdAttributes(*queryVolIDAttrs).
+		SetVolumeStateAttributes(*queryVolStateAttrs)
 
 	response, err := azgo.NewVolumeGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
@@ -1125,6 +1129,13 @@ func (d Client) VserverGetIterRequest() (response azgo.VserverGetIterResponse, e
 	response, err = azgo.NewVserverGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
 		ExecuteUsing(d.zr)
+	return
+}
+
+// VserverGetRequest returns vserver to which it is sent
+// equivalent to filer::> vserver show
+func (d Client) VserverGetRequest() (response azgo.VserverGetResponse, err error) {
+	response, err = azgo.NewVserverGetRequest().ExecuteUsing(d.zr)
 	return
 }
 
