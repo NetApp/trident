@@ -18,6 +18,7 @@ BUILD_TIME = `date`
 PORT ?= 8000
 ROOT = $(shell pwd)
 BIN_DIR = ${ROOT}/bin
+COVERAGE_DIR = ${ROOT}/coverage
 BIN ?= trident_orchestrator
 TARBALL_BIN ?= trident
 CLI_BIN ?= tridentctl
@@ -33,11 +34,11 @@ DR=docker run --rm \
 	-v $(TRIDENT_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
-	golang:1.8
+	golang:1.10
 
 GO=${DR} go
 
-.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other clean fmt install vet
+.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
 default: dist
 
@@ -144,23 +145,31 @@ dist: build dist_tar dist_tag build_container_tools
 
 ## Test targets
 test_core:
+	@mkdir -p ${COVERAGE_DIR}
+	@chmod 777 ${COVERAGE_DIR}
 	-docker kill etcd-test > /dev/null
 	-docker rm etcd-test > /dev/null
 	@docker run -d -p ${ETCD_PORT}:${ETCD_PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${ETCD_PORT} -listen-client-urls http://0.0.0.0:${ETCD_PORT} > /dev/null
-	@go test -cover -v github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCD_SERVER} -etcd_v3=${ETCD_SERVER} -etcd_src=${ETCD_SERVER} -etcd_dest=${ETCD_SERVER}
+	@go test -v -coverprofile=${COVERAGE_DIR}/persistent_store-coverage.out github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCD_SERVER} -etcd_v3=${ETCD_SERVER} -etcd_src=${ETCD_SERVER} -etcd_dest=${ETCD_SERVER}
 	@sleep 1
 	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCD_SERVER}
 	@sleep 1
 	@go test -cover -v github.com/netapp/trident/core -args -etcd_v3=${ETCD_SERVER}
 	@sleep 1
-	@go test -cover -v github.com/netapp/trident/core
+	@go test -v -coverprofile=${COVERAGE_DIR}/core-coverage.out github.com/netapp/trident/core
 	@docker kill etcd-test > /dev/null
 	@docker rm etcd-test > /dev/null
 
 test_other:
-	@go test -cover -v $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store)
+	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store)
 
-test: test_core test_other
+test_coverage_report:
+	@sed 1,1d ${COVERAGE_DIR}/persistent_store-coverage.out >>${COVERAGE_DIR}/coverage.out
+	@sed 1,1d ${COVERAGE_DIR}/core-coverage.out >>${COVERAGE_DIR}/coverage.out
+	@go tool cover -func=${COVERAGE_DIR}/coverage.out -o ${COVERAGE_DIR}/function-coverage.txt
+	@go tool cover -html=${COVERAGE_DIR}/coverage.out -o ${COVERAGE_DIR}/coverage.html
+
+test: test_core test_other test_coverage_report
 
 ## docker-compose targets
 docker_compose_up:
@@ -177,7 +186,8 @@ clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
 	-docker rmi ${TRIDENT_TAG} ${TRIDENT_DIST_TAG} || true
 	-docker rmi netapp/container-tools || true
-	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
+	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz 
+	-rm -rf ${COVERAGE_DIR}
 
 fmt:
 	@$(GO) fmt
