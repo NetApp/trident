@@ -1,5 +1,5 @@
-hash: ed82a843195e9976764caa5dbd867d34018058269e682244b03766ad09eebb07
-updated: 2018-03-13T20:43:34.387780369-04:00
+hash: e800a5ac76c56c848a772c4ecc565c8beef4f148557c98f5b148d3d04088cefe
+updated: 2018-04-17T16:39:30.151371536-04:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -163,6 +163,8 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/rs/xid
+  version: 1ed2fb9d49fc2563cd7ff4afdc123b8232d9861b
 - name: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/cobra
