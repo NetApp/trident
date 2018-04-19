@@ -29,9 +29,9 @@
   obviates extending the Trident storage class API to support new parameters
   (Issue [#93](https://github.com/NetApp/trident/issues/93)).
 - **Kubernetes:** Added the ability to rename an existing backend.
-- **Kubernetes:** SolidFire defaults to use CHAP if Kubernetes version is
-  >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or
-  UseCHAP in config overrides this behavior.
+- **Kubernetes:** SolidFire defaults to use CHAP if Kubernetes version is >= 1.7
+  and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in
+  config overrides this behavior.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
  
 ## v18.01.0

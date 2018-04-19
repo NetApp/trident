@@ -68,3 +68,23 @@ utility, which you may need to install first.
 .. code-block:: bash
 
   tridentctl get backend -o json | jq '[.items[] | {backend: .name, storageClasses: [.storage[].storageClasses]|unique}]'
+
+Updating a backend
+------------------
+
+Once you have a new :ref:`backend configuration <Backend configuration>` file, run:
+
+.. code-block:: bash
+
+  tridentctl update backend <backend-name> -f <backend-file>
+
+If backend update fails, something was wrong with the backend configuration or
+you attempted an invalid update.
+You can view the logs to determine the cause by running:
+
+.. code-block:: bash
+
+  tridentctl logs
+
+Once you identify and correct the problem with the configuration file you can
+simply run the update command again.
