@@ -85,7 +85,8 @@ func getVersionFromRest() (rest.GetVersionResponse, error) {
 	if err != nil {
 		return rest.GetVersionResponse{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return rest.GetVersionResponse{}, fmt.Errorf("could not get version. %v", response.Status)
+		return rest.GetVersionResponse{}, fmt.Errorf("could not get version: %v",
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var getVersionResponse rest.GetVersionResponse

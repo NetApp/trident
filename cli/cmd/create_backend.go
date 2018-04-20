@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -89,7 +90,7 @@ func backendCreate(postData []byte) error {
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusCreated {
-		return errors.New(response.Status)
+		return fmt.Errorf("could not create backend: %v", GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var addBackendResponse rest.AddBackendResponse

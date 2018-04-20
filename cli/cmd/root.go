@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 
+	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
 	k8s "k8s.io/api/core/v1"
@@ -262,6 +264,15 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 
 	SetExitCodeFromError(err)
 	return output, err
+}
+
+func GetErrorFromHTTPResponse(response *http.Response, responseBody []byte) error {
+
+	var errorResponse api.ErrorResponse
+	if err := json.Unmarshal(responseBody, &errorResponse); err == nil {
+		return fmt.Errorf("%s (%s)", errorResponse.Error, response.Status)
+	}
+	return errors.New(response.Status)
 }
 
 func SetExitCodeFromError(err error) {

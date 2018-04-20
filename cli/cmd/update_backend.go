@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/spf13/cobra"
@@ -68,7 +69,8 @@ func backendUpdate(backendNames []string, postData []byte) error {
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusOK {
-		return errors.New(response.Status)
+		return fmt.Errorf("could not update backend %s: %v", backendNames[0],
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var updateBackendResponse rest.UpdateBackendResponse

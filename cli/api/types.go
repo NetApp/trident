@@ -4,6 +4,10 @@ package api
 
 import "github.com/netapp/trident/storage"
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 type Backend struct {
 	Name   string `json:"name"`
 	Config struct {

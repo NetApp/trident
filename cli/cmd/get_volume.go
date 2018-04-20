@@ -76,7 +76,8 @@ func GetVolumes(baseURL string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get volumes. %v", response.Status)
+		return nil, fmt.Errorf("could not get volumes: %v",
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var listVolumesResponse rest.ListVolumesResponse
@@ -96,7 +97,8 @@ func GetVolume(baseURL, volumeName string) (storage.VolumeExternal, error) {
 	if err != nil {
 		return storage.VolumeExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s. %v", volumeName, response.Status)
+		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s: %v", volumeName,
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var getVolumeResponse rest.GetVolumeResponse

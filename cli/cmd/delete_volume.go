@@ -21,7 +21,7 @@ func init() {
 var deleteVolumeCmd = &cobra.Command{
 	Use:     "volume <name> [<name>...]",
 	Short:   "Delete one or more storage volumes from Trident",
-	Aliases: []string{"b", "volumes"},
+	Aliases: []string{"v", "volumes"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "volume"}
@@ -64,11 +64,12 @@ func volumeDelete(volumeNames []string) error {
 	for _, volumeName := range volumeNames {
 		url := baseURL + "/volume/" + volumeName
 
-		response, _, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
+		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {
-			return fmt.Errorf("could not delete volume %s. %v", volumeName, response.Status)
+			return fmt.Errorf("could not delete volume %s: %v", volumeName,
+				GetErrorFromHTTPResponse(response, responseBody))
 		}
 	}
 

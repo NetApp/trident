@@ -74,7 +74,8 @@ func GetBackends(baseURL string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get backends. %v", response.Status)
+		return nil, fmt.Errorf("could not get backends: %v",
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var listBackendsResponse rest.ListBackendsResponse
@@ -94,7 +95,8 @@ func GetBackend(baseURL, backendName string) (api.Backend, error) {
 	if err != nil {
 		return api.Backend{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return api.Backend{}, fmt.Errorf("could not get backend %s. %v", backendName, response.Status)
+		return api.Backend{}, fmt.Errorf("could not get backend %s: %v", backendName,
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var getBackendResponse api.GetBackendResponse

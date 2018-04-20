@@ -64,11 +64,12 @@ func storageClassDelete(storageClassNames []string) error {
 	for _, storageClassName := range storageClassNames {
 		url := baseURL + "/storageclass/" + storageClassName
 
-		response, _, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
+		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {
-			return fmt.Errorf("could not delete storage class %s. %v", storageClassName, response.Status)
+			return fmt.Errorf("could not delete storage class %s: %v", storageClassName,
+				GetErrorFromHTTPResponse(response, responseBody))
 		}
 	}
 

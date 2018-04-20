@@ -73,7 +73,8 @@ func GetStorageClasses(baseURL string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get storage classes. %v", response.Status)
+		return nil, fmt.Errorf("could not get storage classes: %v",
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var listStorageClassesResponse rest.ListStorageClassesResponse
@@ -93,7 +94,8 @@ func GetStorageClass(baseURL, storageClassName string) (api.StorageClass, error)
 	if err != nil {
 		return api.StorageClass{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return api.StorageClass{}, fmt.Errorf("could not get storage class %s. %v", storageClassName, response.Status)
+		return api.StorageClass{}, fmt.Errorf("could not get storage class %s: %v", storageClassName,
+			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var getStorageClassResponse api.GetStorageClassResponse

@@ -64,11 +64,12 @@ func backendDelete(backendNames []string) error {
 	for _, backendName := range backendNames {
 		url := baseURL + "/backend/" + backendName
 
-		response, _, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
+		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {
-			return fmt.Errorf("could not delete backend %s. %v", backendName, response.Status)
+			return fmt.Errorf("could not delete backend %s: %v", backendName,
+				GetErrorFromHTTPResponse(response, responseBody))
 		}
 	}
 
