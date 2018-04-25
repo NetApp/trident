@@ -15,10 +15,10 @@ latest `installer bundle`_ and run:
 
 .. code-block:: bash
 
-  ./uninstall_trident.sh -n <namespace>
-  ./install_trident.sh -n <namespace>
+  ./tridentctl uninstall -n <namespace>
+  ./tridentctl install -n <namespace>
 
-By default the uninstall script will leave all of Trident's state intact by
+By default the uninstall command will leave all of Trident's state intact by
 not deleting the PVC and PV used by the Trident deployment, allowing an
 uninstall followed by an install to act as an upgrade.
 
@@ -31,13 +31,13 @@ the interim once it is back online.
 Uninstalling Trident
 --------------------
 
-The uninstall script in the `installer bundle`_ will remove all of the
+The uninstall command in tridentctl will remove all of the
 resources associated with Trident except for the PVC, PV and backing volume,
 making it easy to run the installer again to update to a more recent version.
 
 .. code-block:: bash
 
-  ./uninstall_trident.sh -n <namespace>
+  ./tridentctl uninstall -n <namespace>
 
 To fully uninstall Trident and remove the PVC and PV as well, specify the
 ``-a`` switch. The backing volume on the storage will still need to be removed
