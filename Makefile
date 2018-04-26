@@ -43,7 +43,7 @@ GO=${DR} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 18.04.0
+TRIDENT_VERSION ?= 18.07.0
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
@@ -62,7 +62,9 @@ DIST_REGISTRY ?= netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
 ## etcd variables
-ETCD_VERSION ?= v3.1.5
+ifeq ($(ETCD_VERSION),)
+ETCD_VERSION := v3.2.19
+endif
 ETCD_PORT ?= 8001
 ETCD_SERVER ?= http://localhost:${ETCD_PORT}
 ETCD_DIR ?= /tmp/etcd

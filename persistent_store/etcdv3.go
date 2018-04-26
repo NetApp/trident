@@ -48,7 +48,8 @@ func NewEtcdClientV3(endpoints string) (*EtcdClientV3, error) {
 			endpoints: endpoints,
 		}, nil
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() {
+	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
+		strings.Contains(err.Error(), "dial tcp") {
 		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 	}
 	return nil, err
@@ -87,7 +88,8 @@ func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key strin
 			tlsConfig: tlsConfig,
 		}, nil
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() {
+	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
+		strings.Contains(err.Error(), "dial tcp") {
 		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 	}
 	return nil, err
@@ -109,7 +111,8 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 			tlsConfig: etcdConfig.TLSConfig,
 		}, nil
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() {
+	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
+		strings.Contains(err.Error(), "dial tcp") {
 		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 	}
 	return nil, err

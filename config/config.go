@@ -25,7 +25,7 @@ type Telemetry struct {
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
-	orchestratorVersion              = "18.04.0"
+	orchestratorVersion              = "18.07.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
@@ -92,7 +92,7 @@ var (
 	BuildImage = "netapp/trident:" + orchestratorVersion + "-custom.0"
 
 	// EtcdImage is the etcd image that Trident should be deployed with
-	BuildEtcdImage = "quay.io/coreos/etcd:v3.1.5"
+	BuildEtcdImage = "quay.io/coreos/etcd:v3.2.19"
 
 	OrchestratorVersion = utils.MustParseDate(version())
 

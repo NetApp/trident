@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.01.0
+## Changes since v18.04.0
+
+**Fixes:**
+
+**Enhancements:**
+- **Kubernetes:** Updated etcd to v3.2.19 and client-go to v7.0.0.
+
+## v18.04.0
 
 **Fixes:**
 - Clone operations are more resilient to busy storage controllers.

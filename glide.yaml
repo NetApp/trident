@@ -3,7 +3,7 @@ import:
 - package: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/coreos/etcd
-  version: 0520cb9304cb2385f7e72b8bc02d6e4d3257158a
+  version: 8a9b3d53857554df347e8b80a42961c88f3dc14f
   subpackages:
   - client
   - clientv3
@@ -30,16 +30,16 @@ import:
   subpackages:
   - context
 - package: google.golang.org/grpc
-  version: v1.0.4
+  version: v1.7.5
 - package: k8s.io/api
-  version: 006a217681ae70cbacdd66a5e2fca1a61a8ff28e
+  version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/client-go
-  version: 9389c055a838d4f208b699b3c7c51b70f2368861
+  version: 23781f4d6632d88e869066eaebb743857aa1ef9b
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -52,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 68f9c3a1feb3140df59c67ced62d3a5df8e6c9c2
+  version: 302974c03f7e50f16561ba237db776ab93594ef6
   subpackages:
   - pkg/api/errors
   - pkg/api/resource
