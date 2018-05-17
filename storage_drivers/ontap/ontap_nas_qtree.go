@@ -481,6 +481,13 @@ func (d *NASQtreeStorageDriver) List() ([]string, error) {
 
 	// AttributesList() returns []QtreeInfoType
 	for _, qtree := range listResponse.Result.AttributesList() {
+
+		// Don't include deleted qtrees
+		if strings.HasPrefix(qtree.Qtree(), deletedQtreeNamePrefix) {
+			continue
+		}
+
+		// Strip the prefix
 		vol := qtree.Qtree()[len(prefix):]
 		volumes = append(volumes, vol)
 	}
@@ -1154,6 +1161,11 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 
 		// Ignore Flexvol-level qtrees
 		if qtree.Qtree() == "" {
+			continue
+		}
+
+		// Don't include deleted qtrees
+		if strings.HasPrefix(qtree.Qtree(), deletedQtreeNamePrefix) {
 			continue
 		}
 
