@@ -16,21 +16,32 @@ import (
 )
 
 const (
-	LogLimitBytes         = 10485760 // 10 MiB
-	tridentLogTrident     = "trident"
-	tridentLogEtcd        = "etcd"
+	LogLimitBytes = 10485760 // 10 MiB
+
+	logNameTrident         = "trident"
+	logNameTridentPrevious = "trident-previous"
+	logNameEtcd            = "etcd"
+	logNameEtcdPrevious    = "etcd-previous"
+
+	logTypeAuto    = "auto"
+	logTypeTrident = "trident"
+	logTypeEtcd    = "etcd"
+	logTypeAll     = "all"
+
 	archiveFilenameFormat = "support-2006-01-02T15-04-05-MST.zip"
 )
 
 var (
-	Log     string
-	archive bool
+	logType  string
+	archive  bool
+	previous bool
 )
 
 func init() {
 	RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&Log, "log", "l", "auto", "Trident log to display. One of trident|etcd|auto|all")
+	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto, "Trident log to display. One of trident|etcd|auto|all")
 	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
+	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false, "Get the logs for the previous container instance if it exists.")
 }
 
 var logsCmd = &cobra.Command{
@@ -58,9 +69,10 @@ var logsCmd = &cobra.Command{
 
 func archiveLogs() error {
 
-	// In archive mode, "auto" means to attempt to get all logs.
-	if Log == "auto" {
-		Log = "all"
+	// In archive mode, "auto" means to attempt to get all logs (current & previous).
+	if logType == logTypeAuto {
+		logType = logTypeAll
+		previous = true
 	}
 
 	logMap := make(map[string][]byte)
@@ -142,51 +154,66 @@ func getLogs(logMap map[string][]byte) error {
 
 	var err error
 
-	switch OperatingMode {
+	if OperatingMode != ModeTunnel {
+		return errors.New("'tridentctl logs' only supports Trident running in a Kubernetes pod")
+	}
 
-	case ModeTunnel:
-		switch Log {
-		case "trident", "auto":
-			err = getTridentLogs(tridentLogTrident, logMap)
-		case "etcd":
-			err = getTridentLogs(tridentLogEtcd, logMap)
-		case "all":
-			getTridentLogs(tridentLogTrident, logMap)
-			getTridentLogs(tridentLogEtcd, logMap)
+	switch logType {
+	case logTypeTrident, logTypeAuto:
+		err = getTridentLogs(logNameTrident, logMap)
+	case logTypeEtcd:
+		err = getTridentLogs(logNameEtcd, logMap)
+	case logTypeAll:
+		getTridentLogs(logNameTrident, logMap)
+		getTridentLogs(logNameEtcd, logMap)
+	}
+
+	if previous {
+		switch logType {
+		case logTypeTrident, logTypeAuto:
+			getTridentLogs(logNameTridentPrevious, logMap)
+		case logTypeEtcd:
+			getTridentLogs(logNameEtcdPrevious, logMap)
+		case logTypeAll:
+			getTridentLogs(logNameTridentPrevious, logMap)
+			getTridentLogs(logNameEtcdPrevious, logMap)
 		}
-
-	case ModeDirect:
-		err = errors.New("'tridentctl logs' only supports Trident running in a Kubernetes pod")
 	}
 
 	return err
 }
 
 func checkValidLog() error {
-	switch Log {
-	case "trident", "etcd", "auto", "all":
+	switch logType {
+	case logTypeTrident, logTypeEtcd, logTypeAuto, logTypeAll:
 		return nil
 	default:
-		return fmt.Errorf("%s is not a valid Trident log", Log)
+		return fmt.Errorf("%s is not a valid Trident log", logType)
 	}
 }
 
-func getTridentLogs(log string, logMap map[string][]byte) error {
+func getTridentLogs(logName string, logMap map[string][]byte) error {
 
 	var container string
+	var prev bool
 
-	switch log {
-	case "trident":
-		container = config.ContainerTrident
-	case "etcd":
-		container = config.ContainerEtcd
+	switch logName {
+	case logNameTrident:
+		container, prev = config.ContainerTrident, false
+	case logNameTridentPrevious:
+		container, prev = config.ContainerTrident, true
+	case logNameEtcd:
+		container, prev = config.ContainerEtcd, false
+	case logNameEtcdPrevious:
+		container, prev = config.ContainerEtcd, true
 	default:
-		return fmt.Errorf("%s is not a valid Trident log", log)
+		return fmt.Errorf("%s is not a valid Trident log", logName)
 	}
 
 	// Build command to get K8S logs
-	limit := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
-	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limit}
+	limitArg := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
+	prevArg := fmt.Sprintf("--previous=%v", prev)
+	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limitArg, prevArg}
 
 	if Debug {
 		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
@@ -197,7 +224,7 @@ func getTridentLogs(log string, logMap map[string][]byte) error {
 	if err != nil {
 		logMap["error"] = appendError(logMap["error"], logBytes)
 	} else {
-		logMap[log] = logBytes
+		logMap[logName] = logBytes
 	}
 	return err
 }
