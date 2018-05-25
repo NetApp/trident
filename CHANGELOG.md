@@ -5,6 +5,7 @@
 ## Changes since v18.04.0
 
 **Fixes:**
+- **Kubernetes:** Fixed an issue where Trident would provision a ReadWriteMany PVC to an iSCSI backend.
 - **Docker:** Fixed an issue where deleted qtrees could appear in Docker volume list.
 
 **Enhancements:**

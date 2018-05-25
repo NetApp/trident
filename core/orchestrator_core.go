@@ -651,12 +651,17 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	}
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
+	// Get the protocol based on the specified access mode & protocol
+	protocol, err := o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	if err != nil {
+		return nil, err
+	}
+
 	sc, ok := o.storageClasses[volumeConfig.StorageClass]
 	if !ok {
-		return nil, fmt.Errorf("unknown storage class: %s",
-			volumeConfig.StorageClass)
+		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
 	}
-	pools := sc.GetStoragePoolsForProtocol(volumeConfig.Protocol)
+	pools := sc.GetStoragePoolsForProtocol(protocol)
 	if len(pools) == 0 {
 		return nil, fmt.Errorf("no available backends for storage class %s",
 			volumeConfig.StorageClass)
@@ -712,10 +717,9 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 
 	externalVol = nil
 	if len(errorMessages) == 0 {
-		err = fmt.Errorf("no suitable %s backend with \"%s\" "+
-			"storage class and %s of free space was found! Find available backends"+
-			" under %s", volumeConfig.Protocol,
-			volumeConfig.StorageClass, volumeConfig.Size, config.BackendURL)
+		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class "+
+			"and %s of free space was found! Find available backends under %s",
+			protocol, volumeConfig.StorageClass, volumeConfig.Size, config.BackendURL)
 	} else {
 		err = fmt.Errorf("encountered error(s) in creating the volume: %s",
 			strings.Join(errorMessages, ", "))
@@ -1218,22 +1222,46 @@ func (o *TridentOrchestrator) ReloadVolumes() error {
 	return err
 }
 
-// getProtocol returns the appropriate protocol name based on volume access mode
-// or an empty string if all protocols are applicable.
-// ReadWriteOnce -> Any (File + Block)
-// ReadOnlyMany -> File
-// ReadWriteMany -> File
-func (o *TridentOrchestrator) getProtocol(mode config.AccessMode) config.Protocol {
-	switch mode {
-	case config.ReadWriteOnce:
-		return config.ProtocolAny
-	case config.ReadOnlyMany:
-		return config.File
-	case config.ReadWriteMany:
-		return config.File
-	default:
-		return config.ProtocolAny
+// getProtocol returns the appropriate protocol based on a specified volume access mode and protocol, or
+// an error if the two settings are incompatible.
+//
+// Generally, the access mode maps to a protocol as follows:
+//
+//  ReadWriteOnce -> Any (File + Block)
+//  ReadOnlyMany  -> Any (File + Block)
+//  ReadWriteMany -> File
+//
+// But if the protocol is explicitly set to File or Block, then it may override ProtocolAny or generate a conflict.
+// The truth table below yields two special cases (RWX/Block) and (RWX/Any); all other rows simply echo the protocol.
+//
+//   AccessMode     Protocol     Result
+//      RWO          File        File
+//      RWO          Block       Block
+//      RWO          Any         Any
+//      ROX          File        File
+//      ROX          Block       Block
+//      ROX          Any         Any
+//      RWX          File        File
+//      RWX          Block       *ERROR*
+//      RWX          Any         *File*
+//      Any          File        File
+//      Any          Block       Block
+//      Any          Any         Any
+//
+func (o *TridentOrchestrator) getProtocol(
+	accessMode config.AccessMode, protocol config.Protocol,
+) (config.Protocol, error) {
+
+	if accessMode == config.ReadWriteMany {
+		if protocol == config.Block {
+			return config.ProtocolAny, fmt.Errorf("incompatible access mode (%s) and protocol (%s)",
+				accessMode, protocol)
+		} else if protocol == config.ProtocolAny {
+			return config.File, nil
+		}
 	}
+
+	return protocol, nil
 }
 
 func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error) {
