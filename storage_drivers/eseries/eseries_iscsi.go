@@ -135,14 +135,13 @@ func (d *SANStorageDriver) Initialize(
 		return fmt.Errorf("could not connect to Web Services Proxy: %v", err)
 	}
 
-	// Log controller serial numbers
-	d.Config.SerialNumbers, err = d.API.ListNodeSerialNumbers()
+	// Log chassis serial number
+	chassisSerialNumber, err := d.API.GetChassisSerialNumber()
 	if err != nil {
-		log.Warnf("Could not determine controller serial numbers. %v", err)
+		log.Warnf("Could not determine chassis serial number. %v", err)
 	} else {
-		log.WithFields(log.Fields{
-			"serialNumbers": strings.Join(d.Config.SerialNumbers, ","),
-		}).Info("Controller serial numbers.")
+		log.WithField("serialNumber", chassisSerialNumber).Info("Chassis serial number.")
+		d.Config.SerialNumbers = []string{chassisSerialNumber}
 	}
 
 	if context == trident.ContextDocker {

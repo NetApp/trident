@@ -252,75 +252,64 @@ func (d Client) Connect() (string, error) {
 	return d.config.ArrayID, nil
 }
 
-// GetControllers returns an array containing all the controllers in the storage system.
-func (d Client) GetControllers() ([]Controller, error) {
+// GetStorageSystem returns a struct detailing the storage system.
+func (d Client) GetStorageSystem() (*StorageSystem, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "GetControllers",
+			"Method": "GetStorageSystem",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetControllers")
-		defer log.WithFields(fields).Debug("<<<< GetControllers")
+		log.WithFields(fields).Debug(">>>> GetStorageSystem")
+		defer log.WithFields(fields).Debug("<<<< GetStorageSystem")
 	}
 
-	// Query volumes on array
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/controllers")
+	// Query array
+	response, responseBody, err := d.InvokeAPI(nil, "GET", "/")
 	if err != nil {
-		return nil, errors.New("could not read controllers")
+		return nil, errors.New("could not read storage system")
 	}
 
 	if response.StatusCode != http.StatusOK {
 		return nil, Error{
 			Code:    response.StatusCode,
-			Message: "could not read controllers",
+			Message: "could not read storage system",
 		}
 	}
 
-	controllers := make([]Controller, 0)
-	err = json.Unmarshal(responseBody, &controllers)
+	storageSystem := StorageSystem{}
+	err = json.Unmarshal(responseBody, &storageSystem)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse controller data: %s. %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse storage system data: %s. %v", string(responseBody), err)
 	}
 
-	log.WithField("Count", len(controllers)).Debug("Read controllers.")
+	log.WithField("Name", storageSystem.Name).Debug("Read storage system.")
 
-	return controllers, nil
+	return &storageSystem, nil
 }
 
-// ListNodeSerialNumbers returns an array containing the controller serial numbers for this storage system.
-func (d Client) ListNodeSerialNumbers() ([]string, error) {
+// GetChassisSerialNumber returns the chassis serial number for this storage system.
+func (d Client) GetChassisSerialNumber() (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "ListNodeSerialNumbers",
+			"Method": "GetChassisSerialNumber",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> ListNodeSerialNumbers")
-		defer log.WithFields(fields).Debug("<<<< ListNodeSerialNumbers")
+		log.WithFields(fields).Debug(">>>> GetChassisSerialNumber")
+		defer log.WithFields(fields).Debug("<<<< GetChassisSerialNumber")
 	}
 
-	serialNumbers := make([]string, 0, 0)
-
-	controllers, err := d.GetControllers()
+	storageSystem, err := d.GetStorageSystem()
 	if err != nil {
-		return serialNumbers, err
+		return "", err
 	}
 
-	// Get the serial numbers
-	for _, controller := range controllers {
-		serialNumber := strings.TrimSpace(controller.SerialNumber)
-		if serialNumber != "" {
-			serialNumbers = append(serialNumbers, serialNumber)
-		}
+	if storageSystem.ChassisSerialNumber == "" {
+		return "", errors.New("chassis serial number is blank")
 	}
 
-	log.WithFields(log.Fields{
-		"Count":         len(serialNumbers),
-		"SerialNumbers": strings.Join(serialNumbers, ","),
-	}).Debug("Read serial numbers.")
-
-	return serialNumbers, nil
+	return storageSystem.ChassisSerialNumber, nil
 }
 
 // GetVolumePools reads all pools on the array, including volume groups and dynamic disk pools. It then
