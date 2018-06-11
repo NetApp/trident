@@ -655,13 +655,15 @@ spec:
   selector:
     matchLabels:
       app: {LABEL}
-  storageClassName:
+  storageClassName: ''
 `
 
-func GetNFSPVYAML(pvName, size, nfsServer, nfsPath, label string) string {
+func GetNFSPVYAML(pvName, size, pvcName, pvcNamespace, nfsServer, nfsPath, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeNFSYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
 	pvYAML = strings.Replace(pvYAML, "{SERVER}", nfsServer, 1)
 	pvYAML = strings.Replace(pvYAML, "{PATH}", nfsPath, 1)
 	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
@@ -680,15 +682,23 @@ spec:
     storage: {SIZE}
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: {PVC_NAME}
+    namespace: {PVC_NAMESPACE}
   nfs:
     server: {SERVER}
     path: {PATH}
 `
 
-func GetISCSIPVYAML(pvName, size, targetPortal, iqn string, lun int32, label string) string {
+func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal, iqn string, lun int32, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
 	pvYAML = strings.Replace(pvYAML, "{TARGET_PORTAL}", targetPortal, 1)
 	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
 	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
@@ -708,6 +718,12 @@ spec:
     storage: {SIZE}
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: {PVC_NAME}
+    namespace: {PVC_NAMESPACE}
   iscsi:
     targetPortal: {TARGET_PORTAL}
     iqn: {IQN}
@@ -716,10 +732,15 @@ spec:
     readOnly: false
 `
 
-func GetCHAPISCSIPVYAML(pvName, size, targetPortal, iqn string, lun int32, secretName, label string) string {
+func GetCHAPISCSIPVYAML(
+	pvName, size, pvcName, pvcNamespace, secretName,
+	targetPortal, iqn string, lun int32, label string,
+) string {
 
 	pvYAML := strings.Replace(persistentVolumeCHAPISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
+	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
 	pvYAML = strings.Replace(pvYAML, "{TARGET_PORTAL}", targetPortal, 1)
 	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
 	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
@@ -740,6 +761,12 @@ spec:
     storage: {SIZE}
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: {PVC_NAME}
+    namespace: {PVC_NAMESPACE}
   iscsi:
     targetPortal: {TARGET_PORTAL}
     iqn: {IQN}

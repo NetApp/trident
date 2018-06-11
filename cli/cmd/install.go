@@ -1113,7 +1113,7 @@ func createPV(sb *storage.Backend) error {
 	switch {
 	case volume.Config.AccessInfo.NfsAccessInfo.NfsServerIP != "":
 
-		pvYAML = k8s_client.GetNFSPVYAML(pvName, volumeSize,
+		pvYAML = k8s_client.GetNFSPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
 			volume.Config.AccessInfo.NfsAccessInfo.NfsServerIP,
 			volume.Config.AccessInfo.NfsAccessInfo.NfsPath,
 			appLabelValue)
@@ -1133,16 +1133,16 @@ func createPV(sb *storage.Backend) error {
 				return err
 			}
 
-			pvYAML = k8s_client.GetCHAPISCSIPVYAML(pvName, volumeSize,
+			pvYAML = k8s_client.GetCHAPISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace, secretName,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
-				secretName, appLabelValue)
+				appLabelValue)
 
 		} else {
 
 			// Not using CHAP
-			pvYAML = k8s_client.GetISCSIPVYAML(pvName, volumeSize,
+			pvYAML = k8s_client.GetISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
