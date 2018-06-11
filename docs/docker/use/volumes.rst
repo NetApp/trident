@@ -27,6 +27,13 @@ Volume sizes are expressed as strings containing an integer value with optional 
 If no units are specified, the default is 'G'.  Size units may be expressed either as powers of 2 (B, KiB, MiB, GiB, TiB)
 or powers of 10 (B, KB, MB, GB, TB).  Shorthand units use powers of 2 (G = GiB, T = TiB, ...).
 
+The snapshot reserve will be changed to 0% if you set the snapshot policy to none as follows:
+
+.. code-block:: bash
+    # create a volume with no snapshot policy and no snapshot reserve
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none
+
+
 Volume Driver CLI Options
 -------------------------
 

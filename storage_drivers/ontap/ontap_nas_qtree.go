@@ -546,6 +546,11 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		encryption = *encrypt
 	}
 
+	snapshotReserve := api.NumericalValueNotSet
+	if snapshotPolicy == "none" {
+		snapshotReserve = 0
+	}
+
 	log.WithFields(log.Fields{
 		"name":            flexvol,
 		"aggregate":       aggregate,
@@ -557,12 +562,13 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		"exportPolicy":    exportPolicy,
 		"securityStyle":   securityStyle,
 		"encryption":      encryption,
+		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating Flexvol for qtrees.")
 
 	// Create the Flexvol
 	createResponse, err := d.API.VolumeCreate(
 		flexvol, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt)
+		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserve)
 	if err = api.GetError(createResponse, err); err != nil {
 		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}

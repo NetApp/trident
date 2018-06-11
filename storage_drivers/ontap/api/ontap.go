@@ -15,7 +15,10 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-const defaultZapiRecords = 100
+const (
+	defaultZapiRecords   = 100
+	NumericalValueNotSet = -1
+)
 
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
@@ -468,7 +471,8 @@ func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse,
 // VolumeCreate creates a volume with the specified options
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt *bool) (response azgo.VolumeCreateResponse, err error) {
+	exportPolicy, securityStyle string, encrypt *bool, snapshotReserve int,
+) (response azgo.VolumeCreateResponse, err error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
 		SetContainingAggrName(aggregateName).
@@ -482,6 +486,10 @@ func (d Client) VolumeCreate(name, aggregateName, size, spaceReserve, snapshotPo
 	// Don't send 'encrypt' unless needed, as pre-9.1 ONTAP won't accept it.
 	if encrypt != nil {
 		request.SetEncrypt(*encrypt)
+	}
+
+	if snapshotReserve != NumericalValueNotSet {
+		request.SetPercentageSnapshotReserve(snapshotReserve)
 	}
 
 	response, err = request.ExecuteUsing(d.zr)

@@ -214,6 +214,11 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return err
 	}
 
+	snapshotReserve := api.NumericalValueNotSet
+	if snapshotPolicy == "none" {
+		snapshotReserve = 0
+	}
+
 	// Check for a supported file system type
 	fstype := strings.ToLower(utils.GetV(opts, "fstype|fileSystemType", d.Config.FileSystemType))
 	switch fstype {
@@ -234,12 +239,13 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		"aggregate":       aggregate,
 		"securityStyle":   securityStyle,
 		"encryption":      encryption,
+		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating Flexvol.")
 
 	// Create the volume
 	volCreateResponse, err := d.API.VolumeCreate(
 		name, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt)
+		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserve)
 
 	if err = api.GetError(volCreateResponse, err); err != nil {
 		if zerr, ok := err.(api.ZapiError); ok {
