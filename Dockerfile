@@ -15,6 +15,7 @@ RUN apk update || true &&  \
 	kmod \
 	curl \
 	jq \
+	open-iscsi \
 	ca-certificates
 
 # for go binaries to work inside an alpine container
