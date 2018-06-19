@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
 
@@ -175,7 +174,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-func GetDeploymentYAML(pvcName, image string, debug bool) string {
+func GetDeploymentYAML(pvcName, tridentImage, etcdImage string, debug bool) string {
 
 	var debugLine string
 	if debug {
@@ -184,8 +183,8 @@ func GetDeploymentYAML(pvcName, image string, debug bool) string {
 		debugLine = "#- -debug"
 	}
 
-	deploymentYAML := strings.Replace(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", image, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{ETCD_IMAGE}", tridentconfig.BuildEtcdImage, 1)
+	deploymentYAML := strings.Replace(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{ETCD_IMAGE}", etcdImage, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{PVC_NAME}", pvcName, 1)
 	return deploymentYAML

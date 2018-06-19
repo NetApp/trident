@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 type EtcdClientV2 struct {
@@ -61,15 +62,47 @@ func NewEtcdClientV2(endpoints string) (*EtcdClientV2, error) {
 		}
 	}
 
-	return &EtcdClientV2{
+	client := &EtcdClientV2{
 		clientV2:  &c,
 		keysAPI:   keysAPI,
 		endpoints: endpoints,
-	}, nil
+	}
+
+	// Warn if etcd version is not what we expect
+	client.checkEtcdVersion()
+
+	return client, nil
 }
 
 func NewEtcdClientV2FromConfig(etcdConfig *ClientConfig) (*EtcdClientV2, error) {
 	return NewEtcdClientV2(etcdConfig.endpoints)
+}
+
+func (p *EtcdClientV2) checkEtcdVersion() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	client := *p.clientV2
+	version, err := client.GetVersion(ctx)
+	if err != nil {
+		log.Errorf("Could not get etcd version: %v", err)
+		return
+	}
+
+	buildEtcdVersion := utils.MustParseSemantic(config.BuildEtcdVersion)
+
+	if comparison, err := buildEtcdVersion.Compare(version.Server); err != nil {
+		log.Errorf("Could not parse etcd version '%s': %v", version.Server, err)
+	} else if comparison != 0 {
+		log.WithFields(log.Fields{
+			"currentEtcdVersion":   version.Server,
+			"preferredEtcdVersion": config.BuildEtcdVersion,
+		}).Warning("The detected etcd version is different than the version Trident is tested with.")
+	} else {
+		log.WithFields(log.Fields{
+			"etcdVersion": version.Server,
+		}).Debug("The detected etcd version matches the version Trident is tested with.")
+	}
 }
 
 // Create is the abstract CRUD interface

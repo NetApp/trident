@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/coreos/etcd/clientv3"
+	log "github.com/sirupsen/logrus"
 	//TODO: Change for the later versions of etcd (etcd v3.1.5 doesn't return any error for unfound keys but later versions do)
 	//"github.com/coreos/etcd/etcdserver"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
@@ -21,6 +22,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -42,17 +44,23 @@ func NewEtcdClientV3(endpoints string) (*EtcdClientV3, error) {
 		DialTimeout: config.PersistentStoreBootstrapTimeout,
 	})
 
-	if err == nil {
-		return &EtcdClientV3{
-			clientV3:  clientV3,
-			endpoints: endpoints,
-		}, nil
+	if err != nil {
+		if err.Error() == grpc.ErrClientConnTimeout.Error() ||
+			strings.Contains(err.Error(), "dial tcp") {
+			return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+		}
+		return nil, err
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
-		strings.Contains(err.Error(), "dial tcp") {
-		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+
+	etcdClientV3 := &EtcdClientV3{
+		clientV3:  clientV3,
+		endpoints: endpoints,
 	}
-	return nil, err
+
+	// Warn if etcd version isn't what we expect
+	etcdClientV3.checkEtcdVersion()
+
+	return etcdClientV3, nil
 }
 
 func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key string) (*EtcdClientV3, error) {
@@ -81,18 +89,24 @@ func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key strin
 		TLS:         tlsConfig,
 	})
 
-	if err == nil {
-		return &EtcdClientV3{
-			clientV3:  clientV3,
-			endpoints: endpoints,
-			tlsConfig: tlsConfig,
-		}, nil
+	if err != nil {
+		if err.Error() == grpc.ErrClientConnTimeout.Error() ||
+			strings.Contains(err.Error(), "dial tcp") {
+			return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+		}
+		return nil, err
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
-		strings.Contains(err.Error(), "dial tcp") {
-		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
+
+	etcdClientV3 := &EtcdClientV3{
+		clientV3:  clientV3,
+		endpoints: endpoints,
+		tlsConfig: tlsConfig,
 	}
-	return nil, err
+
+	// Warn if etcd version isn't what we expect
+	etcdClientV3.checkEtcdVersion()
+
+	return etcdClientV3, nil
 }
 
 func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) {
@@ -116,6 +130,31 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 	}
 	return nil, err
+}
+
+func (p *EtcdClientV3) checkEtcdVersion() {
+
+	// Get the cluster status, which contains the version
+	status, err := p.clientV3.Maintenance.Status(p.clientV3.Ctx(), p.endpoints)
+	if err != nil {
+		log.Errorf("Could not get etcd version: %v", err)
+		return
+	}
+
+	buildEtcdVersion := utils.MustParseSemantic(config.BuildEtcdVersion)
+
+	if comparison, err := buildEtcdVersion.Compare(status.Version); err != nil {
+		log.Errorf("Could not parse etcd version '%s': %v", status.Version, err)
+	} else if comparison != 0 {
+		log.WithFields(log.Fields{
+			"currentEtcdVersion":   status.Version,
+			"preferredEtcdVersion": config.BuildEtcdVersion,
+		}).Warning("The detected etcd version is different than the version Trident is tested with.")
+	} else {
+		log.WithFields(log.Fields{
+			"etcdVersion": status.Version,
+		}).Debug("The detected etcd version matches the version Trident is tested with.")
+	}
 }
 
 // Create creates a key in etcd

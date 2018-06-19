@@ -71,7 +71,7 @@ ETCD_DIR ?= /tmp/etcd
 ETCD_TAG := quay.io/coreos/etcd:${ETCD_VERSION}
 
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
+BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdVersion=$(ETCD_VERSION)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
 
 ## Trident build targets
 get:

@@ -203,7 +203,9 @@ Customized Installation
 
 Trident's installer allows you to customize attributes such as PV or PVC default names, 
 by using the installer's ``--pv`` or ``--pvc`` parameters. You can also specify a
-storage volume name and size by using ``--volume-name`` and ``--volume-size``.
+storage volume name and size by using ``--volume-name`` and ``--volume-size``. If you have
+copied the Trident images to a private repository, you can specify the image names by using
+``--trident-image`` and ``--etcd-image``.
 
 Users can also customize Trident's deployment files. Using the ``--generate-custom-yaml``
 parameter will create the following YAML files in the installer's ``setup`` directory:

@@ -60,7 +60,8 @@ var (
 	volumeName   string
 	volumeSize   string
 	k8sTimeout   time.Duration
-	image        string
+	tridentImage string
+	etcdImage    string
 
 	// CLI-based K8S client
 	client k8s_client.Interface
@@ -93,8 +94,8 @@ func init() {
 	installCmd.Flags().StringVar(&volumeSize, "volume-size", DefaultVolumeSize, "The size of the storage volume used by Trident.")
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 120*time.Second, "The number of seconds to wait before timing out on Kubernetes operations.")
 
-	installCmd.Flags().StringVar(&image, "image", "", "The Trident image to install.")
-	installCmd.Flags().MarkHidden("image")
+	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
+	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 }
 
 var installCmd = &cobra.Command{
@@ -160,8 +161,15 @@ func discoverInstallationEnvironment() error {
 	OperatingMode = ModeInstall
 
 	// Default deployment image to what Trident was built with
-	if image == "" {
-		image = tridentconfig.BuildImage
+	if tridentImage == "" {
+		tridentImage = tridentconfig.BuildImage
+	}
+
+	// Default deployment image to what etcd was built with
+	if etcdImage == "" {
+		etcdImage = tridentconfig.BuildEtcdImage
+	} else if etcdImage != tridentconfig.BuildEtcdImage {
+		log.Warning("The specified etcd image is different than the version Trident is tested with.")
 	}
 
 	// Ensure we're on Linux
@@ -275,7 +283,7 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write PVC YAML file; %v", err)
 	}
 
-	deploymentYAML := k8s_client.GetDeploymentYAML(pvcName, image, Debug)
+	deploymentYAML := k8s_client.GetDeploymentYAML(pvcName, tridentImage, etcdImage, Debug)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -544,7 +552,7 @@ func installTrident() (returnError error) {
 		returnError = client.CreateObjectByFile(deploymentPath)
 		logFields = log.Fields{"path": deploymentPath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8s_client.GetDeploymentYAML(pvcName, image, Debug))
+		returnError = client.CreateObjectByYAML(k8s_client.GetDeploymentYAML(pvcName, tridentImage, etcdImage, Debug))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
