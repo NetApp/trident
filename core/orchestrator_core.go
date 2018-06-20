@@ -92,12 +92,11 @@ func (o *TridentOrchestrator) Bootstrap() error {
 	config.OrchestratorTelemetry = config.Telemetry{
 		TridentVersion: config.OrchestratorVersion.String(),
 	}
-	if kubeFrontend, found := o.frontends["kubernetes"]; found {
-		config.OrchestratorTelemetry.Platform = kubeFrontend.GetName()
-		config.OrchestratorTelemetry.PlatformVersion = kubeFrontend.Version()
-	} else if dockerFrontend, found := o.frontends["docker"]; found {
-		config.OrchestratorTelemetry.Platform = dockerFrontend.GetName()
-		config.OrchestratorTelemetry.PlatformVersion = dockerFrontend.Version()
+	config.OrchestratorTelemetry.Platform = string(config.CurrentDriverContext)
+	if f, ok := o.frontends[string(config.CurrentDriverContext)]; ok {
+		config.OrchestratorTelemetry.PlatformVersion = f.Version()
+	} else {
+		log.Warning("Trident is bootstrapping with no frontend.")
 	}
 
 	// Transform persistent state, if necessary
@@ -1079,10 +1078,9 @@ func (o *TridentOrchestrator) ListVolumesByPlugin(pluginName string) ([]*storage
 	return volumes, nil
 }
 
-// AttachVolume mounts a volume to the local host.  It ensures the mount point exists,
-// and it calls the underlying storage driver to perform the attach operation as appropriate
-// for the protocol and storage controller type.
-func (o *TridentOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+func (o *TridentOrchestrator) PublishVolume(
+	volumeName string, publishInfo *utils.VolumePublishInfo,
+) error {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -1092,6 +1090,27 @@ func (o *TridentOrchestrator) AttachVolume(volumeName, mountpoint string, option
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+
+	return o.backends[volume.Backend].Driver.Publish(volume.Config.InternalName, publishInfo)
+}
+
+// AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
+// and it should be able to accomplish its task using only the data passed in; it should not need to
+// use the storage controller API.  It may be assumed that this method always runs on the host to
+// which the volume will be attached.
+func (o *TridentOrchestrator) AttachVolume(
+	volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo,
+) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	if _, ok := o.volumes[volumeName]; !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
@@ -1123,20 +1142,24 @@ func (o *TridentOrchestrator) AttachVolume(volumeName, mountpoint string, option
 		}
 	}
 
-	return o.backends[volume.Backend].Driver.Attach(volume.Config.InternalName, mountpoint,
-		options)
+	if publishInfo.FilesystemType == "nfs" {
+		return utils.AttachNFSVolume(volumeName, mountpoint, publishInfo)
+	} else {
+		return utils.AttachISCSIVolume(volumeName, mountpoint, publishInfo)
+	}
 }
 
-// DetachVolume unmounts a volume from the local host.  It ensures the volume is already
-// mounted, and it calls the underlying storage driver to perform the detach operation as
-// appropriate for the protocol and storage controller type.
+// DetachVolume unmounts a volume from the local host.  This method is currently only used by Docker,
+// and it should be able to accomplish its task using only the data passed in; it should not need to
+// use the storage controller API.  It may be assumed that this method always runs on the host to
+// which the volume will be attached.  It ensures the volume is already mounted, and it attempts to
+// delete the mount point.
 func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
 
-	volume, ok := o.volumes[volumeName]
-	if !ok {
+	if _, ok := o.volumes[volumeName]; !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
@@ -1150,9 +1173,7 @@ func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 	}
 
 	// Unmount the volume
-	err = o.backends[volume.Backend].Driver.Detach(volume.Config.InternalName,
-		mountpoint)
-	if err != nil {
+	if err := utils.Umount(mountpoint); err != nil {
 		return err
 	}
 

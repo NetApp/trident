@@ -19,13 +19,14 @@ import (
 	"github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap"
+	"github.com/netapp/trident/utils"
 )
 
 type mockBackend struct {
 	volumes  map[string]*storage.Volume
 	protocol config.Protocol
 	// Store non-volume specific access info here
-	accessInfo storage.VolumeAccessInfo
+	accessInfo utils.VolumeAccessInfo
 }
 
 func GetFakeInternalName(name string) string {
@@ -309,11 +310,16 @@ func (m *MockOrchestrator) ListVolumesByPlugin(pluginName string) ([]*storage.Vo
 	return nil, nil
 }
 
-func (m *MockOrchestrator) AttachVolume(volumeName, mountpoint string, options map[string]string) error {
+func (m *MockOrchestrator) AttachVolume(volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error {
 	return nil
 }
 
 func (m *MockOrchestrator) DetachVolume(volumeName, mountpoint string) error {
+	return nil
+}
+
+func (m *MockOrchestrator) PublishVolume(
+	volumeName string, publishInfo *utils.VolumePublishInfo) error {
 	return nil
 }
 

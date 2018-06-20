@@ -79,7 +79,7 @@ get:
 	@chmod 777 vendor
 	@go get github.com/Masterminds/glide
 	@go install github.com/Masterminds/glide
-	@${GOPATH}/bin/glide install -v
+	@${GOPATH}/bin/glide install --force --strip-vendor
 
 trident_retag:
 	-docker volume rm $(TRIDENT_VOLUME) || true
@@ -188,7 +188,7 @@ clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
 	-docker rmi ${TRIDENT_TAG} ${TRIDENT_DIST_TAG} || true
 	-docker rmi netapp/container-tools || true
-	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz 
+	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
 	-rm -rf ${COVERAGE_DIR}
 
 fmt:

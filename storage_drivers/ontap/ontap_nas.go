@@ -10,7 +10,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -46,7 +46,7 @@ func (d *NASStorageDriver) Name() string {
 
 // Initialize from the provided config
 func (d *NASStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -274,41 +274,28 @@ func (d *NASStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-// Attach the volume
-func (d *NASStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+// Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":     "Attach",
-			"Type":       "NASStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-			"opts":       opts,
+			"Method": "Publish",
+			"Type":   "NASStorageDriver",
+			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Attach")
-		defer log.WithFields(fields).Debug("<<<< Attach")
+		log.WithFields(fields).Debug(">>>> Publish")
+		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
-	exportPath := fmt.Sprintf("%s:/%s", d.Config.DataLIF, name)
+	// Add fields needed by Attach
+	publishInfo.NfsPath = fmt.Sprintf("/%s", name)
+	publishInfo.NfsServerIP = d.Config.DataLIF
+	publishInfo.FilesystemType = "nfs"
+	publishInfo.MountOptions = d.Config.NfsMountOptions
 
-	return MountVolume(exportPath, mountpoint, &d.Config)
-}
-
-// Detach the volume
-func (d *NASStorageDriver) Detach(name, mountpoint string) error {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "Detach",
-			"Type":       "NASStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> Detach")
-		defer log.WithFields(fields).Debug("<<<< Detach")
-	}
-
-	return UnmountVolume(mountpoint, &d.Config)
+	return nil
 }
 
 // Return the list of snapshots associated with the named volume
@@ -399,8 +386,8 @@ func (d *NASStorageDriver) CreateFollowup(
 	return nil
 }
 
-func (d *NASStorageDriver) GetProtocol() trident.Protocol {
-	return trident.File
+func (d *NASStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.File
 }
 
 func (d *NASStorageDriver) StoreConfig(
@@ -467,18 +454,18 @@ func (d *NASStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(int64(volumeSpaceAttrs.Size()), 10),
-		Protocol:        trident.File,
+		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    volumeExportAttrs.Policy(),
 		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
 		UnixPermissions: volumeSecurityUnixAttrs.Permissions(),
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteMany,
-		AccessInfo:      storage.VolumeAccessInfo{},
+		AccessMode:      tridentconfig.ReadWriteMany,
+		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}

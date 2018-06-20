@@ -98,6 +98,7 @@ doing. This `introductory video`_ provides a great way to do just that.
     concepts/index
     known-issues
     troubleshooting
+    trident-csi
 
 .. _Kubernetes: https://kubernetes.io
 .. _Persistent Volume framework: https://kubernetes.io/docs/concepts/storage/persistent-volumes/

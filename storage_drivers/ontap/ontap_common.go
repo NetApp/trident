@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
-	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -668,67 +666,6 @@ func GetVolume(name string, client *api.Client, config *drivers.OntapStorageDriv
 	if !volExists {
 		log.WithField("flexvol", name).Debug("Flexvol not found.")
 		return fmt.Errorf("volume %s does not exist", name)
-	}
-
-	return nil
-}
-
-// MountVolume accepts the mount info for an NFS share and mounts it on the local host.
-func MountVolume(exportPath, mountpoint string, config *drivers.OntapStorageDriverConfig) error {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "MountVolume",
-			"Type":       "ontap_common",
-			"exportPath": exportPath,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> MountVolume")
-		defer log.WithFields(fields).Debug("<<<< MountVolume")
-	}
-
-	nfsMountOptions := config.NfsMountOptions
-
-	// Do the mount
-	var cmd string
-	switch runtime.GOOS {
-	case utils.Linux:
-		cmd = fmt.Sprintf("mount -v %s %s %s", nfsMountOptions, exportPath, mountpoint)
-	case utils.Darwin:
-		cmd = fmt.Sprintf("mount -v -o rw %s -t nfs %s %s", nfsMountOptions, exportPath, mountpoint)
-	default:
-		return fmt.Errorf("unsupported operating system: %v", runtime.GOOS)
-	}
-
-	log.WithField("command", cmd).Debug("Mounting volume.")
-
-	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
-		log.WithField("output", string(out)).Debug("Mount failed.")
-		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
-	}
-
-	return nil
-}
-
-// UnmountVolume unmounts the volume mounted on the specified mountpoint.
-func UnmountVolume(mountpoint string, config *drivers.OntapStorageDriverConfig) error {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "UnmountVolume",
-			"Type":       "ontap_common",
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> UnmountVolume")
-		defer log.WithFields(fields).Debug("<<<< UnmountVolume")
-	}
-
-	cmd := fmt.Sprintf("umount %s", mountpoint)
-	log.WithField("command", cmd).Debug("Unmounting volume.")
-
-	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
-		log.WithField("output", string(out)).Debug("Unmount failed.")
-		return fmt.Errorf("error unmounting NFS volume from mountpoint %v: %v", mountpoint, err)
 	}
 
 	return nil

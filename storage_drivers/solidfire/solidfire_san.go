@@ -13,7 +13,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -54,12 +54,15 @@ type StorageDriverConfigExternal struct {
 }
 
 type Telemetry struct {
-	trident.Telemetry
+	tridentconfig.Telemetry
 	Plugin string `json:"plugin"`
 }
 
 func parseQOS(qosOpt string) (qos api.QoS, err error) {
 	iops := strings.Split(qosOpt, ",")
+	if len(iops) != 3 {
+		return qos, errors.New("qos parameter must have 3 constituents (min/max/burst)")
+	}
 	qos.MinIOPS, err = strconv.ParseInt(iops[0], 10, 64)
 	qos.MaxIOPS, err = strconv.ParseInt(iops[1], 10, 64)
 	qos.BurstIOPS, err = strconv.ParseInt(iops[2], 10, 64)
@@ -90,7 +93,7 @@ func (d SANStorageDriver) Name() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -234,7 +237,7 @@ func (d *SANStorageDriver) Initialize(
 	go d.getNodeSerialNumbers(config.CommonStorageDriverConfig)
 
 	d.Telemetry = &Telemetry{
-		Telemetry: trident.OrchestratorTelemetry,
+		Telemetry: tridentconfig.OrchestratorTelemetry,
 		Plugin:    d.Name(),
 	}
 
@@ -332,9 +335,16 @@ func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.Solidfi
 		}
 	}
 
-	if config.DriverContext == trident.ContextDocker {
+	// Force CHAP for Docker & CSI
+	switch config.DriverContext {
+	case tridentconfig.ContextDocker:
 		if !config.UseCHAP {
 			log.Info("Enabling CHAP for Docker volumes.")
+			config.UseCHAP = true
+		}
+	case tridentconfig.ContextCSI:
+		if !config.UseCHAP {
+			log.Info("Enabling CHAP for CSI volumes.")
 			config.UseCHAP = true
 		}
 	}
@@ -357,6 +367,8 @@ func (d *SANStorageDriver) validate() error {
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
+	var err error
+
 	// We want to verify we have everything we need to run the Docker driver
 	if d.Config.TenantName == "" {
 		return errors.New("missing required TenantName in config")
@@ -368,13 +380,114 @@ func (d *SANStorageDriver) validate() error {
 		return errors.New("missing required SVIP in config")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Validate the environment
 		isIscsiSupported := utils.ISCSISupported()
 		if !isIscsiSupported {
 			log.Error("Host doesn't appear to support iSCSI.")
 			return errors.New("no iSCSI support on this host")
 		}
+	}
+
+	if !d.Config.UseCHAP {
+		// VolumeAccessGroup logic
+
+		// If zero AccessGroups are specified it could be that this is an upgrade where we
+		// just utilize the default 'trident' group automatically.  Or, perhaps the deployment
+		// doesn't need more than one set of 64 initiators, so we'll just use the old way of
+		// doing it here, and look for/set the default group.
+		if len(d.Config.AccessGroups) == 0 {
+			// We're going to do some hacky stuff here and make sure that if this is an upgrade
+			// that we verify that one of the AccessGroups in the list is the default Trident VAG ID
+			listVAGReq := &api.ListVolumeAccessGroupsRequest{
+				StartVAGID: 0,
+				Limit:      0,
+			}
+			vags, vagErr := d.Client.ListVolumeAccessGroups(listVAGReq)
+			if vagErr != nil {
+				err = fmt.Errorf("could not list VAGs for backend %s: %s", d.Config.SVIP, vagErr.Error())
+				return err
+			}
+
+			found := false
+			initiators := ""
+			for _, vag := range vags {
+				if vag.Name == tridentconfig.DefaultSolidFireVAG {
+					d.Config.AccessGroups = append(d.Config.AccessGroups, vag.VAGID)
+					found = true
+					for _, initiator := range vag.Initiators {
+						initiators = initiators + initiator + ","
+					}
+					initiators = strings.TrimSuffix(initiators, ",")
+					log.Infof("No AccessGroup ID's configured, using the default group: %v, "+
+						"with initiators: %+v", vag.Name, initiators)
+					break
+				}
+			}
+			if !found {
+				// UseCHAP was not specified in the config and no VAG was found.
+				if tridentconfig.PlatformAtLeast("kubernetes", "v1.7.0") {
+					// Found a version of Kubernetes that can support CHAP
+					log.WithFields(log.Fields{
+						"platform":         tridentconfig.OrchestratorTelemetry.Platform,
+						"platform version": tridentconfig.OrchestratorTelemetry.PlatformVersion,
+					}).Warn("Volume Access Group use not detected. Defaulting to using CHAP.")
+					d.Config.UseCHAP = true
+				} else {
+					err = fmt.Errorf("volume Access Group %v doesn't exist at %v and must be manually "+
+						"created; please also ensure all relevant hosts are added to the VAG",
+						tridentconfig.DefaultSolidFireVAG, d.Config.SVIP)
+					return err
+				}
+			}
+		} else if len(d.Config.AccessGroups) > 4 {
+			err = fmt.Errorf("the maximum number of allowed Volume Access Groups per config is 4 but your "+
+				"config has specified %d", len(d.Config.AccessGroups))
+			return err
+		} else {
+			// We only need this in the case that AccessGroups were specified, if it was zero and we
+			// used the default we already verified it in that step so we're good here.
+			var missingVags []int64
+			missingVags, err = d.VerifyVags(d.Config.AccessGroups)
+			if err != nil {
+				return err
+			}
+			if len(missingVags) != 0 {
+				return fmt.Errorf("failed to discover the following specified VAG ID's: %+v", missingVags)
+			}
+		}
+
+		log.WithFields(log.Fields{
+			"driver":       drivers.SolidfireSANStorageDriverName,
+			"SVIP":         d.Config.SVIP,
+			"AccessGroups": d.Config.AccessGroups,
+			"UseCHAP":      d.Config.UseCHAP,
+		}).Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
+
+		// Deal with upgrades for versions prior to handling multiple VAG ID's
+		var vIDs []int64
+		var req api.ListVolumesForAccountRequest
+		req.AccountID = d.AccountID
+		volumes, _ := d.Client.ListVolumesForAccount(&req)
+		for _, v := range volumes {
+			if v.Status != "deleted" {
+				vIDs = append(vIDs, v.VolumeID)
+			}
+		}
+		for _, vag := range d.Config.AccessGroups {
+			addAGErr := d.AddMissingVolumesToVag(vag, vIDs)
+			if addAGErr != nil {
+				err = fmt.Errorf("failed to update AccessGroup membership of volume %+v", addAGErr)
+				return err
+			}
+		}
+	} else {
+		// CHAP logic
+		log.WithFields(log.Fields{
+			"driver":  drivers.SolidfireSANStorageDriverName,
+			"SVIP":    d.Config.SVIP,
+			"UseCHAP": d.Config.UseCHAP,
+		}).Debug("Using CHAP, skipping Volume Access Group logic.")
 	}
 
 	return nil
@@ -600,7 +713,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 
 	v, err := d.GetVolume(name)
 	if err != nil && err.Error() != "volume not found" {
-		log.Errorf("Unable to locate volume for delete operation: %+v", err)
+		log.Errorf("Unable to locate volume for delete operation: %v", err)
 		return err
 	} else if err != nil {
 		// Volume wasn't found. No action needs to be taken.
@@ -608,38 +721,40 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return nil
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
+
 		// Inform the host about the device removal
 		utils.PrepareDeviceForRemoval(0, v.Iqn)
-	}
 
-	err = d.Client.DetachVolume(v)
-	if err != nil {
-		log.Warningf("Unable to detach volume, deleting anyway: %v", err)
+		// Logout from the session
+		err = d.Client.DetachVolume(v)
+		if err != nil {
+			log.Warningf("Unable to detach volume, deleting anyway: %v", err)
+		}
 	}
 
 	err = d.Client.DeleteVolume(v.VolumeID)
 	if err != nil {
-		log.Errorf("Error during delete operation: %+v", err)
+		log.Errorf("Error during delete operation: %v", err)
 		return err
 	}
 
 	return nil
 }
 
-// Attach the lun
-func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+// Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":     "Attach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-			"opts":       opts,
+			"Method": "Publish",
+			"Type":   "SANStorageDriver",
+			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Attach")
-		defer log.WithFields(fields).Debug("<<<< Attach")
+		log.WithFields(fields).Debug(">>>> Publish")
+		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
 	v, err := d.GetVolume(name)
@@ -648,49 +763,6 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		return errors.New("volume not found")
 	}
 
-	if !utils.IsAlreadyAttached(0, v.Iqn) {
-		err = d.Client.AttachVolume(&v, d.InitiatorIFace)
-		if err != nil {
-			log.Errorf("Error on iSCSI attach: %+v", err)
-			return errors.New("iSCSI attach error")
-		}
-
-		// Rescan and wait for the device(s) to appear
-		err = utils.RescanTargetAndWaitForDevice(0, v.Iqn)
-		if err != nil {
-			log.Errorf("Could not find iSCSI device: %+v", err)
-			return err
-		}
-	}
-
-	err = utils.WaitForMultiPathDevice(0, v.Iqn)
-	if err != nil {
-		return err
-	}
-
-	// NOTE(jdg): Check for device including multipath/DM device)
-	deviceInfo, err := utils.GetDeviceInfoForLUN(0, v.Iqn)
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %v", err)
-	} else if deviceInfo == nil {
-		return errors.New("could not get iSCSI device information for LUN")
-	}
-
-	log.WithFields(log.Fields{
-		"scsiLun":         deviceInfo.LUN,
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-		"fsType":          deviceInfo.Filesystem,
-		"iqn":             deviceInfo.IQN,
-	}).Debug("Found device.")
-
-	// Make sure we use the proper device (multipath if in use)
-	deviceToUse := deviceInfo.Devices[0]
-	if deviceInfo.MultipathDevice != "" {
-		deviceToUse = deviceInfo.MultipathDevice
-	}
-	devicePath := "/dev/" + deviceToUse
-
 	// Get the fstype
 	attrs, _ := v.Attributes.(map[string]interface{})
 	fstype := "ext4"
@@ -698,60 +770,25 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		fstype = str
 	}
 
-	// Put a filesystem on it if there isn't one already there
-	existingFstype := deviceInfo.Filesystem
-	if existingFstype == "" {
-		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(devicePath, fstype)
-		if err != nil {
-			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
-		}
-	} else if existingFstype != fstype {
-		log.WithFields(log.Fields{
-			"LUN":             name,
-			"existingFstype":  existingFstype,
-			"requestedFstype": fstype,
-		}).Warn("LUN already formatted with a different file system type.")
-	} else {
-		log.WithFields(log.Fields{"LUN": name, "fstype": existingFstype}).Debug("LUN already formatted.")
-	}
-
-	if mountErr := utils.Mount(devicePath, mountpoint); mountErr != nil {
-		log.Errorf("Unable to mount device: (device: %s, mountpoint: %s, error: %+v", deviceToUse, mountpoint, err)
-		return errors.New("unable to mount device")
-	}
-
-	return nil
-}
-
-// Detach the volume
-func (d *SANStorageDriver) Detach(name, mountpoint string) error {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "Detach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> Detach")
-		defer log.WithFields(fields).Debug("<<<< Detach")
-	}
-
-	umountErr := utils.Umount(mountpoint)
-	if umountErr != nil {
-		log.Errorf("Unable to unmount device: (name: %s, mountpoint: %s, error: %+v", name, mountpoint, umountErr)
-		return errors.New("unable to unmount device")
-	}
-
-	v, err := d.GetVolume(name)
+	// Get the account, which contains the iSCSI login credentials
+	var req api.GetAccountByIDRequest
+	req.AccountID = v.AccountID
+	account, err := d.Client.GetAccountByID(&req)
 	if err != nil {
-		log.WithField("volume", v).Errorf("Unable to locate volume: %+v", err)
-		return errors.New("volume not found")
+		log.Errorf("Failed to get account %v: %+v ", v.AccountID, err)
+		return errors.New("volume attach failure")
 	}
-	// no longer detaching and removing iSCSI session here because it was causing issues with 'docker cp'
-	// see also;  https://github.com/moby/moby/issues/34665
-	//d.Client.DetachVolume(v)
+
+	// Add fields needed by Attach
+	publishInfo.IscsiLunNumber = 0
+	publishInfo.IscsiTargetPortal = d.Config.SVIP
+	publishInfo.IscsiTargetIQN = v.Iqn
+	publishInfo.IscsiUsername = account.Username
+	publishInfo.IscsiInitiatorSecret = account.InitiatorSecret
+	publishInfo.IscsiInterface = d.InitiatorIFace
+	publishInfo.FilesystemType = fstype
+	publishInfo.UseCHAP = true
+	publishInfo.SharedTarget = false
 
 	return nil
 }
@@ -944,7 +981,7 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
-	if trident.UsingPassthroughStore {
+	if tridentconfig.UsingPassthroughStore {
 		return strings.Replace(name, "_", "-", -1)
 	} else {
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
@@ -981,7 +1018,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		log.Debug("No follow-up create actions for Docker.")
 		return nil
 	}
@@ -1087,8 +1124,8 @@ func (d *SANStorageDriver) GetVolumeOpts(
 	return opts, nil
 }
 
-func (d *SANStorageDriver) GetProtocol() trident.Protocol {
-	return trident.Block
+func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.Block
 }
 
 func (d *SANStorageDriver) StoreConfig(
@@ -1202,18 +1239,18 @@ func (d *SANStorageDriver) getVolumeExternal(
 	externalName string, volumeAttrs *api.Volume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            externalName,
 		InternalName:    string(volumeAttrs.Name),
 		Size:            strconv.FormatInt(volumeAttrs.TotalSize, 10),
-		Protocol:        trident.Block,
+		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  "",
 		ExportPolicy:    "",
 		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteOnce,
-		AccessInfo:      storage.VolumeAccessInfo{},
+		AccessMode:      tridentconfig.ReadWriteOnce,
+		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       strconv.FormatInt(volumeAttrs.BlockSize, 10),
 		FileSystem:      "",
 	}

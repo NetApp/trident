@@ -3,7 +3,7 @@ import:
 - package: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/coreos/etcd
-  version: 8a9b3d53857554df347e8b80a42961c88f3dc14f
+  version: v3.2.19
   subpackages:
   - client
   - clientv3
@@ -80,3 +80,5 @@ import:
   version: 1ed2fb9d49fc2563cd7ff4afdc123b8232d9861b
 - package: github.com/RoaringBitmap/roaring
   version: 6f670287d7ec5bb044dc8afcc8cb904113fd581a
+- package: github.com/container-storage-interface/spec
+  version: 2c60d1f8615f58b5c0b94075edace75592ddda74

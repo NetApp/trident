@@ -199,7 +199,7 @@ func GetDefaultStoragePrefix(context trident.DriverContext) string {
 	switch context {
 	default:
 		fallthrough
-	case trident.ContextKubernetes:
+	case trident.ContextKubernetes, trident.ContextCSI:
 		return DefaultTridentStoragePrefix
 	case trident.ContextDocker:
 		return DefaultDockerStoragePrefix
@@ -210,7 +210,7 @@ func GetDefaultIgroupName(context trident.DriverContext) string {
 	switch context {
 	default:
 		fallthrough
-	case trident.ContextKubernetes:
+	case trident.ContextKubernetes, trident.ContextCSI:
 		return DefaultTridentIgroupName
 	case trident.ContextDocker:
 		return DefaultDockerIgroupName

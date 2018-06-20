@@ -13,6 +13,7 @@
 - **Kubernetes:** Added --previous switch to 'tridentctl logs' command.
 - **Kubernetes:** Added liveness probes to the trident-main and etcd containers.
 - **Kubernetes:** Added --trident-image and --etcd-image switches to 'tridentctl install' command.
+- **Kubernetes:** Added prototype CSI implementation to Trident.
 
 ## v18.04.0
 

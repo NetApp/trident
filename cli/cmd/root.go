@@ -35,6 +35,18 @@ const (
 
 	ExitCodeSuccess = 0
 	ExitCodeFailure = 1
+
+	TridentLabelKey   = "app"
+	TridentLabelValue = "trident.netapp.io"
+	TridentLabel      = TridentLabelKey + "=" + TridentLabelValue
+
+	TridentCSILabelKey   = "app"
+	TridentCSILabelValue = "controller.csi.trident.netapp.io"
+	TridentCSILabel      = TridentCSILabelKey + "=" + TridentCSILabelValue
+
+	TridentNodeLabelKey   = "app"
+	TridentNodeLabelValue = "node.csi.trident.netapp.io"
+	TridentNodeLabel      = TridentNodeLabelKey + "=" + TridentNodeLabelValue
 )
 
 var (
@@ -47,6 +59,7 @@ var (
 	Debug        bool
 	Server       string
 	OutputFormat string
+	CSI          bool
 )
 
 var RootCmd = &cobra.Command{
@@ -61,6 +74,9 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface")
 	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
+
+	RootCmd.PersistentFlags().BoolVar(&CSI, "csi", false, "Manage Trident as a CSI plugin (experimental)")
+	RootCmd.PersistentFlags().MarkHidden("csi")
 }
 
 func discoverOperatingMode(cmd *cobra.Command) error {
@@ -109,9 +125,20 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		}
 	}
 
-	// Find the Trident pod
-	if TridentPodName, err = getTridentPod(TridentPodNamespace); err != nil {
-		return err
+	if CSI {
+		// Find the CSI Trident pod
+		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
+			return err
+		}
+	} else {
+		// Find the Trident pod
+		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLabel); err != nil {
+
+			// Try falling back to CSI pod
+			if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
+				return err
+			}
+		}
 	}
 
 	OperatingMode = ModeTunnel
@@ -168,10 +195,10 @@ func getCurrentNamespace() (string, error) {
 }
 
 // getTridentPod returns the name of the Trident pod in the specified namespace
-func getTridentPod(namespace string) (string, error) {
+func getTridentPod(namespace, appLabel string) (string, error) {
 
 	// Get 'trident' pod info
-	cmd := exec.Command(KubernetesCLI, "get", "pod", "-n", namespace, "-l", "app=trident.netapp.io", "-o=json")
+	cmd := exec.Command(KubernetesCLI, "get", "pod", "-n", namespace, "-l", appLabel, "-o=json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -190,7 +217,7 @@ func getTridentPod(namespace string) (string, error) {
 
 	if len(tridentPod.Items) != 1 {
 		return "", fmt.Errorf("could not find a Trident pod in the %s namespace. "+
-			"You may need to use the -n option to specify the correct namespace.", namespace)
+			"You may need to use the -n option to specify the correct namespace", namespace)
 	}
 
 	// Get Trident pod name & namespace

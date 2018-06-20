@@ -9,54 +9,33 @@ import (
 	"strings"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils"
 )
 
 type VolumeConfig struct {
-	Version                   string            `json:"version"`
-	Name                      string            `json:"name"`
-	InternalName              string            `json:"internalName"`
-	Size                      string            `json:"size"`
-	Protocol                  config.Protocol   `json:"protocol"`
-	SpaceReserve              string            `json:"spaceReserve"`
-	SecurityStyle             string            `json:"securityStyle"`
-	SnapshotPolicy            string            `json:"snapshotPolicy,omitempty"`
-	ExportPolicy              string            `json:"exportPolicy,omitempty"`
-	SnapshotDir               string            `json:"snapshotDirectory,omitempty"`
-	UnixPermissions           string            `json:"unixPermissions,omitempty"`
-	StorageClass              string            `json:"storageClass,omitempty"`
-	AccessMode                config.AccessMode `json:"accessMode,omitempty"`
-	AccessInfo                VolumeAccessInfo  `json:"accessInformation"`
-	BlockSize                 string            `json:"blockSize"`
-	FileSystem                string            `json:"fileSystem"`
-	Encryption                string            `json:"encryption"`
-	CloneSourceVolume         string            `json:"cloneSourceVolume"`
-	CloneSourceVolumeInternal string            `json:"cloneSourceVolumeInternal"`
-	CloneSourceSnapshot       string            `json:"cloneSourceSnapshot"`
-	SplitOnClone              string            `json:"splitOnClone"`
-	QoS                       string            `json:"qos,omitempty"`
-	QoSType                   string            `json:"type,omitempty"`
-}
-
-type VolumeAccessInfo struct {
-	IscsiAccessInfo
-	NfsAccessInfo
-}
-
-type IscsiAccessInfo struct {
-	IscsiTargetPortal    string  `json:"iscsiTargetPortal,omitempty"`
-	IscsiTargetIQN       string  `json:"iscsiTargetIqn,omitempty"`
-	IscsiLunNumber       int32   `json:"iscsiLunNumber,omitempty"`
-	IscsiInterface       string  `json:"iscsiInterface,omitempty"`
-	IscsiIgroup          string  `json:"iscsiIgroup,omitempty"`
-	IscsiVAGs            []int64 `json:"iscsiVags,omitempty"`
-	IscsiUsername        string  `json:"iscsiUsername,omitempty"`
-	IscsiInitiatorSecret string  `json:"iscsiInitiatorSecret,omitempty"`
-	IscsiTargetSecret    string  `json:"iscsiTargetSecret,omitempty"`
-}
-
-type NfsAccessInfo struct {
-	NfsServerIP string `json:"nfsServerIp,omitempty"`
-	NfsPath     string `json:"nfsPath,omitempty"`
+	Version                   string                 `json:"version"`
+	Name                      string                 `json:"name"`
+	InternalName              string                 `json:"internalName"`
+	Size                      string                 `json:"size"`
+	Protocol                  config.Protocol        `json:"protocol"`
+	SpaceReserve              string                 `json:"spaceReserve"`
+	SecurityStyle             string                 `json:"securityStyle"`
+	SnapshotPolicy            string                 `json:"snapshotPolicy,omitempty"`
+	ExportPolicy              string                 `json:"exportPolicy,omitempty"`
+	SnapshotDir               string                 `json:"snapshotDirectory,omitempty"`
+	UnixPermissions           string                 `json:"unixPermissions,omitempty"`
+	StorageClass              string                 `json:"storageClass,omitempty"`
+	AccessMode                config.AccessMode      `json:"accessMode,omitempty"`
+	AccessInfo                utils.VolumeAccessInfo `json:"accessInformation"`
+	BlockSize                 string                 `json:"blockSize"`
+	FileSystem                string                 `json:"fileSystem"`
+	Encryption                string                 `json:"encryption"`
+	CloneSourceVolume         string                 `json:"cloneSourceVolume"`
+	CloneSourceVolumeInternal string                 `json:"cloneSourceVolumeInternal"`
+	CloneSourceSnapshot       string                 `json:"cloneSourceSnapshot"`
+	SplitOnClone              string                 `json:"splitOnClone"`
+	QoS                       string                 `json:"qos,omitempty"`
+	QoSType                   string                 `json:"type,omitempty"`
 }
 
 func (c *VolumeConfig) Validate() error {

@@ -7,6 +7,7 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 type Orchestrator interface {
@@ -28,7 +29,8 @@ type Orchestrator interface {
 	ListVolumes() ([]*storage.VolumeExternal, error)
 	DeleteVolume(volume string) error
 	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
-	AttachVolume(volumeName, mountpoint string, options map[string]string) error
+	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error
+	AttachVolume(volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	DetachVolume(volumeName, mountpoint string) error
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	ReloadVolumes() error

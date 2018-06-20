@@ -295,7 +295,7 @@ func (p *Plugin) Deactivate() error {
 }
 
 func (p *Plugin) GetName() string {
-	return "kubernetes"
+	return string(config.ContextKubernetes)
 }
 
 func (p *Plugin) Version() string {

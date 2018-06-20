@@ -11,6 +11,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 
@@ -40,6 +41,18 @@ type Interface interface {
 	GetDeploymentsByLabel(label string, allNamespaces bool) ([]v1beta1.Deployment, error)
 	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDeploymentByLabel(label string) error
+	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
+	GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error)
+	CheckServiceExistsByLabel(label string, allNamespaces bool) (bool, string, error)
+	DeleteServiceByLabel(label string) error
+	GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error)
+	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
+	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
+	DeleteStatefulSetByLabel(label string) error
+	GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error)
+	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error)
+	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
+	DeleteDaemonSetByLabel(label string) error
 	GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, error)
 	GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error)
 	GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error)
@@ -61,6 +74,9 @@ type Interface interface {
 	AddTridentUserToOpenShiftSCC() error
 	RemoveTridentUserFromOpenShiftSCC() error
 	ReadDeploymentFromFile(filePath string) (*v1beta1.Deployment, error)
+	ReadServiceFromFile(filePath string) (*v1.Service, error)
+	ReadStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error)
+	ReadDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error)
 	ReadPVCFromFile(filePath string) (*v1.PersistentVolumeClaim, error)
 }
 
@@ -351,6 +367,258 @@ func (c *KubectlClient) DeleteDeploymentByLabel(label string) error {
 		"label":     label,
 		"namespace": c.namespace,
 	}).Debug("Deleted Kubernetes deployment.")
+
+	return nil
+}
+
+// GetServiceByLabel returns a service object matching the specified label if it is unique
+func (c *KubectlClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error) {
+
+	services, err := c.GetServicesByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(services) == 1 {
+		return &services[0], nil
+	} else if len(services) > 1 {
+		return nil, fmt.Errorf("multiple services have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no services have the label %s", label)
+	}
+}
+
+// GetServicesByLabel returns all service objects matching the specified label
+func (c *KubectlClient) GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error) {
+
+	// Get service info
+	cmdArgs := []string{"get", "service", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var serviceList v1.ServiceList
+	if err := json.NewDecoder(stdout).Decode(&serviceList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return serviceList.Items, nil
+}
+
+// CheckServiceExistsByLabel returns true if one or more service objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckServiceExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	services, err := c.GetServicesByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(services) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, services[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteServiceByLabel deletes a service object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteServiceByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "service", "-l", label, "--namespace", c.namespace}
+	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted Kubernetes service.")
+
+	return nil
+}
+
+// GetStatefulSetByLabel returns a statefulset object matching the specified label if it is unique
+func (c *KubectlClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error) {
+
+	statefulsets, err := c.GetStatefulSetsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(statefulsets) == 1 {
+		return &statefulsets[0], nil
+	} else if len(statefulsets) > 1 {
+		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no statefulsets have the label %s", label)
+	}
+}
+
+// GetStatefulSetsByLabel returns all stateful objects matching the specified label
+func (c *KubectlClient) GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error) {
+
+	// Get statefulset info
+	cmdArgs := []string{"get", "statefulset", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var statefulsetList appsv1.StatefulSetList
+	if err := json.NewDecoder(stdout).Decode(&statefulsetList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return statefulsetList.Items, nil
+}
+
+// CheckStatefulSetExistsByLabel returns true if one or more statefulset objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	statefulsets, err := c.GetStatefulSetsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(statefulsets) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, statefulsets[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteStatefulSetByLabel deletes a statefulset object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteStatefulSetByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "statefulset", "-l", label, "--namespace", c.namespace}
+	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted Kubernetes statefulset.")
+
+	return nil
+}
+
+// GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
+func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error) {
+
+	daemonsets, err := c.GetDaemonSetsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(daemonsets) == 1 {
+		return &daemonsets[0], nil
+	} else if len(daemonsets) > 1 {
+		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no daemonsets have the label %s", label)
+	}
+}
+
+// GetDaemonSetsByLabel returns all deployment objects matching the specified label
+func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error) {
+
+	// Get daemonset info
+	cmdArgs := []string{"get", "daemonset", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var daemonsetList v1beta1.DaemonSetList
+	if err := json.NewDecoder(stdout).Decode(&daemonsetList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return daemonsetList.Items, nil
+}
+
+// CheckDaemonSetExistsByLabel returns true if one or more daemonset objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	daemonsets, err := c.GetDaemonSetsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(daemonsets) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, daemonsets[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteDaemonSetByLabel deletes a daemonset object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteDaemonSetByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "daemonset", "-l", label, "--namespace", c.namespace}
+	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted Kubernetes daemonset.")
 
 	return nil
 }
@@ -776,6 +1044,54 @@ func (c *KubectlClient) ReadDeploymentFromFile(filePath string) (*v1beta1.Deploy
 		return nil, err
 	}
 	return &deployment, nil
+}
+
+// ReadServiceFromFile parses and returns a service object from a file.
+func (c *KubectlClient) ReadServiceFromFile(filePath string) (*v1.Service, error) {
+
+	var service v1.Service
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &service)
+	if err != nil {
+		return nil, err
+	}
+	return &service, nil
+}
+
+// ReadStatefulSetFromFile parses and returns a statefulset object from a file.
+func (c *KubectlClient) ReadStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error) {
+
+	var statefulset appsv1.StatefulSet
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &statefulset)
+	if err != nil {
+		return nil, err
+	}
+	return &statefulset, nil
+}
+
+// ReadDaemonSetFromFile parses and returns a daemonset object from a file.
+func (c *KubectlClient) ReadDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error) {
+
+	var daemonset v1beta1.DaemonSet
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &daemonset)
+	if err != nil {
+		return nil, err
+	}
+	return &daemonset, nil
 }
 
 // ReadPVCFromFile parses and returns a PVC object from a file.

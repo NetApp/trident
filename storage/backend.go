@@ -13,7 +13,7 @@ import (
 	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
@@ -22,15 +22,14 @@ import (
 // Driver provides a common interface for storage related operations
 type Driver interface {
 	Name() string
-	Initialize(config.DriverContext, string, *drivers.CommonStorageDriverConfig) error
+	Initialize(tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate()
 	Create(name string, sizeBytes uint64, opts map[string]string) error
 	CreateClone(name, source, snapshot string, opts map[string]string) error
 	Destroy(name string) error
-	Attach(name, mountpoint string, opts map[string]string) error
-	Detach(name, mountpoint string) error
+	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	SnapshotList(name string) ([]Snapshot, error)
 	List() ([]string, error)
 	Get(name string) error
@@ -48,7 +47,7 @@ type Driver interface {
 		pool *Pool,
 		requests map[string]storageattribute.Request,
 	) (map[string]string, error)
-	GetProtocol() config.Protocol
+	GetProtocol() tridentconfig.Protocol
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -90,7 +89,7 @@ func (b *Backend) GetDriverName() string {
 	return b.Driver.Name()
 }
 
-func (b *Backend) GetProtocol() config.Protocol {
+func (b *Backend) GetProtocol() tridentconfig.Protocol {
 	return b.Driver.GetProtocol()
 }
 
@@ -148,7 +147,7 @@ func (b *Backend) AddVolume(
 				}).Warnf("Mapping the created volume failed "+
 					"and %s wasn't able to delete it afterwards: %s. "+
 					"Volume needs to be manually deleted.",
-					config.OrchestratorName, errDestroy)
+					tridentconfig.OrchestratorName, errDestroy)
 			}
 			return nil, err
 		}
@@ -228,7 +227,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 			}).Warnf("Mapping the created volume failed "+
 				"and %s wasn't able to delete it afterwards: %s. "+
 				"Volume needs to be manually deleted.",
-				config.OrchestratorName, errDestroy)
+				tridentconfig.OrchestratorName, errDestroy)
 		}
 		return nil, err
 	}
@@ -283,20 +282,22 @@ func (b *Backend) Terminate() {
 }
 
 type BackendExternal struct {
-	Name    string                   `json:"name"`
-	Config  interface{}              `json:"config"`
-	Storage map[string]*PoolExternal `json:"storage"`
-	Online  bool                     `json:"online"`
-	Volumes []string                 `json:"volumes"`
+	Name     string                   `json:"name"`
+	Protocol tridentconfig.Protocol   `json:"protocol"`
+	Config   interface{}              `json:"config"`
+	Storage  map[string]*PoolExternal `json:"storage"`
+	Online   bool                     `json:"online"`
+	Volumes  []string                 `json:"volumes"`
 }
 
 func (b *Backend) ConstructExternal() *BackendExternal {
 	backendExternal := BackendExternal{
-		Name:    b.Name,
-		Config:  b.Driver.GetExternalConfig(),
-		Storage: make(map[string]*PoolExternal),
-		Online:  b.Online,
-		Volumes: make([]string, 0),
+		Name:     b.Name,
+		Protocol: b.GetProtocol(),
+		Config:   b.Driver.GetExternalConfig(),
+		Storage:  make(map[string]*PoolExternal),
+		Online:   b.Online,
+		Volumes:  make([]string, 0),
 	}
 
 	for name, pool := range b.Storage {
@@ -328,7 +329,7 @@ type BackendPersistent struct {
 
 func (b *Backend) ConstructPersistent() *BackendPersistent {
 	persistentBackend := &BackendPersistent{
-		Version: config.OrchestratorAPIVersion,
+		Version: tridentconfig.OrchestratorAPIVersion,
 		Config:  PersistentStorageBackendConfig{},
 		Name:    b.Name,
 		Online:  b.Online,

@@ -1,8 +1,12 @@
-hash: b38a380566834c2d93023f734752346c7fa05ab0442731ba119baf3c2016084a
-updated: 2018-04-26T16:24:04.161911603-04:00
+hash: 1770176c2a9f324fd744ccd5dd964454a1888acaa8eba5d4342cd45e26a0ce77
+updated: 2018-05-01T17:35:19.477927051-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
+- name: github.com/container-storage-interface/spec
+  version: 2c60d1f8615f58b5c0b94075edace75592ddda74
+  subpackages:
+  - lib/go/csi/v0
 - name: github.com/coreos/etcd
   version: 8a9b3d53857554df347e8b80a42961c88f3dc14f
   subpackages:
@@ -34,7 +38,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: 7beb39f0b969b075d1325fecb092faf27fd357b6
+  version: 3ede32e2033de7505e6500d6c868c2b9ed9f169d
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -96,9 +100,9 @@ imports:
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
 - name: github.com/mattn/go-runewidth
-  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+  version: ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb
 - name: github.com/Microsoft/go-winio
-  version: 7da180ee92d8bd8bb8c37fc560e673e6557c392f
+  version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/mschoch/smat
@@ -128,9 +132,9 @@ imports:
   subpackages:
   - codec
 - name: github.com/willf/bitset
-  version: 1a37ad96e8c1a11b20900a232874843b5174221f
+  version: 8ce1146b8621c95164efd9c8b1124cfa9b8afb4e
 - name: golang.org/x/crypto
-  version: 650f4a345ab4e5b245a3034b110ebc7299e68186
+  version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -188,7 +192,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 - name: k8s.io/api
   version: 73d903622b7391f3312dcbac6483fed484e185f8
   subpackages:

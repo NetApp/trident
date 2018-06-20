@@ -16,6 +16,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/frontend/rest"
@@ -42,6 +43,11 @@ var (
 		"Unix domain socket")
 	configPath = flag.String("config", "", "Path to configuration file(s)")
 
+	// CSI
+	csiEndpoint = flag.String("csi_endpoint", "", "Register as a CSI storage "+
+		"provider with this endpoint")
+	csiNodeName = flag.String("csi_node_name", "", "CSI node name")
+
 	// Persistence
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
@@ -66,6 +72,7 @@ var (
 	storeClient      persistentstore.Client
 	enableKubernetes bool
 	enableDocker     bool
+	enableCSI        bool
 )
 
 func shouldEnableTLS() bool {
@@ -95,14 +102,26 @@ func processCmdLineArgs() {
 	flag.Visit(printFlag)
 
 	// Infer frontend from arguments
-	enableKubernetes = *k8sPod || *k8sAPIServer != ""
-	enableDocker = *configPath != ""
+	enableCSI = *csiEndpoint != ""
+	enableKubernetes = (*k8sPod || *k8sAPIServer != "") && !enableCSI
+	enableDocker = *configPath != "" && !enableCSI
 
-	if enableKubernetes && enableDocker {
-		log.Fatal("Trident cannot serve both Docker and Kubernetes at the same time.")
-	} else if !enableKubernetes && !enableDocker && !*useInMemory {
-		log.Fatal("Insufficient arguments provided for Trident to start.  Specify either " +
-			"k8sAPIServer (for Kubernetes) or configPath (for Docker).")
+	frontendCount := 0
+	if enableKubernetes {
+		frontendCount++
+	}
+	if enableDocker {
+		frontendCount++
+	}
+	if enableCSI {
+		frontendCount++
+	}
+
+	if frontendCount > 1 {
+		log.Fatal("Trident can only run one frontend type (Kubernetes, Docker, CSI).")
+	} else if !enableKubernetes && !enableDocker && !enableCSI && !*useInMemory {
+		log.Fatal("Insufficient arguments provided for Trident to start.  Specify " +
+			"k8sAPIServer (for Kubernetes) or configPath (for Docker) or csiEndpoint (for CSI).")
 	}
 
 	// Determine persistent store type from arguments
@@ -181,6 +200,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Print all env variables
+	for _, element := range os.Environ() {
+		v := strings.Split(element, "=")
+		log.WithField(v[0], v[1]).Debug("Environment")
+	}
+
 	log.WithFields(log.Fields{
 		"version":    config.OrchestratorVersion.String(),
 		"build_time": config.BuildTime,
@@ -225,6 +250,16 @@ func main() {
 		}
 		orchestrator.AddFrontend(dockerFrontend)
 		frontends = append(frontends, dockerFrontend)
+
+	} else if enableCSI {
+		config.CurrentDriverContext = config.ContextCSI
+
+		csiFrontend, err := csi.NewPlugin(*csiNodeName, *csiEndpoint, orchestrator)
+		if err != nil {
+			log.Fatalf("Unable to start the CSI frontend. %v", err)
+		}
+		orchestrator.AddFrontend(csiFrontend)
+		frontends = append(frontends, csiFrontend)
 	}
 
 	// Create REST frontend

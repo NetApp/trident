@@ -20,6 +20,7 @@ func init() {
 	RootCmd.AddCommand(uninstallCmd)
 	uninstallCmd.Flags().BoolVarP(&deleteAll, "all", "a", false, "Deletes almost all artifacts of Trident, including the PVC and PV used by Trident; however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!")
 	uninstallCmd.Flags().BoolVarP(&silent, "silent", "", false, "Disable most output during uninstallation.")
+	uninstallCmd.Flags().BoolVar(&csi, "csi", false, "Uninstall CSI Trident (experimental).")
 }
 
 var uninstallCmd = &cobra.Command{
@@ -30,6 +31,7 @@ var uninstallCmd = &cobra.Command{
 		if err := discoverUninstallationEnvironment(); err != nil {
 			log.Fatalf("Uninstall pre-checks failed; %v", err)
 		}
+		processUninstallationArguments()
 		if err := validateUninstallationArguments(); err != nil {
 			log.Fatalf("Invalid arguments; %v", err)
 		}
@@ -53,7 +55,7 @@ func discoverUninstallationEnvironment() error {
 
 	// Ensure we're on Linux
 	if runtime.GOOS != "linux" {
-		return errors.New("the Trident uninstaller only runs on Linux.")
+		return errors.New("the Trident uninstaller only runs on Linux")
 	}
 
 	// Create the CLI-based Kubernetes client
@@ -82,6 +84,47 @@ func discoverUninstallationEnvironment() error {
 	return nil
 }
 
+func isTridentInstalled() (installed bool, namespace string, err error) {
+
+	if deploymentExists, namespace, err := client.CheckDeploymentExistsByLabel(TridentLabel, true); err != nil {
+		return false, "", err
+	} else if deploymentExists {
+		return true, namespace, nil
+	}
+
+	return false, "", nil
+}
+
+func isCSITridentInstalled() (installed bool, namespace string, err error) {
+
+	if statefulSetExists, namespace, err := client.CheckStatefulSetExistsByLabel(TridentCSILabel, true); err != nil {
+		return false, "", err
+	} else if statefulSetExists {
+		return true, namespace, nil
+	}
+
+	if daemonSetExists, namespace, err := client.CheckDaemonSetExistsByLabel(TridentNodeLabel, true); err != nil {
+		return false, "", err
+	} else if daemonSetExists {
+		return true, namespace, nil
+	}
+
+	return false, "", nil
+}
+
+func processUninstallationArguments() {
+
+	if csi {
+		appLabel = TridentCSILabel
+		appLabelKey = TridentCSILabelKey
+		appLabelValue = TridentCSILabelValue
+	} else {
+		appLabel = TridentLabel
+		appLabelKey = TridentLabelKey
+		appLabelValue = TridentLabelValue
+	}
+}
+
 func validateUninstallationArguments() error {
 
 	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
@@ -95,59 +138,152 @@ func validateUninstallationArguments() error {
 
 func uninstallTrident() error {
 
-	var deleted bool
 	var anyErrors = false
 
-	// Delete Trident deployment (try label first, fall back to YAML file)
-	deleted = false
-	if deployment, err := client.GetDeploymentByLabel(TridentLabel, true); err == nil {
+	if !csi {
 
-		// Deployment found by label, so ensure there isn't a namespace clash
-		if TridentPodNamespace != deployment.Namespace {
-			return fmt.Errorf("Trident deployment found in namespace '%s', not in "+
-				"specified namespace '%s'", deployment.Namespace, TridentPodNamespace)
-		}
+		// Delete Trident deployment
+		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
 
-		log.WithFields(log.Fields{
-			"deployment": deployment.Name,
-			"namespace":  deployment.Namespace,
-		}).Debug("Trident deployment found by label.")
+			log.WithFields(log.Fields{
+				"label": appLabel,
+				"error": err,
+			}).Warn("Trident deployment not found.")
 
-		// Delete the deployment
-		if err = client.DeleteDeploymentByLabel(TridentLabel); err != nil {
+		} else {
+
+			// Deployment found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != deployment.Namespace {
+				return fmt.Errorf("a Trident deployment was found in namespace '%s', "+
+					"not in specified namespace '%s'", deployment.Namespace, TridentPodNamespace)
+			}
+
 			log.WithFields(log.Fields{
 				"deployment": deployment.Name,
 				"namespace":  deployment.Namespace,
-				"label":      TridentLabel,
-				"error":      err,
-			}).Warning("Could not delete deployment.")
-		} else {
-			deleted = true
+			}).Debug("Trident deployment found by label.")
+
+			// Delete the deployment
+			if err = client.DeleteDeploymentByLabel(appLabel); err != nil {
+				log.WithFields(log.Fields{
+					"deployment": deployment.Name,
+					"namespace":  deployment.Namespace,
+					"label":      appLabel,
+					"error":      err,
+				}).Warning("Could not delete deployment.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident deployment.")
+			}
 		}
 
-	} else if fileExists(deploymentPath) {
+	} else {
 
-		log.WithFields(log.Fields{
-			"namespace": client.Namespace(),
-		}).Warning("Trident deployment not found by label, using existing YAML file.")
+		// Delete CSI Trident components
+		if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
 
-		// Delete the deployment in the current namespace
-		if err = client.DeleteObjectByFile(deploymentPath, false); err != nil {
 			log.WithFields(log.Fields{
-				"path":  deploymentPath,
+				"label": TridentNodeLabel,
 				"error": err,
-			}).Warning("Could not delete deployment using existing YAML file.")
+			}).Warning("Trident daemonset not found.")
+			anyErrors = true
+
 		} else {
-			deleted = true
+			// Daemonset found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != daemonset.Namespace {
+				return fmt.Errorf("a Trident daemonset was found in namespace '%s', "+
+					"not in specified namespace '%s'", daemonset.Namespace, TridentPodNamespace)
+			}
+
+			log.WithFields(log.Fields{
+				"daemonset": daemonset.Name,
+				"namespace": daemonset.Namespace,
+			}).Debug("Trident daemonset found by label.")
+
+			// Delete the daemonset
+			if err = client.DeleteDaemonSetByLabel(TridentNodeLabel); err != nil {
+				log.WithFields(log.Fields{
+					"daemonset": daemonset.Name,
+					"namespace": daemonset.Namespace,
+					"label":     TridentNodeLabel,
+					"error":     err,
+				}).Warning("Could not delete daemonset.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident daemonset.")
+			}
 		}
 
-	} else {
-		log.Warning("Trident deployment not found.")
-	}
-	if deleted {
-		log.Info("Deleted Trident deployment.")
-	} else {
-		anyErrors = true
+		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
+
+			log.WithFields(log.Fields{
+				"label": appLabel,
+				"error": err,
+			}).Warning("Trident statefulset not found.")
+			anyErrors = true
+
+		} else {
+
+			// Statefulset found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != statefulset.Namespace {
+				return fmt.Errorf("a Trident statefulset was found in namespace '%s', "+
+					"not in specified namespace '%s'", statefulset.Namespace, TridentPodNamespace)
+			}
+
+			log.WithFields(log.Fields{
+				"statefulset": statefulset.Name,
+				"namespace":   statefulset.Namespace,
+			}).Debug("Trident statefulset found by label.")
+
+			// Delete the statefulset
+			if err = client.DeleteStatefulSetByLabel(appLabel); err != nil {
+				log.WithFields(log.Fields{
+					"statefulset": statefulset.Name,
+					"namespace":   statefulset.Namespace,
+					"label":       appLabel,
+					"error":       err,
+				}).Warning("Could not delete statefulset.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident statefulset.")
+			}
+		}
+
+		if service, err := client.GetServiceByLabel(appLabel, true); err != nil {
+
+			log.WithFields(log.Fields{
+				"label": appLabel,
+				"error": err,
+			}).Warning("Trident service not found.")
+			anyErrors = true
+
+		} else {
+
+			// Service found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != service.Namespace {
+				return fmt.Errorf("a Trident service was found in namespace '%s', "+
+					"not in specified namespace '%s'", service.Namespace, TridentPodNamespace)
+			}
+
+			log.WithFields(log.Fields{
+				"service":   service.Name,
+				"namespace": service.Namespace,
+			}).Debug("Trident service found by label.")
+
+			// Delete the service
+			if err = client.DeleteServiceByLabel(appLabel); err != nil {
+				log.WithFields(log.Fields{
+					"service":   service.Name,
+					"namespace": service.Namespace,
+					"label":     appLabel,
+					"error":     err,
+				}).Warning("Could not delete service.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident service.")
+			}
+		}
+
 	}
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
@@ -155,10 +291,10 @@ func uninstallTrident() error {
 	if deleteAll {
 
 		// Ensure the Trident PVC may be uniquely identified, then delete it
-		if pvc, err := client.GetPVCByLabel(TridentLabel, false); err != nil {
+		if pvc, err := client.GetPVCByLabel(appLabel, false); err != nil {
 			log.WithField("error", err).Warning("Could not uniquely identify Trident PVC.")
 			anyErrors = true
-		} else if err = client.DeletePVCByLabel(TridentLabel); err != nil {
+		} else if err = client.DeletePVCByLabel(appLabel); err != nil {
 			log.WithFields(log.Fields{
 				"pvc":       pvc.Name,
 				"namespace": pvc.Namespace,
@@ -173,10 +309,10 @@ func uninstallTrident() error {
 		}
 
 		// Ensure the Trident PV may be uniquely identified, then delete it
-		if pv, err := client.GetPVByLabel(TridentLabel); err != nil {
+		if pv, err := client.GetPVByLabel(appLabel); err != nil {
 			log.WithField("error", err).Warning("Could not uniquely identify Trident PV.")
 			anyErrors = true
-		} else if err = client.DeletePVByLabel(TridentLabel); err != nil {
+		} else if err = client.DeletePVByLabel(appLabel); err != nil {
 			log.WithFields(log.Fields{
 				"pv":    pv.Name,
 				"error": err,

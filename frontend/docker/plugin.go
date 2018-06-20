@@ -15,8 +15,11 @@ import (
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 type Plugin struct {
@@ -73,7 +76,7 @@ func registerDockerVolumePlugin(root string) error {
 	}
 	// If root (volumeDir) isn't a directory, error
 	if dir != nil && !dir.IsDir() {
-		return fmt.Errorf("Volume directory '%v' exists and it's not a directory", root)
+		return fmt.Errorf("volume directory '%v' exists and it's not a directory", root)
 	}
 
 	return nil
@@ -143,7 +146,7 @@ func (p *Plugin) Deactivate() error {
 }
 
 func (p *Plugin) GetName() string {
-	return pluginName
+	return string(config.ContextDocker)
 }
 
 func (p *Plugin) Version() string {
@@ -163,13 +166,20 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 	}).Debug("Docker frontend method is invoked.")
 
 	// Find a matching storage class, or register a new one
-	scConfig, err := getStorageClass(request.Options, p.orchestrator)
+	scConfig, err := frontendcommon.GetStorageClass(request.Options, p.orchestrator)
 	if err != nil {
 		return p.dockerError(err)
 	}
 
+	sizeBytes, err := utils.GetVolumeSizeBytes(request.Options, "0")
+	if err != nil {
+		return fmt.Errorf("error creating volume: %v", err)
+	}
+	delete(request.Options, "size")
+
 	// Convert volume creation options into a Trident volume config
-	volConfig, err := getVolumeConfig(request.Name, scConfig.Name, request.Options)
+	volConfig, err := frontendcommon.GetVolumeConfig(
+		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny)
 	if err != nil {
 		return p.dockerError(err)
 	}
@@ -301,9 +311,17 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
-	options := make(map[string]string)
 
-	if err = p.orchestrator.AttachVolume(request.Name, mountpoint, options); err != nil {
+	// First call PublishVolume to make the volume available to the node
+	publishInfo := &utils.VolumePublishInfo{Localhost: true}
+	if err = p.orchestrator.PublishVolume(request.Name, publishInfo); err != nil {
+		err = fmt.Errorf("error publishing volume %s: %v", request.Name, err)
+		log.Error(err)
+		return &volume.MountResponse{}, p.dockerError(err)
+	}
+
+	// Then call AttachVolume to discover/format/mount the volume on the node
+	if err = p.orchestrator.AttachVolume(request.Name, mountpoint, publishInfo); err != nil {
 		err = fmt.Errorf("error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
 		log.Error(err)
 		return &volume.MountResponse{}, p.dockerError(err)
@@ -332,6 +350,9 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 		log.Error(err)
 		return p.dockerError(err)
 	}
+
+	// No longer detaching and removing iSCSI session here because it was causing issues with 'docker cp'.
+	// See https://github.com/moby/moby/issues/34665
 
 	return nil
 }

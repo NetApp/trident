@@ -3,15 +3,15 @@
 package ontap
 
 import (
+	"errors"
 	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -53,7 +53,7 @@ func (d SANStorageDriver) Name() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -81,6 +81,25 @@ func (d *SANStorageDriver) Initialize(
 	err = d.validate()
 	if err != nil {
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
+	}
+
+	// Create igroup
+	igroupResponse, err := d.API.IgroupCreate(d.Config.IgroupName, "iscsi", "linux")
+	if err != nil {
+		return fmt.Errorf("error creating igroup: %v", err)
+	}
+	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
+		// Handle case where the igroup already exists
+		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+			return fmt.Errorf("error creating igroup %v: %v", d.Config.IgroupName, zerr)
+		}
+	}
+	if context == tridentconfig.ContextKubernetes {
+		log.WithFields(log.Fields{
+			"driver": drivers.OntapSANStorageDriverName,
+			"SVM":    d.Config.SVM,
+			"igroup": d.Config.IgroupName,
+		}).Warn("Please ensure all relevant hosts are added to the initiator group.")
 	}
 
 	// Set up the autosupport heartbeat
@@ -138,7 +157,7 @@ func (d *SANStorageDriver) validate() error {
 		d.Config.DataLIF = dataLIFs[0]
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the ONTAP iSCSI target
 		err := utils.EnsureISCSISession(d.Config.DataLIF)
 		if err != nil {
@@ -312,7 +331,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return nil
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
 		iSCSINodeName, _, err = d.getISCSITargetInfo()
@@ -356,30 +375,45 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-// Attach the lun
-func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+// Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":     "Attach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-			"opts":       opts,
+			"Method": "Publish",
+			"Type":   "SANStorageDriver",
+			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Attach")
-		defer log.WithFields(fields).Debug("<<<< Attach")
+		log.WithFields(fields).Debug(">>>> Publish")
+		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
+	var iqn string
 	var err error
 
-	// Error if no iSCSI session exists for the specified iscsi portal
-	sessionExists, err := utils.ISCSISessionExists(d.Config.DataLIF)
-	if err != nil {
-		return fmt.Errorf("unexpected iSCSI session error: %v", err)
-	}
-	if !sessionExists {
-		return fmt.Errorf("expected iSCSI session %v not found; please login to the iSCSI portal", d.Config.DataLIF)
+	lunPath := lunPath(name)
+	igroupName := d.Config.IgroupName
+
+	if publishInfo.Localhost {
+
+		// Lookup local host IQNs
+		iqns, err := utils.GetInitiatorIqns()
+		if err != nil {
+			return fmt.Errorf("error determining host initiator IQN: %v", err)
+		} else if len(iqns) == 0 {
+			return errors.New("could not determine host initiator IQN")
+		}
+		iqn = iqns[0]
+
+	} else {
+
+		// Host IQN must have been passed in
+		if len(publishInfo.HostIQN) == 0 {
+			return errors.New("host initiator IQN not specified")
+		}
+		iqn = publishInfo.HostIQN[0]
 	}
 
 	// Get target info
@@ -387,9 +421,6 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	if err != nil {
 		return err
 	}
-
-	igroupName := d.Config.IgroupName
-	lunPath := lunPath(name)
 
 	// Get the fstype
 	fstype := DefaultFileSystemType
@@ -404,104 +435,33 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 
-	// Create igroup
-	igroupResponse, err := d.API.IgroupCreate(igroupName, "iscsi", "linux")
-	if err != nil {
-		return fmt.Errorf("error creating igroup: %v", err)
-	}
-	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
-		// Handle case where the igroup already exists
-		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
-			return fmt.Errorf("error creating igroup %v: %v", igroupName, zerr)
-		}
-	}
-
-	// Lookup host IQNs
-	iqns, err := utils.GetInitiatorIqns()
-	if err != nil {
-		return fmt.Errorf("error determining host initiator IQNs: %v", err)
+	// Add IQN to igroup
+	igroupAddResponse, err := d.API.IgroupAdd(igroupName, iqn)
+	err = api.GetError(igroupAddResponse, err)
+	zerr, zerrOK := err.(api.ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+		log.WithFields(log.Fields{
+			"IQN":    iqn,
+			"igroup": igroupName,
+		}).Debug("Host IQN already in igroup.")
+	} else {
+		return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 	}
 
-	// Add each IQN found to group
-	for _, iqn := range iqns {
-		igroupAddResponse, err := d.API.IgroupAdd(igroupName, iqn)
-		if err := api.GetError(igroupAddResponse, err); err != nil {
-			if zerr, ok := err.(api.ZapiError); ok {
-				if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE {
-					continue
-				}
-			}
-			return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
-		}
-	}
-
-	// Map LUN
+	// Map LUN (it may already be mapped)
 	lunID, err := d.API.LunMapIfNotMapped(igroupName, lunPath)
 	if err != nil {
 		return err
 	}
 
-	// Rescan and wait for the device(s) to appear
-	err = utils.RescanTargetAndWaitForDevice(lunID, iSCSINodeName)
-	if err != nil {
-		return fmt.Errorf("could not find iSCSI device: %v", err)
-	}
-
-	err = utils.WaitForMultiPathDevice(lunID, iSCSINodeName)
-	if err != nil {
-		return err
-	}
-
-	// Lookup all the SCSI device information
-	deviceInfo, err := utils.GetDeviceInfoForLUN(lunID, iSCSINodeName)
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %v", err)
-	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
-	}
-
-	log.WithFields(log.Fields{
-		"scsiLun":         deviceInfo.LUN,
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-		"fsType":          deviceInfo.Filesystem,
-		"iqn":             deviceInfo.IQN,
-	}).Debug("Found device.")
-
-	// Make sure we use the proper device (multipath if in use)
-	deviceToUse := deviceInfo.Devices[0]
-	if deviceInfo.MultipathDevice != "" {
-		deviceToUse = deviceInfo.MultipathDevice
-	}
-
-	if deviceToUse == "" {
-		return fmt.Errorf("could not determine device to use for %v", name)
-	}
-	devicePath := "/dev/" + deviceToUse
-
-	// Put a filesystem on it if there isn't one already there
-	if deviceInfo.Filesystem == "" {
-		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(devicePath, fstype)
-		if err != nil {
-			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
-		}
-	} else if deviceInfo.Filesystem != fstype {
-		log.WithFields(log.Fields{
-			"LUN":             lunPath,
-			"existingFstype":  deviceInfo.Filesystem,
-			"requestedFstype": fstype,
-		}).Warn("LUN already formatted with a different file system type.")
-	} else {
-		log.WithFields(log.Fields{"LUN": lunPath, "fstype": deviceInfo.Filesystem}).Debug("LUN already formatted.")
-	}
-
-	// Mount it
-	err = utils.Mount(devicePath, mountpoint)
-	if err != nil {
-		return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v: %v",
-			name, deviceToUse, mountpoint, err)
-	}
+	// Add fields needed by Attach
+	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiTargetPortal = d.Config.DataLIF
+	publishInfo.IscsiTargetIQN = iSCSINodeName
+	publishInfo.IscsiIgroup = igroupName
+	publishInfo.FilesystemType = fstype
+	publishInfo.UseCHAP = false
+	publishInfo.SharedTarget = true
 
 	return nil
 }
@@ -535,31 +495,6 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 	}
 
 	return
-}
-
-// Detach the volume
-func (d *SANStorageDriver) Detach(name, mountpoint string) error {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "Detach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> Detach")
-		defer log.WithFields(fields).Debug("<<<< Detach")
-	}
-
-	cmd := fmt.Sprintf("umount %s", mountpoint)
-	log.WithField("command", cmd).Debug("Unmounting volume.")
-
-	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
-		log.WithField("output", string(out)).Debug("Unmount failed.")
-		return fmt.Errorf("error unmounting volume %v, mountpoint %v: %v", name, mountpoint, err)
-	}
-
-	return nil
 }
 
 // Return the list of snapshots associated with the named volume
@@ -654,7 +589,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		log.Debug("No follow-up create actions for Docker.")
 		return nil
 	}
@@ -706,8 +641,8 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 	return nil
 }
 
-func (d *SANStorageDriver) GetProtocol() trident.Protocol {
-	return trident.Block
+func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.Block
 }
 
 func (d *SANStorageDriver) StoreConfig(
@@ -799,18 +734,18 @@ func (d *SANStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(int64(lunAttrs.Size()), 10),
-		Protocol:        trident.Block,
+		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    "",
 		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteOnce,
-		AccessInfo:      storage.VolumeAccessInfo{},
+		AccessMode:      tridentconfig.ReadWriteOnce,
+		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}

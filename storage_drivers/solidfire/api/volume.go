@@ -211,46 +211,9 @@ func (c *Client) DetachVolume(v Volume) (err error) {
 		log.Errorf("error response from DetachVolume request: %+v ", err)
 		return errors.New("detach volume error")
 	}
-	tgt := &utils.ISCSITargetInfo{
-		IP:     c.SVIP,
-		Portal: c.SVIP,
-		Iqn:    v.Iqn,
-	}
-	err = utils.ISCSIDisableDelete(tgt)
+
+	err = utils.ISCSIDisableDelete(v.Iqn, c.SVIP)
 	return
-}
-
-// AttachVolume tbd
-func (c *Client) AttachVolume(v *Volume, iface string) (err error) {
-	var req GetAccountByIDRequest
-
-	if c.SVIP == "" {
-		err = errors.New("unable to perform iSCSI actions without setting SVIP")
-		log.Errorf("Unable to attach volume: SVIP is NOT set")
-		return err
-	}
-
-	if utils.ISCSISupported() == false {
-		err := errors.New("unable to attach: open-iscsi tools not found on host")
-		log.Errorf("Unable to attach volume: open-iscsi utils not found")
-		return err
-	}
-
-	req.AccountID = v.AccountID
-	a, err := c.GetAccountByID(&req)
-	if err != nil {
-		log.Errorf("Failed to get account %v: %+v ", v.AccountID, err)
-		return errors.New("volume attach failure")
-	}
-
-	err = utils.LoginWithChap(v.Iqn, c.SVIP, a.Username, a.InitiatorSecret, iface,
-		c.Config.DebugTraceFlags["sensitive"])
-	if err != nil {
-		log.Errorf("Failed to login with CHAP credentials: %+v ", err)
-		return err
-	}
-
-	return nil
 }
 
 func (c *Client) ModifyVolume(req *ModifyVolumeRequest) (err error) {

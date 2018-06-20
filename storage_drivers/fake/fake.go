@@ -13,7 +13,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -51,7 +51,7 @@ func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver
 
 func newFakeStorageDriverConfigJSON(
 	name string,
-	protocol config.Protocol,
+	protocol tridentconfig.Protocol,
 	pools map[string]*fake.StoragePool,
 ) (string, error) {
 	prefix := ""
@@ -76,7 +76,7 @@ func newFakeStorageDriverConfigJSON(
 
 func NewFakeStorageDriverConfigJSON(
 	name string,
-	protocol config.Protocol,
+	protocol tridentconfig.Protocol,
 	pools map[string]*fake.StoragePool,
 ) (string, error) {
 	return newFakeStorageDriverConfigJSON(name, protocol, pools)
@@ -87,7 +87,7 @@ func (d *StorageDriver) Name() string {
 }
 
 func (d *StorageDriver) Initialize(
-	context config.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
@@ -267,12 +267,8 @@ func (d *StorageDriver) Destroy(name string) error {
 	return nil
 }
 
-func (d *StorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
-	return errors.New("fake driver does not support attaching")
-}
-
-func (d *StorageDriver) Detach(name, mountpoint string) error {
-	return errors.New("fake driver does not support detaching")
+func (d *StorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+	return errors.New("fake driver does not support Publish")
 }
 
 func (d *StorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
@@ -346,10 +342,10 @@ func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 
 	switch d.Config.Protocol {
-	case config.File:
+	case tridentconfig.File:
 		volConfig.AccessInfo.NfsServerIP = "192.0.2.1" // unrouteable test address, see RFC 5737
 		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
-	case config.Block:
+	case tridentconfig.Block:
 		volConfig.AccessInfo.IscsiTargetPortal = "192.0.2.1"
 		volConfig.AccessInfo.IscsiTargetIQN = "iqn.2017-06.com.netapp:fake"
 		volConfig.AccessInfo.IscsiLunNumber = 0
@@ -357,7 +353,7 @@ func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 	return nil
 }
 
-func (d *StorageDriver) GetProtocol() config.Protocol {
+func (d *StorageDriver) GetProtocol() tridentconfig.Protocol {
 	return d.Config.Protocol
 }
 
@@ -384,7 +380,7 @@ func (d *StorageDriver) GetExternalConfig() interface{} {
 
 	return &struct {
 		*drivers.CommonStorageDriverConfigExternal
-		Protocol     config.Protocol              `json:"protocol"`
+		Protocol     tridentconfig.Protocol       `json:"protocol"`
 		Pools        map[string]*fake.StoragePool `json:"pools"`
 		InstanceName string
 	}{
@@ -421,7 +417,7 @@ func (d *StorageDriver) GetVolumeExternalWrappers(
 func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:      config.OrchestratorAPIVersion,
+		Version:      tridentconfig.OrchestratorAPIVersion,
 		Name:         volume.Name,
 		InternalName: volume.Name,
 		Size:         strconv.FormatUint(volume.SizeBytes, 10),

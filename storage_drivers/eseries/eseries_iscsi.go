@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"sort"
 	"strconv"
@@ -20,7 +19,7 @@ import (
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -57,7 +56,7 @@ func (d *SANStorageDriver) Protocol() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here
@@ -102,9 +101,9 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	telemetry := make(map[string]string)
-	telemetry["version"] = trident.OrchestratorVersion.ShortString()
-	telemetry["platform"] = trident.OrchestratorTelemetry.Platform
-	telemetry["platformVersion"] = trident.OrchestratorTelemetry.PlatformVersion
+	telemetry["version"] = tridentconfig.OrchestratorVersion.ShortString()
+	telemetry["platform"] = tridentconfig.OrchestratorTelemetry.Platform
+	telemetry["platformVersion"] = tridentconfig.OrchestratorTelemetry.PlatformVersion
 	telemetry["plugin"] = d.Name()
 	telemetry["storagePrefix"] = *d.Config.StoragePrefix
 
@@ -144,7 +143,10 @@ func (d *SANStorageDriver) Initialize(
 		d.Config.SerialNumbers = []string{chassisSerialNumber}
 	}
 
-	if context == trident.ContextDocker {
+	// For Docker, we create a host now
+	// For Kubernetes, we ensure there is a host group and warn users to populate it with hosts out of band
+	// For K8S CSI, we create a host group if necessary and create the hosts automatically during the Publish calls
+	if context == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the E-series iSCSI target
 		err = utils.EnsureISCSISession(d.Config.HostDataIP)
 		if err != nil {
@@ -152,9 +154,29 @@ func (d *SANStorageDriver) Initialize(
 		}
 
 		// Make sure there is a host defined on the array for this system
-		_, err = d.CreateHost()
+		_, err = d.CreateHostForLocalHost()
 		if err != nil {
 			return err
+		}
+	} else if context == tridentconfig.ContextKubernetes {
+		hostGroup, err := d.API.GetHostGroup(d.Config.AccessGroup)
+		if err != nil {
+			return fmt.Errorf("could not check for host group %s: %v", d.Config.AccessGroup, err)
+		} else if hostGroup.ClusterRef == "" {
+			return fmt.Errorf("host group %s doesn't exist for E-Series array %s and needs to be manually "+
+				"created; please also ensure all relevant Hosts are defined on the array and added to the Host Group",
+				d.Config.AccessGroup, d.Config.ControllerA)
+		} else {
+			log.WithFields(log.Fields{
+				"driver":     drivers.EseriesIscsiStorageDriverName,
+				"controller": d.Config.ControllerA,
+				"hostGroup":  hostGroup.Label,
+			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", d.Config.AccessGroup)
+		}
+	} else if context == tridentconfig.ContextCSI {
+		_, err = d.API.EnsureHostGroup()
+		if err != nil {
+			return fmt.Errorf("could not check for host group %s: %v", d.Config.AccessGroup, err)
 		}
 	}
 
@@ -345,7 +367,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return fmt.Errorf("could not find volume %s: %v", name, err)
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
 		iSCSINodeName, _, err = d.getISCSITargetInfo()
@@ -382,21 +404,19 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-// Attach is called by Docker when attaching a container volume to a container. This method is expected to map the volume
-// to the local host, discover it on the SCSI bus, format it with a filesystem, and mount it at the specified mount point.
-// This method has an opts parameter, but no options are presently handled by this method.
-func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+// Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":     "Attach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-			"opts":       opts,
+			"Method": "Publish",
+			"Type":   "SANStorageDriver",
+			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Attach")
-		defer log.WithFields(fields).Debug("<<<< Attach")
+		log.WithFields(fields).Debug(">>>> Publish")
+		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
 	// Get the volume
@@ -406,6 +426,12 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 	}
 	if !d.API.IsRefValid(vol.VolumeRef) {
 		return fmt.Errorf("could not find volume %s", name)
+	}
+
+	// Get the Target IQN
+	targetIQN, err := d.API.GetTargetIQN()
+	if err != nil {
+		return fmt.Errorf("could not get target IQN from array: %v", err)
 	}
 
 	// Get the fstype
@@ -422,79 +448,79 @@ func (d *SANStorageDriver) Attach(name, mountpoint string, opts map[string]strin
 		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Warn("LUN fstype not found, using default.")
 	}
 
-	// Get target info
-	iSCSINodeName, _, err := d.getISCSITargetInfo()
-	if err != nil {
-		return err
-	}
+	var iqn string
+	var hostname string
+	var mapping api.LUNMapping
 
-	// Map the volume to the local host
-	mapping, err := d.MapVolumeToLocalHost(vol)
-	if err != nil {
-		return fmt.Errorf("could not map volume %s: %v", name, err)
-	}
+	if publishInfo.Localhost {
 
-	// Rescan and wait for the device(s) to appear
-	err = utils.RescanTargetAndWaitForDevice(mapping.LunNumber, iSCSINodeName)
-	if err != nil {
-		return fmt.Errorf("could not find iSCSI device: %v", err)
-	}
-
-	err = utils.WaitForMultiPathDevice(mapping.LunNumber, iSCSINodeName)
-	if err != nil {
-		return err
-	}
-
-	// Lookup all the SCSI device information
-	deviceInfo, err := utils.GetDeviceInfoForLUN(mapping.LunNumber, iSCSINodeName)
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %v", err)
-	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN %d", mapping.LunNumber)
-	}
-
-	log.WithFields(log.Fields{
-		"scsiLun":         deviceInfo.LUN,
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-		"fsType":          deviceInfo.Filesystem,
-		"iqn":             deviceInfo.IQN,
-	}).Debug("Found device.")
-
-	// Make sure we use the proper device (multipath if in use)
-	deviceToUse := deviceInfo.Devices[0]
-	if deviceInfo.MultipathDevice != "" {
-		deviceToUse = deviceInfo.MultipathDevice
-	}
-	devicePath := "/dev/" + deviceToUse
-
-	if deviceToUse == "" {
-		return fmt.Errorf("could not determine device to use for %v", name)
-	}
-
-	// Put a filesystem on it if there isn't one already there
-	if deviceInfo.Filesystem == "" {
-		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Debug("Formatting LUN.")
-		err := utils.FormatVolume(devicePath, fstype)
+		// Lookup local host IQNs
+		iqns, err := utils.GetInitiatorIqns()
 		if err != nil {
-			return fmt.Errorf("error formatting LUN %v, device %v: %v", name, deviceToUse, err)
+			return fmt.Errorf("error determining host initiator IQN: %v", err)
+		} else if len(iqns) == 0 {
+			return errors.New("could not determine host initiator IQN")
 		}
-	} else if deviceInfo.Filesystem != fstype {
-		log.WithFields(log.Fields{
-			"LUN":             name,
-			"existingFstype":  deviceInfo.Filesystem,
-			"requestedFstype": fstype,
-		}).Warn("LUN already formatted with a different file system type.")
+		iqn = iqns[0]
+
+		// Map the volume to the local host
+		mapping, err = d.MapVolumeToLocalHost(vol)
+		if err != nil {
+			return fmt.Errorf("could not map volume %s: %v", name, err)
+		}
+
 	} else {
-		log.WithFields(log.Fields{"LUN": name, "fstype": deviceInfo.Filesystem}).Debug("LUN already formatted.")
+
+		// Host IQN must have been passed in
+		if len(publishInfo.HostIQN) == 0 {
+			return errors.New("host initiator IQN not specified")
+		}
+		iqn = publishInfo.HostIQN[0]
+		hostname = publishInfo.HostName
+
+		// Get the host group
+		hostGroup, err := d.API.EnsureHostGroup()
+		if err != nil {
+			return fmt.Errorf("could not get host group: %v", err)
+		}
+
+		// See if there is already a host for the specified IQN
+		host, err := d.API.GetHostForIQN(iqn)
+		if err != nil {
+			return fmt.Errorf("could not get host for IQN %s: %v", iqn, err)
+		}
+
+		// Create the host if necessary
+		if host.HostRef == "" {
+			host, err = d.API.CreateHost(hostname, iqn, d.Config.HostType, hostGroup)
+			if err != nil {
+				return fmt.Errorf("could not create host for IQN %s: %v", iqn, err)
+			}
+		}
+
+		// If we got a host, make sure it's in the right group
+		if host.HostRef != "" && host.ClusterRef != hostGroup.ClusterRef {
+			return fmt.Errorf("found for IQN %s, but it is in host group %s: %v", iqn, d.Config.AccessGroup, err)
+		}
+
+		// Map the volume directly to the Host Group
+		mapHost := api.HostEx{
+			HostRef:    api.NullRef,
+			ClusterRef: hostGroup.ClusterRef,
+		}
+		mapping, err = d.API.MapVolume(vol, mapHost)
+		if err != nil {
+			return fmt.Errorf("could not map volume %s to Host Group %s: %v", name, hostGroup.Label, err)
+		}
 	}
 
-	// Mount the volume
-	err = utils.Mount(devicePath, mountpoint)
-	if err != nil {
-		return fmt.Errorf("could not mount volume %s, device %v at mount point %s: %v", name, deviceToUse,
-			mountpoint, err)
-	}
+	// Add fields needed by Attach
+	publishInfo.IscsiLunNumber = int32(mapping.LunNumber)
+	publishInfo.IscsiTargetPortal = d.Config.HostDataIP
+	publishInfo.IscsiTargetIQN = targetIQN
+	publishInfo.FilesystemType = fstype
+	publishInfo.UseCHAP = false
+	publishInfo.SharedTarget = true
 
 	return nil
 }
@@ -521,9 +547,9 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 	return
 }
 
-// CreateHost ensures a corresponding Host definition exists on the array,
+// CreateHostForLocalHost ensures a Host definition corresponding to the local host exists on the array,
 // defining a Host & HostGroup if not.
-func (d *SANStorageDriver) CreateHost() (api.HostEx, error) {
+func (d *SANStorageDriver) CreateHostForLocalHost() (api.HostEx, error) {
 
 	// Get the IQN for this host
 	iqns, err := utils.GetInitiatorIqns()
@@ -559,7 +585,7 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 	}
 
 	// Ensure we have a host to map the volume to
-	host, err := d.CreateHost()
+	host, err := d.CreateHostForLocalHost()
 	if err != nil {
 		return api.LUNMapping{}, fmt.Errorf("could not map volume %s to host: %v", volume.Label, err)
 	}
@@ -571,34 +597,6 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 	}
 
 	return mapping, nil
-}
-
-// Detach is called by Docker when detaching a container volume from a container. This method merely
-// unmounts the volume; it does not rescan the bus, unmap the volume, or undo any of the other actions
-// taken by the Attach method.
-func (d *SANStorageDriver) Detach(name, mountpoint string) error {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "Detach",
-			"Type":       "SANStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> Detach")
-		defer log.WithFields(fields).Debug("<<<< Detach")
-	}
-
-	cmd := fmt.Sprintf("umount %s", mountpoint)
-
-	log.WithFields(log.Fields{"Command": cmd}).Debug("Unmounting volume")
-
-	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
-		log.WithFields(log.Fields{"result": string(out)}).Debug("Unmount failed.")
-		return fmt.Errorf("could not unmount docker volume: %v mountpoint: %v error: %v", name, mountpoint, err)
-	}
-
-	return nil
 }
 
 // SnapshotList returns the list of snapshots associated with the named volume. The E-series volume plugin does not support snapshots,
@@ -776,7 +774,7 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
-	if trident.UsingPassthroughStore {
+	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
 	} else {
@@ -869,7 +867,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		log.Debug("No follow-up create actions for Docker.")
 		return nil
 	}
@@ -921,8 +919,8 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 	return nil
 }
 
-func (d *SANStorageDriver) GetProtocol() trident.Protocol {
-	return trident.Block
+func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.Block
 }
 
 func (d *SANStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
@@ -1067,18 +1065,18 @@ func (d *SANStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            volumeAttrs.VolumeSize,
-		Protocol:        trident.Block,
+		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  "",
 		ExportPolicy:    "",
 		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteOnce,
-		AccessInfo:      storage.VolumeAccessInfo{},
+		AccessMode:      tridentconfig.ReadWriteOnce,
+		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}

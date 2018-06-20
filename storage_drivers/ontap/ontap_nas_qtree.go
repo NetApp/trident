@@ -14,7 +14,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -76,7 +76,7 @@ func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 
 // Initialize from the provided config
 func (d *NASQtreeStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -100,12 +100,12 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Remap context for artifact naming so the names remain stable over time
 	var artifactPrefix string
 	switch context {
-	case trident.ContextDocker:
+	case tridentconfig.ContextDocker:
 		artifactPrefix = artifactPrefixDocker
-	case trident.ContextKubernetes:
+	case tridentconfig.ContextKubernetes, tridentconfig.ContextCSI:
 		artifactPrefix = artifactPrefixKubernetes
 	default:
-		return fmt.Errorf("Unknown driver context: %s", context)
+		return fmt.Errorf("unknown driver context: %s", context)
 	}
 
 	// Set up internal driver state
@@ -384,19 +384,19 @@ func (d *NASQtreeStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-// Attach the volume
-func (d *NASQtreeStorageDriver) Attach(name, mountpoint string, opts map[string]string) error {
+// Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":     "Attach",
-			"Type":       "NASQtreeStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-			"opts":       opts,
+			"Method": "Publish",
+			"Type":   "NASQtreeStorageDriver",
+			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Attach")
-		defer log.WithFields(fields).Debug("<<<< Attach")
+		log.WithFields(fields).Debug(">>>> Publish")
+		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
 	// Check if qtree exists, and find its Flexvol so we can build the export location
@@ -410,34 +410,13 @@ func (d *NASQtreeStorageDriver) Attach(name, mountpoint string, opts map[string]
 		return fmt.Errorf("volume %s not found", name)
 	}
 
-	exportPath := fmt.Sprintf("%s:/%s/%s", d.Config.DataLIF, flexvol, name)
+	// Add fields needed by Attach
+	publishInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, name)
+	publishInfo.NfsServerIP = d.Config.DataLIF
+	publishInfo.FilesystemType = "nfs"
+	publishInfo.MountOptions = d.Config.NfsMountOptions
 
-	return MountVolume(exportPath, mountpoint, &d.Config)
-}
-
-// Detach the volume
-func (d *NASQtreeStorageDriver) Detach(name, mountpoint string) error {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "Detach",
-			"Type":       "NASQtreeStorageDriver",
-			"name":       name,
-			"mountpoint": mountpoint,
-		}
-		log.WithFields(fields).Debug(">>>> Detach")
-		defer log.WithFields(fields).Debug("<<<< Detach")
-	}
-
-	exists, _, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
-	if err != nil {
-		log.Warnf("Error checking for existing qtree. %v", err)
-	}
-	if !exists {
-		log.WithField("qtree", name).Warn("Qtree not found, attempting unmount anyway.")
-	}
-
-	return UnmountVolume(mountpoint, &d.Config)
+	return nil
 }
 
 // Return the list of snapshots associated with the named volume
@@ -1065,8 +1044,8 @@ func (d *NASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) 
 	return nil
 }
 
-func (d *NASQtreeStorageDriver) GetProtocol() trident.Protocol {
-	return trident.File
+func (d *NASQtreeStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.File
 }
 
 func (d *NASQtreeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
@@ -1207,18 +1186,18 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 	}
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(size, 10),
-		Protocol:        trident.File,
+		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    qtreeAttrs.ExportPolicy(),
 		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
 		UnixPermissions: qtreeAttrs.Mode(),
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteMany,
-		AccessInfo:      storage.VolumeAccessInfo{},
+		AccessMode:      tridentconfig.ReadWriteMany,
+		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}
