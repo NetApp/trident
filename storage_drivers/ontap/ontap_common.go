@@ -314,6 +314,7 @@ func ValidateDataLIFs(config *drivers.OntapStorageDriverConfig, dataLIFs []strin
 	return nil
 }
 
+const DefaultSpaceAllocate = "false"
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
 const DefaultUnixPermissions = "---rwxrwxrwx"
@@ -347,6 +348,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	if config.StoragePrefix == nil {
 		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
 		config.StoragePrefix = &prefix
+	}
+
+	if config.SpaceAllocate == "" {
+		config.SpaceAllocate = DefaultSpaceAllocate
 	}
 
 	if config.SpaceReserve == "" {
@@ -396,6 +401,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 
 	log.WithFields(log.Fields{
 		"StoragePrefix":   *config.StoragePrefix,
+		"SpaceAllocate":   config.SpaceAllocate,
 		"SpaceReserve":    config.SpaceReserve,
 		"SnapshotPolicy":  config.SnapshotPolicy,
 		"UnixPermissions": config.UnixPermissions,

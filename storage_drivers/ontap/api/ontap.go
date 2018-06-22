@@ -265,12 +265,13 @@ func (d Client) IgroupList() (response azgo.IgroupGetIterResponse, err error) {
 
 // LunCreate creates a lun with the specified attributes
 // equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled
-func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool) (response azgo.LunCreateBySizeResponse, err error) {
+func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool, spaceAllocated bool) (response azgo.LunCreateBySizeResponse, err error) {
 	response, err = azgo.NewLunCreateBySizeRequest().
 		SetPath(lunPath).
 		SetSize(sizeInBytes).
 		SetOstype(osType).
 		SetSpaceReservationEnabled(spaceReserved).
+		SetSpaceAllocationEnabled(spaceAllocated).
 		ExecuteUsing(d.zr)
 	return
 }

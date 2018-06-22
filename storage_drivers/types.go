@@ -82,6 +82,7 @@ type OntapStorageDriverConfig struct {
 }
 
 type OntapStorageDriverConfigDefaults struct {
+	SpaceAllocate   string `json:"spaceAllocate"`
 	SpaceReserve    string `json:"spaceReserve"`
 	SnapshotPolicy  string `json:"snapshotPolicy"`
 	UnixPermissions string `json:"unixPermissions"`
