@@ -324,6 +324,7 @@ func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {
 	return addressesFromHostname, nil
 }
 
+const DefaultSpaceAllocate = "false"
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
 const DefaultSnapshotReserve = ""
@@ -361,6 +362,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	if config.StoragePrefix == nil {
 		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
 		config.StoragePrefix = &prefix
+	}
+
+	if config.SpaceAllocate == "" {
+		config.SpaceAllocate = DefaultSpaceAllocate
 	}
 
 	if config.SpaceReserve == "" {
@@ -427,6 +432,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 
 	log.WithFields(log.Fields{
 		"StoragePrefix":       *config.StoragePrefix,
+		"SpaceAllocate":       config.SpaceAllocate,
 		"SpaceReserve":        config.SpaceReserve,
 		"SnapshotPolicy":      config.SnapshotPolicy,
 		"SnapshotReserve":     config.SnapshotReserve,

@@ -236,6 +236,7 @@ func (d *SANStorageDriver) Create(
 	// Get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	size := strconv.FormatUint(sizeBytes, 10)
+	spaceAllocate, _ := strconv.ParseBool(utils.GetV(opts, "spaceAllocate", d.Config.SpaceAllocate))
 	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
 	snapshotReserve := utils.GetV(opts, "snapshotReserve", d.Config.SnapshotReserve)
@@ -276,6 +277,7 @@ func (d *SANStorageDriver) Create(
 	log.WithFields(log.Fields{
 		"name":            name,
 		"size":            size,
+		"spaceAllocate":   spaceAllocate,
 		"spaceReserve":    spaceReserve,
 		"snapshotPolicy":  snapshotPolicy,
 		"snapshotReserve": snapshotReserveInt,
@@ -308,7 +310,7 @@ func (d *SANStorageDriver) Create(
 	osType := "linux"
 
 	// Create the LUN
-	lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false)
+	lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocate)
 	if err = api.GetError(lunCreateResponse, err); err != nil {
 		return fmt.Errorf("error creating LUN: %v", err)
 	}
