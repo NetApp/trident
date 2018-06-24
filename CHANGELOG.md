@@ -5,6 +5,7 @@
 ## Changes since v18.04.0
 
 **Fixes:**
+- Fixed cleanup of the transaction object upon failed deletion (Issue [#126](https://github.com/NetApp/trident/issues/126)).
 - **Kubernetes:** Fixed an issue where Trident would provision a ReadWriteMany PVC to an iSCSI backend.
 - **Kubernetes:** Fixed an installer issue where the Trident PV could be bound to the wrong PVC.
 - **Kubernetes:** Fixed an issue where the Trident installer could fail if a default storage class is set.

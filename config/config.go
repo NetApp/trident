@@ -25,6 +25,7 @@ type Telemetry struct {
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
+	OrchestratorClientName           = OrchestratorName + "ctl"
 	orchestratorVersion              = "18.07.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30

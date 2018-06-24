@@ -306,14 +306,16 @@ func (o *TridentOrchestrator) rollBackTransaction(v *persistentstore.VolumeTrans
 		// the volume is still in etcd.  In this case, it will have been
 		// loaded into memory when previously bootstrapping.
 		if _, ok := o.volumes[v.Config.Name]; ok {
-			// Ignore errors, since the volume may no longer exist on the
-			// backend
 			log.WithFields(log.Fields{
 				"name": v.Config.Name,
 			}).Info("Volume for delete transaction found.")
 			err := o.deleteVolume(v.Config.Name)
 			if err != nil {
-				return fmt.Errorf("unable to clean up deleted volume %s: %v", v.Config.Name, err)
+				log.WithFields(log.Fields{
+					"volume": v.Config.Name,
+					"error":  err,
+				}).Errorf("Unable to finalize deletion of the volume! ",
+					"Repeat deleting the volume using %s.", config.OrchestratorClientName)
 			}
 		} else {
 			log.WithFields(log.Fields{
@@ -890,6 +892,9 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 			}
 		}
 		err = fmt.Errorf("%s", strings.Join(errList, "\n\t"))
+		log.Warnf("Unable to clean up artifacts of volume creation: %v. ",
+			"Repeat creating the volume or restart %v.",
+			err, config.OrchestratorName)
 	}
 	return
 }
@@ -979,7 +984,7 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 
 	// Note that this call will only return an error if the backend actually
 	// fails to delete the volume.  If the volume does not exist on the backend,
-	// the nDVP will not return an error.  Thus, we're fine.
+	// the driver will not return an error.  Thus, we're fine.
 	if err := volumeBackend.RemoveVolume(volume); err != nil {
 		log.WithFields(log.Fields{
 			"volume":  volumeName,
@@ -1017,14 +1022,11 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 
 // DeleteVolume does the necessary set up to delete a volume during the course
 // of normal operation, verifying that the volume is present in Trident and
-// creating a transaction to ensure that the delete eventually completes.  It
-// only resolves the transaction if all stages of deletion complete
-// successfully, ensuring that the deletion will complete either upon retrying
-// the delete or upon reboot of Trident.
-// Returns true if the volume is found and false otherwise.
-func (o *TridentOrchestrator) DeleteVolume(volumeName string) error {
+// creating a transaction to ensure that the delete eventually completes.
+func (o *TridentOrchestrator) DeleteVolume(volumeName string) (err error) {
 	if o.bootstrapError != nil {
-		return o.bootstrapError
+		err = o.bootstrapError
+		return
 	}
 
 	o.mutex.Lock()
@@ -1042,19 +1044,25 @@ func (o *TridentOrchestrator) DeleteVolume(volumeName string) error {
 	if err := o.storeClient.AddVolumeTransaction(volTxn); err != nil {
 		return err
 	}
-	if err := o.deleteVolume(volumeName); err != nil {
+
+	defer func() {
+		if errTxn := o.storeClient.DeleteVolumeTransaction(volTxn); errTxn != nil {
+			log.WithFields(log.Fields{
+				"volume": volume,
+				"error":  errTxn,
+			}).Warnf("Unable to delete volume transaction. ",
+				"Repeat deletion using %s or restart %v.",
+				config.OrchestratorClientName, config.OrchestratorName)
+		}
+	}()
+
+	if err = o.deleteVolume(volumeName); err != nil {
 		// Do not try to delete the volume transaction here; instead, if we
 		// fail, leave the transaction around and let the deletion be attempted
 		// again.
 		return err
 	}
-	if err := o.storeClient.DeleteVolumeTransaction(volTxn); err != nil {
-		log.WithFields(log.Fields{
-			"volume": volume,
-		}).Warn("Unable to delete volume transaction.  Repeat deletion to finalize.")
-		// Reinsert the volume so that it can be deleted again
-		o.volumes[volumeName] = volume
-	}
+
 	return nil
 }
 
