@@ -18,9 +18,10 @@ NFS has two additional options that aren't relevant when using iSCSI:
 * ``exportPolicy`` - sets the export policy to be used for the volume.  The default is ``default``.
 * ``securityStyle`` - sets the security style to be used for access to the volume.  The default is ``unix``. Valid values are ``unix`` and ``mixed``.
 
-iSCSI has an additional option that isn't relevant when using NFS:
+iSCSI has few additional options that aren't relevant when using NFS:
 
 * ``fileSystemType`` - sets the file system used to format iSCSI volumes.  The default is ``ext4``.  Valid values are ``ext3``, ``ext4``, and ``xfs``.
+* ``percentageSnapshotReserve`` - this will modify the percentage of space to reserve for snapshots on the volume. If nothing is set, it uses the SAN's default configuration.
 
 
 Using these options during the docker volume create operation is super simple, just provide the option and the value using the ``-o`` operator during the CLI operation.  These override any equivalent vales from the JSON configuration file.
