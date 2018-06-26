@@ -314,7 +314,10 @@ func ValidateDataLIFs(config *drivers.OntapStorageDriverConfig, dataLIFs []strin
 	return nil
 }
 
-const DefaultSpaceAllocate = "false"
+// Enable space-allocation by default. If not enabled, Data ONTAP takes the LUNs offline
+// when they're seen as full.
+// see: https://github.com/NetApp/trident/issues/135
+const DefaultSpaceAllocate = "true"
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
 const DefaultUnixPermissions = "---rwxrwxrwx"
