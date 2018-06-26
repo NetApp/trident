@@ -76,6 +76,7 @@ trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-econo
 trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy
 trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy
 trident.netapp.io/blockSize         blockSize         solidfire-san
+trident.netapp.io/spaceAllocate     spaceAllocate     ontap-san
 =================================== ================= ======================================================
 
 The reclaim policy for the created PV can be determined by setting the

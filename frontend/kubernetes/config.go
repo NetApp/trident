@@ -27,6 +27,7 @@ const (
 	AnnPrefix          = config.OrchestratorName + ".netapp.io"
 	AnnReclaimPolicy   = AnnPrefix + "/reclaimPolicy"
 	AnnProtocol        = AnnPrefix + "/protocol"
+	AnnSpaceAllocate   = AnnPrefix + "/spaceAllocate"
 	AnnSpaceReserve    = AnnPrefix + "/spaceReserve"
 	AnnSnapshotPolicy  = AnnPrefix + "/snapshotPolicy"
 	AnnSnapshotDir     = AnnPrefix + "/snapshotDirectory"
