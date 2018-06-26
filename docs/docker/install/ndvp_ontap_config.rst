@@ -11,7 +11,7 @@ Below are the ONTAP CLI comands to create a dedicated user for Trident with spec
 
   # create a new Trident role
   security login role create -vserver [VSERVER] -role trident_role -cmddirname DEFAULT -access none
-  
+
   # grant common Trident permissions
   security login role create -vserver [VSERVER] -role trident_role -cmddirname "event generate-autosupport-log" -access all
   security login role create -vserver [VSERVER] -role trident_role -cmddirname "network interface" -access readonly
@@ -76,27 +76,29 @@ For the ontap-san driver, an additional top level option is available to specify
 
 Also, when using ONTAP, these default option settings are available to avoid having to specify them on every volume create.
 
-+-----------------------+--------------------------------------------------------------------------+------------+
-| Defaults Option       | Description                                                              | Example    |
-+=======================+==========================================================================+============+
-| ``spaceReserve``      | Space reservation mode; "none" (thin provisioned) or "volume" (thick)    | none       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotPolicy``    | Snapshot policy to use, default is "none"                                | none       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``splitOnClone``      | Split a clone from its parent upon creation, defaults to "false"         | false      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``encryption``        | Enable NetApp Volume Encryption, defaults to "false"                     | true       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``unixPermissions``   | NAS option for provisioned NFS volumes, defaults to "777"                | 777        |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotDir``       | NAS option for access to the .snapshot directory, defaults to "false"    | false      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``exportPolicy``      | NAS option for the NFS export policy to use, defaults to "default"       | default    |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``securityStyle``     | NAS option for access to the provisioned NFS volume, defaults to "unix"  | mixed      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``fileSystemType``    | SAN option to select the file system type, defaults to "ext4"            | xfs        |
-+-----------------------+--------------------------------------------------------------------------+------------+
++-------------------------------+--------------------------------------------------------------------------+------------+
+| Defaults Option               | Description                                                              | Example    |
++===============================+==========================================================================+============+
+| ``spaceReserve``              | Space reservation mode; "none" (thin provisioned) or "volume" (thick)    | none       |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotPolicy``            | Snapshot policy to use, default is "none"                                | none       |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``percentageSnapshotReserve`` | Percent of volume to reserve for snapshots, default is "none"            | none       |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``splitOnClone``              | Split a clone from its parent upon creation, defaults to "false"         | false      |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``encryption``                | Enable NetApp Volume Encryption, defaults to "false"                     | true       |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``unixPermissions``           | NAS option for provisioned NFS volumes, defaults to "777"                | 777        |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotDir``               | NAS option for access to the .snapshot directory, defaults to "false"    | false      |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``exportPolicy``              | NAS option for the NFS export policy to use, defaults to "default"       | default    |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``securityStyle``             | NAS option for access to the provisioned NFS volume, defaults to "unix"  | mixed      |
++-------------------------------+--------------------------------------------------------------------------+------------+
+| ``fileSystemType``            | SAN option to select the file system type, defaults to "ext4"            | xfs        |
++-------------------------------+--------------------------------------------------------------------------+------------+
 
 Scaling Options
 ---------------

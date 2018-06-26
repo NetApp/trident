@@ -316,6 +316,7 @@ func ValidateDataLIFs(config *drivers.OntapStorageDriverConfig, dataLIFs []strin
 
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
+const DefaultPercentageSnapshotReserve = "none"
 const DefaultUnixPermissions = "---rwxrwxrwx"
 const DefaultSnapshotDir = "false"
 const DefaultExportPolicy = "default"
@@ -355,6 +356,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 
 	if config.SnapshotPolicy == "" {
 		config.SnapshotPolicy = DefaultSnapshotPolicy
+	}
+
+	if config.PercentageSnapshotReserve == "" {
+		config.PercentageSnapshotReserve = DefaultPercentageSnapshotReserve
 	}
 
 	if config.UnixPermissions == "" {

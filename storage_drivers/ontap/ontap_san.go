@@ -202,6 +202,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	size := strconv.FormatUint(sizeBytes, 10)
 	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
+	percentageSnapshotReserve := utils.GetV(opts, "percentageSnapshotReserve", d.Config.PercentageSnapshotReserve)
 	unixPermissions := utils.GetV(opts, "unixPermissions", d.Config.UnixPermissions)
 	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
 	exportPolicy := utils.GetV(opts, "exportPolicy", d.Config.ExportPolicy)
@@ -224,22 +225,23 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	}
 
 	log.WithFields(log.Fields{
-		"name":            name,
-		"size":            size,
-		"spaceReserve":    spaceReserve,
-		"snapshotPolicy":  snapshotPolicy,
-		"unixPermissions": unixPermissions,
-		"snapshotDir":     snapshotDir,
-		"exportPolicy":    exportPolicy,
-		"aggregate":       aggregate,
-		"securityStyle":   securityStyle,
-		"encryption":      encryption,
+		"name":                      name,
+		"size":                      size,
+		"spaceReserve":              spaceReserve,
+		"snapshotPolicy":            snapshotPolicy,
+		"percentageSnapshotReserve": percentageSnapshotReserve,
+		"unixPermissions":           unixPermissions,
+		"snapshotDir":               snapshotDir,
+		"exportPolicy":              exportPolicy,
+		"aggregate":                 aggregate,
+		"securityStyle":             securityStyle,
+		"encryption":                encryption,
 	}).Debug("Creating Flexvol.")
 
 	// Create the volume
 	volCreateResponse, err := d.API.VolumeCreate(
 		name, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt)
+		unixPermissions, exportPolicy, securityStyle, encrypt, percentageSnapshotReserve)
 
 	if err = api.GetError(volCreateResponse, err); err != nil {
 		if zerr, ok := err.(api.ZapiError); ok {

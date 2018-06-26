@@ -468,13 +468,14 @@ func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse,
 // VolumeCreate creates a volume with the specified options
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt *bool) (response azgo.VolumeCreateResponse, err error) {
+	exportPolicy, securityStyle string, encrypt *bool, percentageSnapshotReserve) (response azgo.VolumeCreateResponse, err error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
 		SetContainingAggrName(aggregateName).
 		SetSize(size).
 		SetSpaceReserve(spaceReserve).
 		SetSnapshotPolicy(snapshotPolicy).
+		SetPercentageSnapshotReserve(percentageSnapshotReserve).
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle)

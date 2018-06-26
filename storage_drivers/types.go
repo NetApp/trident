@@ -82,15 +82,16 @@ type OntapStorageDriverConfig struct {
 }
 
 type OntapStorageDriverConfigDefaults struct {
-	SpaceReserve    string `json:"spaceReserve"`
-	SnapshotPolicy  string `json:"snapshotPolicy"`
-	UnixPermissions string `json:"unixPermissions"`
-	SnapshotDir     string `json:"snapshotDir"`
-	ExportPolicy    string `json:"exportPolicy"`
-	SecurityStyle   string `json:"securityStyle"`
-	SplitOnClone    string `json:"splitOnClone"`
-	FileSystemType  string `json:"fileSystemType"`
-	Encryption      string `json:"encryption"`
+	SpaceReserve              string `json:"spaceReserve"`
+	SnapshotPolicy            string `json:"snapshotPolicy"`
+	PercentageSnapshotReserve string `json:"percentageSnapshotReserve"`
+	UnixPermissions           string `json:"unixPermissions"`
+	SnapshotDir               string `json:"snapshotDir"`
+	ExportPolicy              string `json:"exportPolicy"`
+	SecurityStyle             string `json:"securityStyle"`
+	SplitOnClone              string `json:"splitOnClone"`
+	FileSystemType            string `json:"fileSystemType"`
+	Encryption                string `json:"encryption"`
 	CommonStorageDriverConfigDefaults
 }
 
