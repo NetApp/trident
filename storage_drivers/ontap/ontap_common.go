@@ -1169,6 +1169,9 @@ func getVolumeOptsCommon(
 	if volConfig.ExportPolicy != "" {
 		opts["exportPolicy"] = volConfig.ExportPolicy
 	}
+	if volConfig.SpaceAllocate != "" {
+		opts["spaceAllocate"] = volConfig.SpaceAllocate
+	}
 	if volConfig.SpaceReserve != "" {
 		opts["spaceReserve"] = volConfig.SpaceReserve
 	}
