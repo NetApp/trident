@@ -199,8 +199,8 @@ func discoverInstallationEnvironment() error {
 	// Default deployment image to what etcd was built with
 	if etcdImage == "" {
 		etcdImage = tridentconfig.BuildEtcdImage
-	} else if etcdImage != tridentconfig.BuildEtcdImage {
-		log.Warning("The specified etcd image is different than the version Trident is tested with.")
+	} else if !strings.Contains(etcdImage, tridentconfig.BuildEtcdVersion) {
+		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", tridentconfig.BuildEtcdVersion)
 	}
 
 	// Ensure we're on Linux

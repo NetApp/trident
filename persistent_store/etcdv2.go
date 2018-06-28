@@ -94,10 +94,7 @@ func (p *EtcdClientV2) checkEtcdVersion() {
 	if comparison, err := buildEtcdVersion.Compare(version.Server); err != nil {
 		log.Errorf("Could not parse etcd version '%s': %v", version.Server, err)
 	} else if comparison != 0 {
-		log.WithFields(log.Fields{
-			"currentEtcdVersion":   version.Server,
-			"preferredEtcdVersion": config.BuildEtcdVersion,
-		}).Warning("The detected etcd version is different than the version Trident is tested with.")
+		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", config.BuildEtcdVersion)
 	} else {
 		log.WithFields(log.Fields{
 			"etcdVersion": version.Server,
