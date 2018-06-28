@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/k8s_client"
+	"github.com/netapp/trident/cli/ucp_client"
 )
 
 var (
@@ -21,6 +22,9 @@ func init() {
 	uninstallCmd.Flags().BoolVarP(&deleteAll, "all", "a", false, "Deletes almost all artifacts of Trident, including the PVC and PV used by Trident; however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!")
 	uninstallCmd.Flags().BoolVarP(&silent, "silent", "", false, "Disable most output during uninstallation.")
 	uninstallCmd.Flags().BoolVar(&csi, "csi", false, "Uninstall CSI Trident (experimental).")
+
+	uninstallCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token.")
+	uninstallCmd.Flags().StringVar(&ucpHost, "ucp-host", "", "IP address of the UCP host.")
 }
 
 var uninstallCmd = &cobra.Command{
@@ -62,6 +66,14 @@ func discoverUninstallationEnvironment() error {
 	client, err = k8s_client.NewKubectlClient()
 	if err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
+	}
+
+	useKubernetesRBAC = true
+	if ucpBearerToken != "" || ucpHost != "" {
+		useKubernetesRBAC = false
+		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
+			return err
+		}
 	}
 
 	// Infer installation namespace if not specified
@@ -141,6 +153,12 @@ func uninstallTrident() error {
 	var anyErrors = false
 
 	if !csi {
+
+		log.WithFields(log.Fields{
+			"useKubernetesRBAC": useKubernetesRBAC,
+			"ucpBearerToken":    ucpBearerToken,
+			"ucpHost":           ucpHost,
+		}).Debug("Dumping fields.")
 
 		// Delete Trident deployment
 		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
