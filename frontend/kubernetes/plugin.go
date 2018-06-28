@@ -1188,6 +1188,19 @@ func (p *Plugin) processAddedClass(class *k8sstoragev1.StorageClass) {
 			}
 			scConfig.AdditionalPools = additionalPools
 
+		case storageattribute.ExcludeStoragePools:
+			// format:  excludeStoragePools: "backend1:pool1,pool2;backend2:pool1"
+			excludeStoragePools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"storageClass":             class.Name,
+					"storageClass_provisioner": class.Provisioner,
+					"storageClass_parameters":  class.Parameters,
+					"error":                    err,
+				}).Errorf("Kubernetes frontend couldn't process the storage class parameter %s", k)
+			}
+			scConfig.ExcludePools = excludeStoragePools
+
 		case storageattribute.StoragePools:
 			// format:  storagePools: "backend1:pool1,pool2;backend2:pool1"
 			pools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)

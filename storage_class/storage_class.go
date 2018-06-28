@@ -5,6 +5,7 @@ package storageclass
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"sort"
 
 	log "github.com/sirupsen/logrus"
@@ -37,20 +38,96 @@ func NewFromPersistent(persistent *Persistent) *StorageClass {
 	return New(persistent.Config)
 }
 
+func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBackendName string, storagePoolList []string) bool {
+	if storagePool == nil {
+		return false
+	}
+	if storagePoolBackendName == "" {
+		return false
+	}
+	if storagePoolList == nil {
+		return false
+	}
+
+	poolsMatch := false
+	for _, storagePoolName := range storagePoolList {
+		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend.Name)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"storagePoolName":          storagePoolName,
+				"storagePool.Name":         storagePool.Name,
+				"storagePool.Backend.Name": storagePool.Backend.Name,
+				"storagePoolBackendName":   storagePoolBackendName,
+				"err": err,
+			}).Warning("Error comparing backend names in regexMatcher.")
+			continue
+		}
+		log.WithFields(log.Fields{
+			"storagePool.Backend.Name": storagePool.Backend.Name,
+			"storagePoolBackendName":   storagePoolBackendName,
+			"backendMatch":             backendMatch,
+		}).Debug("Compared backend names in regexMatcher.")
+		if !backendMatch {
+			continue
+		}
+
+		matched, err := regexp.MatchString(storagePoolName, storagePool.Name)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"storagePoolName":          storagePoolName,
+				"storagePool.Name":         storagePool.Name,
+				"storagePool.Backend.Name": storagePool.Backend.Name,
+				"poolsMatch":               poolsMatch,
+				"err":                      err,
+			}).Warning("Error comparing pool names in regexMatcher.")
+			continue
+		}
+		if matched {
+			poolsMatch = true
+		}
+		log.WithFields(log.Fields{
+			"storagePoolName":          storagePoolName,
+			"storagePool.Name":         storagePool.Name,
+			"storagePool.Backend.Name": storagePool.Backend.Name,
+			"poolsMatch":               poolsMatch,
+		}).Debug("Compared pool names in regexMatcher.")
+	}
+	return poolsMatch
+}
+
+func (s *StorageClass) regexMatcher(storagePool *storage.Pool, poolMap map[string][]string) bool {
+	poolsMatch := false
+	if len(poolMap) > 0 {
+		for storagePoolBackendName, storagePoolList := range poolMap {
+			poolsMatch = s.regexMatcherImpl(storagePool, storagePoolBackendName, storagePoolList)
+			if poolsMatch {
+				return true
+			}
+		}
+	}
+	return poolsMatch
+}
+
 func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 
-	// Check additionalStoragePools first, since it can yield a match result by itself
+	log.WithFields(log.Fields{
+		"storageClass": s.GetName(),
+		"config":       s.config,
+		"pool":         storagePool.Name,
+		"poolBackend":  storagePool.Backend.Name,
+	}).Debug("Checking if storage pool matches.")
+
+	// Check excludeStoragePools first, since it can reject a match
+	if len(s.config.ExcludePools) > 0 {
+		if matches := s.regexMatcher(storagePool, s.config.ExcludePools); matches {
+			return false
+		}
+	}
+
+	// Check additionalStoragePools next, since it can yield a match result by itself
 	if len(s.config.AdditionalPools) > 0 {
-		if storagePoolList, ok := s.config.AdditionalPools[storagePool.Backend.Name]; ok {
-			for _, storagePoolName := range storagePoolList {
-				if storagePoolName == storagePool.Name {
-					log.WithFields(log.Fields{
-						"storageClass": s.GetName(),
-						"pool":         storagePool.Name,
-					}).Debug("Matched by additionalStoragePools attribute.")
-					return true
-				}
-			}
+		if matches := s.regexMatcher(storagePool, s.config.AdditionalPools); matches {
+			return true
 		}
 
 		// Handle the sub-case where additionalStoragePools is specified (but didn't match) and
@@ -84,19 +161,12 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 		}
 	}
 
-	// The storagePools list is used to narrow the pool selection.  Therefore if no pools are
+	// The storagePools list is used to narrow the pool selection.  Therefore, if no pools are
 	// specified, then all pools can match.  If one or more pools are listed in the storage
 	// class, then the pool must be in the list.
 	poolsMatch := true
 	if len(s.config.Pools) > 0 {
-		poolsMatch = false
-		if storagePoolList, ok := s.config.Pools[storagePool.Backend.Name]; ok {
-			for _, storagePoolName := range storagePoolList {
-				if storagePoolName == storagePool.Name {
-					poolsMatch = true
-				}
-			}
-		}
+		poolsMatch = s.regexMatcher(storagePool, s.config.Pools)
 	}
 
 	result := attributesMatch && poolsMatch

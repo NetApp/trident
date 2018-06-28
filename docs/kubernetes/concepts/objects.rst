@@ -179,6 +179,7 @@ Attribute               Type                  Required Description
 attributes              map[string]string     no       See the attributes section below
 storagePools            map[string]StringList no       Map of backend names to lists of storage pools within
 additionalStoragePools  map[string]StringList no       Map of backend names to lists of storage pools within
+excludeStoragePools     map[string]StringList no       Map of backend names to lists of storage pools within
 ======================= ===================== ======== =====================================================
 
 Storage attributes and their possible values can be classified into two groups:
@@ -226,11 +227,15 @@ The ``additionalStoragePools`` parameter is used to extend the set of pools
 that Trident will use for provisioning, regardless of any pools selected by
 the ``attributes`` and ``storagePools`` parameters.
 
+The ``excludeStoragePools`` parameter is used to filter the set of pools
+that Trident will use for provisioning and will remove any pools that match.
+
 In the ``storagePools`` and ``additionalStoragePools`` parameters, each entry
 takes the form ``<backend>:<storagePoolList>``, where ``<storagePoolList>`` is
 a comma-separated list of storage pools for the specified backend. For example,
 a value for ``additionalStoragePools`` might look like
-``ontapnas_192.168.1.100:aggr1,aggr2;solidfire_192.168.1.101:bronze``. You can
+``ontapnas_192.168.1.100:aggr1,aggr2;solidfire_192.168.1.101:bronze``. These lists
+will accept regex values for both the backend and list values. You can
 use ``tridentctl get backend`` to get the list of backends and their pools.
 
 2. Kubernetes attributes: These attributes have no impact on the selection of

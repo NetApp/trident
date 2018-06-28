@@ -196,11 +196,12 @@ func TestSpecificBackends(t *testing.T) {
 		name      string
 		poolNames []string
 	}{
-		{name: "fast-a", poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
-		{name: "fast-b", poolNames: []string{tu.FastThinOnly,
-			tu.FastUniqueAttr}},
-		{name: "slow", poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots,
-			tu.MediumOverlap}},
+		{name: "fast-a",
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
+		{name: "fast-b",
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
+		{name: "slow",
+			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
 	} {
 		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
@@ -302,6 +303,226 @@ func TestSpecificBackends(t *testing.T) {
 			}
 			t.Errorf("%s:  Storage class failed to match storage pools %s",
 				test.name, strings.Join(expectedNames, ", "))
+		}
+	}
+}
+
+func TestRegex(t *testing.T) {
+	backends := make(map[string]*storage.Backend)
+	mockPools := tu.GetFakePools()
+	for _, c := range []struct {
+		backendName string
+		poolNames   []string
+	}{
+		{backendName: "fast-a",
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
+		{backendName: "fast-b",
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
+		{backendName: "slow",
+			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
+	} {
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
+		for _, poolName := range c.poolNames {
+			pools[poolName] = mockPools[poolName]
+		}
+		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		if err != nil {
+			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
+		}
+		backend, err := factory.NewStorageBackendForConfig(config)
+		if err != nil {
+			t.Fatalf("Unable to construct backend using mock driver.")
+		}
+		backends[c.backendName] = backend
+	}
+	for _, test := range []struct {
+		description string
+		sc          *StorageClass
+		expected    []*tu.PoolMatch
+	}{
+		{
+			description: "All pools for the 'slow' backend via regex '.*''",
+			sc: New(&Config{
+				Name: "regex1",
+				Pools: map[string][]string{
+					"slow": {".*"},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "TBD",
+			sc: New(&Config{
+				Name: "regex1b",
+				Pools: map[string][]string{
+					"slow": {"slow.*", tu.MediumOverlap},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "Implicitly exclude the medium-overlap pool via regex by only matching those starting with 'slow-'",
+			sc: New(&Config{
+				Name: "regex2",
+				Pools: map[string][]string{
+					"slow": {"slow-.*"},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+			},
+		},
+		{
+			description: "Backends whose names start with 'fast-' and all of their respective pools",
+			sc: New(&Config{
+				Name: "regex3",
+				Pools: map[string][]string{
+					"fast-.*": {".*"}, // All fast backends:  all their pools
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			description: "Backends {fast-a, slow} and all of their respective pools",
+			sc: New(&Config{
+				Name: "regex4",
+				Pools: map[string][]string{
+					"fast-a|slow": {".*"}, // fast-a or slow:  all their pools
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "Backends {fast-a, slow} and all of their respective pools",
+			sc: New(&Config{
+				Name: "regex5",
+				Pools: map[string][]string{
+					"(fast-a|slow|NOT_ACTUALLY_THERE)": {".*"}, // fast-a or slow or 1 that doesn't exist:  all their pools
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "Every backend and every pool",
+			sc: New(&Config{
+				Name: "regex6",
+				Pools: map[string][]string{
+					".*": {".*"}, // All backends:  all pools
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			description: "Exclusion test",
+			sc: New(&Config{
+				Name: "regex7",
+				Pools: map[string][]string{
+					".*": {".*"}, // Start off allowing all backends:  all pools
+				},
+				ExcludePools: map[string][]string{
+					"slow": {tu.MediumOverlap}, // Now, specifically exclude backend 'slow':  tu.MediumOverlap pool
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			description: "Exclude the FastThinOnly pools from the fast backends",
+			sc: New(&Config{
+				Name: "regex8",
+				Pools: map[string][]string{
+					"fast-.*": {".*"}, // All fast backends:  all their pools
+				},
+				ExcludePools: map[string][]string{
+					".*": {tu.FastThinOnly}, // Now, specifically exclude backend 'slow':  tu.MediumOverlap pool
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+	} {
+		// add the backends to the test StorageClass
+		for _, backend := range backends {
+			test.sc.CheckAndAddBackend(backend)
+		}
+		// validate the results for the test StorageClass
+		for _, protocol := range []config.Protocol{config.File, config.Block} {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(protocol) {
+				nameFound := false
+				for _, scName := range pool.StorageClasses {
+					if scName == test.sc.GetName() {
+						nameFound = true
+						break
+					}
+				}
+				if !nameFound {
+					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name)
+				}
+				matchIndex := -1
+				for i, e := range test.expected {
+					if e.Matches(pool) {
+						matchIndex = i
+						break
+					}
+				}
+				if matchIndex >= 0 {
+					// If we match, remove the match from the potential matches.
+					test.expected[matchIndex] = test.expected[len(test.expected)-1]
+					test.expected[len(test.expected)-1] = nil
+					test.expected = test.expected[:len(test.expected)-1]
+				} else {
+					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description, pool.Backend.Name, pool.Name)
+				}
+			}
+		}
+		if len(test.expected) > 0 {
+			expectedNames := make([]string, len(test.expected))
+			for i, e := range test.expected {
+				expectedNames[i] = e.String()
+			}
+			t.Errorf("%s:  Storage class failed to match storage pools %s", test.description, strings.Join(expectedNames, ", "))
 		}
 	}
 }

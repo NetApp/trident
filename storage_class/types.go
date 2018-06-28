@@ -20,6 +20,7 @@ type Config struct {
 	Attributes      map[string]storageattribute.Request `json:"attributes,omitempty"`
 	Pools           map[string][]string                 `json:"storagePools,omitempty"`
 	AdditionalPools map[string][]string                 `json:"additionalStoragePools,omitempty"`
+	ExcludePools    map[string][]string                 `json:"excludeStoragePools,omitempty"`
 }
 
 type External struct {

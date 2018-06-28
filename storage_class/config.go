@@ -17,6 +17,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 		Pools           map[string][]string `json:"storagePools,omitempty"`
 		RequiredStorage map[string][]string `json:"requiredStorage,omitempty"`
 		AdditionalPools map[string][]string `json:"additionalStoragePools,omitempty"`
+		ExcludePools    map[string][]string `json:"excludeStoragePools,omitempty"`
 	}
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
@@ -34,6 +35,8 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 		c.AdditionalPools = tmp.AdditionalPools
 	}
 
+	c.ExcludePools = tmp.ExcludePools
+
 	return err
 }
 
@@ -45,11 +48,13 @@ func (c *Config) MarshalJSON() ([]byte, error) {
 		Attributes      json.RawMessage     `json:"attributes,omitempty"`
 		Pools           map[string][]string `json:"storagePools,omitempty"`
 		AdditionalPools map[string][]string `json:"additionalStoragePools,omitempty"`
+		ExcludePools    map[string][]string `json:"excludeStoragePools,omitempty"`
 	}
 	tmp.Version = c.Version
 	tmp.Name = c.Name
 	tmp.Pools = c.Pools
 	tmp.AdditionalPools = c.AdditionalPools
+	tmp.ExcludePools = c.ExcludePools
 	attrs, err := storageattribute.MarshalRequestMap(c.Attributes)
 	if err != nil {
 		return nil, err

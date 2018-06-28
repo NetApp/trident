@@ -30,6 +30,7 @@ const (
 	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
 	StoragePools           = "storagePools"
 	AdditionalStoragePools = "additionalStoragePools"
+	ExcludeStoragePools    = "excludeStoragePools"
 )
 
 var attrTypes = map[string]Type{

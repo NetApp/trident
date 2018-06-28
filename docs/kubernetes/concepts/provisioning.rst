@@ -11,17 +11,18 @@ of these phases and the considerations involved in them, so that users can
 better understand how Trident handles their storage.
 
 Associating backend storage pools with a storage class relies on both the
-storage class's requested attributes and its ``storagePools`` and
-``additionalStoragePools`` lists.  When a user creates a storage class, Trident
-compares the attributes and pools offered by each of its backends to those
-requested by the storage class.  If a storage pool's attributes and name match
-all of the requested attributes and pool names, Trident adds that storage
-pool to the set of suitable storage pools for that storage class.  In addition,
-Trident adds all storage pools listed in the ``additionalStoragePools`` list to
-that set, even if their attributes do not fulfill all or any of the storage
-class's requested attributes.  Trident performs a similar process every time a
-user adds a new backend, checking whether its storage pools satisfy those of
-the existing storage classes.
+storage class's requested attributes and its ``storagePools``, 
+``additionalStoragePools``, and ``excludeStoragePools`` lists.  When a user 
+creates a storage class, Trident compares the attributes and pools offered by 
+each of its backends to those requested by the storage class.  If a storage pool's 
+attributes and name match all of the requested attributes and pool names, Trident 
+adds that storage pool to the set of suitable storage pools for that storage class.  
+In addition, Trident adds all storage pools listed in the ``additionalStoragePools`` 
+list to that set, even if their attributes do not fulfill all or any of the storage
+class's requested attributes.  Use the ``excludeStoragePools`` list to override and 
+remove storage pools from use for a storage class. Trident performs a similar process
+every time a user adds a new backend, checking whether its storage pools satisfy 
+those of the existing storage classes and removing any that have been marked as excluded.
 
 Trident then uses the associations between storage classes and storage pools to
 determine where to provision volumes.  When a user creates a volume, Trident
