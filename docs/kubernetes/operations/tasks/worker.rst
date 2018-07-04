@@ -82,12 +82,15 @@ iSCSI
            find_multipaths yes
        }
        EOF
-
+       
+       sudo systemctl enable multipath-tools.service
        sudo service multipath-tools restart
 
-  #. Ensure that ``open-iscsi`` and ``multipath-tools`` are running:
+  #. Ensure that ``open-iscsi`` and ``multipath-tools`` are enabled and running:
 
      .. code-block:: bash
-
+       
+       sudo systemctl status multipath-tools
+       sudo systemctl enable open-iscsi.service
        sudo service open-iscsi start
-       sudo service multipath-tools start
+       sudo systemctl status open-iscsi
