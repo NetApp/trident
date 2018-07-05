@@ -1,4 +1,6 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+/*
+ * Copyright 2018 NetApp, Inc. All Rights Reserved.
+ */
 
 package config
 
@@ -68,7 +70,7 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin    = "v1.5.0"
-	KubernetesVersionMax    = "v1.10.0"
+	KubernetesVersionMax    = "v1.11.0"
 	KubernetesCSIVersionMin = "v1.10.0"
 )
 
