@@ -31,7 +31,6 @@ type Driver interface {
 	Destroy(name string) error
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	SnapshotList(name string) ([]Snapshot, error)
-	List() ([]string, error)
 	Get(name string) error
 	CreatePrepare(volConfig *VolumeConfig) bool
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.

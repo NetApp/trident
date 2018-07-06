@@ -275,14 +275,6 @@ func (d *StorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 	return nil, errors.New("fake driver does not support SnapshotList")
 }
 
-func (d *StorageDriver) List() ([]string, error) {
-	vols := []string{}
-	for vol := range d.Volumes {
-		vols = append(vols, vol)
-	}
-	return vols, nil
-}
-
 func (d *StorageDriver) Get(name string) error {
 
 	_, ok := d.Volumes[name]

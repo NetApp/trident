@@ -635,62 +635,6 @@ func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[s
 	return errors.New("cloning with E-Series is not supported")
 }
 
-// List the list of volumes associated with this tenant
-func (d *SANStorageDriver) List() ([]string, error) {
-	prefix := *d.Config.StoragePrefix
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "List",
-			"Type":   "SANStorageDriver",
-			"prefix": prefix,
-		}
-		log.WithFields(fields).Debug(">>>> List")
-		defer log.WithFields(fields).Debug("<<<< List")
-	}
-
-	volumeNames, err := d.API.ListVolumes()
-	if err != nil {
-		return nil, fmt.Errorf("could not get the list of volumes: %v", err)
-	}
-
-	// Filter out internal volumes
-	filteredVolumeNames := make([]string, 0, len(volumeNames))
-	reposRegex, _ := regexp.Compile("^repos_\\d{4}$")
-	for _, name := range volumeNames {
-		if !reposRegex.MatchString(name) {
-			filteredVolumeNames = append(filteredVolumeNames, name)
-		}
-	}
-
-	if len(prefix) == 0 {
-
-		// No prefix, so just return the whole list
-		log.WithField("Count", len(filteredVolumeNames)).Debug("Returning list of all volume names.")
-		return filteredVolumeNames, nil
-
-	} else {
-
-		// Return only the volume names with the specified prefix
-		prefixedVolumeNames := make([]string, 0, len(filteredVolumeNames))
-		for _, name := range filteredVolumeNames {
-
-			if !strings.HasPrefix(name, prefix) {
-				continue
-			}
-
-			// The prefix shouldn't be visible to the user
-			prefixedVolumeNames = append(prefixedVolumeNames, strings.TrimPrefix(name, prefix))
-		}
-
-		log.WithFields(log.Fields{
-			"Count":  len(prefixedVolumeNames),
-			"Prefix": prefix,
-		}).Debug("Returning list of prefixed volume names.")
-		return prefixedVolumeNames, nil
-	}
-}
-
 // Get test for the existence of a volume
 func (d *SANStorageDriver) Get(name string) error {
 

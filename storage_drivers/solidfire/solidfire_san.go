@@ -793,31 +793,6 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	return nil
 }
 
-// List of volumes according to backend device
-func (d *SANStorageDriver) List() (vols []string, err error) {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "SANStorageDriver"}
-		log.WithFields(fields).Debug(">>>> List")
-		defer log.WithFields(fields).Debug("<<<< List")
-	}
-
-	var req api.ListVolumesForAccountRequest
-	req.AccountID = d.AccountID
-	volumes, err := d.Client.ListVolumesForAccount(&req)
-	for _, v := range volumes {
-		if v.Status != "deleted" {
-			attrs, _ := v.Attributes.(map[string]interface{})
-			dName := strings.Replace(v.Name, d.LegacyNamePrefix, "", -1)
-			if str, ok := attrs["docker-name"].(string); ok {
-				dName = strings.Replace(str, d.LegacyNamePrefix, "", -1)
-			}
-			vols = append(vols, dName)
-		}
-	}
-	return vols, err
-}
-
 // SnapshotList returns the list of snapshots associated with the named volume
 func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 

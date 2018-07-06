@@ -621,34 +621,6 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 	return snapshots, nil
 }
 
-// Return the list of volumes associated with the tenant
-func GetVolumeList(client *api.Client, config *drivers.OntapStorageDriverConfig) ([]string, error) {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "GetVolumeList", "Type": "ontap_common"}
-		log.WithFields(fields).Debug(">>>> GetVolumeList")
-		defer log.WithFields(fields).Debug("<<<< GetVolumeList")
-	}
-
-	prefix := *config.StoragePrefix
-
-	volResponse, err := client.VolumeList(prefix)
-	if err = api.GetError(volResponse, err); err != nil {
-		return nil, fmt.Errorf("error enumerating volumes: %v", err)
-	}
-
-	var volumes []string
-
-	// AttributesList() returns []VolumeAttributesType
-	for _, volume := range volResponse.Result.AttributesList() {
-		volIDAttrs := volume.VolumeIdAttributes()
-		volName := string(volIDAttrs.Name())[len(prefix):]
-		volumes = append(volumes, volName)
-	}
-
-	return volumes, nil
-}
-
 // GetVolume checks for the existence of a volume.  It returns nil if the volume
 // exists and an error if it does not (or the API call fails).
 func GetVolume(name string, client *api.Client, config *drivers.OntapStorageDriverConfig) error {

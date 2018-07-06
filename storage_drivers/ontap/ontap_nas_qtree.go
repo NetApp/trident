@@ -436,44 +436,6 @@ func (d *NASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, e
 	return []storage.Snapshot{}, nil
 }
 
-// Return the list of volumes associated with this tenant
-func (d *NASQtreeStorageDriver) List() ([]string, error) {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "NASQtreeStorageDriver"}
-		log.WithFields(fields).Debug(">>>> List")
-		defer log.WithFields(fields).Debug("<<<< List")
-	}
-
-	// Generic user-facing message
-	listError := errors.New("volume list failed")
-
-	prefix := *d.Config.StoragePrefix
-	volumes := make([]string, 0)
-
-	// Get all qtrees in all Flexvols managed by this driver
-	listResponse, err := d.API.QtreeList(prefix, d.FlexvolNamePrefix())
-	if err = api.GetError(listResponse, err); err != nil {
-		log.Errorf("Qtree list failed. %v", err)
-		return volumes, listError
-	}
-
-	// AttributesList() returns []QtreeInfoType
-	for _, qtree := range listResponse.Result.AttributesList() {
-
-		// Don't include deleted qtrees
-		if strings.HasPrefix(qtree.Qtree(), deletedQtreeNamePrefix) {
-			continue
-		}
-
-		// Strip the prefix
-		vol := qtree.Qtree()[len(prefix):]
-		volumes = append(volumes, vol)
-	}
-
-	return volumes, nil
-}
-
 // Test for the existence of a volume
 func (d *NASQtreeStorageDriver) Get(name string) error {
 

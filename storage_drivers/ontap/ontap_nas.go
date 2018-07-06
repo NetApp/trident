@@ -320,18 +320,6 @@ func (d *NASStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error)
 	return GetSnapshotList(name, &d.Config, d.API)
 }
 
-// Return the list of volumes associated with this tenant
-func (d *NASStorageDriver) List() ([]string, error) {
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "NASStorageDriver"}
-		log.WithFields(fields).Debug(">>>> List")
-		defer log.WithFields(fields).Debug("<<<< List")
-	}
-
-	return GetVolumeList(d.API, &d.Config)
-}
-
 // Test for the existence of a volume
 func (d *NASStorageDriver) Get(name string) error {
 
