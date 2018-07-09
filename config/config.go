@@ -72,6 +72,8 @@ const (
 	KubernetesVersionMin    = "v1.5.0"
 	KubernetesVersionMax    = "v1.11.0"
 	KubernetesCSIVersionMin = "v1.10.0"
+
+	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 var (

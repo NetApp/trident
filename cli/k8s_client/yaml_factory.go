@@ -1,4 +1,4 @@
-package k8s_client
+package k8sclient
 
 import (
 	"encoding/base64"
@@ -58,7 +58,7 @@ func GetClusterRoleYAML(flavor OrchestratorFlavor, version *utils.Version, csi b
 
 const clusterRoleOpenShiftYAML = `---
 kind: ClusterRole
-apiVersion: v1
+apiVersion: authorization.openshift.io/v1
 metadata:
   name: trident
 rules:
@@ -81,7 +81,7 @@ rules:
 
 const clusterRoleOpenShiftCSIYAML = `---
 kind: ClusterRole
-apiVersion: v1
+apiVersion: authorization.openshift.io/v1
 metadata:
   name: trident-csi
 rules:
@@ -96,7 +96,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]
@@ -148,7 +148,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]
@@ -214,7 +214,7 @@ func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, vers
 
 const clusterRoleBindingOpenShiftYAMLTemplate = `---
 kind: ClusterRoleBinding
-apiVersion: v1 
+apiVersion: authorization.openshift.io/v1
 metadata:
   name: {NAME}
 subjects:
@@ -807,4 +807,217 @@ data:
   node.session.auth.password: {INITIATOR_SECRET}
   node.session.auth.username_in: {USER_NAME}
   node.session.auth.password_in: {TARGET_SECRET}
+`
+
+func GetInstallerServiceAccountYAML() string {
+
+	return installerServiceAccountYAML
+}
+
+const installerServiceAccountYAML = `---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trident-installer
+`
+
+func GetInstallerClusterRoleYAML(flavor OrchestratorFlavor, version *utils.Version) string {
+	switch flavor {
+	case FlavorOpenShift:
+		return installerClusterRoleOpenShiftYAML
+	default:
+		fallthrough
+	case FlavorKubernetes:
+		if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
+			return strings.Replace(installerClusterRoleKubernetesYAMLTemplate, "{API_VERSION}", "rbac.authorization.k8s.io/v1", 1)
+		} else {
+			return strings.Replace(installerClusterRoleKubernetesYAMLTemplate, "{API_VERSION}", "rbac.authorization.k8s.io/v1alpha1", 1)
+		}
+	}
+}
+
+const installerClusterRoleOpenShiftYAML = `---
+kind: ClusterRole
+apiVersion: "authorization.openshift.io/v1"
+metadata:
+  name: trident-installer
+rules:
+- apiGroups: [""]
+  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+  verbs: ["*"]
+- apiGroups: ["extensions"]
+  resources: ["deployments", "daemonsets"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["statefulsets", "daemonsets", "deployments"]
+  verbs: ["*"]
+- apiGroups: ["authorization.openshift.io", "rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["*"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses", "volumeattachments"]
+  verbs: ["*"]
+- apiGroups: ["security.openshift.io"]
+  resources: ["securitycontextconstraints"]
+  verbs: ["*"]
+`
+
+const installerClusterRoleKubernetesYAMLTemplate = `---
+kind: ClusterRole
+apiVersion: {API_VERSION}
+metadata:
+  name: trident-installer
+rules:
+- apiGroups: [""]
+  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+  verbs: ["*"]
+- apiGroups: ["extensions"]
+  resources: ["deployments", "daemonsets"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["statefulsets", "daemonsets", "deployments"]
+  verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["*"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses", "volumeattachments"]
+  verbs: ["*"]
+`
+
+func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, version *utils.Version) string {
+
+	var crbYAML string
+
+	switch flavor {
+	case FlavorOpenShift:
+		crbYAML = installerClusterRoleBindingOpenShiftYAMLTemplate
+	default:
+		fallthrough
+	case FlavorKubernetes:
+		if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
+			crbYAML = installerClusterRoleBindingKubernetesV1YAMLTemplate
+		} else {
+			crbYAML = installerClusterRoleBindingKubernetesV1Alpha1YAMLTemplate
+		}
+	}
+
+	crbYAML = strings.Replace(crbYAML, "{NAMESPACE}", namespace, 1)
+	return crbYAML
+}
+
+const installerClusterRoleBindingOpenShiftYAMLTemplate = `---
+kind: ClusterRoleBinding
+apiVersion: authorization.openshift.io/v1
+metadata:
+  name: trident-installer
+subjects:
+  - kind: ServiceAccount
+    name: trident-installer
+    namespace: {NAMESPACE}
+roleRef:
+  name: trident-installer
+`
+
+const installerClusterRoleBindingKubernetesV1YAMLTemplate = `---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: trident-installer
+subjects:
+  - kind: ServiceAccount
+    name: trident-installer
+    namespace: {NAMESPACE}
+roleRef:
+  kind: ClusterRole
+  name: trident-installer
+  apiGroup: rbac.authorization.k8s.io
+`
+
+const installerClusterRoleBindingKubernetesV1Alpha1YAMLTemplate = `---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: trident-installer
+subjects:
+  - kind: ServiceAccount
+    name: trident-installer
+    namespace: {NAMESPACE}
+roleRef:
+  kind: ClusterRole
+  name: trident-installer
+  apiGroup: rbac.authorization.k8s.io
+`
+
+func GetInstallerPodYAML(label, tridentImage string, commandArgs []string) string {
+
+	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
+
+	jobYAML := strings.Replace(installerPodTemplate, "{LABEL}", label, 1)
+	jobYAML = strings.Replace(jobYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
+	jobYAML = strings.Replace(jobYAML, "{COMMAND}", command, 1)
+	return jobYAML
+}
+
+const installerPodTemplate = `---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trident-installer
+  labels:
+    app: {LABEL}
+spec:
+  serviceAccount: trident-installer
+  containers:
+  - name: trident-installer
+    image: {TRIDENT_IMAGE}
+    workingDir: /
+    command: {COMMAND}
+    volumeMounts:
+    - name: setup-dir
+      mountPath: /setup
+  restartPolicy: Never
+  volumes:
+  - name: setup-dir
+    configMap:
+      name: trident-installer
+`
+
+func GetUninstallerPodYAML(label, tridentImage string, commandArgs []string) string {
+
+	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
+
+	jobYAML := strings.Replace(uninstallerPodTemplate, "{LABEL}", label, 1)
+	jobYAML = strings.Replace(jobYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
+	jobYAML = strings.Replace(jobYAML, "{COMMAND}", command, 1)
+	return jobYAML
+}
+
+const uninstallerPodTemplate = `---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trident-installer
+  labels:
+    app: {LABEL}
+spec:
+  serviceAccount: trident-installer
+  containers:
+  - name: trident-installer
+    image: {TRIDENT_IMAGE}
+    workingDir: /
+    command: {COMMAND}
+  restartPolicy: Never
+`
+
+func GetOpenShiftSCCQueryYAML(scc string) string {
+	return strings.Replace(openShiftSCCQueryYAMLTemplate, "{SCC}", scc, 1)
+}
+
+const openShiftSCCQueryYAMLTemplate = `
+---
+kind: SecurityContextConstraints
+apiVersion: security.openshift.io/v1
+metadata:
+  name: {SCC}
 `

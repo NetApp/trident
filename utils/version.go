@@ -163,6 +163,10 @@ func (v *Version) MinorVersion() uint {
 	return v.components[1]
 }
 
+func (v *Version) MinorVersionString() string {
+	return strconv.FormatUint(uint64(v.components[1]), 10)
+}
+
 func (v *Version) PatchVersion() uint {
 	if len(v.components) < 3 {
 		return 0

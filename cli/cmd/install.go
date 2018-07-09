@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -14,15 +17,19 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/ghodss/yaml"
+	"github.com/go-logfmt/logfmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/cli/ucp_client"
-
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -57,6 +64,7 @@ var (
 	useYAML      bool
 	silent       bool
 	csi          bool
+	inCluster    bool
 	pvName       string
 	pvcName      string
 	volumeName   string
@@ -69,10 +77,9 @@ var (
 	useKubernetesRBAC bool
 	ucpBearerToken    string
 	ucpHost           string
-	ucpTraceREST      bool
 
 	// CLI-based K8S client
-	client k8s_client.Interface
+	client k8sclient.Interface
 
 	// UCP REST client
 	ucpClient ucpclient.Interface
@@ -106,7 +113,9 @@ func init() {
 	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false, "Generate YAML files, but don't install anything.")
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
-	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (experimental).")
+	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (alpha, not for production clusters).")
+	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
+	installCmd.Flags().MarkHidden("in-cluster")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", "", "The name of the PVC used by Trident.")
 	installCmd.Flags().StringVar(&pvName, "pv", "", "The name of the PV used by Trident.")
@@ -117,8 +126,8 @@ func init() {
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The number of seconds to wait before timing out on Kubernetes operations.")
 
-	installCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token.")
-	installCmd.Flags().StringVar(&ucpHost, "ucp-host", "", "IP address of the UCP host.")
+	installCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token (for Docker UCP only).")
+	installCmd.Flags().StringVar(&ucpHost, "ucp-host", "", "IP address of the UCP host (for Docker UCP only).")
 }
 
 var installCmd = &cobra.Command{
@@ -152,9 +161,14 @@ var installCmd = &cobra.Command{
 			}
 			log.WithField("setupPath", setupPath).Info("Wrote installation YAML files.")
 
+		} else if inCluster {
+			// Run the installer as a Kubernetes pod
+			if err := installTridentInCluster(); err != nil {
+				log.Fatalf("Install failed; %v.  Resolve the issue; use 'tridentctl uninstall' "+
+					"to clean up; and try again.", err)
+			}
 		} else {
-
-			// Run the installer
+			// Run the installer directly using the Kubernetes client
 			if err := installTrident(); err != nil {
 				log.Fatalf("Install failed; %v.  Resolve the issue; use 'tridentctl uninstall' "+
 					"to clean up; and try again.", err)
@@ -208,9 +222,8 @@ func discoverInstallationEnvironment() error {
 		return errors.New("the Trident installer only runs on Linux")
 	}
 
-	// Create the CLI-based Kubernetes client
-	client, err = k8s_client.NewKubectlClient()
-	if err != nil {
+	// Create the Kubernetes client
+	if client, err = initClient(); err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 
@@ -245,9 +258,34 @@ func discoverInstallationEnvironment() error {
 	log.WithFields(log.Fields{
 		"installationNamespace": TridentPodNamespace,
 		"kubernetesVersion":     client.Version().String(),
-	}).Debug("Validated Trident installation environment.")
+	}).Debug("Validated installation environment.")
 
 	return nil
+}
+
+func initClient() (k8sclient.Interface, error) {
+
+	// Detect whether we are running inside a pod
+	if namespaceBytes, err := ioutil.ReadFile(tridentconfig.TridentNamespaceFile); err == nil {
+
+		// The namespace file exists, so we're in a pod.  Create an API-based client.
+		kubeConfig, err := rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
+		namespace := string(namespaceBytes)
+
+		log.WithField("namespace", namespace).Debug("Running in a pod, creating API-based client.")
+
+		return k8sclient.NewKubeClient(kubeConfig, namespace)
+
+	} else {
+
+		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
+		log.Debug("Running outside a pod, creating CLI-based client.")
+
+		return k8sclient.NewKubectlClient("")
+	}
 }
 
 func processInstallationArguments() {
@@ -351,33 +389,33 @@ func prepareYAMLFiles() error {
 
 	cleanYAMLFiles()
 
-	namespaceYAML := k8s_client.GetNamespaceYAML(TridentPodNamespace)
+	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8s_client.GetServiceAccountYAML(false)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(false)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
 
-	clusterRoleYAML := k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), false)
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), client.ServerVersion(), false)
 	if err = writeFile(clusterRolePath, clusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write cluster role YAML file; %v", err)
 	}
 
-	clusterRoleBindingYAML := k8s_client.GetClusterRoleBindingYAML(
-		TridentPodNamespace, client.Flavor(), client.Version(), false)
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(
+		TridentPodNamespace, client.Flavor(), client.ServerVersion(), false)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
 
-	pvcYAML := k8s_client.GetPVCYAML(pvcName, TridentPodNamespace, volumeSize, appLabelValue)
+	pvcYAML := k8sclient.GetPVCYAML(pvcName, TridentPodNamespace, volumeSize, appLabelValue)
 	if err = writeFile(pvcPath, pvcYAML); err != nil {
 		return fmt.Errorf("could not write PVC YAML file; %v", err)
 	}
 
-	deploymentYAML := k8s_client.GetDeploymentYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug)
+	deploymentYAML := k8sclient.GetDeploymentYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -391,43 +429,43 @@ func prepareCSIYAMLFiles() error {
 
 	cleanYAMLFiles()
 
-	namespaceYAML := k8s_client.GetNamespaceYAML(TridentPodNamespace)
+	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8s_client.GetServiceAccountYAML(true)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(true)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
 
-	clusterRoleYAML := k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), true)
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), client.ServerVersion(), true)
 	if err = writeFile(clusterRolePath, clusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write cluster role YAML file; %v", err)
 	}
 
-	clusterRoleBindingYAML := k8s_client.GetClusterRoleBindingYAML(
-		TridentPodNamespace, client.Flavor(), client.Version(), true)
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(
+		TridentPodNamespace, client.Flavor(), client.ServerVersion(), true)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
 
-	pvcYAML := k8s_client.GetPVCYAML(pvcName, TridentPodNamespace, volumeSize, appLabelValue)
+	pvcYAML := k8sclient.GetPVCYAML(pvcName, TridentPodNamespace, volumeSize, appLabelValue)
 	if err = writeFile(pvcPath, pvcYAML); err != nil {
 		return fmt.Errorf("could not write PVC YAML file; %v", err)
 	}
 
-	serviceYAML := k8s_client.GetCSIServiceYAML(appLabelValue)
+	serviceYAML := k8sclient.GetCSIServiceYAML(appLabelValue)
 	if err = writeFile(csiServicePath, serviceYAML); err != nil {
 		return fmt.Errorf("could not write service YAML file; %v", err)
 	}
 
-	statefulSetYAML := k8s_client.GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug)
+	statefulSetYAML := k8sclient.GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug)
 	if err = writeFile(csiStatefulSetPath, statefulSetYAML); err != nil {
 		return fmt.Errorf("could not write statefulset YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8s_client.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug)
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug)
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -469,14 +507,14 @@ func installTrident() (returnError error) {
 		if installed, namespace, err := isTridentInstalled(); err != nil {
 			return fmt.Errorf("could not check if Trident deployment exists; %v", err)
 		} else if installed {
-			return fmt.Errorf("Trident is already installed in namespace %s", namespace)
+			return fmt.Errorf("trident is already installed in namespace %s", namespace)
 		}
 
 	} else {
 
 		// Ensure CSI minimum requirements are met
 		minCSIVersion := utils.MustParseSemantic(tridentconfig.KubernetesCSIVersionMin)
-		if !client.Version().AtLeast(minCSIVersion) {
+		if !client.ServerVersion().AtLeast(minCSIVersion) {
 			return fmt.Errorf("CSI Trident requires Kubernetes %s or later", minCSIVersion.ShortString())
 		}
 
@@ -623,18 +661,10 @@ func installTrident() (returnError error) {
 
 	// Create namespace if it doesn't exist
 	if !namespaceExists {
-		if useYAML && fileExists(namespacePath) {
-			returnError = client.CreateObjectByFile(namespacePath)
-			logFields = log.Fields{"path": namespacePath}
-		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetNamespaceYAML(TridentPodNamespace))
-			logFields = log.Fields{"namespace": TridentPodNamespace}
-		}
+		returnError = createNamespace()
 		if returnError != nil {
-			returnError = fmt.Errorf("could not create namespace %s; %v", TridentPodNamespace, returnError)
 			return
 		}
-		log.WithFields(logFields).Info("Created namespace.")
 	}
 
 	// Remove any RBAC objects from a previous Trident installation
@@ -660,7 +690,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(pvcPath)
 			logFields = log.Fields{"path": pvcPath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetPVCYAML(
+			returnError = client.CreateObjectByYAML(k8sclient.GetPVCYAML(
 				pvcName, TridentPodNamespace, volumeSize, appLabelValue))
 			logFields = log.Fields{}
 		}
@@ -720,7 +750,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8s_client.GetDeploymentYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug))
+				k8sclient.GetDeploymentYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -741,7 +771,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(csiServicePath)
 			logFields = log.Fields{"path": csiServicePath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetCSIServiceYAML(appLabelValue))
+			returnError = client.CreateObjectByYAML(k8sclient.GetCSIServiceYAML(appLabelValue))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -761,7 +791,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": csiStatefulSetPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8s_client.GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug))
+				k8sclient.GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, appLabelValue, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -781,7 +811,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": csiDaemonSetPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8s_client.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug))
+				k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -811,13 +841,32 @@ func installTrident() (returnError error) {
 	return nil
 }
 
+func createNamespace() (returnError error) {
+
+	var logFields log.Fields
+
+	if useYAML && fileExists(namespacePath) {
+		returnError = client.CreateObjectByFile(namespacePath)
+		logFields = log.Fields{"path": namespacePath}
+	} else {
+		returnError = client.CreateObjectByYAML(k8sclient.GetNamespaceYAML(TridentPodNamespace))
+		logFields = log.Fields{"namespace": TridentPodNamespace}
+	}
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create namespace %s; %v", TridentPodNamespace, returnError)
+		return
+	}
+	log.WithFields(logFields).Info("Created namespace.")
+	return nil
+}
+
 func loadStorageDriver() (backend *storage.Backend, returnError error) {
 
 	// Set up telemetry so any PV we create has the correct metadata
 	tridentconfig.OrchestratorTelemetry = tridentconfig.Telemetry{
 		TridentVersion:  tridentconfig.OrchestratorVersion.String(),
 		Platform:        "kubernetes",
-		PlatformVersion: client.Version().ShortString(),
+		PlatformVersion: client.ServerVersion().ShortString(),
 	}
 
 	if csi {
@@ -863,7 +912,7 @@ func createRBACObjects() (returnError error) {
 		returnError = client.CreateObjectByFile(serviceAccountPath)
 		logFields = log.Fields{"path": serviceAccountPath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8s_client.GetServiceAccountYAML(csi))
+		returnError = client.CreateObjectByYAML(k8sclient.GetServiceAccountYAML(csi))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -879,7 +928,8 @@ func createRBACObjects() (returnError error) {
 			returnError = client.CreateObjectByFile(clusterRolePath)
 			logFields = log.Fields{"path": clusterRolePath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), csi))
+			returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleYAML(client.Flavor(),
+				client.ServerVersion(), csi))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -893,8 +943,8 @@ func createRBACObjects() (returnError error) {
 			returnError = client.CreateObjectByFile(clusterRoleBindingPath)
 			logFields = log.Fields{"path": clusterRoleBindingPath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetClusterRoleBindingYAML(
-				TridentPodNamespace, client.Flavor(), client.Version(), csi))
+			returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleBindingYAML(
+				TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -903,13 +953,27 @@ func createRBACObjects() (returnError error) {
 		}
 		log.WithFields(logFields).Info("Created cluster role binding.")
 
-		// If OpenShift, add Trident to security context constraint
-		if client.Flavor() == k8s_client.FlavorOpenShift {
-			if returnError = client.AddTridentUserToOpenShiftSCC(); returnError != nil {
-				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-				return
+		// If OpenShift, add Trident to security context constraint(s)
+		if client.Flavor() == k8sclient.FlavorOpenShift {
+			if csi {
+				if returnError = client.AddTridentUserToOpenShiftSCC("trident-csi", "privileged"); returnError != nil {
+					returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
+					return
+				}
+				log.WithFields(log.Fields{
+					"scc":  "privileged",
+					"user": "trident-csi",
+				}).Info("Added security context constraint user.")
+			} else {
+				if returnError = client.AddTridentUserToOpenShiftSCC("trident", "anyuid"); returnError != nil {
+					returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
+					return
+				}
+				log.WithFields(log.Fields{
+					"scc":  "anyuid",
+					"user": "trident",
+				}).Info("Added security context constraint user.")
 			}
-			log.Info("Added Trident user to security context constraint.")
 		}
 
 	} else {
@@ -933,30 +997,33 @@ func createRBACObjects() (returnError error) {
 
 func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
-	logFunc := log.Info
-	if logLevel == log.DebugLevel {
-		logFunc = log.Debug
+	logFunc := func(fields log.Fields) func(args ...interface{}) {
+		if logLevel == log.DebugLevel {
+			return log.WithFields(fields).Debug
+		} else {
+			return log.WithFields(fields).Info
+		}
 	}
 
 	if useKubernetesRBAC {
 
 		// Delete cluster role binding
-		clusterRoleBindingYAML := k8s_client.GetClusterRoleBindingYAML(
-			TridentPodNamespace, client.Flavor(), client.Version(), csi)
+		clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(
+			TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi)
 		if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
 			log.WithField("error", err).Warning("Could not delete cluster role binding.")
 			anyErrors = true
 		} else {
-			logFunc("Deleted cluster role binding.")
+			logFunc(log.Fields{})("Deleted cluster role binding.")
 		}
 
 		// Delete cluster role
-		clusterRoleYAML := k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), csi)
+		clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), client.ServerVersion(), csi)
 		if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
 			log.WithField("error", err).Warning("Could not delete cluster role.")
 			anyErrors = true
 		} else {
-			logFunc("Deleted cluster role.")
+			logFunc(log.Fields{})("Deleted cluster role.")
 		}
 	} else {
 		removedRoleFromAccount, clientError := ucpClient.RemoveTridentRoleFromServiceAccount(TridentPodNamespace)
@@ -979,152 +1046,47 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	}
 
 	// Delete service account
-	serviceAccountYAML := k8s_client.GetServiceAccountYAML(csi)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(csi)
 	if err := client.DeleteObjectByYAML(serviceAccountYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete service account.")
 		anyErrors = true
 	} else {
-		logFunc("Deleted service account.")
+		logFunc(log.Fields{})("Deleted service account.")
 	}
 
 	if useKubernetesRBAC {
-		// If OpenShift, remove Trident from security context constraint
-		if client.Flavor() == k8s_client.FlavorOpenShift {
-			if err := client.RemoveTridentUserFromOpenShiftSCC(); err != nil {
-				log.WithField("error", err).Warning("Could not modify security context constraint.")
-				anyErrors = true
+		// If OpenShift, remove Trident from security context constraint(s)
+		if client.Flavor() == k8sclient.FlavorOpenShift {
+			if csi {
+				if err := client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged"); err != nil {
+					log.WithField("error", err).Warning("Could not modify security context constraint.")
+					anyErrors = true
+				} else {
+					logFunc(log.Fields{
+						"scc":  "privileged",
+						"user": "trident-csi",
+					})("Removed security context constraint user.")
+				}
 			} else {
-				logFunc("Removed Trident user from security context constraint.")
+				if err := client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid"); err != nil {
+					log.WithField("error", err).Warning("Could not modify security context constraint.")
+					anyErrors = true
+				} else {
+					logFunc(log.Fields{
+						"scc":  "anyuid",
+						"user": "trident",
+					})("Removed security context constraint user.")
+				}
 			}
 		}
 	}
 
 	return
 }
-
-/*
-func createRBACObjects() (returnError error) {
-
-	var logFields log.Fields
-
-	// Create service account
-	if useYAML && fileExists(serviceAccountPath) {
-		returnError = client.CreateObjectByFile(serviceAccountPath)
-		logFields = log.Fields{"path": serviceAccountPath}
-	} else {
-		returnError = client.CreateObjectByYAML(k8s_client.GetServiceAccountYAML(csi))
-		logFields = log.Fields{}
-	}
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create service account; %v", returnError)
-		return
-	}
-	log.WithFields(logFields).Info("Created service account.")
-
-	if useKubernetesRBAC {
-		// Create cluster role
-		if useYAML && fileExists(clusterRolePath) {
-			returnError = client.CreateObjectByFile(clusterRolePath)
-			logFields = log.Fields{"path": clusterRolePath}
-		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), csi))
-			logFields = log.Fields{}
-		}
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create cluster role; %v", returnError)
-			return
-		}
-		log.WithFields(logFields).Info("Created cluster role.")
-
-		// If OpenShift, add Trident to security context constraint
-		if client.Flavor() == k8s_client.FlavorOpenShift {
-			if returnError = client.AddTridentUserToOpenShiftSCC(); returnError != nil {
-				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-				return
-			}
-			log.Info("Added Trident user to security context constraint.")
-		} else {
-			returnError = client.CreateObjectByYAML(k8s_client.GetClusterRoleBindingYAML(
-				TridentPodNamespace, client.Flavor(), client.Version(), csi))
-			logFields = log.Fields{}
-		}
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create cluster role binding; %v", returnError)
-			return
-		}
-		log.WithFields(logFields).Info("Created cluster role binding.")
-
-	} else {
-		createdRole, clientError := ucpClient.CreateTridentRole()
-		logFields = log.Fields{"createdRole": createdRole}
-		if clientError != nil {
-			return fmt.Errorf("could not create Trident UCP role; %v", clientError)
-		}
-		log.WithFields(logFields).Info("Created Trident UCP role.")
-
-		addedRole, clientError := ucpClient.AddTridentRoleToServiceAccount()
-		logFields = log.Fields{"addedRole": addedRole}
-		if clientError != nil {
-			return fmt.Errorf("could not add Trident UCP role to service account; %v", clientError)
-		}
-		log.WithFields(logFields).Info("Add Trident UCP role to service account.")
-	}
-
-	return
-}
-
-func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
-
-	logFunc := log.Info
-	if logLevel == log.DebugLevel {
-		logFunc = log.Debug
-	}
-
-	// Delete cluster role binding
-	clusterRoleBindingYAML := k8s_client.GetClusterRoleBindingYAML(
-		TridentPodNamespace, client.Flavor(), client.Version(), csi)
-	if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
-		log.WithField("error", err).Warning("Could not delete cluster role binding.")
-		anyErrors = true
-	} else {
-		logFunc("Deleted cluster role binding.")
-	}
-
-	// Delete cluster role
-	clusterRoleYAML := k8s_client.GetClusterRoleYAML(client.Flavor(), client.Version(), csi)
-	if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
-		log.WithField("error", err).Warning("Could not delete cluster role.")
-		anyErrors = true
-	} else {
-		logFunc("Deleted cluster role.")
-	}
-
-	// Delete service account
-	serviceAccountYAML := k8s_client.GetServiceAccountYAML(csi)
-	if err := client.DeleteObjectByYAML(serviceAccountYAML, true); err != nil {
-		log.WithField("error", err).Warning("Could not delete service account.")
-		anyErrors = true
-	} else {
-		logFunc("Deleted service account.")
-	}
-
-	// If OpenShift, remove Trident from security context constraint
-	if client.Flavor() == k8s_client.FlavorOpenShift {
-		if err := client.RemoveTridentUserFromOpenShiftSCC(); err != nil {
-			log.WithField("error", err).Warning("Could not modify security context constraint.")
-			anyErrors = true
-		} else {
-			logFunc("Removed Trident user from security context constraint.")
-		}
-	}
-
-	return
-}
-*/
 
 func validateTridentDeployment() error {
 
-	deployment, err := client.ReadDeploymentFromFile(deploymentPath)
+	deployment, err := ReadDeploymentFromFile(deploymentPath)
 	if err != nil {
 		return fmt.Errorf("could not load deployment YAML file; %v", err)
 	}
@@ -1158,7 +1120,7 @@ func validateTridentDeployment() error {
 
 func validateTridentService() error {
 
-	service, err := client.ReadServiceFromFile(csiServicePath)
+	service, err := ReadServiceFromFile(csiServicePath)
 	if err != nil {
 		return fmt.Errorf("could not load service YAML file; %v", err)
 	}
@@ -1175,7 +1137,7 @@ func validateTridentService() error {
 
 func validateTridentStatefulSet() error {
 
-	statefulset, err := client.ReadStatefulSetFromFile(csiStatefulSetPath)
+	statefulset, err := ReadStatefulSetFromFile(csiStatefulSetPath)
 	if err != nil {
 		return fmt.Errorf("could not load statefulset YAML file; %v", err)
 	}
@@ -1209,7 +1171,7 @@ func validateTridentStatefulSet() error {
 
 func validateTridentDaemonSet() error {
 
-	daemonset, err := client.ReadDaemonSetFromFile(csiDaemonSetPath)
+	daemonset, err := ReadDaemonSetFromFile(csiDaemonSetPath)
 	if err != nil {
 		return fmt.Errorf("could not load daemonset YAML file; %v", err)
 	}
@@ -1243,7 +1205,7 @@ func validateTridentDaemonSet() error {
 
 func validateTridentPVC() error {
 
-	pvc, err := client.ReadPVCFromFile(pvcPath)
+	pvc, err := ReadPVCFromFile(pvcPath)
 	if err != nil {
 		return fmt.Errorf("could not load PVC YAML file; %v", err)
 	}
@@ -1301,7 +1263,7 @@ func createPV(sb *storage.Backend) error {
 	switch {
 	case volume.Config.AccessInfo.NfsAccessInfo.NfsServerIP != "":
 
-		pvYAML = k8s_client.GetNFSPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
+		pvYAML = k8sclient.GetNFSPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
 			volume.Config.AccessInfo.NfsAccessInfo.NfsServerIP,
 			volume.Config.AccessInfo.NfsAccessInfo.NfsPath,
 			appLabelValue)
@@ -1311,7 +1273,7 @@ func createPV(sb *storage.Backend) error {
 		if volume.Config.AccessInfo.IscsiTargetSecret != "" {
 
 			// Validate CHAP support in Kubernetes
-			if !client.Version().AtLeast(utils.MustParseSemantic("v1.7.0")) {
+			if !client.ServerVersion().AtLeast(utils.MustParseSemantic("v1.7.0")) {
 				return errors.New("iSCSI CHAP requires Kubernetes 1.7.0 or later")
 			}
 
@@ -1321,7 +1283,7 @@ func createPV(sb *storage.Backend) error {
 				return err
 			}
 
-			pvYAML = k8s_client.GetCHAPISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace, secretName,
+			pvYAML = k8sclient.GetCHAPISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace, secretName,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
@@ -1330,7 +1292,7 @@ func createPV(sb *storage.Backend) error {
 		} else {
 
 			// Not using CHAP
-			pvYAML = k8s_client.GetISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
+			pvYAML = k8sclient.GetISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
@@ -1364,7 +1326,7 @@ func createCHAPSecret(volume *storage.Volume) (secretName string, returnError er
 		log.WithField("secret", secretName).Debug("iSCSI CHAP secret does not exist.")
 
 		// Create the YAML for the new secret
-		secretYAML := k8s_client.GetCHAPSecretYAML(secretName,
+		secretYAML := k8sclient.GetCHAPSecretYAML(secretName,
 			volume.Config.AccessInfo.IscsiUsername,
 			volume.Config.AccessInfo.IscsiInitiatorSecret,
 			volume.Config.AccessInfo.IscsiTargetSecret)
@@ -1478,4 +1440,602 @@ func waitForRESTInterface() error {
 	log.WithField("version", version).Info("Trident REST interface is up.")
 
 	return nil
+}
+
+// ReadDeploymentFromFile parses and returns a deployment object from a file.
+func ReadDeploymentFromFile(filePath string) (*v1beta1.Deployment, error) {
+
+	var deployment v1beta1.Deployment
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &deployment)
+	if err != nil {
+		return nil, err
+	}
+	return &deployment, nil
+}
+
+// ReadServiceFromFile parses and returns a service object from a file.
+func ReadServiceFromFile(filePath string) (*v1.Service, error) {
+
+	var service v1.Service
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &service)
+	if err != nil {
+		return nil, err
+	}
+	return &service, nil
+}
+
+// ReadStatefulSetFromFile parses and returns a statefulset object from a file.
+func ReadStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error) {
+
+	var statefulset appsv1.StatefulSet
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &statefulset)
+	if err != nil {
+		return nil, err
+	}
+	return &statefulset, nil
+}
+
+// ReadDaemonSetFromFile parses and returns a daemonset object from a file.
+func ReadDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error) {
+
+	var daemonset v1beta1.DaemonSet
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &daemonset)
+	if err != nil {
+		return nil, err
+	}
+	return &daemonset, nil
+}
+
+// ReadPVCFromFile parses and returns a PVC object from a file.
+func ReadPVCFromFile(filePath string) (*v1.PersistentVolumeClaim, error) {
+
+	var pvc v1.PersistentVolumeClaim
+
+	yamlBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlBytes, &pvc)
+	if err != nil {
+		return nil, err
+	}
+	return &pvc, nil
+}
+
+func installTridentInCluster() (returnError error) {
+
+	// Ensure Trident installer pod isn't already present
+	if podPresent, namespace, err := client.CheckPodExistsByLabel(TridentInstallerLabel, true); err != nil {
+		return fmt.Errorf("could not check if Trident installer pod is present; %v", err)
+	} else if podPresent {
+		return fmt.Errorf("trident installer pod 'trident-installer' is already present in namespace %s; "+
+			"please remove it manually and try again", namespace)
+	}
+
+	// Ensure Trident installer configmap isn't already present
+	if configmapPresent, namespace, err := client.CheckConfigMapExistsByLabel(TridentInstallerLabel, true); err != nil {
+		return fmt.Errorf("could not check if Trident installer configmap is present; %v", err)
+	} else if configmapPresent {
+		if err := client.DeleteConfigMapByLabel(TridentInstallerLabel); err != nil {
+			log.WithFields(log.Fields{
+				"configmap": "trident-installer",
+				"namespace": namespace,
+			}).Error("Could not delete configmap; please delete it manually.")
+		}
+	}
+
+	// Ensure the required namespace exists
+	namespaceExists, returnError := client.CheckNamespaceExists(TridentPodNamespace)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not check if namespace %s exists; %v", TridentPodNamespace, returnError)
+		return
+	}
+	if namespaceExists {
+		log.WithField("namespace", TridentPodNamespace).Debug("Namespace exists.")
+	} else {
+		log.WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
+
+		if dryRun {
+			returnError = fmt.Errorf("namespace %s must exist to perform an in-cluster dry run; "+
+				"please create it manually", TridentPodNamespace)
+			return
+		}
+
+		returnError = createNamespace()
+		if returnError != nil {
+			return
+		}
+	}
+
+	// Remove any RBAC objects from a previous Trident installation
+	if anyCleanupErrors := removeInstallerRBACObjects(log.DebugLevel); anyCleanupErrors {
+		returnError = fmt.Errorf("could not remove one or more previous Trident installer artifacts; " +
+			"please delete them manually and try again")
+		return
+	}
+
+	// Create the RBAC objects
+	if returnError = createInstallerRBACObjects(); returnError != nil {
+		return
+	}
+
+	// Make sure we always clean up the RBAC objects
+	defer func() {
+		if anyCleanupErrors := removeInstallerRBACObjects(log.InfoLevel); anyCleanupErrors {
+			log.Errorf("could not remove one or more Trident installer artifacts; " +
+				"please delete them manually")
+		}
+	}()
+
+	// Create the configmap
+	if returnError = client.CreateConfigMapFromDirectory(
+		setupPath, "trident-installer", TridentInstallerLabel); returnError != nil {
+		return
+	}
+	log.WithFields(log.Fields{"configmap": "trident-installer"}).Info("Created installer configmap.")
+
+	// Create the installer arguments
+	commandArgs := []string{
+		"tridentctl", "install",
+		"--volume-size", volumeSize,
+		"--k8s-timeout", k8sTimeout.String(),
+		"--namespace", TridentPodNamespace,
+	}
+	if Debug {
+		commandArgs = append(commandArgs, "--debug")
+	}
+	if dryRun {
+		commandArgs = append(commandArgs, "--dry-run")
+	}
+	if useYAML {
+		commandArgs = append(commandArgs, "--use-custom-yaml")
+	}
+	if silent {
+		commandArgs = append(commandArgs, "--silent")
+	}
+	if csi {
+		commandArgs = append(commandArgs, "--csi")
+	}
+	if pvcName != "" {
+		commandArgs = append(commandArgs, "--pvc")
+		commandArgs = append(commandArgs, pvcName)
+	}
+	if pvName != "" {
+		commandArgs = append(commandArgs, "--pv")
+		commandArgs = append(commandArgs, pvName)
+	}
+	if volumeName != "" {
+		commandArgs = append(commandArgs, "--volume-name")
+		commandArgs = append(commandArgs, volumeName)
+	}
+	if tridentImage != "" {
+		commandArgs = append(commandArgs, "--trident-image")
+		commandArgs = append(commandArgs, tridentImage)
+	}
+
+	// Create the install pod
+	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerPodYAML(
+		TridentInstallerLabelValue, tridentImage, commandArgs))
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create installer pod; %v", returnError)
+		return
+	}
+	log.WithFields(log.Fields{"pod": "trident-installer"}).Info("Created installer pod.")
+
+	// Wait for Trident installation pod to start
+	var installPod *v1.Pod
+	installPod, returnError = waitForTridentInstallationPodToStart()
+	if returnError != nil {
+		return
+	}
+
+	// Wait for pod to finish & output logs
+	followInstallationLogs(installPod.Name, "", installPod.Namespace)
+
+	installPod, returnError = waitForTridentInstallationPodToFinish()
+	if returnError != nil {
+		return
+	}
+
+	// Clean up the pod if it succeeded, otherwise leave it around for inspection
+	if installPod.Status.Phase == v1.PodSucceeded {
+
+		if returnError = client.DeletePodByLabel(TridentInstallerLabel); returnError != nil {
+			log.WithFields(log.Fields{"pod": "trident-installer"}).Error("Could not delete installer pod;" +
+				"please delete it manually.")
+		} else {
+			log.WithFields(log.Fields{"pod": "trident-installer"}).Info("Deleted installer pod.")
+		}
+
+		if returnError = client.DeleteConfigMapByLabel(TridentInstallerLabel); returnError != nil {
+			log.WithFields(log.Fields{"configmap": "trident-installer"}).Error("Could not delete installer " +
+				"configmap; please delete it manually.")
+		} else {
+			log.WithFields(log.Fields{"configmap": "trident-installer"}).Info("Deleted installer configmap.")
+		}
+
+	} else {
+
+		log.WithFields(log.Fields{
+			"pod": "trident-installer",
+		}).Warningf("Installer pod status is %s. Use '%s describe pod %s -n %s' for more information.",
+			installPod.Status.Phase, client.CLI(), installPod.Name, client.Namespace())
+	}
+
+	log.Info("In-cluster installation completed.")
+
+	return
+}
+
+func createInstallerRBACObjects() (returnError error) {
+
+	// Create service account
+	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerServiceAccountYAML())
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create installer service account; %v", returnError)
+		return
+	}
+	log.WithFields(log.Fields{"serviceaccount": "trident-installer"}).Info("Created installer service account.")
+
+	// Create cluster role
+	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerClusterRoleYAML(
+		client.Flavor(), client.ServerVersion()))
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create installer cluster role; %v", returnError)
+		return
+	}
+	log.WithFields(log.Fields{"clusterrole": "trident-installer"}).Info("Created installer cluster role.")
+
+	// Create cluster role binding
+	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerClusterRoleBindingYAML(
+		TridentPodNamespace, client.Flavor(), client.ServerVersion()))
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create installer cluster role binding; %v", returnError)
+		return
+	}
+	log.WithFields(log.Fields{"clusterrolebinding": "trident-installer"}).Info("Created installer cluster role binding.")
+
+	//If OpenShift, add Trident to security context constraint(s)
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		if returnError = client.AddTridentUserToOpenShiftSCC("trident-installer", "privileged"); returnError != nil {
+			returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
+			return
+		}
+		log.WithFields(log.Fields{
+			"scc":  "privileged",
+			"user": "trident-installer",
+		}).Info("Added security context constraint user.")
+	}
+
+	return
+}
+
+func removeInstallerRBACObjects(logLevel log.Level) (anyErrors bool) {
+
+	logFunc := func(fields log.Fields) func(args ...interface{}) {
+		if logLevel == log.DebugLevel {
+			return log.WithFields(fields).Debug
+		} else {
+			return log.WithFields(fields).Info
+		}
+	}
+
+	// Delete cluster role binding
+	clusterRoleBindingYAML := k8sclient.GetInstallerClusterRoleBindingYAML(
+		TridentPodNamespace, client.Flavor(), client.ServerVersion())
+	if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete installer cluster role binding.")
+		anyErrors = true
+	} else {
+		logFunc(log.Fields{})("Deleted installer cluster role binding.")
+	}
+
+	// Delete cluster role
+	clusterRoleYAML := k8sclient.GetInstallerClusterRoleYAML(client.Flavor(), client.ServerVersion())
+	if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete installer cluster role.")
+		anyErrors = true
+	} else {
+		logFunc(log.Fields{})("Deleted installer cluster role.")
+	}
+
+	// Delete service account
+	serviceAccountYAML := k8sclient.GetInstallerServiceAccountYAML()
+	if err := client.DeleteObjectByYAML(serviceAccountYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete installer service account.")
+		anyErrors = true
+	} else {
+		logFunc(log.Fields{})("Deleted installer service account.")
+	}
+
+	// If OpenShift, remove Trident from security context constraint(s)
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		if err := client.RemoveTridentUserFromOpenShiftSCC("trident-installer", "privileged"); err != nil {
+			log.WithField("error", err).Warning("Could not modify security context constraint.")
+			anyErrors = true
+		} else {
+			logFunc(log.Fields{
+				"scc":  "privileged",
+				"user": "trident-installer",
+			})("Removed security context constraint user.")
+		}
+	}
+
+	return
+}
+
+func waitForTridentInstallationPodToStart() (*v1.Pod, error) {
+
+	var pod *v1.Pod
+
+	checkPodRunning := func() error {
+		var podError error
+		pod, podError = client.GetPodByLabel(TridentInstallerLabel, false)
+		if podError != nil {
+			return fmt.Errorf("pod not yet started; %v", podError)
+		}
+		switch pod.Status.Phase {
+		case v1.PodPending, v1.PodUnknown:
+			return fmt.Errorf("pod not yet started (%s)", pod.Status.Phase)
+		default:
+			// Stop waiting if if pod is any of Running, Succeeded, Failed, Unschedulable
+			log.WithField("phase", pod.Status.Phase).Debug("Pod started.")
+			return nil
+		}
+	}
+	podNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Trident installer pod not yet started, waiting.")
+	}
+	podBackoff := backoff.NewExponentialBackOff()
+	podBackoff.MaxElapsedTime = k8sTimeout
+
+	log.Info("Waiting for Trident installer pod to start.")
+
+	if err := backoff.RetryNotify(checkPodRunning, podBackoff, podNotify); err != nil {
+
+		// Build up an error message with as much detail as available.
+		var errMessages []string
+		errMessages = append(errMessages,
+			fmt.Sprintf("Trident installer pod was not started after %3.2f seconds.", k8sTimeout.Seconds()))
+
+		if pod != nil {
+			if pod.Status.Phase != "" {
+				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
+				if pod.Status.Message != "" {
+					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+				}
+			}
+			errMessages = append(errMessages,
+				fmt.Sprintf("Use '%s describe pod %s -n %s' for more information.",
+					client.CLI(), pod.Name, client.Namespace()))
+		}
+
+		log.Error(strings.Join(errMessages, " "))
+		return nil, err
+	}
+
+	log.WithFields(log.Fields{
+		"pod":       pod.Name,
+		"namespace": pod.Namespace,
+	}).Info("Trident installer pod started.")
+
+	return pod, nil
+}
+
+func waitForTridentInstallationPodToFinish() (*v1.Pod, error) {
+
+	var pod *v1.Pod
+
+	checkPodFinished := func() error {
+		var podError error
+		pod, podError = client.GetPodByLabel(TridentInstallerLabel, false)
+		if podError != nil {
+			return fmt.Errorf("pod not yet finished; %v", podError)
+		}
+		switch pod.Status.Phase {
+		case v1.PodPending, v1.PodUnknown, v1.PodRunning:
+			return fmt.Errorf("pod not yet finished (%s)", pod.Status.Phase)
+		default:
+			// Stop waiting if if pod is any of Succeeded, Failed, Unschedulable
+			log.WithField("phase", pod.Status.Phase).Debug("Pod finished.")
+			return nil
+		}
+	}
+	podNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Trident installer pod not yet finished, waiting.")
+	}
+	podBackoff := backoff.NewExponentialBackOff()
+	podBackoff.MaxElapsedTime = k8sTimeout
+
+	log.Info("Waiting for Trident installer pod to finish.")
+
+	if err := backoff.RetryNotify(checkPodFinished, podBackoff, podNotify); err != nil {
+
+		// Build up an error message with as much detail as available.
+		var errMessages []string
+		errMessages = append(errMessages,
+			fmt.Sprintf("Trident installer pod was not finished after %3.2f seconds.", k8sTimeout.Seconds()))
+
+		if pod != nil {
+			if pod.Status.Phase != "" {
+				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
+				if pod.Status.Message != "" {
+					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+				}
+			}
+			errMessages = append(errMessages,
+				fmt.Sprintf("Use '%s describe pod %s -n %s' for more information.",
+					client.CLI(), pod.Name, client.Namespace()))
+		}
+
+		log.Error(strings.Join(errMessages, " "))
+		return nil, err
+	}
+
+	log.WithFields(log.Fields{
+		"pod":       pod.Name,
+		"namespace": pod.Namespace,
+	}).Info("Trident installer pod finished.")
+
+	return pod, nil
+}
+
+func followInstallationLogs(pod, container, namespace string) {
+
+	var (
+		err error
+		cmd *exec.Cmd
+	)
+
+RetryLoop:
+	for {
+		time.Sleep(1 * time.Second)
+
+		args := []string{
+			fmt.Sprintf("--namespace=%s", namespace),
+			"logs",
+			pod,
+			"-f",
+		}
+		if container != "" {
+			args = append(args, []string{"-c", container}...)
+		}
+
+		log.WithField("cmd", client.CLI()+" "+strings.Join(args, " ")).Debug("Getting logs.")
+
+		cmd = exec.Command(client.CLI(), args...)
+
+		// Create a pipe that holds stdout
+		stdout, _ := cmd.StdoutPipe()
+		stderr, _ := cmd.StderrPipe()
+
+		// Start the child process
+		err = cmd.Start()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"pod":       pod,
+				"container": container,
+				"namespace": namespace,
+				"error":     err,
+			}).Error("Could not get pod logs.")
+			return
+		}
+
+		// Create a new scanner
+		buff := bufio.NewScanner(io.MultiReader(stdout, stderr))
+
+		// Iterate over buff and append content to the slice
+		for buff.Scan() {
+			line := buff.Text()
+
+			// If we get an error from Kubernetes, just try again
+			if strings.Contains(line, "Error from server") {
+
+				log.WithFields(log.Fields{
+					"pod":       pod,
+					"container": container,
+					"error":     line,
+				}).Debug("Got server error, retrying.")
+
+				cmd.Wait()
+				continue RetryLoop
+			}
+
+			logLogFmtMessage(line)
+		}
+
+		log.WithFields(log.Fields{
+			"pod":       pod,
+			"container": container,
+		}).Debug("Received EOF from pod logs.")
+		break
+	}
+
+	// Clean up
+	cmd.Wait()
+}
+
+func parseLogFmtMessage(message string) map[string]string {
+
+	fields := make(map[string]string)
+	d := logfmt.NewDecoder(strings.NewReader(message))
+	for d.ScanRecord() {
+		for d.ScanKeyval() {
+			fields[string(d.Key())] = string(d.Value())
+		}
+	}
+	if d.Err() != nil {
+		fields["msg"] = message
+	}
+
+	return fields
+}
+
+func logLogFmtMessage(message string) {
+
+	fields := parseLogFmtMessage(message)
+
+	delete(fields, "time")
+
+	msg := fields["msg"]
+	if msg == "" {
+		return
+	}
+	delete(fields, "msg")
+
+	level := fields["level"]
+	if level == "" {
+		level = "info"
+	}
+	delete(fields, "level")
+
+	logFields := make(map[string]interface{})
+	for k, v := range fields {
+		logFields[k] = v
+	}
+
+	entry := log.WithFields(logFields)
+
+	switch level {
+	case "debug":
+		entry.Debug(msg)
+	case "info":
+		entry.Info(msg)
+	case "warning":
+		entry.Warning(msg)
+	case "error":
+		entry.Error(msg)
+	case "fatal":
+		entry.Fatal(msg)
+	case "panic":
+		entry.Panic(msg)
+	default:
+		entry.Info(msg)
+	}
 }

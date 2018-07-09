@@ -47,6 +47,10 @@ const (
 	TridentNodeLabelKey   = "app"
 	TridentNodeLabelValue = "node.csi.trident.netapp.io"
 	TridentNodeLabel      = TridentNodeLabelKey + "=" + TridentNodeLabelValue
+
+	TridentInstallerLabelKey   = "app"
+	TridentInstallerLabelValue = "trident-installer.netapp.io"
+	TridentInstallerLabel      = TridentInstallerLabelKey + "=" + TridentInstallerLabelValue
 )
 
 var (

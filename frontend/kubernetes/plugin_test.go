@@ -603,8 +603,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				reactor.wait()
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume probably not created.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume probably not created", volumeName)
 				}
 				// Simulate each possible event:  added while pending, then
 				// bound, then released.  Note that the spec should already
@@ -620,8 +620,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 
 				volumeClone = reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)
@@ -666,8 +666,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)
@@ -717,8 +717,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeFailed
 				vs.Modify(volumeClone)
@@ -778,8 +778,8 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)
@@ -1170,8 +1170,8 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				reactor.wait()
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume probably not created.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume probably not created", volumeName)
 				}
 				// Simulate each possible event:  added while pending, then
 				// bound, then released.  Note that the spec should already
@@ -1187,8 +1187,8 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 
 				volumeClone = reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)
@@ -1233,8 +1233,8 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)
@@ -1284,8 +1284,8 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeFailed
 				vs.Modify(volumeClone)
@@ -1345,8 +1345,8 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 				volumeName := getUniqueClaimName(claim)
 				volumeClone := reactor.getVolumeClone(volumeName)
 				if volumeClone == nil {
-					return fmt.Errorf("Unable to find volume %s in reactor; "+
-						"volume likely deleted too early.", volumeName)
+					return fmt.Errorf("unable to find volume %s in reactor; "+
+						"volume likely deleted too early", volumeName)
 				}
 				volumeClone.Status.Phase = v1.VolumeReleased
 				vs.Modify(volumeClone)

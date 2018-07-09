@@ -1,5 +1,5 @@
-hash: 1770176c2a9f324fd744ccd5dd964454a1888acaa8eba5d4342cd45e26a0ce77
-updated: 2018-05-01T17:35:19.477927051-04:00
+hash: 95d61838f0e0e33e120343a872bf9b2ae514213a1b32d60d3fc7db2ab1295f79
+updated: 2018-06-20T14:25:48.279040771-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
@@ -38,7 +38,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: 3ede32e2033de7505e6500d6c868c2b9ed9f169d
+  version: 7395e3f8aa162843a74ed6d48e79627d9792ac55
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -46,12 +46,18 @@ imports:
   subpackages:
   - sdk
   - volume
+- name: github.com/docker/spdystream
+  version: 449fdfce4d962303d702fec724ef0ad181c92528
+  subpackages:
+  - spdy
 - name: github.com/dustin/go-humanize
   version: 6d15c0ae71e55ed645c21ac4945aaadbc0e9a590
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/glycerine/go-unsnap-stream
   version: 9f0cb55181dd3a0a4c168d3dbc72d4aca4853126
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/gogo/protobuf
   version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
@@ -74,7 +80,7 @@ imports:
   - ptypes/duration
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/googleapis/gnostic
@@ -99,10 +105,12 @@ imports:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/mattn/go-runewidth
   version: ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb
 - name: github.com/Microsoft/go-winio
-  version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
+  version: ab35fc04b6365e8fcb18e6e9e41ea4a02b10b175
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/mschoch/smat
@@ -120,11 +128,11 @@ imports:
 - name: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/cobra
-  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
 - name: github.com/spf13/pflag
-  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+  version: 583c0c0531f06d5278b7d917446061adc344b5cd
 - name: github.com/tinylib/msgp
-  version: 3b5c87ab5fb00c660bf85b888445d9a01db64db4
+  version: ef41b42e603a8b9d25e0027b432f41d141093fbd
   subpackages:
   - msgp
 - name: github.com/ugorji/go
@@ -134,7 +142,7 @@ imports:
 - name: github.com/willf/bitset
   version: 8ce1146b8621c95164efd9c8b1124cfa9b8afb4e
 - name: golang.org/x/crypto
-  version: 49796115aa4b964c318aad4f3084fdb41e9aa067
+  version: 7f39a6fea4fe9364fb61e1def6a268a51b4f3a06
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -253,10 +261,13 @@ imports:
   - pkg/util/diff
   - pkg/util/errors
   - pkg/util/framer
+  - pkg/util/httpstream
+  - pkg/util/httpstream/spdy
   - pkg/util/intstr
   - pkg/util/json
   - pkg/util/mergepatch
   - pkg/util/net
+  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -267,12 +278,14 @@ imports:
   - pkg/version
   - pkg/watch
   - third_party/forked/golang/json
+  - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
   version: 23781f4d6632d88e869066eaebb743857aa1ef9b
   subpackages:
   - discovery
   - discovery/fake
+  - dynamic
   - kubernetes
   - kubernetes/fake
   - kubernetes/scheme
@@ -351,9 +364,12 @@ imports:
   - tools/pager
   - tools/record
   - tools/reference
+  - tools/remotecommand
   - transport
+  - transport/spdy
   - util/buffer
   - util/cert
+  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer

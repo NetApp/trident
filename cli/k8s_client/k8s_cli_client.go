@@ -1,11 +1,10 @@
-package k8s_client
+package k8sclient
 
 import (
 	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os/exec"
 	"strings"
 
@@ -14,71 +13,12 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
+	"k8s.io/apimachinery/pkg/version"
 )
-
-type OrchestratorFlavor string
-
-const (
-	CLIKubernetes = "kubectl"
-	CLIOpenShift  = "oc"
-
-	FlavorKubernetes OrchestratorFlavor = "k8s"
-	FlavorOpenShift  OrchestratorFlavor = "openshift"
-)
-
-type Interface interface {
-	Version() *utils.Version
-	Flavor() OrchestratorFlavor
-	CLI() string
-	Namespace() string
-	SetNamespace(namespace string)
-	GetCurrentNamespace() (string, error)
-	Exec(pod, container string, commandArgs []string) ([]byte, error)
-	GetDeploymentByLabel(label string, allNamespaces bool) (*v1beta1.Deployment, error)
-	GetDeploymentsByLabel(label string, allNamespaces bool) ([]v1beta1.Deployment, error)
-	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteDeploymentByLabel(label string) error
-	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
-	GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error)
-	CheckServiceExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteServiceByLabel(label string) error
-	GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error)
-	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
-	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteStatefulSetByLabel(label string) error
-	GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error)
-	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error)
-	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteDaemonSetByLabel(label string) error
-	GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, error)
-	GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error)
-	GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error)
-	CheckPVCExists(pvcName string) (bool, error)
-	CheckPVCBound(pvcName string) (bool, error)
-	DeletePVCByLabel(label string) error
-	GetPV(pvName string) (*v1.PersistentVolume, error)
-	GetPVByLabel(label string) (*v1.PersistentVolume, error)
-	CheckPVExists(pvName string) (bool, error)
-	DeletePVByLabel(label string) error
-	CheckSecretExists(secretName string) (bool, error)
-	CheckNamespaceExists(namespace string) (bool, error)
-	CreateObjectByFile(filePath string) error
-	CreateObjectByName(typeName, objectName string, additionalArgs []string) error
-	CreateObjectByYAML(yaml string) error
-	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
-	DeleteObjectByName(typeName, objectName string, ignoreNotFound bool) error
-	DeleteObjectByYAML(yaml string, ignoreNotFound bool) error
-	AddTridentUserToOpenShiftSCC() error
-	RemoveTridentUserFromOpenShiftSCC() error
-	ReadDeploymentFromFile(filePath string) (*v1beta1.Deployment, error)
-	ReadServiceFromFile(filePath string) (*v1.Service, error)
-	ReadStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error)
-	ReadDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error)
-	ReadPVCFromFile(filePath string) (*v1.PersistentVolumeClaim, error)
-}
 
 type KubectlClient struct {
 	cli       string
@@ -87,7 +27,7 @@ type KubectlClient struct {
 	namespace string
 }
 
-func NewKubectlClient() (Interface, error) {
+func NewKubectlClient(namespace string) (Interface, error) {
 
 	// Discover which CLI to use (kubectl or oc)
 	cli, err := discoverKubernetesCLI()
@@ -96,7 +36,7 @@ func NewKubectlClient() (Interface, error) {
 	}
 
 	var flavor OrchestratorFlavor
-	var version *utils.Version
+	var k8sVersion *utils.Version
 
 	// Discover Kubernetes server version
 	switch cli {
@@ -104,10 +44,10 @@ func NewKubectlClient() (Interface, error) {
 		fallthrough
 	case CLIKubernetes:
 		flavor = FlavorKubernetes
-		version, err = discoverKubernetesServerVersion(cli)
+		k8sVersion, err = discoverKubernetesServerVersion(cli)
 	case CLIOpenShift:
 		flavor = FlavorOpenShift
-		version, err = discoverOpenShiftServerVersion(cli)
+		k8sVersion, err = discoverOpenShiftServerVersion(cli)
 	}
 	if err != nil {
 		return nil, err
@@ -116,36 +56,38 @@ func NewKubectlClient() (Interface, error) {
 	// Ensure the version is a supported one
 	minSupportedVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMin)
 	maxSupportedVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMax)
-	if !version.AtLeast(minSupportedVersion) {
-		return nil, fmt.Errorf("Trident requires Kubernetes %s or later", minSupportedVersion.ShortString())
+	if !k8sVersion.AtLeast(minSupportedVersion) {
+		return nil, fmt.Errorf("trident requires Kubernetes %s or later", minSupportedVersion.ShortString())
 	}
-	mmVersion := version.ToMajorMinorVersion()
+	mmVersion := k8sVersion.ToMajorMinorVersion()
 	maxSupportedMMVersion := maxSupportedVersion.ToMajorMinorVersion()
 	if maxSupportedMMVersion.LessThan(mmVersion) {
 		log.WithFields(log.Fields{
-			"kubernetesVersion":   version.ShortString(),
+			"kubernetesVersion":   k8sVersion.ShortString(),
 			"maxSupportedVersion": maxSupportedMMVersion.String(),
 		}).Warning("Trident has not been qualified with this version of Kubernetes.")
 	}
 
 	client := &KubectlClient{
-		cli:     cli,
-		flavor:  flavor,
-		version: version,
+		cli:       cli,
+		flavor:    flavor,
+		version:   k8sVersion,
+		namespace: namespace,
 	}
 
-	// Get current namespace
-	currentNamespace, err := client.GetCurrentNamespace()
-	if err != nil {
-		return nil, fmt.Errorf("could not determine current namespace; %v", err)
+	// Get current namespace if one wasn't specified
+	if namespace == "" {
+		client.namespace, err = client.getCurrentNamespace()
+		if err != nil {
+			return nil, fmt.Errorf("could not determine current namespace; %v", err)
+		}
 	}
-	client.namespace = currentNamespace
 
 	log.WithFields(log.Fields{
 		"cli":       cli,
 		"flavor":    flavor,
-		"version":   version.String(),
-		"namespace": currentNamespace,
+		"version":   k8sVersion.String(),
+		"namespace": client.namespace,
 	}).Debug("Initialized Kubernetes CLI client.")
 
 	return client, nil
@@ -160,12 +102,12 @@ func discoverKubernetesCLI() (string, error) {
 	}
 
 	// Fall back to the K8S CLI
-	_, err = exec.Command(CLIKubernetes, "version").CombinedOutput()
+	out, err := exec.Command(CLIKubernetes, "version").CombinedOutput()
 	if err == nil {
 		return CLIKubernetes, nil
 	}
 
-	return "", errors.New("could not find the Kubernetes CLI.")
+	return "", fmt.Errorf("could not find the Kubernetes CLI; %s", string(out))
 }
 
 func discoverKubernetesServerVersion(kubernetesCLI string) (*utils.Version, error) {
@@ -190,7 +132,7 @@ func discoverKubernetesServerVersion(kubernetesCLI string) (*utils.Version, erro
 		}
 	}
 
-	return nil, errors.New("could not get Kubernetes server version.")
+	return nil, errors.New("could not get Kubernetes server version")
 }
 
 func discoverOpenShiftServerVersion(kubernetesCLI string) (*utils.Version, error) {
@@ -218,11 +160,20 @@ func discoverOpenShiftServerVersion(kubernetesCLI string) (*utils.Version, error
 		}
 	}
 
-	return nil, errors.New("could not get OpenShift server version.")
+	return nil, errors.New("could not get OpenShift server version")
 }
 
-func (c *KubectlClient) Version() *utils.Version {
+func (c *KubectlClient) ServerVersion() *utils.Version {
 	return c.version
+}
+
+func (c *KubectlClient) Version() *version.Info {
+	serverVersion := c.ServerVersion()
+	versionInfo := &version.Info{
+		Major: serverVersion.MajorVersionString(),
+		Minor: serverVersion.MinorVersionString(),
+	}
+	return versionInfo
 }
 
 func (c *KubectlClient) Flavor() OrchestratorFlavor {
@@ -241,7 +192,7 @@ func (c *KubectlClient) SetNamespace(namespace string) {
 	c.namespace = namespace
 }
 
-func (c *KubectlClient) GetCurrentNamespace() (string, error) {
+func (c *KubectlClient) getCurrentNamespace() (string, error) {
 
 	// Get current namespace from service account info
 	cmd := exec.Command(c.cli, "get", "serviceaccount", "default", "-o=json")
@@ -267,14 +218,14 @@ func (c *KubectlClient) GetCurrentNamespace() (string, error) {
 	return namespace, nil
 }
 
-func (c *KubectlClient) Exec(pod, container string, commandArgs []string) ([]byte, error) {
+func (c *KubectlClient) Exec(podName, containerName string, commandArgs []string) ([]byte, error) {
 
 	// Build tunnel command to exec command in container
 	execCommand := []string{
 		"exec",
-		pod,
+		podName,
 		"-n", c.namespace,
-		"-c", container,
+		"-c", containerName,
 		"--",
 	}
 
@@ -358,9 +309,9 @@ func (c *KubectlClient) CheckDeploymentExistsByLabel(label string, allNamespaces
 func (c *KubectlClient) DeleteDeploymentByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "deployment", "-l", label, "--namespace", c.namespace}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -442,9 +393,9 @@ func (c *KubectlClient) CheckServiceExistsByLabel(label string, allNamespaces bo
 func (c *KubectlClient) DeleteServiceByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "service", "-l", label, "--namespace", c.namespace}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -526,9 +477,9 @@ func (c *KubectlClient) CheckStatefulSetExistsByLabel(label string, allNamespace
 func (c *KubectlClient) DeleteStatefulSetByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "statefulset", "-l", label, "--namespace", c.namespace}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -556,7 +507,7 @@ func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*
 	}
 }
 
-// GetDaemonSetsByLabel returns all deployment objects matching the specified label
+// GetDaemonSetsByLabel returns all daemonset objects matching the specified label
 func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error) {
 
 	// Get daemonset info
@@ -610,9 +561,9 @@ func (c *KubectlClient) CheckDaemonSetExistsByLabel(label string, allNamespaces 
 func (c *KubectlClient) DeleteDaemonSetByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "daemonset", "-l", label, "--namespace", c.namespace}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -623,11 +574,138 @@ func (c *KubectlClient) DeleteDaemonSetByLabel(label string) error {
 	return nil
 }
 
+// GetConfigMapByLabel returns a configmap object matching the specified label if it is unique
+func (c *KubectlClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error) {
+
+	configmaps, err := c.GetConfigMapsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(configmaps) == 1 {
+		return &configmaps[0], nil
+	} else if len(configmaps) > 1 {
+		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no configmaps have the label %s", label)
+	}
+}
+
+// GetConfigMapsByLabel returns all configmap objects matching the specified label
+func (c *KubectlClient) GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error) {
+
+	// Get configmap info
+	cmdArgs := []string{"get", "configmap", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var configMapList v1.ConfigMapList
+	if err := json.NewDecoder(stdout).Decode(&configMapList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return configMapList.Items, nil
+}
+
+// CheckConfigMapExistsByLabel returns true if one or more configmap objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	configmaps, err := c.GetConfigMapsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(configmaps) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, configmaps[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteConfigMapByLabel deletes a configmap object matching the specified label
+func (c *KubectlClient) DeleteConfigMapByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "configmap", "-l", label, "--namespace", c.namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted Kubernetes configmap.")
+
+	return nil
+}
+
+func (c *KubectlClient) CreateConfigMapFromDirectory(path, name, label string) error {
+
+	cmdArgs := []string{"create", "configmap", name, "--from-file", path, "--namespace", c.namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	if label != "" {
+		cmdArgs = []string{"label", "configmap", name, "--namespace", c.namespace, label}
+		out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("%s; %v", string(out), err)
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"name":      name,
+		"path":      path,
+		"namespace": c.namespace,
+	}).Debug("Created Kubernetes configmap from directory.")
+
+	return nil
+}
+
 // GetPodByLabel returns a pod object matching the specified label
 func (c *KubectlClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, error) {
 
 	// Get pod info
-	cmdArgs := []string{"get", "pod", "-l", label, "-o=json"}
+	pods, err := c.GetPodsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pods) == 1 {
+		return &pods[0], nil
+	} else if len(pods) > 1 {
+		return nil, fmt.Errorf("multiple pods have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no pods have the label %s", label)
+	}
+}
+
+// GetPodsByLabel returns all pod objects matching the specified label
+func (c *KubectlClient) GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod, error) {
+
+	// Get pod info
+	cmdArgs := []string{"get", "pod", "-a", "-l", label, "-o=json"}
 	if allNamespaces {
 		cmdArgs = append(cmdArgs, "--all-namespaces")
 	} else {
@@ -650,13 +728,43 @@ func (c *KubectlClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod
 		return nil, err
 	}
 
-	if len(podList.Items) == 1 {
-		return &podList.Items[0], nil
-	} else if len(podList.Items) > 1 {
-		return nil, fmt.Errorf("multiple pods have the label %s", label)
-	} else {
-		return nil, fmt.Errorf("no pods have the label %s", label)
+	return podList.Items, nil
+}
+
+// CheckPodExistsByLabel returns true if one or more pod objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckPodExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	pods, err := c.GetPodsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
 	}
+
+	switch len(pods) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, pods[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeletePodByLabel deletes a pod object matching the specified label
+func (c *KubectlClient) DeletePodByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "pod", "-l", label, "--namespace", c.namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted Kubernetes pod.")
+
+	return nil
 }
 
 func (c *KubectlClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
@@ -666,7 +774,7 @@ func (c *KubectlClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error
 	args := []string{"get", "pvc", pvcName, "--namespace", c.namespace, "-o=json"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s; %v", string(out), err)
 	}
 	if len(out) == 0 {
 		return nil, fmt.Errorf("PVC %s does not exist in namespace %s", pvcName, c.namespace)
@@ -720,7 +828,7 @@ func (c *KubectlClient) CheckPVCExists(pvcName string) (bool, error) {
 	args := []string{"get", "pvc", pvcName, "--namespace", c.namespace, "--ignore-not-found"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%s; %v", string(out), err)
 	}
 	return len(out) > 0, nil
 }
@@ -742,9 +850,9 @@ func (c *KubectlClient) CheckPVCBound(pvcName string) (bool, error) {
 func (c *KubectlClient) DeletePVCByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "pvc", "-l", label, "--namespace", c.namespace}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithFields(log.Fields{
@@ -762,7 +870,7 @@ func (c *KubectlClient) GetPV(pvName string) (*v1.PersistentVolume, error) {
 	args := []string{"get", "pv", pvName, "-o=json"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s; %v", string(out), err)
 	}
 	if len(out) == 0 {
 		return nil, fmt.Errorf("PV %s does not exist", pvName)
@@ -811,7 +919,7 @@ func (c *KubectlClient) CheckPVExists(pvName string) (bool, error) {
 	args := []string{"get", "pv", pvName, "--ignore-not-found"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%s; %v", string(out), err)
 	}
 	return len(out) > 0, nil
 }
@@ -819,9 +927,9 @@ func (c *KubectlClient) CheckPVExists(pvName string) (bool, error) {
 func (c *KubectlClient) DeletePVByLabel(label string) error {
 
 	cmdArgs := []string{"delete", "pv", "-l", label}
-	_, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithField("label", label).Debug("Deleted PV by label.")
@@ -835,9 +943,86 @@ func (c *KubectlClient) CheckSecretExists(secretName string) (bool, error) {
 	args := []string{"get", "secret", secretName, "--namespace", c.namespace, "--ignore-not-found"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%s; %v", string(out), err)
 	}
 	return len(out) > 0, nil
+}
+
+// CreateSecret creates a new Secret
+func (c *KubectlClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
+
+	// Convert to YAML
+	jsonBytes, err := json.Marshal(secret)
+	if err != nil {
+		return nil, err
+	}
+	yamlBytes, _ := yaml.JSONToYAML(jsonBytes)
+
+	// Create object
+	err = c.CreateObjectByYAML(string(yamlBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get secret
+	return c.GetSecret(secret.Name)
+}
+
+// CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
+func (c *KubectlClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string,
+) (*v1.Secret, error) {
+	return c.CreateSecret(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: c.namespace,
+			Name:      secretName,
+		},
+		Type: "kubernetes.io/iscsi-chap",
+		Data: map[string][]byte{
+			"discovery.sendtargets.auth.username":    []byte(accountName),
+			"discovery.sendtargets.auth.password":    []byte(initiatorSecret),
+			"discovery.sendtargets.auth.username_in": []byte(accountName),
+			"discovery.sendtargets.auth.password_in": []byte(targetSecret),
+			"node.session.auth.username":             []byte(accountName),
+			"node.session.auth.password":             []byte(initiatorSecret),
+			"node.session.auth.username_in":          []byte(accountName),
+			"node.session.auth.password_in":          []byte(targetSecret),
+		},
+	})
+}
+
+// GetSecret looks up a Secret by name
+func (c *KubectlClient) GetSecret(secretName string) (*v1.Secret, error) {
+
+	cmdArgs := []string{"get", "secret", secretName, "--namespace", c.namespace, "-o=json"}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var createdSecret v1.Secret
+	if err := json.NewDecoder(stdout).Decode(&createdSecret); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return &createdSecret, nil
+}
+
+// DeleteSecret deletes the specified Secret
+func (c *KubectlClient) DeleteSecret(secretName string) error {
+
+	cmdArgs := []string{"delete", "secret", secretName, "--namespace", c.namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+	return nil
 }
 
 // CheckNamespaceExists returns true if the specified namespace exists, false otherwise.
@@ -846,12 +1031,12 @@ func (c *KubectlClient) CheckNamespaceExists(namespace string) (bool, error) {
 	args := []string{"get", "namespace", namespace, "--ignore-not-found"}
 	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%s; %v", string(out), err)
 	}
 	return len(out) > 0, nil
 }
 
-// CreateObjectByFile creates an object from a YAML/JSON file at the specified path.
+// CreateObjectByFile creates an object on the server from a YAML/JSON file at the specified path.
 func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 
 	args := []string{
@@ -860,9 +1045,9 @@ func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 		"-f",
 		filePath,
 	}
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithField("path", filePath).Debug("Created Kubernetes object by file.")
@@ -870,28 +1055,7 @@ func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 	return nil
 }
 
-func (c *KubectlClient) CreateObjectByName(typeName, objectName string, additionalArgs []string) error {
-
-	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		"create",
-		typeName,
-		objectName,
-	}
-	if len(additionalArgs) > 0 {
-		args = append(args, additionalArgs...)
-	}
-
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
-	if err != nil {
-		return err
-	}
-
-	log.WithField(typeName, objectName).Debug("Created Kubernetes object by name.")
-
-	return nil
-}
-
+// CreateObjectByYAML creates an object on the server from a YAML/JSON document.
 func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
 
 	args := []string{fmt.Sprintf("--namespace=%s", c.namespace), "create", "-f", "-"}
@@ -906,9 +1070,9 @@ func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
 		stdin.Write([]byte(yaml))
 	}()
 
-	_, err = cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.Debug("Created Kubernetes object by YAML.")
@@ -916,18 +1080,19 @@ func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
 	return nil
 }
 
+// DeleteObjectByFile deletes an object on the server from a YAML/JSON file at the specified path.
 func (c *KubectlClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) error {
 
 	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		fmt.Sprintf("--ignore-not-found=%t", ignoreNotFound),
 		"delete",
 		"-f",
 		filePath,
+		fmt.Sprintf("--namespace=%s", c.namespace),
+		fmt.Sprintf("--ignore-not-found=%t", ignoreNotFound),
 	}
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.WithField("path", filePath).Debug("Deleted Kubernetes object by file.")
@@ -935,33 +1100,15 @@ func (c *KubectlClient) DeleteObjectByFile(filePath string, ignoreNotFound bool)
 	return nil
 }
 
-func (c *KubectlClient) DeleteObjectByName(typeName, objectName string, ignoreNotFound bool) error {
-
-	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		fmt.Sprintf("--ignore-not-found=%t", ignoreNotFound),
-		"delete",
-		typeName,
-		objectName,
-	}
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
-	if err != nil {
-		return err
-	}
-
-	log.WithField(typeName, objectName).Debug("Deleted Kubernetes object by name.")
-
-	return nil
-}
-
+// DeleteObjectByYAML deletes an object on the server from a YAML/JSON document.
 func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) error {
 
 	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		fmt.Sprintf("--ignore-not-found=%t", ignoreNotFound),
 		"delete",
 		"-f",
 		"-",
+		fmt.Sprintf("--namespace=%s", c.namespace),
+		fmt.Sprintf("--ignore-not-found=%t", ignoreNotFound),
 	}
 	cmd := exec.Command(c.cli, args...)
 	stdin, err := cmd.StdinPipe()
@@ -974,9 +1121,9 @@ func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) err
 		stdin.Write([]byte(yaml))
 	}()
 
-	_, err = cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
 	log.Debug("Deleted Kubernetes object by YAML.")
@@ -984,10 +1131,12 @@ func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) err
 	return nil
 }
 
-func (c *KubectlClient) AddTridentUserToOpenShiftSCC() error {
+// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
+// security context constraint. This only works for OpenShift.
+func (c *KubectlClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
 
 	if c.flavor != FlavorOpenShift {
-		return errors.New("The current client context is not OpenShift.")
+		return errors.New("the current client context is not OpenShift")
 	}
 
 	// This command appears to be idempotent, so no need to call isTridentUserInOpenShiftSCC() first.
@@ -996,21 +1145,23 @@ func (c *KubectlClient) AddTridentUserToOpenShiftSCC() error {
 		"adm",
 		"policy",
 		"add-scc-to-user",
-		"anyuid",
+		scc,
 		"-z",
-		"trident",
+		user,
 	}
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 	return nil
 }
 
-func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC() error {
+// RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
+// security context constraint. This only works for OpenShift.
+func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
 
 	if c.flavor != FlavorOpenShift {
-		return errors.New("The current client context is not OpenShift.")
+		return errors.New("the current client context is not OpenShift")
 	}
 
 	// This command appears to be idempotent, so no need to call isTridentUserInOpenShiftSCC() first.
@@ -1019,93 +1170,13 @@ func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC() error {
 		"adm",
 		"policy",
 		"remove-scc-from-user",
-		"anyuid",
+		scc,
 		"-z",
-		"trident",
+		user,
 	}
-	_, err := exec.Command(c.cli, args...).CombinedOutput()
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s; %v", string(out), err)
 	}
 	return nil
-}
-
-// ReadDeploymentFromFile parses and returns a deployment object from a file.
-func (c *KubectlClient) ReadDeploymentFromFile(filePath string) (*v1beta1.Deployment, error) {
-
-	var deployment v1beta1.Deployment
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &deployment)
-	if err != nil {
-		return nil, err
-	}
-	return &deployment, nil
-}
-
-// ReadServiceFromFile parses and returns a service object from a file.
-func (c *KubectlClient) ReadServiceFromFile(filePath string) (*v1.Service, error) {
-
-	var service v1.Service
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &service)
-	if err != nil {
-		return nil, err
-	}
-	return &service, nil
-}
-
-// ReadStatefulSetFromFile parses and returns a statefulset object from a file.
-func (c *KubectlClient) ReadStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error) {
-
-	var statefulset appsv1.StatefulSet
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &statefulset)
-	if err != nil {
-		return nil, err
-	}
-	return &statefulset, nil
-}
-
-// ReadDaemonSetFromFile parses and returns a daemonset object from a file.
-func (c *KubectlClient) ReadDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error) {
-
-	var daemonset v1beta1.DaemonSet
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &daemonset)
-	if err != nil {
-		return nil, err
-	}
-	return &daemonset, nil
-}
-
-// ReadPVCFromFile parses and returns a PVC object from a file.
-func (c *KubectlClient) ReadPVCFromFile(filePath string) (*v1.PersistentVolumeClaim, error) {
-
-	var pvc v1.PersistentVolumeClaim
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &pvc)
-	if err != nil {
-		return nil, err
-	}
-	return &pvc, nil
 }

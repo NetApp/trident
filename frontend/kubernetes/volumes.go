@@ -110,7 +110,10 @@ func CreateNFSVolumeSource(vol *storage.VolumeExternal) *v1.NFSVolumeSource {
 	}
 }
 
-func findOrCreateCHAPSecret(k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal) (string, error) {
+func findOrCreateCHAPSecret(
+	k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal,
+) (string, error) {
+
 	volConfig := vol.Config
 	secretName := vol.GetCHAPSecretName()
 	log.Debugf("Using secret: %v", secretName)
@@ -137,7 +140,9 @@ func findOrCreateCHAPSecret(k8sClient k8sclient.Interface, kubeVersion *k8sutilv
 	return secretName, nil
 }
 
-func CreateISCSIPersistentVolumeSource(k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal) (*v1.ISCSIPersistentVolumeSource, error) {
+func CreateISCSIPersistentVolumeSource(
+	k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal,
+) (*v1.ISCSIPersistentVolumeSource, error) {
 
 	namespace := ""
 	switch {

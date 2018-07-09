@@ -253,7 +253,6 @@ func GetInitiatorIqns() ([]string, error) {
 // PathExists returns true if the file/directory at the specified path exists,
 // false otherwise or if an error occurs.
 func PathExists(path string) bool {
-	//TODO: revert to system stat if needed
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}

@@ -37,10 +37,6 @@ import (
 	k8sutilversion "github.com/netapp/trident/utils"
 )
 
-const (
-	tridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
-)
-
 func ValidateKubeVersion(versionInfo *k8sversion.Info) (kubeVersion *k8sutilversion.Version, err error) {
 	kubeVersion, err = nil, nil
 	defer func() {
@@ -97,17 +93,13 @@ func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin
 	}
 
 	// Create the CLI-based Kubernetes client
-	client, err := cli_k8s_client.NewKubectlClient()
+	client, err := cli_k8s_client.NewKubectlClient("")
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 
-	// when running in binary mode, we use the default namespace
-	tridentNamespace, err := client.GetCurrentNamespace()
-	if err != nil {
-		return nil, err
-	}
-	return newKubernetesPlugin(o, kubeConfig, tridentNamespace)
+	// when running in binary mode, we use the current namespace as determined by the CLI client
+	return newKubernetesPlugin(o, kubeConfig, client.Namespace())
 }
 
 func NewPluginInCluster(o core.Orchestrator) (*Plugin, error) {
@@ -117,11 +109,11 @@ func NewPluginInCluster(o core.Orchestrator) (*Plugin, error) {
 	}
 
 	// when running in a pod, we use the Trident pod's namespace
-	bytes, err := ioutil.ReadFile(tridentNamespaceFile)
+	bytes, err := ioutil.ReadFile(config.TridentNamespaceFile)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error":         err,
-			"namespaceFile": tridentNamespaceFile,
+			"namespaceFile": config.TridentNamespaceFile,
 		}).Fatal("Kubernetes frontend failed to obtain Trident's namespace!")
 	}
 	tridentNamespace := string(bytes)
@@ -186,7 +178,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(
 		&corev1.EventSinkImpl{
-			Interface: kubeClient.Core().Events(""),
+			Interface: kubeClient.CoreV1().Events(""),
 		})
 	ret.eventRecorder = broadcaster.NewRecorder(scheme.Scheme,
 		v1.EventSource{Component: AnnOrchestrator})
@@ -194,12 +186,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Setting up a watch for PVCs
 	ret.claimSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.Core().PersistentVolumeClaims(
-				v1.NamespaceAll).List(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.Core().PersistentVolumeClaims(
-				v1.NamespaceAll).Watch(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(options)
 		},
 	}
 	_, ret.claimController = cache.NewInformer(
@@ -216,10 +206,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Setting up a watch for PVs
 	ret.volumeSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.Core().PersistentVolumes().List(options)
+			return kubeClient.CoreV1().PersistentVolumes().List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.Core().PersistentVolumes().Watch(options)
+			return kubeClient.CoreV1().PersistentVolumes().Watch(options)
 		},
 	}
 	_, ret.volumeController = cache.NewInformer(
@@ -860,7 +850,7 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		err = fmt.Errorf("unrecognized volume type by Kubernetes")
 		return
 	}
-	pv, err = p.kubeClient.Core().PersistentVolumes().Create(pv)
+	pv, err = p.kubeClient.CoreV1().PersistentVolumes().Create(pv)
 	return
 }
 
@@ -875,7 +865,7 @@ func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {
 			v1.EventTypeWarning, "FailedVolumeDelete", message)
 		return fmt.Errorf(message)
 	}
-	err = p.kubeClient.Core().PersistentVolumes().Delete(volume.GetName(),
+	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(volume.GetName(),
 		&metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("kubernetes frontend failed to contact the API server and delete the PV: %s", err.Error())
@@ -1056,7 +1046,7 @@ func (p *Plugin) updateVolumePhase(volume *v1.PersistentVolume, phase v1.Persist
 	volumeClone.Status.Phase = phase
 	volumeClone.Status.Message = message
 
-	newVol, err := p.kubeClient.Core().PersistentVolumes().UpdateStatus(volumeClone)
+	newVol, err := p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(volumeClone)
 	if err != nil {
 		return newVol, err
 	}

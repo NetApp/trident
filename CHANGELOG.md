@@ -9,6 +9,7 @@
 - **Kubernetes:** Fixed an issue where Trident would provision a ReadWriteMany PVC to an iSCSI backend.
 - **Kubernetes:** Fixed an installer issue where the Trident PV could be bound to the wrong PVC.
 - **Kubernetes:** Fixed an issue where the Trident installer could fail if a default storage class is set.
+- **Kubernetes:** Fixed an issue where the Trident installer could fail to delete objects on some Kubernetes versions (Issue [#132](https://github.com/NetApp/trident/issues/132)).
 - **Docker:** Fixed an issue where deleted qtrees could appear in Docker volume list.
 
 **Enhancements:**
