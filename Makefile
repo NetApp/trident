@@ -143,7 +143,7 @@ dist_tar:
 	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 	-rm -rf /tmp/trident-installer
 
-dist: build dist_tar dist_tag build_container_tools
+dist: build dist_tar dist_tag
 
 ## Test targets
 test_core:
