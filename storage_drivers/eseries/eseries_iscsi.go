@@ -874,7 +874,7 @@ func (d *SANStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig
 	b.EseriesConfig = &d.Config
 }
 
-func (d *SANStorageDriver) GetExternalConfig() interface{} {
+func (d *SANStorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 	log.Debugln("EseriesStorageDriver:GetExternalConfig")
 
 	return &SANStorageDriverConfigExternal{

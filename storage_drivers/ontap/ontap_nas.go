@@ -391,7 +391,7 @@ func (d *NASStorageDriver) StoreConfig(
 	b.OntapConfig = &d.Config
 }
 
-func (d *NASStorageDriver) GetExternalConfig() interface{} {
+func (d *NASStorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 	return getExternalConfig(d.Config)
 }
 

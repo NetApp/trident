@@ -646,7 +646,7 @@ func (d *SANStorageDriver) StoreConfig(
 	b.OntapConfig = &d.Config
 }
 
-func (d *SANStorageDriver) GetExternalConfig() interface{} {
+func (d *SANStorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 	return getExternalConfig(d.Config)
 }
 

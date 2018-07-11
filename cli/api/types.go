@@ -15,6 +15,7 @@ type Backend struct {
 		StorageDriverName string   `json:"storageDriverName"`
 		StoragePrefix     string   `json:"storagePrefix"`
 		SerialNumbers     []string `json:"serialNumbers"`
+		FailureDomainZone string   `json:"failureDomainZone"`
 	} `json:"config"`
 	Storage interface{} `json:"storage"`
 	Online  bool        `json:"online"`

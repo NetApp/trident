@@ -25,6 +25,7 @@ type CommonStorageDriverConfig struct {
 	StoragePrefix     *string               `json:"-"`
 	SerialNumbers     []string              `json:"-"`
 	DriverContext     trident.DriverContext `json:"-"`
+	FailureDomainZone string                `json:"failureDomainZone"`
 }
 
 type CommonStorageDriverConfigDefaults struct {
@@ -222,6 +223,15 @@ type CommonStorageDriverConfigExternal struct {
 	StorageDriverName string   `json:"storageDriverName"`
 	StoragePrefix     *string  `json:"storagePrefix"`
 	SerialNumbers     []string `json:"serialNumbers"`
+	FailureDomainZone string   `json:"failureDomainZone"`
+}
+
+type StorageDriverConfigExternal interface {
+	GetFailureDomainZone() string
+}
+
+func (c CommonStorageDriverConfigExternal) GetFailureDomainZone() string {
+	return c.FailureDomainZone
 }
 
 func SanitizeCommonStorageDriverConfig(c *CommonStorageDriverConfig) {
@@ -241,6 +251,7 @@ func GetCommonStorageDriverConfigExternal(
 		StorageDriverName: c.StorageDriverName,
 		StoragePrefix:     c.StoragePrefix,
 		SerialNumbers:     c.SerialNumbers,
+		FailureDomainZone: c.FailureDomainZone,
 	}
 }
 

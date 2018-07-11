@@ -50,7 +50,7 @@ type Driver interface {
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
-	GetExternalConfig() interface{}
+	GetExternalConfig() drivers.StorageDriverConfigExternal
 	GetVolumeExternal(name string) (*VolumeExternal, error)
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 	GetUpdateType(driver Driver) *roaring.Bitmap
@@ -281,12 +281,12 @@ func (b *Backend) Terminate() {
 }
 
 type BackendExternal struct {
-	Name     string                   `json:"name"`
-	Protocol tridentconfig.Protocol   `json:"protocol"`
-	Config   interface{}              `json:"config"`
-	Storage  map[string]*PoolExternal `json:"storage"`
-	Online   bool                     `json:"online"`
-	Volumes  []string                 `json:"volumes"`
+	Name     string                              `json:"name"`
+	Protocol tridentconfig.Protocol              `json:"protocol"`
+	Config   drivers.StorageDriverConfigExternal `json:"config"`
+	Storage  map[string]*PoolExternal            `json:"storage"`
+	Online   bool                                `json:"online"`
+	Volumes  []string                            `json:"volumes"`
 }
 
 func (b *Backend) ConstructExternal() *BackendExternal {

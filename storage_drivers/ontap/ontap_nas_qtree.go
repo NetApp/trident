@@ -1021,7 +1021,7 @@ func (d *NASQtreeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendC
 	b.OntapConfig = &d.Config
 }
 
-func (d *NASQtreeStorageDriver) GetExternalConfig() interface{} {
+func (d *NASQtreeStorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 	return getExternalConfig(d.Config)
 }
 

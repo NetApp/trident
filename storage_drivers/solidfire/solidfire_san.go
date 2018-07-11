@@ -1110,7 +1110,7 @@ func (d *SANStorageDriver) StoreConfig(
 	b.SolidfireConfig = &d.Config
 }
 
-func (d *SANStorageDriver) GetExternalConfig() interface{} {
+func (d *SANStorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 	endpointHalves := strings.Split(d.Config.EndPoint, "@")
 	return &StorageDriverConfigExternal{
 		CommonStorageDriverConfigExternal: drivers.GetCommonStorageDriverConfigExternal(

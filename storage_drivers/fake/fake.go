@@ -366,7 +366,7 @@ func (d *StorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
 	}
 }
 
-func (d *StorageDriver) GetExternalConfig() interface{} {
+func (d *StorageDriver) GetExternalConfig() drivers.StorageDriverConfigExternal {
 
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 

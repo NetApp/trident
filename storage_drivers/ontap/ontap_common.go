@@ -1012,7 +1012,7 @@ func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) bool
 	return true
 }
 
-func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {
+func getExternalConfig(config drivers.OntapStorageDriverConfig) drivers.StorageDriverConfigExternal {
 
 	drivers.SanitizeCommonStorageDriverConfig(config.CommonStorageDriverConfig)
 
