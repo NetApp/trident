@@ -22,6 +22,9 @@ const (
 	AnnDefaultStorageClass    = "storageclass.kubernetes.io/is-default-class"
 	AnnMountOptions           = "volume.beta.kubernetes.io/mount-options"
 
+	// (Based on kubernetes/pkg/kubelet/apis/well_known_labels.go)
+	LabelZoneFailureDomain    = "failure-domain.beta.kubernetes.io/zone"
+
 	// Orchestrator-defined annotations
 	AnnOrchestrator    = "netapp.io/" + config.OrchestratorName
 	AnnPrefix          = config.OrchestratorName + ".netapp.io"

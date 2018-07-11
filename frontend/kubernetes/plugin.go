@@ -747,6 +747,25 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		return
 	}
 
+	backend, err := p.orchestrator.GetBackend(vol.Backend)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume": uniqueName,
+		}).Warnf("Kubernetes frontend couldn't retrieve backend %q: %s", vol.Backend, err.Error())
+		return
+	}
+
+	var labels map[string]string
+	if failureDomainZone := backend.Config.GetFailureDomainZone(); failureDomainZone != "" {
+		labels = map[string]string{
+			LabelZoneFailureDomain:	failureDomainZone,
+		}
+	}
+	log.WithFields(log.Fields{
+		"volume": uniqueName,
+	}).Infof("Kubernetes frontend created a new volume using "+
+		"%q backend (failureDomainZone: %q)", vol.Backend, backend.Config.GetFailureDomainZone())
+
 	claimRef := v1.ObjectReference{
 		Namespace: claim.Namespace,
 		Name:      claim.Name,
@@ -759,6 +778,7 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: uniqueName,
+			Labels: labels,
 			Annotations: map[string]string{
 				AnnClass:                  GetPersistentVolumeClaimClass(claim),
 				AnnDynamicallyProvisioned: AnnOrchestrator,
