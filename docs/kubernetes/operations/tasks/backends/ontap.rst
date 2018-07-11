@@ -106,6 +106,7 @@ igroupName         Name of the igroup for SAN volumes to use                    
 username           Username to connect to the cluster/SVM
 password           Password to connect to the cluster/SVM
 storagePrefix      Prefix used when provisioning new volumes in the SVM            "trident"
+failureDomainZone  Failure domain zone corresponding to the backend
 ================== =============================================================== ================================================
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver

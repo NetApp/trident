@@ -42,6 +42,7 @@ InitiatorIFace     Restrict iSCSI traffic to a specific host interface          
 UseCHAP            Use CHAP to authenticate iSCSI
 AccessGroups       List of Access Group IDs to use                                 Finds the ID of an access group named "trident"
 Types              QoS specifications (see below)
+failureDomainZone  Failure domain zone corresponding to the backend
 ================== =============================================================== ================================================
 
 Example configuration

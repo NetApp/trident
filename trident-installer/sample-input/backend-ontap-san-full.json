@@ -7,5 +7,6 @@
     "username": "admin",
     "password": "password123",
     "storagePrefix": "alternate-trident",
-    "igroupName": "custom"
+    "igroupName": "custom",
+    "failureDomainZone": "dc01-a"
 }
