@@ -437,8 +437,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
-        - name: etc-dir
-          mountPath: /etc
       - name: etcd
         image: {ETCD_IMAGE}
         command:
@@ -500,10 +498,6 @@ spec:
           claimName: {PVC_NAME}
       - name: socket-dir
         emptyDir:
-      - name: etc-dir
-        hostPath:
-          path: /etc
-          type: Directory
 `
 
 func GetCSIDaemonSetYAML(tridentImage, label string, debug bool) string {
@@ -574,8 +568,6 @@ spec:
         - name: pods-mount-dir
           mountPath: /var/lib/kubelet/pods
           mountPropagation: "Bidirectional"
-        - name: etc-dir
-          mountPath: /etc
         - name: dev-dir
           mountPath: /dev
         - name: sys-dir
@@ -611,10 +603,6 @@ spec:
         hostPath:
           path: /var/lib/kubelet/pods
           type: DirectoryOrCreate
-      - name: etc-dir
-        hostPath:
-          path: /etc
-          type: Directory
       - name: dev-dir
         hostPath:
           path: /dev
