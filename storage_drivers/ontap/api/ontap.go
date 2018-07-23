@@ -639,10 +639,13 @@ func (d Client) VolumeGetAll(prefix string) (response azgo.VolumeGetIterResponse
 
 	// Limit the Flexvols to those matching the name prefix
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
+	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
 	if d.SupportsFeature(FlexGroups) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
-	query := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*queryVolIDAttrs)
+	query := azgo.NewVolumeAttributesType().
+		SetVolumeIdAttributes(*queryVolIDAttrs).
+		SetVolumeStateAttributes(*queryVolStateAttrs)
 
 	// Limit the returned data to only the data relevant to containers
 	desiredVolExportAttrs := azgo.NewVolumeExportAttributesType().
@@ -683,7 +686,10 @@ func (d Client) VolumeList(prefix string) (response azgo.VolumeGetIterResponse, 
 	if d.SupportsFeature(FlexGroups) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
-	query := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*queryVolIDAttrs)
+	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
+	query := azgo.NewVolumeAttributesType().
+		SetVolumeIdAttributes(*queryVolIDAttrs).
+		SetVolumeStateAttributes(*queryVolStateAttrs)
 
 	// Limit the returned data to only the Flexvol names
 	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
@@ -714,10 +720,13 @@ func (d Client) VolumeListByAttrs(
 	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().
 		SetSnapshotPolicy(snapshotPolicy).
 		SetSnapdirAccessEnabled(snapshotDir)
+	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().
+		SetState("online")
 	query := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
 		SetVolumeSpaceAttributes(*queryVolSpaceAttrs).
-		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs)
+		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs).
+		SetVolumeStateAttributes(*queryVolStateAttrs)
 
 	if encrypt != nil {
 		query.SetEncrypt(*encrypt)
