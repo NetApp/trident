@@ -9,6 +9,7 @@
 
 **Enhancements:**
 - Added ability to set snapshotReserve in backend config files, volume creation options, and PVC annotations (Issue [#43](https://github.com/NetApp/trident/issues/43)).
+- **Kubernetes:** Added support for expanding NFS Persistent Volumes (Issue [#21](https://github.com/NetApp/trident/issues/21)).
 - **Kubernetes:** Modified Trident installer to do most of its work in a pod.
 
 ## v18.07.0

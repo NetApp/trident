@@ -27,5 +27,5 @@ func logRestCallInfo(msg string, r *http.Request, start time.Time, requestId xid
 		"uri":       r.RequestURI,
 		"route":     name,
 		"duration":  time.Since(start),
-	}).Info(msg)
+	}).Debug(msg)
 }

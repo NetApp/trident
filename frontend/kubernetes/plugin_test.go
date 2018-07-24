@@ -203,6 +203,7 @@ func newTestPlugin(
 	claimSource *framework.FakePVCControllerSource,
 	volumeSource *framework.FakePVControllerSource,
 	classSource *framework.FakeControllerSource,
+	resizeSource *framework.FakePVCControllerSource,
 	protocols []config.Protocol,
 	kubeVersion *k8sversion.Info,
 ) (*Plugin, error) {
@@ -211,6 +212,7 @@ func newTestPlugin(
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
+		resizeControllerStopChan: make(chan struct{}),
 		mutex:                 &sync.Mutex{},
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
@@ -237,6 +239,15 @@ func newTestPlugin(
 			AddFunc:    ret.addVolume,
 			UpdateFunc: ret.updateVolume,
 			DeleteFunc: ret.deleteVolume,
+		},
+	)
+	ret.resizeSource = resizeSource
+	_, ret.resizeController = cache.NewInformer(
+		ret.resizeSource,
+		&v1.PersistentVolumeClaim{},
+		KubernetesResizeSyncPeriod,
+		cache.ResourceEventHandlerFuncs{
+			UpdateFunc: ret.updateClaimResize,
 		},
 	)
 	version, err := ValidateKubeVersion(ret.kubernetesVersion)
@@ -801,8 +812,9 @@ func TestVolumeControllerKubeVersion1_5(t *testing.T) {
 		cs := framework.NewFakePVCControllerSource()
 		volumeSource := framework.NewFakePVControllerSource()
 		classSource := framework.NewFakeControllerSource()
+		resizeSource := framework.NewFakePVCControllerSource()
 		ctrl, err := newTestPlugin(orchestrator, client, cs, volumeSource,
-			classSource, test.protocols, kubeVersion)
+			classSource, resizeSource, test.protocols, kubeVersion)
 		if err != nil {
 			t.Fatalf("Unable to create the Kubernetes plugin: %v", err)
 		}
@@ -1368,8 +1380,9 @@ func TestVolumeControllerKubeVersion1_6(t *testing.T) {
 		cs := framework.NewFakePVCControllerSource()
 		volumeSource := framework.NewFakePVControllerSource()
 		classSource := framework.NewFakeControllerSource()
+		resizeSource := framework.NewFakePVCControllerSource()
 		ctrl, err := newTestPlugin(orchestrator, client, cs, volumeSource,
-			classSource, test.protocols, kubeVersion)
+			classSource, resizeSource, test.protocols, kubeVersion)
 		if err != nil {
 			t.Fatalf("Unable to create the Kubernetes plugin: %v", err)
 		}
@@ -1486,8 +1499,9 @@ func TestStorageClassControllerKubeVersion1_5(t *testing.T) {
 		claimSource := framework.NewFakePVCControllerSource()
 		volumeSource := framework.NewFakePVControllerSource()
 		classSource := framework.NewFakeControllerSource()
+		resizeSource := framework.NewFakePVCControllerSource()
 		ctrl, err := newTestPlugin(orchestrator, client, claimSource, volumeSource,
-			classSource, []config.Protocol{config.File}, kubeVersion)
+			classSource, resizeSource, []config.Protocol{config.File}, kubeVersion)
 		if err != nil {
 			t.Fatalf("Unable to create the Kubernetes plugin: %v", err)
 		}
@@ -1619,8 +1633,9 @@ func TestV1betaStorageClassKube1_5(t *testing.T) {
 		claimSource := framework.NewFakePVCControllerSource()
 		volumeSource := framework.NewFakePVControllerSource()
 		classSource := framework.NewFakeControllerSource()
+		resizeSource := framework.NewFakePVCControllerSource()
 		ctrl, err := newTestPlugin(orchestrator, client, claimSource,
-			volumeSource, classSource, test.protocols, kubeVersion)
+			volumeSource, classSource, resizeSource, test.protocols, kubeVersion)
 		if err != nil {
 			t.Fatalf("Unable to create the Kubernetes plugin: %v", err)
 		}
@@ -1881,8 +1896,9 @@ func TestV1StorageClassKube1_6(t *testing.T) {
 		claimSource := framework.NewFakePVCControllerSource()
 		volumeSource := framework.NewFakePVControllerSource()
 		classSource := framework.NewFakeControllerSource()
+		resizeSource := framework.NewFakePVCControllerSource()
 		ctrl, err := newTestPlugin(orchestrator, client, claimSource,
-			volumeSource, classSource, test.protocols, kubeVersion)
+			volumeSource, classSource, resizeSource, test.protocols, kubeVersion)
 		if err != nil {
 			t.Fatalf("Unable to create the Kubernetes plugin: %v", err)
 		}

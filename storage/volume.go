@@ -52,12 +52,14 @@ func (c *VolumeConfig) Validate() error {
 	return nil
 }
 
-func (c *VolumeConfig) ConstructClone(clone *VolumeConfig) {
+func (c *VolumeConfig) ConstructClone() *VolumeConfig {
+	clone := &VolumeConfig{}
 	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 	dec := gob.NewDecoder(buff)
 	enc.Encode(c)
 	dec.Decode(clone)
+	return clone
 }
 
 type Volume struct {

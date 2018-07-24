@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	KubernetesSyncPeriod = 60 * time.Second
+	KubernetesSyncPeriod       = 60 * time.Second
+	KubernetesResizeSyncPeriod = 3 * time.Minute
 
 	// Kubernetes-defined storage class parameters
 	K8sFsType = "fsType"

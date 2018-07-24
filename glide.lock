@@ -1,5 +1,5 @@
-hash: 95d61838f0e0e33e120343a872bf9b2ae514213a1b32d60d3fc7db2ab1295f79
-updated: 2018-06-20T14:25:48.279040771-04:00
+hash: 1c9087211cf689105655f6e316e7ab4b381e197f6fd3c1e585d9ca95f48fd46b
+updated: 2018-07-27T08:13:57.20693459-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
@@ -38,7 +38,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: 7395e3f8aa162843a74ed6d48e79627d9792ac55
+  version: 3ede32e2033de7505e6500d6c868c2b9ed9f169d
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -80,7 +80,7 @@ imports:
   - ptypes/duration
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+  version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/googleapis/gnostic
@@ -110,7 +110,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb
 - name: github.com/Microsoft/go-winio
-  version: ab35fc04b6365e8fcb18e6e9e41ea4a02b10b175
+  version: 78439966b38d69bf38227fbf57ac8a6fee70f69a
 - name: github.com/mitchellh/hashstructure
   version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/mschoch/smat
@@ -132,7 +132,7 @@ imports:
 - name: github.com/spf13/pflag
   version: 583c0c0531f06d5278b7d917446061adc344b5cd
 - name: github.com/tinylib/msgp
-  version: ef41b42e603a8b9d25e0027b432f41d141093fbd
+  version: 3b5c87ab5fb00c660bf85b888445d9a01db64db4
   subpackages:
   - msgp
 - name: github.com/ugorji/go
@@ -142,7 +142,7 @@ imports:
 - name: github.com/willf/bitset
   version: 8ce1146b8621c95164efd9c8b1124cfa9b8afb4e
 - name: golang.org/x/crypto
-  version: 7f39a6fea4fe9364fb61e1def6a268a51b4f3a06
+  version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net

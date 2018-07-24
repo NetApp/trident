@@ -14,6 +14,7 @@ import (
 	"k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sversion "k8s.io/apimachinery/pkg/version"
@@ -37,30 +38,13 @@ import (
 	k8sutilversion "github.com/netapp/trident/utils"
 )
 
-func ValidateKubeVersion(versionInfo *k8sversion.Info) (kubeVersion *k8sutilversion.Version, err error) {
-	kubeVersion, err = nil, nil
-	defer func() {
-		if r := recover(); r != nil {
-			log.WithFields(log.Fields{
-				"panic": r,
-			}).Errorf("Kubernetes frontend recovered from a panic!")
-			err = fmt.Errorf("kubernetes frontend recovered from a panic: %v", r)
-		}
-	}()
-	kubeVersion = k8sutilversion.MustParseSemantic(versionInfo.GitVersion)
-	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic(config.KubernetesVersionMin)) {
-		err = fmt.Errorf("kubernetes frontend only works with Kubernetes %s or later",
-			config.KubernetesVersionMin)
-	}
-	return
-}
-
 // StorageClassSummary captures relevant fields in the storage class that are needed
-// during PV creation.
+// during PV creation or PV resize.
 type StorageClassSummary struct {
 	Parameters                    map[string]string
 	MountOptions                  []string
 	PersistentVolumeReclaimPolicy *v1.PersistentVolumeReclaimPolicy
+	AllowVolumeExpansion          *bool
 }
 
 type Plugin struct {
@@ -78,6 +62,9 @@ type Plugin struct {
 	classController          cache.Controller
 	classControllerStopChan  chan struct{}
 	classSource              cache.ListerWatcher
+	resizeController         cache.Controller
+	resizeControllerStopChan chan struct{}
+	resizeSource             cache.ListerWatcher
 	mutex                    *sync.Mutex
 	pendingClaimMatchMap     map[string]*v1.PersistentVolume
 	kubernetesVersion        *k8sversion.Info
@@ -140,6 +127,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
+		resizeControllerStopChan: make(chan struct{}),
 		mutex:                 &sync.Mutex{},
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
@@ -150,7 +138,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
 	if err != nil {
 		return nil,
-			fmt.Errorf("kubernetes frontend couldn't retrieve API server's version: %v", err)
+			fmt.Errorf("Kubernetes frontend couldn't retrieve API server's version: %v", err)
 	}
 	log.WithFields(log.Fields{
 		"version":    ret.kubernetesVersion.Major + "." + ret.kubernetesVersion.Minor,
@@ -158,21 +146,22 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	}).Info("Kubernetes frontend determined the container orchestrator ",
 		"version.")
 	kubeVersion, err := ValidateKubeVersion(ret.kubernetesVersion)
-	if err != nil &&
-		strings.Contains(err.Error(),
-			"Kubernetes frontend only works with Kubernetes") {
-		return nil, err
-	} else if err != nil {
-		log.Warnf("%s v%s may not support "+
-			"container orchestrator version %s.%s (%s)! "+
-			"Supported versions for Kubernetes are %s-%s.",
-			config.OrchestratorName, config.OrchestratorVersion,
-			ret.kubernetesVersion.Major, ret.kubernetesVersion.Minor,
-			ret.kubernetesVersion.GitVersion, config.KubernetesVersionMin,
-			config.KubernetesVersionMax)
-		log.Warnf("Kubernetes frontend proceeds as if you are running "+
-			"Kubernetes %s!", config.KubernetesVersionMax)
-		kubeVersion = k8sutilversion.MustParseSemantic(config.KubernetesVersionMax)
+	if err != nil {
+		if IsPanicKubeVersion(err) {
+			return nil, fmt.Errorf("Kubernetes frontend couldn't validate Kubernetes version: %v", err)
+		}
+		if IsUnsupportedKubeVersion(err) {
+			log.Warnf("%s v%s may not support "+
+				"container orchestrator version %s.%s (%s)! "+
+				"Supported versions for Kubernetes are %s-%s.",
+				config.OrchestratorName, config.OrchestratorVersion,
+				ret.kubernetesVersion.Major, ret.kubernetesVersion.Minor,
+				ret.kubernetesVersion.GitVersion, config.KubernetesVersionMin,
+				config.KubernetesVersionMax)
+			log.Warnf("Kubernetes frontend proceeds as if you are running "+
+				"Kubernetes %s!", config.KubernetesVersionMax)
+			kubeVersion = k8sutilversion.MustParseSemantic(config.KubernetesVersionMax)
+		}
 	}
 
 	broadcaster := record.NewBroadcaster()
@@ -265,6 +254,24 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		)
 	}
 
+	// Setting up a watch for PVCs to detect resize
+	ret.resizeSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(options)
+		},
+	}
+	_, ret.resizeController = cache.NewInformer(
+		ret.resizeSource,
+		&v1.PersistentVolumeClaim{},
+		KubernetesResizeSyncPeriod,
+		cache.ResourceEventHandlerFuncs{
+			UpdateFunc: ret.updateClaimResize,
+		},
+	)
+
 	return ret, nil
 }
 
@@ -273,6 +280,7 @@ func (p *Plugin) Activate() error {
 	go p.claimController.Run(p.claimControllerStopChan)
 	go p.volumeController.Run(p.volumeControllerStopChan)
 	go p.classController.Run(p.classControllerStopChan)
+	go p.resizeController.Run(p.resizeControllerStopChan)
 	return nil
 }
 
@@ -281,6 +289,7 @@ func (p *Plugin) Deactivate() error {
 	close(p.claimControllerStopChan)
 	close(p.volumeControllerStopChan)
 	close(p.classControllerStopChan)
+	close(p.resizeControllerStopChan)
 	return nil
 }
 
@@ -292,20 +301,11 @@ func (p *Plugin) Version() string {
 	return p.kubernetesVersion.GitVersion
 }
 
-func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
-	id := string(claim.UID)
-	r := strings.NewReplacer("-", "", "_", "", " ", "", ",", "")
-	id = r.Replace(id)
-	if len(id) > 5 {
-		id = id[:5]
-	}
-	return fmt.Sprintf("%s-%s-%s", claim.Namespace, claim.Name, id)
-}
-
 func (p *Plugin) addClaim(obj interface{}) {
 	claim, ok := obj.(*v1.PersistentVolumeClaim)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PVC; handler got %v", obj)
+		log.Errorf("Kubernetes frontend expected PVC; handler got %v", obj)
+		return
 	}
 	p.processClaim(claim, "add")
 }
@@ -313,7 +313,8 @@ func (p *Plugin) addClaim(obj interface{}) {
 func (p *Plugin) updateClaim(oldObj, newObj interface{}) {
 	claim, ok := newObj.(*v1.PersistentVolumeClaim)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PVC; handler got %v", newObj)
+		log.Errorf("Kubernetes frontend expected PVC; handler got %v", newObj)
+		return
 	}
 	p.processClaim(claim, "update")
 }
@@ -321,7 +322,8 @@ func (p *Plugin) updateClaim(oldObj, newObj interface{}) {
 func (p *Plugin) deleteClaim(obj interface{}) {
 	claim, ok := obj.(*v1.PersistentVolumeClaim)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PVC; handler got %v", obj)
+		log.Errorf("Kubernetes frontend expected PVC; handler got %v", obj)
+		return
 	}
 	p.processClaim(claim, "delete")
 }
@@ -449,7 +451,7 @@ func (p *Plugin) processClaim(
 		// As of Kubernetes 1.6, selector and storage class are mutually exclusive.
 		if claim.Spec.Selector != nil {
 			message := "Kubernetes frontend ignores PVCs with label selectors!"
-			p.updateClaimWithEvent(claim, v1.EventTypeWarning, "IgnoredClaim",
+			p.updatePVCWithEvent(claim, v1.EventTypeWarning, "IgnoredClaim",
 				message)
 			log.WithFields(log.Fields{
 				"PVC": claim.Name,
@@ -547,7 +549,7 @@ func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	if err != nil {
 		message := "Kubernetes frontend failed to delete the provisioned " +
 			"volume for the lost PVC (will retry upon resync)."
-		p.updateClaimWithEvent(claim, v1.EventTypeWarning,
+		p.updatePVCWithEvent(claim, v1.EventTypeWarning,
 			"FailedVolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
@@ -556,7 +558,7 @@ func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	} else {
 		message := "Kubernetes frontend successfully deleted the " +
 			"provisioned volume for the lost PVC."
-		p.updateClaimWithEvent(claim, v1.EventTypeNormal,
+		p.updatePVCWithEvent(claim, v1.EventTypeNormal,
 			"VolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
@@ -615,10 +617,10 @@ func (p *Plugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 	pv, err := p.createVolumeAndPV(orchestratorClaimName, claim)
 	if err != nil {
 		if pv == nil {
-			p.updateClaimWithEvent(claim, v1.EventTypeNormal,
+			p.updatePVCWithEvent(claim, v1.EventTypeNormal,
 				"ProvisioningFailed", err.Error())
 		} else {
-			p.updateClaimWithEvent(claim, v1.EventTypeWarning,
+			p.updatePVCWithEvent(claim, v1.EventTypeWarning,
 				"ProvisioningFailed", err.Error())
 		}
 		return
@@ -627,7 +629,7 @@ func (p *Plugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 	p.pendingClaimMatchMap[orchestratorClaimName] = pv
 	p.mutex.Unlock()
 	message := "Kubernetes frontend provisioned a volume and a PV for the PVC."
-	p.updateClaimWithEvent(claim, v1.EventTypeNormal,
+	p.updatePVCWithEvent(claim, v1.EventTypeNormal,
 		"ProvisioningSuccess", message)
 	log.WithFields(log.Fields{
 		"PVC":       claim.Name,
@@ -690,9 +692,9 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, claim.Namespace)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"claim.Namespace": claim.Namespace,
-		}).Warnf("Kubernetes frontend couldn't create a client to namespace: %v error: %v",
-			claim.Namespace, err.Error())
+			"namespace": claim.Namespace,
+			"error":     err.Error(),
+		}).Warn("Kubernetes frontend couldn't create a client to namespace!")
 	}
 
 	// Create the volume configuration object
@@ -803,9 +805,9 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		k8sClientCHAP, err = p.getNamespacedKubeClient(&p.kubeConfig, p.tridentNamespace)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"p.tridentNamespace": p.tridentNamespace,
-			}).Warnf("Kubernetes frontend couldn't create a client to Trident's namespace: %v error: %v",
-				p.tridentNamespace, err.Error())
+				"namespace": p.tridentNamespace,
+				"error":     err.Error(),
+			}).Warn("Kubernetes frontend couldn't create a client to namespace!")
 		}
 	default:
 		// In K8S 1.7 and 1.8, we create the CHAP secret in the namespace of the PVC
@@ -869,32 +871,16 @@ func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {
 	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(volume.GetName(),
 		&metav1.DeleteOptions{})
 	if err != nil {
-		return fmt.Errorf("kubernetes frontend failed to contact the API server and delete the PV: %s", err.Error())
+		return fmt.Errorf("Kubernetes frontend failed to contact the API server and delete the PV: %s", err.Error())
 	}
 	return err
-}
-
-// getClaimReclaimPolicy returns the reclaim policy for a claim
-// (similar to ReclaimPolicy for PVs)
-func getClaimReclaimPolicy(claim *v1.PersistentVolumeClaim) string {
-	if policy, found := claim.Annotations[AnnReclaimPolicy]; found {
-		return policy
-	}
-	return ""
-}
-
-// getClaimProvisioner returns the provisioner for a claim
-func getClaimProvisioner(claim *v1.PersistentVolumeClaim) string {
-	if provisioner, found := claim.Annotations[AnnStorageProvisioner]; found {
-		return provisioner
-	}
-	return ""
 }
 
 func (p *Plugin) addVolume(obj interface{}) {
 	volume, ok := obj.(*v1.PersistentVolume)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PV; handler got %v", obj)
+		log.Errorf("Kubernetes frontend expected PV; handler got %v", obj)
+		return
 	}
 	p.processVolume(volume, "add")
 }
@@ -902,7 +888,8 @@ func (p *Plugin) addVolume(obj interface{}) {
 func (p *Plugin) updateVolume(oldObj, newObj interface{}) {
 	volume, ok := newObj.(*v1.PersistentVolume)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PV; handler got %v", newObj)
+		log.Errorf("Kubernetes frontend expected PV; handler got %v", newObj)
+		return
 	}
 	p.processVolume(volume, "update")
 }
@@ -910,7 +897,8 @@ func (p *Plugin) updateVolume(oldObj, newObj interface{}) {
 func (p *Plugin) deleteVolume(obj interface{}) {
 	volume, ok := obj.(*v1.PersistentVolume)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected PV; handler got %v", obj)
+		log.Errorf("Kubernetes frontend expected PV; handler got %v", obj)
+		return
 	}
 	p.processVolume(volume, "delete")
 }
@@ -919,10 +907,11 @@ func (p *Plugin) processVolume(
 	volume *v1.PersistentVolume,
 	eventType string,
 ) {
+	pvSize := volume.Spec.Capacity[v1.ResourceStorage]
 	log.WithFields(log.Fields{
 		"PV":             volume.Name,
 		"PV_phase":       volume.Status.Phase,
-		"PV_size":        volume.Spec.Capacity[v1.ResourceStorage],
+		"PV_size":        pvSize.String(),
 		"PV_uid":         volume.UID,
 		"PV_accessModes": volume.Spec.AccessModes,
 		"PV_annotations": volume.Annotations,
@@ -995,7 +984,7 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 			if !strings.HasSuffix(err.Error(), "not found") {
 				// PVs provisioned by external provisioners seem to end up in
 				// the failed state as Kubernetes doesn't recognize them.
-				log.Errorf("kubernetes frontend failed to delete the PV: %s",
+				log.Errorf("Kubernetes frontend failed to delete the PV: %s",
 					err.Error())
 			}
 			return
@@ -1054,13 +1043,22 @@ func (p *Plugin) updateVolumePhase(volume *v1.PersistentVolume, phase v1.Persist
 	return newVol, err
 }
 
-// updateClaimWithEvent emits given event on the claim.
+// updatePVCWithEvent emits given event on the PVC.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
-func (p *Plugin) updateClaimWithEvent(
+func (p *Plugin) updatePVCWithEvent(
 	claim *v1.PersistentVolumeClaim, eventtype, reason, message string,
 ) (*v1.PersistentVolumeClaim, error) {
 	p.eventRecorder.Event(claim, eventtype, reason, message)
 	return claim, nil
+}
+
+// updatePVWithEvent emits given event on the PV.
+// (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
+func (p *Plugin) updatePVWithEvent(
+	pv *v1.PersistentVolume, eventtype, reason, message string,
+) (*v1.PersistentVolume, error) {
+	p.eventRecorder.Event(pv, eventtype, reason, message)
+	return pv, nil
 }
 
 func convertStorageClassV1BetaToV1(class *k8sstoragev1beta.StorageClass) *k8sstoragev1.StorageClass {
@@ -1081,8 +1079,9 @@ func (p *Plugin) addClass(obj interface{}) {
 	}
 	classV1, ok := obj.(*k8sstoragev1.StorageClass)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+		log.Errorf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
 			"or storage.k8s.io/v1 storage class; handler got %v", obj)
+		return
 	}
 	p.processClass(classV1, "add")
 }
@@ -1095,8 +1094,9 @@ func (p *Plugin) updateClass(oldObj, newObj interface{}) {
 	}
 	classV1, ok := newObj.(*k8sstoragev1.StorageClass)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+		log.Errorf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
 			"or storage.k8s.io/v1 storage class; handler got %v", newObj)
+		return
 	}
 	p.processClass(classV1, "update")
 }
@@ -1109,8 +1109,9 @@ func (p *Plugin) deleteClass(obj interface{}) {
 	}
 	classV1, ok := obj.(*k8sstoragev1.StorageClass)
 	if !ok {
-		log.Panicf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
+		log.Errorf("Kubernetes frontend expected storage.k8s.io/v1beta1 "+
 			"or storage.k8s.io/v1 storage class; handler got %v", obj)
+		return
 	}
 	p.processClass(classV1, "delete")
 }
@@ -1229,6 +1230,7 @@ func (p *Plugin) processAddedClass(class *k8sstoragev1.StorageClass) {
 		Parameters:                    k8sStorageClassParams,
 		MountOptions:                  class.MountOptions,
 		PersistentVolumeReclaimPolicy: class.ReclaimPolicy,
+		AllowVolumeExpansion:          class.AllowVolumeExpansion,
 	}
 	p.storageClassCache[class.Name] = storageClassSummary
 	p.mutex.Unlock()
@@ -1289,9 +1291,12 @@ func (p *Plugin) processDeletedClass(class *k8sstoragev1.StorageClass) {
 		}).Error("Kubernetes frontend couldn't delete the storage class: ", err)
 		return
 	} else {
+		p.mutex.Lock()
+		delete(p.storageClassCache, class.Name)
 		log.WithFields(log.Fields{
 			"storageClass": class.Name,
 		}).Info("Kubernetes frontend successfully deleted the storage class.")
+		p.mutex.Unlock()
 	}
 	return
 }
@@ -1357,4 +1362,190 @@ func GetPersistentVolumeClaimClass(claim *v1.PersistentVolumeClaim) string {
 	}
 
 	return ""
+}
+
+func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
+	oldClaim, ok := oldObj.(*v1.PersistentVolumeClaim)
+	if !ok {
+		log.Errorf("Kubernetes frontend expected PVC; handler got %v", oldObj)
+		return
+	}
+	newClaim, ok := newObj.(*v1.PersistentVolumeClaim)
+	if !ok {
+		log.Errorf("Kubernetes frontend expected PVC; handler got %v", oldObj)
+		return
+	}
+
+	// Filtering PVCs for volume resize. It's important to keep the order as
+	// follows to minimize the amount of work done during periodic syncs.
+	// We intentionally don't use feature gates to see whether volume expansion
+	// is enabled or not. We also don't check for k8s version 1.12 or later
+	// as Trident can support volume resize with earlier versions of k8s if
+	// admission controller doesn't restrict volume resize through
+	// --disable-admission-plugins=PersistentVolumeClaimResize.
+
+	// Verify the storage class allows volume expansion and is managed by Trident.
+	storageClass := GetPersistentVolumeClaimClass(newClaim)
+	if storageClass == "" ||
+		getClaimProvisioner(newClaim) != AnnOrchestrator {
+		return
+	}
+	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
+		if !*storageClassSummary.AllowVolumeExpansion {
+			message := "Kubernetes frontend doesn't resize a PV whose storage class " +
+				"doesn't allow volume expansion!"
+			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+			return
+		}
+	} else {
+		message := fmt.Sprintf("Kubernetes frontend has no knowledge of "+
+			"storage class %s to conduct volume resize!", storageClass)
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		return
+	}
+
+	// We only allow resizing bound claims.
+	if newClaim.Status.Phase != v1.ClaimBound {
+		return
+	}
+
+	// We only allow expanding volumes.
+	oldPVCSize := oldClaim.Spec.Resources.Requests[v1.ResourceStorage]
+	newPVCSize := newClaim.Spec.Resources.Requests[v1.ResourceStorage]
+	currentSize := newClaim.Status.Capacity[v1.ResourceStorage]
+	if newPVCSize.Cmp(oldPVCSize) < 0 ||
+		(newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) >= 0) {
+		message := "Kubernetes frontend doesn't allow shrinking a PV!"
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		return
+	}
+
+	// If we get this far, we potentially have a valid resize operation.
+	log.WithFields(log.Fields{
+		"PVC":          newClaim.Name,
+		"PVC_old_size": newPVCSize.String(),
+		"PVC_new_size": currentSize.String(),
+	}).Debug("Kubernetes frontend detected a PVC suited for volume resize.")
+
+	// We intentionally don't set the PVC condition to "PersistentVolumeClaimResizing"
+	// as NFS resize happens instantaneously. Note that updating the condition
+	// should only happen when the condition isn't set. Otherwise, we may have
+	// infinite calls to updateClaimResize. Currently, we don't keep track of
+	// outstanding resize operations. This may need to change when resize takes
+	// non-negligible amount of time.
+
+	// We only allow resizing NFS PVs as it doesn't require a host-side
+	// footprint to resize the file system.
+	pv, err := p.GetPVForPVC(newClaim)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"PVC":   newClaim.Name,
+			"PV":    newClaim.Spec.VolumeName,
+			"error": err,
+		}).Error("Kubernetes frontend couldn't retrieve the matching PV for the PVC!")
+		return
+	}
+	if pv == nil {
+		return
+	} else if pv.Spec.NFS == nil {
+		message := "Kubernetes frontend only allows resizing NFS PVs!"
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Debug(message)
+		return
+	}
+
+	// Resize the volume and PV
+	if _, err = p.resizeVolumeAndPV(pv, newPVCSize); err != nil {
+		message := fmt.Sprintf("Kubernetes frontend failed in resizing the volume or PV: %v.", err)
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Error(message)
+		return
+	}
+
+	// Update the PVC
+	updatedClaim, err := p.updatePVCSize(newClaim, newPVCSize)
+	if err != nil {
+		message := fmt.Sprintf("Kubernetes frontend failed in updating the PVC size: %v.",
+			err)
+		if updatedClaim == nil {
+			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		} else {
+			p.updatePVCWithEvent(updatedClaim, v1.EventTypeWarning, "VolumeResize", message)
+		}
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Error(message)
+		return
+	}
+	message := "Kubernetes frontend successfuly resized the volume."
+	p.updatePVCWithEvent(updatedClaim, v1.EventTypeNormal, "VolumeResize", message)
+}
+
+// GetPVForPVC returns the PV for a bound PVC.
+func (p *Plugin) GetPVForPVC(claim *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
+	if claim.Status.Phase != v1.ClaimBound {
+		return nil, nil
+	}
+
+	return p.kubeClient.CoreV1().PersistentVolumes().Get(claim.Spec.VolumeName, metav1.GetOptions{})
+}
+
+// resizeVolumeAndPV resizes the volume on the storage backend and updates the
+// PV size.
+func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume,
+	newSize resource.Quantity) (*v1.PersistentVolume, error) {
+	pvSize := pv.Spec.Capacity[v1.ResourceStorage]
+	if pvSize.Cmp(newSize) < 0 {
+		// Calling the orchestrator to resize the volume on the storage backend.
+		if err := p.orchestrator.ResizeVolume(pv.Name,
+			fmt.Sprintf("%d", newSize.Value())); err != nil {
+			return pv, err
+		}
+	} else if pvSize.Cmp(newSize) == 0 {
+		return pv, nil
+	} else {
+		return pv, fmt.Errorf("cannot shrink PV %q", pv.Name)
+	}
+
+	// Update the PV
+	pvClone := pv.DeepCopy()
+	pvClone.Spec.Capacity[v1.ResourceStorage] = newSize
+	pvUpdated, err := PatchPV(p.kubeClient, pv, pvClone)
+	if err != nil {
+		return pv, err
+	}
+	updatedSize := pvUpdated.Spec.Capacity[v1.ResourceStorage]
+	if updatedSize.Cmp(newSize) != 0 {
+		return pvUpdated, err
+	}
+
+	log.WithFields(log.Fields{
+		"PV":          pv.Name,
+		"PV_old_size": pvSize.String(),
+		"PV_new_size": updatedSize.String(),
+	}).Info("Kubernetes frontend successfully resized the PV.")
+
+	return pvUpdated, nil
+}
+
+// updatePVCSize updates the PVC size.
+func (p *Plugin) updatePVCSize(pvc *v1.PersistentVolumeClaim,
+	newSize resource.Quantity) (*v1.PersistentVolumeClaim, error) {
+	pvcClone := pvc.DeepCopy()
+	pvcClone.Status.Capacity[v1.ResourceStorage] = newSize
+	pvcUpdated, err := PatchPVCStatus(p.kubeClient, pvc, pvcClone)
+	if err != nil {
+		return nil, err
+	}
+	updatedSize := pvcUpdated.Status.Capacity[v1.ResourceStorage]
+	if updatedSize.Cmp(newSize) != 0 {
+		return pvcUpdated, err
+	}
+
+	oldSize := pvc.Status.Capacity[v1.ResourceStorage]
+	log.WithFields(log.Fields{
+		"PVC":          pvc.Name,
+		"PVC_old_size": oldSize.String(),
+		"PVC_new_size": updatedSize.String(),
+	}).Info("Kubernetes frontend successfully updated the PVC after resize.")
+
+	return pvcUpdated, nil
 }
