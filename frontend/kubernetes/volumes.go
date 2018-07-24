@@ -150,6 +150,11 @@ func CreateISCSIPersistentVolumeSource(
 		namespace = k8sClient.Namespace()
 	}
 	volConfig := vol.Config
+	var portals []string
+	switch {
+	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
+		portals = volConfig.AccessInfo.IscsiPortals
+	}
 	if volConfig.AccessInfo.IscsiTargetSecret != "" {
 		// CHAP logic
 		secretName, chapError := findOrCreateCHAPSecret(k8sClient, kubeVersion, vol)
@@ -160,6 +165,7 @@ func CreateISCSIPersistentVolumeSource(
 
 		return &v1.ISCSIPersistentVolumeSource{
 			TargetPortal:      volConfig.AccessInfo.IscsiTargetPortal,
+			Portals:           portals,
 			IQN:               volConfig.AccessInfo.IscsiTargetIQN,
 			Lun:               volConfig.AccessInfo.IscsiLunNumber,
 			ISCSIInterface:    volConfig.AccessInfo.IscsiInterface,
@@ -172,6 +178,7 @@ func CreateISCSIPersistentVolumeSource(
 		// non-CHAP logic
 		return &v1.ISCSIPersistentVolumeSource{
 			TargetPortal:   volConfig.AccessInfo.IscsiTargetPortal,
+			Portals:        portals,
 			IQN:            volConfig.AccessInfo.IscsiTargetIQN,
 			Lun:            volConfig.AccessInfo.IscsiLunNumber,
 			ISCSIInterface: volConfig.AccessInfo.IscsiInterface,

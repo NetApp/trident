@@ -68,8 +68,16 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 
 	var err error
 	var lunID = int(publishInfo.IscsiLunNumber)
-	var targetPortal = publishInfo.IscsiTargetPortal
-	var targetPortalIP = strings.Split(targetPortal, ":")[0]
+
+	var bkportal []string
+	var portalIps []string
+	bkportal = append(bkportal, publishInfo.IscsiTargetPortal)
+	portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, ":")[0])
+	for _, p := range publishInfo.IscsiPortals {
+		bkportal = append(bkportal, p)
+		portalIps = append(portalIps, strings.Split(p, ":")[0])
+	}
+
 	var targetIQN = publishInfo.IscsiTargetIQN
 	var username = publishInfo.IscsiUsername
 	var initiatorSecret = publishInfo.IscsiInitiatorSecret
@@ -78,12 +86,12 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	var options = publishInfo.MountOptions
 
 	log.WithFields(log.Fields{
-		"volume":       name,
-		"mountpoint":   mountpoint,
-		"lunID":        lunID,
-		"targetPortal": targetPortal,
-		"targetIQN":    targetIQN,
-		"fstype":       fstype,
+		"volume":        name,
+		"mountpoint":    mountpoint,
+		"lunID":         lunID,
+		"targetPortals": bkportal,
+		"targetIQN":     targetIQN,
+		"fstype":        fstype,
 	}).Debug("Publishing iSCSI volume.")
 
 	if ISCSISupported() == false {
@@ -99,13 +107,15 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	}
 	if !sessionExists {
 		if publishInfo.UseCHAP {
-			err = loginWithChap(targetIQN, targetPortal, username, initiatorSecret, iscsiInterface, false)
-			if err != nil {
-				log.Errorf("Failed to login with CHAP credentials: %+v ", err)
-				return fmt.Errorf("iSCSI login error: %v", err)
+			for _, portal := range bkportal {
+				err = loginWithChap(targetIQN, portal, username, initiatorSecret, iscsiInterface, false)
+				if err != nil {
+					log.Errorf("Failed to login with CHAP credentials: %+v ", err)
+					return fmt.Errorf("iSCSI login error: %v", err)
+				}
 			}
 		} else {
-			err = EnsureISCSISession(targetPortalIP)
+			err = EnsureISCSISessions(portalIps)
 			if err != nil {
 				return fmt.Errorf("iSCSI session error: %v", err)
 			}
@@ -1608,6 +1618,15 @@ func loginWithChap(tiqn, portal, username, password, iface string, logSensitiveI
 		return err
 	}
 
+	return nil
+}
+
+func EnsureISCSISessions(hostDataIPs []string) error {
+	for _, ip := range hostDataIPs {
+		if err := EnsureISCSISession(ip); nil != err {
+			return err
+		}
+	}
 	return nil
 }
 

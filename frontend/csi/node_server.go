@@ -4,6 +4,7 @@ package csi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -210,6 +211,28 @@ func (p *Plugin) nodePublishNFSVolume(
 	return &csi.NodePublishVolumeResponse{}, nil
 }
 
+func unstashIscsiTargetPortals(publishInfo *utils.VolumePublishInfo, reqPublishInfo map[string]string) error {
+
+	count, err := strconv.Atoi(reqPublishInfo["iscsiTargetPortalCount"])
+	if nil != err {
+		return err
+	}
+	if 1 > count {
+		return fmt.Errorf("iscsiTargetPortalCount=%d may not be less than 1", count)
+	}
+	publishInfo.IscsiTargetPortal = reqPublishInfo["p1"]
+	publishInfo.IscsiPortals = make([]string, count-1)
+	for i := 1; i < count; i++ {
+		key := fmt.Sprintf("p%d", i+1)
+		value, ok := reqPublishInfo[key]
+		if !ok {
+			return fmt.Errorf("missing portal: %s", key)
+		}
+		publishInfo.IscsiPortals[i-1] = value
+	}
+	return nil
+}
+
 func (p *Plugin) nodeStageISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
@@ -250,7 +273,10 @@ func (p *Plugin) nodeStageISCSIVolume(
 		SharedTarget:   sharedTarget,
 	}
 
-	publishInfo.IscsiTargetPortal = req.PublishInfo["iscsiTargetPortal"]
+	err = unstashIscsiTargetPortals(publishInfo, req.PublishInfo)
+	if nil != err {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	publishInfo.IscsiTargetIQN = req.PublishInfo["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
 	publishInfo.IscsiInterface = req.PublishInfo["iscsiInterface"]
@@ -297,6 +323,9 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 	if logout {
 		utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
+		for _, portal := range publishInfo.IscsiPortals {
+			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
+		}
 	}
 
 	return &csi.NodeUnstageVolumeResponse{}, nil

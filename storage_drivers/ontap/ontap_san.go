@@ -5,6 +5,7 @@ package ontap
 import (
 	"errors"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -30,6 +31,7 @@ func lunPath(name string) string {
 type SANStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
+	ips         []string
 	API         *api.Client
 	Telemetry   *Telemetry
 }
@@ -77,6 +79,17 @@ func (d *SANStorageDriver) Initialize(
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 	d.Config = *config
+
+	d.ips, err = d.API.NetInterfaceGetDataLIFs("iscsi")
+	if err != nil {
+		return err
+	}
+
+	if len(d.ips) == 0 {
+		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.Config.SVM)
+	} else {
+		log.WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
+	}
 
 	err = d.validate()
 	if err != nil {
@@ -134,32 +147,33 @@ func (d *SANStorageDriver) validate() error {
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
-	dataLIFs, err := d.API.NetInterfaceGetDataLIFs("iscsi")
-	if err != nil {
-		return err
-	}
-
-	if len(dataLIFs) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.Config.SVM)
-	} else {
-		log.WithField("dataLIFs", dataLIFs).Debug("Found iSCSI LIFs.")
-	}
-
-	// If they didn't set a LIF to use in the config, we'll set it to the first iSCSI LIF we happen to find
-	if d.Config.DataLIF == "" {
-		d.Config.DataLIF = dataLIFs[0]
-	} else {
-		err := ValidateDataLIFs(&d.Config, dataLIFs)
-		if err != nil {
-			return fmt.Errorf("data LIF validation failed: %v", err)
+	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
+	if d.Config.DataLIF != "" {
+		// Make sure it's actually a valid address
+		if ip := net.ParseIP(d.Config.DataLIF); nil == ip {
+			return fmt.Errorf("Data LIF is not a valid IP: %s", d.Config.DataLIF)
 		}
-
-		d.Config.DataLIF = dataLIFs[0]
+		// Make sure the IP matches one of the LIFs
+		found := false
+		for _, ip := range d.ips {
+			if d.Config.DataLIF == ip {
+				found = true
+				break
+			}
+		}
+		if found {
+			log.WithField("ip", d.Config.DataLIF).Debug("Found matching Data LIF.")
+		} else {
+			log.WithField("ip", d.Config.DataLIF).Debug("Could not find matching Data LIF.")
+			return fmt.Errorf("could not find Data LIF for %s", d.Config.DataLIF)
+		}
+		// Replace the IPs with a singleton list
+		d.ips = []string{d.Config.DataLIF}
 	}
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the ONTAP iSCSI target
-		err := utils.EnsureISCSISession(d.Config.DataLIF)
+		err := utils.EnsureISCSISessions(d.ips)
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
 		}
@@ -462,7 +476,8 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
-	publishInfo.IscsiTargetPortal = d.Config.DataLIF
+	publishInfo.IscsiTargetPortal = d.ips[0]
+	publishInfo.IscsiPortals = d.ips[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
 	publishInfo.IscsiIgroup = igroupName
 	publishInfo.FilesystemType = fstype
@@ -535,7 +550,7 @@ func (d *SANStorageDriver) Get(name string) error {
 func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		backend.Name = "ontapsan_" + d.Config.DataLIF
+		backend.Name = "ontapsan_" + d.ips[0]
 	} else {
 		backend.Name = d.Config.BackendName
 	}
@@ -620,7 +635,8 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 		return err
 	}
 
-	volConfig.AccessInfo.IscsiTargetPortal = d.Config.DataLIF
+	volConfig.AccessInfo.IscsiTargetPortal = d.ips[0]
+	volConfig.AccessInfo.IscsiPortals = d.ips[1:]
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
 	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
 	volConfig.AccessInfo.IscsiIgroup = d.Config.IgroupName
@@ -764,5 +780,4 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 	}
 
 	return bitmap
-
 }

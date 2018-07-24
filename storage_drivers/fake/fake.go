@@ -339,6 +339,7 @@ func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
 		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
 	case tridentconfig.Block:
 		volConfig.AccessInfo.IscsiTargetPortal = "192.0.2.1"
+		volConfig.AccessInfo.IscsiPortals = []string{"192.0.2.2"}
 		volConfig.AccessInfo.IscsiTargetIQN = "iqn.2017-06.com.netapp:fake"
 		volConfig.AccessInfo.IscsiLunNumber = 0
 	}

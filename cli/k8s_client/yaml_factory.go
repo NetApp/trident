@@ -681,7 +681,8 @@ spec:
     path: {PATH}
 `
 
-func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal, iqn string, lun int32, label string) string {
+func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal string, portals []string,
+	iqn string, lun int32, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
@@ -691,6 +692,12 @@ func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal, iqn strin
 	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
 	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
 	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
+	if 0 != len(portals) {
+		pvYAML += "    portals:\n"
+		for _, portal := range portals {
+			pvYAML += "      - " + portal + "\n"
+		}
+	}
 	return pvYAML
 }
 
@@ -720,10 +727,8 @@ spec:
     readOnly: false
 `
 
-func GetCHAPISCSIPVYAML(
-	pvName, size, pvcName, pvcNamespace, secretName,
-	targetPortal, iqn string, lun int32, label string,
-) string {
+func GetCHAPISCSIPVYAML(pvName, size, pvcName, pvcNamespace, secretName, targetPortal string,
+	portals []string, iqn string, lun int32, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeCHAPISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
@@ -734,6 +739,12 @@ func GetCHAPISCSIPVYAML(
 	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
 	pvYAML = strings.Replace(pvYAML, "{SECRET_NAME}", secretName, 1)
 	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
+	if 0 != len(portals) {
+		pvYAML += "    portals:\n"
+		for _, portal := range portals {
+			pvYAML += "      - " + portal + "\n"
+		}
+	}
 	return pvYAML
 }
 

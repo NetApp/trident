@@ -1285,6 +1285,7 @@ func createPV(sb *storage.Backend) error {
 
 			pvYAML = k8sclient.GetCHAPISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace, secretName,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
+				volume.Config.AccessInfo.IscsiAccessInfo.IscsiPortals,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
 				appLabelValue)
@@ -1294,6 +1295,7 @@ func createPV(sb *storage.Backend) error {
 			// Not using CHAP
 			pvYAML = k8sclient.GetISCSIPVYAML(pvName, volumeSize, pvcName, TridentPodNamespace,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetPortal,
+				volume.Config.AccessInfo.IscsiAccessInfo.IscsiPortals,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiTargetIQN,
 				volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber,
 				appLabelValue)

@@ -270,7 +270,7 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 	if config.DataLIF == "" {
 		config.DataLIF = dataLIFs[0]
 	} else {
-		err := ValidateDataLIFs(config, dataLIFs)
+		_, err := ValidateDataLIF(config.DataLIF, dataLIFs)
 		if err != nil {
 			return fmt.Errorf("data LIF validation failed: %v", err)
 		}
@@ -279,16 +279,16 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 	return nil
 }
 
-func ValidateDataLIFs(config *drivers.OntapStorageDriverConfig, dataLIFs []string) error {
+func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {
 
-	addressesFromHostname, err := net.LookupHost(config.DataLIF)
+	addressesFromHostname, err := net.LookupHost(dataLIF)
 	if err != nil {
 		log.Error("Host lookup failed. ", err)
-		return err
+		return nil, err
 	}
 
 	log.WithFields(log.Fields{
-		"hostname":  config.DataLIF,
+		"hostname":  dataLIF,
 		"addresses": addressesFromHostname,
 	}).Debug("Addresses found from hostname lookup.")
 
@@ -306,12 +306,12 @@ func ValidateDataLIFs(config *drivers.OntapStorageDriverConfig, dataLIFs []strin
 			log.WithField("hostNameAddress", hostNameAddress).Debug("Found matching Data LIF.")
 		} else {
 			log.WithField("hostNameAddress", hostNameAddress).Debug("Could not find matching Data LIF.")
-			return fmt.Errorf("could not find Data LIF for %s", hostNameAddress)
+			return nil, fmt.Errorf("could not find Data LIF for %s", hostNameAddress)
 		}
 
 	}
 
-	return nil
+	return addressesFromHostname, nil
 }
 
 const DefaultSpaceReserve = "none"
