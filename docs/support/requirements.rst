@@ -7,9 +7,16 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* Docker (CE and EE) 17.03, 17.06, 17.09, and 17.12
-* Kubernetes 1.6, 1.7, 1.8, 1.9, and 1.10
-* OpenShift 3.6, 3.7, and 3.9
+.. warning::
+  Do not use Docker 18.03.0-ce. It contains a `critical bug`_ that impacts
+  most volume plugins, including Trident. The fix is available in 18.03.1-ce.
+
+.. _critical bug: https://github.com/moby/moby/issues/36784
+
+* Docker 17.06 (CE or EE) or later (latest: 18.03, but see the warning above)
+* Docker Enterprise Edition 17.06 or later (latest: 2.0)
+* Kubernetes 1.6 or later (latest: 1.11)
+* OpenShift 3.6 or later (latest: 3.10)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
 that uses one of the supported versions as a base, such as Rancher or Tectonic.
@@ -35,11 +42,11 @@ backend(s) you're using.
 
 These are the Linux distributions that are known to work:
 
-* Debian 8 and above
-* Ubuntu 14.04 and above, 15.10 and above if using iSCSI multipathing
-* CentOS 7.0 and above
-* RHEL 7.0 and above
-* CoreOS 1353.8.0 and above
+* Debian 8 or later
+* Ubuntu 16.04 or later
+* CentOS 7.0 or later
+* RHEL 7.0 or later
+* CoreOS 1353.8.0 or later
 
 The ``tridentctl`` utility also runs on any of these distributions of Linux.
 
