@@ -53,9 +53,11 @@ In addition to the global configuration values above, when using ONTAP these top
 | ``aggregate``         | Aggregate for provisioning (optional; if set, must be assigned to the SVM) | aggr1      |
 +-----------------------+----------------------------------------------------------------------------+------------+
 
-A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
-selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas, ontap-nas-economy, and ontap-nas-flexgroup
-drivers use the provided FQDN as the dataLIF for NFS mount operations.
+A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
+drivers only, a FQDN may also be specified for the dataLIF option, in which case the FQDN will
+be used for the NFS mount operations. For the ontap-san driver, the default is to use all data LIF IPs from
+the SVM and to use iSCSI multipath. Specifying an IP address for the dataLIF for the ontap-san driver forces
+the driver to disable multipath and use only the specified address.
 
 For the ontap-nas and ontap-nas-economy drivers, an additional top level option is available.
 For NFS host configuration, see also: http://www.netapp.com/us/media/tr-4067.pdf
