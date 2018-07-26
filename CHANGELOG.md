@@ -7,14 +7,19 @@
 **Fixes:**
 - Fixed cleanup of the transaction object upon failed deletion (Issue [#126](https://github.com/NetApp/trident/issues/126)).
 - **Kubernetes:** Fixed an issue where Trident would provision a ReadWriteMany PVC to an iSCSI backend.
-- **Kubernetes:** Fixed an installer issue where the Trident PV could be bound to the wrong PVC.
-- **Kubernetes:** Fixed an issue where the Trident installer could fail if a default storage class is set.
+- **Kubernetes:** Fixed an installer issue where the Trident PV could be bound to the wrong PVC (Issue [#120](https://github.com/NetApp/trident/issues/120)).
+- **Kubernetes:** Fixed an issue where the Trident installer could fail if a default storage class is set (Issue [#120](https://github.com/NetApp/trident/issues/120)).
 - **Kubernetes:** Fixed an issue where the Trident installer could fail to delete objects on some Kubernetes versions (Issue [#132](https://github.com/NetApp/trident/issues/132)).
 - **Docker:** Fixed an issue where deleted qtrees could appear in Docker volume list.
+- **Docker:** Fixed plugin restart issue for newer versions of Docker (Issue [#129](https://github.com/NetApp/trident/issues/129)).
+- **Docker:** Trident no longer crashes if ONTAP volumes are offline (Issue [#151](https://github.com/NetApp/trident/issues/151)).
 
 **Enhancements:**
-- Changed ONTAP drivers so that the snapshot reserve is set to zero when snapshotPolicy is "none"
 - Added ontap-nas-flexgroup driver to support ONTAP FlexGroup Volumes.
+- Changed ONTAP drivers so that the snapshot reserve is set to zero when snapshotPolicy is "none".
+- Added support for Docker EE UCP.
+- **Kubernetes:** Added regex matching to storage pool selection as well as a new excludeStoragePools option for Kubernetes storage classes (Issue [#118](https://github.com/NetApp/trident/issues/118)).
+- **Kubernetes:** Added support for iSCSI multipath (Issue [#69](https://github.com/NetApp/trident/issues/69)).
 - **Kubernetes:** Updated etcd to v3.2.19 and client-go to v7.0.0.
 - **Kubernetes:** Added --previous switch to 'tridentctl logs' command.
 - **Kubernetes:** Added liveness probes to the trident-main and etcd containers.
