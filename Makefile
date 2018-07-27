@@ -62,7 +62,9 @@ DIST_REGISTRY ?= netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
 ## etcd variables
-ETCD_VERSION ?= v3.1.5
+ifeq ($(ETCD_VERSION),)
+ETCD_VERSION := v3.1.5
+endif
 ETCD_PORT ?= 8001
 ETCD_SERVER ?= http://localhost:${ETCD_PORT}
 ETCD_DIR ?= /tmp/etcd
@@ -186,7 +188,7 @@ clean:
 	-docker volume rm $(TRIDENT_VOLUME) || true
 	-docker rmi ${TRIDENT_TAG} ${TRIDENT_DIST_TAG} || true
 	-docker rmi netapp/container-tools || true
-	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz 
+	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
 	-rm -rf ${COVERAGE_DIR}
 
 fmt:
