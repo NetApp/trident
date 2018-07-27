@@ -823,7 +823,8 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		}
 		pv.Spec.ISCSI = iscsiSource
 	case driverType == drivers.OntapNASStorageDriverName ||
-		driverType == drivers.OntapNASQtreeStorageDriverName:
+		driverType == drivers.OntapNASQtreeStorageDriverName ||
+		driverType == drivers.OntapNASFlexGroupStorageDriverName:
 		nfsSource = CreateNFSVolumeSource(vol)
 		pv.Spec.NFS = nfsSource
 	case driverType == drivers.FakeStorageDriverName:

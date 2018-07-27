@@ -813,6 +813,128 @@ func (o *VolumeModifyIterInfoType) SetVolumeKey(newValue VolumeAttributesType) *
 	return o
 }
 
+// VolumeModifyIterAsyncInfoType is a structure to represent a volume-modify-iter-async-info ZAPI object
+type VolumeModifyIterAsyncInfoType struct {
+	XMLName xml.Name `xml:"volume-modify-iter-async-info"`
+
+	ErrorCodePtr    *int    `xml:"error-code"`
+	ErrorMessagePtr *string `xml:"error-message"`
+	JobidPtr        *int    `xml:"jobid"`
+	StatusPtr       *string `xml:"status"`
+
+	// TODO: Find a better XML parser so we can reenable this.
+	// If 'volume-key' is not commented out here, we get errors like this:
+	//    Error unmarshaling response body. xml: name "volume-key" in tag of
+	//    azgo.VolumeModifyIterInfoType.VolumeKeyPtr conflicts with name
+	//    "volume-attributes" in *azgo.VolumeAttributesType.XMLName
+	VolumeKeyPtr *VolumeAttributesType //`xml:"volume-key"`
+}
+
+// ToXML converts this object into an xml string representation
+func (o *VolumeModifyIterAsyncInfoType) ToXML() (string, error) {
+	output, err := xml.MarshalIndent(o, " ", "    ")
+	if err != nil {
+		log.Errorf("error: %v", err)
+	}
+	return string(output), err
+}
+
+// NewVolumeModifyIterAsyncInfoType is a factory method for creating new instances of VolumeModifyIterAsyncInfoType objects
+func NewVolumeModifyIterAsyncInfoType() *VolumeModifyIterAsyncInfoType {
+	return &VolumeModifyIterAsyncInfoType{}
+}
+
+// String returns a string representation of this object's fields and implements the Stringer interface
+func (o VolumeModifyIterAsyncInfoType) String() string {
+	var buffer bytes.Buffer
+	if o.ErrorCodePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "error-code", *o.ErrorCodePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("error-code: nil\n"))
+	}
+	if o.ErrorMessagePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "error-message", *o.ErrorMessagePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("error-message: nil\n"))
+	}
+	if o.JobidPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "jobid", *o.JobidPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("jobid: nil\n"))
+	}
+	if o.StatusPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "status", *o.StatusPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("status: nil\n"))
+	}
+	if o.VolumeKeyPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "volume-key", *o.VolumeKeyPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("volume-key: nil\n"))
+	}
+	return buffer.String()
+}
+
+// ErrorCode is a fluent style 'getter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) ErrorCode() int {
+	r := *o.ErrorCodePtr
+	return r
+}
+
+// SetErrorCode is a fluent style 'setter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) SetErrorCode(newValue int) *VolumeModifyIterAsyncInfoType {
+	o.ErrorCodePtr = &newValue
+	return o
+}
+
+// ErrorMessage is a fluent style 'getter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) ErrorMessage() string {
+	r := *o.ErrorMessagePtr
+	return r
+}
+
+// SetErrorMessage is a fluent style 'setter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) SetErrorMessage(newValue string) *VolumeModifyIterAsyncInfoType {
+	o.ErrorMessagePtr = &newValue
+	return o
+}
+
+// Jobid is a fluent style 'getter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) Jobid() int {
+	r := *o.JobidPtr
+	return r
+}
+
+// SetJobid is a fluent style 'setter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) SetJobid(newValue int) *VolumeModifyIterAsyncInfoType {
+	o.JobidPtr = &newValue
+	return o
+}
+
+// Status is a fluent style 'getter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) Status() string {
+	r := *o.StatusPtr
+	return r
+}
+
+// SetStatus is a fluent style 'setter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) SetStatus(newValue string) *VolumeModifyIterAsyncInfoType {
+	o.StatusPtr = &newValue
+	return o
+}
+
+// VolumeKey is a fluent style 'getter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) VolumeKey() VolumeAttributesType {
+	r := *o.VolumeKeyPtr
+	return r
+}
+
+// SetVolumeKey is a fluent style 'setter' method that can be chained
+func (o *VolumeModifyIterAsyncInfoType) SetVolumeKey(newValue VolumeAttributesType) *VolumeModifyIterAsyncInfoType {
+	o.VolumeKeyPtr = &newValue
+	return o
+}
+
 type VolumeVmAlignAttributesType struct {
 	XMLName xml.Name `xml:"volume-vm-align-attributes"`
 
@@ -10303,3 +10425,63 @@ func (o *IscsiInterfaceListEntryInfoType) SetVserver(newValue string) *IscsiInte
 	o.VserverPtr = &newValue
 	return o
 }
+
+// NewVolumeAttributesType is a factory method for creating new instances of VolumeAttributesType objects
+func NewJobInfoType() *JobInfoType { return &JobInfoType{} }
+
+// SetJobId is a fluent style 'setter' method that can be chained
+func (o *JobInfoType) SetJobId(newValue int) *JobInfoType {
+	o.JobIdPtr = &newValue
+	return o
+}
+
+// JobState is a fluent style 'getter' method that can be chained
+func (o *JobInfoType) JobState() JobStateType {
+	r := *o.JobStatePtr
+	return r
+}
+
+// JobInfoType is a structure to represent a job-info ZAPI object
+type JobInfoType struct {
+	XMLName xml.Name `xml:"job-info"`
+
+	IsRestartedPtr                 *bool            `xml:"is-restarted"`
+	JobAffinityPtr                 *JobAffinityType `xml:"job-affinity"`
+	JobCategoryPtr                 *string          `xml:"job-category"`
+	JobCompletionPtr               *string          `xml:"job-completion"`
+	JobDescriptionPtr              *string          `xml:"job-description"`
+	JobDropdeadTimePtr             *int             `xml:"job-dropdead-time"`
+	JobEndTimePtr                  *int             `xml:"job-end-time"`
+	JobIdPtr                       *int             `xml:"job-id"`
+	JobNamePtr                     *string          `xml:"job-name"`
+	JobNodePtr                     *FilerIdType     `xml:"job-node"`
+	JobPriorityPtr                 *JobPriorityType `xml:"job-priority"`
+	JobProcessPtr                  *string          `xml:"job-process"`
+	JobProgressPtr                 *string          `xml:"job-progress"`
+	JobQueueTimePtr                *int             `xml:"job-queue-time"`
+	JobRestartIsDelayedByModulePtr *string          `xml:"job-restart-is-delayed-by-module"`
+	JobRestartIsOrWasDelayedPtr    *bool            `xml:"job-restart-is-or-was-delayed"`
+	JobSchedulePtr                 *string          `xml:"job-schedule"`
+	JobStartTimePtr                *int             `xml:"job-start-time"`
+	JobStatePtr                    *JobStateType    `xml:"job-state"`
+	JobStatusCodePtr               *int             `xml:"job-status-code"`
+	JobTypePtr                     *string          `xml:"job-type"`
+	JobUsernamePtr                 *string          `xml:"job-username"`
+	JobUuidPtr                     *UuidType        `xml:"job-uuid"`
+	JobVserverPtr                  *VserverNameType `xml:"job-vserver"`
+}
+
+// JobAffinityType is a structure to represent a job-affinity ZAPI object
+type JobAffinityType string
+
+// FilerIdType is a structure to represent a filer-id ZAPI object
+type FilerIdType string
+
+// JobPriorityType is a structure to represent a job-priority ZAPI object
+type JobPriorityType string
+
+// JobStateType is a structure to represent a job-state ZAPI object
+type JobStateType string
+
+// VserverNameType is a structure to represent a vserver-name ZAPI object
+type VserverNameType string

@@ -946,6 +946,8 @@ func (o *TridentOrchestrator) GetVolumeType(vol *storage.VolumeExternal) (
 		volumeType = config.OntapNFS
 	case driver == drivers.OntapNASQtreeStorageDriverName:
 		volumeType = config.OntapNFS
+	case driver == drivers.OntapNASFlexGroupStorageDriverName:
+		volumeType = config.OntapNFS
 	case driver == drivers.OntapSANStorageDriverName:
 		volumeType = config.OntapISCSI
 	case driver == drivers.SolidfireSANStorageDriverName:

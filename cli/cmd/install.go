@@ -732,7 +732,7 @@ func installTrident() (returnError error) {
 		log.WithField("pvc", pvcName).Info("Waiting for PVC to be bound.")
 
 		if err := backoff.RetryNotify(checkPVCBound, pvcBackoff, pvcNotify); err != nil {
-			returnError = fmt.Errorf("PVC %s was not bound after %d seconds", pvcName, k8sTimeout)
+			returnError = fmt.Errorf("PVC %s was not bound after %3.2f seconds", pvcName, k8sTimeout.Seconds())
 			return
 		}
 	}

@@ -13,12 +13,13 @@ const DefaultTridentIgroupName = "trident"
 
 // Storage driver names specified in the config file, etc.
 const (
-	EseriesIscsiStorageDriverName  = "eseries-iscsi"
-	OntapNASStorageDriverName      = "ontap-nas"
-	OntapNASQtreeStorageDriverName = "ontap-nas-economy"
-	OntapSANStorageDriverName      = "ontap-san"
-	SolidfireSANStorageDriverName  = "solidfire-san"
-	FakeStorageDriverName          = "fake"
+	EseriesIscsiStorageDriverName      = "eseries-iscsi"
+	OntapNASStorageDriverName          = "ontap-nas"
+	OntapNASFlexGroupStorageDriverName = "ontap-nas-flexgroup"
+	OntapNASQtreeStorageDriverName     = "ontap-nas-economy"
+	OntapSANStorageDriverName          = "ontap-san"
+	SolidfireSANStorageDriverName      = "solidfire-san"
+	FakeStorageDriverName              = "fake"
 )
 
 const UnsetPool = ""

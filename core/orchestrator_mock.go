@@ -267,6 +267,8 @@ func (m *MockOrchestrator) GetVolumeType(vol *storage.VolumeExternal) (config.Vo
 	switch {
 	case driver == drivers.OntapNASStorageDriverName:
 		return config.OntapNFS, nil
+	case driver == drivers.OntapNASFlexGroupStorageDriverName:
+		return config.OntapNFS, nil
 	case driver == drivers.OntapSANStorageDriverName:
 		return config.OntapISCSI, nil
 	case driver == drivers.SolidfireSANStorageDriverName:

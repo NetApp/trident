@@ -14,6 +14,7 @@
 
 **Enhancements:**
 - Changed ONTAP drivers so that the snapshot reserve is set to zero when snapshotPolicy is "none"
+- Added ontap-nas-flexgroup driver to support ONTAP FlexGroup Volumes.
 - **Kubernetes:** Updated etcd to v3.2.19 and client-go to v7.0.0.
 - **Kubernetes:** Added --previous switch to 'tridentctl logs' command.
 - **Kubernetes:** Added liveness probes to the trident-main and etcd containers.

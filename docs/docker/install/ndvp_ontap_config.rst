@@ -48,17 +48,20 @@ In addition to the global configuration values above, when using ONTAP these top
 +-----------------------+----------------------------------------------------------------------------+------------+
 | ``username``          | Username to connect to the storage device                                  | vsadmin    |
 +-----------------------+----------------------------------------------------------------------------+------------+
-| ``password``          | Password to connect to the storage device                                  | netapp123  |
+| ``password``          | Password to connect to the storage device                                  | secret     |
 +-----------------------+----------------------------------------------------------------------------+------------+
 | ``aggregate``         | Aggregate for provisioning (optional; if set, must be assigned to the SVM) | aggr1      |
 +-----------------------+----------------------------------------------------------------------------+------------+
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
-selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas and ontap-nas-economy drivers use the
-provided FQDN as the dataLIF for NFS mount operations.
+selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas, ontap-nas-economy, and ontap-nas-flexgroup
+drivers use the provided FQDN as the dataLIF for NFS mount operations.
 
 For the ontap-nas and ontap-nas-economy drivers, an additional top level option is available.
 For NFS host configuration, see also: http://www.netapp.com/us/media/tr-4067.pdf
+
+For the ontap-nas-flexgroup driver, the ``aggregate`` option in the configuration file is ignored. All aggregates
+assigned to the SVM are used to provision a FlexGroup Volume.
 
 +-----------------------+--------------------------------------------------------------------------+------------+
 | Option                | Description                                                              | Example    |
@@ -111,6 +114,24 @@ greater scaling, up to 100,000 per cluster node and 2,400,000 per cluster, at th
 The ontap-nas-economy driver does not support Docker-volume-granular snapshots or cloning. The ontap-nas-economy driver
 is not currently supported in Docker Swarm, as Swarm does not orchestrate volume creation across multiple nodes.
 
+Choose the ontap-nas-flexgroup driver to increase parallelism to a single volume
+that can grow into the petabyte range with billions of files. Some ideal use cases
+for FlexGroups include AI/ML/DL, big data and analytics, software builds, streaming,
+file repositories, etc. Trident uses all aggregates assigned to an SVM when
+provisioning a FlexGroup Volume. FlexGroup support in Trident also has the following
+considerations:
+
+* Requires ONTAP version 9.2 or greater.
+* As of this writing, FlexGroups only support NFS v3.
+* Recommended to enable the 64-bit NFSv3 identifiers for the SVM.
+* The minimum recommended FlexGroup size is 100GB.
+* Cloning is not supported for FlexGroup Volumes.
+
+For information regarding FlexGroups and workloads that are appropriate for FlexGroups see the
+`NetApp FlexGroup Volume - Best Practices and Implementation Guide`_.
+
+.. _NetApp FlexGroup Volume - Best Practices and Implementation Guide: https://www.netapp.com/us/media/tr-4571.pdf
+
 To get advanced features and huge scale in the same environment, you can run multiple instances of the Docker Volume
 Plugin, with one using ontap-nas and another using ontap-nas-economy.
 
@@ -128,7 +149,7 @@ Example ONTAP Config Files
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
         "username": "vsadmin",
-        "password": "netapp123",
+        "password": "secret",
         "aggregate": "aggr1",
         "defaults": {
           "size": "10G",
@@ -136,6 +157,26 @@ Example ONTAP Config Files
           "exportPolicy": "default"
         }
     }
+
+**NFS Example for ontap-nas-flexgroup driver**
+
+.. code-block:: json
+
+    {
+        "version": 1,
+        "storageDriverName": "ontap-nas-flexgroup",
+        "managementLIF": "10.0.0.1",
+        "dataLIF": "10.0.0.2",
+        "svm": "svm_nfs",
+        "username": "vsadmin",
+        "password": "secret",
+        "defaults": {
+          "size": "100G",
+          "spaceReserve": "none",
+          "exportPolicy": "default"
+        }
+    }
+
 
 **NFS Example for ontap-nas-economy driver**
 
@@ -148,7 +189,7 @@ Example ONTAP Config Files
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
         "username": "vsadmin",
-        "password": "netapp123",
+        "password": "secret",
         "aggregate": "aggr1"
     }
 
@@ -163,7 +204,7 @@ Example ONTAP Config Files
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
         "username": "vsadmin",
-        "password": "netapp123",
+        "password": "secret",
         "aggregate": "aggr1",
         "igroupName": "myigroup"
     }

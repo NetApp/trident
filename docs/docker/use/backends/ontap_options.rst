@@ -11,7 +11,7 @@ Volume create options for both NFS and iSCSI:
 * ``splitOnClone`` - when cloning a volume, this will cause ONTAP to immediately split the clone from its parent. The default is ``false``. Some use cases for cloning volumes are best served by splitting the clone from its parent immediately upon creation, since there is unlikely to be any opportunity for storage efficiencies. For example, cloning an empty database can offer large time savings but little storage savings, so it's best to split the clone immediately.
 * ``encryption`` - this will enable NetApp Volume Encryption (NVE) on the new volume, defaults to ``false``.  NVE must be licensed and enabled on the cluster to use this option.
 
-NFS has two additional options that aren't relevant when using iSCSI:
+NFS has additional options that aren't relevant when using iSCSI:
 
 * ``unixPermissions`` - this controls the permission set for the volume itself. By default the permissions will be set to ``---rwxr-xr-x``, or in numerical notation ``0755``, and root will be the owner. Either the text or numerical format will work.
 * ``snapshotDir`` - setting this to ``true`` will make the .snapshot directory visible to clients accessing the volume. The default value is ``false``, meaning that access to snapshot data is disabled by default.  Some images, for example the official MySQL image, don't function as expected when the .snapshot directory is visible.

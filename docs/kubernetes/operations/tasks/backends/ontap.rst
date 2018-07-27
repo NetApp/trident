@@ -13,13 +13,14 @@ To create and use an ONTAP backend, you will need:
 Choosing a driver
 -----------------
 
-================= ========
-Driver            Protocol
-================= ========
-ontap-nas         NFS
-ontap-nas-economy NFS
-ontap-san         iSCSI
-================= ========
+=================== ========
+Driver              Protocol
+=================== ========
+ontap-nas           NFS
+ontap-nas-economy   NFS
+ontap-nas-flexgroup NFS
+ontap-san           iSCSI
+=================== ========
 
 The ``ontap-nas`` and ``ontap-san`` drivers create an ONTAP FlexVol for each
 volume. ONTAP supports up to 1000 FlexVols per cluster node with a cluster
@@ -32,6 +33,24 @@ limits, choose the ``ontap-nas-economy`` driver, which creates volumes as ONTAP
 Qtrees within a pool of automatically managed FlexVols. Qtrees offer far
 greater scaling, up to 100,000 per cluster node and 2,400,000 per cluster, at
 the expense of granular data management features.
+
+Choose the ontap-nas-flexgroup driver to increase parallelism to a single volume
+that can grow into the petabyte range with billions of files. Some ideal use cases
+for FlexGroups include AI/ML/DL, big data and analytics, software builds, streaming,
+file repositories, etc. Trident uses all aggregates assigned to an SVM when
+provisioning a FlexGroup Volume. FlexGroup support in Trident also has the following
+considerations:
+
+* Requires ONTAP version 9.2 or greater.
+* As of this writing, FlexGroups only support NFS v3.
+* Recommended to enable the 64-bit NFSv3 identifiers for the SVM.
+* The minimum recommended FlexGroup size is 100GB.
+* Cloning is not supported for FlexGroup Volumes.
+
+For information regarding FlexGroups and workloads that are appropriate for FlexGroups see the
+`NetApp FlexGroup Volume - Best Practices and Implementation Guide`_.
+
+.. _NetApp FlexGroup Volume - Best Practices and Implementation Guide: https://www.netapp.com/us/media/tr-4571.pdf
 
 Remember that you can also run more than one driver, and create storage
 classes that point to one or the other. For example, you could configure a
@@ -48,8 +67,8 @@ For all ONTAP backends, Trident requires at least one
 
 .. _aggregate assigned to the SVM: https://library.netapp.com/ecmdocs/ECMP1368404/html/GUID-5255E7D8-F420-4BD3-AEFB-7EF65488C65C.html
 
-ontap-nas and ontap-nas-economy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ontap-nas, ontap-nas-economy, ontap-nas-flexgroups
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All of your Kubernetes worker nodes must have the appropriate NFS tools
 installed. See the :ref:`worker configuration guide <NFS>` for more details.
@@ -93,24 +112,24 @@ they should be removed when nodes are removed as well.
 Backend configuration options
 -----------------------------
 
-================== =============================================================== ================================================
-Parameter          Description                                                     Default
-================== =============================================================== ================================================
+================== ======================================================================= ================================================
+Parameter          Description                                                             Default
+================== ======================================================================= ================================================
 version            Always 1
-storageDriverName  "ontap-nas", "ontap-nas-economy" or "ontap-san"
-backendName        Custom name for the storage backend                             Driver name + "_" + dataLIF
-managementLIF      IP address of a cluster or SVM management LIF                   "10.0.0.1"
-dataLIF            IP address of protocol LIF                                      Derived by the SVM unless specified
-svm                Storage virtual machine to use                                  Derived if an SVM managementLIF is specified
-igroupName         Name of the igroup for SAN volumes to use                       "trident"
+storageDriverName  "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
+backendName        Custom name for the storage backend                                     Driver name + "_" + dataLIF
+managementLIF      IP address of a cluster or SVM management LIF                           "10.0.0.1"
+dataLIF            IP address of protocol LIF                                              Derived by the SVM unless specified
+svm                Storage virtual machine to use                                          Derived if an SVM managementLIF is specified
+igroupName         Name of the igroup for SAN volumes to use                               "trident"
 username           Username to connect to the cluster/SVM
 password           Password to connect to the cluster/SVM
-storagePrefix      Prefix used when provisioning new volumes in the SVM            "trident"
-================== =============================================================== ================================================
+storagePrefix      Prefix used when provisioning new volumes in the SVM                    "trident"
+================== ======================================================================= ================================================
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF and dataLIF options. The ontap-san driver
-selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas and ontap-nas-economy drivers use the
-provided FQDN as the dataLIF for NFS mount operations.
+selects an IP address from the FQDN lookup for the dataLIF. The ontap-nas, ontap-nas-economy, and ontap-nas-flexgroup
+drivers use the provided FQDN as the dataLIF for NFS mount operations.
 
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
@@ -143,12 +162,33 @@ Example configuration
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
         "username": "vsadmin",
-        "password": "netapp123",
+        "password": "secret",
         "defaults": {
           "spaceReserve": "volume",
           "exportPolicy": "myk8scluster"
         }
     }
+
+**NFS Example for ontap-nas-flexgroup driver**
+
+.. code-block:: json
+
+    {
+        "version": 1,
+        "storageDriverName": "ontap-nas",
+        "managementLIF": "10.0.0.1",
+        "dataLIF": "10.0.0.2",
+        "svm": "svm_nfs",
+        "username": "vsadmin",
+        "password": "secret",
+        "defaults": {
+          "size": "100G",
+          "spaceReserve": "volume",
+          "exportPolicy": "myk8scluster"
+        }
+    }
+
+
 
 **NFS Example for ontap-nas-economy driver**
 
@@ -161,7 +201,7 @@ Example configuration
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
         "username": "vsadmin",
-        "password": "netapp123"
+        "password": "secret"
     }
 
 **iSCSI Example for ontap-san driver**
@@ -176,7 +216,7 @@ Example configuration
         "svm": "svm_iscsi",
         "igroupName": "trident",
         "username": "vsadmin",
-        "password": "netapp123"
+        "password": "secret"
     }
 
 User permissions

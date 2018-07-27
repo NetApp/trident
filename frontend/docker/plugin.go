@@ -394,7 +394,9 @@ func (p *Plugin) mountpoint(name string) string {
 
 func (p *Plugin) dockerError(err error) error {
 
-	log.Errorf("Docker frontend method returning error: %v", err)
+	if err != nil {
+		log.Errorf("Docker frontend method returning error: %v", err)
+	}
 
 	if berr, ok := err.(*core.BootstrapError); ok {
 		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", berr.Error())

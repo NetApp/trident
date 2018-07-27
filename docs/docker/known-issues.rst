@@ -8,3 +8,6 @@ Known issues
 
 #. Because Docker Swarm does not orchestrate volume creation across multiple nodes, only the ontap-nas and ontap-san
    drivers will work in Swarm.
+
+#. If a FlexGroup is in the process of being provisioned, ONTAP will not provision a second FlexGroup if the second
+   FlexGroup has one or more aggregates in common with the FlexGroup being provisioned.

@@ -5,7 +5,7 @@ Worker preparation
 All of the worker nodes in the Kubernetes cluster need to be able to mount the
 volumes that users have provisioned for their pods.
 
-If you are using the ``ontap-nas`` or ``ontap-nas-economy`` driver for one of
+If you are using the ``ontap-nas``, ``ontap-nas-economy``, ``ontap-nas-flexgroup`` driver for one of
 your backends, your workers will need the :ref:`NFS` tools. Otherwise they
 require the :ref:`iSCSI` tools.
 

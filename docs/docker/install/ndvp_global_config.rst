@@ -3,15 +3,15 @@ Global Configuration
 
 These configuration variables apply to all Trident configurations, regardless of the storage platform being used.
 
-+-----------------------+----------------------------------------------------------------------------------------------+-------------+
-| Option                | Description                                                                                  | Example     |
-+=======================+==============================================================================================+=============+
-| ``version``           | Config file version number                                                                   | 1           |
-+-----------------------+----------------------------------------------------------------------------------------------+-------------+
-| ``storageDriverName`` | ``ontap-nas``, ``ontap-nas-economy``, ``ontap-san``, ``eseries-iscsi``, or ``solidfire-san`` | ontap-nas   |
-+-----------------------+----------------------------------------------------------------------------------------------+-------------+
-| ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_"                                    | netappdvp\_ |
-+-----------------------+----------------------------------------------------------------------------------------------+-------------+
++-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
+| Option                | Description                                                                                                           | Example     |
++=======================+=======================================================================================================================+=============+
+| ``version``           | Config file version number                                                                                            | 1           |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
+| ``storageDriverName`` | ``ontap-nas``, ``ontap-nas-economy``, ``ontap-nas-flexgroup``, ``ontap-san``, ``eseries-iscsi``, or ``solidfire-san`` | ontap-nas   |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
+| ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_"                                                             | netappdvp\_ |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
 
 Also, default option settings are available to avoid having to specify them on every volume create.  The ``size``
 option is available for all controller types.  See the ONTAP config section for an example of how to set the default

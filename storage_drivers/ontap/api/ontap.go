@@ -8,7 +8,9 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -18,6 +20,7 @@ import (
 const (
 	defaultZapiRecords   = 100
 	NumericalValueNotSet = -1
+	maxFlexGroupWait     = 30 * time.Second
 )
 
 // ClientConfig holds the configuration data for Client objects
@@ -76,20 +79,13 @@ func (d Client) GetNontunneledZapiRunner() *azgo.ZapiRunner {
 // Result object where the error info exists.
 // TODO: Replace reflection with relevant enhancements in AZGO generator.
 func NewZapiError(zapiResult interface{}) (err ZapiError) {
-
 	defer func() {
 		if r := recover(); r != nil {
 			err = ZapiError{}
 		}
 	}()
 
-	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
-	// embedded Result struct extracted via reflection.
-	val := reflect.ValueOf(zapiResult)
-	if testResult := val.FieldByName("Result"); testResult.IsValid() {
-		zapiResult = testResult.Interface()
-		val = reflect.ValueOf(zapiResult)
-	}
+	val := NewZapiResultValue(zapiResult)
 
 	err = ZapiError{
 		val.FieldByName("ResultStatusAttr").String(),
@@ -97,7 +93,61 @@ func NewZapiError(zapiResult interface{}) (err ZapiError) {
 		val.FieldByName("ResultErrnoAttr").String(),
 	}
 
-	return
+	return err
+}
+
+// NewZapiAsyncResult accepts the Response value from any AZGO Async Request, extracts the status, jobId, and
+// errorCode values and returns a ZapiAsyncResult.
+// TODO: Replace reflection with relevant enhancements in AZGO generator.
+func NewZapiAsyncResult(zapiResult interface{}) (result ZapiAsyncResult, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = ZapiError{}
+		}
+	}()
+
+	var jobId int64
+	var status string
+	var errorCode int64
+
+	val := NewZapiResultValue(zapiResult)
+
+	if s := val.FieldByName("ResultStatusPtr"); !s.IsNil() {
+		status = s.Elem().String()
+	}
+	if j := val.FieldByName("ResultJobidPtr"); !j.IsNil() {
+		jobId = j.Elem().Int()
+	}
+	if e := val.FieldByName("ResultErrorCodePtr"); !e.IsNil() {
+		errorCode = e.Elem().Int()
+	}
+
+	result = ZapiAsyncResult{
+		int(jobId),
+		status,
+		int(errorCode),
+	}
+
+	return result, err
+}
+
+// NewZapiResultValue obtains the Result from an AZGO Response object and returns the Result
+func NewZapiResultValue(zapiResult interface{}) reflect.Value {
+	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
+	// embedded Result struct extracted via reflection.
+	val := reflect.ValueOf(zapiResult)
+	if testResult := val.FieldByName("Result"); testResult.IsValid() {
+		zapiResult = testResult.Interface()
+		val = reflect.ValueOf(zapiResult)
+	}
+	return val
+}
+
+// ZapiAsyncResult encap
+type ZapiAsyncResult struct {
+	jobId     int
+	status    string
+	errorCode int
 }
 
 // ZapiError encapsulates the status, reason, and errno values from a ZAPI invocation, and it provides helper methods for detecting
@@ -175,16 +225,18 @@ type feature string
 const (
 	MinimumONTAPIVersion   feature = "MINIMUM_ONTAPI_VERSION"
 	VServerShowAggr        feature = "VSERVER_SHOW_AGGR"
-	FlexGroups             feature = "FLEX_GROUPS"
+	FlexGroupsFilter       feature = "FLEX_GROUPS_FILTER"
 	NetAppVolumeEncryption feature = "NETAPP_VOLUME_ENCRYPTION"
+	NetAppFlexGroups       feature = "NETAPP_FLEX_GROUPS"
 )
 
 // Indicate the minimum Ontapi version for each feature here
 var features = map[feature]*utils.Version{
 	MinimumONTAPIVersion:   utils.MustParseSemantic("1.30.0"),  // cDOT 8.3.0
 	VServerShowAggr:        utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
-	FlexGroups:             utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
+	FlexGroupsFilter:       utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
 	NetAppVolumeEncryption: utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
+	NetAppFlexGroups:       utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -466,6 +518,225 @@ func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse,
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
+// FlexGroup operations BEGIN
+
+// FlexGroupCreate creates a FlexGroup with the specified options
+// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
+func (d Client) FlexGroupCreate(name string, size int, aggrList []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle string, encrypt *bool, snapshotReserve int) (response azgo.VolumeCreateAsyncResponse, err error) {
+	junctionPath := fmt.Sprintf("/%s", name)
+
+	request := azgo.NewVolumeCreateAsyncRequest().
+		SetVolumeName(name).
+		SetSize(size).
+		SetSnapshotPolicy(snapshotPolicy).
+		SetSpaceReserve(spaceReserve).
+		SetUnixPermissions(unixPermissions).
+		SetExportPolicy(exportPolicy).
+		SetVolumeSecurityStyle(securityStyle).
+		SetEncrypt(*encrypt).
+		SetAggrList(aggrList).
+		SetJunctionPath(junctionPath)
+
+	if snapshotReserve != NumericalValueNotSet {
+		request.SetPercentageSnapshotReserve(snapshotReserve)
+	}
+
+	response, err = request.ExecuteUsing(d.zr)
+	if zerr := GetError(response, err); zerr != nil {
+		return response, zerr
+	}
+
+	err = d.waitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
+	if err != nil {
+		return response, fmt.Errorf("error waiting for response: %v", err)
+	}
+
+	return
+}
+
+// FlexGroupDestroy destroys a FlexGroup
+func (d Client) FlexGroupDestroy(name string, force bool) (response azgo.VolumeDestroyAsyncResponse, err error) {
+	response, err = azgo.NewVolumeDestroyAsyncRequest().
+		SetVolumeName(name).
+		SetUnmountAndOffline(force).
+		ExecuteUsing(d.zr)
+
+	if zerr := GetError(response, err); zerr != nil {
+		return response, zerr
+	}
+
+	err = d.waitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
+	if err != nil {
+		return response, fmt.Errorf("error waiting for response: %v", err)
+	}
+
+	return
+}
+
+// FlexGroupExists tests for the existence of a FlexGroup
+func (d Client) FlexGroupExists(name string) (bool, error) {
+	response, err := azgo.NewVolumeSizeAsyncRequest().
+		SetVolumeName(name).
+		ExecuteUsing(d.zr)
+
+	// Check for errors from request
+	if err != nil {
+		return false, err
+	}
+
+	if zerr := NewZapiError(response); !zerr.IsPassed() {
+		switch zerr.Code() {
+		case azgo.EOBJECTNOTFOUND, azgo.EVOLUMEDOESNOTEXIST:
+			return false, nil
+		default:
+			return false, zerr
+		}
+	}
+
+	// Wait for Async Job to complete
+	err = d.waitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
+	if err != nil {
+		return false, fmt.Errorf("error waiting for response: %v", err)
+	}
+
+	return true, nil
+}
+
+// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
+// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
+func (d Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(name string) (response azgo.VolumeModifyIterAsyncResponse, err error) {
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	volattr := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
+	volidattr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
+	queryattr := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volidattr)
+
+	response, err = azgo.NewVolumeModifyIterAsyncRequest().
+		SetQuery(*queryattr).
+		SetAttributes(*volattr).
+		ExecuteUsing(d.zr)
+
+	if zerr := GetError(response, err); zerr != nil {
+		return response, zerr
+	}
+
+	err = d.waitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
+	if err != nil {
+		return response, fmt.Errorf("error waiting for response: %v", err)
+	}
+
+	return
+}
+
+// FlexGroupGet returns all relevant details for a single FlexGroup
+func (d Client) FlexGroupGet(name string) (azgo.VolumeAttributesType, error) {
+	// Limit the FlexGroups to the one matching the name
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
+	queryVolIDAttrs.SetStyleExtended("flexgroup")
+	return d.volumeGetIterCommon(name, queryVolIDAttrs)
+}
+
+// FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
+func (d Client) FlexGroupGetAll(prefix string) (response azgo.VolumeGetIterResponse, err error) {
+	// Limit the FlexGroups to those matching the name prefix
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
+	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
+	queryVolIDAttrs.SetStyleExtended("flexgroup")
+	return d.volumeGetIterAll(prefix, queryVolIDAttrs, queryVolStateAttrs)
+}
+
+// waitForAsyncResponse handles waiting for an AsyncResponse to return successfully or return an error.
+func (d Client) waitForAsyncResponse(zapiResult interface{}, maxWaitTime time.Duration) error {
+
+	asyncResult, err := NewZapiAsyncResult(zapiResult)
+	if err != nil {
+		return err
+	}
+
+	// Possible values: "succeeded", "in_progress", "failed". Only check if status is "in_progress".
+	if asyncResult.status == "in_progress" {
+		// handle zapi response
+		jobId := int(asyncResult.jobId)
+		if asyncResponseError := d.checkForJobCompletion(jobId, maxWaitTime); asyncResponseError != nil {
+			return asyncResponseError
+		}
+	}
+
+	return nil
+}
+
+// checkForJobCompletion polls for the ONTAP job status success with backoff retry logic
+func (d *Client) checkForJobCompletion(jobId int, maxWaitTime time.Duration) error {
+
+	checkJobFinished := func() error {
+		jobResponse, err := d.GetJobIterStatus(jobId)
+		if err != nil {
+			return fmt.Errorf("error occurred getting job status for job ID %d: %v", jobId, jobResponse.Result)
+		}
+		if jobResponse.Result.ResultStatusAttr != "passed" {
+			return fmt.Errorf("failed to get job status for job ID %d: %v ", jobId, jobResponse.Result)
+		}
+
+		jobState := jobResponse.Result.AttributesList()[0].JobState()
+		log.WithFields(log.Fields{
+			"jobId":    jobId,
+			"jobState": jobState,
+		}).Debug("Job status for job ID")
+		// Check for an error with the job. If found return Permanent error to halt backoff.
+		if jobState == "failure" || jobState == "error" || jobState == "quit" || jobState == "dead" {
+			err = fmt.Errorf("job %d failed to complete. job state: %v", jobId, jobState)
+			return backoff.Permanent(err)
+		}
+		if jobState != "success" {
+			return fmt.Errorf("job %d is not yet completed. job state: %v", jobId, jobState)
+		}
+		return nil
+	}
+
+	jobCompletedNotify := func(err error, duration time.Duration) {
+		log.WithField("duration", duration).
+			Debug("Job not yet completed, waiting.")
+	}
+
+	inProgressBackoff := asyncResponseBackoff(maxWaitTime)
+
+	// Run the job completion check using an exponential backoff
+	if err := backoff.RetryNotify(checkJobFinished, inProgressBackoff, jobCompletedNotify); err != nil {
+		log.Warnf("Job not completed after %v seconds.", inProgressBackoff.MaxElapsedTime.Seconds())
+		return fmt.Errorf("job Id %d failed to complete successfully", jobId)
+	} else {
+		//log.WithField("volume", name).Debug("Volume found.")
+		log.WithField("jobId", jobId).Debug("Job completed successfully.")
+		return nil
+	}
+}
+
+func asyncResponseBackoff(maxWaitTime time.Duration) *backoff.ExponentialBackOff {
+	inProgressBackoff := backoff.NewExponentialBackOff()
+	inProgressBackoff.InitialInterval = 1 * time.Second
+	inProgressBackoff.Multiplier = 2
+	inProgressBackoff.RandomizationFactor = 0.1
+
+	inProgressBackoff.MaxElapsedTime = maxWaitTime
+	return inProgressBackoff
+}
+
+// GetJobStatus returns the current job status for Async requests.
+func (d Client) GetJobIterStatus(jobId int) (response azgo.JobGetIterResponse, err error) {
+
+	queryAttr := azgo.NewJobInfoType().SetJobId(jobId)
+
+	response, err = azgo.NewJobGetIterRequest().
+		SetQuery(*queryAttr).
+		ExecuteUsing(d.GetNontunneledZapiRunner())
+
+	return
+}
+
+// FlexGroup operations END
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
 // VOLUME operations BEGIN
 
 // VolumeCreate creates a volume with the specified options
@@ -609,9 +880,15 @@ func (d Client) VolumeGet(name string) (azgo.VolumeAttributesType, error) {
 
 	// Limit the Flexvols to the one matching the name
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
-	if d.SupportsFeature(FlexGroups) {
+	if d.SupportsFeature(FlexGroupsFilter) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
+	return d.volumeGetIterCommon(name, queryVolIDAttrs)
+}
+
+func (d Client) volumeGetIterCommon(name string,
+	queryVolIDAttrs *azgo.VolumeIdAttributesType) (azgo.VolumeAttributesType, error) {
+
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
 	query := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
@@ -640,9 +917,16 @@ func (d Client) VolumeGetAll(prefix string) (response azgo.VolumeGetIterResponse
 	// Limit the Flexvols to those matching the name prefix
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
-	if d.SupportsFeature(FlexGroups) {
+	if d.SupportsFeature(FlexGroupsFilter) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
+
+	return d.volumeGetIterAll(prefix, queryVolIDAttrs, queryVolStateAttrs)
+}
+
+func (d Client) volumeGetIterAll(prefix string, queryVolIDAttrs *azgo.VolumeIdAttributesType,
+	queryVolStateAttrs *azgo.VolumeStateAttributesType) (response azgo.VolumeGetIterResponse, err error) {
+
 	query := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
 		SetVolumeStateAttributes(*queryVolStateAttrs)
@@ -683,7 +967,7 @@ func (d Client) VolumeList(prefix string) (response azgo.VolumeGetIterResponse, 
 
 	// Limit the Flexvols to those matching the name prefix
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
-	if d.SupportsFeature(FlexGroups) {
+	if d.SupportsFeature(FlexGroupsFilter) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
@@ -712,7 +996,7 @@ func (d Client) VolumeListByAttrs(
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName(azgo.VolumeNameType(prefix + "*")).
 		SetContainingAggregateName(aggregate)
-	if d.SupportsFeature(FlexGroups) {
+	if d.SupportsFeature(FlexGroupsFilter) {
 		queryVolIDAttrs.SetStyleExtended("flexvol")
 	}
 	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
@@ -1146,6 +1430,24 @@ func (d Client) VserverGetIterRequest() (response azgo.VserverGetIterResponse, e
 	response, err = azgo.NewVserverGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
 		ExecuteUsing(d.zr)
+	return
+}
+
+// VserverGetIterAdminRequest returns vservers of type "admin" on the system.
+// equivalent to filer::> vserver show -type admin
+func (d Client) VserverGetIterAdminRequest() (response azgo.VserverGetIterResponse, err error) {
+	query := azgo.NewVserverInfoType()
+	query.SetVserverType("admin")
+
+	desiredAttributes := azgo.NewVserverInfoType().
+		SetVserverName("").
+		SetVserverType("")
+
+	response, err = azgo.NewVserverGetIterRequest().
+		SetMaxRecords(defaultZapiRecords).
+		SetQuery(*query).
+		SetDesiredAttributes(*desiredAttributes).
+		ExecuteUsing(d.GetNontunneledZapiRunner())
 	return
 }
 

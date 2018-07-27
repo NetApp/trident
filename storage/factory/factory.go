@@ -50,6 +50,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	switch commonConfig.StorageDriverName {
 	case drivers.OntapNASStorageDriverName:
 		storageDriver = &ontap.NASStorageDriver{}
+	case drivers.OntapNASFlexGroupStorageDriverName:
+		storageDriver = &ontap.NASFlexGroupStorageDriver{}
 	case drivers.OntapNASQtreeStorageDriverName:
 		storageDriver = &ontap.NASQtreeStorageDriver{}
 	case drivers.OntapSANStorageDriverName:

@@ -48,3 +48,5 @@ outstanding issues to be aware of when using it:
   iSCSI storage systems. This only affects OpenShift Origin.
   See OpenShift issues
   `#18880 <https://github.com/openshift/origin/issues/18880>`_.
+* ONTAP cannot concurrently provision more than one FlexGroup at a time unless the set of aggregates are
+  unique to each provisioning request.

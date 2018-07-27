@@ -33,7 +33,7 @@ Deploying
          "dataLIF": "10.0.0.2",
          "svm": "svm_nfs",
          "username": "vsadmin",
-         "password": "netapp123",
+         "password": "secret",
          "aggregate": "aggr1"
      }
      EOF

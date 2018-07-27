@@ -58,6 +58,7 @@ Volume Cloning
 --------------
 
 When using the ontap-nas, ontap-san, and solidfire-san storage drivers, the Docker Volume Plugin can clone volumes.
+When using the ontap-nas-flexgroup or ontap-nas-economy drivers, cloning is not supported.
 
 .. code-block:: bash
 

@@ -71,10 +71,10 @@ trident.netapp.io/reclaimPolicy     N/A               any
 trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san
 trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
-trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-economy
-trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-economy, ontap-san
-trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy
-trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy
+trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
+trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san
+trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
+trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/blockSize         blockSize         solidfire-san
 =================================== ================= ======================================================
 
@@ -188,18 +188,19 @@ Storage attributes and their possible values can be classified into two groups:
    Trident-managed storage pools should be utilized to provision volumes of a
    given type.
 
-================= ====== ======================================= ========================================================== ============================== =========================================================
+================= ====== ======================================= ========================================================== ============================== =============================================================
 Attribute         Type   Values                                  Offer                                                      Request                        Supported by
-================= ====== ======================================= ========================================================== ============================== =========================================================
+================= ====== ======================================= ========================================================== ============================== =============================================================
 media             string hdd, hybrid, ssd                        Pool contains media of this type; hybrid means both        Media type specified           All drivers
 provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all but solidfire-san, thin: all but eseries-iscsi
 backendType       string ontap-nas, ontap-nas-economy,           Pool belongs to this type of backend                       Backend specified              All drivers
-                         ontap-san, solidfire-san, eseries-iscsi
+                         ontap-nas-flexgroup, ontap-san,
+                         solidfire-san, eseries-iscsi
 snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san
 clones            bool   true, false                             Pool supports cloning volumes                              Volume with clones enabled     ontap-nas, ontap-san, solidfire-san
-encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-san
+encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-nas-flexgroups, ontap-san
 IOPS              int    positive integer                        Pool is capable of guaranteeing IOPS in this range         Volume guaranteed these IOPS   solidfire-san
-================= ====== ======================================= ========================================================== ============================== =========================================================
+================= ====== ======================================= ========================================================== ============================== =============================================================
 
 In most cases, the values requested will directly influence provisioning; for
 instance, requesting thick provisioning will result in a thickly provisioned
