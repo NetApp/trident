@@ -30,26 +30,17 @@ type Plugin struct {
 
 func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*Plugin, error) {
 
-	// Get the Docker version
-	version, err := getDockerVersion()
-	if err != nil {
-		log.Errorf("Failed to get the Docker version: %v", err)
-	} else {
-		log.WithField("version", version.Server.Version).Info("Docker server version.")
-	}
-
 	// Create the plugin object
 	plugin := &Plugin{
 		orchestrator: orchestrator,
 		driverName:   driverName,
 		driverPort:   driverPort,
 		volumePath:   filepath.Join(volume.DefaultDockerRootDirectory, driverName),
-		version:      version,
 		mutex:        &sync.Mutex{},
 	}
 
 	// Register the plugin with Docker
-	err = registerDockerVolumePlugin(plugin.volumePath)
+	err := registerDockerVolumePlugin(plugin.volumePath)
 	if err != nil {
 		return nil, err
 	}
@@ -147,11 +138,20 @@ func (p *Plugin) GetName() string {
 }
 
 func (p *Plugin) Version() string {
+
+	// Get the Docker version on demand
 	if p.version == nil {
-		return "unknown"
-	} else {
-		return p.version.Server.Version
+
+		version, err := getDockerVersion()
+		if err != nil {
+			log.Errorf("Failed to get the Docker version: %v", err)
+			return "unknown"
+		}
+
+		p.version = version
 	}
+
+	return p.version.Server.Version
 }
 
 func (p *Plugin) Create(request *volume.CreateRequest) error {
@@ -372,6 +372,11 @@ func (p *Plugin) mountpoint(name string) string {
 }
 
 func (p *Plugin) dockerError(err error) error {
+
+	if err != nil {
+		log.Errorf("Docker frontend method returning error: %v", err)
+	}
+
 	if berr, ok := err.(*core.BootstrapError); ok {
 		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", berr.Error())
 	} else {
