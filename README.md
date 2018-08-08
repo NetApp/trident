@@ -4,7 +4,7 @@
 [![Chat](https://img.shields.io/badge/chat-slack-4C9689.svg)](http://netapp.io/slack/)
 [![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)](https://github.com/NetApp/trident/commits)
 [![license](https://img.shields.io/github/license/netapp/trident.svg)](LICENSE)
-[![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=latest)](https://netapp-trident.readthedocs.io)
+[![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=stable-v18.07)](https://netapp-trident.readthedocs.io/en/stable-v18.07)
 [![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident)](https://goreportcard.com/report/github.com/netapp/trident)
 
 Trident is a fully supported open source project maintained by [NetApp](https://www.netapp.com). It has been designed
@@ -20,4 +20,4 @@ Today, that infrastructure includes our [ONTAP](https://www.netapp.com/us/produc
 (HCI/SolidFire), and [SANtricity](https://www.netapp.com/us/products/data-management-software/santricity-os.aspx)
 (E/EF-Series) data management software. That list continues to grow.
 
-Detailed documentation for Trident can be found on [Read the Docs](https://netapp-trident.readthedocs.io).
+Detailed documentation for Trident can be found on [Read the Docs](https://netapp-trident.readthedocs.io/en/stable-v18.07).
