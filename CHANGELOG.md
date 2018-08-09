@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.04.0
+## Changes since v18.07.0
+
+**Fixes:**
+- Modified log messages about ONTAP media types not associated with performance classes (Issue [#158](https://github.com/NetApp/trident/issues/158)).
+
+**Enhancements:**
+
+## v18.07.0
 
 **Fixes:**
 - Fixed cleanup of the transaction object upon failed deletion (Issue [#126](https://github.com/NetApp/trident/issues/126)).

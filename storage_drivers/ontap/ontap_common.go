@@ -841,7 +841,7 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 			log.WithFields(log.Fields{
 				"aggregate": aggrName,
 				"mediaType": aggrType,
-			}).Debug("Aggregate has unknown media type.")
+			}).Debug("Aggregate has unknown performance characteristics.")
 
 			continue
 		}
@@ -890,7 +890,7 @@ func getClusterAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 			log.WithFields(log.Fields{
 				"aggregate": aggrName,
 				"mediaType": aggrType,
-			}).Debug("Aggregate has unknown media type.")
+			}).Debug("Aggregate has unknown performance characteristics.")
 
 			continue
 		}
