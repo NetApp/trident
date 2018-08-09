@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.01.0
+## Changes since v18.04.0
+
+**Fixes:**
+- **Docker:** Resolved issue where containers might not restart after restarting Docker (Issue [#160](https://github.com/NetApp/trident/issues/160)).
+
+**Enhancements:**
+
+## v18.04.0
 
 **Fixes:**
 - Clone operations are more resilient to busy storage controllers.

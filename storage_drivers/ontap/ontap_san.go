@@ -11,7 +11,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -43,6 +43,7 @@ func (d *SANStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *SANStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
@@ -53,7 +54,7 @@ func (d SANStorageDriver) Name() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -138,7 +139,7 @@ func (d *SANStorageDriver) validate() error {
 		d.Config.DataLIF = dataLIFs[0]
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the ONTAP iSCSI target
 		err := utils.EnsureISCSISession(d.Config.DataLIF)
 		if err != nil {
@@ -312,7 +313,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return nil
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
 		iSCSINodeName, _, err = d.getISCSITargetInfo()
@@ -654,7 +655,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		log.Debug("No follow-up create actions for Docker.")
 		return nil
 	}
@@ -706,8 +707,8 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 	return nil
 }
 
-func (d *SANStorageDriver) GetProtocol() trident.Protocol {
-	return trident.Block
+func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.Block
 }
 
 func (d *SANStorageDriver) StoreConfig(
@@ -799,17 +800,17 @@ func (d *SANStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(int64(lunAttrs.Size()), 10),
-		Protocol:        trident.Block,
+		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    "",
 		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteOnce,
+		AccessMode:      tridentconfig.ReadWriteOnce,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",

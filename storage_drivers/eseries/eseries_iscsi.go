@@ -20,7 +20,7 @@ import (
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -57,7 +57,7 @@ func (d *SANStorageDriver) Protocol() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here
@@ -102,9 +102,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	telemetry := make(map[string]string)
-	telemetry["version"] = trident.OrchestratorVersion.ShortString()
-	telemetry["platform"] = trident.OrchestratorTelemetry.Platform
-	telemetry["platformVersion"] = trident.OrchestratorTelemetry.PlatformVersion
+	telemetry["version"] = tridentconfig.OrchestratorVersion.ShortString()
 	telemetry["plugin"] = d.Name()
 	telemetry["storagePrefix"] = *d.Config.StoragePrefix
 
@@ -145,7 +143,7 @@ func (d *SANStorageDriver) Initialize(
 		}).Info("Controller serial numbers.")
 	}
 
-	if context == trident.ContextDocker {
+	if context == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the E-series iSCSI target
 		err = utils.EnsureISCSISession(d.Config.HostDataIP)
 		if err != nil {
@@ -346,7 +344,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		return fmt.Errorf("could not find volume %s: %v", name, err)
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
 		iSCSINodeName, _, err = d.getISCSITargetInfo()
@@ -777,7 +775,7 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
-	if trident.UsingPassthroughStore {
+	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
 	} else {
@@ -870,7 +868,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	if d.Config.DriverContext == trident.ContextDocker {
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		log.Debug("No follow-up create actions for Docker.")
 		return nil
 	}
@@ -922,8 +920,8 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 	return nil
 }
 
-func (d *SANStorageDriver) GetProtocol() trident.Protocol {
-	return trident.Block
+func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.Block
 }
 
 func (d *SANStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
@@ -1068,17 +1066,17 @@ func (d *SANStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            volumeAttrs.VolumeSize,
-		Protocol:        trident.Block,
+		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  "",
 		ExportPolicy:    "",
 		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteOnce,
+		AccessMode:      tridentconfig.ReadWriteOnce,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",

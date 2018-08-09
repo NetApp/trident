@@ -10,7 +10,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -36,6 +36,7 @@ func (d *NASStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
@@ -46,7 +47,7 @@ func (d *NASStorageDriver) Name() string {
 
 // Initialize from the provided config
 func (d *NASStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -399,8 +400,8 @@ func (d *NASStorageDriver) CreateFollowup(
 	return nil
 }
 
-func (d *NASStorageDriver) GetProtocol() trident.Protocol {
-	return trident.File
+func (d *NASStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.File
 }
 
 func (d *NASStorageDriver) StoreConfig(
@@ -467,17 +468,17 @@ func (d *NASStorageDriver) getVolumeExternal(
 	name := internalName[len(*d.Config.StoragePrefix):]
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(int64(volumeSpaceAttrs.Size()), 10),
-		Protocol:        trident.File,
+		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    volumeExportAttrs.Policy(),
 		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
 		UnixPermissions: volumeSecurityUnixAttrs.Permissions(),
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteMany,
+		AccessMode:      tridentconfig.ReadWriteMany,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",

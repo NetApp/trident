@@ -14,7 +14,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -62,6 +62,7 @@ func (d *NASQtreeStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
@@ -76,7 +77,7 @@ func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 
 // Initialize from the provided config
 func (d *NASQtreeStorageDriver) Initialize(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -100,9 +101,9 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Remap context for artifact naming so the names remain stable over time
 	var artifactPrefix string
 	switch context {
-	case trident.ContextDocker:
+	case tridentconfig.ContextDocker:
 		artifactPrefix = artifactPrefixDocker
-	case trident.ContextKubernetes:
+	case tridentconfig.ContextKubernetes:
 		artifactPrefix = artifactPrefixKubernetes
 	default:
 		return fmt.Errorf("Unknown driver context: %s", context)
@@ -1058,8 +1059,8 @@ func (d *NASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) 
 	return nil
 }
 
-func (d *NASQtreeStorageDriver) GetProtocol() trident.Protocol {
-	return trident.File
+func (d *NASQtreeStorageDriver) GetProtocol() tridentconfig.Protocol {
+	return tridentconfig.File
 }
 
 func (d *NASQtreeStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
@@ -1195,17 +1196,17 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 	}
 
 	volumeConfig := &storage.VolumeConfig{
-		Version:         trident.OrchestratorAPIVersion,
+		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
 		InternalName:    internalName,
 		Size:            strconv.FormatInt(size, 10),
-		Protocol:        trident.File,
+		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volumeSnapshotAttrs.SnapshotPolicy(),
 		ExportPolicy:    qtreeAttrs.ExportPolicy(),
 		SnapshotDir:     strconv.FormatBool(volumeSnapshotAttrs.SnapdirAccessEnabled()),
 		UnixPermissions: qtreeAttrs.Mode(),
 		StorageClass:    "",
-		AccessMode:      trident.ReadWriteMany,
+		AccessMode:      tridentconfig.ReadWriteMany,
 		AccessInfo:      storage.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
