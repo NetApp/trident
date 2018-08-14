@@ -29,7 +29,6 @@ var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
 
 func init() {
-
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
 	} else {
@@ -275,7 +274,7 @@ func getSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
 
 	paths := make([]string, 0)
 	for hostNumber, sessionNumber := range hostSessionMap {
-		path := fmt.Sprintf("/sys/class/scsi_host/host%d/device/session%d/iscsi_session/session%d/device/target%d:0:0/%d:0:0:%d",
+		path := fmt.Sprintf(chrootPathPrefix+"/sys/class/scsi_host/host%d/device/session%d/iscsi_session/session%d/device/target%d:0:0/%d:0:0:%d",
 			hostNumber, sessionNumber, sessionNumber, hostNumber, hostNumber, lunID)
 		paths = append(paths, path)
 	}
@@ -612,7 +611,7 @@ func findMultipathDeviceForDevice(device string) string {
 	log.WithField("device", device).Debug(">>>> osutils.findMultipathDeviceForDevice")
 	defer log.WithField("device", device).Debug("<<<< osutils.findMultipathDeviceForDevice")
 
-	holdersDir := "/sys/block/" + device + "/holders"
+	holdersDir := chrootPathPrefix + "/sys/block/" + device + "/holders"
 	if dirs, err := ioutil.ReadDir(holdersDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
@@ -634,7 +633,7 @@ func findDevicesForMultipathDevice(device string) []string {
 
 	devices := make([]string, 0)
 
-	slavesDir := "/sys/block/" + device + "/slaves"
+	slavesDir := chrootPathPrefix + "/sys/block/" + device + "/slaves"
 	if dirs, err := ioutil.ReadDir(slavesDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
@@ -929,7 +928,7 @@ func iSCSIRescanTargetLUN(lunID int, hosts []int) error {
 
 	for _, hostNumber := range hosts {
 
-		filename := fmt.Sprintf("/sys/class/scsi_host/host%d/scan", hostNumber)
+		filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
 			log.WithField("file", filename).Warning("Could not open file for writing.")
 			return err
@@ -990,7 +989,7 @@ func getISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 
 	hostSessionMap := make(map[int]int)
 
-	sysPath := "/sys/class/iscsi_host/"
+	sysPath := chrootPathPrefix + "/sys/class/iscsi_host/"
 	if hostDirs, err := ioutil.ReadDir(sysPath); err != nil {
 		log.WithField("error", err).Errorf("Could not read %s", sysPath)
 		return hostSessionMap
@@ -1055,7 +1054,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	hostSessionMapCache := make(map[string]map[int]int)
 
 	// Start by reading the sessions from /sys/class/iscsi_session
-	sysPath := "/sys/class/iscsi_session/"
+	sysPath := chrootPathPrefix + "/sys/class/iscsi_session/"
 	sessionDirs, err := ioutil.ReadDir(sysPath)
 	if err != nil {
 		log.WithField("error", err).Errorf("Could not read %s", sysPath)
@@ -1358,7 +1357,7 @@ func removeDevice(deviceInfo *ScsiDeviceInfo) {
 
 	for _, deviceName := range deviceInfo.Devices {
 
-		filename := fmt.Sprintf("/sys/block/%s/device/delete", deviceName)
+		filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
 			log.WithField("file", filename).Warning("Could not open file for writing.")
 			return
@@ -1505,6 +1504,9 @@ func MountDevice(device, mountpoint, options string) (err error) {
 	}
 	if _, err = execCommand("mount", args...); err != nil {
 		log.WithField("error", err).Error("Mount failed.")
+	}
+	if _, err = execCommand("chmod", "777", mountpoint); err != nil {
+		log.WithField("error", err).Warning("Chmod failed.")
 	}
 	return
 }

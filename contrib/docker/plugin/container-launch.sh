@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export DOCKER_PLUGIN_MODE=1
+
 # process debug 
 MY_DEBUG=${debug:-false}
 case $(echo ${MY_DEBUG} | tr '[:upper:]' '[:lower:]') in

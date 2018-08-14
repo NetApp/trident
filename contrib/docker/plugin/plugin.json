@@ -53,12 +53,6 @@
             },
             {
                 "type": "bind",
-                "source": "/sys",
-                "destination": "/sys",
-                "options": ["rbind"]
-            },
-            {
-                "type": "bind",
                 "source": "/etc/netappdvp",
                 "destination": "/etc/netappdvp",
                 "options": ["rbind"]
