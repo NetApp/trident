@@ -148,7 +148,7 @@ corresponding PV, Trident follows the following rules:
 Kubernetes StorageClass objects
 -------------------------------
 
-`Kubernetes StorageClass objects`_ are specified by name in
+`Kubernetes StorageClass`_ objects are specified by name in
 PersistentVolumeClaims to provision storage with a set of properties. The
 storage class itself identifies the provisioner that will be used and defines
 that set of properties in terms the provisioner understands.
@@ -166,6 +166,7 @@ A Kubernetes StorageClass object that uses Trident looks like this:
   metadata:
     name: <Name>
   provisioner: netapp.io/trident
+  mountOptions: <Mount Options>
   parameters:
     <Trident Parameters>
 
@@ -356,7 +357,7 @@ One can use volume configurations to directly provision volumes via the
 standard `Kubernetes PersistentVolumeClaim`_ method. Trident will create this
 volume object automatically as part of the provisioning process in that case.
 
-.. _Kubernetes StorageClass: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses
+.. _Kubernetes StorageClass: https://kubernetes.io/docs/concepts/storage/storage-classes
 .. _Kubernetes PersistentVolume: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes
 .. _Kubernetes PersistentVolumeClaim: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 .. _standard specification: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims

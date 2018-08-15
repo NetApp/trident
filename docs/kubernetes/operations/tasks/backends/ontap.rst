@@ -42,7 +42,8 @@ provisioning a FlexGroup Volume. FlexGroup support in Trident also has the follo
 considerations:
 
 * Requires ONTAP version 9.2 or greater.
-* As of this writing, FlexGroups only support NFS v3.
+* As of this writing, FlexGroups only support NFSv3 (required to set
+  ``mountOptions: ["nfsvers=3"]`` in the Kubernetes storage class).
 * Recommended to enable the 64-bit NFSv3 identifiers for the SVM.
 * The minimum recommended FlexGroup size is 100GB.
 * Cloning is not supported for FlexGroup Volumes.
@@ -180,7 +181,7 @@ Example configuration
 
     {
         "version": 1,
-        "storageDriverName": "ontap-nas",
+        "storageDriverName": "ontap-nas-flexgroup",
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
