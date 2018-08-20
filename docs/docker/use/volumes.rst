@@ -27,12 +27,21 @@ Volume sizes are expressed as strings containing an integer value with optional 
 If no units are specified, the default is 'G'.  Size units may be expressed either as powers of 2 (B, KiB, MiB, GiB, TiB)
 or powers of 10 (B, KB, MB, GB, TB).  Shorthand units use powers of 2 (G = GiB, T = TiB, ...).
 
-The snapshot reserve will be changed to 0% if you set the snapshot policy to none as follows:
+If the snapshot reserve is not specified and the snapshot policy is 'none', Trident will use a snapshot reserve of 0%.
 
 .. code-block:: bash
+
     # create a volume with no snapshot policy and no snapshot reserve
     docker volume create -d netapp --name my_vol --opt snapshotPolicy=none
 
+    # create a volume with no snapshot policy and a custom snapshot reserve of 10%
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none --opt snapshotReserve=10
+
+    # create a volume with a snapshot policy and a custom snapshot reserve of 10%
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy --opt snapshotReserve=10
+
+    # create a volume with a snapshot policy, and accept ONTAP's default snapshot reserve (usually 5%)
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy
 
 Volume Driver CLI Options
 -------------------------

@@ -146,6 +146,7 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	size := strconv.FormatUint(sizeBytes, 10)
 	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
+	snapshotReserve := utils.GetV(opts, "snapshotReserve", d.Config.SnapshotReserve)
 	unixPermissions := utils.GetV(opts, "unixPermissions", d.Config.UnixPermissions)
 	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
 	exportPolicy := utils.GetV(opts, "exportPolicy", d.Config.ExportPolicy)
@@ -163,9 +164,9 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return err
 	}
 
-	snapshotReserve := api.NumericalValueNotSet
-	if snapshotPolicy == "none" {
-		snapshotReserve = 0
+	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
 	log.WithFields(log.Fields{
@@ -173,19 +174,19 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		"size":            size,
 		"spaceReserve":    spaceReserve,
 		"snapshotPolicy":  snapshotPolicy,
+		"snapshotReserve": snapshotReserveInt,
 		"unixPermissions": unixPermissions,
 		"snapshotDir":     enableSnapshotDir,
 		"exportPolicy":    exportPolicy,
 		"aggregate":       aggregate,
 		"securityStyle":   securityStyle,
 		"encryption":      encryption,
-		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating Flexvol.")
 
 	// Create the volume
 	volCreateResponse, err := d.API.VolumeCreate(
 		name, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserve)
+		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserveInt)
 
 	if err = api.GetError(volCreateResponse, err); err != nil {
 		if zerr, ok := err.(api.ZapiError); ok {

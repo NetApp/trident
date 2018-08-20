@@ -8,6 +8,7 @@ Volume create options for both NFS and iSCSI:
 * ``size`` - the size of the volume, defaults to 1 GiB
 * ``spaceReserve`` - thin or thick provision the volume, defaults to thin. Valid values are ``none`` (thin provisioned) and ``volume`` (thick provisioned).
 * ``snapshotPolicy`` - this will set the snapshot policy to the desired value. The default is ``none``, meaning no snapshots will automatically be created for the volume. Unless modified by your storage administrator, a policy named "default" exists on all ONTAP systems which creates and retains six hourly, two daily, and two weekly snapshots. The data preserved in a snapshot can be recovered by browsing to the .snapshot directory in any directory in the volume.
+* ``snapshotReserve`` - this will set the snapshot reserve to the desired percentage. The default is no value, meaning ONTAP will select the snapshotReserve (usually 5%) if you have selected a snapshotPolicy, or 0% if the snapshotPolicy is ``none``. The default snapshotReserve value may be set in the config file for all ONTAP backends, and it may be used as a volume creation option for all ONTAP backends except ontap-nas-economy.
 * ``splitOnClone`` - when cloning a volume, this will cause ONTAP to immediately split the clone from its parent. The default is ``false``. Some use cases for cloning volumes are best served by splitting the clone from its parent immediately upon creation, since there is unlikely to be any opportunity for storage efficiencies. For example, cloning an empty database can offer large time savings but little storage savings, so it's best to split the clone immediately.
 * ``encryption`` - this will enable NetApp Volume Encryption (NVE) on the new volume, defaults to ``false``.  NVE must be licensed and enabled on the cluster to use this option.
 
@@ -31,7 +32,7 @@ Using these options during the docker volume create operation is super simple, j
    docker volume create -d netapp --name demo -o size=10G -o encryption=true
 
    # create a 100GiB volume with snapshots
-   docker volume create -d netapp --name demo -o size=100G -o snapshotPolicy=default
+   docker volume create -d netapp --name demo -o size=100G -o snapshotPolicy=default -o snapshotReserve=10
 
    # create a volume which has the setUID bit enabled
    docker volume create -d netapp --name demo -o unixPermissions=4755

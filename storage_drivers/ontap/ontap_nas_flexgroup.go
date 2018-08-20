@@ -173,6 +173,7 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
+	snapshotReserve := utils.GetV(opts, "snapshotReserve", d.Config.SnapshotReserve)
 	unixPermissions := utils.GetV(opts, "unixPermissions", d.Config.UnixPermissions)
 	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
 	exportPolicy := utils.GetV(opts, "exportPolicy", d.Config.ExportPolicy)
@@ -189,9 +190,9 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 		return err
 	}
 
-	snapshotReserve := api.NumericalValueNotSet
-	if snapshotPolicy == "none" {
-		snapshotReserve = 0
+	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
 	log.WithFields(log.Fields{
@@ -199,19 +200,19 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 		"size":            size,
 		"spaceReserve":    spaceReserve,
 		"snapshotPolicy":  snapshotPolicy,
+		"snapshotReserve": snapshotReserveInt,
 		"unixPermissions": unixPermissions,
 		"snapshotDir":     enableSnapshotDir,
 		"exportPolicy":    exportPolicy,
 		"aggregates":      vserverAggrNames,
 		"securityStyle":   securityStyle,
 		"encryption":      encryption,
-		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating FlexGroup.")
 
 	// Create the FlexGroup
 	_, err = d.API.FlexGroupCreate(
 		name, size, vserverAggrNames, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserve)
+		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserveInt)
 
 	if err != nil {
 		return fmt.Errorf("error creating FlexGroup %v: %v", name, err)

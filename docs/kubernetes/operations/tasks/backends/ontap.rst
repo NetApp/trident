@@ -142,6 +142,7 @@ Parameter          Description                                                  
 ================== =============================================================== ================================================
 spaceReserve       Space reservation mode; "none" (thin) or "volume" (thick)       "none"
 snapshotPolicy     Snapshot policy to use                                          "none"
+snapshotReserve    Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
 splitOnClone       Split a clone from its parent upon creation                     false
 encryption         Enable NetApp volume encryption                                 false
 unixPermissions    ontap-nas* only: mode for new volumes                           "777"
@@ -167,7 +168,9 @@ Example configuration
         "password": "secret",
         "defaults": {
           "spaceReserve": "volume",
-          "exportPolicy": "myk8scluster"
+          "exportPolicy": "myk8scluster",
+          "snapshotPolicy": "default",
+          "snapshotReserve": "10"
         }
     }
 

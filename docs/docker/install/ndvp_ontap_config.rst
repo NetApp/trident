@@ -88,6 +88,8 @@ Also, when using ONTAP, these default option settings are available to avoid hav
 +-----------------------+--------------------------------------------------------------------------+------------+
 | ``snapshotPolicy``    | Snapshot policy to use, default is "none"                                | none       |
 +-----------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotReserve``   | Snapshot reserve percentage, default is "" to accept ONTAP's default     | 10         |
++-----------------------+--------------------------------------------------------------------------+------------+
 | ``splitOnClone``      | Split a clone from its parent upon creation, defaults to "false"         | false      |
 +-----------------------+--------------------------------------------------------------------------+------------+
 | ``encryption``        | Enable NetApp Volume Encryption, defaults to "false"                     | true       |

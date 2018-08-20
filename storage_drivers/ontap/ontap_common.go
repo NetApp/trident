@@ -316,6 +316,7 @@ func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {
 
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
+const DefaultSnapshotReserve = ""
 const DefaultUnixPermissions = "---rwxrwxrwx"
 const DefaultSnapshotDir = "false"
 const DefaultExportPolicy = "default"
@@ -355,6 +356,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 
 	if config.SnapshotPolicy == "" {
 		config.SnapshotPolicy = DefaultSnapshotPolicy
+	}
+
+	if config.SnapshotReserve == "" {
+		config.SnapshotReserve = DefaultSnapshotReserve
 	}
 
 	if config.UnixPermissions == "" {
@@ -398,6 +403,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		"StoragePrefix":   *config.StoragePrefix,
 		"SpaceReserve":    config.SpaceReserve,
 		"SnapshotPolicy":  config.SnapshotPolicy,
+		"SnapshotReserve": config.SnapshotReserve,
 		"UnixPermissions": config.UnixPermissions,
 		"SnapshotDir":     config.SnapshotDir,
 		"ExportPolicy":    config.ExportPolicy,
@@ -444,6 +450,27 @@ func GetVolumeSize(sizeBytes uint64, config drivers.OntapStorageDriverConfig) (u
 			"the minimum volume size is %d bytes", sizeBytes, MinimumVolumeSizeBytes)
 	}
 	return sizeBytes, nil
+}
+
+func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
+
+	if snapshotReserve != "" {
+		// snapshotReserve defaults to "", so if it is explicitly set
+		// (either in config or create options), honor the value.
+		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 64)
+		if err != nil {
+			return api.NumericalValueNotSet, err
+		}
+		return int(snapshotReserveInt64), nil
+	} else {
+		// If snapshotReserve isn't set, then look at snapshotPolicy.  If the policy is "none",
+		// return 0.  Otherwise return -1, indicating that ONTAP should use its own default value.
+		if snapshotPolicy == "none" {
+			return 0, nil
+		} else {
+			return api.NumericalValueNotSet, nil
+		}
+	}
 }
 
 // EMSHeartbeat logs an ASUP message on a timer
@@ -956,6 +983,9 @@ func getVolumeOptsCommon(
 	}
 	if volConfig.SnapshotPolicy != "" {
 		opts["snapshotPolicy"] = volConfig.SnapshotPolicy
+	}
+	if volConfig.SnapshotReserve != "" {
+		opts["snapshotReserve"] = volConfig.SnapshotReserve
 	}
 	if volConfig.UnixPermissions != "" {
 		opts["unixPermissions"] = volConfig.UnixPermissions

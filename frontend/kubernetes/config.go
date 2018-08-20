@@ -29,6 +29,7 @@ const (
 	AnnProtocol        = AnnPrefix + "/protocol"
 	AnnSpaceReserve    = AnnPrefix + "/spaceReserve"
 	AnnSnapshotPolicy  = AnnPrefix + "/snapshotPolicy"
+	AnnSnapshotReserve = AnnPrefix + "/snapshotReserve"
 	AnnSnapshotDir     = AnnPrefix + "/snapshotDirectory"
 	AnnUnixPermissions = AnnPrefix + "/unixPermissions"
 	AnnVendor          = AnnPrefix + "/vendor"
