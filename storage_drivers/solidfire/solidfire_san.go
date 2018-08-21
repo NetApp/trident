@@ -409,29 +409,31 @@ func (d *SANStorageDriver) validate() error {
 				return err
 			}
 
-			found := false
+			foundVAG := false
 			initiators := ""
 			for _, vag := range vags {
 				if vag.Name == tridentconfig.DefaultSolidFireVAG {
 					d.Config.AccessGroups = append(d.Config.AccessGroups, vag.VAGID)
-					found = true
+					foundVAG = true
 					for _, initiator := range vag.Initiators {
 						initiators = initiators + initiator + ","
 					}
 					initiators = strings.TrimSuffix(initiators, ",")
-					log.Infof("No AccessGroup ID's configured, using the default group: %v, "+
-						"with initiators: %+v", vag.Name, initiators)
+					log.WithFields(log.Fields{
+						"group":      vag.Name,
+						"initiators": initiators,
+					}).Info("No AccessGroup ID's configured. Using the default group with listed initiators.")
 					break
 				}
 			}
-			if !found {
+			if !foundVAG {
 				// UseCHAP was not specified in the config and no VAG was found.
 				if tridentconfig.PlatformAtLeast("kubernetes", "v1.7.0") {
 					// Found a version of Kubernetes that can support CHAP
 					log.WithFields(log.Fields{
 						"platform":         tridentconfig.OrchestratorTelemetry.Platform,
 						"platform version": tridentconfig.OrchestratorTelemetry.PlatformVersion,
-					}).Warn("Volume Access Group use not detected. Defaulting to using CHAP.")
+					}).Info("Volume Access Group use not detected. Defaulting to using CHAP.")
 					d.Config.UseCHAP = true
 				} else {
 					err = fmt.Errorf("volume Access Group %v doesn't exist at %v and must be manually "+
@@ -457,13 +459,6 @@ func (d *SANStorageDriver) validate() error {
 			}
 		}
 
-		log.WithFields(log.Fields{
-			"driver":       drivers.SolidfireSANStorageDriverName,
-			"SVIP":         d.Config.SVIP,
-			"AccessGroups": d.Config.AccessGroups,
-			"UseCHAP":      d.Config.UseCHAP,
-		}).Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
-
 		// Deal with upgrades for versions prior to handling multiple VAG ID's
 		var vIDs []int64
 		var req api.ListVolumesForAccountRequest
@@ -481,13 +476,19 @@ func (d *SANStorageDriver) validate() error {
 				return err
 			}
 		}
+	}
+
+	fields := log.WithFields(log.Fields{
+		"driver":       drivers.SolidfireSANStorageDriverName,
+		"SVIP":         d.Config.SVIP,
+		"AccessGroups": d.Config.AccessGroups,
+		"UseCHAP":      d.Config.UseCHAP,
+	})
+
+	if d.Config.UseCHAP {
+		fields.Debug("Using CHAP, skipped Volume Access Group logic.")
 	} else {
-		// CHAP logic
-		log.WithFields(log.Fields{
-			"driver":  drivers.SolidfireSANStorageDriverName,
-			"SVIP":    d.Config.SVIP,
-			"UseCHAP": d.Config.UseCHAP,
-		}).Debug("Using CHAP, skipping Volume Access Group logic.")
+		fields.Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
 	}
 
 	return nil
