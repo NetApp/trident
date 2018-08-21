@@ -478,17 +478,17 @@ func (d *SANStorageDriver) validate() error {
 		}
 	}
 
-	fields := log.WithFields(log.Fields{
+	fields := log.Fields{
 		"driver":       drivers.SolidfireSANStorageDriverName,
 		"SVIP":         d.Config.SVIP,
 		"AccessGroups": d.Config.AccessGroups,
 		"UseCHAP":      d.Config.UseCHAP,
-	})
+	}
 
 	if d.Config.UseCHAP {
-		fields.Debug("Using CHAP, skipped Volume Access Group logic.")
+		log.WithFields(fields).Debug("Using CHAP, skipped Volume Access Group logic.")
 	} else {
-		fields.Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
+		log.WithFields(fields).Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
 	}
 
 	return nil
