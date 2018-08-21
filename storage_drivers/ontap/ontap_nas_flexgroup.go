@@ -541,3 +541,23 @@ func (d *NASFlexGroupStorageDriver) GetUpdateType(driverOrig storage.Driver) *ro
 
 	return bitmap
 }
+
+// Resize expands the FlexGroup size.
+func (d *NASFlexGroupStorageDriver) Resize(name string, sizeBytes uint64) error {
+	flexvolSize, err := resizeValidation(name, sizeBytes, d.API.FlexGroupExists, d.API.FlexGroupSize)
+	if err != nil {
+		return err
+	}
+
+	if flexvolSize == sizeBytes {
+		return nil
+	}
+
+	response, err := d.API.FlexGroupSetSize(name, strconv.FormatUint(sizeBytes, 10))
+	if err = api.GetError(response.Result, err); err != nil {
+		log.WithField("error", err).Errorf("FlexGroup resize failed.")
+		return fmt.Errorf("flexgroup resize failed")
+	}
+
+	return nil
+}

@@ -603,6 +603,26 @@ func (d Client) FlexGroupExists(name string) (bool, error) {
 	return true, nil
 }
 
+// FlexGroupVolumeSize retrieves the size of the specified volume
+func (d Client) FlexGroupSize(name string) (int, error) {
+	volAttrs, err := d.FlexGroupGet(name)
+	if err != nil {
+		return 0, err
+	}
+
+	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+	return volSpaceAttrs.Size(), nil
+}
+
+// FlexGroupSetSize sets the size of the specified FlexGroup
+func (d Client) FlexGroupSetSize(name, newSize string) (response azgo.VolumeSizeAsyncResponse, err error) {
+	response, err = azgo.NewVolumeSizeAsyncRequest().
+		SetVolumeName(name).
+		SetNewSize(newSize).
+		ExecuteUsing(d.zr)
+	return
+}
+
 // FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 func (d Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(name string) (response azgo.VolumeModifyIterAsyncResponse, err error) {
@@ -823,11 +843,15 @@ func (d Client) VolumeExists(name string) (bool, error) {
 }
 
 // VolumeSize retrieves the size of the specified volume
-func (d Client) VolumeSize(name string) (response azgo.VolumeSizeResponse, err error) {
-	response, err = azgo.NewVolumeSizeRequest().
-		SetVolume(name).
-		ExecuteUsing(d.zr)
-	return
+func (d Client) VolumeSize(name string) (int, error) {
+
+	volAttrs, err := d.VolumeGet(name)
+	if err != nil {
+		return 0, err
+	}
+	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+
+	return volSpaceAttrs.Size(), nil
 }
 
 // SetVolumeSize sets the size of the specified volume
@@ -1256,7 +1280,7 @@ func (d Client) QuotaSetEntry(qtreeName, volumeName, quotaTarget, quotaType, dis
 
 // QuotaEntryGet returns the disk limit for a single qtree
 // equivalent to filer::> volume quota policy rule show
-func (d Client) QuotaEntryGet(target string) (azgo.QuotaEntryType, error) {
+func (d Client) QuotaGetEntry(target string) (azgo.QuotaEntryType, error) {
 
 	query := azgo.NewQuotaEntryType().SetQuotaType("tree").SetQuotaTarget(target)
 

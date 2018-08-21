@@ -1251,3 +1251,8 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	return bitmap
 }
+
+// Resize expands the volume size.
+func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
+	return errors.New("resize not yet implemented")
+}

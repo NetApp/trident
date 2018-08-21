@@ -438,3 +438,21 @@ func Clone(a, b interface{}) {
 	enc.Encode(a)
 	dec.Decode(b)
 }
+
+// Resize expands the volume size.
+func (d *StorageDriver) Resize(name string, sizeBytes uint64) error {
+	vol := d.Volumes[name]
+
+	if vol.SizeBytes == sizeBytes {
+		return nil
+	}
+
+	if sizeBytes < vol.SizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, vol.SizeBytes)
+	} else {
+		vol.SizeBytes = sizeBytes
+		d.Volumes[name] = vol
+	}
+
+	return nil
+}

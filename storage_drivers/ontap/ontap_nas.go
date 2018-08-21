@@ -486,3 +486,23 @@ func (d *NASStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	return bitmap
 }
+
+// Resize expands the volume size.
+func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
+	flexvolSize, err := resizeValidation(name, sizeBytes, d.API.VolumeExists, d.API.VolumeSize)
+	if err != nil {
+		return err
+	}
+
+	if flexvolSize == sizeBytes {
+		return nil
+	}
+
+	response, err := d.API.SetVolumeSize(name, strconv.FormatUint(sizeBytes, 10))
+	if err = api.GetError(response.Result, err); err != nil {
+		log.WithField("error", err).Errorf("Volume resize failed.")
+		return fmt.Errorf("volume resize failed")
+	}
+
+	return nil
+}

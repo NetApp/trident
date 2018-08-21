@@ -32,6 +32,7 @@ type Driver interface {
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	SnapshotList(name string) ([]Snapshot, error)
 	Get(name string) error
+	Resize(name string, sizeBytes uint64) error
 	CreatePrepare(volConfig *VolumeConfig) bool
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(volConfig *VolumeConfig) error

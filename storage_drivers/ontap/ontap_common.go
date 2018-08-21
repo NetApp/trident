@@ -1062,3 +1062,33 @@ func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {
 		SVM:           config.SVM,
 	}
 }
+
+// resizeValidation performs needed validation checks prior to the resize operation.
+func resizeValidation(name string, sizeBytes uint64,
+	volumeExists func(string) (bool, error),
+	volumeSize func(string) (int, error)) (uint64, error) {
+
+	// Check that volume exists
+	volExists, err := volumeExists(name)
+	if err != nil {
+		log.WithField("error", err).Errorf("Error checking for existing volume.")
+		return 0, fmt.Errorf("error occured checking for existing volume")
+	}
+	if !volExists {
+		return 0, fmt.Errorf("volume %s does not exist", name)
+	}
+
+	// Check that current size is smaller than requested size
+	volSize, err := volumeSize(name)
+	if err != nil {
+		log.WithField("error", err).Errorf("Error checking volume size.")
+		return 0, fmt.Errorf("error occured when checking volume size")
+	}
+	volSizeBytes := uint64(volSize)
+
+	if sizeBytes < volSizeBytes {
+		return 0, fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSize)
+	}
+
+	return volSizeBytes, nil
+}

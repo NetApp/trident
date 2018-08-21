@@ -129,7 +129,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Ensure all quotas are in force after a driver restart
 	d.queueAllFlexvolsForQuotaResize()
 
-	// Start periodic housekeeping tasks like cleaning up unused FlexVols
+	// Start periodic housekeeping tasks like cleaning up unused Flexvols
 	d.housekeepingWaitGroup = &sync.WaitGroup{}
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
 	pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
@@ -239,7 +239,6 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	size := strconv.FormatUint(sizeBytes, 10)
 	aggregate := utils.GetV(opts, "aggregate", d.Config.Aggregate)
 	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
@@ -264,25 +263,9 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	}
 
 	// Grow or shrink the Flexvol as needed
-	flexvolSizeBytes, err := d.getOptimalSizeForFlexvol(flexvol, sizeBytes)
+	err = d.resizeFlexvol(flexvol, sizeBytes)
 	if err != nil {
-		log.Warnf("Could not calculate optimal Flexvol size. %v", err)
-
-		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, "+"+size)
-		if err = api.GetError(resizeResponse.Result, err); err != nil {
-			log.Errorf("Flexvol resize failed. %v", err)
-			return createError
-		}
-	} else {
-
-		// Got optimal size, so just set the Flexvol to that value
-		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, flexvolSizeStr)
-		if err = api.GetError(resizeResponse.Result, err); err != nil {
-			log.Errorf("Flexvol resize failed. %v", err)
-			return createError
-		}
+		return createError
 	}
 
 	// Get qtree options with default fallback values
@@ -298,7 +281,7 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	}
 
 	// Add the quota
-	d.addQuotaForQtree(name, flexvol, sizeBytes)
+	err = d.setQuotaForQtree(name, flexvol, sizeBytes)
 	if err != nil {
 		log.Errorf("Qtree quota definition failed. %v", err)
 		return createError
@@ -665,8 +648,9 @@ func (d *NASQtreeStorageDriver) addDefaultQuotaForFlexvol(flexvol string) error 
 	return nil
 }
 
-// addQuotaForQtree adds a tree quota to a Flexvol/qtree with a hard disk size limit.
-func (d *NASQtreeStorageDriver) addQuotaForQtree(qtree, flexvol string, sizeBytes uint64) error {
+// setQuotaForQtree adds a tree quota to a Flexvol/qtree with a hard disk size limit if it doesn't exist.
+// If the quota already exists the hard disk size limit is updated.
+func (d *NASQtreeStorageDriver) setQuotaForQtree(qtree, flexvol string, sizeBytes uint64) error {
 
 	target := fmt.Sprintf("/vol/%s/%s", flexvol, qtree)
 	sizeKB := strconv.FormatUint(sizeBytes/1024, 10)
@@ -680,6 +664,21 @@ func (d *NASQtreeStorageDriver) addQuotaForQtree(qtree, flexvol string, sizeByte
 	d.quotaResizeMap[flexvol] = true
 
 	return nil
+}
+
+// getQuotaDiskLimitSize returns the disk limit size for the specified quota.
+func (d *NASQtreeStorageDriver) getQuotaDiskLimitSize(name string, flexvol string) (uint64, error) {
+	quotaTarget := fmt.Sprintf("/vol/%s/%s", flexvol, name)
+	quota, err := d.API.QuotaGetEntry(quotaTarget)
+	if err != nil {
+		return 0, err
+	}
+
+	quotaSize := uint64(convertDiskLimitToBytes(quota.DiskLimit()))
+	if quotaSize == 0 {
+		return 0, fmt.Errorf("unable to determine quota size")
+	}
+	return quotaSize, nil
 }
 
 // enableQuotas disables quotas on a Flexvol, optionally waiting for the operation to finish.
@@ -891,7 +890,7 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees() {
 
 	log.Debug("Housekeeping, checking for deleted qtrees.")
 
-	// Get all deleted qtrees in all FlexVols managed by this driver
+	// Get all deleted qtrees in all Flexvols managed by this driver
 	prefix := deletedQtreeNamePrefix + *d.Config.StoragePrefix
 	listResponse, err := d.API.QtreeList(prefix, d.FlexvolNamePrefix())
 	if err = api.GetError(listResponse, err); err != nil {
@@ -1040,7 +1039,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeE
 	}
 
 	quotaTarget := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
-	quota, err := d.API.QuotaEntryGet(quotaTarget)
+	quota, err := d.API.QuotaGetEntry(quotaTarget)
 	if err != nil {
 		return nil, err
 	}
@@ -1145,12 +1144,7 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 	internalName := qtreeAttrs.Qtree()
 	name := internalName[len(*d.Config.StoragePrefix):]
 
-	size, err := strconv.ParseInt(quotaAttrs.DiskLimit(), 10, 64)
-	if err != nil {
-		size = 0
-	} else {
-		size *= 1024 // convert KB to bytes
-	}
+	size := convertDiskLimitToBytes(quotaAttrs.DiskLimit())
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
@@ -1173,6 +1167,16 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 		Config: volumeConfig,
 		Pool:   volumeIDAttrs.ContainingAggregateName(),
 	}
+}
+
+func convertDiskLimitToBytes(diskLimit string) int64 {
+	size, err := strconv.ParseInt(diskLimit, 10, 64)
+	if err != nil {
+		size = 0
+	} else {
+		size *= 1024 // convert KB to bytes
+	}
+	return size
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver
@@ -1295,4 +1299,91 @@ func NewResizeTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
 	}
 
 	return task
+}
+
+// Resize expands the Flexvol containing the Qtree and updates the Qtree quota.
+func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "Resize",
+			"Type":      "NASQtreeStorageDriver",
+			"name":      name,
+			"sizeBytes": sizeBytes,
+		}
+		log.WithFields(fields).Debug(">>>> Resize")
+		defer log.WithFields(fields).Debug("<<<< Resize")
+	}
+
+	// Ensure any Flexvol won't be pruned before resize is completed.
+	utils.Lock("resize", d.sharedLockID)
+	defer utils.Unlock("resize", d.sharedLockID)
+
+	// Generic user-facing message
+	resizeError := errors.New("storage driver failed to resize the volume")
+
+	// Check that volume exists
+	exists, flexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
+	if err != nil {
+		log.WithField("error", err).Errorf("Error checking for existing volume.")
+		return resizeError
+	}
+	if !exists {
+		log.WithFields(log.Fields{"qtree": name, "flexvol": flexvol}).Debug("Qtree does not exist.")
+		return fmt.Errorf("volume %s does not exist", name)
+	}
+
+	// Calculate the delta size needed to resize the Qtree quota
+	quotaSize, err := d.getQuotaDiskLimitSize(name, flexvol)
+	if err != nil {
+		log.WithField("error", err).Errorf("Failed to determine quota size.")
+		return resizeError
+	}
+
+	if sizeBytes == quotaSize {
+		log.Infof("Requested size and existing volume size are the same for volume %s.", name)
+		return nil
+	}
+
+	if sizeBytes < quotaSize {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, quotaSize)
+	}
+	deltaQuotaSize := sizeBytes - quotaSize
+
+	err = d.resizeFlexvol(flexvol, deltaQuotaSize)
+	if err != nil {
+		log.WithField("error", err).Errorf("Failed to resize flexvol.")
+		return resizeError
+	}
+
+	// Update the quota
+	err = d.setQuotaForQtree(name, flexvol, sizeBytes)
+	if err != nil {
+		log.WithField("error", err).Errorf("Qtree quota update failed.")
+		return resizeError
+	}
+
+	return nil
+}
+
+// resizeFlexvol grows or shrinks the Flexvol to an optimal size if possible. Otherwise
+// the Flexvol is expanded by the value of sizeBytes
+func (d *NASQtreeStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64) error {
+	flexvolSizeBytes, err := d.getOptimalSizeForFlexvol(flexvol, sizeBytes)
+	if err != nil {
+		log.Warnf("Could not calculate optimal Flexvol size. %v", err)
+		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
+		size := strconv.FormatUint(sizeBytes, 10)
+		resizeResponse, err := d.API.SetVolumeSize(flexvol, "+"+size)
+		if err = api.GetError(resizeResponse.Result, err); err != nil {
+			return fmt.Errorf("flexvol resize failed: %v", err)
+		}
+	} else {
+		// Got optimal size, so just set the Flexvol to that value
+		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
+		resizeResponse, err := d.API.SetVolumeSize(flexvol, flexvolSizeStr)
+		if err = api.GetError(resizeResponse.Result, err); err != nil {
+			return fmt.Errorf("flexvol resize failed: %v", err)
+		}
+	}
+	return nil
 }
