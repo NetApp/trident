@@ -219,6 +219,9 @@ func GetError(zapiResult interface{}, errorIn error) (errorOut error) {
 /////////////////////////////////////////////////////////////////////////////
 // API feature operations BEGIN
 
+// API functions are named in a NounVerb pattern. This reflects how the azgo
+// functions are also named. (i.e. VolumeGet instead of GetVolume)
+
 type feature string
 
 // Define new version-specific feature constants here
@@ -689,7 +692,7 @@ func (d Client) waitForAsyncResponse(zapiResult interface{}, maxWaitTime time.Du
 func (d *Client) checkForJobCompletion(jobId int, maxWaitTime time.Duration) error {
 
 	checkJobFinished := func() error {
-		jobResponse, err := d.GetJobIterStatus(jobId)
+		jobResponse, err := d.JobGetIterStatus(jobId)
 		if err != nil {
 			return fmt.Errorf("error occurred getting job status for job ID %d: %v", jobId, jobResponse.Result)
 		}
@@ -741,8 +744,8 @@ func asyncResponseBackoff(maxWaitTime time.Duration) *backoff.ExponentialBackOff
 	return inProgressBackoff
 }
 
-// GetJobStatus returns the current job status for Async requests.
-func (d Client) GetJobIterStatus(jobId int) (response azgo.JobGetIterResponse, err error) {
+// JobGetIterStatus returns the current job status for Async requests.
+func (d Client) JobGetIterStatus(jobId int) (response azgo.JobGetIterResponse, err error) {
 
 	queryAttr := azgo.NewJobInfoType().SetJobId(jobId)
 
@@ -854,8 +857,8 @@ func (d Client) VolumeSize(name string) (int, error) {
 	return volSpaceAttrs.Size(), nil
 }
 
-// SetVolumeSize sets the size of the specified volume
-func (d Client) SetVolumeSize(name, newSize string) (response azgo.VolumeSizeResponse, err error) {
+// VolumeSetSize sets the size of the specified volume
+func (d Client) VolumeSetSize(name, newSize string) (response azgo.VolumeSizeResponse, err error) {
 	response, err = azgo.NewVolumeSizeRequest().
 		SetVolume(name).
 		SetNewSize(newSize).
@@ -1482,10 +1485,10 @@ func (d Client) VserverGetRequest() (response azgo.VserverGetResponse, err error
 	return
 }
 
-// GetVserverAggregateNames returns an array of names of the aggregates assigned to the configured vserver.
+// VserverGetAggregateNames returns an array of names of the aggregates assigned to the configured vserver.
 // The vserver-get-iter API works with either cluster or vserver scope, so the ZAPI runner may or may not
 // be configured for tunneling; using the query parameter ensures we address only the configured vserver.
-func (d Client) GetVserverAggregateNames() ([]string, error) {
+func (d Client) VserverGetAggregateNames() ([]string, error) {
 
 	// Get just the SVM of interest
 	query := azgo.NewVserverInfoType()
@@ -1639,7 +1642,7 @@ func (d Client) SystemGetOntapiVersion() (string, error) {
 	return d.zr.OntapiVersion, nil
 }
 
-func (d Client) ListNodeSerialNumbers() ([]string, error) {
+func (d Client) NodeListSerialNumbers() ([]string, error) {
 
 	serialNumbers := make([]string, 0, 0)
 	zr := d.GetNontunneledZapiRunner()

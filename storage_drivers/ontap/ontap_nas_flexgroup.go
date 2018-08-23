@@ -150,7 +150,7 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 	size := int(sizeBytes)
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.GetVserverAggregateNames()
+	vserverAggrs, err := d.API.VserverGetAggregateNames()
 	if err != nil {
 		return err
 	}
@@ -370,7 +370,7 @@ func (d *NASFlexGroupStorageDriver) getStorageBackendSpecsCommon(
 	}()
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.GetVserverAggregateNames()
+	vserverAggrs, err := d.API.VserverGetAggregateNames()
 	if err != nil {
 		return
 	}

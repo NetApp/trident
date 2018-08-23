@@ -171,7 +171,7 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Clien
 	log.WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
 	// Log cluster node serial numbers if we can get them
-	config.SerialNumbers, err = client.ListNodeSerialNumbers()
+	config.SerialNumbers, err = client.NodeListSerialNumbers()
 	if err != nil {
 		log.Warnf("Could not determine controller serial numbers. %v", err)
 	} else {
@@ -770,7 +770,7 @@ func getStorageBackendSpecsCommon(
 	}()
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := client.GetVserverAggregateNames()
+	vserverAggrs, err := client.VserverGetAggregateNames()
 	if err != nil {
 		return
 	}

@@ -1373,14 +1373,14 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64) 
 		log.Warnf("Could not calculate optimal Flexvol size. %v", err)
 		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
 		size := strconv.FormatUint(sizeBytes, 10)
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, "+"+size)
+		resizeResponse, err := d.API.VolumeSetSize(flexvol, "+"+size)
 		if err = api.GetError(resizeResponse.Result, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	} else {
 		// Got optimal size, so just set the Flexvol to that value
 		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, flexvolSizeStr)
+		resizeResponse, err := d.API.VolumeSetSize(flexvol, flexvolSizeStr)
 		if err = api.GetError(resizeResponse.Result, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
