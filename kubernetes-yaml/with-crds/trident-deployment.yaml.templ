@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: trident
+  labels:
+    app: trident.netapp.io
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: trident.netapp.io
+    spec:
+      serviceAccount: trident
+      containers:
+      - name: trident-main
+        image: __TRIDENT_IMAGE__
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - -k8s_persistence
+        - -k8s_pod
+        #- -k8s_api_server
+        #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
+        #- -debug
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - 127.0.0.1:8000
+            - get
+            - backend
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+      

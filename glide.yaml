@@ -84,3 +84,21 @@ import:
   version: 2c60d1f8615f58b5c0b94075edace75592ddda74
 - package: github.com/go-logfmt/logfmt
   version: v0.3.0
+- package: k8s.io/code-generator
+  version: 9de8e796a74d16d2a285165727d04c185ebca6dc
+  subpackages:
+  - cmd/deepcopy-gen
+  - cmd/client-gen
+- package: k8s.io/gengo
+  version: 4242d8e6c5dba56827bb7bcf14ad11cda38f3991
+  subpackages:
+  - args
+  - examples/defaulter-gen/generators
+  - examples/deepcopy-gen/generators
+  - namer
+  - generator
+  - types
+- package: golang.org/x/tools
+  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
+  subpackages:
+  - imports

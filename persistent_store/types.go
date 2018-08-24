@@ -16,6 +16,7 @@ const (
 	EtcdV2Store      StoreType = "etcdv2"
 	EtcdV3Store      StoreType = "etcdv3"
 	PassthroughStore StoreType = "passthrough"
+	KubernetesStore  StoreType = "kubetnetes"
 )
 
 type PersistentStateVersion struct {

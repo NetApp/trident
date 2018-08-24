@@ -61,6 +61,8 @@ var (
 		"etcdV3 client private key")
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
+	useKubernetes = flag.Bool("k8s_persistence", false, "Persist data "+
+		"in Kubernetes CRD objects.")
 	usePassthrough = flag.Bool("passthrough", false, "Uses the storage backends "+
 		"as the source of truth.  No data is stored anywhere else.")
 
@@ -103,7 +105,7 @@ func processCmdLineArgs() {
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""
-	enableKubernetes = (*k8sPod || *k8sAPIServer != "") && !enableCSI
+	enableKubernetes = (*k8sPod || *k8sAPIServer != "" || *k8sConfigPath != "") && !enableCSI
 	enableDocker = *configPath != "" && !enableCSI
 
 	frontendCount := 0
@@ -136,6 +138,9 @@ func processCmdLineArgs() {
 		storeCount++
 	}
 	if *usePassthrough {
+		storeCount++
+	}
+	if *useKubernetes {
 		storeCount++
 	}
 	// Infer persistent store type if not explicitly specified
@@ -181,6 +186,16 @@ func processCmdLineArgs() {
 		if err != nil {
 			log.Fatalf("Unable to create the passthrough store client. %v", err)
 		}
+	} else if *useKubernetes {
+		if *k8sAPIServer != "" || *k8sConfigPath != "" {
+			storeClient, err = persistentstore.NewKubernetesClient(*k8sAPIServer, *k8sConfigPath)
+		} else {
+			storeClient, err = persistentstore.NewKubernetesClientInCluster()
+		}
+
+		if err != nil {
+			log.Fatalf("Unable to create the Kubernetes store client. %v", err)
+		}
 	}
 
 	config.UsingPassthroughStore = storeClient.GetType() == persistentstore.PassthroughStore
@@ -222,7 +237,7 @@ func main() {
 		var kubernetesFrontend frontend.Plugin
 		config.CurrentDriverContext = config.ContextKubernetes
 
-		if *k8sAPIServer != "" {
+		if *k8sAPIServer != "" || *k8sConfigPath != "" {
 			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
 		} else {
 			kubernetesFrontend, err = kubernetes.NewPluginInCluster(orchestrator)

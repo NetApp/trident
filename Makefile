@@ -7,6 +7,7 @@ GOGC ?= ""
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
+TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/kubernetes
 
 ## build flags variables
 GITHASH ?= `git rev-parse HEAD || echo unknown`
@@ -38,7 +39,7 @@ DR=docker run --rm \
 
 GO=${DR} go
 
-.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
+.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet kubernetes_codegen
 
 default: dist
 
@@ -80,6 +81,10 @@ get:
 	@go get github.com/Masterminds/glide
 	@go install github.com/Masterminds/glide
 	@${GOPATH}/bin/glide install --force --strip-vendor
+
+kubernetes_codegen: GOOS=linux # Force linux because we run in docker
+kubernetes_codegen:
+	@${DR} ./vendor/k8s.io/code-generator/generate-groups.sh deepcopy,client $(TRIDENT_KUBERNETES_PKG)/client $(TRIDENT_KUBERNETES_PKG)/apis "netapp:v1" -h ./hack/boilerplate.go.txt
 
 trident_retag:
 	-docker volume rm $(TRIDENT_VOLUME) || true

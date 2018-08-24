@@ -1,5 +1,5 @@
-hash: 95d61838f0e0e33e120343a872bf9b2ae514213a1b32d60d3fc7db2ab1295f79
-updated: 2018-06-20T14:25:48.279040771-04:00
+hash: 0f0199d66fda090ed93438079bf629fffc920c3d55d78a590c728d6835a3348e
+updated: 2018-08-23T18:07:10.781541777+01:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
@@ -172,6 +172,10 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
+- name: golang.org/x/tools
+  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
+  subpackages:
+  - imports
 - name: google.golang.org/genproto
   version: 09f6ed296fc66555a25fe4ce95173148778dfa85
   subpackages:
@@ -374,6 +378,20 @@ imports:
   - util/homedir
   - util/integer
   - util/retry
+- name: k8s.io/code-generator
+  version: 9de8e796a74d16d2a285165727d04c185ebca6dc
+  subpackages:
+  - cmd/client-gen
+  - cmd/deepcopy-gen
+- name: k8s.io/gengo
+  version: 4242d8e6c5dba56827bb7bcf14ad11cda38f3991
+  subpackages:
+  - args
+  - examples/deepcopy-gen/generators
+  - examples/defaulter-gen/generators
+  - generator
+  - namer
+  - types
 - name: k8s.io/kube-openapi
   version: 50ae88d24ede7b8bad68e23c805b5d3da5c8abaf
   subpackages:
