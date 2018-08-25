@@ -961,11 +961,11 @@ func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.Backend)
 	} else {
 		backend.Name = d.Config.BackendName
 	}
-	poolAttrs := d.GetStoragePoolAttributes()
+	poolAttrs := d.getStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *NASQtreeStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),

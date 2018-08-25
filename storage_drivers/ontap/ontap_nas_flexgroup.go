@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"runtime/debug"
 	"strconv"
 
 	"github.com/RoaringBitmap/roaring"
@@ -347,36 +346,23 @@ func (d *NASFlexGroupStorageDriver) Get(name string) error {
 func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		backend.Name = "ontapnas_" + d.Config.DataLIF
+		backend.Name = "ontapnasfg_" + d.Config.DataLIF
 	} else {
 		backend.Name = d.Config.BackendName
 	}
-	poolAttrs := d.GetStoragePoolAttributes()
-	return d.getStorageBackendSpecsCommon(backend, poolAttrs)
+	poolAttrs := d.getStoragePoolAttributes()
+	return d.getStorageBackendSpecs(backend, poolAttrs)
 }
 
 // getStorageBackendSpecsCommon discovers the aggregates assigned to the configured SVM. The aggregates assigned to
 // a SVM represent a single StoragePool for a FlexGroup. The default attributes for a FlexGroup are assigned to the pool.
-func (d *NASFlexGroupStorageDriver) getStorageBackendSpecsCommon(
+func (d *NASFlexGroupStorageDriver) getStorageBackendSpecs(
 	backend *storage.Backend, poolAttributes map[string]sa.Offer) (err error) {
 
 	config := d.GetConfig()
-
-	// Handle panics from the API layer
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("unable to inspect ONTAP backend: %v\nStack trace:\n%s", r, debug.Stack())
-		}
-	}()
-
-	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.VserverGetAggregateNames()
+	vserverAggrs, err := d.vserverAggregates(config.SVM)
 	if err != nil {
-		return
-	}
-	if len(vserverAggrs) == 0 {
-		err = fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
-		return
+		return err
 	}
 
 	log.WithFields(log.Fields{
@@ -385,15 +371,7 @@ func (d *NASFlexGroupStorageDriver) getStorageBackendSpecsCommon(
 	}).Debug("Read aggregates assigned to SVM.")
 
 	// For a FlexGroup all aggregates that belong to the SVM represent the storage pool.
-	storagePools := make(map[string]*storage.Pool)
-
 	pool := storage.NewStoragePool(backend, config.SVM)
-
-	pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-	pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
-	pool.Attributes[sa.Encryption] = sa.NewBoolOffer(true)
-
-	storagePools[backend.Name] = pool
 	for attrName, offer := range poolAttributes {
 		pool.Attributes[attrName] = offer
 	}
@@ -402,12 +380,28 @@ func (d *NASFlexGroupStorageDriver) getStorageBackendSpecsCommon(
 	return
 }
 
-func (d *NASFlexGroupStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASFlexGroupStorageDriver) vserverAggregates(svmName string) ([]string, error) {
+	var err error
+	// Get the aggregates assigned to the SVM.  There must be at least one!
+	vserverAggrs, err := d.API.VserverGetAggregateNames()
+	if err != nil {
+		return nil, err
+	}
+	if len(vserverAggrs) == 0 {
+		err = fmt.Errorf("SVM %s has no assigned aggregates", svmName)
+		return nil, err
+	}
+
+	return vserverAggrs, nil
+}
+
+func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType: sa.NewStringOffer(d.Name()),
 		sa.Snapshots:   sa.NewBoolOffer(true),
 		sa.Encryption:  sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
+		sa.Clones:      sa.NewBoolOffer(false),
 	}
 }
 

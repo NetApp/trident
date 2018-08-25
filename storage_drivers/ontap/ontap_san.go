@@ -555,11 +555,11 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	} else {
 		backend.Name = d.Config.BackendName
 	}
-	poolAttrs := d.GetStoragePoolAttributes()
+	poolAttrs := d.getStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *SANStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *SANStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
