@@ -281,6 +281,11 @@ type UCPRole struct {
 	} `json:"operations"`
 }
 
+// UCPInfo holds the results from calls to "/info"
+type UCPInfo struct {
+	ServerVersion string `json:"ServerVersion"`
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // END: UCP objects
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -652,8 +657,14 @@ func (o *UCP) DeleteRoleByName(ucpRoleName string) (bool, error) {
 
 // CreateTridentRole creates Trident's UCP role
 func (o *UCP) CreateTridentRole() (bool, error) {
+
+	ucpInfo, infoErr := o.GetInfo()
+	if infoErr != nil {
+		return false, infoErr
+	}
+
 	ucpTridentRoleName := defaultTridentRole
-	jsonString := GetUCPRoleCreateJSON(ucpTridentRoleName)
+	jsonString := GetUCPRoleCreateJSON(ucpInfo.ServerVersion, ucpTridentRoleName)
 
 	// verify what we have can be encoded into JSON
 	ucpRole := &UCPRole{}
@@ -724,6 +735,26 @@ func (o *UCP) RemoveTridentRoleFromServiceAccount(TridentPodNamespace string) (b
 	}
 
 	return true, nil
+}
+
+// GetInfo returns information about the UCP system
+func (o *UCP) GetInfo() (*UCPInfo, error) {
+	body, err := o.client.Get(fmt.Sprintf("/info"))
+	if err != nil {
+		return nil, err
+	}
+
+	ucpInfo := &UCPInfo{}
+	unmarshalError := json.Unmarshal(body, ucpInfo)
+	if unmarshalError != nil {
+		return nil, unmarshalError
+	}
+
+	log.WithFields(log.Fields{
+		"ServerVersion": ucpInfo.ServerVersion,
+	}).Debug("UCP information")
+
+	return ucpInfo, nil
 }
 
 // NewClient factory method to create a new client object for use against a UCP server
