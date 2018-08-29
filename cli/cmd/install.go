@@ -114,7 +114,7 @@ func init() {
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (alpha, not for production clusters).")
-	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
+	installCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a pod in the cluster.")
 	installCmd.Flags().MarkHidden("in-cluster")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", "", "The name of the PVC used by Trident.")
