@@ -230,8 +230,14 @@ func discoverInstallationEnvironment() error {
 	useKubernetesRBAC = true
 	if ucpBearerToken != "" || ucpHost != "" {
 		useKubernetesRBAC = false
+
 		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
 			return err
+		}
+
+		if inCluster {
+			log.Info("In-cluster installation is not supported with Docker EE, running outside cluster.")
+			inCluster = false
 		}
 	}
 
@@ -1634,6 +1640,19 @@ func installTridentInCluster() (returnError error) {
 		commandArgs = append(commandArgs, "--trident-image")
 		commandArgs = append(commandArgs, tridentImage)
 	}
+	if etcdImage != "" {
+		commandArgs = append(commandArgs, "--etcd-image")
+		commandArgs = append(commandArgs, etcdImage)
+	}
+	if ucpBearerToken != "" {
+		commandArgs = append(commandArgs, "--ucp-bearer-token")
+		commandArgs = append(commandArgs, ucpBearerToken)
+	}
+	if ucpHost != "" {
+		commandArgs = append(commandArgs, "--ucp-host")
+		commandArgs = append(commandArgs, ucpHost)
+	}
+	commandArgs = append(commandArgs, "--in-cluster=false")
 
 	// Create the install pod
 	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerPodYAML(

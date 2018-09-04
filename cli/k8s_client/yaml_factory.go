@@ -851,7 +851,7 @@ metadata:
   name: trident-installer
 rules:
 - apiGroups: [""]
-  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
   verbs: ["*"]
 - apiGroups: ["extensions"]
   resources: ["deployments", "daemonsets"]
@@ -877,7 +877,7 @@ metadata:
   name: trident-installer
 rules:
 - apiGroups: [""]
-  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
   verbs: ["*"]
 - apiGroups: ["extensions"]
   resources: ["deployments", "daemonsets"]

@@ -26,7 +26,7 @@ func init() {
 	uninstallCmd.Flags().BoolVar(&csi, "csi", false, "Uninstall CSI Trident (alpha, not for production clusters).")
 	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
 	uninstallCmd.Flags().MarkHidden("trident-image")
-	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a job in the cluster.")
+	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a job in the cluster.")
 	uninstallCmd.Flags().MarkHidden("in-cluster")
 
 	uninstallCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token (for Docker UCP only).")
@@ -90,8 +90,14 @@ func discoverUninstallationEnvironment() error {
 	useKubernetesRBAC = true
 	if ucpBearerToken != "" || ucpHost != "" {
 		useKubernetesRBAC = false
+
 		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
 			return err
+		}
+
+		if inCluster {
+			log.Info("In-cluster uninstallation is not supported with Docker EE, running outside cluster.")
+			inCluster = false
 		}
 	}
 
@@ -449,6 +455,19 @@ func uninstallTridentInCluster() (returnError error) {
 	if csi {
 		commandArgs = append(commandArgs, "--csi")
 	}
+	if tridentImage != "" {
+		commandArgs = append(commandArgs, "--trident-image")
+		commandArgs = append(commandArgs, tridentImage)
+	}
+	if ucpBearerToken != "" {
+		commandArgs = append(commandArgs, "--ucp-bearer-token")
+		commandArgs = append(commandArgs, ucpBearerToken)
+	}
+	if ucpHost != "" {
+		commandArgs = append(commandArgs, "--ucp-host")
+		commandArgs = append(commandArgs, ucpHost)
+	}
+	commandArgs = append(commandArgs, "--in-cluster=false")
 
 	// Create the uninstall pod
 	returnError = client.CreateObjectByYAML(k8sclient.GetUninstallerPodYAML(
