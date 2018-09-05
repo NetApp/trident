@@ -45,6 +45,7 @@ func (d *SANStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *SANStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 

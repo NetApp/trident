@@ -39,7 +39,6 @@ type SANStorageDriver struct {
 	AccessGroups     []int64
 	LegacyNamePrefix string
 	InitiatorIFace   string
-	Telemetry        *Telemetry
 }
 
 type StorageDriverConfigExternal struct {
@@ -84,6 +83,13 @@ func parseType(vTypes []api.VolType, typeName string) (qos api.QoS, err error) {
 		err = errors.New("specified type not found")
 	}
 	return qos, err
+}
+
+func (d SANStorageDriver) getTelemetry() *Telemetry {
+	return &Telemetry{
+		Telemetry: tridentconfig.OrchestratorTelemetry,
+		Plugin:    d.Name(),
+	}
 }
 
 // Name is for returning the name of this driver
@@ -235,11 +241,6 @@ func (d *SANStorageDriver) Initialize(
 
 	// log cluster node serial numbers asynchronously since the API can take a long time
 	go d.getNodeSerialNumbers(config.CommonStorageDriverConfig)
-
-	d.Telemetry = &Telemetry{
-		Telemetry: tridentconfig.OrchestratorTelemetry,
-		Plugin:    d.Name(),
-	}
 
 	d.initialized = true
 	return nil
@@ -516,7 +517,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 
 	var req api.CreateVolumeRequest
 	var qos api.QoS
-	telemetry, _ := json.Marshal(d.Telemetry)
+	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
 		"trident":     string(telemetry),
 		"docker-name": name,
@@ -643,7 +644,7 @@ func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, op
 	}
 
 	var req api.CloneVolumeRequest
-	telemetry, _ := json.Marshal(d.Telemetry)
+	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
 		"trident":     string(telemetry),
 		"docker-name": name,
