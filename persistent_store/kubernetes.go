@@ -5,6 +5,7 @@ package persistentstore
 import (
 	"fmt"
 	"io/ioutil"
+	"sync"
 
 	cli_k8s_client "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
@@ -24,6 +25,7 @@ var _ Client = &KubernetesClient{}
 
 // KubernetesClient stores persistent state in CRD objects in Kubernetes
 type KubernetesClient struct {
+	mu      sync.Mutex
 	client  versioned.Interface
 	version *PersistentStateVersion
 }
@@ -97,6 +99,9 @@ func (k *KubernetesClient) Stop() error {
 }
 
 func (k *KubernetesClient) AddBackend(b *storage.Backend) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	backend, err := v1.NewBackend(b.ConstructPersistent())
 	if err != nil {
 		return err
@@ -111,6 +116,9 @@ func (k *KubernetesClient) AddBackend(b *storage.Backend) error {
 }
 
 func (k *KubernetesClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	backend, err := k.client.TridentV1().Backends().Get(v1.NameFix(backendName), metav1.GetOptions{})
 
 	if err != nil {
@@ -126,6 +134,9 @@ func (k *KubernetesClient) GetBackend(backendName string) (*storage.BackendPersi
 }
 
 func (k *KubernetesClient) UpdateBackend(update *storage.Backend) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	backend, err := k.client.TridentV1().Backends().Get(v1.NameFix(update.Name), metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -145,6 +156,9 @@ func (k *KubernetesClient) UpdateBackend(update *storage.Backend) error {
 }
 
 func (k *KubernetesClient) DeleteBackend(b *storage.Backend) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	err := k.client.TridentV1().Backends().Delete(v1.NameFix(b.Name), nil)
 	if err != nil {
 		return err
@@ -154,6 +168,9 @@ func (k *KubernetesClient) DeleteBackend(b *storage.Backend) error {
 }
 
 func (k *KubernetesClient) GetBackends() ([]*storage.BackendPersistent, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	results := []*storage.BackendPersistent{}
 
 	list, err := k.client.TridentV1().Backends().List(metav1.ListOptions{})
@@ -174,10 +191,16 @@ func (k *KubernetesClient) GetBackends() ([]*storage.BackendPersistent, error) {
 }
 
 func (k *KubernetesClient) DeleteBackends() error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	return k.client.TridentV1().Backends().DeleteCollection(nil, metav1.ListOptions{})
 }
 
 func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	var err error
 
 	err = k.AddBackend(newBackend)
@@ -212,6 +235,9 @@ func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBacken
 }
 
 func (k *KubernetesClient) AddVolume(vol *storage.Volume) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	volume, err := v1.NewVolume(vol.ConstructExternal())
 	if err != nil {
 		return err
@@ -226,6 +252,9 @@ func (k *KubernetesClient) AddVolume(vol *storage.Volume) error {
 }
 
 func (k *KubernetesClient) GetVolume(volName string) (*storage.VolumeExternal, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	volume, err := k.client.TridentV1().Volumes().Get(v1.NameFix(volName), metav1.GetOptions{})
 
 	if err != nil {
@@ -241,6 +270,9 @@ func (k *KubernetesClient) GetVolume(volName string) (*storage.VolumeExternal, e
 }
 
 func (k *KubernetesClient) UpdateVolume(update *storage.Volume) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	volume, err := k.client.TridentV1().Volumes().Get(v1.NameFix(update.Config.Name), metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -260,10 +292,16 @@ func (k *KubernetesClient) UpdateVolume(update *storage.Volume) error {
 }
 
 func (k *KubernetesClient) DeleteVolume(vol *storage.Volume) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	return k.client.TridentV1().Volumes().Delete(v1.NameFix(vol.Config.Name), nil)
 }
 
 func (k *KubernetesClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	err := k.client.TridentV1().Volumes().Delete(v1.NameFix(vol.Config.Name), nil)
 
 	if errors.IsNotFound(err) {
@@ -274,6 +312,9 @@ func (k *KubernetesClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error
 }
 
 func (k *KubernetesClient) GetVolumes() ([]*storage.VolumeExternal, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	results := []*storage.VolumeExternal{}
 
 	list, err := k.client.TridentV1().Volumes().List(metav1.ListOptions{})
@@ -294,10 +335,16 @@ func (k *KubernetesClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 }
 
 func (k *KubernetesClient) DeleteVolumes() error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	return k.client.TridentV1().Volumes().DeleteCollection(nil, metav1.ListOptions{})
 }
 
 func (k *KubernetesClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	volume, err := v1.NewVolumeTransaction(string(volTxn.Op), volTxn.Config)
 	if err != nil {
 		return err
@@ -312,6 +359,9 @@ func (k *KubernetesClient) AddVolumeTransaction(volTxn *VolumeTransaction) error
 }
 
 func (k *KubernetesClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	results := []*VolumeTransaction{}
 
 	list, err := k.client.TridentV1().VolumeTransactions().List(metav1.ListOptions{})
@@ -335,6 +385,9 @@ func (k *KubernetesClient) GetVolumeTransactions() ([]*VolumeTransaction, error)
 }
 
 func (k *KubernetesClient) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	volume, err := k.client.TridentV1().VolumeTransactions().Get(v1.NameFix(volTxn.Config.Name), metav1.GetOptions{})
 
 	if errors.IsNotFound(err) {
@@ -358,10 +411,16 @@ func (k *KubernetesClient) GetExistingVolumeTransaction(volTxn *VolumeTransactio
 }
 
 func (k *KubernetesClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	return k.client.TridentV1().VolumeTransactions().Delete(v1.NameFix(volTxn.Config.Name), nil)
 }
 
 func (k *KubernetesClient) AddStorageClass(sc *storageclass.StorageClass) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	storageclass, err := v1.NewStorageClass(sc.ConstructPersistent())
 	if err != nil {
 		return err
@@ -376,6 +435,9 @@ func (k *KubernetesClient) AddStorageClass(sc *storageclass.StorageClass) error 
 }
 
 func (k *KubernetesClient) GetStorageClass(scName string) (*storageclass.Persistent, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	storageclass, err := k.client.TridentV1().StorageClasses().Get(v1.NameFix(scName), metav1.GetOptions{})
 
 	if err != nil {
@@ -391,6 +453,9 @@ func (k *KubernetesClient) GetStorageClass(scName string) (*storageclass.Persist
 }
 
 func (k *KubernetesClient) GetStorageClasses() ([]*storageclass.Persistent, error) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	results := []*storageclass.Persistent{}
 
 	list, err := k.client.TridentV1().StorageClasses().List(metav1.ListOptions{})
@@ -411,5 +476,8 @@ func (k *KubernetesClient) GetStorageClasses() ([]*storageclass.Persistent, erro
 }
 
 func (k *KubernetesClient) DeleteStorageClass(sc *storageclass.StorageClass) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+
 	return k.client.TridentV1().StorageClasses().Delete(v1.NameFix(sc.GetName()), nil)
 }
