@@ -524,7 +524,7 @@ func probeForVolume(name string, client *api.Client) error {
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
-		log.WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime)
+		log.WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
 		return fmt.Errorf("volume %v does not exist", name)
 	} else {
 		log.WithField("volume", name).Debug("Volume found.")

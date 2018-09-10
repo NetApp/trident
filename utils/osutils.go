@@ -1006,7 +1006,7 @@ func getISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 
 			devicePath := sysPath + hostName + "/device/"
 			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
-				log.WithField("error", err).Errorf("Could not read %f", devicePath)
+				log.WithField("error", err).Errorf("Could not read %s", devicePath)
 				return hostSessionMap
 			} else {
 				for _, deviceDir := range deviceDirs {

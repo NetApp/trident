@@ -309,7 +309,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 				log.WithFields(log.Fields{
 					"volume": v.Config.Name,
 					"error":  err,
-				}).Errorf("Unable to finalize deletion of the volume! ",
+				}).Errorf("Unable to finalize deletion of the volume! "+
 					"Repeat deleting the volume using %s.", config.OrchestratorClientName)
 			}
 		} else {
@@ -1099,7 +1099,7 @@ func (o *TridentOrchestrator) DeleteVolume(volumeName string) (err error) {
 				"volume":    volume,
 				"error":     errTxn,
 				"operation": volTxn.Op,
-			}).Warnf("Unable to delete volume transaction. ",
+			}).Warnf("Unable to delete volume transaction. "+
 				"Repeat deletion using %s or restart %v.",
 				config.OrchestratorClientName, config.OrchestratorName)
 		}
