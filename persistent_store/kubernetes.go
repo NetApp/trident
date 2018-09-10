@@ -194,7 +194,19 @@ func (k *KubernetesClient) DeleteBackends() error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 
-	return k.client.TridentV1().Backends().DeleteCollection(nil, metav1.ListOptions{})
+	list, err := k.client.TridentV1().Backends().List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, item := range list.Items {
+		err := k.client.TridentV1().Backends().Delete(item.ObjectMeta.Name, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error {
@@ -203,7 +215,12 @@ func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBacken
 
 	var err error
 
-	err = k.AddBackend(newBackend)
+	backend, err := v1.NewBackend(newBackend.ConstructPersistent())
+	if err != nil {
+		return err
+	}
+
+	_, err = k.client.TridentV1().Backends().Create(backend)
 	if err != nil {
 		return err
 	}
@@ -226,7 +243,7 @@ func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBacken
 		}
 	}
 
-	err = k.DeleteBackend(origBackend)
+	err = k.client.TridentV1().Backends().Delete(v1.NameFix(origBackend.Name), nil)
 	if err != nil {
 		return err
 	}
@@ -338,7 +355,19 @@ func (k *KubernetesClient) DeleteVolumes() error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 
-	return k.client.TridentV1().Volumes().DeleteCollection(nil, metav1.ListOptions{})
+	list, err := k.client.TridentV1().Volumes().List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, item := range list.Items {
+		err := k.client.TridentV1().Volumes().Delete(item.ObjectMeta.Name, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (k *KubernetesClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
@@ -351,11 +380,28 @@ func (k *KubernetesClient) AddVolumeTransaction(volTxn *VolumeTransaction) error
 	}
 
 	_, err = k.client.TridentV1().VolumeTransactions().Create(volume)
-	if err != nil {
-		return err
+
+	// Update if already exists
+	if errors.IsAlreadyExists(err) {
+		existing, err := k.client.TridentV1().VolumeTransactions().Get(volume.ObjectMeta.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		err = existing.Apply(string(volTxn.Op), volTxn.Config)
+		if err != nil {
+			return err
+		}
+
+		_, err = k.client.TridentV1().VolumeTransactions().Update(existing)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
-	return nil
+	return err
 }
 
 func (k *KubernetesClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
