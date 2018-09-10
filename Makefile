@@ -44,7 +44,7 @@ GO=${DR} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 18.07.0
+TRIDENT_VERSION ?= 18.10.0
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom

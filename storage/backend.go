@@ -110,9 +110,11 @@ func (b *Backend) AddVolume(
 	}
 
 	log.WithFields(log.Fields{
-		"storagePool": storagePool.Name,
-		"size":        volSize,
-		"volConfig.StorageClass": volConfig.StorageClass,
+		"backend":       b.Name,
+		"volume":        volConfig.InternalName,
+		"storage_pool":  storagePool.Name,
+		"size":          volSize,
+		"storage_class": volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
 
 	// CreatePrepare should perform the following tasks:
@@ -156,9 +158,10 @@ func (b *Backend) AddVolume(
 		return vol, err
 	} else {
 		log.WithFields(log.Fields{
-			"storagePoolName":       storagePool.Name,
-			"requestedBytes":        volSize,
-			"requestedStorageClass": volConfig.StorageClass,
+			"backend":       b.Name,
+			"storage_pool":  storagePool.Name,
+			"size":          volSize,
+			"storage_class": volConfig.StorageClass,
 		}).Debug("Storage pool does not match volume request.")
 	}
 	return nil, nil
@@ -167,10 +170,11 @@ func (b *Backend) AddVolume(
 func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
-		"storageClass":   volConfig.StorageClass,
-		"sourceVolume":   volConfig.CloneSourceVolume,
-		"sourceSnapshot": volConfig.CloneSourceSnapshot,
-		"cloneVolume":    volConfig.Name,
+		"backend":         b.Name,
+		"storage_class":   volConfig.StorageClass,
+		"source_volume":   volConfig.CloneSourceVolume,
+		"source_snapshot": volConfig.CloneSourceSnapshot,
+		"clone_volume":    volConfig.Name,
 	}).Debug("Attempting volume clone.")
 
 	// CreatePrepare should perform the following tasks:
@@ -211,10 +215,10 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	// Run the clone check using an exponential backoff
 	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
-		log.WithField("cloneVolume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
+		log.WithField("clone_volume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
 			cloneBackoff.MaxElapsedTime)
 	} else {
-		log.WithField("cloneVolume", volConfig.Name).Debug("Clone found.")
+		log.WithField("clone_volume", volConfig.Name).Debug("Clone found.")
 	}
 
 	err = b.Driver.CreateFollowup(volConfig)
@@ -236,10 +240,24 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 	return vol, nil
 }
 
-// HasVolumes returns true if the Backend has one or more volumes
-// provisioned on it.
-func (b *Backend) HasVolumes() bool {
-	return len(b.Volumes) > 0
+func (b *Backend) ResizeVolume(volName, newSize string) error {
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(newSize)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
+	}
+	newSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
+	}
+
+	log.WithFields(log.Fields{
+		"backend":     b.Name,
+		"volume":      volName,
+		"volume_size": newSizeBytes,
+	}).Debug("Attempting volume resize.")
+	return b.Driver.Resize(volName, newSizeBytes)
 }
 
 func (b *Backend) RemoveVolume(vol *Volume) error {
@@ -268,14 +286,20 @@ func (b *Backend) GetUpdateType(origBackend *Backend) *roaring.Bitmap {
 	return updateCode
 }
 
+// HasVolumes returns true if the Backend has one or more volumes
+// provisioned on it.
+func (b *Backend) HasVolumes() bool {
+	return len(b.Volumes) > 0
+}
+
 // Terminate informs the backend that it is being deleted from the core
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
 func (b *Backend) Terminate() {
 
 	log.WithFields(log.Fields{
-		"backendName": b.Name,
-		"driverName":  b.GetDriverName(),
+		"backend": b.Name,
+		"driver":  b.GetDriverName(),
 	}).Debug("Terminating backend.")
 
 	b.Driver.Terminate()

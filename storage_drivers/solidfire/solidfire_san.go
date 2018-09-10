@@ -39,7 +39,6 @@ type SANStorageDriver struct {
 	AccessGroups     []int64
 	LegacyNamePrefix string
 	InitiatorIFace   string
-	Telemetry        *Telemetry
 }
 
 type StorageDriverConfigExternal struct {
@@ -84,6 +83,13 @@ func parseType(vTypes []api.VolType, typeName string) (qos api.QoS, err error) {
 		err = errors.New("specified type not found")
 	}
 	return qos, err
+}
+
+func (d SANStorageDriver) getTelemetry() *Telemetry {
+	return &Telemetry{
+		Telemetry: tridentconfig.OrchestratorTelemetry,
+		Plugin:    d.Name(),
+	}
 }
 
 // Name is for returning the name of this driver
@@ -235,11 +241,6 @@ func (d *SANStorageDriver) Initialize(
 
 	// log cluster node serial numbers asynchronously since the API can take a long time
 	go d.getNodeSerialNumbers(config.CommonStorageDriverConfig)
-
-	d.Telemetry = &Telemetry{
-		Telemetry: tridentconfig.OrchestratorTelemetry,
-		Plugin:    d.Name(),
-	}
 
 	d.initialized = true
 	return nil
@@ -409,29 +410,31 @@ func (d *SANStorageDriver) validate() error {
 				return err
 			}
 
-			found := false
+			foundVAG := false
 			initiators := ""
 			for _, vag := range vags {
 				if vag.Name == tridentconfig.DefaultSolidFireVAG {
 					d.Config.AccessGroups = append(d.Config.AccessGroups, vag.VAGID)
-					found = true
+					foundVAG = true
 					for _, initiator := range vag.Initiators {
 						initiators = initiators + initiator + ","
 					}
 					initiators = strings.TrimSuffix(initiators, ",")
-					log.Infof("No AccessGroup ID's configured, using the default group: %v, "+
-						"with initiators: %+v", vag.Name, initiators)
+					log.WithFields(log.Fields{
+						"group":      vag.Name,
+						"initiators": initiators,
+					}).Info("No AccessGroup ID's configured. Using the default group with listed initiators.")
 					break
 				}
 			}
-			if !found {
+			if !foundVAG {
 				// UseCHAP was not specified in the config and no VAG was found.
 				if tridentconfig.PlatformAtLeast("kubernetes", "v1.7.0") {
 					// Found a version of Kubernetes that can support CHAP
 					log.WithFields(log.Fields{
 						"platform":         tridentconfig.OrchestratorTelemetry.Platform,
 						"platform version": tridentconfig.OrchestratorTelemetry.PlatformVersion,
-					}).Warn("Volume Access Group use not detected. Defaulting to using CHAP.")
+					}).Info("Volume Access Group use not detected. Defaulting to using CHAP.")
 					d.Config.UseCHAP = true
 				} else {
 					err = fmt.Errorf("volume Access Group %v doesn't exist at %v and must be manually "+
@@ -457,13 +460,6 @@ func (d *SANStorageDriver) validate() error {
 			}
 		}
 
-		log.WithFields(log.Fields{
-			"driver":       drivers.SolidfireSANStorageDriverName,
-			"SVIP":         d.Config.SVIP,
-			"AccessGroups": d.Config.AccessGroups,
-			"UseCHAP":      d.Config.UseCHAP,
-		}).Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
-
 		// Deal with upgrades for versions prior to handling multiple VAG ID's
 		var vIDs []int64
 		var req api.ListVolumesForAccountRequest
@@ -481,13 +477,19 @@ func (d *SANStorageDriver) validate() error {
 				return err
 			}
 		}
+	}
+
+	fields := log.Fields{
+		"driver":       drivers.SolidfireSANStorageDriverName,
+		"SVIP":         d.Config.SVIP,
+		"AccessGroups": d.Config.AccessGroups,
+		"UseCHAP":      d.Config.UseCHAP,
+	}
+
+	if d.Config.UseCHAP {
+		log.WithFields(fields).Debug("Using CHAP, skipped Volume Access Group logic.")
 	} else {
-		// CHAP logic
-		log.WithFields(log.Fields{
-			"driver":  drivers.SolidfireSANStorageDriverName,
-			"SVIP":    d.Config.SVIP,
-			"UseCHAP": d.Config.UseCHAP,
-		}).Debug("Using CHAP, skipping Volume Access Group logic.")
+		log.WithFields(fields).Info("Please ensure all relevant hosts are added to one of the specified Volume Access Groups.")
 	}
 
 	return nil
@@ -515,7 +517,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 
 	var req api.CreateVolumeRequest
 	var qos api.QoS
-	telemetry, _ := json.Marshal(d.Telemetry)
+	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
 		"trident":     string(telemetry),
 		"docker-name": name,
@@ -642,7 +644,7 @@ func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, op
 	}
 
 	var req api.CloneVolumeRequest
-	telemetry, _ := json.Marshal(d.Telemetry)
+	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
 		"trident":     string(telemetry),
 		"docker-name": name,

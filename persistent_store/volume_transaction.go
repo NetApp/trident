@@ -13,6 +13,7 @@ type VolumeOperation string
 const (
 	AddVolume    VolumeOperation = "addVolume"
 	DeleteVolume VolumeOperation = "deleteVolume"
+	ResizeVolume VolumeOperation = "resizeVolume"
 )
 
 type VolumeTransaction struct {

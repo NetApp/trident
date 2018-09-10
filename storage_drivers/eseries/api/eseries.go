@@ -93,19 +93,20 @@ func NewAPIClient(config ClientConfig) *Client {
 	}
 	c.config.CompiledPoolNameSearchPattern = compiledRegex
 
-	volumeTags = []VolumeTag{
-		{"IF", c.config.Protocol},
-		{"version", c.config.Telemetry["version"]},
-		{"platform", c.config.Telemetry["platform"]},
-		{"platformVersion", c.config.Telemetry["platformVersion"]},
-		{"plugin", c.config.Telemetry["plugin"]},
-		{"storagePrefix", c.config.Telemetry["storagePrefix"]},
-	}
-
 	return c
 }
 
-var volumeTags []VolumeTag
+func (d Client) makeVolumeTags() []VolumeTag {
+
+	return []VolumeTag{
+		{"IF", d.config.Protocol},
+		{"version", d.config.Telemetry["version"]},
+		{"platform", tridentconfig.OrchestratorTelemetry.Platform},
+		{"platformVersion", tridentconfig.OrchestratorTelemetry.PlatformVersion},
+		{"plugin", d.config.Telemetry["plugin"]},
+		{"storagePrefix", d.config.Telemetry["storagePrefix"]},
+	}
+}
 
 // InvokeAPI makes a REST call to the Web Services Proxy. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to identify
@@ -608,7 +609,7 @@ func (d Client) CreateVolume(
 	}
 
 	// Copy static volume metadata and add fstype
-	tags := append([]VolumeTag(nil), volumeTags...)
+	tags := d.makeVolumeTags()
 	tags = append(tags, VolumeTag{"fstype", fstype})
 
 	// Set up the volume create request

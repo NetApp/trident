@@ -34,6 +34,7 @@ type Orchestrator interface {
 	DetachVolume(volumeName, mountpoint string) error
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	ReloadVolumes() error
+	ResizeVolume(volumeName, newSize string) error
 
 	AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error)
 	GetStorageClass(scName string) (*storageclass.External, error)

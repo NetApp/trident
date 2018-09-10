@@ -36,6 +36,7 @@ func (d *NASStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
@@ -341,11 +342,11 @@ func (d *NASStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	} else {
 		backend.Name = d.Config.BackendName
 	}
-	poolAttrs := d.GetStoragePoolAttributes()
+	poolAttrs := d.getStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *NASStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
@@ -498,7 +499,7 @@ func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return nil
 	}
 
-	response, err := d.API.SetVolumeSize(name, strconv.FormatUint(sizeBytes, 10))
+	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(sizeBytes, 10))
 	if err = api.GetError(response.Result, err); err != nil {
 		log.WithField("error", err).Errorf("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")

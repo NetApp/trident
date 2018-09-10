@@ -333,6 +333,10 @@ func (m *MockOrchestrator) ReloadVolumes() error {
 	return nil
 }
 
+func (m *MockOrchestrator) ResizeVolume(volumeName, newSize string) error {
+	return nil
+}
+
 func NewMockOrchestrator() *MockOrchestrator {
 	return &MockOrchestrator{
 		backends:       make(map[string]*storage.Backend),

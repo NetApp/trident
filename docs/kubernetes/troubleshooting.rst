@@ -1,17 +1,16 @@
 Troubleshooting
 ^^^^^^^^^^^^^^^
 
-* Run ``tridentctl logs -l all -n trident``. Trident incorporates a multi-phase
-  installation process that involves multiple pods, and the Trident pod itself
-  includes multiple containers, all of which have their own logs. When
-  something goes wrong, this is the best way to quickly examine all of the
-  relevant logs.
+* Run ``tridentctl logs -l all -n trident`` and look for problems in the logs
+  for the ``trident-main`` and ``etcd`` containers. Alternatively, you can use
+  ``kubectl logs`` to retrieve the logs for the ``trident-********-****`` pod.
 * If the Trident pod fails to come up properly (e.g., when Trident pod is stuck
   in the ``ContainerCreating`` phase with fewer than 2 ready containers),
   running ``kubectl -n trident describe deployment trident`` and
   ``kubectl -n trident describe pod trident-********-****`` can provide
   additional insights. Obtaining kubelet logs
-  (e.g., via ``journalctl -xeu kubelet``) can also be helpful here.
+  (e.g., via ``journalctl -xeu kubelet``) can also be helpful if there is a
+  problem in mounting the ``trident`` PVC (the ``etcd`` volume).
 * If there's not enough information in the Trident and Trident launcher logs,
   you can try enabling debug mode for Trident and Trident launcher by passing
   the ``-d`` flag to the install parameter: ``./tridentctl install -d -n trident``.
@@ -19,7 +18,12 @@ Troubleshooting
   after a failed run. By default the script does not touch the etcd backing
   store, making it safe to uninstall and install again even in a running
   deployment.
+* If a PVC is stuck in the ``Pending`` phase, running ``kubectl describe pvc``
+  can provide additional information on why Trident failed to provsion a PV for
+  this PVC.
 * If service accounts are not available, the logs will report an error that
   ``/var/run/secrets/kubernetes.io/serviceaccount/token`` does not exist.  In
   this case, you will either need to enable service accounts or connect to the
   API server by specifying the insecure address and port on the command line.
+* If you require further assistance, please create a support bundle via
+  ``tridentctl logs -a -n trident`` and send it to :ref:`NetApp Support <Getting Help>`.

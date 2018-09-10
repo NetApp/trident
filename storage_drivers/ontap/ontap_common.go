@@ -16,7 +16,7 @@ import (
 	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -32,7 +32,7 @@ const (
 )
 
 type Telemetry struct {
-	trident.Telemetry
+	tridentconfig.Telemetry
 	Plugin        string        `json:"plugin"`
 	SVM           string        `json:"svm"`
 	StoragePrefix string        `json:"storagePrefix"`
@@ -50,7 +50,7 @@ type StorageDriver interface {
 
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
 func InitializeOntapConfig(
-	context trident.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) (*drivers.OntapStorageDriverConfig, error) {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -75,7 +75,6 @@ func InitializeOntapConfig(
 
 func NewOntapTelemetry(d StorageDriver) *Telemetry {
 	t := &Telemetry{
-		Telemetry:     trident.OrchestratorTelemetry,
 		Plugin:        d.Name(),
 		SVM:           d.GetConfig().SVM,
 		StoragePrefix: *d.GetConfig().StoragePrefix,
@@ -171,7 +170,7 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Clien
 	log.WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
 	// Log cluster node serial numbers if we can get them
-	config.SerialNumbers, err = client.ListNodeSerialNumbers()
+	config.SerialNumbers, err = client.NodeListSerialNumbers()
 	if err != nil {
 		log.Warnf("Could not determine controller serial numbers. %v", err)
 	} else {
@@ -488,7 +487,7 @@ func EMSHeartbeat(driver StorageDriver) {
 
 	emsResponse, err := driver.GetAPI().EmsAutosupportLog(
 		strconv.Itoa(drivers.ConfigVersion), false, "heartbeat", hostname,
-		string(message), 1, trident.OrchestratorName, 5)
+		string(message), 1, tridentconfig.OrchestratorName, 5)
 
 	if err = api.GetError(emsResponse, err); err != nil {
 		log.WithFields(log.Fields{
@@ -770,7 +769,7 @@ func getStorageBackendSpecsCommon(
 	}()
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := client.GetVserverAggregateNames()
+	vserverAggrs, err := client.VserverGetAggregateNames()
 	if err != nil {
 		return
 	}
@@ -1017,7 +1016,7 @@ func getVolumeOptsCommon(
 
 func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {
 
-	if trident.UsingPassthroughStore {
+	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *commonConfig.StoragePrefix + name
 	} else {

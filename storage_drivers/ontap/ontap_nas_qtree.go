@@ -62,6 +62,7 @@ func (d *NASQtreeStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
@@ -961,11 +962,11 @@ func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.Backend)
 	} else {
 		backend.Name = d.Config.BackendName
 	}
-	poolAttrs := d.GetStoragePoolAttributes()
+	poolAttrs := d.getStoragePoolAttributes()
 	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
 }
 
-func (d *NASQtreeStorageDriver) GetStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
@@ -1373,14 +1374,14 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64) 
 		log.Warnf("Could not calculate optimal Flexvol size. %v", err)
 		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
 		size := strconv.FormatUint(sizeBytes, 10)
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, "+"+size)
+		resizeResponse, err := d.API.VolumeSetSize(flexvol, "+"+size)
 		if err = api.GetError(resizeResponse.Result, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	} else {
 		// Got optimal size, so just set the Flexvol to that value
 		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
-		resizeResponse, err := d.API.SetVolumeSize(flexvol, flexvolSizeStr)
+		resizeResponse, err := d.API.VolumeSetSize(flexvol, flexvolSizeStr)
 		if err = api.GetError(resizeResponse.Result, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}

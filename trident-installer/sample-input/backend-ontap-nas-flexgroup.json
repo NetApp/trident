@@ -5,7 +5,7 @@
     "managementLIF": "10.0.0.1",
     "dataLIF": "10.0.0.2",
     "svm": "trident_svm",
-    "username": "cluster-admin",
+    "username": "vsadmin",
     "password": "password",
     "defaults": {
         "size": "100G"

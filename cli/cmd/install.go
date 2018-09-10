@@ -114,7 +114,7 @@ func init() {
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (alpha, not for production clusters).")
-	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
+	installCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a pod in the cluster.")
 	installCmd.Flags().MarkHidden("in-cluster")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", "", "The name of the PVC used by Trident.")
@@ -230,8 +230,14 @@ func discoverInstallationEnvironment() error {
 	useKubernetesRBAC = true
 	if ucpBearerToken != "" || ucpHost != "" {
 		useKubernetesRBAC = false
+
 		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
 			return err
+		}
+
+		if inCluster {
+			log.Info("In-cluster installation is not supported with Docker EE, running outside cluster.")
+			inCluster = false
 		}
 	}
 
@@ -1634,6 +1640,19 @@ func installTridentInCluster() (returnError error) {
 		commandArgs = append(commandArgs, "--trident-image")
 		commandArgs = append(commandArgs, tridentImage)
 	}
+	if etcdImage != "" {
+		commandArgs = append(commandArgs, "--etcd-image")
+		commandArgs = append(commandArgs, etcdImage)
+	}
+	if ucpBearerToken != "" {
+		commandArgs = append(commandArgs, "--ucp-bearer-token")
+		commandArgs = append(commandArgs, ucpBearerToken)
+	}
+	if ucpHost != "" {
+		commandArgs = append(commandArgs, "--ucp-host")
+		commandArgs = append(commandArgs, ucpHost)
+	}
+	commandArgs = append(commandArgs, "--in-cluster=false")
 
 	// Create the install pod
 	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerPodYAML(

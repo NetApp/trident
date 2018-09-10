@@ -61,6 +61,7 @@ import:
   - pkg/runtime
   - pkg/types
   - pkg/util/diff
+  - pkg/util/strategicpatch
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
