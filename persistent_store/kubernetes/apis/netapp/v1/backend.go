@@ -5,39 +5,52 @@ import (
 
 	"github.com/netapp/trident/storage"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-func BackendFromBackendPersistent(persistent *storage.BackendPersistent) (*Backend, error) {
-	config, err := json.Marshal(persistent.Config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Backend{
+// NewBackend creates a new backend CRD object from a internal
+// storage.BackendPersistent object
+func NewBackend(persistent *storage.BackendPersistent) (*Backend, error) {
+	backend := &Backend{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
 			Kind:       "Backend",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: persistent.Name,
+			Name: NameFix(persistent.Name),
 		},
-		Spec: runtime.RawExtension{
-			Raw: config,
-		},
-		Status: BackendStatus{
-			Version: persistent.Version,
-			Online:  persistent.Online,
-		},
-	}, nil
-}
-
-func BackendPersistentFromBackend(backend *Backend) (*storage.BackendPersistent, error) {
-	persistent := &storage.BackendPersistent{
-		Name:    backend.ObjectMeta.Name,
-		Version: backend.Status.Version,
-		Online:  backend.Status.Online,
 	}
 
-	return persistent, json.Unmarshal(backend.Spec.Raw, persistent.Config)
+	return backend, backend.Apply(persistent)
+}
+
+// Apply applies changes from an internal storage.BackendPersistnet
+// object to its Kubernetes CRD equivalent
+func (b *Backend) Apply(persistent *storage.BackendPersistent) error {
+	if NameFix(persistent.Name) != b.ObjectMeta.Name {
+		return ErrNamesDontMatch
+	}
+
+	config, err := json.Marshal(persistent.Config)
+	if err != nil {
+		return err
+	}
+
+	b.Config.Raw = config
+	b.Name = persistent.Name
+	b.Online = persistent.Online
+	b.Version = persistent.Version
+
+	return nil
+}
+
+// Persistent converts a Kubernetes CRD object into its internal
+// storage.BackendPersistent equivalent
+func (b *Backend) Persistent() (*storage.BackendPersistent, error) {
+	persistent := &storage.BackendPersistent{
+		Name:    b.Name,
+		Version: b.Version,
+		Online:  b.Online,
+	}
+
+	return persistent, json.Unmarshal(b.Config.Raw, &persistent.Config)
 }

@@ -22,7 +22,6 @@ type VolumesGetter interface {
 type VolumeInterface interface {
 	Create(*v1.Volume) (*v1.Volume, error)
 	Update(*v1.Volume) (*v1.Volume, error)
-	UpdateStatus(*v1.Volume) (*v1.Volume, error)
 	Delete(name string, options *metav1.DeleteOptions) error
 	DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error
 	Get(name string, options metav1.GetOptions) (*v1.Volume, error)
@@ -93,21 +92,6 @@ func (c *volumes) Update(volume *v1.Volume) (result *v1.Volume, err error) {
 	err = c.client.Put().
 		Resource("volumes").
 		Name(volume.Name).
-		Body(volume).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *volumes) UpdateStatus(volume *v1.Volume) (result *v1.Volume, err error) {
-	result = &v1.Volume{}
-	err = c.client.Put().
-		Resource("volumes").
-		Name(volume.Name).
-		SubResource("status").
 		Body(volume).
 		Do().
 		Into(result)

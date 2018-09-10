@@ -97,7 +97,7 @@ func (k *KubernetesClient) Stop() error {
 }
 
 func (k *KubernetesClient) AddBackend(b *storage.Backend) error {
-	backend, err := v1.BackendFromBackendPersistent(b.ConstructPersistent())
+	backend, err := v1.NewBackend(b.ConstructPersistent())
 	if err != nil {
 		return err
 	}
@@ -111,13 +111,13 @@ func (k *KubernetesClient) AddBackend(b *storage.Backend) error {
 }
 
 func (k *KubernetesClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
-	backend, err := k.client.TridentV1().Backends().Get(backendName, metav1.GetOptions{})
+	backend, err := k.client.TridentV1().Backends().Get(v1.NameFix(backendName), metav1.GetOptions{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	persistent, err := v1.BackendPersistentFromBackend(backend)
+	persistent, err := backend.Persistent()
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +125,13 @@ func (k *KubernetesClient) GetBackend(backendName string) (*storage.BackendPersi
 	return persistent, nil
 }
 
-func (k *KubernetesClient) UpdateBackend(b *storage.Backend) error {
-	backend, err := v1.BackendFromBackendPersistent(b.ConstructPersistent())
+func (k *KubernetesClient) UpdateBackend(update *storage.Backend) error {
+	backend, err := k.client.TridentV1().Backends().Get(v1.NameFix(update.Name), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = backend.Apply(update.ConstructPersistent())
 	if err != nil {
 		return err
 	}
@@ -140,7 +145,7 @@ func (k *KubernetesClient) UpdateBackend(b *storage.Backend) error {
 }
 
 func (k *KubernetesClient) DeleteBackend(b *storage.Backend) error {
-	err := k.client.TridentV1().Backends().Delete(b.Name, nil)
+	err := k.client.TridentV1().Backends().Delete(v1.NameFix(b.Name), nil)
 	if err != nil {
 		return err
 	}
@@ -157,7 +162,7 @@ func (k *KubernetesClient) GetBackends() ([]*storage.BackendPersistent, error) {
 	}
 
 	for _, item := range list.Items {
-		persistent, err := v1.BackendPersistentFromBackend(item)
+		persistent, err := item.Persistent()
 		if err != nil {
 			return nil, err
 		}
@@ -180,20 +185,19 @@ func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBacken
 		return err
 	}
 
-	vols, err := k.GetVolumes()
+	vols, err := k.client.TridentV1().Volumes().List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	for _, v := range vols {
-		v.Backend = newBackend.Name
-
-		volume, err := v1.VolumeFromVolumeExternal(v)
-		if err != nil {
-			return err
+	for _, v := range vols.Items {
+		if v.Backend != origBackend.Name {
+			continue
 		}
 
-		_, err = k.client.TridentV1().Volumes().Update(volume)
+		v.Backend = newBackend.Name
+
+		_, err = k.client.TridentV1().Volumes().Update(v)
 		if err != nil {
 			return err
 		}
@@ -208,7 +212,7 @@ func (k *KubernetesClient) ReplaceBackendAndUpdateVolumes(origBackend, newBacken
 }
 
 func (k *KubernetesClient) AddVolume(vol *storage.Volume) error {
-	volume, err := v1.VolumeFromVolumeExternal(vol.ConstructExternal())
+	volume, err := v1.NewVolume(vol.ConstructExternal())
 	if err != nil {
 		return err
 	}
@@ -222,13 +226,13 @@ func (k *KubernetesClient) AddVolume(vol *storage.Volume) error {
 }
 
 func (k *KubernetesClient) GetVolume(volName string) (*storage.VolumeExternal, error) {
-	volume, err := k.client.TridentV1().Volumes().Get(volName, metav1.GetOptions{})
+	volume, err := k.client.TridentV1().Volumes().Get(v1.NameFix(volName), metav1.GetOptions{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	persistent, err := v1.VolumeExternalFromVolume(volume)
+	persistent, err := volume.Persistent()
 	if err != nil {
 		return nil, err
 	}
@@ -236,8 +240,13 @@ func (k *KubernetesClient) GetVolume(volName string) (*storage.VolumeExternal, e
 	return persistent, nil
 }
 
-func (k *KubernetesClient) UpdateVolume(vol *storage.Volume) error {
-	volume, err := v1.VolumeFromVolumeExternal(vol.ConstructExternal())
+func (k *KubernetesClient) UpdateVolume(update *storage.Volume) error {
+	volume, err := k.client.TridentV1().Volumes().Get(v1.NameFix(update.Config.Name), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = volume.Apply(update.ConstructExternal())
 	if err != nil {
 		return err
 	}
@@ -251,11 +260,11 @@ func (k *KubernetesClient) UpdateVolume(vol *storage.Volume) error {
 }
 
 func (k *KubernetesClient) DeleteVolume(vol *storage.Volume) error {
-	return k.client.TridentV1().Volumes().Delete(vol.Config.Name, nil)
+	return k.client.TridentV1().Volumes().Delete(v1.NameFix(vol.Config.Name), nil)
 }
 
 func (k *KubernetesClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error {
-	err := k.client.TridentV1().Volumes().Delete(vol.Config.Name, nil)
+	err := k.client.TridentV1().Volumes().Delete(v1.NameFix(vol.Config.Name), nil)
 
 	if errors.IsNotFound(err) {
 		return nil
@@ -273,7 +282,7 @@ func (k *KubernetesClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 	}
 
 	for _, item := range list.Items {
-		persistent, err := v1.VolumeExternalFromVolume(item)
+		persistent, err := item.Persistent()
 		if err != nil {
 			return nil, err
 		}
@@ -289,7 +298,7 @@ func (k *KubernetesClient) DeleteVolumes() error {
 }
 
 func (k *KubernetesClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
-	volume, err := v1.VolumeTransactionFromPersistentVolumeTransaction(string(volTxn.Op), volTxn.Config)
+	volume, err := v1.NewVolumeTransaction(string(volTxn.Op), volTxn.Config)
 	if err != nil {
 		return err
 	}
@@ -311,7 +320,7 @@ func (k *KubernetesClient) GetVolumeTransactions() ([]*VolumeTransaction, error)
 	}
 
 	for _, item := range list.Items {
-		op, config, err := v1.PersistentVolumeTransactionFromVolumeTransaction(item)
+		op, config, err := item.Persistent()
 		if err != nil {
 			return nil, err
 		}
@@ -326,13 +335,18 @@ func (k *KubernetesClient) GetVolumeTransactions() ([]*VolumeTransaction, error)
 }
 
 func (k *KubernetesClient) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error) {
-	volume, err := k.client.TridentV1().VolumeTransactions().Get(volTxn.Config.Name, metav1.GetOptions{})
+	volume, err := k.client.TridentV1().VolumeTransactions().Get(v1.NameFix(volTxn.Config.Name), metav1.GetOptions{})
+
+	if errors.IsNotFound(err) {
+		return nil, nil
+	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	op, config, err := v1.PersistentVolumeTransactionFromVolumeTransaction(volume)
+	op, config, err := volume.Persistent()
+
 	if err != nil {
 		return nil, err
 	}
@@ -344,11 +358,11 @@ func (k *KubernetesClient) GetExistingVolumeTransaction(volTxn *VolumeTransactio
 }
 
 func (k *KubernetesClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
-	return k.client.TridentV1().VolumeTransactions().Delete(volTxn.Config.Name, nil)
+	return k.client.TridentV1().VolumeTransactions().Delete(v1.NameFix(volTxn.Config.Name), nil)
 }
 
 func (k *KubernetesClient) AddStorageClass(sc *storageclass.StorageClass) error {
-	storageclass, err := v1.StorageClassFromPersistentStorageClass(sc.ConstructPersistent())
+	storageclass, err := v1.NewStorageClass(sc.ConstructPersistent())
 	if err != nil {
 		return err
 	}
@@ -362,13 +376,13 @@ func (k *KubernetesClient) AddStorageClass(sc *storageclass.StorageClass) error 
 }
 
 func (k *KubernetesClient) GetStorageClass(scName string) (*storageclass.Persistent, error) {
-	storageclass, err := k.client.TridentV1().StorageClasses().Get(scName, metav1.GetOptions{})
+	storageclass, err := k.client.TridentV1().StorageClasses().Get(v1.NameFix(scName), metav1.GetOptions{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	persistent, err := v1.PersistentStorageClassFromStorageClass(storageclass)
+	persistent, err := storageclass.Persistent()
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +399,7 @@ func (k *KubernetesClient) GetStorageClasses() ([]*storageclass.Persistent, erro
 	}
 
 	for _, item := range list.Items {
-		persistent, err := v1.PersistentStorageClassFromStorageClass(item)
+		persistent, err := item.Persistent()
 		if err != nil {
 			return nil, err
 		}
@@ -397,5 +411,5 @@ func (k *KubernetesClient) GetStorageClasses() ([]*storageclass.Persistent, erro
 }
 
 func (k *KubernetesClient) DeleteStorageClass(sc *storageclass.StorageClass) error {
-	return k.client.TridentV1().StorageClasses().Delete(sc.GetName(), nil)
+	return k.client.TridentV1().StorageClasses().Delete(v1.NameFix(sc.GetName()), nil)
 }

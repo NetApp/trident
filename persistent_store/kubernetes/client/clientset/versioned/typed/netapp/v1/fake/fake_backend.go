@@ -79,17 +79,6 @@ func (c *FakeBackends) Update(backend *netappv1.Backend) (result *netappv1.Backe
 	return obj.(*netappv1.Backend), err
 }
 
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeBackends) UpdateStatus(backend *netappv1.Backend) (*netappv1.Backend, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateSubresourceAction(backendsResource, "status", backend), &netappv1.Backend{})
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*netappv1.Backend), err
-}
-
 // Delete takes name of the backend and deletes it. Returns an error if one occurs.
 func (c *FakeBackends) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

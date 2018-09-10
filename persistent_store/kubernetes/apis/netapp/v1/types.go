@@ -18,12 +18,14 @@ type Backend struct {
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Specification of the NetApp backend. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-	Spec runtime.RawExtension `json:"spec"`
-	// Status of the NetApp backend. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-	Status BackendStatus `json:"status"`
+	// Config of the trident backend
+	Config runtime.RawExtension `json:"config"`
+	// Name is the real name of the backend (metadata has restrictions)
+	Name string `json:"name"`
+	// Version is the version of the backend
+	Version string `json:"version"`
+	// Online defines if the backend is online
+	Online bool `json:"online"`
 }
 
 // BackendList is a list of Backends.
@@ -38,13 +40,6 @@ type BackendList struct {
 	Items []*Backend `json:"items"`
 }
 
-// BackendStatus is the status of the NetApp backend.
-// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-type BackendStatus struct {
-	Version string `json:"version"`
-	Online  bool   `json:"online"`
-}
-
 // Volume defines a netapp volume
 // +genclient
 // +genclient:nonNamespaced
@@ -56,13 +51,14 @@ type Volume struct {
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Specification of the NetApp volume. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-	Spec runtime.RawExtension `json:"spec"`
-
-	// Status of the NetApp volume. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-	Status VolumeStatus `json:"status"`
+	// Config is the Volumes Config
+	Config runtime.RawExtension `json:"config"`
+	// Backend is the name of the volumes backend
+	Backend string `json:"backend"`
+	// Pool is the volumes pool
+	Pool string `json:"pool"`
+	// Orphaned defines if the backend is orphaned
+	Orphaned bool `json:"orphaned"`
 }
 
 // VolumeList is a list of Volume.
@@ -76,14 +72,6 @@ type VolumeList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of Volumes
 	Items []*Volume `json:"items"`
-}
-
-// VolumeStatus is the status of the NetApp volume. More info:
-// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-type VolumeStatus struct {
-	Backend  string `json:"backend"`
-	Pool     string `json:"pool"`
-	Orphaned bool   `json:"orphaned"`
 }
 
 // StorageClass defines a netapp storage class
@@ -125,8 +113,10 @@ type VolumeTransaction struct {
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Transaction information
-	Transaction VolumeTransactionSpec `json:"transaction"`
+	// Operation is the volume transaction operation
+	Operation string `json:"operation"`
+	// Config is the volume config
+	Config runtime.RawExtension `json:"config"`
 }
 
 // VolumeTransactionList is a list of VolumeTransaction.
@@ -139,11 +129,4 @@ type VolumeTransactionList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of VolumeTransactiones
 	Items []*VolumeTransaction `json:"items"`
-}
-
-// VolumeTransactionSpec is the specification of the NetApp volume transation. More info:
-// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-type VolumeTransactionSpec struct {
-	Operation string               `json:"operation"`
-	Config    runtime.RawExtension `json:"config"`
 }
