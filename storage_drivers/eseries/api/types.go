@@ -175,6 +175,17 @@ type VolumeEx struct {
 	VolumeTags     []VolumeTag  `json:"metadata"`
 }
 
+type VolumeResizeRequest struct {
+	ExpansionSize int    `json:"expansionSize"`
+	SizeUnit      string `json:"sizeUnit"` //bytes, b, kb, mb, gb, tb, pb, eb, zb, yb
+}
+
+type VolumeResizeStatusResponse struct {
+	PercentComplete  int    `json:percentComplete`
+	TimeToCompletion int    `json:timeToCompletion`
+	Action           string `json:action`
+}
+
 type HostCreateRequest struct {
 	Name     string `json:"name"`
 	HostType `json:"hostType"`

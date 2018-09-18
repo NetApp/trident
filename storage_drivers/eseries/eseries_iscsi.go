@@ -646,15 +646,25 @@ func (d *SANStorageDriver) Get(name string) error {
 		defer log.WithFields(fields).Debug("<<<< Get")
 	}
 
+	_, err := d.getVolume(name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *SANStorageDriver) getVolume(name string) (api.VolumeEx, error) {
+
 	vol, err := d.API.GetVolume(name)
 	if err != nil {
-		return fmt.Errorf("could not find volume %s: %v", name, err)
+		return vol, fmt.Errorf("could not find volume %s: %v", name, err)
 	} else if !d.API.IsRefValid(vol.VolumeRef) {
-		return fmt.Errorf("could not find volume %s", name)
+		return vol, fmt.Errorf("could not find volume %s", name)
 	}
 	log.WithField("volume", vol).Debug("Found volume.")
 
-	return nil
+	return vol, nil
 }
 
 // GetStorageBackendSpecs retrieve storage capabilities and register pools with specified backend.
@@ -1045,7 +1055,56 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 	return bitmap
 }
 
-// Resize expands the volume size.
+// Resize expands the volume size. This method relies on the desired state model of Kubernetes
+// and will not work with Docker.
 func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
-	return errors.New("resize not yet implemented")
+	vol, err := d.getVolume(name)
+	if err != nil {
+		return err
+	}
+
+	// Check to see if a volume expand operation is already being processed.
+	// If true then return the error, to K8S, which indicates that the volume resize is in progress.
+	// If no errors exist continue to attempt to resize the volume.
+	isResizing, err := d.API.ResizingVolume(vol)
+	if isResizing || (err != nil) {
+		return err
+	}
+
+	volSizeBytes, err := strconv.ParseUint(vol.VolumeSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("error occurred when checking volume size")
+	}
+
+	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSizeBytes), tridentconfig.SANResizeDelta)
+	if err != nil {
+		return err
+	}
+
+	if sameSize {
+		log.WithFields(log.Fields{
+			"requestedSize":     sizeBytes,
+			"currentVolumeSize": volSizeBytes,
+			"name":              name,
+			"delta":             tridentconfig.SANResizeDelta,
+		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		return nil
+	}
+
+	if sizeBytes < volSizeBytes {
+
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
+	}
+
+	d.API.ResizeVolume(vol, sizeBytes)
+
+	// Check to see if a volume expand operation is still being processed.
+	// If true then return the error, to K8S, which indicates that the volume resize is in progress.
+	// If no errors exist then return nil as resize succeeded.
+	isResizing, err = d.API.ResizingVolume(vol)
+	if isResizing || (err != nil) {
+		return err
+	}
+
+	return nil
 }

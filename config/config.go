@@ -56,6 +56,7 @@ const (
 	DefaultSolidFireVAG      = OrchestratorName
 	UnknownDriver            = "UnknownDriver"
 	StorageAPITimeoutSeconds = 90
+	SANResizeDelta           = 50000000 // 50mb
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240

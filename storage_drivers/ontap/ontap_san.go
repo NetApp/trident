@@ -786,5 +786,94 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 // Resize expands the volume size.
 func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
-	return errors.New("resize not yet implemented")
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "Resize",
+			"Type":      "SANStorageDriver",
+			"name":      name,
+			"sizeBytes": sizeBytes,
+		}
+		log.WithFields(fields).Debug(">>>> Resize")
+		defer log.WithFields(fields).Debug("<<<< Resize")
+	}
+
+	// Validation checks
+	volExists, err := d.API.VolumeExists(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+			"name":  name,
+		}).Error("Error checking for existing volume.")
+		return fmt.Errorf("error occurred checking for existing volume")
+	}
+	if !volExists {
+		return fmt.Errorf("volume %s does not exist", name)
+	}
+
+	volSize, err := d.API.VolumeSize(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+			"name":  name,
+		}).Error("Error checking volume size.")
+		return fmt.Errorf("error occurred when checking volume size")
+	}
+
+	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSize), tridentconfig.SANResizeDelta)
+	if err != nil {
+		return err
+	}
+
+	if sameSize {
+		log.WithFields(log.Fields{
+			"requestedSize":     sizeBytes,
+			"currentVolumeSize": volSize,
+			"name":              name,
+			"delta":             tridentconfig.SANResizeDelta,
+		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		return nil
+	}
+
+	volSizeBytes := uint64(volSize)
+	if sizeBytes < volSizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
+	}
+
+	// Resize operations
+	lunPath := fmt.Sprintf("/vol/%v/lun0", name)
+	if !d.API.SupportsFeature(api.LunGeometrySkip) {
+		// Check LUN geometry and verify LUN max size.
+		lunGeometry, err := d.API.LunGetGeometry(lunPath)
+		if err != nil {
+			log.WithField("error", err).Error("LUN resize failed.")
+			return fmt.Errorf("volume resize failed")
+		}
+
+		lunMaxSize := lunGeometry.Result.MaxResizeSize()
+		if lunMaxSize < int(sizeBytes) {
+			log.WithFields(log.Fields{
+				"error":      err,
+				"sizeBytes":  sizeBytes,
+				"lunMaxSize": lunMaxSize,
+				"lunPath":    lunPath,
+			}).Error("Requested size is larger than LUN's maximum capacity.")
+			return fmt.Errorf("volume resize failed as requested size is larger than LUN's maximum capacity")
+		}
+	}
+
+	// Resize FlexVol
+	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(sizeBytes, 10))
+	if err = api.GetError(response.Result, err); err != nil {
+		log.WithField("error", err).Error("Volume resize failed.")
+		return fmt.Errorf("volume resize failed")
+	}
+
+	// Resize LUN0
+	_, err = d.API.LunResize(lunPath, int(sizeBytes))
+	if err != nil {
+		log.WithField("error", err).Error("LUN resize failed.")
+		return fmt.Errorf("volume resize failed")
+	}
+
+	return nil
 }

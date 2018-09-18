@@ -705,6 +705,98 @@ func (d Client) volumeHasTags(volume VolumeEx, tags []VolumeTag) bool {
 	return true
 }
 
+// ResizingVolume checks to see if an expand operation is in progress for the volume.
+func (d Client) ResizingVolume(volume VolumeEx) (bool, error) {
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ResizingVolume",
+			"Type":   "Client",
+			"name":   volume.Label,
+		}
+		log.WithFields(fields).Debug(">>>> ResizingVolume")
+		defer log.WithFields(fields).Debug("<<<< ResizingVolume")
+	}
+
+	resourcePath := "/volumes/" + volume.VolumeRef + "/expand"
+	response, responseBody, err := d.InvokeAPI(nil, "GET", resourcePath)
+	if err != nil {
+		return false, fmt.Errorf("API invocation failed. %v", err)
+	}
+
+	// Parse JSON data
+	responseData := VolumeResizeStatusResponse{}
+	if err := json.Unmarshal(responseBody, &responseData); err != nil {
+		return false, fmt.Errorf("could not parse volume resize status response: %s; %v", string(responseBody), err)
+	}
+	log.WithFields(log.Fields{
+		"percentComplete":  responseData.PercentComplete,
+		"timeToCompletion": responseData.TimeToCompletion,
+		"action":           responseData.Action,
+		"name":             volume.Label,
+	}).Debug("Volume resize status.")
+
+	// Evaluate resize status
+	switch response.StatusCode {
+	case http.StatusOK:
+		if responseData.Action != "none" {
+			return true, fmt.Errorf("volume resize operation in progress with action: %v", responseData.Action)
+		} else {
+			return false, nil
+		}
+	default:
+		apiError := d.getErrorFromHTTPResponse(response, responseBody)
+		apiError.Message = fmt.Sprintf("could not get resize status %s; %s", volume.Label, apiError.Message)
+		return false, apiError
+	}
+}
+
+// ResizeVolume expands a volume's size. Thin provisioning is not supported on E-series
+// so we only call the API for expanding thick provisioned volumes.
+func (d Client) ResizeVolume(volume VolumeEx, size uint64) error {
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ResizeVolume",
+			"Type":   "Client",
+			"name":   volume.Label,
+			"size":   size,
+		}
+		log.WithFields(fields).Debug(">>>> ResizeVolume")
+		defer log.WithFields(fields).Debug("<<<< ResizeVolume")
+	}
+
+	// The API requires size to be an int (not uint64) so pass as an int but in KB.
+	expansionSize := int(size / 1024)
+
+	// Set up the volume resize request
+	request := VolumeResizeRequest{
+		ExpansionSize: expansionSize,
+		SizeUnit:      "kb",
+	}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+	resourcePath := "/volumes/" + volume.VolumeRef + "/expand"
+	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", resourcePath)
+	if err != nil {
+		return fmt.Errorf("API invocation failed: %v", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		apiError := d.getErrorFromHTTPResponse(response, responseBody)
+		log.WithFields(log.Fields{
+			"name":       volume,
+			"statusCode": response.StatusCode,
+			"message":    apiError.Message,
+		}).Error("Volume resize failed!")
+		apiError.Message = fmt.Sprintf("resize failed for volume %s", volume.Label)
+		return apiError
+	}
+
+	return nil
+}
+
 // DeleteVolume deletes a volume from the array.
 func (d Client) DeleteVolume(volume VolumeEx) error {
 

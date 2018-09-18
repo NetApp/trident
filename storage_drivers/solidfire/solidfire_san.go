@@ -1256,5 +1256,53 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 // Resize expands the volume size.
 func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
-	return errors.New("resize not yet implemented")
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "Resize",
+			"Type":      "SANStorageDriver",
+			"name":      name,
+			"sizeBytes": sizeBytes,
+		}
+		log.WithFields(fields).Debug(">>>> Resize")
+		defer log.WithFields(fields).Debug("<<<< Resize")
+	}
+
+	volume, err := d.GetVolume(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume": name,
+			"error":  err,
+		}).Error("Error checking for existing volume.")
+		return errors.New("error occurred checking for existing volume")
+	}
+
+	if volume.VolumeID == 0 {
+		return fmt.Errorf("volume %s does not exist", name)
+	}
+
+	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
+	if err != nil {
+		return err
+	}
+
+	if sameSize {
+		log.WithFields(log.Fields{
+			"requestedSize":     sizeBytes,
+			"currentVolumeSize": volume.TotalSize,
+			"name":              name,
+			"delta":             tridentconfig.SANResizeDelta,
+		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		return nil
+	}
+
+	volSizeBytes := uint64(volume.TotalSize)
+	if sizeBytes < volSizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
+	}
+
+	var req api.ModifyVolumeRequest
+	req.VolumeID = volume.VolumeID
+	req.AccountID = volume.AccountID
+	req.TotalSize = int64(sizeBytes)
+	return d.Client.ModifyVolume(&req)
 }

@@ -5,6 +5,8 @@ package utils
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -66,4 +68,36 @@ func TestGetV(t *testing.T) {
 	if val := GetV(d, "key2", "defaultValue"); val != "defaultValue" {
 		t.Errorf("Expected '%v' but was %v", "defaultValue", val)
 	}
+}
+
+func TestVolumeSizeWithinTolerance(t *testing.T) {
+	log.Debug("Running TestVolumeSizeWithinTolerance...")
+
+	delta := int64(50000000) // 50mb
+
+	var volSizeTests = []struct {
+		requestedSize int64
+		currentSize   int64
+		delta         int64
+		expected      bool
+	}{
+		{50000000000, 50000003072, delta, true},
+		{50000000001, 50000000000, delta, true},
+		{50049999999, 50000000000, delta, true},
+		{50000000000, 50049999900, delta, true},
+		{50050000001, 50000000000, delta, false},
+		{50000000000, 50050000001, delta, false},
+	}
+
+	for _, vst := range volSizeTests {
+
+		isSameSize, err := VolumeSizeWithinTolerance(vst.requestedSize, vst.currentSize, vst.delta)
+
+		if err != nil {
+			t.Errorf("Encountered '%v' running TestVolumeSizeWithinTolerance", err)
+		}
+
+		assert.Equal(t, vst.expected, isSameSize)
+	}
+
 }

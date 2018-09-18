@@ -78,18 +78,18 @@ type ListVolumesRequest struct {
 	Limit         *int64  `json:"limit,omitempty"`
 }
 
-// ListVolumesForAccountRequest tbd
+// ListVolumesForAccountRequest
 type ListVolumesForAccountRequest struct {
 	AccountID int64 `json:"accountID"`
 }
 
-// ListActiveVolumesRequest tbd
+// ListActiveVolumesRequest
 type ListActiveVolumesRequest struct {
 	StartVolumeID int64 `json:"startVolumeID"`
 	Limit         int64 `json:"limit"`
 }
 
-// ListVolumesResult tbd
+// ListVolumesResult
 type ListVolumesResult struct {
 	ID     int `json:"id"`
 	Result struct {
@@ -97,7 +97,7 @@ type ListVolumesResult struct {
 	} `json:"result"`
 }
 
-// CreateVolumeRequest tbd
+// CreateVolumeRequest
 type CreateVolumeRequest struct {
 	Name       string      `json:"name"`
 	AccountID  int64       `json:"accountID"`
@@ -107,7 +107,7 @@ type CreateVolumeRequest struct {
 	Attributes interface{} `json:"attributes"`
 }
 
-// CreateVolumeResult tbd
+// CreateVolumeResult
 type CreateVolumeResult struct {
 	ID     int `json:"id"`
 	Result struct {
@@ -115,7 +115,7 @@ type CreateVolumeResult struct {
 	} `json:"result"`
 }
 
-// DeleteVolumeRequest tbd
+// DeleteVolumeRequest
 type DeleteVolumeRequest struct {
 	VolumeID int64 `json:"volumeID"`
 }
@@ -184,20 +184,20 @@ type DeleteSnapshotRequest struct {
 	SnapshotID int64 `json:"snapshotID"`
 }
 
-// AddVolumesToVolumeAccessGroupRequest tbd
+// AddVolumesToVolumeAccessGroupRequest
 type AddVolumesToVolumeAccessGroupRequest struct {
 	VolumeAccessGroupID int64   `json:"volumeAccessGroupID"`
 	Volumes             []int64 `json:"volumes"`
 }
 
-// CreateVolumeAccessGroupRequest tbd
+// CreateVolumeAccessGroupRequest
 type CreateVolumeAccessGroupRequest struct {
 	Name       string   `json:"name"`
 	Volumes    []int64  `json:"volumes,omitempty"`
 	Initiators []string `json:"initiators,omitempty"`
 }
 
-// CreateVolumeAccessGroupResult tbd
+// CreateVolumeAccessGroupResult
 type CreateVolumeAccessGroupResult struct {
 	ID     int `json:"id"`
 	Result struct {
@@ -205,19 +205,19 @@ type CreateVolumeAccessGroupResult struct {
 	} `json:"result"`
 }
 
-// AddInitiatorsToVolumeAccessGroupRequest tbd
+// AddInitiatorsToVolumeAccessGroupRequest
 type AddInitiatorsToVolumeAccessGroupRequest struct {
 	Initiators []string `json:"initiators"`
 	VAGID      int64    `json:"volumeAccessGroupID"`
 }
 
-// ListVolumeAccessGroupsRequest tbd
+// ListVolumeAccessGroupsRequest
 type ListVolumeAccessGroupsRequest struct {
 	StartVAGID int64 `json:"startVolumeAccessGroupID,omitempty"`
 	Limit      int64 `json:"limit,omitempty"`
 }
 
-// ListVolumesAccessGroupsResult tbd
+// ListVolumesAccessGroupsResult
 type ListVolumesAccessGroupsResult struct {
 	ID     int `json:"id"`
 	Result struct {
@@ -225,14 +225,14 @@ type ListVolumesAccessGroupsResult struct {
 	} `json:"result"`
 }
 
-// EmptyResponse tbd
+// EmptyResponse
 type EmptyResponse struct {
 	ID     int `json:"id"`
 	Result struct {
 	} `json:"result"`
 }
 
-// VolumeAccessGroup tbd
+// VolumeAccessGroup
 type VolumeAccessGroup struct {
 	Initiators     []string    `json:"initiators"`
 	Attributes     interface{} `json:"attributes"`
@@ -242,17 +242,17 @@ type VolumeAccessGroup struct {
 	Volumes        []int64     `json:"volumes"`
 }
 
-// GetAccountByNameRequest tbd
+// GetAccountByNameRequest
 type GetAccountByNameRequest struct {
 	Name string `json:"username"`
 }
 
-// GetAccountByIDRequest tbd
+// GetAccountByIDRequest
 type GetAccountByIDRequest struct {
 	AccountID int64 `json:"accountID"`
 }
 
-// GetAccountResult tbd
+// GetAccountResult
 type GetAccountResult struct {
 	ID     int `json:"id"`
 	Result struct {
@@ -260,7 +260,7 @@ type GetAccountResult struct {
 	} `json:"result"`
 }
 
-// Account tbd
+// Account
 type Account struct {
 	AccountID       int64       `json:"accountID,omitempty"`
 	Username        string      `json:"username,omitempty"`
@@ -271,7 +271,7 @@ type Account struct {
 	Attributes      interface{} `json:"attributes,omitempty"`
 }
 
-// AddAccountRequest tbd
+// AddAccountRequest
 type AddAccountRequest struct {
 	Username        string      `json:"username"`
 	InitiatorSecret string      `json:"initiatorSecret,omitempty"`
@@ -279,7 +279,7 @@ type AddAccountRequest struct {
 	Attributes      interface{} `json:"attributes,omitempty"`
 }
 
-// AddAccountResult tbd
+// AddAccountResult
 type AddAccountResult struct {
 	ID     int `json:"id"`
 	Result struct {

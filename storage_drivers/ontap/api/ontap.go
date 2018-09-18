@@ -231,6 +231,7 @@ const (
 	FlexGroupsFilter       feature = "FLEX_GROUPS_FILTER"
 	NetAppVolumeEncryption feature = "NETAPP_VOLUME_ENCRYPTION"
 	NetAppFlexGroups       feature = "NETAPP_FLEX_GROUPS"
+	LunGeometrySkip        feature = "LUN_GEOMETRY_SKIP"
 )
 
 // Indicate the minimum Ontapi version for each feature here
@@ -240,6 +241,7 @@ var features = map[feature]*utils.Version{
 	FlexGroupsFilter:       utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
 	NetAppVolumeEncryption: utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
 	NetAppFlexGroups:       utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	LunGeometrySkip:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -514,6 +516,23 @@ func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse,
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
+	return
+}
+
+func (d Client) LunGetGeometry(path string) (response azgo.LunGetGeometryResponse, err error) {
+	response, err = azgo.NewLunGetGeometryRequest().
+		SetPath(path).
+		ExecuteUsing(d.zr)
+
+	return
+}
+
+func (d Client) LunResize(path string, sizeBytes int) (response azgo.LunResizeResponse, err error) {
+	response, err = azgo.NewLunResizeRequest().
+		SetPath(path).
+		SetSize(sizeBytes).
+		ExecuteUsing(d.zr)
+
 	return
 }
 

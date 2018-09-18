@@ -1325,7 +1325,7 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 	// Check that volume exists
 	exists, flexvol, err := d.API.QtreeExists(name, d.FlexvolNamePrefix())
 	if err != nil {
-		log.WithField("error", err).Errorf("Error checking for existing volume.")
+		log.WithField("error", err).Error("Error checking for existing volume.")
 		return resizeError
 	}
 	if !exists {
@@ -1336,7 +1336,7 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 	// Calculate the delta size needed to resize the Qtree quota
 	quotaSize, err := d.getQuotaDiskLimitSize(name, flexvol)
 	if err != nil {
-		log.WithField("error", err).Errorf("Failed to determine quota size.")
+		log.WithField("error", err).Error("Failed to determine quota size.")
 		return resizeError
 	}
 
@@ -1352,14 +1352,14 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 
 	err = d.resizeFlexvol(flexvol, deltaQuotaSize)
 	if err != nil {
-		log.WithField("error", err).Errorf("Failed to resize flexvol.")
+		log.WithField("error", err).Error("Failed to resize flexvol.")
 		return resizeError
 	}
 
 	// Update the quota
 	err = d.setQuotaForQtree(name, flexvol, sizeBytes)
 	if err != nil {
-		log.WithField("error", err).Errorf("Qtree quota update failed.")
+		log.WithField("error", err).Error("Qtree quota update failed.")
 		return resizeError
 	}
 

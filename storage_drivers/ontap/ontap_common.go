@@ -1071,7 +1071,7 @@ func resizeValidation(name string, sizeBytes uint64,
 	volExists, err := volumeExists(name)
 	if err != nil {
 		log.WithField("error", err).Errorf("Error checking for existing volume.")
-		return 0, fmt.Errorf("error occured checking for existing volume")
+		return 0, fmt.Errorf("error occurred checking for existing volume")
 	}
 	if !volExists {
 		return 0, fmt.Errorf("volume %s does not exist", name)
@@ -1081,7 +1081,7 @@ func resizeValidation(name string, sizeBytes uint64,
 	volSize, err := volumeSize(name)
 	if err != nil {
 		log.WithField("error", err).Errorf("Error checking volume size.")
-		return 0, fmt.Errorf("error occured when checking volume size")
+		return 0, fmt.Errorf("error occurred when checking volume size")
 	}
 	volSizeBytes := uint64(volSize)
 
