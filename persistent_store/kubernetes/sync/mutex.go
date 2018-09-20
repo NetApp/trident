@@ -268,5 +268,5 @@ func (m *Mutex) keepOwnership(mutex *v1.Mutex, done chan struct{}) {
 		log.Warnf("Error deleting mutex lock: %s", err)
 	}
 
-	log.Infof("Released lock: %s", mutex.ObjectMeta.Name)
+	log.Debugf("Released lock: %s", mutex.ObjectMeta.Name)
 }

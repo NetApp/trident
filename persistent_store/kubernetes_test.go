@@ -11,6 +11,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/persistent_store/kubernetes/client/clientset/versioned/fake"
+	"github.com/netapp/trident/persistent_store/kubernetes/sync"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
@@ -20,13 +21,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestKubernetesBackend(t *testing.T) {
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
+func GetTestKubernetesClient() *KubernetesClient {
+	client := fake.NewSimpleClientset()
+
+	return &KubernetesClient{
+		client: client,
+		mu:     sync.NewMutex(client.TridentV1().Mutexes()),
 		version: &PersistentStateVersion{
 			"kubernetes", config.OrchestratorAPIVersion,
 		},
 	}
+}
+
+func TestKubernetesBackend(t *testing.T) {
+	p := GetTestKubernetesClient()
 
 	// Adding storage backend
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -108,12 +116,7 @@ func TestKubernetesBackend(t *testing.T) {
 }
 
 func TestKubernetesBackends(t *testing.T) {
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	var backends []*storage.BackendPersistent
 	var err error
@@ -165,12 +168,7 @@ func TestKubernetesBackends(t *testing.T) {
 }
 
 func TestKubernetesDuplicateBackend(t *testing.T) {
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -204,12 +202,7 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 }
 
 func TestKubernetesVolume(t *testing.T) {
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	// Adding a volume
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -280,12 +273,7 @@ func TestKubernetesVolume(t *testing.T) {
 func TestKubernetesVolumes(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	// Adding volumes
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -349,12 +337,7 @@ func TestKubernetesVolumes(t *testing.T) {
 func TestKubernetesVolumeTransactions(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	// Adding volume transactions
 	for i := 1; i <= 5; i++ {
@@ -411,12 +394,7 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	firstTxn := &VolumeTransaction{
 		Config: &storage.VolumeConfig{
@@ -465,12 +443,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 func TestKubernetesAddSolidFireBackend(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	sfConfig := drivers.SolidfireStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -517,12 +490,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 func TestKubernetesAddStorageClass(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	bronzeConfig := &storageclass.Config{
 		Name:            "bronze",
@@ -579,12 +547,7 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	var err error
 
-	p := &KubernetesClient{
-		client: fake.NewSimpleClientset(),
-		version: &PersistentStateVersion{
-			"kubernetes", config.OrchestratorAPIVersion,
-		},
-	}
+	p := GetTestKubernetesClient()
 
 	// Initialize the state by adding a storage backend and volumes
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
