@@ -4,6 +4,7 @@ package persistentstore
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -20,6 +21,13 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire"
 	log "github.com/sirupsen/logrus"
 )
+
+func init() {
+	flag.Parse()
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
+}
 
 func GetTestKubernetesClient() *KubernetesClient {
 	client := fake.NewSimpleClientset()
