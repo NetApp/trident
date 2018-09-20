@@ -450,9 +450,11 @@ func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, 
 	}
 }
 
-func checkAggregateLimits(opts map[string]string, requestedSize float64, config drivers.OntapStorageDriverConfig, client *api.Client) error {
-	aggregate := utils.GetV(opts, "aggregate", config.Aggregate)
-	limitAggregateUsage := utils.GetV(opts, "limitAggregateUsage", config.LimitAggregateUsage)
+//func checkAggregateLimits(opts map[string]string, requestedSize float64, config drivers.OntapStorageDriverConfig, client *api.Client) error {
+func checkAggregateLimits(requestedSize float64, config drivers.OntapStorageDriverConfig, client *api.Client) error {
+	//aggregate := utils.GetV(opts, "aggregate", config.Aggregate)
+	aggregate := config.Aggregate
+	limitAggregateUsage := config.LimitAggregateUsage
 	limitAggregateUsage = strings.Replace(limitAggregateUsage, "%", "", -1) // strip off any %
 
 	log.WithFields(log.Fields{
@@ -502,7 +504,8 @@ func checkAggregateLimits(opts map[string]string, requestedSize float64, config 
 			usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
 			aggregateSize := float64(aggrSpace.AggregateSize())
 
-			spaceReserve := utils.GetV(opts, "spaceReserve", config.SpaceReserve)
+			//spaceReserve := utils.GetV(opts, "spaceReserve", config.SpaceReserve)
+			spaceReserve := config.SpaceReserve
 			spaceReserveIsThick := false
 			if spaceReserve == "volume" {
 				spaceReserveIsThick = true

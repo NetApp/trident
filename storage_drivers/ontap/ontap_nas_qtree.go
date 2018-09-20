@@ -246,7 +246,7 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
-	if aggrLimitsErr := checkAggregateLimits(opts, float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimits(float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
@@ -457,7 +457,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
 ) (string, error) {
 
-	shouldLimitVolumeSize, flexvolQuotaSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(opts, float64(sizeBytes), config.CommonStorageDriverConfig)
+	shouldLimitVolumeSize, flexvolQuotaSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), config.CommonStorageDriverConfig)
 	if checkVolumeSizeLimitsError != nil {
 		return "", checkVolumeSizeLimitsError
 	}
@@ -1375,6 +1375,14 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, quotaSize)
 	}
 	deltaQuotaSize := sizeBytes - quotaSize
+
+	if aggrLimitsErr := checkAggregateLimits(float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		return aggrLimitsErr
+	}
+
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
 
 	err = d.resizeFlexvol(flexvol, deltaQuotaSize)
 	if err != nil {

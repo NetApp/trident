@@ -295,7 +295,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(opts, float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -1097,6 +1097,10 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 	if sizeBytes < volSizeBytes {
 
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
+	}
+
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
 	}
 
 	d.API.ResizeVolume(vol, sizeBytes)
