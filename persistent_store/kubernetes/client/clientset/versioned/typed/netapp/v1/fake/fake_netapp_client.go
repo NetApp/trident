@@ -17,6 +17,10 @@ func (c *FakeTridentV1) Backends() v1.BackendInterface {
 	return &FakeBackends{c}
 }
 
+func (c *FakeTridentV1) Mutexes() v1.MutexInterface {
+	return &FakeMutexes{c}
+}
+
 func (c *FakeTridentV1) StorageClasses() v1.StorageClassInterface {
 	return &FakeStorageClasses{c}
 }

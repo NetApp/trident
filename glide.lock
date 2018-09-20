@@ -176,6 +176,10 @@ imports:
   version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
   subpackages:
   - imports
+- name: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup
 - name: google.golang.org/genproto
   version: 09f6ed296fc66555a25fe4ce95173148778dfa85
   subpackages:

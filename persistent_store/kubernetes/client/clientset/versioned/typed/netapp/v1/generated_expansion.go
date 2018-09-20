@@ -5,6 +5,8 @@ package v1
 
 type BackendExpansion interface{}
 
+type MutexExpansion interface{}
+
 type StorageClassExpansion interface{}
 
 type VolumeExpansion interface{}

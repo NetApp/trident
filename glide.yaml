@@ -103,3 +103,7 @@ import:
   version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
   subpackages:
   - imports
+- package: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup

@@ -13,6 +13,7 @@ import (
 type TridentV1Interface interface {
 	RESTClient() rest.Interface
 	BackendsGetter
+	MutexesGetter
 	StorageClassesGetter
 	VolumesGetter
 	VolumeTransactionsGetter
@@ -25,6 +26,10 @@ type TridentV1Client struct {
 
 func (c *TridentV1Client) Backends() BackendInterface {
 	return newBackends(c)
+}
+
+func (c *TridentV1Client) Mutexes() MutexInterface {
+	return newMutexes(c)
 }
 
 func (c *TridentV1Client) StorageClasses() StorageClassInterface {

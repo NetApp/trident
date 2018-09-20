@@ -130,3 +130,32 @@ type VolumeTransactionList struct {
 	// List of VolumeTransactiones
 	Items []*VolumeTransaction `json:"items"`
 }
+
+// Mutex for locking resources
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type Mutex struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard object’s metadata. More info:
+	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Holder is the current holder of the mutex
+	Holder string `json:"name"`
+	// Expires is when the mutex expires
+	Expires int64 `json:"version"`
+}
+
+// MutexList is a list of Mutex.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type MutexList struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard list metadata
+	// More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// List of Mutex
+	Items []*Mutex `json:"items"`
+}
