@@ -60,6 +60,7 @@ hostDataIP            Host iSCSI IP address
 poolNameSearchPattern Regular expression for matching available storage pools         ".+" (all)
 hostType              E-Series Host types created by the driver                       "linux_dm_mp"
 accessGroupName       E-Series Host Group used by the driver                          "trident"
+limitVolumeSize       Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 ===================== =============================================================== ================================================
 
 Example configuration

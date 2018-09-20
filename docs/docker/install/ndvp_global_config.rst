@@ -12,6 +12,8 @@ These configuration variables apply to all Trident configurations, regardless of
 +-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
 | ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_"                                                             | netappdvp\_ |
 +-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
+| ``limitVolumeSize``   | Optional restriction on volume sizes.  Default: "" (not enforced)                                                     | 10g         |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------+-------------+
 
 Also, default option settings are available to avoid having to specify them on every volume create.  The ``size``
 option is available for all controller types.  See the ONTAP config section for an example of how to set the default

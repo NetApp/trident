@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -11,6 +12,7 @@ import (
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/utils"
 )
 
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
@@ -25,6 +27,7 @@ type CommonStorageDriverConfig struct {
 	StoragePrefix     *string               `json:"-"`
 	SerialNumbers     []string              `json:"-"`
 	DriverContext     trident.DriverContext `json:"-"`
+	LimitVolumeSize   string                `json:"limitVolumeSize"`
 }
 
 type CommonStorageDriverConfigDefaults struct {
@@ -78,6 +81,7 @@ type OntapStorageDriverConfig struct {
 	QtreePruneFlexvolsPeriod         string `json:"qtreePruneFlexvolsPeriod"` // in seconds, default to 600
 	QtreeQuotaResizePeriod           string `json:"qtreeQuotaResizePeriod"`   // in seconds, default to 60
 	NfsMountOptions                  string `json:"nfsMountOptions"`
+	LimitAggregateUsage              string `json:"limitAggregateUsage"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -260,4 +264,37 @@ func GetCommonInternalVolumeName(c *CommonStorageDriverConfig, name string) stri
 	}
 
 	return fmt.Sprintf("%s-%s", prefixToUse, name)
+}
+
+// CheckVolumeSizeLimits if a limit has been set, ensures the requestedSize is under it.
+func CheckVolumeSizeLimits(opts map[string]string, requestedSize float64, config *CommonStorageDriverConfig) (bool, uint64, error) {
+
+	// if the user specified a limit for volume size, parse and enforce it
+	limitVolumeSize := utils.GetV(opts, "limitVolumeSize", config.LimitVolumeSize)
+	log.WithFields(log.Fields{
+		"limitVolumeSize": limitVolumeSize,
+	}).Debugf("Limits")
+	if limitVolumeSize == "" {
+		log.Debugf("No limits specified, not limiting volume size")
+		return false, 0, nil
+	}
+
+	volumeSizeLimit := uint64(0)
+	volumeSizeLimitStr, parseErr := utils.ConvertSizeToBytes(limitVolumeSize)
+	if parseErr != nil {
+		return false, 0, fmt.Errorf("error parsing limitVolumeSize: %v", parseErr)
+	}
+	volumeSizeLimit, _ = strconv.ParseUint(volumeSizeLimitStr, 10, 64)
+
+	log.WithFields(log.Fields{
+		"limitVolumeSize":    limitVolumeSize,
+		"volumeSizeLimit":    volumeSizeLimit,
+		"requestedSizeBytes": requestedSize,
+	}).Debugf("Comparing limits")
+
+	if requestedSize >= float64(volumeSizeLimit) {
+		return true, volumeSizeLimit, fmt.Errorf("requested size: %1.f >= the size limit: %d", requestedSize, volumeSizeLimit)
+	}
+
+	return true, volumeSizeLimit, nil
 }

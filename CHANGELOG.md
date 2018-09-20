@@ -12,6 +12,8 @@
 - Added ability to set snapshotReserve in backend config files, volume creation options, and PVC annotations (Issue [#43](https://github.com/NetApp/trident/issues/43)).
 - **Kubernetes:** Added support for expanding NFS Persistent Volumes (Issue [#21](https://github.com/NetApp/trident/issues/21)).
 - **Kubernetes:** Modified Trident installer to do most of its work in a pod.
+- Added ability to limit the ONTAP Aggregate usage % and commitment % (Issue [#64](https://github.com/NetApp/trident/issues/64)).
+- Added ability to limit the ONTAP Flexvol size for the ontap-nas-economy driver (Issue [#141](https://github.com/NetApp/trident/issues/141)).
 
 ## v18.07.0
 
@@ -68,7 +70,7 @@
   and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in
   config overrides this behavior.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
- 
+
 ## v18.01.0
 
 **Fixes:**

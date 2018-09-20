@@ -3,6 +3,7 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -498,13 +499,7 @@ func (d Client) LunGet(path string) (azgo.LunInfoType, error) {
 	return response.Result.AttributesList()[0], nil
 }
 
-// LunGetAll returns all relevant details for all LUNs whose paths match the supplied pattern
-// equivalent to filer::> lun show
-func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse, err error) {
-
-	// Limit the LUNs to those matching the path pattern
-	query := azgo.NewLunInfoType().SetPath(pathPattern)
-
+func (d Client) lunGetAllCommon(query *azgo.LunInfoType) (response azgo.LunGetIterResponse, err error) {
 	// Limit the returned data to only the data relevant to containers
 	desiredAttributes := azgo.NewLunInfoType().
 		SetPath("").
@@ -532,8 +527,27 @@ func (d Client) LunResize(path string, sizeBytes int) (response azgo.LunResizeRe
 		SetPath(path).
 		SetSize(sizeBytes).
 		ExecuteUsing(d.zr)
-
 	return
+}
+
+// LunGetAll returns all relevant details for all LUNs whose paths match the supplied pattern
+// equivalent to filer::> lun show -path /vol/trident_*/lun0
+func (d Client) LunGetAll(pathPattern string) (response azgo.LunGetIterResponse, err error) {
+
+	// Limit LUNs to those matching the pathPattern; ex, "/vol/trident_*/lun0"
+	query := azgo.NewLunInfoType().
+		SetPath(pathPattern)
+	return d.lunGetAllCommon(query)
+}
+
+// LunGetAllForVolume returns all relevant details for all LUNs in the supplied Volume
+// equivalent to filer::> lun show -volume trident_CEwDWXQRPz
+func (d Client) LunGetAllForVolume(volumeName string) (response azgo.LunGetIterResponse, err error) {
+
+	// Limit LUNs to those owned by the volumeName; ex, "trident_trident"
+	query := azgo.NewLunInfoType().
+		SetVolume(volumeName)
+	return d.lunGetAllCommon(query)
 }
 
 // LUN operations END
@@ -1566,6 +1580,146 @@ func (d Client) AggrGetIterRequest() (response azgo.AggrGetIterResponse, err err
 		SetMaxRecords(defaultZapiRecords).
 		ExecuteUsing(zr)
 	return
+}
+
+// AggrSpaceGetIterRequest returns the aggregates on the system
+// equivalent to filer::> storage aggregate show-space -aggregate-name aggregate
+func (d Client) AggrSpaceGetIterRequest(aggregateName string) (responseAggrSpace azgo.AggrSpaceGetIterResponse, err error) {
+	zr := d.GetNontunneledZapiRunner()
+
+	querySpaceInformation := azgo.NewSpaceInformationType()
+	if aggregateName != "" {
+		querySpaceInformation.SetAggregate(aggregateName)
+	}
+
+	responseAggrSpace, err = azgo.NewAggrSpaceGetIterRequest().
+		SetQuery(*querySpaceInformation).
+		ExecuteUsing(zr)
+	return
+}
+
+func (d Client) getAggregateSize(aggregateName string) (result int, err error) {
+	// First, lookup the aggregate and it's space used
+	aggregateSizeTotal := NumericalValueNotSet
+
+	responseAggrSpace, error := d.AggrSpaceGetIterRequest(aggregateName)
+	if error = GetError(responseAggrSpace, error); error != nil {
+		return NumericalValueNotSet, fmt.Errorf("error getting size for Aggregate %v: %v", aggregateName, error)
+	}
+
+	for _, aggrSpace := range responseAggrSpace.Result.AttributesList() {
+		aggregateSizeTotal = aggrSpace.AggregateSize()
+		return aggregateSizeTotal, nil
+	}
+
+	return aggregateSizeTotal, fmt.Errorf("error getting size for Aggregate %v", aggregateName)
+}
+
+type AggregateCommitment struct {
+	AggregateSize  float64
+	TotalAllocated float64
+}
+
+func (o *AggregateCommitment) Percent() float64 {
+	committedPercent := (o.TotalAllocated / float64(o.AggregateSize)) * 100.0
+	return committedPercent
+}
+
+func (o *AggregateCommitment) PercentWithRequestedSize(requestedSize float64) float64 {
+	committedPercent := ((o.TotalAllocated + requestedSize) / float64(o.AggregateSize)) * 100.0
+	return committedPercent
+}
+
+func (o AggregateCommitment) String() string {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("%s: %1.f ", "AggregateSize", o.AggregateSize))
+	buffer.WriteString(fmt.Sprintf("%s: %1.f ", "TotalAllocated", o.TotalAllocated))
+	buffer.WriteString(fmt.Sprintf("%s: %.2f %%", "Percent", o.Percent()))
+	return buffer.String()
+}
+
+// AggregateCommitmentPercentage returns the allocated capacity percentage for an aggregate
+// See also;  https://practical-admin.com/blog/netapp-powershell-toolkit-aggregate-overcommitment-report/
+func (d Client) AggregateCommitment(aggregate string) (result *AggregateCommitment, err error) {
+
+	zr := d.GetNontunneledZapiRunner()
+
+	// first, get the aggregate's size
+	aggregateSize, error := d.getAggregateSize(aggregate)
+	if error != nil {
+		return nil, error
+	}
+
+	// now, get all of the aggregate's volumes
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
+		SetContainingAggregateName(aggregate)
+	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType()
+	query := azgo.NewVolumeAttributesType().
+		SetVolumeIdAttributes(*queryVolIDAttrs).
+		SetVolumeSpaceAttributes(*queryVolSpaceAttrs)
+
+	response, err := azgo.NewVolumeGetIterRequest().
+		SetMaxRecords(defaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(zr)
+
+	if err != nil {
+		return nil, err
+	}
+	if err = GetError(response, err); err != nil {
+		return nil, fmt.Errorf("error enumerating Flexvols: %v", err)
+	}
+
+	totalAllocated := 0.0
+
+	// for each of the aggregate's volumes, compute its potential storage usage
+	for _, volAttrs := range response.Result.AttributesList() {
+		volIDAttrs := volAttrs.VolumeIdAttributes()
+		volName := string(volIDAttrs.Name())
+		volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+		volSisAttrs := volAttrs.VolumeSisAttributes()
+		volAllocated := float64(volSpaceAttrs.SizeTotal())
+
+		log.WithFields(log.Fields{
+			"volName":         volName,
+			"SizeTotal":       volSpaceAttrs.SizeTotal(),
+			"TotalSpaceSaved": volSisAttrs.TotalSpaceSaved(),
+			"volAllocated":    volAllocated,
+		}).Info("Dumping volume")
+
+		lunAllocated := 0.0
+		lunsResponse, lunsResponseErr := d.LunGetAllForVolume(volName)
+		if lunsResponseErr != nil {
+			return nil, lunsResponseErr
+		}
+		if lunsResponseErr = GetError(lunsResponse, lunsResponseErr); lunsResponseErr != nil {
+			return nil, fmt.Errorf("error enumerating LUNs for volume %v: %v", volName, lunsResponseErr)
+		}
+		if lunsResponse.Result.AttributesList() != nil {
+			for _, lun := range lunsResponse.Result.AttributesList() {
+				lunPath := lun.Path()
+				lunSize := lun.Size()
+				log.WithFields(log.Fields{
+					"lunPath": lunPath,
+					"lunSize": lunSize,
+				}).Info("Dumping LUN")
+				lunAllocated += float64(lunSize)
+			}
+		}
+
+		if lunAllocated > volAllocated {
+			totalAllocated += float64(lunAllocated)
+		} else {
+			totalAllocated += float64(volAllocated)
+		}
+	}
+
+	ac := &AggregateCommitment{
+		TotalAllocated: totalAllocated,
+		AggregateSize:  float64(aggregateSize),
+	}
+
+	return ac, nil
 }
 
 // AGGREGATE operations END

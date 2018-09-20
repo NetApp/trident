@@ -180,6 +180,8 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
+	// limits checks are not currently applicable to the Flexgroups driver, ommited here on purpose
+
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)

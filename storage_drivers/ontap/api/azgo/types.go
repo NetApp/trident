@@ -709,14 +709,25 @@ func (o *ShowAggregatesType) SetVserverName(newValue string) *ShowAggregatesType
 }
 
 type AggrAttributesType struct {
-	XMLName               xml.Name                `xml:"aggr-attributes"`
-	AggrRaidAttributesPtr *AggrRaidAttributesType `xml:"aggr-raid-attributes"`
-	AggregateNamePtr      *string                 `xml:"aggregate-name"`
+	XMLName                xml.Name                 `xml:"aggr-attributes"`
+	AggrRaidAttributesPtr  *AggrRaidAttributesType  `xml:"aggr-raid-attributes"`
+	AggrSpaceAttributesPtr *AggrSpaceAttributesType `xml:"aggr-space-attributes"`
+	AggregateNamePtr       *string                  `xml:"aggregate-name"`
 }
 
 func (o *AggrAttributesType) AggrRaidAttributes() AggrRaidAttributesType {
 	r := *o.AggrRaidAttributesPtr
 	return r
+}
+
+func (o *AggrAttributesType) AggrSpaceAttributes() AggrSpaceAttributesType {
+	r := *o.AggrSpaceAttributesPtr
+	return r
+}
+
+func (o *AggrAttributesType) SetAggrSpaceAttributes(newValue AggrSpaceAttributesType) *AggrAttributesType {
+	o.AggrSpaceAttributesPtr = &newValue
+	return o
 }
 
 func (o *AggrAttributesType) AggregateName() string {
@@ -737,6 +748,810 @@ func (o *AggrRaidAttributesType) AggregateType() string {
 func (o *AggrRaidAttributesType) RaidType() string {
 	r := *o.RaidTypePtr
 	return r
+}
+
+// AggrSpaceAttributesType is a structure to represent a aggr-space-attributes ZAPI object
+type AggrSpaceAttributesType struct {
+	XMLName xml.Name `xml:"aggr-space-attributes"`
+
+	AggregateMetadataPtr               *int `xml:"aggregate-metadata"`
+	CapacityTierUsedPtr                *int `xml:"capacity-tier-used"`
+	DataCompactedCountPtr              *int `xml:"data-compacted-count"`
+	DataCompactionSpaceSavedPtr        *int `xml:"data-compaction-space-saved"`
+	DataCompactionSpaceSavedPercentPtr *int `xml:"data-compaction-space-saved-percent"`
+	HybridCacheSizeTotalPtr            *int `xml:"hybrid-cache-size-total"`
+	PercentUsedCapacityPtr             *int `xml:"percent-used-capacity"`
+	PhysicalUsedPtr                    *int `xml:"physical-used"`
+	PhysicalUsedPercentPtr             *int `xml:"physical-used-percent"`
+	SisSharedCountPtr                  *int `xml:"sis-shared-count"`
+	SisSpaceSavedPtr                   *int `xml:"sis-space-saved"`
+	SisSpaceSavedPercentPtr            *int `xml:"sis-space-saved-percent"`
+	SizeAvailablePtr                   *int `xml:"size-available"`
+	SizeTotalPtr                       *int `xml:"size-total"`
+	SizeUsedPtr                        *int `xml:"size-used"`
+	TotalReservedSpacePtr              *int `xml:"total-reserved-space"`
+	UsedIncludingSnapshotReservePtr    *int `xml:"used-including-snapshot-reserve"`
+	VolumeFootprintsPtr                *int `xml:"volume-footprints"`
+}
+
+// ToXML converts this object into an xml string representation
+func (o *AggrSpaceAttributesType) ToXML() (string, error) {
+	output, err := xml.MarshalIndent(o, " ", "    ")
+	if err != nil {
+		log.Errorf("error: %v", err)
+	}
+	return string(output), err
+}
+
+// NewAggrSpaceAttributesType is a factory method for creating new instances of AggrSpaceAttributesType objects
+func NewAggrSpaceAttributesType() *AggrSpaceAttributesType { return &AggrSpaceAttributesType{} }
+
+// String returns a string representation of this object's fields and implements the Stringer interface
+func (o AggrSpaceAttributesType) String() string {
+	var buffer bytes.Buffer
+	if o.AggregateMetadataPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "aggregate-metadata", *o.AggregateMetadataPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("aggregate-metadata: nil\n"))
+	}
+	if o.CapacityTierUsedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "capacity-tier-used", *o.CapacityTierUsedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("capacity-tier-used: nil\n"))
+	}
+	if o.DataCompactedCountPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "data-compacted-count", *o.DataCompactedCountPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("data-compacted-count: nil\n"))
+	}
+	if o.DataCompactionSpaceSavedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "data-compaction-space-saved", *o.DataCompactionSpaceSavedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("data-compaction-space-saved: nil\n"))
+	}
+	if o.DataCompactionSpaceSavedPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "data-compaction-space-saved-percent", *o.DataCompactionSpaceSavedPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("data-compaction-space-saved-percent: nil\n"))
+	}
+	if o.HybridCacheSizeTotalPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "hybrid-cache-size-total", *o.HybridCacheSizeTotalPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("hybrid-cache-size-total: nil\n"))
+	}
+	if o.PercentUsedCapacityPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "percent-used-capacity", *o.PercentUsedCapacityPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("percent-used-capacity: nil\n"))
+	}
+	if o.PhysicalUsedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "physical-used", *o.PhysicalUsedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("physical-used: nil\n"))
+	}
+	if o.PhysicalUsedPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "physical-used-percent", *o.PhysicalUsedPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("physical-used-percent: nil\n"))
+	}
+	if o.SisSharedCountPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "sis-shared-count", *o.SisSharedCountPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("sis-shared-count: nil\n"))
+	}
+	if o.SisSpaceSavedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "sis-space-saved", *o.SisSpaceSavedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("sis-space-saved: nil\n"))
+	}
+	if o.SisSpaceSavedPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "sis-space-saved-percent", *o.SisSpaceSavedPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("sis-space-saved-percent: nil\n"))
+	}
+	if o.SizeAvailablePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "size-available", *o.SizeAvailablePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("size-available: nil\n"))
+	}
+	if o.SizeTotalPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "size-total", *o.SizeTotalPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("size-total: nil\n"))
+	}
+	if o.SizeUsedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "size-used", *o.SizeUsedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("size-used: nil\n"))
+	}
+	if o.TotalReservedSpacePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "total-reserved-space", *o.TotalReservedSpacePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("total-reserved-space: nil\n"))
+	}
+	if o.UsedIncludingSnapshotReservePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "used-including-snapshot-reserve", *o.UsedIncludingSnapshotReservePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("used-including-snapshot-reserve: nil\n"))
+	}
+	if o.VolumeFootprintsPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "volume-footprints", *o.VolumeFootprintsPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("volume-footprints: nil\n"))
+	}
+	return buffer.String()
+}
+
+// AggregateMetadata is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) AggregateMetadata() int {
+	r := *o.AggregateMetadataPtr
+	return r
+}
+
+// SetAggregateMetadata is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetAggregateMetadata(newValue int) *AggrSpaceAttributesType {
+	o.AggregateMetadataPtr = &newValue
+	return o
+}
+
+// CapacityTierUsed is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) CapacityTierUsed() int {
+	r := *o.CapacityTierUsedPtr
+	return r
+}
+
+// SetCapacityTierUsed is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetCapacityTierUsed(newValue int) *AggrSpaceAttributesType {
+	o.CapacityTierUsedPtr = &newValue
+	return o
+}
+
+// DataCompactedCount is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) DataCompactedCount() int {
+	r := *o.DataCompactedCountPtr
+	return r
+}
+
+// SetDataCompactedCount is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetDataCompactedCount(newValue int) *AggrSpaceAttributesType {
+	o.DataCompactedCountPtr = &newValue
+	return o
+}
+
+// DataCompactionSpaceSaved is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) DataCompactionSpaceSaved() int {
+	r := *o.DataCompactionSpaceSavedPtr
+	return r
+}
+
+// SetDataCompactionSpaceSaved is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetDataCompactionSpaceSaved(newValue int) *AggrSpaceAttributesType {
+	o.DataCompactionSpaceSavedPtr = &newValue
+	return o
+}
+
+// DataCompactionSpaceSavedPercent is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) DataCompactionSpaceSavedPercent() int {
+	r := *o.DataCompactionSpaceSavedPercentPtr
+	return r
+}
+
+// SetDataCompactionSpaceSavedPercent is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetDataCompactionSpaceSavedPercent(newValue int) *AggrSpaceAttributesType {
+	o.DataCompactionSpaceSavedPercentPtr = &newValue
+	return o
+}
+
+// HybridCacheSizeTotal is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) HybridCacheSizeTotal() int {
+	r := *o.HybridCacheSizeTotalPtr
+	return r
+}
+
+// SetHybridCacheSizeTotal is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetHybridCacheSizeTotal(newValue int) *AggrSpaceAttributesType {
+	o.HybridCacheSizeTotalPtr = &newValue
+	return o
+}
+
+// PercentUsedCapacity is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) PercentUsedCapacity() int {
+	r := *o.PercentUsedCapacityPtr
+	return r
+}
+
+// SetPercentUsedCapacity is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetPercentUsedCapacity(newValue int) *AggrSpaceAttributesType {
+	o.PercentUsedCapacityPtr = &newValue
+	return o
+}
+
+// PhysicalUsed is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) PhysicalUsed() int {
+	r := *o.PhysicalUsedPtr
+	return r
+}
+
+// SetPhysicalUsed is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetPhysicalUsed(newValue int) *AggrSpaceAttributesType {
+	o.PhysicalUsedPtr = &newValue
+	return o
+}
+
+// PhysicalUsedPercent is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) PhysicalUsedPercent() int {
+	r := *o.PhysicalUsedPercentPtr
+	return r
+}
+
+// SetPhysicalUsedPercent is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetPhysicalUsedPercent(newValue int) *AggrSpaceAttributesType {
+	o.PhysicalUsedPercentPtr = &newValue
+	return o
+}
+
+// SisSharedCount is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SisSharedCount() int {
+	r := *o.SisSharedCountPtr
+	return r
+}
+
+// SetSisSharedCount is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSisSharedCount(newValue int) *AggrSpaceAttributesType {
+	o.SisSharedCountPtr = &newValue
+	return o
+}
+
+// SisSpaceSaved is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SisSpaceSaved() int {
+	r := *o.SisSpaceSavedPtr
+	return r
+}
+
+// SetSisSpaceSaved is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSisSpaceSaved(newValue int) *AggrSpaceAttributesType {
+	o.SisSpaceSavedPtr = &newValue
+	return o
+}
+
+// SisSpaceSavedPercent is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SisSpaceSavedPercent() int {
+	r := *o.SisSpaceSavedPercentPtr
+	return r
+}
+
+// SetSisSpaceSavedPercent is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSisSpaceSavedPercent(newValue int) *AggrSpaceAttributesType {
+	o.SisSpaceSavedPercentPtr = &newValue
+	return o
+}
+
+// SizeAvailable is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SizeAvailable() int {
+	r := *o.SizeAvailablePtr
+	return r
+}
+
+// SetSizeAvailable is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSizeAvailable(newValue int) *AggrSpaceAttributesType {
+	o.SizeAvailablePtr = &newValue
+	return o
+}
+
+// SizeTotal is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SizeTotal() int {
+	r := *o.SizeTotalPtr
+	return r
+}
+
+// SetSizeTotal is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSizeTotal(newValue int) *AggrSpaceAttributesType {
+	o.SizeTotalPtr = &newValue
+	return o
+}
+
+// SizeUsed is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) SizeUsed() int {
+	r := *o.SizeUsedPtr
+	return r
+}
+
+// SetSizeUsed is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetSizeUsed(newValue int) *AggrSpaceAttributesType {
+	o.SizeUsedPtr = &newValue
+	return o
+}
+
+// TotalReservedSpace is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) TotalReservedSpace() int {
+	r := *o.TotalReservedSpacePtr
+	return r
+}
+
+// SetTotalReservedSpace is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetTotalReservedSpace(newValue int) *AggrSpaceAttributesType {
+	o.TotalReservedSpacePtr = &newValue
+	return o
+}
+
+// UsedIncludingSnapshotReserve is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) UsedIncludingSnapshotReserve() int {
+	r := *o.UsedIncludingSnapshotReservePtr
+	return r
+}
+
+// SetUsedIncludingSnapshotReserve is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetUsedIncludingSnapshotReserve(newValue int) *AggrSpaceAttributesType {
+	o.UsedIncludingSnapshotReservePtr = &newValue
+	return o
+}
+
+// VolumeFootprints is a fluent style 'getter' method that can be chained
+func (o *AggrSpaceAttributesType) VolumeFootprints() int {
+	r := *o.VolumeFootprintsPtr
+	return r
+}
+
+// SetVolumeFootprints is a fluent style 'setter' method that can be chained
+func (o *AggrSpaceAttributesType) SetVolumeFootprints(newValue int) *AggrSpaceAttributesType {
+	o.VolumeFootprintsPtr = &newValue
+	return o
+}
+
+// SpaceInformationType is a structure to represent a space-information ZAPI object
+type SpaceInformationType struct {
+	XMLName xml.Name `xml:"space-information"`
+
+	AggregatePtr                            *string `xml:"aggregate"`
+	AggregateMetadataPtr                    *int    `xml:"aggregate-metadata"`
+	AggregateMetadataPercentPtr             *int    `xml:"aggregate-metadata-percent"`
+	AggregateSizePtr                        *int    `xml:"aggregate-size"`
+	ObjectStoreMetadataPtr                  *int    `xml:"object-store-metadata"`
+	ObjectStoreMetadataPercentPtr           *int    `xml:"object-store-metadata-percent"`
+	ObjectStorePhysicalUsedPtr              *int    `xml:"object-store-physical-used"`
+	ObjectStorePhysicalUsedPercentPtr       *int    `xml:"object-store-physical-used-percent"`
+	ObjectStoreReferencedCapacityPtr        *int    `xml:"object-store-referenced-capacity"`
+	ObjectStoreReferencedCapacityPercentPtr *int    `xml:"object-store-referenced-capacity-percent"`
+	ObjectStoreSizePtr                      *int    `xml:"object-store-size"`
+	ObjectStoreUnreclaimedSpacePtr          *int    `xml:"object-store-unreclaimed-space"`
+	ObjectStoreUnreclaimedSpacePercentPtr   *int    `xml:"object-store-unreclaimed-space-percent"`
+	PercentSnapshotSpacePtr                 *int    `xml:"percent-snapshot-space"`
+	PhysicalUsedPtr                         *int    `xml:"physical-used"`
+	PhysicalUsedPercentPtr                  *int    `xml:"physical-used-percent"`
+	SnapSizeTotalPtr                        *int    `xml:"snap-size-total"`
+	SnapshotReserveUnusablePtr              *int    `xml:"snapshot-reserve-unusable"`
+	SnapshotReserveUnusablePercentPtr       *int    `xml:"snapshot-reserve-unusable-percent"`
+	TierNamePtr                             *string `xml:"tier-name"`
+	UsedIncludingSnapshotReservePtr         *int    `xml:"used-including-snapshot-reserve"`
+	UsedIncludingSnapshotReservePercentPtr  *int    `xml:"used-including-snapshot-reserve-percent"`
+	VolumeFootprintsPtr                     *int    `xml:"volume-footprints"`
+	VolumeFootprintsPercentPtr              *int    `xml:"volume-footprints-percent"`
+}
+
+// ToXML converts this object into an xml string representation
+func (o *SpaceInformationType) ToXML() (string, error) {
+	output, err := xml.MarshalIndent(o, " ", "    ")
+	if err != nil {
+		log.Errorf("error: %v", err)
+	}
+	return string(output), err
+}
+
+// NewSpaceInformationType is a factory method for creating new instances of SpaceInformationType objects
+func NewSpaceInformationType() *SpaceInformationType { return &SpaceInformationType{} }
+
+// String returns a string representation of this object's fields and implements the Stringer interface
+func (o SpaceInformationType) String() string {
+	var buffer bytes.Buffer
+	if o.AggregatePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "aggregate", *o.AggregatePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("aggregate: nil\n"))
+	}
+	if o.AggregateMetadataPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "aggregate-metadata", *o.AggregateMetadataPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("aggregate-metadata: nil\n"))
+	}
+	if o.AggregateMetadataPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "aggregate-metadata-percent", *o.AggregateMetadataPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("aggregate-metadata-percent: nil\n"))
+	}
+	if o.AggregateSizePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "aggregate-size", *o.AggregateSizePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("aggregate-size: nil\n"))
+	}
+	if o.ObjectStoreMetadataPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-metadata", *o.ObjectStoreMetadataPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-metadata: nil\n"))
+	}
+	if o.ObjectStoreMetadataPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-metadata-percent", *o.ObjectStoreMetadataPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-metadata-percent: nil\n"))
+	}
+	if o.ObjectStorePhysicalUsedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-physical-used", *o.ObjectStorePhysicalUsedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-physical-used: nil\n"))
+	}
+	if o.ObjectStorePhysicalUsedPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-physical-used-percent", *o.ObjectStorePhysicalUsedPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-physical-used-percent: nil\n"))
+	}
+	if o.ObjectStoreReferencedCapacityPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-referenced-capacity", *o.ObjectStoreReferencedCapacityPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-referenced-capacity: nil\n"))
+	}
+	if o.ObjectStoreReferencedCapacityPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-referenced-capacity-percent", *o.ObjectStoreReferencedCapacityPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-referenced-capacity-percent: nil\n"))
+	}
+	if o.ObjectStoreSizePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-size", *o.ObjectStoreSizePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-size: nil\n"))
+	}
+	if o.ObjectStoreUnreclaimedSpacePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-unreclaimed-space", *o.ObjectStoreUnreclaimedSpacePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-unreclaimed-space: nil\n"))
+	}
+	if o.ObjectStoreUnreclaimedSpacePercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "object-store-unreclaimed-space-percent", *o.ObjectStoreUnreclaimedSpacePercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("object-store-unreclaimed-space-percent: nil\n"))
+	}
+	if o.PercentSnapshotSpacePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "percent-snapshot-space", *o.PercentSnapshotSpacePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("percent-snapshot-space: nil\n"))
+	}
+	if o.PhysicalUsedPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "physical-used", *o.PhysicalUsedPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("physical-used: nil\n"))
+	}
+	if o.PhysicalUsedPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "physical-used-percent", *o.PhysicalUsedPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("physical-used-percent: nil\n"))
+	}
+	if o.SnapSizeTotalPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "snap-size-total", *o.SnapSizeTotalPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("snap-size-total: nil\n"))
+	}
+	if o.SnapshotReserveUnusablePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "snapshot-reserve-unusable", *o.SnapshotReserveUnusablePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("snapshot-reserve-unusable: nil\n"))
+	}
+	if o.SnapshotReserveUnusablePercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "snapshot-reserve-unusable-percent", *o.SnapshotReserveUnusablePercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("snapshot-reserve-unusable-percent: nil\n"))
+	}
+	if o.TierNamePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "tier-name", *o.TierNamePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("tier-name: nil\n"))
+	}
+	if o.UsedIncludingSnapshotReservePtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "used-including-snapshot-reserve", *o.UsedIncludingSnapshotReservePtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("used-including-snapshot-reserve: nil\n"))
+	}
+	if o.UsedIncludingSnapshotReservePercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "used-including-snapshot-reserve-percent", *o.UsedIncludingSnapshotReservePercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("used-including-snapshot-reserve-percent: nil\n"))
+	}
+	if o.VolumeFootprintsPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "volume-footprints", *o.VolumeFootprintsPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("volume-footprints: nil\n"))
+	}
+	if o.VolumeFootprintsPercentPtr != nil {
+		buffer.WriteString(fmt.Sprintf("%s: %v\n", "volume-footprints-percent", *o.VolumeFootprintsPercentPtr))
+	} else {
+		buffer.WriteString(fmt.Sprintf("volume-footprints-percent: nil\n"))
+	}
+	return buffer.String()
+}
+
+// Aggregate is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) Aggregate() string {
+	r := *o.AggregatePtr
+	return r
+}
+
+// SetAggregate is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetAggregate(newValue string) *SpaceInformationType {
+	o.AggregatePtr = &newValue
+	return o
+}
+
+// AggregateMetadata is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) AggregateMetadata() int {
+	r := *o.AggregateMetadataPtr
+	return r
+}
+
+// SetAggregateMetadata is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetAggregateMetadata(newValue int) *SpaceInformationType {
+	o.AggregateMetadataPtr = &newValue
+	return o
+}
+
+// AggregateMetadataPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) AggregateMetadataPercent() int {
+	r := *o.AggregateMetadataPercentPtr
+	return r
+}
+
+// SetAggregateMetadataPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetAggregateMetadataPercent(newValue int) *SpaceInformationType {
+	o.AggregateMetadataPercentPtr = &newValue
+	return o
+}
+
+// AggregateSize is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) AggregateSize() int {
+	r := *o.AggregateSizePtr
+	return r
+}
+
+// SetAggregateSize is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetAggregateSize(newValue int) *SpaceInformationType {
+	o.AggregateSizePtr = &newValue
+	return o
+}
+
+// ObjectStoreMetadata is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreMetadata() int {
+	r := *o.ObjectStoreMetadataPtr
+	return r
+}
+
+// SetObjectStoreMetadata is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreMetadata(newValue int) *SpaceInformationType {
+	o.ObjectStoreMetadataPtr = &newValue
+	return o
+}
+
+// ObjectStoreMetadataPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreMetadataPercent() int {
+	r := *o.ObjectStoreMetadataPercentPtr
+	return r
+}
+
+// SetObjectStoreMetadataPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreMetadataPercent(newValue int) *SpaceInformationType {
+	o.ObjectStoreMetadataPercentPtr = &newValue
+	return o
+}
+
+// ObjectStorePhysicalUsed is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStorePhysicalUsed() int {
+	r := *o.ObjectStorePhysicalUsedPtr
+	return r
+}
+
+// SetObjectStorePhysicalUsed is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStorePhysicalUsed(newValue int) *SpaceInformationType {
+	o.ObjectStorePhysicalUsedPtr = &newValue
+	return o
+}
+
+// ObjectStorePhysicalUsedPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStorePhysicalUsedPercent() int {
+	r := *o.ObjectStorePhysicalUsedPercentPtr
+	return r
+}
+
+// SetObjectStorePhysicalUsedPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStorePhysicalUsedPercent(newValue int) *SpaceInformationType {
+	o.ObjectStorePhysicalUsedPercentPtr = &newValue
+	return o
+}
+
+// ObjectStoreReferencedCapacity is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreReferencedCapacity() int {
+	r := *o.ObjectStoreReferencedCapacityPtr
+	return r
+}
+
+// SetObjectStoreReferencedCapacity is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreReferencedCapacity(newValue int) *SpaceInformationType {
+	o.ObjectStoreReferencedCapacityPtr = &newValue
+	return o
+}
+
+// ObjectStoreReferencedCapacityPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreReferencedCapacityPercent() int {
+	r := *o.ObjectStoreReferencedCapacityPercentPtr
+	return r
+}
+
+// SetObjectStoreReferencedCapacityPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreReferencedCapacityPercent(newValue int) *SpaceInformationType {
+	o.ObjectStoreReferencedCapacityPercentPtr = &newValue
+	return o
+}
+
+// ObjectStoreSize is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreSize() int {
+	r := *o.ObjectStoreSizePtr
+	return r
+}
+
+// SetObjectStoreSize is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreSize(newValue int) *SpaceInformationType {
+	o.ObjectStoreSizePtr = &newValue
+	return o
+}
+
+// ObjectStoreUnreclaimedSpace is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreUnreclaimedSpace() int {
+	r := *o.ObjectStoreUnreclaimedSpacePtr
+	return r
+}
+
+// SetObjectStoreUnreclaimedSpace is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreUnreclaimedSpace(newValue int) *SpaceInformationType {
+	o.ObjectStoreUnreclaimedSpacePtr = &newValue
+	return o
+}
+
+// ObjectStoreUnreclaimedSpacePercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) ObjectStoreUnreclaimedSpacePercent() int {
+	r := *o.ObjectStoreUnreclaimedSpacePercentPtr
+	return r
+}
+
+// SetObjectStoreUnreclaimedSpacePercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetObjectStoreUnreclaimedSpacePercent(newValue int) *SpaceInformationType {
+	o.ObjectStoreUnreclaimedSpacePercentPtr = &newValue
+	return o
+}
+
+// PercentSnapshotSpace is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) PercentSnapshotSpace() int {
+	r := *o.PercentSnapshotSpacePtr
+	return r
+}
+
+// SetPercentSnapshotSpace is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetPercentSnapshotSpace(newValue int) *SpaceInformationType {
+	o.PercentSnapshotSpacePtr = &newValue
+	return o
+}
+
+// PhysicalUsed is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) PhysicalUsed() int {
+	r := *o.PhysicalUsedPtr
+	return r
+}
+
+// SetPhysicalUsed is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetPhysicalUsed(newValue int) *SpaceInformationType {
+	o.PhysicalUsedPtr = &newValue
+	return o
+}
+
+// PhysicalUsedPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) PhysicalUsedPercent() int {
+	r := *o.PhysicalUsedPercentPtr
+	return r
+}
+
+// SetPhysicalUsedPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetPhysicalUsedPercent(newValue int) *SpaceInformationType {
+	o.PhysicalUsedPercentPtr = &newValue
+	return o
+}
+
+// SnapSizeTotal is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) SnapSizeTotal() int {
+	r := *o.SnapSizeTotalPtr
+	return r
+}
+
+// SetSnapSizeTotal is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetSnapSizeTotal(newValue int) *SpaceInformationType {
+	o.SnapSizeTotalPtr = &newValue
+	return o
+}
+
+// SnapshotReserveUnusable is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) SnapshotReserveUnusable() int {
+	r := *o.SnapshotReserveUnusablePtr
+	return r
+}
+
+// SetSnapshotReserveUnusable is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetSnapshotReserveUnusable(newValue int) *SpaceInformationType {
+	o.SnapshotReserveUnusablePtr = &newValue
+	return o
+}
+
+// SnapshotReserveUnusablePercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) SnapshotReserveUnusablePercent() int {
+	r := *o.SnapshotReserveUnusablePercentPtr
+	return r
+}
+
+// SetSnapshotReserveUnusablePercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetSnapshotReserveUnusablePercent(newValue int) *SpaceInformationType {
+	o.SnapshotReserveUnusablePercentPtr = &newValue
+	return o
+}
+
+// TierName is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) TierName() string {
+	r := *o.TierNamePtr
+	return r
+}
+
+// SetTierName is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetTierName(newValue string) *SpaceInformationType {
+	o.TierNamePtr = &newValue
+	return o
+}
+
+// UsedIncludingSnapshotReserve is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) UsedIncludingSnapshotReserve() int {
+	r := *o.UsedIncludingSnapshotReservePtr
+	return r
+}
+
+// SetUsedIncludingSnapshotReserve is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetUsedIncludingSnapshotReserve(newValue int) *SpaceInformationType {
+	o.UsedIncludingSnapshotReservePtr = &newValue
+	return o
+}
+
+// UsedIncludingSnapshotReservePercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) UsedIncludingSnapshotReservePercent() int {
+	r := *o.UsedIncludingSnapshotReservePercentPtr
+	return r
+}
+
+// SetUsedIncludingSnapshotReservePercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetUsedIncludingSnapshotReservePercent(newValue int) *SpaceInformationType {
+	o.UsedIncludingSnapshotReservePercentPtr = &newValue
+	return o
+}
+
+// VolumeFootprints is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) VolumeFootprints() int {
+	r := *o.VolumeFootprintsPtr
+	return r
+}
+
+// SetVolumeFootprints is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetVolumeFootprints(newValue int) *SpaceInformationType {
+	o.VolumeFootprintsPtr = &newValue
+	return o
+}
+
+// VolumeFootprintsPercent is a fluent style 'getter' method that can be chained
+func (o *SpaceInformationType) VolumeFootprintsPercent() int {
+	r := *o.VolumeFootprintsPercentPtr
+	return r
+}
+
+// SetVolumeFootprintsPercent is a fluent style 'setter' method that can be chained
+func (o *SpaceInformationType) SetVolumeFootprintsPercent(newValue int) *SpaceInformationType {
+	o.VolumeFootprintsPercentPtr = &newValue
+	return o
 }
 
 type VolumeModifyIterInfoType struct {

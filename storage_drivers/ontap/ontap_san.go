@@ -225,6 +225,14 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
+	if aggrLimitsErr := checkAggregateLimits(opts, float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		return aggrLimitsErr
+	}
+
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(opts, float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
+
 	encrypt, err := ValidateEncryptionAttribute(encryption, d.API)
 	if err != nil {
 		return err

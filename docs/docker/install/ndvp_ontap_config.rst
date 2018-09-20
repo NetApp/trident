@@ -11,7 +11,7 @@ Below are the ONTAP CLI comands to create a dedicated user for Trident with spec
 
   # create a new Trident role
   security login role create -vserver [VSERVER] -role trident_role -cmddirname DEFAULT -access none
-  
+
   # grant common Trident permissions
   security login role create -vserver [VSERVER] -role trident_role -cmddirname "event generate-autosupport-log" -access all
   security login role create -vserver [VSERVER] -role trident_role -cmddirname "network interface" -access readonly
@@ -37,21 +37,23 @@ Configuration File Options
 
 In addition to the global configuration values above, when using ONTAP these top level options are available.
 
-+-----------------------+----------------------------------------------------------------------------+------------+
-| Option                | Description                                                                | Example    |
-+=======================+============================================================================+============+
-| ``managementLIF``     | IP address of ONTAP management LIF                                         | 10.0.0.1   |
-+-----------------------+----------------------------------------------------------------------------+------------+
-| ``dataLIF``           | IP address of protocol LIF; will be derived if not specified               | 10.0.0.2   |
-+-----------------------+----------------------------------------------------------------------------+------------+
-| ``svm``               | Storage virtual machine to use (req, if management LIF is a cluster LIF)   | svm_nfs    |
-+-----------------------+----------------------------------------------------------------------------+------------+
-| ``username``          | Username to connect to the storage device                                  | vsadmin    |
-+-----------------------+----------------------------------------------------------------------------+------------+
-| ``password``          | Password to connect to the storage device                                  | secret     |
-+-----------------------+----------------------------------------------------------------------------+------------+
-| ``aggregate``         | Aggregate for provisioning (optional; if set, must be assigned to the SVM) | aggr1      |
-+-----------------------+----------------------------------------------------------------------------+------------+
++------------------------------+----------------------------------------------------------------------------+------------+
+| Option                       | Description                                                                | Example    |
++==============================+============================================================================+============+
+| ``managementLIF``            | IP address of ONTAP management LIF                                         | 10.0.0.1   |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``dataLIF``                  | IP address of protocol LIF; will be derived if not specified               | 10.0.0.2   |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``svm``                      | Storage virtual machine to use (req, if management LIF is a cluster LIF)   | svm_nfs    |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``username``                 | Username to connect to the storage device                                  | vsadmin    |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``password``                 | Password to connect to the storage device                                  | secret     |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``aggregate``                | Aggregate for provisioning (optional; if set, must be assigned to the SVM) | aggr1      |
++------------------------------+----------------------------------------------------------------------------+------------+
+| ``limitAggregateUsage``      | Fail provisioning if usage is above this percentage (optional)             | 75%        |
++------------------------------+----------------------------------------------------------------------------+------------+
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
 drivers only, a FQDN may also be specified for the dataLIF option, in which case the FQDN will
@@ -65,45 +67,54 @@ For NFS host configuration, see also: http://www.netapp.com/us/media/tr-4067.pdf
 For the ontap-nas-flexgroup driver, the ``aggregate`` option in the configuration file is ignored. All aggregates
 assigned to the SVM are used to provision a FlexGroup Volume.
 
-+-----------------------+--------------------------------------------------------------------------+------------+
-| Option                | Description                                                              | Example    |
-+=======================+==========================================================================+============+
-| ``nfsMountOptions``   | Fine grained control of NFS mount options; defaults to "-o nfsvers=3"    |-o nfsvers=4|
-+-----------------------+--------------------------------------------------------------------------+------------+
++------------------------------+--------------------------------------------------------------------------+------------+
+| Option                       | Description                                                              | Example    |
++==============================+==========================================================================+============+
+| ``nfsMountOptions``          | Fine grained control of NFS mount options; defaults to "-o nfsvers=3"    |-o nfsvers=4|
++------------------------------+--------------------------------------------------------------------------+------------+
 
 For the ontap-san driver, an additional top level option is available to specify an igroup.
 
-+-----------------------+--------------------------------------------------------------------------+------------+
-| Option                | Description                                                              | Example    |
-+=======================+==========================================================================+============+
-| ``igroupName``        | The igroup used by the plugin; defaults to "netappdvp"                   | myigroup   |
-+-----------------------+--------------------------------------------------------------------------+------------+
++------------------------------+--------------------------------------------------------------------------+------------+
+| Option                       | Description                                                              | Example    |
++==============================+==========================================================================+============+
+| ``igroupName``               | The igroup used by the plugin; defaults to "netappdvp"                   | myigroup   |
++------------------------------+--------------------------------------------------------------------------+------------+
+
+For the ontap-nas-economy driver, the ``limitVolumeSize`` option will additionally limit the size of the
+FlexVols that it creates.
+
++------------------------------+--------------------------------------------------------------------------+------------+
+| Option                       | Description                                                              | Example    |
++==============================+==========================================================================+============+
+| ``limitVolumeSize``          | Maximum requestable volume size and qtree parent volume size             | 300g       |
++------------------------------+--------------------------------------------------------------------------+------------+
 
 Also, when using ONTAP, these default option settings are available to avoid having to specify them on every volume create.
 
-+-----------------------+--------------------------------------------------------------------------+------------+
-| Defaults Option       | Description                                                              | Example    |
-+=======================+==========================================================================+============+
-| ``spaceReserve``      | Space reservation mode; "none" (thin provisioned) or "volume" (thick)    | none       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotPolicy``    | Snapshot policy to use, default is "none"                                | none       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotReserve``   | Snapshot reserve percentage, default is "" to accept ONTAP's default     | 10         |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``splitOnClone``      | Split a clone from its parent upon creation, defaults to "false"         | false      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``encryption``        | Enable NetApp Volume Encryption, defaults to "false"                     | true       |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``unixPermissions``   | NAS option for provisioned NFS volumes, defaults to "777"                | 777        |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotDir``       | NAS option for access to the .snapshot directory, defaults to "false"    | false      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``exportPolicy``      | NAS option for the NFS export policy to use, defaults to "default"       | default    |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``securityStyle``     | NAS option for access to the provisioned NFS volume, defaults to "unix"  | mixed      |
-+-----------------------+--------------------------------------------------------------------------+------------+
-| ``fileSystemType``    | SAN option to select the file system type, defaults to "ext4"            | xfs        |
-+-----------------------+--------------------------------------------------------------------------+------------+
++------------------------------+--------------------------------------------------------------------------+------------+
+| Defaults Option              | Description                                                              | Example    |
++==============================+==========================================================================+============+
+| ``spaceReserve``             | Space reservation mode; "none" (thin provisioned) or "volume" (thick)    | none       |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotPolicy``           | Snapshot policy to use, default is "none"                                | none       |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotReserve``          | Snapshot reserve percentage, default is "" to accept ONTAP's default     | 10         |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``splitOnClone``             | Split a clone from its parent upon creation, defaults to "false"         | false      |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``encryption``               | Enable NetApp Volume Encryption, defaults to "false"                     | true       |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``unixPermissions``          | NAS option for provisioned NFS volumes, defaults to "777"                | 777        |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``snapshotDir``              | NAS option for access to the .snapshot directory, defaults to "false"    | false      |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``exportPolicy``             | NAS option for the NFS export policy to use, defaults to "default"       | default    |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``securityStyle``            | NAS option for access to the provisioned NFS volume, defaults to "unix"  | mixed      |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``fileSystemType``           | SAN option to select the file system type, defaults to "ext4"            | xfs        |
++------------------------------+--------------------------------------------------------------------------+------------+
 
 Scaling Options
 ---------------

@@ -113,44 +113,47 @@ they should be removed when nodes are removed as well.
 Backend configuration options
 -----------------------------
 
-================== ======================================================================= ================================================
-Parameter          Description                                                             Default
-================== ======================================================================= ================================================
-version            Always 1
-storageDriverName  "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
-backendName        Custom name for the storage backend                                     Driver name + "_" + dataLIF
-managementLIF      IP address of a cluster or SVM management LIF                           "10.0.0.1"
-dataLIF            IP address of protocol LIF                                              Derived by the SVM unless specified
-svm                Storage virtual machine to use                                          Derived if an SVM managementLIF is specified
-igroupName         Name of the igroup for SAN volumes to use                               "trident"
-username           Username to connect to the cluster/SVM
-password           Password to connect to the cluster/SVM
-storagePrefix      Prefix used when provisioning new volumes in the SVM                    "trident"
-================== ======================================================================= ================================================
+========================= ======================================================================= ================================================
+Parameter                 Description                                                             Default
+========================= ======================================================================= ================================================
+version                   Always 1
+storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
+backendName               Custom name for the storage backend                                     Driver name + "_" + dataLIF
+managementLIF             IP address of a cluster or SVM management LIF                           "10.0.0.1"
+dataLIF                   IP address of protocol LIF                                              Derived by the SVM unless specified
+svm                       Storage virtual machine to use                                          Derived if an SVM managementLIF is specified
+igroupName                Name of the igroup for SAN volumes to use                               "trident"
+username                  Username to connect to the cluster/SVM
+password                  Password to connect to the cluster/SVM
+storagePrefix             Prefix used when provisioning new volumes in the SVM                    "trident"
+limitAggregateUsage       Fail provisioning if usage is above this percentage                     "" (not enforced by default)
+limitVolumeSize           Fail provisioning if requested volume size is above this value          "" (not enforced by default)
+========================= ======================================================================= ================================================
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
 drivers only, a FQDN may also be specified for the dataLIF option, in which case the FQDN will
 be used for the NFS mount operations. For the ontap-san driver, the default is to use all data LIF IPs from
 the SVM and to use iSCSI multipath. Specifying an IP address for the dataLIF for the ontap-san driver forces
-the driver to disable multipath and use only the specified address.
+the driver to disable multipath and use only the specified address.  For the ontap-nas-economy driver,
+the limitVolumeSize option will also restrict the maximum size of the volumes it manages for qtrees.
 
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
 configuration examples below.
 
-================== =============================================================== ================================================
-Parameter          Description                                                     Default
-================== =============================================================== ================================================
-spaceReserve       Space reservation mode; "none" (thin) or "volume" (thick)       "none"
-snapshotPolicy     Snapshot policy to use                                          "none"
-snapshotReserve    Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
-splitOnClone       Split a clone from its parent upon creation                     false
-encryption         Enable NetApp volume encryption                                 false
-unixPermissions    ontap-nas* only: mode for new volumes                           "777"
-snapshotDir        ontap-nas* only: access to the .snapshot directory              false
-exportPolicy       ontap-nas* only: export policy to use                           "default"
-securityStyle      ontap-nas* only: security style for new volumes                 "unix"
-================== =============================================================== ================================================
+========================= =============================================================== ================================================
+Parameter                 Description                                                     Default
+========================= =============================================================== ================================================
+spaceReserve              Space reservation mode; "none" (thin) or "volume" (thick)       "none"
+snapshotPolicy            Snapshot policy to use                                          "none"
+snapshotReserve           Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
+splitOnClone              Split a clone from its parent upon creation                     false
+encryption                Enable NetApp volume encryption                                 false
+unixPermissions           ontap-nas* only: mode for new volumes                           "777"
+snapshotDir               ontap-nas* only: access to the .snapshot directory              false
+exportPolicy              ontap-nas* only: export policy to use                           "default"
+securityStyle             ontap-nas* only: security style for new volumes                 "unix"
+========================= =============================================================== ================================================
 
 Example configuration
 ---------------------

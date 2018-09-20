@@ -155,6 +155,14 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
+	if aggrLimitsErr := checkAggregateLimits(opts, float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		return aggrLimitsErr
+	}
+
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(opts, float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
+
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)

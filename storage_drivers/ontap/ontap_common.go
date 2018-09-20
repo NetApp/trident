@@ -324,6 +324,8 @@ const DefaultNfsMountOptions = "-o nfsvers=3"
 const DefaultSplitOnClone = "false"
 const DefaultFileSystemType = "ext4"
 const DefaultEncryption = "false"
+const DefaultLimitAggregateUsage = ""
+const DefaultLimitVolumeSize = ""
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) error {
@@ -398,20 +400,30 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		config.Encryption = DefaultEncryption
 	}
 
+	if config.LimitAggregateUsage == "" {
+		config.LimitAggregateUsage = DefaultLimitAggregateUsage
+	}
+
+	if config.LimitVolumeSize == "" {
+		config.LimitVolumeSize = DefaultLimitVolumeSize
+	}
+
 	log.WithFields(log.Fields{
-		"StoragePrefix":   *config.StoragePrefix,
-		"SpaceReserve":    config.SpaceReserve,
-		"SnapshotPolicy":  config.SnapshotPolicy,
-		"SnapshotReserve": config.SnapshotReserve,
-		"UnixPermissions": config.UnixPermissions,
-		"SnapshotDir":     config.SnapshotDir,
-		"ExportPolicy":    config.ExportPolicy,
-		"SecurityStyle":   config.SecurityStyle,
-		"NfsMountOptions": config.NfsMountOptions,
-		"SplitOnClone":    config.SplitOnClone,
-		"FileSystemType":  config.FileSystemType,
-		"Encryption":      config.Encryption,
-		"Size":            config.Size,
+		"StoragePrefix":       *config.StoragePrefix,
+		"SpaceReserve":        config.SpaceReserve,
+		"SnapshotPolicy":      config.SnapshotPolicy,
+		"SnapshotReserve":     config.SnapshotReserve,
+		"UnixPermissions":     config.UnixPermissions,
+		"SnapshotDir":         config.SnapshotDir,
+		"ExportPolicy":        config.ExportPolicy,
+		"SecurityStyle":       config.SecurityStyle,
+		"NfsMountOptions":     config.NfsMountOptions,
+		"SplitOnClone":        config.SplitOnClone,
+		"FileSystemType":      config.FileSystemType,
+		"Encryption":          config.Encryption,
+		"LimitAggregateUsage": config.LimitAggregateUsage,
+		"LimitVolumeSize":     config.LimitVolumeSize,
+		"Size":                config.Size,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -436,6 +448,102 @@ func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, 
 			return nil, nil
 		}
 	}
+}
+
+func checkAggregateLimits(opts map[string]string, requestedSize float64, config drivers.OntapStorageDriverConfig, client *api.Client) error {
+	aggregate := utils.GetV(opts, "aggregate", config.Aggregate)
+	limitAggregateUsage := utils.GetV(opts, "limitAggregateUsage", config.LimitAggregateUsage)
+	limitAggregateUsage = strings.Replace(limitAggregateUsage, "%", "", -1) // strip off any %
+
+	log.WithFields(log.Fields{
+		"aggregate":           aggregate,
+		"requestedSize":       requestedSize,
+		"limitAggregateUsage": limitAggregateUsage,
+	}).Debugf("Checking Aggregate limits")
+
+	if limitAggregateUsage == "" {
+		log.Debugf("No limits specified")
+		return nil
+	}
+
+	if aggregate == "" {
+		return errors.New("aggregate not provided, cannot check aggregate provisioning limits")
+	}
+
+	// lookup aggregate
+	aggrSpaceResponse, aggrSpaceErr := client.AggrSpaceGetIterRequest(aggregate)
+	if aggrSpaceErr != nil {
+		return aggrSpaceErr
+	}
+
+	// iterate over results
+	for _, aggrSpace := range aggrSpaceResponse.Result.AttributesList() {
+		aggrName := aggrSpace.Aggregate()
+		if aggregate != aggrName {
+			log.Debugf("Skipping " + aggrName)
+			continue
+		}
+
+		log.WithFields(log.Fields{
+			"aggrName":                            aggrName,
+			"size":                                aggrSpace.AggregateSize(),
+			"volumeFootprints":                    aggrSpace.VolumeFootprints(),
+			"volumeFootprintsPercent":             aggrSpace.VolumeFootprintsPercent(),
+			"usedIncludingSnapshotReserve":        aggrSpace.UsedIncludingSnapshotReserve(),
+			"usedIncludingSnapshotReservePercent": aggrSpace.UsedIncludingSnapshotReservePercent(),
+		}).Info("Dumping aggregate space")
+
+		if limitAggregateUsage != "" {
+			percentLimit, parseErr := strconv.ParseFloat(limitAggregateUsage, 64)
+			if parseErr != nil {
+				return parseErr
+			}
+
+			usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
+			aggregateSize := float64(aggrSpace.AggregateSize())
+
+			spaceReserve := utils.GetV(opts, "spaceReserve", config.SpaceReserve)
+			spaceReserveIsThick := false
+			if spaceReserve == "volume" {
+				spaceReserveIsThick = true
+			}
+
+			if spaceReserveIsThick {
+				// we SHOULD include the requestedSize in our computation
+				percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
+				log.WithFields(log.Fields{
+					"percentUsedWithRequest": percentUsedWithRequest,
+					"percentLimit":           percentLimit,
+					"spaceReserve":           spaceReserve,
+				}).Debugf("Checking usage percentage limits")
+
+				if percentUsedWithRequest >= percentLimit {
+					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% would exceed the limit of %.2f %%",
+						percentUsedWithRequest, percentLimit)
+					return errors.New(errorMessage)
+				}
+			} else {
+				// we should NOT include the requestedSize in our computation
+				percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
+				log.WithFields(log.Fields{
+					"percentUsedWithoutRequest": percentUsedWithoutRequest,
+					"percentLimit":              percentLimit,
+					"spaceReserve":              spaceReserve,
+				}).Debugf("Checking usage percentage limits")
+
+				if percentUsedWithoutRequest >= percentLimit {
+					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% exceeds the limit of %.2f %%",
+						percentUsedWithoutRequest, percentLimit)
+					return errors.New(errorMessage)
+				}
+			}
+		}
+
+		log.Debugf("Request within specicifed limits, going to create.")
+		return nil
+	}
+
+	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
 }
 
 func GetVolumeSize(sizeBytes uint64, config drivers.OntapStorageDriverConfig) (uint64, error) {

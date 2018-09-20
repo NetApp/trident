@@ -537,6 +537,9 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(opts, float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
 
 	qosOpt := utils.GetV(opts, "qos", "")
 	if qosOpt != "" {
