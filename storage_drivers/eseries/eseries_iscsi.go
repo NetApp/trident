@@ -102,8 +102,6 @@ func (d *SANStorageDriver) Initialize(
 
 	telemetry := make(map[string]string)
 	telemetry["version"] = tridentconfig.OrchestratorVersion.ShortString()
-	telemetry["platform"] = tridentconfig.OrchestratorTelemetry.Platform
-	telemetry["platformVersion"] = tridentconfig.OrchestratorTelemetry.PlatformVersion
 	telemetry["plugin"] = d.Name()
 	telemetry["storagePrefix"] = *d.Config.StoragePrefix
 

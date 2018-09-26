@@ -35,6 +35,7 @@ func (d *NASFlexGroupStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASFlexGroupStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 

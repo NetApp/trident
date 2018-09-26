@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.04.0
+## Changes since v18.07.0
+
+**Fixes:**
+- **Docker:** Resolved issue where containers might not restart after restarting Docker (Issue [#160](https://github.com/NetApp/trident/issues/160)).
+
+**Enhancements:**
+
+## v18.07.0
 
 **Fixes:**
 - Fixed cleanup of the transaction object upon failed deletion (Issue [#126](https://github.com/NetApp/trident/issues/126)).

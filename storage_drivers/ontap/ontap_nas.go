@@ -36,6 +36,7 @@ func (d *NASStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 

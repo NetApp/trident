@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 
@@ -20,6 +22,10 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+)
+
+const (
+	startupTimeout = 50 * time.Second
 )
 
 type Plugin struct {
@@ -73,12 +79,14 @@ func registerDockerVolumePlugin(root string) error {
 	return nil
 }
 
-func getDockerVersion() (*Version, error) {
+func (p *Plugin) initDockerVersion() {
+
+	time.Sleep(5 * time.Second)
 
 	// Get Docker version
 	out, err := exec.Command("docker", "version", "--format", "'{{json .}}'").CombinedOutput()
 	if err != nil {
-		return nil, err
+		log.Errorf("could not get Docker version: %v", err)
 	}
 	versionJSON := string(out)
 	versionJSON = strings.TrimSpace(versionJSON)
@@ -88,7 +96,7 @@ func getDockerVersion() (*Version, error) {
 	var version Version
 	err = json.Unmarshal([]byte(versionJSON), &version)
 	if err != nil {
-		return nil, err
+		log.Errorf("could not parse Docker version: %v", err)
 	}
 
 	log.WithFields(log.Fields{
@@ -102,11 +110,15 @@ func getDockerVersion() (*Version, error) {
 		"clientOS":         version.Server.Os,
 	}).Debug("Docker version info.")
 
-	return &version, nil
+	p.version = &version
+	config.OrchestratorTelemetry.PlatformVersion = version.Server.Version
 }
 
 func (p *Plugin) Activate() error {
+
 	handler := volume.NewHandler(p)
+
+	// Start serving requests on a different thread
 	go func() {
 		var err error
 		if p.driverPort != "" {
@@ -128,6 +140,10 @@ func (p *Plugin) Activate() error {
 			log.Fatalf("Failed to activate Docker frontend: %v", err)
 		}
 	}()
+
+	// Read the Docker version on a different thread so we don't deadlock if Docker is also initializing
+	go p.initDockerVersion()
+
 	return nil
 }
 
@@ -142,16 +158,8 @@ func (p *Plugin) GetName() string {
 
 func (p *Plugin) Version() string {
 
-	// Get the Docker version on demand
 	if p.version == nil {
-
-		version, err := getDockerVersion()
-		if err != nil {
-			log.Errorf("Failed to get the Docker version: %v", err)
-			return "unknown"
-		}
-
-		p.version = version
+		return "unknown"
 	}
 
 	return p.version.Server.Version
@@ -199,7 +207,7 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 		"method": "List",
 	}).Debug("Docker frontend method is invoked.")
 
-	err := p.orchestrator.ReloadVolumes()
+	err := p.reloadVolumes()
 	if err != nil {
 		return &volume.ListResponse{}, p.dockerError(err)
 	}
@@ -228,7 +236,7 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 
 	// Get is called at the start of every 'docker volume' workflow except List & Unmount,
 	// so refresh the volume list here.
-	err := p.orchestrator.ReloadVolumes()
+	err := p.reloadVolumes()
 	if err != nil {
 		return &volume.GetResponse{}, p.dockerError(err)
 	}
@@ -403,4 +411,37 @@ func (p *Plugin) dockerError(err error) error {
 	} else {
 		return err
 	}
+}
+
+// reloadVolumes instructs Trident core to refresh its cached volume info from its
+// backend storage controller(s).  If Trident isn't ready, it will retry for nearly
+// the Docker timeout of 60 seconds.  Otherwise, it returns immediately with any
+// other error or nil if the operation succeeded.
+func (p *Plugin) reloadVolumes() error {
+
+	reloadVolumesFunc := func() error {
+
+		err := p.orchestrator.ReloadVolumes()
+		if err == nil {
+			return nil
+		} else if core.IsNotReadyError(err) {
+			return err
+		} else {
+			return backoff.Permanent(err)
+		}
+	}
+	reloadNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Docker frontend waiting to reload volumes.")
+	}
+	reloadBackoff := backoff.NewExponentialBackOff()
+	reloadBackoff.InitialInterval = 1 * time.Second
+	reloadBackoff.RandomizationFactor = 0.0
+	reloadBackoff.Multiplier = 1.0
+	reloadBackoff.MaxInterval = 1 * time.Second
+	reloadBackoff.MaxElapsedTime = startupTimeout
+
+	return backoff.RetryNotify(reloadVolumesFunc, reloadBackoff, reloadNotify)
 }

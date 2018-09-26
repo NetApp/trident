@@ -62,6 +62,7 @@ func (d *NASQtreeStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
+	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	return d.Telemetry
 }
 
