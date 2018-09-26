@@ -71,12 +71,12 @@ you have the necessary privileges to.
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 18.07.0:
+For example, if the latest version is 18.07.1:
 
 .. code-block:: bash
 
-   wget https://github.com/NetApp/trident/releases/download/v18.07.0/trident-installer-18.07.0.tar.gz
-   tar -xf trident-installer-18.07.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v18.07.1/trident-installer-18.07.1.tar.gz
+   tar -xf trident-installer-18.07.1.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -179,7 +179,7 @@ It will look like this when the installer is complete:
   +----------------+----------------+
   | SERVER VERSION | CLIENT VERSION |
   +----------------+----------------+
-  | 18.07.0        | 18.07.0        |
+  | 18.07.1        | 18.07.1        |
   +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -215,7 +215,7 @@ If you continue to have trouble, visit the
 Customized Installation
 -----------------------
 
-Trident's installer allows you to customize attributes such as PV or PVC default names, 
+Trident's installer allows you to customize attributes such as PV or PVC default names,
 by using the installer's ``--pv`` or ``--pvc`` parameters. You can also specify a
 storage volume name and size by using ``--volume-name`` and ``--volume-size``. If you have
 copied the Trident images to a private repository, you can specify the image names by using

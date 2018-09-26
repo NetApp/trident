@@ -1,6 +1,4 @@
-/*
- * Copyright 2018 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -28,7 +26,7 @@ const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
-	orchestratorVersion              = "18.07.0"
+	orchestratorVersion              = "18.07.1"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second

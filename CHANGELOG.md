@@ -6,6 +6,7 @@
 
 **Fixes:**
 - **Docker:** Resolved issue where containers might not restart after restarting Docker (Issue [#160](https://github.com/NetApp/trident/issues/160)).
+- **Kubernetes:** Will now send correct RBAC format based on UCP version being used (Issue [#161](https://github.com/NetApp/trident/issues/161)). 
 
 **Enhancements:**
 
