@@ -566,8 +566,8 @@ func installTrident() (returnError error) {
 			return
 		}
 		if pvc.Status.Phase == v1.ClaimBound && pvc.Spec.VolumeName != pvName {
-			returnError = fmt.Errorf("PVC %s is Bound, but not to PV %s; "+
-				"please specify a different PV and/or PVC", pvcName, pvName)
+			returnError = fmt.Errorf("PVC %s is Bound to PV %s, does not match expected PV name %s; "+
+				"please specify a different PV and/or PVC", pvcName, pvc.Spec.VolumeName, pvName)
 			return
 		}
 		if pvc.Labels == nil || pvc.Labels[appLabelKey] != appLabelValue {
@@ -610,8 +610,8 @@ func installTrident() (returnError error) {
 		}
 		if pv.Status.Phase == v1.VolumeBound && pv.Spec.ClaimRef != nil {
 			if pv.Spec.ClaimRef.Name != pvcName {
-				returnError = fmt.Errorf("PV %s is Bound, but not to PVC %s; "+
-					"please delete PV and try again", pvName, pvcName)
+				returnError = fmt.Errorf("PV %s is Bound to PVC %s, does not match expected PVC name %s; "+
+					"please specify a different PV and/or PVC", pvName, pv.Spec.ClaimRef.Name, pvcName)
 				return
 			}
 			if pv.Spec.ClaimRef.Namespace != TridentPodNamespace {
