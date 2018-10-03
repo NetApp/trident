@@ -950,9 +950,14 @@ func (d Client) volumeGetIterCommon(name string,
 	queryVolIDAttrs *azgo.VolumeIdAttributesType) (azgo.VolumeAttributesType, error) {
 
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
+	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
+		SetSize(0).
+		SetSpaceGuarantee("")
+
 	query := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
-		SetVolumeStateAttributes(*queryVolStateAttrs)
+		SetVolumeStateAttributes(*queryVolStateAttrs).
+		SetVolumeSpaceAttributes(*queryVolSpaceAttrs)
 
 	response, err := azgo.NewVolumeGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
@@ -1002,7 +1007,8 @@ func (d Client) volumeGetIterAll(prefix string, queryVolIDAttrs *azgo.VolumeIdAt
 	desiredVolSecurityAttrs := azgo.NewVolumeSecurityAttributesType().
 		SetVolumeSecurityUnixAttributes(*desiredVolSecurityUnixAttrs)
 	desiredVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
-		SetSize(0)
+		SetSize(0).
+		SetSpaceGuarantee("")
 	desiredVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().
 		SetSnapdirAccessEnabled(true).
 		SetSnapshotPolicy("")

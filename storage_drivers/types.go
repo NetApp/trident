@@ -267,8 +267,9 @@ func GetCommonInternalVolumeName(c *CommonStorageDriverConfig, name string) stri
 }
 
 // CheckVolumeSizeLimits if a limit has been set, ensures the requestedSize is under it.
-func CheckVolumeSizeLimits(requestedSize float64, config *CommonStorageDriverConfig) (bool, uint64, error) {
+func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverConfig) (bool, uint64, error) {
 
+	requestedSize := float64(requestedSizeInt)
 	// if the user specified a limit for volume size, parse and enforce it
 	limitVolumeSize := config.LimitVolumeSize
 	log.WithFields(log.Fields{

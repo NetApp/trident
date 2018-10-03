@@ -225,11 +225,11 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
-	if aggrLimitsErr := checkAggregateLimits(float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -847,11 +847,16 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
 	}
 
-	if aggrLimitsErr := checkAggregateLimits(float64(sizeBytes), d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	opts, err := getAggregateLimitsOptsForFlexvol(name, d.GetAPI())
+	if err != nil {
+		return err
+	}
+
+	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(float64(sizeBytes), d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
