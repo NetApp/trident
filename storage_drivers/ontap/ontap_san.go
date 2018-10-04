@@ -152,7 +152,7 @@ func (d *SANStorageDriver) validate() error {
 	if d.Config.DataLIF != "" {
 		// Make sure it's actually a valid address
 		if ip := net.ParseIP(d.Config.DataLIF); nil == ip {
-			return fmt.Errorf("Data LIF is not a valid IP: %s", d.Config.DataLIF)
+			return fmt.Errorf("data LIF is not a valid IP: %s", d.Config.DataLIF)
 		}
 		// Make sure the IP matches one of the LIFs
 		found := false
@@ -225,7 +225,7 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
@@ -847,12 +847,7 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
 	}
 
-	opts, err := getAggregateLimitsOptsForFlexvol(name, d.GetAPI())
-	if err != nil {
-		return err
-	}
-
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 

@@ -246,7 +246,7 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
@@ -1376,12 +1376,7 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 	}
 	deltaQuotaSize := sizeBytes - quotaSize
 
-	opts, err := getAggregateLimitsOptsForFlexvol(name, d.GetAPI())
-	if err != nil {
-		return err
-	}
-
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 

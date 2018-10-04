@@ -155,7 +155,7 @@ func (d *NASStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
 	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
 
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
@@ -517,12 +517,7 @@ func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return nil
 	}
 
-	opts, err := getAggregateLimitsOptsForFlexvol(name, d.GetAPI())
-	if err != nil {
-		return err
-	}
-
-	if aggrLimitsErr := checkAggregateLimits(opts, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 

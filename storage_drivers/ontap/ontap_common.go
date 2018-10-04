@@ -450,27 +450,37 @@ func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, 
 	}
 }
 
-// getAggregateLimitsOptsForFlexvol returns the required data for checkAggregateLimits to work
-func getAggregateLimitsOptsForFlexvol(flexvol string, client *api.Client) (map[string]string, error) {
-	opts := make(map[string]string)
+func checkAggregateLimitsForFlexvol(
+	flexvol string, requestedSizeInt uint64, config drivers.OntapStorageDriverConfig, client *api.Client,
+) error {
+
+	var aggregate, spaceReserve string
+
 	volInfo, err := client.VolumeGet(flexvol)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if volInfo.VolumeIdAttributesPtr != nil {
-		aggregateName := volInfo.VolumeIdAttributesPtr.ContainingAggregateName()
-		opts["aggregate"] = aggregateName
+		aggregate = volInfo.VolumeIdAttributesPtr.ContainingAggregateName()
+	} else {
+		return fmt.Errorf("aggregate info not available from Flexvol %s", flexvol)
 	}
 	if volInfo.VolumeSpaceAttributesPtr != nil {
-		spaceReserve := volInfo.VolumeSpaceAttributesPtr.SpaceGuarantee()
-		opts["spaceReserve"] = spaceReserve
+		spaceReserve = volInfo.VolumeSpaceAttributesPtr.SpaceGuarantee()
+	} else {
+		return fmt.Errorf("spaceReserve info not available from Flexvol %s", flexvol)
 	}
-	return opts, nil
+
+	return checkAggregateLimits(aggregate, spaceReserve, requestedSizeInt, config, client)
 }
 
-func checkAggregateLimits(opts map[string]string, requestedSizeInt uint64, config drivers.OntapStorageDriverConfig, client *api.Client) error {
+func checkAggregateLimits(
+	aggregate, spaceReserve string, requestedSizeInt uint64,
+	config drivers.OntapStorageDriverConfig, client *api.Client,
+) error {
+
 	requestedSize := float64(requestedSizeInt)
-	aggregate := utils.GetV(opts, "aggregate", config.Aggregate)
+
 	limitAggregateUsage := config.LimitAggregateUsage
 	limitAggregateUsage = strings.Replace(limitAggregateUsage, "%", "", -1) // strip off any %
 
@@ -521,7 +531,6 @@ func checkAggregateLimits(opts map[string]string, requestedSizeInt uint64, confi
 			usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
 			aggregateSize := float64(aggrSpace.AggregateSize())
 
-			spaceReserve := utils.GetV(opts, "spaceReserve", config.SpaceReserve)
 			spaceReserveIsThick := false
 			if spaceReserve == "volume" {
 				spaceReserveIsThick = true
