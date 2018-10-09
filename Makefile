@@ -124,7 +124,7 @@ ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
 	@docker tag ${TRIDENT_TAG} ${TRIDENT_DIST_TAG}
 endif
 
-dist_tar:
+dist_tar: build
 	-rm -rf /tmp/trident-installer
 	@cp -a trident-installer /tmp/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
@@ -133,7 +133,7 @@ dist_tar:
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
 	-rm -rf /tmp/trident-installer/setup/backend.json /tmp/trident-installer/extras/container-tools
 	@rm -rf /tmp/trident-installer/extras/external-etcd/etcd-copy
-	-find /tmp/trident-installer -name \*.swp | xargs rm
+	-find /tmp/trident-installer -name \*.swp | xargs -0 -r rm
 	@mkdir -p /tmp/trident-installer/setup
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment-external-etcd.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/trident-deployment-external-etcd.yaml
 	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/etcdcopy-job.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/etcdcopy-job.yaml
@@ -143,7 +143,7 @@ dist_tar:
 	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 	-rm -rf /tmp/trident-installer
 
-dist: build dist_tar dist_tag
+dist: dist_tar dist_tag
 
 ## Test targets
 test_core:

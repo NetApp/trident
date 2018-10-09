@@ -1259,6 +1259,7 @@ func (p *Plugin) processAddedClass(class *k8sstoragev1.StorageClass) {
 			}
 			p.mutex.Unlock()
 		}
+
 		log.WithFields(log.Fields{
 			"storageClass":             class.Name,
 			"storageClass_provisioner": class.Provisioner,
@@ -1308,19 +1309,24 @@ func (p *Plugin) processUpdatedClass(class *k8sstoragev1.StorageClass) {
 		p.mutex.Unlock()
 	}()
 
+	// Updating the storage class cache.
+	storageClassSummary, found := p.storageClassCache[class.Name]
+	if !found || storageClassSummary == nil {
+		// Should never reach here.
+	} else {
+		// Updating the mutable fields in StorageClassSummary.
+		// See kubernetes/kubernetes/pkg/apis/storage/validation.
+		storageClassSummary.AllowVolumeExpansion = class.AllowVolumeExpansion
+		storageClassSummary.MountOptions = class.MountOptions
+	}
+
+	// Handling updates related to the default storage class.
 	if p.defaultStorageClasses[class.Name] {
 		// It's an update to a default storage class.
 		// Check to see if it's still a default storage class.
 		if getAnnotation(class.Annotations, AnnDefaultStorageClass) != "true" {
 			delete(p.defaultStorageClasses, class.Name)
-			return
 		}
-		log.WithFields(log.Fields{
-			"storageClass":           class.Name,
-			"default_storageClasses": p.getDefaultStorageClasses(),
-		}).Debug("Kubernetes frontend only supports updating the " +
-			"default storage class tag.")
-		return
 	} else {
 		// It's an update to a non-default storage class.
 		if getAnnotation(class.Annotations, AnnDefaultStorageClass) == "true" {
@@ -1330,14 +1336,7 @@ func (p *Plugin) processUpdatedClass(class *k8sstoragev1.StorageClass) {
 				"storageClass":           class.Name,
 				"default_storageClasses": p.getDefaultStorageClasses(),
 			}).Info("Kubernetes frontend added a new default storage class.")
-			return
 		}
-		log.WithFields(log.Fields{
-			"storageClass":           class.Name,
-			"default_storageClasses": p.getDefaultStorageClasses(),
-		}).Debug("Kubernetes frontend only supports updating the " +
-			"default storage class tag.")
-		return
 	}
 }
 
@@ -1376,36 +1375,22 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 		return
 	}
 
-	// Filtering PVCs for volume resize. It's important to keep the order as
-	// follows to minimize the amount of work done during periodic syncs.
+	// Filtering PVCs for volume resize.
 	// We intentionally don't use feature gates to see whether volume expansion
 	// is enabled or not. We also don't check for k8s version 1.12 or later
 	// as Trident can support volume resize with earlier versions of k8s if
 	// admission controller doesn't restrict volume resize through
 	// --disable-admission-plugins=PersistentVolumeClaimResize.
 
-	// Verify the storage class allows volume expansion and is managed by Trident.
-	storageClass := GetPersistentVolumeClaimClass(newClaim)
-	if storageClass == "" ||
-		getClaimProvisioner(newClaim) != AnnOrchestrator {
-		return
-	}
-	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
-		if !*storageClassSummary.AllowVolumeExpansion {
-			message := "Kubernetes frontend doesn't resize a PV whose storage class " +
-				"doesn't allow volume expansion!"
-			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
-			return
-		}
-	} else {
-		message := fmt.Sprintf("Kubernetes frontend has no knowledge of "+
-			"storage class %s to conduct volume resize!", storageClass)
-		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+	// We only allow resizing bound claims.
+	if newClaim.Status.Phase != v1.ClaimBound {
 		return
 	}
 
-	// We only allow resizing bound claims.
-	if newClaim.Status.Phase != v1.ClaimBound {
+	// Verify the storage class is managed by Trident.
+	storageClass := GetPersistentVolumeClaimClass(newClaim)
+	if storageClass == "" ||
+		getClaimProvisioner(newClaim) != AnnOrchestrator {
 		return
 	}
 
@@ -1414,9 +1399,39 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 	newPVCSize := newClaim.Spec.Resources.Requests[v1.ResourceStorage]
 	currentSize := newClaim.Status.Capacity[v1.ResourceStorage]
 	if newPVCSize.Cmp(oldPVCSize) < 0 ||
-		(newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) >= 0) {
+		(newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) > 0) {
 		message := "Kubernetes frontend doesn't allow shrinking a PV!"
 		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		log.WithFields(log.Fields{
+			"PVC": newClaim.Name,
+		}).Debug(message)
+		return
+	} else if newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) == 0 {
+		// Everything has the right size. No work to be done!
+		return
+	}
+
+	// Verify the storage class allows volume expansion.
+	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
+		if storageClassSummary.AllowVolumeExpansion == nil ||
+			!*storageClassSummary.AllowVolumeExpansion {
+			message := "Kubernetes frontend doesn't resize a PV whose storage class " +
+				"doesn't allow volume expansion!"
+			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+			log.WithFields(log.Fields{
+				"PVC":          newClaim.Name,
+				"storageClass": storageClass,
+			}).Debug(message)
+			return
+		}
+	} else {
+		message := fmt.Sprintf("Kubernetes frontend has no knowledge of "+
+			"storage class %s to conduct volume resize!", storageClass)
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		log.WithFields(log.Fields{
+			"PVC":          newClaim.Name,
+			"storageClass": storageClass,
+		}).Debug(message)
 		return
 	}
 
@@ -1475,7 +1490,7 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 		log.WithFields(log.Fields{"PVC": newClaim.Name}).Error(message)
 		return
 	}
-	message := "Kubernetes frontend successfuly resized the volume."
+	message := "Kubernetes frontend successfully resized the volume."
 	p.updatePVCWithEvent(updatedClaim, v1.EventTypeNormal, "VolumeResize", message)
 }
 

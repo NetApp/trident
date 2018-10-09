@@ -13,8 +13,7 @@ and ``ontap-nas-flexgroup`` backends can be expanded.
 workflows involved in resizing a PV. Volume resize was introduced in
 Kubernetes v1.8 as an alpha feature and was promoted to beta in v1.11,
 which means this feature is enabled by default starting with Kubernetes
-v1.11. The blog post provides more information about enabling volume
-resize when offered as an alpha feature.
+v1.11.
 
 .. _Resizing Persistent Volumes using Kubernetes: https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/
 
@@ -22,27 +21,30 @@ Because NFS PV resize is not supported by Kubernetes, and is implemented by the
 Trident orchestrator externally, Kubernetes admission controller may reject PVC
 size updates for in-tree volume plugins that don't support resize (e.g., NFS).
 The Trident team has changed Kubernetes to allow such changes starting
-with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still
-possible to resize NFS PVs for earlier versions of Kubernetes that support
-resize. This is done by disabling the ``PersistentVolumeClaimResize`` admission
-plugin when the Kubernetes API server is started:
+with Kubernetes 1.12. Therefore, we recommend using this feature with Kubernetes
+1.12 or later as it would just work.
+
+While we recommend using Kubernetes 1.12 or later, it is still possible to
+resize NFS PVs with earlier versions of Kubernetes that support resize.
+This is done by disabling the ``PersistentVolumeClaimResize`` admission plugin
+when the Kubernetes API server is started:
 
 .. code-block:: bash
   
   kube-apiserver --disable-admission-plugins=PersistentVolumeClaimResize
 
 
-With Kubernetes 1.12 or later, we recommend enabling the ``PersistentVolumeClaimResize``
-admission plugin. Here is an example of enabling the ``PersistentVolumeClaimResize``
-admission plugin when other plugins are enabled:
+With Kubernetes 1.8-1.10 that offer this feature as alpha, the
+``ExpandPersistentVolumes`` `Feature Gate`_ should also be turned on:
+
+.. _Feature Gate : https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 
 .. code-block:: bash
   
-  kube-apiserver --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,PersistentVolumeClaimResize
+  kube-apiserver --feature-gates=ExpandPersistentVolumes=true --disable-admission-plugins=PersistentVolumeClaimResize
 
 
-Once admission plugins are configured correctly, resizing NFS PVs is
-straightforward. First, the admin needs to configure the storage class to
+To resize an NFS PV, the admin first needs to configure the storage class to
 allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``:
 
 .. code-block:: bash
@@ -57,9 +59,11 @@ allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``
     backendType: ontap-nas
   allowVolumeExpansion: true
   
-If you have already created a storage class, you can simply delete the existing
-storage class and create a new one with the same configuration but with volume
-expansion enabled. Let's create a PVC using this storage class:
+If you have already created a storage class without this option, you can simply
+edit the existing storage class via ``kubectl edit storageclass`` to allow
+volume expansion.
+
+Next, we create a PVC using this storage class:
 
 .. code-block:: bash
   
@@ -76,7 +80,7 @@ expansion enabled. Let's create a PVC using this storage class:
         storage: 20Mi
     storageClassName: ontapnas
 
-Now, we should have a 20MiB NFS PV created:
+Trident should create a 20MiB NFS PV for this PVC:
 
 .. code-block:: bash
   
