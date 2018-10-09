@@ -950,14 +950,10 @@ func (d Client) volumeGetIterCommon(name string,
 	queryVolIDAttrs *azgo.VolumeIdAttributesType) (azgo.VolumeAttributesType, error) {
 
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
-	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
-		SetSize(0).
-		SetSpaceGuarantee("")
 
 	query := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
-		SetVolumeStateAttributes(*queryVolStateAttrs).
-		SetVolumeSpaceAttributes(*queryVolSpaceAttrs)
+		SetVolumeStateAttributes(*queryVolStateAttrs)
 
 	response, err := azgo.NewVolumeGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
