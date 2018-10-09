@@ -1376,7 +1376,7 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 	}
 	deltaQuotaSize := sizeBytes - quotaSize
 
-	if aggrLimitsErr := checkAggregateLimitsForFlexvol(name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(flexvol, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
