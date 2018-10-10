@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -47,6 +48,13 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 	}
 	if storagePoolList == nil {
 		return false
+	}
+
+	if !strings.HasPrefix(storagePoolBackendName, "^") {
+		storagePoolBackendName = "^" + storagePoolBackendName
+	}
+	if !strings.HasSuffix(storagePoolBackendName, "$") {
+		storagePoolBackendName = storagePoolBackendName + "$"
 	}
 
 	poolsMatch := false

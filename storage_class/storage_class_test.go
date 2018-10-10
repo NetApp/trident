@@ -526,3 +526,127 @@ func TestRegex(t *testing.T) {
 		}
 	}
 }
+
+// This tests some specific defect scenarios that were found
+func TestRegex2(t *testing.T) {
+	backends := make(map[string]*storage.Backend)
+	mockPools := tu.GetFakePools()
+	for _, c := range []struct {
+		backendName string
+		poolNames   []string
+	}{
+		{backendName: "fast-a",
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
+		{backendName: "fast-b",
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
+		{backendName: "slow",
+			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
+		{backendName: "slower",
+			poolNames: []string{tu.FastThinOnly}},
+	} {
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
+		for _, poolName := range c.poolNames {
+			pools[poolName] = mockPools[poolName]
+		}
+		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		if err != nil {
+			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
+		}
+		backend, err := factory.NewStorageBackendForConfig(config)
+		if err != nil {
+			t.Fatalf("Unable to construct backend using mock driver.")
+		}
+		backends[c.backendName] = backend
+	}
+	for _, test := range []struct {
+		description string
+		sc          *StorageClass
+		expected    []*tu.PoolMatch
+	}{
+		{
+			description: "slow only, not slow+slower",
+			sc: New(&Config{
+				Name: "regex1",
+				Pools: map[string][]string{
+					"slow": {".*"},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "slow only, not slow+slower",
+			sc: New(&Config{
+				Name: "regex2",
+				Pools: map[string][]string{
+					"^slow$": {".*"},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+			},
+		},
+		{
+			description: "slow and slower combined",
+			sc: New(&Config{
+				Name: "regex2",
+				Pools: map[string][]string{
+					"slow.*": {".*"},
+				},
+			}),
+			expected: []*tu.PoolMatch{
+				{Backend: "slow", Pool: tu.SlowSnapshots},
+				{Backend: "slow", Pool: tu.SlowNoSnapshots},
+				{Backend: "slow", Pool: tu.MediumOverlap},
+				{Backend: "slower", Pool: tu.FastThinOnly},
+			},
+		},
+	} {
+		// add the backends to the test StorageClass
+		for _, backend := range backends {
+			test.sc.CheckAndAddBackend(backend)
+		}
+		// validate the results for the test StorageClass
+		for _, protocol := range []config.Protocol{config.File, config.Block} {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(protocol) {
+				nameFound := false
+				for _, scName := range pool.StorageClasses {
+					if scName == test.sc.GetName() {
+						nameFound = true
+						break
+					}
+				}
+				if !nameFound {
+					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name)
+				}
+				matchIndex := -1
+				for i, e := range test.expected {
+					if e.Matches(pool) {
+						matchIndex = i
+						break
+					}
+				}
+				if matchIndex >= 0 {
+					// If we match, remove the match from the potential matches.
+					test.expected[matchIndex] = test.expected[len(test.expected)-1]
+					test.expected[len(test.expected)-1] = nil
+					test.expected = test.expected[:len(test.expected)-1]
+				} else {
+					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description, pool.Backend.Name, pool.Name)
+				}
+			}
+		}
+		if len(test.expected) > 0 {
+			expectedNames := make([]string, len(test.expected))
+			for i, e := range test.expected {
+				expectedNames[i] = e.String()
+			}
+			t.Errorf("%s:  Storage class failed to match storage pools %s", test.description, strings.Join(expectedNames, ", "))
+		}
+	}
+}
