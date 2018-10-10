@@ -170,6 +170,8 @@ Example configuration
         "svm": "svm_nfs",
         "username": "vsadmin",
         "password": "secret",
+        "limitAggregateUsage": "80%",
+        "limitVolumeSize": "50Gi",
         "defaults": {
           "spaceReserve": "volume",
           "exportPolicy": "myk8scluster",

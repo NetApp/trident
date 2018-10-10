@@ -355,7 +355,7 @@ func (p *Plugin) processClaim(
 		*claim.Spec.StorageClassName == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
-		}).Debug("Kubernetes frontend ignores this PVC as an empty string " +
+		}).Debug("Kubernetes frontend ignored this PVC as an empty string " +
 			"was specified for the storage class!")
 		return
 	}
@@ -371,7 +371,7 @@ func (p *Plugin) processClaim(
 			log.WithFields(log.Fields{
 				"PVC":             claim.Name,
 				"PVC_provisioner": provisioner,
-			}).Debugf("Kubernetes frontend ignores this PVC as it's not "+
+			}).Debugf("Kubernetes frontend ignored this PVC as it's not "+
 				"tagged with %s as the storage provisioner!", AnnOrchestrator)
 			return
 		}
@@ -396,14 +396,14 @@ func (p *Plugin) processClaim(
 				log.WithFields(log.Fields{
 					"PVC": claim.Name,
 					"default_storageClasses": p.getDefaultStorageClasses(),
-				}).Warn("Kubernetes frontend ignores this PVC as more than " +
+				}).Warn("Kubernetes frontend ignored this PVC as more than " +
 					"one default storage class has been configured!")
 				p.mutex.Unlock()
 				return
 			} else {
 				log.WithFields(log.Fields{
 					"PVC": claim.Name,
-				}).Debug("Kubernetes frontend ignores this PVC as no storage class " +
+				}).Debug("Kubernetes frontend ignored this PVC as no storage class " +
 					"was specified and no default storage class was configured!")
 				p.mutex.Unlock()
 				return
@@ -417,7 +417,7 @@ func (p *Plugin) processClaim(
 	if GetPersistentVolumeClaimClass(claim) == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
-		}).Debug("Kubernetes frontend ignores this PVC as no storage class " +
+		}).Debug("Kubernetes frontend ignored this PVC as no storage class " +
 			"was specified!")
 		return
 	}
@@ -450,12 +450,12 @@ func (p *Plugin) processClaim(
 	case v1.ClaimPending:
 		// As of Kubernetes 1.6, selector and storage class are mutually exclusive.
 		if claim.Spec.Selector != nil {
-			message := "Kubernetes frontend ignores PVCs with label selectors!"
+			message := "ignored PVCs with label selectors!"
 			p.updatePVCWithEvent(claim, v1.EventTypeWarning, "IgnoredClaim",
 				message)
 			log.WithFields(log.Fields{
 				"PVC": claim.Name,
-			}).Debug(message)
+			}).Debugf("Kubernetes frontend %s", message)
 			return
 		}
 		p.processPendingClaim(claim)
@@ -547,23 +547,21 @@ func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	}
 	err := p.orchestrator.DeleteVolume(volName)
 	if err != nil {
-		message := "Kubernetes frontend failed to delete the provisioned " +
-			"volume for the lost PVC (will retry upon resync)."
+		message := "failed to delete the provisioned volume or PV for the lost PVC (will retry upon resync)."
 		p.updatePVCWithEvent(claim, v1.EventTypeWarning,
 			"FailedVolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
 			"volume": volName,
-		}).Error(message)
+		}).Errorf("Kubernetes frontend %s", message)
 	} else {
-		message := "Kubernetes frontend successfully deleted the " +
-			"provisioned volume for the lost PVC."
+		message := "deleted the provisioned PV and volume for the lost PVC."
 		p.updatePVCWithEvent(claim, v1.EventTypeNormal,
 			"VolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
 			"volume": volName,
-		}).Info(message)
+		}).Infof("Kubernetes frontend %s", message)
 	}
 	return
 }
@@ -617,25 +615,23 @@ func (p *Plugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 	pv, err := p.createVolumeAndPV(orchestratorClaimName, claim)
 	if err != nil {
 		if pv == nil {
-			p.updatePVCWithEvent(claim, v1.EventTypeNormal,
-				"ProvisioningFailed", err.Error())
+			p.updatePVCWithEvent(claim, v1.EventTypeNormal, "ProvisioningFailed", err.Error())
 		} else {
-			p.updatePVCWithEvent(claim, v1.EventTypeWarning,
-				"ProvisioningFailed", err.Error())
+			p.updatePVCWithEvent(claim, v1.EventTypeWarning, "ProvisioningFailed", err.Error())
 		}
 		return
 	}
 	p.mutex.Lock()
 	p.pendingClaimMatchMap[orchestratorClaimName] = pv
 	p.mutex.Unlock()
-	message := "Kubernetes frontend provisioned a volume and a PV for the PVC."
+	message := "provisioned a volume and a PV for the PVC."
 	p.updatePVCWithEvent(claim, v1.EventTypeNormal,
 		"ProvisioningSuccess", message)
 	log.WithFields(log.Fields{
 		"PVC":       claim.Name,
 		"PV":        orchestratorClaimName,
 		"PV_volume": pv.Name,
-	}).Info(message)
+	}).Infof("Kubernetes frontend %s", message)
 }
 
 func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolumeClaim) (pv *v1.PersistentVolume,
@@ -861,12 +857,12 @@ func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {
 	err := p.orchestrator.DeleteVolume(volume.GetName())
 	if err != nil && !core.IsNotFoundError(err) {
 		message := fmt.Sprintf(
-			"Kubernetes frontend failed to delete the volume "+
-				"for PV %s: %s. Volume and PV may need to be manually deleted.",
+			"failed to delete the volume for PV %s: %s. Volume and PV may "+
+				"need to be manually deleted.",
 			volume.GetName(), err.Error())
 		p.updateVolumePhaseWithEvent(volume, v1.VolumeFailed,
 			v1.EventTypeWarning, "FailedVolumeDelete", message)
-		return fmt.Errorf(message)
+		return fmt.Errorf("Kubernetes frontend %s", message)
 	}
 	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(volume.GetName(),
 		&metav1.DeleteOptions{})
@@ -967,13 +963,13 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 			// Updating the PV's phase to "VolumeFailed", so that
 			// a storage admin can take action.
 			message := fmt.Sprintf(
-				"Kubernetes frontend failed to delete the volume "+
-					"for PV %s: %s. Will eventually retry, but volume and PV "+
+				"failed to delete the volume for PV %s: %s. "+
+					"Will eventually retry, but volume and PV "+
 					"may need to be manually deleted.", volume.Name,
 				err.Error())
 			p.updateVolumePhaseWithEvent(volume, v1.VolumeFailed,
 				v1.EventTypeWarning, "FailedVolumeDelete", message)
-			log.Errorf(message)
+			log.Errorf("Kubernetes frontend %s", message)
 			// PV needs to be manually deleted by the admin after removing
 			// the volume.
 			return
@@ -992,7 +988,7 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 		log.WithFields(log.Fields{
 			"PV":     volume.Name,
 			"volume": volume.Name,
-		}).Info("Kubernetes frontend successfully deleted the provisioned " +
+		}).Info("Kubernetes frontend deleted the provisioned " +
 			"volume and PV.")
 	default:
 		log.WithFields(log.Fields{
@@ -1265,7 +1261,7 @@ func (p *Plugin) processAddedClass(class *k8sstoragev1.StorageClass) {
 			"storageClass_provisioner": class.Provisioner,
 			"storageClass_parameters":  class.Parameters,
 			"default_storageClasses":   p.getDefaultStorageClasses(),
-		}).Info("Kubernetes frontend successfully added the storage class.")
+		}).Info("Kubernetes frontend added the storage class.")
 	}
 	return
 }
@@ -1296,7 +1292,7 @@ func (p *Plugin) processDeletedClass(class *k8sstoragev1.StorageClass) {
 		delete(p.storageClassCache, class.Name)
 		log.WithFields(log.Fields{
 			"storageClass": class.Name,
-		}).Info("Kubernetes frontend successfully deleted the storage class.")
+		}).Info("Kubernetes frontend deleted the storage class.")
 		p.mutex.Unlock()
 	}
 	return
@@ -1400,11 +1396,11 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 	currentSize := newClaim.Status.Capacity[v1.ResourceStorage]
 	if newPVCSize.Cmp(oldPVCSize) < 0 ||
 		(newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) > 0) {
-		message := "Kubernetes frontend doesn't allow shrinking a PV!"
-		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		message := "shrinking a PV isn't allowed!"
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
 		log.WithFields(log.Fields{
 			"PVC": newClaim.Name,
-		}).Debug(message)
+		}).Debug("Kubernetes frontend doesn't allow shrinking a PV!")
 		return
 	} else if newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) == 0 {
 		// Everything has the right size. No work to be done!
@@ -1415,23 +1411,21 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
 		if storageClassSummary.AllowVolumeExpansion == nil ||
 			!*storageClassSummary.AllowVolumeExpansion {
-			message := "Kubernetes frontend doesn't resize a PV whose storage class " +
-				"doesn't allow volume expansion!"
-			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+			message := "can't resize a PV whose storage class doesn't allow volume expansion!"
+			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
 			log.WithFields(log.Fields{
 				"PVC":          newClaim.Name,
 				"storageClass": storageClass,
-			}).Debug(message)
+			}).Debugf("Kubernetes frontend %s", message)
 			return
 		}
 	} else {
-		message := fmt.Sprintf("Kubernetes frontend has no knowledge of "+
-			"storage class %s to conduct volume resize!", storageClass)
-		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+		message := fmt.Sprintf("no knowledge of storage class %s to conduct volume resize!", storageClass)
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
 		log.WithFields(log.Fields{
 			"PVC":          newClaim.Name,
 			"storageClass": storageClass,
-		}).Debug(message)
+		}).Debugf("Kubernetes frontend has %s", message)
 		return
 	}
 
@@ -1463,35 +1457,35 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 	if pv == nil {
 		return
 	} else if pv.Spec.NFS == nil {
-		message := "Kubernetes frontend only allows resizing NFS PVs!"
-		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
-		log.WithFields(log.Fields{"PVC": newClaim.Name}).Debug(message)
+		message := "can't resize a non-NFS PV!"
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Debugf("Kubernetes frontend %s", message)
 		return
 	}
 
 	// Resize the volume and PV
 	if _, err = p.resizeVolumeAndPV(pv, newPVCSize); err != nil {
-		message := fmt.Sprintf("Kubernetes frontend failed in resizing the volume or PV: %v.", err)
-		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
-		log.WithFields(log.Fields{"PVC": newClaim.Name}).Error(message)
+		message := fmt.Sprintf("failed in resizing the volume or PV: %v", err)
+		p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Errorf("Kubernetes frontend %v", message)
 		return
 	}
 
 	// Update the PVC
 	updatedClaim, err := p.updatePVCSize(newClaim, newPVCSize)
 	if err != nil {
-		message := fmt.Sprintf("Kubernetes frontend failed in updating the PVC size: %v.",
+		message := fmt.Sprintf("failed in updating the PVC size: %v.",
 			err)
 		if updatedClaim == nil {
-			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "VolumeResize", message)
+			p.updatePVCWithEvent(newClaim, v1.EventTypeWarning, "ResizeFailed", message)
 		} else {
-			p.updatePVCWithEvent(updatedClaim, v1.EventTypeWarning, "VolumeResize", message)
+			p.updatePVCWithEvent(updatedClaim, v1.EventTypeWarning, "ResizeFailed", message)
 		}
-		log.WithFields(log.Fields{"PVC": newClaim.Name}).Error(message)
+		log.WithFields(log.Fields{"PVC": newClaim.Name}).Errorf("Kubernetes frontend %v", message)
 		return
 	}
-	message := "Kubernetes frontend successfully resized the volume."
-	p.updatePVCWithEvent(updatedClaim, v1.EventTypeNormal, "VolumeResize", message)
+	message := "resized the PV and volume."
+	p.updatePVCWithEvent(updatedClaim, v1.EventTypeNormal, "ResizeSuccess", message)
 }
 
 // GetPVForPVC returns the PV for a bound PVC.
@@ -1517,7 +1511,7 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume,
 	} else if pvSize.Cmp(newSize) == 0 {
 		return pv, nil
 	} else {
-		return pv, fmt.Errorf("cannot shrink PV %q", pv.Name)
+		return pv, fmt.Errorf("cannot shrink PV %q!", pv.Name)
 	}
 
 	// Update the PV
@@ -1536,7 +1530,7 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume,
 		"PV":          pv.Name,
 		"PV_old_size": pvSize.String(),
 		"PV_new_size": updatedSize.String(),
-	}).Info("Kubernetes frontend successfully resized the PV.")
+	}).Info("Kubernetes frontend resized the PV.")
 
 	return pvUpdated, nil
 }
@@ -1560,7 +1554,7 @@ func (p *Plugin) updatePVCSize(pvc *v1.PersistentVolumeClaim,
 		"PVC":          pvc.Name,
 		"PVC_old_size": oldSize.String(),
 		"PVC_new_size": updatedSize.String(),
-	}).Info("Kubernetes frontend successfully updated the PVC after resize.")
+	}).Info("Kubernetes frontend updated the PVC after resize.")
 
 	return pvcUpdated, nil
 }

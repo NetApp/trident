@@ -70,7 +70,7 @@ const (
 	ContextCSI        DriverContext = "csi"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin    = "v1.5.0"
+	KubernetesVersionMin    = "v1.8.0"
 	KubernetesVersionMax    = "v1.12.0"
 	KubernetesCSIVersionMin = "v1.10.0"
 

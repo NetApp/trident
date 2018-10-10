@@ -293,8 +293,8 @@ func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverC
 		"requestedSizeBytes": requestedSize,
 	}).Debugf("Comparing limits")
 
-	if requestedSize >= float64(volumeSizeLimit) {
-		return true, volumeSizeLimit, fmt.Errorf("requested size: %1.f >= the size limit: %d", requestedSize, volumeSizeLimit)
+	if requestedSize > float64(volumeSizeLimit) {
+		return true, volumeSizeLimit, fmt.Errorf("requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit)
 	}
 
 	return true, volumeSizeLimit, nil

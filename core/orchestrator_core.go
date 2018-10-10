@@ -340,7 +340,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 				log.WithFields(log.Fields{
 					"volume":      vol.Config.Name,
 					"volume_size": v.Config.Size,
-				}).Info("Orchestrator successfully resized the volume on the storage backend.")
+				}).Info("Orchestrator resized the volume on the storage backend.")
 			}
 		} else {
 			log.WithFields(log.Fields{
@@ -748,8 +748,8 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	externalVol = nil
 	if len(errorMessages) == 0 {
 		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class "+
-			"and %s of free space was found! Find available backends under %s",
-			protocol, volumeConfig.StorageClass, volumeConfig.Size, config.BackendURL)
+			"and %s of free space was found!",
+			protocol, volumeConfig.StorageClass, volumeConfig.Size)
 	} else {
 		err = fmt.Errorf("encountered error(s) in creating the volume: %s",
 			strings.Join(errorMessages, ", "))
@@ -1341,7 +1341,7 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 			log.WithFields(log.Fields{
 				"volume":      volumeName,
 				"volume_size": newSize,
-			}).Info("Orchestrator successfully resized the volume on the storage backend.")
+			}).Info("Orchestrator resized the volume on the storage backend.")
 		}
 		err = o.resizeVolumeCleanup(err, vol, volTxn)
 	}()
