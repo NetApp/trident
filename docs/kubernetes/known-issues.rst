@@ -44,7 +44,7 @@ outstanding issues to be aware of when using it:
   not differ, there is a very slim chance to have name collisions for volumes
   created on the same backend.
 * Due to a known issue in the containerized version of OpenShift, where some
-  iSCSI initiator utilities are missing, Trident will fail to install of configure
+  iSCSI initiator utilities are missing, Trident will fail to install on
   iSCSI storage systems. This only affects OpenShift Origin.
   See OpenShift issues
   `#18880 <https://github.com/openshift/origin/issues/18880>`_.

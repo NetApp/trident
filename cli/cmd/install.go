@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -847,6 +848,26 @@ func installTrident() (returnError error) {
 		return
 	}
 
+	// Add backend if we created the PV during this installation
+	if storageBackend == nil {
+		log.WithField("pvName", pvcName).Debug("PV existed prior to installation, " +
+			"so installer will not add a backend automatically.")
+	} else {
+		backendFile := fmt.Sprintf("setup/%s", BackendConfigFilename)
+		backendName, err := addTridentBackend()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"backendFile": backendFile,
+				"error":       err,
+			}).Warning("Could not add backend to Trident.")
+		} else {
+			log.WithFields(log.Fields{
+				"backendFile": backendFile,
+				"backendName": backendName,
+			}).Info("Added backend to Trident.")
+		}
+	}
+
 	log.Info("Trident installation succeeded.")
 	return nil
 }
@@ -885,24 +906,15 @@ func loadStorageDriver() (backend *storage.Backend, returnError error) {
 		tridentconfig.CurrentDriverContext = tridentconfig.ContextKubernetes
 	}
 
-	// Ensure the setup directory & backend config file are present
-	if _, returnError = os.Stat(setupPath); os.IsNotExist(returnError) {
-		returnError = fmt.Errorf("setup directory does not exist; %v", returnError)
-		return
-	}
-	if _, returnError = os.Stat(backendConfigFilePath); os.IsNotExist(returnError) {
-		returnError = fmt.Errorf("storage backend config file does not exist; %v", returnError)
-		return
-	}
-
 	// Try to start the driver, which is the source of many installation problems and
 	// will be needed to if we have to provision the Trident PV.
 	log.WithField("backend", backendConfigFilePath).Info("Starting storage driver.")
-	configFileBytes, returnError := ioutil.ReadFile(backendConfigFilePath)
+
+	configFileBytes, returnError := loadStorageDriverConfig()
 	if returnError != nil {
-		returnError = fmt.Errorf("could not read the storage backend config file; %v", returnError)
 		return
 	}
+
 	backend, returnError = factory.NewStorageBackendForConfig(string(configFileBytes))
 	if returnError != nil {
 		returnError = fmt.Errorf("could not start the storage backend driver; %v", returnError)
@@ -911,6 +923,24 @@ func loadStorageDriver() (backend *storage.Backend, returnError error) {
 
 	log.WithField("driver", backend.GetDriverName()).Info("Storage driver loaded.")
 	return
+}
+
+func loadStorageDriverConfig() ([]byte, error) {
+
+	// Ensure the setup directory & backend config file are present
+	if _, err := os.Stat(setupPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("setup directory does not exist; %v", err)
+	}
+	if _, err := os.Stat(backendConfigFilePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("storage backend config file does not exist; %v", err)
+	}
+
+	configFileBytes, err := ioutil.ReadFile(backendConfigFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read the storage backend config file; %v", err)
+	}
+
+	return configFileBytes, nil
 }
 
 func createRBACObjects() (returnError error) {
@@ -1452,6 +1482,41 @@ func waitForRESTInterface() error {
 	log.WithField("version", version).Info("Trident REST interface is up.")
 
 	return nil
+}
+
+func addTridentBackend() (string, error) {
+
+	configFileBytes, err := loadStorageDriverConfig()
+	if err != nil {
+		return "", err
+	}
+
+	cliCommand := []string{
+		"tridentctl",
+		"-s", PodServer,
+		"create", "backend",
+		"-o", "json",
+		"--base64", base64.StdEncoding.EncodeToString(configFileBytes),
+	}
+	backendJSON, err := client.Exec(TridentPodName, tridentconfig.ContainerTrident, cliCommand)
+	if err != nil {
+		if backendJSON != nil && len(backendJSON) > 0 {
+			err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(backendJSON)))
+		}
+		return "", err
+	}
+
+	var backendsResponse api.MultipleBackendResponse
+	err = json.Unmarshal(backendJSON, &backendsResponse)
+	if err != nil {
+		return "", err
+	}
+
+	if len(backendsResponse.Items) != 1 {
+		return "", errors.New("could not discern added backend")
+	}
+
+	return backendsResponse.Items[0].Name, nil
 }
 
 // ReadDeploymentFromFile parses and returns a deployment object from a file.

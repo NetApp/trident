@@ -21,6 +21,7 @@ commands and global options:
     create      Add a resource to Trident
     delete      Remove one or more resources from Trident
     get         Get one or more resources from Trident
+    help        Help about any command
     install     Install Trident
     logs        Print the logs from Trident
     uninstall   Uninstall Trident
@@ -29,6 +30,7 @@ commands and global options:
 
   Flags:
     -d, --debug              Debug output
+    -h, --help               help for tridentctl
     -n, --namespace string   Namespace of Trident deployment
     -o, --output string      Output format. One of json|yaml|name|wide|ps (default)
     -s, --server string      Address/port of Trident REST interface
@@ -87,16 +89,20 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
-    --dry-run
-    --generate-custom-yaml   Generate YAML files, but don't install anything
-    --k8s-timeout duration   The number of seconds to wait before timing out on Kubernetes
-                             operations (default 2m0s)
-    --pv string              The name of the PV used by Trident (default "trident")
-    --pvc string             The name of the PVC used by Trident (default "trident")
-    --silent                 Disable most output during installation
-    --use-custom-yaml        Use any existing YAML files that exist in setup directory
-    --volume-name string     The name of the storage volume used by Trident (default "trident")
-    --volume-size string     The size of the storage volume used by Trident (default "2Gi")
+        --dry-run                   Run all the pre-checks, but don't install anything.
+        --etcd-image string         The etcd image to install.
+        --generate-custom-yaml      Generate YAML files, but don't install anything.
+    -h, --help                      help for install
+        --k8s-timeout duration      The number of seconds to wait before timing out on Kubernetes operations. (default 3m0s)
+        --pv string                 The name of the PV used by Trident.
+        --pvc string                The name of the PVC used by Trident.
+        --silent                    Disable most output during installation.
+        --trident-image string      The Trident image to install.
+        --ucp-bearer-token string   UCP authorization token (for Docker UCP only).
+        --ucp-host string           IP address of the UCP host (for Docker UCP only).
+        --use-custom-yaml           Use any existing YAML files that exist in setup directory.
+        --volume-name string        The name of the storage volume used by Trident.
+        --volume-size string        The size of the storage volume used by Trident. (default "2Gi")
 
 logs
 ----
@@ -110,8 +116,9 @@ Print the logs from Trident
 
   Flags:
     -a, --archive      Create a support archive with all logs unless otherwise specified.
-    -l, --log string   Trident log to display. One of trident|etcd|launcher|ephemeral|auto|all
-                       (default "auto")
+    -h, --help         help for logs
+    -l, --log string   Trident log to display. One of trident|etcd|auto|all (default "auto")
+    -p, --previous     Get the logs for the previous container instance if it exists.
 
 uninstall
 ---------
@@ -124,10 +131,12 @@ Uninstall Trident
     tridentctl uninstall [flags]
 
   Flags:
-    -a, --all      Deletes almost all artifacts of Trident, including the PVC and PV used
-                   by Trident; however, it doesn't delete the volume used by Trident from
-                   the storage backend. Use with caution!
-        --silent   Disable most output during uninstallation.
+    -a, --all                       Deletes almost all artifacts of Trident, including the PVC and PV used by Trident;
+                                    however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!
+    -h, --help                      help for uninstall
+        --silent                    Disable most output during uninstallation.
+        --ucp-bearer-token string   UCP authorization token (for Docker UCP only).
+        --ucp-host string           IP address of the UCP host (for Docker UCP only).
 
 update
 ------
@@ -135,17 +144,12 @@ update
 Modify a resource in Trident
 
 .. code-block:: console
+
   Usage:
     tridentctl update [command]
 
   Available Commands:
     backend     Update a backend in Trident
-
-  Global Flags:
-    -d, --debug              Debug output
-    -n, --namespace string   Namespace of Trident deployment
-    -o, --output string      Output format. One of json|yaml|name|wide|ps (default)
-    -s, --server string      Address/port of Trident REST interface
 
 version
 -------

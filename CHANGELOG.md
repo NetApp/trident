@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.07.0
+## Changes since v18.10.0
+
+**Fixes:**
+
+**Enhancements:**
+- **Kubernetes:** Enhanced the Trident installer to automatically add the backend with which Trident was installed for subsequent volume provisioning.
+
+## v18.10.0
 
 **Fixes:**
 - Modified log messages about ONTAP media types not associated with performance classes (Issue [#158](https://github.com/NetApp/trident/issues/158)).

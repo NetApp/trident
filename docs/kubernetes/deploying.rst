@@ -90,8 +90,8 @@ For example, if the latest version is 18.10.0:
   persistent volume to store Trident's own metadata when Trident itself isn't
   running yet. The installer handles that for you!
 
-Configure a *temporary* storage backend that the Trident installer will use
-*once* to provision a volume to store its own metadata.
+Configure a storage backend that the Trident installer will use to provision a
+volume to store its own metadata.
 
 You do this by placing a ``backend.json`` file in the installer's ``setup``
 directory. Sample configuration files for different backend types can be
@@ -243,26 +243,34 @@ then use the ``--use-custom-yaml`` to install a customized version of Trident.
 .. code-block:: console
   # ./tridentctl install -n trident --use-custom-yaml --volume-name my_volume
 
-5: Add your first backend
-=========================
+5: Verify your first backend
+============================
 
-You already created a *temporary* :ref:`backend <Backend configuration>` in
+You already created a :ref:`backend <Backend configuration>` in
 step 3 to provision a volume for that Trident uses for its own metadata.
 
-The installer does not assume that you want to use that backend configuration
-for the rest of the volumes that Trident provisions. So Trident forgot about it.
-
-Create a storage backend configuration that Trident will provision volumes
-from. This can be the same backend configuration that you used in step 3, or
-something completely different. It's up to you.
+During a first-time installation, the installer assumes you want to use
+that backend for the rest of the volumes that Trident provisions.
 
 .. code-block:: bash
 
-    ./tridentctl -n trident create backend -f setup/backend.json
+    ./tridentctl -n trident get backend
     +-----------------------+----------------+--------+---------+
     |         NAME          | STORAGE DRIVER | ONLINE | VOLUMES |
     +-----------------------+----------------+--------+---------+
     | ontapnas_10.0.0.1     | ontap-nas      | true   |       0 |
+    +-----------------------+----------------+--------+---------+
+
+You can add more backends, or replace the initial one with other backends (it
+won't affect the volume where Trident keeps its metadata). It's up to you.
+
+.. code-block:: bash
+
+    ./tridentctl -n trident create backend -f <path-to-backend-config-file>
+    +-----------------------+----------------+--------+---------+
+    |         NAME          | STORAGE DRIVER | ONLINE | VOLUMES |
+    +-----------------------+----------------+--------+---------+
+    | ontapnas_10.0.1.1     | ontap-nas      | true   |       0 |
     +-----------------------+----------------+--------+---------+
 
 If the creation fails, something was wrong with the backend configuration. You
