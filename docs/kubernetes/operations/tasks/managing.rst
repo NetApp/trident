@@ -37,6 +37,12 @@ the interim once it is back online.
       # ./tridentctl uninstall -n <namespace> --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
       # ./tridentctl install   -n <namespace> --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
 
+.. warning::
+  Trident's support for Docker EE 2.0's UCP access control will be removed in the 
+  next release, replaced by the native Kubernetes access control support in
+  Docker EE 2.1 and beyond. The ``--ucp-host`` and ``--ucp-bearer-token`` parameters
+  will be deprecated and will not be needed in order to install or uninstall Trident.
+
 .. _installer bundle: https://github.com/NetApp/trident/releases/latest
 
 Uninstalling Trident

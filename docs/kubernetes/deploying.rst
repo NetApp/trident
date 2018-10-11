@@ -147,6 +147,12 @@ own namespace to isolate it from other applications.
       AUTHTOKEN=$(curl -sk -d "{\"username\":\"${EE_USER}\",\"password\":\"${EE_PASS}\"}" https://${UCP_HOST}/auth/login | jq -r .auth_token)
       # ./tridentctl install --dry-run -n trident --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
 
+.. warning::
+  Trident's support for Docker EE 2.0's UCP access control will be removed in the 
+  next release, replaced by the native Kubernetes access control support in
+  Docker EE 2.1 and beyond. The ``--ucp-host`` and ``--ucp-bearer-token`` parameters
+  will be deprecated and will not be needed in order to install or uninstall Trident.
+
 Provided that everything was configured correctly, you can now run the
 Trident installer and it should be running in a few minutes:
 

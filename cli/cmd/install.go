@@ -229,6 +229,9 @@ func discoverInstallationEnvironment() error {
 
 	useKubernetesRBAC = true
 	if ucpBearerToken != "" || ucpHost != "" {
+		log.Warning("Trident's support for Docker EE 2.0's UCP access control will " +
+			"be removed in the next release, replaced by the native Kubernetes " +
+			"access control support in Docker EE 2.1 and beyond.")
 		useKubernetesRBAC = false
 
 		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
