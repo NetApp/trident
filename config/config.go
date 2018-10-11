@@ -100,7 +100,7 @@ var (
 	BuildImage = "netapp/trident:" + orchestratorVersion + "-custom.0"
 
 	// BuildEtcdVersion is the etcd version that Trident should be deployed with
-	BuildEtcdVersion = "v3.2.19"
+	BuildEtcdVersion = "v3.3.9"
 
 	// BuildEtcdImage is the etcd image that Trident should be deployed with
 	BuildEtcdImage = "quay.io/coreos/etcd:" + BuildEtcdVersion

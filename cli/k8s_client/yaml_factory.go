@@ -479,7 +479,7 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 10
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v0.2.0
+        image: quay.io/k8scsi/csi-attacher:v0.3.0
         args:
         - "--v=9"
         - "--csi-address=$(ADDRESS)"
@@ -490,7 +490,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v0.2.1
+        image: quay.io/k8scsi/csi-provisioner:v0.3.1
         args:
         - "--v=9"
         - "--provisioner=io.netapp.trident.csi"
@@ -585,10 +585,11 @@ spec:
           mountPath: /host
           mountPropagation: "Bidirectional"
       - name: driver-registrar
-        image: quay.io/k8scsi/driver-registrar:v0.2.0
+        image: quay.io/k8scsi/driver-registrar:v0.3.0
         args:
         - "--v=9"
         - "--csi-address=$(ADDRESS)"
+        - "--kubelet-registration-path="
         env:
         - name: ADDRESS
           value: /plugin/csi.sock

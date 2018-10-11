@@ -10,11 +10,12 @@
 
 **Enhancements:**
 - Added ability to set snapshotReserve in backend config files, volume creation options, and PVC annotations (Issue [#43](https://github.com/NetApp/trident/issues/43)).
-- **Kubernetes:** Added support for expanding NFS Persistent Volumes (Issue [#21](https://github.com/NetApp/trident/issues/21)).
-- **Kubernetes:** Modified Trident installer to do most of its work in a pod.
-- Added ability to limit the size of requested Volumes.
+- Added ability to limit the size of requested volumes.
 - Added ability to limit the ONTAP Aggregate usage % (Issue [#64](https://github.com/NetApp/trident/issues/64)).
 - Added ability to limit the ONTAP Flexvol size for the ontap-nas-economy driver (Issue [#141](https://github.com/NetApp/trident/issues/141)).
+- **Kubernetes:** Added support for expanding NFS Persistent Volumes (Issue [#21](https://github.com/NetApp/trident/issues/21)).
+- **Kubernetes:** Modified Trident installer to do most of its work in a pod.
+- **Kubernetes:** Updated etcd to v3.3.9 and client-go to v9.0.0.
 
 ## v18.07.0
 

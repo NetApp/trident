@@ -120,6 +120,43 @@ func (p *Plugin) NodeGetId(
 	log.WithFields(fields).Debug(">>>> NodeGetId")
 	defer log.WithFields(fields).Debug("<<<< NodeGetId")
 
+	nodeId, err := p.nodeGetId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &csi.NodeGetIdResponse{NodeId: nodeId}, nil
+}
+
+func (p *Plugin) NodeGetCapabilities(
+	ctx context.Context, req *csi.NodeGetCapabilitiesRequest,
+) (*csi.NodeGetCapabilitiesResponse, error) {
+
+	fields := log.Fields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
+	log.WithFields(fields).Debug(">>>> NodeGetCapabilities")
+	defer log.WithFields(fields).Debug("<<<< NodeGetCapabilities")
+
+	return &csi.NodeGetCapabilitiesResponse{Capabilities: p.nsCap}, nil
+}
+
+func (p *Plugin) NodeGetInfo(
+	ctx context.Context, req *csi.NodeGetInfoRequest,
+) (*csi.NodeGetInfoResponse, error) {
+
+	fields := log.Fields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
+	log.WithFields(fields).Debug(">>>> NodeGetInfo")
+	defer log.WithFields(fields).Debug("<<<< NodeGetInfo")
+
+	nodeId, err := p.nodeGetId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &csi.NodeGetInfoResponse{NodeId: nodeId}, nil
+}
+
+func (p *Plugin) nodeGetId() (string, error) {
+
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns()
 	if err != nil {
@@ -141,21 +178,10 @@ func (p *Plugin) NodeGetId(
 			"nodeID": nodeID,
 			"error":  err,
 		}).Error("Could not marshal node ID struct.")
-		return nil, status.Error(codes.Internal, "could not marshal node ID struct")
+		return "", status.Error(codes.Internal, "could not marshal node ID struct")
 	}
 
-	return &csi.NodeGetIdResponse{NodeId: string(nodeIDbytes)}, nil
-}
-
-func (p *Plugin) NodeGetCapabilities(
-	ctx context.Context, req *csi.NodeGetCapabilitiesRequest,
-) (*csi.NodeGetCapabilitiesResponse, error) {
-
-	fields := log.Fields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeGetCapabilities")
-	defer log.WithFields(fields).Debug("<<<< NodeGetCapabilities")
-
-	return &csi.NodeGetCapabilitiesResponse{Capabilities: p.nsCap}, nil
+	return string(nodeIDbytes), nil
 }
 
 func (p *Plugin) nodePublishNFSVolume(

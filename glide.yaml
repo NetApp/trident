@@ -1,28 +1,28 @@
 package: github.com/netapp/trident
 import:
 - package: github.com/sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  version: v1.1.0
 - package: github.com/coreos/etcd
-  version: v3.2.19
+  version: v3.3.9
   subpackages:
   - client
   - clientv3
   - etcdserver
 - package: github.com/golang/protobuf
-  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  version: b4deda0973fb4c70b50d226b1af49f3da59f5265 # v1.1.0
   subpackages:
   - jsonpb
   - proto
 - package: github.com/ghodss/yaml
-  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+  version: v1.0.0
 - package: github.com/gorilla/context
-  version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
+  version: v1.1.1
 - package: github.com/gorilla/mux
-  version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
+  version: v1.6.2
 - package: github.com/pborman/uuid
-  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
+  version: v1.2.0
 - package: github.com/spf13/pflag
-  version: v1.0.1
+  version: v1.0.2
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: golang.org/x/net
@@ -32,14 +32,14 @@ import:
 - package: google.golang.org/grpc
   version: v1.7.5
 - package: k8s.io/api
-  version: 73d903622b7391f3312dcbac6483fed484e185f8
+  version: fd83cbc87e7632ccd8bbab63d2b673d4e0c631cc # kubernetes-1.12.0
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/client-go
-  version: v7.0.0
+  version: v9.0.0
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -52,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 302974c03f7e50f16561ba237db776ab93594ef6
+  version: 6dd46049f39503a1fc8d65de4bd566829e95faff # kubernetes-1.12.0
   subpackages:
   - pkg/api/errors
   - pkg/api/resource
@@ -66,24 +66,24 @@ import:
   - pkg/version
   - pkg/watch
 - package: github.com/docker/go-plugins-helpers
-  version: bd8c600f0cdd76c7a57ff6aa86bd2b423868c688
+  version: 39aeefe5db4eb2034cdc56ff43a86f63b4b543bc
   subpackages:
   - volume
 - package: github.com/mitchellh/hashstructure
-  version: 2bca23e0e452137f789efbc8610126fd8b94f73b
+  version: v1.0.0
 - package: github.com/dustin/go-humanize
-  version: 6d15c0ae71e55ed645c21ac4945aaadbc0e9a590
+  version: 9f541cc9db5d55bce703bd99987c9d5cb8eea45e
 - package: github.com/olekukonko/tablewriter
-  version: a7a4c189eb47ed33ce7b35f2880070a0c82a67d4
+  version: be2c049b30ccd4d3fd795d6bf7dce74e42eeedaa
 - package: github.com/cenkalti/backoff
-  version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
+  version: v2.0.0
 - package: github.com/rs/xid
-  version: 1ed2fb9d49fc2563cd7ff4afdc123b8232d9861b
+  version: v1.2.1
 - package: github.com/RoaringBitmap/roaring
-  version: 6f670287d7ec5bb044dc8afcc8cb904113fd581a
+  version: v0.4.16
 - package: github.com/container-storage-interface/spec
-  version: 2c60d1f8615f58b5c0b94075edace75592ddda74
+  version: v0.3.0
 - package: github.com/go-logfmt/logfmt
   version: v0.3.0
 - package: github.com/stretchr/testify
-  version: ^1.2.2
+  version: ^v1.2.2

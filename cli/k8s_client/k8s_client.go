@@ -16,7 +16,6 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -150,16 +149,29 @@ func NewKubeClient(config *rest.Config, namespace string) (Interface, error) {
 func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 
 	// Read the API groups/resources available from the server
-	dd := k.clientset.Discovery()
-	apiGroups, err := discovery.GetAPIGroupResources(dd)
+	discoveryClient := k.clientset.Discovery()
+
+	resourcesList, err := discoveryClient.ServerResources()
 	if err != nil {
-		log.WithField("error", err).Warning("Could not determine Kubernetes flavor.")
+		log.WithField("error", err).Warning("Could not get server resources, defaulting to Kubernetes flavor.")
 		return FlavorKubernetes
 	}
 
-	// Any API group containing "openshift" signals an OpenShift environment
-	for _, apiGroup := range apiGroups {
-		if strings.Contains(apiGroup.Group.Name, "openshift") {
+	resources, err := discovery.GroupVersionResources(resourcesList)
+	if err != nil {
+		log.WithField("error", err).Warning("Could not parse server resources, defaulting to Kubernetes flavor.")
+		return FlavorKubernetes
+	}
+
+	for gvr := range resources {
+
+		//log.WithFields(log.Fields{
+		//	"group":    gvr.Group,
+		//	"version":  gvr.Version,
+		//	"resource": gvr.Resource,
+		//}).Debug("Considering dynamic resource, looking for openshift group.")
+
+		if strings.Contains(gvr.Group, "openshift") {
 			return FlavorOpenShift
 		}
 	}
@@ -200,8 +212,7 @@ func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) (
 	}
 
 	if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
-		return nil, fmt.Errorf("cannot exec into a container in a completed pod; "+
-			"current phase is %s", pod.Status.Phase)
+		return nil, fmt.Errorf("cannot exec into a completed pod; current phase is %s", pod.Status.Phase)
 	}
 
 	// Infer container name if necessary
@@ -946,13 +957,13 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 	}
 
 	// Get a matching API resource
-	apiResource, err := k.getDynamicResource(gvk)
+	gvr, namespaced, err := k.getDynamicResource(gvk)
 	if err != nil {
 		return err
 	}
 
 	// Get a dynamic REST client
-	client, err := k.getDynamicClient(gvk)
+	client, err := dynamic.NewForConfig(k.restConfig)
 	if err != nil {
 		return err
 	}
@@ -971,9 +982,23 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 		}
 	}
 
+	log.WithFields(log.Fields{
+		"name":      objName,
+		"namespace": objNamespace,
+		"kind":      gvk.Kind,
+	}).Debugf("Creating object.")
+
 	// Create the object
-	if _, err = client.Resource(apiResource, objNamespace).Create(unstruct); err != nil {
-		return err
+	createOptions := metav1.CreateOptions{}
+
+	if namespaced {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Create(unstruct, createOptions); err != nil {
+			return err
+		}
+	} else {
+		if _, err = client.Resource(*gvr).Create(unstruct, createOptions); err != nil {
+			return err
+		}
 	}
 
 	log.WithField("name", objName).Debug("Created object by YAML.")
@@ -1001,13 +1026,13 @@ func (k *KubeClient) DeleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 	}
 
 	// Get a matching API resource
-	apiResource, err := k.getDynamicResource(gvk)
+	gvr, namespaced, err := k.getDynamicResource(gvk)
 	if err != nil {
 		return err
 	}
 
 	// Get a dynamic REST client
-	client, err := k.getDynamicClient(gvk)
+	client, err := dynamic.NewForConfig(k.restConfig)
 	if err != nil {
 		return err
 	}
@@ -1031,8 +1056,19 @@ func (k *KubeClient) DeleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 		return errors.New("cannot determine object name from YAML")
 	}
 
+	log.WithFields(log.Fields{
+		"name":      objName,
+		"namespace": objNamespace,
+		"kind":      gvk.Kind,
+	}).Debug("Deleting object.")
+
 	// Delete the object
-	err = client.Resource(apiResource, objNamespace).Delete(objName, k.deleteOptions())
+	if namespaced {
+		err = client.Resource(*gvr).Namespace(objNamespace).Delete(objName, k.deleteOptions())
+	} else {
+		err = client.Resource(*gvr).Delete(objName, k.deleteOptions())
+	}
+
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok {
 			if ignoreNotFound && statusErr.Status().Reason == metav1.StatusReasonNotFound {
@@ -1057,13 +1093,13 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 	}
 
 	// Get a matching API resource
-	apiResource, err := k.getDynamicResource(gvk)
+	gvr, namespaced, err := k.getDynamicResource(gvk)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get a dynamic REST client
-	client, err := k.getDynamicClient(gvk)
+	client, err := dynamic.NewForConfig(k.restConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -1082,9 +1118,19 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 		}
 	}
 
+	log.WithFields(log.Fields{
+		"name":      objName,
+		"namespace": objNamespace,
+		"kind":      gvk.Kind,
+	}).Debug("Getting object.")
+
 	// Get the object
 	getOptions := metav1.GetOptions{}
-	return client.Resource(apiResource, objNamespace).Get(objName, getOptions)
+	if namespaced {
+		return client.Resource(*gvr).Namespace(objNamespace).Get(objName, getOptions)
+	} else {
+		return client.Resource(*gvr).Get(objName, getOptions)
+	}
 }
 
 // updateObjectByYAML uses the dynamic client-go API to update an object on the server using a YAML/JSON document.
@@ -1097,13 +1143,13 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 	}
 
 	// Get a matching API resource
-	apiResource, err := k.getDynamicResource(gvk)
+	gvr, namespaced, err := k.getDynamicResource(gvk)
 	if err != nil {
 		return err
 	}
 
 	// Get a dynamic REST client
-	client, err := k.getDynamicClient(gvk)
+	client, err := dynamic.NewForConfig(k.restConfig)
 	if err != nil {
 		return err
 	}
@@ -1122,9 +1168,23 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 		}
 	}
 
-	// Create the object
-	if _, err = client.Resource(apiResource, objNamespace).Update(unstruct); err != nil {
-		return err
+	log.WithFields(log.Fields{
+		"name":      objName,
+		"namespace": objNamespace,
+		"kind":      gvk.Kind,
+	}).Debug("Updating object.")
+
+	// Update the object
+	updateOptions := metav1.UpdateOptions{}
+
+	if namespaced {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(unstruct, updateOptions); err != nil {
+			return err
+		}
+	} else {
+		if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+			return err
+		}
 	}
 
 	log.WithField("name", objName).Debug("Updated object by YAML.")
@@ -1157,113 +1217,76 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 	}
 
 	log.WithFields(log.Fields{
-		"group":        gvk.Group,
-		"version":      gvk.Version,
-		"kind":         gvk.Kind,
-		"groupVersion": gvk.GroupVersion().String(),
+		"group":   gvk.Group,
+		"version": gvk.Version,
+		"kind":    gvk.Kind,
 	}).Debugf("Parsed YAML into unstructured object.")
 
 	return &unstruct, gvk, nil
 }
 
 // getDynamicResource accepts a GVK value and returns a matching Resource from the dynamic client-go API.
-func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*metav1.APIResource, error) {
+//func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*metav1.APIResource, error) {
+func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.GroupVersionResource, bool, error) {
 
 	// Read the API groups/resources available from the server
-	dd := k.clientset.Discovery()
-	apiGroups, err := discovery.GetAPIGroupResources(dd)
+	discoveryClient := k.clientset.Discovery()
+
+	resourcesList, err := discoveryClient.ServerResources()
 	if err != nil {
-		return nil, err
+		log.WithFields(log.Fields{
+			"group":   gvk.Group,
+			"version": gvk.Version,
+			"kind":    gvk.Kind,
+			"error":   err,
+		}).Error("Could not get dynamic resource, failed to list server resources.")
+		return nil, false, err
 	}
 
-	// Create a REST mapper so we can get the needed API group/resource
-	restMapper := discovery.NewRESTMapper(apiGroups, meta.InterfacesForUnstructured)
-	mapping, err := restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
-	if err != nil {
-		return nil, err
-	}
+	for _, resources := range resourcesList {
 
-	//log.WithFields(log.Fields{
-	//	"group":        mapping.GroupVersionKind.Group,
-	//	"version":      mapping.GroupVersionKind.Version,
-	//	"kind":         mapping.GroupVersionKind.Kind,
-	//	"groupVersion": mapping.GroupVersionKind.GroupVersion().String(),
-	//	"resource":     mapping.Resource,
-	//}).Debugf("Created REST mapper.")
+		groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
+		if err != nil {
+			log.WithField("groupVersion", groupVersion).Error("Could not parse group/version.")
+			continue
+		}
 
-	// Find the specific server resource that we need
-	apiResourceList, err := dd.ServerResources()
-	if err != nil {
-		return nil, err
-	}
+		for _, resource := range resources.APIResources {
 
-	var dynamicResource *metav1.APIResource
+			//log.WithFields(log.Fields{
+			//	"group":    groupVersion.Group,
+			//	"version":  groupVersion.Version,
+			//	"kind":     resource.Kind,
+			//	"resource": resource.Name,
+			//}).Debug("Considering dynamic API resource.")
 
-ResourceGroupLoop:
-	for _, apiResourceGroup := range apiResourceList {
+			if groupVersion.Group == gvk.Group &&
+				groupVersion.Version == gvk.Version &&
+				resource.Kind == gvk.Kind {
 
-		//log.WithFields(log.Fields{
-		//	"groupVersion": apiResourceGroup.GroupVersion,
-		//}).Debug("Considering API resource group.")
+				log.WithFields(log.Fields{
+					"group":    groupVersion.Group,
+					"version":  groupVersion.Version,
+					"kind":     resource.Kind,
+					"resource": resource.Name,
+				}).Debug("Found API resource.")
 
-		if apiResourceGroup.GroupVersion == mapping.GroupVersionKind.GroupVersion().String() {
-			for _, apiResource := range apiResourceGroup.APIResources {
-
-				//log.WithFields(log.Fields{
-				//	"name":    apiResource.Name,
-				//	"group":   apiResource.Group,
-				//	"version": apiResource.Version,
-				//	"kind":    apiResource.Kind,
-				//}).Debug("Considering API resource.")
-
-				if apiResource.Name == mapping.Resource && apiResource.Kind == mapping.GroupVersionKind.Kind {
-					dynamicResource = &apiResource
-					break ResourceGroupLoop
-				}
-
-				// Work around misspelling in OpenShift API
-				if apiResource.Name == "securitycontextconstraints" &&
-					mapping.Resource == "securitycontextconstraintses" &&
-					apiResource.Kind == mapping.GroupVersionKind.Kind {
-
-					dynamicResource = &apiResource
-					break ResourceGroupLoop
-				}
+				return &schema.GroupVersionResource{
+					Group:    groupVersion.Group,
+					Version:  groupVersion.Version,
+					Resource: resource.Name,
+				}, resource.Namespaced, nil
 			}
 		}
 	}
 
-	if dynamicResource == nil {
-		return nil, errors.New("API resource not found")
-	}
-
 	log.WithFields(log.Fields{
-		"name":    dynamicResource.Name,
-		"group":   dynamicResource.Group,
-		"version": dynamicResource.Version,
-		"kind":    dynamicResource.Kind,
-	}).Debug("Found API resource.")
+		"group":   gvk.Group,
+		"version": gvk.Version,
+		"kind":    gvk.Kind,
+	}).Error("API resource not found.")
 
-	return dynamicResource, nil
-}
-
-// getDynamicClient accepts a GVK value and returns a matching REST client for the dynamic client-go API.
-func (k *KubeClient) getDynamicClient(gvk *schema.GroupVersionKind) (*dynamic.Client, error) {
-
-	// Create a dynamic client using our REST config
-	restConfig := k.restConfig
-	restConfig.GroupVersion = &schema.GroupVersion{
-		Group:   gvk.Group,
-		Version: gvk.Version,
-	}
-
-	if gvk.GroupVersion().String() == "v1" {
-		restConfig.APIPath = "/api"
-	} else {
-		restConfig.APIPath = "/apis"
-	}
-
-	return dynamic.NewClient(restConfig)
+	return nil, false, errors.New("API resource not found")
 }
 
 // AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'

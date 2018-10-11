@@ -307,6 +307,30 @@ func (p *Plugin) ControllerGetCapabilities(
 	return &csi.ControllerGetCapabilitiesResponse{Capabilities: p.csCap}, nil
 }
 
+func (p *Plugin) CreateSnapshot(
+	ctx context.Context, req *csi.CreateSnapshotRequest,
+) (*csi.CreateSnapshotResponse, error) {
+
+	// Trident doesn't support snapshots
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (p *Plugin) DeleteSnapshot(
+	ctx context.Context, req *csi.DeleteSnapshotRequest,
+) (*csi.DeleteSnapshotResponse, error) {
+
+	// Trident doesn't support snapshots
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (p *Plugin) ListSnapshots(
+	ctx context.Context, req *csi.ListSnapshotsRequest,
+) (*csi.ListSnapshotsResponse, error) {
+
+	// Trident doesn't support snapshots
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (p *Plugin) parseVolumeID(ID string) (string, tridentconfig.Protocol, error) {
 
 	// Get volume attributes from the volume ID
