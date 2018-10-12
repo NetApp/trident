@@ -589,10 +589,12 @@ spec:
         args:
         - "--v=9"
         - "--csi-address=$(ADDRESS)"
-        - "--kubelet-registration-path="
+        - "--kubelet-registration-path=$(REGISTRATION_PATH)"
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
+        - name: REGISTRATION_PATH
+          value: /var/lib/kubelet/plugins/io.netapp.trident.csi/csi.sock
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:
@@ -600,11 +602,17 @@ spec:
         volumeMounts:
         - name: plugin-dir
           mountPath: /plugin
+        - name: registration-dir
+          mountPath: /registration
       volumes:
       - name: plugin-dir
         hostPath:
           path: /var/lib/kubelet/plugins/io.netapp.trident.csi
           type: DirectoryOrCreate
+      - name: registration-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins/
+          type: Directory
       - name: plugins-mount-dir
         hostPath:
           path: /var/lib/kubelet/plugins
