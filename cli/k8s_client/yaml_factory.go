@@ -509,18 +509,25 @@ spec:
         emptyDir:
 `
 
-func GetCSIDaemonSetYAML(tridentImage, label string, debug bool) string {
+func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
 
-	var debugLine string
+	var (
+		debugLine        string
+		registrationPath string
+	)
 	if debug {
 		debugLine = "- -debug"
 	} else {
 		debugLine = "#- -debug"
 	}
+	if version.AtLeast(utils.MustParseSemantic("v1.12.0")) {
+		registrationPath = "/var/lib/kubelet/plugins/io.netapp.trident.csi/csi.sock"
+	}
 
 	daemonSetYAML := strings.Replace(daemonSetYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{REGISTRATION_PATH}", registrationPath, 1)
 	return daemonSetYAML
 }
 
@@ -594,7 +601,7 @@ spec:
         - name: ADDRESS
           value: /plugin/csi.sock
         - name: REGISTRATION_PATH
-          value: /var/lib/kubelet/plugins/io.netapp.trident.csi/csi.sock
+          value: {REGISTRATION_PATH}
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:

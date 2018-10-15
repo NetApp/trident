@@ -474,7 +474,8 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write statefulset YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug)
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue,
+		Debug, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -820,7 +821,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": csiDaemonSetPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug))
+				k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
