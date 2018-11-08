@@ -16,7 +16,7 @@ Trident supports multiple container engines and orchestrators, including:
 * Docker 17.06 (CE or EE) or later (latest: 18.03, but see the warning above)
 * Docker Enterprise Edition 17.06 or later (latest: 2.0)
 * Kubernetes 1.8 or later (latest: 1.12)
-* OpenShift 3.8 or later (latest: 3.10)
+* OpenShift 3.8 or later (latest: 3.11)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
 that uses one of the supported versions as a base, such as Rancher or Tectonic.
