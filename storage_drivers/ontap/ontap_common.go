@@ -212,7 +212,8 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 		if err = api.GetError(vserverResponse, err); err != nil {
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
 		}
-		client.SVMUUID = string(vserverResponse.Result.AttributesPtr.Uuid())
+
+		client.SVMUUID = string(vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid())
 
 		log.WithField("SVM", config.SVM).Debug("Using specified SVM.")
 		return client, nil
@@ -229,8 +230,8 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 	}
 
 	// Update everything to use our derived SVM
-	config.SVM = vserverResponse.Result.AttributesList()[0].VserverName()
-	svmUUID := string(vserverResponse.Result.AttributesList()[0].Uuid())
+	config.SVM = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverName()
+	svmUUID := string(vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid())
 
 	client = api.NewClient(api.ClientConfig{
 		ManagementLIF:   config.ManagementLIF,
@@ -506,69 +507,71 @@ func checkAggregateLimits(
 	}
 
 	// iterate over results
-	for _, aggrSpace := range aggrSpaceResponse.Result.AttributesList() {
-		aggrName := aggrSpace.Aggregate()
-		if aggregate != aggrName {
-			log.Debugf("Skipping " + aggrName)
-			continue
-		}
-
-		log.WithFields(log.Fields{
-			"aggrName":                            aggrName,
-			"size":                                aggrSpace.AggregateSize(),
-			"volumeFootprints":                    aggrSpace.VolumeFootprints(),
-			"volumeFootprintsPercent":             aggrSpace.VolumeFootprintsPercent(),
-			"usedIncludingSnapshotReserve":        aggrSpace.UsedIncludingSnapshotReserve(),
-			"usedIncludingSnapshotReservePercent": aggrSpace.UsedIncludingSnapshotReservePercent(),
-		}).Info("Dumping aggregate space")
-
-		if limitAggregateUsage != "" {
-			percentLimit, parseErr := strconv.ParseFloat(limitAggregateUsage, 64)
-			if parseErr != nil {
-				return parseErr
+	if aggrSpaceResponse.Result.AttributesListPtr != nil {
+		for _, aggrSpace := range aggrSpaceResponse.Result.AttributesListPtr.SpaceInformationPtr {
+			aggrName := aggrSpace.Aggregate()
+			if aggregate != aggrName {
+				log.Debugf("Skipping " + aggrName)
+				continue
 			}
 
-			usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
-			aggregateSize := float64(aggrSpace.AggregateSize())
+			log.WithFields(log.Fields{
+				"aggrName":                            aggrName,
+				"size":                                aggrSpace.AggregateSize(),
+				"volumeFootprints":                    aggrSpace.VolumeFootprints(),
+				"volumeFootprintsPercent":             aggrSpace.VolumeFootprintsPercent(),
+				"usedIncludingSnapshotReserve":        aggrSpace.UsedIncludingSnapshotReserve(),
+				"usedIncludingSnapshotReservePercent": aggrSpace.UsedIncludingSnapshotReservePercent(),
+			}).Info("Dumping aggregate space")
 
-			spaceReserveIsThick := false
-			if spaceReserve == "volume" {
-				spaceReserveIsThick = true
-			}
-
-			if spaceReserveIsThick {
-				// we SHOULD include the requestedSize in our computation
-				percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
-				log.WithFields(log.Fields{
-					"percentUsedWithRequest": percentUsedWithRequest,
-					"percentLimit":           percentLimit,
-					"spaceReserve":           spaceReserve,
-				}).Debugf("Checking usage percentage limits")
-
-				if percentUsedWithRequest >= percentLimit {
-					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% would exceed the limit of %.2f %%",
-						percentUsedWithRequest, percentLimit)
-					return errors.New(errorMessage)
+			if limitAggregateUsage != "" {
+				percentLimit, parseErr := strconv.ParseFloat(limitAggregateUsage, 64)
+				if parseErr != nil {
+					return parseErr
 				}
-			} else {
-				// we should NOT include the requestedSize in our computation
-				percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
-				log.WithFields(log.Fields{
-					"percentUsedWithoutRequest": percentUsedWithoutRequest,
-					"percentLimit":              percentLimit,
-					"spaceReserve":              spaceReserve,
-				}).Debugf("Checking usage percentage limits")
 
-				if percentUsedWithoutRequest >= percentLimit {
-					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% exceeds the limit of %.2f %%",
-						percentUsedWithoutRequest, percentLimit)
-					return errors.New(errorMessage)
+				usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
+				aggregateSize := float64(aggrSpace.AggregateSize())
+
+				spaceReserveIsThick := false
+				if spaceReserve == "volume" {
+					spaceReserveIsThick = true
+				}
+
+				if spaceReserveIsThick {
+					// we SHOULD include the requestedSize in our computation
+					percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
+					log.WithFields(log.Fields{
+						"percentUsedWithRequest": percentUsedWithRequest,
+						"percentLimit":           percentLimit,
+						"spaceReserve":           spaceReserve,
+					}).Debugf("Checking usage percentage limits")
+
+					if percentUsedWithRequest >= percentLimit {
+						errorMessage := fmt.Sprintf("aggregate usage of %.2f %% would exceed the limit of %.2f %%",
+							percentUsedWithRequest, percentLimit)
+						return errors.New(errorMessage)
+					}
+				} else {
+					// we should NOT include the requestedSize in our computation
+					percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
+					log.WithFields(log.Fields{
+						"percentUsedWithoutRequest": percentUsedWithoutRequest,
+						"percentLimit":              percentLimit,
+						"spaceReserve":              spaceReserve,
+					}).Debugf("Checking usage percentage limits")
+
+					if percentUsedWithoutRequest >= percentLimit {
+						errorMessage := fmt.Sprintf("aggregate usage of %.2f %% exceeds the limit of %.2f %%",
+							percentUsedWithoutRequest, percentLimit)
+						return errors.New(errorMessage)
+					}
 				}
 			}
-		}
 
-		log.Debugf("Request within specicifed limits, going to create.")
-		return nil
+			log.Debugf("Request within specicifed limits, going to create.")
+			return nil
+		}
 	}
 
 	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
@@ -766,18 +769,19 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 	log.Debugf("Returned %v snapshots.", snapResponse.Result.NumRecords())
 	snapshots := []storage.Snapshot{}
 
-	// AttributesList() returns []SnapshotInfoType
-	for _, snap := range snapResponse.Result.AttributesList() {
+	if snapResponse.Result.AttributesListPtr != nil {
+		for _, snap := range snapResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 
-		log.WithFields(log.Fields{
-			"name":       snap.Name(),
-			"accessTime": snap.AccessTime(),
-		}).Debug("Snapshot")
+			log.WithFields(log.Fields{
+				"name":       snap.Name(),
+				"accessTime": snap.AccessTime(),
+			}).Debug("Snapshot")
 
-		// Time format: yyyy-mm-ddThh:mm:ssZ
-		snapTime := time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
+			// Time format: yyyy-mm-ddThh:mm:ssZ
+			snapTime := time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
 
-		snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime})
+			snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime})
+		}
 	}
 
 	return snapshots, nil
@@ -830,9 +834,14 @@ func UpdateLoadSharingMirrors(client *api.Client) {
 	}
 
 	// One or more LS mirrors found, so issue an update
-	mirrorSourceLocation := mirrorGetResponse.Result.AttributesList()[0].SourceLocation()
-	_, err = client.SnapmirrorUpdateLoadSharingMirrors(mirrorSourceLocation)
-	if err = api.GetError(rootVolumeResponse, err); err != nil {
+	if mirrorGetResponse.Result.AttributesListPtr != nil {
+		mirrorSourceLocation := mirrorGetResponse.Result.AttributesListPtr.SnapmirrorInfoPtr[0].SourceLocation()
+		_, err = client.SnapmirrorUpdateLoadSharingMirrors(mirrorSourceLocation)
+		if err = api.GetError(rootVolumeResponse, err); err != nil {
+			log.Warnf("Error updating load-sharing mirrors for SVM root volume. %v", err)
+			return
+		}
+	} else {
 		log.Warnf("Error updating load-sharing mirrors for SVM root volume. %v", err)
 		return
 	}
@@ -855,11 +864,14 @@ func UpdateLoadSharingMirrors(client *api.Client) {
 
 		// Ensure all mirrors are idle
 		idle := true
-		for _, mirror := range mirrorGetResponse.Result.AttributesList() {
-			if mirror.RelationshipStatusPtr == nil || mirror.RelationshipStatus() != "idle" {
-				idle = false
+		if mirrorGetResponse.Result.AttributesListPtr != nil {
+			for _, mirror := range mirrorGetResponse.Result.AttributesListPtr.SnapmirrorInfoPtr {
+				if mirror.RelationshipStatusPtr == nil || mirror.RelationshipStatus() != "idle" {
+					idle = false
+				}
 			}
 		}
+
 		if idle {
 			log.Debug("Load-sharing mirrors idle.")
 			break
@@ -987,35 +999,37 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 		return zerr
 	}
 
-	for _, aggr := range result.Result.AttributesList() {
-		aggrName := string(aggr.AggregateName())
-		aggrType := aggr.AggregateType()
+	if result.Result.AttributesListPtr != nil {
+		for _, aggr := range result.Result.AttributesListPtr.ShowAggregatesPtr {
+			aggrName := string(aggr.AggregateName())
+			aggrType := aggr.AggregateType()
 
-		// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
-		pool, ok := (*storagePools)[aggrName]
-		if !ok {
-			continue
-		}
+			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
+			pool, ok := (*storagePools)[aggrName]
+			if !ok {
+				continue
+			}
 
-		// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
-		storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
-		if !ok {
+			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
+			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
+			if !ok {
+				log.WithFields(log.Fields{
+					"aggregate": aggrName,
+					"mediaType": aggrType,
+				}).Debug("Aggregate has unknown performance characteristics.")
+
+				continue
+			}
+
 			log.WithFields(log.Fields{
 				"aggregate": aggrName,
 				"mediaType": aggrType,
-			}).Debug("Aggregate has unknown performance characteristics.")
+			}).Debug("Read aggregate attributes.")
 
-			continue
-		}
-
-		log.WithFields(log.Fields{
-			"aggregate": aggrName,
-			"mediaType": aggrType,
-		}).Debug("Read aggregate attributes.")
-
-		// Update the pool with the aggregate storage attributes
-		for attrName, attr := range storageAttrs {
-			pool.Attributes[attrName] = attr
+			// Update the pool with the aggregate storage attributes
+			for attrName, attr := range storageAttrs {
+				pool.Attributes[attrName] = attr
+			}
 		}
 	}
 
@@ -1035,36 +1049,38 @@ func getClusterAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 		return zerr
 	}
 
-	for _, aggr := range result.Result.AttributesList() {
-		aggrName := aggr.AggregateName()
-		aggrRaidAttrs := aggr.AggrRaidAttributes()
-		aggrType := aggrRaidAttrs.AggregateType()
+	if result.Result.AttributesListPtr != nil {
+		for _, aggr := range result.Result.AttributesListPtr.AggrAttributesPtr {
+			aggrName := aggr.AggregateName()
+			aggrRaidAttrs := aggr.AggrRaidAttributes()
+			aggrType := aggrRaidAttrs.AggregateType()
 
-		// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
-		pool, ok := (*storagePools)[aggrName]
-		if !ok {
-			continue
-		}
+			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
+			pool, ok := (*storagePools)[aggrName]
+			if !ok {
+				continue
+			}
 
-		// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
-		storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
-		if !ok {
+			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
+			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
+			if !ok {
+				log.WithFields(log.Fields{
+					"aggregate": aggrName,
+					"mediaType": aggrType,
+				}).Debug("Aggregate has unknown performance characteristics.")
+
+				continue
+			}
+
 			log.WithFields(log.Fields{
 				"aggregate": aggrName,
 				"mediaType": aggrType,
-			}).Debug("Aggregate has unknown performance characteristics.")
+			}).Debug("Read aggregate attributes.")
 
-			continue
-		}
-
-		log.WithFields(log.Fields{
-			"aggregate": aggrName,
-			"mediaType": aggrType,
-		}).Debug("Read aggregate attributes.")
-
-		// Update the pool with the aggregate storage attributes
-		for attrName, attr := range storageAttrs {
-			pool.Attributes[attrName] = attr
+			// Update the pool with the aggregate storage attributes
+			for attrName, attr := range storageAttrs {
+				pool.Attributes[attrName] = attr
+			}
 		}
 	}
 

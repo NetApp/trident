@@ -377,9 +377,11 @@ func (d *SANStorageDriver) Destroy(name string) error {
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		lunID = -1
-		for _, lunMapResponse := range lunMapResponse.Result.InitiatorGroups() {
-			if lunMapResponse.InitiatorGroupName() == d.Config.IgroupName {
-				lunID = lunMapResponse.LunId()
+		if lunMapResponse.Result.InitiatorGroupsPtr != nil {
+			for _, lunMapResponse := range lunMapResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
+				if lunMapResponse.InitiatorGroupName() == d.Config.IgroupName {
+					lunID = lunMapResponse.LunId()
+				}
 			}
 		}
 		if lunID >= 0 {
@@ -513,12 +515,14 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 		returnError = fmt.Errorf("could not get SVM iSCSI interfaces: %v", err)
 		return
 	}
-	for _, iscsiAttrs := range interfaceResponse.Result.AttributesList() {
-		if !iscsiAttrs.IsInterfaceEnabled() {
-			continue
+	if interfaceResponse.Result.AttributesListPtr != nil {
+		for _, iscsiAttrs := range interfaceResponse.Result.AttributesListPtr.IscsiInterfaceListEntryInfoPtr {
+			if !iscsiAttrs.IsInterfaceEnabled() {
+				continue
+			}
+			iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
+			iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
 		}
-		iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
-		iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
 	}
 	if len(iSCSIInterfaces) == 0 {
 		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", d.Config.SVM)
@@ -627,14 +631,16 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 		return fmt.Errorf("problem retrieving iSCSI services: %v, %v",
 			err, response.Result.ResultErrnoAttr)
 	}
-	for _, serviceInfo := range response.Result.AttributesList() {
-		if serviceInfo.Vserver() == d.Config.SVM {
-			targetIQN = serviceInfo.NodeName()
-			log.WithFields(log.Fields{
-				"volume":    volConfig.Name,
-				"targetIQN": targetIQN,
-			}).Debug("Discovered target IQN for volume.")
-			break
+	if response.Result.AttributesListPtr != nil {
+		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
+			if serviceInfo.Vserver() == d.Config.SVM {
+				targetIQN = serviceInfo.NodeName()
+				log.WithFields(log.Fields{
+					"volume":    volConfig.Name,
+					"targetIQN": targetIQN,
+				}).Debug("Discovered target IQN for volume.")
+				break
+			}
 		}
 	}
 
@@ -722,21 +728,25 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 
 	// Make a map of volumes for faster correlation with LUNs
 	volumeMap := make(map[string]azgo.VolumeAttributesType)
-	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
-		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
-		volumeMap[internalName] = volumeAttrs
+	if volumesResponse.Result.AttributesListPtr != nil {
+		for _, volumeAttrs := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+			volumeMap[internalName] = volumeAttrs
+		}
 	}
 
 	// Convert all LUNs to VolumeExternal and write them to the channel
-	for _, lun := range lunsResponse.Result.AttributesList() {
+	if lunsResponse.Result.AttributesListPtr != nil {
+		for _, lun := range lunsResponse.Result.AttributesListPtr.LunInfoPtr {
 
-		volume, ok := volumeMap[lun.Volume()]
-		if !ok {
-			log.WithField("path", lun.Path()).Warning("Flexvol not found for LUN.")
-			continue
+			volume, ok := volumeMap[lun.Volume()]
+			if !ok {
+				log.WithField("path", lun.Path()).Warning("Flexvol not found for LUN.")
+				continue
+			}
+
+			channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&lun, &volume), nil}
 		}
-
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&lun, &volume), nil}
 	}
 }
 

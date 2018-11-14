@@ -479,8 +479,10 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 	}
 
 	// Convert all volumes to VolumeExternal and write them to the channel
-	for _, volume := range volumesResponse.Result.AttributesList() {
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&volume), nil}
+	if volumesResponse.Result.AttributesListPtr != nil {
+		for _, volume := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&volume), nil}
+		}
 	}
 }
 

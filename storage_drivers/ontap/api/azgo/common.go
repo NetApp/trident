@@ -5,9 +5,12 @@ package azgo
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"reflect"
 	"time"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -16,6 +19,10 @@ import (
 
 type ZAPIRequest interface {
 	ToXML() (string, error)
+}
+
+type ZAPIResponseIterable interface {
+	NextTag() string
 }
 
 type ZapiRunner struct {
@@ -92,4 +99,84 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	}
 
 	return response, err
+}
+
+// ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
+	return o.ExecuteWithoutIteration(z, requestType, v)
+}
+
+// ExecuteWithoutIteration does not attempt to perform any nextTag style iteration
+func (o *ZapiRunner) ExecuteWithoutIteration(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
+
+	if o.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "ExecuteUsing", "Type": requestType}
+		log.WithFields(fields).Debug(">>>> ExecuteUsing")
+		defer log.WithFields(fields).Debug("<<<< ExecuteUsing")
+	}
+
+	resp, err := o.SendZapi(z)
+	if err != nil {
+		log.Errorf("API invocation failed. %v", err.Error())
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, readErr := ioutil.ReadAll(resp.Body)
+	if readErr != nil {
+		log.Errorf("Error reading response body. %v", readErr.Error())
+		return nil, readErr
+	}
+	if o.DebugTraceFlags["api"] {
+		log.Debugf("response Body:\n%s", string(body))
+	}
+
+	//unmarshalErr := xml.Unmarshal(body, &v)
+	unmarshalErr := xml.Unmarshal(body, v)
+	if unmarshalErr != nil {
+		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
+	}
+	if o.DebugTraceFlags["api"] {
+		log.Debugf("%s result:\n%v", requestType, v)
+	}
+
+	return v, nil
+}
+
+// ToString implements a String() function via reflection
+func ToString(val reflect.Value) string {
+	if reflect.TypeOf(val).Kind() == reflect.Ptr {
+		val = reflect.Indirect(val)
+	}
+
+	var buffer bytes.Buffer
+	if reflect.ValueOf(val).Kind() == reflect.Struct {
+		for i := 0; i < val.Type().NumField(); i++ {
+			fieldName := val.Type().Field(i).Name
+			fieldType := val.Type().Field(i)
+			fieldTag := fieldType.Tag
+			fieldValue := val.Field(i)
+
+			switch val.Field(i).Kind() {
+			case reflect.Ptr:
+				fieldValue = reflect.Indirect(val.Field(i))
+			default:
+				fieldValue = val.Field(i)
+			}
+
+			if fieldTag != "" {
+				xmlTag := fieldTag.Get("xml")
+				if xmlTag != "" {
+					fieldName = xmlTag
+				}
+			}
+
+			if fieldValue.IsValid() {
+				buffer.WriteString(fmt.Sprintf("%s: %v\n", fieldName, fieldValue))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: %v\n", fieldName, "nil"))
+			}
+		}
+	}
+
+	return buffer.String()
 }

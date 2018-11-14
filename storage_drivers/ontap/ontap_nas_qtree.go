@@ -579,30 +579,32 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	// 1) already having too many qtrees
 	// 2) exceeding size limits
 	var volumes []string
-	for _, volAttrs := range volListResponse.Result.AttributesList() {
-		volIDAttrs := volAttrs.VolumeIdAttributes()
-		volName := string(volIDAttrs.Name())
+	if volListResponse.Result.AttributesListPtr != nil {
+		for _, volAttrs := range volListResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			volIDAttrs := volAttrs.VolumeIdAttributes()
+			volName := string(volIDAttrs.Name())
 
-		// skip flexvols over the size limit
-		if shouldLimitFlexvolQuotaSize {
-			sizeWithRequest, err := d.getOptimalSizeForFlexvol(volName, sizeBytes)
+			// skip flexvols over the size limit
+			if shouldLimitFlexvolQuotaSize {
+				sizeWithRequest, err := d.getOptimalSizeForFlexvol(volName, sizeBytes)
+				if err != nil {
+					log.Errorf("Error checking size for existing qtree. %v %v", volName, err)
+					continue
+				}
+				if sizeWithRequest > flexvolQuotaSizeLimit {
+					log.Debugf("Flexvol quota size for %v is over the limit of %v", volName, flexvolQuotaSizeLimit)
+					continue
+				}
+			}
+
+			count, err := d.API.QtreeCount(volName)
 			if err != nil {
-				log.Errorf("Error checking size for existing qtree. %v %v", volName, err)
-				continue
+				return "", fmt.Errorf("error enumerating qtrees: %v", err)
 			}
-			if sizeWithRequest > flexvolQuotaSizeLimit {
-				log.Debugf("Flexvol quota size for %v is over the limit of %v", volName, flexvolQuotaSizeLimit)
-				continue
+
+			if count < maxQtreesPerFlexvol {
+				volumes = append(volumes, volName)
 			}
-		}
-
-		count, err := d.API.QtreeCount(volName)
-		if err != nil {
-			return "", fmt.Errorf("error enumerating qtrees: %v", err)
-		}
-
-		if count < maxQtreesPerFlexvol {
-			volumes = append(volumes, volName)
 		}
 	}
 
@@ -789,10 +791,12 @@ func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize() {
 		log.Errorf("Error listing Flexvols: %v", err)
 	}
 
-	for _, volAttrs := range volumeListResponse.Result.AttributesList() {
-		volIDAttrs := volAttrs.VolumeIdAttributes()
-		flexvol := string(volIDAttrs.Name())
-		d.quotaResizeMap[flexvol] = true
+	if volumeListResponse.Result.AttributesListPtr != nil {
+		for _, volAttrs := range volumeListResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			volIDAttrs := volAttrs.VolumeIdAttributes()
+			flexvol := string(volIDAttrs.Name())
+			d.quotaResizeMap[flexvol] = true
+		}
 	}
 }
 
@@ -859,12 +863,14 @@ func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(flexvol string) (uint
 
 	var totalDiskLimitKB uint64
 
-	for _, rule := range listResponse.Result.AttributesList() {
-		diskLimitKB, err := strconv.ParseUint(rule.DiskLimit(), 10, 64)
-		if err != nil {
-			continue
+	if listResponse.Result.AttributesListPtr != nil {
+		for _, rule := range listResponse.Result.AttributesListPtr.QuotaEntryPtr {
+			diskLimitKB, err := strconv.ParseUint(rule.DiskLimit(), 10, 64)
+			if err != nil {
+				continue
+			}
+			totalDiskLimitKB += diskLimitKB
 		}
-		totalDiskLimitKB += diskLimitKB
 	}
 
 	return totalDiskLimitKB * 1024, nil
@@ -888,10 +894,12 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 	}
 
 	var flexvols []string
-	for _, volAttrs := range volumeListResponse.Result.AttributesList() {
-		volIDAttrs := volAttrs.VolumeIdAttributes()
-		volName := string(volIDAttrs.Name())
-		flexvols = append(flexvols, volName)
+	if volumeListResponse.Result.AttributesListPtr != nil {
+		for _, volAttrs := range volumeListResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			volIDAttrs := volAttrs.VolumeIdAttributes()
+			volName := string(volIDAttrs.Name())
+			flexvols = append(flexvols, volName)
+		}
 	}
 
 	// Destroy any Flexvol if it is devoid of qtrees
@@ -924,11 +932,12 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees() {
 		log.Errorf("Error listing deleted qtrees. %v", err)
 	}
 
-	// AttributesList() returns []QtreeInfoType
-	for _, qtree := range listResponse.Result.AttributesList() {
-		qtreePath := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
-		log.WithField("qtree", qtreePath).Debug("Housekeeping, reaping deleted qtree.")
-		d.API.QtreeDestroyAsync(qtreePath, true)
+	if listResponse.Result.AttributesListPtr != nil {
+		for _, qtree := range listResponse.Result.AttributesListPtr.QtreeInfoPtr {
+			qtreePath := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
+			log.WithField("qtree", qtreePath).Debug("Housekeeping, reaping deleted qtree.")
+			d.API.QtreeDestroyAsync(qtreePath, true)
+		}
 	}
 }
 
@@ -1092,7 +1101,10 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	}
 
 	// Bail out early if there aren't any Flexvols
-	if len(volumesResponse.Result.AttributesList()) == 0 {
+	if volumesResponse.Result.AttributesListPtr == nil {
+		return
+	}
+	if len(volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr) == 0 {
 		return
 	}
 
@@ -1104,7 +1116,10 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	}
 
 	// Bail out early if there aren't any qtrees
-	if len(qtreesResponse.Result.AttributesList()) == 0 {
+	if qtreesResponse.Result.AttributesListPtr == nil {
+		return
+	}
+	if len(qtreesResponse.Result.AttributesListPtr.QtreeInfoPtr) == 0 {
 		return
 	}
 
@@ -1117,44 +1132,50 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 
 	// Make a map of volumes for faster correlation with qtrees
 	volumeMap := make(map[string]azgo.VolumeAttributesType)
-	for _, volumeAttrs := range volumesResponse.Result.AttributesList() {
-		internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
-		volumeMap[internalName] = volumeAttrs
+	if volumesResponse.Result.AttributesListPtr != nil {
+		for _, volumeAttrs := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+			volumeMap[internalName] = volumeAttrs
+		}
 	}
 
 	// Make a map of quotas for faster correlation with qtrees
 	quotaMap := make(map[string]azgo.QuotaEntryType)
-	for _, quotaAttrs := range quotasResponse.Result.AttributesList() {
-		quotaMap[quotaAttrs.QuotaTarget()] = quotaAttrs
+	if quotasResponse.Result.AttributesListPtr != nil {
+		for _, quotaAttrs := range quotasResponse.Result.AttributesListPtr.QuotaEntryPtr {
+			quotaMap[quotaAttrs.QuotaTarget()] = quotaAttrs
+		}
 	}
 
 	// Convert all qtrees to VolumeExternal and write them to the channel
-	for _, qtree := range qtreesResponse.Result.AttributesList() {
+	if qtreesResponse.Result.AttributesListPtr != nil {
+		for _, qtree := range qtreesResponse.Result.AttributesListPtr.QtreeInfoPtr {
 
-		// Ignore Flexvol-level qtrees
-		if qtree.Qtree() == "" {
-			continue
+			// Ignore Flexvol-level qtrees
+			if qtree.Qtree() == "" {
+				continue
+			}
+
+			// Don't include deleted qtrees
+			if strings.HasPrefix(qtree.Qtree(), deletedQtreeNamePrefix) {
+				continue
+			}
+
+			volume, ok := volumeMap[qtree.Volume()]
+			if !ok {
+				log.WithField("qtree", qtree.Qtree()).Warning("Flexvol not found for qtree.")
+				continue
+			}
+
+			quotaTarget := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
+			quota, ok := quotaMap[quotaTarget]
+			if !ok {
+				log.WithField("qtree", qtree.Qtree()).Warning("Quota rule not found for qtree.")
+				continue
+			}
+
+			channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&qtree, &volume, &quota), nil}
 		}
-
-		// Don't include deleted qtrees
-		if strings.HasPrefix(qtree.Qtree(), deletedQtreeNamePrefix) {
-			continue
-		}
-
-		volume, ok := volumeMap[qtree.Volume()]
-		if !ok {
-			log.WithField("qtree", qtree.Qtree()).Warning("Flexvol not found for qtree.")
-			continue
-		}
-
-		quotaTarget := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
-		quota, ok := quotaMap[quotaTarget]
-		if !ok {
-			log.WithField("qtree", qtree.Qtree()).Warning("Quota rule not found for qtree.")
-			continue
-		}
-
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&qtree, &volume, &quota), nil}
 	}
 }
 
