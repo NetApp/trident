@@ -222,8 +222,8 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
-		snapDirResponse, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(name)
-		if err = api.GetError(snapDirResponse, err); err != nil {
+		_, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(name)
+		if err != nil {
 			return fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
@@ -266,18 +266,9 @@ func (d *NASFlexGroupStorageDriver) Destroy(name string) error {
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
 
-	volDestroyResponse, err := d.API.FlexGroupDestroy(name, true)
+	_, err := d.API.FlexGroupDestroy(name, true)
 	if err != nil {
 		return fmt.Errorf("error destroying FlexGroup %v: %v", name, err)
-	}
-	if zerr := api.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
-
-		// It's not an error if the volume no longer exists
-		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
-			log.WithField("volume", name).Warn("FlexGroup already deleted.")
-		} else {
-			return fmt.Errorf("error destroying FlexGroup %v: %v", name, zerr)
-		}
 	}
 
 	return nil
@@ -562,8 +553,8 @@ func (d *NASFlexGroupStorageDriver) Resize(name string, sizeBytes uint64) error 
 		return nil
 	}
 
-	response, err := d.API.FlexGroupSetSize(name, strconv.FormatUint(sizeBytes, 10))
-	if err = api.GetError(response.Result, err); err != nil {
+	_, err = d.API.FlexGroupSetSize(name, strconv.FormatUint(sizeBytes, 10))
+	if err != nil {
 		log.WithField("error", err).Error("FlexGroup resize failed.")
 		return fmt.Errorf("flexgroup resize failed")
 	}

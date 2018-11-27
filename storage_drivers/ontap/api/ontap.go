@@ -78,7 +78,6 @@ func (d Client) GetNontunneledZapiRunner() *azgo.ZapiRunner {
 // NewZapiError accepts the Response value from any AZGO call, extracts the status, reason, and errno values,
 // and returns a ZapiError.  The interface passed in may either be a Response object, or the always-embedded
 // Result object where the error info exists.
-// TODO: Replace reflection with relevant enhancements in AZGO generator.
 func NewZapiError(zapiResult interface{}) (err ZapiError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -102,7 +101,6 @@ func NewZapiError(zapiResult interface{}) (err ZapiError) {
 
 // NewZapiAsyncResult accepts the Response value from any AZGO Async Request, extracts the status, jobId, and
 // errorCode values and returns a ZapiAsyncResult.
-// TODO: Replace reflection with relevant enhancements in AZGO generator.
 func NewZapiAsyncResult(zapiResult interface{}) (result ZapiAsyncResult, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -630,8 +628,16 @@ func (d Client) FlexGroupDestroy(name string, force bool) (azgo.VolumeDestroyAsy
 		SetUnmountAndOffline(force).
 		ExecuteUsing(d.zr)
 
-	if zerr := GetError(*response, err); zerr != nil {
-		return *response, zerr
+	if zerr := NewZapiError(*response); !zerr.IsPassed() {
+		// It's not an error if the volume no longer exists
+		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
+			log.WithField("volume", name).Warn("FlexGroup already deleted.")
+			return *response, nil
+		}
+	}
+
+	if gerr := GetError(response, err); gerr != nil {
+		return *response, gerr
 	}
 
 	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
@@ -648,11 +654,6 @@ func (d Client) FlexGroupExists(name string) (bool, error) {
 		SetVolumeName(name).
 		ExecuteUsing(d.zr)
 
-	// Check for errors from request
-	if err != nil {
-		return false, err
-	}
-
 	if zerr := NewZapiError(response); !zerr.IsPassed() {
 		switch zerr.Code() {
 		case azgo.EOBJECTNOTFOUND, azgo.EVOLUMEDOESNOTEXIST:
@@ -660,6 +661,10 @@ func (d Client) FlexGroupExists(name string) (bool, error) {
 		default:
 			return false, zerr
 		}
+	}
+
+	if gerr := GetError(response, err); gerr != nil {
+		return false, gerr
 	}
 
 	// Wait for Async Job to complete
@@ -688,6 +693,16 @@ func (d Client) FlexGroupSetSize(name, newSize string) (azgo.VolumeSizeAsyncResp
 		SetVolumeName(name).
 		SetNewSize(newSize).
 		ExecuteUsing(d.zr)
+
+	if zerr := GetError(*response, err); zerr != nil {
+		return *response, zerr
+	}
+
+	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+	if err != nil {
+		return *response, fmt.Errorf("error waiting for response: %v", err)
+	}
+
 	return *response, err
 }
 
@@ -747,13 +762,15 @@ func (d Client) waitForAsyncResponse(zapiResult interface{}, maxWaitTime time.Du
 		return err
 	}
 
-	// Possible values: "succeeded", "in_progress", "failed". Only check if status is "in_progress".
+	// Possible values: "succeeded", "in_progress", "failed". Returns nil if succeeded
 	if asyncResult.status == "in_progress" {
 		// handle zapi response
 		jobId := int(asyncResult.jobId)
 		if asyncResponseError := d.checkForJobCompletion(jobId, maxWaitTime); asyncResponseError != nil {
 			return asyncResponseError
 		}
+	} else if asyncResult.status == "failed" {
+		return fmt.Errorf("result status is failed with errorCode %d", asyncResult.errorCode)
 	}
 
 	return nil
