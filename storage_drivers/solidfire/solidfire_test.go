@@ -62,7 +62,7 @@ func getDriver() *SANStorageDriver {
 
 func TestGetExternalConfig(t *testing.T) {
 	driver := getDriver()
-	newConfig := driver.GetExternalConfig().(*StorageDriverConfigExternal)
+	newConfig := driver.GetExternalConfig().(drivers.SolidfireStorageDriverConfig)
 	if newConfig.EndPoint == driver.Config.EndPoint {
 		t.Errorf("EndPoints are equal; expected different. Got: %s", newConfig.EndPoint)
 	}

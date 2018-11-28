@@ -8,26 +8,13 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-type Backend struct {
-	Name   string `json:"name"`
-	Config struct {
-		Version           int      `json:"version"`
-		StorageDriverName string   `json:"storageDriverName"`
-		StoragePrefix     string   `json:"storagePrefix"`
-		SerialNumbers     []string `json:"serialNumbers"`
-	} `json:"config"`
-	Storage interface{} `json:"storage"`
-	Online  bool        `json:"online"`
-	Volumes []string    `json:"volumes"`
-}
-
 type GetBackendResponse struct {
-	Backend Backend `json:"backend"`
-	Error   string  `json:"error"`
+	Backend storage.BackendExternal `json:"backend"`
+	Error   string                  `json:"error"`
 }
 
 type MultipleBackendResponse struct {
-	Items []Backend `json:"items"`
+	Items []storage.BackendExternal `json:"items"`
 }
 
 type StorageClass struct {

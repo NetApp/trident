@@ -13,6 +13,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/storage"
 )
 
 func init() {
@@ -79,7 +80,7 @@ func backendUpdate(backendNames []string, postData []byte) error {
 		return err
 	}
 
-	backends := make([]api.Backend, 0, 1)
+	backends := make([]storage.BackendExternal, 0, 1)
 	backendName := updateBackendResponse.BackendID
 
 	// Retrieve the updated backend and write to stdout

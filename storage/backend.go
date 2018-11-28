@@ -306,12 +306,12 @@ func (b *Backend) Terminate() {
 }
 
 type BackendExternal struct {
-	Name     string                   `json:"name"`
-	Protocol tridentconfig.Protocol   `json:"protocol"`
-	Config   interface{}              `json:"config"`
-	Storage  map[string]*PoolExternal `json:"storage"`
-	Online   bool                     `json:"online"`
-	Volumes  []string                 `json:"volumes"`
+	Name     string                 `json:"name"`
+	Protocol tridentconfig.Protocol `json:"protocol"`
+	Config   interface{}            `json:"config"`
+	Storage  map[string]interface{} `json:"storage"`
+	Online   bool                   `json:"online"`
+	Volumes  []string               `json:"volumes"`
 }
 
 func (b *Backend) ConstructExternal() *BackendExternal {
@@ -319,7 +319,7 @@ func (b *Backend) ConstructExternal() *BackendExternal {
 		Name:     b.Name,
 		Protocol: b.GetProtocol(),
 		Config:   b.Driver.GetExternalConfig(),
-		Storage:  make(map[string]*PoolExternal),
+		Storage:  make(map[string]interface{}),
 		Online:   b.Online,
 		Volumes:  make([]string, 0),
 	}

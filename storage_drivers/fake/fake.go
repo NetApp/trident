@@ -368,7 +368,6 @@ func (d *StorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
 }
 
 func (d *StorageDriver) GetExternalConfig() interface{} {
-
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 
 	return &struct {

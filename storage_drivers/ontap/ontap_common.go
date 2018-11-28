@@ -1195,23 +1195,14 @@ func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) bool
 
 func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {
 
-	drivers.SanitizeCommonStorageDriverConfig(config.CommonStorageDriverConfig)
+	// Clone the config so we don't risk altering the original
+	var cloneConfig drivers.OntapStorageDriverConfig
+	drivers.Clone(config, &cloneConfig)
 
-	return &struct {
-		*drivers.CommonStorageDriverConfigExternal
-		ManagementLIF string `json:"managementLIF"`
-		DataLIF       string `json:"dataLIF"`
-		IgroupName    string `json:"igroupName"`
-		SVM           string `json:"svm"`
-	}{
-		CommonStorageDriverConfigExternal: drivers.GetCommonStorageDriverConfigExternal(
-			config.CommonStorageDriverConfig,
-		),
-		ManagementLIF: config.ManagementLIF,
-		DataLIF:       config.DataLIF,
-		IgroupName:    config.IgroupName,
-		SVM:           config.SVM,
-	}
+	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
+	cloneConfig.Username = "" // redact the username
+	cloneConfig.Password = "" // redact the password
+	return cloneConfig
 }
 
 // resizeValidation performs needed validation checks prior to the resize operation.

@@ -56,10 +56,7 @@ func (pool *Pool) ConstructExternal() *PoolExternal {
 	external := &PoolExternal{
 		Name:           pool.Name,
 		StorageClasses: pool.StorageClasses,
-		Attributes:     make(map[string]sa.Offer),
-	}
-	for k, v := range pool.Attributes {
-		external.Attributes[k] = v
+		Attributes:     pool.Attributes,
 	}
 
 	// We want to sort these so that the output remains consistent;

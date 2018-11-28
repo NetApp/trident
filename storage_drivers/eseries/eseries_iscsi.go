@@ -888,14 +888,13 @@ func (d *SANStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig
 func (d *SANStorageDriver) GetExternalConfig() interface{} {
 	log.Debugln("EseriesStorageDriver:GetExternalConfig")
 
-	return &SANStorageDriverConfigExternal{
-		CommonStorageDriverConfigExternal: drivers.GetCommonStorageDriverConfigExternal(
-			d.Config.CommonStorageDriverConfig),
-		Username:    d.Config.Username,
-		ControllerA: d.Config.ControllerA,
-		ControllerB: d.Config.ControllerB,
-		HostDataIP:  d.Config.HostDataIP,
-	}
+	// Clone the config so we don't risk altering the original
+	var cloneConfig drivers.ESeriesStorageDriverConfig
+	drivers.Clone(d.Config, &cloneConfig)
+	cloneConfig.Username = ""      // redact the username
+	cloneConfig.Password = ""      // redact the password
+	cloneConfig.PasswordArray = "" // redact the password
+	return cloneConfig
 }
 
 func (d *SANStorageDriver) uuidToBase64(UUID string) (string, error) {

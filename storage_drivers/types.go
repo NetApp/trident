@@ -1,9 +1,12 @@
 package storagedrivers
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -230,7 +233,7 @@ type CommonStorageDriverConfigExternal struct {
 }
 
 func SanitizeCommonStorageDriverConfig(c *CommonStorageDriverConfig) {
-	if c.StoragePrefixRaw == nil {
+	if c != nil && c.StoragePrefixRaw == nil {
 		c.StoragePrefixRaw = json.RawMessage("{}")
 	}
 }
@@ -298,4 +301,17 @@ func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverC
 	}
 
 	return true, volumeSizeLimit, nil
+}
+
+// Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
+func Clone(source, destination interface{}) {
+	if reflect.TypeOf(destination).Kind() != reflect.Ptr {
+		log.Error("storager_drivers.Clone, destination parameter must be a pointer")
+	}
+
+	buff := new(bytes.Buffer)
+	enc := gob.NewEncoder(buff)
+	dec := gob.NewDecoder(buff)
+	enc.Encode(source)
+	dec.Decode(destination)
 }

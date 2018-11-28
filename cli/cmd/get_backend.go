@@ -11,6 +11,8 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/storage"
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +51,7 @@ func backendList(backendNames []string) error {
 		}
 	}
 
-	backends := make([]api.Backend, 0, 10)
+	backends := make([]storage.BackendExternal, 0, 10)
 
 	// Get the actual backend objects
 	for _, backendName := range backendNames {
@@ -87,28 +89,28 @@ func GetBackends(baseURL string) ([]string, error) {
 	return listBackendsResponse.Backends, nil
 }
 
-func GetBackend(baseURL, backendName string) (api.Backend, error) {
+func GetBackend(baseURL, backendName string) (storage.BackendExternal, error) {
 
 	url := baseURL + "/backend/" + backendName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
-		return api.Backend{}, err
+		return storage.BackendExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return api.Backend{}, fmt.Errorf("could not get backend %s: %v", backendName,
+		return storage.BackendExternal{}, fmt.Errorf("could not get backend %s: %v", backendName,
 			GetErrorFromHTTPResponse(response, responseBody))
 	}
 
 	var getBackendResponse api.GetBackendResponse
 	err = json.Unmarshal(responseBody, &getBackendResponse)
 	if err != nil {
-		return api.Backend{}, err
+		return storage.BackendExternal{}, err
 	}
 
 	return getBackendResponse.Backend, nil
 }
 
-func WriteBackends(backends []api.Backend) {
+func WriteBackends(backends []storage.BackendExternal) {
 	switch OutputFormat {
 	case FormatJSON:
 		WriteJSON(api.MultipleBackendResponse{backends})
@@ -121,24 +123,87 @@ func WriteBackends(backends []api.Backend) {
 	}
 }
 
-func writeBackendTable(backends []api.Backend) {
+func getESeriesStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.ESeriesStorageDriverConfig, error) {
+	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
+	if marshalError != nil {
+		return nil, marshalError
+	}
+
+	var result drivers.ESeriesStorageDriverConfig
+	err := json.Unmarshal(jsonBytes, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func getFakeStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.FakeStorageDriverConfig, error) {
+	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
+	if marshalError != nil {
+		return nil, marshalError
+	}
+
+	var result drivers.FakeStorageDriverConfig
+	err := json.Unmarshal(jsonBytes, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func getOntapStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.OntapStorageDriverConfig, error) {
+	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
+	if marshalError != nil {
+		return nil, marshalError
+	}
+
+	var result drivers.OntapStorageDriverConfig
+	err := json.Unmarshal(jsonBytes, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.SolidfireStorageDriverConfig, error) {
+	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
+	if marshalError != nil {
+		return nil, marshalError
+	}
+
+	var result drivers.SolidfireStorageDriverConfig
+	err := json.Unmarshal(jsonBytes, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func writeBackendTable(backends []storage.BackendExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Storage Driver", "Online", "Volumes"})
 
 	for _, b := range backends {
-		table.Append([]string{
-			b.Name,
-			b.Config.StorageDriverName,
-			strconv.FormatBool(b.Online),
-			strconv.Itoa(len(b.Volumes)),
-		})
+		if b.Config == nil {
+			continue
+		}
+
+		if configAsMap, ok := b.Config.(map[string]interface{}); ok {
+			storageDriverName := configAsMap["storageDriverName"].(string)
+			table.Append([]string{
+				b.Name,
+				storageDriverName,
+				strconv.FormatBool(b.Online),
+				strconv.Itoa(len(b.Volumes)),
+			})
+		}
 	}
 
 	table.Render()
 }
 
-func writeBackendNames(backends []api.Backend) {
+func writeBackendNames(backends []storage.BackendExternal) {
 
 	for _, b := range backends {
 		fmt.Println(b.Name)

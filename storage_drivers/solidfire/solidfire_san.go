@@ -1116,18 +1116,15 @@ func (d *SANStorageDriver) StoreConfig(
 }
 
 func (d *SANStorageDriver) GetExternalConfig() interface{} {
-	endpointHalves := strings.Split(d.Config.EndPoint, "@")
-	return &StorageDriverConfigExternal{
-		CommonStorageDriverConfigExternal: drivers.GetCommonStorageDriverConfigExternal(
-			d.Config.CommonStorageDriverConfig),
-		TenantName:     d.Config.TenantName,
-		EndPoint:       fmt.Sprintf("https://%s", endpointHalves[1]),
-		SVIP:           d.Config.SVIP,
-		InitiatorIFace: d.Config.InitiatorIFace,
-		Types:          d.Config.Types,
-		AccessGroups:   d.Config.AccessGroups,
-		UseCHAP:        d.Config.UseCHAP,
-	}
+	// Clone the config so we don't risk altering the original
+	var cloneConfig drivers.SolidfireStorageDriverConfig
+	drivers.Clone(d.Config, &cloneConfig)
+
+	// remove the user/password from the EndPoint URL
+	endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
+	cloneConfig.EndPoint = fmt.Sprintf("https://%s", endpointHalves[1])
+
+	return cloneConfig
 }
 
 // Find/Return items that exist in b but NOT a
