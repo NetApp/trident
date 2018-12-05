@@ -142,14 +142,17 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Clien
 		defer log.WithFields(fields).Debug("<<<< InitializeOntapDriver")
 	}
 
-	addressesFromHostname, err := net.LookupHost(config.ManagementLIF)
+	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
+	mgmtLIF := strings.Split(config.ManagementLIF, ":")[0]
+
+	addressesFromHostname, err := net.LookupHost(mgmtLIF)
 	if err != nil {
-		log.WithField("ManagementLIF", config.ManagementLIF).Error("Host lookup failed for ManagementLIF. ", err)
+		log.WithField("ManagementLIF", mgmtLIF).Error("Host lookup failed for ManagementLIF. ", err)
 		return nil, err
 	}
 
 	log.WithFields(log.Fields{
-		"hostname":  config.ManagementLIF,
+		"hostname":  mgmtLIF,
 		"addresses": addressesFromHostname,
 	}).Debug("Addresses found from ManagementLIF lookup.")
 
