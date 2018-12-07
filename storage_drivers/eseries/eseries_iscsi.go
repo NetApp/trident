@@ -1,6 +1,4 @@
-/*
- * Copyright 2018 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -1016,7 +1014,10 @@ func (d *SANStorageDriver) getVolumeExternal(
 	volumeAttrs *api.VolumeEx, poolAttrs *api.VolumeGroupEx) *storage.VolumeExternal {
 
 	internalName := volumeAttrs.Label
-	name := internalName[len(*d.Config.StoragePrefix):]
+	name := internalName
+	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
+		name = internalName[len(*d.Config.StoragePrefix):]
+	}
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
