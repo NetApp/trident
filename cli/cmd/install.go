@@ -1724,10 +1724,10 @@ func installTridentInCluster() (returnError error) {
 	commandArgs = append(commandArgs, "--in-cluster=false")
 
 	// Create the install pod
-	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerPodYAML(
-		TridentInstallerLabelValue, tridentImage, commandArgs))
+	errMessage := "could not create installer pod"
+	returnError = backoffCreateObjectsByYAML("installerPod",
+		k8sclient.GetInstallerPodYAML(TridentInstallerLabelValue, tridentImage, commandArgs), errMessage)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create installer pod; %v", returnError)
 		return
 	}
 	log.WithFields(log.Fields{"pod": "trident-installer"}).Info("Created installer pod.")
@@ -1777,31 +1777,65 @@ func installTridentInCluster() (returnError error) {
 	return
 }
 
-func createInstallerRBACObjects() (returnError error) {
+func backoffCreateObjectsByYAML(objectName string, installerYAML string, errorMessage string) error {
+	// Wait for PV/PVC to be bound
+	checkCreateObjectByYAML := func() error {
+		returnError := client.CreateObjectByYAML(installerYAML)
+		if returnError != nil {
+			log.WithFields(log.Fields{
+				"objectName": objectName,
+				"err":        returnError,
+			}).Errorf("Object creation failed.")
+			return errors.New(errorMessage)
+		}
+		return nil
+	}
+
+	createObjectNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"objectName": objectName,
+			"increment":  duration,
+			"err":        err,
+		}).Debugf("Object not created, waiting.")
+	}
+	createObjectBackoff := backoff.NewExponentialBackOff()
+	createObjectBackoff.MaxElapsedTime = k8sTimeout
+
+	log.WithField("objectName", objectName).Info("Waiting for object to be created.")
+
+	if err := backoff.RetryNotify(checkCreateObjectByYAML, createObjectBackoff, createObjectNotify); err != nil {
+		returnError := fmt.Errorf("object %s was not created after %3.2f seconds", objectName, k8sTimeout.Seconds())
+		return returnError
+	}
+
+	return nil
+}
+
+func createInstallerRBACObjects() error {
 
 	// Create service account
-	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerServiceAccountYAML())
+	returnError := client.CreateObjectByYAML(k8sclient.GetInstallerServiceAccountYAML())
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create installer service account; %v", returnError)
-		return
+		return returnError
 	}
 	log.WithFields(log.Fields{"serviceaccount": "trident-installer"}).Info("Created installer service account.")
 
 	// Create cluster role
-	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerClusterRoleYAML(
-		client.Flavor(), client.ServerVersion()))
+	errMessage := "could not create installer cluster role"
+	returnError = backoffCreateObjectsByYAML("clusterRole",
+		k8sclient.GetInstallerClusterRoleYAML(client.Flavor(), client.ServerVersion()), errMessage)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create installer cluster role; %v", returnError)
-		return
+		return returnError
 	}
 	log.WithFields(log.Fields{"clusterrole": "trident-installer"}).Info("Created installer cluster role.")
 
 	// Create cluster role binding
-	returnError = client.CreateObjectByYAML(k8sclient.GetInstallerClusterRoleBindingYAML(
-		TridentPodNamespace, client.Flavor(), client.ServerVersion()))
+	errMessage = "could not create installer cluster role binding"
+	returnError = backoffCreateObjectsByYAML("clusterRoleBinding",
+		k8sclient.GetInstallerClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(), client.ServerVersion()), errMessage)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create installer cluster role binding; %v", returnError)
-		return
+		return returnError
 	}
 	log.WithFields(log.Fields{"clusterrolebinding": "trident-installer"}).Info("Created installer cluster role binding.")
 
@@ -1809,7 +1843,7 @@ func createInstallerRBACObjects() (returnError error) {
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		if returnError = client.AddTridentUserToOpenShiftSCC("trident-installer", "privileged"); returnError != nil {
 			returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-			return
+			return returnError
 		}
 		log.WithFields(log.Fields{
 			"scc":  "privileged",
@@ -1817,7 +1851,7 @@ func createInstallerRBACObjects() (returnError error) {
 		}).Info("Added security context constraint user.")
 	}
 
-	return
+	return nil
 }
 
 func removeInstallerRBACObjects(logLevel log.Level) (anyErrors bool) {
