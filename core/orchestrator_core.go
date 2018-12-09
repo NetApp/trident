@@ -543,8 +543,8 @@ func (o *TridentOrchestrator) updateBackend(backendName, configJSON string) (
 		if vol.Backend == originalBackend.Name {
 			vol.Backend = backend.Name
 			updatePersistentStore := false
-			volExternal, _ := backend.Driver.GetVolumeExternal(vol.Config.InternalName)
-			if volExternal == nil {
+			volumeExists := backend.Driver.Get(vol.Config.InternalName) == nil
+			if !volumeExists {
 				if vol.Orphaned == false {
 					vol.Orphaned = true
 					updatePersistentStore = true

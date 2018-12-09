@@ -52,7 +52,12 @@ type Driver interface {
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
 	GetExternalConfig() interface{}
+	// GetVolumeExternal accepts the internal name of a volume and returns a VolumeExternal
+	// object.  This method is only available if using the passthrough store (i.e. Docker).
 	GetVolumeExternal(name string) (*VolumeExternal, error)
+	// GetVolumeExternalWrappers reads all volumes owned by this driver from the storage backend and
+	// writes them to the supplied channel as VolumeExternalWrapper objects.  This method is only
+	// available if using the passthrough store (i.e. Docker).
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 	GetUpdateType(driver Driver) *roaring.Bitmap
 }

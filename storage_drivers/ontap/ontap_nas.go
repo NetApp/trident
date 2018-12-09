@@ -457,7 +457,10 @@ func (d *NASStorageDriver) getVolumeExternal(
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
 	internalName := string(volumeIDAttrs.Name())
-	name := internalName[len(*d.Config.StoragePrefix):]
+	name := internalName
+	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
+		name = internalName[len(*d.Config.StoragePrefix):]
+	}
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,

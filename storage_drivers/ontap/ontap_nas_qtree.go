@@ -1190,7 +1190,10 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
 	internalName := qtreeAttrs.Qtree()
-	name := internalName[len(*d.Config.StoragePrefix):]
+	name := internalName
+	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
+		name = internalName[len(*d.Config.StoragePrefix):]
+	}
 
 	size := convertDiskLimitToBytes(quotaAttrs.DiskLimit())
 

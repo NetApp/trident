@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
@@ -491,7 +492,10 @@ func (d *NASFlexGroupStorageDriver) getVolumeExternal(
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
 	internalName := string(volumeIDAttrs.Name())
-	name := internalName[len(*d.Config.StoragePrefix):]
+	name := internalName
+	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
+		name = internalName[len(*d.Config.StoragePrefix):]
+	}
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
