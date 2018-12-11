@@ -7,15 +7,9 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-.. warning::
-  Do not use Docker 18.03.0-ce. It contains a `critical bug`_ that impacts
-  most volume plugins, including Trident. The fix is available in 18.03.1-ce.
-
-.. _critical bug: https://github.com/moby/moby/issues/36784
-
-* Docker 17.06 (CE or EE) or later (latest: 18.03, but see the warning above)
-* Docker Enterprise Edition 17.06 or later (latest: 2.0)
-* Kubernetes 1.8 or later (latest: 1.12)
+* Docker 17.06 (CE or EE) or later (latest: 18.09)
+* Docker Enterprise Edition 17.06 or later (latest: 2.1)
+* Kubernetes 1.8 or later (latest: 1.13)
 * OpenShift 3.8 or later (latest: 3.11)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes

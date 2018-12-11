@@ -520,7 +520,7 @@ func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.
 	} else {
 		debugLine = "#- -debug"
 	}
-	if version.AtLeast(utils.MustParseSemantic("v1.12.0")) {
+	if version.AtLeast(utils.MustParseSemantic("v1.13.0")) {
 		registrationPath = "/var/lib/kubelet/plugins/io.netapp.trident.csi/csi.sock"
 	}
 

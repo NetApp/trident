@@ -71,7 +71,7 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin    = "v1.8.0"
-	KubernetesVersionMax    = "v1.12.0"
+	KubernetesVersionMax    = "v1.13.0"
 	KubernetesCSIVersionMin = "v1.10.0"
 
 	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
