@@ -1,4 +1,4 @@
-# Trident
+<img src="logo/trident.png" alt="NetApp Trident" width="100" height="100">
 
 [![Support](https://img.shields.io/badge/support-official-0067C5.svg)](http://mysupport.netapp.com/info/web/ECMLP2619434.html)
 [![Chat](https://img.shields.io/badge/chat-slack-4C9689.svg)](http://netapp.io/slack/)

@@ -779,6 +779,10 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 			return
 		}
 		pv.Spec.ISCSI = iscsiSource
+		if claim.Spec.VolumeMode != nil &&
+			*claim.Spec.VolumeMode == v1.PersistentVolumeBlock {
+			pv.Spec.VolumeMode = claim.Spec.VolumeMode
+		}
 	case driverType == drivers.OntapNASStorageDriverName ||
 		driverType == drivers.OntapNASQtreeStorageDriverName ||
 		driverType == drivers.OntapNASFlexGroupStorageDriverName:

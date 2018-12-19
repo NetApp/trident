@@ -7,6 +7,7 @@
 **Fixes:**
 
 **Enhancements:**
+- **Kubernetes:** Added support for raw block volumes for iSCSI PVs.
 - **Kubernetes:** Enhanced the Trident installer to automatically add the backend with which Trident was installed for subsequent volume provisioning.
 
 **Deprecations:**
