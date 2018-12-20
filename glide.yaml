@@ -1,9 +1,9 @@
 package: github.com/netapp/trident
 import:
 - package: github.com/sirupsen/logrus
-  version: v1.1.0
+  version: v1.2.0
 - package: github.com/coreos/etcd
-  version: v3.3.9
+  version: v3.3.10
   subpackages:
   - client
   - clientv3
@@ -22,24 +22,24 @@ import:
 - package: github.com/pborman/uuid
   version: v1.2.0
 - package: github.com/spf13/pflag
-  version: v1.0.2
+  version: v1.0.3
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: golang.org/x/net
-  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  version: 0ed95abb35c445290478a5348a7b38bb154135fd
   subpackages:
   - context
 - package: google.golang.org/grpc
   version: v1.7.5
 - package: k8s.io/api
-  version: fd83cbc87e7632ccd8bbab63d2b673d4e0c631cc # kubernetes-1.12.0
+  version: 89a74a8d264df0e993299876a8cde88379b940ee # kubernetes-1.13.0
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/client-go
-  version: v9.0.0
+  version: v10.0.0
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -52,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 6dd46049f39503a1fc8d65de4bd566829e95faff # kubernetes-1.12.0
+  version: 2b1284ed4c93a43499e781493253e2ac5959c4fd # kubernetes-1.13.0
   subpackages:
   - pkg/api/errors
   - pkg/api/resource
@@ -66,17 +66,17 @@ import:
   - pkg/version
   - pkg/watch
 - package: github.com/docker/go-plugins-helpers
-  version: 39aeefe5db4eb2034cdc56ff43a86f63b4b543bc
+  version: 1e6269c305b8c75cfda1c8aa91349c38d7335814
   subpackages:
   - volume
 - package: github.com/mitchellh/hashstructure
   version: v1.0.0
 - package: github.com/dustin/go-humanize
-  version: 9f541cc9db5d55bce703bd99987c9d5cb8eea45e
+  version: v1.0.0
 - package: github.com/olekukonko/tablewriter
-  version: be2c049b30ccd4d3fd795d6bf7dce74e42eeedaa
+  version: v0.0.1
 - package: github.com/cenkalti/backoff
-  version: v2.0.0
+  version: v2.1.0
 - package: github.com/rs/xid
   version: v1.2.1
 - package: github.com/RoaringBitmap/roaring
@@ -84,6 +84,6 @@ import:
 - package: github.com/container-storage-interface/spec
   version: v0.3.0
 - package: github.com/go-logfmt/logfmt
-  version: v0.3.0
+  version: v0.4.0
 - package: github.com/stretchr/testify
   version: ^v1.2.2
