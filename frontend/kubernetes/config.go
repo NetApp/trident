@@ -26,7 +26,6 @@ const (
 	// Orchestrator-defined annotations
 	AnnOrchestrator    = "netapp.io/" + config.OrchestratorName
 	AnnPrefix          = config.OrchestratorName + ".netapp.io"
-	AnnReclaimPolicy   = AnnPrefix + "/reclaimPolicy"
 	AnnProtocol        = AnnPrefix + "/protocol"
 	AnnSpaceReserve    = AnnPrefix + "/spaceReserve"
 	AnnSnapshotPolicy  = AnnPrefix + "/snapshotPolicy"

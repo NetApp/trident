@@ -67,7 +67,6 @@ defaults that you set in the backend configuration:
 Annotation                          Volume Option     Supported Drivers
 =================================== ================= ======================================================
 trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi
-trident.netapp.io/reclaimPolicy     N/A               any
 trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san
 trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
@@ -79,10 +78,6 @@ trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-econo
 trident.netapp.io/blockSize         blockSize         solidfire-san
 =================================== ================= ======================================================
 
-The reclaim policy for the created PV can be determined by setting the
-annotation ``trident.netapp.io/reclaimPolicy`` in the PVC to either ``Delete``
-or ``Retain``; this value will then be set in the PV's ``ReclaimPolicy`` field.
-When the annotation is left unspecified, Trident will use the ``Delete`` policy.
 If the created PV has the ``Delete`` reclaim policy, Trident will delete both
 the PV and the backing volume when the PV becomes released (i.e., when the user
 deletes the PVC).  Should the delete action fail, Trident will mark the PV

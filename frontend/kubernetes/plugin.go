@@ -527,42 +527,9 @@ func (p *Plugin) processBoundClaim(claim *v1.PersistentVolumeClaim) {
 // processLostClaim cleans up Trident-created PVs.
 func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	volName := getUniqueClaimName(claim)
-
-	defer func() {
-		// Remove the pending claim, if present.
-		p.mutex.Lock()
-		delete(p.pendingClaimMatchMap, volName)
-		p.mutex.Unlock()
-	}()
-
-	// A PVC is in the "Lost" phase when the corresponding PV is deleted.
-	// Check whether we need to recycle the claim and the corresponding volume.
-	if getClaimReclaimPolicy(claim) == string(v1.PersistentVolumeReclaimRetain) {
-		return
-	}
-
-	// We need to delete the corresponding volume.
-	if vol, _ := p.orchestrator.GetVolume(volName); vol == nil {
-		return
-	}
-	err := p.orchestrator.DeleteVolume(volName)
-	if err != nil {
-		message := "failed to delete the provisioned volume or PV for the lost PVC (will retry upon resync)."
-		p.updatePVCWithEvent(claim, v1.EventTypeWarning,
-			"FailedVolumeDelete", message)
-		log.WithFields(log.Fields{
-			"PVC":    claim.Name,
-			"volume": volName,
-		}).Errorf("Kubernetes frontend %s", message)
-	} else {
-		message := "deleted the provisioned PV and volume for the lost PVC."
-		p.updatePVCWithEvent(claim, v1.EventTypeNormal,
-			"VolumeDelete", message)
-		log.WithFields(log.Fields{
-			"PVC":    claim.Name,
-			"volume": volName,
-		}).Infof("Kubernetes frontend %s", message)
-	}
+	p.mutex.Lock()
+	delete(p.pendingClaimMatchMap, volName)
+	p.mutex.Unlock()
 	return
 }
 
@@ -785,14 +752,6 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 		pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
 	}
 
-	// PVC annotation takes precedence over the storage class field
-	if getClaimReclaimPolicy(claim) ==
-		string(v1.PersistentVolumeReclaimRetain) {
-		// Extra flexibility in our implementation.
-		pv.Spec.PersistentVolumeReclaimPolicy =
-			v1.PersistentVolumeReclaimRetain
-	}
-
 	// In K8S 1.7 and 1.8 we create in the namespace of the PVC, in K8S 1.9+ we create in Trident's namespace
 	var k8sClientCHAP k8sclient.Interface
 	switch {
@@ -940,9 +899,48 @@ func (p *Plugin) processDeletedVolume(volume *v1.PersistentVolume) {
 	// This method can get called under two scenarios:
 	// (1) Deletion of a PVC has resulted in deletion of a PV and the
 	//     corresponding volume.
-	// (2) An admin has deleted the PV before deleting PVC. processLostClaim
-	//     should handle this scenario.
-	// Therefore, no action needs to be taken here.
+	// (2) An admin has deleted the PV before deleting the PVC. Here we handle
+	// this case for versions of Kubernetes that don't support the storage
+	// object in use protection feature. This feature was beta in v1.10 and
+	// stable in v.11.
+
+	// First, make sure the PVC is present and is in the Lost phase.
+	claim, err := p.GetPVCForPV(volume)
+	if claim == nil || err != nil {
+		return
+	}
+	if claim.Status.Phase != v1.ClaimLost {
+		return
+	}
+
+	// Second, take the appropriate action based on the PV's reclaim policy.
+	if volume.Spec.PersistentVolumeReclaimPolicy == v1.PersistentVolumeReclaimRetain {
+		return
+	}
+
+	// Third, we need to delete the corresponding volume.
+	if vol, _ := p.orchestrator.GetVolume(volume.Name); vol == nil {
+		return
+	}
+	err = p.orchestrator.DeleteVolume(volume.Name)
+	if err != nil {
+		message := "failed to delete the provisioned volume for the lost PVC."
+		p.updatePVCWithEvent(claim, v1.EventTypeWarning,
+			"FailedVolumeDelete", message)
+		log.WithFields(log.Fields{
+			"PVC":    claim.Name,
+			"volume": volume.Name,
+		}).Errorf("Kubernetes frontend %s", message)
+	} else {
+		message := "deleted the provisioned volume for the lost PVC."
+		p.updatePVCWithEvent(claim, v1.EventTypeNormal,
+			"VolumeDelete", message)
+		log.WithFields(log.Fields{
+			"PVC":    claim.Name,
+			"volume": volume.Name,
+		}).Infof("Kubernetes frontend %s", message)
+	}
+	return
 }
 
 // processUpdatedVolume processes updated Trident-created PVs.
@@ -1495,6 +1493,15 @@ func (p *Plugin) GetPVForPVC(claim *v1.PersistentVolumeClaim) (*v1.PersistentVol
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumes().Get(claim.Spec.VolumeName, metav1.GetOptions{})
+}
+
+// GetPVCForPV returns the PVC for a PV.
+func (p *Plugin) GetPVCForPV(volume *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
+	if volume.Spec.ClaimRef == nil {
+		return nil, nil
+	}
+
+	return p.kubeClient.CoreV1().PersistentVolumeClaims(volume.Spec.ClaimRef.Namespace).Get(volume.Spec.ClaimRef.Name, metav1.GetOptions{})
 }
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the

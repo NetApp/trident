@@ -9,6 +9,9 @@
 **Enhancements:**
 - **Kubernetes:** Enhanced the Trident installer to automatically add the backend with which Trident was installed for subsequent volume provisioning.
 
+**Deprecations:**
+- **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the storage class since Kubernetes v1.8.
+
 ## v18.10.0
 
 **Fixes:**
@@ -24,7 +27,7 @@
 - **Kubernetes:** Modified Trident installer to do most of its work in a pod.
 - **Kubernetes:** Updated etcd to v3.3.9 and client-go to v9.0.0.
 
-**Deprecations**
+**Deprecations:**
 - **Docker:** Trident's support for Docker EE 2.0's UCP access control will be removed in the
   v19.01 release, replaced by the native Kubernetes access control support in
   Docker EE 2.1 and beyond. The `--ucp-host` and `--ucp-bearer-token` parameters

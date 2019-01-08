@@ -79,15 +79,6 @@ func getUniqueClaimName(claim *v1.PersistentVolumeClaim) string {
 	return fmt.Sprintf("%s-%s-%s", claim.Namespace, claim.Name, id)
 }
 
-// getClaimReclaimPolicy returns the reclaim policy for a claim
-// (similar to ReclaimPolicy for PVs)
-func getClaimReclaimPolicy(claim *v1.PersistentVolumeClaim) string {
-	if policy, found := claim.Annotations[AnnReclaimPolicy]; found {
-		return policy
-	}
-	return ""
-}
-
 // getClaimProvisioner returns the provisioner for a claim
 func getClaimProvisioner(claim *v1.PersistentVolumeClaim) string {
 	if provisioner, found := claim.Annotations[AnnStorageProvisioner]; found {
