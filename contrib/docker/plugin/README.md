@@ -50,7 +50,7 @@ Requirement:
 
 * A Docker Registry ([https://docs.docker.com/registry/deploying/](https://docs.docker.com/registry/deploying/))
 
-Run the develop plugin script.
+Run the develop plugin script. (***Notice:*** This script will stop and start your docker instance.)
 
 ```none
 ./devPlugin
@@ -65,4 +65,4 @@ docker plugin ls
 ## Deploy Plugin
 
 * [https://github.com/NetApp/trident/blob/master/docs/docker/deploying.rst](https://github.com/NetApp/trident/blob/master/docs/docker/deploying.rst)
-* [https://netapp-trident.readthedocs.io/en/stable-v18.04/docker/deploying.html](https://netapp-trident.readthedocs.io/en/stable-v18.04/docker/deploying.html)
+* [https://netapp-trident.readthedocs.io/en/master/docker/deploying.html](https://netapp-trident.readthedocs.io/en/master/docker/deploying.html)
