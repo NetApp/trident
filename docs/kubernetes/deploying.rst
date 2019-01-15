@@ -71,7 +71,7 @@ Download the latest version of the `Trident installer bundle`_ from the
 
 For example, if the latest version is 19.01.0:
 
-.. code-block:: bash
+.. code-block:: console
 
    wget https://github.com/NetApp/trident/releases/download/v19.01.0/trident-installer-19.01.0.tar.gz
    tar -xf trident-installer-19.01.0.tar.gz
@@ -121,7 +121,7 @@ First, let's verify that Trident can be installed:
 
 .. code-block:: console
 
-  # ./tridentctl install --dry-run -n trident
+  ./tridentctl install --dry-run -n trident
   INFO Starting storage driver.                backend=setup/backend.json
   INFO Storage driver loaded.                  driver=ontap-nas
   INFO Dry run completed, no problems found.
@@ -140,7 +140,7 @@ Trident installer and it should be running in a few minutes:
 
 .. code-block:: console
 
-  #./tridentctl install -n trident
+  ./tridentctl install -n trident
   INFO Starting storage driver.                backend=setup/backend.json
   INFO Storage driver loaded.                  driver=ontap-nas
   INFO Starting Trident installation.          namespace=trident
@@ -159,11 +159,11 @@ It will look like this when the installer is complete:
 
 .. code-block:: console
 
-  # kubectl get pod -n trident
+  kubectl get pod -n trident
   NAME                       READY     STATUS    RESTARTS   AGE
   trident-7d5d659bd7-tzth6   2/2       Running   1          14s
 
-  # ./tridentctl -n trident version
+  ./tridentctl -n trident version
   +----------------+----------------+
   | SERVER VERSION | CLIENT VERSION |
   +----------------+----------------+
@@ -182,14 +182,14 @@ which will turn on debug mode and help you understand what the problem is:
 
 .. code-block:: console
 
-  # ./tridentctl install -n trident -d
+  ./tridentctl install -n trident -d
 
 After addressing the problem, you can clean up the installation and go back to
 the beginning of this step by first running:
 
 .. code-block:: console
 
-  # ./tridentctl uninstall -n trident
+  ./tridentctl uninstall -n trident
   INFO Deleted Trident deployment.
   INFO Deleted cluster role binding.
   INFO Deleted cluster role.
@@ -203,7 +203,7 @@ If you continue to have trouble, visit the
 Customized Installation
 -----------------------
 
-Trident's installer allows you to customize attributes such as PV or PVC default names, 
+Trident's installer allows you to customize attributes such as PV or PVC default names,
 by using the installer's ``--pv`` or ``--pvc`` parameters. You can also specify a
 storage volume name and size by using ``--volume-name`` and ``--volume-size``. If you have
 copied the Trident images to a private repository, you can specify the image names by using
@@ -223,7 +223,8 @@ Once you have generated these files, you can modify them according to your needs
 then use the ``--use-custom-yaml`` to install a customized version of Trident.
 
 .. code-block:: console
-  # ./tridentctl install -n trident --use-custom-yaml --volume-name my_volume
+
+  ./tridentctl install -n trident --use-custom-yaml --volume-name my_volume
 
 5: Verify your first backend
 ============================
@@ -234,7 +235,7 @@ step 3 to provision a volume for that Trident uses for its own metadata.
 During a first-time installation, the installer assumes you want to use
 that backend for the rest of the volumes that Trident provisions.
 
-.. code-block:: bash
+.. code-block:: console
 
     ./tridentctl -n trident get backend
     +-----------------------+----------------+--------+---------+
@@ -246,7 +247,7 @@ that backend for the rest of the volumes that Trident provisions.
 You can add more backends, or replace the initial one with other backends (it
 won't affect the volume where Trident keeps its metadata). It's up to you.
 
-.. code-block:: bash
+.. code-block:: console
 
     ./tridentctl -n trident create backend -f <path-to-backend-config-file>
     +-----------------------+----------------+--------+---------+
@@ -300,20 +301,21 @@ installer, replacing ``__BACKEND_TYPE__`` with the storage driver name.
     +-----------------------+----------------+--------+---------+
 
     cp sample-input/storage-class-basic.yaml.templ sample-input/storage-class-basic.yaml
+
     # Modify __BACKEND_TYPE__ with the storage driver field above (e.g., ontap-nas)
     vi sample-input/storage-class-basic.yaml
 
 This is a Kubernetes object, so you will use ``kubectl`` to create it in
 Kubernetes.
 
-.. code-block:: bash
+.. code-block:: console
 
     kubectl create -f sample-input/storage-class-basic.yaml
 
 You should now see a **basic** storage class in both Kubernetes and Trident,
 and Trident should have discovered the pools on the backend.
 
-.. code-block:: bash
+.. code-block:: console
 
     kubectl get sc basic
     NAME      PROVISIONER
@@ -362,6 +364,7 @@ class name matches the one that you created in 6.
 .. code-block:: bash
 
     kubectl create -f sample-input/pvc-basic.yaml
+
     # The '-aw' argument lets you watch the pvc get provisioned
     kubectl get pvc -aw
     NAME      STATUS    VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -417,7 +420,7 @@ there. You could use it from another pod if you wanted to.
 
 To delete the volume, simply delete the claim:
 
-.. code-block:: bash
+.. code-block:: console
 
   kubectl delete pvc basic
 
