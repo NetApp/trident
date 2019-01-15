@@ -136,7 +136,7 @@ type FakeStorageDriverConfigDefaults struct {
 
 // ValidateCommonSettings attempts to "partially" decode the JSON into just the settings in CommonStorageDriverConfig
 func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, error) {
-	log.Debugf("config: %s", configJSON)
+
 	config := &CommonStorageDriverConfig{}
 
 	// Decode configJSON into config object
@@ -306,7 +306,7 @@ func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverC
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
 func Clone(source, destination interface{}) {
 	if reflect.TypeOf(destination).Kind() != reflect.Ptr {
-		log.Error("storager_drivers.Clone, destination parameter must be a pointer")
+		log.Error("storage_drivers.Clone, destination parameter must be a pointer")
 	}
 
 	buff := new(bytes.Buffer)

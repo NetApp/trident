@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -284,19 +285,37 @@ func RandomString(strSize int) string {
 func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
+
+	requestURL, _ := url.Parse(request.URL.String())
+	requestURL.User = nil
+
+	headers := make(map[string][]string)
+	for k, v := range request.Header {
+		headers[k] = v
+	}
+	delete(headers, "Authorization")
+
 	var body string
 	if requestBody == nil {
 		body = "<nil>"
 	} else {
 		body = string(requestBody)
 	}
+
 	log.Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
-		header, request.Method, request.URL, request.Header, body, footer)
+		header, request.Method, requestURL, headers, body, footer)
 }
 
 func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
+
+	headers := make(map[string][]string)
+	for k, v := range response.Header {
+		headers[k] = v
+	}
+	delete(headers, "Authorization")
+
 	var body string
 	if responseBody == nil {
 		body = "<nil>"
@@ -304,7 +323,7 @@ func LogHTTPResponse(response *http.Response, responseBody []byte) {
 		body = string(responseBody)
 	}
 	log.Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
-		header, response.Status, response.Header, body, footer)
+		header, response.Status, headers, body, footer)
 }
 
 type HTTPError struct {

@@ -131,7 +131,6 @@ func (d *SANStorageDriver) Initialize(
 		"DisableDelete":     config.DisableDelete,
 	}).Debugf("Parsed into solidfireConfig")
 
-	log.Debugf("Decoded to %+v", config)
 	d.Config = *config
 
 	var accountID int64
@@ -163,9 +162,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	log.WithFields(log.Fields{
-		"endpoint": endpoint,
-		"svip":     svip,
-		"cfg":      cfg,
+		"svip": svip,
 	}).Debug("Initializing SolidFire API client.")
 
 	// Create a new api.Client object for interacting with the SolidFire storage system
