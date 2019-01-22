@@ -11,7 +11,6 @@ import (
 	"k8s.io/api/core/v1"
 
 	"github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/cli/ucp_client"
 	tridentconfig "github.com/netapp/trident/config"
 )
 
@@ -28,9 +27,6 @@ func init() {
 	uninstallCmd.Flags().MarkHidden("trident-image")
 	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a job in the cluster.")
 	uninstallCmd.Flags().MarkHidden("in-cluster")
-
-	uninstallCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token (for Docker UCP only).")
-	uninstallCmd.Flags().StringVar(&ucpHost, "ucp-host", "", "IP address of the UCP host (for Docker UCP only).")
 }
 
 var uninstallCmd = &cobra.Command{
@@ -85,23 +81,6 @@ func discoverUninstallationEnvironment() error {
 	// Create the Kubernetes client
 	if client, err = initClient(); err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	useKubernetesRBAC = true
-	if ucpBearerToken != "" || ucpHost != "" {
-		log.Warning("Trident's support for Docker EE 2.0's UCP access control will " +
-			"be removed in the next release, replaced by the native Kubernetes " +
-			"access control support in Docker EE 2.1 and beyond.")
-		useKubernetesRBAC = false
-
-		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
-			return err
-		}
-
-		if inCluster {
-			log.Info("In-cluster uninstallation is not supported with Docker EE, running outside cluster.")
-			inCluster = false
-		}
 	}
 
 	// Infer installation namespace if not specified
@@ -181,12 +160,6 @@ func uninstallTrident() error {
 	var anyErrors = false
 
 	if !csi {
-
-		log.WithFields(log.Fields{
-			"useKubernetesRBAC": useKubernetesRBAC,
-			"ucpBearerToken":    ucpBearerToken,
-			"ucpHost":           ucpHost,
-		}).Debug("Dumping fields.")
 
 		// Delete Trident deployment
 		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
@@ -461,14 +434,6 @@ func uninstallTridentInCluster() (returnError error) {
 	if tridentImage != "" {
 		commandArgs = append(commandArgs, "--trident-image")
 		commandArgs = append(commandArgs, tridentImage)
-	}
-	if ucpBearerToken != "" {
-		commandArgs = append(commandArgs, "--ucp-bearer-token")
-		commandArgs = append(commandArgs, ucpBearerToken)
-	}
-	if ucpHost != "" {
-		commandArgs = append(commandArgs, "--ucp-host")
-		commandArgs = append(commandArgs, ucpHost)
 	}
 	commandArgs = append(commandArgs, "--in-cluster=false")
 

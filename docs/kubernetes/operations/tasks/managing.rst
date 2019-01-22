@@ -27,21 +27,9 @@ offline, and Trident will provision volumes for any PVCs that are created in
 the interim once it is back online.
 
 .. note::
-  When using Kubernetes with Docker EE 2.0, you must also provide
-  ``--ucp-host`` and ``--ucp-bearer-token`` for the uninstall and install commands::
-
-      UCP_HOST="1.2.3.4"
-      EE_USER="admin"
-      EE_PASS="password"
-      AUTHTOKEN=$(curl -sk -d "{\"username\":\"${EE_USER}\",\"password\":\"${EE_PASS}\"}" https://${UCP_HOST}/auth/login | jq -r .auth_token)
-      # ./tridentctl uninstall -n <namespace> --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
-      # ./tridentctl install   -n <namespace> --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
-
-.. warning::
-  Trident's support for Docker EE 2.0's UCP access control will be removed in the 
-  next release, replaced by the native Kubernetes access control support in
-  Docker EE 2.1 and beyond. The ``--ucp-host`` and ``--ucp-bearer-token`` parameters
-  will be deprecated and will not be needed in order to install or uninstall Trident.
+  When upgrading from Trident 18.10 with Docker EE 2.0, you must use the Trident
+  18.10 installer (specifying the ``--ucp-host`` and ``--ucp-bearer-token`` parameters)
+  to uninstall Trident.  `See the 18.10 docs for details <https://netapp-trident.readthedocs.io/en/stable-v18.10/kubernetes/operations/tasks/managing.html#uninstalling-trident>`_.
 
 .. _installer bundle: https://github.com/NetApp/trident/releases/latest
 
@@ -59,16 +47,6 @@ making it easy to run the installer again to update to a more recent version.
 To fully uninstall Trident and remove the PVC and PV as well, specify the
 ``-a`` switch. The backing volume on the storage will still need to be removed
 manually.
-
-.. note::
-  When using Kubernetes with Docker EE 2.0, you must also provide
-  ``--ucp-host`` and ``--ucp-bearer-token`` for the uninstall command::
-
-      UCP_HOST="1.2.3.4"
-      EE_USER="admin"
-      EE_PASS="password"
-      AUTHTOKEN=$(curl -sk -d "{\"username\":\"${EE_USER}\",\"password\":\"${EE_PASS}\"}" https://${UCP_HOST}/auth/login | jq -r .auth_token)
-      # ./tridentctl uninstall -n <namespace> --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
 
 .. warning::
   If you remove Trident's PVC, PV and/or backing volume, you will need to

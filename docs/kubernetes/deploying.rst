@@ -29,10 +29,8 @@ To deploy Trident you need:
   Kubernetes worker nodes
 * A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
   and configured to manage the Kubernetes cluster you want to use
-* If you are using Kubernetes with Docker EE 2.0, `follow their steps
-  to enable CLI and REST access <https://docs.docker.com/ee/ucp/user-access/cli/>`_;
-  the **AUTHTOKEN** must be provided later in Trident's install and uninstall
-  commands.
+* If you are using Kubernetes with Docker EE 2.1, `follow their steps
+  to enable CLI access <https://docs.docker.com/ee/ucp/user-access/cli/>`_.
 
 Got all that? Great! Let's get started.
 
@@ -136,22 +134,6 @@ install Trident.
 The ``-n`` argument specifies the namespace (project in OpenShift) that
 Trident will be installed into. We recommend installing Trident into its
 own namespace to isolate it from other applications.
-
-.. note::
-  When using Kubernetes with Docker EE 2.0, you must also provide
-  ``--ucp-host`` and ``--ucp-bearer-token`` for the install and uninstall commands::
-
-      UCP_HOST="1.2.3.4"
-      EE_USER="admin"
-      EE_PASS="password"
-      AUTHTOKEN=$(curl -sk -d "{\"username\":\"${EE_USER}\",\"password\":\"${EE_PASS}\"}" https://${UCP_HOST}/auth/login | jq -r .auth_token)
-      # ./tridentctl install --dry-run -n trident --ucp-bearer-token="${AUTHTOKEN}" --ucp-host="${UCP_HOST}"
-
-.. warning::
-  Trident's support for Docker EE 2.0's UCP access control will be removed in the 
-  next release, replaced by the native Kubernetes access control support in
-  Docker EE 2.1 and beyond. The ``--ucp-host`` and ``--ucp-bearer-token`` parameters
-  will be deprecated and will not be needed in order to install or uninstall Trident.
 
 Provided that everything was configured correctly, you can now run the
 Trident installer and it should be running in a few minutes:

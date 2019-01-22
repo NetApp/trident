@@ -98,8 +98,6 @@ Install Trident
         --pvc string                The name of the PVC used by Trident.
         --silent                    Disable most output during installation.
         --trident-image string      The Trident image to install.
-        --ucp-bearer-token string   UCP authorization token (for Docker UCP only).
-        --ucp-host string           IP address of the UCP host (for Docker UCP only).
         --use-custom-yaml           Use any existing YAML files that exist in setup directory.
         --volume-name string        The name of the storage volume used by Trident.
         --volume-size string        The size of the storage volume used by Trident. (default "2Gi")
@@ -135,8 +133,6 @@ Uninstall Trident
                                     however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!
     -h, --help                      help for uninstall
         --silent                    Disable most output during uninstallation.
-        --ucp-bearer-token string   UCP authorization token (for Docker UCP only).
-        --ucp-host string           IP address of the UCP host (for Docker UCP only).
 
 update
 ------

@@ -30,7 +30,6 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/cli/ucp_client"
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -74,16 +73,8 @@ var (
 	etcdImage    string
 	k8sTimeout   time.Duration
 
-	// Docker EE / UCP related
-	useKubernetesRBAC bool
-	ucpBearerToken    string
-	ucpHost           string
-
 	// CLI-based K8S client
 	client k8sclient.Interface
-
-	// UCP REST client
-	ucpClient ucpclient.Interface
 
 	// File paths
 	installerDirectoryPath string
@@ -126,9 +117,6 @@ func init() {
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The number of seconds to wait before timing out on Kubernetes operations.")
-
-	installCmd.Flags().StringVar(&ucpBearerToken, "ucp-bearer-token", "", "UCP authorization token (for Docker UCP only).")
-	installCmd.Flags().StringVar(&ucpHost, "ucp-host", "", "IP address of the UCP host (for Docker UCP only).")
 }
 
 var installCmd = &cobra.Command{
@@ -226,23 +214,6 @@ func discoverInstallationEnvironment() error {
 	// Create the Kubernetes client
 	if client, err = initClient(); err != nil {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	useKubernetesRBAC = true
-	if ucpBearerToken != "" || ucpHost != "" {
-		log.Warning("Trident's support for Docker EE 2.0's UCP access control will " +
-			"be removed in the next release, replaced by the native Kubernetes " +
-			"access control support in Docker EE 2.1 and beyond.")
-		useKubernetesRBAC = false
-
-		if ucpClient, err = ucpclient.NewClient(ucpHost, ucpBearerToken); err != nil {
-			return err
-		}
-
-		if inCluster {
-			log.Info("In-cluster installation is not supported with Docker EE, running outside cluster.")
-			inCluster = false
-		}
 	}
 
 	// Prepare input file paths
@@ -508,11 +479,6 @@ func installTrident() (returnError error) {
 	log.WithField("quantity", pvRequestedQuantity.String()).Debug("Parsed requested volume size.")
 
 	if !csi {
-		log.WithFields(log.Fields{
-			"useKubernetesRBAC": useKubernetesRBAC,
-			"ucpBearerToken":    ucpBearerToken,
-			"ucpHost":           ucpHost,
-		}).Debug("Dumping RBAC fields.")
 
 		// Ensure Trident isn't already installed
 		if installed, namespace, err := isTridentInstalled(); err != nil {
@@ -961,75 +927,57 @@ func createRBACObjects() (returnError error) {
 	}
 	log.WithFields(logFields).Info("Created service account.")
 
-	if useKubernetesRBAC {
-
-		// Create cluster role
-		if useYAML && fileExists(clusterRolePath) {
-			returnError = client.CreateObjectByFile(clusterRolePath)
-			logFields = log.Fields{"path": clusterRolePath}
-		} else {
-			returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleYAML(client.Flavor(),
-				client.ServerVersion(), csi))
-			logFields = log.Fields{}
-		}
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create cluster role; %v", returnError)
-			return
-		}
-		log.WithFields(logFields).Info("Created cluster role.")
-
-		// Create cluster role binding
-		if useYAML && fileExists(clusterRoleBindingPath) {
-			returnError = client.CreateObjectByFile(clusterRoleBindingPath)
-			logFields = log.Fields{"path": clusterRoleBindingPath}
-		} else {
-			returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleBindingYAML(
-				TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi))
-			logFields = log.Fields{}
-		}
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create cluster role binding; %v", returnError)
-			return
-		}
-		log.WithFields(logFields).Info("Created cluster role binding.")
-
-		// If OpenShift, add Trident to security context constraint(s)
-		if client.Flavor() == k8sclient.FlavorOpenShift {
-			if csi {
-				if returnError = client.AddTridentUserToOpenShiftSCC("trident-csi", "privileged"); returnError != nil {
-					returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-					return
-				}
-				log.WithFields(log.Fields{
-					"scc":  "privileged",
-					"user": "trident-csi",
-				}).Info("Added security context constraint user.")
-			} else {
-				if returnError = client.AddTridentUserToOpenShiftSCC("trident", "anyuid"); returnError != nil {
-					returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-					return
-				}
-				log.WithFields(log.Fields{
-					"scc":  "anyuid",
-					"user": "trident",
-				}).Info("Added security context constraint user.")
-			}
-		}
-
+	// Create cluster role
+	if useYAML && fileExists(clusterRolePath) {
+		returnError = client.CreateObjectByFile(clusterRolePath)
+		logFields = log.Fields{"path": clusterRolePath}
 	} else {
-		createdRole, clientError := ucpClient.CreateTridentRole()
-		logFields = log.Fields{"createdRole": createdRole}
-		if clientError != nil {
-			return fmt.Errorf("could not create Trident UCP role; %v", clientError)
-		}
-		log.WithFields(logFields).Info("Created Trident UCP role.")
+		returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleYAML(client.Flavor(),
+			client.ServerVersion(), csi))
+		logFields = log.Fields{}
+	}
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create cluster role; %v", returnError)
+		return
+	}
+	log.WithFields(logFields).Info("Created cluster role.")
 
-		addedRole, clientError := ucpClient.AddTridentRoleToServiceAccount(TridentPodNamespace)
-		logFields = log.Fields{"addedRole": addedRole}
-		if clientError != nil {
-			return fmt.Errorf("could not add Trident UCP role to service account; %v", clientError)
+	// Create cluster role binding
+	if useYAML && fileExists(clusterRoleBindingPath) {
+		returnError = client.CreateObjectByFile(clusterRoleBindingPath)
+		logFields = log.Fields{"path": clusterRoleBindingPath}
+	} else {
+		returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleBindingYAML(
+			TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi))
+		logFields = log.Fields{}
+	}
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create cluster role binding; %v", returnError)
+		return
+	}
+	log.WithFields(logFields).Info("Created cluster role binding.")
+
+	// If OpenShift, add Trident to security context constraint(s)
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		if csi {
+			if returnError = client.AddTridentUserToOpenShiftSCC("trident-csi", "privileged"); returnError != nil {
+				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
+				return
+			}
+			log.WithFields(log.Fields{
+				"scc":  "privileged",
+				"user": "trident-csi",
+			}).Info("Added security context constraint user.")
+		} else {
+			if returnError = client.AddTridentUserToOpenShiftSCC("trident", "anyuid"); returnError != nil {
+				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
+				return
+			}
+			log.WithFields(log.Fields{
+				"scc":  "anyuid",
+				"user": "trident",
+			}).Info("Added security context constraint user.")
 		}
-		log.WithFields(logFields).Info("Added Trident UCP role to service account.")
 	}
 
 	return
@@ -1045,44 +993,23 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 		}
 	}
 
-	if useKubernetesRBAC {
-
-		// Delete cluster role binding
-		clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(
-			TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi)
-		if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete cluster role binding.")
-			anyErrors = true
-		} else {
-			logFunc(log.Fields{})("Deleted cluster role binding.")
-		}
-
-		// Delete cluster role
-		clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), client.ServerVersion(), csi)
-		if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete cluster role.")
-			anyErrors = true
-		} else {
-			logFunc(log.Fields{})("Deleted cluster role.")
-		}
+	// Delete cluster role binding
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(
+		TridentPodNamespace, client.Flavor(), client.ServerVersion(), csi)
+	if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete cluster role binding.")
+		anyErrors = true
 	} else {
-		removedRoleFromAccount, clientError := ucpClient.RemoveTridentRoleFromServiceAccount(TridentPodNamespace)
-		if clientError != nil {
-			log.WithField("error", clientError).Warning("Could not remove Trident UCP role from service account")
-			//anyErrors = true
-		} else {
-			logFields := log.Fields{"removedRoleFromAccount": removedRoleFromAccount}
-			log.WithFields(logFields).Info("Removed Trident UCP role from service account.")
-		}
+		logFunc(log.Fields{})("Deleted cluster role binding.")
+	}
 
-		deletedRole, clientError := ucpClient.DeleteTridentRole()
-		if clientError != nil {
-			log.WithField("error", clientError).Warning("could not delete Trident UCP role")
-			//anyErrors = true
-		} else {
-			logFields := log.Fields{"deletedRole": deletedRole}
-			log.WithFields(logFields).Info("Deleted Trident UCP role.")
-		}
+	// Delete cluster role
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), client.ServerVersion(), csi)
+	if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete cluster role.")
+		anyErrors = true
+	} else {
+		logFunc(log.Fields{})("Deleted cluster role.")
 	}
 
 	// Delete service account
@@ -1094,29 +1021,27 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 		logFunc(log.Fields{})("Deleted service account.")
 	}
 
-	if useKubernetesRBAC {
-		// If OpenShift, remove Trident from security context constraint(s)
-		if client.Flavor() == k8sclient.FlavorOpenShift {
-			if csi {
-				if err := client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged"); err != nil {
-					log.WithField("error", err).Warning("Could not modify security context constraint.")
-					anyErrors = true
-				} else {
-					logFunc(log.Fields{
-						"scc":  "privileged",
-						"user": "trident-csi",
-					})("Removed security context constraint user.")
-				}
+	// If OpenShift, remove Trident from security context constraint(s)
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		if csi {
+			if err := client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged"); err != nil {
+				log.WithField("error", err).Warning("Could not modify security context constraint.")
+				anyErrors = true
 			} else {
-				if err := client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid"); err != nil {
-					log.WithField("error", err).Warning("Could not modify security context constraint.")
-					anyErrors = true
-				} else {
-					logFunc(log.Fields{
-						"scc":  "anyuid",
-						"user": "trident",
-					})("Removed security context constraint user.")
-				}
+				logFunc(log.Fields{
+					"scc":  "privileged",
+					"user": "trident-csi",
+				})("Removed security context constraint user.")
+			}
+		} else {
+			if err := client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid"); err != nil {
+				log.WithField("error", err).Warning("Could not modify security context constraint.")
+				anyErrors = true
+			} else {
+				logFunc(log.Fields{
+					"scc":  "anyuid",
+					"user": "trident",
+				})("Removed security context constraint user.")
 			}
 		}
 	}
@@ -1712,14 +1637,6 @@ func installTridentInCluster() (returnError error) {
 	if etcdImage != "" {
 		commandArgs = append(commandArgs, "--etcd-image")
 		commandArgs = append(commandArgs, etcdImage)
-	}
-	if ucpBearerToken != "" {
-		commandArgs = append(commandArgs, "--ucp-bearer-token")
-		commandArgs = append(commandArgs, ucpBearerToken)
-	}
-	if ucpHost != "" {
-		commandArgs = append(commandArgs, "--ucp-host")
-		commandArgs = append(commandArgs, ucpHost)
 	}
 	commandArgs = append(commandArgs, "--in-cluster=false")
 

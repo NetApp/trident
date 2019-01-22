@@ -11,13 +11,16 @@
 
 **Enhancements:**
 - Updated Trident's 3rd-party dependencies for 19.01 release.
-- Added support for Docker 18.09, Docker Enterprise Edition 2.1, OpenShift 3.11 and Kubernetes 1.13.0
+- Added support for Docker 18.09, Docker Enterprise Edition 2.1, OpenShift 3.11 and Kubernetes 1.13.
+- Removed support for Docker Enterprise Edition 2.0 and Kubernetes 1.8.
 - **Kubernetes:** Added support for raw block volumes for iSCSI PVs.
 - **Kubernetes:** Added retry logic to installer for Kubernetes object creation.
+- **Kubernetes:** Updated etcd to v3.3.10 and client-go to v10.0.0.
 - **Behavioural change:** The Trident installer now automatically adds the backend used to provision the Trident volume in new installations.
 
 **Deprecations:**
-- **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the storage class since Kubernetes v1.8.
+- **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the
+  storage class since Kubernetes v1.8.
 
 ## v18.10.0
 

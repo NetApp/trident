@@ -28,7 +28,7 @@ const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
-	orchestratorVersion              = "18.10.0"
+	orchestratorVersion              = "19.01.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
@@ -70,7 +70,7 @@ const (
 	ContextCSI        DriverContext = "csi"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin    = "v1.8.0"
+	KubernetesVersionMin    = "v1.9.0"
 	KubernetesVersionMax    = "v1.13.0"
 	KubernetesCSIVersionMin = "v1.10.0"
 
@@ -100,7 +100,7 @@ var (
 	BuildImage = "netapp/trident:" + orchestratorVersion + "-custom.0"
 
 	// BuildEtcdVersion is the etcd version that Trident should be deployed with
-	BuildEtcdVersion = "v3.3.9"
+	BuildEtcdVersion = "v3.3.10"
 
 	// BuildEtcdImage is the etcd image that Trident should be deployed with
 	BuildEtcdImage = "quay.io/coreos/etcd:" + BuildEtcdVersion

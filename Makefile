@@ -43,7 +43,7 @@ GO=${DR} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 18.10.0
+TRIDENT_VERSION ?= 19.01.0
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
@@ -63,7 +63,7 @@ TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
 ## etcd variables
 ifeq ($(ETCD_VERSION),)
-ETCD_VERSION := v3.3.9
+ETCD_VERSION := v3.3.10
 endif
 ETCD_PORT ?= 8001
 ETCD_SERVER ?= http://localhost:${ETCD_PORT}
