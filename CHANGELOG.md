@@ -5,10 +5,16 @@
 ## Changes since v18.10.0
 
 **Fixes:**
+- Fixed an issue where Trident did not allow specifying a port in the management LIF config (Issue [#195](https://github.com/NetApp/trident/issues/195)). Thank you, [@vnandha!](https://github.com/vnandha)
+- Only strip prefix on volume name if volume name starts with prefix.
+- **Kubernetes:** Refactored BackendExternal which fixed the output of "tridentctl get backend -o json" where details like "limitAggregateUsage" and "limitVolumeSize" were not found. (Issue [#188](https://github.com/NetApp/trident/issues/188))
 
 **Enhancements:**
+- Updated Trident's 3rd-party dependencies for 19.01 release.
+- Added support for Docker 18.09, Docker Enterprise Edition 2.1, OpenShift 3.11 and Kubernetes 1.13.0
 - **Kubernetes:** Added support for raw block volumes for iSCSI PVs.
-- **Kubernetes:** Enhanced the Trident installer to automatically add the backend with which Trident was installed for subsequent volume provisioning.
+- **Kubernetes:** Added retry logic to installer for Kubernetes object creation.
+- **Behavioural change:** The Trident installer now automatically adds the backend used to provision the Trident volume in new installations.
 
 **Deprecations:**
 - **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the storage class since Kubernetes v1.8.

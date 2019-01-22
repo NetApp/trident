@@ -23,6 +23,9 @@ work, we have developed a public preview version of Trident that deploys itself 
 CSI Trident are to better inform our contributions to CSI as well as to give our customers a way to kick the tires
 on CSI and see where the container storage community is going.
 
+.. note::
+  This experimental CSI driver does not support Kubernetes v1.13
+
 .. warning::
   CSI Trident for Kubernetes is an unsupported, alpha-level preview release for evaluation purposes only, and it
   should not be deployed in support of production workloads.  We recommend you install CSI Trident in a sandbox
@@ -50,7 +53,7 @@ Invoke the install command with the ``--csi`` switch:
    INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-0
    INFO Waiting for Trident REST interface.
-   INFO Trident REST interface is up.                 version=18.10.0
+   INFO Trident REST interface is up.                 version=19.01.0
    INFO Trident installation succeeded.
 
 It will look like this when the installer is complete:
@@ -66,7 +69,7 @@ It will look like this when the installer is complete:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 18.10.0        | 18.10.0        |
+   | 19.01.0        | 19.01.0        |
    +----------------+----------------+
 
 Using CSI Trident

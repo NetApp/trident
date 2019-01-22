@@ -26,16 +26,16 @@ again. Under most circumstances, this is a matter of seconds.
 
    .. code-block:: bash
 
-	 docker plugin disable -f netapp:latest
-	 docker plugin ls
-	 ID                  NAME                DESCRIPTION                          ENABLED
-	 7067f39a5df5        netapp:latest       nDVP - NetApp Docker Volume Plugin   false
+     docker plugin disable -f netapp:latest
+     docker plugin ls
+     ID                  NAME                DESCRIPTION                          ENABLED
+     7067f39a5df5        netapp:latest       nDVP - NetApp Docker Volume Plugin   false
 
 #. Upgrade the plugin:
 
    .. code-block:: bash
 
-	 docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest netapp/trident-plugin:18.10
+     docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest netapp/trident-plugin:19.01
 
    .. note:: The 18.01 release of Trident replaces the nDVP. You should upgrade directly from the netapp/ndvp-plugin
 image to the netapp/trident-plugin image.
@@ -74,10 +74,10 @@ Uninstalling Trident
 
    .. code-block:: bash
 
-	 docker plugin disable netapp:latest
-	 docker plugin ls
-	 ID                  NAME                DESCRIPTION                          ENABLED
-	 7067f39a5df5        netapp:latest       nDVP - NetApp Docker Volume Plugin   false
+     docker plugin disable netapp:latest
+     docker plugin ls
+     ID                  NAME                DESCRIPTION                          ENABLED
+     7067f39a5df5        netapp:latest       nDVP - NetApp Docker Volume Plugin   false
 
 #. Remove the plugin:
 

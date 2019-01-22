@@ -42,7 +42,7 @@ Deploying
 
    .. code-block:: bash
    
-     docker plugin install netapp/trident-plugin:18.10 --alias netapp --grant-all-permissions
+     docker plugin install netapp/trident-plugin:19.01 --alias netapp --grant-all-permissions
 
 #. Begin using Trident to consume storage from the configured system.
 
