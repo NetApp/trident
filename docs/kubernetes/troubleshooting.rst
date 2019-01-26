@@ -19,6 +19,14 @@ Troubleshooting
   after a failed run. By default the script does not touch the etcd backing
   store, making it safe to uninstall and install again even in a running
   deployment.
+* If Trident fails to start and the logs from Trident's etcd container report "another
+  etcd process is running with the same data dir and holding the file lock" or similar,
+  then you may have stale NFSv3 locks held on the ONTAP storage system.  This situation
+  may be caused by an unclean shutdown of the Kubernetes node where Trident is running.
+  You can avoid this issue by enabling NFSv4 on your ONTAP SVM and setting
+  ``nfsMountOptions: "nfsvers=4"`` in the backend.json config file used during Trident
+  installation.  Furthermore, you should use ``kubectl drain`` or ``oc adm drain`` to
+  cleanly stop all pods on a Kubernetes node prior to powering it off.
 * After a successful install, if a PVC is stuck in the ``Pending`` phase,
   running ``kubectl describe pvc`` can provide additional information on why
   Trident failed to provsion a PV for this PVC.

@@ -7,6 +7,7 @@ package kubernetes
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -745,7 +746,7 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.8.0")):
 		pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
 		// Apply Storage Class mount options and reclaim policy
-		pv.Spec.MountOptions = p.storageClassCache[storageClass].MountOptions
+		pv.Spec.MountOptions = p.getPVMountOptions(p.storageClassCache[storageClass], vol)
 		pv.Spec.PersistentVolumeReclaimPolicy =
 			*p.storageClassCache[storageClass].PersistentVolumeReclaimPolicy
 	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
@@ -814,6 +815,17 @@ func (p *Plugin) createVolumeAndPV(uniqueName string, claim *v1.PersistentVolume
 	}
 	pv, err = p.kubeClient.CoreV1().PersistentVolumes().Create(pv)
 	return
+}
+
+func (p *Plugin) getPVMountOptions(scSummary *StorageClassSummary, volume *storage.VolumeExternal) []string {
+
+	if scSummary != nil && len(scSummary.MountOptions) > 0 {
+		return scSummary.MountOptions
+	}
+	if volume != nil && volume.Config.AccessInfo.MountOptions != "" {
+		return regexp.MustCompile(`\s*,\s*`).Split(volume.Config.AccessInfo.MountOptions, -1)
+	}
+	return make([]string, 0)
 }
 
 func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {

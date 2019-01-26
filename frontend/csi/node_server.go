@@ -217,9 +217,9 @@ func (p *Plugin) nodePublishNFSVolume(
 	publishInfo := &utils.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: "nfs",
-		MountOptions:   strings.Join(mountOptions, ","),
 	}
 
+	publishInfo.MountOptions = strings.Join(mountOptions, ",")
 	publishInfo.NfsServerIP = req.PublishInfo["nfsServerIp"]
 	publishInfo.NfsPath = req.PublishInfo["nfsPath"]
 

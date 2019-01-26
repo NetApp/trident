@@ -128,6 +128,7 @@ password                  Password to connect to the cluster/SVM
 storagePrefix             Prefix used when provisioning new volumes in the SVM                    "trident"
 limitAggregateUsage       Fail provisioning if usage is above this percentage                     "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value          "" (not enforced by default)
+nfsMountOptions           Comma-separated list of NFS mount options (except ontap-san)            ""
 ========================= ======================================================================= ================================================
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
@@ -136,6 +137,12 @@ be used for the NFS mount operations. For the ontap-san driver, the default is t
 the SVM and to use iSCSI multipath. Specifying an IP address for the dataLIF for the ontap-san driver forces
 the driver to disable multipath and use only the specified address.  For the ontap-nas-economy driver,
 the limitVolumeSize option will also restrict the maximum size of the volumes it manages for qtrees.
+
+The nfsMountOptions parameter applies to all ONTAP drivers except ontap-san.  The mount options for Kubernetes
+persistent volumes are normally specified in storage classes, but if no mount options are specified in a storage
+class, Trident will fall back to using the mount options specified in the storage backend's config file.  If
+no mount options are specified in either the storage class or the config file, then Trident will not set any
+mount options on an associated persistent volume.
 
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
@@ -172,6 +179,7 @@ Example configuration
         "password": "secret",
         "limitAggregateUsage": "80%",
         "limitVolumeSize": "50Gi",
+        "nfsMountOptions": "nfsvers=4",
         "defaults": {
           "spaceReserve": "volume",
           "exportPolicy": "myk8scluster",

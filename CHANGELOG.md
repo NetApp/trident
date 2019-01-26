@@ -16,6 +16,7 @@
 - **Kubernetes:** Added support for raw block volumes for iSCSI PVs.
 - **Kubernetes:** Added retry logic to installer for Kubernetes object creation.
 - **Kubernetes:** Updated etcd to v3.3.10 and client-go to v10.0.0.
+- **Kubernetes:** Trident now honors the nfsMountOptions parameter in ONTAP NAS backend config files.
 - **Behavioural change:** The Trident installer now automatically adds the backend used to provision the Trident volume in new installations.
 
 **Deprecations:**

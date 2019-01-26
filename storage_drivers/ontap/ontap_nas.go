@@ -386,6 +386,7 @@ func (d *NASStorageDriver) CreateFollowup(
 ) error {
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
 	volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 	volConfig.FileSystem = ""
 	return nil
 }

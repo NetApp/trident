@@ -324,7 +324,8 @@ const DefaultUnixPermissions = "---rwxrwxrwx"
 const DefaultSnapshotDir = "false"
 const DefaultExportPolicy = "default"
 const DefaultSecurityStyle = "unix"
-const DefaultNfsMountOptions = "-o nfsvers=3"
+const DefaultNfsMountOptionsDocker = "-o nfsvers=3"
+const DefaultNfsMountOptionsKubernetes = ""
 const DefaultSplitOnClone = "false"
 const DefaultFileSystemType = "ext4"
 const DefaultEncryption = "false"
@@ -384,7 +385,12 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	}
 
 	if config.NfsMountOptions == "" {
-		config.NfsMountOptions = DefaultNfsMountOptions
+		switch config.DriverContext {
+		case tridentconfig.ContextDocker:
+			config.NfsMountOptions = DefaultNfsMountOptionsDocker
+		default:
+			config.NfsMountOptions = DefaultNfsMountOptionsKubernetes
+		}
 	}
 
 	if config.SplitOnClone == "" {

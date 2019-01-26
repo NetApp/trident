@@ -1042,6 +1042,7 @@ func (d *NASQtreeStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) 
 	// Set export path info on the volume config
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
 	volConfig.AccessInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, volConfig.InternalName)
+	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 
 	return nil
 }

@@ -2,6 +2,8 @@ package k8sclient
 
 import (
 	"encoding/base64"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -671,7 +673,20 @@ spec:
   storageClassName: ''
 `
 
-func GetNFSPVYAML(pvName, size, pvcName, pvcNamespace, nfsServer, nfsPath, label string) string {
+func addMountOptionsToPVYAML(pvYAML, mountOptions string) string {
+
+	mountOptions = strings.TrimPrefix(mountOptions, "-o ")
+	if len(mountOptions) > 0 {
+		pvYAML += "  mountOptions:\n"
+		for _, option := range regexp.MustCompile(`\s*,\s*`).Split(mountOptions, -1) {
+			pvYAML += fmt.Sprintf("  - %s\n", option)
+		}
+	}
+
+	return pvYAML
+}
+
+func GetNFSPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, nfsServer, nfsPath, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeNFSYAMLTemplate, "{PV_NAME}", pvName, 1)
 	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
@@ -680,6 +695,9 @@ func GetNFSPVYAML(pvName, size, pvcName, pvcNamespace, nfsServer, nfsPath, label
 	pvYAML = strings.Replace(pvYAML, "{SERVER}", nfsServer, 1)
 	pvYAML = strings.Replace(pvYAML, "{PATH}", nfsPath, 1)
 	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
+
+	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
+
 	return pvYAML
 }
 
@@ -706,7 +724,7 @@ spec:
     path: {PATH}
 `
 
-func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal string, portals []string,
+func GetISCSIPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, targetPortal string, portals []string,
 	iqn string, lun int32, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
@@ -717,12 +735,16 @@ func GetISCSIPVYAML(pvName, size, pvcName, pvcNamespace, targetPortal string, po
 	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
 	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
 	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
+
 	if 0 != len(portals) {
 		pvYAML += "    portals:\n"
 		for _, portal := range portals {
 			pvYAML += "      - " + portal + "\n"
 		}
 	}
+
+	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
+
 	return pvYAML
 }
 
@@ -752,7 +774,7 @@ spec:
     readOnly: false
 `
 
-func GetCHAPISCSIPVYAML(pvName, size, pvcName, pvcNamespace, secretName, targetPortal string,
+func GetCHAPISCSIPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, secretName, targetPortal string,
 	portals []string, iqn string, lun int32, label string) string {
 
 	pvYAML := strings.Replace(persistentVolumeCHAPISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
@@ -770,6 +792,9 @@ func GetCHAPISCSIPVYAML(pvName, size, pvcName, pvcNamespace, secretName, targetP
 			pvYAML += "      - " + portal + "\n"
 		}
 	}
+
+	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
+
 	return pvYAML
 }
 

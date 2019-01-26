@@ -5,6 +5,7 @@ package utils
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
 	NfsAccessInfo
+	MountOptions string `json:"mountOptions,omitempty"`
 }
 
 type IscsiAccessInfo struct {
@@ -31,7 +32,6 @@ type VolumePublishInfo struct {
 	HostIP         []string `json:"hostIP,omitempty"`
 	HostName       string   `json:"hostName,omitempty"`
 	FilesystemType string   `json:"fstype,omitempty"`
-	MountOptions   string   `json:"mountOptions,omitempty"`
 	UseCHAP        bool     `json:"useCHAP,omitempty"`
 	SharedTarget   bool     `json:"sharedTarget,omitempty"`
 	DevicePath     string   `json:"devicePath,omitempty"`
