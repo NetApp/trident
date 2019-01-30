@@ -2,7 +2,7 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v18.10.0
+## v19.01.0
 
 **Fixes:**
 - Fixed an issue where Trident did not allow specifying a port in the management LIF config (Issue [#195](https://github.com/NetApp/trident/issues/195)). Thank you, [@vnandha!](https://github.com/vnandha)
