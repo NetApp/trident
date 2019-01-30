@@ -19,6 +19,7 @@ Storage Orchestrator for Containers
    :caption: Kubernetes
 
    kubernetes/index
+   dag/kubernetes/index
 
 .. toctree::
    :caption: Docker

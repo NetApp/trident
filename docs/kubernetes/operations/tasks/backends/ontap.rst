@@ -154,10 +154,10 @@ Parameter                 Description                                           
 spaceReserve              Space reservation mode; "none" (thin) or "volume" (thick)       "none"
 snapshotPolicy            Snapshot policy to use                                          "none"
 snapshotReserve           Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
-splitOnClone              Split a clone from its parent upon creation                     false
-encryption                Enable NetApp volume encryption                                 false
+splitOnClone              Split a clone from its parent upon creation                     "false"
+encryption                Enable NetApp volume encryption                                 "false"
 unixPermissions           ontap-nas* only: mode for new volumes                           "777"
-snapshotDir               ontap-nas* only: access to the .snapshot directory              false
+snapshotDir               ontap-nas* only: access to the .snapshot directory              "false"
 exportPolicy              ontap-nas* only: export policy to use                           "default"
 securityStyle             ontap-nas* only: security style for new volumes                 "unix"
 ========================= =============================================================== ================================================
