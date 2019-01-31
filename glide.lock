@@ -1,5 +1,5 @@
-hash: 95e4715bb78ec5fb7b1bac7dca750581cc2644d10b52ebb15e4480b97a57079d
-updated: 2018-12-20T18:45:07.45558398-05:00
+hash: be86aa7fc711c9ab3c0278475d0cb838e79d9baa0de2f00d1f2bc1f36a1e51f4
+updated: 2019-01-31T00:13:35.562877493-05:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 62661b46c4093e2c1f38d943e663db1a29873e80
@@ -8,7 +8,7 @@ imports:
   subpackages:
   - lib/go/csi/v0
 - name: github.com/coreos/etcd
-  version: 27fc7e2296f506182f58ce846e48f36b34fe6842
+  version: 2cf9e51d2a78003b164c2998886158e60ded1cbb
   subpackages:
   - auth/authpb
   - client
@@ -57,7 +57,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/glycerine/go-unsnap-stream
-  version: 9f0cb55181dd3a0a4c168d3dbc72d4aca4853126
+  version: f9677308dec2b35e76737f9713df328ad11b1fea
 - name: github.com/go-logfmt/logfmt
   version: 07c9b44f60d7ffdfb7d8efe1ad539965737836dc
 - name: github.com/gogo/protobuf
@@ -120,7 +120,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
-  version: 97e4973ce50b2ff5f09635a57e2b88a037aae829
+  version: 75bf6ca3d7cb77506c52495e61472c131a254d56
 - name: github.com/mitchellh/hashstructure
   version: a38c50148365edc8df43c1580c48fb2b3a1e9cd7
 - name: github.com/modern-go/concurrent
@@ -148,11 +148,11 @@ imports:
 - name: github.com/spf13/pflag
   version: 298182f68c66c05229eb03ac171abe6e309ee79a
 - name: github.com/stretchr/testify
-  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
-  version: af6442a0fcf6e2a1b824f70dd0c734f01e817751
+  version: ade0ca4ace05af96235d107023ab018ee921309c
   subpackages:
   - msgp
 - name: github.com/ugorji/go
@@ -160,9 +160,9 @@ imports:
   subpackages:
   - codec
 - name: github.com/willf/bitset
-  version: 71fa2377963fc761fc6556dd5895dff5816d4e8c
+  version: 3fb80c4041d4fce1c027ff1c416cca3e0dccd97e
 - name: golang.org/x/crypto
-  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
+  version: b01c7a72566457eb1420261cdafef86638fc3861
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -210,7 +210,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/genproto
-  version: 5a97ab628bfb2f65f6befec18f4bc7bc7f382b77
+  version: 8ac453e89fca495c0d17f98932642f392e2a11f3
   subpackages:
   - googleapis/rpc/status
 - name: google.golang.org/grpc

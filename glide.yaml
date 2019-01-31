@@ -3,7 +3,7 @@ import:
 - package: github.com/sirupsen/logrus
   version: v1.2.0
 - package: github.com/coreos/etcd
-  version: v3.3.10
+  version: v3.3.11
   subpackages:
   - client
   - clientv3
