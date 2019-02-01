@@ -53,7 +53,7 @@ Invoke the install command with the ``--csi`` switch:
    INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-0
    INFO Waiting for Trident REST interface.
-   INFO Trident REST interface is up.                 version=19.01.0
+   INFO Trident REST interface is up.                 version=19.04.0
    INFO Trident installation succeeded.
 
 It will look like this when the installer is complete:
@@ -69,7 +69,7 @@ It will look like this when the installer is complete:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 19.01.0        | 19.01.0        |
+   | 19.04.0        | 19.04.0        |
    +----------------+----------------+
 
 Using CSI Trident
