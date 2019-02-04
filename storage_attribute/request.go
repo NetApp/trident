@@ -44,6 +44,8 @@ func MarshalRequestMap(requestMap map[string]Request) ([]byte, error) {
 
 func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error) {
 	var req Request
+	var err error
+
 	valType, ok := attrTypes[name]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized storage attribute: %s", name)
@@ -63,6 +65,11 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 		req = NewIntRequest(int(v))
 	case stringType:
 		req = NewStringRequest(val)
+	case labelType:
+		req, err = NewLabelRequest(val)
+		if err != nil {
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s)", val, valType)
+		}
 	default:
 		return nil, fmt.Errorf("unrecognized type for a storage attribute request: %s", valType)
 	}

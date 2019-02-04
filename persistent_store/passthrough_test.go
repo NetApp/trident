@@ -523,13 +523,30 @@ func TestPassthroughClient_DeleteVolumeIgnoreNotFoundNonexistent(t *testing.T) {
 func TestPassthroughClient_GetVolumes(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	createOpts := map[string]string{"pool": "pool-0"}
-	fakeBackend.Driver.Create("fake_volume_1", 1000000000, createOpts)
-	fakeBackend.Driver.Create("fake_volume_2", 2000000000, createOpts)
+
+	volConfig := &storage.VolumeConfig{
+		Name:         "fake_volume_1",
+		InternalName: "trident_fake_volume_1",
+		Size:         "1000000000",
+	}
+	err := fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	if err != nil {
+		t.Error(err)
+	}
+
+	volConfig = &storage.VolumeConfig{
+		Name:         "fake_volume_2",
+		InternalName: "trident_fake_volume_2",
+		Size:         "2000000000",
+	}
+	err = fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	if err != nil {
+		t.Error(err)
+	}
+
 	p.AddBackend(fakeBackend)
 
 	result, err := p.GetVolumes()
-
 	if err != nil {
 		t.Error("Could not get volumes from passthrough client!")
 	}

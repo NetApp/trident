@@ -18,8 +18,8 @@ import (
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
-	tu "github.com/netapp/trident/storage_class/test_utils"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
+	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
 
 var (
@@ -108,8 +108,8 @@ func cleanupStoreVersion(t *testing.T, etcd string) {
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 
 	diffs := make([]string, 0, 0)
-	expectedStruct := reflect.ValueOf(expected).Elem()
-	gotStruct := reflect.ValueOf(got).Elem()
+	expectedStruct := reflect.Indirect(reflect.ValueOf(expected))
+	gotStruct := reflect.Indirect(reflect.ValueOf(got))
 
 	for i := 0; i < expectedStruct.NumField(); i++ {
 
@@ -149,11 +149,17 @@ func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) 
 	expectedConfig := expected.Config
 	gotConfig := got.Config
 
-	expectedValElem := reflect.ValueOf(expected.Config).Elem()
-	gotValElem := reflect.ValueOf(got.Config).Elem()
+	expectedConfigTypeName := reflect.TypeOf(expectedConfig).Name()
+	gotConfigTypeName := reflect.TypeOf(gotConfig).Name()
+	if expectedConfigTypeName != gotConfigTypeName {
+		t.Errorf("Config type mismatch: %v != %v", expectedConfigTypeName, gotConfigTypeName)
+	}
 
-	expectedCSDCIntf := expectedValElem.FieldByName("CommonStorageDriverConfigExternal").Interface()
-	gotCSDCIntf := gotValElem.FieldByName("CommonStorageDriverConfigExternal").Interface()
+	expectedConfigValue := reflect.ValueOf(expectedConfig)
+	gotConfigValue := reflect.ValueOf(gotConfig)
+
+	expectedCSDCIntf := expectedConfigValue.FieldByName("CommonStorageDriverConfig").Interface()
+	gotCSDCIntf := gotConfigValue.FieldByName("CommonStorageDriverConfig").Interface()
 
 	var configDiffs []string
 
@@ -1344,8 +1350,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		persistentBackend, err := orchestrator.storeClient.GetBackend(backendName)
 		if err != nil {
 			t.Error("Unable to retrieve backend from store client:  ", err)
-		} else if !reflect.DeepEqual(newBackend.ConstructPersistent(),
-			persistentBackend) {
+		} else if !reflect.DeepEqual(newBackend.ConstructPersistent(), persistentBackend) {
 			t.Errorf("Backend not correctly updated in persistent store.")
 		}
 		previousBackends = append(previousBackends, newBackend)
@@ -1416,8 +1421,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		t.Error("Unable to find backend after bootstrapping.")
 	} else if !reflect.DeepEqual(bootstrappedBackend,
 		backend.ConstructExternal()) {
-		diffExternalBackends(t, backend.ConstructExternal(),
-			bootstrappedBackend)
+		diffExternalBackends(t, backend.ConstructExternal(), bootstrappedBackend)
 	}
 	orchestrator.mutex.Unlock()
 

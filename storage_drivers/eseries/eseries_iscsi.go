@@ -36,14 +36,6 @@ type SANStorageDriver struct {
 	API         *api.Client
 }
 
-type SANStorageDriverConfigExternal struct {
-	*drivers.CommonStorageDriverConfigExternal
-	Username    string
-	ControllerA string
-	ControllerB string
-	HostDataIP  string
-}
-
 func (d *SANStorageDriver) Name() string {
 	return drivers.EseriesIscsiStorageDriverName
 }
@@ -272,19 +264,32 @@ func (d *SANStorageDriver) validate() error {
 // Create is called by Docker to create a container volume. Besides the volume name, a few optional parameters such as size
 // and disk media type may be provided in the opts map. If more than one pool on the storage controller can satisfy the request, the
 // one with the most free space is selected.
-func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *SANStorageDriver) Create(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Create",
 			"Type":   "SANStorageDriver",
 			"name":   name,
-			"opts":   opts,
+			"attrs":  volAttributes,
 		}
 		log.WithFields(fields).Debug(">>>> Create")
 		defer log.WithFields(fields).Debug("<<<< Create")
 	}
 
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
@@ -295,6 +300,12 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
+	}
+
+	// Get options
+	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
 	}
 
 	// Get media type, or default to "hdd" if not specified
@@ -617,7 +628,11 @@ func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error)
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshot := volConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -964,14 +979,14 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 	// Get all volumes
 	volumes, err := d.API.GetVolumes()
 	if err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
 	// Get all pools
 	pools, err := d.API.GetVolumePools("", 0, "")
 	if err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
@@ -1003,7 +1018,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 			continue
 		}
 
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&volume, &pool), nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume, &pool), Error: nil}
 	}
 }
 

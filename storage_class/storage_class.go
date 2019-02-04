@@ -39,6 +39,21 @@ func NewFromPersistent(persistent *Persistent) *StorageClass {
 	return New(persistent.Config)
 }
 
+func NewFromAttributes(attributes map[string]storageattribute.Request) *StorageClass {
+
+	cfg := &Config{
+		Version:         "1",
+		Attributes:      attributes,
+		Pools:           make(map[string][]string),
+		AdditionalPools: make(map[string][]string),
+		ExcludePools:    make(map[string][]string),
+	}
+	return &StorageClass{
+		config: cfg,
+		pools:  make([]*storage.Pool, 0),
+	}
+}
+
 func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBackendName string, storagePoolList []string) bool {
 	if storagePool == nil {
 		return false
@@ -155,6 +170,12 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 	// storage class, then all must match.
 	attributesMatch := true
 	for name, request := range s.config.Attributes {
+
+		// Remap the "selector" storage class attribute to the "labels" pool attribute
+		if name == "selector" {
+			name = "labels"
+		}
+
 		if offer, ok := storagePool.Attributes[name]; !ok || !offer.Matches(request) {
 			log.WithFields(log.Fields{
 				"offer":        offer,
@@ -255,6 +276,10 @@ func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.
 		}
 	}
 	return ret
+}
+
+func (s *StorageClass) Pools() []*storage.Pool {
+	return s.pools
 }
 
 func (s *StorageClass) ConstructExternal() *External {

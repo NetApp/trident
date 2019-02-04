@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage_attribute"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
@@ -26,8 +26,8 @@ type Driver interface {
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate()
-	Create(name string, sizeBytes uint64, opts map[string]string) error
-	CreateClone(name, source, snapshot string, opts map[string]string) error
+	Create(volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
+	CreateClone(volConfig *VolumeConfig) error
 	Destroy(name string) error
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	SnapshotList(name string) ([]Snapshot, error)
@@ -42,11 +42,6 @@ type Driver interface {
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
 	GetInternalVolumeName(name string) string
 	GetStorageBackendSpecs(backend *Backend) error
-	GetVolumeOpts(
-		volConfig *VolumeConfig,
-		pool *Pool,
-		requests map[string]storageattribute.Request,
-	) (map[string]string, error)
 	GetProtocol() tridentconfig.Protocol
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
@@ -99,26 +94,16 @@ func (b *Backend) GetProtocol() tridentconfig.Protocol {
 }
 
 func (b *Backend) AddVolume(
-	volConfig *VolumeConfig,
-	storagePool *Pool,
-	volumeAttributes map[string]storageattribute.Request,
+	volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request,
 ) (*Volume, error) {
 
-	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
-	}
-	volSize, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
-	}
+	var err error
 
 	log.WithFields(log.Fields{
 		"backend":       b.Name,
 		"volume":        volConfig.InternalName,
 		"storage_pool":  storagePool.Name,
-		"size":          volSize,
+		"size":          volConfig.Size,
 		"storage_class": volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
 
@@ -127,17 +112,8 @@ func (b *Backend) AddVolume(
 	// 2. Ensure no volume with the same name exists on that backend
 	if b.Driver.CreatePrepare(volConfig) {
 
-		// add volume to the backend
-		args, err := b.Driver.GetVolumeOpts(volConfig, storagePool,
-			volumeAttributes)
-		if err != nil {
-			// An error on GetVolumeOpts is almost certainly going to indicate
-			// a formatting mistake, so go ahead and return an error, rather
-			// than just log a warning.
-			return nil, err
-		}
-
-		if err := b.Driver.Create(volConfig.InternalName, volSize, args); err != nil {
+		// Add volume to the backend
+		if err = b.Driver.Create(volConfig, storagePool, volAttributes); err != nil {
 			// Implement idempotency at the Trident layer
 			// Ignore the error if the volume exists already
 			if b.Driver.Get(volConfig.InternalName) != nil {
@@ -145,7 +121,7 @@ func (b *Backend) AddVolume(
 			}
 		}
 
-		if err = b.Driver.CreateFollowup(volConfig); err != nil {
+		if err := b.Driver.CreateFollowup(volConfig); err != nil {
 			errDestroy := b.Driver.Destroy(volConfig.InternalName)
 			if errDestroy != nil {
 				log.WithFields(log.Fields{
@@ -165,7 +141,7 @@ func (b *Backend) AddVolume(
 		log.WithFields(log.Fields{
 			"backend":       b.Name,
 			"storage_pool":  storagePool.Name,
-			"size":          volSize,
+			"size":          volConfig.Size,
 			"storage_class": volConfig.StorageClass,
 		}).Debug("Storage pool does not match volume request.")
 	}
@@ -189,18 +165,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		return nil, errors.New("failed to prepare clone create")
 	}
 
-	nilAttributes := make(map[string]storageattribute.Request)
-	args, err := b.Driver.GetVolumeOpts(volConfig, nil, nilAttributes)
-	if err != nil {
-		// An error on GetVolumeOpts is almost certainly going to indicate
-		// a formatting mistake, so go ahead and return an error, rather
-		// than just log a warning.
-		return nil, err
-	}
-
-	err = b.Driver.CreateClone(volConfig.InternalName,
-		volConfig.CloneSourceVolumeInternal, volConfig.CloneSourceSnapshot,
-		args)
+	err := b.Driver.CreateClone(volConfig)
 	if err != nil {
 		return nil, err
 	}

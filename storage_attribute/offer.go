@@ -7,9 +7,7 @@ import (
 	"fmt"
 )
 
-func UnmarshalOfferMap(mapJSON json.RawMessage) (
-	map[string]Offer, error,
-) {
+func UnmarshalOfferMap(mapJSON json.RawMessage) (map[string]Offer, error) {
 	var tmp map[string]json.RawMessage
 	ret := make(map[string]Offer)
 
@@ -21,6 +19,7 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 		var (
 			final Offer
 		)
+
 		baseType, ok := attrTypes[name]
 		if !ok {
 			return nil, fmt.Errorf("unknown storage attribute: %s", name)
@@ -32,6 +31,8 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 			final = new(intOffer)
 		case baseType == stringType:
 			final = new(stringOffer)
+		case baseType == labelType:
+			final = new(labelOffer)
 		default:
 			return nil, fmt.Errorf("offer %s has unrecognized type %s", name,
 				baseType)
@@ -43,5 +44,6 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (
 		}
 		ret[name] = final
 	}
+
 	return ret, nil
 }

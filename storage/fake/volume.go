@@ -1,7 +1,8 @@
 package fake
 
 type Volume struct {
-	Name      string
-	PoolName  string
-	SizeBytes uint64
+	Name          string
+	RequestedPool string
+	PhysicalPool  string
+	SizeBytes     uint64
 }

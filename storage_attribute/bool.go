@@ -12,6 +12,30 @@ func NewBoolOffer(offer bool) Offer {
 	}
 }
 
+func NewBoolOfferFromOffers(offers ...Offer) Offer {
+
+	anyTrueOffer := false
+
+	for _, offer := range offers {
+		if bOffer, ok := offer.(*boolOffer); ok {
+			if bOffer.Offer {
+				anyTrueOffer = true
+			}
+		}
+	}
+
+	// A boolOffer must hold either a true or false value.  If any of the
+	// supplied offers are true, the combined result must be true.  Otherwise,
+	// the supplied offers were all false, in which case the combined result
+	// must be false.
+
+	if anyTrueOffer {
+		return &boolOffer{Offer: true}
+	} else {
+		return &boolOffer{Offer: false}
+	}
+}
+
 // Matches is a boolean offer of true matches any request; a boolean offer of false
 // only matches a false request.  This assumes that the requested parameter
 // will be passed into the driver.

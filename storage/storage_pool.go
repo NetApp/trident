@@ -10,19 +10,20 @@ import (
 
 type Pool struct {
 	Name string
-	// A Trident storage pool can potentially satisfy more than one storage
-	// class.
-	StorageClasses []string
-	Backend        *Backend
-	Attributes     map[string]sa.Offer
+	// A Trident storage pool can potentially satisfy more than one storage class.
+	StorageClasses     []string
+	Backend            *Backend
+	Attributes         map[string]sa.Offer // These attributes are used to match storage classes
+	InternalAttributes map[string]string   // These attributes are defined & used internally by storage drivers
 }
 
 func NewStoragePool(backend *Backend, name string) *Pool {
 	return &Pool{
-		Name:           name,
-		StorageClasses: make([]string, 0),
-		Backend:        backend,
-		Attributes:     make(map[string]sa.Offer),
+		Name:               name,
+		StorageClasses:     make([]string, 0),
+		Backend:            backend,
+		Attributes:         make(map[string]sa.Offer),
+		InternalAttributes: make(map[string]string),
 	}
 }
 

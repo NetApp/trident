@@ -41,17 +41,6 @@ type SANStorageDriver struct {
 	InitiatorIFace   string
 }
 
-type StorageDriverConfigExternal struct {
-	*drivers.CommonStorageDriverConfigExternal
-	TenantName     string
-	EndPoint       string
-	SVIP           string
-	InitiatorIFace string //iface to use of iSCSI initiator
-	Types          *[]api.VolType
-	AccessGroups   []int64
-	UseCHAP        bool
-}
-
 type Telemetry struct {
 	tridentconfig.Telemetry
 	Plugin string `json:"plugin"`
@@ -498,15 +487,18 @@ func MakeSolidFireName(name string) string {
 }
 
 // Create a SolidFire volume
-func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *SANStorageDriver) Create(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Create",
-			"Type":      "SANStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-			"opts":      opts,
+			"Method": "Create",
+			"Type":   "SANStorageDriver",
+			"name":   name,
+			"attrs":  volAttributes,
 		}
 		log.WithFields(fields).Debug(">>>> Create")
 		defer log.WithFields(fields).Debug("<<<< Create")
@@ -526,6 +518,15 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 		return errors.New("volume with requested name already exists")
 	}
 
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
@@ -536,6 +537,12 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
+	}
+
+	// Get options
+	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
 	}
 
 	qosOpt := utils.GetV(opts, "qos", "")
@@ -602,7 +609,11 @@ func (d *SANStorageDriver) Create(name string, sizeBytes uint64, opts map[string
 }
 
 // Create a volume clone
-func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, opts map[string]string) error {
+func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
+	sourceName := volConfig.CloneSourceVolumeInternal
+	snapshotName := volConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -611,7 +622,6 @@ func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, op
 			"name":     name,
 			"source":   sourceName,
 			"snapshot": snapshotName,
-			"opts":     opts,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
@@ -620,6 +630,11 @@ func (d *SANStorageDriver) CreateClone(name, sourceName, snapshotName string, op
 	var err error
 	var qos api.QoS
 	doModify := false
+
+	opts, err := d.GetVolumeOpts(volConfig, nil, make(map[string]sa.Request))
+	if err != nil {
+		return err
+	}
 
 	qosOpt := utils.GetV(opts, "qos", "")
 	if qosOpt != "" {
@@ -1196,13 +1211,13 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 	// Get all volumes
 	volumes, err := d.getVolumes()
 	if err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for externalName, volume := range volumes {
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(externalName, &volume), nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(externalName, &volume), Error: nil}
 	}
 }
 

@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
@@ -17,13 +19,20 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
+	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
 
 const (
-	FakePoolAttribute      = "pool"
 	MinimumVolumeSizeBytes = 1048576 // 1 MiB
+
+	defaultLimitVolumeSize = ""
+
+	// Constants for internal pool attributes
+	Size   = "size"
+	Region = "region"
+	Zone   = "zone"
 )
 
 type StorageDriver struct {
@@ -38,21 +47,46 @@ type StorageDriver struct {
 	// different driver instances with the same config won't actually share
 	// state.
 	DestroyedVolumes map[string]bool
+
+	physicalPools map[string]*storage.Pool
+	virtualPools  map[string]*storage.Pool
+}
+
+func NewFakeStorageBackend(configJSON string) (sb *storage.Backend, err error) {
+
+	// Parse the common config struct from JSON
+	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
+	if err != nil {
+		err = fmt.Errorf("input failed validation: %v", err)
+		return nil, err
+	}
+
+	storageDriver := &StorageDriver{}
+
+	if initializeErr := storageDriver.Initialize(
+		tridentconfig.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
+		err = fmt.Errorf("problem initializing storage driver '%s': %v",
+			commonConfig.StorageDriverName, initializeErr)
+		return nil, err
+	}
+
+	return storage.NewStorageBackend(storageDriver)
 }
 
 func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver {
-	return &StorageDriver{
+	driver := &StorageDriver{
 		initialized:      true,
 		Config:           config,
 		Volumes:          make(map[string]fake.Volume),
 		DestroyedVolumes: make(map[string]bool),
 	}
+	driver.populateConfigurationDefaults(&config)
+	driver.initializeStoragePools()
+	return driver
 }
 
-func newFakeStorageDriverConfigJSON(
-	name string,
-	protocol tridentconfig.Protocol,
-	pools map[string]*fake.StoragePool,
+func NewFakeStorageDriverConfigJSON(
+	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool,
 ) (string, error) {
 	prefix := ""
 	jsonBytes, err := json.Marshal(
@@ -60,7 +94,7 @@ func newFakeStorageDriverConfigJSON(
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: drivers.FakeStorageDriverName,
-				StoragePrefixRaw:  json.RawMessage("{}"),
+				StoragePrefixRaw:  json.RawMessage("\"\""),
 				StoragePrefix:     &prefix,
 			},
 			Protocol:     protocol,
@@ -74,16 +108,40 @@ func newFakeStorageDriverConfigJSON(
 	return string(jsonBytes), nil
 }
 
-func NewFakeStorageDriverConfigJSON(
-	name string,
-	protocol tridentconfig.Protocol,
-	pools map[string]*fake.StoragePool,
+func NewFakeStorageDriverConfigJSONWithVirtualPools(
+	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool,
+	vpool drivers.FakeStorageDriverPool, vpools []drivers.FakeStorageDriverPool,
 ) (string, error) {
-	return newFakeStorageDriverConfigJSON(name, protocol, pools)
+	prefix := ""
+	jsonBytes, err := json.Marshal(
+		&drivers.FakeStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				Version:           1,
+				StorageDriverName: drivers.FakeStorageDriverName,
+				StoragePrefixRaw:  json.RawMessage("\"\""),
+				StoragePrefix:     &prefix,
+			},
+			Protocol:              protocol,
+			Pools:                 pools,
+			InstanceName:          name,
+			FakeStorageDriverPool: vpool,
+			Storage:               vpools,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
 }
 
 func (d *StorageDriver) Name() string {
 	return drivers.FakeStorageDriverName
+}
+
+// poolName returns the name of the pool reported by this driver instance
+func (d *StorageDriver) poolName(region string) string {
+	name := fmt.Sprintf("%s_%s", d.Name(), strings.Replace(region, "-", "", -1))
+	return strings.Replace(name, "__", "_", -1)
 }
 
 func (d *StorageDriver) Initialize(
@@ -100,12 +158,22 @@ func (d *StorageDriver) Initialize(
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
+	err = d.initializeStoragePools()
+	if err != nil {
+		return fmt.Errorf("could not configure storage pools: %v", err)
+	}
+
 	d.Volumes = make(map[string]fake.Volume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 
 	s, _ := json.Marshal(d.Config)
 	log.Debugf("FakeStorageDriverConfig: %s", string(s))
+
+	err = d.validate()
+	if err != nil {
+		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
+	}
 
 	d.initialized = true
 	return nil
@@ -128,14 +196,19 @@ func (d *StorageDriver) populateConfigurationDefaults(config *drivers.FakeStorag
 		defer log.WithFields(fields).Debug("<<<< populateConfigurationDefaults")
 	}
 
+	if config.StoragePrefix == nil {
+		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		config.StoragePrefix = &prefix
+		config.StoragePrefixRaw = json.RawMessage("\"" + *config.StoragePrefix + "\"")
+	}
+
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
 		config.Size = drivers.DefaultVolumeSize
-	} else {
-		_, err := utils.ConvertSizeToBytes(config.Size)
-		if err != nil {
-			return fmt.Errorf("invalid config value for default volume size: %v", err)
-		}
+	}
+
+	if config.LimitVolumeSize == "" {
+		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
 
 	log.WithFields(log.Fields{
@@ -145,22 +218,161 @@ func (d *StorageDriver) populateConfigurationDefaults(config *drivers.FakeStorag
 	return nil
 }
 
-func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *StorageDriver) initializeStoragePools() error {
 
-	poolName, ok := opts[FakePoolAttribute]
-	if !ok {
-		return fmt.Errorf("no pool specified; expected %s in opts map", FakePoolAttribute)
+	d.physicalPools = make(map[string]*storage.Pool)
+	d.virtualPools = make(map[string]*storage.Pool)
+
+	snapshotOffers := make([]sa.Offer, 0)
+	cloneOffers := make([]sa.Offer, 0)
+	encryptionOffers := make([]sa.Offer, 0)
+	provisioningTypeOffers := make([]sa.Offer, 0)
+	mediaOffers := make([]sa.Offer, 0)
+
+	// Define physical pools
+	for name, fakeStoragePool := range d.Config.Pools {
+
+		pool := storage.NewStoragePool(nil, name)
+
+		pool.Attributes = fakeStoragePool.Attrs
+		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+		if d.Config.Zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+		}
+
+		if snapshotOffer, ok := pool.Attributes[sa.Snapshots]; ok {
+			snapshotOffers = append(snapshotOffers, snapshotOffer)
+		}
+		if cloneOffer, ok := pool.Attributes[sa.Clones]; ok {
+			cloneOffers = append(cloneOffers, cloneOffer)
+		}
+		if encryptionOffer, ok := pool.Attributes[sa.Encryption]; ok {
+			encryptionOffers = append(encryptionOffers, encryptionOffer)
+		}
+		if provisioningTypeOffer, ok := pool.Attributes[sa.ProvisioningType]; ok {
+			provisioningTypeOffers = append(provisioningTypeOffers, provisioningTypeOffer)
+		}
+		if mediaOffer, ok := pool.Attributes[sa.Media]; ok {
+			mediaOffers = append(mediaOffers, mediaOffer)
+		}
+
+		pool.InternalAttributes[Size] = d.Config.Size
+		pool.InternalAttributes[Region] = d.Config.Region
+		pool.InternalAttributes[Zone] = d.Config.Zone
+
+		d.physicalPools[pool.Name] = pool
 	}
 
-	pool, ok := d.Config.Pools[poolName]
-	if !ok {
-		return fmt.Errorf("could not find pool %s", poolName)
+	// Define virtual pools
+	for index, vpool := range d.Config.Storage {
+
+		region := d.Config.Region
+		if vpool.Region != "" {
+			region = vpool.Region
+		}
+
+		zone := d.Config.Zone
+		if vpool.Zone != "" {
+			zone = vpool.Zone
+		}
+
+		size := d.Config.Size
+		if vpool.Size != "" {
+			size = vpool.Size
+		}
+
+		pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf(region+"_pool_%d", index)))
+
+		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+		pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+		if zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+		}
+
+		if len(snapshotOffers) > 0 {
+			pool.Attributes[sa.Snapshots] = sa.NewBoolOfferFromOffers(snapshotOffers...)
+		}
+		if len(cloneOffers) > 0 {
+			pool.Attributes[sa.Clones] = sa.NewBoolOfferFromOffers(cloneOffers...)
+		}
+		if len(encryptionOffers) > 0 {
+			pool.Attributes[sa.Encryption] = sa.NewBoolOfferFromOffers(encryptionOffers...)
+		}
+		if len(provisioningTypeOffers) > 0 {
+			pool.Attributes[sa.ProvisioningType] = sa.NewStringOfferFromOffers(provisioningTypeOffers...)
+		}
+		if len(mediaOffers) > 0 {
+			pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+		}
+
+		pool.InternalAttributes[Size] = size
+		pool.InternalAttributes[Region] = region
+		pool.InternalAttributes[Zone] = zone
+
+		d.virtualPools[pool.Name] = pool
 	}
 
-	if _, ok = d.Volumes[name]; ok {
+	return nil
+}
+
+// validate ensures the driver configuration and execution environment are valid and working
+func (d *StorageDriver) validate() error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "validate", "Type": "StorageDriver"}
+		log.WithFields(fields).Debug(">>>> validate")
+		defer log.WithFields(fields).Debug("<<<< validate")
+	}
+
+	// Validate driver-level attributes
+
+	// Validate pool-level attributes
+	allPools := make([]*storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
+
+	for _, pool := range d.physicalPools {
+		allPools = append(allPools, pool)
+	}
+	for _, pool := range d.virtualPools {
+		allPools = append(allPools, pool)
+	}
+
+	for _, pool := range allPools {
+
+		// Validate default size
+		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (d *StorageDriver) Create(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) error {
+
+	name := volConfig.InternalName
+	if _, ok := d.Volumes[name]; ok {
 		return fmt.Errorf("volume %s already exists", name)
 	}
 
+	// Get candidate physical pools
+	physicalPools, err := d.getPoolsForCreate(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
+	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
@@ -170,30 +382,104 @@ func (d *StorageDriver) Create(name string, sizeBytes uint64, opts map[string]st
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
 
-	if sizeBytes > pool.Bytes {
-		return fmt.Errorf("requested volume is too large; requested %d bytes; have %d available in pool %s",
-			sizeBytes, pool.Bytes, poolName)
+	if _, _, err = drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
+		return err
 	}
 
-	d.Volumes[name] = fake.Volume{
-		Name:      name,
-		PoolName:  poolName,
-		SizeBytes: sizeBytes,
+	createErrors := make([]error, 0)
+
+	for _, physicalPool := range physicalPools {
+
+		fakePoolName := physicalPool.Name
+		fakePool, ok := d.Config.Pools[physicalPool.Name]
+		if !ok {
+			errMessage := fmt.Sprintf("fake pool %s not found.", fakePoolName)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
+		}
+
+		if sizeBytes > fakePool.Bytes {
+			errMessage := fmt.Sprintf("requested volume is too large, requested %d bytes, "+
+				"have %d available in pool %s", sizeBytes, fakePool.Bytes, fakePoolName)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
+		}
+
+		d.Volumes[name] = fake.Volume{
+			Name:          name,
+			RequestedPool: storagePool.Name,
+			PhysicalPool:  fakePoolName,
+			SizeBytes:     sizeBytes,
+		}
+		d.DestroyedVolumes[name] = false
+		fakePool.Bytes -= sizeBytes
+
+		log.WithFields(log.Fields{
+			"backend":       d.Config.InstanceName,
+			"name":          name,
+			"requestedPool": storagePool.Name,
+			"physicalPool":  fakePoolName,
+			"sizeBytes":     sizeBytes,
+		}).Debug("Created fake volume.")
+
+		return nil
 	}
-	d.DestroyedVolumes[name] = false
-	pool.Bytes -= sizeBytes
 
-	log.WithFields(log.Fields{
-		"backend":   d.Config.InstanceName,
-		"Name":      name,
-		"PoolName":  poolName,
-		"SizeBytes": sizeBytes,
-	}).Debug("Created fake volume.")
-
-	return nil
+	// All physical pools that were eligible ultimately failed, so don't try this backend again
+	return drivers.NewBackendIneligibleError(name, createErrors)
 }
 
-func (d *StorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *StorageDriver) getPoolsForCreate(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) ([]*storage.Pool, error) {
+
+	// If a physical pool was requested, just use it
+	if _, ok := d.physicalPools[storagePool.Name]; ok {
+		return []*storage.Pool{storagePool}, nil
+	}
+
+	// If a virtual pool was requested, find a physical pool to satisfy it
+	if _, ok := d.virtualPools[storagePool.Name]; !ok {
+		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
+	}
+
+	// Make a storage class from the volume attributes to simplify pool matching
+	attributesCopy := make(map[string]sa.Request)
+	for k, v := range volAttributes {
+		attributesCopy[k] = v
+	}
+	delete(attributesCopy, sa.Selector)
+	storageClass := sc.NewFromAttributes(attributesCopy)
+
+	// Find matching pools
+	candidatePools := make([]*storage.Pool, 0)
+
+	for _, pool := range d.physicalPools {
+		if storageClass.Matches(pool) {
+			candidatePools = append(candidatePools, pool)
+		}
+	}
+
+	if len(candidatePools) == 0 {
+		err := errors.New("backend has no physical pools that can satisfy request")
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+	}
+
+	// Shuffle physical pools
+	rand.Shuffle(len(candidatePools), func(i, j int) {
+		candidatePools[i], candidatePools[j] = candidatePools[j], candidatePools[i]
+	})
+
+	return candidatePools, nil
+}
+
+func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshot := volConfig.CloneSourceSnapshot
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]
@@ -207,34 +493,36 @@ func (d *StorageDriver) CreateClone(name, source, snapshot string, opts map[stri
 	}
 
 	// Use the same pool as the source
-	poolName := sourceVolume.PoolName
-	pool, ok := d.Config.Pools[poolName]
+	physicalPool := sourceVolume.PhysicalPool
+	fakePool, ok := d.Config.Pools[physicalPool]
 	if !ok {
-		return fmt.Errorf("could not find pool %s", poolName)
+		return fmt.Errorf("could not find pool %s", physicalPool)
 	}
 
 	// Use the same size as the source
 	sizeBytes := sourceVolume.SizeBytes
-	if sizeBytes > pool.Bytes {
+	if sizeBytes > fakePool.Bytes {
 		return fmt.Errorf("requested clone is too large: requested %d bytes; have %d available in pool %s",
-			sizeBytes, pool.Bytes, poolName)
+			sizeBytes, fakePool.Bytes, physicalPool)
 	}
 
 	d.Volumes[name] = fake.Volume{
-		Name:      name,
-		PoolName:  poolName,
-		SizeBytes: sizeBytes,
+		Name:          name,
+		RequestedPool: sourceVolume.RequestedPool,
+		PhysicalPool:  physicalPool,
+		SizeBytes:     sizeBytes,
 	}
 	d.DestroyedVolumes[name] = false
-	pool.Bytes -= sizeBytes
+	fakePool.Bytes -= sizeBytes
 
 	log.WithFields(log.Fields{
-		"backend":   d.Config.InstanceName,
-		"Name":      name,
-		"source":    sourceVolume.Name,
-		"snapshot":  snapshot,
-		"PoolName":  poolName,
-		"SizeBytes": sizeBytes,
+		"backend":       d.Config.InstanceName,
+		"Name":          name,
+		"source":        sourceVolume.Name,
+		"snapshot":      snapshot,
+		"requestedPool": sourceVolume.RequestedPool,
+		"physicalPool":  physicalPool,
+		"SizeBytes":     sizeBytes,
 	}).Debug("Cloned fake volume.")
 
 	return nil
@@ -249,19 +537,21 @@ func (d *StorageDriver) Destroy(name string) error {
 		return nil
 	}
 
-	pool, ok := d.Config.Pools[volume.PoolName]
+	physicalPool := volume.PhysicalPool
+	fakePool, ok := d.Config.Pools[physicalPool]
 	if !ok {
-		return fmt.Errorf("could not find pool %s", volume.PoolName)
+		return fmt.Errorf("could not find pool %s", physicalPool)
 	}
 
-	pool.Bytes += volume.SizeBytes
+	fakePool.Bytes += volume.SizeBytes
 	delete(d.Volumes, name)
 
 	log.WithFields(log.Fields{
-		"backend":   d.Config.InstanceName,
-		"Name":      name,
-		"PoolName":  volume.PoolName,
-		"SizeBytes": volume.SizeBytes,
+		"backend":       d.Config.InstanceName,
+		"Name":          name,
+		"requestedPool": volume.RequestedPool,
+		"physicalPool":  physicalPool,
+		"sizeBytes":     volume.SizeBytes,
 	}).Debug("Deleted fake volume.")
 
 	return nil
@@ -285,7 +575,26 @@ func (d *StorageDriver) Get(name string) error {
 	return nil
 }
 
+// Resize expands the volume size.
+func (d *StorageDriver) Resize(name string, sizeBytes uint64) error {
+	vol := d.Volumes[name]
+
+	if vol.SizeBytes == sizeBytes {
+		return nil
+	}
+
+	if sizeBytes < vol.SizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, vol.SizeBytes)
+	} else {
+		vol.SizeBytes = sizeBytes
+		d.Volumes[name] = vol
+	}
+
+	return nil
+}
+
 func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
+
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no backend is specified
 		backend.Name = d.Config.InstanceName
@@ -293,40 +602,43 @@ func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 		backend.Name = d.Config.BackendName
 	}
 
-	for name, pool := range d.Config.Pools {
-		vc := &storage.Pool{
-			Name:           name,
-			StorageClasses: make([]string, 0),
-			Backend:        backend,
-			Attributes:     pool.Attrs,
+	virtual := len(d.virtualPools) > 0
+
+	for _, pool := range d.physicalPools {
+		pool.Backend = backend
+		if !virtual {
+			backend.AddStoragePool(pool)
 		}
-		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		backend.AddStoragePool(vc)
 	}
+
+	for _, pool := range d.virtualPools {
+		pool.Backend = backend
+		if virtual {
+			backend.AddStoragePool(pool)
+		}
+	}
+
 	return nil
 }
 
-func (d *StorageDriver) GetVolumeOpts(
-	volConfig *storage.VolumeConfig,
-	pool *storage.Pool,
-	requests map[string]sa.Request,
-) (map[string]string, error) {
-	opts := make(map[string]string)
-	if pool != nil {
-		opts[FakePoolAttribute] = pool.Name
-	}
-	return opts, nil
-}
-
 func (d *StorageDriver) GetInternalVolumeName(name string) string {
-	return drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+	if tridentconfig.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
+		return *d.Config.StoragePrefix + name
+	} else {
+		// With an external store, any transformation of the name is fine
+		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+		internal = strings.Replace(internal, "--", "-", -1) // Remove any double hyphens
+		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+		internal = strings.Replace(internal, "_-", "-", -1) // Remove any strange delimiter
+		return internal
+	}
 }
 
 func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 	if volConfig.CloneSourceVolume != "" {
-		volConfig.CloneSourceVolumeInternal =
-			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
+		volConfig.CloneSourceVolumeInternal = d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 	return true
 }
@@ -358,30 +670,32 @@ func (d *StorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
 	var cloneCommonConfig drivers.CommonStorageDriverConfig
 	Clone(d.Config.CommonStorageDriverConfig, &cloneCommonConfig)
 	cloneCommonConfig.SerialNumbers = nil
+	if cloneCommonConfig.StoragePrefix == nil {
+		cloneCommonConfig.StoragePrefixRaw = json.RawMessage("{}")
+	} else {
+		cloneCommonConfig.StoragePrefixRaw = json.RawMessage("\"" + *cloneCommonConfig.StoragePrefix + "\"")
+	}
+	cloneCommonConfig.StoragePrefix = nil
+
+	var cloneFakePool drivers.FakeStorageDriverPool
+	Clone(&d.Config.FakeStorageDriverPool, &cloneFakePool)
+
+	var cloneFakePools []drivers.FakeStorageDriverPool
+	Clone(&d.Config.Storage, &cloneFakePools)
 
 	b.FakeStorageDriverConfig = &drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &cloneCommonConfig,
 		Protocol:                  d.Config.Protocol,
 		Pools:                     d.Config.Pools,
 		InstanceName:              d.Config.InstanceName,
+		Storage:                   cloneFakePools,
+		FakeStorageDriverPool:     cloneFakePool,
 	}
 }
 
 func (d *StorageDriver) GetExternalConfig() interface{} {
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
-
-	return &struct {
-		*drivers.CommonStorageDriverConfigExternal
-		Protocol     tridentconfig.Protocol       `json:"protocol"`
-		Pools        map[string]*fake.StoragePool `json:"pools"`
-		InstanceName string
-	}{
-		drivers.GetCommonStorageDriverConfigExternal(
-			d.Config.CommonStorageDriverConfig),
-		d.Config.Protocol,
-		d.Config.Pools,
-		d.Config.InstanceName,
-	}
+	return d.Config
 }
 
 func (d *StorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
@@ -402,31 +716,41 @@ func (d *StorageDriver) GetVolumeExternalWrappers(
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range d.Volumes {
-		channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(volume), nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(volume), Error: nil}
 	}
 }
 
 func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
 
+	internalName := volume.Name
+	name := internalName[len(*d.Config.StoragePrefix):]
+
 	volumeConfig := &storage.VolumeConfig{
 		Version:      tridentconfig.OrchestratorAPIVersion,
-		Name:         volume.Name,
-		InternalName: volume.Name,
+		Name:         name,
+		InternalName: internalName,
 		Size:         strconv.FormatUint(volume.SizeBytes, 10),
 	}
 
 	volumeExternal := &storage.VolumeExternal{
 		Config:  volumeConfig,
 		Backend: d.Name(),
-		Pool:    volume.PoolName,
+		Pool:    drivers.UnsetPool,
 	}
 
 	return volumeExternal
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver
-func (d *StorageDriver) GetUpdateType(dOrig storage.Driver) *roaring.Bitmap {
-	//TODO
+func (d *StorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
+
+	bitmap := roaring.New()
+	_, ok := driverOrig.(*StorageDriver)
+	if !ok {
+		bitmap.Add(storage.InvalidUpdate)
+		return bitmap
+	}
+
 	return roaring.New()
 }
 
@@ -436,22 +760,4 @@ func Clone(a, b interface{}) {
 	dec := gob.NewDecoder(buff)
 	enc.Encode(a)
 	dec.Decode(b)
-}
-
-// Resize expands the volume size.
-func (d *StorageDriver) Resize(name string, sizeBytes uint64) error {
-	vol := d.Volumes[name]
-
-	if vol.SizeBytes == sizeBytes {
-		return nil
-	}
-
-	if sizeBytes < vol.SizeBytes {
-		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, vol.SizeBytes)
-	} else {
-		vol.SizeBytes = sizeBytes
-		d.Volumes[name] = vol
-	}
-
-	return nil
 }

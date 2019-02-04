@@ -20,6 +20,7 @@ const (
 	intType    Type = "int"
 	boolType   Type = "bool"
 	stringType Type = "string"
+	labelType  Type = "label"
 )
 
 type intOffer struct {
@@ -45,4 +46,13 @@ type stringOffer struct {
 
 type stringRequest struct {
 	Request string `json:"request"`
+}
+
+type labelOffer struct {
+	Offers map[string]string `json:"offer"`
+}
+
+type labelRequest struct {
+	Request   string          `json:"request"`
+	selectors []labelSelector `json:"-"`
 }

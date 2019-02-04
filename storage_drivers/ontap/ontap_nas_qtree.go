@@ -196,15 +196,18 @@ func (d *NASQtreeStorageDriver) validate() error {
 }
 
 // Create a qtree-backed volume with the specified options
-func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *NASQtreeStorageDriver) Create(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Create",
-			"Type":      "NASQtreeStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-			"opts":      opts,
+			"Method": "Create",
+			"Type":   "NASQtreeStorageDriver",
+			"name":   name,
+			"attrs":  volAttributes,
 		}
 		log.WithFields(fields).Debug(">>>> Create")
 		defer log.WithFields(fields).Debug("<<<< Create")
@@ -228,6 +231,15 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 		return fmt.Errorf("volume %s already exists", name)
 	}
 
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	sizeBytes, err = GetVolumeSize(sizeBytes, d.Config)
 	if err != nil {
 		return err
@@ -236,6 +248,12 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 	// Ensure qtree name isn't too long
 	if len(name) > maxQtreeNameLength {
 		return fmt.Errorf("volume %s name exceeds the limit of %d characters", name, maxQtreeNameLength)
+	}
+
+	// Get options
+	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
 	}
 
 	// Get Flexvol options with default fallback values
@@ -296,7 +314,11 @@ func (d *NASQtreeStorageDriver) Create(name string, sizeBytes uint64, opts map[s
 }
 
 // Create a volume clone
-func (d *NASQtreeStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *NASQtreeStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshot := volConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -305,7 +327,6 @@ func (d *NASQtreeStorageDriver) CreateClone(name, source, snapshot string, opts 
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
-			"opts":     opts,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
@@ -1097,7 +1118,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	// Get all volumes matching the storage prefix
 	volumesResponse, err := d.API.VolumeGetAll(d.FlexvolNamePrefix())
 	if err = api.GetError(volumesResponse, err); err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
@@ -1112,7 +1133,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	// Get all qtrees in all Flexvols matching the storage prefix
 	qtreesResponse, err := d.API.QtreeGetAll(d.FlexvolNamePrefix())
 	if err = api.GetError(qtreesResponse, err); err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
@@ -1127,7 +1148,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	// Get all quotas in all Flexvols matching the storage prefix
 	quotasResponse, err := d.API.QuotaEntryList(d.FlexvolNamePrefix() + "*")
 	if err = api.GetError(quotasResponse, err); err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
@@ -1175,7 +1196,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 				continue
 			}
 
-			channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&qtree, &volume, &quota), nil}
+			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&qtree, &volume, &quota), Error: nil}
 		}
 	}
 }

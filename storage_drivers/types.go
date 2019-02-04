@@ -28,7 +28,7 @@ type CommonStorageDriverConfig struct {
 	DisableDelete     bool                  `json:"disableDelete"`
 	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
 	StoragePrefix     *string               `json:"-"`
-	SerialNumbers     []string              `json:"-"`
+	SerialNumbers     []string              `json:"serialNumbers,omitEmpty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
 }
@@ -124,9 +124,17 @@ type SolidfireStorageDriverConfigDefaults struct {
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`
-	// pools represents the possible buckets into which a given volume should go
-	Pools                           map[string]*fake.StoragePool `json:"pools"`
-	InstanceName                    string                       `json:"instanceName"`
+	// Pools are the modeled physical pools.  At least one is required.
+	Pools        map[string]*fake.StoragePool `json:"pools"`
+	InstanceName string                       `json:"instanceName"`
+	FakeStorageDriverPool
+	Storage []FakeStorageDriverPool `json:"storage"`
+}
+
+type FakeStorageDriverPool struct {
+	Labels                          map[string]string `json:"labels"`
+	Region                          string            `json:"region"`
+	Zone                            string            `json:"zone"`
 	FakeStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -225,30 +233,9 @@ func GetDefaultIgroupName(context trident.DriverContext) string {
 	}
 }
 
-type CommonStorageDriverConfigExternal struct {
-	Version           int      `json:"version"`
-	StorageDriverName string   `json:"storageDriverName"`
-	StoragePrefix     *string  `json:"storagePrefix"`
-	SerialNumbers     []string `json:"serialNumbers"`
-}
-
 func SanitizeCommonStorageDriverConfig(c *CommonStorageDriverConfig) {
 	if c != nil && c.StoragePrefixRaw == nil {
 		c.StoragePrefixRaw = json.RawMessage("{}")
-	}
-}
-
-func GetCommonStorageDriverConfigExternal(
-	c *CommonStorageDriverConfig,
-) *CommonStorageDriverConfigExternal {
-
-	SanitizeCommonStorageDriverConfig(c)
-
-	return &CommonStorageDriverConfigExternal{
-		Version:           c.Version,
-		StorageDriverName: c.StorageDriverName,
-		StoragePrefix:     c.StoragePrefix,
-		SerialNumbers:     c.SerialNumbers,
 	}
 }
 
@@ -314,4 +301,30 @@ func Clone(source, destination interface{}) {
 	dec := gob.NewDecoder(buff)
 	enc.Encode(source)
 	dec.Decode(destination)
+}
+
+type BackendIneligibleError struct {
+	message string
+}
+
+func (e *BackendIneligibleError) Error() string { return e.message }
+
+func NewBackendIneligibleError(volumeName string, errors []error) error {
+	messages := make([]string, 0)
+	for _, err := range errors {
+		messages = append(messages, err.Error())
+	}
+
+	return &BackendIneligibleError{
+		message: fmt.Sprintf("backend cannot satisfy create request for volume %s: (%s)",
+			volumeName, strings.Join(messages, "; ")),
+	}
+}
+
+func IsBackendIneligibleError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*BackendIneligibleError)
+	return ok
 }

@@ -118,15 +118,18 @@ func (d *NASFlexGroupStorageDriver) validate() error {
 }
 
 // Create a volume with the specified options
-func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts map[string]string) error {
+func (d *NASFlexGroupStorageDriver) Create(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Create",
-			"Type":      "NASFlexGroupStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-			"opts":      opts,
+			"Method": "Create",
+			"Type":   "NASFlexGroupStorageDriver",
+			"name":   name,
+			"attrs":  volAttributes,
 		}
 		log.WithFields(fields).Debug(">>>> Create")
 		defer log.WithFields(fields).Debug("<<<< Create")
@@ -141,6 +144,15 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 		return fmt.Errorf("FlexGroup %s already exists", name)
 	}
 
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	sizeBytes, err = GetVolumeSize(sizeBytes, d.Config)
 	if err != nil {
 		return err
@@ -169,6 +181,12 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 	log.WithFields(log.Fields{
 		"aggregates": vserverAggrs,
 	}).Debug("Read aggregates assigned to SVM.")
+
+	// Get options
+	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
+	}
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -242,7 +260,7 @@ func (d *NASFlexGroupStorageDriver) Create(name string, sizeBytes uint64, opts m
 }
 
 // Create a volume clone
-func (d *NASFlexGroupStorageDriver) CreateClone(name, source, snapshot string, opts map[string]string) error {
+func (d *NASFlexGroupStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return errors.New("clones are not supported for FlexGroups")
 }
 
@@ -467,14 +485,14 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 	// Get all volumes matching the storage prefix
 	volumesResponse, err := d.API.FlexGroupGetAll(*d.Config.StoragePrefix)
 	if err = api.GetError(volumesResponse, err); err != nil {
-		channel <- &storage.VolumeExternalWrapper{nil, err}
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	if volumesResponse.Result.AttributesListPtr != nil {
 		for _, volume := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
-			channel <- &storage.VolumeExternalWrapper{d.getVolumeExternal(&volume), nil}
+			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume), Error: nil}
 		}
 	}
 }

@@ -1,6 +1,6 @@
 // Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package storageclass
+package fake
 
 import (
 	"strings"
@@ -8,32 +8,30 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/factory"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
-	tu "github.com/netapp/trident/storage_class/test_utils"
-	fake_driver "github.com/netapp/trident/storage_drivers/fake"
+	sc "github.com/netapp/trident/storage_class"
+	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
 
 func TestAttributeMatches(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	config, err := fake_driver.NewFakeStorageDriverConfigJSON("mock", config.File,
-		mockPools)
+	fakeConfig, err := NewFakeStorageDriverConfigJSON("mock", config.File, mockPools)
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
-	backend, err := factory.NewStorageBackendForConfig(config)
+	backend, err := NewFakeStorageBackend(fakeConfig)
 	if err != nil {
 		t.Fatalf("Unable to construct backend using mock driver.")
 	}
 	for _, test := range []struct {
 		name          string
-		sc            *StorageClass
+		sc            *sc.StorageClass
 		expectedPools []string
 	}{
 		{
 			name: "Slow",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "slow",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(40),
@@ -47,7 +45,7 @@ func TestAttributeMatches(t *testing.T) {
 			// Tests that a request for false will return backends offering
 			// both true and false
 			name: "Bool",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "no-snapshots",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(40),
@@ -59,7 +57,7 @@ func TestAttributeMatches(t *testing.T) {
 		},
 		{
 			name: "Fast",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "fast",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -74,7 +72,7 @@ func TestAttributeMatches(t *testing.T) {
 			// This tests the correctness of matching string requests, using
 			// ProvisioningType
 			name: "String",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "string",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -88,7 +86,7 @@ func TestAttributeMatches(t *testing.T) {
 			// This uses sa.UniqueOptions to test that StorageClass only
 			// matches backends that have all required attributes.
 			name: "Unique",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "unique",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(2000),
@@ -102,7 +100,7 @@ func TestAttributeMatches(t *testing.T) {
 		{
 			// Tests overlapping int ranges
 			name: "Overlap",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "overlap",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(1000),
@@ -117,7 +115,7 @@ func TestAttributeMatches(t *testing.T) {
 		{
 			// Tests non-existent bool attribute
 			name: "Bool failure",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "bool-failure",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(1000),
@@ -130,7 +128,7 @@ func TestAttributeMatches(t *testing.T) {
 		},
 		{
 			name: "Invalid string value",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "invalid-string",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(1000),
@@ -142,7 +140,7 @@ func TestAttributeMatches(t *testing.T) {
 		},
 		{
 			name: "Invalid int range",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "invalid-int",
 				Attributes: map[string]sa.Request{
 					sa.IOPS:             sa.NewIntRequest(300),
@@ -160,7 +158,126 @@ func TestAttributeMatches(t *testing.T) {
 		}
 		unmatched := make([]string, 0)
 		matched := make([]string, 0)
-		for _, vc := range test.sc.pools {
+		for _, vc := range test.sc.Pools() {
+			if _, ok := expectedMap[vc.Name]; !ok {
+				unmatched = append(unmatched, vc.Name)
+			} else {
+				delete(expectedMap, vc.Name)
+				matched = append(matched, vc.Name)
+			}
+		}
+		if len(unmatched) > 0 {
+			t.Errorf("%s:\n\tFailed to match pools: %s\n\tMatched:  %s",
+				test.name,
+				strings.Join(unmatched, ", "),
+				strings.Join(matched, ", "),
+			)
+		}
+		if len(expectedMap) > 0 {
+			expectedMatches := make([]string, 0)
+			for k := range expectedMap {
+				expectedMatches = append(expectedMatches, k)
+			}
+			t.Errorf("%s:\n\tExpected additional matches:  %s\n\tMatched: %s",
+				test.name,
+				strings.Join(expectedMatches, ", "),
+				strings.Join(matched, ", "),
+			)
+		}
+	}
+}
+
+func TestAttributeMatchesWithVirtualPools(t *testing.T) {
+	mockPools := tu.GetFakePools()
+	vpool, vpools := tu.GetFakeVirtualPools()
+	fakeConfig, err := NewFakeStorageDriverConfigJSONWithVirtualPools("mock", config.File, mockPools, vpool, vpools)
+	if err != nil {
+		t.Fatalf("Unable to construct config JSON.")
+	}
+	backend, err := NewFakeStorageBackend(fakeConfig)
+	if err != nil {
+		t.Fatalf("Unable to construct backend using mock driver.")
+	}
+	for _, test := range []struct {
+		name          string
+		sc            *sc.StorageClass
+		expectedPools []string
+	}{
+		{
+			name: "Gold",
+			sc: sc.New(&sc.Config{
+				Name: "gold",
+				Attributes: map[string]sa.Request{
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=gold"),
+				},
+			}),
+			expectedPools: []string{"fake_useast_pool_0", "fake_useast_pool_3"},
+		},
+		{
+			name: "Gold-Zone1",
+			sc: sc.New(&sc.Config{
+				Name: "Gold-Zone1",
+				Attributes: map[string]sa.Request{
+					sa.Zone:     sa.NewStringRequest("1"),
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=gold"),
+				},
+			}),
+			expectedPools: []string{"fake_useast_pool_0"},
+		},
+		{
+			name: "Gold-Zone2-AWS",
+			sc: sc.New(&sc.Config{
+				Name: "Gold-Zone2-AWS",
+				Attributes: map[string]sa.Request{
+					sa.Zone:     sa.NewStringRequest("2"),
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=gold; cloud in (aws,azure)"),
+				},
+			}),
+			expectedPools: []string{"fake_useast_pool_3"},
+		},
+		{
+			name: "Silver-Zone2-NotAWS",
+			sc: sc.New(&sc.Config{
+				Name: "Silver-Zone2-NotAWS",
+				Attributes: map[string]sa.Request{
+					sa.Zone:     sa.NewStringRequest("2"),
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=silver; cloud notin (aws)"),
+				},
+			}),
+			expectedPools: []string{},
+		},
+		{
+			name: "Silver-USEast-Zone2-AnyCloud",
+			sc: sc.New(&sc.Config{
+				Name: "Silver-USEast-Zone2-AnyCloud",
+				Attributes: map[string]sa.Request{
+					sa.Zone:     sa.NewStringRequest("2"),
+					sa.Region:   sa.NewStringRequest("us-east"),
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=silver; cloud"),
+				},
+			}),
+			expectedPools: []string{"fake_useast_pool_4"},
+		},
+		{
+			name: "Silver-Zone2-NoCloud",
+			sc: sc.New(&sc.Config{
+				Name: "Silver-Zone2-NoCloud",
+				Attributes: map[string]sa.Request{
+					sa.Zone:     sa.NewStringRequest("2"),
+					sa.Selector: sa.NewLabelRequestMustCompile("performance=bronze; !cloud"),
+				},
+			}),
+			expectedPools: []string{},
+		},
+	} {
+		test.sc.CheckAndAddBackend(backend)
+		expectedMap := make(map[string]bool, len(test.expectedPools))
+		for _, pool := range test.expectedPools {
+			expectedMap[pool] = true
+		}
+		unmatched := make([]string, 0)
+		matched := make([]string, 0)
+		for _, vc := range test.sc.Pools() {
 			if _, ok := expectedMap[vc.Name]; !ok {
 				unmatched = append(unmatched, vc.Name)
 			} else {
@@ -207,12 +324,11 @@ func TestSpecificBackends(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.name, config.File,
-			pools)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.name, config.File, pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
-		backend, err := factory.NewStorageBackendForConfig(config)
+		backend, err := NewFakeStorageBackend(fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -220,12 +336,12 @@ func TestSpecificBackends(t *testing.T) {
 	}
 	for _, test := range []struct {
 		name     string
-		sc       *StorageClass
+		sc       *sc.StorageClass
 		expected []*tu.PoolMatch
 	}{
 		{
 			name: "Specific backends",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "specific",
 				AdditionalPools: map[string][]string{
 					"fast-a": {tu.FastThinOnly},
@@ -240,7 +356,7 @@ func TestSpecificBackends(t *testing.T) {
 		},
 		{
 			name: "Mixed attributes, backends",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "mixed",
 				AdditionalPools: map[string][]string{
 					"slow":   {tu.SlowNoSnapshots},
@@ -325,11 +441,11 @@ func TestRegex(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := factory.NewStorageBackendForConfig(config)
+		backend, err := NewFakeStorageBackend(fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -337,12 +453,12 @@ func TestRegex(t *testing.T) {
 	}
 	for _, test := range []struct {
 		description string
-		sc          *StorageClass
+		sc          *sc.StorageClass
 		expected    []*tu.PoolMatch
 	}{
 		{
 			description: "All pools for the 'slow' backend via regex '.*''",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex1",
 				Pools: map[string][]string{
 					"slow": {".*"},
@@ -356,7 +472,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "TBD",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex1b",
 				Pools: map[string][]string{
 					"slow": {"slow.*", tu.MediumOverlap},
@@ -370,7 +486,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Implicitly exclude the medium-overlap pool via regex by only matching those starting with 'slow-'",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex2",
 				Pools: map[string][]string{
 					"slow": {"slow-.*"},
@@ -383,7 +499,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Backends whose names start with 'fast-' and all of their respective pools",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex3",
 				Pools: map[string][]string{
 					"fast-.*": {".*"}, // All fast backends:  all their pools
@@ -398,7 +514,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Backends {fast-a, slow} and all of their respective pools",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex4",
 				Pools: map[string][]string{
 					"fast-a|slow": {".*"}, // fast-a or slow:  all their pools
@@ -414,7 +530,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Backends {fast-a, slow} and all of their respective pools",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex5",
 				Pools: map[string][]string{
 					"(fast-a|slow|NOT_ACTUALLY_THERE)": {".*"}, // fast-a or slow or 1 that doesn't exist:  all their pools
@@ -430,7 +546,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Every backend and every pool",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex6",
 				Pools: map[string][]string{
 					".*": {".*"}, // All backends:  all pools
@@ -448,7 +564,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Exclusion test",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex7",
 				Pools: map[string][]string{
 					".*": {".*"}, // Start off allowing all backends:  all pools
@@ -468,7 +584,7 @@ func TestRegex(t *testing.T) {
 		},
 		{
 			description: "Exclude the FastThinOnly pools from the fast backends",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex8",
 				Pools: map[string][]string{
 					"fast-.*": {".*"}, // All fast backends:  all their pools
@@ -548,11 +664,11 @@ func TestRegex2(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		config, err := fake_driver.NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := factory.NewStorageBackendForConfig(config)
+		backend, err := NewFakeStorageBackend(fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -560,12 +676,12 @@ func TestRegex2(t *testing.T) {
 	}
 	for _, test := range []struct {
 		description string
-		sc          *StorageClass
+		sc          *sc.StorageClass
 		expected    []*tu.PoolMatch
 	}{
 		{
 			description: "slow only, not slow+slower",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex1",
 				Pools: map[string][]string{
 					"slow": {".*"},
@@ -579,7 +695,7 @@ func TestRegex2(t *testing.T) {
 		},
 		{
 			description: "slow only, not slow+slower",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex2",
 				Pools: map[string][]string{
 					"^slow$": {".*"},
@@ -593,7 +709,7 @@ func TestRegex2(t *testing.T) {
 		},
 		{
 			description: "slow and slower combined",
-			sc: New(&Config{
+			sc: sc.New(&sc.Config{
 				Name: "regex2",
 				Pools: map[string][]string{
 					"slow.*": {".*"},

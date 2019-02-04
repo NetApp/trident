@@ -4,7 +4,6 @@ package storageattribute
 
 import (
 	"encoding/json"
-	"log"
 	"reflect"
 	"testing"
 )
@@ -15,7 +14,6 @@ func TestMatches(t *testing.T) {
 		o        Offer
 		expected bool
 	}{
-		// This is all basically trivial, but it doesn't hurt to test.
 		{NewIntRequest(5), NewIntOffer(0, 10), true},
 		{NewIntRequest(5), NewIntOffer(6, 10), false},
 		{NewIntRequest(11), NewIntOffer(6, 10), false},
@@ -23,13 +21,90 @@ func TestMatches(t *testing.T) {
 		{NewBoolRequest(false), NewBoolOffer(true), true},
 		{NewBoolRequest(true), NewBoolOffer(true), true},
 		{NewBoolRequest(true), NewBoolOffer(false), false},
-		{NewStringRequest("bar"), NewStringOffer("foo", "bar"),
-			true},
-		{NewStringRequest("baz"), NewStringOffer("foo", "bar"),
-			false},
+		{NewStringRequest("bar"), NewStringOffer("foo", "bar"), true},
+		{NewStringRequest("baz"), NewStringOffer("foo", "bar"), false},
 		{NewIntRequest(5), NewStringOffer("foo", "bar"), false},
 		{NewIntRequest(5), NewBoolOffer(true), false},
 		{NewBoolRequest(false), NewIntOffer(0, 10), false},
+		{NewBoolRequest(false), NewLabelOffer(map[string]string{"performance": "gold"}), false},
+
+		{NewLabelRequestMustCompile("performance = gold"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance=gold;protection=minimal"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance=gold;protection=full"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance=gold;protection=minimal"),
+			NewLabelOffer(map[string]string{"performance": "silver", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance=gold;protection=minimal"),
+			NewLabelOffer(map[string]string{"performance": "silver", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("protection != full"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance = gold;protection != minimal"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance in (gold,silver)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance in (silver, bronze)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance in (gold, silver); protection in (minimal, full)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance notin (gold,silver)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance notin (silver, bronze)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("location notin (east, west)"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("performance;protection"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("!performance; !protection"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("protection;!cloud"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			true,
+		},
+		{NewLabelRequestMustCompile("protection;foo"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
+			false,
+		},
+		{NewLabelRequestMustCompile("performance=gold;protection!=full;cloud in (aws, azure);!foo"),
+			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"},
+				map[string]string{"cloud": "aws", "bar": "baz"}),
+			true,
+		},
 	} {
 		if test.o.Matches(test.r) != test.expected {
 			t.Errorf("Test case %d failed", i)
@@ -52,15 +127,22 @@ func TestUnmarshalOffer(t *testing.T) {
 		ProvisioningType: &stringOffer{
 			Offers: []string{"foo", "bar"},
 		},
+		Labels: NewLabelOffer(
+			map[string]string{"performance": "gold", "protection": "minimal"},
+			map[string]string{"cloud": "aws"},
+		),
 	}
+
 	data, err := json.Marshal(offerMap)
 	if err != nil {
 		t.Fatal("Unable to marshal:  ", err)
 	}
+
 	targetOfferMap, err = UnmarshalOfferMap(data)
 	if err != nil {
 		t.Fatal("Unable to unmarshal: ", err)
 	}
+
 	if !reflect.DeepEqual(offerMap, targetOfferMap) {
 		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", offerMap,
 			targetOfferMap)
@@ -68,9 +150,9 @@ func TestUnmarshalOffer(t *testing.T) {
 }
 
 func TestUnmarshalRequest(t *testing.T) {
-	var (
-		targetRequestMap map[string]Request
-	)
+
+	labelRequest, _ := NewLabelRequest("performance=gold")
+
 	requestMap := map[string]Request{
 		IOPS: &intRequest{
 			Request: 5,
@@ -81,19 +163,20 @@ func TestUnmarshalRequest(t *testing.T) {
 		BackendType: &stringRequest{
 			Request: "foo",
 		},
+		Labels: labelRequest,
 	}
-	//data, err := json.Marshal(requestMap)
+
 	data, err := MarshalRequestMap(requestMap)
 	if err != nil {
-		t.Fatal("Unable to marshal:  ", err)
+		t.Fatal("Unable to marshal: ", err)
 	}
-	log.Print("Marshaled data: ", string(data))
-	targetRequestMap, err = UnmarshalRequestMap(data)
+
+	targetRequestMap, err := UnmarshalRequestMap(data)
 	if err != nil {
 		t.Fatal("Unable to unmarshal: ", err)
 	}
+
 	if !reflect.DeepEqual(requestMap, targetRequestMap) {
-		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", requestMap,
-			targetRequestMap)
+		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", requestMap, targetRequestMap)
 	}
 }

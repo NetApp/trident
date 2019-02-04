@@ -15,6 +15,12 @@ const (
 	ProvisioningType = "provisioningType"
 	BackendType      = "backendType"
 	Media            = "media"
+	Region           = "region"
+	Zone             = "zone"
+
+	// Constants for label attributes
+	Labels   = "labels"
+	Selector = "selector"
 
 	// Testing constants
 	RecoveryTest     = "recoveryTest"
@@ -41,6 +47,10 @@ var attrTypes = map[string]Type{
 	ProvisioningType: stringType,
 	BackendType:      stringType,
 	Media:            stringType,
+	Region:           stringType,
+	Zone:             stringType,
+	Labels:           labelType,
+	Selector:         labelType,
 	RecoveryTest:     boolType,
 	UniqueOptions:    stringType,
 	TestingAttribute: boolType,
