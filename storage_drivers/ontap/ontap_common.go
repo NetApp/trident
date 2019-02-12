@@ -1190,7 +1190,7 @@ func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig
 	}
 }
 
-func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) bool {
+func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) error {
 
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 
@@ -1199,7 +1199,7 @@ func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) bool
 			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 
-	return true
+	return nil
 }
 
 func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {

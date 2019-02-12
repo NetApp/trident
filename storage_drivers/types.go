@@ -121,6 +121,31 @@ type SolidfireStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
 }
 
+type AWSNFSStorageDriverConfig struct {
+	*CommonStorageDriverConfig
+	APIURL          string `json:"apiURL"`
+	APIKey          string `json:"apiKey"`
+	APIRegion       string `json:"apiRegion"`
+	SecretKey       string `json:"secretKey"`
+	NfsMountOptions string `json:"nfsMountOptions"`
+	AWSNFSStorageDriverPool
+	Storage []AWSNFSStorageDriverPool `json:"storage"`
+}
+
+type AWSNFSStorageDriverPool struct {
+	Labels                            map[string]string `json:"labels"`
+	Region                            string            `json:"region"`
+	Zone                              string            `json:"zone"`
+	ServiceLevel                      string            `json:"serviceLevel"`
+	AWSNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type AWSNFSStorageDriverConfigDefaults struct {
+	ExportRule      string `json:"exportRule"`
+	SnapshotReserve string `json:"snapshotReserve"`
+	CommonStorageDriverConfigDefaults
+}
+
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`
@@ -204,6 +229,13 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 	} else {
 		config.StoragePrefix = nil
 		log.Debug("Storage prefix is absent, will use default prefix.")
+	}
+
+	// Validate volume size limit (if set)
+	if config.LimitVolumeSize != "" {
+		if _, err = utils.ConvertSizeToBytes(config.LimitVolumeSize); err != nil {
+			return nil, fmt.Errorf("invalid value for limitVolumeSize: %v", config.LimitVolumeSize)
+		}
 	}
 
 	log.Debugf("Parsed commonConfig: %+v", *config)
@@ -326,5 +358,25 @@ func IsBackendIneligibleError(err error) bool {
 		return false
 	}
 	_, ok := err.(*BackendIneligibleError)
+	return ok
+}
+
+type VolumeExistsError struct {
+	message string
+}
+
+func (e *VolumeExistsError) Error() string { return e.message }
+
+func NewVolumeExistsError(name string) error {
+	return &VolumeExistsError{
+		message: fmt.Sprintf("volume %s already exists", name),
+	}
+}
+
+func IsVolumeExistsError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*VolumeExistsError)
 	return ok
 }

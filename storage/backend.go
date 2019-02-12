@@ -4,7 +4,6 @@ package storage
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -33,7 +32,7 @@ type Driver interface {
 	SnapshotList(name string) ([]Snapshot, error)
 	Get(name string) error
 	Resize(name string, sizeBytes uint64) error
-	CreatePrepare(volConfig *VolumeConfig) bool
+	CreatePrepare(volConfig *VolumeConfig) error
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(volConfig *VolumeConfig) error
 	// GetInternalVolumeName will return a name that satisfies any character
@@ -108,20 +107,37 @@ func (b *Backend) AddVolume(
 	}).Debug("Attempting volume create.")
 
 	// CreatePrepare should perform the following tasks:
-	// 1. Sanitize the volume name
-	// 2. Ensure no volume with the same name exists on that backend
-	if b.Driver.CreatePrepare(volConfig) {
+	// 1. Generate the internal volume name
+	// 2. Optionally perform any other steps that could veto volume creation
+	if err = b.Driver.CreatePrepare(volConfig); err != nil {
+		return nil, err
+	}
 
-		// Add volume to the backend
-		if err = b.Driver.Create(volConfig, storagePool, volAttributes); err != nil {
-			// Implement idempotency at the Trident layer
-			// Ignore the error if the volume exists already
-			if b.Driver.Get(volConfig.InternalName) != nil {
-				return nil, err
-			}
+	// Add volume to the backend
+	volumeExists := false
+	if err = b.Driver.Create(volConfig, storagePool, volAttributes); err != nil {
+
+		if drivers.IsVolumeExistsError(err) {
+
+			// Implement idempotency by ignoring the error if the volume exists already
+			volumeExists = true
+
+			log.WithFields(log.Fields{
+				"backend": b.Name,
+				"volume":  volConfig.InternalName,
+			}).Warning("Volume already exists.")
+
+		} else {
+			// If the volume doesn't exist but the create failed, return the error
+			return nil, err
 		}
+	}
 
-		if err := b.Driver.CreateFollowup(volConfig); err != nil {
+	// Always perform the follow-up steps
+	if err = b.Driver.CreateFollowup(volConfig); err != nil {
+
+		// If follow-up fails and we just created the volume, clean up by deleting it
+		if !volumeExists {
 			errDestroy := b.Driver.Destroy(volConfig.InternalName)
 			if errDestroy != nil {
 				log.WithFields(log.Fields{
@@ -129,40 +145,37 @@ func (b *Backend) AddVolume(
 					"volume":  volConfig.InternalName,
 				}).Warnf("Mapping the created volume failed "+
 					"and %s wasn't able to delete it afterwards: %s. "+
-					"Volume needs to be manually deleted.",
+					"Volume must be manually deleted.",
 					tridentconfig.OrchestratorName, errDestroy)
 			}
-			return nil, err
 		}
-		vol := NewVolume(volConfig, b.Name, storagePool.Name, false)
-		b.Volumes[vol.Config.Name] = vol
-		return vol, err
-	} else {
-		log.WithFields(log.Fields{
-			"backend":       b.Name,
-			"storage_pool":  storagePool.Name,
-			"size":          volConfig.Size,
-			"storage_class": volConfig.StorageClass,
-		}).Debug("Storage pool does not match volume request.")
+
+		// In all cases where follow-up fails, return the follow-up error
+		return nil, err
 	}
-	return nil, nil
+
+	vol := NewVolume(volConfig, b.Name, storagePool.Name, false)
+	b.Volumes[vol.Config.Name] = vol
+	return vol, nil
 }
 
 func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
-		"backend":         b.Name,
-		"storage_class":   volConfig.StorageClass,
-		"source_volume":   volConfig.CloneSourceVolume,
-		"source_snapshot": volConfig.CloneSourceSnapshot,
-		"clone_volume":    volConfig.Name,
+		"backend":                b.Name,
+		"storage_class":          volConfig.StorageClass,
+		"source_volume":          volConfig.CloneSourceVolume,
+		"source_volume_internal": volConfig.CloneSourceVolumeInternal,
+		"source_snapshot":        volConfig.CloneSourceSnapshot,
+		"clone_volume":           volConfig.Name,
+		"clone_volume_internal":  volConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
 	// CreatePrepare should perform the following tasks:
 	// 1. Sanitize the volume name
 	// 2. Ensure no volume with the same name exists on that backend
-	if !b.Driver.CreatePrepare(volConfig) {
-		return nil, errors.New("failed to prepare clone create")
+	if err := b.Driver.CreatePrepare(volConfig); err != nil {
+		return nil, fmt.Errorf("failed to prepare clone create: %v", err)
 	}
 
 	err := b.Driver.CreateClone(volConfig)
@@ -311,6 +324,7 @@ type PersistentStorageBackendConfig struct {
 	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	EseriesConfig           *drivers.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
+	AWSConfig               *drivers.AWSNFSStorageDriverConfig    `json:"aws_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -348,6 +362,8 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.SolidfireConfig)
 	case p.Config.EseriesConfig != nil:
 		bytes, err = json.Marshal(p.Config.EseriesConfig)
+	case p.Config.AWSConfig != nil:
+		bytes, err = json.Marshal(p.Config.AWSConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:

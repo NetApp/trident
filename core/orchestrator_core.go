@@ -717,20 +717,12 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 
 	// Choose a pool at random.
 	for _, num := range rand.Perm(len(pools)) {
+
+		// Add volume to the backend of the selected pool
 		backend = pools[num].Backend
 		vol, err = backend.AddVolume(volumeConfig, pools[num], sc.GetAttributes())
-		if vol != nil && err == nil {
-			if vol.Config.Protocol == config.ProtocolAny {
-				vol.Config.Protocol = backend.GetProtocol()
-			}
-			err = o.storeClient.AddVolume(vol)
-			if err != nil {
-				return nil, err
-			}
-			o.volumes[volumeConfig.Name] = vol
-			externalVol = vol.ConstructExternal()
-			return externalVol, nil
-		} else if err != nil {
+		if err != nil {
+
 			log.WithFields(log.Fields{
 				"backend": backend.Name,
 				"pool":    pools[num].Name,
@@ -738,17 +730,31 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 				"error":   err,
 			}).Warn("Failed to create the volume on this backend!")
 			errorMessages = append(errorMessages,
-				fmt.Sprintf("[Failed to create volume %s "+
-					"on storage pool %s from backend %s: %s]",
-					volumeConfig.Name, pools[num].Name, backend.Name,
-					err.Error()))
+				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
+					volumeConfig.Name, pools[num].Name, backend.Name, err.Error()))
+
+		} else {
+
+			if vol.Config.Protocol == config.ProtocolAny {
+				vol.Config.Protocol = backend.GetProtocol()
+			}
+
+			// Add new volume to persistent store
+			err = o.storeClient.AddVolume(vol)
+			if err != nil {
+				return nil, err
+			}
+
+			// Update internal cache and return external form of the new volume
+			o.volumes[volumeConfig.Name] = vol
+			externalVol = vol.ConstructExternal()
+			return externalVol, nil
 		}
 	}
 
 	externalVol = nil
 	if len(errorMessages) == 0 {
-		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class "+
-			"and %s of free space was found!",
+		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class and %s of free space was found",
 			protocol, volumeConfig.StorageClass, volumeConfig.Size)
 	} else {
 		err = fmt.Errorf("encountered error(s) in creating the volume: %s",
@@ -796,8 +802,10 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 
 	// Copy a few attributes from the request that will affect clone creation
 	cloneConfig.Name = volumeConfig.Name
+	cloneConfig.InternalName = ""
 	cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
 	cloneConfig.CloneSourceVolume = volumeConfig.CloneSourceVolume
+	cloneConfig.CloneSourceVolumeInternal = sourceVolume.Config.InternalName
 	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
 	cloneConfig.QoS = volumeConfig.QoS
 	cloneConfig.QoSType = volumeConfig.QoSType

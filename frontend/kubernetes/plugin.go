@@ -687,7 +687,7 @@ func (p *Plugin) createVolumeAndPV(
 		},
 		Spec: v1.PersistentVolumeSpec{
 			AccessModes: accessModes,
-			Capacity:    v1.ResourceList{v1.ResourceStorage: size},
+			Capacity:    v1.ResourceList{v1.ResourceStorage: resource.MustParse(vol.Config.Size)},
 			ClaimRef:    &claimRef,
 			// Default policy is "Delete".
 			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
@@ -730,7 +730,8 @@ func (p *Plugin) createVolumeAndPV(
 
 	case drivers.OntapNASStorageDriverName,
 		drivers.OntapNASQtreeStorageDriverName,
-		drivers.OntapNASFlexGroupStorageDriverName:
+		drivers.OntapNASFlexGroupStorageDriverName,
+		drivers.AWSNFSStorageDriverName:
 
 		nfsSource = CreateNFSVolumeSource(vol)
 		pv.Spec.NFS = nfsSource
@@ -1370,8 +1371,8 @@ func (p *Plugin) updateClaimResize(oldObj, newObj interface{}) {
 	// If we get this far, we potentially have a valid resize operation.
 	log.WithFields(log.Fields{
 		"PVC":          newClaim.Name,
-		"PVC_old_size": newPVCSize.String(),
-		"PVC_new_size": currentSize.String(),
+		"PVC_old_size": currentSize.String(),
+		"PVC_new_size": newPVCSize.String(),
 	}).Debug("Kubernetes frontend detected a PVC suited for volume resize.")
 
 	// We intentionally don't set the PVC condition to "PersistentVolumeClaimResizing"

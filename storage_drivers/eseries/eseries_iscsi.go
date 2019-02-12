@@ -281,6 +281,15 @@ func (d *SANStorageDriver) Create(
 		defer log.WithFields(fields).Debug("<<<< Create")
 	}
 
+	// If the volume already exists, bail out
+	extantVolume, err := d.API.GetVolume(name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if d.API.IsRefValid(extantVolume.VolumeRef) {
+		return drivers.NewVolumeExistsError(name)
+	}
+
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
@@ -729,7 +738,7 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	return nil
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 
 	// 1. Sanitize the volume name
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
@@ -737,7 +746,7 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 	// 2. Ensure no volume with the same name exists on that backend (unnecessary since
 	// Step 1 always generates a new UUID-based name)
 
-	return true
+	return nil
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {

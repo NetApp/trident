@@ -1,7 +1,8 @@
 Managing volumes
 ################
 
-Creating and consuming storage from ONTAP, SolidFire, and/or E-Series systems is easy with Trident.  Simply use the standard ``docker volume`` commands with the nDVP driver name specified when needed.
+Creating and consuming storage from ONTAP, SolidFire, E-Series systems and the Cloud Volumes Service is easy
+with Trident. Simply use the standard ``docker volume`` commands with the Trident driver name specified when needed.
 
 Create a Volume
 ---------------
@@ -27,26 +28,11 @@ Volume sizes are expressed as strings containing an integer value with optional 
 If no units are specified, the default is 'G'.  Size units may be expressed either as powers of 2 (B, KiB, MiB, GiB, TiB)
 or powers of 10 (B, KB, MB, GB, TB).  Shorthand units use powers of 2 (G = GiB, T = TiB, ...).
 
-If the snapshot reserve is not specified and the snapshot policy is 'none', Trident will use a snapshot reserve of 0%.
-
-.. code-block:: bash
-
-    # create a volume with no snapshot policy and no snapshot reserve
-    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none
-
-    # create a volume with no snapshot policy and a custom snapshot reserve of 10%
-    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none --opt snapshotReserve=10
-
-    # create a volume with a snapshot policy and a custom snapshot reserve of 10%
-    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy --opt snapshotReserve=10
-
-    # create a volume with a snapshot policy, and accept ONTAP's default snapshot reserve (usually 5%)
-    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy
-
 Volume Driver CLI Options
 -------------------------
 
-Each storage driver has a different set of options which can be provided at volume creation time to customize the outcome.  Refer to the documentation below for your configured storage system to determine which options apply.
+Each storage driver has a different set of options which can be provided at volume creation time to customize the outcome.
+Refer to the documentation below for your configured storage system to determine which options apply.
 
 .. toctree::
    :maxdepth: 1
@@ -54,6 +40,7 @@ Each storage driver has a different set of options which can be provided at volu
    backends/ontap_options
    backends/solidfire_options
    backends/eseries_options
+   backends/cvs_aws_options
 
 Destroy a Volume
 ----------------
@@ -66,7 +53,7 @@ Destroy a Volume
 Volume Cloning
 --------------
 
-When using the ontap-nas, ontap-san, and solidfire-san storage drivers, the Docker Volume Plugin can clone volumes.
+When using the ontap-nas, ontap-san, solidfire-san and aws-cvs storage drivers, Trident can clone volumes.
 When using the ontap-nas-flexgroup or ontap-nas-economy drivers, cloning is not supported.
 
 .. code-block:: bash
@@ -117,4 +104,6 @@ Here is an example of that in action:
 Access Externally Created Volumes
 ---------------------------------
 
-Externally created block devices (or their clones) may be accessed by containers using Trident only if they have no partitions and if their filesystem is supported by nDVP (example: an ext4-formatted /dev/sdc1 will not be accessible via nDVP).
+Externally created block devices (or their clones) may be accessed by containers using Trident only if they have no
+partitions and if their filesystem is supported by Trident (example: an ext4-formatted /dev/sdc1 will not be accessible
+via Trident).

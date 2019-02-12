@@ -355,7 +355,7 @@ func (d *StorageDriver) Create(
 
 	name := volConfig.InternalName
 	if _, ok := d.Volumes[name]; ok {
-		return fmt.Errorf("volume %s already exists", name)
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Get candidate physical pools
@@ -635,12 +635,12 @@ func (d *StorageDriver) GetInternalVolumeName(name string) string {
 	}
 }
 
-func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 	if volConfig.CloneSourceVolume != "" {
 		volConfig.CloneSourceVolumeInternal = d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
-	return true
+	return nil
 }
 
 func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

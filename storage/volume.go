@@ -37,6 +37,7 @@ type VolumeConfig struct {
 	SplitOnClone              string                 `json:"splitOnClone"`
 	QoS                       string                 `json:"qos,omitempty"`
 	QoSType                   string                 `json:"type,omitempty"`
+	ServiceLevel              string                 `json:"serviceLevel,omitempty"`
 }
 
 func (c *VolumeConfig) Validate() error {

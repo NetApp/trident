@@ -1,3 +1,5 @@
+// Copyright 2018 NetApp, Inc. All Rights Reserved.
+
 package storagedrivers
 
 // ConfigVersion is the expected version specified in the config file
@@ -19,6 +21,7 @@ const (
 	OntapNASQtreeStorageDriverName     = "ontap-nas-economy"
 	OntapSANStorageDriverName          = "ontap-san"
 	SolidfireSANStorageDriverName      = "solidfire-san"
+	AWSNFSStorageDriverName            = "aws-cvs"
 	FakeStorageDriverName              = "fake"
 )
 

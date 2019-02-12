@@ -141,7 +141,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return fmt.Errorf("error checking for existing FlexGroup: %v", err)
 	}
 	if volExists {
-		return fmt.Errorf("FlexGroup %s already exists", name)
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Determine volume size in bytes
@@ -430,7 +430,7 @@ func (d *NASFlexGroupStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *NASFlexGroupStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *NASFlexGroupStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 	return createPrepareCommon(d, volConfig)
 }
 

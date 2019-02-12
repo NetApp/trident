@@ -137,5 +137,6 @@ func GetVolumeConfig(
 		Encryption:          utils.GetV(opts, "encryption", ""),
 		CloneSourceVolume:   utils.GetV(opts, "from", ""),
 		CloneSourceSnapshot: utils.GetV(opts, "fromSnapshot", ""),
+		ServiceLevel:        utils.GetV(opts, "serviceLevel", ""),
 	}, nil
 }

@@ -207,7 +207,7 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volExists {
-		return fmt.Errorf("volume %s already exists", name)
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Determine volume size in bytes
@@ -621,7 +621,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 	return createPrepareCommon(d, volConfig)
 }
 

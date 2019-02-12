@@ -123,6 +123,9 @@ func (c *PassthroughClient) loadBackend(configPath string) error {
 
 	// Convert config file to persistent backend JSON
 	backendJSON, err := c.unmarshalConfig(fileContents)
+	if err != nil {
+		return err
+	}
 
 	var backend storage.BackendPersistent
 	err = json.Unmarshal([]byte(backendJSON), &backend)
@@ -161,6 +164,8 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 		configType = "solidfire_config"
 	case drivers.EseriesIscsiStorageDriverName:
 		configType = "eseries_config"
+	case drivers.AWSNFSStorageDriverName:
+		configType = "aws_config"
 	case drivers.FakeStorageDriverName:
 		configType = "fake_config"
 	default:

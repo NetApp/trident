@@ -24,7 +24,7 @@ iSCSI has an additional option that isn't relevant when using NFS:
 * ``fileSystemType`` - sets the file system used to format iSCSI volumes.  The default is ``ext4``.  Valid values are ``ext3``, ``ext4``, and ``xfs``.
 
 
-Using these options during the docker volume create operation is super simple, just provide the option and the value using the ``-o`` operator during the CLI operation.  These override any equivalent vales from the JSON configuration file.
+Using these options during the docker volume create operation is super simple, just provide the option and the value using the ``-o`` operator during the CLI operation.  These override any equivalent values from the JSON configuration file.
 
 .. code-block:: bash
 
@@ -38,3 +38,19 @@ Using these options during the docker volume create operation is super simple, j
    docker volume create -d netapp --name demo -o unixPermissions=4755
 
 The minimum volume size is 20MiB.
+
+If the snapshot reserve is not specified and the snapshot policy is 'none', Trident will use a snapshot reserve of 0%.
+
+.. code-block:: bash
+
+    # create a volume with no snapshot policy and no snapshot reserve
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none
+
+    # create a volume with no snapshot policy and a custom snapshot reserve of 10%
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=none --opt snapshotReserve=10
+
+    # create a volume with a snapshot policy and a custom snapshot reserve of 10%
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy --opt snapshotReserve=10
+
+    # create a volume with a snapshot policy, and accept ONTAP's default snapshot reserve (usually 5%)
+    docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy

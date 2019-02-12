@@ -228,7 +228,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 	if exists {
 		log.WithFields(log.Fields{"qtree": name, "flexvol": existsInFlexvol}).Debug("Qtree already exists.")
-		return fmt.Errorf("volume %s already exists", name)
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Determine volume size in bytes
@@ -1045,7 +1045,7 @@ func (d *NASQtreeStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *NASQtreeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *NASQtreeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 	return createPrepareCommon(d, volConfig)
 }
 

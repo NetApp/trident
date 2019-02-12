@@ -515,7 +515,7 @@ func (d *SANStorageDriver) Create(
 	v, err := d.GetVolume(name)
 	if err == nil && v.VolumeID != 0 {
 		log.WithField("volume", name).Warning("Found existing volume.")
-		return errors.New("volume with requested name already exists")
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// Determine volume size in bytes
@@ -984,7 +984,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 	}
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
 
 	// 1. Sanitize the volume name
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
@@ -994,7 +994,7 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) bool {
 			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
 	}
 
-	return true
+	return nil
 }
 
 func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

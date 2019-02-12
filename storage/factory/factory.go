@@ -13,6 +13,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/aws"
 	"github.com/netapp/trident/storage_drivers/eseries"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/ontap"
@@ -60,6 +61,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		storageDriver = &solidfire.SANStorageDriver{}
 	case drivers.EseriesIscsiStorageDriverName:
 		storageDriver = &eseries.SANStorageDriver{}
+	case drivers.AWSNFSStorageDriverName:
+		storageDriver = &aws.NFSStorageDriver{}
 	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:

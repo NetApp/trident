@@ -282,6 +282,16 @@ func RandomString(strSize int) string {
 	return string(bytes)
 }
 
+// StringInSlice checks whether a string is in a list of strings
+func StringInSlice(s string, list []string) bool {
+	for _, item := range list {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
 func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
@@ -294,6 +304,8 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 		headers[k] = v
 	}
 	delete(headers, "Authorization")
+	delete(headers, "Api-Key")
+	delete(headers, "Secret-Key")
 
 	var body string
 	if requestBody == nil {
@@ -315,6 +327,8 @@ func LogHTTPResponse(response *http.Response, responseBody []byte) {
 		headers[k] = v
 	}
 	delete(headers, "Authorization")
+	delete(headers, "Api-Key")
+	delete(headers, "Secret-Key")
 
 	var body string
 	if responseBody == nil {

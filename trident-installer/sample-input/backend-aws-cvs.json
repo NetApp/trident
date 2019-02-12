@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "storageDriverName": "aws-cvs",
+  "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "secretKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "region": "us-east"
+}

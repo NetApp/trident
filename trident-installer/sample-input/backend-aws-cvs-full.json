@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "storageDriverName": "aws-cvs",
+  "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "secretKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "region": "us-east",
+  "limitVolumeSize": "50Gi",
+  "nfsMountOptions": "nfsvers=3",
+  "defaults": {
+    "snapshotReserve": "5",
+    "serviceLevel": "premium",
+    "exportRule": "10.0.0.0/24",
+    "size": "2Gi"
+  }
+}

@@ -7,7 +7,7 @@ Resizing an NFS volume
 
 Starting with v18.10, Trident supports volume resize for NFS PVs. More 
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,
-and ``ontap-nas-flexgroup`` backends can be expanded.
+``ontap-nas-flexgroup``, and ``aws-cvs`` backends can be expanded.
 
 `Resizing Persistent Volumes using Kubernetes`_ blog post describes the
 workflows involved in resizing a PV. Volume resize was introduced in
