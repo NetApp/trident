@@ -1,15 +1,38 @@
 {
   "version": 1,
   "storageDriverName": "aws-cvs",
-  "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "secretKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "region": "us-east",
-  "limitVolumeSize": "50Gi",
-  "nfsMountOptions": "nfsvers=3",
+  "apiRegion": "us-east-1",
+  "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1",
+  "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
+  "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
+  "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+
   "defaults": {
-    "snapshotReserve": "5",
-    "serviceLevel": "premium",
-    "exportRule": "10.0.0.0/24",
-    "size": "2Gi"
-  }
+    "snapshotReserve": "10",
+    "exportRule": "0.0.0.0/0,10.0.0.0/24",
+    "size": "200Gi"
+  },
+
+  "labels": {"cloud": "aws"},
+  "region": "us-east-1",
+
+  "storage": [
+    {
+      "labels": {"performance": "extreme"},
+      "serviceLevel": "extreme",
+      "defaults": {
+        "snapshotReserve": "5",
+        "exportRule": "0.0.0.0/0",
+        "size": "100Gi"
+      }
+    },
+    {
+      "labels": {"performance": "premium"},
+      "serviceLevel": "premium"
+    },
+    {
+      "labels": {"performance": "standard"},
+      "serviceLevel": "standard"
+    }
+  ]
 }

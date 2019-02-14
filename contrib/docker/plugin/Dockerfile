@@ -1,7 +1,7 @@
-FROM alpine:3.8
+FROM alpine:3.9
 
 # Use APK mirrors for fault tolerance
-RUN printf "http://dl-1.alpinelinux.org/alpine/v3.8/main\nhttp://dl-2.alpinelinux.org/alpine/v3.8/main\nhttp://dl-3.alpinelinux.org/alpine/v3.8/main\nhttp://dl-4.alpinelinux.org/alpine/v3.8/main\nhttp://dl-5.alpinelinux.org/alpine/v3.8/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.8/community\nhttp://dl-2.alpinelinux.org/alpine/v3.8/community\nhttp://dl-3.alpinelinux.org/alpine/v3.8/community\nhttp://dl-4.alpinelinux.org/alpine/v3.8/community\nhttp://dl-5.alpinelinux.org/alpine/v3.8/community" > /etc/apk/repositories
+RUN printf "http://dl-1.alpinelinux.org/alpine/v3.9/main\nhttp://dl-2.alpinelinux.org/alpine/v3.9/main\nhttp://dl-3.alpinelinux.org/alpine/v3.9/main\nhttp://dl-4.alpinelinux.org/alpine/v3.9/main\nhttp://dl-5.alpinelinux.org/alpine/v3.9/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.9/community\nhttp://dl-2.alpinelinux.org/alpine/v3.9/community\nhttp://dl-3.alpinelinux.org/alpine/v3.9/community\nhttp://dl-4.alpinelinux.org/alpine/v3.9/community\nhttp://dl-5.alpinelinux.org/alpine/v3.9/community" > /etc/apk/repositories
 
 RUN apk update || true && \
     apk add coreutils nfs-utils util-linux blkid multipath-tools lsscsi e2fsprogs xfsprogs bash
