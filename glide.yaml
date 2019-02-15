@@ -30,7 +30,7 @@ import:
   subpackages:
   - context
 - package: google.golang.org/grpc
-  version: v1.7.5
+  version: v1.8.0
 - package: k8s.io/api
   version: 89a74a8d264df0e993299876a8cde88379b940ee # kubernetes-1.13.0
   subpackages:
@@ -82,7 +82,7 @@ import:
 - package: github.com/RoaringBitmap/roaring
   version: v0.4.16
 - package: github.com/container-storage-interface/spec
-  version: v0.3.0
+  version: v1.0.0
 - package: github.com/go-logfmt/logfmt
   version: v0.4.0
 - package: github.com/stretchr/testify

@@ -1,5 +1,6 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
+
 // Copyright 2017 The Kubernetes Authors.
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -7,16 +8,16 @@ import (
 	"net"
 	"os"
 
-	"github.com/container-storage-interface/spec/lib/go/csi/v0"
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
-// Defines Non blocking GRPC server interfaces
+// NonBlockingGRPCServer Defines Non blocking GRPC server interfaces
 type NonBlockingGRPCServer interface {
 	// Start services at the endpoint
 	Start(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer)
-	// Stops the service gracefully
+	// GracefulStop Stops the service gracefully
 	GracefulStop()
 	// Stops the service forcefully
 	Stop()

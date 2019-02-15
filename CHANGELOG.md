@@ -5,6 +5,7 @@
 ## Changes since v19.01.0
 
 **Fixes:**
+- **Kubernetes:** Updated CSI driver for 1.0 spec and Kubernetes 1.13. (Alpha release - unsupported)
 
 **Enhancements:**
 - Trident driver for NetApp Cloud Volumes Service in AWS.

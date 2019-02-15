@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/container-storage-interface/spec/lib/go/csi/v0"
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -231,7 +231,7 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
 	}
 
-	return &csi.ControllerPublishVolumeResponse{PublishInfo: publishInfo}, nil
+	return &csi.ControllerPublishVolumeResponse{PublishContext: publishInfo}, nil
 }
 
 func (p *Plugin) ControllerUnpublishVolume(
@@ -381,8 +381,8 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 
 	return &csi.Volume{
 		CapacityBytes: capacity,
-		Id:            string(volumeIDbytes),
-		Attributes:    attributes,
+		VolumeId:      string(volumeIDbytes),
+		VolumeContext: attributes,
 	}, nil
 }
 

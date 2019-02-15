@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/container-storage-interface/spec/lib/go/csi/v0"
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -31,7 +31,7 @@ func (p *Plugin) NodeStageVolume(
 	log.WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeStageVolume")
 
-	switch req.PublishInfo["protocol"] {
+	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		return &csi.NodeStageVolumeResponse{}, nil // No need to stage NFS
 	case string(tridentconfig.Block):
@@ -72,7 +72,7 @@ func (p *Plugin) NodePublishVolume(
 	log.WithFields(fields).Debug(">>>> NodePublishVolume")
 	defer log.WithFields(fields).Debug("<<<< NodePublishVolume")
 
-	switch req.PublishInfo["protocol"] {
+	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		return p.nodePublishNFSVolume(ctx, req)
 	case string(tridentconfig.Block):
@@ -112,20 +112,11 @@ func (p *Plugin) NodeUnpublishVolume(
 	return &csi.NodeUnpublishVolumeResponse{}, nil
 }
 
-func (p *Plugin) NodeGetId(
-	ctx context.Context, req *csi.NodeGetIdRequest,
-) (*csi.NodeGetIdResponse, error) {
+func (p *Plugin) NodeGetVolumeStats(
+	ctx context.Context, req *csi.NodeGetVolumeStatsRequest) (*csi.NodeGetVolumeStatsResponse, error) {
 
-	fields := log.Fields{"Method": "NodeGetId", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeGetId")
-	defer log.WithFields(fields).Debug("<<<< NodeGetId")
-
-	nodeId, err := p.nodeGetId()
-	if err != nil {
-		return nil, err
-	}
-
-	return &csi.NodeGetIdResponse{NodeId: nodeId}, nil
+	// Trident doesn't support GET_VOLUME_STATS capability
+	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func (p *Plugin) NodeGetCapabilities(
@@ -146,16 +137,6 @@ func (p *Plugin) NodeGetInfo(
 	fields := log.Fields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeGetInfo")
 	defer log.WithFields(fields).Debug("<<<< NodeGetInfo")
-
-	nodeId, err := p.nodeGetId()
-	if err != nil {
-		return nil, err
-	}
-
-	return &csi.NodeGetInfoResponse{NodeId: nodeId}, nil
-}
-
-func (p *Plugin) nodeGetId() (string, error) {
 
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns()
@@ -178,10 +159,10 @@ func (p *Plugin) nodeGetId() (string, error) {
 			"nodeID": nodeID,
 			"error":  err,
 		}).Error("Could not marshal node ID struct.")
-		return "", status.Error(codes.Internal, "could not marshal node ID struct")
+		return nil, status.Error(codes.Internal, "could not marshal node ID struct")
 	}
 
-	return string(nodeIDbytes), nil
+	return &csi.NodeGetInfoResponse{NodeId: string(nodeIDbytes)}, nil
 }
 
 func (p *Plugin) nodePublishNFSVolume(
@@ -220,10 +201,10 @@ func (p *Plugin) nodePublishNFSVolume(
 	}
 
 	publishInfo.MountOptions = strings.Join(mountOptions, ",")
-	publishInfo.NfsServerIP = req.PublishInfo["nfsServerIp"]
-	publishInfo.NfsPath = req.PublishInfo["nfsPath"]
+	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
+	publishInfo.NfsPath = req.PublishContext["nfsPath"]
 
-	err = utils.AttachNFSVolume(req.VolumeAttributes["internalName"], req.TargetPath, publishInfo)
+	err = utils.AttachNFSVolume(req.VolumeContext["internalName"], req.TargetPath, publishInfo)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())
@@ -274,20 +255,20 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	if fstype == "" {
-		fstype = req.PublishInfo["filesystemType"]
+		fstype = req.PublishContext["filesystemType"]
 	}
 
-	useCHAP, err := strconv.ParseBool(req.PublishInfo["useCHAP"])
+	useCHAP, err := strconv.ParseBool(req.PublishContext["useCHAP"])
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	sharedTarget, err := strconv.ParseBool(req.PublishInfo["sharedTarget"])
+	sharedTarget, err := strconv.ParseBool(req.PublishContext["sharedTarget"])
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	lunID, err := strconv.Atoi(req.PublishInfo["iscsiLunNumber"])
+	lunID, err := strconv.Atoi(req.PublishContext["iscsiLunNumber"])
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -299,20 +280,20 @@ func (p *Plugin) nodeStageISCSIVolume(
 		SharedTarget:   sharedTarget,
 	}
 
-	err = unstashIscsiTargetPortals(publishInfo, req.PublishInfo)
+	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	publishInfo.IscsiTargetIQN = req.PublishInfo["iscsiTargetIqn"]
+	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
-	publishInfo.IscsiInterface = req.PublishInfo["iscsiInterface"]
-	publishInfo.IscsiIgroup = req.PublishInfo["iscsiIgroup"]
-	publishInfo.IscsiUsername = req.PublishInfo["iscsiUsername"]
-	publishInfo.IscsiInitiatorSecret = req.PublishInfo["iscsiInitiatorSecret"]
-	publishInfo.IscsiTargetSecret = req.PublishInfo["iscsiTargetSecret"]
+	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
+	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
+	publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
+	publishInfo.IscsiInitiatorSecret = req.PublishContext["iscsiInitiatorSecret"]
+	publishInfo.IscsiTargetSecret = req.PublishContext["iscsiTargetSecret"]
 
 	// Perform the login/rescan/discovery/format & get the device back in the publish info
-	if err := utils.AttachISCSIVolume(req.VolumeAttributes["internalName"], "", publishInfo); err != nil {
+	if err := utils.AttachISCSIVolume(req.VolumeContext["internalName"], "", publishInfo); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

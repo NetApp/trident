@@ -1,6 +1,4 @@
-/*
- * Copyright 2018 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -72,7 +70,7 @@ const (
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin    = "v1.9.0"
 	KubernetesVersionMax    = "v1.13.0"
-	KubernetesCSIVersionMin = "v1.10.0"
+	KubernetesCSIVersionMin = "v1.13.0"
 
 	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )

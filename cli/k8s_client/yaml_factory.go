@@ -1,3 +1,5 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
+
 package k8sclient
 
 import (
@@ -481,7 +483,7 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 10
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v0.3.0
+        image: quay.io/k8scsi/csi-attacher:v1.0.1
         args:
         - "--v=9"
         - "--csi-address=$(ADDRESS)"
@@ -492,7 +494,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v0.3.1
+        image: quay.io/k8scsi/csi-provisioner:v1.0.1
         args:
         - "--v=9"
         - "--provisioner=io.netapp.trident.csi"
@@ -594,7 +596,7 @@ spec:
           mountPath: /host
           mountPropagation: "Bidirectional"
       - name: driver-registrar
-        image: quay.io/k8scsi/driver-registrar:v0.3.0
+        image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
         - "--v=9"
         - "--csi-address=$(ADDRESS)"
@@ -616,11 +618,11 @@ spec:
       volumes:
       - name: plugin-dir
         hostPath:
-          path: /var/lib/kubelet/plugins/io.netapp.trident.csi
+          path: /var/lib/kubelet/plugins/io.netapp.trident.csi/
           type: DirectoryOrCreate
       - name: registration-dir
         hostPath:
-          path: /var/lib/kubelet/plugins/
+          path: /var/lib/kubelet/plugins_registry/
           type: Directory
       - name: plugins-mount-dir
         hostPath:
