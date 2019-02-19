@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -107,20 +108,20 @@ func (d *SANStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
+	d.Config = *config
 
 	// Apply config defaults
 	err = d.populateConfigurationDefaults(config)
 	if err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
+	d.Config = *config
 
 	log.WithFields(log.Fields{
 		"Version":           config.Version,
 		"StorageDriverName": config.StorageDriverName,
 		"DisableDelete":     config.DisableDelete,
 	}).Debugf("Parsed into solidfireConfig")
-
-	d.Config = *config
 
 	var accountID int64
 	var defaultBlockSize int64
@@ -277,6 +278,18 @@ func (d *SANStorageDriver) getEndpoint(config *drivers.SolidfireStorageDriverCon
 		log.WithField("version", paramsMap["version"]).Debug("Using SF API version from config file.")
 		return paramsMap["endpoint"] + paramsMap["version"], nil
 	}
+}
+
+// getEndpointCredentials parses the EndPoint URL and extracts the username and password
+func (d *SANStorageDriver) getEndpointCredentials(config drivers.SolidfireStorageDriverConfig) (string, string, error) {
+	requestURL, parseErr := url.Parse(config.EndPoint)
+	if parseErr == nil {
+		username := requestURL.User.Username()
+		password, _ := requestURL.User.Password()
+		return username, password, nil
+	}
+	log.Errorf("could not determine credentials: %+v", parseErr)
+	return "", "", errors.New("could not determine credentials")
 }
 
 func (d *SANStorageDriver) getNodeSerialNumbers(c *drivers.CommonStorageDriverConfig) {
@@ -1261,6 +1274,17 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	if d.Config.SVIP != dOrig.Config.SVIP {
 		bitmap.Add(storage.VolumeAccessInfoChange)
+	}
+
+	origUsername, origPassword, parseError1 := d.getEndpointCredentials(dOrig.Config)
+	newUsername, newPassword, parseError2 := d.getEndpointCredentials(d.Config)
+	if parseError1 == nil && parseError2 == nil {
+		if newPassword != origPassword {
+			bitmap.Add(storage.PasswordChange)
+		}
+		if newUsername != origUsername {
+			bitmap.Add(storage.UsernameChange)
+		}
 	}
 
 	return bitmap

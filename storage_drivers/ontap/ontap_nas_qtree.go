@@ -91,6 +91,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+	d.Config = *config
 
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
@@ -161,13 +162,20 @@ func (d *NASQtreeStorageDriver) Terminate() {
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
 
-	for _, task := range d.housekeepingTasks {
-		task.Stop()
+	if d.housekeepingWaitGroup != nil {
+		for _, task := range d.housekeepingTasks {
+			task.Stop()
+		}
 	}
-	d.Telemetry.Stop()
 
-	log.Debug("Waiting for housekeeping tasks to exit.")
-	d.housekeepingWaitGroup.Wait()
+	if d.Telemetry != nil {
+		d.Telemetry.Stop()
+	}
+
+	if d.housekeepingWaitGroup != nil {
+		log.Debug("Waiting for housekeeping tasks to exit.")
+		d.housekeepingWaitGroup.Wait()
+	}
 
 	d.initialized = false
 }
@@ -912,6 +920,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 	volumeListResponse, err := d.API.VolumeList(d.FlexvolNamePrefix())
 	if err = api.GetError(volumeListResponse, err); err != nil {
 		log.Errorf("Error listing Flexvols. %v", err)
+		return
 	}
 
 	var flexvols []string
@@ -951,6 +960,7 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees() {
 	listResponse, err := d.API.QtreeList(prefix, d.FlexvolNamePrefix())
 	if err = api.GetError(listResponse, err); err != nil {
 		log.Errorf("Error listing deleted qtrees. %v", err)
+		return
 	}
 
 	if listResponse.Result.AttributesListPtr != nil {
@@ -1102,7 +1112,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternal(name string) (*storage.VolumeE
 		return nil, err
 	}
 
-	return d.getVolumeExternal(&qtree, &volume, &quota), nil
+	return d.getVolumeExternal(qtree, volume, quota), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1265,6 +1275,14 @@ func (d *NASQtreeStorageDriver) GetUpdateType(driverOrig storage.Driver) *roarin
 		bitmap.Add(storage.VolumeAccessInfoChange)
 	}
 
+	if d.Config.Password != dOrig.Config.Password {
+		bitmap.Add(storage.PasswordChange)
+	}
+
+	if d.Config.Username != dOrig.Config.Username {
+		bitmap.Add(storage.UsernameChange)
+	}
+
 	return bitmap
 }
 
@@ -1275,6 +1293,7 @@ type HousekeepingTask struct {
 	Done         chan struct{}
 	Tasks        []func()
 	Driver       *NASQtreeStorageDriver
+	stopped      bool
 }
 
 func (t *HousekeepingTask) Start() {
@@ -1299,11 +1318,16 @@ func (t *HousekeepingTask) Start() {
 }
 
 func (t *HousekeepingTask) Stop() {
-	t.Ticker.Stop()
-	close(t.Done)
-	// Run the housekeeping tasks one last time
-	for _, task := range t.Tasks {
-		task()
+	if !t.stopped {
+		if t.Ticker != nil {
+			t.Ticker.Stop()
+		}
+		close(t.Done)
+		t.stopped = true
+		// Run the housekeeping tasks one last time
+		for _, task := range t.Tasks {
+			task()
+		}
 	}
 }
 

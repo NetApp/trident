@@ -39,6 +39,7 @@ type Telemetry struct {
 	Driver        StorageDriver `json:"-"`
 	done          chan struct{} `json:"-"`
 	ticker        *time.Ticker  `json:"-"`
+	stopped       bool          `json:"-"`
 }
 
 type StorageDriver interface {
@@ -129,7 +130,11 @@ func (t *Telemetry) Stop() {
 	if t.ticker != nil {
 		t.ticker.Stop()
 	}
-	close(t.done)
+	if !t.stopped {
+		// calling close on an already closed channel causes a panic, guard against that
+		close(t.done)
+		t.stopped = true
+	}
 }
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks

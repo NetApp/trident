@@ -67,12 +67,14 @@ func (d *SANStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
+	d.Config = *config
 
 	// Apply config defaults
 	err = d.populateConfigurationDefaults(config)
 	if err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
+	d.Config = *config
 
 	log.WithFields(log.Fields{
 		"Version":           config.Version,
@@ -81,8 +83,6 @@ func (d *SANStorageDriver) Initialize(
 		"DisableDelete":     config.DisableDelete,
 		"StoragePrefix":     *config.StoragePrefix,
 	}).Debug("Reparsed into ESeriesStorageDriverConfig")
-
-	d.Config = *config
 
 	// Ensure the config is valid
 	err = d.validate()
@@ -1077,6 +1077,14 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	if d.Config.HostDataIP != dOrig.Config.HostDataIP {
 		bitmap.Add(storage.VolumeAccessInfoChange)
+	}
+
+	if d.Config.Password != dOrig.Config.Password {
+		bitmap.Add(storage.PasswordChange)
+	}
+
+	if d.Config.Username != dOrig.Config.Username {
+		bitmap.Add(storage.UsernameChange)
 	}
 
 	return bitmap

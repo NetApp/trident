@@ -61,6 +61,7 @@ func (d *NASStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+	d.Config = *config
 
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
@@ -92,7 +93,9 @@ func (d *NASStorageDriver) Terminate() {
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
-	d.Telemetry.Stop()
+	if d.Telemetry != nil {
+		d.Telemetry.Stop()
+	}
 	d.initialized = false
 }
 
@@ -442,7 +445,7 @@ func (d *NASStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 		return nil, err
 	}
 
-	return d.getVolumeExternal(&volumeAttributes), nil
+	return d.getVolumeExternal(volumeAttributes), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -514,6 +517,15 @@ func (d *NASStorageDriver) getVolumeExternal(
 
 // GetUpdateType returns a bitmap populated with updates to the driver
 func (d *NASStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "GetUpdateType",
+			"Type":   "NASStorageDriver",
+		}
+		log.WithFields(fields).Debug(">>>> GetUpdateType")
+		defer log.WithFields(fields).Debug("<<<< GetUpdateType")
+	}
+
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*NASStorageDriver)
 	if !ok {
@@ -523,6 +535,14 @@ func (d *NASStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	if d.Config.DataLIF != dOrig.Config.DataLIF {
 		bitmap.Add(storage.VolumeAccessInfoChange)
+	}
+
+	if d.Config.Password != dOrig.Config.Password {
+		bitmap.Add(storage.PasswordChange)
+	}
+
+	if d.Config.Username != dOrig.Config.Username {
+		bitmap.Add(storage.UsernameChange)
 	}
 
 	return bitmap

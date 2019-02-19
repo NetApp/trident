@@ -89,13 +89,18 @@ func (o IgroupRemoveResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupRemoveRequest) ExecuteUsing(zr *ZapiRunner) (*IgroupRemoveResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupRemoveRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupRemoveResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IgroupRemoveRequest", NewIgroupRemoveResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IgroupRemoveResponse), err
 }
 

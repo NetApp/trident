@@ -88,13 +88,18 @@ func (o LunGetSerialNumberResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetSerialNumberRequest) ExecuteUsing(zr *ZapiRunner) (*LunGetSerialNumberResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetSerialNumberRequest) executeWithoutIteration(zr *ZapiRunner) (*LunGetSerialNumberResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunGetSerialNumberRequest", NewLunGetSerialNumberResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunGetSerialNumberResponse), err
 }
 

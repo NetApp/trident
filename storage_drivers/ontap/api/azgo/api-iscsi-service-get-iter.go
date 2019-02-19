@@ -93,13 +93,18 @@ func (o IscsiServiceGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IscsiServiceGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*IscsiServiceGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IscsiServiceGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*IscsiServiceGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IscsiServiceGetIterRequest", NewIscsiServiceGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IscsiServiceGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *IscsiServiceGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Iscs
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

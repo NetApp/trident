@@ -93,13 +93,18 @@ func (o LunGetGeometryResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetGeometryRequest) ExecuteUsing(zr *ZapiRunner) (*LunGetGeometryResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetGeometryRequest) executeWithoutIteration(zr *ZapiRunner) (*LunGetGeometryResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunGetGeometryRequest", NewLunGetGeometryResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunGetGeometryResponse), err
 }
 

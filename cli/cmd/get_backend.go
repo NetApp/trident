@@ -182,7 +182,7 @@ func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drive
 func writeBackendTable(backends []storage.BackendExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Storage Driver", "Online", "Volumes"})
+	table.SetHeader([]string{"Name", "Storage Driver", "State", "Volumes"})
 
 	for _, b := range backends {
 		if b.Config == nil {
@@ -194,7 +194,7 @@ func writeBackendTable(backends []storage.BackendExternal) {
 			table.Append([]string{
 				b.Name,
 				storageDriverName,
-				strconv.FormatBool(b.Online),
+				b.State.String(),
 				strconv.Itoa(len(b.Volumes)),
 			})
 		}

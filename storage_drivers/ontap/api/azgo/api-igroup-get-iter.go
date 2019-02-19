@@ -93,13 +93,18 @@ func (o IgroupGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*IgroupGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IgroupGetIterRequest", NewIgroupGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IgroupGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *IgroupGetIterRequest) executeWithIteration(zr *ZapiRunner) (*IgroupGetI
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

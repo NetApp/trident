@@ -87,13 +87,18 @@ func (o VolumeGetRootNameResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeGetRootNameRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeGetRootNameResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeGetRootNameRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeGetRootNameResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeGetRootNameRequest", NewVolumeGetRootNameResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeGetRootNameResponse), err
 }
 

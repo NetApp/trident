@@ -88,13 +88,18 @@ func (o QtreeRenameResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeRenameRequest) ExecuteUsing(zr *ZapiRunner) (*QtreeRenameResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeRenameRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeRenameResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QtreeRenameRequest", NewQtreeRenameResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QtreeRenameResponse), err
 }
 

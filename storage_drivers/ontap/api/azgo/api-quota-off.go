@@ -91,13 +91,18 @@ func (o QuotaOffResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QuotaOffRequest) ExecuteUsing(zr *ZapiRunner) (*QuotaOffResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QuotaOffRequest) executeWithoutIteration(zr *ZapiRunner) (*QuotaOffResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QuotaOffRequest", NewQuotaOffResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QuotaOffResponse), err
 }
 

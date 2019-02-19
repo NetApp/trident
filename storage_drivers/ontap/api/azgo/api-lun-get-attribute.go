@@ -89,13 +89,18 @@ func (o LunGetAttributeResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetAttributeRequest) ExecuteUsing(zr *ZapiRunner) (*LunGetAttributeResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetAttributeRequest) executeWithoutIteration(zr *ZapiRunner) (*LunGetAttributeResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunGetAttributeRequest", NewLunGetAttributeResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunGetAttributeResponse), err
 }
 

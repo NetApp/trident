@@ -202,7 +202,14 @@ func getCurrentNamespace() (string, error) {
 func getTridentPod(namespace, appLabel string) (string, error) {
 
 	// Get 'trident' pod info
-	cmd := exec.Command(KubernetesCLI, "get", "pod", "-n", namespace, "-l", appLabel, "-o=json")
+	cmd := exec.Command(
+		KubernetesCLI,
+		"get", "pod",
+		"-n", namespace,
+		"-l", appLabel,
+		"-o=json",
+		"--field-selector=status.phase=Running",
+	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err

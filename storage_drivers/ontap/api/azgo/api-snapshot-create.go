@@ -91,13 +91,18 @@ func (o SnapshotCreateResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapshotCreateRequest) ExecuteUsing(zr *ZapiRunner) (*SnapshotCreateResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapshotCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*SnapshotCreateResponse, error) {
 	result, err := zr.ExecuteUsing(o, "SnapshotCreateRequest", NewSnapshotCreateResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*SnapshotCreateResponse), err
 }
 

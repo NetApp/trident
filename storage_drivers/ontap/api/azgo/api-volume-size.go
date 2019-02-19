@@ -92,13 +92,18 @@ func (o VolumeSizeResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeSizeRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeSizeResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeSizeRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeSizeResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeSizeRequest", NewVolumeSizeResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeSizeResponse), err
 }
 

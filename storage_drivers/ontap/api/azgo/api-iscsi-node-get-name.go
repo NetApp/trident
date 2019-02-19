@@ -87,13 +87,18 @@ func (o IscsiNodeGetNameResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IscsiNodeGetNameRequest) ExecuteUsing(zr *ZapiRunner) (*IscsiNodeGetNameResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IscsiNodeGetNameRequest) executeWithoutIteration(zr *ZapiRunner) (*IscsiNodeGetNameResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IscsiNodeGetNameRequest", NewIscsiNodeGetNameResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IscsiNodeGetNameResponse), err
 }
 

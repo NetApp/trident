@@ -60,13 +60,65 @@ type Backend struct {
 	Driver  Driver
 	Name    string
 	Online  bool
+	State   BackendState
 	Storage map[string]*Pool
 	Volumes map[string]*Volume
+}
+
+type UpdateBackendStateRequest struct {
+	State string `json:"state"`
+}
+
+type BackendState string
+
+const (
+	Unknown  = BackendState("unknown")
+	Online   = BackendState("online")
+	Offline  = BackendState("offline")
+	Deleting = BackendState("deleting")
+	Failed   = BackendState("failed")
+)
+
+func (s BackendState) String() string {
+	switch s {
+	case Unknown, Online, Offline, Deleting, Failed:
+		return string(s)
+	default:
+		return "unknown"
+	}
+}
+
+func (s BackendState) IsUnknown() bool {
+	switch s {
+	case Online, Offline, Deleting, Failed:
+		return false
+	case Unknown:
+		return true
+	default:
+		return true
+	}
+}
+
+func (s BackendState) IsOnline() bool {
+	return s == Online
+}
+
+func (s BackendState) IsOffline() bool {
+	return s == Offline
+}
+
+func (s BackendState) IsDeleting() bool {
+	return s == Deleting
+}
+
+func (s BackendState) IsFailed() bool {
+	return s == Failed
 }
 
 func NewStorageBackend(driver Driver) (*Backend, error) {
 	backend := Backend{
 		Driver:  driver,
+		State:   Online,
 		Online:  true,
 		Storage: make(map[string]*Pool),
 		Volumes: make(map[string]*Volume),
@@ -78,6 +130,22 @@ func NewStorageBackend(driver Driver) (*Backend, error) {
 	}
 
 	return &backend, nil
+}
+
+func NewFailedStorageBackend(driver Driver) *Backend {
+	backend := Backend{
+		Driver:  driver,
+		State:   Failed,
+		Storage: make(map[string]*Pool),
+		Volumes: make(map[string]*Volume),
+	}
+
+	log.WithFields(log.Fields{
+		"backend": backend,
+		"driver":  driver,
+	}).Debug("NewFailedStorageBackend.")
+
+	return &backend
 }
 
 func (b *Backend) AddStoragePool(pool *Pool) {
@@ -199,7 +267,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 	// Run the clone check using an exponential backoff
 	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
 		log.WithField("clone_volume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
-			cloneBackoff.MaxElapsedTime)
+			float64(cloneBackoff.MaxElapsedTime))
 	} else {
 		log.WithField("clone_volume", volConfig.Name).Debug("Clone found.")
 	}
@@ -259,6 +327,8 @@ const (
 	BackendRename = iota
 	VolumeAccessInfoChange
 	InvalidUpdate
+	UsernameChange
+	PasswordChange
 )
 
 func (b *Backend) GetUpdateType(origBackend *Backend) *roaring.Bitmap {
@@ -293,6 +363,7 @@ type BackendExternal struct {
 	Protocol tridentconfig.Protocol `json:"protocol"`
 	Config   interface{}            `json:"config"`
 	Storage  map[string]interface{} `json:"storage"`
+	State    BackendState           `json:"state"`
 	Online   bool                   `json:"online"`
 	Volumes  []string               `json:"volumes"`
 }
@@ -304,6 +375,7 @@ func (b *Backend) ConstructExternal() *BackendExternal {
 		Config:   b.Driver.GetExternalConfig(),
 		Storage:  make(map[string]interface{}),
 		Online:   b.Online,
+		State:    b.State,
 		Volumes:  make([]string, 0),
 	}
 
@@ -333,6 +405,7 @@ type BackendPersistent struct {
 	Config  PersistentStorageBackendConfig `json:"config"`
 	Name    string                         `json:"name"`
 	Online  bool                           `json:"online"`
+	State   BackendState                   `json:"state"`
 }
 
 func (b *Backend) ConstructPersistent() *BackendPersistent {
@@ -341,6 +414,7 @@ func (b *Backend) ConstructPersistent() *BackendPersistent {
 		Config:  PersistentStorageBackendConfig{},
 		Name:    b.Name,
 		Online:  b.Online,
+		State:   b.State,
 	}
 	b.Driver.StoreConfig(&persistentBackend.Config)
 	return persistentBackend

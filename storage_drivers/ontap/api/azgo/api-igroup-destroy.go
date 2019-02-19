@@ -88,13 +88,18 @@ func (o IgroupDestroyResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupDestroyRequest) ExecuteUsing(zr *ZapiRunner) (*IgroupDestroyResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupDestroyResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IgroupDestroyRequest", NewIgroupDestroyResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IgroupDestroyResponse), err
 }
 

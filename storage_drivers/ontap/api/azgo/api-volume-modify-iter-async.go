@@ -99,13 +99,18 @@ func (o VolumeModifyIterAsyncResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeModifyIterAsyncRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeModifyIterAsyncResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeModifyIterAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeModifyIterAsyncResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeModifyIterAsyncRequest", NewVolumeModifyIterAsyncResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeModifyIterAsyncResponse), err
 }
 

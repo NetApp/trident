@@ -104,3 +104,56 @@ func TestNoUpgradeNewerEndpointAPIVersion(t *testing.T) {
 		t.Error("Client endpoint changed to minimum version.")
 	}
 }
+
+func TestGetEndpointCredentials(t *testing.T) {
+
+	// good path, should work
+	driver := getDriver()
+	driver.Config.EndPoint = newerEndpoint
+	username, password, err := driver.getEndpointCredentials(driver.Config)
+	if err != nil {
+		t.Errorf("Received error from getEndpointCredentials: %v", err)
+	}
+
+	if username == "" {
+		t.Errorf("Received empty username from getEndpointCredentials: %v", err)
+	}
+	if password == "" {
+		t.Errorf("Received empty password from getEndpointCredentials: %v", err)
+	}
+
+	if username != "admin" {
+		t.Errorf("Received unexpected username %v from getEndpointCredentials: %v", username, err)
+	}
+	if password != "solidfire" {
+		t.Errorf("Received unexpected password %v from getEndpointCredentials: %v", password, err)
+	}
+
+	// invalid URL, should error
+	badEndpoint := "://admin:solidfire@10.63.171.151/json-rpc/9.0"
+	driver.Config.EndPoint = badEndpoint
+	username, password, err = driver.getEndpointCredentials(driver.Config)
+	if err == nil {
+		t.Errorf("Should have received error from getEndpointCredentials: %v", err)
+	}
+	if err != nil && err.Error() != "could not determine credentials" {
+		t.Errorf("Received error from getEndpointCredentials: %v", err)
+	}
+	if username != "" {
+		t.Errorf("Received unexpected username %v from getEndpointCredentials: %v", username, err)
+	}
+	if password != "" {
+		t.Errorf("Received unexpected password %v from getEndpointCredentials: %v", password, err)
+	}
+
+	// no username, password (wouldn't work, but we should handle)
+	badEndpoint2 := "https://10.63.171.151/json-rpc/9.0"
+	driver.Config.EndPoint = badEndpoint2
+	username, password, err = driver.getEndpointCredentials(driver.Config)
+	if username != "" {
+		t.Errorf("Received unexpected username %v from getEndpointCredentials: %v", username, err)
+	}
+	if password != "" {
+		t.Errorf("Received unexpected password %v from getEndpointCredentials: %v", password, err)
+	}
+}

@@ -89,13 +89,18 @@ func (o IgroupAddResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupAddRequest) ExecuteUsing(zr *ZapiRunner) (*IgroupAddResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *IgroupAddRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupAddResponse, error) {
 	result, err := zr.ExecuteUsing(o, "IgroupAddRequest", NewIgroupAddResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*IgroupAddResponse), err
 }
 

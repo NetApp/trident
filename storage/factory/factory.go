@@ -6,6 +6,7 @@ package factory
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
@@ -28,6 +29,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 	// so catch any panics that might occur and return an error.
 	defer func() {
 		if r := recover(); r != nil {
+			log.WithField("Stack trace", string(debug.Stack())).Error("unable to instantiate backend")
 			err = fmt.Errorf("unable to instantiate backend: %v", r)
 		}
 	}()
@@ -76,10 +78,20 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
 		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)
-		return nil, err
+
+		log.WithFields(log.Fields{
+			"initializeErr": initializeErr.Error(),
+			"err":           err.Error(),
+		}).Debug("storageDriver.Initialize")
+
+		return storage.NewFailedStorageBackend(storageDriver), err
 	}
 
 	sb, err = storage.NewStorageBackend(storageDriver)
+	log.WithFields(log.Fields{
+		"sb":  sb,
+		"err": err,
+	}).Debug("NewStorageBackend")
 
 	log.WithField("driver", commonConfig.StorageDriverName).Debug("Storage driver initialized.")
 

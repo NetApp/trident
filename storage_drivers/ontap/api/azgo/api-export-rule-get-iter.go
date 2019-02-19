@@ -93,13 +93,18 @@ func (o ExportRuleGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *ExportRuleGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*ExportRuleGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *ExportRuleGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*ExportRuleGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "ExportRuleGetIterRequest", NewExportRuleGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*ExportRuleGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *ExportRuleGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Export
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

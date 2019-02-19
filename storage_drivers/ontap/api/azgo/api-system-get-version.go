@@ -91,13 +91,18 @@ func (o SystemGetVersionResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SystemGetVersionRequest) ExecuteUsing(zr *ZapiRunner) (*SystemGetVersionResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SystemGetVersionRequest) executeWithoutIteration(zr *ZapiRunner) (*SystemGetVersionResponse, error) {
 	result, err := zr.ExecuteUsing(o, "SystemGetVersionRequest", NewSystemGetVersionResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*SystemGetVersionResponse), err
 }
 

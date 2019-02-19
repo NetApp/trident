@@ -93,13 +93,18 @@ func (o QuotaListEntriesIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QuotaListEntriesIterRequest) ExecuteUsing(zr *ZapiRunner) (*QuotaListEntriesIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QuotaListEntriesIterRequest) executeWithoutIteration(zr *ZapiRunner) (*QuotaListEntriesIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QuotaListEntriesIterRequest", NewQuotaListEntriesIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QuotaListEntriesIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *QuotaListEntriesIterRequest) executeWithIteration(zr *ZapiRunner) (*Quo
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

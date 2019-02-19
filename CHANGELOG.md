@@ -6,6 +6,7 @@
 
 **Fixes:**
 - **Kubernetes:** Updated CSI driver for 1.0 spec and Kubernetes 1.13. (Alpha release - unsupported)
+- **Kubernetes:** Allow Trident to start if one or more backend drivers fail to initialize.
 
 **Enhancements:**
 - Trident driver for NetApp Cloud Volumes Service in AWS.

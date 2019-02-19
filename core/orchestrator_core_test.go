@@ -13,11 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/persistent_store"
+	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
@@ -140,9 +140,9 @@ func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) 
 		diffs = append(diffs,
 			fmt.Sprintf("Name:  expected %s, got %s", expected.Name, got.Name))
 	}
-	if expected.Online != got.Online {
-		diffs = append(diffs, fmt.Sprintf("Online:  expected %s, got %s",
-			expected.Name, got.Name))
+	if expected.State != got.State {
+		diffs = append(diffs,
+			fmt.Sprintf("Online:  expected %s, got %s", expected.State, got.State))
 	}
 
 	// Diff configs
@@ -1361,12 +1361,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	pool := volume.Pool
 
 	// Test backend offlining.
-	err = orchestrator.OfflineBackend(backendName)
+	err = orchestrator.DeleteBackend(backendName)
 	if err != nil {
-		t.Fatalf("Unable to offline backend:  %v", err)
+		t.Fatalf("Unable to delete backend:  %v", err)
 	}
 	if !backend.Driver.Initialized() {
-		t.Errorf("Offlined backend with volumes %s is not initialized.", backendName)
+		t.Errorf("Deleted backend with volumes %s is not initialized.", backendName)
 	}
 	_, err = orchestrator.AddVolume(generateVolumeConfig(offlineVolumeName, 50,
 		scName, config.File))
@@ -1389,7 +1389,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to retrieve backend from store client after offlining:"+
 			"  ", err)
-	} else if persistentBackend.Online {
+	} else if persistentBackend.State.IsOnline() {
 		t.Error("Online not set to true in the backend.")
 	}
 	orchestrator.mutex.Unlock()
@@ -1473,9 +1473,9 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	addBackendStorageClass(t, orchestrator, backendName, "none")
 	backend := orchestrator.backends[backendName]
 
-	err := orchestrator.OfflineBackend(backendName)
+	err := orchestrator.DeleteBackend(backendName)
 	if err != nil {
-		t.Fatalf("Unable to offline backend: %v", err)
+		t.Fatalf("Unable to delete backend: %v", err)
 	}
 	if backend.Driver.Initialized() {
 		t.Errorf("Deleted backend %s is still initialized.", backendName)
@@ -1513,9 +1513,9 @@ func TestBackendCleanup(t *testing.T) {
 	// ends up on the backend to be offlined.
 	addBackend(t, orchestrator, onlineBackendName)
 
-	err = orchestrator.OfflineBackend(offlineBackendName)
+	err = orchestrator.DeleteBackend(offlineBackendName)
 	if err != nil {
-		t.Fatalf("Unable to offline backend %s: %v", offlineBackendName, err)
+		t.Fatalf("Unable to delete backend %s: %v", offlineBackendName, err)
 	}
 	// Simulate deleting the existing volume and then bootstrapping
 	orchestrator.mutex.Lock()
@@ -1935,9 +1935,9 @@ func TestOrchestratorNotReady(t *testing.T) {
 		t.Errorf("Expected ListBackends to return an error.")
 	}
 
-	err = orchestrator.OfflineBackend("")
+	err = orchestrator.DeleteBackend("")
 	if !IsNotReadyError(err) {
-		t.Errorf("Expected OfflineBackend to return an error.")
+		t.Errorf("Expected DeleteBackend to return an error.")
 	}
 
 	volume, err = orchestrator.AddVolume(nil)

@@ -61,6 +61,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+	d.Config = *config
 
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
@@ -92,7 +93,9 @@ func (d *NASFlexGroupStorageDriver) Terminate() {
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
-	d.Telemetry.Stop()
+	if d.Telemetry != nil {
+		d.Telemetry.Stop()
+	}
 	d.initialized = false
 }
 
@@ -469,7 +472,7 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternal(name string) (*storage.Vol
 		return nil, err
 	}
 
-	return d.getVolumeExternal(&volumeAttributes), nil
+	return d.getVolumeExternal(volumeAttributes), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -550,6 +553,14 @@ func (d *NASFlexGroupStorageDriver) GetUpdateType(driverOrig storage.Driver) *ro
 
 	if d.Config.DataLIF != dOrig.Config.DataLIF {
 		bitmap.Add(storage.VolumeAccessInfoChange)
+	}
+
+	if d.Config.Password != dOrig.Config.Password {
+		bitmap.Add(storage.PasswordChange)
+	}
+
+	if d.Config.Username != dOrig.Config.Username {
+		bitmap.Add(storage.UsernameChange)
 	}
 
 	return bitmap

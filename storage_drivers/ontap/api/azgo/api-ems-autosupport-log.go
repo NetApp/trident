@@ -94,13 +94,18 @@ func (o EmsAutosupportLogResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *EmsAutosupportLogRequest) ExecuteUsing(zr *ZapiRunner) (*EmsAutosupportLogResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *EmsAutosupportLogRequest) executeWithoutIteration(zr *ZapiRunner) (*EmsAutosupportLogResponse, error) {
 	result, err := zr.ExecuteUsing(o, "EmsAutosupportLogRequest", NewEmsAutosupportLogResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*EmsAutosupportLogResponse), err
 }
 

@@ -93,13 +93,18 @@ func (o AggrGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *AggrGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*AggrGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *AggrGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*AggrGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "AggrGetIterRequest", NewAggrGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*AggrGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *AggrGetIterRequest) executeWithIteration(zr *ZapiRunner) (*AggrGetIterR
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

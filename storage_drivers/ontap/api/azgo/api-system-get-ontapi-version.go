@@ -89,13 +89,18 @@ func (o SystemGetOntapiVersionResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SystemGetOntapiVersionRequest) ExecuteUsing(zr *ZapiRunner) (*SystemGetOntapiVersionResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SystemGetOntapiVersionRequest) executeWithoutIteration(zr *ZapiRunner) (*SystemGetOntapiVersionResponse, error) {
 	result, err := zr.ExecuteUsing(o, "SystemGetOntapiVersionRequest", NewSystemGetOntapiVersionResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*SystemGetOntapiVersionResponse), err
 }
 

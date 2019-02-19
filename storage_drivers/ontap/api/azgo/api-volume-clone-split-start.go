@@ -91,13 +91,18 @@ func (o VolumeCloneSplitStartResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeCloneSplitStartRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeCloneSplitStartResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeCloneSplitStartRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeCloneSplitStartResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeCloneSplitStartRequest", NewVolumeCloneSplitStartResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeCloneSplitStartResponse), err
 }
 

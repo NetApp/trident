@@ -6,7 +6,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -17,9 +17,10 @@ type Orchestrator interface {
 
 	AddBackend(configJSON string) (*storage.BackendExternal, error)
 	UpdateBackend(backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendState(backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
 	GetBackend(backend string) (*storage.BackendExternal, error)
 	ListBackends() ([]*storage.BackendExternal, error)
-	OfflineBackend(backend string) error
+	DeleteBackend(backend string) error
 
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)

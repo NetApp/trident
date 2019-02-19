@@ -270,7 +270,7 @@ func TestPassthroughClient_UpdateBackend(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeBackend.Online = false
+	fakeBackend.State = storage.Deleting
 
 	err := p.UpdateBackend(fakeBackend)
 
@@ -281,7 +281,7 @@ func TestPassthroughClient_UpdateBackend(t *testing.T) {
 	if err != nil {
 		t.Error("Could not get backend from passthrough client!")
 	}
-	if result.Online {
+	if !result.State.IsDeleting() {
 		t.Error("Backend not updated on passthrough client!")
 	}
 }

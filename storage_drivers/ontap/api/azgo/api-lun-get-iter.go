@@ -94,13 +94,18 @@ func (o LunGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*LunGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*LunGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunGetIterRequest", NewLunGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunGetIterResponse), err
 }
 
@@ -112,13 +117,15 @@ func (o *LunGetIterRequest) executeWithIteration(zr *ZapiRunner) (*LunGetIterRes
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

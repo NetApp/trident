@@ -93,13 +93,18 @@ func (o VolumeGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeGetIterRequest", NewVolumeGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *VolumeGetIterRequest) executeWithIteration(zr *ZapiRunner) (*VolumeGetI
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

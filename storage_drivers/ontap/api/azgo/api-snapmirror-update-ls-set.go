@@ -94,13 +94,18 @@ func (o SnapmirrorUpdateLsSetResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapmirrorUpdateLsSetRequest) ExecuteUsing(zr *ZapiRunner) (*SnapmirrorUpdateLsSetResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapmirrorUpdateLsSetRequest) executeWithoutIteration(zr *ZapiRunner) (*SnapmirrorUpdateLsSetResponse, error) {
 	result, err := zr.ExecuteUsing(o, "SnapmirrorUpdateLsSetRequest", NewSnapmirrorUpdateLsSetResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*SnapmirrorUpdateLsSetResponse), err
 }
 

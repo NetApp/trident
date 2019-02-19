@@ -93,13 +93,18 @@ func (o QtreeListIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeListIterRequest) ExecuteUsing(zr *ZapiRunner) (*QtreeListIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeListIterRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeListIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QtreeListIterRequest", NewQtreeListIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QtreeListIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *QtreeListIterRequest) executeWithIteration(zr *ZapiRunner) (*QtreeListI
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

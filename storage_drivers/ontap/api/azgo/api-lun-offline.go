@@ -87,13 +87,18 @@ func (o LunOfflineResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunOfflineRequest) ExecuteUsing(zr *ZapiRunner) (*LunOfflineResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunOfflineRequest) executeWithoutIteration(zr *ZapiRunner) (*LunOfflineResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunOfflineRequest", NewLunOfflineResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunOfflineResponse), err
 }
 

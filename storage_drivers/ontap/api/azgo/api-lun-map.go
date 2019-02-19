@@ -92,13 +92,18 @@ func (o LunMapResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunMapRequest) ExecuteUsing(zr *ZapiRunner) (*LunMapResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunMapRequest) executeWithoutIteration(zr *ZapiRunner) (*LunMapResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunMapRequest", NewLunMapResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunMapResponse), err
 }
 

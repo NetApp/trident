@@ -90,13 +90,18 @@ func (o LunDestroyResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunDestroyRequest) ExecuteUsing(zr *ZapiRunner) (*LunDestroyResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *LunDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*LunDestroyResponse, error) {
 	result, err := zr.ExecuteUsing(o, "LunDestroyRequest", NewLunDestroyResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*LunDestroyResponse), err
 }
 

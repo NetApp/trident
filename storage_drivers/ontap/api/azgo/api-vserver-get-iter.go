@@ -93,13 +93,18 @@ func (o VserverGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VserverGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*VserverGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VserverGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*VserverGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VserverGetIterRequest", NewVserverGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VserverGetIterResponse), err
 }
 
@@ -111,13 +116,15 @@ func (o *VserverGetIterRequest) executeWithIteration(zr *ZapiRunner) (*VserverGe
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

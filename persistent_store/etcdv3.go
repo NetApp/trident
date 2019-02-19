@@ -21,7 +21,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -427,6 +427,10 @@ func (p *EtcdClientV3) GetBackends() ([]*storage.BackendPersistent, error) {
 		backend, err := p.GetBackend(strings.TrimPrefix(key, config.BackendURL+"/"))
 		if err != nil {
 			return nil, err
+		}
+		if !backend.Online {
+			// handle upgrade logic for "Offline" (aka Deleting) backends
+			backend.State = storage.Deleting
 		}
 		backendList = append(backendList, backend)
 	}

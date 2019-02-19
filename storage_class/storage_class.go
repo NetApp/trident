@@ -221,7 +221,7 @@ func (s *StorageClass) CheckAndAddBackend(b *storage.Backend) int {
 		"storageClass": s.GetName(),
 	}).Debug("Checking backend for storage class")
 
-	if !b.Online {
+	if !b.State.IsOnline() {
 		log.WithField("backend", b.Name).Warn("Backend not online.")
 		return 0
 	}

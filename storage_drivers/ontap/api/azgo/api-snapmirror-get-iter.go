@@ -94,13 +94,18 @@ func (o SnapmirrorGetIterResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapmirrorGetIterRequest) ExecuteUsing(zr *ZapiRunner) (*SnapmirrorGetIterResponse, error) {
 	return o.executeWithIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *SnapmirrorGetIterRequest) executeWithoutIteration(zr *ZapiRunner) (*SnapmirrorGetIterResponse, error) {
 	result, err := zr.ExecuteUsing(o, "SnapmirrorGetIterRequest", NewSnapmirrorGetIterResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*SnapmirrorGetIterResponse), err
 }
 
@@ -112,13 +117,15 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 	done := false
 	for done != true {
 		n, err := o.executeWithoutIteration(zr)
-		if err == nil {
-			nextTagPtr = n.Result.NextTagPtr
-			if nextTagPtr == nil {
-				done = true
-			} else {
-				o.SetTag(*nextTagPtr)
-			}
+
+		if err != nil {
+			return nil, err
+		}
+		nextTagPtr = n.Result.NextTagPtr
+		if nextTagPtr == nil {
+			done = true
+		} else {
+			o.SetTag(*nextTagPtr)
 		}
 
 		if n.Result.NumRecordsPtr == nil {

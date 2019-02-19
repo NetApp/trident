@@ -92,13 +92,18 @@ func (o QtreeDeleteAsyncResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeDeleteAsyncRequest) ExecuteUsing(zr *ZapiRunner) (*QtreeDeleteAsyncResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeDeleteAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeDeleteAsyncResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QtreeDeleteAsyncRequest", NewQtreeDeleteAsyncResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QtreeDeleteAsyncResponse), err
 }
 

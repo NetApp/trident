@@ -96,13 +96,18 @@ func (o VolumeCloneCreateResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeCloneCreateRequest) ExecuteUsing(zr *ZapiRunner) (*VolumeCloneCreateResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VolumeCloneCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeCloneCreateResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VolumeCloneCreateRequest", NewVolumeCloneCreateResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VolumeCloneCreateResponse), err
 }
 

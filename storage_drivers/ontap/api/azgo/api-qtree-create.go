@@ -92,13 +92,18 @@ func (o QtreeCreateResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeCreateRequest) ExecuteUsing(zr *ZapiRunner) (*QtreeCreateResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *QtreeCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeCreateResponse, error) {
 	result, err := zr.ExecuteUsing(o, "QtreeCreateRequest", NewQtreeCreateResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*QtreeCreateResponse), err
 }
 

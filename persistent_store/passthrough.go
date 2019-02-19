@@ -176,7 +176,8 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 		Version: config.OrchestratorAPIVersion,
 		Config:  storage.PersistentStorageBackendConfig{},
 		Name:    "",
-		Online:  true,
+		//Online:  true,
+		State: storage.Online,
 	}
 	persistentBackendJSON, _ := json.Marshal(persistentBackend)
 

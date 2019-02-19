@@ -88,13 +88,18 @@ func (o VserverGetResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VserverGetRequest) ExecuteUsing(zr *ZapiRunner) (*VserverGetResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *VserverGetRequest) executeWithoutIteration(zr *ZapiRunner) (*VserverGetResponse, error) {
 	result, err := zr.ExecuteUsing(o, "VserverGetRequest", NewVserverGetResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*VserverGetResponse), err
 }
 

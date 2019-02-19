@@ -44,6 +44,12 @@ var routes = Routes{
 		UpdateBackend,
 	},
 	Route{
+		"UpdateBackendState",
+		"POST",
+		config.BackendURL + "/{backend}" + "/state",
+		UpdateBackendState,
+	},
+	Route{
 		"GetBackend",
 		"GET",
 		config.BackendURL + "/{backend}",

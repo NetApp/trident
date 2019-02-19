@@ -74,6 +74,7 @@ func (m *MockOrchestrator) AddBackend(configJSON string) (*storage.BackendExtern
 		Name:    fmt.Sprintf("mock-%d", len(m.backends)),
 		Driver:  nil,
 		Online:  true,
+		State:   storage.Online,
 		Storage: make(map[string]*storage.Pool),
 	}
 	mock := newMockBackend(backend.GetProtocol())
@@ -94,6 +95,7 @@ func (m *MockOrchestrator) addMockBackend(
 		Name:    name,
 		Driver:  nil,
 		Online:  true,
+		State:   storage.Online,
 		Storage: make(map[string]*storage.Pool),
 	}
 	m.backends[backend.Name] = backend
@@ -125,6 +127,13 @@ func (m *MockOrchestrator) UpdateBackend(backendName, configJSON string) (
 	return nil, fmt.Errorf("operation not currently supported")
 }
 
+// UpdateBackendState updates an existing backend
+func (m *MockOrchestrator) UpdateBackendState(backendName, backendState string) (
+	storageBackendExternal *storage.BackendExternal, err error) {
+	//TODO
+	return nil, fmt.Errorf("operation not currently supported")
+}
+
 func (m *MockOrchestrator) GetBackend(backend string) (*storage.BackendExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -146,7 +155,7 @@ func (m *MockOrchestrator) ListBackends() ([]*storage.BackendExternal, error) {
 	return backends, nil
 }
 
-func (m *MockOrchestrator) OfflineBackend(backend string) error {
+func (m *MockOrchestrator) DeleteBackend(backend string) error {
 	// Implement this if it becomes necessary to test.
 	return nil
 }

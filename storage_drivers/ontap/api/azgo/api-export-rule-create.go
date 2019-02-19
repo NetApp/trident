@@ -98,13 +98,18 @@ func (o ExportRuleCreateResponseResult) String() string {
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *ExportRuleCreateRequest) ExecuteUsing(zr *ZapiRunner) (*ExportRuleCreateResponse, error) {
 	return o.executeWithoutIteration(zr)
 }
 
 // executeWithoutIteration converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
+
 func (o *ExportRuleCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*ExportRuleCreateResponse, error) {
 	result, err := zr.ExecuteUsing(o, "ExportRuleCreateRequest", NewExportRuleCreateResponse())
+	if result == nil {
+		return nil, err
+	}
 	return result.(*ExportRuleCreateResponse), err
 }
 

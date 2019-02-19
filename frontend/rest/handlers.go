@@ -15,7 +15,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 )
 
 type listResponse interface {
@@ -342,6 +342,28 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateBackendResponse{}
+	UpdateGeneric(w, r, "backend", response,
+		func(backendName string, body []byte) int {
+			request := new(storage.UpdateBackendStateRequest)
+			err := json.Unmarshal(body, request)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForGetUpdateList(err)
+			}
+			backend, err := orchestrator.UpdateBackendState(backendName, request.State)
+			if err != nil {
+				response.Error = err.Error()
+			}
+			if backend != nil {
+				response.BackendID = backend.Name
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
 type ListBackendsResponse struct {
 	Backends []string `json:"backends"`
 	Error    string   `json:"error,omitempty"`
@@ -395,7 +417,7 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 // not allow for full deletion of backends due to the potential for race
 // conditions and the additional bookkeeping that would be required.
 func DeleteBackend(w http.ResponseWriter, r *http.Request) {
-	DeleteGeneric(w, r, orchestrator.OfflineBackend, "backend")
+	DeleteGeneric(w, r, orchestrator.DeleteBackend, "backend")
 }
 
 type AddVolumeResponse struct {
