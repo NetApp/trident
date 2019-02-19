@@ -9,7 +9,7 @@ The container storage interface (`CSI`_) is a standardized API for container orc
 A community-driven effort, CSI promises to let storage vendors write a single plugin to make their products
 work with multiple container orchestrators.
 
-Kubernetes 1.10 contains `beta`_-level support for CSI-based plugins.  It uses CSI version 0.2, which has very
+Kubernetes 1.13 contains support for CSI-based plugins.  It uses CSI version 1.0, which has very
 limited capabilities, including creating/deleting/mounting/unmounting persistent volumes.
 
 CSI Trident
@@ -22,9 +22,6 @@ However, NetApp is participating in the community's efforts to see CSI achieve i
 work, we have developed a public preview version of Trident that deploys itself as a CSI plugin.  The goals of shipping
 CSI Trident are to better inform our contributions to CSI as well as to give our customers a way to kick the tires
 on CSI and see where the container storage community is going.
-
-.. note::
-  This experimental CSI driver does not support Kubernetes v1.13
 
 .. warning::
   CSI Trident for Kubernetes is an unsupported, alpha-level preview release for evaluation purposes only, and it
