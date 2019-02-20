@@ -1014,6 +1014,41 @@ func (c *KubectlClient) GetSecret(secretName string) (*v1.Secret, error) {
 	return &createdSecret, nil
 }
 
+func (c *KubectlClient) GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error) {
+
+	// Get secret info
+	cmdArgs := []string{"get", "secret", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var secretList v1.SecretList
+	if err := json.NewDecoder(stdout).Decode(&secretList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	if len(secretList.Items) == 1 {
+		return &secretList.Items[0], nil
+	} else if len(secretList.Items) > 1 {
+		return nil, fmt.Errorf("multiple secrets have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no secrets have the label %s", label)
+	}
+}
+
 // DeleteSecret deletes the specified Secret
 func (c *KubectlClient) DeleteSecret(secretName string) error {
 
@@ -1022,6 +1057,24 @@ func (c *KubectlClient) DeleteSecret(secretName string) error {
 	if err != nil {
 		return fmt.Errorf("%s; %v", string(out), err)
 	}
+	return nil
+}
+
+// DeleteSecretByLabel deletes a secret object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteSecretByLabel(label string) error {
+
+	cmdArgs := []string{"delete", "secret", "-l", label, "--namespace", c.namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Deleted secret by label.")
+
 	return nil
 }
 

@@ -757,6 +757,30 @@ func installTrident() (returnError error) {
 		}
 		log.WithFields(logFields).Info("Created Trident service.")
 
+		// Create the certificates for the CSI controller's HTTPS REST interface
+		certInfo, err := utils.MakeHTTPCertInfo()
+		if err != nil {
+			returnError = fmt.Errorf("could not create Trident X509 certificates; %v", err)
+			return
+		}
+
+		// Create the secret for the HTTP certs & keys
+		secretMap := map[string]string{
+			"caKey":      certInfo.CAKey,
+			"caCert":     certInfo.CACert,
+			"serverKey":  certInfo.ServerKey,
+			"serverCert": certInfo.ServerCert,
+			"clientKey":  certInfo.ClientKey,
+			"clientCert": certInfo.ClientCert,
+		}
+		err = client.CreateObjectByYAML(
+			k8sclient.GetSecretYAML("trident-csi", TridentPodNamespace, appLabelValue, secretMap))
+		if err != nil {
+			returnError = fmt.Errorf("could not create Trident secret; %v", err)
+			return
+		}
+		log.WithFields(logFields).Info("Created Trident secret.")
+
 		// Create the statefulset
 		if useYAML && fileExists(csiStatefulSetPath) {
 			returnError = validateTridentStatefulSet()

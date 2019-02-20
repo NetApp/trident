@@ -450,6 +450,9 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
+        - name: certs
+          mountPath: "/certs"
+          readOnly: true
       - name: etcd
         image: {ETCD_IMAGE}
         command:
@@ -511,6 +514,9 @@ spec:
           claimName: {PVC_NAME}
       - name: socket-dir
         emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
 `
 
 func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
@@ -595,6 +601,9 @@ spec:
         - name: host-dir
           mountPath: /host
           mountPropagation: "Bidirectional"
+        - name: certs
+          mountPath: "/certs"
+          readOnly: true
       - name: driver-registrar
         image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
@@ -644,6 +653,9 @@ spec:
         hostPath:
           path: /
           type: Directory
+      - name: certs
+        secret:
+          secretName: trident-csi
 `
 
 func GetPVCYAML(pvcName, namespace, size, label string) string {
@@ -1071,4 +1083,28 @@ kind: SecurityContextConstraints
 apiVersion: security.openshift.io/v1
 metadata:
   name: {SCC}
+`
+
+func GetSecretYAML(secretName, namespace, label string, secretData map[string]string) string {
+
+	secretYAML := strings.Replace(secretYAMLTemplate, "{SECRET_NAME}", secretName, 1)
+	secretYAML = strings.Replace(secretYAML, "{NAMESPACE}", namespace, 1)
+	secretYAML = strings.Replace(secretYAML, "{LABEL}", label, 1)
+
+	for key, value := range secretData {
+		secretYAML += fmt.Sprintf("  %s: %s\n", key, value)
+	}
+
+	return secretYAML
+}
+
+const secretYAMLTemplate = `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {SECRET_NAME}
+  namespace: {NAMESPACE}
+  labels:
+    app: {LABEL}
+data:
 `
