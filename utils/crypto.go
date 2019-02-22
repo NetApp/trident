@@ -29,13 +29,14 @@ type CertInfo struct {
 // the parameters are configurable...the serial numbers and principal names are
 // hardcoded, the validity period is hardcoded to 1970-2070, and the algorithm
 // and key size are hardcoded to 521-bit elliptic curve.
-func MakeHTTPCertInfo() (*CertInfo, error) {
+func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertInfo, error) {
 
 	certInfo := &CertInfo{}
 
 	notBefore := time.Unix(0, 0)                      // The Epoch (1970 Jan 1)
 	notAfter := notBefore.Add(time.Hour * 24 * 36525) // 100 years (365.25 days per year)
 
+	// Create CA key
 	caKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -46,14 +47,15 @@ func MakeHTTPCertInfo() (*CertInfo, error) {
 	}
 	certInfo.CAKey = caKeyBase64
 
+	// Create CA cert
 	caCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(1),
 		Subject: pkix.Name{
 			Country:      []string{"US"},
+			Province:     []string{"NC"},
 			Locality:     []string{"RTP"},
 			Organization: []string{"NetApp"},
-			Province:     []string{"NC"},
-			CommonName:   "CA",
+			CommonName:   caCertName,
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
@@ -69,6 +71,7 @@ func MakeHTTPCertInfo() (*CertInfo, error) {
 	}
 	certInfo.CACert = certToBase64String(derBytes)
 
+	// Create HTTPS server key
 	serverKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -79,14 +82,15 @@ func MakeHTTPCertInfo() (*CertInfo, error) {
 	}
 	certInfo.ServerKey = serverKeyBase64
 
+	// Create HTTPS server cert
 	serverCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(2),
 		Subject: pkix.Name{
 			Country:      []string{"US"},
+			Province:     []string{"NC"},
 			Locality:     []string{"RTP"},
 			Organization: []string{"NetApp"},
-			Province:     []string{"NC"},
-			CommonName:   "csi-controller",
+			CommonName:   serverCertName,
 		},
 		NotBefore:      notBefore,
 		NotAfter:       notAfter,
@@ -101,6 +105,7 @@ func MakeHTTPCertInfo() (*CertInfo, error) {
 	}
 	certInfo.ServerCert = certToBase64String(derBytes)
 
+	// Create HTTPS client key
 	clientKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -111,14 +116,15 @@ func MakeHTTPCertInfo() (*CertInfo, error) {
 	}
 	certInfo.ClientKey = clientKeyBase64
 
+	// Create HTTPS client cert
 	clientCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(3),
 		Subject: pkix.Name{
 			Country:      []string{"US"},
+			Province:     []string{"NC"},
 			Locality:     []string{"RTP"},
 			Organization: []string{"NetApp"},
-			Province:     []string{"NC"},
-			CommonName:   "csi-node",
+			CommonName:   clientCertName,
 		},
 		NotBefore:      notBefore,
 		NotAfter:       notAfter,
