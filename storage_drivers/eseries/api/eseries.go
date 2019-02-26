@@ -951,7 +951,6 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 			Code:    response.StatusCode,
 			Message: "could not get hosts from array",
 		}
-		return HostEx{}, fmt.Errorf("could not get hosts from array; status code: %d", response.StatusCode)
 	}
 
 	// Parse JSON data
