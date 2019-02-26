@@ -113,9 +113,9 @@ func GetBackend(baseURL, backendName string) (storage.BackendExternal, error) {
 func WriteBackends(backends []storage.BackendExternal) {
 	switch OutputFormat {
 	case FormatJSON:
-		WriteJSON(api.MultipleBackendResponse{backends})
+		WriteJSON(api.MultipleBackendResponse{Items: backends})
 	case FormatYAML:
-		WriteYAML(api.MultipleBackendResponse{backends})
+		WriteYAML(api.MultipleBackendResponse{Items: backends})
 	case FormatName:
 		writeBackendNames(backends)
 	default:

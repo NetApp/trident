@@ -110,9 +110,9 @@ func GetStorageClass(baseURL, storageClassName string) (api.StorageClass, error)
 func WriteStorageClasses(storageClasses []api.StorageClass) {
 	switch OutputFormat {
 	case FormatJSON:
-		WriteJSON(api.MultipleStorageClassResponse{storageClasses})
+		WriteJSON(api.MultipleStorageClassResponse{Items: storageClasses})
 	case FormatYAML:
-		WriteYAML(api.MultipleStorageClassResponse{storageClasses})
+		WriteYAML(api.MultipleStorageClassResponse{Items: storageClasses})
 	case FormatName:
 		writeStorageClassNames(storageClasses)
 	default:

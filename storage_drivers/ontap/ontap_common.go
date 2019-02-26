@@ -37,9 +37,9 @@ type Telemetry struct {
 	SVM           string        `json:"svm"`
 	StoragePrefix string        `json:"storagePrefix"`
 	Driver        StorageDriver `json:"-"`
-	done          chan struct{} `json:"-"`
-	ticker        *time.Ticker  `json:"-"`
-	stopped       bool          `json:"-"`
+	done          chan struct{}
+	ticker        *time.Ticker
+	stopped       bool
 }
 
 type StorageDriver interface {
@@ -794,7 +794,7 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 			// Time format: yyyy-mm-ddThh:mm:ssZ
 			snapTime := time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
 
-			snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime})
+			snapshots = append(snapshots, storage.Snapshot{Name: snap.Name(), Created: snapTime})
 		}
 	}
 
