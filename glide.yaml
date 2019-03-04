@@ -87,3 +87,5 @@ import:
   version: v0.4.0
 - package: github.com/stretchr/testify
   version: ^v1.2.2
+- package: github.com/kubernetes-csi/external-snapshotter
+  version: v1.0.1

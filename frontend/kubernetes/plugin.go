@@ -10,7 +10,10 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
+	k8ssnapshotv1alpha1 "github.com/kubernetes-csi/external-snapshotter/pkg/apis/volumesnapshot/v1alpha1"
+	k8ssnapshotclient "github.com/kubernetes-csi/external-snapshotter/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -47,29 +50,33 @@ type StorageClassSummary struct {
 }
 
 type Plugin struct {
-	orchestrator             core.Orchestrator
-	kubeClient               kubernetes.Interface
-	getNamespacedKubeClient  func(*rest.Config, string) (k8sclient.Interface, error)
-	kubeConfig               rest.Config
-	eventRecorder            record.EventRecorder
-	claimController          cache.Controller
-	claimControllerStopChan  chan struct{}
-	claimSource              cache.ListerWatcher
-	volumeController         cache.Controller
-	volumeControllerStopChan chan struct{}
-	volumeSource             cache.ListerWatcher
-	classController          cache.Controller
-	classControllerStopChan  chan struct{}
-	classSource              cache.ListerWatcher
-	resizeController         cache.Controller
-	resizeControllerStopChan chan struct{}
-	resizeSource             cache.ListerWatcher
-	mutex                    *sync.Mutex
-	pendingClaimMatchMap     map[string]*v1.PersistentVolume
-	kubernetesVersion        *k8sversion.Info
-	defaultStorageClasses    map[string]bool
-	storageClassCache        map[string]*StorageClassSummary
-	tridentNamespace         string
+	orchestrator                     core.Orchestrator
+	kubeClient                       kubernetes.Interface
+	kubeSnapClient                   k8ssnapshotclient.Interface
+	getNamespacedKubeClient          func(*rest.Config, string) (k8sclient.Interface, error)
+	kubeConfig                       rest.Config
+	eventRecorder                    record.EventRecorder
+	claimController                  cache.Controller
+	claimControllerStopChan          chan struct{}
+	claimSource                      cache.ListerWatcher
+	volumeController                 cache.Controller
+	volumeControllerStopChan         chan struct{}
+	volumeSource                     cache.ListerWatcher
+	classController                  cache.Controller
+	classControllerStopChan          chan struct{}
+	classSource                      cache.ListerWatcher
+	resizeController                 cache.Controller
+	resizeControllerStopChan         chan struct{}
+	resizeSource                     cache.ListerWatcher
+	volumeSnapshotController         cache.Controller
+	volumeSnapshotControllerStopChan chan struct{}
+	volumeSnapshotSource             cache.ListerWatcher
+	mutex                            *sync.Mutex
+	pendingClaimMatchMap             map[string]*v1.PersistentVolume
+	kubernetesVersion                *k8sversion.Info
+	defaultStorageClasses            map[string]bool
+	storageClassCache                map[string]*StorageClassSummary
+	tridentNamespace                 string
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin, error) {
@@ -120,15 +127,22 @@ func newKubernetesPlugin(
 		return nil, err
 	}
 
+	kubeSnapClient, err := k8ssnapshotclient.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	ret := &Plugin{
-		orchestrator:             orchestrator,
-		kubeClient:               kubeClient,
-		getNamespacedKubeClient:  k8sclient.NewKubeClient,
-		kubeConfig:               *kubeConfig,
-		claimControllerStopChan:  make(chan struct{}),
-		volumeControllerStopChan: make(chan struct{}),
-		classControllerStopChan:  make(chan struct{}),
-		resizeControllerStopChan: make(chan struct{}),
+		orchestrator:                     orchestrator,
+		kubeClient:                       kubeClient,
+		kubeSnapClient:                   kubeSnapClient,
+		getNamespacedKubeClient:          k8sclient.NewKubeClient,
+		kubeConfig:                       *kubeConfig,
+		claimControllerStopChan:          make(chan struct{}),
+		volumeControllerStopChan:         make(chan struct{}),
+		classControllerStopChan:          make(chan struct{}),
+		resizeControllerStopChan:         make(chan struct{}),
+		volumeSnapshotControllerStopChan: make(chan struct{}),
 		mutex:                 &sync.Mutex{},
 		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses: make(map[string]bool, 1),
@@ -244,6 +258,24 @@ func newKubernetesPlugin(
 		},
 	)
 
+	// Setting up a watch for VolumeSnapshot CR
+	ret.volumeSnapshotSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(v1.NamespaceAll).List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(v1.NamespaceAll).Watch(options)
+		},
+	}
+	_, ret.volumeSnapshotController = cache.NewInformer(
+		ret.volumeSnapshotSource,
+		&k8ssnapshotv1alpha1.VolumeSnapshot{},
+		KubernetesSyncPeriod,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: ret.addVolumeSnapshot,
+		},
+	)
+
 	return ret, nil
 }
 
@@ -253,6 +285,7 @@ func (p *Plugin) Activate() error {
 	go p.volumeController.Run(p.volumeControllerStopChan)
 	go p.classController.Run(p.classControllerStopChan)
 	go p.resizeController.Run(p.resizeControllerStopChan)
+	go p.volumeSnapshotController.Run(p.volumeSnapshotControllerStopChan)
 	return nil
 }
 
@@ -262,6 +295,7 @@ func (p *Plugin) Deactivate() error {
 	close(p.volumeControllerStopChan)
 	close(p.classControllerStopChan)
 	close(p.resizeControllerStopChan)
+	close(p.volumeSnapshotControllerStopChan)
 	return nil
 }
 
@@ -1507,4 +1541,179 @@ func (p *Plugin) updatePVCSize(
 	}).Info("Kubernetes frontend updated the PVC after resize.")
 
 	return pvcUpdated, nil
+}
+
+func (p *Plugin) addVolumeSnapshot(obj interface{}) {
+	volumeSnapshot, ok := obj.(*k8ssnapshotv1alpha1.VolumeSnapshot)
+	if !ok {
+		log.Errorf("Kubernetes frontend expected VolumeSnapshot CR; handler got %v", obj)
+		return
+	}
+	p.processAddedVolumeSnapshot(volumeSnapshot)
+}
+
+func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) {
+
+	// Validate the VolumeSnapshot CR
+	if volSnap.Status.Error != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+		}).Error("Kubernetes frontend found error set on the VolumeSnapshot")
+		return
+	}
+	if volSnap.Spec.Source.Kind != "PersistentVolumeClaim" {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+		}).Debug("Kubernetes frontend ignored this VolumeSnapshot CR as " +
+			"the source is not a PVC")
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"volumeSnapshot": volSnap.Name,
+		"namespace":      volSnap.Namespace,
+		"sourceKind":     volSnap.Spec.Source.Kind,
+		"sourceName":     volSnap.Spec.Source.Name,
+	}).Debug("Kubernetes frontend got notified of a VolumeSnapshot CR.")
+
+	// Validate the source PVC
+	// 1. PVC and VolumeSnapshotCR must be in the same namespace
+	sourcePVC := volSnap.Spec.Source.Name
+	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, volSnap.Namespace)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"namespace": volSnap.Namespace,
+			"error":     err.Error(),
+		}).Error("Kubernetes frontend couldn't create a client to namespace!")
+		return
+	}
+	claim, err := k8sClient.GetPVC(sourcePVC, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("snapshotting a PVC requires the PVC to be in the same namespace as the VolumeSnapshot CR")
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+			"sourcePVC":      sourcePVC,
+		}).Errorf("Kubernetes frontend detected an invalid configuration "+
+			"for creating snapshot from a PVC: %v", err.Error())
+		return
+	}
+
+	// 2. Trident should be set as the provisioner for the PVC
+	provisioner := getClaimProvisioner(claim)
+	if provisioner != AnnOrchestrator &&
+		GetPersistentVolumeClaimClass(claim) != "" {
+		log.WithFields(log.Fields{
+			"volumeSnapshot":    volSnap.Name,
+			"sourcePVC":         claim.Name,
+			"sourceProvisioner": provisioner,
+		}).Debugf("Kubernetes frontend ignored this VolumeSnapshot as the source PVC is not "+
+			"tagged with %s as the storage provisioner!", AnnOrchestrator)
+		return
+	}
+
+	// 3. PVC must be Bound to a PV
+	if claim.Status.Phase != v1.ClaimBound {
+		log.WithFields(log.Fields{
+			"volumeSnapshot":  volSnap.Name,
+			"sourcePVC":       claim.Name,
+			"sourcePVCStatus": claim.Status.Phase,
+		}).Debug("Kubernetes frontend ignored this VolumeSnapshot as the source PVC is not " +
+			"bound to any volume")
+		return
+	}
+
+	// Create the volume configuration object
+	uniqueClaimName := getUniqueClaimName(claim)
+	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	accessModes := claim.Spec.AccessModes
+	annotations := claim.Annotations
+	volConfig := getVolumeConfig(accessModes, uniqueClaimName, size, annotations)
+
+	// Create the snapshot
+	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, volConfig)
+	if err != nil {
+		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		if uerr != nil {
+			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
+				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+			return
+		}
+		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotFailed", err.Error())
+		return
+	}
+
+	// Parse creation time
+	var createdAt time.Time
+	if createdAt, err = time.Parse(time.RFC3339, snapshotExt.Snapshot.Created); err != nil {
+		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		if uerr != nil {
+			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
+				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+			return
+		}
+		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "ParseCreateTimeFailed", err.Error())
+		return
+	}
+
+	// Update success status
+	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, snapshotExt.Snapshot.ReadyToUse,
+		createdAt, snapshotExt.Snapshot.Size)
+	if err != nil {
+		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		if uerr != nil {
+			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
+				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+			return
+		}
+		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "UpdateStatusFailed", err.Error())
+		return
+	}
+
+	message := "created a snapshot for the VolumeSnapshot."
+	p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotSuccess", message)
+	log.WithFields(log.Fields{
+		"volumeSnapshot": volSnap.Name,
+		"sourcePVC":      claim.Name,
+	}).Infof("Kubernetes frontend %s", message)
+}
+
+// updateVolumeSnapshotStatus updates the VolumeSnapshotStatus with given info
+func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot, readyToUse bool,
+	createdAt time.Time, reuseSize int64) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+
+	status := volSnap.Status
+	status.ReadyToUse = readyToUse
+	status.Error = nil
+	timeAt := &metav1.Time{
+		Time: createdAt,
+	}
+	if status.CreationTime == nil {
+		status.CreationTime = timeAt
+	}
+	if reuseSize > 0 {
+		status.RestoreSize = resource.NewQuantity(reuseSize, resource.BinarySI)
+	}
+
+	volSnapClone := volSnap.DeepCopy()
+	volSnapClone.Status = status
+	return p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(
+		volSnapClone.Namespace).Update(volSnapClone)
+}
+
+// updateVolumeSnapshotErrorStatus updates VolumeSnapshotStatus with Error
+func (p *Plugin) updateVolumeSnapshotErrorStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot,
+	message string) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+
+	volSnapClone := volSnap.DeepCopy()
+	statusError := &k8sstoragev1beta.VolumeError{
+		Time: metav1.Time{
+			Time: time.Now(),
+		},
+		Message: message,
+	}
+	volSnapClone.Status.Error = statusError
+	volSnapClone.Status.ReadyToUse = false
+
+	return p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(
+		volSnapClone.Namespace).Update(volSnapClone)
 }

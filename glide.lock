@@ -1,5 +1,5 @@
-hash: cb7f5b11a2e4c4f0485cf3ace8941fd6a5556d8e54132a577935760badcaa0ff
-updated: 2019-02-12T15:26:10.026505-05:00
+hash: 0b1f1571c8ddae0c70a539484700198730e870f3fdc3880cd5ea158be5da1c8f
+updated: 2019-03-04T01:13:24.515286-08:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 62661b46c4093e2c1f38d943e663db1a29873e80
@@ -26,13 +26,6 @@ imports:
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
   subpackages:
   - semver
-- name: github.com/coreos/go-systemd
-  version: d2196463941895ee908e13531a23a39feb9e1243
-  subpackages:
-  - activation
-  - daemon
-  - journal
-  - util
 - name: github.com/davecgh/go-spew
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
@@ -110,26 +103,23 @@ imports:
   - simplelru
 - name: github.com/imdario/mergo
   version: 9316a62528ac99aaecb4e47eadd6dc8aa6533d58
-- name: github.com/inconshreveable/mousetrap
-  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/json-iterator/go
   version: ab8a2e0c74be9d3be70b3184d9acc634935ded82
-- name: github.com/konsorten/go-windows-terminal-sequences
-  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
-- name: github.com/kr/logfmt
-  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/kubernetes-csi/external-snapshotter
+  version: 0d2cdd7bde5ea9d41ae47ef4184ca20ebe0435e1
+  subpackages:
+  - pkg/apis/volumesnapshot/v1alpha1
+  - pkg/client/clientset/versioned
+  - pkg/client/clientset/versioned/scheme
+  - pkg/client/clientset/versioned/typed/volumesnapshot/v1alpha1
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
-- name: github.com/Microsoft/go-winio
-  version: 75bf6ca3d7cb77506c52495e61472c131a254d56
 - name: github.com/mitchellh/hashstructure
   version: a38c50148365edc8df43c1580c48fb2b3a1e9cd7
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
   version: 94122c33edd36123c84d5368cfb2b69df93a0ec8
-- name: github.com/mschoch/smat
-  version: 90eadee771aeab36e8bf796039b8c261bebebe4f
 - name: github.com/olekukonko/tablewriter
   version: e6d60cf7ba1f42d86d54cdf5508611c4aafb3970
 - name: github.com/pborman/uuid
@@ -160,8 +150,6 @@ imports:
   version: bdcc60b419d136a85cdf2e7cbcac34b3f1cd6e57
   subpackages:
   - codec
-- name: github.com/willf/bitset
-  version: 3fb80c4041d4fce1c027ff1c416cca3e0dccd97e
 - name: golang.org/x/crypto
   version: 193df9c0f06f8bb35fba505183eaf0acc0136505
   subpackages:
@@ -200,16 +188,6 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
-- name: google.golang.org/appengine
-  version: 99bc4335fe23898c0a61f5b35afabb6d11f29094
-  subpackages:
-  - internal
-  - internal/base
-  - internal/datastore
-  - internal/log
-  - internal/remote_api
-  - internal/urlfetch
-  - urlfetch
 - name: google.golang.org/genproto
   version: 4b09977fb92221987e99d190c8f88f2c92727a29
   subpackages:
