@@ -320,6 +320,24 @@ func (d *NASFlexGroupStorageDriver) Publish(name string, publishInfo *utils.Volu
 	return nil
 }
 
+// CreateSnapshot creates a snapshot for the given volume
+func (d *NASFlexGroupStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	return CreateOntapSnapshot(snapshotName, volConfig.InternalName, &d.Config, d.API)
+}
+
 // Return the list of snapshots associated with the named volume
 func (d *NASFlexGroupStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 

@@ -561,6 +561,26 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 	return
 }
 
+// CreateSnapshot creates a snapshot for the given volume
+func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	return CreateOntapSnapshot(snapshotName, internalVolName, &d.Config, d.API)
+}
+
 // Return the list of snapshots associated with the named volume
 func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 

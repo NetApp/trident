@@ -29,6 +29,7 @@ type Driver interface {
 	CreateClone(volConfig *VolumeConfig) error
 	Destroy(name string) error
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
+	CreateSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error)
 	SnapshotList(name string) ([]Snapshot, error)
 	Get(name string) error
 	Resize(name string, sizeBytes uint64) error
@@ -321,6 +322,28 @@ func (b *Backend) RemoveVolume(vol *Volume) error {
 		delete(b.Volumes, vol.Config.Name)
 	}
 	return nil
+}
+
+func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error) {
+
+	log.WithFields(log.Fields{
+		"backend":       b.Name,
+		"storage_class": volConfig.StorageClass,
+		"source_volume": volConfig.Name,
+		"snapshot_name": snapshotName,
+	}).Debug("Attempting snapshot create.")
+
+	// Prepare volume
+	if volConfig.InternalName == "" {
+		volConfig.InternalName = b.Driver.GetInternalVolumeName(volConfig.Name)
+	}
+
+	// Create snapshot
+	snapshot, err := b.Driver.CreateSnapshot(snapshotName, volConfig)
+	if err != nil {
+		return nil, err
+	}
+	return snapshot, nil
 }
 
 const (

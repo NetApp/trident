@@ -762,6 +762,63 @@ func CreateOntapClone(
 	return nil
 }
 
+// CreateOntapSnapshot creates a snapshot for the given volume
+func CreateOntapSnapshot(
+	snapshotName, sourceVolName string, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) (*storage.Snapshot, error) {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateOntapSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": snapshotName,
+			"sourceVolume": sourceVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateOntapSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateOntapSnapshot")
+	}
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.VolumeExists(sourceVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", sourceVolName)
+	}
+
+	snapResponse, err := client.SnapshotCreate(snapshotName, sourceVolName)
+	if err = api.GetError(snapResponse, err); err != nil {
+		return nil, fmt.Errorf("could not create snapshot: %v", err)
+	}
+
+	// Fetching list of snapshots to get snapshot access time
+	snapListResponse, err := client.SnapshotGetByVolume(sourceVolName)
+	if err = api.GetError(snapListResponse, err); err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+	var snapTime string
+	if snapListResponse.Result.AttributesListPtr != nil {
+		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
+			if snap.Name() == snapshotName {
+				// Time format: yyyy-mm-ddThh:mm:ssZ
+				snapTime = time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
+				break
+			}
+		}
+		if snapTime == "" {
+			return nil, errors.New("could not find snapshot after creation")
+		}
+	} else {
+		return nil, fmt.Errorf("could not list snapshots for source volume %s", sourceVolName)
+	}
+
+	return &storage.Snapshot{
+		Name:    snapshotName,
+		Created: snapTime,
+	}, nil
+}
+
 // Return the list of snapshots associated with the named volume
 func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, client *api.Client) ([]storage.Snapshot, error) {
 

@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
@@ -50,6 +51,9 @@ type StorageDriver struct {
 
 	physicalPools map[string]*storage.Pool
 	virtualPools  map[string]*storage.Pool
+
+	// Snapshots saves info about Snapshots created on this driver
+	Snapshots map[string][]storage.Snapshot
 }
 
 func NewFakeStorageBackend(configJSON string) (sb *storage.Backend, err error) {
@@ -79,6 +83,7 @@ func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver
 		Config:           config,
 		Volumes:          make(map[string]fake.Volume),
 		DestroyedVolumes: make(map[string]bool),
+		Snapshots:        make(map[string][]storage.Snapshot),
 	}
 	driver.populateConfigurationDefaults(&config)
 	driver.initializeStoragePools()
@@ -166,6 +171,7 @@ func (d *StorageDriver) Initialize(
 	d.Volumes = make(map[string]fake.Volume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
+	d.Snapshots = make(map[string][]storage.Snapshot)
 
 	s, _ := json.Marshal(d.Config)
 	log.Debugf("FakeStorageDriverConfig: %s", string(s))
@@ -559,6 +565,48 @@ func (d *StorageDriver) Destroy(name string) error {
 
 func (d *StorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
 	return errors.New("fake driver does not support Publish")
+}
+
+// CreateSnapshot creates a snapshot for the given volume
+func (d *StorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "StorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// Ensure source volume exists
+	_, ok := d.Volumes[internalVolName]
+	if !ok {
+		return nil, fmt.Errorf("source volume %s not found", internalVolName)
+	}
+	// Initialize snapshots list for this volume if not present
+	if _, ok := d.Snapshots[internalVolName]; !ok {
+		d.Snapshots[internalVolName] = make([]storage.Snapshot, 0)
+	}
+
+	snapshot := storage.Snapshot{
+		Name:    snapshotName,
+		Created: time.Now().UTC().Format("20060102T150405Z"),
+	}
+	d.Snapshots[internalVolName] = append(d.Snapshots[internalVolName], snapshot)
+
+	log.WithFields(log.Fields{
+		"backend":      d.Config.InstanceName,
+		"sourceVolume": internalVolName,
+		"snapshotName": snapshotName,
+	}).Info("Created fake snapshot.")
+
+	return &snapshot, nil
 }
 
 func (d *StorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {

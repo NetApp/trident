@@ -823,6 +823,45 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	return nil
 }
 
+// CreateSnapshot creates a snapshot for the given volume
+func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// Check to see if the volume exists
+	sourceVolume, err := d.GetVolume(internalVolName)
+	if err != nil {
+		log.Errorf("unable to locate parent volume: %+v", err)
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	var req api.CreateSnapshotRequest
+	req.VolumeID = sourceVolume.VolumeID
+	req.Name = snapshotName
+
+	snapshot, err := d.Client.CreateSnapshot(&req)
+	if err != nil {
+		return nil, fmt.Errorf("could not create source snapshot: %+v", err)
+	}
+
+	return &storage.Snapshot{
+		Name:    snapshot.Name,
+		Created: snapshot.CreateTime,
+	}, nil
+}
+
 // SnapshotList returns the list of snapshots associated with the named volume
 func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 
