@@ -789,11 +789,7 @@ func (p *EtcdClientV3) AddSnapshot(volName string, snapshot *storage.Snapshot) e
 	if err != nil {
 		return err
 	}
-	err = p.Create(config.SnapshotURL+"/"+volName+"/"+snapshot.Name, string(snapJSON))
-	if err != nil {
-		return err
-	}
-	return nil
+	return p.Create(config.SnapshotURL+"/"+volName+"/"+snapshot.Name, string(snapJSON))
 }
 
 // GetSnapshot fetches a snapshot's state from the persistent store
@@ -803,8 +799,7 @@ func (p *EtcdClientV3) GetSnapshot(volName, snapshotName string) (*storage.Snaps
 		return nil, err
 	}
 	snapExternal := &storage.SnapshotExternal{}
-	err = json.Unmarshal([]byte(snapJSON), snapExternal)
-	if err != nil {
+	if err = json.Unmarshal([]byte(snapJSON), snapExternal); err != nil {
 		return nil, err
 	}
 	return snapExternal, nil

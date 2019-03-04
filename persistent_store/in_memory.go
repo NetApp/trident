@@ -284,14 +284,10 @@ func (c *InMemoryClient) GetSnapshot(volName, snapshotName string) (*storage.Sna
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, volName)
 	}
-	var ret *storage.SnapshotExternal
 	for _, snapExternal := range snapshots {
 		if snapExternal.Name == snapshotName {
-			ret = snapExternal
+			return snapExternal, nil
 		}
 	}
-	if ret == nil {
-		return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
-	}
-	return ret, nil
+	return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
 }

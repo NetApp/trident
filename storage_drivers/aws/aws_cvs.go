@@ -930,7 +930,7 @@ func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 
 	sourceSnapshot, err := d.API.CreateSnapshot(snapshotCreateRequest)
 	if err != nil {
-		return nil, fmt.Errorf("could not create source snapshot: %v", err)
+		return nil, fmt.Errorf("could not create snapshot: %v", err)
 	}
 
 	// Wait for snapshot creation to complete

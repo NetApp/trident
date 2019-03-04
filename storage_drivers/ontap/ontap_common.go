@@ -797,26 +797,17 @@ func CreateOntapSnapshot(
 	if err = api.GetError(snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
-	var snapTime string
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 			if snap.Name() == snapshotName {
-				// Time format: yyyy-mm-ddThh:mm:ssZ
-				snapTime = time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
-				break
+				return &storage.Snapshot{
+					Name:    snapshotName,
+					Created: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(time.RFC3339),
+				}, nil
 			}
 		}
-		if snapTime == "" {
-			return nil, errors.New("could not find snapshot after creation")
-		}
-	} else {
-		return nil, fmt.Errorf("could not list snapshots for source volume %s", sourceVolName)
 	}
-
-	return &storage.Snapshot{
-		Name:    snapshotName,
-		Created: snapTime,
-	}, nil
+	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", snapshotName, sourceVolName)
 }
 
 // Return the list of snapshots associated with the named volume

@@ -2172,7 +2172,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		orchestrator.mutex.Unlock()
 
 		// Now take a snapshot and ensure everything looks fine
-		snapshotName := s.config.Name + "_snapshot" + time.Now().UTC().Format("20060102T150405Z")
+		snapshotName := s.config.Name + "_snapshot" + time.Now().UTC().Format(time.RFC3339)
 		snapshotResult, err := orchestrator.CreateVolumeSnapshot(snapshotName, s.config)
 		if err != nil {
 			t.Fatalf("%s: got unexpected error: %v", s.name, err)
@@ -2182,18 +2182,18 @@ func TestSnapshotVolumes(t *testing.T) {
 		// Snapshot should be registered in the store
 		externalSnapshot, err := orchestrator.storeClient.GetSnapshot(s.config.Name, snapshotName)
 		if err != nil {
-			t.Errorf("%s: unable to communicate with backing store:  %v", snapshotName, err)
+			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
 		}
 		if !reflect.DeepEqual(externalSnapshot, snapshotResult) {
 			t.Errorf("%s: external snapshot %s stored in backend does not match"+
-				" created snapshot.", snapshotName, externalSnapshot.Snapshot.Name)
+				" created snapshot.", snapshotName, externalSnapshot.Name)
 			externalSnapshotJSON, err := json.Marshal(externalSnapshot)
 			if err != nil {
-				t.Fatal("Unable to remarshal JSON:  ", err)
+				t.Fatal("Unable to remarshal JSON: ", err)
 			}
 			origSnapshotJSON, err := json.Marshal(snapshotResult)
 			if err != nil {
-				t.Fatal("Unable to remarshal JSON:  ", err)
+				t.Fatal("Unable to remarshal JSON: ", err)
 			}
 			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalSnapshotJSON), string(origSnapshotJSON))
 		}

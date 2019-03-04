@@ -853,7 +853,7 @@ func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 
 	snapshot, err := d.Client.CreateSnapshot(&req)
 	if err != nil {
-		return nil, fmt.Errorf("could not create source snapshot: %+v", err)
+		return nil, fmt.Errorf("could not create snapshot: %+v", err)
 	}
 
 	return &storage.Snapshot{

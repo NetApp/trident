@@ -339,11 +339,7 @@ func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeCon
 	}
 
 	// Create snapshot
-	snapshot, err := b.Driver.CreateSnapshot(snapshotName, volConfig)
-	if err != nil {
-		return nil, err
-	}
-	return snapshot, nil
+	return b.Driver.CreateSnapshot(snapshotName, volConfig)
 }
 
 const (
