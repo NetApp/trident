@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -717,5 +718,38 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 
 	if err := p.DeleteStorageClass(bronzeClass); err != nil {
 		t.Fatal(err.Error())
+	}
+}
+
+func TestEtcdv2Snapshot(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+
+	// Adding a snapshot
+	vol1Config := storage.VolumeConfig{
+		Version:      string(config.OrchestratorAPIVersion),
+		Name:         "vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	snap1 := &storage.Snapshot{
+		Name:    "snap1",
+		Created: time.Now().UTC().Format("20060102T150405Z"),
+	}
+	err = p.AddSnapshot(vol1Config.Name, snap1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	var recoveredSnapshot *storage.SnapshotExternal
+	recoveredSnapshot, err = p.GetSnapshot(vol1Config.Name, snap1.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if recoveredSnapshot.Name != snap1.Name ||
+		recoveredSnapshot.Created != snap1.Created {
+		t.Error("Recovered snapshot does not match!")
 	}
 }
