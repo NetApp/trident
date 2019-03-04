@@ -443,6 +443,24 @@ func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePu
 	return nil
 }
 
+// CreateSnapshot creates a snapshot for the given volume
+func (d *NASQtreeStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "NASQtreeStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	return nil, errors.New("snapshotting with the ONTAP NAS Economy driver is not supported")
+}
+
 // Return the list of snapshots associated with the named volume
 func (d *NASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 

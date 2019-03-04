@@ -44,6 +44,7 @@ type Driver interface {
 	GetProtocol() tridentconfig.Protocol
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	SnapshotList(name string) ([]Snapshot, error)
+	CreateSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error)
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -437,6 +438,18 @@ func (b *Backend) RemoveCachedVolume(volumeName string) {
 	if _, ok := b.Volumes[volumeName]; ok {
 		delete(b.Volumes, volumeName)
 	}
+}
+
+func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error) {
+
+	log.WithFields(log.Fields{
+		"backend":      b.Name,
+		"sourceVolume": volConfig.Name,
+		"snapshotName": snapshotName,
+	}).Debug("Attempting snapshot create.")
+
+	// Create snapshot
+	return b.Driver.CreateSnapshot(snapshotName, volConfig)
 }
 
 const (

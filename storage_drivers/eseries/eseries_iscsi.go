@@ -841,6 +841,25 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 	return mapping, nil
 }
 
+// CreateSnapshot creates a snapshot for the given volume. The E-series volume plugin
+// does not support cloning or snapshots, so this method always returns an error.
+func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	return nil, errors.New("snapshotting with E-Series is not supported")
+}
+
 // SnapshotList returns the list of snapshots associated with the named volume. The E-series volume plugin does not support snapshots,
 // so this method always returns an empty array.
 func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {

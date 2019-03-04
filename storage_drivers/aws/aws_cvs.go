@@ -965,6 +965,74 @@ func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	return nil
 }
 
+// CreateSnapshot creates a snapshot for the given volume
+func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
+	*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "NFSStorageDriver",
+			"snapshotName": snapshotName,
+			"sourceVolume": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// Make sure we got a valid name
+	if err := d.validateName(internalVolName); err != nil {
+		return nil, err
+	}
+
+	// Check if volume exists
+	volumeExists, _, err := d.API.VolumeExistsByCreationToken(internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volumeExists {
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	// Get the source volume by creation token (efficient query) to get its ID
+	sourceVolume, err := d.API.GetVolumeByCreationToken(internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("could not find source volume: %v", err)
+	}
+
+	// Get the source volume by ID to get all details
+	sourceVolume, err = d.API.GetVolumeByID(sourceVolume.FileSystemID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get source volume details: %v", err)
+	}
+
+	// Construct a snapshot request
+	snapshotCreateRequest := &api.SnapshotCreateRequest{
+		FileSystemID: sourceVolume.FileSystemID,
+		Name:         snapshotName,
+		Region:       sourceVolume.Region,
+	}
+
+	snapshot, err := d.API.CreateSnapshot(snapshotCreateRequest)
+	if err != nil {
+		return nil, fmt.Errorf("could not create snapshot: %v", err)
+	}
+
+	// Wait for snapshot creation to complete
+	err = d.API.WaitForSnapshotState(snapshot, api.StateAvailable, []string{api.StateError})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storage.Snapshot{
+		Name:    snapshot.Name,
+		Created: snapshot.Created.Format(time.RFC3339),
+		ID:      snapshot.SnapshotID,
+	}, nil
+}
+
 // Return the list of snapshots associated with the named volume
 func (d *NFSStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
 

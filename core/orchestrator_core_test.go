@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	log "github.com/sirupsen/logrus"
@@ -2376,4 +2377,186 @@ func TestDeleteNode(t *testing.T) {
 	if _, ok := orchestrator.nodes[initialNode.Name]; ok {
 		t.Errorf("node was not properly deleted")
 	}
+}
+
+func TestSnapshotVolumes(t *testing.T) {
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator()
+
+	errored := false
+	for _, c := range []struct {
+		name      string
+		protocol  config.Protocol
+		poolNames []string
+	}{
+		{
+			name:      "fast-a",
+			protocol:  config.File,
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
+		},
+		{
+			name:      "fast-b",
+			protocol:  config.File,
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr},
+		},
+		{
+			name:      "slow-file",
+			protocol:  config.File,
+			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots},
+		},
+		{
+			name:      "slow-block",
+			protocol:  config.Block,
+			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
+		},
+	} {
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
+		for _, poolName := range c.poolNames {
+			pools[poolName] = mockPools[poolName]
+		}
+		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
+			pools)
+		if err != nil {
+			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
+		}
+		_, err = orchestrator.AddBackend(cfg)
+		if err != nil {
+			t.Errorf("Unable to add backend %s:  %v", c.name, err)
+			errored = true
+		}
+		orchestrator.mutex.Lock()
+		backend, ok := orchestrator.backends[c.name]
+		if !ok {
+			t.Fatalf("Backend %s not stored in orchestrator", c.name)
+		}
+		persistentBackend, err := orchestrator.storeClient.GetBackend(
+			c.name)
+		if err != nil {
+			t.Fatalf("Unable to get backend %s from persistent store:  %v",
+				c.name, err)
+		} else if !reflect.DeepEqual(backend.ConstructPersistent(),
+			persistentBackend) {
+			t.Error("Wrong data stored for backend ", c.name)
+		}
+		orchestrator.mutex.Unlock()
+	}
+	if errored {
+		t.Fatal("Failed to add all backends; aborting remaining tests.")
+	}
+
+	// Add storage classes
+	storageClasses := []storageClassTest{
+		{
+			config: &storageclass.Config{
+				Name: "slow",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(40),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "slow-file", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+			},
+		},
+		{
+			config: &storageclass.Config{
+				Name: "fast",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+	}
+	for _, s := range storageClasses {
+		_, err := orchestrator.AddStorageClass(s.config)
+		if err != nil {
+			t.Errorf("Unable to add storage class %s:  %v", s.config.Name, err)
+			continue
+		}
+		validateStorageClass(t, orchestrator, s.config.Name, s.expected)
+	}
+
+	for _, s := range []struct {
+		name            string
+		config          *storage.VolumeConfig
+		expectedSuccess bool
+		expectedMatches []*tu.PoolMatch
+	}{
+		{
+			name:            "file",
+			config:          generateVolumeConfig("file", 1, "fast", config.File),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastThinOnly},
+				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
+			},
+		},
+		{
+			name:            "block",
+			config:          generateVolumeConfig("block", 1, "slow", config.Block),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+				{Backend: "slow-block", Pool: tu.SlowSnapshots},
+			},
+		},
+	} {
+		// Create the source volume
+		_, err := orchestrator.AddVolume(s.config)
+		if err != nil {
+			t.Errorf("%s: could not add volume: %v", s.name, err)
+			continue
+		}
+
+		orchestrator.mutex.Lock()
+		_, found := orchestrator.volumes[s.config.Name]
+		if s.expectedSuccess && !found {
+			t.Errorf("%s: did not get volume where expected.", s.name)
+			continue
+		}
+		orchestrator.mutex.Unlock()
+
+		// Now take a snapshot and ensure everything looks fine
+		snapshotName := s.config.Name + "_snapshot" + time.Now().UTC().Format(time.RFC3339)
+		snapshotResult, err := orchestrator.CreateVolumeSnapshot(snapshotName, s.name)
+		if err != nil {
+			t.Fatalf("%s: got unexpected error: %v", s.name, err)
+		}
+
+		orchestrator.mutex.Lock()
+		// Snapshot should be registered in the store
+		externalSnapshot, err := orchestrator.storeClient.GetSnapshot(snapshotName)
+		if err != nil {
+			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
+		}
+		if !reflect.DeepEqual(externalSnapshot, snapshotResult) {
+			t.Errorf("%s: external snapshot %s stored in backend does not match"+
+				" created snapshot.", snapshotName, externalSnapshot.Name)
+			externalSnapshotJSON, err := json.Marshal(externalSnapshot)
+			if err != nil {
+				t.Fatal("Unable to remarshal JSON: ", err)
+			}
+			origSnapshotJSON, err := json.Marshal(snapshotResult)
+			if err != nil {
+				t.Fatal("Unable to remarshal JSON: ", err)
+			}
+			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalSnapshotJSON), string(origSnapshotJSON))
+		}
+
+		orchestrator.mutex.Unlock()
+	}
+
+	cleanup(t, orchestrator)
 }

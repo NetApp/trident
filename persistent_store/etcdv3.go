@@ -870,3 +870,26 @@ func (p *EtcdClientV3) DeleteNode(n *utils.Node) error {
 	}
 	return nil
 }
+
+// AddSnapshot adds a snapshot's state to the persistent store
+func (p *EtcdClientV3) AddSnapshot(snapshot *storage.Snapshot) error {
+	snapExternal := snapshot.ConstructExternal()
+	snapJSON, err := json.Marshal(snapExternal)
+	if err != nil {
+		return err
+	}
+	return p.Create(config.SnapshotURL+"/"+snapshot.Name, string(snapJSON))
+}
+
+// GetSnapshot fetches a snapshot's state from the persistent store
+func (p *EtcdClientV3) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
+	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotName)
+	if err != nil {
+		return nil, err
+	}
+	snapExternal := &storage.SnapshotExternal{}
+	if err = json.Unmarshal([]byte(snapJSON), snapExternal); err != nil {
+		return nil, err
+	}
+	return snapExternal, nil
+}

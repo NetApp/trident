@@ -68,6 +68,9 @@ type Client interface {
 	GetNode(nName string) (*utils.Node, error)
 	GetNodes() ([]*utils.Node, error)
 	DeleteNode(n *utils.Node) error
+
+	AddSnapshot(snapshot *storage.Snapshot) error
+	GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error)
 }
 
 type EtcdClient interface {

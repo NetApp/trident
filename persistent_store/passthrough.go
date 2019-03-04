@@ -428,3 +428,11 @@ func (c *PassthroughClient) GetNodes() ([]*utils.Node, error) {
 func (c *PassthroughClient) DeleteNode(n *utils.Node) error {
 	return nil
 }
+
+func (c *PassthroughClient) AddSnapshot(snapshot *storage.Snapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
+	return nil, nil
+}

@@ -23,6 +23,8 @@ type InMemoryClient struct {
 	version             *config.PersistentStateVersion
 	nodes               map[string]*utils.Node
 	nodesAdded          int
+	snapshots           map[string]*storage.SnapshotExternal
+	snapshotsAdded      int
 }
 
 func NewInMemoryClient() *InMemoryClient {
@@ -32,6 +34,7 @@ func NewInMemoryClient() *InMemoryClient {
 		storageClasses: make(map[string]*sc.Persistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
 		nodes:          make(map[string]*utils.Node),
+		snapshots:      make(map[string]*storage.SnapshotExternal),
 		version: &config.PersistentStateVersion{
 			"memory", config.OrchestratorAPIVersion,
 		},
@@ -48,6 +51,7 @@ func (c *InMemoryClient) Stop() error {
 	c.storageClassesAdded = 0
 	c.volumeTxnsAdded = 0
 	c.nodesAdded = 0
+	c.snapshotsAdded = 0
 	return nil
 }
 
@@ -342,4 +346,20 @@ func (c *InMemoryClient) DeleteNode(n *utils.Node) error {
 	}
 	delete(c.nodes, n.Name)
 	return nil
+}
+
+func (c *InMemoryClient) AddSnapshot(snapshot *storage.Snapshot) error {
+	snapExternal := snapshot.ConstructExternal()
+	c.snapshots[snapshot.Name] = snapExternal
+	c.snapshotsAdded++
+	return nil
+}
+
+// GetSnapshot retrieves a snapshot state from the persistent store
+func (c *InMemoryClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
+	ret, ok := c.snapshots[snapshotName]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
+	}
+	return ret, nil
 }

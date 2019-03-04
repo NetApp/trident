@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	uuid "github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -824,5 +825,33 @@ func TestEtcdv2GetNodes(t *testing.T) {
 
 	if !unorderedNodeSlicesEqual(retrievedNodes, initialNodes) {
 		t.Error("Incorrect nodes returned from persistence")
+	}
+}
+
+func TestEtcdv2Snapshot(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+
+	// Adding a snapshot
+	snap1 := &storage.Snapshot{
+		Name:    "snap1",
+		Created: time.Now().UTC().Format(time.RFC3339),
+		ID:      "id1",
+	}
+	err = p.AddSnapshot(snap1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	var recoveredSnapshot *storage.SnapshotExternal
+	recoveredSnapshot, err = p.GetSnapshot(snap1.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if recoveredSnapshot.Name != snap1.Name ||
+		recoveredSnapshot.Created != snap1.Created ||
+		recoveredSnapshot.ID != snap1.ID {
+		t.Error("Recovered snapshot does not match!")
 	}
 }

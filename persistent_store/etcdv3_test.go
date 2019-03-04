@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	uuid "github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -1078,4 +1079,32 @@ func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 		return true
 	}
 	return false
+}
+
+func TestEtcdv3Snapshot(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+
+	// Adding a snapshot
+	snap1 := &storage.Snapshot{
+		Name:    "snap1",
+		Created: time.Now().UTC().Format(time.RFC3339),
+		ID:      "id1",
+	}
+	err = p.AddSnapshot(snap1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	var recoveredSnapshot *storage.SnapshotExternal
+	recoveredSnapshot, err = p.GetSnapshot(snap1.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if recoveredSnapshot.Name != snap1.Name ||
+		recoveredSnapshot.Created != snap1.Created ||
+		recoveredSnapshot.ID != snap1.ID {
+		t.Error("Recovered snapshot does not match!")
+	}
 }

@@ -120,6 +120,7 @@ var (
 	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
 	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
 	NodeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
+	SnapshotURL     = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
 	StoreURL        = "/" + OrchestratorName + "/store"
 
 	UsingPassthroughStore bool
