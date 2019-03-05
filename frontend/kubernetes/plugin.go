@@ -281,7 +281,8 @@ func newKubernetesPlugin(
 		&k8ssnapshotv1alpha1.VolumeSnapshot{},
 		KubernetesSyncPeriod,
 		cache.ResourceEventHandlerFuncs{
-			AddFunc: ret.addVolumeSnapshot,
+			AddFunc:    ret.addVolumeSnapshot,
+			UpdateFunc: ret.updateVolumeSnapshot,
 		},
 	)
 
@@ -1867,17 +1868,23 @@ func (p *Plugin) addVolumeSnapshot(obj interface{}) {
 		log.Errorf("Kubernetes frontend expected VolumeSnapshot CR; handler got %v", obj)
 		return
 	}
-	p.processAddedVolumeSnapshot(volumeSnapshot)
+	p.processVolumeSnapshot(volumeSnapshot)
 }
 
-func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) {
+func (p *Plugin) updateVolumeSnapshot(oldObj, newObj interface{}) {
+	volumeSnapshot, ok := newObj.(*k8ssnapshotv1alpha1.VolumeSnapshot)
+	if !ok {
+		log.Errorf("Kubernetes frontend expected VolumeSnapshot CR; handler got %v", newObj)
+		return
+	}
+	p.processVolumeSnapshot(volumeSnapshot)
+}
+
+func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) {
 
 	// Validate the VolumeSnapshot CR
 	// 1. Error must not be set
 	if volSnap.Status.Error != nil {
-		log.WithFields(log.Fields{
-			"volumeSnapshot": volSnap.Name,
-		}).Debug("Kubernetes frontend found an error set on the VolumeSnapshot")
 		return
 	}
 
@@ -1954,7 +1961,7 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 
 	// Create the volume configuration object
 	uniqueClaimName := getUniqueClaimName(claim)
-	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	size := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	accessModes := claim.Spec.AccessModes
 	annotations := claim.Annotations
 	volConfig := getVolumeConfig(accessModes, uniqueClaimName, size, annotations)
@@ -1962,39 +1969,36 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 	// Create the snapshot
 	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, volConfig)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+			"sourcePVC":      claim.Name,
+			"error":          err.Error(),
+		}).Error("Kubernetes frontend failed to create snapshot")
 		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
 			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
 				"Controller failed to update VolumeSnapshot.Status.Error")
 			return
 		}
-		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotFailed", err.Error())
+		p.eventRecorder.Event(newVolSnap, v1.EventTypeWarning, "CreateSnapshotFailed", err.Error())
 		return
 	}
 
-	// Parse creation time
-	var createdAt time.Time
-	if createdAt, err = time.Parse(time.RFC3339, snapshotExt.Snapshot.Created); err != nil {
-		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
-		if uerr != nil {
-			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Controller failed to update VolumeSnapshot.Status.Error")
-			return
-		}
-		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "ParseCreateTimeFailed", err.Error())
-		return
-	}
-
-	// Update success status
-	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, createdAt)
+	// Update VolumeSnapshot status with snapshot info
+	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, snapshotExt)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+			"sourcePVC":      claim.Name,
+			"error":          err.Error(),
+		}).Error("Controller failed to update VolumeSnapshot status")
 		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
 			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
 				"Controller failed to update VolumeSnapshot.Status.Error")
 			return
 		}
-		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "UpdateStatusFailed", err.Error())
+		p.eventRecorder.Event(newVolSnap, v1.EventTypeWarning, "UpdateStatusFailed", err.Error())
 		return
 	}
 
@@ -2008,7 +2012,13 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 
 // updateVolumeSnapshotStatus updates the VolumeSnapshot.Status with given info
 func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot,
-	createdAt time.Time) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+	snapshotExt *storage.SnapshotExternal) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+
+	// Parse create time
+	createdAt, err := time.Parse(time.RFC3339, snapshotExt.Snapshot.Created)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse snapshot creation time: %s", err.Error())
+	}
 
 	status := volSnap.Status
 	status.ReadyToUse = true
