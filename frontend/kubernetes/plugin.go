@@ -1555,16 +1555,28 @@ func (p *Plugin) addVolumeSnapshot(obj interface{}) {
 func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) {
 
 	// Validate the VolumeSnapshot CR
+	// 1. Error must not be set
 	if volSnap.Status.Error != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
-		}).Error("Kubernetes frontend found error set on the VolumeSnapshot")
+		}).Debug("Kubernetes frontend found an error set on the VolumeSnapshot")
 		return
 	}
+
+	// 2. Snapshot must not be created before
+	if volSnap.Status.CreationTime != nil && volSnap.Status.ReadyToUse {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+		}).Debug("Kubernetes frontend ignored this VolumeSnapshot as " +
+			"the snapshot has already been created")
+		return
+	}
+
+	// 3. Snapshot source must be of PVC kind
 	if volSnap.Spec.Source.Kind != "PersistentVolumeClaim" {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
-		}).Debug("Kubernetes frontend ignored this VolumeSnapshot CR as " +
+		}).Debug("Kubernetes frontend ignored this VolumeSnapshot as " +
 			"the source is not a PVC")
 		return
 	}
@@ -1574,7 +1586,7 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 		"namespace":      volSnap.Namespace,
 		"sourceKind":     volSnap.Spec.Source.Kind,
 		"sourceName":     volSnap.Spec.Source.Name,
-	}).Debug("Kubernetes frontend got notified of a VolumeSnapshot CR.")
+	}).Debug("Kubernetes frontend got notified of a VolumeSnapshot.")
 
 	// Validate the source PVC
 	// 1. PVC and VolumeSnapshotCR must be in the same namespace
@@ -1584,12 +1596,12 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 		log.WithFields(log.Fields{
 			"namespace": volSnap.Namespace,
 			"error":     err.Error(),
-		}).Error("Kubernetes frontend couldn't create a client to namespace!")
+		}).Error("Kubernetes frontend couldn't create a client to namespace")
 		return
 	}
 	claim, err := k8sClient.GetPVC(sourcePVC, metav1.GetOptions{})
 	if err != nil {
-		err = fmt.Errorf("snapshotting a PVC requires the PVC to be in the same namespace as the VolumeSnapshot CR")
+		err = fmt.Errorf("snapshotting a PVC requires the PVC to be in the same namespace as the VolumeSnapshot")
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
 			"sourcePVC":      sourcePVC,
@@ -1635,7 +1647,7 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
 			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+				"Controller failed to update VolumeSnapshot.Status.Error")
 			return
 		}
 		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotFailed", err.Error())
@@ -1648,7 +1660,7 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
 			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+				"Controller failed to update VolumeSnapshot.Status.Error")
 			return
 		}
 		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "ParseCreateTimeFailed", err.Error())
@@ -1656,20 +1668,19 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 	}
 
 	// Update success status
-	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, snapshotExt.Snapshot.ReadyToUse,
-		createdAt, snapshotExt.Snapshot.Size)
+	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, createdAt)
 	if err != nil {
 		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
 			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Snapshots controller failed to update VolumeSnapshotErrorStatus")
+				"Controller failed to update VolumeSnapshot.Status.Error")
 			return
 		}
 		p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "UpdateStatusFailed", err.Error())
 		return
 	}
 
-	message := "created a snapshot for the VolumeSnapshot."
+	message := "created a volume snapshot for the PVC."
 	p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotSuccess", message)
 	log.WithFields(log.Fields{
 		"volumeSnapshot": volSnap.Name,
@@ -1677,21 +1688,18 @@ func (p *Plugin) processAddedVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeS
 	}).Infof("Kubernetes frontend %s", message)
 }
 
-// updateVolumeSnapshotStatus updates the VolumeSnapshotStatus with given info
-func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot, readyToUse bool,
-	createdAt time.Time, reuseSize int64) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+// updateVolumeSnapshotStatus updates the VolumeSnapshot.Status with given info
+func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot,
+	createdAt time.Time) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
 
 	status := volSnap.Status
-	status.ReadyToUse = readyToUse
+	status.ReadyToUse = true
 	status.Error = nil
 	timeAt := &metav1.Time{
 		Time: createdAt,
 	}
 	if status.CreationTime == nil {
 		status.CreationTime = timeAt
-	}
-	if reuseSize > 0 {
-		status.RestoreSize = resource.NewQuantity(reuseSize, resource.BinarySI)
 	}
 
 	volSnapClone := volSnap.DeepCopy()
@@ -1700,7 +1708,7 @@ func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeS
 		volSnapClone.Namespace).Update(volSnapClone)
 }
 
-// updateVolumeSnapshotErrorStatus updates VolumeSnapshotStatus with Error
+// updateVolumeSnapshotErrorStatus updates VolumeSnapshot.Status with Error
 func (p *Plugin) updateVolumeSnapshotErrorStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot,
 	message string) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
 
