@@ -705,7 +705,7 @@ func (c *KubectlClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod
 func (c *KubectlClient) GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod, error) {
 
 	// Get pod info
-	cmdArgs := []string{"get", "pod", "-a", "-l", label, "-o=json"}
+	cmdArgs := []string{"get", "pod", "-l", label, "-o=json"}
 	if allNamespaces {
 		cmdArgs = append(cmdArgs, "--all-namespaces")
 	} else {
