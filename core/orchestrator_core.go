@@ -1400,7 +1400,7 @@ func (o *TridentOrchestrator) CreateVolumeSnapshot(
 	}
 
 	// Save references to new snapshot in the persistent store
-	err = o.storeClient.AddSnapshot(volumeConfig.Name, snapshot)
+	err = o.storeClient.AddSnapshot(snapshot)
 	if err != nil {
 		return nil, err
 	}

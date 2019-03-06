@@ -62,8 +62,8 @@ type Client interface {
 	GetStorageClasses() ([]*storageclass.Persistent, error)
 	DeleteStorageClass(sc *storageclass.StorageClass) error
 
-	AddSnapshot(volName string, snapshot *storage.Snapshot) error
-	GetSnapshot(volName, snapshotName string) (*storage.SnapshotExternal, error)
+	AddSnapshot(snapshot *storage.Snapshot) error
+	GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error)
 }
 
 type EtcdClient interface {

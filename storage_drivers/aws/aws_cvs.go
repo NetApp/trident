@@ -928,20 +928,21 @@ func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 		Region:       sourceVolume.Region,
 	}
 
-	sourceSnapshot, err := d.API.CreateSnapshot(snapshotCreateRequest)
+	snapshot, err := d.API.CreateSnapshot(snapshotCreateRequest)
 	if err != nil {
 		return nil, fmt.Errorf("could not create snapshot: %v", err)
 	}
 
 	// Wait for snapshot creation to complete
-	err = d.API.WaitForSnapshotState(sourceSnapshot, api.StateAvailable, []string{api.StateError})
+	err = d.API.WaitForSnapshotState(snapshot, api.StateAvailable, []string{api.StateError})
 	if err != nil {
 		return nil, err
 	}
 
 	return &storage.Snapshot{
-		Name:    sourceSnapshot.Name,
-		Created: sourceSnapshot.Created.Format(time.RFC3339),
+		Name:    snapshot.Name,
+		Created: snapshot.Created.Format(time.RFC3339),
+		ID:      snapshot.SnapshotID,
 	}, nil
 }
 

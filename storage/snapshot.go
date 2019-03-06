@@ -6,6 +6,7 @@ package storage
 type Snapshot struct {
 	Name    string // The snapshot name or other identifier you would use to reference it
 	Created string // The UTC time that the snapshot was created, in RFC3339 format
+	ID      string // Unique ID assigned to the snapshot at the time of creation
 }
 
 type SnapshotExternal struct {

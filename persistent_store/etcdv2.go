@@ -564,18 +564,18 @@ func (p *EtcdClientV2) DeleteStorageClass(sc *storageclass.StorageClass) error {
 }
 
 // AddSnapshot adds a snapshot's state to the persistent store
-func (p *EtcdClientV2) AddSnapshot(volName string, snapshot *storage.Snapshot) error {
+func (p *EtcdClientV2) AddSnapshot(snapshot *storage.Snapshot) error {
 	snapExternal := snapshot.ConstructExternal()
 	snapJSON, err := json.Marshal(snapExternal)
 	if err != nil {
 		return err
 	}
-	return p.Create(config.SnapshotURL+"/"+volName+"/"+snapshot.Name, string(snapJSON))
+	return p.Create(config.SnapshotURL+"/"+snapshot.Name, string(snapJSON))
 }
 
 // GetSnapshot fetches a snapshot's state from the persistent store
-func (p *EtcdClientV2) GetSnapshot(volName, snapshotName string) (*storage.SnapshotExternal, error) {
-	snapJSON, err := p.Read(config.SnapshotURL + "/" + volName + "/" + snapshotName)
+func (p *EtcdClientV2) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
+	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotName)
 	if err != nil {
 		return nil, err
 	}

@@ -859,6 +859,7 @@ func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 	return &storage.Snapshot{
 		Name:    snapshot.Name,
 		Created: snapshot.CreateTime,
+		ID:      strconv.FormatInt(snapshot.SnapshotID, 10),
 	}, nil
 }
 

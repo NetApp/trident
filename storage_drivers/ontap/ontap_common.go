@@ -803,6 +803,7 @@ func CreateOntapSnapshot(
 				return &storage.Snapshot{
 					Name:    snapshotName,
 					Created: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(time.RFC3339),
+					ID:      snap.SnapshotInstanceUuid(),
 				}, nil
 			}
 		}
@@ -842,7 +843,7 @@ func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, clie
 			// Time format: yyyy-mm-ddThh:mm:ssZ
 			snapTime := time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
 
-			snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime})
+			snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime, snap.SnapshotInstanceUuid()})
 		}
 	}
 

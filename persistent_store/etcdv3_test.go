@@ -952,18 +952,12 @@ func TestEtcdv3Snapshot(t *testing.T) {
 	p, err := NewEtcdClientV3(*etcdV3)
 
 	// Adding a snapshot
-	vol1Config := storage.VolumeConfig{
-		Version:      string(config.OrchestratorAPIVersion),
-		Name:         "vol1",
-		Size:         "1GB",
-		Protocol:     config.File,
-		StorageClass: "gold",
-	}
 	snap1 := &storage.Snapshot{
 		Name:    "snap1",
-		Created: time.Now().UTC().Format("20060102T150405Z"),
+		Created: time.Now().UTC().Format(time.RFC3339),
+		ID:      "id1",
 	}
-	err = p.AddSnapshot(vol1Config.Name, snap1)
+	err = p.AddSnapshot(snap1)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -971,12 +965,13 @@ func TestEtcdv3Snapshot(t *testing.T) {
 
 	// Getting a snapshot
 	var recoveredSnapshot *storage.SnapshotExternal
-	recoveredSnapshot, err = p.GetSnapshot(vol1Config.Name, snap1.Name)
+	recoveredSnapshot, err = p.GetSnapshot(snap1.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if recoveredSnapshot.Name != snap1.Name ||
-		recoveredSnapshot.Created != snap1.Created {
+		recoveredSnapshot.Created != snap1.Created ||
+		recoveredSnapshot.ID != snap1.ID {
 		t.Error("Recovered snapshot does not match!")
 	}
 }

@@ -392,10 +392,10 @@ func (c *PassthroughClient) DeleteStorageClass(sc *sc.StorageClass) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddSnapshot(volName string, snapshot *storage.Snapshot) error {
+func (c *PassthroughClient) AddSnapshot(snapshot *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetSnapshot(volName, snapshotName string) (*storage.SnapshotExternal, error) {
+func (c *PassthroughClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
 	return nil, nil
 }
