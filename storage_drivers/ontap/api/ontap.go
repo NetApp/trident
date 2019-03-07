@@ -1697,9 +1697,10 @@ func (d Client) VserverGetAggregateNames() ([]string, error) {
 	aggrNames := make([]string, 0, 10)
 	if response.Result.AttributesListPtr != nil {
 		for _, vserver := range response.Result.AttributesListPtr.VserverInfoPtr {
-			aggrList := vserver.VserverAggrInfoList().VserverAggrInfoPtr
-			for _, aggr := range aggrList {
-				aggrNames = append(aggrNames, string(aggr.AggrName()))
+			if vserver.VserverAggrInfoListPtr != nil {
+				for _, aggr := range vserver.VserverAggrInfoList().VserverAggrInfoPtr {
+					aggrNames = append(aggrNames, string(aggr.AggrName()))
+				}
 			}
 		}
 	}
