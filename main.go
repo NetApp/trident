@@ -64,10 +64,20 @@ var (
 	usePassthrough = flag.Bool("passthrough", false, "Uses the storage backends "+
 		"as the source of truth.  No data is stored anywhere else.")
 
-	// REST interface
-	address    = flag.String("address", "127.0.0.1", "Storage orchestrator API address")
-	port       = flag.String("port", "8000", "Storage orchestrator API port")
-	enableREST = flag.Bool("rest", true, "Enable REST interface")
+	// HTTP REST interface
+	address    = flag.String("address", "127.0.0.1", "Storage orchestrator HTTP API address")
+	port       = flag.String("port", "8000", "Storage orchestrator HTTP API port")
+	enableREST = flag.Bool("rest", true, "Enable HTTP REST interface")
+
+	// HTTPS REST interface
+	httpsAddress    = flag.String("https_address", "", "Storage orchestrator HTTPS API address")
+	httpsPort       = flag.String("https_port", "8443", "Storage orchestrator HTTPS API port")
+	enableHTTPSREST = flag.Bool("https_rest", false, "Enable HTTPS REST interface")
+	httpsCACert     = flag.String("https_ca_cert", rest.CACertPath, "HTTPS CA certificate")
+	httpsServerKey  = flag.String("https_server_key", rest.ServerKeyPath, "HTTPS server private key")
+	httpsServerCert = flag.String("https_server_cert", rest.ServerCertPath, "HTTPS server certificate")
+	httpsClientKey  = flag.String("https_client_key", rest.ClientKeyPath, "HTTPS client private key")
+	httpsClientCert = flag.String("https_client_cert", rest.ClientCertPath, "HTTPS client certificate")
 
 	storeClient      persistentstore.Client
 	enableKubernetes bool
@@ -262,14 +272,29 @@ func main() {
 		frontends = append(frontends, csiFrontend)
 	}
 
-	// Create REST frontend
+	// Create HTTP REST frontend
 	if *enableREST {
 		if *port == "" {
-			log.Warning("REST interface will not be available (port not specified).")
+			log.Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
-			restServer := rest.NewAPIServer(orchestrator, *address, *port)
-			frontends = append(frontends, restServer)
-			log.WithFields(log.Fields{"name": "REST"}).Info("Added frontend.")
+			httpServer := rest.NewHTTPServer(orchestrator, *address, *port)
+			frontends = append(frontends, httpServer)
+			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
+		}
+	}
+
+	// Create HTTPS REST frontend
+	if *enableHTTPSREST {
+		if *httpsPort == "" {
+			log.Warning("HTTPS REST interface will not be available (httpsPort not specified).")
+		} else {
+			httpsServer, err := rest.NewHTTPSServer(
+				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey)
+			if err != nil {
+				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
+			}
+			frontends = append(frontends, httpsServer)
+			log.WithFields(log.Fields{"name": httpsServer.GetName()}).Info("Added frontend.")
 		}
 	}
 
