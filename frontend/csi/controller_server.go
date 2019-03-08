@@ -3,7 +3,6 @@
 package csi
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -137,15 +136,10 @@ func (p *Plugin) DeleteVolume(
 	log.WithFields(fields).Debug(">>>> DeleteVolume")
 	defer log.WithFields(fields).Debug("<<<< DeleteVolume")
 
-	volumeName, _, err := p.parseVolumeID(req.VolumeId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
-	err = p.orchestrator.DeleteVolume(volumeName)
+	err := p.orchestrator.DeleteVolume(req.VolumeId)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"volumeName": volumeName,
+			"volumeName": req.VolumeId,
 			"error":      err,
 		}).Debugf("Could not delete volume.")
 
@@ -177,30 +171,25 @@ func (p *Plugin) ControllerPublishVolume(
 	log.WithFields(fields).Debug(">>>> ControllerPublishVolume")
 	defer log.WithFields(fields).Debug("<<<< ControllerPublishVolume")
 
-	volumeName, _, err := p.parseVolumeID(req.VolumeId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
 	// Make sure volume exists
-	volume, err := p.orchestrator.GetVolume(volumeName)
+	volume, err := p.orchestrator.GetVolume(req.VolumeId)
 	if err != nil {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
 	// Get node attributes from the node ID
-	var nodeID TridentNodeID
-	err = json.Unmarshal([]byte(req.NodeId), &nodeID)
+	nodeInfo, err := p.orchestrator.GetNode(req.NodeId)
 	if err != nil {
+		log.Errorf("Info for node %s not found.", req.NodeId)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set up volume publish info with what we know about the node
 	volumePublishInfo := &utils.VolumePublishInfo{
 		Localhost: false,
-		HostIQN:   []string{nodeID.IQN},
+		HostIQN:   []string{nodeInfo.IQN},
 		HostIP:    []string{},
-		HostName:  nodeID.Name,
+		HostName:  nodeInfo.Name,
 	}
 
 	// Update NFS export rules (?), add node IQN to igroup, etc.
@@ -242,13 +231,8 @@ func (p *Plugin) ControllerUnpublishVolume(
 	log.WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
 	defer log.WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
 
-	volumeName, _, err := p.parseVolumeID(req.VolumeId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
 	// Make sure volume exists
-	if _, err := p.orchestrator.GetVolume(volumeName); err != nil {
+	if _, err := p.orchestrator.GetVolume(req.VolumeId); err != nil {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -331,22 +315,6 @@ func (p *Plugin) ListSnapshots(
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (p *Plugin) parseVolumeID(ID string) (string, tridentconfig.Protocol, error) {
-
-	// Get volume attributes from the volume ID
-	var volumeID TridentVolumeID
-	err := json.Unmarshal([]byte(ID), &volumeID)
-	if err != nil {
-		return "", "", err
-	}
-
-	if len(volumeID.Name) == 0 || len(volumeID.Protocol) == 0 {
-		return "", "", fmt.Errorf("invalid volume ID: %s", ID)
-	}
-
-	return volumeID.Name, tridentconfig.Protocol(volumeID.Protocol), nil
-}
-
 func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (*csi.Volume, error) {
 
 	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
@@ -358,20 +326,6 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 		capacity = 0
 	}
 
-	// Encode volumeID as JSON
-	volumeID := &TridentVolumeID{
-		Name:     volume.Config.Name,
-		Protocol: string(volume.Config.Protocol),
-	}
-	volumeIDbytes, err := json.Marshal(volumeID)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"volumeID": volumeID,
-			"error":    err,
-		}).Error("Could not marshal volume ID struct.")
-		return nil, err
-	}
-
 	attributes := map[string]string{
 		"backend":      volume.Backend,
 		"name":         volume.Config.Name,
@@ -381,7 +335,7 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 
 	return &csi.Volume{
 		CapacityBytes: capacity,
-		VolumeId:      string(volumeIDbytes),
+		VolumeId:      volume.Config.Name,
 		VolumeContext: attributes,
 	}, nil
 }

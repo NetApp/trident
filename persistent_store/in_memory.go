@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -8,6 +8,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 type InMemoryClient struct {
@@ -20,6 +21,8 @@ type InMemoryClient struct {
 	volumeTxns          map[string]*VolumeTransaction
 	volumeTxnsAdded     int
 	version             *PersistentStateVersion
+	nodes               map[string]*utils.Node
+	nodesAdded          int
 }
 
 func NewInMemoryClient() *InMemoryClient {
@@ -28,6 +31,7 @@ func NewInMemoryClient() *InMemoryClient {
 		volumes:        make(map[string]*storage.VolumeExternal),
 		storageClasses: make(map[string]*sc.Persistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
+		nodes:          make(map[string]*utils.Node),
 		version: &PersistentStateVersion{
 			"memory", config.OrchestratorAPIVersion,
 		},
@@ -43,6 +47,7 @@ func (c *InMemoryClient) Stop() error {
 	c.volumesAdded = 0
 	c.storageClassesAdded = 0
 	c.volumeTxnsAdded = 0
+	c.nodesAdded = 0
 	return nil
 }
 
@@ -261,5 +266,45 @@ func (c *InMemoryClient) DeleteStorageClass(s *sc.StorageClass) error {
 		return NewPersistentStoreError(KeyNotFoundErr, s.GetName())
 	}
 	delete(c.storageClasses, s.GetName())
+	return nil
+}
+
+func (c *InMemoryClient) AddOrUpdateNode(n *utils.Node) error {
+	exists := false
+	if _, ok := c.nodes[n.Name]; ok {
+		exists = true
+	}
+	c.nodes[n.Name] = n
+	if !exists {
+		c.nodesAdded++
+	}
+	return nil
+}
+
+func (c *InMemoryClient) GetNode(nName string) (*utils.Node, error) {
+	ret, ok := c.nodes[nName]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, nName)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) GetNodes() ([]*utils.Node, error) {
+	ret := make([]*utils.Node, 0, len(c.nodes))
+	if c.nodesAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return ret, nil
+	}
+	for _, v := range c.nodes {
+		ret = append(ret, v)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) DeleteNode(n *utils.Node) error {
+	if _, ok := c.nodes[n.Name]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, n.Name)
+	}
+	delete(c.nodes, n.Name)
 	return nil
 }

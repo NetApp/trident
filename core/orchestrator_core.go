@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -28,6 +28,7 @@ type TridentOrchestrator struct {
 	frontends      map[string]frontend.Plugin
 	mutex          *sync.Mutex
 	storageClasses map[string]*storageclass.StorageClass
+	nodes          map[string]*utils.Node
 	storeClient    persistentstore.Client
 	bootstrapped   bool
 	bootstrapError error
@@ -40,6 +41,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		volumes:        make(map[string]*storage.Volume),
 		frontends:      make(map[string]frontend.Plugin),
 		storageClasses: make(map[string]*storageclass.StorageClass),
+		nodes:          make(map[string]*utils.Node),
 		mutex:          &sync.Mutex{},
 		storeClient:    client,
 		bootstrapped:   false,
@@ -249,12 +251,27 @@ func (o *TridentOrchestrator) bootstrapVolTxns() error {
 	return nil
 }
 
+func (o *TridentOrchestrator) bootstrapNodes() error {
+	nodes, err := o.storeClient.GetNodes()
+	if err != nil {
+		return err
+	}
+	for _, n := range nodes {
+		log.WithFields(log.Fields{
+			"node":    n.Name,
+			"handler": "Bootstrap",
+		}).Info("Added an existing node.")
+		o.nodes[n.Name] = n
+	}
+	return nil
+}
+
 func (o *TridentOrchestrator) bootstrap() error {
 	// Fetching backend information
 
 	type bootstrapFunc func() error
 	for _, f := range []bootstrapFunc{o.bootstrapBackends,
-		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns} {
+		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns, o.bootstrapNodes} {
 		err := f()
 		if err != nil {
 			if persistentstore.MatchKeyNotFoundErr(err) {
@@ -1681,6 +1698,69 @@ func (o *TridentOrchestrator) DeleteStorageClass(scName string) error {
 	for _, storagePool := range sc.GetStoragePoolsForProtocol(config.ProtocolAny) {
 		storagePool.RemoveStorageClass(scName)
 	}
+	return nil
+}
+
+func (o *TridentOrchestrator) AddNode(node *utils.Node) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	if err := o.storeClient.AddOrUpdateNode(node); err != nil {
+		return err
+	}
+	o.nodes[node.Name] = node
+	return nil
+}
+
+func (o *TridentOrchestrator) GetNode(nName string) (*utils.Node, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	node, found := o.nodes[nName]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("node %v was not found", nName))
+	}
+	return node, nil
+}
+
+func (o *TridentOrchestrator) ListNodes() ([]*utils.Node, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	nodes := make([]*utils.Node, 0, len(o.nodes))
+	for _, node := range o.nodes {
+		nodes = append(nodes, node)
+	}
+	return nodes, nil
+}
+
+func (o *TridentOrchestrator) DeleteNode(nName string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	node, found := o.nodes[nName]
+	if !found {
+		return notFoundError(fmt.Sprintf("node %s not found", nName))
+	}
+	if err := o.storeClient.DeleteNode(node); err != nil {
+		return err
+	}
+	delete(o.nodes, nName)
 	return nil
 }
 

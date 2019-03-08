@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -51,6 +51,7 @@ type MockOrchestrator struct {
 	mockBackends   map[string]*mockBackend
 	storageClasses map[string]*storageclass.StorageClass
 	volumes        map[string]*storage.Volume
+	nodes          map[string]*utils.Node
 	mutex          *sync.Mutex
 }
 
@@ -388,5 +389,42 @@ func (m *MockOrchestrator) DeleteStorageClass(scName string) error {
 		return notFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
 	delete(m.storageClasses, scName)
+	return nil
+}
+
+func (m *MockOrchestrator) AddNode(node *utils.Node) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.nodes[node.Name] = node
+	return nil
+}
+
+func (m *MockOrchestrator) GetNode(nName string) (*utils.Node, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	node, found := m.nodes[nName]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("node %s not found", nName))
+	}
+	return node, nil
+}
+
+func (m *MockOrchestrator) ListNodes() ([]*utils.Node, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	ret := make([]*utils.Node, 0, len(m.nodes))
+	for _, node := range m.nodes {
+		ret = append(ret, node)
+	}
+	return ret, nil
+}
+
+func (m *MockOrchestrator) DeleteNode(nName string) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if _, ok := m.nodes[nName]; !ok {
+		return notFoundError(fmt.Sprintf("node %s not found", nName))
+	}
+	delete(m.nodes, nName)
 	return nil
 }

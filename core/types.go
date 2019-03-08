@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -6,7 +6,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
-	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -41,6 +41,11 @@ type Orchestrator interface {
 	GetStorageClass(scName string) (*storageclass.External, error)
 	ListStorageClasses() ([]*storageclass.External, error)
 	DeleteStorageClass(scName string) error
+
+	AddNode(node *utils.Node) error
+	GetNode(nName string) (*utils.Node, error)
+	ListNodes() ([]*utils.Node, error)
+	DeleteNode(nName string) error
 }
 
 type NotReadyError struct {

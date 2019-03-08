@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -15,7 +15,8 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
-	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 type listResponse interface {
@@ -624,4 +625,106 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 
 func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, orchestrator.DeleteStorageClass, "storageClass")
+}
+
+type AddNodeResponse struct {
+	Name  string `json:"name"`
+	Error string `json:"error,omitempty"`
+}
+
+func (a *AddNodeResponse) setError(err error) {
+	a.Error = err.Error()
+}
+
+func (a *AddNodeResponse) isError() bool {
+	return a.Error != ""
+}
+
+func (a *AddNodeResponse) logSuccess() {
+	log.WithFields(log.Fields{
+		"handler": "AddOrUpdateNode",
+		"node":    a.Name,
+	}).Info("Added a new node.")
+}
+
+func (a *AddNodeResponse) logFailure() {
+	log.WithFields(log.Fields{
+		"handler": "AddOrUpdateNode",
+		"node":    a.Name,
+	}).Error(a.Error)
+}
+
+func AddNode(w http.ResponseWriter, r *http.Request) {
+	response := &AddNodeResponse{
+		Name:  "",
+		Error: "",
+	}
+	UpdateGeneric(w, r, "node", response,
+		func(name string, body []byte) int {
+			node := new(utils.Node)
+			err := json.Unmarshal(body, node)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
+			}
+			err = orchestrator.AddNode(node)
+			if err != nil {
+				response.setError(err)
+			}
+			response.Name = node.Name
+			return httpStatusCodeForAdd(err)
+		},
+	)
+}
+
+type GetNodeResponse struct {
+	Node  *utils.Node `json:"node"`
+	Error string      `json:"error,omitempty"`
+}
+
+func GetNode(w http.ResponseWriter, r *http.Request) {
+	response := &GetNodeResponse{}
+	GetGeneric(w, r, "node", response,
+		func(nName string) int {
+			node, err := orchestrator.GetNode(nName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Node = node
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ListNodesResponse struct {
+	Nodes []string `json:"nodes"`
+	Error string   `json:"error,omitempty"`
+}
+
+func (l *ListNodesResponse) setList(payload []string) {
+	l.Nodes = payload
+}
+
+func ListNodes(w http.ResponseWriter, r *http.Request) {
+	response := &ListNodesResponse{}
+	ListGeneric(w, r, response,
+		func() int {
+			nodes, err := orchestrator.ListNodes()
+			nodeNames := make([]string, 0, len(nodes))
+			if err != nil {
+				response.Error = err.Error()
+			} else if nodes != nil {
+				for _, node := range nodes {
+					nodeNames = append(nodeNames, node.Name)
+				}
+			}
+			response.setList(nodeNames)
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func DeleteNode(w http.ResponseWriter, r *http.Request) {
+	DeleteGeneric(w, r, orchestrator.DeleteNode, "node")
 }

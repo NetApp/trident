@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -47,6 +47,7 @@ var (
 	csiEndpoint = flag.String("csi_endpoint", "", "Register as a CSI storage "+
 		"provider with this endpoint")
 	csiNodeName = flag.String("csi_node_name", "", "CSI node name")
+	csiRole     = flag.String("csi_role", "", fmt.Sprintf("CSI role to play: '%s' or '%s'", csi.CSIController, csi.CSINode))
 
 	// Persistence
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
@@ -263,8 +264,31 @@ func main() {
 
 	} else if enableCSI {
 		config.CurrentDriverContext = config.ContextCSI
+		if *csiRole != csi.CSIController && *csiRole != csi.CSINode {
+			log.Fatalf("CSI is enabled but an unknown role has been assigned: '%v'", csiRole)
+		}
 
-		csiFrontend, err := csi.NewPlugin(*csiNodeName, *csiEndpoint, orchestrator)
+		if *csiEndpoint == "" {
+			log.Fatal("CSI is enabled but csi_endpoint was not specified.")
+		}
+
+		if *csiNodeName == "" {
+			log.Fatal("CSI is enabled but csi_node_name was not specified.")
+		}
+
+		log.WithFields(log.Fields{
+			"name":    *csiNodeName,
+			"version": config.OrchestratorVersion,
+		}).Info("Initializing CSI frontend.")
+
+		var csiFrontend *csi.Plugin
+		switch *csiRole {
+		case csi.CSIController:
+			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator)
+		case csi.CSINode:
+			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
+				*httpsClientKey, orchestrator)
+		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)
 		}

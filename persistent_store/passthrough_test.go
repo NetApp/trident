@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -15,6 +15,7 @@ import (
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/utils"
 )
 
 func getFakePools(count int) map[string]*fake.StoragePool {
@@ -88,6 +89,14 @@ func getFakeStorageClass() *sc.StorageClass {
 		},
 	}
 	return sc.New(scConfig)
+}
+
+func getFakeNode() *utils.Node {
+	return &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
 }
 
 func newPassthroughClient() *PassthroughClient {
@@ -722,5 +731,55 @@ func TestPassthroughClient_DeleteStorageClass(t *testing.T) {
 
 	if err != nil {
 		t.Error("Could not delete storage class from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_AddNode(t *testing.T) {
+	p := newPassthroughClient()
+	fakeNode := getFakeNode()
+
+	err := p.AddOrUpdateNode(fakeNode)
+
+	if err != nil {
+		t.Error("Could not add node to passthrough client!")
+	}
+}
+
+func TestPassthroughClient_GetNode(t *testing.T) {
+	p := newPassthroughClient()
+	fakeNode := getFakeNode()
+	p.AddOrUpdateNode(fakeNode)
+
+	result, err := p.GetNode(fakeNode.Name)
+
+	if result != nil || err == nil {
+		t.Error("Did not expect to get node from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_GetNodes(t *testing.T) {
+	p := newPassthroughClient()
+	fakeNode := getFakeNode()
+	p.AddOrUpdateNode(fakeNode)
+
+	result, err := p.GetNodes()
+
+	if err != nil {
+		t.Error("Could not get nodes from passthrough client!")
+	}
+	if len(result) != 0 {
+		t.Error("Did not expect to get nodes from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_DeleteNode(t *testing.T) {
+	p := newPassthroughClient()
+	fakeNode := getFakeNode()
+	p.AddOrUpdateNode(fakeNode)
+
+	err := p.DeleteNode(fakeNode)
+
+	if err != nil {
+		t.Error("Could not delete node from passthrough client!")
 	}
 }

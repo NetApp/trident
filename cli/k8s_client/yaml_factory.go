@@ -430,6 +430,7 @@ spec:
         - "--https_port=8443"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
         {DEBUG}
         livenessProbe:
           exec:
@@ -573,6 +574,7 @@ spec:
         - "--rest=false"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=node"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME

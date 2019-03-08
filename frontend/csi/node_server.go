@@ -10,8 +10,11 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/netapp/trident/frontend/rest"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -49,16 +52,21 @@ func (p *Plugin) NodeUnstageVolume(
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
-	_, protocol, err := p.parseVolumeID(req.VolumeId)
+	// Read the device info from the staging path
+	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	protocol, err := p.getVolumeProtocolFromPublishInfo(publishInfo)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	switch protocol {
 	case tridentconfig.File:
 		return &csi.NodeUnstageVolumeResponse{}, nil // No need to unstage NFS
 	case tridentconfig.Block:
-		return p.nodeUnstageISCSIVolume(ctx, req)
+		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -138,6 +146,10 @@ func (p *Plugin) NodeGetInfo(
 	log.WithFields(fields).Debug(">>>> NodeGetInfo")
 	defer log.WithFields(fields).Debug("<<<< NodeGetInfo")
 
+	return &csi.NodeGetInfoResponse{NodeId: p.nodeName}, nil
+}
+
+func (p *Plugin) nodeGetInfo() *utils.Node {
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns()
 	if err != nil {
@@ -148,21 +160,52 @@ func (p *Plugin) NodeGetInfo(
 		iscsiWWN = iscsiWWNs[0]
 	}
 
-	// Encode node info as JSON and return as the opaque node ID
-	nodeID := &TridentNodeID{
+	// TODO (akerr): add IP discovery here as well
+
+	node := &utils.Node{
 		Name: p.nodeName,
 		IQN:  iscsiWWN,
 	}
-	nodeIDbytes, err := json.Marshal(nodeID)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"nodeID": nodeID,
-			"error":  err,
-		}).Error("Could not marshal node ID struct.")
-		return nil, status.Error(codes.Internal, "could not marshal node ID struct")
-	}
+	return node
+}
 
-	return &csi.NodeGetInfoResponse{NodeId: string(nodeIDbytes)}, nil
+func (p *Plugin) nodeRegisterWithController() error {
+	node := p.nodeGetInfo()
+	// The controller may not be fully initialized by the time the node is ready to register,
+	// so wait here until it is ready.
+	checkBackChannelReady := func() error {
+		_, err := p.restClient.GetNodes()
+		return err
+	}
+	backChannelReadyNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Controller not yet ready, waiting.")
+	}
+	backChannelBackoff := backoff.NewExponentialBackOff()
+	backChannelBackoff.InitialInterval = 1 * time.Second
+	backChannelBackoff.Multiplier = 2
+	backChannelBackoff.RandomizationFactor = 0.1
+	backChannelBackoff.MaxElapsedTime = rest.HTTPTimeout
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkBackChannelReady, backChannelBackoff, backChannelReadyNotify); err != nil {
+		log.WithField("node", p.nodeName).Errorf("Could not communicate with controller after %3.2f seconds; %v",
+			backChannelBackoff.MaxElapsedTime.Seconds(), err)
+	} else {
+		log.WithField("node", p.nodeName).Debug("Communication with controller established.")
+	}
+	err := p.restClient.CreateNode(node)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Plugin) nodeDeregisterWithController() error {
+	err := p.restClient.DeleteNode(p.nodeName)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *Plugin) nodePublishNFSVolume(
@@ -306,14 +349,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 }
 
 func (p *Plugin) nodeUnstageISCSIVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-
-	// Read the device info from the staging path
-	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
 
 	// Delete the device from the host
 	utils.PrepareDeviceForRemoval(int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
@@ -401,5 +438,16 @@ func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePu
 		return nil, err
 	}
 
+	log.Debug("Publish Info found")
 	return &publishInfo, nil
+}
+
+func (p *Plugin) getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (tridentconfig.Protocol, error) {
+	if publishInfo.VolumeAccessInfo.NfsServerIP != "" && publishInfo.VolumeAccessInfo.IscsiTargetIQN == "" {
+		return tridentconfig.File, nil
+	} else if publishInfo.VolumeAccessInfo.IscsiTargetIQN != "" && publishInfo.VolumeAccessInfo.NfsServerIP == "" {
+		return tridentconfig.Block, nil
+	} else {
+		return "", fmt.Errorf("unable to infer volume protocol")
+	}
 }

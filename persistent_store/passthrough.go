@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/utils"
 )
 
 type PassthroughClient struct {
@@ -389,5 +390,21 @@ func (c *PassthroughClient) GetStorageClasses() ([]*sc.Persistent, error) {
 }
 
 func (c *PassthroughClient) DeleteStorageClass(sc *sc.StorageClass) error {
+	return nil
+}
+
+func (c *PassthroughClient) AddOrUpdateNode(n *utils.Node) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetNode(nName string) (*utils.Node, error) {
+	return nil, NewPersistentStoreError(KeyNotFoundErr, nName)
+}
+
+func (c *PassthroughClient) GetNodes() ([]*utils.Node, error) {
+	return make([]*utils.Node, 0), nil
+}
+
+func (c *PassthroughClient) DeleteNode(n *utils.Node) error {
 	return nil
 }

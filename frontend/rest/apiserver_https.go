@@ -34,8 +34,8 @@ func NewHTTPSServer(
 			Addr:         fmt.Sprintf("%s:%s", address, port),
 			Handler:      &tlsAuthHandler{handler: NewRouter()},
 			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert},
-			ReadTimeout:  httpTimeout,
-			WriteTimeout: httpTimeout,
+			ReadTimeout:  HTTPTimeout,
+			WriteTimeout: HTTPTimeout,
 		},
 		caCertFile:     caCertFile,
 		serverCertFile: serverCertFile,
@@ -70,7 +70,7 @@ func (s *APIServerHTTPS) Activate() error {
 
 func (s *APIServerHTTPS) Deactivate() error {
 	log.WithField("address", s.server.Addr).Infof("Deactivating HTTPS REST frontend.")
-	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
 }
