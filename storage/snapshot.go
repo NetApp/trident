@@ -7,6 +7,8 @@ type Snapshot struct {
 	Name    string // The snapshot name or other identifier you would use to reference it
 	Created string // The UTC time that the snapshot was created, in RFC3339 format
 	ID      string // Unique ID assigned to the snapshot at the time of creation
+	Backend string // Name of the storage backend
+	Pool    string // Name of the pool on which the source volume and this snapshot were provisioned
 }
 
 type SnapshotExternal struct {

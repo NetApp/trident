@@ -585,7 +585,8 @@ func (d *StorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.V
 	}
 
 	// Ensure source volume exists
-	if _, ok := d.Volumes[internalVolName]; !ok {
+	vol, ok := d.Volumes[internalVolName]
+	if !ok {
 		return nil, fmt.Errorf("source volume %s not found", internalVolName)
 	}
 	// Initialize snapshots list for a snapshot with same name
@@ -601,10 +602,11 @@ func (d *StorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.V
 	d.Snapshots[snapshotName] = snapshot
 
 	log.WithFields(log.Fields{
-		"backend":      d.Config.InstanceName,
-		"sourceVolume": internalVolName,
-		"snapshotName": snapshotName,
-		"snapshotID":   snapshot.ID,
+		"backend":       d.Config.InstanceName,
+		"snapshotName":  snapshotName,
+		"sourceVolume":  internalVolName,
+		"requestedPool": vol.RequestedPool,
+		"physicalPool":  vol.PhysicalPool,
 	}).Info("Created fake snapshot.")
 
 	return snapshot, nil

@@ -339,7 +339,18 @@ func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeCon
 	}
 
 	// Create snapshot
-	return b.Driver.CreateSnapshot(snapshotName, volConfig)
+	snapshot, err := b.Driver.CreateSnapshot(snapshotName, volConfig)
+	if err != nil {
+		return nil, err
+	}
+	// Update snapshot with relevant backend information
+	vol, ok := b.Volumes[volConfig.Name]
+	if !ok {
+		return nil, fmt.Errorf("could not find source volume %s in the backend", volConfig.Name)
+	}
+	snapshot.Backend = vol.Backend
+	snapshot.Pool = vol.Pool
+	return snapshot, nil
 }
 
 const (
