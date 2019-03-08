@@ -80,7 +80,7 @@ func (c *Client) WaitForVolumeByID(volID int64) (Volume, error) {
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
 		log.WithField("volumeID", volID).Warnf(
-			"Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
+			"Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime)
 		return volume, fmt.Errorf("volume %d does not exist", volID)
 	} else {
 		log.WithField("volumeID", volID).Debug("Volume found.")

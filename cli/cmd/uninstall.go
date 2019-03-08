@@ -303,41 +303,6 @@ func uninstallTrident() error {
 			}
 		}
 
-		if secret, err := client.GetSecretByLabel(appLabel, true); err != nil {
-
-			log.WithFields(log.Fields{
-				"label": appLabel,
-				"error": err,
-			}).Warning("Trident secret not found.")
-			anyErrors = true
-
-		} else {
-
-			// Secret found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != secret.Namespace {
-				return fmt.Errorf("a Trident secret was found in namespace '%s', "+
-					"not in specified namespace '%s'", secret.Namespace, TridentPodNamespace)
-			}
-
-			log.WithFields(log.Fields{
-				"service":   secret.Name,
-				"namespace": secret.Namespace,
-			}).Debug("Trident secret found by label.")
-
-			// Delete the secret
-			if err = client.DeleteSecretByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
-					"service":   secret.Name,
-					"namespace": secret.Namespace,
-					"label":     appLabel,
-					"error":     err,
-				}).Warning("Could not delete secret.")
-				anyErrors = true
-			} else {
-				log.Info("Deleted Trident secret.")
-			}
-		}
-
 	}
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors

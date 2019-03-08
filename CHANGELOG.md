@@ -5,7 +5,6 @@
 ## Changes since v19.01.0
 
 **Fixes:**
-- Fixed panic if no aggregates are assigned to an ONTAP SVM.
 - **Kubernetes:** Updated CSI driver for 1.0 spec and Kubernetes 1.13. (Alpha release - unsupported)
 - **Kubernetes:** Allow Trident to start if one or more backend drivers fail to initialize.
 

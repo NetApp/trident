@@ -181,9 +181,9 @@ type VolumeResizeRequest struct {
 }
 
 type VolumeResizeStatusResponse struct {
-	PercentComplete  int    `json:"percentComplete"`
-	TimeToCompletion int    `json:"timeToCompletion"`
-	Action           string `json:"action"`
+	PercentComplete  int    `json:percentComplete`
+	TimeToCompletion int    `json:timeToCompletion`
+	Action           string `json:action`
 }
 
 type HostCreateRequest struct {

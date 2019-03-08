@@ -379,9 +379,8 @@ spec:
   selector:
     app: {LABEL}
   ports:
-    - protocol: TCP
-      port: 34571
-      targetPort: 8443
+    - name: dummy
+      port: 12345
 `
 
 func GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, label string, debug bool) string {
@@ -420,14 +419,11 @@ spec:
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
-        ports:
-        - containerPort: 8443
         command:
         - /usr/local/bin/trident_orchestrator
         args:
-        - "--etcd_v3=http://127.0.0.1:8001"
-        - "--https_rest"
-        - "--https_port=8443"
+        - -etcd_v3
+        - http://127.0.0.1:8001
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         {DEBUG}
@@ -454,21 +450,25 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
-        - name: certs
-          mountPath: /certs
-          readOnly: true
       - name: etcd
         image: {ETCD_IMAGE}
         command:
         - /usr/local/bin/etcd
         args:
-        - "--name=etcd1"
-        - "--advertise-client-urls=http://127.0.0.1:8001"
-        - "--listen-client-urls=http://127.0.0.1:8001"
-        - "--initial-advertise-peer-urls=http://127.0.0.1:8002"
-        - "--listen-peer-urls=http://127.0.0.1:8002"
-        - "--data-dir=/var/etcd/data"
-        - "--initial-cluster=etcd1=http://127.0.0.1:8002"
+        - -name
+        - etcd1
+        - -advertise-client-urls
+        - http://127.0.0.1:8001
+        - -listen-client-urls
+        - http://127.0.0.1:8001
+        - -initial-advertise-peer-urls
+        - http://127.0.0.1:8002
+        - -listen-peer-urls
+        - http://127.0.0.1:8002
+        - -data-dir
+        - /var/etcd/data
+        - -initial-cluster
+        - etcd1=http://127.0.0.1:8002
         volumeMounts:
         - name: etcd-vol
           mountPath: /var/etcd/data
@@ -511,9 +511,6 @@ spec:
           claimName: {PVC_NAME}
       - name: socket-dir
         emptyDir:
-      - name: certs
-        secret:
-          secretName: trident-csi
 `
 
 func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
@@ -557,7 +554,6 @@ spec:
       serviceAccount: trident-csi
       hostNetwork: true
       hostIPC: true
-      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: trident-main
         securityContext:
@@ -569,10 +565,10 @@ spec:
         command:
         - /usr/local/bin/trident_orchestrator
         args:
-        - "--no_persistence"
-        - "--rest=false"
+        - -no_persistence
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--rest=false"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME
@@ -599,9 +595,6 @@ spec:
         - name: host-dir
           mountPath: /host
           mountPropagation: "Bidirectional"
-        - name: certs
-          mountPath: /certs
-          readOnly: true
       - name: driver-registrar
         image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
@@ -651,9 +644,6 @@ spec:
         hostPath:
           path: /
           type: Directory
-      - name: certs
-        secret:
-          secretName: trident-csi
 `
 
 func GetPVCYAML(pvcName, namespace, size, label string) string {
@@ -1081,28 +1071,4 @@ kind: SecurityContextConstraints
 apiVersion: security.openshift.io/v1
 metadata:
   name: {SCC}
-`
-
-func GetSecretYAML(secretName, namespace, label string, secretData map[string]string) string {
-
-	secretYAML := strings.Replace(secretYAMLTemplate, "{SECRET_NAME}", secretName, 1)
-	secretYAML = strings.Replace(secretYAML, "{NAMESPACE}", namespace, 1)
-	secretYAML = strings.Replace(secretYAML, "{LABEL}", label, 1)
-
-	for key, value := range secretData {
-		secretYAML += fmt.Sprintf("  %s: %s\n", key, value)
-	}
-
-	return secretYAML
-}
-
-const secretYAMLTemplate = `
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {SECRET_NAME}
-  namespace: {NAMESPACE}
-  labels:
-    app: {LABEL}
-data:
 `
