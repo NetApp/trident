@@ -113,9 +113,9 @@ func GetVolume(baseURL, volumeName string) (storage.VolumeExternal, error) {
 func WriteVolumes(volumes []storage.VolumeExternal) {
 	switch OutputFormat {
 	case FormatJSON:
-		WriteJSON(api.MultipleVolumeResponse{volumes})
+		WriteJSON(api.MultipleVolumeResponse{Items: volumes})
 	case FormatYAML:
-		WriteYAML(api.MultipleVolumeResponse{volumes})
+		WriteYAML(api.MultipleVolumeResponse{Items: volumes})
 	case FormatName:
 		writeVolumeNames(volumes)
 	case FormatWide:

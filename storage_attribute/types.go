@@ -53,6 +53,6 @@ type labelOffer struct {
 }
 
 type labelRequest struct {
-	Request   string          `json:"request"`
-	selectors []labelSelector `json:"-"`
+	Request   string `json:"request"`
+	selectors []labelSelector
 }

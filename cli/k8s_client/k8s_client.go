@@ -88,8 +88,10 @@ type Interface interface {
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
 	GetSecret(secretName string) (*v1.Secret, error)
+	GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error)
 	CheckSecretExists(secretName string) (bool, error)
 	DeleteSecret(secretName string) error
+	DeleteSecretByLabel(label string) error
 	CreateObjectByFile(filePath string) error
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
@@ -919,6 +921,33 @@ func (k *KubeClient) GetSecret(secretName string) (*v1.Secret, error) {
 	return k.clientset.CoreV1().Secrets(k.namespace).Get(secretName, options)
 }
 
+// GetSecretByLabel looks up a Secret by label
+func (k *KubeClient) GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := k.namespace
+	if allNamespaces {
+		namespace = ""
+	}
+
+	secretList, err := k.clientset.CoreV1().Secrets(namespace).List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(secretList.Items) == 1 {
+		return &secretList.Items[0], nil
+	} else if len(secretList.Items) > 1 {
+		return nil, fmt.Errorf("multiple secrets have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no secrets have the label %s", label)
+	}
+}
+
 // CheckSecretExists returns true if the Secret exists
 func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
 
@@ -934,6 +963,26 @@ func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
 // DeleteSecret deletes the specified Secret
 func (k *KubeClient) DeleteSecret(secretName string) error {
 	return k.clientset.CoreV1().Secrets(k.namespace).Delete(secretName, k.deleteOptions())
+}
+
+// DeleteSecretByLabel deletes a secret object matching the specified label
+func (k *KubeClient) DeleteSecretByLabel(label string) error {
+
+	secret, err := k.GetSecretByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.CoreV1().Secrets(k.namespace).Delete(secret.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": k.namespace,
+	}).Debug("Deleted secret by label.")
+
+	return nil
 }
 
 // CreateObjectByFile creates an object on the server from a YAML/JSON file at the specified path.
