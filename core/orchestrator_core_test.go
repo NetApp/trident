@@ -2173,7 +2173,7 @@ func TestSnapshotVolumes(t *testing.T) {
 
 		// Now take a snapshot and ensure everything looks fine
 		snapshotName := s.config.Name + "_snapshot" + time.Now().UTC().Format(time.RFC3339)
-		snapshotResult, err := orchestrator.CreateVolumeSnapshot(snapshotName, s.config)
+		snapshotResult, err := orchestrator.CreateVolumeSnapshot(snapshotName, s.name)
 		if err != nil {
 			t.Fatalf("%s: got unexpected error: %v", s.name, err)
 		}

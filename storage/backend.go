@@ -327,30 +327,13 @@ func (b *Backend) RemoveVolume(vol *Volume) error {
 func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error) {
 
 	log.WithFields(log.Fields{
-		"backend":       b.Name,
-		"storage_class": volConfig.StorageClass,
-		"source_volume": volConfig.Name,
-		"snapshot_name": snapshotName,
+		"backend":      b.Name,
+		"sourceVolume": volConfig.Name,
+		"snapshotName": snapshotName,
 	}).Debug("Attempting snapshot create.")
 
-	// Prepare volume
-	if volConfig.InternalName == "" {
-		volConfig.InternalName = b.Driver.GetInternalVolumeName(volConfig.Name)
-	}
-
 	// Create snapshot
-	snapshot, err := b.Driver.CreateSnapshot(snapshotName, volConfig)
-	if err != nil {
-		return nil, err
-	}
-	// Update snapshot with relevant backend information
-	vol, ok := b.Volumes[volConfig.Name]
-	if !ok {
-		return nil, fmt.Errorf("could not find source volume %s in the backend", volConfig.Name)
-	}
-	snapshot.Backend = vol.Backend
-	snapshot.Pool = vol.Pool
-	return snapshot, nil
+	return b.Driver.CreateSnapshot(snapshotName, volConfig)
 }
 
 const (

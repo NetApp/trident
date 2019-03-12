@@ -1366,9 +1366,8 @@ func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 }
 
 // CreateVolumeSnapshot creates a snapshot of the given volume
-func (o *TridentOrchestrator) CreateVolumeSnapshot(
-	snapshotName string, volumeConfig *storage.VolumeConfig,
-) (*storage.SnapshotExternal, error) {
+func (o *TridentOrchestrator) CreateVolumeSnapshot(snapshotName, volName string) (
+	*storage.SnapshotExternal, error) {
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1378,26 +1377,28 @@ func (o *TridentOrchestrator) CreateVolumeSnapshot(
 	defer o.mutex.Unlock()
 
 	// Get the source volume
-	sourceVolume, ok := o.volumes[volumeConfig.Name]
+	sourceVolume, ok := o.volumes[volName]
 	if !ok {
-		return nil, notFoundError(fmt.Sprintf("source volume %s not found", volumeConfig.Name))
+		return nil, notFoundError(fmt.Sprintf("source volume %s not found", volName))
 	}
-	volumeConfig.Version = config.OrchestratorAPIVersion
 
 	// Get the corresponding backend
 	backend, found := o.backends[sourceVolume.Backend]
 	if !found {
 		// Should never get here but just to be safe
 		return nil, notFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
-			sourceVolume.Backend, volumeConfig.Name))
+			sourceVolume.Backend, volName))
 	}
 
 	// Create the snapshot
-	snapshot, err := backend.CreateVolumeSnapshot(snapshotName, volumeConfig)
+	snapshot, err := backend.CreateVolumeSnapshot(snapshotName, sourceVolume.Config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create snapshot for volume %s on backend %s: %v", volumeConfig.Name,
+		return nil, fmt.Errorf("failed to create snapshot for volume %s on backend %s: %v", volName,
 			backend.Name, err)
 	}
+
+	// Add backend information to the snapshot
+	snapshot.Backend = backend.Name
 
 	// Save references to new snapshot in the persistent store
 	err = o.storeClient.AddSnapshot(snapshot)
