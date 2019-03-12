@@ -1643,13 +1643,9 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 
 	// Create the volume configuration object
 	uniqueClaimName := getUniqueClaimName(claim)
-	size := claim.Spec.Resources.Requests[v1.ResourceStorage]
-	accessModes := claim.Spec.AccessModes
-	annotations := claim.Annotations
-	volConfig := getVolumeConfig(accessModes, uniqueClaimName, size, annotations)
 
 	// Create the snapshot
-	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, volConfig)
+	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, uniqueClaimName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
