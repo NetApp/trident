@@ -153,20 +153,24 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 func discoverKubernetesCLI() error {
 
 	// Try the OpenShift CLI first
-	_, err := exec.Command(CLIOpenshift, "version").CombinedOutput()
+	_, err := exec.Command(CLIOpenshift, "version").Output()
 	if GetExitCodeFromError(err) == ExitCodeSuccess {
 		KubernetesCLI = CLIOpenshift
 		return nil
 	}
 
 	// Fall back to the K8S CLI
-	_, err = exec.Command(CLIKubernetes, "version").CombinedOutput()
+	_, err = exec.Command(CLIKubernetes, "version").Output()
 	if GetExitCodeFromError(err) == ExitCodeSuccess {
 		KubernetesCLI = CLIKubernetes
 		return nil
 	}
 
-	return errors.New("could not find the Kubernetes CLI")
+	if ee, ok := err.(*exec.ExitError); ok {
+		return fmt.Errorf("could find the Kubernetes CLI, but it exited with error: %s", strings.TrimRight(string(ee.Stderr), "\n"))
+	}
+
+	return fmt.Errorf("could not find the Kubernetes CLI: %v", err)
 }
 
 // getCurrentNamespace returns the default namespace from service account info
