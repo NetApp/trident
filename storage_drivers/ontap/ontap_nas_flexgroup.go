@@ -381,38 +381,92 @@ func (d *NASFlexGroupStorageDriver) Publish(name string, publishInfo *utils.Volu
 	return nil
 }
 
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *NASFlexGroupStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	return GetSnapshot(snapConfig, &d.Config, d.API)
+}
+
+// Return the list of snapshots associated with the specified volume
+func (d *NASFlexGroupStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "NASFlexGroupStorageDriver",
+			"volumeName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	return GetSnapshots(volConfig, &d.Config, d.API)
+}
+
 // CreateSnapshot creates a snapshot for the given volume
-func (d *NASFlexGroupStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+func (d *NASFlexGroupStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": volConfig.InternalName,
+			"snapshotName": internalSnapName,
+			"sourceVolume": internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateOntapSnapshot(snapshotName, volConfig.InternalName, &d.Config, d.API)
+	return CreateSnapshot(snapConfig, &d.Config, d.API)
 }
 
-// Return the list of snapshots associated with the named volume
-func (d *NASFlexGroupStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *NASFlexGroupStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "NASFlexGroupStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return GetSnapshotList(name, &d.Config, d.API)
+	return RestoreSnapshot(snapConfig, &d.Config, d.API)
+}
+
+// DeleteSnapshot creates a snapshot of a volume.
+func (d *NASFlexGroupStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	return DeleteSnapshot(snapConfig, &d.Config, d.API)
 }
 
 // Tests the existence of a FlexGroup. Returns nil if the FlexGroup

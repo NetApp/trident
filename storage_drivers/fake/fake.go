@@ -49,11 +49,18 @@ type StorageDriver struct {
 	// state.
 	DestroyedVolumes map[string]bool
 
+	fakePools     map[string]*fake.StoragePool
 	physicalPools map[string]*storage.Pool
 	virtualPools  map[string]*storage.Pool
 
 	// Snapshots saves info about Snapshots created on this driver
-	Snapshots map[string]*storage.Snapshot
+	Snapshots map[string]map[string]*storage.Snapshot // map[volumeName]map[snapshotName]snapshot
+
+	// DestroyedSnapshots is here so that tests can check whether delete
+	// has been called on a snapshot during or after bootstrapping, since
+	// different driver instances with the same config won't actually share
+	// state.
+	DestroyedSnapshots map[string]bool
 }
 
 func NewFakeStorageBackend(configJSON string) (sb *storage.Backend, err error) {
@@ -79,14 +86,15 @@ func NewFakeStorageBackend(configJSON string) (sb *storage.Backend, err error) {
 
 func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver {
 	driver := &StorageDriver{
-		initialized:      true,
-		Config:           config,
-		Volumes:          make(map[string]fake.Volume),
-		DestroyedVolumes: make(map[string]bool),
-		Snapshots:        make(map[string]*storage.Snapshot),
+		initialized:        true,
+		Config:             config,
+		Volumes:            make(map[string]fake.Volume),
+		DestroyedVolumes:   make(map[string]bool),
+		Snapshots:          make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots: make(map[string]bool),
 	}
-	driver.populateConfigurationDefaults(&config)
-	driver.initializeStoragePools()
+	_ = driver.populateConfigurationDefaults(&config)
+	_ = driver.initializeStoragePools()
 	return driver
 }
 
@@ -173,7 +181,8 @@ func (d *StorageDriver) Initialize(
 	d.Volumes = make(map[string]fake.Volume)
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
-	d.Snapshots = make(map[string]*storage.Snapshot)
+	d.Snapshots = make(map[string]map[string]*storage.Snapshot)
+	d.DestroyedSnapshots = make(map[string]bool)
 
 	s, _ := json.Marshal(d.Config)
 	log.Debugf("FakeStorageDriverConfig: %s", string(s))
@@ -257,6 +266,11 @@ func (d *StorageDriver) populateConfigurationDefaults(config *drivers.FakeStorag
 
 func (d *StorageDriver) initializeStoragePools() error {
 
+	d.fakePools = make(map[string]*fake.StoragePool)
+	for fakePoolName, fakePool := range d.Config.Pools {
+		d.fakePools[fakePoolName] = fakePool.ConstructClone()
+	}
+
 	d.physicalPools = make(map[string]*storage.Pool)
 	d.virtualPools = make(map[string]*storage.Pool)
 
@@ -267,7 +281,7 @@ func (d *StorageDriver) initializeStoragePools() error {
 	mediaOffers := make([]sa.Offer, 0)
 
 	// Define physical pools
-	for name, fakeStoragePool := range d.Config.Pools {
+	for name, fakeStoragePool := range d.fakePools {
 
 		pool := storage.NewStoragePool(nil, name)
 
@@ -430,7 +444,7 @@ func (d *StorageDriver) Create(
 	for _, physicalPool := range physicalPools {
 
 		fakePoolName := physicalPool.Name
-		fakePool, ok := d.Config.Pools[physicalPool.Name]
+		fakePool, ok := d.fakePools[physicalPool.Name]
 		if !ok {
 			errMessage := fmt.Sprintf("fake pool %s not found.", fakePoolName)
 			log.Error(errMessage)
@@ -452,6 +466,7 @@ func (d *StorageDriver) Create(
 			PhysicalPool:  fakePoolName,
 			SizeBytes:     sizeBytes,
 		}
+		d.Snapshots[name] = make(map[string]*storage.Snapshot)
 		d.DestroyedVolumes[name] = false
 		fakePool.Bytes -= sizeBytes
 
@@ -514,6 +529,38 @@ func (d *StorageDriver) getPoolsForCreate(
 	return candidatePools, nil
 }
 
+func (d *StorageDriver) BootstrapVolume(volume *storage.Volume) {
+
+	var pool *storage.Pool
+
+	// If a physical pool was requested, just use it
+	if ppool, ok := d.physicalPools[volume.Pool]; ok {
+		pool = ppool
+	} else if vpool, ok := d.virtualPools[volume.Pool]; ok {
+		pool = vpool
+	} else {
+		for poolName := range d.physicalPools {
+			pool = d.physicalPools[poolName]
+			break
+		}
+	}
+
+	volAttrs := make(map[string]sa.Request)
+
+	logFields := log.Fields{
+		"backend":       d.Config.InstanceName,
+		"name":          volume.Config.Name,
+		"requestedPool": volume.Pool,
+		"sizeBytes":     volume.Config.Size,
+	}
+
+	if err := d.Create(volume.Config, pool, volAttrs); err != nil {
+		log.WithFields(logFields).Error("Failed to bootstrap fake volume.")
+	} else {
+		log.WithFields(logFields).Debug("Bootstrapped fake volume.")
+	}
+}
+
 func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 
 	name := volConfig.InternalName
@@ -533,7 +580,7 @@ func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 
 	// Use the same pool as the source
 	physicalPool := sourceVolume.PhysicalPool
-	fakePool, ok := d.Config.Pools[physicalPool]
+	fakePool, ok := d.fakePools[physicalPool]
 	if !ok {
 		return fmt.Errorf("could not find pool %s", physicalPool)
 	}
@@ -551,6 +598,7 @@ func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 		PhysicalPool:  physicalPool,
 		SizeBytes:     sizeBytes,
 	}
+	d.Snapshots[name] = make(map[string]*storage.Snapshot)
 	d.DestroyedVolumes[name] = false
 	fakePool.Bytes -= sizeBytes
 
@@ -616,13 +664,14 @@ func (d *StorageDriver) Destroy(name string) error {
 	}
 
 	physicalPool := volume.PhysicalPool
-	fakePool, ok := d.Config.Pools[physicalPool]
+	fakePool, ok := d.fakePools[physicalPool]
 	if !ok {
 		return fmt.Errorf("could not find pool %s", physicalPool)
 	}
 
 	fakePool.Bytes += volume.SizeBytes
 	delete(d.Volumes, name)
+	delete(d.Snapshots, name)
 
 	log.WithFields(log.Fields{
 		"backend":       d.Config.InstanceName,
@@ -639,51 +688,155 @@ func (d *StorageDriver) Publish(name string, publishInfo *utils.VolumePublishInf
 	return errors.New("fake driver does not support Publish")
 }
 
-// CreateSnapshot creates a snapshot for the given volume
-func (d *StorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *StorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	// Ensure source volume exists
+	if _, ok := d.Volumes[internalVolName]; !ok {
+		return nil, fmt.Errorf("volume %s not found", internalVolName)
+	}
+
+	// Initialize the snapshot array if necessary
+	if _, ok := d.Snapshots[internalVolName]; !ok {
+		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
+	}
+
+	if snapshot, ok := d.Snapshots[internalVolName][internalSnapName]; ok {
+		return snapshot, nil
+	}
+	return nil, nil
+}
+
+// GetSnapshots returns the list of snapshots associated with the specified volume
+func (d *StorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
 
 	internalVolName := volConfig.InternalName
+
+	snapshots := make([]*storage.Snapshot, 0)
+
+	// Ensure source volume exists
+	if _, ok := d.Volumes[internalVolName]; !ok {
+		return snapshots, fmt.Errorf("volume %s not found", internalVolName)
+	}
+
+	if volSnapshots, ok := d.Snapshots[internalVolName]; ok {
+		for _, snapshot := range volSnapshots {
+			snapshots = append(snapshots, snapshot)
+		}
+	}
+	return snapshots, nil
+}
+
+// CreateSnapshot creates a snapshot for the given volume
+func (d *StorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "StorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": internalVolName,
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
 	// Ensure source volume exists
-	_, ok := d.Volumes[internalVolName]
+	volume, ok := d.Volumes[internalVolName]
 	if !ok {
 		return nil, fmt.Errorf("source volume %s not found", internalVolName)
 	}
+
+	// Initialize the snapshot array if necessary
+	if _, ok := d.Snapshots[internalVolName]; !ok {
+		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
+	}
+
 	// Check if a snapshot with same name exists
-	if _, ok := d.Snapshots[snapshotName]; ok {
-		return nil, fmt.Errorf("snapshot %s already exists", snapshotName)
+	if _, ok := d.Snapshots[internalVolName][internalSnapName]; ok {
+		return nil, fmt.Errorf("snapshot %s already exists", internalSnapName)
 	}
 
 	snapshot := &storage.Snapshot{
-		Name:    snapshotName,
-		Created: time.Now().UTC().Format(time.RFC3339),
-		ID:      strconv.FormatInt(time.Now().UnixNano(), 10),
+		Config:    snapConfig,
+		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		SizeBytes: int64(volume.SizeBytes),
 	}
-	d.Snapshots[snapshotName] = snapshot
+	d.Snapshots[internalVolName][internalSnapName] = snapshot
+	d.DestroyedSnapshots[snapConfig.ID()] = false
 
 	log.WithFields(log.Fields{
 		"backend":      d.Config.InstanceName,
-		"snapshotName": snapshotName,
+		"snapshotName": internalSnapName,
 		"sourceVolume": internalVolName,
 	}).Info("Created fake snapshot.")
 
 	return snapshot, nil
 }
 
-func (d *StorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
-	return nil, errors.New("fake driver does not support SnapshotList")
+func (d *StorageDriver) BootstrapSnapshot(snapshot *storage.Snapshot) {
+
+	logFields := log.Fields{
+		"backend":      d.Config.InstanceName,
+		"snapshotName": snapshot.Config.InternalName,
+		"sourceVolume": snapshot.Config.VolumeInternalName,
+	}
+
+	if newSnapshot, err := d.CreateSnapshot(snapshot.Config); err != nil {
+		log.WithFields(logFields).Error("Failed to bootstrap fake snapshot.")
+	} else {
+		newSnapshot.Created = snapshot.Created
+		log.WithFields(logFields).Debug("Bootstrapped fake snapshot.")
+	}
+}
+
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *StorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	// Ensure source volume exists
+	if _, ok := d.Volumes[internalVolName]; !ok {
+		return fmt.Errorf("volume %s not found", internalVolName)
+	}
+
+	// Initialize the snapshot array if necessary
+	if _, ok := d.Snapshots[internalVolName]; !ok {
+		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
+	}
+
+	if _, ok := d.Snapshots[internalVolName][internalSnapName]; !ok {
+		return fmt.Errorf("snapshot %s not found in volume %s", internalSnapName, internalVolName)
+	}
+	return nil
+}
+
+// DeleteSnapshot creates a snapshot of a volume.
+func (d *StorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	// Initialize the snapshot array if necessary
+	if _, ok := d.Snapshots[internalVolName]; !ok {
+		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
+	}
+
+	if _, ok := d.Snapshots[internalVolName][internalSnapName]; ok {
+		delete(d.Snapshots[internalVolName], internalSnapName)
+	}
+
+	d.DestroyedSnapshots[snapConfig.ID()] = true
+
+	return nil
 }
 
 func (d *StorageDriver) Get(name string) error {
@@ -877,38 +1030,6 @@ func (d *StorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap
 	return roaring.New()
 }
 
-func (d *StorageDriver) BootstrapVolume(volume *storage.Volume) {
-
-	var pool *storage.Pool
-
-	// If a physical pool was requested, just use it
-	if ppool, ok := d.physicalPools[volume.Pool]; ok {
-		pool = ppool
-	} else if vpool, ok := d.virtualPools[volume.Pool]; ok {
-		pool = vpool
-	} else {
-		for poolName := range d.physicalPools {
-			pool = d.physicalPools[poolName]
-			break
-		}
-	}
-
-	volAttrs := make(map[string]sa.Request)
-
-	logFields := log.Fields{
-		"backend":       d.Config.InstanceName,
-		"name":          volume.Config.Name,
-		"requestedPool": volume.Pool,
-		"sizeBytes":     volume.Config.Size,
-	}
-
-	if err := d.Create(volume.Config, pool, volAttrs); err != nil {
-		log.WithFields(logFields).Error("Failed to bootstrap fake volume.")
-	} else {
-		log.WithFields(logFields).Debug("Bootstrapped fake volume.")
-	}
-}
-
 // CopyVolumes copies Volumes into this instance; there is no "storage system of truth" to use
 func (d StorageDriver) CopyVolumes(volumes map[string]fake.Volume) {
 	for name, vol := range volumes {
@@ -920,6 +1041,6 @@ func Clone(a, b interface{}) {
 	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 	dec := gob.NewDecoder(buff)
-	enc.Encode(a)
-	dec.Decode(b)
+	_ = enc.Encode(a)
+	_ = dec.Decode(b)
 }

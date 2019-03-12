@@ -37,39 +37,39 @@ metadata:
 `
 
 func GetClusterRoleYAML(flavor OrchestratorFlavor, csi bool) string {
+
+	var clusterRoleYAML string
+
+	if csi {
+		clusterRoleYAML = clusterRoleCSIYAMLTemplate
+	} else {
+		clusterRoleYAML = clusterRoleYAMLTemplate
+	}
+
 	switch flavor {
 	case FlavorOpenShift:
-		if csi {
-			return clusterRoleOpenShiftCSIYAML
-		} else {
-			return clusterRoleOpenShiftYAML
-		}
+		clusterRoleYAML = strings.Replace(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1", 1)
 	default:
 		fallthrough
 	case FlavorKubernetes:
-		if csi {
-			return clusterRoleKubernetesV1CSIYAML
-		} else {
-			return clusterRoleKubernetesV1YAML
-		}
+		clusterRoleYAML = strings.Replace(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1", 1)
 	}
+
+	return clusterRoleYAML
 }
 
-const clusterRoleOpenShiftYAML = `---
+const clusterRoleYAMLTemplate = `---
 kind: ClusterRole
-apiVersion: authorization.openshift.io/v1
+apiVersion: {API_VERSION}
 metadata:
   name: trident
 rules:
   - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
+    resources: ["persistentvolumes", "persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
-    verbs: ["patch"]
+    verbs: ["update", "patch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]
@@ -83,95 +83,25 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 `
 
-const clusterRoleOpenShiftCSIYAML = `---
+const clusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
-apiVersion: authorization.openshift.io/v1
+apiVersion: {API_VERSION}
 metadata:
   name: trident-csi
 rules:
   - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "delete", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["csi.storage.k8s.io"]
-    resources: ["csinodeinfos"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-`
-
-const clusterRoleKubernetesV1YAML = `---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: trident
-rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
+    resources: ["persistentvolumes", "persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
-    verbs: ["patch"]
+    verbs: ["update", "patch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-`
-
-const clusterRoleKubernetesV1CSIYAML = `---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: trident-csi
-rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "delete", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
@@ -184,12 +114,24 @@ rules:
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots", "volumesnapshotclasses"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["csi.storage.k8s.io"]
-    resources: ["csinodeinfos"]
-    verbs: ["get", "list", "watch", "update"]
+    resources: ["csidrivers", "csinodeinfos"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csidrivers", "csinodes"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]    
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 `
 
 func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, csi bool) string {
@@ -281,10 +223,8 @@ spec:
         command:
         - /usr/local/bin/trident_orchestrator
         args:
-        - -crd_persistence
-        - -k8s_pod
-        #- -k8s_api_server
-        #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
+        - "--crd_persistence"
+        - "--k8s_pod"
         {DEBUG}
         livenessProbe:
           exec:
@@ -322,7 +262,7 @@ spec:
       targetPort: 8443
 `
 
-func GetCSIStatefulSetYAML(tridentImage, label string, debug bool) string {
+func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils.Version) string {
 
 	var debugLine string
 	if debug {
@@ -331,22 +271,30 @@ func GetCSIStatefulSetYAML(tridentImage, label string, debug bool) string {
 		debugLine = "#- -debug"
 	}
 
-	statefulSetYAML := strings.Replace(statefulSetYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
-	statefulSetYAML = strings.Replace(statefulSetYAML, "{DEBUG}", debugLine, 1)
-	statefulSetYAML = strings.Replace(statefulSetYAML, "{LABEL}", label, -1)
-	return statefulSetYAML
+	var deploymentYAML string
+	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
+		deploymentYAML = csiDeployment113YAMLTemplate
+	} else {
+		deploymentYAML = csiDeployment114YAMLTemplate
+	}
+
+	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
+	return deploymentYAML
 }
 
-const statefulSetYAMLTemplate = `---
-apiVersion: apps/v1beta1
-kind: StatefulSet
+const csiDeployment113YAMLTemplate = `---
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: trident-csi
   labels:
     app: {LABEL}
 spec:
-  serviceName: "trident-csi"
   replicas: 1
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -362,6 +310,7 @@ spec:
         - /usr/local/bin/trident_orchestrator
         args:
         - "--crd_persistence"
+        - "--k8s_pod"
         - "--https_rest"
         - "--https_port=8443"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
@@ -394,10 +343,11 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
-      - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v1.0.1
+      - name: csi-provisioner
+        image: quay.io/k8scsi/csi-provisioner:v1.0.1
         args:
         - "--v=9"
+        - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -405,11 +355,139 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.0.1
+      - name: csi-attacher
+        image: quay.io/k8scsi/csi-attacher:v1.0.1
         args:
         - "--v=9"
-        - "--provisioner=csi.trident.netapp.io"
+        - "--connection-timeout=24h"
+        - "--timeout=60s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-snapshotter
+        image: quay.io/k8scsi/csi-snapshotter:v1.0.1
+        args:
+        - "--v=9"
+        - "--connection-timeout=24h"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-cluster-driver-registrar
+        image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
+        args:
+        - "--v=9"
+        - "--connection-timeout=24h"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      volumes:
+      - name: socket-dir
+        emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
+`
+
+const csiDeployment114YAMLTemplate = `---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: trident-csi
+  labels:
+    app: {LABEL}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {LABEL}
+    spec:
+      serviceAccount: trident-csi
+      containers:
+      - name: trident-main
+        image: {TRIDENT_IMAGE}
+        ports:
+        - containerPort: 8443
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - "--crd_persistence"
+        - "--k8s_pod"
+        - "--https_rest"
+        - "--https_port=8443"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
+        {DEBUG}
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - 127.0.0.1:8000
+            - get
+            - backend
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /plugin
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: csi-provisioner
+        image: quay.io/k8scsi/csi-provisioner:v1.2.1
+        args:
+        - "--v=9"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-attacher
+        image: quay.io/k8scsi/csi-attacher:v1.1.1
+        args:
+        - "--v=9"
+        - "--timeout=60s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-snapshotter
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.0
+        args:
+        - "--v=9"
+        - "--timeout=60s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -427,27 +505,28 @@ spec:
 
 func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
 
-	var (
-		debugLine        string
-		registrationPath string
-	)
+	var debugLine string
+
 	if debug {
 		debugLine = "- -debug"
 	} else {
 		debugLine = "#- -debug"
 	}
-	if version.AtLeast(utils.MustParseSemantic("v1.13.0")) {
-		registrationPath = "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
+
+	var daemonSetYAML string
+	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
+		daemonSetYAML = daemonSet113YAMLTemplate
+	} else {
+		daemonSetYAML = daemonSet114YAMLTemplate
 	}
 
-	daemonSetYAML := strings.Replace(daemonSetYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{REGISTRATION_PATH}", registrationPath, 1)
 	return daemonSetYAML
 }
 
-const daemonSetYAMLTemplate = `---
+const daemonSet113YAMLTemplate = `---
 apiVersion: apps/v1beta2
 kind: DaemonSet
 metadata:
@@ -516,13 +595,133 @@ spec:
         image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
         - "--v=9"
+        - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
         - name: REGISTRATION_PATH
-          value: {REGISTRATION_PATH}
+          value: "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: plugin-dir
+          mountPath: /plugin
+        - name: registration-dir
+          mountPath: /registration
+      volumes:
+      - name: plugin-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins/csi.trident.netapp.io/
+          type: DirectoryOrCreate
+      - name: registration-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins_registry/
+          type: Directory
+      - name: plugins-mount-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins
+          type: DirectoryOrCreate
+      - name: pods-mount-dir
+        hostPath:
+          path: /var/lib/kubelet/pods
+          type: DirectoryOrCreate
+      - name: dev-dir
+        hostPath:
+          path: /dev
+          type: Directory
+      - name: sys-dir
+        hostPath:
+          path: /sys
+          type: Directory
+      - name: host-dir
+        hostPath:
+          path: /
+          type: Directory
+      - name: certs
+        secret:
+          secretName: trident-csi
+`
+
+const daemonSet114YAMLTemplate = `---
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  name: trident-csi
+  labels:
+    app: {LABEL}
+spec:
+  selector:
+    matchLabels:
+      app: {LABEL}
+  template:
+    metadata:
+      labels:
+        app: {LABEL}
+    spec:
+      serviceAccount: trident-csi
+      hostNetwork: true
+      hostIPC: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: trident-main
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+          allowPrivilegeEscalation: true
+        image: {TRIDENT_IMAGE}
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - "--no_persistence"
+        - "--rest=false"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=node"
+        {DEBUG}
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        - name: PATH
+          value: /netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        volumeMounts:
+        - name: plugin-dir
+          mountPath: /plugin
+        - name: plugins-mount-dir
+          mountPath: /var/lib/kubelet/plugins
+        - name: pods-mount-dir
+          mountPath: /var/lib/kubelet/pods
+          mountPropagation: "Bidirectional"
+        - name: dev-dir
+          mountPath: /dev
+        - name: sys-dir
+          mountPath: /sys
+        - name: host-dir
+          mountPath: /host
+          mountPropagation: "Bidirectional"
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: driver-registrar
+        image: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
+        args:
+        - "--v=9"
+        - "--csi-address=$(ADDRESS)"
+        - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+        env:
+        - name: ADDRESS
+          value: /plugin/csi.sock
+        - name: REGISTRATION_PATH
+          value: "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:
@@ -602,7 +801,7 @@ rules:
     resources: ["deployments", "daemonsets"]
     verbs: ["*"]
   - apiGroups: ["apps"]
-    resources: ["statefulsets", "daemonsets", "deployments"]
+    resources: ["statefulsets", daemonsets", "deployments"]
     verbs: ["*"]
   - apiGroups: ["authorization.openshift.io", "rbac.authorization.k8s.io"]
     resources: ["clusterroles", "clusterrolebindings"]
@@ -617,7 +816,7 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["*"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["*"]
 `
 
@@ -640,13 +839,19 @@ rules:
     resources: ["clusterroles", "clusterrolebindings"]
     verbs: ["*"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "volumeattachments"]
+    resources: ["storageclasses", "volumeattachments", "csidrivers", "csinodes"]
+    verbs: ["*"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots", "volumesnapshotclasses", "volumesnapshotcontents"]
     verbs: ["*"]
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["*"]
+  - apiGroups: ["csi.storage.k8s.io"]
+    resources: ["csidrivers", "csinodeinfos"]
+    verbs: ["*"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["*"]
 `
 
@@ -695,7 +900,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, debug bool, commandArgs []string) string {
+func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, csi bool, commandArgs []string) string {
 
 	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
 
@@ -704,6 +909,13 @@ func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, debug bo
 	podYAML = strings.Replace(podYAML, "{PVC_NAME}", pvcName, 1)
 	podYAML = strings.Replace(podYAML, "{LABEL}", label, 1)
 	podYAML = strings.Replace(podYAML, "{COMMAND}", command, 1)
+
+	if csi {
+		podYAML = strings.Replace(podYAML, "{SERVICE_ACCOUNT}", "trident-csi", 1)
+	} else {
+		podYAML = strings.Replace(podYAML, "{SERVICE_ACCOUNT}", "trident", 1)
+	}
+
 	return podYAML
 }
 
@@ -715,7 +927,7 @@ metadata:
   labels:
     app: {LABEL}
 spec:
-  serviceAccount: trident
+  serviceAccount: {SERVICE_ACCOUNT}
   restartPolicy: Never
   containers:
   - name: trident-migrator
@@ -840,11 +1052,25 @@ data:
 `
 
 func GetCRDsYAML() string {
-	return customResourceDefinitionYAMLTemplate
+	return customResourceDefinitionYAML
 }
 
 /*
+kubectl delete crd tridentversions.trident.netapp.io --wait=false
+kubectl delete crd tridentbackends.trident.netapp.io --wait=false
+kubectl delete crd tridentstorageclasses.trident.netapp.io --wait=false
+kubectl delete crd tridentvolumes.trident.netapp.io --wait=false
+kubectl delete crd tridentnodes.trident.netapp.io --wait=false
+kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
+kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
+
+kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentstorageclasses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentvolumes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
@@ -852,8 +1078,10 @@ kubectl delete crd tridentstorageclasses.trident.netapp.io
 kubectl delete crd tridentvolumes.trident.netapp.io
 kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
+kubectl delete crd tridentsnapshots.trident.netapp.io
 */
-const customResourceDefinitionYAMLTemplate = `
+
+const customResourceDefinitionYAML = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1006,4 +1234,137 @@ spec:
     - ttransaction
     categories:
     - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentsnapshots.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentsnapshots
+    singular: tridentsnapshot
+    kind: TridentSnapshot
+    shortNames:
+    - tss
+    - tsnap
+    - tsnapshot
+    categories:
+    - trident
+    - trident-internal
+`
+
+func GetCSIDriverCRDYAML() string {
+	return CSIDriverCRDYAML
+}
+
+const CSIDriverCRDYAML = `
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: csidrivers.csi.storage.k8s.io
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  group: csi.storage.k8s.io
+  names:
+    kind: CSIDriver
+    plural: csidrivers
+  scope: Cluster
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: Specification of the CSI Driver.
+          properties:
+            attachRequired:
+              description: Indicates this CSI volume driver requires an attach operation,
+                and that Kubernetes should call attach and wait for any attach operation
+                to complete before proceeding to mount.
+              type: boolean
+            podInfoOnMountVersion:
+              description: Indicates this CSI volume driver requires additional pod
+                information (like podName, podUID, etc.) during mount operations.
+              type: string
+  version: v1alpha1
+`
+
+func GetCSINodeInfoCRDYAML() string {
+	return CSINodeInfoCRDYAML
+}
+
+const CSINodeInfoCRDYAML = `
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: csinodeinfos.csi.storage.k8s.io
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  group: csi.storage.k8s.io
+  names:
+    kind: CSINodeInfo
+    plural: csinodeinfos
+  scope: Cluster
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: Specification of CSINodeInfo
+          properties:
+            drivers:
+              description: List of CSI drivers running on the node and their specs.
+              type: array
+              items:
+                properties:
+                  name:
+                    description: The CSI driver that this object refers to.
+                    type: string
+                  nodeID:
+                    description: The node from the driver point of view.
+                    type: string
+                  topologyKeys:
+                    description: List of keys supported by the driver.
+                    items:
+                      type: string
+                    type: array
+        status:
+          description: Status of CSINodeInfo
+          properties:
+            drivers:
+              description: List of CSI drivers running on the node and their statuses.
+              type: array
+              items:
+                properties:
+                  name:
+                    description: The CSI driver that this object refers to.
+                    type: string
+                  available:
+                    description: Whether the CSI driver is installed.
+                    type: boolean
+                  volumePluginMechanism:
+                    description: Indicates to external components the required mechanism
+                      to use for any in-tree plugins replaced by this driver.
+                    pattern: in-tree|csi
+                    type: string
+  version: v1alpha1
+`
+
+func GetCSIDriverCRYAML() string {
+	return CSIDriverCRYAML
+}
+
+const CSIDriverCRYAML = `
+apiVersion: storage.k8s.io/v1beta1
+kind: CSIDriver
+metadata:
+  name: csi.trident.netapp.io
+spec:
+  attachRequired: true
 `

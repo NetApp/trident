@@ -11,12 +11,16 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/netapp/trident/frontend/crd"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/frontend/csi/helpers"
+	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
+	plainhelper "github.com/netapp/trident/frontend/csi/helpers/plain"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/frontend/rest"
@@ -217,7 +221,8 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
-	frontends := make([]frontend.Plugin, 0)
+	preBootstrapFrontends := make([]frontend.Plugin, 0)
+	postBootstrapFrontends := make([]frontend.Plugin, 0)
 
 	// Set log level
 	err = logging.InitLogLevel(*debug, *logLevel)
@@ -247,7 +252,7 @@ func main() {
 			log.Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
 			httpServer := rest.NewHTTPServer(orchestrator, *address, *port)
-			frontends = append(frontends, httpServer)
+			preBootstrapFrontends = append(preBootstrapFrontends, httpServer)
 			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
 		}
 	}
@@ -262,12 +267,12 @@ func main() {
 			if err != nil {
 				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
 			}
-			frontends = append(frontends, httpsServer)
+			preBootstrapFrontends = append(preBootstrapFrontends, httpsServer)
 			log.WithFields(log.Fields{"name": httpsServer.GetName()}).Info("Added frontend.")
 		}
 	}
 
-	// Create Kubernetes *or* Docker frontend
+	// Create Kubernetes *or* Docker *or* CSI/K8S frontend
 	if enableKubernetes {
 
 		var kubernetesFrontend frontend.Plugin
@@ -275,27 +280,27 @@ func main() {
 
 		if *k8sAPIServer != "" {
 			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
-		} else {
+		} else if *k8sPod {
 			kubernetesFrontend, err = kubernetes.NewPluginInCluster(orchestrator)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the Kubernetes frontend. %v", err)
 		}
 		orchestrator.AddFrontend(kubernetesFrontend)
-		frontends = append(frontends, kubernetesFrontend)
+		postBootstrapFrontends = append(postBootstrapFrontends, kubernetesFrontend)
 
 		if *useCRD {
 			var crdController frontend.Plugin
 			if *k8sAPIServer != "" {
-				crdController, err = kubernetes.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
+				crdController, err = crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
 			} else {
-				crdController, err = kubernetes.NewTridentCrdControllerInCluster(orchestrator)
+				crdController, err = crd.NewTridentCrdControllerInCluster(orchestrator)
 			}
 			if err != nil {
 				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
 			}
 			orchestrator.AddFrontend(crdController)
-			frontends = append(frontends, crdController)
+			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
 		}
 
 	} else if enableDocker {
@@ -314,7 +319,7 @@ func main() {
 			log.Fatalf("Unable to start the Docker frontend. %v", err)
 		}
 		orchestrator.AddFrontend(dockerFrontend)
-		frontends = append(frontends, dockerFrontend)
+		preBootstrapFrontends = append(preBootstrapFrontends, dockerFrontend)
 
 	} else if enableCSI {
 		config.CurrentDriverContext = config.ContextCSI
@@ -330,6 +335,21 @@ func main() {
 			log.Fatal("CSI is enabled but csi_node_name was not specified.")
 		}
 
+		var hybridFrontend frontend.Plugin
+		if *k8sAPIServer != "" {
+			hybridFrontend, err = k8shelper.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
+		} else if *k8sPod {
+			hybridFrontend, err = k8shelper.NewPluginInCluster(orchestrator)
+		} else {
+			hybridFrontend = plainhelper.NewPlugin(orchestrator)
+		}
+		if err != nil {
+			log.Fatalf("Unable to start the K8S hybrid frontend. %v", err)
+		}
+		orchestrator.AddFrontend(hybridFrontend)
+		postBootstrapFrontends = append(postBootstrapFrontends, hybridFrontend)
+		hybridPlugin := hybridFrontend.(helpers.HybridPlugin)
+
 		log.WithFields(log.Fields{
 			"name":    *csiNodeName,
 			"version": config.OrchestratorVersion,
@@ -338,27 +358,47 @@ func main() {
 		var csiFrontend *csi.Plugin
 		switch *csiRole {
 		case csi.CSIController:
-			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator)
+			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, orchestrator)
 		case csi.CSIAllInOne:
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator)
+				*httpsClientKey, orchestrator, &hybridPlugin)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)
 		}
 		orchestrator.AddFrontend(csiFrontend)
-		frontends = append(frontends, csiFrontend)
+		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
+
+		if *useCRD {
+			var crdController frontend.Plugin
+			if *k8sAPIServer != "" {
+				crdController, err = crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			} else {
+				crdController, err = crd.NewTridentCrdControllerInCluster(orchestrator)
+			}
+			if err != nil {
+				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
+			}
+			orchestrator.AddFrontend(crdController)
+			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
+		}
 	}
 
-	// Bootstrap the orchestrator and start its frontends
-	for _, f := range frontends {
+	// Bootstrap the orchestrator and start its frontends.  Some frontends, notably REST and Docker, must
+	// start before the core so that the external interfaces are minimally responding while the core is
+	// still initializing.  Other frontends such as legacy Kubernetes and CSI benefit from starting after
+	// the core is ready.
+	for _, f := range preBootstrapFrontends {
 		f.Activate()
 	}
 	if err = orchestrator.Bootstrap(); err != nil {
 		log.Error(err.Error())
+	}
+	for _, f := range postBootstrapFrontends {
+		f.Activate()
 	}
 
 	// Register and wait for a shutdown signal
@@ -366,7 +406,10 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
 	log.Info("Shutting down.")
-	for _, f := range frontends {
+	for _, f := range postBootstrapFrontends {
+		f.Deactivate()
+	}
+	for _, f := range preBootstrapFrontends {
 		f.Deactivate()
 	}
 	storeClient.Stop()

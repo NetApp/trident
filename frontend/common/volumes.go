@@ -47,7 +47,7 @@ func GetStorageClass(options map[string]string, o core.Orchestrator) (*storagecl
 	if err != nil {
 		log.WithFields(log.Fields{
 			"storageClass": newScConfig.Name,
-		}).Error("Docker frontend couldn't add the storage class: ", err)
+		}).Error("couldn't add the storage class: ", err)
 		return nil, err
 	}
 

@@ -1120,18 +1120,132 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	return nil
 }
 
-// CreateSnapshot creates a snapshot for the given volume
-func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	volume, err := d.GetVolume(internalVolName)
+	if err != nil {
+		log.Errorf("Unable to locate snapshot parent volume: %+v", err)
+		return nil, errors.New("volume not found")
+	}
+
+	var req api.ListSnapshotsRequest
+	req.VolumeID = volume.VolumeID
+
+	snapList, err := d.Client.ListSnapshots(&req)
+	if err != nil {
+		log.Errorf("Unable to locate snapshot: %+v", err)
+		return nil, errors.New("snapshot not found")
+	}
+
+	log.Debugf("Returned %d snapshots", len(snapList))
+
+	for _, snap := range snapList {
+		if snap.Name == internalSnapName {
+
+			log.WithFields(log.Fields{
+				"snapshotName": internalSnapName,
+				"volumeName":   internalVolName,
+				"created":      snap.CreateTime,
+			}).Debug("Found snapshot.")
+
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: volume.TotalSize,
+			}, nil
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
+}
+
+// SnapshotList returns the list of snapshots associated with the specified volume
+func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
 
 	internalVolName := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "SANStorageDriver",
+			"volumeName": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	volume, err := d.GetVolume(internalVolName)
+	if err != nil {
+		log.Errorf("Unable to locate parent volume in snapshot list: %+v", err)
+		return nil, errors.New("volume not found")
+	}
+
+	var req api.ListSnapshotsRequest
+	req.VolumeID = volume.VolumeID
+
+	snapList, err := d.Client.ListSnapshots(&req)
+	if err != nil {
+		log.Errorf("Unable to list snapshots: %+v", err)
+		return nil, errors.New("no snapshots found")
+	}
+
+	log.Debugf("Returned %d snapshots", len(snapList))
+	var snapshots []*storage.Snapshot
+
+	for _, snap := range snapList {
+		log.Debugf("Snapshot name: %s, date: %s", snap.Name, snap.CreateTime)
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: volume.TotalSize,
+		}
+
+		snapshots = append(snapshots, snapshot)
+	}
+
+	return snapshots, nil
+}
+
+// CreateSnapshot creates a snapshot for the given volume
+func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "SANStorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": internalVolName,
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
@@ -1146,7 +1260,7 @@ func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 
 	var req api.CreateSnapshotRequest
 	req.VolumeID = sourceVolume.VolumeID
-	req.Name = snapshotName
+	req.Name = internalSnapName
 
 	snapshot, err := d.Client.CreateSnapshot(&req)
 	if err != nil {
@@ -1154,49 +1268,89 @@ func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 	}
 
 	return &storage.Snapshot{
-		Name:    snapshot.Name,
-		Created: snapshot.CreateTime,
-		ID:      strconv.FormatInt(snapshot.SnapshotID, 10),
+		Config:    snapConfig,
+		Created:   snapshot.CreateTime,
+		SizeBytes: sourceVolume.TotalSize,
 	}, nil
 }
 
-// SnapshotList returns the list of snapshots associated with the named volume
-func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *SANStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "SANStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	v, err := d.GetVolume(name)
+	volume, err := d.GetVolume(internalVolName)
 	if err != nil {
-		log.Errorf("Unable to locate parent volume in snapshot list: %+v", err)
-		return nil, errors.New("volume not found")
+		return err
 	}
 
-	var req api.ListSnapshotsRequest
-	req.VolumeID = v.VolumeID
-
-	s, err := d.Client.ListSnapshots(&req)
+	snapshot, err := d.Client.GetSnapshot(-1, volume.VolumeID, internalSnapName)
 	if err != nil {
-		log.Errorf("Unable to locate snapshot: %+v", err)
-		return nil, errors.New("snapshot not found")
+		return err
 	}
 
-	log.Debugf("Returned %d snapshots", len(s))
-	var snapshots []storage.Snapshot
-
-	for _, snap := range s {
-		log.Debugf("Snapshot name: %s, date: %s", snap.Name, snap.CreateTime)
-		snapshots = append(snapshots, storage.Snapshot{Name: snap.Name, Created: snap.CreateTime})
+	if snapshot.Name != internalSnapName {
+		return fmt.Errorf("unable to find snapshot %s", internalSnapName)
 	}
 
-	return snapshots, nil
+	req := api.RollbackToSnapshotRequest{
+		VolumeID:   volume.VolumeID,
+		SnapshotID: snapshot.SnapshotID,
+	}
+
+	_, err = d.Client.RollbackToSnapshot(&req)
+	if err != nil {
+		return fmt.Errorf("unable to rollback to snapshot. %v", err)
+	}
+
+	return nil
+}
+
+// DeleteSnapshot deletes a snapshot of a volume.
+func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	volume, err := d.GetVolume(internalVolName)
+	if err != nil {
+		return err
+	}
+
+	snapshot, err := d.Client.GetSnapshot(-1, volume.VolumeID, internalSnapName)
+	if err != nil {
+		return err
+	}
+
+	if snapshot.Name != internalSnapName {
+		return fmt.Errorf("unable to find snapshot %s", internalSnapName)
+	}
+
+	err = d.Client.DeleteSnapshot(snapshot.SnapshotID)
+	return err
 }
 
 // Get tests for the existence of a volume

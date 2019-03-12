@@ -1202,6 +1202,48 @@ func (d Client) VolumeListByAttrs(
 	return response, err
 }
 
+// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
+func (d Client) VolumeListAllBackedBySnapshot(volumeName, snapshotName string) ([]string, error) {
+
+	// Limit the Flexvols to those matching the specified attributes
+	query := &azgo.VolumeGetIterRequestQuery{}
+	queryVolCloneParentAttrs := azgo.NewVolumeCloneParentAttributesType().
+		SetName(volumeName).
+		SetSnapshotName(snapshotName)
+	queryVolCloneAttrs := azgo.NewVolumeCloneAttributesType().
+		SetVolumeCloneParentAttributes(*queryVolCloneParentAttrs)
+	volumeAttributes := azgo.NewVolumeAttributesType().
+		SetVolumeCloneAttributes(*queryVolCloneAttrs)
+	query.SetVolumeAttributes(*volumeAttributes)
+
+	// Limit the returned data to only the Flexvol names
+	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
+	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
+	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
+
+	response, err := azgo.NewVolumeGetIterRequest().
+		SetMaxRecords(defaultZapiRecords).
+		SetQuery(*query).
+		SetDesiredAttributes(*desiredAttributes).
+		ExecuteUsing(d.zr)
+
+	if err = GetError(response, err); err != nil {
+		return nil, fmt.Errorf("error enumerating volumes backed by snapshot: %v", err)
+	}
+
+	volumeNames := make([]string, 0)
+
+	if response.Result.AttributesListPtr != nil {
+		for _, volAttrs := range response.Result.AttributesListPtr.VolumeAttributesPtr {
+			volIDAttrs := volAttrs.VolumeIdAttributes()
+			volumeNames = append(volumeNames, string(volIDAttrs.Name()))
+		}
+	}
+
+	return volumeNames, nil
+}
+
 // VolumeGetRootName gets the name of the root volume of a vserver
 func (d Client) VolumeGetRootName() (*azgo.VolumeGetRootNameResponse, error) {
 	response, err := azgo.NewVolumeGetRootNameRequest().
@@ -1600,16 +1642,16 @@ func (d Client) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIter
 // SNAPSHOT operations BEGIN
 
 // SnapshotCreate creates a snapshot of a volume
-func (d Client) SnapshotCreate(name, volumeName string) (*azgo.SnapshotCreateResponse, error) {
+func (d Client) SnapshotCreate(snapshotName, volumeName string) (*azgo.SnapshotCreateResponse, error) {
 	response, err := azgo.NewSnapshotCreateRequest().
-		SetSnapshot(name).
+		SetSnapshot(snapshotName).
 		SetVolume(volumeName).
 		ExecuteUsing(d.zr)
 	return response, err
 }
 
-// SnapshotGetByVolume returns the list of snapshots associated with a volume
-func (d Client) SnapshotGetByVolume(volumeName string) (*azgo.SnapshotGetIterResponse, error) {
+// SnapshotList returns the list of snapshots associated with a volume
+func (d Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, error) {
 	query := &azgo.SnapshotGetIterRequestQuery{}
 	snapshotInfo := azgo.NewSnapshotInfoType().SetVolume(volumeName)
 	query.SetSnapshotInfo(*snapshotInfo)
@@ -1617,6 +1659,26 @@ func (d Client) SnapshotGetByVolume(volumeName string) (*azgo.SnapshotGetIterRes
 	response, err := azgo.NewSnapshotGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
 		SetQuery(*query).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// SnapshotRestoreVolume restores a volume to a snapshot
+func (d Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
+	response, err := azgo.NewSnapshotRestoreVolumeRequest().
+		SetVolume(volumeName).
+		SetSnapshot(snapshotName).
+		SetPreserveLunIds(true).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// DeleteSnapshot deletes a snapshot of a volume
+func (d Client) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotDeleteResponse, error) {
+	response, err := azgo.NewSnapshotDeleteRequest().
+		SetVolume(volumeName).
+		SetSnapshot(snapshotName).
+		SetIgnoreOwners(true).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -1778,13 +1840,13 @@ func (d Client) AggrSpaceGetIterRequest(aggregateName string) (*azgo.AggrSpaceGe
 	return responseAggrSpace, err
 }
 
-func (d Client) getAggregateSize(aggregateName string) (result int, err error) {
+func (d Client) getAggregateSize(aggregateName string) (int, error) {
 	// First, lookup the aggregate and it's space used
 	aggregateSizeTotal := NumericalValueNotSet
 
-	responseAggrSpace, error := d.AggrSpaceGetIterRequest(aggregateName)
-	if error = GetError(responseAggrSpace, error); error != nil {
-		return NumericalValueNotSet, fmt.Errorf("error getting size for Aggregate %v: %v", aggregateName, error)
+	responseAggrSpace, err := d.AggrSpaceGetIterRequest(aggregateName)
+	if err = GetError(responseAggrSpace, err); err != nil {
+		return NumericalValueNotSet, fmt.Errorf("error getting size for aggregate %v: %v", aggregateName, err)
 	}
 
 	if responseAggrSpace.Result.AttributesListPtr != nil {
@@ -1794,7 +1856,7 @@ func (d Client) getAggregateSize(aggregateName string) (result int, err error) {
 		}
 	}
 
-	return aggregateSizeTotal, fmt.Errorf("error getting size for Aggregate %v", aggregateName)
+	return aggregateSizeTotal, fmt.Errorf("error getting size for aggregate %v", aggregateName)
 }
 
 type AggregateCommitment struct {
@@ -1822,14 +1884,14 @@ func (o AggregateCommitment) String() string {
 
 // AggregateCommitmentPercentage returns the allocated capacity percentage for an aggregate
 // See also;  https://practical-admin.com/blog/netapp-powershell-toolkit-aggregate-overcommitment-report/
-func (d Client) AggregateCommitment(aggregate string) (result *AggregateCommitment, err error) {
+func (d Client) AggregateCommitment(aggregate string) (*AggregateCommitment, error) {
 
 	zr := d.GetNontunneledZapiRunner()
 
 	// first, get the aggregate's size
-	aggregateSize, error := d.getAggregateSize(aggregate)
-	if error != nil {
-		return nil, error
+	aggregateSize, err := d.getAggregateSize(aggregate)
+	if err != nil {
+		return nil, err
 	}
 
 	// now, get all of the aggregate's volumes

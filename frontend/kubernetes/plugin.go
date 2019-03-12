@@ -270,6 +270,11 @@ func (p *Plugin) Activate() error {
 	go p.volumeController.Run(p.volumeControllerStopChan)
 	go p.classController.Run(p.classControllerStopChan)
 	go p.resizeController.Run(p.resizeControllerStopChan)
+
+	// Configure telemetry
+	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
+	config.OrchestratorTelemetry.PlatformVersion = p.Version()
+
 	return nil
 }
 

@@ -30,3 +30,10 @@ func (p *StoragePool) UnmarshalJSON(data []byte) error {
 	p.Bytes = tmp.Bytes
 	return nil
 }
+
+func (p *StoragePool) ConstructClone() *StoragePool {
+	return &StoragePool{
+		Attrs: p.Attrs,
+		Bytes: p.Bytes,
+	}
+}

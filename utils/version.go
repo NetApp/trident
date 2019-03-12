@@ -303,6 +303,11 @@ func (v *Version) LessThan(other *Version) bool {
 	return v.compareInternal(other) == -1
 }
 
+// GreaterThan tests if a version is greater than a given version.
+func (v *Version) GreaterThan(other *Version) bool {
+	return v.compareInternal(other) == 1
+}
+
 // Compare compares v against a version string (which will be parsed as either Semantic
 // or non-Semantic depending on v). On success it returns -1 if v is less than other, 1 if
 // it is greater than other, or 0 if they are equal.
@@ -316,4 +321,8 @@ func (v *Version) Compare(other string) (int, error) {
 
 func (v *Version) ToMajorMinorVersion() *Version {
 	return MustParseGeneric(fmt.Sprintf("%d.%d", v.MajorVersion(), v.MinorVersion()))
+}
+
+func (v *Version) ToMajorMinorString() string {
+	return fmt.Sprintf("%d.%d", v.MajorVersion(), v.MinorVersion())
 }

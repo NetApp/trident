@@ -22,6 +22,10 @@ func (c *FakeTridentV1) TridentNodes(namespace string) v1.TridentNodeInterface {
 	return &FakeTridentNodes{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentSnapshots(namespace string) v1.TridentSnapshotInterface {
+	return &FakeTridentSnapshots{c, namespace}
+}
+
 func (c *FakeTridentV1) TridentStorageClasses(namespace string) v1.TridentStorageClassInterface {
 	return &FakeTridentStorageClasses{c, namespace}
 }

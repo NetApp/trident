@@ -401,3 +401,15 @@ func IsVolumeExistsError(err error) bool {
 	_, ok := err.(*VolumeExistsError)
 	return ok
 }
+
+type SnapshotsNotSupportedError struct {
+	message string
+}
+
+func (e *SnapshotsNotSupportedError) Error() string { return e.message }
+
+func NewSnapshotsNotSupportedError(backendType string) error {
+	return &SnapshotsNotSupportedError{
+		message: fmt.Sprintf("snapshots are not supported by backend type %s", backendType),
+	}
+}

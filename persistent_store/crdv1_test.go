@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	uuid "github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -781,6 +782,173 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 	_, err = p.GetNode(utilsNode.Name)
 	if !IsStatusNotFoundError(err) {
 		t.Fatal(err.Error())
+	}
+}
+
+func TestKubernetesSnapshot(t *testing.T) {
+	p := GetTestKubernetesClient()
+
+	// Adding a snapshot
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	NFSServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
+			Config: NFSServerConfig,
+		},
+		Name:        "NFS_server-" + NFSServerConfig.ManagementLIF,
+		BackendUUID: uuid.New().String(),
+	}
+	vol1Config := storage.VolumeConfig{
+		Version:      string(config.OrchestratorAPIVersion),
+		Name:         "vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	vol1 := &storage.Volume{
+		Config:      &vol1Config,
+		BackendUUID: NFSServer.BackendUUID,
+		Pool:        storagePool,
+	}
+	err := p.AddVolume(vol1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	snap1Config := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               "testsnap1",
+		InternalName:       "internal_testsnap1",
+		VolumeName:         "vol1",
+		VolumeInternalName: "internal_vol1",
+	}
+	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
+	size := int64(1000000000)
+	snap1 := storage.NewSnapshot(snap1Config, now, size)
+	err = p.AddSnapshot(snap1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	recoveredSnapshot, err := p.GetSnapshot(snap1.Config.VolumeName, snap1.Config.Name)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	if recoveredSnapshot.SizeBytes != snap1.SizeBytes || recoveredSnapshot.Created != snap1.Created ||
+		!reflect.DeepEqual(recoveredSnapshot.Config, snap1.Config) {
+		t.Error("Recovered snapshot does not match!")
+	}
+
+	// Deleting a snapshot
+	err = p.DeleteSnapshot(snap1)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	_, err = p.GetSnapshot(snap1.Config.VolumeName, snap1.Config.Name)
+	if err == nil {
+		t.Error("Snapshot should have been deleted.")
+		t.FailNow()
+	}
+
+	// Deleting a non-existent snapshot
+	err = p.DeleteSnapshot(snap1)
+	if err == nil {
+		t.Error("DeleteSnapshot should have failed.")
+	}
+	err = p.DeleteSnapshotIgnoreNotFound(snap1)
+	if err != nil {
+		t.Error("DeleteSnapshotIgnoreNotFound should have succeeded.")
+	}
+}
+
+func TestKubernetesSnapshots(t *testing.T) {
+	var err error
+
+	p := GetTestKubernetesClient()
+
+	// Adding volumes
+	NFSServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	NFSServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
+			Config: NFSServerConfig,
+		},
+		Name:        "NFS_server-" + NFSServerConfig.ManagementLIF,
+		BackendUUID: uuid.New().String(),
+	}
+
+	for i := 1; i <= 5; i++ {
+		volConfig := storage.VolumeConfig{
+			Version:      string(config.OrchestratorAPIVersion),
+			Name:         "vol" + strconv.Itoa(i),
+			Size:         strconv.Itoa(i) + "GB",
+			Protocol:     config.File,
+			StorageClass: "gold",
+		}
+		vol := &storage.Volume{
+			Config:      &volConfig,
+			BackendUUID: NFSServer.BackendUUID,
+		}
+		err = p.AddVolume(vol)
+		if err != nil {
+			t.Error(err.Error())
+			t.FailNow()
+		}
+		snapConfig := &storage.SnapshotConfig{
+			Version:            "1",
+			Name:               "snap" + strconv.Itoa(i),
+			InternalName:       "internal_snap1" + strconv.Itoa(i),
+			VolumeName:         "vol" + strconv.Itoa(i),
+			VolumeInternalName: "internal_vol" + strconv.Itoa(i),
+		}
+		now := time.Now().UTC().Format(storage.SnapshotNameFormat)
+		size := int64(1000000000)
+		snap := storage.NewSnapshot(snapConfig, now, size)
+		err = p.AddSnapshot(snap)
+		if err != nil {
+			t.Error(err.Error())
+			t.FailNow()
+		}
+	}
+
+	// Retrieving all snapshots
+	var snapshots []*storage.SnapshotPersistent
+	if snapshots, err = p.GetSnapshots(); err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	if len(snapshots) != 5 {
+		t.Errorf("Expected %d snapshots; retrieved %d", 5, len(snapshots))
+	}
+
+	// Deleting all snapshots
+	if err = p.DeleteSnapshots(); err != nil {
+		t.Error(err.Error())
+	}
+	if snapshots, err = p.GetSnapshots(); err != nil {
+		t.Error(err.Error())
+	} else if len(snapshots) != 0 {
+		t.Error("Deleting snapshots failed!")
 	}
 }
 

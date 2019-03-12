@@ -15,6 +15,7 @@ type TridentV1Interface interface {
 	RESTClient() rest.Interface
 	TridentBackendsGetter
 	TridentNodesGetter
+	TridentSnapshotsGetter
 	TridentStorageClassesGetter
 	TridentTransactionsGetter
 	TridentVersionsGetter
@@ -32,6 +33,10 @@ func (c *TridentV1Client) TridentBackends(namespace string) TridentBackendInterf
 
 func (c *TridentV1Client) TridentNodes(namespace string) TridentNodeInterface {
 	return newTridentNodes(c, namespace)
+}
+
+func (c *TridentV1Client) TridentSnapshots(namespace string) TridentSnapshotInterface {
+	return newTridentSnapshots(c, namespace)
 }
 
 func (c *TridentV1Client) TridentStorageClasses(namespace string) TridentStorageClassInterface {

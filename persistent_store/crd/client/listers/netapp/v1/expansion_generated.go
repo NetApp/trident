@@ -20,6 +20,14 @@ type TridentNodeListerExpansion interface{}
 // TridentNodeNamespaceLister.
 type TridentNodeNamespaceListerExpansion interface{}
 
+// TridentSnapshotListerExpansion allows custom methods to be added to
+// TridentSnapshotLister.
+type TridentSnapshotListerExpansion interface{}
+
+// TridentSnapshotNamespaceListerExpansion allows custom methods to be added to
+// TridentSnapshotNamespaceLister.
+type TridentSnapshotNamespaceListerExpansion interface{}
+
 // TridentStorageClassListerExpansion allows custom methods to be added to
 // TridentStorageClassLister.
 type TridentStorageClassListerExpansion interface{}

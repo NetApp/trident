@@ -107,7 +107,24 @@ func ListGeneric(
 	writeHTTPResponse(w, response, httpStatusCode)
 }
 
-func GetGeneric(w http.ResponseWriter,
+func ListGenericOneArg(
+	w http.ResponseWriter,
+	r *http.Request,
+	varName string,
+	response listResponse,
+	lister func(string) int,
+) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	vars := mux.Vars(r)
+	target := vars[varName]
+	httpStatusCode := lister(target)
+
+	writeHTTPResponse(w, response, httpStatusCode)
+}
+
+func GetGeneric(
+	w http.ResponseWriter,
 	r *http.Request,
 	varName string,
 	response interface{},
@@ -122,7 +139,25 @@ func GetGeneric(w http.ResponseWriter,
 	writeHTTPResponse(w, response, httpStatusCode)
 }
 
-func GetGenericNoArg(w http.ResponseWriter,
+func GetGenericTwoArg(
+	w http.ResponseWriter,
+	r *http.Request,
+	varName1, varName2 string,
+	response interface{},
+	getter func(string, string) int,
+) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	vars := mux.Vars(r)
+	target1 := vars[varName1]
+	target2 := vars[varName2]
+	httpStatusCode := getter(target1, target2)
+
+	writeHTTPResponse(w, response, httpStatusCode)
+}
+
+func GetGenericNoArg(
+	w http.ResponseWriter,
 	r *http.Request,
 	response interface{},
 	getter func() int,
@@ -232,6 +267,30 @@ func DeleteGeneric(
 	toDelete := vars[varName]
 
 	err := deleter(toDelete)
+	if err != nil {
+		response.Error = err.Error()
+	}
+	httpStatusCode := httpStatusCodeForDelete(err)
+
+	writeHTTPResponse(w, response, httpStatusCode)
+}
+
+type deleteFuncTwoArg func(arg1, arg2 string) error
+
+func DeleteGenericTwoArg(
+	w http.ResponseWriter,
+	r *http.Request,
+	deleter deleteFuncTwoArg,
+	varName1, varName2 string,
+) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	response := DeleteResponse{}
+
+	vars := mux.Vars(r)
+	toDelete1 := vars[varName1]
+	toDelete2 := vars[varName2]
+
+	err := deleter(toDelete1, toDelete2)
 	if err != nil {
 		response.Error = err.Error()
 	}
@@ -821,4 +880,127 @@ func ListNodes(w http.ResponseWriter, r *http.Request) {
 
 func DeleteNode(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, orchestrator.DeleteNode, "node")
+}
+
+type GetSnapshotResponse struct {
+	Snapshot *storage.SnapshotExternal `json:"snapshot"`
+	Error    string                    `json:"error,omitempty"`
+}
+
+func GetSnapshot(w http.ResponseWriter, r *http.Request) {
+	response := &GetSnapshotResponse{}
+	GetGenericTwoArg(w, r, "volume", "snapshot", response,
+		func(volumeName, snapshotName string) int {
+			snapshot, err := orchestrator.GetSnapshot(volumeName, snapshotName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Snapshot = snapshot
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ListSnapshotsResponse struct {
+	Snapshots []string `json:"snapshots"`
+	Error     string   `json:"error,omitempty"`
+}
+
+func (l *ListSnapshotsResponse) setList(payload []string) {
+	l.Snapshots = payload
+}
+
+func ListSnapshots(w http.ResponseWriter, r *http.Request) {
+	response := &ListSnapshotsResponse{}
+	ListGeneric(w, r, response,
+		func() int {
+			snapshots, err := orchestrator.ListSnapshots()
+			snapshotIDs := make([]string, 0, len(snapshots))
+			if err != nil {
+				response.Error = err.Error()
+			} else if snapshots != nil {
+				for _, snapshot := range snapshots {
+					snapshotIDs = append(snapshotIDs, snapshot.ID())
+				}
+			}
+			response.setList(snapshotIDs)
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func ListSnapshotsForVolume(w http.ResponseWriter, r *http.Request) {
+	response := &ListSnapshotsResponse{}
+	ListGenericOneArg(w, r, "volume", response,
+		func(volumeName string) int {
+			snapshots, err := orchestrator.ListSnapshotsForVolume(volumeName)
+			snapshotIDs := make([]string, 0, len(snapshots))
+			if err != nil {
+				response.Error = err.Error()
+			} else if snapshots != nil {
+				for _, snapshot := range snapshots {
+					snapshotIDs = append(snapshotIDs, snapshot.ID())
+				}
+			}
+			response.setList(snapshotIDs)
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type AddSnapshotResponse struct {
+	SnapshotID string `json:"snapshotID"`
+	Error      string `json:"error,omitempty"`
+}
+
+func (r *AddSnapshotResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *AddSnapshotResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *AddSnapshotResponse) logSuccess() {
+	log.WithFields(log.Fields{
+		"snapshot": r.SnapshotID,
+		"handler":  "AddSnapshot",
+	}).Info("Added a new volume snapshot.")
+}
+
+func (r *AddSnapshotResponse) logFailure() {
+	log.WithFields(log.Fields{
+		"snapshot": r.SnapshotID,
+		"handler":  "AddSnapshot",
+	}).Error(r.Error)
+}
+
+func AddSnapshot(w http.ResponseWriter, r *http.Request) {
+	response := &AddSnapshotResponse{}
+	AddGeneric(w, r, response,
+		func(body []byte) int {
+			snapshotConfig := new(storage.SnapshotConfig)
+			if err := json.Unmarshal(body, snapshotConfig); err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
+			}
+			if err := snapshotConfig.Validate(); err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			snapshot, err := orchestrator.CreateSnapshot(snapshotConfig)
+			if err != nil {
+				response.setError(err)
+			}
+			if snapshot != nil {
+				response.SnapshotID = snapshot.ID()
+			}
+			return httpStatusCodeForAdd(err)
+		},
+	)
+}
+
+func DeleteSnapshot(w http.ResponseWriter, r *http.Request) {
+	DeleteGenericTwoArg(w, r, orchestrator.DeleteSnapshot, "volume", "snapshot")
 }

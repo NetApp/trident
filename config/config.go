@@ -15,6 +15,7 @@ type Protocol string
 type AccessMode string
 type VolumeType string
 type DriverContext string
+type Platform string
 
 type Telemetry struct {
 	TridentVersion  string `json:"version"`
@@ -73,10 +74,19 @@ const (
 	ContextCSI        DriverContext = "csi"
 	ContextCRD        DriverContext = "crd"
 
+	PlatformDocker     Platform = "docker"
+	PlatformKubernetes Platform = "kubernetes"
+	PlatformCSI        Platform = "csi" // plain CSI, no other CO present
+
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin    = "v1.10.0"
-	KubernetesVersionMax    = "v1.14.0"
-	KubernetesCSIVersionMin = "v1.13.0"
+	KubernetesVersionMin = "v1.11.0"
+	KubernetesVersionMax = "v1.14.0"
+
+	// Minimum Kubernetes version for CSI Trident (non-CSI is the default)
+	KubernetesCSIVersionMinOptional = "v1.13.0"
+
+	// Minimum Kubernetes version for CSI Trident default (non-CSI not supported)
+	KubernetesCSIVersionMinForced = "v1.14.0"
 
 	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
@@ -125,7 +135,7 @@ var (
 
 	UsingPassthroughStore bool
 	CurrentDriverContext  DriverContext
-	OrchestratorTelemetry = Telemetry{}
+	OrchestratorTelemetry = Telemetry{TridentVersion: OrchestratorVersion.String()}
 )
 
 func IsValidProtocol(p Protocol) bool {

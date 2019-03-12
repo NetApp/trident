@@ -394,12 +394,12 @@ func (m *MockOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (*sto
 	return nil, nil
 }
 
-func (o *MockOrchestrator) GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error) {
+func (m *MockOrchestrator) GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error) {
 	// TODO: write this method to enable GetVolumeExternal unit tests
 	return nil, nil
 }
 
-func (o *MockOrchestrator) ImportVolume(
+func (m *MockOrchestrator) ImportVolume(
 	volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback,
 ) (externalVol *storage.VolumeExternal, err error) {
 
@@ -522,8 +522,32 @@ func (m *MockOrchestrator) PublishVolume(
 	return nil
 }
 
-func (m *MockOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error) {
+func (m *MockOrchestrator) CreateSnapshot(snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error) {
+	return nil, nil
+}
+
+func (m *MockOrchestrator) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotExternal, error) {
+	return nil, nil
+}
+
+func (m *MockOrchestrator) ListSnapshots() ([]*storage.SnapshotExternal, error) {
 	return make([]*storage.SnapshotExternal, 0), nil
+}
+
+func (m *MockOrchestrator) ListSnapshotsByName(snapshotName string) ([]*storage.SnapshotExternal, error) {
+	return make([]*storage.SnapshotExternal, 0), nil
+}
+
+func (m *MockOrchestrator) ListSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error) {
+	return make([]*storage.SnapshotExternal, 0), nil
+}
+
+func (m *MockOrchestrator) ReadSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error) {
+	return make([]*storage.SnapshotExternal, 0), nil
+}
+
+func (m *MockOrchestrator) DeleteSnapshot(volumeName, snapshotName string) error {
+	return nil
 }
 
 func (m *MockOrchestrator) ReloadVolumes() error {

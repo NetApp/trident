@@ -571,40 +571,92 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 	return
 }
 
-// CreateSnapshot creates a snapshot for the given volume
-func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
 
-	internalVolName := volConfig.InternalName
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	return GetSnapshot(snapConfig, &d.Config, d.API)
+}
+
+// Return the list of snapshots associated with the specified volume
+func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "SANStorageDriver",
+			"volumeName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	return GetSnapshots(volConfig, &d.Config, d.API)
+}
+
+// CreateSnapshot creates a snapshot for the given volume
+func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "SANStorageDriver",
-			"snapshotName": snapshotName,
+			"snapshotName": internalSnapName,
 			"sourceVolume": internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateOntapSnapshot(snapshotName, internalVolName, &d.Config, d.API)
+	return CreateSnapshot(snapConfig, &d.Config, d.API)
 }
 
-// Return the list of snapshots associated with the named volume
-func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *SANStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "SANStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return GetSnapshotList(name, &d.Config, d.API)
+	return RestoreSnapshot(snapConfig, &d.Config, d.API)
+}
+
+// DeleteSnapshot creates a snapshot of a volume.
+func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	return DeleteSnapshot(snapConfig, &d.Config, d.API)
 }
 
 // Test for the existence of a volume

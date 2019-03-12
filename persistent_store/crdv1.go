@@ -672,6 +672,14 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*
 		return nil, err
 	}
 
+	if !ttxn.ObjectMeta.DeletionTimestamp.IsZero() {
+		log.WithFields(log.Fields{
+			"Name":              ttxn.Name,
+			"DeletionTimestamp": ttxn.DeletionTimestamp,
+		}).Debug("GetExistingVolumeTransaction skipping deleted VolumeTransaction")
+		return nil, err
+	}
+
 	op, cfg, err := ttxn.Persistent()
 
 	if err != nil {
@@ -871,4 +879,96 @@ func (k *CRDClientV1) deleteOpts() *metav1.DeleteOptions {
 	}
 
 	return deleteOptions
+}
+
+func (k *CRDClientV1) AddSnapshot(snapshot *storage.Snapshot) error {
+
+	persistentSnapshot, err := v1.NewTridentSnapshot(snapshot.ConstructPersistent())
+	if err != nil {
+		return err
+	}
+
+	_, err = k.client.TridentV1().TridentSnapshots(k.namespace).Create(persistentSnapshot)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *CRDClientV1) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
+
+	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
+	snapshot, err := k.client.TridentV1().TridentSnapshots(k.namespace).Get(v1.NameFix(snapshotID), getOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	persistentSnapshot, err := snapshot.Persistent()
+	if err != nil {
+		return nil, err
+	}
+
+	return persistentSnapshot, nil
+}
+
+func (k *CRDClientV1) GetSnapshots() ([]*storage.SnapshotPersistent, error) {
+
+	snapshotList, err := k.client.TridentV1().TridentSnapshots(k.namespace).List(listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*storage.SnapshotPersistent, 0)
+
+	for _, item := range snapshotList.Items {
+		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
+			log.WithFields(log.Fields{
+				"Name":              item.Name,
+				"DeletionTimestamp": item.DeletionTimestamp,
+			}).Debug("GetSnapshots skipping deleted Snapshot")
+			continue
+		}
+
+		persistentSnapshot, err := item.Persistent()
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, persistentSnapshot)
+	}
+
+	return results, nil
+}
+
+func (k *CRDClientV1) DeleteSnapshot(snapshot *storage.Snapshot) error {
+	return k.client.TridentV1().TridentSnapshots(k.namespace).Delete(v1.NameFix(snapshot.ID()), k.deleteOpts())
+}
+
+func (k *CRDClientV1) DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error {
+
+	err := k.client.TridentV1().TridentSnapshots(k.namespace).Delete(v1.NameFix(snapshot.ID()), k.deleteOpts())
+
+	if errors.IsNotFound(err) {
+		return nil
+	}
+
+	return err
+}
+
+func (k *CRDClientV1) DeleteSnapshots() error {
+
+	snapshotList, err := k.client.TridentV1().TridentSnapshots(k.namespace).List(listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range snapshotList.Items {
+		err := k.client.TridentV1().TridentSnapshots(k.namespace).Delete(item.ObjectMeta.Name, k.deleteOpts())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -182,3 +182,29 @@ type TridentVersionList struct {
 	// List of TridentVersion objects
 	Items []*TridentVersion `json:"items"`
 }
+
+// TridentSnapshot defines a Trident snapshot.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentSnapshot struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Specification of the snapshot
+	Spec runtime.RawExtension `json:"spec"`
+	// The UTC time that the snapshot was created, in RFC3339 format
+	Created string `json:"dateCreated"`
+	// The size of the volume at the time the snapshot was created
+	SizeBytes int64 `json:"size"`
+}
+
+// TridentSnapshotList is a list of TridentSnapshot objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentSnapshotList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// List of TridentSnapshot objects
+	Items []*TridentSnapshot `json:"items"`
+}

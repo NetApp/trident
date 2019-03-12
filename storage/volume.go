@@ -60,8 +60,8 @@ func (c *VolumeConfig) ConstructClone() *VolumeConfig {
 	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 	dec := gob.NewDecoder(buff)
-	enc.Encode(c)
-	dec.Decode(clone)
+	_ = enc.Encode(c)
+	_ = dec.Decode(clone)
 	return clone
 }
 

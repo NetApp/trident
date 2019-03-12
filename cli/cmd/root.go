@@ -36,9 +36,9 @@ const (
 	ExitCodeSuccess = 0
 	ExitCodeFailure = 1
 
-	TridentLabelKey   = "app"
-	TridentLabelValue = "trident.netapp.io"
-	TridentLabel      = TridentLabelKey + "=" + TridentLabelValue
+	TridentLegacyLabelKey   = "app"
+	TridentLegacyLabelValue = "trident.netapp.io"
+	TridentLegacyLabel      = TridentLegacyLabelKey + "=" + TridentLegacyLabelValue
 
 	TridentCSILabelKey   = "app"
 	TridentCSILabelValue = "controller.csi.trident.netapp.io"
@@ -67,7 +67,6 @@ var (
 	Debug        bool
 	Server       string
 	OutputFormat string
-	CSI          bool
 )
 
 var RootCmd = &cobra.Command{
@@ -82,9 +81,6 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface")
 	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
-
-	RootCmd.PersistentFlags().BoolVar(&CSI, "csi", false, "Manage Trident as a CSI plugin (experimental)")
-	RootCmd.PersistentFlags().MarkHidden("csi")
 }
 
 func discoverOperatingMode(cmd *cobra.Command) error {
@@ -133,19 +129,12 @@ func discoverOperatingMode(cmd *cobra.Command) error {
 		}
 	}
 
-	if CSI {
-		// Find the CSI Trident pod
-		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
-			return err
-		}
-	} else {
-		// Find the Trident pod
-		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLabel); err != nil {
+	// Find the CSI Trident pod
+	if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
 
-			// Try falling back to CSI pod
-			if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
-				return err
-			}
+		// Fall back to non-CSI Trident pod
+		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLegacyLabel); err != nil {
+			return err
 		}
 	}
 

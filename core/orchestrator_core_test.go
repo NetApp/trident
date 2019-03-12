@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -49,9 +49,10 @@ type deleteTest struct {
 }
 
 type recoveryTest struct {
-	name          string
-	volumeConfig  *storage.VolumeConfig
-	expectDestroy bool
+	name           string
+	volumeConfig   *storage.VolumeConfig
+	snapshotConfig *storage.SnapshotConfig
+	expectDestroy  bool
 }
 
 func cleanup(t *testing.T, o *TridentOrchestrator) {
@@ -75,6 +76,10 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 	err = o.storeClient.DeleteVolumes()
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up volumes:  ", err)
+	}
+	err = o.storeClient.DeleteSnapshots()
+	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
+		t.Fatal("Unable to clean up snapshots:  ", err)
 	}
 	if *etcdV2 == "" && *etcdV3 == "" {
 		// Clear the InMemoryClient state so that it looks like we're
@@ -1376,12 +1381,12 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		}
 		volumeBackend, err := orchestrator.getBackendByBackendUUID(volume.BackendUUID)
 		if volumeBackend == nil || err != nil {
-			for uuid, backend := range orchestrator.backends {
+			for backendUUID, backend := range orchestrator.backends {
 				log.WithFields(log.Fields{
 					"volume.BackendUUID":  volume.BackendUUID,
 					"backend":             backend,
 					"backend.BackendUUID": backend.BackendUUID,
-					"uuid":                uuid,
+					"uuid":                backendUUID,
 				}).Debug("Found backend.")
 			}
 			t.Fatalf("Backend %s not stored in orchestrator, err: %v", volume.BackendUUID, err)
@@ -1416,8 +1421,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if !backend.Driver.Initialized() {
 		t.Errorf("Deleted backend with volumes %s is not initialized.", backendName)
 	}
-	_, err = orchestrator.AddVolume(generateVolumeConfig(offlineVolumeName, 50,
-		scName, config.File))
+	_, err = orchestrator.AddVolume(generateVolumeConfig(offlineVolumeName, 50, scName, config.File))
 	if err == nil {
 		t.Error("Created volume volume on offline backend.")
 	}
@@ -1471,7 +1475,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	orchestrator.mutex.Lock()
 	if bootstrappedBackend, _ := newOrchestrator.GetBackend(backendName); bootstrappedBackend == nil {
 		t.Error("Unable to find backend after bootstrapping.")
-		// removed compare because the size, in bytes, in the pool size differs. being reworked on another branch
+	} else if !reflect.DeepEqual(bootstrappedBackend, backend.ConstructExternal()) {
+		diffExternalBackends(t, backend.ConstructExternal(), bootstrappedBackend)
 	}
 
 	orchestrator.mutex.Unlock()
@@ -1777,30 +1782,172 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	)
 	orchestrator := getOrchestrator()
 	prepRecoveryTest(t, orchestrator, backendName, scName)
+
 	// For the full test, we delete everything but the ending transaction.
-	fullVolumeConfig := generateVolumeConfig(fullVolumeName, 50, scName,
-		config.File)
-	_, err := orchestrator.AddVolume(fullVolumeConfig)
-	if err != nil {
+	fullVolumeConfig := generateVolumeConfig(fullVolumeName, 50, scName, config.File)
+	if _, err := orchestrator.AddVolume(fullVolumeConfig); err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
-	err = orchestrator.DeleteVolume(fullVolumeName)
-	if err != nil {
+	if err := orchestrator.DeleteVolume(fullVolumeName); err != nil {
 		t.Fatal("Unable to remove full volume:  ", err)
 	}
-	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
-		config.File)
-	_, err = orchestrator.AddVolume(txOnlyVolumeConfig)
-	if err != nil {
+
+	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName, config.File)
+	if _, err := orchestrator.AddVolume(txOnlyVolumeConfig); err != nil {
 		t.Fatal("Unable to add tx only volume: ", err)
 	}
+
 	// BEGIN actual test
 	runRecoveryTests(t, orchestrator, backendName,
 		persistentstore.DeleteVolume, []recoveryTest{
-			{name: "full", volumeConfig: fullVolumeConfig,
-				expectDestroy: false},
-			{name: "txOnly", volumeConfig: txOnlyVolumeConfig,
-				expectDestroy: true},
+			{name: "full", volumeConfig: fullVolumeConfig, expectDestroy: false},
+			{name: "txOnly", volumeConfig: txOnlyVolumeConfig, expectDestroy: true},
+		})
+	cleanup(t, orchestrator)
+}
+
+func generateSnapshotConfig(
+	name, volumeName, volumeInternalName string,
+) *storage.SnapshotConfig {
+	return &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               name,
+		VolumeName:         volumeName,
+		VolumeInternalName: volumeInternalName,
+	}
+}
+
+func runSnapshotRecoveryTests(
+	t *testing.T,
+	orchestrator *TridentOrchestrator,
+	backendName string,
+	op persistentstore.VolumeOperation,
+	testCases []recoveryTest,
+) {
+	for _, c := range testCases {
+		// Manipulate the persistent store directly, since it's
+		// easier to store the results of a partially completed snapshot addition
+		// than to actually inject a failure.
+		volTxn := &persistentstore.VolumeTransaction{
+			SnapshotConfig: c.snapshotConfig,
+			Op:             op,
+		}
+		if err := orchestrator.storeClient.AddVolumeTransaction(volTxn); err != nil {
+			t.Fatalf("%s: Unable to create volume transaction:  %v", c.name, err)
+		}
+		newOrchestrator := getOrchestrator()
+		newOrchestrator.mutex.Lock()
+		if _, ok := newOrchestrator.snapshots[c.snapshotConfig.ID()]; ok {
+			t.Errorf("%s: snapshot still present in orchestrator.", c.name)
+			// Note:  assume that if the snapshot's still present in the
+			// top-level map, it's present everywhere else and that, if it's
+			// absent there, it's absent everywhere else in memory
+		}
+		backend, err := newOrchestrator.getBackendByBackendName(backendName)
+		if err != nil {
+			t.Fatalf("%s: Backend not found after bootstrapping.", c.name)
+		}
+		f := backend.Driver.(*fakedriver.StorageDriver)
+
+		_, ok := f.DestroyedSnapshots[c.snapshotConfig.ID()]
+		if !ok && c.expectDestroy {
+			t.Errorf("%s:  Destroy not called on snapshot.", c.name)
+		} else if ok && !c.expectDestroy {
+			t.Errorf("%s:  Destroy should not have been called on snapshot.", c.name)
+		}
+
+		_, err = newOrchestrator.storeClient.GetSnapshot(c.snapshotConfig.VolumeName, c.snapshotConfig.Name)
+		if err != nil {
+			if !persistentstore.MatchKeyNotFoundErr(err) {
+				t.Errorf("%s: unable to communicate with backing store: %v", c.name, err)
+			}
+		} else {
+			t.Errorf("%s: Found SnapshotConfig still stored in etcd.", c.name)
+		}
+		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(); err != nil {
+			t.Errorf("%s: Unable to retrieve transactions from backing store: %v", c.name, err)
+		} else if len(txns) > 0 {
+			t.Errorf("%s:  Transaction not cleared from the backing store", c.name)
+		}
+		newOrchestrator.mutex.Unlock()
+	}
+}
+
+func TestAddSnapshotRecovery(t *testing.T) {
+	const (
+		backendName        = "addSnapshotRecoveryBackend"
+		scName             = "addSnapshotRecoveryBackendSC"
+		volumeName         = "addSnapshotRecoveryVolume"
+		fullSnapshotName   = "addSnapshotRecoverySnapshotFull"
+		txOnlySnapshotName = "addSnapshotRecoverySnapshotTxOnly"
+	)
+	orchestrator := getOrchestrator()
+	prepRecoveryTest(t, orchestrator, backendName, scName)
+
+	// It's easier to add the volume/snapshot and then reinject the transaction again afterwards.
+	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	if _, err := orchestrator.AddVolume(volumeConfig); err != nil {
+		t.Fatal("Unable to add volume: ", err)
+	}
+
+	// For the full test, we create everything and recreate the AddSnapshot transaction.
+	fullSnapshotConfig := generateSnapshotConfig(fullSnapshotName, volumeName, volumeName)
+	if _, err := orchestrator.CreateSnapshot(fullSnapshotConfig); err != nil {
+		t.Fatal("Unable to add snapshot: ", err)
+	}
+
+	// For the partial test, we add only the AddSnapshot transaction.
+	txOnlySnapshotConfig := generateSnapshotConfig(txOnlySnapshotName, volumeName, volumeName)
+
+	// BEGIN actual test.  Note that the delete idempotency is handled at the backend layer
+	// (above the driver), so if the snapshot doesn't exist after bootstrapping, the driver
+	// will not be called to delete the snapshot.
+	runSnapshotRecoveryTests(t, orchestrator, backendName, persistentstore.AddSnapshot,
+		[]recoveryTest{
+			{name: "full", snapshotConfig: fullSnapshotConfig, expectDestroy: true},
+			{name: "txOnly", snapshotConfig: txOnlySnapshotConfig, expectDestroy: false},
+		})
+	cleanup(t, orchestrator)
+}
+
+func TestDeleteSnapshotRecovery(t *testing.T) {
+	const (
+		backendName        = "deleteSnapshotRecoveryBackend"
+		scName             = "deleteSnapshotRecoveryBackendSC"
+		volumeName         = "deleteSnapshotRecoveryVolume"
+		fullSnapshotName   = "deleteSnapshotRecoverySnapshotFull"
+		txOnlySnapshotName = "deleteSnapshotRecoverySnapshotTxOnly"
+	)
+	orchestrator := getOrchestrator()
+	prepRecoveryTest(t, orchestrator, backendName, scName)
+
+	// For the full test, we delete everything and recreate the delete transaction.
+	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	if _, err := orchestrator.AddVolume(volumeConfig); err != nil {
+		t.Fatal("Unable to add volume: ", err)
+	}
+	fullSnapshotConfig := generateSnapshotConfig(fullSnapshotName, volumeName, volumeName)
+	if _, err := orchestrator.CreateSnapshot(fullSnapshotConfig); err != nil {
+		t.Fatal("Unable to add snapshot: ", err)
+	}
+	if err := orchestrator.DeleteSnapshot(volumeName, fullSnapshotName); err != nil {
+		t.Fatal("Unable to remove full snapshot: ", err)
+	}
+
+	// For the partial test, we ensure the snapshot will be restored during bootstrapping,
+	// and the delete transaction will ensure everything is deleted.
+	txOnlySnapshotConfig := generateSnapshotConfig(txOnlySnapshotName, volumeName, volumeName)
+	if _, err := orchestrator.CreateSnapshot(txOnlySnapshotConfig); err != nil {
+		t.Fatal("Unable to add snapshot: ", err)
+	}
+
+	// BEGIN actual test.  Note that the delete idempotency is handled at the backend layer
+	// (above the driver), so if the snapshot doesn't exist after bootstrapping, the driver
+	// will not be called to delete the snapshot.
+	runSnapshotRecoveryTests(t, orchestrator, backendName, persistentstore.DeleteSnapshot,
+		[]recoveryTest{
+			{name: "full", snapshotConfig: fullSnapshotConfig, expectDestroy: false},
+			{name: "txOnly", snapshotConfig: txOnlySnapshotConfig, expectDestroy: true},
 		})
 	cleanup(t, orchestrator)
 }
@@ -1970,6 +2117,7 @@ func TestOrchestratorNotReady(t *testing.T) {
 		backends       []*storage.BackendExternal
 		volume         *storage.VolumeExternal
 		volumes        []*storage.VolumeExternal
+		snapshot       *storage.SnapshotExternal
 		snapshots      []*storage.SnapshotExternal
 		storageClass   *storageclass.External
 		storageClasses []*storageclass.External
@@ -2049,9 +2197,29 @@ func TestOrchestratorNotReady(t *testing.T) {
 		t.Errorf("Expected DetachVolume to return an error.")
 	}
 
-	snapshots, err = orchestrator.ListVolumeSnapshots("")
+	snapshot, err = orchestrator.CreateSnapshot(nil)
+	if snapshot != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected CreateSnapshot to return an error.")
+	}
+
+	snapshot, err = orchestrator.GetSnapshot("", "")
+	if snapshot != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected GetSnapshot to return an error.")
+	}
+
+	snapshots, err = orchestrator.ListSnapshots()
 	if snapshots != nil || !IsNotReadyError(err) {
-		t.Errorf("Expected ListVolumeSnapshots to return an error.")
+		t.Errorf("Expected ListSnapshots to return an error.")
+	}
+
+	snapshots, err = orchestrator.ReadSnapshotsForVolume("")
+	if snapshots != nil || !IsNotReadyError(err) {
+		t.Errorf("Expected ReadSnapshotsForVolume to return an error.")
+	}
+
+	err = orchestrator.DeleteSnapshot("", "")
+	if !IsNotReadyError(err) {
+		t.Errorf("Expected DeleteSnapshot to return an error.")
 	}
 
 	err = orchestrator.ReloadVolumes()
@@ -2414,8 +2582,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
-			pools)
+		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools, make([]fake.Volume, 0))
 		if err != nil {
 			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
@@ -2425,8 +2592,8 @@ func TestSnapshotVolumes(t *testing.T) {
 			errored = true
 		}
 		orchestrator.mutex.Lock()
-		backend, ok := orchestrator.backends[c.name]
-		if !ok {
+		backend, err := orchestrator.getBackendByBackendName(c.name)
+		if err != nil {
 			t.Fatalf("Backend %s not stored in orchestrator", c.name)
 		}
 		persistentBackend, err := orchestrator.storeClient.GetBackend(
@@ -2521,7 +2688,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		}
 
 		orchestrator.mutex.Lock()
-		_, found := orchestrator.volumes[s.config.Name]
+		volume, found := orchestrator.volumes[s.config.Name]
 		if s.expectedSuccess && !found {
 			t.Errorf("%s: did not get volume where expected.", s.name)
 			continue
@@ -2529,32 +2696,54 @@ func TestSnapshotVolumes(t *testing.T) {
 		orchestrator.mutex.Unlock()
 
 		// Now take a snapshot and ensure everything looks fine
-		snapshotName := s.config.Name + "_snapshot" + time.Now().UTC().Format(time.RFC3339)
-		snapshotResult, err := orchestrator.CreateVolumeSnapshot(snapshotName, s.name)
+		snapshotName := "snapshot-" + uuid.New()
+		snapshotConfig := &storage.SnapshotConfig{
+			Version:    config.OrchestratorAPIVersion,
+			Name:       snapshotName,
+			VolumeName: volume.Config.Name,
+		}
+		snapshotExternal, err := orchestrator.CreateSnapshot(snapshotConfig)
 		if err != nil {
-			t.Fatalf("%s: got unexpected error: %v", s.name, err)
+			t.Fatalf("%s: got unexpected error creating snapshot: %v", s.name, err)
 		}
 
 		orchestrator.mutex.Lock()
 		// Snapshot should be registered in the store
-		externalSnapshot, err := orchestrator.storeClient.GetSnapshot(snapshotName)
+		persistentSnapshot, err := orchestrator.storeClient.GetSnapshot(volume.Config.Name, snapshotName)
 		if err != nil {
 			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
 		}
-		if !reflect.DeepEqual(externalSnapshot, snapshotResult) {
-			t.Errorf("%s: external snapshot %s stored in backend does not match"+
-				" created snapshot.", snapshotName, externalSnapshot.Name)
-			externalSnapshotJSON, err := json.Marshal(externalSnapshot)
+		persistentSnapshotExternal := persistentSnapshot.ConstructExternal()
+		if !reflect.DeepEqual(persistentSnapshotExternal, snapshotExternal) {
+			t.Errorf("%s: external snapshot %s stored in backend does not match created snapshot.",
+				snapshotName, persistentSnapshot.Config.Name)
+			externalSnapshotJSON, err := json.Marshal(persistentSnapshotExternal)
 			if err != nil {
 				t.Fatal("Unable to remarshal JSON: ", err)
 			}
-			origSnapshotJSON, err := json.Marshal(snapshotResult)
+			origSnapshotJSON, err := json.Marshal(snapshotExternal)
 			if err != nil {
 				t.Fatal("Unable to remarshal JSON: ", err)
 			}
 			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalSnapshotJSON), string(origSnapshotJSON))
 		}
+		orchestrator.mutex.Unlock()
 
+		err = orchestrator.DeleteSnapshot(volume.Config.Name, snapshotName)
+		if err != nil {
+			t.Fatalf("%s: got unexpected error deleting snapshot: %v", s.name, err)
+		}
+
+		orchestrator.mutex.Lock()
+		// Snapshot should not be registered in the store
+		persistentSnapshot, err = orchestrator.storeClient.GetSnapshot(volume.Config.Name, snapshotName)
+		if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
+			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
+		}
+		if persistentSnapshot != nil {
+			t.Errorf("%s: got snapshot when not expected.", snapshotName)
+			continue
+		}
 		orchestrator.mutex.Unlock()
 	}
 

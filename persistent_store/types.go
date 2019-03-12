@@ -70,7 +70,11 @@ type Client interface {
 	DeleteNode(n *utils.Node) error
 
 	AddSnapshot(snapshot *storage.Snapshot) error
-	GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error)
+	GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error)
+	GetSnapshots() ([]*storage.SnapshotPersistent, error)
+	DeleteSnapshot(snapshot *storage.Snapshot) error
+	DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error
+	DeleteSnapshots() error
 }
 
 type EtcdClient interface {

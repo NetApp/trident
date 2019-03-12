@@ -145,4 +145,34 @@ var routes = Routes{
 		config.NodeURL + "/{node}",
 		DeleteNode,
 	},
+	Route{
+		"ListSnapshots",
+		"GET",
+		config.SnapshotURL,
+		ListSnapshots,
+	},
+	Route{
+		"ListSnapshotsForVolume",
+		"GET",
+		config.VolumeURL + "/{volume}/snapshot",
+		ListSnapshotsForVolume,
+	},
+	Route{
+		"GetSnapshot",
+		"GET",
+		config.SnapshotURL + "/{volume}/{snapshot}",
+		GetSnapshot,
+	},
+	Route{
+		"AddSnapshot",
+		"POST",
+		config.SnapshotURL,
+		AddSnapshot,
+	},
+	Route{
+		"DeleteSnapshot",
+		"DELETE",
+		config.SnapshotURL + "/{volume}/{snapshot}",
+		DeleteSnapshot,
+	},
 }

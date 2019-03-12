@@ -16,7 +16,7 @@ func (c *Client) CreateSnapshot(req *CreateSnapshotRequest) (snapshot Snapshot, 
 		log.Errorf("Error detected unmarshalling CreateSnapshot json response: %+v", err)
 		return Snapshot{}, errors.New("json decode error")
 	}
-	return c.GetSnapshot(req.VolumeID, result.Result.SnapshotID, "")
+	return c.GetSnapshot(result.Result.SnapshotID, req.VolumeID, "")
 }
 
 func (c *Client) GetSnapshot(snapID, volID int64, sfName string) (s Snapshot, err error) {

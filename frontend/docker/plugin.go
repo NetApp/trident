@@ -111,7 +111,10 @@ func (p *Plugin) initDockerVersion() {
 	}).Debug("Docker version info.")
 
 	p.version = &version
-	config.OrchestratorTelemetry.PlatformVersion = version.Server.Version
+
+	// Configure telemetry
+	config.OrchestratorTelemetry.Platform = string(config.PlatformDocker)
+	config.OrchestratorTelemetry.PlatformVersion = p.Version()
 }
 
 func (p *Plugin) Activate() error {
@@ -247,13 +250,20 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 		return &volume.GetResponse{}, p.dockerError(err)
 	}
 
-	// Get the volume's snapshots
-	snapshots, err := p.orchestrator.ListVolumeSnapshots(request.Name)
+	// Get the volume's snapshots and convert to struct Docker expects
+	snapshots, err := p.orchestrator.ReadSnapshotsForVolume(request.Name)
 	if err != nil {
 		return &volume.GetResponse{}, p.dockerError(err)
 	}
+	dockerSnapshots := make([]*Snapshot, 0)
+	for _, snapshot := range snapshots {
+		dockerSnapshots = append(dockerSnapshots, &Snapshot{
+			Name:    snapshot.Config.Name,
+			Created: snapshot.Created,
+		})
+	}
 	status := map[string]interface{}{
-		"Snapshots": snapshots,
+		"Snapshots": dockerSnapshots,
 	}
 
 	// Get the mountpoint, if this volume is mounted

@@ -14,6 +14,8 @@ type Interface interface {
 	TridentBackends() TridentBackendInformer
 	// TridentNodes returns a TridentNodeInformer.
 	TridentNodes() TridentNodeInformer
+	// TridentSnapshots returns a TridentSnapshotInformer.
+	TridentSnapshots() TridentSnapshotInformer
 	// TridentStorageClasses returns a TridentStorageClassInformer.
 	TridentStorageClasses() TridentStorageClassInformer
 	// TridentTransactions returns a TridentTransactionInformer.
@@ -43,6 +45,11 @@ func (v *version) TridentBackends() TridentBackendInformer {
 // TridentNodes returns a TridentNodeInformer.
 func (v *version) TridentNodes() TridentNodeInformer {
 	return &tridentNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentSnapshots returns a TridentSnapshotInformer.
+func (v *version) TridentSnapshots() TridentSnapshotInformer {
+	return &tridentSnapshotInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentStorageClasses returns a TridentStorageClassInformer.

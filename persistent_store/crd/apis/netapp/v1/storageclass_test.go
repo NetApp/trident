@@ -29,7 +29,7 @@ func TestNewStorageClass(t *testing.T) {
 	// Convert to Kubernetes Object using NewTridentStorageClass
 	storageClass, err := NewTridentStorageClass(bronzeStorageClass.ConstructPersistent())
 	if err != nil {
-		t.Fatal("Unable to construct TridentBackend CRD: ", err)
+		t.Fatal("Unable to construct TridentStorageClass CRD: ", err)
 	}
 
 	// Build expected Kubernetes Object
@@ -81,8 +81,8 @@ func TestStorageClass_Persistent(t *testing.T) {
 		},
 	}
 
-	// Build persistent object by calling TridentBackend.Persistent
-	peristent, err := storageClass.Persistent()
+	// Build persistent object by calling TridentStorageClass.Persistent
+	persistent, err := storageClass.Persistent()
 	if err != nil {
 		t.Fatal("Unable to construct TridentStorageClass persistent object: ", err)
 	}
@@ -91,7 +91,7 @@ func TestStorageClass_Persistent(t *testing.T) {
 	expected := bronzeStorageClass.ConstructPersistent()
 
 	// Compare
-	if !reflect.DeepEqual(peristent, expected) {
-		t.Fatalf("TridentStorageClass does not match expected result, got %v expected %v", peristent, expected)
+	if !reflect.DeepEqual(persistent, expected) {
+		t.Fatalf("TridentStorageClass does not match expected result, got %v expected %v", persistent, expected)
 	}
 }

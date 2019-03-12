@@ -21,8 +21,8 @@ import:
   version: v1.7.0
 - package: github.com/pborman/uuid
   version: v1.2.0
-- package: github.com/spf13/pflag
-  version: v1.0.3
+#- package: github.com/spf13/pflag
+#  version: v1.0.3
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: golang.org/x/net
@@ -84,7 +84,7 @@ import:
 - package: github.com/RoaringBitmap/roaring
   version: v0.4.17
 - package: github.com/container-storage-interface/spec
-  version: v1.0.0
+  version: v1.1.0
 - package: github.com/go-logfmt/logfmt
   version: v0.4.0
 - package: github.com/stretchr/testify

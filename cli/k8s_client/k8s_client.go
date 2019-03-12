@@ -1066,7 +1066,7 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 		createObjectBackoff := backoff.NewExponentialBackOff()
 		createObjectBackoff.MaxElapsedTime = k.timeout
 
-		log.WithField("yamlDocument", yamlDocument).Info("Waiting for object to be created.")
+		log.WithField("yamlDocument", yamlDocument).Trace("Waiting for object to be created.")
 
 		if err := backoff.RetryNotify(checkCreateObjectByYAML, createObjectBackoff, createObjectNotify); err != nil {
 			returnError := fmt.Errorf("yamlDocument %s was not created after %3.2f seconds", yamlDocument, k.timeout.Seconds())

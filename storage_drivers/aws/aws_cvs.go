@@ -711,7 +711,7 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 		// No source snapshot specified, so create one
 		snapshotCreateRequest := &api.SnapshotCreateRequest{
 			FileSystemID: sourceVolume.FileSystemID,
-			Name:         time.Now().UTC().Format("20060102T150405Z"),
+			Name:         time.Now().UTC().Format(storage.SnapshotNameFormat),
 			Region:       sourceVolume.Region,
 		}
 
@@ -965,41 +965,141 @@ func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	return nil
 }
 
-// CreateSnapshot creates a snapshot for the given volume
-func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *NFSStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "NFSStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	// Get the volume
+	creationToken := internalVolName
+
+	volume, err := d.API.GetVolumeByCreationToken(creationToken)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	snapshots, err := d.API.GetSnapshotsForVolume(volume)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snapshot := range *snapshots {
+		if snapshot.Name == internalSnapName {
+
+			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+
+			log.WithFields(log.Fields{
+				"snapshotName": internalSnapName,
+				"volumeName":   internalVolName,
+				"created":      created,
+			}).Debug("Found snapshot.")
+
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   created,
+				SizeBytes: volume.QuotaInBytes,
+			}, nil
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
+}
+
+// Return the list of snapshots associated with the specified volume
+func (d *NFSStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
 
 	internalVolName := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "NFSStorageDriver",
+			"volumeName": internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	// Get the volume
+	creationToken := internalVolName
+
+	volume, err := d.API.GetVolumeByCreationToken(creationToken)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	snapshots, err := d.API.GetSnapshotsForVolume(volume)
+	if err != nil {
+		return nil, err
+	}
+
+	snapshotList := make([]*storage.Snapshot, 0)
+
+	for _, snapshot := range *snapshots {
+
+		// Filter out snapshots in an unavailable state
+		if snapshot.LifeCycleState != api.StateAvailable {
+			continue
+		}
+
+		snapshotList = append(snapshotList, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snapshot.Name,
+				InternalName:       snapshot.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+			SizeBytes: volume.QuotaInBytes,
+		})
+	}
+
+	return snapshotList, nil
+}
+
+// CreateSnapshot creates a snapshot for the given volume
+func (d *NFSStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "NFSStorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": internalVolName,
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	// Make sure we got a valid name
-	if err := d.validateName(internalVolName); err != nil {
-		return nil, err
-	}
-
 	// Check if volume exists
-	volumeExists, _, err := d.API.VolumeExistsByCreationToken(internalVolName)
+	volumeExists, sourceVolume, err := d.API.VolumeExistsByCreationToken(internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if !volumeExists {
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
-	}
-
-	// Get the source volume by creation token (efficient query) to get its ID
-	sourceVolume, err := d.API.GetVolumeByCreationToken(internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("could not find source volume: %v", err)
 	}
 
 	// Get the source volume by ID to get all details
@@ -1011,7 +1111,7 @@ func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 	// Construct a snapshot request
 	snapshotCreateRequest := &api.SnapshotCreateRequest{
 		FileSystemID: sourceVolume.FileSystemID,
-		Name:         snapshotName,
+		Name:         internalSnapName,
 		Region:       sourceVolume.Region,
 	}
 
@@ -1027,54 +1127,76 @@ func (d *NFSStorageDriver) CreateSnapshot(snapshotName string, volConfig *storag
 	}
 
 	return &storage.Snapshot{
-		Name:    snapshot.Name,
-		Created: snapshot.Created.Format(time.RFC3339),
-		ID:      snapshot.SnapshotID,
+		Config:    snapConfig,
+		Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+		SizeBytes: sourceVolume.QuotaInBytes,
 	}, nil
 }
 
-// Return the list of snapshots associated with the named volume
-func (d *NFSStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *NFSStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "NFSStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
 	// Get the volume
-	creationToken := name
+	creationToken := internalVolName
 
 	volume, err := d.API.GetVolumeByCreationToken(creationToken)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
 
-	snapshots, err := d.API.GetSnapshotsForVolume(volume)
+	snapshot, err := d.API.GetSnapshotForVolume(volume, internalSnapName)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
-	snapshotList := make([]storage.Snapshot, 0)
+	return d.API.RestoreSnapshot(volume, snapshot)
+}
 
-	for _, snapshot := range *snapshots {
+// DeleteSnapshot creates a snapshot of a volume.
+func (d *NFSStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
 
-		// Filter out snapshots in an unavailable state
-		if snapshot.LifeCycleState != api.StateAvailable {
-			continue
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "NFSStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
-
-		snapshotList = append(snapshotList, storage.Snapshot{
-			Name:    snapshot.Name,
-			Created: snapshot.Created.Format(time.RFC3339),
-		})
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	return snapshotList, nil
+	// Get the volume
+	creationToken := internalVolName
+
+	volume, err := d.API.GetVolumeByCreationToken(creationToken)
+	if err != nil {
+		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	snapshot, err := d.API.GetSnapshotForVolume(volume, internalSnapName)
+	if err != nil {
+		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
+	}
+
+	return d.API.DeleteSnapshot(volume, snapshot)
 }
 
 // Return the list of volumes associated with this tenant

@@ -74,7 +74,7 @@ func (p *Plugin) NodeUnstageVolume(
 
 	switch protocol {
 	case tridentconfig.File:
-		return &csi.NodeUnstageVolumeResponse{}, nil // No need to unstage NFS
+		return p.nodeUnstageNFSVolume(ctx, req, publishInfo)
 	case tridentconfig.Block:
 		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo)
 	default:
@@ -140,9 +140,18 @@ func (p *Plugin) NodeUnpublishVolume(
 }
 
 func (p *Plugin) NodeGetVolumeStats(
-	ctx context.Context, req *csi.NodeGetVolumeStatsRequest) (*csi.NodeGetVolumeStatsResponse, error) {
+	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
+) (*csi.NodeGetVolumeStatsResponse, error) {
 
 	// Trident doesn't support GET_VOLUME_STATS capability
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (p *Plugin) NodeExpandVolume(
+	ctx context.Context, in *csi.NodeExpandVolumeRequest,
+) (*csi.NodeExpandVolumeResponse, error) {
+
+	// Trident doesn't support expansion via CSI
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
@@ -249,6 +258,18 @@ func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolum
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodeUnstageNFSVolume(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+) (*csi.NodeUnstageVolumeResponse, error) {
+
+	// Delete the device info we saved to the staging path so unstage can succeed
+	if err := p.clearStagedDeviceInfo(req.StagingTargetPath); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &csi.NodeUnstageVolumeResponse{}, nil
 }
 
 func (p *Plugin) nodePublishNFSVolume(
@@ -408,6 +429,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 	}
 
+	// Delete the device info we saved to the staging path so unstage can succeed
+	if err := p.clearStagedDeviceInfo(req.StagingTargetPath); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	return &csi.NodeUnstageVolumeResponse{}, nil
 }
 
@@ -476,6 +502,11 @@ func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePu
 
 	log.Debug("Publish Info found")
 	return &publishInfo, nil
+}
+
+func (p *Plugin) clearStagedDeviceInfo(stagingTargetPath string) error {
+	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
+	return os.Remove(filename)
 }
 
 func (p *Plugin) getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (tridentconfig.Protocol, error) {

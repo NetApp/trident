@@ -23,7 +23,7 @@ type InMemoryClient struct {
 	version             *config.PersistentStateVersion
 	nodes               map[string]*utils.Node
 	nodesAdded          int
-	snapshots           map[string]*storage.SnapshotExternal
+	snapshots           map[string]*storage.SnapshotPersistent
 	snapshotsAdded      int
 }
 
@@ -34,7 +34,7 @@ func NewInMemoryClient() *InMemoryClient {
 		storageClasses: make(map[string]*sc.Persistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
 		nodes:          make(map[string]*utils.Node),
-		snapshots:      make(map[string]*storage.SnapshotExternal),
+		snapshots:      make(map[string]*storage.SnapshotPersistent),
 		version: &config.PersistentStateVersion{
 			"memory", config.OrchestratorAPIVersion,
 		},
@@ -349,17 +349,56 @@ func (c *InMemoryClient) DeleteNode(n *utils.Node) error {
 }
 
 func (c *InMemoryClient) AddSnapshot(snapshot *storage.Snapshot) error {
-	snapExternal := snapshot.ConstructExternal()
-	c.snapshots[snapshot.Name] = snapExternal
+	snapPersistent := snapshot.ConstructPersistent()
+	c.snapshots[snapshot.ID()] = snapPersistent
 	c.snapshotsAdded++
 	return nil
 }
 
 // GetSnapshot retrieves a snapshot state from the persistent store
-func (c *InMemoryClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
-	ret, ok := c.snapshots[snapshotName]
+func (c *InMemoryClient) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
+	ret, ok := c.snapshots[storage.MakeSnapshotID(volumeName, snapshotName)]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
 	}
 	return ret, nil
+}
+
+// GetSnapshots retrieves all snapshots for all volumes
+func (c *InMemoryClient) GetSnapshots() ([]*storage.SnapshotPersistent, error) {
+	ret := make([]*storage.SnapshotPersistent, 0, len(c.snapshots))
+	if c.snapshotsAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return ret, nil
+	}
+	for _, s := range c.snapshots {
+		ret = append(ret, s)
+	}
+	return ret, nil
+}
+
+// DeleteSnapshot deletes a snapshot from the persistent store
+func (c *InMemoryClient) DeleteSnapshot(snapshot *storage.Snapshot) error {
+	if _, ok := c.snapshots[snapshot.ID()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, snapshot.Config.Name)
+	}
+	delete(c.snapshots, snapshot.ID())
+	return nil
+}
+
+// DeleteVolumeIgnoreNotFound deletes a snapshot from the persistent store,
+// returning no error if the record does not exist.
+func (c *InMemoryClient) DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error {
+	_ = c.DeleteSnapshot(snapshot)
+	return nil
+}
+
+// DeleteSnapshots deletes all snapshots
+func (c *InMemoryClient) DeleteSnapshots() error {
+	if c.snapshotsAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return NewPersistentStoreError(KeyNotFoundErr, "Snapshots")
+	}
+	c.snapshots = make(map[string]*storage.SnapshotPersistent)
+	return nil
 }

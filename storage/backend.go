@@ -43,8 +43,11 @@ type Driver interface {
 	GetStorageBackendSpecs(backend *Backend) error
 	GetProtocol() tridentconfig.Protocol
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
-	SnapshotList(name string) ([]Snapshot, error)
-	CreateSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error)
+	GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
+	GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error)
+	CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
+	RestoreSnapshot(snapConfig *SnapshotConfig) error
+	DeleteSnapshot(snapConfig *SnapshotConfig) error
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -179,12 +182,9 @@ func (b *Backend) AddVolume(
 		"storage_class": volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
 
-	if b.State != Online {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
 	}
 
 	// CreatePrepare should perform the following tasks:
@@ -253,12 +253,9 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		"clone_volume_internal":  volConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
-	if b.State != Online {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
 	}
 
 	// CreatePrepare should perform the following tasks:
@@ -315,12 +312,9 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) {
 
-	if b.State != Online {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
 	}
 
 	if b.Driver.Get(volumeName) != nil {
@@ -337,18 +331,16 @@ func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) 
 }
 
 func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volume, error) {
+
 	log.WithFields(log.Fields{
 		"backend":    b.Name,
 		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": notManaged,
 	}).Debug("Backend#ImportVolume")
 
-	if b.State != Online {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
 	}
 
 	if notManaged {
@@ -383,12 +375,9 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 
 func (b *Backend) ResizeVolume(volName, newSize string) error {
 
-	if b.State != Online {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return fmt.Errorf("backend %s is not Online", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return err
 	}
 
 	// Determine volume size in bytes
@@ -416,12 +405,9 @@ func (b *Backend) RemoveVolume(vol *Volume) error {
 		"volume":  vol.Config.Name,
 	}).Debug("Backend#RemoveVolume")
 
-	if b.State != Online && b.State != Deleting {
-		log.WithFields(log.Fields{
-			"state":         b.State,
-			"expectedState": string(Online) + "/" + string(Deleting),
-		}).Error("Invalid backend state.")
-		return fmt.Errorf("backend %s is not Online or Deleting", b.Name)
+	// Ensure backend is ready
+	if err := b.ensureOnlineOrDeleting(); err != nil {
+		return err
 	}
 
 	if err := b.Driver.Destroy(vol.Config.InternalName); err != nil {
@@ -440,16 +426,134 @@ func (b *Backend) RemoveCachedVolume(volumeName string) {
 	}
 }
 
-func (b *Backend) CreateVolumeSnapshot(snapshotName string, volConfig *VolumeConfig) (*Snapshot, error) {
+func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
 
 	log.WithFields(log.Fields{
 		"backend":      b.Name,
-		"sourceVolume": volConfig.Name,
-		"snapshotName": snapshotName,
+		"volumeName":   snapConfig.VolumeName,
+		"snapshotName": snapConfig.Name,
+	}).Debug("GetSnapshot.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
+	}
+
+	if snapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
+		return nil, err
+	} else if snapshot == nil {
+		// No error and no snapshot means the snapshot doesn't exist.
+		return nil, fmt.Errorf("snapshot %s on volume %s not found", snapConfig.Name, snapConfig.VolumeName)
+	} else {
+		return snapshot, nil
+	}
+}
+
+func (b *Backend) GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error) {
+
+	log.WithFields(log.Fields{
+		"backend":    b.Name,
+		"volumeName": volConfig.Name,
+	}).Debug("GetSnapshots.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
+	}
+
+	return b.Driver.GetSnapshots(volConfig)
+}
+
+func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
+
+	log.WithFields(log.Fields{
+		"backend":      b.Name,
+		"volumeName":   snapConfig.VolumeName,
+		"snapshotName": snapConfig.Name,
 	}).Debug("Attempting snapshot create.")
 
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return nil, err
+	}
+
+	// Set the default internal snapshot name to match the snapshot name.  Drivers
+	// may override this value in the SnapshotConfig structure if necessary.
+	snapConfig.InternalName = snapConfig.Name
+
+	// Implement idempotency by checking for the snapshot first
+	if existingSnapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+
+		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
+		return nil, err
+
+	} else if existingSnapshot != nil {
+
+		log.WithFields(log.Fields{
+			"backend":      b.Name,
+			"volumeName":   snapConfig.VolumeName,
+			"snapshotName": snapConfig.Name,
+		}).Warning("Snapshot already exists.")
+
+		// Snapshot already exists, so just return it
+		return existingSnapshot, nil
+	}
+
 	// Create snapshot
-	return b.Driver.CreateSnapshot(snapshotName, volConfig)
+	return b.Driver.CreateSnapshot(snapConfig)
+}
+
+func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig) error {
+
+	log.WithFields(log.Fields{
+		"backend":      b.Name,
+		"volumeName":   snapConfig.VolumeName,
+		"snapshotName": snapConfig.Name,
+	}).Debug("Attempting snapshot restore.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnline(); err != nil {
+		return err
+	}
+
+	// Restore snapshot
+	return b.Driver.RestoreSnapshot(snapConfig)
+}
+
+func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig) error {
+
+	log.WithFields(log.Fields{
+		"backend":      b.Name,
+		"volumeName":   snapConfig.VolumeName,
+		"snapshotName": snapConfig.Name,
+	}).Debug("Attempting snapshot delete.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnlineOrDeleting(); err != nil {
+		return err
+	}
+
+	// Implement idempotency by checking for the snapshot first
+	if existingSnapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+
+		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
+		return err
+
+	} else if existingSnapshot == nil {
+
+		log.WithFields(log.Fields{
+			"backend":      b.Name,
+			"volumeName":   snapConfig.VolumeName,
+			"snapshotName": snapConfig.Name,
+		}).Warning("Snapshot not found.")
+
+		// Snapshot does not exist, so just return without error.
+		return nil
+	}
+
+	// Delete snapshot
+	return b.Driver.DeleteSnapshot(snapConfig)
 }
 
 const (
@@ -492,6 +596,28 @@ func (b *Backend) Terminate() {
 		log.WithFields(logFields).Debug("Terminating backend.")
 		b.Driver.Terminate()
 	}
+}
+
+func (b *Backend) ensureOnline() error {
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return fmt.Errorf("backend %s is not Online", b.Name)
+	}
+	return nil
+}
+
+func (b *Backend) ensureOnlineOrDeleting() error {
+	if b.State != Online && b.State != Deleting {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online) + "/" + string(Deleting),
+		}).Error("Invalid backend state.")
+		return fmt.Errorf("backend %s is not Online or Deleting", b.Name)
+	}
+	return nil
 }
 
 type BackendExternal struct {

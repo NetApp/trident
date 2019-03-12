@@ -3,6 +3,7 @@
 package csi
 
 const (
-	csiVersion    = "1.0"
-	csiPluginName = "csi.trident.netapp.io"
+	Version           = "1.1"
+	Provisioner       = "csi.trident.netapp.io"
+	LegacyProvisioner = "netapp.io/trident"
 )

@@ -199,7 +199,7 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 	log.WithFields(log.Fields{
 		"apiVersion": apiVersion.String(),
 		"sdeVersion": sdeVersion.String(),
-	}).Debug("Read CVS version.")
+	}).Info("Read CVS version.")
 
 	return apiVersion, sdeVersion, nil
 }
@@ -224,7 +224,7 @@ func (d *Client) GetRegions() (*[]Region, error) {
 		return nil, fmt.Errorf("could not parse region data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(regions)).Debug("Read regions.")
+	log.WithField("count", len(regions)).Info("Read regions.")
 
 	return &regions, nil
 }
@@ -444,7 +444,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Debug("Filesystem created.")
+	}).Info("Filesystem created.")
 
 	return &filesystem, nil
 }
@@ -484,7 +484,7 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Debug("Filesystem renamed.")
+	}).Info("Filesystem renamed.")
 
 	return filesystem, nil
 }
@@ -605,7 +605,7 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		"size":          newSizeBytes,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Debug("Filesystem resized.")
+	}).Info("Filesystem resized.")
 
 	return filesystem, nil
 }
@@ -626,7 +626,7 @@ func (d *Client) DeleteVolume(filesystem *FileSystem) error {
 
 	log.WithFields(log.Fields{
 		"volume": filesystem.CreationToken,
-	}).Debug("Deleted volume.")
+	}).Info("Filesystem deleted.")
 
 	return nil
 }
@@ -651,7 +651,7 @@ func (d *Client) GetMountTargetsForVolume(filesystem *FileSystem) (*[]MountTarge
 		return nil, fmt.Errorf("could not parse mount target data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(mountTargets)).Debug("Read mount targets.")
+	log.WithField("count", len(mountTargets)).Debug("Read mount targets for filesystem.")
 
 	return &mountTargets, nil
 }
@@ -676,7 +676,7 @@ func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, err
 		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(snapshots)).Debug("Read snapshots.")
+	log.WithField("count", len(snapshots)).Debug("Read filesystem snapshots.")
 
 	return &snapshots, nil
 }
@@ -694,7 +694,7 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 			log.WithFields(log.Fields{
 				"snapshot":   snapshotName,
 				"filesystem": filesystem.CreationToken,
-			}).Debug("Found snapshot.")
+			}).Debug("Found filesystem snapshot.")
 
 			return &snapshot, nil
 		}
@@ -818,9 +818,63 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 	log.WithFields(log.Fields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
-	}).Debug("Snapshot created.")
+	}).Info("Filesystem snapshot created.")
 
 	return &snapshot, nil
+}
+
+func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+
+	resourcePath := fmt.Sprintf("/FileSystems/%s/Revert", filesystem.FileSystemID)
+
+	snapshotRevertRequest := &SnapshotRevertRequest{
+		FileSystemID: filesystem.FileSystemID,
+		Region:       filesystem.Region,
+		SnapshotID:   snapshot.SnapshotID,
+	}
+
+	jsonRequest, err := json.Marshal(snapshotRevertRequest)
+	if err != nil {
+		return fmt.Errorf("could not marshal JSON request: %v; %v", snapshotRevertRequest, err)
+	}
+
+	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	if err != nil {
+		return err
+	}
+
+	if err = d.getErrorFromAPIResponse(response, responseBody); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"snapshot":   snapshot.Name,
+		"filesystem": filesystem.CreationToken,
+	}).Info("Filesystem reverted to snapshot.")
+
+	return nil
+}
+
+func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+
+	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots/%s", filesystem.FileSystemID, snapshot.SnapshotID)
+
+	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
+	if err != nil {
+		return errors.New("failed to delete snapshot")
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"snapshot": snapshot.Name,
+		"volume":   filesystem.CreationToken,
+	}).Info("Deleted filesytem snapshot.")
+
+	return nil
 }
 
 func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody []byte) error {

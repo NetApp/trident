@@ -25,3 +25,8 @@ type Version struct {
 		BuildTime     string `json:"BuildTime"`
 	} `json:"Server"`
 }
+
+type Snapshot struct {
+	Name    string `json:"name"`
+	Created string `json:"dateCreated"` // The UTC time that the snapshot was created, in RFC3339 format
+}

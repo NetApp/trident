@@ -56,19 +56,14 @@ func NewKubectlClient(namespace string) (Interface, error) {
 		return nil, err
 	}
 
-	// Ensure the version is a supported one
-	minSupportedVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMin)
-	maxSupportedVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMax)
-	if !k8sVersion.AtLeast(minSupportedVersion) {
-		return nil, fmt.Errorf("trident requires Kubernetes %s or later", minSupportedVersion.ShortString())
-	}
-	mmVersion := k8sVersion.ToMajorMinorVersion()
-	maxSupportedMMVersion := maxSupportedVersion.ToMajorMinorVersion()
-	if maxSupportedMMVersion.LessThan(mmVersion) {
-		log.WithFields(log.Fields{
-			"kubernetesVersion":   k8sVersion.ShortString(),
-			"maxSupportedVersion": maxSupportedMMVersion.String(),
-		}).Warning("Trident has not been qualified with this version of Kubernetes.")
+	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
+	minSupportedMMVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMin).ToMajorMinorVersion()
+	maxSupportedMMVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMax).ToMajorMinorVersion()
+
+	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
+		return nil, fmt.Errorf("%s %s supports Kubernetes versions in the range [%s, %s]",
+			strings.Title(tridentconfig.OrchestratorName), tridentconfig.OrchestratorVersion.ShortString(),
+			minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString())
 	}
 
 	client := &KubectlClient{
@@ -1342,7 +1337,7 @@ RetryLoop:
 }
 
 // AddFinalizerToCRD patches the CRD object to include our Trident finalizer (definitions are not namespaced)
-func (k *KubectlClient) AddFinalizerToCRD(crdName string) error {
+func (c *KubectlClient) AddFinalizerToCRD(crdName string) error {
 
 	log.Debugf("Adding finalizers to Kubernetes CRD object %v", crdName)
 
@@ -1356,7 +1351,7 @@ func (k *KubectlClient) AddFinalizerToCRD(crdName string) error {
 		"--type=merge",
 	}
 
-	out, err := exec.Command(k.cli, args...).CombinedOutput()
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %v", string(out), err)
 	}

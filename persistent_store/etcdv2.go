@@ -201,6 +201,11 @@ func (p *EtcdClientV2) Delete(key string) error {
 
 // DeleteKeys deletes all the keys with the designated prefix
 func (p *EtcdClientV2) DeleteKeys(keyPrefix string) error {
+	return p.deleteKeys(keyPrefix)
+}
+
+// deleteKeys deletes all the keys with the designated prefix
+func (p *EtcdClientV2) deleteKeys(keyPrefix string) error {
 	keys, err := p.ReadKeys(keyPrefix)
 	if err != nil {
 		return err
@@ -343,16 +348,7 @@ func (p *EtcdClientV2) GetBackends() ([]*storage.BackendPersistent, error) {
 
 // DeleteBackends deletes all backends
 func (p *EtcdClientV2) DeleteBackends() error {
-	backends, err := p.ReadKeys(config.BackendURL)
-	if err != nil {
-		return err
-	}
-	for _, backend := range backends {
-		if err = p.Delete(backend); err != nil {
-			return err
-		}
-	}
-	return nil
+	return p.deleteKeys(config.BackendURL)
 }
 
 // AddVolume saves a volume's state to the persistent store
@@ -445,30 +441,16 @@ func (p *EtcdClientV2) GetVolumes() ([]*storage.VolumeExternal, error) {
 
 // DeleteVolumes deletes all volumes
 func (p *EtcdClientV2) DeleteVolumes() error {
-	volumes, err := p.ReadKeys(config.VolumeURL)
-	if err != nil {
-		return err
-	}
-	for _, vol := range volumes {
-		if err = p.Delete(vol); err != nil {
-			return err
-		}
-	}
-	return nil
+	return p.deleteKeys(config.VolumeURL)
 }
 
 // AddVolumeTransaction logs an AddVolume operation
 func (p *EtcdClientV2) AddVolumeTransaction(volTxn *VolumeTransaction) error {
-	volTxnJSON, err := json.Marshal(volTxn)
-	if err != nil {
+	if volTxnJSON, err := json.Marshal(volTxn); err != nil {
 		return err
+	} else {
+		return p.Set(config.TransactionURL+"/"+volTxn.getKey(), string(volTxnJSON))
 	}
-	err = p.Set(config.TransactionURL+"/"+volTxn.getKey(),
-		string(volTxnJSON))
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GetVolumeTransactions retrieves AddVolume logs
@@ -563,8 +545,7 @@ func (p *EtcdClientV2) GetStorageClasses() ([]*storageclass.Persistent, error) {
 		return nil, err
 	}
 	for _, key := range keys {
-		sc, err := p.GetStorageClass(strings.TrimPrefix(key,
-			config.StorageClassURL+"/"))
+		sc, err := p.GetStorageClass(strings.TrimPrefix(key, config.StorageClassURL+"/"))
 		if err != nil {
 			return nil, err
 		}
@@ -637,23 +618,66 @@ func (p *EtcdClientV2) DeleteNode(n *utils.Node) error {
 
 // AddSnapshot adds a snapshot's state to the persistent store
 func (p *EtcdClientV2) AddSnapshot(snapshot *storage.Snapshot) error {
-	snapExternal := snapshot.ConstructExternal()
-	snapJSON, err := json.Marshal(snapExternal)
-	if err != nil {
+	if snapJSON, err := json.Marshal(snapshot.ConstructPersistent()); err != nil {
 		return err
+	} else {
+		return p.Create(config.SnapshotURL+"/"+snapshot.ID(), string(snapJSON))
 	}
-	return p.Create(config.SnapshotURL+"/"+snapshot.Name, string(snapJSON))
 }
 
 // GetSnapshot fetches a snapshot's state from the persistent store
-func (p *EtcdClientV2) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
-	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotName)
+func (p *EtcdClientV2) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
+	return p.getSnapshotByID(storage.MakeSnapshotID(volumeName, snapshotName))
+}
+
+// getSnapshotByID fetches a snapshot's state from the persistent store given its ID
+func (p *EtcdClientV2) getSnapshotByID(snapshotID string) (*storage.SnapshotPersistent, error) {
+	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotID)
 	if err != nil {
 		return nil, err
 	}
-	snapExternal := &storage.SnapshotExternal{}
-	if err = json.Unmarshal([]byte(snapJSON), snapExternal); err != nil {
+	snapPersistent := &storage.SnapshotPersistent{}
+	if err = json.Unmarshal([]byte(snapJSON), snapPersistent); err != nil {
 		return nil, err
 	}
-	return snapExternal, nil
+	return snapPersistent, nil
+}
+
+// GetSnapshots retrieves all snapshots
+func (p *EtcdClientV2) GetSnapshots() ([]*storage.SnapshotPersistent, error) {
+	snapshotList := make([]*storage.SnapshotPersistent, 0)
+	keys, err := p.ReadKeys(config.SnapshotURL)
+	if err != nil && MatchKeyNotFoundErr(err) {
+		return snapshotList, nil
+	} else if err != nil {
+		return nil, err
+	}
+	for _, key := range keys {
+		snapshot, err := p.getSnapshotByID(strings.TrimPrefix(key, config.SnapshotURL+"/"))
+		if err != nil {
+			return nil, err
+		}
+		snapshotList = append(snapshotList, snapshot)
+	}
+	return snapshotList, nil
+}
+
+// DeleteSnapshot deletes a snapshot from the persistent store
+func (p *EtcdClientV2) DeleteSnapshot(snapshot *storage.Snapshot) error {
+	return p.Delete(config.SnapshotURL + "/" + snapshot.ID())
+}
+
+// DeleteVolumeIgnoreNotFound deletes a snapshot from the persistent store,
+// returning no error if the record does not exist.
+func (p *EtcdClientV2) DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error {
+	err := p.DeleteSnapshot(snapshot)
+	if etcdErr, ok := err.(etcdclientv2.Error); ok && etcdErr.Code == etcdclientv2.ErrorCodeKeyNotFound {
+		return nil
+	}
+	return err
+}
+
+// DeleteSnapshots deletes all snapshots
+func (p *EtcdClientV2) DeleteSnapshots() error {
+	return p.deleteKeys(config.SnapshotURL)
 }

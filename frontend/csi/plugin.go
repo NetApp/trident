@@ -13,6 +13,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/frontend/rest"
 )
 
@@ -32,23 +33,30 @@ type Plugin struct {
 	role     string
 
 	restClient *RestClient
+	helper     helpers.HybridPlugin
 
 	grpc NonBlockingGRPCServer
 
 	csCap []*csi.ControllerServiceCapability
 	nsCap []*csi.NodeServiceCapability
 	vCap  []*csi.VolumeCapability_AccessMode
+
+	opCache map[string]bool
 }
 
-func NewControllerPlugin(nodeName, endpoint string, orchestrator core.Orchestrator) (*Plugin, error) {
+func NewControllerPlugin(
+	nodeName, endpoint string, orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
+) (*Plugin, error) {
 
 	p := &Plugin{
 		orchestrator: orchestrator,
-		name:         csiPluginName,
+		name:         Provisioner,
 		nodeName:     nodeName,
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
 		role:         CSIController,
+		helper:       *helper,
+		opCache:      make(map[string]bool),
 	}
 
 	// Define controller capabilities
@@ -56,6 +64,8 @@ func NewControllerPlugin(nodeName, endpoint string, orchestrator core.Orchestrat
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
+		//csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
 	})
 
 	// Define volume capabilities
@@ -70,16 +80,18 @@ func NewControllerPlugin(nodeName, endpoint string, orchestrator core.Orchestrat
 	return p, nil
 }
 
-func NewNodePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
-	orchestrator core.Orchestrator) (*Plugin, error) {
+func NewNodePlugin(
+	nodeName, endpoint, caCert, clientCert, clientKey string, orchestrator core.Orchestrator,
+) (*Plugin, error) {
 
 	p := &Plugin{
 		orchestrator: orchestrator,
-		name:         csiPluginName,
+		name:         Provisioner,
 		nodeName:     nodeName,
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
 		role:         CSINode,
+		opCache:      make(map[string]bool),
 	}
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
@@ -112,16 +124,20 @@ func NewNodePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
 	return p, nil
 }
 
-func NewAllInOnePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
-	orchestrator core.Orchestrator) (*Plugin, error) {
+func NewAllInOnePlugin(
+	nodeName, endpoint, caCert, clientCert, clientKey string,
+	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
+) (*Plugin, error) {
 
 	p := &Plugin{
 		orchestrator: orchestrator,
-		name:         csiPluginName,
+		name:         Provisioner,
 		nodeName:     nodeName,
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
 		role:         CSIAllInOne,
+		helper:       *helper,
+		opCache:      make(map[string]bool),
 	}
 
 	// Define controller capabilities
@@ -129,6 +145,8 @@ func NewAllInOnePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
+		//csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
 	})
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
@@ -195,7 +213,7 @@ func (p *Plugin) GetName() string {
 }
 
 func (p *Plugin) Version() string {
-	return csiVersion
+	return tridentconfig.OrchestratorVersion.String()
 }
 
 func (p *Plugin) addControllerServiceCapabilities(cl []csi.ControllerServiceCapability_RPC_Type) {

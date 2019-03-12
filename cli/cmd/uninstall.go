@@ -16,7 +16,6 @@ import (
 func init() {
 	RootCmd.AddCommand(uninstallCmd)
 	uninstallCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during uninstallation.")
-	uninstallCmd.Flags().BoolVar(&csi, "csi", false, "Uninstall CSI Trident (alpha, not for production clusters).")
 	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
 	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a job in the cluster.")
 
@@ -32,7 +31,6 @@ var uninstallCmd = &cobra.Command{
 		if err := discoverUninstallationEnvironment(); err != nil {
 			log.Fatalf("Uninstall pre-checks failed; %v", err)
 		}
-		processUninstallationArguments()
 		if err := validateUninstallationArguments(); err != nil {
 			log.Fatalf("Invalid arguments; %v", err)
 		}
@@ -99,44 +97,38 @@ func discoverUninstallationEnvironment() error {
 }
 
 func isTridentInstalled() (installed bool, namespace string, err error) {
+	return client.CheckDeploymentExistsByLabel(TridentLegacyLabel, true)
+}
 
-	if deploymentExists, namespace, err := client.CheckDeploymentExistsByLabel(TridentLabel, true); err != nil {
-		return false, "", err
-	} else if deploymentExists {
-		return true, namespace, nil
-	}
-
-	return false, "", nil
+func isPreviewCSITridentInstalled() (installed bool, namespace string, err error) {
+	return client.CheckStatefulSetExistsByLabel(TridentCSILabel, true)
 }
 
 func isCSITridentInstalled() (installed bool, namespace string, err error) {
-
-	if statefulSetExists, namespace, err := client.CheckStatefulSetExistsByLabel(TridentCSILabel, true); err != nil {
-		return false, "", err
-	} else if statefulSetExists {
-		return true, namespace, nil
-	}
-
-	if daemonSetExists, namespace, err := client.CheckDaemonSetExistsByLabel(TridentNodeLabel, true); err != nil {
-		return false, "", err
-	} else if daemonSetExists {
-		return true, namespace, nil
-	}
-
-	return false, "", nil
+	return client.CheckDeploymentExistsByLabel(TridentCSILabel, true)
 }
 
-func processUninstallationArguments() {
+func discoverTrident() (legacy, csi, csiPreview bool, err error) {
 
-	if csi {
-		appLabel = TridentCSILabel
-		appLabelKey = TridentCSILabelKey
-		appLabelValue = TridentCSILabelValue
-	} else {
-		appLabel = TridentLabel
-		appLabelKey = TridentLabelKey
-		appLabelValue = TridentLabelValue
+	// Check if legacy Trident is installed
+	if legacy, _, err = isTridentInstalled(); err != nil {
+		err = fmt.Errorf("could not check if legacy Trident is installed; %v", err)
+		return
 	}
+
+	// Check if preview CSI Trident is installed
+	if csiPreview, _, err = isPreviewCSITridentInstalled(); err != nil {
+		err = fmt.Errorf("could not check if preview CSI Trident is installed; %v", err)
+		return
+	}
+
+	// Check if CSI Trident is installed
+	if csi, _, err = isCSITridentInstalled(); err != nil {
+		err = fmt.Errorf("could not check if CSI Trident is installed; %v", err)
+		return
+	}
+
+	return
 }
 
 func validateUninstallationArguments() error {
@@ -152,9 +144,81 @@ func validateUninstallationArguments() error {
 
 func uninstallTrident() error {
 
+	// 1. preview CSI Trident --> uninstall preview CSI Trident
+	// 2. preview CSI Trident & legacy Trident --> uninstall preview CSI Trident
+	// 3. CSI Trident --> uninstall CSI Trident
+	// 4. legacy Trident --> uninstall legacy Trident
+	//
+	// if csiPreview, uninstall csiPreview
+	// else if csi, uninstall csi
+	// else if legacy, uninstall legacy
+
 	var anyErrors = false
 
-	if !csi {
+	legacyTridentInstalled, csiTridentInstalled, csiPreviewTridentInstalled, err := discoverTrident()
+	if err != nil {
+		return err
+	}
+
+	if legacyTridentInstalled && csiPreviewTridentInstalled {
+		log.Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
+			"you must run the uninstaller again to remove legacy Trident before running the Trident installer.")
+	}
+
+	// Set the global csi variable, which controls things like RBAC and app labels
+	csi = csiTridentInstalled || csiPreviewTridentInstalled
+
+	// Set the app labels (CSI takes precedence)
+	if csi {
+		appLabel = TridentCSILabel
+		appLabelKey = TridentCSILabelKey
+		appLabelValue = TridentCSILabelValue
+	} else {
+		appLabel = TridentLegacyLabel
+		appLabelKey = TridentLegacyLabelKey
+		appLabelValue = TridentLegacyLabelValue
+	}
+
+	// First handle the deployment (legacy, CSI) / statefulset (preview CSI)
+
+	if csiPreviewTridentInstalled {
+
+		// Delete Trident statefulset
+		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
+
+			log.WithFields(log.Fields{
+				"label": appLabel,
+				"error": err,
+			}).Warn("Trident statefulset not found.")
+
+		} else {
+
+			// Statefulset found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != statefulset.Namespace {
+				return fmt.Errorf("a Trident statefulset was found in namespace '%s', "+
+					"not in specified namespace '%s'", statefulset.Namespace, TridentPodNamespace)
+			}
+
+			log.WithFields(log.Fields{
+				"statefulset": statefulset.Name,
+				"namespace":   statefulset.Namespace,
+			}).Debug("Trident statefulset found by label.")
+
+			// Delete the statefulset
+			if err = client.DeleteStatefulSetByLabel(appLabel); err != nil {
+				log.WithFields(log.Fields{
+					"statefulset": statefulset.Name,
+					"namespace":   statefulset.Namespace,
+					"label":       appLabel,
+					"error":       err,
+				}).Warning("Could not delete Trident statefulset.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident statefulset.")
+			}
+		}
+
+	} else {
 
 		// Delete Trident deployment
 		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
@@ -184,14 +248,17 @@ func uninstallTrident() error {
 					"namespace":  deployment.Namespace,
 					"label":      appLabel,
 					"error":      err,
-				}).Warning("Could not delete deployment.")
+				}).Warning("Could not delete Trident deployment.")
 				anyErrors = true
 			} else {
 				log.Info("Deleted Trident deployment.")
 			}
 		}
+	}
 
-	} else {
+	// Next handle all the other common CSI components (daemonset, service)
+
+	if csi {
 
 		// Delete CSI Trident components
 		if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
@@ -203,6 +270,7 @@ func uninstallTrident() error {
 			anyErrors = true
 
 		} else {
+
 			// Daemonset found by label, so ensure there isn't a namespace clash
 			if TridentPodNamespace != daemonset.Namespace {
 				return fmt.Errorf("a Trident daemonset was found in namespace '%s', "+
@@ -221,45 +289,10 @@ func uninstallTrident() error {
 					"namespace": daemonset.Namespace,
 					"label":     TridentNodeLabel,
 					"error":     err,
-				}).Warning("Could not delete daemonset.")
+				}).Warning("Could not delete Trident daemonset.")
 				anyErrors = true
 			} else {
 				log.Info("Deleted Trident daemonset.")
-			}
-		}
-
-		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
-
-			log.WithFields(log.Fields{
-				"label": appLabel,
-				"error": err,
-			}).Warning("Trident statefulset not found.")
-			anyErrors = true
-
-		} else {
-
-			// Statefulset found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != statefulset.Namespace {
-				return fmt.Errorf("a Trident statefulset was found in namespace '%s', "+
-					"not in specified namespace '%s'", statefulset.Namespace, TridentPodNamespace)
-			}
-
-			log.WithFields(log.Fields{
-				"statefulset": statefulset.Name,
-				"namespace":   statefulset.Namespace,
-			}).Debug("Trident statefulset found by label.")
-
-			// Delete the statefulset
-			if err = client.DeleteStatefulSetByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
-					"statefulset": statefulset.Name,
-					"namespace":   statefulset.Namespace,
-					"label":       appLabel,
-					"error":       err,
-				}).Warning("Could not delete statefulset.")
-				anyErrors = true
-			} else {
-				log.Info("Deleted Trident statefulset.")
 			}
 		}
 
@@ -304,7 +337,8 @@ func uninstallTrident() error {
 				"label": appLabel,
 				"error": err,
 			}).Warning("Trident secret not found.")
-			anyErrors = true
+
+			// The secret was added in 19.04, so it isn't an error if it wasn't found.
 
 		} else {
 
@@ -332,7 +366,6 @@ func uninstallTrident() error {
 				log.Info("Deleted Trident secret.")
 			}
 		}
-
 	}
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
@@ -342,8 +375,8 @@ func uninstallTrident() error {
 	if !anyErrors {
 		log.Info("Trident uninstallation succeeded.")
 	} else {
-		log.Error("Trident uninstallation completed with errors. Please resolve those " +
-			"and run the uninstaller again.")
+		log.Error("Trident uninstallation completed with errors. " +
+			"Please resolve those and run the uninstaller again.")
 	}
 
 	return nil
@@ -407,9 +440,6 @@ func uninstallTridentInCluster() (returnError error) {
 	}
 	if silent {
 		commandArgs = append(commandArgs, "--silent")
-	}
-	if csi {
-		commandArgs = append(commandArgs, "--csi")
 	}
 	if tridentImage != "" {
 		commandArgs = append(commandArgs, "--trident-image")

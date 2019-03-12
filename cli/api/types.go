@@ -46,6 +46,10 @@ type MultipleNodeResponse struct {
 	Items []utils.Node `json:"items"`
 }
 
+type MultipleSnapshotResponse struct {
+	Items []storage.SnapshotExternal `json:"items"`
+}
+
 type Version struct {
 	Version       string `json:"version"`
 	MajorVersion  uint   `json:"majorVersion"`

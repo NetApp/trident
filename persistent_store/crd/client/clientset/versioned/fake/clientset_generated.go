@@ -61,8 +61,3 @@ var _ clientset.Interface = &Clientset{}
 func (c *Clientset) TridentV1() tridentv1.TridentV1Interface {
 	return &faketridentv1.FakeTridentV1{Fake: &c.Fake}
 }
-
-// Trident retrieves the TridentV1Client
-func (c *Clientset) Trident() tridentv1.TridentV1Interface {
-	return &faketridentv1.FakeTridentV1{Fake: &c.Fake}
-}

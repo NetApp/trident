@@ -200,3 +200,9 @@ type SnapshotCreateRequest struct {
 	Name         string `json:"name"`
 	Region       string `json:"region"`
 }
+
+type SnapshotRevertRequest struct {
+	FileSystemID string `json:"fileSystemId"`
+	Region       string `json:"region"`
+	SnapshotID   string `json:"snapshotId"`
+}

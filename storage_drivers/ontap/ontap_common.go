@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -725,8 +726,7 @@ func CreateOntapClone(
 
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
-		// This is golang being stupid: https://golang.org/pkg/time/#Time.Format
-		snapshot = time.Now().UTC().Format("20060102T150405Z")
+		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
 		snapResponse, err := client.SnapshotCreate(snapshot, source)
 		if err = api.GetError(snapResponse, err); err != nil {
 			return fmt.Errorf("error creating snapshot: %v", err)
@@ -773,92 +773,298 @@ func CreateOntapClone(
 	return nil
 }
 
-// CreateOntapSnapshot creates a snapshot for the given volume
-func CreateOntapSnapshot(
-	snapshotName, sourceVolName string, config *drivers.OntapStorageDriverConfig, client *api.Client,
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func GetSnapshot(
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
 ) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":       "CreateOntapSnapshot",
+			"Method":       "GetSnapshot",
 			"Type":         "ontap_common",
-			"snapshotName": snapshotName,
-			"sourceVolume": sourceVolName,
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
 		}
-		log.WithFields(fields).Debug(">>>> CreateOntapSnapshot")
-		defer log.WithFields(fields).Debug("<<<< CreateOntapSnapshot")
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	// If the specified volume doesn't exist, return error
-	volExists, err := client.VolumeExists(sourceVolName)
+	size, err := client.VolumeSize(internalVolName)
 	if err != nil {
-		return nil, fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		return nil, fmt.Errorf("volume %s does not exist", sourceVolName)
+		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapResponse, err := client.SnapshotCreate(snapshotName, sourceVolName)
-	if err = api.GetError(snapResponse, err); err != nil {
-		return nil, fmt.Errorf("could not create snapshot: %v", err)
-	}
-
-	// Fetching list of snapshots to get snapshot access time
-	snapListResponse, err := client.SnapshotGetByVolume(sourceVolName)
+	snapListResponse, err := client.SnapshotList(internalVolName)
 	if err = api.GetError(snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
+
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
-			if snap.Name() == snapshotName {
+			if snap.Name() == internalSnapName {
+
+				log.WithFields(log.Fields{
+					"snapshotName": internalSnapName,
+					"volumeName":   internalVolName,
+					"created":      snap.AccessTime(),
+				}).Debug("Found snapshot.")
+
 				return &storage.Snapshot{
-					Name:    snapshotName,
-					Created: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(time.RFC3339),
-					ID:      snap.SnapshotInstanceUuid(),
+					Config:    snapConfig,
+					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
+					SizeBytes: int64(size),
 				}, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", snapshotName, sourceVolName)
+
+	log.WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
 }
 
-// Return the list of snapshots associated with the named volume
-func GetSnapshotList(name string, config *drivers.OntapStorageDriverConfig, client *api.Client) ([]storage.Snapshot, error) {
+// GetSnapshots returns the list of snapshots associated with the named volume.
+func GetSnapshots(
+	volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) ([]*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "GetSnapshotList",
-			"Type":   "ontap_common",
-			"name":   name,
+			"Method":     "GetSnapshotList",
+			"Type":       "ontap_common",
+			"volumeName": internalVolName,
 		}
 		log.WithFields(fields).Debug(">>>> GetSnapshotList")
 		defer log.WithFields(fields).Debug("<<<< GetSnapshotList")
 	}
 
-	snapResponse, err := client.SnapshotGetByVolume(name)
-	if err = api.GetError(snapResponse, err); err != nil {
+	size, err := client.VolumeSize(internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapListResponse, err := client.SnapshotList(internalVolName)
+	if err = api.GetError(snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
-	log.Debugf("Returned %v snapshots.", snapResponse.Result.NumRecords())
-	snapshots := []storage.Snapshot{}
+	log.Debugf("Returned %v snapshots.", snapListResponse.Result.NumRecords())
+	snapshots := make([]*storage.Snapshot, 0)
 
-	if snapResponse.Result.AttributesListPtr != nil {
-		for _, snap := range snapResponse.Result.AttributesListPtr.SnapshotInfoPtr {
+	if snapListResponse.Result.AttributesListPtr != nil {
+		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 
 			log.WithFields(log.Fields{
 				"name":       snap.Name(),
 				"accessTime": snap.AccessTime(),
 			}).Debug("Snapshot")
 
-			// Time format: yyyy-mm-ddThh:mm:ssZ
-			snapTime := time.Unix(int64(snap.AccessTime()), 0).UTC().Format("2006-01-02T15:04:05Z")
+			snapshot := &storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Version:            tridentconfig.OrchestratorAPIVersion,
+					Name:               snap.Name(),
+					InternalName:       snap.Name(),
+					VolumeName:         volConfig.Name,
+					VolumeInternalName: volConfig.InternalName,
+				},
+				Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
+				SizeBytes: int64(size),
+			}
 
-			snapshots = append(snapshots, storage.Snapshot{snap.Name(), snapTime, snap.SnapshotInstanceUuid()})
+			snapshots = append(snapshots, snapshot)
 		}
 	}
 
 	return snapshots, nil
+}
+
+// CreateSnapshot creates a snapshot for the given volume.
+func CreateSnapshot(
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.VolumeExists(internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	size, err := client.VolumeSize(internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapResponse, err := client.SnapshotCreate(internalSnapName, internalVolName)
+	if err = api.GetError(snapResponse, err); err != nil {
+		return nil, fmt.Errorf("could not create snapshot: %v", err)
+	}
+
+	// Fetching list of snapshots to get snapshot access time
+	snapListResponse, err := client.SnapshotList(internalVolName)
+	if err = api.GetError(snapListResponse, err); err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+	if snapListResponse.Result.AttributesListPtr != nil {
+		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
+			if snap.Name() == internalSnapName {
+				return &storage.Snapshot{
+					Config:    snapConfig,
+					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
+					SizeBytes: int64(size),
+				}, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
+}
+
+// Restore a volume (in place) from a snapshot.
+func RestoreSnapshot(
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "RestoreSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
+	}
+
+	snapResponse, err := client.SnapshotRestoreVolume(internalSnapName, internalVolName)
+	if err = api.GetError(snapResponse, err); err != nil {
+		return fmt.Errorf("error restoring snapshot: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Debug("Restored snapshot.")
+
+	return nil
+}
+
+// DeleteSnapshot deletes a single snapshot.
+func DeleteSnapshot(
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	snapResponse, err := client.SnapshotDelete(internalSnapName, internalVolName)
+	if err != nil {
+		return fmt.Errorf("error deleting snapshot: %v", err)
+	}
+	if zerr := api.NewZapiError(snapResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.ESNAPSHOTBUSY {
+			// Start a split here before returning the error so a subsequent delete attempt may succeed.
+			_ = SplitVolumeFromBusySnapshot(snapConfig, config, client)
+		}
+		return fmt.Errorf("error deleting snapshot: %v", zerr)
+	}
+
+	log.WithField("snapshotName", internalSnapName).Debug("Deleted snapshot.")
+	return nil
+}
+
+// SplitVolumeFromBusySnapshot gets the list of volumes backed by a busy snapshot and starts
+// a split operation on the first one (sorted by volume name).
+func SplitVolumeFromBusySnapshot(
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+) error {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "SplitVolumeFromBusySnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		log.WithFields(fields).Debug(">>>> SplitVolumeFromBusySnapshot")
+		defer log.WithFields(fields).Debug("<<<< SplitVolumeFromBusySnapshot")
+	}
+
+	childVolumes, err := client.VolumeListAllBackedBySnapshot(internalVolName, internalSnapName)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"snapshotName":     internalSnapName,
+			"parentVolumeName": internalVolName,
+			"error":            err,
+		}).Error("Could not list volumes backed by snapshot.")
+		return err
+	} else if len(childVolumes) == 0 {
+		return nil
+	}
+
+	// We're going to start a single split operation, but there could be multiple children, so we
+	// sort the volumes by name to not have more than one split operation running at a time.
+	sort.Strings(childVolumes)
+
+	splitResponse, err := client.VolumeCloneSplitStart(childVolumes[0])
+	if err = api.GetError(splitResponse, err); err != nil {
+		log.WithFields(log.Fields{
+			"snapshotName":     internalSnapName,
+			"parentVolumeName": internalVolName,
+			"cloneVolumeName":  childVolumes[0],
+			"error":            err,
+		}).Error("Could not begin splitting clone from snapshot.")
+		return fmt.Errorf("error splitting clone: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"snapshotName":     internalSnapName,
+		"parentVolumeName": internalVolName,
+		"cloneVolumeName":  childVolumes[0],
+	}).Info("Began splitting clone from snapshot.")
+
+	return nil
 }
 
 // GetVolume checks for the existence of a volume.  It returns nil if the volume

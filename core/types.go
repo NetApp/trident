@@ -37,9 +37,16 @@ type Orchestrator interface {
 	ImportVolume(volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
 	ListVolumes() ([]*storage.VolumeExternal, error)
 	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
-	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error
 	ResizeVolume(volumeName, newSize string) error
+
+	CreateSnapshot(snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
+	GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotExternal, error)
+	ListSnapshots() ([]*storage.SnapshotExternal, error)
+	ListSnapshotsByName(snapshotName string) ([]*storage.SnapshotExternal, error)
+	ListSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error)
+	ReadSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error)
+	DeleteSnapshot(volumeName, snapshotName string) error
 
 	GetDriverTypeForVolume(vol *storage.VolumeExternal) (string, error)
 	ReloadVolumes() error

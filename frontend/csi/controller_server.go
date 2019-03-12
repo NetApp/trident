@@ -5,16 +5,19 @@ package csi
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	v1 "k8s.io/api/core/v1"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	frontendcommon "github.com/netapp/trident/frontend/common"
+	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -23,9 +26,17 @@ func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
 ) (*csi.CreateVolumeResponse, error) {
 
-	fields := log.Fields{"Method": "CreateVolume", "Type": "CSI_Controller"}
+	fields := log.Fields{"Method": "CreateVolume", "Type": "CSI_Controller", "name": req.Name}
 	log.WithFields(fields).Debug(">>>> CreateVolume")
 	defer log.WithFields(fields).Debug("<<<< CreateVolume")
+
+	if _, ok := p.opCache[req.Name]; ok {
+		log.WithFields(fields).Debug("Create already in progress, returning DeadlineExceeded.")
+		return nil, status.Error(codes.DeadlineExceeded, "create already in progress")
+	} else {
+		p.opCache[req.Name] = true
+		defer delete(p.opCache, req.Name)
+	}
 
 	// Check arguments
 	if len(req.GetName()) == 0 {
@@ -65,7 +76,7 @@ func (p *Plugin) CreateVolume(
 	log.Debugf("Volume capabilities (%d): %v", len(req.GetVolumeCapabilities()), req.GetVolumeCapabilities())
 	protocol := tridentconfig.ProtocolAny
 	accessMode := tridentconfig.ModeAny
-	fileSystem := ""
+	fsType := ""
 	//var mountFlags []string
 
 	if req.GetVolumeCapabilities() != nil {
@@ -85,16 +96,10 @@ func (p *Plugin) CreateVolume(
 
 			// See if fsType was specified
 			if mount := capability.GetMount(); mount != nil {
-				fileSystem = mount.GetFsType()
+				fsType = mount.GetFsType()
 				//mountFlags = mount.GetMountFlags()
 			}
 		}
-	}
-
-	// Find a matching storage class, or register a new one
-	scConfig, err := frontendcommon.GetStorageClass(req.Parameters, p.orchestrator)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "could not create a storage class from volume request")
 	}
 
 	var sizeBytes int64
@@ -103,21 +108,54 @@ func (p *Plugin) CreateVolume(
 	}
 
 	// Convert volume creation options into a Trident volume config
-	volConfig, err := frontendcommon.GetVolumeConfig(req.Name, scConfig.Name, sizeBytes,
-		req.Parameters, protocol, accessMode)
+	volConfig, err := p.helper.GetVolumeConfig(req.Name, sizeBytes, req.Parameters, protocol, accessMode, fsType)
 	if err != nil {
+		p.helper.RecordVolumeEvent(req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	// Copy any volume attributes from the capabilities
-	if volConfig.FileSystem == "" {
-		volConfig.FileSystem = fileSystem
+	// Check if CSI asked for a clone (overrides trident.netapp.io/cloneFromPVC PVC annotation, if present)
+	if req.VolumeContentSource != nil {
+		switch contentSource := req.VolumeContentSource.Type.(type) {
+
+		case *csi.VolumeContentSource_Volume:
+			volumeID := contentSource.Volume.VolumeId
+			if volumeID == "" {
+				return nil, status.Error(codes.InvalidArgument, "content source volume ID missing in request")
+			}
+			volConfig.CloneSourceVolume = volumeID
+
+		case *csi.VolumeContentSource_Snapshot:
+			snapshotID := contentSource.Snapshot.SnapshotId
+			if snapshotID == "" {
+				return nil, status.Error(codes.InvalidArgument, "content source snapshot ID missing in request")
+			}
+			if cloneSourceVolume, cloneSourceSnapshot, err := storage.ParseSnapshotID(snapshotID); err != nil {
+				log.WithFields(log.Fields{
+					"volumeName": req.Name,
+					"snapshotID": contentSource.Snapshot.SnapshotId,
+				}).Error("Cannot create clone, invalid snapshot ID.")
+				return nil, status.Error(codes.InvalidArgument, "invalid snapshot ID")
+			} else {
+				volConfig.CloneSourceVolume = cloneSourceVolume
+				volConfig.CloneSourceSnapshot = cloneSourceSnapshot
+			}
+		}
 	}
 
-	// Invoke the orchestrator to create the new volume
-	newVolume, err := p.orchestrator.AddVolume(volConfig)
+	// Invoke the orchestrator to create or clone the new volume
+	var newVolume *storage.VolumeExternal
+	if volConfig.CloneSourceVolume == "" {
+		newVolume, err = p.orchestrator.AddVolume(volConfig)
+	} else {
+		newVolume, err = p.orchestrator.CloneVolume(volConfig)
+	}
+
 	if err != nil {
+		p.helper.RecordVolumeEvent(req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
+	} else {
+		p.helper.RecordVolumeEvent(req.Name, v1.EventTypeNormal, "ProvisioningSuccess", "provisioned a volume")
 	}
 
 	csiVolume, err := p.getCSIVolumeFromTridentVolume(newVolume)
@@ -140,8 +178,8 @@ func (p *Plugin) DeleteVolume(
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
 	}
 
-	err := p.orchestrator.DeleteVolume(req.VolumeId)
-	if err != nil {
+	if err := p.orchestrator.DeleteVolume(req.VolumeId); err != nil {
+
 		log.WithFields(log.Fields{
 			"volumeName": req.VolumeId,
 			"error":      err,
@@ -356,16 +394,107 @@ func (p *Plugin) CreateSnapshot(
 	ctx context.Context, req *csi.CreateSnapshotRequest,
 ) (*csi.CreateSnapshotResponse, error) {
 
-	// Trident doesn't support snapshots
-	return nil, status.Error(codes.Unimplemented, "")
+	fields := log.Fields{"Method": "CreateSnapshot", "Type": "CSI_Controller"}
+	log.WithFields(fields).Debug(">>>> CreateSnapshot")
+	defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+
+	volumeName := req.GetSourceVolumeId()
+	if volumeName == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	snapshotName := req.GetName()
+	if snapshotName == "" {
+		return nil, status.Error(codes.InvalidArgument, "no snapshot name provided")
+	}
+
+	// Check for pre-existing snapshot with the same name on the same volume
+	existingSnapshot, err := p.orchestrator.GetSnapshot(volumeName, snapshotName)
+	if err != nil && !core.IsNotFoundError(err) {
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	// If pre-existing snapshot found, just return it
+	if existingSnapshot != nil {
+		if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(existingSnapshot); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		} else {
+			return &csi.CreateSnapshotResponse{Snapshot: csiSnapshot}, nil
+		}
+	}
+
+	// Check for pre-existing snapshot with the same name on a different volume
+	if existingSnapshots, err := p.orchestrator.ListSnapshotsByName(snapshotName); err != nil {
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	} else if len(existingSnapshots) > 0 {
+		for _, s := range existingSnapshots {
+			log.Errorf("Found existing snapshot %s in another volume %s.", s.Config.Name, s.Config.VolumeName)
+		}
+		// We already handled the same name / same volume case, so getting here has to mean a different volume
+		return nil, status.Error(codes.AlreadyExists, "snapshot exists on a different volume")
+	} else {
+		log.Debugf("Found no existing snapshot %s in other volumes.", snapshotName)
+	}
+
+	// Convert snapshot creation options into a Trident snapshot config
+	snapshotConfig, err := p.helper.GetSnapshotConfig(volumeName, snapshotName)
+	if err != nil {
+		p.helper.RecordVolumeEvent(req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	// Create the snapshot
+	newSnapshot, err := p.orchestrator.CreateSnapshot(snapshotConfig)
+	if err != nil {
+		if core.IsNotFoundError(err) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(newSnapshot); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	} else {
+		return &csi.CreateSnapshotResponse{Snapshot: csiSnapshot}, nil
+	}
 }
 
 func (p *Plugin) DeleteSnapshot(
 	ctx context.Context, req *csi.DeleteSnapshotRequest,
 ) (*csi.DeleteSnapshotResponse, error) {
 
-	// Trident doesn't support snapshots
-	return nil, status.Error(codes.Unimplemented, "")
+	fields := log.Fields{"Method": "DeleteSnapshot", "Type": "CSI_Controller"}
+	log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+	defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+
+	snapshotID := req.GetSnapshotId()
+	if snapshotID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no snapshot ID provided")
+	}
+
+	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
+	if err != nil {
+		// An invalid ID is treated an a non-existent snapshot, so we log the error and return success
+		log.Error(err)
+		return &csi.DeleteSnapshotResponse{}, nil
+	}
+
+	// Delete the snapshot
+	if err = p.orchestrator.DeleteSnapshot(volumeName, snapshotName); err != nil {
+
+		log.WithFields(log.Fields{
+			"volumeName":   volumeName,
+			"snapshotName": snapshotName,
+			"error":        err,
+		}).Debugf("Could not delete snapshot.")
+
+		// In CSI, delete is idempotent, so don't return an error if the snapshot doesn't exist
+		if !core.IsNotFoundError(err) {
+			return nil, p.getCSIErrorForOrchestratorError(err)
+		}
+	}
+
+	return &csi.DeleteSnapshotResponse{}, nil
 }
 
 func (p *Plugin) ListSnapshots(
@@ -376,6 +505,14 @@ func (p *Plugin) ListSnapshots(
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (p *Plugin) ControllerExpandVolume(
+	ctx context.Context, in *csi.ControllerExpandVolumeRequest,
+) (*csi.ControllerExpandVolumeResponse, error) {
+
+	// Trident doesn't support expansion via CSI
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (*csi.Volume, error) {
 
 	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
@@ -383,7 +520,7 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 		log.WithFields(log.Fields{
 			"volume": volume.Config.InternalName,
 			"size":   volume.Config.Size,
-		}).Warn("Could not parse volume size.")
+		}).Error("Could not parse volume size.")
 		capacity = 0
 	}
 
@@ -398,6 +535,23 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 		CapacityBytes: capacity,
 		VolumeId:      volume.Config.Name,
 		VolumeContext: attributes,
+	}, nil
+}
+
+func (p *Plugin) getCSISnapshotFromTridentSnapshot(snapshot *storage.SnapshotExternal) (*csi.Snapshot, error) {
+
+	createdSeconds, err := time.Parse(time.RFC3339, snapshot.Created)
+	if err != nil {
+		log.WithField("time", snapshot.Created).Error("Could not parse RFC3339 snapshot time.")
+		createdSeconds = time.Now()
+	}
+
+	return &csi.Snapshot{
+		SizeBytes:      snapshot.SizeBytes,
+		SnapshotId:     storage.MakeSnapshotID(snapshot.Config.VolumeName, snapshot.Config.Name),
+		SourceVolumeId: snapshot.Config.VolumeName,
+		CreationTime:   &timestamp.Timestamp{Seconds: createdSeconds.Unix()},
+		ReadyToUse:     true,
 	}, nil
 }
 

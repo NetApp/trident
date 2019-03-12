@@ -14,8 +14,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	TridentV1() tridentv1.TridentV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Trident() tridentv1.TridentV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -27,12 +25,6 @@ type Clientset struct {
 
 // TridentV1 retrieves the TridentV1Client
 func (c *Clientset) TridentV1() tridentv1.TridentV1Interface {
-	return c.tridentV1
-}
-
-// Deprecated: Trident retrieves the default version of TridentClient.
-// Please explicitly pick a version.
-func (c *Clientset) Trident() tridentv1.TridentV1Interface {
 	return c.tridentV1
 }
 

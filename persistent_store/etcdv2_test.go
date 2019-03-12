@@ -828,14 +828,146 @@ func TestEtcdv2GetNodes(t *testing.T) {
 	}
 }
 
-func TestEtcdv2Snapshot(t *testing.T) {
-	p, err := NewEtcdClientV2(*etcdV2)
+func TestEtcdv2AddGetSnapshot(t *testing.T) {
+	p, _ := NewEtcdClientV2(*etcdV2)
+
+	// Adding a volume
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	nfsServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
+			Config: nfsServerConfig,
+		},
+		Name:        "nfs_server-" + nfsServerConfig.ManagementLIF,
+		BackendUUID: uuid.New().String(),
+	}
+	vol1Config := storage.VolumeConfig{
+		Version:      string(config.OrchestratorAPIVersion),
+		Name:         "vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	vol1 := &storage.Volume{
+		Config:      &vol1Config,
+		BackendUUID: nfsServer.BackendUUID,
+		Pool:        storagePool,
+	}
+	err := p.AddVolume(vol1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
 
 	// Adding a snapshot
+	snap1config := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "snapA",
+		InternalName:       "snapA",
+		VolumeName:         "vol1",
+		VolumeInternalName: "trident_vol1",
+	}
+	snapA := &storage.Snapshot{
+		Config:    snap1config,
+		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		SizeBytes: 1000000000,
+	}
+	err = p.AddSnapshot(snapA)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	var recoveredSnapshot *storage.SnapshotPersistent
+	recoveredSnapshot, err = p.GetSnapshot(snapA.Config.VolumeName, snapA.Config.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if !reflect.DeepEqual(snapA.ConstructPersistent(), recoveredSnapshot) {
+		t.Error("Recovered snapshot does not match!")
+	}
+
+	// Deleting a snapshot
+	err = p.DeleteSnapshot(snapA)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	recoveredSnapshot, err = p.GetSnapshot(snapA.Config.VolumeName, snapA.Config.Name)
+	if err != nil && !MatchKeyNotFoundErr(err) {
+		t.Error(err.Error())
+		t.FailNow()
+	} else if recoveredSnapshot != nil {
+		t.Error("Didn't delete snapshot!")
+	}
+
+	// Deleting a volume
+	err = p.DeleteVolume(vol1)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestEtcdv2AddGetSnapshots(t *testing.T) {
+	p, _ := NewEtcdClientV2(*etcdV2)
+
+	// Adding a volume
+	nfsServerConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: drivers.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	nfsServer := &storage.Backend{
+		Driver: &ontap.NASStorageDriver{
+			Config: nfsServerConfig,
+		},
+		Name:        "nfs_server-" + nfsServerConfig.ManagementLIF,
+		BackendUUID: uuid.New().String(),
+	}
+	vol1Config := storage.VolumeConfig{
+		Version:      string(config.OrchestratorAPIVersion),
+		Name:         "vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	vol1 := &storage.Volume{
+		Config:      &vol1Config,
+		BackendUUID: nfsServer.BackendUUID,
+		Pool:        storagePool,
+	}
+	err := p.AddVolume(vol1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Adding a snapshot
+	snap1config := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "snap1",
+		InternalName:       "snap1",
+		VolumeName:         "vol1",
+		VolumeInternalName: "trident_vol1",
+	}
 	snap1 := &storage.Snapshot{
-		Name:    "snap1",
-		Created: time.Now().UTC().Format(time.RFC3339),
-		ID:      "id1",
+		Config:    snap1config,
+		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		SizeBytes: 1000000000,
 	}
 	err = p.AddSnapshot(snap1)
 	if err != nil {
@@ -843,15 +975,61 @@ func TestEtcdv2Snapshot(t *testing.T) {
 		t.FailNow()
 	}
 
-	// Getting a snapshot
-	var recoveredSnapshot *storage.SnapshotExternal
-	recoveredSnapshot, err = p.GetSnapshot(snap1.Name)
+	// Adding another snapshot
+	snap2config := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "snap2",
+		InternalName:       "snap2",
+		VolumeName:         "vol1",
+		VolumeInternalName: "trident_vol1",
+	}
+	snap2 := &storage.Snapshot{
+		Config:    snap2config,
+		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		SizeBytes: 2000000000,
+	}
+	err = p.AddSnapshot(snap2)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting snapshots
+	var recoveredSnapshots []*storage.SnapshotPersistent
+	recoveredSnapshots, err = p.GetSnapshots()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if recoveredSnapshot.Name != snap1.Name ||
-		recoveredSnapshot.Created != snap1.Created ||
-		recoveredSnapshot.ID != snap1.ID {
-		t.Error("Recovered snapshot does not match!")
+	for _, snap := range recoveredSnapshots {
+		switch snap.Config.Name {
+		case "snap1":
+			if !reflect.DeepEqual(snap1.ConstructPersistent(), snap) {
+				t.Error("Recovered snapshot does not match!")
+			}
+		case "snap2":
+			if !reflect.DeepEqual(snap2.ConstructPersistent(), snap) {
+				t.Error("Recovered snapshot does not match!")
+			}
+		}
+	}
+
+	// Deleting snapshots
+	err = p.DeleteSnapshots()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	recoveredSnapshots, err = p.GetSnapshots()
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	} else if recoveredSnapshots != nil && len(recoveredSnapshots) != 0 {
+		t.Error("Didn't delete snapshots!")
+	}
+
+	// Deleting a volume
+	err = p.DeleteVolume(vol1)
+	if err != nil {
+		t.Error(err.Error())
 	}
 }

@@ -18,7 +18,6 @@ import (
 	"github.com/go-logfmt/logfmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/client-go/rest"
@@ -43,6 +42,7 @@ const (
 	TransactionCRDName  = "tridenttransactions.trident.netapp.io"
 	VersionCRDName      = "tridentversions.trident.netapp.io"
 	VolumeCRDName       = "tridentvolumes.trident.netapp.io"
+	SnapshotCRDName     = "tridentsnapshots.trident.netapp.io"
 
 	NamespaceFilename          = "trident-namespace.yaml"
 	ServiceAccountFilename     = "trident-serviceaccount.yaml"
@@ -50,7 +50,6 @@ const (
 	ClusterRoleBindingFilename = "trident-clusterrolebinding.yaml"
 	DeploymentFilename         = "trident-deployment.yaml"
 	ServiceFilename            = "trident-service.yaml"
-	StatefulSetFilename        = "trident-statefulset.yaml"
 	DaemonSetFilename          = "trident-daemonset.yaml"
 	CRDsFilename               = "trident-crds.yaml"
 )
@@ -83,7 +82,6 @@ var (
 	clusterRoleBindingPath string
 	deploymentPath         string
 	csiServicePath         string
-	csiStatefulSetPath     string
 	csiDaemonSetPath       string
 	setupYAMLPaths         []string
 
@@ -101,6 +99,7 @@ var (
 		TransactionCRDName,
 		VersionCRDName,
 		VolumeCRDName,
+		SnapshotCRDName,
 	}
 )
 
@@ -110,11 +109,11 @@ func init() {
 	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false, "Generate YAML files, but don't install anything.")
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
-	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (alpha, not for production clusters).")
+	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).")
 	installCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a pod in the cluster.")
 
-	installCmd.Flags().StringVar(&pvcName, "pvc", "", "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
-	installCmd.Flags().StringVar(&pvName, "pv", "", "The name of the legacy PV used by Trident, will be migrated to CRDs.")
+	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
+	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 
@@ -135,7 +134,7 @@ var installCmd = &cobra.Command{
 		if err := discoverInstallationEnvironment(); err != nil {
 			log.Fatalf("Install pre-checks failed; %v", err)
 		}
-		processInstallationArguments()
+		processInstallationArguments(cmd)
 		if err := validateInstallationArguments(); err != nil {
 			log.Fatalf("Invalid arguments; %v", err)
 		}
@@ -275,22 +274,32 @@ func initClient() (k8sclient.Interface, error) {
 	}
 }
 
-func processInstallationArguments() {
+func processInstallationArguments(cmd *cobra.Command) {
 
-	if pvcName == "" {
-		if csi {
-			pvcName = DefaultPVCName + "-csi"
-		} else {
-			pvcName = DefaultPVCName
-		}
-	}
+	// Determine whether CSI or legacy Trident will be installed
+	minOptionalCSIVersion := utils.MustParseSemantic(tridentconfig.KubernetesCSIVersionMinOptional)
+	minForcedCSIVersion := utils.MustParseSemantic(tridentconfig.KubernetesCSIVersionMinForced)
 
-	if pvName == "" {
+	if client.ServerVersion().LessThan(minOptionalCSIVersion) {
 		if csi {
-			pvName = DefaultPVName + "-csi"
-		} else {
-			pvName = DefaultPVName
+			log.Warningf("CSI Trident requires Kubernetes %s or later, ignoring --csi switch.",
+				minOptionalCSIVersion.ShortString())
+			csi = false
 		}
+	} else if client.ServerVersion().LessThan(minForcedCSIVersion) {
+		if csi {
+			log.Warningf("CSI Trident supports Kubernetes %s, but multiple Kubernetes feature gates must "+
+				"have been enabled.  See Trident documentation for details.", client.ServerVersion().ShortString())
+		}
+	} else {
+		if csiFlag := cmd.Flag("csi"); csiFlag != nil {
+			if csiFlag.Value.String() == "false" && csiFlag.Changed {
+				log.Warningf("Only CSI Trident is supported on Kubernetes %s or later, ignoring --csi switch.",
+					minForcedCSIVersion.ShortString())
+			}
+		}
+
+		csi = true
 	}
 
 	if csi {
@@ -298,9 +307,9 @@ func processInstallationArguments() {
 		appLabelKey = TridentCSILabelKey
 		appLabelValue = TridentCSILabelValue
 	} else {
-		appLabel = TridentLabel
-		appLabelKey = TridentLabelKey
-		appLabelValue = TridentLabelValue
+		appLabel = TridentLegacyLabel
+		appLabelKey = TridentLegacyLabelKey
+		appLabelValue = TridentLegacyLabelValue
 	}
 }
 
@@ -343,12 +352,11 @@ func prepareYAMLFilePaths() error {
 	crdsPath = path.Join(setupPath, CRDsFilename)
 	deploymentPath = path.Join(setupPath, DeploymentFilename)
 	csiServicePath = path.Join(setupPath, ServiceFilename)
-	csiStatefulSetPath = path.Join(setupPath, StatefulSetFilename)
 	csiDaemonSetPath = path.Join(setupPath, DaemonSetFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath, serviceAccountPath, clusterRolePath, clusterRoleBindingPath, crdsPath,
-		deploymentPath, csiServicePath, csiStatefulSetPath, csiDaemonSetPath,
+		deploymentPath, csiServicePath, csiDaemonSetPath,
 	}
 
 	return nil
@@ -436,13 +444,12 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write service YAML file; %v", err)
 	}
 
-	statefulSetYAML := k8sclient.GetCSIStatefulSetYAML(tridentImage, appLabelValue, Debug)
-	if err = writeFile(csiStatefulSetPath, statefulSetYAML); err != nil {
-		return fmt.Errorf("could not write statefulset YAML file; %v", err)
+	deploymentYAML := k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, Debug, client.ServerVersion())
+	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
+		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue,
-		Debug, client.ServerVersion())
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -469,32 +476,25 @@ func installTrident() (returnError error) {
 		migrateToCRDs bool
 	)
 
-	if !csi {
+	// Ensure legacy Trident isn't already installed
+	if installed, namespace, err := isTridentInstalled(); err != nil {
+		return fmt.Errorf("could not check if Trident deployment exists; %v", err)
+	} else if installed {
+		return fmt.Errorf("trident is already installed in namespace %s", namespace)
+	}
 
-		// Ensure Trident isn't already installed
-		if installed, namespace, err := isTridentInstalled(); err != nil {
-			return fmt.Errorf("could not check if Trident deployment exists; %v", err)
-		} else if installed {
-			return fmt.Errorf("trident is already installed in namespace %s", namespace)
-		}
+	// Ensure CSI Trident isn't already installed
+	if installed, namespace, err := isCSITridentInstalled(); err != nil {
+		return fmt.Errorf("could not check if CSI Trident deployment exists; %v", err)
+	} else if installed {
+		return fmt.Errorf("CSI Trident is already installed in namespace %s", namespace)
+	}
 
-	} else {
-
-		// Ensure CSI minimum requirements are met
-		minCSIVersion := utils.MustParseSemantic(tridentconfig.KubernetesCSIVersionMin)
-		if !client.ServerVersion().AtLeast(minCSIVersion) {
-			return fmt.Errorf("CSI Trident requires Kubernetes %s or later", minCSIVersion.ShortString())
-		}
-
-		// Ensure CSI Trident isn't already installed
-		if installed, namespace, err := isCSITridentInstalled(); err != nil {
-			return fmt.Errorf("could not check if Trident statefulset exists; %v", err)
-		} else if installed {
-			return fmt.Errorf("CSI Trident is already installed in namespace %s", namespace)
-		}
-
-		log.Warning("CSI Trident for Kubernetes is a technology preview " +
-			"and should not be installed in production environments!")
+	// Ensure preview CSI Trident isn't already installed
+	if installed, namespace, err := isPreviewCSITridentInstalled(); err != nil {
+		return fmt.Errorf("could not check if preview CSI Trident deployment exists; %v", err)
+	} else if installed {
+		return fmt.Errorf("CSI Trident is already installed in namespace %s", namespace)
 	}
 
 	// Check if the required namespace exists
@@ -627,6 +627,20 @@ func installTrident() (returnError error) {
 
 	} else {
 
+		// Create the CSI CRDs if necessary
+		returnError = createK8S113CSICustomResourceDefinitions()
+		if returnError != nil {
+			returnError = fmt.Errorf("could not create the Kubernetes 1.13 CSI CRDs; %v", returnError)
+			return
+		}
+
+		// Create the CSI Driver object if necessary
+		returnError = createK8S114CSIDriver()
+		if returnError != nil {
+			returnError = fmt.Errorf("could not create the Kubernetes 1.14 CSI Driver object; %v", returnError)
+			return
+		}
+
 		// Create the service
 		if useYAML && fileExists(csiServicePath) {
 			returnError = validateTridentService()
@@ -671,25 +685,25 @@ func installTrident() (returnError error) {
 		}
 		log.WithFields(logFields).Info("Created Trident secret.")
 
-		// Create the statefulset
-		if useYAML && fileExists(csiStatefulSetPath) {
-			returnError = validateTridentStatefulSet()
+		// Create the deployment
+		if useYAML && fileExists(deploymentPath) {
+			returnError = validateTridentDeployment()
 			if returnError != nil {
-				returnError = fmt.Errorf("please correct the statefulset YAML file; %v", returnError)
+				returnError = fmt.Errorf("please correct the deployment YAML file; %v", returnError)
 				return
 			}
-			returnError = client.CreateObjectByFile(csiStatefulSetPath)
-			logFields = log.Fields{"path": csiStatefulSetPath}
+			returnError = client.CreateObjectByFile(deploymentPath)
+			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIStatefulSetYAML(tridentImage, appLabelValue, Debug))
+				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, Debug, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
-			returnError = fmt.Errorf("could not create Trident statefulset; %v", returnError)
+			returnError = fmt.Errorf("could not create Trident deployment; %v", returnError)
 			return
 		}
-		log.WithFields(logFields).Info("Created Trident statefulset.")
+		log.WithFields(logFields).Info("Created Trident deployment.")
 
 		// Create the daemonset
 		if useYAML && fileExists(csiDaemonSetPath) {
@@ -762,9 +776,9 @@ func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error)
 				"please specify a different PV and/or PVC", pvcName, pvc.Spec.VolumeName, pvName)
 			return
 		}
-		if pvc.Labels == nil || pvc.Labels[appLabelKey] != appLabelValue {
+		if pvc.Labels == nil || pvc.Labels[TridentLegacyLabelKey] != TridentLegacyLabelValue {
 			returnError = fmt.Errorf("PVC %s does not have %s label; "+
-				"please add label or delete PVC and try again", pvcName, appLabel)
+				"please add label or delete PVC and try again", pvcName, TridentLegacyLabel)
 			return
 		}
 
@@ -812,9 +826,9 @@ func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error)
 				return
 			}
 		}
-		if pv.Labels == nil || pv.Labels[appLabelKey] != appLabelValue {
+		if pv.Labels == nil || pv.Labels[TridentLegacyLabelKey] != TridentLegacyLabelValue {
 			returnError = fmt.Errorf("PV %s does not have %s label; "+
-				"please add label or delete PV and try again", pvName, appLabel)
+				"please add label or delete PV and try again", pvName, TridentLegacyLabel)
 			return
 		}
 
@@ -861,7 +875,8 @@ func createCustomResourceDefinitions() (returnError error) {
 		logFields = log.Fields{"namespace": TridentPodNamespace}
 	}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create custom resource definitions in %s; %v", TridentPodNamespace, returnError)
+		returnError = fmt.Errorf("could not create custom resource definitions in %s; %v",
+			TridentPodNamespace, returnError)
 		return
 	}
 	log.WithFields(logFields).Info("Created custom resource definitions.")
@@ -880,7 +895,8 @@ func deleteCustomResourceDefinitions() (returnError error) {
 		logFields = log.Fields{"namespace": TridentPodNamespace}
 	}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not delete custom resource definitions in %s; %v", TridentPodNamespace, returnError)
+		returnError = fmt.Errorf("could not delete custom resource definitions in %s; %v",
+			TridentPodNamespace, returnError)
 		return
 	}
 	log.WithFields(logFields).Info("Deleted custom resource definitions.")
@@ -896,6 +912,53 @@ func protectCustomResourceDefinitions() error {
 		}
 	}
 	log.Info("Added finalizers to custom resource definitions.")
+	return nil
+}
+
+func createK8S113CSICustomResourceDefinitions() error {
+
+	// We only have to create these CRDs on Kubernetes 1.13
+	if client.ServerVersion().MajorVersion() != 1 || client.ServerVersion().MinorVersion() != 13 {
+		return nil
+	}
+
+	csiDriversCRDExists, err := client.CheckCRDExists("csidrivers.csi.storage.k8s.io")
+	if err != nil {
+		return fmt.Errorf("could not check if CRD csidrivers.csi.storage.k8s.io exists; %v", err)
+	} else if !csiDriversCRDExists {
+		if err = client.CreateObjectByYAML(k8sclient.GetCSIDriverCRDYAML()); err != nil {
+			return fmt.Errorf("could not create CRD csidrivers.csi.storage.k8s.io; %v", err)
+		}
+	}
+
+	csiNodeInfosCRDExists, err := client.CheckCRDExists("csinodeinfos.csi.storage.k8s.io")
+	if err != nil {
+		return fmt.Errorf("could not check if CRD csinodeinfos.csi.storage.k8s.io exists; %v", err)
+	} else if !csiNodeInfosCRDExists {
+		if err = client.CreateObjectByYAML(k8sclient.GetCSINodeInfoCRDYAML()); err != nil {
+			return fmt.Errorf("could not create CRD csinodeinfos.csi.storage.k8s.io; %v", err)
+		}
+	}
+
+	return nil
+}
+
+func createK8S114CSIDriver() error {
+
+	// We only have to create this object on Kubernetes 1.14
+	if client.ServerVersion().MajorVersion() != 1 || client.ServerVersion().MinorVersion() != 14 {
+		return nil
+	}
+
+	// Delete the object in case it already exists and we need to update it
+	if err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverCRYAML(), true); err != nil {
+		return fmt.Errorf("could not delete csidriver custom resource; %v", err)
+	}
+
+	if err := client.CreateObjectByYAML(k8sclient.GetCSIDriverCRYAML()); err != nil {
+		return fmt.Errorf("could not create csidriver custom resource; %v", err)
+	}
+
 	return nil
 }
 
@@ -1088,40 +1151,6 @@ func validateTridentService() error {
 	return nil
 }
 
-func validateTridentStatefulSet() error {
-
-	statefulset, err := readStatefulSetFromFile(csiStatefulSetPath)
-	if err != nil {
-		return fmt.Errorf("could not load statefulset YAML file; %v", err)
-	}
-
-	// Check the statefulset label
-	labels := statefulset.Labels
-	if labels[appLabelKey] != appLabelValue {
-		return fmt.Errorf("the Trident statefulset must have the label \"%s: %s\"",
-			appLabelKey, appLabelValue)
-	}
-
-	// Check the pod label
-	labels = statefulset.Spec.Template.Labels
-	if labels[appLabelKey] != appLabelValue {
-		return fmt.Errorf("the Trident statefulset's pod template must have the label \"%s: %s\"",
-			appLabelKey, appLabelValue)
-	}
-
-	tridentImage := ""
-	for _, container := range statefulset.Spec.Template.Spec.Containers {
-		if container.Name == tridentconfig.ContainerTrident {
-			tridentImage = container.Image
-		}
-	}
-	if tridentImage == "" {
-		return fmt.Errorf("the Trident statefulset must define the %s container", tridentconfig.ContainerTrident)
-	}
-
-	return nil
-}
-
 func validateTridentDaemonSet() error {
 
 	daemonset, err := readDaemonSetFromFile(csiDaemonSetPath)
@@ -1133,14 +1162,14 @@ func validateTridentDaemonSet() error {
 	labels := daemonset.Labels
 	if labels[TridentNodeLabelKey] != TridentNodeLabelValue {
 		return fmt.Errorf("the Trident daemonset must have the label \"%s: %s\"",
-			appLabelKey, appLabelValue)
+			TridentNodeLabelKey, TridentNodeLabelValue)
 	}
 
 	// Check the pod label
 	labels = daemonset.Spec.Template.Labels
 	if labels[TridentNodeLabelKey] != TridentNodeLabelValue {
 		return fmt.Errorf("the Trident daemonset's pod template must have the label \"%s: %s\"",
-			appLabelKey, appLabelValue)
+			TridentNodeLabelKey, TridentNodeLabelValue)
 	}
 
 	tridentImage := ""
@@ -1283,22 +1312,6 @@ func readServiceFromFile(filePath string) (*v1.Service, error) {
 		return nil, err
 	}
 	return &service, nil
-}
-
-// readStatefulSetFromFile parses and returns a statefulset object from a file.
-func readStatefulSetFromFile(filePath string) (*appsv1.StatefulSet, error) {
-
-	var statefulset appsv1.StatefulSet
-
-	yamlBytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &statefulset)
-	if err != nil {
-		return nil, err
-	}
-	return &statefulset, nil
 }
 
 // readDaemonSetFromFile parses and returns a daemonset object from a file.
@@ -1534,7 +1547,8 @@ func runTridentMigrator() (returnError error) {
 	// Create the migrator pod
 	errMessage := "could not create migrator pod"
 	returnError = createObjectsByYAML("migratorPod",
-		k8sclient.GetMigratorPodYAML(pvcName, tridentImage, etcdImage, TridentMigratorLabelValue, Debug, commandArgs), errMessage)
+		k8sclient.GetMigratorPodYAML(pvcName, tridentImage, etcdImage,
+			TridentMigratorLabelValue, csi, commandArgs), errMessage)
 	if returnError != nil {
 		return
 	}

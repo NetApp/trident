@@ -8,6 +8,8 @@ type TridentBackendExpansion interface{}
 
 type TridentNodeExpansion interface{}
 
+type TridentSnapshotExpansion interface{}
+
 type TridentStorageClassExpansion interface{}
 
 type TridentTransactionExpansion interface{}

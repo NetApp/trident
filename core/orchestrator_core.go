@@ -20,7 +20,7 @@ import (
 	"github.com/netapp/trident/storage/factory"
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
-	fake "github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 )
 
@@ -31,6 +31,7 @@ type TridentOrchestrator struct {
 	mutex          *sync.Mutex
 	storageClasses map[string]*storageclass.StorageClass
 	nodes          map[string]*utils.Node
+	snapshots      map[string]*storage.Snapshot
 	storeClient    persistentstore.Client
 	bootstrapped   bool
 	bootstrapError error
@@ -44,6 +45,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		frontends:      make(map[string]frontend.Plugin),
 		storageClasses: make(map[string]*storageclass.StorageClass),
 		nodes:          make(map[string]*utils.Node),
+		snapshots:      make(map[string]*storage.Snapshot), // key is ID, not name
 		mutex:          &sync.Mutex{},
 		storeClient:    client,
 		bootstrapped:   false,
@@ -98,14 +100,7 @@ func (o *TridentOrchestrator) transformPersistentState() error {
 func (o *TridentOrchestrator) Bootstrap() error {
 	var err error
 
-	// Set up telemetry for use by the storage backends
-	config.OrchestratorTelemetry = config.Telemetry{
-		TridentVersion: config.OrchestratorVersion.String(),
-	}
-	config.OrchestratorTelemetry.Platform = string(config.CurrentDriverContext)
-	if f, ok := o.frontends[string(config.CurrentDriverContext)]; ok {
-		config.OrchestratorTelemetry.PlatformVersion = f.Version()
-	} else {
+	if len(o.frontends) == 0 {
 		log.Warning("Trident is bootstrapping with no frontend.")
 	}
 
@@ -247,10 +242,10 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.Backend
 		var ok bool
-		backend, ok = o.backends[v.BackendUUID]
-		if !ok {
+		if backend, ok = o.backends[v.BackendUUID]; !ok {
 			return fmt.Errorf("couldn't find backend %s for volume %s", v.BackendUUID, v.Config.Name)
 		}
+
 		vol := storage.NewVolume(v.Config, backend.BackendUUID, v.Pool, v.Orphaned)
 		backend.Volumes[vol.Config.Name] = vol
 		o.volumes[vol.Config.Name] = vol
@@ -268,6 +263,39 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 			"orphaned":     vol.Orphaned,
 			"handler":      "Bootstrap",
 		}).Info("Added an existing volume.")
+	}
+	return nil
+}
+
+func (o *TridentOrchestrator) bootstrapSnapshots() error {
+	snapshots, err := o.storeClient.GetSnapshots()
+	if err != nil {
+		return err
+	}
+	for _, s := range snapshots {
+		// TODO:  If the API evolves, check the Version field here.
+		volume, ok := o.volumes[s.Config.VolumeName]
+		if !ok {
+			return fmt.Errorf("couldn't find volume %s for snapshot %s", s.Config.VolumeName, s.Config.Name)
+		}
+		backend, ok := o.backends[volume.BackendUUID]
+		if !ok {
+			return fmt.Errorf("couldn't find backend %s for volume %s", volume.BackendUUID, volume.Config.Name)
+		}
+
+		snapshot := storage.NewSnapshot(s.Config, s.Created, s.SizeBytes)
+		o.snapshots[snapshot.ID()] = snapshot
+
+		if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+			fakeDriver.BootstrapSnapshot(snapshot)
+		}
+
+		log.WithFields(log.Fields{
+			"snapshot": snapshot.Config.Name,
+			"volume":   snapshot.Config.VolumeName,
+			"backend":  backend.Name,
+			"handler":  "Bootstrap",
+		}).Info("Added an existing snapshot.")
 	}
 	return nil
 }
@@ -307,15 +335,15 @@ func (o *TridentOrchestrator) bootstrap() error {
 	// Fetching backend information
 
 	type bootstrapFunc func() error
-	for _, f := range []bootstrapFunc{o.bootstrapBackends,
-		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns, o.bootstrapNodes} {
+	for _, f := range []bootstrapFunc{
+		o.bootstrapBackends, o.bootstrapStorageClasses, o.bootstrapVolumes,
+		o.bootstrapSnapshots, o.bootstrapVolTxns, o.bootstrapNodes} {
 		err := f()
 		if err != nil {
 			if persistentstore.MatchKeyNotFoundErr(err) {
 				keyError := err.(*persistentstore.Error)
 				log.Warnf("Unable to find key %s.  Continuing bootstrap, but "+
-					"consider checking integrity if Trident installation is "+
-					"not new.", keyError.Key)
+					"consider checking integrity if Trident installation is not new.", keyError.Key)
 			} else {
 				return err
 			}
@@ -344,12 +372,24 @@ func (o *TridentOrchestrator) bootstrap() error {
 }
 
 func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeTransaction) error {
-	log.WithFields(log.Fields{
-		"volume":       v.Config.Name,
-		"size":         v.Config.Size,
-		"storageClass": v.Config.StorageClass,
-		"op":           v.Op,
-	}).Info("Processed volume transaction log.")
+
+	switch v.Op {
+	case persistentstore.AddVolume, persistentstore.DeleteVolume,
+		persistentstore.ImportVolume, persistentstore.ResizeVolume:
+		log.WithFields(log.Fields{
+			"volume":       v.Config.Name,
+			"size":         v.Config.Size,
+			"storageClass": v.Config.StorageClass,
+			"op":           v.Op,
+		}).Info("Processed volume transaction log.")
+	case persistentstore.AddSnapshot, persistentstore.DeleteSnapshot:
+		log.WithFields(log.Fields{
+			"volume":   v.SnapshotConfig.VolumeName,
+			"snapshot": v.SnapshotConfig.Name,
+			"op":       v.Op,
+		}).Info("Processed snapshot transaction log.")
+	}
+
 	switch v.Op {
 	case persistentstore.AddVolume:
 		// Regardless of whether the transaction succeeded or not, we need
@@ -373,9 +413,9 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			// so this should be idempotent.
 			// Handles case 2)
 			for _, backend := range o.backends {
-				if !backend.State.IsOnline() {
-					// Backend offlining is serialized with volume creation,
-					// so we can safely skip offline backends.
+				// Backend offlining is serialized with volume creation,
+				// so we can safely skip offline backends.
+				if !backend.State.IsOnline() && !backend.State.IsDeleting() {
 					continue
 				}
 				// Volume deletion is an idempotent operation, so it's safe to
@@ -416,6 +456,66 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 		if err := o.deleteVolumeTransaction(v); err != nil {
 			return fmt.Errorf("failed to clean up volume deletion transaction: %v", err)
 		}
+
+	case persistentstore.AddSnapshot:
+		// Regardless of whether the transaction succeeded or not, we need
+		// to roll it back.  There are three possible states:
+		// 1) Snapshot transaction created only
+		// 2) Snapshot created on backend
+		// 3) Snapshot created in persistent store
+		if _, ok := o.snapshots[v.SnapshotConfig.ID()]; ok {
+			// If the snapshot was added to the store, we will have loaded the
+			// snapshot into memory, and we can just delete it normally.
+			// Handles case 3)
+			if err := o.deleteSnapshot(v.SnapshotConfig); err != nil {
+				return fmt.Errorf("unable to clean up snapshot %s: %v", v.SnapshotConfig.Name, err)
+			}
+		} else {
+			// If the snapshot wasn't added into the store, we attempt to delete
+			// it at each backend, since we don't know where it might have landed.
+			// We're guaranteed that the volume name will be unique across backends,
+			// thanks to the StoragePrefix field, so this should be idempotent.
+			// Handles case 2)
+			for _, backend := range o.backends {
+				// Skip backends that aren't ready to accept a snapshot delete operation
+				if !backend.State.IsOnline() && !backend.State.IsDeleting() {
+					continue
+				}
+				// Snapshot deletion is an idempotent operation, so it's safe to
+				// delete an already deleted snapshot.
+				if err := backend.DeleteSnapshot(v.SnapshotConfig); err != nil {
+					return fmt.Errorf("error attempting to clean up snapshot %s from backend %s: %v",
+						v.SnapshotConfig.Name, backend.Name, err)
+				}
+			}
+		}
+		// Finally, we need to clean up the snapshot transaction.  Necessary for all cases.
+		if err := o.deleteVolumeTransaction(v); err != nil {
+			return fmt.Errorf("failed to clean up snapshot addition transaction: %v", err)
+		}
+
+	case persistentstore.DeleteSnapshot:
+		// Because we remove the snapshot from persistent store after we remove
+		// it from the backend, we need to take any special measures only when
+		// the snapshot is still in the persistent store. In this case, the
+		// snapshot, volume, and backend should all have been loaded into memory
+		// when we bootstrapped and we can retry the snapshot deletion.
+
+		logFields := log.Fields{"volume": v.SnapshotConfig.VolumeName, "snapshot": v.SnapshotConfig.Name}
+
+		if err := o.deleteSnapshot(v.SnapshotConfig); err != nil {
+			if IsNotFoundError(err) {
+				log.WithFields(logFields).Info("Snapshot for the delete transaction wasn't found.")
+			} else {
+				log.WithFields(logFields).Errorf("Unable to finalize deletion of the snapshot! "+
+					"Repeat deleting the snapshot using %s.", config.OrchestratorClientName)
+			}
+		}
+
+		if err := o.deleteVolumeTransaction(v); err != nil {
+			return fmt.Errorf("failed to clean up snapshot deletion transaction: %v", err)
+		}
+
 	case persistentstore.ResizeVolume:
 		// There are a few possible states:
 		// 1) We failed to resize the volume on the backend.
@@ -492,14 +592,10 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 func (o *TridentOrchestrator) AddFrontend(f frontend.Plugin) {
 	name := f.GetName()
 	if _, ok := o.frontends[name]; ok {
-		log.WithFields(log.Fields{
-			"name": name,
-		}).Warn("Adding frontend already present.")
+		log.WithField("name", name).Warn("Adding frontend already present.")
 		return
 	}
-	log.WithFields(log.Fields{
-		"name": name,
-	}).Info("Added frontend.")
+	log.WithField("name", name).Info("Added frontend.")
 	o.frontends[name] = f
 }
 
@@ -1443,9 +1539,11 @@ func (o *TridentOrchestrator) addVolumeTransaction(volTxn *persistentstore.Volum
 			return fmt.Errorf("unable to process the preexisting transaction "+
 				"for volume %s:  %v", volTxn.Config.Name, err)
 		}
-		if oldTxn.Op == persistentstore.DeleteVolume {
-			return fmt.Errorf("rejecting the %v transaction after successful completion of a preexisting %v transaction",
-				volTxn.Op, oldTxn.Op)
+
+		switch oldTxn.Op {
+		case persistentstore.DeleteVolume, persistentstore.DeleteSnapshot:
+			return fmt.Errorf("rejecting the %v transaction after successful completion "+
+				"of a preexisting %v transaction", volTxn.Op, oldTxn.Op)
 		}
 	}
 
@@ -1880,9 +1978,17 @@ func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 	return nil
 }
 
-// CreateVolumeSnapshot creates a snapshot of the given volume
-func (o *TridentOrchestrator) CreateVolumeSnapshot(snapshotName, volName string) (
-	*storage.SnapshotExternal, error) {
+// CreateSnapshot creates a snapshot of the given volume
+func (o *TridentOrchestrator) CreateSnapshot(
+	snapshotConfig *storage.SnapshotConfig,
+) (externalSnapshot *storage.SnapshotExternal, err error) {
+
+	var (
+		ok       bool
+		backend  *storage.Backend
+		volume   *storage.Volume
+		snapshot *storage.Snapshot
+	)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1891,40 +1997,317 @@ func (o *TridentOrchestrator) CreateVolumeSnapshot(snapshotName, volName string)
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	// Get the source volume
-	sourceVolume, ok := o.volumes[volName]
-	if !ok {
-		return nil, notFoundError(fmt.Sprintf("source volume %s not found", volName))
+	// Check if the snapshot already exists
+	if _, ok := o.snapshots[snapshotConfig.ID()]; ok {
+		return nil, fmt.Errorf("snapshot %s already exists", snapshotConfig.ID())
 	}
 
-	// Get the corresponding backend
-	backend, found := o.backends[sourceVolume.Backend]
-	if !found {
+	// Get the volume
+	if volume, ok = o.volumes[snapshotConfig.VolumeName]; !ok {
+		return nil, notFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
+	}
+
+	// Get the backend
+	if backend, ok = o.backends[volume.BackendUUID]; !ok {
 		// Should never get here but just to be safe
 		return nil, notFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
-			sourceVolume.Backend, volName))
+			volume.BackendUUID, snapshotConfig.VolumeName))
 	}
 
-	// Create the snapshot
-	snapshot, err := backend.CreateVolumeSnapshot(snapshotName, sourceVolume.Config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create snapshot for volume %s on backend %s: %v", volName,
-			backend.Name, err)
+	// Complete the snapshot config
+	snapshotConfig.VolumeInternalName = volume.Config.InternalName
+
+	// Add transaction in case the operation must be rolled back later
+	txn := &persistentstore.VolumeTransaction{
+		Config:         volume.Config,
+		SnapshotConfig: snapshotConfig,
+		Op:             persistentstore.AddSnapshot,
 	}
-
-	// Add backend information to the snapshot
-	snapshot.Backend = backend.Name
-
-	// Save references to new snapshot in the persistent store
-	err = o.storeClient.AddSnapshot(snapshot)
-	if err != nil {
+	if err = o.addVolumeTransaction(txn); err != nil {
 		return nil, err
 	}
+
+	// Recovery function in case of error
+	defer func() {
+		err = o.addSnapshotCleanup(err, backend, snapshot, txn, snapshotConfig)
+	}()
+
+	// Create the snapshot
+	snapshot, err = backend.CreateSnapshot(snapshotConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create snapshot %s for volume %s on backend %s: %v",
+			snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name, err)
+	}
+
+	// Save references to new snapshot
+	if err = o.storeClient.AddSnapshot(snapshot); err != nil {
+		return nil, err
+	}
+	o.snapshots[snapshotConfig.ID()] = snapshot
 
 	return snapshot.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error) {
+// addSnapshotCleanup is used as a deferred method from the snapshot create method
+// to clean up in case anything goes wrong during the operation.
+func (o *TridentOrchestrator) addSnapshotCleanup(
+	err error, backend *storage.Backend, snapshot *storage.Snapshot,
+	volTxn *persistentstore.VolumeTransaction, snapConfig *storage.SnapshotConfig) error {
+
+	var (
+		cleanupErr, txErr error
+	)
+	if err != nil {
+		// We failed somewhere.  There are two possible cases:
+		// 1.  We failed to create a snapshot and fell through to the
+		//     end of the function.  In this case, we don't need to roll
+		//     anything back.
+		// 2.  We failed to save the snapshot to the persistent store.
+		//     In this case, we need to remove the snapshot from the backend.
+		if backend != nil && snapshot != nil {
+			// We succeeded in adding the snapshot to the backend; now delete it.
+			cleanupErr = backend.DeleteSnapshot(snapshot.Config)
+			if cleanupErr != nil {
+				cleanupErr = fmt.Errorf("unable to delete snapshot from backend during cleanup:  %v", cleanupErr)
+			}
+		}
+	}
+	if cleanupErr == nil {
+		// Only clean up the snapshot transaction if we've succeeded at
+		// cleaning up on the backend or if we didn't need to do so in the
+		// first place.
+		if txErr = o.deleteVolumeTransaction(volTxn); txErr != nil {
+			txErr = fmt.Errorf("unable to clean up transaction: %v", txErr)
+		}
+	}
+	if cleanupErr != nil || txErr != nil {
+		// Remove the snapshot from memory, if it's there, so that the user
+		// can try to re-add.  This will trigger recovery code.
+		delete(o.snapshots, snapConfig.ID())
+
+		// Report on all errors we encountered.
+		errList := make([]string, 0, 3)
+		for _, e := range []error{err, cleanupErr, txErr} {
+			if e != nil {
+				errList = append(errList, e.Error())
+			}
+		}
+		err = fmt.Errorf(strings.Join(errList, ", "))
+		log.Warnf("Unable to clean up artifacts of snapshot creation: %v. "+
+			"Repeat creating the snapshot or restart %v.", err, config.OrchestratorName)
+	}
+	return err
+}
+
+func (o *TridentOrchestrator) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
+	snapshot, found := o.snapshots[snapshotID]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("snapshot %v was not found", snapshotName))
+	}
+	return snapshot.ConstructExternal(), nil
+}
+
+// deleteSnapshot does the necessary work to delete a snapshot entirely.  It does
+// not construct a transaction, nor does it take locks; it assumes that the caller will
+// take care of both of these.
+func (o *TridentOrchestrator) deleteSnapshot(snapshotConfig *storage.SnapshotConfig) error {
+
+	volume, ok := o.volumes[snapshotConfig.VolumeName]
+	if !ok {
+		return notFoundError(fmt.Sprintf("volume %s not found", snapshotConfig.VolumeName))
+	}
+
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		return notFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+	}
+
+	snapshotID := snapshotConfig.ID()
+	snapshot, ok := o.snapshots[snapshotID]
+	if !ok {
+		return notFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
+			snapshotConfig.Name, snapshotConfig.VolumeName))
+	}
+
+	// Note that this call will only return an error if the backend actually
+	// fails to delete the snapshot.  If the snapshot does not exist on the backend,
+	// the driver will not return an error.  Thus, we're fine.
+	if err := backend.DeleteSnapshot(snapshot.Config); err != nil {
+		log.WithFields(log.Fields{
+			"volume":   snapshot.Config.VolumeName,
+			"snapshot": snapshot.Config.Name,
+			"backend":  backend.Name,
+			"error":    err,
+		}).Error("Unable to delete snapshot from backend.")
+		return err
+	}
+	if err := o.deleteSnapshotFromPersistentStoreIgnoreError(snapshot); err != nil {
+		return err
+	}
+
+	// TODO: handle deleting volume & backend, if one or both are in a deleting state
+
+	//if volumeBackend.State.IsDeleting() && !volumeBackend.HasVolumes() {
+	//	if err := o.storeClient.DeleteBackend(volumeBackend); err != nil {
+	//		log.WithFields(log.Fields{
+	//			"backend": volume.Backend,
+	//			"volume":  volumeName,
+	//		}).Error("Unable to delete offline backend from the backing store" +
+	//			" after its last volume was deleted.  Delete the volume again" +
+	//			" to remove the backend.")
+	//		return err
+	//	}
+	//	volumeBackend.Terminate()
+	//	delete(o.backends, volume.Backend)
+	//}
+
+	delete(o.snapshots, snapshot.ID())
+	return nil
+}
+
+func (o *TridentOrchestrator) deleteSnapshotFromPersistentStoreIgnoreError(snapshot *storage.Snapshot) error {
+	// Ignore failures to find the snapshot being deleted, as this may be called
+	// during recovery of a snapshot that has already been deleted from etcd.
+	// During normal operation, checks on whether the snapshot is present in the
+	// snapshot map should suffice to prevent deletion of non-existent snapshots.
+	if err := o.storeClient.DeleteSnapshotIgnoreNotFound(snapshot); err != nil {
+		log.WithFields(log.Fields{
+			"snapshot": snapshot.Config.Name,
+			"volume":   snapshot.Config.VolumeName,
+		}).Error("Unable to delete snapshot from persistent store.")
+		return err
+	}
+	return nil
+}
+
+// DeleteSnapshot deletes a snapshot of the given volume
+func (o *TridentOrchestrator) DeleteSnapshot(volumeName, snapshotName string) (err error) {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+
+	_, ok = o.backends[volume.BackendUUID]
+	if !ok {
+		return notFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+	}
+
+	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
+	snapshot, ok := o.snapshots[snapshotID]
+	if !ok {
+		return notFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+	}
+
+	// TODO: Is this needed?
+	if volume.Orphaned {
+		log.WithFields(log.Fields{
+			"volume":   volumeName,
+			"snapshot": snapshotName,
+			"backend":  volume.BackendUUID,
+		}).Warnf("Delete operation is likely to fail with an orphaned volume!")
+	}
+
+	volTxn := &persistentstore.VolumeTransaction{
+		Config:         volume.Config,
+		SnapshotConfig: snapshot.Config,
+		Op:             persistentstore.DeleteSnapshot,
+	}
+	if err := o.addVolumeTransaction(volTxn); err != nil {
+		return err
+	}
+
+	defer func() {
+		errTxn := o.deleteVolumeTransaction(volTxn)
+		if errTxn != nil {
+			log.WithFields(log.Fields{
+				"volume":    volumeName,
+				"snapshot":  snapshotName,
+				"backend":   volume.BackendUUID,
+				"error":     errTxn,
+				"operation": volTxn.Op,
+			}).Warnf("Unable to delete snapshot transaction. Repeat deletion using %s or restart %v.",
+				config.OrchestratorClientName, config.OrchestratorName)
+		}
+		if err != nil || errTxn != nil {
+			errList := make([]string, 0, 2)
+			for _, e := range []error{err, errTxn} {
+				if e != nil {
+					errList = append(errList, e.Error())
+				}
+			}
+			err = fmt.Errorf(strings.Join(errList, ", "))
+		}
+	}()
+
+	// Delete the snapshot
+	return o.deleteSnapshot(snapshot.Config)
+}
+
+func (o *TridentOrchestrator) ListSnapshots() ([]*storage.SnapshotExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	snapshots := make([]*storage.SnapshotExternal, 0, len(o.snapshots))
+	for _, s := range o.snapshots {
+		snapshots = append(snapshots, s.ConstructExternal())
+	}
+	return snapshots, nil
+}
+
+func (o *TridentOrchestrator) ListSnapshotsByName(snapshotName string) ([]*storage.SnapshotExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	snapshots := make([]*storage.SnapshotExternal, 0)
+	for _, s := range o.snapshots {
+		if s.Config.Name == snapshotName {
+			snapshots = append(snapshots, s.ConstructExternal())
+		}
+	}
+	return snapshots, nil
+}
+
+func (o *TridentOrchestrator) ListSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	snapshots := make([]*storage.SnapshotExternal, 0, len(o.snapshots))
+	for _, s := range o.snapshots {
+		if s.Config.VolumeName == volumeName {
+			snapshots = append(snapshots, s.ConstructExternal())
+		}
+	}
+	return snapshots, nil
+}
+
+func (o *TridentOrchestrator) ReadSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -1934,7 +2317,7 @@ func (o *TridentOrchestrator) ListVolumeSnapshots(volumeName string) ([]*storage
 		return nil, notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
-	snapshots, err := o.backends[volume.BackendUUID].Driver.SnapshotList(volume.Config.InternalName)
+	snapshots, err := o.backends[volume.BackendUUID].GetSnapshots(volume.Config)
 	if err != nil {
 		return nil, err
 	}

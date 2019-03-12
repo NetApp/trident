@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -84,7 +85,7 @@ func getFakeVolumeTransactionWithName(name string) *VolumeTransaction {
 		InternalName: name + "_internal",
 	}
 
-	return &VolumeTransaction{volumeConfig, AddVolume}
+	return &VolumeTransaction{Config: volumeConfig, Op: AddVolume}
 }
 
 func getFakeStorageClass() *sc.StorageClass {
@@ -110,6 +111,21 @@ func getFakeNode() *utils.Node {
 		Name: "testNode",
 		IQN:  "myIQN",
 		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+}
+
+func getFakeSnapshot() *storage.Snapshot {
+	snapConfig := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "snap1",
+		InternalName:       "snap1",
+		VolumeName:         "vol1",
+		VolumeInternalName: "trident_vol1",
+	}
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		SizeBytes: 1000000000,
 	}
 }
 
@@ -795,5 +811,79 @@ func TestPassthroughClient_DeleteNode(t *testing.T) {
 
 	if err != nil {
 		t.Error("Could not delete node from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_AddSnapshot(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+
+	err := p.AddSnapshot(fakeSnapshot)
+
+	if err != nil {
+		t.Error("Could not add snapshot to passthrough client!")
+	}
+}
+
+func TestPassthroughClient_GetSnapshot(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+	_ = p.AddSnapshot(fakeSnapshot)
+
+	result, err := p.GetSnapshot(fakeSnapshot.Config.VolumeName, fakeSnapshot.Config.Name)
+
+	if result != nil || err == nil {
+		t.Error("Did not expect to get snapshot from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_GetSnapshots(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+	_ = p.AddSnapshot(fakeSnapshot)
+
+	result, err := p.GetSnapshots()
+
+	if err != nil {
+		t.Error("Could not get snapshots from passthrough client!")
+	}
+	if len(result) != 0 {
+		t.Error("Did not expect to get snapshots from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_DeleteSnapshot(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+	_ = p.AddSnapshot(fakeSnapshot)
+
+	err := p.DeleteSnapshot(fakeSnapshot)
+
+	if err != nil {
+		t.Error("Could not delete snapshot from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_DeleteSnapshotIgnoreNotFound(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+	_ = p.AddSnapshot(fakeSnapshot)
+
+	err := p.DeleteSnapshotIgnoreNotFound(fakeSnapshot)
+
+	if err != nil {
+		t.Error("Could not delete snapshot from passthrough client!")
+	}
+}
+
+func TestPassthroughClient_DeleteSnapshots(t *testing.T) {
+	p := newPassthroughClient()
+	fakeSnapshot := getFakeSnapshot()
+	_ = p.AddSnapshot(fakeSnapshot)
+
+	err := p.DeleteSnapshots()
+
+	if err != nil {
+		t.Error("Could not delete snapshots from passthrough client!")
 	}
 }

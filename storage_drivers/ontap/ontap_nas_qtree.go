@@ -340,7 +340,7 @@ func (d *NASQtreeStorageDriver) CreateClone(volConfig *storage.VolumeConfig) err
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	return errors.New("cloning with the ONTAP NAS Economy driver is not supported")
+	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
 
 func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
@@ -443,39 +443,89 @@ func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePu
 	return nil
 }
 
+// GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
+func (d *NASQtreeStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "NASQtreeStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+}
+
+// Return the list of snapshots associated with the specified volume
+func (d *NASQtreeStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "NASQtreeStorageDriver",
+			"volumeName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	// Qtrees can't have snapshots, so return an empty list
+	return []*storage.Snapshot{}, nil
+}
+
 // CreateSnapshot creates a snapshot for the given volume
-func (d *NASQtreeStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+func (d *NASQtreeStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "NASQtreeStorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": volConfig.InternalName,
+			"snapshotName": snapConfig.InternalName,
+			"sourceVolume": snapConfig.VolumeInternalName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return nil, errors.New("snapshotting with the ONTAP NAS Economy driver is not supported")
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
-// Return the list of snapshots associated with the named volume
-func (d *NASQtreeStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *NASQtreeStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "NASQtreeStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "NASQtreeStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"sourceVolume": snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	// Qtrees can't have snapshots, so return an empty list
-	return []storage.Snapshot{}, nil
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
+}
+
+// DeleteSnapshot creates a snapshot of a volume.
+func (d *NASQtreeStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "NASQtreeStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // Test for the existence of a volume

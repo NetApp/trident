@@ -1,10 +1,10 @@
-hash: 57e551422775e43c4bb13fd70fe8d3ea6fd114511b7bb5ff5a3f6457e7f880ee
-updated: 2019-05-13T10:59:17.155087-04:00
+hash: e39ecf9ccc613226a5c7e7ecd4d508e2fd63c8f659302b86fbb42c8d2f8c314d
+updated: 2019-06-07T12:34:46.157981787-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 1e4cf3da559842a91afcb6ea6141451e6c30c618
 - name: github.com/container-storage-interface/spec
-  version: ed0bb0e1557548aa028307f48728767cfe8f6345
+  version: f750e6765f5f6b4ac0e13e95214d58901290fb4b
   subpackages:
   - lib/go/csi
 - name: github.com/coreos/etcd
@@ -85,6 +85,11 @@ imports:
   version: 2a8bb927dd31d8daada140a5d09578521ce5c36a
 - name: github.com/google/go-cmp
   version: 3af367b6b30c263d47e8895973edcca9a49cf029
+  subpackages:
+  - cmp
+  - cmp/internal/diff
+  - cmp/internal/function
+  - cmp/internal/value
 - name: github.com/google/gofuzz
   version: 24818f796faf91cd76ec7bddd72458fbced7a6c1
 - name: github.com/google/uuid
@@ -284,7 +289,7 @@ imports:
   - storage/v1alpha1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 0fe22c71c47604641d9aa352c785b7912c200562
+  version: 53c4693659ed354d76121458fb819202dd1635fa
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1
@@ -452,6 +457,7 @@ imports:
   - util/homedir
   - util/keyutil
   - util/retry
+  - util/workqueue
 - name: k8s.io/code-generator
   version: 50b561225d70b3eb79a1faafd3dfe7b1a62cbe73
   subpackages:

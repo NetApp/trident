@@ -433,6 +433,23 @@ func (c *PassthroughClient) AddSnapshot(snapshot *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
-	return nil, nil
+func (c *PassthroughClient) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
+	return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
+}
+
+// GetSnapshots retrieves all snapshots
+func (c *PassthroughClient) GetSnapshots() ([]*storage.SnapshotPersistent, error) {
+	return make([]*storage.SnapshotPersistent, 0), nil
+}
+
+func (c *PassthroughClient) DeleteSnapshot(snapshot *storage.Snapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteSnapshots() error {
+	return nil
 }

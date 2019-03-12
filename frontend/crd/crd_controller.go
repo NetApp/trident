@@ -2,28 +2,23 @@
  * Copyright 2019 NetApp, Inc. All Rights Reserved.
  */
 
-package kubernetes
+package crd
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
-
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
@@ -98,6 +93,10 @@ type TridentCrdController struct {
 	volumesLister listers.TridentVolumeLister
 	volumesSynced cache.InformerSynced
 
+	// TridentSnapshot CRD handling
+	snapshotsLister listers.TridentSnapshotLister
+	snapshotsSynced cache.InformerSynced
+
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
 	// means we can ensure we only process a fixed amount of resources at a
@@ -137,7 +136,7 @@ func NewTridentCrdControllerInCluster(o core.Orchestrator) (*TridentCrdControlle
 		log.WithFields(log.Fields{
 			"error":         err,
 			"namespaceFile": config.TridentNamespaceFile,
-		}).Fatal("Trident Crd Controller frontend failed to obtain Trident's namespace!")
+		}).Fatal("Trident CRD Controller frontend failed to obtain Trident's namespace.")
 	}
 	tridentNamespace := string(bytes)
 
@@ -180,11 +179,12 @@ func newTridentCrdControllerImpl(
 	transactionInformer := crdInformer.TridentTransactions()
 	versionInformer := crdInformer.TridentVersions()
 	volumeInformer := crdInformer.TridentVolumes()
+	snapshotInformer := crdInformer.TridentSnapshots()
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
 	utilruntime.Must(tridentscheme.AddToScheme(scheme.Scheme))
-	log.Info("Creating event broadcaster")
+	log.Info("Creating event broadcaster.")
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(log.Infof)
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClientset.CoreV1().Events("")})
@@ -209,12 +209,14 @@ func newTridentCrdControllerImpl(
 		versionsSynced:        versionInformer.Informer().HasSynced,
 		volumesLister:         volumeInformer.Lister(),
 		volumesSynced:         volumeInformer.Informer().HasSynced,
+		snapshotsLister:       snapshotInformer.Lister(),
+		snapshotsSynced:       snapshotInformer.Informer().HasSynced,
 		workqueue:             workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "TridentBackends"),
 		recorder:              recorder,
 	}
 
 	// Set up event handlers for when our Trident CRDs change
-	log.Info("Setting up event handlers...")
+	log.Info("Setting up CRD event handlers.")
 
 	// TODO RIPPY not using this right now, which means, no support for a 'kubectl edit' of a backend
 	useComplicatedBackendUpdateHandling := false
@@ -301,6 +303,7 @@ func newTridentCrdControllerImpl(
 		transactionInformer.Informer(),
 		versionInformer.Informer(),
 		volumeInformer.Informer(),
+		snapshotInformer.Informer(),
 	}
 	for _, informer := range informers {
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -352,31 +355,32 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) erro
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	log.Info("Starting Trident CRD controller...")
+	log.Info("Starting Trident CRD controller.")
 
 	// Wait for the caches to be synced before starting workers
-	log.Info("Waiting for informer caches to sync...")
+	log.Info("Waiting for informer caches to sync.")
 	if ok := cache.WaitForCacheSync(stopCh,
 		c.backendsSynced,
 		c.nodesSynced,
 		c.storageClassesSynced,
 		c.transactionsSynced,
 		c.versionsSynced,
-		c.volumesSynced); !ok {
+		c.volumesSynced,
+		c.snapshotsSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
 		log.Errorf("Error: %v", waitErr)
 		return waitErr
 	}
 
 	// Launch workers to process CRD resources
-	log.Info("Starting workers...")
+	log.Info("Starting workers.")
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
 	log.Info("Started workers.")
 	<-stopCh
-	log.Info("Shutting down workers...")
+	log.Info("Shutting down workers.")
 
 	return nil
 }
@@ -385,7 +389,7 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) erro
 // processNextWorkItem function in order to read and process a message on the
 // workqueue.
 func (c *TridentCrdController) runWorker() {
-	log.Debug("TridentCrdController runWorker started")
+	log.Debug("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
 	}
 }
@@ -543,7 +547,7 @@ func (c *TridentCrdController) updateBackend(backend *tridentv1.TridentBackend) 
 		"Name":                       backend.Name,
 		"BackendName":                backend.BackendName,
 		"string(backend.Config.Raw)": string(rawJSONData),
-	}).Debug("Updating backend in core...")
+	}).Debug("Updating backend in core.")
 
 	psbc := &storage.PersistentStorageBackendConfig{}
 	err = json.Unmarshal(rawJSONData, &psbc)
@@ -613,7 +617,7 @@ func (c *TridentCrdController) deleteCRD(obj interface{}) {
 	log.WithFields(log.Fields{
 		"backend.ResourceVersion":              backend.ResourceVersion,
 		"backend.ObjectMeta.DeletionTimestamp": backend.ObjectMeta.DeletionTimestamp,
-	}).Debug("deleteCRD")
+	}).Debug("TridentCrdController#deleteCRD")
 
 	if backend.ObjectMeta.DeletionTimestamp.IsZero() {
 		// TODO shouldn't happen?
@@ -624,15 +628,15 @@ func (c *TridentCrdController) deleteCRD(obj interface{}) {
 	if _, getBackendErr := c.orchestrator.GetBackend(backend.BackendName); core.IsNotFoundError(getBackendErr) {
 		log.WithFields(log.Fields{
 			"BackendName": backend.BackendName,
-		}).Warn("Could not find backend")
+		}).Warn("Could not find backend.")
 	} else {
 		log.WithFields(log.Fields{
 			"BackendName": backend.BackendName,
-		}).Debug("Deleting...")
+		}).Debug("Deleting backend.")
 		if deleteBackendErr := c.orchestrator.DeleteBackend(backend.BackendName); core.IsNotFoundError(deleteBackendErr) {
 			log.WithFields(log.Fields{
 				"BackendName": backend.BackendName,
-			}).Warn("Could not find backend")
+			}).Warn("Could not find backend.")
 		}
 	}
 }
@@ -671,6 +675,10 @@ func (c *TridentCrdController) removeFinalizers(obj interface{}, force bool) {
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			c.removeVolumeFinalizers(crd)
 		}
+	case *tridentv1.TridentSnapshot:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			c.removeSnapshotFinalizers(crd)
+		}
 	default:
 		log.Warnf("unexpected type %T", crd)
 	}
@@ -684,12 +692,12 @@ func (c *TridentCrdController) removeBackendFinalizers(backend *tridentv1.Triden
 	}).Debug("removeBackendFinalizers")
 
 	if backend.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		backendCopy := backend.DeepCopy()
 		backendCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(backendCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {
@@ -705,12 +713,12 @@ func (c *TridentCrdController) removeNodeFinalizers(node *tridentv1.TridentNode)
 	}).Debug("removeNodeFinalizers")
 
 	if node.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		nodeCopy := node.DeepCopy()
 		nodeCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentNodes(node.Namespace).Update(nodeCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {
@@ -726,12 +734,12 @@ func (c *TridentCrdController) removeStorageClassFinalizers(sc *tridentv1.Triden
 	}).Debug("removeStorageClassFinalizers")
 
 	if sc.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		scCopy := sc.DeepCopy()
 		scCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentStorageClasses(sc.Namespace).Update(scCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {
@@ -747,12 +755,12 @@ func (c *TridentCrdController) removeTransactionFinalizers(tx *tridentv1.Trident
 	}).Debug("removeTransactionFinalizers")
 
 	if tx.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		txCopy := tx.DeepCopy()
 		txCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentTransactions(tx.Namespace).Update(txCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {
@@ -768,12 +776,12 @@ func (c *TridentCrdController) removeVersionFinalizers(v *tridentv1.TridentVersi
 	}).Debug("removeVersionFinalizers")
 
 	if v.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		vCopy := v.DeepCopy()
 		vCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentVersions(v.Namespace).Update(vCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {
@@ -786,15 +794,36 @@ func (c *TridentCrdController) removeVolumeFinalizers(vol *tridentv1.TridentVolu
 	log.WithFields(log.Fields{
 		"vol.ResourceVersion":              vol.ResourceVersion,
 		"vol.ObjectMeta.DeletionTimestamp": vol.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeVersionFinalizers")
+	}).Debug("removeVolumeFinalizers")
 
 	if vol.HasTridentFinalizers() {
-		log.Debug("Has finalizers, removing them...")
+		log.Debug("Has finalizers, removing them.")
 		volCopy := vol.DeepCopy()
 		volCopy.RemoveTridentFinalizers()
 		_, err := c.crdClientset.TridentV1().TridentVolumes(vol.Namespace).Update(volCopy)
 		if err != nil {
-			log.Errorf("problem removing finalizers: %v", err)
+			log.Errorf("Problem removing finalizers: %v", err)
+			return
+		}
+	} else {
+		log.Debug("No finalizers to remove.")
+	}
+}
+
+// removeSnapshotFinalizers removes Trident's finalizers from TridentSnapshot CRD objects
+func (c *TridentCrdController) removeSnapshotFinalizers(snap *tridentv1.TridentSnapshot) {
+	log.WithFields(log.Fields{
+		"snap.ResourceVersion":              snap.ResourceVersion,
+		"snap.ObjectMeta.DeletionTimestamp": snap.ObjectMeta.DeletionTimestamp,
+	}).Debug("removeSnapshotFinalizers")
+
+	if snap.HasTridentFinalizers() {
+		log.Debug("Has finalizers, removing them.")
+		snapCopy := snap.DeepCopy()
+		snapCopy.RemoveTridentFinalizers()
+		_, err := c.crdClientset.TridentV1().TridentSnapshots(snap.Namespace).Update(snapCopy)
+		if err != nil {
+			log.Errorf("Problem removing finalizers: %v", err)
 			return
 		}
 	} else {

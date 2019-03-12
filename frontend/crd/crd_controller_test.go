@@ -1,4 +1,4 @@
-package kubernetes
+package crd
 
 import (
 	"fmt"
@@ -7,10 +7,14 @@ import (
 	"testing"
 	"time"
 
-	//	persistentstore "github.com/netapp/trident/persistent_store"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	k8s_fake "k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	persistentstore "github.com/netapp/trident/persistent_store"
@@ -23,11 +27,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	fake_driver "github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
-	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	k8s_fake "k8s.io/client-go/kubernetes/fake"
-	k8stesting "k8s.io/client-go/testing"
 )
 
 var (
@@ -322,7 +321,7 @@ func TestFoo(t *testing.T) {
 
 	backendList, listErr := crdClient.TridentV1().TridentBackends(tridentNamespace).List(listOpts)
 	if listErr != nil {
-		t.Fatalf("error listing CRD backends: %v", err.Error())
+		t.Fatalf("error listing CRD backends: %v", listErr)
 	}
 	var crdName string
 	for _, backend := range backendList.Items {
@@ -371,7 +370,7 @@ func TestFoo(t *testing.T) {
 	// delete backend, make sure it gets removed
 	deleteErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(crdName, deleteOptions)
 	if deleteErr != nil {
-		t.Fatalf("error deleting CRD backend '%v': %v", crdName, err.Error())
+		t.Fatalf("error deleting CRD backend '%v': %v", crdName, deleteErr)
 	}
 
 	// validate it's gone

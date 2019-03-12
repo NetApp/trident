@@ -189,7 +189,7 @@ func (d *SANStorageDriver) Initialize(
 				d.Config.AccessGroup, d.Config.ControllerA)
 		} else {
 			log.WithFields(log.Fields{
-				"driver":     drivers.EseriesIscsiStorageDriverName,
+				"driver":     d.Name(),
 				"controller": d.Config.ControllerA,
 				"hostGroup":  hostGroup.Label,
 			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", d.Config.AccessGroup)
@@ -841,40 +841,90 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 	return mapping, nil
 }
 
+// GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
+func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshot")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+}
+
+// SnapshotList returns the list of snapshots associated with the specified volume. The E-series volume
+// plugin does not support snapshots, so this method always returns an empty array.
+func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "GetSnapshots",
+			"Type":       "SANStorageDriver",
+			"volumeName": volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> GetSnapshots")
+		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+	}
+
+	return make([]*storage.Snapshot, 0), nil
+}
+
 // CreateSnapshot creates a snapshot for the given volume. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.VolumeConfig) (
-	*storage.Snapshot, error) {
+func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "SANStorageDriver",
-			"snapshotName": snapshotName,
-			"sourceVolume": volConfig.InternalName,
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
 		}
 		log.WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return nil, errors.New("snapshotting with E-Series is not supported")
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
-// SnapshotList returns the list of snapshots associated with the named volume. The E-series volume plugin does not support snapshots,
-// so this method always returns an empty array.
-func (d *SANStorageDriver) SnapshotList(name string) ([]storage.Snapshot, error) {
+// RestoreSnapshot restores a volume (in place) from a snapshot.
+func (d *SANStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "SnapshotList",
-			"Type":   "SANStorageDriver",
-			"name":   name,
+			"Method":       "RestoreSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> SnapshotList")
-		defer log.WithFields(fields).Debug("<<<< SnapshotList")
+		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return make([]storage.Snapshot, 0), nil
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
+}
+
+// DeleteSnapshot deletes a volume snapshot.
+func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "SANStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
@@ -897,7 +947,7 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	return errors.New("cloning with E-Series is not supported")
+	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
 
 func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
