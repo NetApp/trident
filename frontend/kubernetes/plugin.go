@@ -1959,11 +1959,8 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 		return
 	}
 
-	// Create the volume configuration object
-	uniqueClaimName := getUniqueClaimName(claim)
-
 	// Create the snapshot
-	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, uniqueClaimName)
+	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, claim.Spec.VolumeName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
