@@ -33,6 +33,7 @@ type Orchestrator interface {
 	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error
 	AttachVolume(volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	DetachVolume(volumeName, mountpoint string) error
+	CreateVolumeSnapshot(snapshotName, volName string) (*storage.SnapshotExternal, error)
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
 	ReloadVolumes() error
 	ResizeVolume(volumeName, newSize string) error
