@@ -227,6 +227,32 @@ func main() {
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
 
+	// Create HTTP REST frontend
+	if *enableREST {
+		if *port == "" {
+			log.Warning("HTTP REST interface will not be available (port not specified).")
+		} else {
+			httpServer := rest.NewHTTPServer(orchestrator, *address, *port)
+			frontends = append(frontends, httpServer)
+			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
+		}
+	}
+
+	// Create HTTPS REST frontend
+	if *enableHTTPSREST {
+		if *httpsPort == "" {
+			log.Warning("HTTPS REST interface will not be available (httpsPort not specified).")
+		} else {
+			httpsServer, err := rest.NewHTTPSServer(
+				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey)
+			if err != nil {
+				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
+			}
+			frontends = append(frontends, httpsServer)
+			log.WithFields(log.Fields{"name": httpsServer.GetName()}).Info("Added frontend.")
+		}
+	}
+
 	// Create Kubernetes *or* Docker frontend
 	if enableKubernetes {
 
@@ -264,8 +290,8 @@ func main() {
 
 	} else if enableCSI {
 		config.CurrentDriverContext = config.ContextCSI
-		if *csiRole != csi.CSIController && *csiRole != csi.CSINode {
-			log.Fatalf("CSI is enabled but an unknown role has been assigned: '%v'", csiRole)
+		if *csiRole != csi.CSIController && *csiRole != csi.CSINode && *csiRole != csi.CSIAllInOne {
+			log.Fatalf("CSI is enabled but an unknown role has been assigned: '%s'", *csiRole)
 		}
 
 		if *csiEndpoint == "" {
@@ -288,38 +314,15 @@ func main() {
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, orchestrator)
+		case csi.CSIAllInOne:
+			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
+				*httpsClientKey, orchestrator)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)
 		}
 		orchestrator.AddFrontend(csiFrontend)
 		frontends = append(frontends, csiFrontend)
-	}
-
-	// Create HTTP REST frontend
-	if *enableREST {
-		if *port == "" {
-			log.Warning("HTTP REST interface will not be available (port not specified).")
-		} else {
-			httpServer := rest.NewHTTPServer(orchestrator, *address, *port)
-			frontends = append(frontends, httpServer)
-			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
-		}
-	}
-
-	// Create HTTPS REST frontend
-	if *enableHTTPSREST {
-		if *httpsPort == "" {
-			log.Warning("HTTPS REST interface will not be available (httpsPort not specified).")
-		} else {
-			httpsServer, err := rest.NewHTTPSServer(
-				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey)
-			if err != nil {
-				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
-			}
-			frontends = append(frontends, httpsServer)
-			log.WithFields(log.Fields{"name": httpsServer.GetName()}).Info("Added frontend.")
-		}
 	}
 
 	// Bootstrap the orchestrator and start its frontends

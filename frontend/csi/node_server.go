@@ -36,7 +36,7 @@ func (p *Plugin) NodeStageVolume(
 
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
-		return &csi.NodeStageVolumeResponse{}, nil // No need to stage NFS
+		return p.nodeStageNFSVolume(ctx, req)
 	case string(tridentconfig.Block):
 		return p.nodeStageISCSIVolume(ctx, req)
 	default:
@@ -52,8 +52,18 @@ func (p *Plugin) NodeUnstageVolume(
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
+	if req.GetVolumeId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	targetPath := req.GetStagingTargetPath()
+
+	if targetPath == "" {
+		return nil, status.Error(codes.InvalidArgument, "no staging target path provided")
+	}
+
 	// Read the device info from the staging path
-	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
+	publishInfo, err := p.readStagedDeviceInfo(targetPath)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -98,7 +108,16 @@ func (p *Plugin) NodeUnpublishVolume(
 	log.WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnpublishVolume")
 
+	if req.GetVolumeId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
 	targetPath := req.GetTargetPath()
+
+	if targetPath == "" {
+		return nil, status.Error(codes.InvalidArgument, "no target path provided")
+	}
+
 	notMnt, err := utils.IsLikelyNotMountPoint(targetPath)
 
 	if err != nil {
@@ -208,6 +227,30 @@ func (p *Plugin) nodeDeregisterWithController() error {
 	return nil
 }
 
+func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
+) (*csi.NodeStageVolumeResponse, error) {
+	mountOptions := make([]string, 0)
+	mountCapability := req.GetVolumeCapability().GetMount()
+	if mountCapability != nil && mountCapability.GetMountFlags() != nil {
+		mountOptions = mountCapability.GetMountFlags()
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		Localhost:      true,
+		FilesystemType: "nfs",
+	}
+
+	publishInfo.MountOptions = strings.Join(mountOptions, ",")
+	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
+	publishInfo.NfsPath = req.PublishContext["nfsPath"]
+
+	// Save the device info to the staging path for use in the publish & unstage calls
+	if err := p.writeStagedDeviceInfo(req.StagingTargetPath, publishInfo); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &csi.NodeStageVolumeResponse{}, nil
+}
+
 func (p *Plugin) nodePublishNFSVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
@@ -229,23 +272,16 @@ func (p *Plugin) nodePublishNFSVolume(
 		return &csi.NodePublishVolumeResponse{}, nil
 	}
 
-	mountOptions := make([]string, 0)
-	mountCapability := req.GetVolumeCapability().GetMount()
-	if mountCapability != nil && mountCapability.GetMountFlags() != nil {
-		mountOptions = mountCapability.GetMountFlags()
+	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	if req.GetReadonly() {
+		mountOptions := strings.Split(publishInfo.MountOptions, ",")
 		mountOptions = append(mountOptions, "ro")
+		publishInfo.MountOptions = strings.Join(mountOptions, ",")
 	}
-
-	publishInfo := &utils.VolumePublishInfo{
-		Localhost:      true,
-		FilesystemType: "nfs",
-	}
-
-	publishInfo.MountOptions = strings.Join(mountOptions, ",")
-	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
-	publishInfo.NfsPath = req.PublishContext["nfsPath"]
 
 	err = utils.AttachNFSVolume(req.VolumeContext["internalName"], req.TargetPath, publishInfo)
 	if err != nil {

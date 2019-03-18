@@ -136,6 +136,10 @@ func (p *Plugin) DeleteVolume(
 	log.WithFields(fields).Debug(">>>> DeleteVolume")
 	defer log.WithFields(fields).Debug("<<<< DeleteVolume")
 
+	if req.GetVolumeId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
 	err := p.orchestrator.DeleteVolume(req.VolumeId)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -171,17 +175,31 @@ func (p *Plugin) ControllerPublishVolume(
 	log.WithFields(fields).Debug(">>>> ControllerPublishVolume")
 	defer log.WithFields(fields).Debug("<<<< ControllerPublishVolume")
 
+	volumeID := req.GetVolumeId()
+	if volumeID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	nodeID := req.GetNodeId()
+	if nodeID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no node ID provided")
+	}
+
+	if req.GetVolumeCapability() == nil {
+		return nil, status.Error(codes.InvalidArgument, "no volume capabilities provided")
+	}
+
 	// Make sure volume exists
-	volume, err := p.orchestrator.GetVolume(req.VolumeId)
+	volume, err := p.orchestrator.GetVolume(volumeID)
 	if err != nil {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
 	// Get node attributes from the node ID
-	nodeInfo, err := p.orchestrator.GetNode(req.NodeId)
+	nodeInfo, err := p.orchestrator.GetNode(nodeID)
 	if err != nil {
-		log.Errorf("Info for node %s not found.", req.NodeId)
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		log.WithField("node", nodeID).Error("Node info not found.")
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
 	// Set up volume publish info with what we know about the node
@@ -231,8 +249,13 @@ func (p *Plugin) ControllerUnpublishVolume(
 	log.WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
 	defer log.WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
 
+	volumeID := req.GetVolumeId()
+	if volumeID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
 	// Make sure volume exists
-	if _, err := p.orchestrator.GetVolume(req.VolumeId); err != nil {
+	if _, err := p.orchestrator.GetVolume(volumeID); err != nil {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -244,8 +267,46 @@ func (p *Plugin) ValidateVolumeCapabilities(
 	ctx context.Context, req *csi.ValidateVolumeCapabilitiesRequest,
 ) (*csi.ValidateVolumeCapabilitiesResponse, error) {
 
-	// Trident doesn't support pre-provisioned volumes
-	return nil, status.Error(codes.NotFound, "volume not found")
+	volumeID := req.GetVolumeId()
+
+	if volumeID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+	if req.GetVolumeCapabilities() == nil {
+		return nil, status.Error(codes.InvalidArgument, "no volume capabilities provided")
+	}
+
+	volume, err := p.orchestrator.GetVolume(volumeID)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "volume not found")
+	}
+
+	resp := &csi.ValidateVolumeCapabilitiesResponse{}
+
+	for _, v := range req.GetVolumeCapabilities() {
+		if volume.Config.AccessMode != p.getAccessForCSIAccessMode(v.GetAccessMode().Mode) {
+			resp.Message = "Could not satisfy one or more access modes."
+			return resp, nil
+		}
+		if block := v.GetBlock(); block != nil {
+			if volume.Config.Protocol != tridentconfig.Block {
+				resp.Message = "Could not satisfy block protocol."
+				return resp, nil
+			}
+		} else {
+			if volume.Config.Protocol != tridentconfig.File {
+				resp.Message = "Could not satisfy file protocol."
+				return resp, nil
+			}
+		}
+	}
+
+	confirmed := &csi.ValidateVolumeCapabilitiesResponse_Confirmed{}
+	confirmed.VolumeCapabilities = req.GetVolumeCapabilities()
+
+	resp.Confirmed = confirmed
+
+	return resp, nil
 }
 
 func (p *Plugin) ListVolumes(
