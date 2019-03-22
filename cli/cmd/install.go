@@ -72,14 +72,13 @@ var (
 	volumeSize   string
 	tridentImage string
 	etcdImage    string
+	setupPath    string
 	k8sTimeout   time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
 
 	// File paths
-	installerDirectoryPath string
-	setupPath              string
 	backendConfigFilePath  string
 	namespacePath          string
 	serviceAccountPath     string
@@ -116,6 +115,7 @@ func init() {
 	installCmd.Flags().StringVar(&volumeSize, "volume-size", DefaultVolumeSize, "The size of the storage volume used by Trident.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
+	installCmd.Flags().StringVar(&setupPath, "setup-path", "", "The path to the setup directory.")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The number of seconds to wait before timing out on Kubernetes operations.")
 }
@@ -330,15 +330,16 @@ func validateInstallationArguments() error {
 // prepareYAMLFilePaths sets up the absolute file paths to all files
 func prepareYAMLFilePaths() error {
 
-	var err error
+	if setupPath == "" {
+		// Get directory of installer
+		installerDirectoryPath, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			return fmt.Errorf("could not determine installer working directory; %v", err)
+		}
 
-	// Get directory of installer
-	installerDirectoryPath, err = filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		return fmt.Errorf("could not determine installer working directory; %v", err)
+		setupPath = path.Join(installerDirectoryPath, "setup")
 	}
 
-	setupPath = path.Join(installerDirectoryPath, "setup")
 	backendConfigFilePath = path.Join(setupPath, BackendConfigFilename)
 	namespacePath = path.Join(setupPath, NamespaceFilename)
 	serviceAccountPath = path.Join(setupPath, ServiceAccountFilename)
