@@ -1,3 +1,4 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package ontap
 
 import (
@@ -262,17 +263,69 @@ func (d *NASFlexGroupStorageDriver) Create(
 	return nil
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *NASFlexGroupStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return errors.New("clones are not supported for FlexGroups")
 }
 
+// Import brings an existing volume under trident's control
 func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
-	return errors.New("import is not implemented")
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "Import",
+			"Type":         "NASFlexGroupStorageDriver",
+			"originalName": originalName,
+			"notManaged":   notManaged,
+		}
+		log.WithFields(fields).Debug(">>>> Import")
+		defer log.WithFields(fields).Debug("<<<< Import")
+	}
+
+	// Ensure the volume exists
+	flexgroup, err := d.API.FlexGroupGet(originalName)
+	if err != nil {
+		return err
+	} else if flexgroup == nil {
+		return fmt.Errorf("could not import volume %s, volume not found", originalName)
+	}
+
+	// Validate the volume is what it should be
+	if flexgroup.VolumeIdAttributesPtr != nil {
+		volumeIdAttrs := flexgroup.VolumeIdAttributes()
+		if volumeIdAttrs.TypePtr != nil && volumeIdAttrs.Type() != "rw" {
+			log.WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
+			return fmt.Errorf("could not import volume %s, type is %s, not rw", originalName, volumeIdAttrs.Type())
+		}
+	}
+
+	// Get the volume size
+	if flexgroup.VolumeSpaceAttributesPtr == nil || flexgroup.VolumeSpaceAttributesPtr.SizePtr == nil {
+		log.WithField("originalName", originalName).Errorf("Could not import volume, size not available")
+		return fmt.Errorf("could not import volume %s, size not available", originalName)
+	}
+	volConfig.Size = strconv.FormatInt(int64(flexgroup.VolumeSpaceAttributesPtr.Size()), 10)
+
+	// We cannot rename flexgroups, so internal name should match the imported originalName
+	volConfig.InternalName = originalName
+
+	// Make sure we're not importing a volume without a junction path when not managed
+	if notManaged {
+		if flexgroup.VolumeIdAttributesPtr == nil {
+			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
+		} else if flexgroup.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexgroup.VolumeIdAttributesPtr.
+			JunctionPath() == "" {
+			return fmt.Errorf("junction path is not set for volume %s", originalName)
+		}
+	}
+
+	return nil
 }
 
-func (d *NASFlexGroupStorageDriver) Rename(name string, new_name string) error {
-	return errors.New("rename is not implemented")
+// Rename changes the name of a volume
+func (d *NASFlexGroupStorageDriver) Rename(name string, newName string) error {
+	// Flexgroups cannot be renamed
+	return nil
 }
 
 // Destroy the volume
@@ -422,10 +475,11 @@ func (d *NASFlexGroupStorageDriver) vserverAggregates(svmName string) ([]string,
 func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 	return map[string]sa.Offer{
-		sa.BackendType: sa.NewStringOffer(d.Name()),
-		sa.Snapshots:   sa.NewBoolOffer(true),
-		sa.Encryption:  sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
-		sa.Clones:      sa.NewBoolOffer(false),
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
+		sa.Clones:           sa.NewBoolOffer(false),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }
 
@@ -445,13 +499,34 @@ func (d *NASFlexGroupStorageDriver) CreatePrepare(volConfig *storage.VolumeConfi
 	return createPrepareCommon(d, volConfig)
 }
 
-func (d *NASFlexGroupStorageDriver) CreateFollowup(
-	volConfig *storage.VolumeConfig,
-) error {
+func (d *NASFlexGroupStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
 	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 	volConfig.FileSystem = ""
+
+	// Set correct junction path
+	flexgroup, err := d.API.FlexGroupGet(volConfig.InternalName)
+	if err != nil {
+		return err
+	} else if flexgroup == nil {
+		return fmt.Errorf("could not create volume %s, volume not found", volConfig.InternalName)
+	}
+
+	if flexgroup.VolumeIdAttributesPtr == nil {
+		return errors.New("error reading volume id attributes")
+	}
+	if flexgroup.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexgroup.VolumeIdAttributesPtr.JunctionPath() == "" {
+		// Flexgroup is not mounted, we need to mount it
+		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+		mountResponse, err := d.API.VolumeMount(volConfig.InternalName, volConfig.AccessInfo.NfsPath)
+		if err = api.GetError(mountResponse, err); err != nil {
+			return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
+		}
+	} else {
+		volConfig.AccessInfo.NfsPath = flexgroup.VolumeIdAttributesPtr.JunctionPath()
+	}
+
 	return nil
 }
 
