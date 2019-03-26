@@ -86,7 +86,7 @@ func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver
 }
 
 func NewFakeStorageDriverConfigJSON(
-	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool,
+	name string, protocol tridentconfig.Protocol, pools map[string]*fake.StoragePool, volumes []fake.Volume,
 ) (string, error) {
 	prefix := ""
 	jsonBytes, err := json.Marshal(
@@ -99,6 +99,7 @@ func NewFakeStorageDriverConfigJSON(
 			},
 			Protocol:     protocol,
 			Pools:        pools,
+			Volumes:      volumes,
 			InstanceName: name,
 		},
 	)
