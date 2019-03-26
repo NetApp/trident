@@ -442,7 +442,8 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools)
+		volumes := make([]fake.Volume, 0)
+		fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools, volumes)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
@@ -914,8 +915,10 @@ func TestCloneVolumes(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
+
+		volumes := make([]fake.Volume, 0)
 		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol,
-			pools)
+			pools, volumes)
 		if err != nil {
 			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
@@ -1152,6 +1155,10 @@ func TestCloneVolumes(t *testing.T) {
 func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string,
 ) {
+	volumes := []fake.Volume{
+		fake.Volume{"origVolume01", "primary", "primary", 1000000000},
+		fake.Volume{"origVolume02", "primary", "primary", 1000000000},
+	}
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
@@ -1167,6 +1174,7 @@ func addBackend(
 				Bytes: 100 * 1024 * 1024 * 1024,
 			},
 		},
+		volumes,
 	)
 	if err != nil {
 		t.Fatal("Unable to create mock driver config JSON: ", err)
@@ -1297,8 +1305,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("Backend %s is not initialized", backendName)
 		}
 
+		volumes := make([]fake.Volume, 0)
 		newConfigJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(backendName,
-			config.File, c.pools)
+			config.File, c.pools, volumes)
 		if err != nil {
 			t.Errorf("%s:  unable to generate new backend config:  %v", c.name, err)
 			continue
@@ -1557,6 +1566,7 @@ func TestLoadBackend(t *testing.T) {
 				Bytes: 100 * 1024 * 1024 * 1024,
 			},
 		},
+		[]fake.Volume{},
 	)
 	originalBackend, err := orchestrator.AddBackend(configJSON)
 	if err != nil {
@@ -1591,6 +1601,7 @@ func TestLoadBackend(t *testing.T) {
 func prepRecoveryTest(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName, scName string,
 ) {
+
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
@@ -1604,6 +1615,7 @@ func prepRecoveryTest(
 				Bytes: 100 * 1024 * 1024 * 1024,
 			},
 		},
+		[]fake.Volume{},
 	)
 	_, err = orchestrator.AddBackend(configJSON)
 	if err != nil {
@@ -2019,6 +2031,182 @@ func TestOrchestratorNotReady(t *testing.T) {
 	err = orchestrator.DeleteStorageClass("")
 	if !IsNotReadyError(err) {
 		t.Errorf("Expected DeleteStorageClass to return an error.")
+	}
+}
+
+func importVolumeSetup(t *testing.T, backendName string, scName string, volumeName string,
+) (*TridentOrchestrator, *storage.VolumeConfig) {
+	// Object setup
+	orchestrator := getOrchestrator()
+	addBackendStorageClass(t, orchestrator, backendName, scName)
+
+	orchestrator.mutex.Lock()
+	_, ok := orchestrator.storageClasses[scName]
+	if !ok {
+		t.Fatal("Storageclass not found in orchestrator map")
+	}
+	orchestrator.mutex.Unlock()
+
+	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	return orchestrator, volumeConfig
+}
+
+func TestImportVolumeFailures(t *testing.T) {
+	const (
+		backendName    = "backend82"
+		scName         = "sc01"
+		volumeName     = "volume82"
+		originalName01 = "origVolume01"
+	)
+
+	createPVandPVCError := func(volExternal *storage.VolumeExternal, driverType string) error {
+		return fmt.Errorf("failed to create PV")
+	}
+
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName)
+
+	_, err := orchestrator.ImportVolume(volumeConfig, originalName01, backendName, false, createPVandPVCError)
+	// verify that importVolumeCleanup renamed volume to originalName
+	backend := orchestrator.backends[backendName]
+	volExternal, err := backend.Driver.GetVolumeExternal(originalName01)
+	if err != nil {
+		t.Errorf("falied to get volumeExternal for %s", originalName01)
+	}
+	if volExternal.Config.Size != "1000000000" {
+		t.Errorf("falied to verify %s size %s", originalName01, volExternal.Config.Size)
+	}
+
+	// verify that we cleaned up the persisted state
+	if _, ok := orchestrator.volumes[volumeConfig.Name]; ok {
+		t.Errorf("volume %s should not exist in orchestrator's volume cache", volumeConfig.Name)
+	}
+	persistedVolume, err := orchestrator.storeClient.GetVolume(volumeConfig.Name)
+	if persistedVolume != nil {
+		t.Errorf("volume %s should not be persisted", volumeConfig.Name)
+	} else {
+		t.Logf("err: %v", volumeConfig.Name)
+	}
+	t.Logf("o.storeClient type %T", orchestrator.storeClient)
+
+}
+
+func TestImportVolume(t *testing.T) {
+	const (
+		backendName    = "backend02"
+		scName         = "sc01"
+		volumeName     = "volume01"
+		originalName01 = "origVolume01"
+		originalName02 = "origVolume02"
+	)
+
+	createPVandPVCNoOp := func(volExternal *storage.VolumeExternal, driverType string) error {
+		return nil
+	}
+
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName)
+
+	// The volume exists on the backend with the original name.
+	// Set volumeConfig.InternalName to the expected volumeName post import.
+	volumeConfig.InternalName = volumeName
+
+	notManagedVolConfig := volumeConfig.ConstructClone()
+	notManagedVolConfig.Name = "volume02"
+	notManagedVolConfig.InternalName = "volume02"
+
+	// Test configuration
+	for _, c := range []struct {
+		name                 string
+		volumeConfig         *storage.VolumeConfig
+		originalName         string
+		notManaged           bool
+		createFunc           Operation
+		expectedInternalName string
+	}{
+		{name: "managed", volumeConfig: volumeConfig, originalName: originalName01, notManaged: false,
+			createFunc: createPVandPVCNoOp, expectedInternalName: volumeConfig.InternalName},
+		{name: "notManaged", volumeConfig: notManagedVolConfig, originalName: originalName02, notManaged: true,
+			createFunc: createPVandPVCNoOp, expectedInternalName: originalName02},
+	} {
+		// The test code
+		volExternal, err := orchestrator.ImportVolume(c.volumeConfig, c.originalName, backendName, c.notManaged, c.createFunc)
+		if err != nil {
+			t.Errorf("%s: unexpected error %v", c.name, err)
+		} else {
+			if volExternal.Config.InternalName != c.expectedInternalName {
+				t.Errorf("%s: expected matching internal names %s - %s",
+					c.name, c.expectedInternalName, volExternal.Config.InternalName)
+			}
+			if _, ok := orchestrator.volumes[volExternal.Config.Name]; ok {
+				if c.notManaged {
+					t.Errorf("%s: notManaged volume %s should not be persisted", c.name, volExternal.Config.Name)
+				}
+			} else if !c.notManaged {
+				t.Errorf("%s: managed volume %s should be persisted", c.name, volExternal.Config.Name)
+			}
+
+		}
+
+	}
+}
+
+func TestValidateImportVolume(t *testing.T) {
+	const (
+		backendName  = "backend01"
+		scName       = "sc01"
+		volumeName   = "volume01"
+		originalName = "origVolume01"
+	)
+
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName)
+
+	_, err := orchestrator.AddVolume(volumeConfig)
+	if err != nil {
+		t.Fatal("Unable to add volume: ", err)
+	}
+
+	// The volume exists on the backend with the original name.
+	// Set volumeConfig.InternalName to the expected volumeName post import.
+	volumeConfig.InternalName = volumeName
+
+	unknownSCVolConfig := volumeConfig.ConstructClone()
+	unknownSCVolConfig.StorageClass = "sc02"
+
+	accessModeVolConfig := volumeConfig.ConstructClone()
+	accessModeVolConfig.AccessMode = config.ReadWriteMany
+	accessModeVolConfig.Protocol = config.Block
+
+	protocolVolConfig := volumeConfig.ConstructClone()
+	protocolVolConfig.Protocol = config.Block
+
+	// Test configuration
+	for _, c := range []struct {
+		name         string
+		volumeConfig *storage.VolumeConfig
+		originalName string
+		valid        bool
+		error        string
+	}{
+		{name: "volumeConfig", volumeConfig: volumeConfig, originalName: originalName, valid: true, error: ""},
+		{name: "pvExists", volumeConfig: volumeConfig, originalName: volumeName, valid: false, error: "already exists"},
+		{name: "unknownSC", volumeConfig: unknownSCVolConfig, originalName: originalName, valid: false, error: "unknown storage class"},
+		{name: "missingVolume", volumeConfig: volumeConfig, originalName: "novol", valid: false, error: "volume novol was not found"},
+		{name: "accessMode", volumeConfig: accessModeVolConfig, originalName: originalName, valid: false, error: "incompatible access mode"},
+		{name: "protocol", volumeConfig: protocolVolConfig, originalName: originalName, valid: false, error: "does not match backend protocol file"},
+	} {
+		// The test code
+		err = orchestrator.validateImportVolume(c.volumeConfig, c.originalName, orchestrator.backends[backendName])
+		if err != nil {
+			if c.valid {
+				t.Errorf("%s: unexpected error %v", c.name, err)
+			} else {
+				if !strings.Contains(err.Error(), c.error) {
+					t.Errorf("%s: expected %s but received error %v", c.name, c.error, err)
+				}
+			}
+		} else if !c.valid {
+			t.Errorf("%s: expected error but passed test", c.name)
+		}
+
 	}
 }
 

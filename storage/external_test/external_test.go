@@ -32,6 +32,7 @@ func TestConstructExternalBackend(t *testing.T) {
 				},
 			},
 		},
+		[]fake.Volume{},
 	)
 	if err != nil {
 		t.Fatal("Unable to construct config JSON.")

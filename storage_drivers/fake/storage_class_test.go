@@ -16,7 +16,8 @@ import (
 
 func TestAttributeMatches(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	fakeConfig, err := NewFakeStorageDriverConfigJSON("mock", config.File, mockPools)
+	volumes := make([]fake.Volume, 0)
+	fakeConfig, err := NewFakeStorageDriverConfigJSON("mock", config.File, mockPools, volumes)
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
@@ -324,7 +325,8 @@ func TestSpecificBackends(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.name, config.File, pools)
+		volumes := make([]fake.Volume, 0)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.name, config.File, pools, volumes)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
@@ -441,7 +443,8 @@ func TestRegex(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		volumes := make([]fake.Volume, 0)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools, volumes)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
@@ -664,7 +667,8 @@ func TestRegex2(t *testing.T) {
 		for _, poolName := range c.poolNames {
 			pools[poolName] = mockPools[poolName]
 		}
-		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools)
+		volumes := make([]fake.Volume, 0)
+		fakeConfig, err := NewFakeStorageDriverConfigJSON(c.backendName, config.File, pools, volumes)
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}

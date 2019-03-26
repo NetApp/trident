@@ -407,6 +407,20 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			}).Error("Volume for the resize transaction wasn't found.")
 		}
 		return o.resizeVolumeCleanup(err, vol, v)
+
+	case persistentstore.ImportVolume:
+		// There are a few possible states:
+		// 1) We created a PVC.
+		// 2) We created a PVC and renamed the volume on the backend.
+		// 3) We created a PVC, renamed the volume, and persisted the volume.
+		// 4) We created a PVC, renamed the vol, persisted the vol, and created a PV
+		// If the import failed the PVC and PV can be deleted by the user and the
+		// import can be attempted again.
+
+		// TODO now what
+		// Determine the original name
+		// Remove vol if persisted
+
 	}
 
 	return nil
@@ -1020,6 +1034,46 @@ func (o *TridentOrchestrator) GetVolumeExternal(volumeName string, backendName s
 	return volExternal, nil
 }
 
+func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeConfig, originalName string, backend *storage.Backend) error {
+
+	for volumeName, volume := range o.volumes {
+		if volume.Config.InternalName == originalName && volume.Backend == backend.Name {
+			return foundError(fmt.Sprintf("PV %s already exists for volume %s", originalName, volumeName))
+		}
+	}
+
+	sc, ok := o.storageClasses[volumeConfig.StorageClass]
+	if !ok {
+		return fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
+	}
+
+	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
+		return nil, fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backendName)
+	}
+
+	if backend.Driver.Get(originalName) != nil {
+		return notFoundError(fmt.Sprintf("volume %s was not found", originalName))
+	}
+
+	// Check that the specified protocol and access mode are compatible
+	_, err := o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	if err != nil {
+		return err
+	}
+
+	// Validate the protocol
+	if len(volumeConfig.Protocol) == 0 {
+		volumeConfig.Protocol = backend.GetProtocol()
+	} else {
+		backendProtocol := backend.GetProtocol()
+		if volumeConfig.Protocol != backendProtocol {
+			return fmt.Errorf("requested protocol %s does not match backend protocol %s", volumeConfig.Protocol, backendProtocol)
+		}
+	}
+
+	return nil
+}
+
 func (o *TridentOrchestrator) ImportVolume(
 	volumeConfig *storage.VolumeConfig, originalName string, backendName string, notManaged bool, createPVandPVC Operation,
 ) (externalVol *storage.VolumeExternal, err error) {
@@ -1037,45 +1091,14 @@ func (o *TridentOrchestrator) ImportVolume(
 		"backendName":  backendName,
 	}).Debug("Orchestrator#ImportVolume")
 
-	for volumeName, volume := range o.volumes {
-		if volume.Config.InternalName == originalName && volume.Backend == backendName {
-			return nil, foundError(fmt.Sprintf("PV %s already exists for volume %s",
-				originalName, volumeName))
-		}
-	}
-
 	backend, ok := o.backends[backendName]
 	if !ok {
 		return nil, notFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
 
-	sc, ok := o.storageClasses[volumeConfig.StorageClass]
-	if !ok {
-		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
-	}
-
-	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
-		return nil, fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backendName)
-	}
-
-	if backend.Driver.Get(originalName) != nil {
-		return nil, notFoundError(fmt.Sprintf("volume %s was not found", originalName))
-	}
-
-	// Check that the specified protocol and access mode are compatible
-	_, err = o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	err = o.validateImportVolume(volumeConfig, originalName, backend)
 	if err != nil {
 		return nil, err
-	}
-
-	// Validate the protocol
-	if len(volumeConfig.Protocol) == 0 {
-		volumeConfig.Protocol = backend.GetProtocol()
-	} else {
-		backendProtocol := backend.GetProtocol()
-		if volumeConfig.Protocol != backendProtocol {
-			return nil, fmt.Errorf("requested protocol %s does not match backend protocol %s", volumeConfig.Protocol, backendProtocol)
-		}
 	}
 
 	// Add transaction in case operation must be rolled back
@@ -1251,7 +1274,12 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 			log.WithFields(log.Fields{
 				"InternalName": volumeConfig.InternalName,
 				"originalName": originalName,
+				"cleanupErr":   cleanupErr,
 			}).Warn("importVolumeCleanup: renamed volume to originalName.")
+
+			// Remove the volume from memory since import failed.
+			delete(o.volumes, volumeConfig.Name)
+			log.Warnf("importVolumeCleanup: removed volume %s from memory", volumeConfig.Name)
 		}
 	}
 	txErr = o.deleteVolumeTransaction(volTxn)
@@ -1260,12 +1288,6 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 	}
 
 	if cleanupErr != nil || txErr != nil {
-		if !notManaged {
-			// Remove the volume from memory since import failed.
-			delete(o.volumes, volumeConfig.Name)
-			log.Debug("importVolumeCleanup: removed volume from memory")
-		}
-
 		// Report on all errors we encountered.
 		errList := make([]string, 0, 3)
 		for _, e := range []error{err, cleanupErr, txErr} {

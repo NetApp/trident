@@ -30,8 +30,9 @@ func getPools(count int) map[string]*fake.StoragePool {
 // TestNewConfig tests that marshaling works properly.  This has broken
 // in the past.
 func TestNewConfig(t *testing.T) {
+	volumes := make([]fake.Volume, 0)
 	_, err := NewFakeStorageDriverConfigJSON("test", config.File,
-		getPools(2))
+		getPools(2), volumes)
 	if err != nil {
 		t.Fatal("Unable to generate config JSON:  ", err)
 	}
