@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -525,8 +525,11 @@ func (d *SANStorageDriver) Create(
 		"docker-name": name,
 	}
 
-	v, err := d.GetVolume(name)
-	if err == nil && v.VolumeID != 0 {
+	exists, err := d.VolumeExists(name)
+	if err != nil {
+		return err
+	}
+	if exists {
 		log.WithField("volume", name).Warning("Found existing volume.")
 		return drivers.NewVolumeExistsError(name)
 	}
@@ -672,15 +675,21 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	}
 
 	var req api.CloneVolumeRequest
-	telemetry, _ := json.Marshal(d.getTelemetry())
+	telemetry, err := json.Marshal(d.getTelemetry())
+	if err != nil {
+		return fmt.Errorf("could not read telemetry data; %v", err)
+	}
 	var meta = map[string]string{
 		"trident":     string(telemetry),
 		"docker-name": name,
 	}
 
 	// Check to see if the clone already exists
-	checkVolume, err := d.GetVolume(name)
-	if err == nil && checkVolume.VolumeID != 0 {
+	exists, err := d.VolumeExists(name)
+	if err != nil {
+		return err
+	}
+	if exists {
 		log.Warningf("Found existing volume %s, aborting clone operation.", name)
 		return errors.New("volume with requested name already exists")
 	}
@@ -728,13 +737,58 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return nil
 }
 
-func (c *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
 
-	return errors.New("import is not implemented")
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "Import",
+			"Type":         "SANStorageDriver",
+			"originalName": originalName,
+			"notManaged":   notManaged,
+		}
+		log.WithFields(fields).Debug(">>>> Import")
+		defer log.WithFields(fields).Debug("<<<< Import")
+	}
+
+	volume, err := d.GetVolume(originalName)
+	if err != nil {
+		return fmt.Errorf("could not import volume %s; %v", originalName, err)
+	}
+
+	// Get the volume size
+	volConfig.Size = strconv.FormatInt(int64(volume.TotalSize), 10)
+
+	// We cannot rename solidfire volumes, so internal name should match the imported name
+	volConfig.InternalName = originalName
+
+	if !notManaged {
+		// Gather and update telemetry labels
+		telemetry, err := json.Marshal(d.getTelemetry())
+		if err != nil {
+			return fmt.Errorf("could not read Solidfire telementry; %v", err)
+		}
+		attrs, ok := volume.Attributes.(map[string]interface{})
+		if !ok {
+			return errors.New("could not read volume attributes")
+		}
+		attrs["trident"] = string(telemetry)
+		attrs["docker-name"] = originalName
+		attrs["fstype"] = strings.ToLower(volConfig.FileSystem)
+
+		var req api.ModifyVolumeRequest
+		req.VolumeID = volume.VolumeID
+		req.Attributes = attrs
+		if err = d.Client.ModifyVolume(&req); err != nil {
+			return fmt.Errorf("could not import volume %s; %v", originalName, err)
+		}
+	}
+
+	return nil
 }
 
-func (d *SANStorageDriver) Rename(name string, new_name string) error {
-	return errors.New("rename is not implemented")
+func (d *SANStorageDriver) Rename(name string, newName string) error {
+	// Solidfire cannot rename volumes
+	return nil
 }
 
 // Destroy the requested docker volume
@@ -880,8 +934,13 @@ func (d *SANStorageDriver) Get(name string) error {
 		defer log.WithFields(fields).Debug("<<<< Get")
 	}
 
-	_, err := d.GetVolume(name)
-	return err
+	exists, err := d.VolumeExists(name)
+	if err != nil {
+		return fmt.Errorf("could not locate volume %s; %v", name, err)
+	} else if !exists {
+		return fmt.Errorf("could not locate volume %s", name)
+	}
+	return nil
 }
 
 // getVolumes returns all volumes for the configured tenant.  The
@@ -908,7 +967,7 @@ func (d *SANStorageDriver) getVolumes() (map[string]api.Volume, error) {
 	return volMap, nil
 }
 
-func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
+func (d *SANStorageDriver) getVolumesWithName(name string) ([]api.Volume, error) {
 	var vols []api.Volume
 	var req api.ListVolumesForAccountRequest
 
@@ -923,7 +982,7 @@ func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
 	volumes, err := d.Client.ListVolumesForAccount(&req)
 	if err != nil {
 		log.Errorf("Error encountered requesting volumes in SolidFire:getVolume: %+v", err)
-		return api.Volume{}, errors.New("device reported API error")
+		return nil, errors.New("device reported API error")
 	}
 
 	legacyName := MakeSolidFireName(d.LegacyNamePrefix + name)
@@ -941,10 +1000,35 @@ func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
 			vols = append(vols, v)
 		}
 	}
+
+	return vols, nil
+}
+
+// GetVolume returns volume, if the name of the volume is unique
+func (d *SANStorageDriver) GetVolume(name string) (api.Volume, error) {
+	vols, err := d.getVolumesWithName(name)
+	if err != nil {
+		return api.Volume{}, err
+	}
 	if len(vols) == 0 {
 		return api.Volume{}, errors.New("volume not found")
 	}
+	if len(vols) > 1 {
+		return api.Volume{}, fmt.Errorf("ambiguous volume name; %d volumes found with name %s", len(vols), name)
+	}
 	return vols[0], nil
+}
+
+// VolumeExists returns true if at least one volume with name exists
+func (d *SANStorageDriver) VolumeExists(name string) (bool, error) {
+	vols, err := d.getVolumesWithName(name)
+	if err != nil {
+		return false, err
+	}
+	if len(vols) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
@@ -1013,7 +1097,7 @@ func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error 
 
 	if volConfig.CloneSourceVolume != "" {
 		volConfig.CloneSourceVolumeInternal =
-			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
+			d.GetInternalVolumeName(volConfig.CloneSourceVolumeInternal)
 	}
 
 	return nil

@@ -1,6 +1,4 @@
-/*
- * Copyright 2018 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -695,6 +693,9 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 	storageClass := GetPersistentVolumeClaimClass(pvc)
 	annotations := p.processStorageClassAnnotations(pvc, storageClass)
 	volConfig := getVolumeConfig(accessModes, uniqueName, claim.Spec.Resources.Requests[v1.ResourceStorage], annotations)
+
+	// We don't really know what filesystem is applied to imported volumes, so to be safe we shouldn't set it
+	volConfig.FileSystem = ""
 
 	// This func is passed to core when ImportVolume is called. The func is created with the locally scoped
 	// context but runs in orchestrator_core inside a volume transaction. This allows needed cleanup to be
