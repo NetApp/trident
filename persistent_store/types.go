@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -7,6 +7,7 @@ import (
 
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 type StoreType string
@@ -61,6 +62,11 @@ type Client interface {
 	GetStorageClass(scName string) (*storageclass.Persistent, error)
 	GetStorageClasses() ([]*storageclass.Persistent, error)
 	DeleteStorageClass(sc *storageclass.StorageClass) error
+
+	AddOrUpdateNode(n *utils.Node) error
+	GetNode(nName string) (*utils.Node, error)
+	GetNodes() ([]*utils.Node, error)
+	DeleteNode(n *utils.Node) error
 }
 
 type EtcdClient interface {

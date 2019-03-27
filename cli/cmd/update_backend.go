@@ -16,10 +16,15 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
+var (
+	updateFilename   string
+	updateBase64Data string
+)
+
 func init() {
 	updateCmd.AddCommand(updateBackendCmd)
-	updateBackendCmd.Flags().StringVarP(&filename, "filename", "f", "", "Path to YAML or JSON file")
-	updateBackendCmd.Flags().StringVarP(&b64Data, "base64", "", "", "Base64 encoding")
+	updateBackendCmd.Flags().StringVarP(&updateFilename, "filename", "f", "", "Path to YAML or JSON file")
+	updateBackendCmd.Flags().StringVarP(&updateBase64Data, "base64", "", "", "Base64 encoding")
 	updateBackendCmd.Flags().MarkHidden("base64")
 }
 
@@ -29,7 +34,7 @@ var updateBackendCmd = &cobra.Command{
 	Aliases: []string{"b"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		jsonData, err := getBackendData()
+		jsonData, err := getBackendData(updateFilename, updateBase64Data)
 		if err != nil {
 			return err
 		}

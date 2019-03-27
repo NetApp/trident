@@ -74,26 +74,27 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 
 	log.WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
 
-	if initializeErr := storageDriver.Initialize(
-		config.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
-		err = fmt.Errorf("problem initializing storage driver '%s': %v",
-			commonConfig.StorageDriverName, initializeErr)
+	// Initialize the driver.  If this fails, return a 'failed' backend object.
+	if err = storageDriver.Initialize(config.CurrentDriverContext, configJSON, commonConfig); err != nil {
 
-		log.WithFields(log.Fields{
-			"initializeErr": initializeErr.Error(),
-			"err":           err.Error(),
-		}).Debug("storageDriver.Initialize")
+		log.WithField("error", err).Error("Could not initialize storage driver.")
 
-		return storage.NewFailedStorageBackend(storageDriver), err
+		return storage.NewFailedStorageBackend(storageDriver),
+			fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
+	} else {
+		log.WithField("driver", commonConfig.StorageDriverName).Info("Storage driver initialized.")
 	}
 
-	sb, err = storage.NewStorageBackend(storageDriver)
-	log.WithFields(log.Fields{
-		"sb":  sb,
-		"err": err,
-	}).Debug("NewStorageBackend")
+	// Create the backend object.  If this calls the driver and fails, return a 'failed' backend object.
+	if sb, err = storage.NewStorageBackend(storageDriver); err != nil {
 
-	log.WithField("driver", commonConfig.StorageDriverName).Debug("Storage driver initialized.")
+		log.WithField("error", err).Error("Could not create storage backend.")
+
+		return storage.NewFailedStorageBackend(storageDriver),
+			fmt.Errorf("problem creating storage backend '%s': %v", commonConfig.StorageDriverName, err)
+	} else {
+		log.WithField("backend", sb).Info("Created new storage backend.")
+	}
 
 	return sb, err
 }

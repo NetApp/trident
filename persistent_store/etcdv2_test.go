@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -19,6 +19,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -717,5 +718,101 @@ func TestEtcdv2AddStorageClass(t *testing.T) {
 
 	if err := p.DeleteStorageClass(bronzeClass); err != nil {
 		t.Fatal(err.Error())
+	}
+}
+
+func TestEtcdv2AddGetDeleteNode(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+	initialNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	retrievedNode, err := p.GetNode(initialNode.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !reflect.DeepEqual(retrievedNode, initialNode) {
+		t.Errorf("Incorrect node added to persistence; expected %v, found %v", initialNode, retrievedNode)
+	}
+
+	if err := p.DeleteNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestEtcdv2UpdateNode(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+	initialNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode)
+
+	updateNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+
+	if err := p.AddOrUpdateNode(updateNode); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	retrievedNode, err := p.GetNode(initialNode.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !reflect.DeepEqual(retrievedNode, updateNode) {
+		t.Errorf("Incorrect node added to persistence; expected %v, found %v", updateNode, retrievedNode)
+	}
+}
+
+func TestEtcdv2GetNodes(t *testing.T) {
+	p, err := NewEtcdClientV2(*etcdV2)
+	initialNodes := make([]*utils.Node, 0)
+	initialNode1 := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode1); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode1)
+	initialNodes = append(initialNodes, initialNode1)
+
+	initialNode2 := &utils.Node{
+		Name: "testNode2",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode2); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode2)
+	initialNodes = append(initialNodes, initialNode2)
+
+	retrievedNodes, err := p.GetNodes()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !unorderedNodeSlicesEqual(retrievedNodes, initialNodes) {
+		t.Error("Incorrect nodes returned from persistence")
 	}
 }

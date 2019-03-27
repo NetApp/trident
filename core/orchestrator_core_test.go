@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -13,13 +13,14 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/storage_class"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -2018,5 +2019,118 @@ func TestOrchestratorNotReady(t *testing.T) {
 	err = orchestrator.DeleteStorageClass("")
 	if !IsNotReadyError(err) {
 		t.Errorf("Expected DeleteStorageClass to return an error.")
+	}
+}
+
+func TestAddNode(t *testing.T) {
+	node := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+	orchestrator := getOrchestrator()
+	if err := orchestrator.AddNode(node); err != nil {
+		t.Errorf("adding node failed; %v", err)
+	}
+}
+
+func TestGetNode(t *testing.T) {
+	orchestrator := getOrchestrator()
+	expectedNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+	unexpectedNode := &utils.Node{
+		Name: "testNode2",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+	initialNodes := map[string]*utils.Node{}
+	initialNodes[expectedNode.Name] = expectedNode
+	initialNodes[unexpectedNode.Name] = unexpectedNode
+	orchestrator.nodes = initialNodes
+
+	actualNode, err := orchestrator.GetNode(expectedNode.Name)
+	if err != nil {
+		t.Errorf("error getting node; %v", err)
+	}
+
+	if actualNode != expectedNode {
+		t.Errorf("Did not get expected node back; expected %+v, got %+v", expectedNode, actualNode)
+	}
+}
+
+func TestListNodes(t *testing.T) {
+	orchestrator := getOrchestrator()
+	expectedNode1 := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+	expectedNode2 := &utils.Node{
+		Name: "testNode2",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+	initialNodes := map[string]*utils.Node{}
+	initialNodes[expectedNode1.Name] = expectedNode1
+	initialNodes[expectedNode2.Name] = expectedNode2
+	orchestrator.nodes = initialNodes
+	expectedNodes := []*utils.Node{expectedNode1, expectedNode2}
+
+	actualNodes, err := orchestrator.ListNodes()
+	if err != nil {
+		t.Errorf("error listing nodes; %v", err)
+	}
+
+	if !unorderedNodeSlicesEqual(actualNodes, expectedNodes) {
+		t.Errorf("node list values do not match; expected %v, found %v", expectedNodes, actualNodes)
+	}
+}
+
+func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	// create a map of node pointers -> int
+	diff := make(map[*utils.Node]int, len(x))
+	for _, _x := range x {
+		// 0 value for int is 0, so just increment a counter for the string
+		diff[_x]++
+	}
+	for _, _y := range y {
+		// If the node _y is not in diff bail out early
+		if _, ok := diff[_y]; !ok {
+			return false
+		}
+		diff[_y] -= 1
+		if diff[_y] == 0 {
+			delete(diff, _y)
+		}
+	}
+	if len(diff) == 0 {
+		return true
+	}
+	return false
+}
+
+func TestDeleteNode(t *testing.T) {
+	orchestrator := getOrchestrator()
+	initialNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+	initialNodes := map[string]*utils.Node{}
+	initialNodes[initialNode.Name] = initialNode
+	orchestrator.nodes = initialNodes
+
+	if err := orchestrator.DeleteNode(initialNode.Name); err != nil {
+		t.Errorf("error deleting node; %v", err)
+	}
+
+	if _, ok := orchestrator.nodes[initialNode.Name]; ok {
+		t.Errorf("node was not properly deleted")
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -28,6 +28,7 @@ type TridentOrchestrator struct {
 	frontends      map[string]frontend.Plugin
 	mutex          *sync.Mutex
 	storageClasses map[string]*storageclass.StorageClass
+	nodes          map[string]*utils.Node
 	storeClient    persistentstore.Client
 	bootstrapped   bool
 	bootstrapError error
@@ -40,6 +41,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		volumes:        make(map[string]*storage.Volume),
 		frontends:      make(map[string]frontend.Plugin),
 		storageClasses: make(map[string]*storageclass.StorageClass),
+		nodes:          make(map[string]*utils.Node),
 		mutex:          &sync.Mutex{},
 		storeClient:    client,
 		bootstrapped:   false,
@@ -249,12 +251,27 @@ func (o *TridentOrchestrator) bootstrapVolTxns() error {
 	return nil
 }
 
+func (o *TridentOrchestrator) bootstrapNodes() error {
+	nodes, err := o.storeClient.GetNodes()
+	if err != nil {
+		return err
+	}
+	for _, n := range nodes {
+		log.WithFields(log.Fields{
+			"node":    n.Name,
+			"handler": "Bootstrap",
+		}).Info("Added an existing node.")
+		o.nodes[n.Name] = n
+	}
+	return nil
+}
+
 func (o *TridentOrchestrator) bootstrap() error {
 	// Fetching backend information
 
 	type bootstrapFunc func() error
 	for _, f := range []bootstrapFunc{o.bootstrapBackends,
-		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns} {
+		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapVolTxns, o.bootstrapNodes} {
 		err := f()
 		if err != nil {
 			if persistentstore.MatchKeyNotFoundErr(err) {
@@ -345,6 +362,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 		// the volume is still in the persistent store. In this case, the
 		// volume should have been loaded into memory when we bootstrapped.
 		if _, ok := o.volumes[v.Config.Name]; ok {
+
 			err := o.deleteVolume(v.Config.Name)
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -406,6 +424,16 @@ func (o *TridentOrchestrator) AddFrontend(f frontend.Plugin) {
 		"name": name,
 	}).Info("Added frontend.")
 	o.frontends[name] = f
+}
+
+func (o *TridentOrchestrator) GetFrontend(name string) (frontend.Plugin, error) {
+	if fe, ok := o.frontends[name]; !ok {
+		err := fmt.Errorf("requested frontend %s does not exist", name)
+		return nil, err
+	} else {
+		log.WithField("name", name).Debug("Found requested frontend.")
+		return fe, nil
+	}
 }
 
 func (o *TridentOrchestrator) validateBackendUpdate(
@@ -963,6 +991,153 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 	return vol.ConstructExternal(), nil
 }
 
+// This func is used by volume import so it doesn't check core's o.volumes to see if the
+// volume exists or not. Instead it asks the driver if the volume exists before requesting
+// the volume size. Returns the VolumeExternal representation of the volume.
+func (o *TridentOrchestrator) GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	log.WithFields(log.Fields{
+		"originalName": volumeName,
+		"backendName":  backendName,
+	}).Debug("Orchestrator#GetVolumeExternal")
+
+	backend, ok := o.backends[backendName]
+	if !ok {
+		return nil, notFoundError(fmt.Sprintf("backend %s not found", backendName))
+	}
+
+	volExternal, err := backend.GetVolumeExternal(volumeName)
+	if err != nil {
+		return nil, err
+	}
+
+	return volExternal, nil
+}
+
+func (o *TridentOrchestrator) ImportVolume(
+	volumeConfig *storage.VolumeConfig, originalName string, backendName string, notManaged bool, createPVandPVC Operation,
+) (externalVol *storage.VolumeExternal, err error) {
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	log.WithFields(log.Fields{
+		"volumeConfig": volumeConfig,
+		"originalName": originalName,
+		"backendName":  backendName,
+	}).Debug("Orchestrator#ImportVolume")
+
+	for volumeName, volume := range o.volumes {
+		if volume.Config.InternalName == originalName && volume.Backend == backendName {
+			return nil, foundError(fmt.Sprintf("PV %s already exists for volume %s",
+				originalName, volumeName))
+		}
+	}
+
+	backend, ok := o.backends[backendName]
+	if !ok {
+		return nil, notFoundError(fmt.Sprintf("backend %s not found", backendName))
+	}
+
+	sc, ok := o.storageClasses[volumeConfig.StorageClass]
+	if !ok {
+		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
+	}
+
+	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
+		return nil, fmt.Errorf("storageClass %s is not added to backend %s", volumeConfig.StorageClass, backendName)
+	}
+
+	if backend.Driver.Get(originalName) != nil {
+		return nil, notFoundError(fmt.Sprintf("volume %s was not found", originalName))
+	}
+
+	// Check that the specified protocol and access mode are compatible
+	_, err = o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the protocol
+	if len(volumeConfig.Protocol) == 0 {
+		volumeConfig.Protocol = backend.GetProtocol()
+	} else {
+		backendProtocol := backend.GetProtocol()
+		if volumeConfig.Protocol != backendProtocol {
+			return nil, fmt.Errorf("requested protocol %s does not match backend protocol %s", volumeConfig.Protocol, backendProtocol)
+		}
+	}
+
+	// Add transaction in case operation must be rolled back
+	volTxn := &persistentstore.VolumeTransaction{
+		Config: volumeConfig,
+		Op:     persistentstore.ImportVolume,
+	}
+	if err = o.addVolumeTransaction(volTxn); err != nil {
+		return nil, fmt.Errorf("failed to add volume transaction: %v", err)
+	}
+
+	// Recover function in case or error
+	defer func() {
+		err = o.importVolumeCleanup(err, volumeConfig, originalName, backend, notManaged, volTxn)
+	}()
+
+	volume, err := backend.ImportVolume(volumeConfig, originalName, notManaged)
+	if err != nil {
+		return nil, fmt.Errorf("failed to import volume %s on backend %s: %v", originalName, backendName, err)
+	}
+
+	if !notManaged {
+		// The volume is managed and is persisted.
+		err = o.storeClient.AddVolume(volume)
+		if err != nil {
+			return nil, fmt.Errorf("failed to persist imported volume data: %v", err)
+		}
+		o.volumes[volumeConfig.Name] = volume
+	}
+
+	volExternal := volume.ConstructExternal()
+
+	driverType, err := o.getDriverTypeForVolume(volExternal.Backend)
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine driver type from volume %v", volExternal)
+	}
+
+	log.WithFields(log.Fields{
+		"backend":        volExternal.Backend,
+		"name":           volExternal.Config.Name,
+		"internalName":   volExternal.Config.InternalName,
+		"size":           volExternal.Config.Size,
+		"protocol":       volExternal.Config.Protocol,
+		"fileSystem":     volExternal.Config.FileSystem,
+		"accessInfo":     volExternal.Config.AccessInfo,
+		"accessMode":     volExternal.Config.AccessMode,
+		"encryption":     volExternal.Config.Encryption,
+		"exportPolicy":   volExternal.Config.ExportPolicy,
+		"snapshotPolicy": volExternal.Config.SnapshotPolicy,
+		"driverType":     driverType,
+	}).Debug("Driver processed volume import.")
+
+	// This function includes cleanup logic. Thus it must be called at the end of the ImportVolume func.
+	err = createPVandPVC(volExternal, driverType)
+	if err != nil {
+		log.Errorf("error occurred while creating PV and PVC %s: %v", volExternal.Config.Name, err)
+		return nil, err
+	}
+
+	return volExternal, nil
+}
+
 // addVolumeTransaction is called from the volume create, clone, and resize
 // methods to save a record of the operation in case it fails and must be
 // cleaned up later.
@@ -1063,6 +1238,50 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 	return err
 }
 
+func (o *TridentOrchestrator) importVolumeCleanup(
+	err error, volumeConfig *storage.VolumeConfig, originalName string, backend *storage.Backend, notManaged bool, volTxn *persistentstore.VolumeTransaction) error {
+
+	var (
+		cleanupErr, txErr error
+	)
+	if err != nil {
+		// We failed somewhere. Most likely we failed to rename the volume or retrieve its size.
+		if !notManaged {
+			cleanupErr = backend.Driver.Rename(volumeConfig.InternalName, originalName)
+			log.WithFields(log.Fields{
+				"InternalName": volumeConfig.InternalName,
+				"originalName": originalName,
+			}).Warn("importVolumeCleanup: renamed volume to originalName.")
+		}
+	}
+	txErr = o.deleteVolumeTransaction(volTxn)
+	if txErr != nil {
+		txErr = fmt.Errorf("unable to clean up transaction:  %v", txErr)
+	}
+
+	if cleanupErr != nil || txErr != nil {
+		if !notManaged {
+			// Remove the volume from memory since import failed.
+			delete(o.volumes, volumeConfig.Name)
+			log.Debug("importVolumeCleanup: removed volume from memory")
+		}
+
+		// Report on all errors we encountered.
+		errList := make([]string, 0, 3)
+		for _, e := range []error{err, cleanupErr, txErr} {
+			if e != nil {
+				errList = append(errList, e.Error())
+			}
+		}
+		err = fmt.Errorf(strings.Join(errList, ", "))
+		log.Warnf("Unable to clean up artifacts of volume import: %v. "+
+			"Repeat importing the volume %v.",
+			err, originalName)
+	}
+
+	return err
+}
+
 func (o *TridentOrchestrator) GetVolume(volume string) (*storage.VolumeExternal, error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1086,7 +1305,15 @@ func (o *TridentOrchestrator) GetDriverTypeForVolume(vol *storage.VolumeExternal
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	if b, ok := o.backends[vol.Backend]; ok {
+	return o.getDriverTypeForVolume(vol.Backend)
+}
+
+// getDriverTypeForVolume does the necessary work to get the driver type.  It does
+// not construct a transaction, nor does it take locks; it assumes that the
+// caller will take care of both of these.  It also assumes that the backend
+// exists in memory.
+func (o *TridentOrchestrator) getDriverTypeForVolume(backendName string) (string, error) {
+	if b, ok := o.backends[backendName]; ok {
 		return b.Driver.Name(), nil
 	}
 	return config.UnknownDriver, nil
@@ -1684,6 +1911,69 @@ func (o *TridentOrchestrator) DeleteStorageClass(scName string) error {
 	return nil
 }
 
+func (o *TridentOrchestrator) AddNode(node *utils.Node) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	if err := o.storeClient.AddOrUpdateNode(node); err != nil {
+		return err
+	}
+	o.nodes[node.Name] = node
+	return nil
+}
+
+func (o *TridentOrchestrator) GetNode(nName string) (*utils.Node, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	node, found := o.nodes[nName]
+	if !found {
+		return nil, notFoundError(fmt.Sprintf("node %v was not found", nName))
+	}
+	return node, nil
+}
+
+func (o *TridentOrchestrator) ListNodes() ([]*utils.Node, error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	nodes := make([]*utils.Node, 0, len(o.nodes))
+	for _, node := range o.nodes {
+		nodes = append(nodes, node)
+	}
+	return nodes, nil
+}
+
+func (o *TridentOrchestrator) DeleteNode(nName string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	node, found := o.nodes[nName]
+	if !found {
+		return notFoundError(fmt.Sprintf("node %s not found", nName))
+	}
+	if err := o.storeClient.DeleteNode(node); err != nil {
+		return err
+	}
+	delete(o.nodes, nName)
+	return nil
+}
+
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(
 	backend *storage.Backend, newBackend bool,
 ) error {
@@ -1766,4 +2056,12 @@ func IsNotFoundError(err error) bool {
 	}
 	_, ok := err.(*NotFoundError)
 	return ok
+}
+
+func foundError(message string) error {
+	return &FoundError{message}
+}
+
+func unsupportedError(message string) error {
+	return &UnsupportedError{message}
 }

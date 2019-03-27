@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -21,7 +21,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -776,6 +776,59 @@ func (p *EtcdClientV3) GetStorageClasses() ([]*storageclass.Persistent, error) {
 // DeleteStorageClass deletes a storage class's state from the persistent store
 func (p *EtcdClientV3) DeleteStorageClass(sc *storageclass.StorageClass) error {
 	err := p.Delete(config.StorageClassURL + "/" + sc.GetName())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// AddOrUpdateNode adds/updates a CSI node object to the persistent store
+func (p *EtcdClientV3) AddOrUpdateNode(n *utils.Node) error {
+	nodeJSON, err := json.Marshal(n)
+	if err != nil {
+		return err
+	}
+	err = p.Set(config.NodeURL+"/"+n.Name, string(nodeJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *EtcdClientV3) GetNode(nName string) (*utils.Node, error) {
+	var node utils.Node
+	nodeJSON, err := p.Read(config.NodeURL + "/" + nName)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(nodeJSON), &node)
+	if err != nil {
+		return nil, err
+	}
+	return &node, nil
+}
+
+func (p *EtcdClientV3) GetNodes() ([]*utils.Node, error) {
+	nodeList := make([]*utils.Node, 0)
+	keys, err := p.ReadKeys(config.NodeURL)
+	if err != nil && MatchKeyNotFoundErr(err) {
+		return nodeList, nil
+	} else if err != nil {
+		return nil, err
+	}
+	for _, key := range keys {
+		node, err := p.GetNode(strings.TrimPrefix(key, config.NodeURL+"/"))
+		if err != nil {
+			return nil, err
+		}
+		nodeList = append(nodeList, node)
+	}
+	return nodeList, nil
+}
+
+// DeleteNode deletes a node from the persistent store
+func (p *EtcdClientV3) DeleteNode(n *utils.Node) error {
+	err := p.Delete(config.NodeURL + "/" + n.Name)
 	if err != nil {
 		return err
 	}

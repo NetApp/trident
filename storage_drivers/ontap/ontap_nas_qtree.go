@@ -343,6 +343,14 @@ func (d *NASQtreeStorageDriver) CreateClone(volConfig *storage.VolumeConfig) err
 	return errors.New("cloning with the ONTAP NAS Economy driver is not supported")
 }
 
+func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *NASQtreeStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
+}
+
 // Destroy the volume
 func (d *NASQtreeStorageDriver) Destroy(name string) error {
 

@@ -26,12 +26,6 @@ type Driver interface {
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate()
 	Create(volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
-	CreateClone(volConfig *VolumeConfig) error
-	Destroy(name string) error
-	Publish(name string, publishInfo *utils.VolumePublishInfo) error
-	SnapshotList(name string) ([]Snapshot, error)
-	Get(name string) error
-	Resize(name string, sizeBytes uint64) error
 	CreatePrepare(volConfig *VolumeConfig) error
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(volConfig *VolumeConfig) error
@@ -39,9 +33,17 @@ type Driver interface {
 	// constraints present on the backend and that will be unique to Trident.
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
+	CreateClone(volConfig *VolumeConfig) error
+	Import(volConfig *VolumeConfig, originalName string, notManaged bool) error
+	Destroy(name string) error
+	Rename(name string, newName string) error
+	Resize(name string, sizeBytes uint64) error
+	Get(name string) error
 	GetInternalVolumeName(name string) string
 	GetStorageBackendSpecs(backend *Backend) error
 	GetProtocol() tridentconfig.Protocol
+	Publish(name string, publishInfo *utils.VolumePublishInfo) error
+	SnapshotList(name string) ([]Snapshot, error)
 	StoreConfig(b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -289,6 +291,56 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 	vol := NewVolume(volConfig, b.Name, drivers.UnsetPool, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
+}
+
+func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) {
+
+	if b.Driver.Get(volumeName) != nil {
+		return nil, fmt.Errorf("volume %s was not found", volumeName)
+	}
+
+	volExternal, err := b.Driver.GetVolumeExternal(volumeName)
+	if err != nil {
+		return nil, fmt.Errorf("error requesting volume size: %v", err)
+	}
+	return volExternal, nil
+}
+
+func (b *Backend) ImportVolume(volConfig *VolumeConfig, originalName string, notManaged bool) (*Volume, error) {
+	log.WithFields(log.Fields{
+		"backend":    b.Name,
+		"volume":     originalName,
+		"NotManaged": notManaged,
+	}).Debug("Backend#ImportVolume")
+
+	if notManaged {
+		// The volume is not managed and will not be renamed during import.
+		volConfig.InternalName = originalName
+	} else {
+		// CreatePrepare should perform the following tasks:
+		// 1. Sanitize the volume name
+		// 2. Ensure no volume with the same name exists on that backend
+		if err := b.Driver.CreatePrepare(volConfig); err != nil {
+			return nil, fmt.Errorf("failed to prepare import volume: %v", err)
+		}
+	}
+
+	err := b.Driver.Import(volConfig, originalName, notManaged)
+	if err != nil {
+		return nil, fmt.Errorf("driver import volume failed: %v", err)
+	}
+
+	err = b.Driver.CreateFollowup(volConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed post import volume operations : %v", err)
+	}
+
+	volume := NewVolume(volConfig, b.Name, drivers.UnsetPool, false)
+	if !notManaged {
+		// The volume is managed
+		b.Volumes[volume.Config.Name] = volume
+	}
+	return volume, nil
 }
 
 func (b *Backend) ResizeVolume(volName, newSize string) error {

@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -92,6 +92,12 @@ var routes = Routes{
 		DeleteVolume,
 	},
 	Route{
+		"ImportVolume",
+		"POST",
+		config.VolumeURL + "/import",
+		ImportVolume,
+	},
+	Route{
 		"AddStorageClass",
 		"POST",
 		config.StorageClassURL,
@@ -114,5 +120,29 @@ var routes = Routes{
 		"DELETE",
 		config.StorageClassURL + "/{storageClass}",
 		DeleteStorageClass,
+	},
+	Route{
+		"AddOrUpdateNode",
+		"PUT",
+		config.NodeURL + "/{node}",
+		AddNode,
+	},
+	Route{
+		"GetNode",
+		"GET",
+		config.NodeURL + "/{node}",
+		GetNode,
+	},
+	Route{
+		"ListNodes",
+		"GET",
+		config.NodeURL,
+		ListNodes,
+	},
+	Route{
+		"DeleteNode",
+		"DELETE",
+		config.NodeURL + "/{node}",
+		DeleteNode,
 	},
 }

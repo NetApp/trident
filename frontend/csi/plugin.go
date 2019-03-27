@@ -3,7 +3,8 @@
 package csi
 
 import (
-	"errors"
+	"os"
+	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
@@ -12,6 +13,13 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend/rest"
+)
+
+const (
+	CSIController = "controller"
+	CSINode       = "node"
+	CSIAllInOne   = "allInOne"
 )
 
 type Plugin struct {
@@ -21,6 +29,9 @@ type Plugin struct {
 	nodeName string
 	version  string
 	endpoint string
+	role     string
+
+	restClient *RestClient
 
 	grpc NonBlockingGRPCServer
 
@@ -29,24 +40,7 @@ type Plugin struct {
 	vCap  []*csi.VolumeCapability_AccessMode
 }
 
-func NewPlugin(nodeName, endpoint string, orchestrator core.Orchestrator) (*Plugin, error) {
-
-	log.WithFields(log.Fields{
-		"name":    csiPluginName,
-		"version": tridentconfig.OrchestratorVersion,
-	}).Info("Initializing CSI frontend.")
-
-	if endpoint == "" {
-		err := errors.New("endpoint missing")
-		log.Error(err)
-		return nil, err
-	}
-
-	if nodeName == "" {
-		err := errors.New("node name missing")
-		log.Error(err)
-		return nil, err
-	}
+func NewControllerPlugin(nodeName, endpoint string, orchestrator core.Orchestrator) (*Plugin, error) {
 
 	p := &Plugin{
 		orchestrator: orchestrator,
@@ -54,6 +48,7 @@ func NewPlugin(nodeName, endpoint string, orchestrator core.Orchestrator) (*Plug
 		nodeName:     nodeName,
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
+		role:         CSIController,
 	}
 
 	// Define controller capabilities
@@ -63,10 +58,96 @@ func NewPlugin(nodeName, endpoint string, orchestrator core.Orchestrator) (*Plug
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
 	})
 
-	// Define node capabilities
+	// Define volume capabilities
+	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
+		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+		csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+	})
+
+	return p, nil
+}
+
+func NewNodePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
+	orchestrator core.Orchestrator) (*Plugin, error) {
+
+	p := &Plugin{
+		orchestrator: orchestrator,
+		name:         csiPluginName,
+		nodeName:     nodeName,
+		version:      tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:     endpoint,
+		role:         CSINode,
+	}
+
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 	})
+	port := "34571"
+	for _, envVar := range os.Environ() {
+		values := strings.Split(envVar, "=")
+		if values[0] == "TRIDENT_CSI_SERVICE_PORT" {
+			port = values[1]
+			break
+		}
+	}
+	restURL := "https://" + rest.ServerCertName + ":" + port
+	var err error
+	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Define volume capabilities
+	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
+		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+		csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+		csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+	})
+
+	return p, nil
+}
+
+func NewAllInOnePlugin(nodeName, endpoint, caCert, clientCert, clientKey string,
+	orchestrator core.Orchestrator) (*Plugin, error) {
+
+	p := &Plugin{
+		orchestrator: orchestrator,
+		name:         csiPluginName,
+		nodeName:     nodeName,
+		version:      tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:     endpoint,
+		role:         CSIAllInOne,
+	}
+
+	// Define controller capabilities
+	p.addControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
+		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
+		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
+	})
+
+	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
+		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+	})
+	port := "34571"
+	for _, envVar := range os.Environ() {
+		values := strings.Split(envVar, "=")
+		if values[0] == "TRIDENT_CSI_SERVICE_PORT" {
+			port = values[1]
+			break
+		}
+	}
+	restURL := "https://" + rest.ServerCertName + ":" + port
+	var err error
+	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
+	if err != nil {
+		return nil, err
+	}
 
 	// Define volume capabilities
 	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
@@ -85,6 +166,13 @@ func (p *Plugin) Activate() error {
 		log.Info("Activating CSI frontend.")
 		p.grpc = NewNonBlockingGRPCServer()
 		p.grpc.Start(p.endpoint, p, p, p)
+		if p.role == CSINode || p.role == CSIAllInOne {
+			err := p.nodeRegisterWithController()
+			if err != nil {
+				log.Errorf("Error registering node %s with controller; %v", p.nodeName, err)
+				p.grpc.GracefulStop()
+			}
+		}
 	}()
 	return nil
 }
@@ -92,6 +180,13 @@ func (p *Plugin) Activate() error {
 func (p *Plugin) Deactivate() error {
 	log.Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
+	if p.role == CSINode || p.role == CSIAllInOne {
+		err := p.nodeDeregisterWithController()
+		if err != nil {
+			log.Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
+			return err
+		}
+	}
 	return nil
 }
 

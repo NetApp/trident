@@ -4,6 +4,7 @@ package storage
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/gob"
 	"fmt"
 	"strings"
@@ -107,4 +108,21 @@ func (v *Volume) ConstructExternal() *VolumeExternal {
 type VolumeExternalWrapper struct {
 	Volume *VolumeExternal
 	Error  error
+}
+
+type ImportVolumeRequest struct {
+	Backend      string `json:"backend"`
+	InternalName string `json:"internalName"`
+	NoManage     bool   `json:"noManage"`
+	PVCData      string `json:"pvcData"` // Opaque, base64-encoded
+}
+
+func (r *ImportVolumeRequest) Validate() error {
+	if r.Backend == "" || r.InternalName == "" {
+		return fmt.Errorf("the following fields are mandatory: backend and internalName")
+	}
+	if _, err := base64.StdEncoding.DecodeString(r.PVCData); err != nil {
+		return fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
+	}
+	return nil
 }

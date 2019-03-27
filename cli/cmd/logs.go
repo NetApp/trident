@@ -91,8 +91,8 @@ func archiveLogs() error {
 	}
 
 	// Create archive file.
-	filename = time.Now().Format(archiveFilenameFormat)
-	zipFile, err := os.Create(filename)
+	zipFileName := time.Now().Format(archiveFilenameFormat)
+	zipFile, err := os.Create(zipFileName)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func archiveLogs() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Wrote %s log to %s archive file.\n", log, filename)
+		fmt.Printf("Wrote %s log to %s archive file.\n", log, zipFileName)
 	}
 
 	return nil
