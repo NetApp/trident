@@ -150,8 +150,10 @@ type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`
 	// Pools are the modeled physical pools.  At least one is required.
-	Pools        map[string]*fake.StoragePool `json:"pools"`
-	InstanceName string                       `json:"instanceName"`
+	Pools map[string]*fake.StoragePool `json:"pools"`
+	// Volumes are the modeled backend volumes that exist when the driver starts.  Optional.
+	Volumes      []fake.Volume `json:"volumes"`
+	InstanceName string        `json:"instanceName"`
 	FakeStorageDriverPool
 	Storage []FakeStorageDriverPool `json:"storage"`
 }
@@ -246,7 +248,7 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 func GetDefaultStoragePrefix(context trident.DriverContext) string {
 	switch context {
 	default:
-		fallthrough
+		return ""
 	case trident.ContextKubernetes, trident.ContextCSI:
 		return DefaultTridentStoragePrefix
 	case trident.ContextDocker:

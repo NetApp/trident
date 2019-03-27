@@ -14,6 +14,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
@@ -522,6 +523,70 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 
 func DeleteVolume(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, orchestrator.DeleteVolume, "volume")
+}
+
+type ImportVolumeResponse struct {
+	Volume *storage.VolumeExternal `json:"volume"`
+	Error  string                  `json:"error,omitempty"`
+}
+
+func (i *ImportVolumeResponse) setError(err error) {
+	i.Error = err.Error()
+}
+
+func (i *ImportVolumeResponse) isError() bool {
+	return i.Error != ""
+}
+
+func (i *ImportVolumeResponse) logSuccess() {
+	log.WithFields(log.Fields{
+		"handler": "ImportVolume",
+		"backend": i.Volume.Backend,
+		"volume":  i.Volume.Config.Name,
+	}).Info("Imported an existing volume.")
+}
+func (i *ImportVolumeResponse) logFailure() {
+	log.WithFields(log.Fields{
+		"handler": "ImportVolume",
+	}).Error(i.Error)
+}
+
+func ImportVolume(w http.ResponseWriter, r *http.Request) {
+	response := &ImportVolumeResponse{}
+	AddGeneric(w, r, response,
+		func(body []byte) int {
+			importVolumeRequest := new(storage.ImportVolumeRequest)
+			err := json.Unmarshal(body, importVolumeRequest)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
+			}
+			if err = importVolumeRequest.Validate(); err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8sFrontend, err := orchestrator.GetFrontend(string(config.ContextKubernetes))
+			if err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8s, ok := k8sFrontend.(kubernetes.KubernetesPlugin)
+			if !ok {
+				err = fmt.Errorf("unable to obtain Kubernetes frontend")
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			volume, err := k8s.ImportVolume(importVolumeRequest)
+
+			if err != nil {
+				response.setError(err)
+			}
+			if volume != nil {
+				response.Volume = volume
+			}
+			return httpStatusCodeForAdd(err)
+		},
+	)
 }
 
 type AddStorageClassResponse struct {

@@ -535,7 +535,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 
 	volConfig := &storage.VolumeConfig{
 		Name:         "fake_volume_1",
-		InternalName: "trident_fake_volume_1",
+		InternalName: "fake_volume_1",
 		Size:         "1000000000",
 	}
 	err := fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
@@ -545,7 +545,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 
 	volConfig = &storage.VolumeConfig{
 		Name:         "fake_volume_2",
-		InternalName: "trident_fake_volume_2",
+		InternalName: "fake_volume_2",
 		Size:         "2000000000",
 	}
 	err = fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))

@@ -92,6 +92,12 @@ var routes = Routes{
 		DeleteVolume,
 	},
 	Route{
+		"ImportVolume",
+		"POST",
+		config.VolumeURL + "/import",
+		ImportVolume,
+	},
+	Route{
 		"AddStorageClass",
 		"POST",
 		config.StorageClassURL,

@@ -5,9 +5,12 @@
 package kubernetes
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -31,12 +34,18 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
+
+type KubernetesPlugin interface {
+	frontend.Plugin
+	ImportVolume(request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
+}
 
 // StorageClassSummary captures relevant fields in the storage class that are needed during PV creation or PV resize.
 type StorageClassSummary struct {
@@ -300,33 +309,21 @@ func (p *Plugin) deleteClaim(obj interface{}) {
 	p.processClaim(claim, "delete")
 }
 
-func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string) {
-	// Validating the claim
-	size, ok := claim.Spec.Resources.Requests[v1.ResourceStorage]
-	if !ok {
-		return
-	}
-	log.WithFields(log.Fields{
-		"PVC":              claim.Name,
-		"PVC_phase":        claim.Status.Phase,
-		"PVC_size":         size.String(),
-		"PVC_uid":          claim.UID,
-		"PVC_storageClass": GetPersistentVolumeClaimClass(claim),
-		"PVC_accessModes":  claim.Spec.AccessModes,
-		"PVC_annotations":  claim.Annotations,
-		"PVC_volume":       claim.Spec.VolumeName,
-		"PVC_eventType":    eventType,
-	}).Debug("Kubernetes frontend got notified of a PVC.")
+func (p *Plugin) validStorageClassReceived(claim *v1.PersistentVolumeClaim) error {
 
 	// Filter unrelated claims
-	provisioner := getClaimProvisioner(claim)
 	if claim.Spec.StorageClassName != nil && *claim.Spec.StorageClassName == "" {
 		log.WithFields(log.Fields{
 			"PVC": claim.Name,
 		}).Debug("Kubernetes frontend ignored this PVC as an empty string " +
 			"was specified for the storage class!")
-		return
+		return fmt.Errorf("ignored PVC %s as an empty string was specified for the storage class", claim.Name)
 	}
+
+	return nil
+}
+
+func (p *Plugin) validClaimReceived(claim *v1.PersistentVolumeClaim, provisioner string) error {
 
 	// Reject PVCs whose provisioner was not set to Trident.
 	// However, don't reject a PVC whose provisioner wasn't set
@@ -339,7 +336,8 @@ func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string)
 			"PVC_provisioner": provisioner,
 		}).Debugf("Kubernetes frontend ignored this PVC as it's not "+
 			"tagged with %s as the storage provisioner!", AnnOrchestrator)
-		return
+		return fmt.Errorf("ignored PVC %s as it's not tagged with %s as the storage provisioner",
+			claim.Name, AnnOrchestrator)
 	}
 
 	// Check if the default storage class should be used.
@@ -363,14 +361,14 @@ func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string)
 			}).Warn("Kubernetes frontend ignored this PVC as more than " +
 				"one default storage class has been configured!")
 			p.mutex.Unlock()
-			return
+			return fmt.Errorf("ignored PVC %s as more than one default storage class has been configured",
+				claim.Name)
 		} else {
-			log.WithFields(log.Fields{
-				"PVC": claim.Name,
-			}).Debug("Kubernetes frontend ignored this PVC as no storage class " +
+			log.WithField("PVC", claim.Name).Debug("Kubernetes frontend ignored this PVC as no storage class " +
 				"was specified and no default storage class was configured!")
 			p.mutex.Unlock()
-			return
+			return fmt.Errorf("ignored PVC %s as no storage class was specified and no default storage class was configured",
+				claim.Name)
 		}
 		p.mutex.Unlock()
 	}
@@ -379,9 +377,65 @@ func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string)
 	// class), ignore the PVC as Kubernetes doesn't allow a storage class with
 	// empty string as the name.
 	if GetPersistentVolumeClaimClass(claim) == "" {
-		log.WithFields(log.Fields{
-			"PVC": claim.Name,
-		}).Debug("Kubernetes frontend ignored this PVC as no storage class was specified!")
+		log.WithField("PVC", claim.Name).Debug("Kubernetes frontend ignored this PVC as no storage class was specified!")
+		return fmt.Errorf("ignored PVC %s as no storage class was specified", claim.Name)
+	}
+
+	return nil
+}
+
+func (p *Plugin) isClaimNotManaged(claim *v1.PersistentVolumeClaim) error {
+	return p.isNotManaged(claim.Annotations, claim.Name, "PVC")
+}
+
+func (p *Plugin) isVolumeNotManaged(pv *v1.PersistentVolume) error {
+	return p.isNotManaged(pv.Annotations, pv.Name, "PV")
+}
+
+func (p *Plugin) isNotManaged(annotations map[string]string, name string, kind string) error {
+	// If the notManaged annotation is set to true then this PVC isn't processed any further.
+	if value, ok := annotations[AnnNotManaged]; ok {
+		notManaged, err := strconv.ParseBool(value)
+		if err != nil {
+			return fmt.Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
+		}
+
+		if notManaged {
+			log.WithField(kind, name).Debugf("Kubernetes frontend ignored this notManaged %s.", kind)
+			return fmt.Errorf("ignored %s %s as it's set with annotation %s", kind, name, AnnNotManaged)
+		}
+	}
+	return nil
+}
+
+func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string) {
+	// Validating the claim
+	size, ok := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	if !ok {
+		return
+	}
+	log.WithFields(log.Fields{
+		"PVC":              claim.Name,
+		"PVC_phase":        claim.Status.Phase,
+		"PVC_size":         size.String(),
+		"PVC_uid":          claim.UID,
+		"PVC_storageClass": GetPersistentVolumeClaimClass(claim),
+		"PVC_accessModes":  claim.Spec.AccessModes,
+		"PVC_annotations":  claim.Annotations,
+		"PVC_volume":       claim.Spec.VolumeName,
+		"PVC_eventType":    eventType,
+	}).Debug("Kubernetes frontend got notified of a PVC.")
+
+	if p.validStorageClassReceived(claim) != nil {
+		return
+	}
+
+	if p.isClaimNotManaged(claim) != nil {
+		return
+	}
+
+	provisioner := getClaimProvisioner(claim)
+	if p.validClaimReceived(claim, provisioner) != nil {
 		return
 	}
 
@@ -414,9 +468,14 @@ func (p *Plugin) processClaim(claim *v1.PersistentVolumeClaim, eventType string)
 		if claim.Spec.Selector != nil {
 			message := "ignored PVCs with label selectors!"
 			p.updatePVCWithEvent(claim, v1.EventTypeWarning, "IgnoredClaim", message)
+			log.WithField("PVC", claim.Name).Debugf("Kubernetes frontend %s", message)
+			return
+		}
+		if _, ok := claim.Annotations[AnnNotManaged]; ok {
 			log.WithFields(log.Fields{
-				"PVC": claim.Name,
-			}).Debugf("Kubernetes frontend %s", message)
+				"PVC":        claim.Name,
+				"notManaged": claim.Annotations[AnnNotManaged],
+			}).Debug("Kubernetes frontend ignored PVC, in Pending phase, created via volume import")
 			return
 		}
 		p.processPendingClaim(claim)
@@ -520,6 +579,12 @@ func (p *Plugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 		// modification again.
 		if canPVMatchWithPVC(pv, claim) {
 			p.mutex.Unlock()
+			log.WithFields(log.Fields{
+				"PV name":    pv.Name,
+				"PV status":  pv.Status,
+				"PVC name":   claim.Name,
+				"PVC status": claim.Status,
+			}).Debug("Kubernetes frontend verified PV specs fit PVC")
 			return
 		}
 		// Otherwise, we need to delete the old volume and allocate a new one
@@ -557,70 +622,190 @@ func (p *Plugin) processPendingClaim(claim *v1.PersistentVolumeClaim) {
 	}).Infof("Kubernetes frontend %s", message)
 }
 
-func (p *Plugin) createVolumeAndPV(
-	uniqueName string, claim *v1.PersistentVolumeClaim,
-) (pv *v1.PersistentVolume, err error) {
+func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error) {
 
-	var (
-		nfsSource          *v1.NFSVolumeSource
-		iscsiSource        *v1.ISCSIPersistentVolumeSource
-		vol                *storage.VolumeExternal
-		storageClassParams map[string]string
-	)
+	log.WithField("request", request).Debug("ImportVolume")
 
-	defer func() {
-		if vol != nil && err != nil {
-			err1 := err
-			// Delete the volume on the backend
-			err = p.orchestrator.DeleteVolume(vol.Config.Name)
-			if err != nil {
-				err2 := "Kubernetes frontend couldn't delete the volume after failed creation: " + err.Error()
-				log.WithFields(log.Fields{
-					"volume":  vol.Config.Name,
-					"backend": vol.Backend,
-				}).Error(err2)
-				err = fmt.Errorf("%s => %s", err1.Error(), err2)
-			} else {
-				err = err1
-			}
-		}
-	}()
-
-	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
-	accessModes := claim.Spec.AccessModes
-	annotations := claim.Annotations
-	storageClass := GetPersistentVolumeClaimClass(claim)
-	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
-		storageClassParams = storageClassSummary.Parameters
+	// Get PVC from ImportVolumeRequest
+	jsonData, err := base64.StdEncoding.DecodeString(request.PVCData)
+	if err != nil {
+		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
 	}
 
-	// TODO: A quick way to support v1 storage classes before changing unit tests
-	if _, found := annotations[AnnClass]; !found {
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
-		annotations[AnnClass] = GetPersistentVolumeClaimClass(claim)
+	claim := &v1.PersistentVolumeClaim{}
+	err = json.Unmarshal(jsonData, &claim)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse JSON PVC: %v", err)
 	}
 
-	// Set the file system type based on the value in the storage class
-	if _, found := annotations[AnnFileSystem]; !found && storageClassParams != nil {
-		if fsType, found := storageClassParams[K8sFsType]; found {
-			annotations[AnnFileSystem] = fsType
-		}
+	log.WithFields(log.Fields{
+		"PVC":               claim.Name,
+		"PVC_storageClass":  GetPersistentVolumeClaimClass(claim),
+		"PVC_accessModes":   claim.Spec.AccessModes,
+		"PVC_annotations":   claim.Annotations,
+		"PVC_volume":        claim.Spec.VolumeName,
+		"PVC_requestedSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
+	}).Debug("ImportVolume: received PVC data.")
+
+	if err = p.validStorageClassReceived(claim); err != nil {
+		return nil, err
 	}
 
-	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, claim.Namespace)
+	provisioner := p.getClaimOrClassProvisioner(claim)
+	if err = p.validClaimReceived(claim, provisioner); err != nil {
+		return nil, err
+	}
+
+	if len(claim.Namespace) == 0 {
+		return nil, fmt.Errorf("a valid PVC namespace is required for volume import")
+	}
+
+	if claim.Annotations == nil {
+		claim.Annotations = map[string]string{}
+	}
+	claim.Annotations[AnnNotManaged] = strconv.FormatBool(request.NoManage)
+
+	// Set the PVC's storage field to the actual volume size.
+	volExternal, err := p.orchestrator.GetVolumeExternal(request.InternalName, request.Backend)
+	if err != nil {
+		return nil, fmt.Errorf("volume import failed to get size of volume: %v", err)
+	}
+	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(volExternal.Config.Size)
+	log.WithFields(log.Fields{
+		"size":      volExternal.Config.Size,
+		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
+	}).Debug("Volume import determined volume size")
+
+	// Need to create the PVC to obtain the PVC UID. The PVC UID is needed to create the volume name
+	// used for the PV Name and volume.Config.Name.
+	pvc, pvcErr := p.createImportPVC(claim)
+	if pvcErr != nil {
+		log.WithFields(log.Fields{
+			"claim": claim.Name,
+			"error": pvcErr,
+		}).Warn("ImportVolume: error occurred during PVC creation.")
+		return nil, pvcErr
+	}
+	log.WithField("PVC", pvc).Debug("ImportVolume: created pending PVC.")
+
+	accessModes := pvc.Spec.AccessModes
+	uniqueName := getUniqueClaimName(pvc)
+	storageClass := GetPersistentVolumeClaimClass(pvc)
+	annotations := p.processStorageClassAnnotations(pvc, storageClass)
+	volConfig := getVolumeConfig(accessModes, uniqueName, claim.Spec.Resources.Requests[v1.ResourceStorage], annotations)
+
+	// This func is passed to core when ImportVolume is called. The func is created with the locally scoped
+	// context but runs in orchestrator_core inside a volume transaction. This allows needed cleanup to be
+	// performed if an error is thrown. The createPVandPVC creates the PV and checks the PVC status.
+	createPVandPVC := func(volExternal *storage.VolumeExternal, driverType string) error {
+		log.WithFields(log.Fields{
+			"volumeName":         volExternal.Config.Name,
+			"volumeInternalName": volExternal.Config.InternalName,
+			"size":               volExternal.Config.Size,
+			"fileSystem":         volExternal.Config.FileSystem,
+			"snapshotPolicy":     volExternal.Config.SnapshotPolicy,
+			"protocol":           volExternal.Config.Protocol,
+			"backend":            volExternal.Backend,
+		}).Debug("ImportVolume: ready to create the PV.")
+
+		pv, pvErr := p.createPV(pvc, volConfig, storageClass, volExternal, true, driverType)
+		if pvErr != nil {
+			log.WithFields(log.Fields{
+				"volume": volExternal.Config.Name,
+				"error":  pvErr,
+			}).Warn("ImportVolume: error occurred during PV creation.")
+			return pvErr
+		}
+
+		// Validate that the PV specs fit the PVC specs. This is just a sanity check as
+		// canPVMatchWithPVC should not fail.
+		if !canPVMatchWithPVC(pv, pvc) {
+			p.deletePV(pv.Name)
+			return fmt.Errorf("the PV specs do not fit requested PVC")
+		}
+
+		pvCheck, err := p.kubeClient.CoreV1().PersistentVolumes().Get(pv.Name, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("error occurred checking PV %s status: %v", pv.Name, err)
+		}
+		log.WithFields(log.Fields{
+			"pv.Name":         pvCheck.Name,
+			"pv.Status.Phase": pvCheck.Status.Phase,
+		}).Debug("ImportVolume: PV created.")
+
+		pvcCheck, err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(pvc.Name, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("error occurred checking PVC %s status: %v", pvc.Name, err)
+		}
+		log.WithFields(log.Fields{
+			"pvc.Name":         pvcCheck.Name,
+			"pvc.Status.Phase": pvcCheck.Status.Phase,
+		}).Debug("ImportVolume: PVC status.")
+
+		return nil
+	}
+
+	volumeExternal, err := p.orchestrator.ImportVolume(volConfig, request.InternalName, request.Backend, request.NoManage, createPVandPVC)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"namespace": claim.Namespace,
+			"name":     volConfig.Name,
+			"PVC.UID":  pvc.UID,
+			"PVC.Name": pvc.Name,
+		}).Warn("ImportVolume: error occurred; deleting PVC.")
+		p.deleteClaim(pvc)
+		return nil, fmt.Errorf("frontend failed to import volume: %v", err)
+	}
+	log.WithField("volumeExternal", volumeExternal).Debug("ImportVolume: import completed.")
+
+	return volumeExternal, nil
+}
+
+func (p *Plugin) deletePV(pvName string) {
+	gracePeriod := int64(0)
+	do := &metav1.DeleteOptions{GracePeriodSeconds: &gracePeriod}
+	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(pvName, do)
+	if err != nil {
+		log.Errorf("error occurred while trying to delete PV %s: %v", pvName, err)
+	}
+}
+
+func (p *Plugin) createImportPVC(claim *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
+
+	log.WithFields(log.Fields{
+		"claim":     claim,
+		"namespace": claim.Namespace,
+	}).Debug("CreateImportPVC: ready to create PVC")
+
+	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim)
+	if err != nil {
+		return nil, fmt.Errorf("error occurred during PVC creation: %v", err)
+	}
+
+	return pvc, nil
+}
+
+func (p *Plugin) createVolumeFromConfig(
+	volConfig *storage.VolumeConfig,
+	storageClass string,
+	namespace string,
+	claimName string,
+) (*storage.VolumeExternal, error) {
+
+	var vol *storage.VolumeExternal
+
+	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, namespace)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"namespace": namespace,
 			"error":     err.Error(),
 		}).Warn("Kubernetes frontend couldn't create a client to namespace!")
 	}
 
-	// Create the volume configuration object
-	volConfig := getVolumeConfig(accessModes, uniqueName, size, annotations)
 	if volConfig.CloneSourceVolume == "" {
 		vol, err = p.orchestrator.AddVolume(volConfig)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		var (
 			options metav1.GetOptions
@@ -634,24 +819,24 @@ func (p *Plugin) createVolumeAndPV(
 			err = fmt.Errorf("cloning from a PVC requires both PVCs be in the same namespace")
 			log.WithFields(log.Fields{
 				"sourcePVC":     volConfig.CloneSourceVolume,
-				"PVC":           claim.Name,
-				"PVC_namespace": claim.Namespace,
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
 			}).Debugf("Kubernetes frontend detected an invalid configuration "+
 				"for cloning from a PVC: %v", err.Error())
-			return
+			return nil, err
 		}
 
 		// 2) Validate that storage classes match for the two PVCs
-		if GetPersistentVolumeClaimClass(pvc) != GetPersistentVolumeClaimClass(claim) {
+		if GetPersistentVolumeClaimClass(pvc) != storageClass {
 			err = fmt.Errorf("cloning from a PVC requires matching storage classes")
 			log.WithFields(log.Fields{
-				"PVC":                    claim.Name,
-				"PVC_storageClass":       GetPersistentVolumeClaimClass(claim),
+				"PVC":                    claimName,
+				"PVC_storageClass":       storageClass,
 				"sourcePVC":              volConfig.CloneSourceVolume,
 				"sourcePVC_storageClass": GetPersistentVolumeClaimClass(pvc),
 			}).Debugf("Kubernetes frontend detected an invalid configuration "+
 				"for cloning from a PVC: %v", err.Error())
-			return
+			return nil, err
 		}
 
 		// 3) Set the source PVC name as it's understood by Trident.
@@ -659,35 +844,52 @@ func (p *Plugin) createVolumeAndPV(
 
 		// 4) Clone the existing volume
 		vol, err = p.orchestrator.CloneVolume(volConfig)
+		if err != nil {
+			return nil, err
+		}
 	}
-	if err != nil {
-		log.WithFields(log.Fields{
-			"volume": uniqueName,
-		}).Warnf("Kubernetes frontend couldn't provision a volume: %s "+
-			"(will retry upon resync)", err.Error())
-		return
-	}
+	return vol, nil
+}
 
-	claimRef := v1.ObjectReference{
+func (p *Plugin) createPV(
+	claim *v1.PersistentVolumeClaim,
+	volConfig *storage.VolumeConfig,
+	storageClass string,
+	volume *storage.VolumeExternal,
+	isImport bool,
+	driverType string,
+) (pv *v1.PersistentVolume, err error) {
+
+	var (
+		claimRef    v1.ObjectReference
+		iscsiSource *v1.ISCSIPersistentVolumeSource
+		nfsSource   *v1.NFSVolumeSource
+	)
+
+	claimRef = v1.ObjectReference{
 		Namespace: claim.Namespace,
 		Name:      claim.Name,
-		UID:       claim.UID,
 	}
+
+	if isImport {
+		claimRef.UID = claim.UID
+	}
+
 	pv = &v1.PersistentVolume{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: uniqueName,
+			Name: volConfig.Name,
 			Annotations: map[string]string{
-				AnnClass:                  GetPersistentVolumeClaimClass(claim),
+				AnnClass:                  storageClass,
 				AnnDynamicallyProvisioned: AnnOrchestrator,
 			},
 		},
 		Spec: v1.PersistentVolumeSpec{
-			AccessModes: accessModes,
-			Capacity:    v1.ResourceList{v1.ResourceStorage: resource.MustParse(vol.Config.Size)},
+			AccessModes: claim.Spec.AccessModes,
+			Capacity:    v1.ResourceList{v1.ResourceStorage: resource.MustParse(volume.Config.Size)},
 			ClaimRef:    &claimRef,
 			// Default policy is "Delete".
 			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
@@ -696,11 +898,16 @@ func (p *Plugin) createVolumeAndPV(
 
 	kubeVersion, _ := ValidateKubeVersion(p.kubernetesVersion)
 
-	pv.Spec.StorageClassName = GetPersistentVolumeClaimClass(claim)
+	pv.Spec.StorageClassName = storageClass
 
 	// Apply Storage Class mount options and reclaim policy
-	pv.Spec.MountOptions = p.getPVMountOptions(p.storageClassCache[storageClass], vol)
+	pv.Spec.MountOptions = p.getPVMountOptions(p.storageClassCache[storageClass], volume)
 	pv.Spec.PersistentVolumeReclaimPolicy = *p.storageClassCache[storageClass].PersistentVolumeReclaimPolicy
+
+	if isImport {
+		// Apply annotation to indicate this PV was created by volume import process
+		pv.Annotations[AnnNotManaged] = claim.Annotations[AnnNotManaged]
+	}
 
 	// We create the CHAP secret in Trident's namespace
 	k8sClientCHAP, err := p.getNamespacedKubeClient(&p.kubeConfig, p.tridentNamespace)
@@ -711,14 +918,13 @@ func (p *Plugin) createVolumeAndPV(
 		}).Warn("Kubernetes frontend couldn't create a client to namespace!")
 	}
 
-	driverType, _ := p.orchestrator.GetDriverTypeForVolume(vol)
 	switch driverType {
 
 	case drivers.SolidfireSANStorageDriverName,
 		drivers.OntapSANStorageDriverName,
 		drivers.EseriesIscsiStorageDriverName:
 
-		iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, vol)
+		iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, volume)
 		if err != nil {
 			return
 		}
@@ -733,16 +939,15 @@ func (p *Plugin) createVolumeAndPV(
 		drivers.OntapNASFlexGroupStorageDriverName,
 		drivers.AWSNFSStorageDriverName:
 
-		nfsSource = CreateNFSVolumeSource(vol)
+		nfsSource = CreateNFSVolumeSource(volume)
 		pv.Spec.NFS = nfsSource
 
 	case drivers.FakeStorageDriverName:
-
-		if vol.Config.Protocol == config.File {
-			nfsSource = CreateNFSVolumeSource(vol)
+		if volume.Config.Protocol == config.File {
+			nfsSource = CreateNFSVolumeSource(volume)
 			pv.Spec.NFS = nfsSource
-		} else if vol.Config.Protocol == config.Block {
-			iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, vol)
+		} else if volume.Config.Protocol == config.Block {
+			iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, volume)
 			if err != nil {
 				return
 			}
@@ -750,20 +955,112 @@ func (p *Plugin) createVolumeAndPV(
 		}
 
 	default:
-
 		// Unknown driver for the frontend plugin or for Kubernetes.
 		// Provisioned volume should get deleted.
-		volType, _ := p.orchestrator.GetVolumeType(vol)
+		volType, _ := p.orchestrator.GetVolumeType(volume)
 		log.WithFields(log.Fields{
-			"volume": vol.Config.Name,
+			"volume": volume.Config.Name,
 			"type":   volType,
 			"driver": driverType,
 		}).Error("Kubernetes frontend doesn't recognize this type of volume; deleting the provisioned volume.")
 		err = fmt.Errorf("unrecognized volume type by Kubernetes")
 		return
 	}
+
 	pv, err = p.kubeClient.CoreV1().PersistentVolumes().Create(pv)
-	return
+	if err != nil {
+		return nil, err
+	}
+
+	log.WithFields(log.Fields{
+		"volume": volume.Config.Name,
+		"driver": driverType,
+		"pv":     pv,
+	}).Debug("PV created")
+
+	return pv, nil
+}
+
+// A pending PVC was received and this func provisions the requested volume
+// and creates the PV with the PVC's claim ref.
+func (p *Plugin) createVolumeAndPV(
+	uniqueName string, claim *v1.PersistentVolumeClaim,
+) (pv *v1.PersistentVolume, err error) {
+
+	var (
+		volExternal *storage.VolumeExternal
+	)
+
+	defer func() {
+		if volExternal != nil && err != nil {
+			err1 := err
+			// Delete the volume on the backend
+			err = p.orchestrator.DeleteVolume(volExternal.Config.Name)
+			if err != nil {
+				err2 := "Kubernetes frontend couldn't delete the volume after failed creation: " + err.Error()
+				log.WithFields(log.Fields{
+					"volume":  volExternal.Config.Name,
+					"backend": volExternal.Backend,
+				}).Error(err2)
+				err = fmt.Errorf("%s => %s", err1.Error(), err2)
+			} else {
+				err = err1
+			}
+		}
+	}()
+
+	storageClass := GetPersistentVolumeClaimClass(claim)
+	annotations := p.processStorageClassAnnotations(claim, storageClass)
+
+	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	accessModes := claim.Spec.AccessModes
+	volConfig := getVolumeConfig(accessModes, uniqueName, size, annotations)
+	volExternal, err = p.createVolumeFromConfig(volConfig, storageClass, claim.Namespace, claim.Name)
+	if err != nil {
+		return nil, err
+	}
+	driverType, _ := p.orchestrator.GetDriverTypeForVolume(volExternal)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume": uniqueName,
+		}).Warnf("Kubernetes frontend couldn't provision a volume: %s "+
+			"(will retry upon resync)", err.Error())
+		return nil, err
+	}
+
+	pv, err = p.createPV(claim, volConfig, storageClass, volExternal, false, driverType)
+	if err != nil {
+		return nil, err
+	}
+
+	return pv, err
+}
+
+func (p *Plugin) processStorageClassAnnotations(claim *v1.PersistentVolumeClaim, storageClass string,
+) map[string]string {
+	var storageClassParams map[string]string
+
+	annotations := claim.Annotations
+	if storageClassSummary, found := p.storageClassCache[storageClass]; found {
+		storageClassParams = storageClassSummary.Parameters
+	}
+
+	// TODO: A quick way to support v1 storage classes before changing unit tests
+	if _, found := annotations[AnnClass]; !found {
+		if annotations == nil {
+			annotations = make(map[string]string)
+		}
+		annotations[AnnClass] = storageClass
+	}
+
+	// Set the file system type based on the value in the storage class
+	if _, found := annotations[AnnFileSystem]; !found && storageClassParams != nil {
+		if fsType, found := storageClassParams[K8sFsType]; found {
+			annotations[AnnFileSystem] = fsType
+		}
+	}
+
+	return annotations
 }
 
 func (p *Plugin) getPVMountOptions(scSummary *StorageClassSummary, volume *storage.VolumeExternal) []string {
@@ -777,15 +1074,15 @@ func (p *Plugin) getPVMountOptions(scSummary *StorageClassSummary, volume *stora
 	return make([]string, 0)
 }
 
-func (p *Plugin) deleteVolumeAndPV(volume *v1.PersistentVolume) error {
-	err := p.orchestrator.DeleteVolume(volume.GetName())
+func (p *Plugin) deleteVolumeAndPV(pv *v1.PersistentVolume) error {
+	err := p.orchestrator.DeleteVolume(pv.GetName())
 	if err != nil && !core.IsNotFoundError(err) {
 		message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Volume and PV may "+
-			"need to be manually deleted.", volume.GetName(), err.Error())
-		p.updateVolumePhaseWithEvent(volume, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
+			"need to be manually deleted.", pv.GetName(), err.Error())
+		p.updateVolumePhaseWithEvent(pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
 		return fmt.Errorf("Kubernetes frontend %s", message)
 	}
-	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(volume.GetName(), &metav1.DeleteOptions{})
+	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.GetName(), &metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("Kubernetes frontend failed to contact the API server and delete the PV: %s", err.Error())
 	}
@@ -819,35 +1116,37 @@ func (p *Plugin) deleteVolume(obj interface{}) {
 	p.processVolume(volume, "delete")
 }
 
-func (p *Plugin) processVolume(
-	volume *v1.PersistentVolume, eventType string,
-) {
-	pvSize := volume.Spec.Capacity[v1.ResourceStorage]
+func (p *Plugin) processVolume(pv *v1.PersistentVolume, eventType string) {
+	pvSize := pv.Spec.Capacity[v1.ResourceStorage]
 	log.WithFields(log.Fields{
-		"PV":             volume.Name,
-		"PV_phase":       volume.Status.Phase,
+		"PV":             pv.Name,
+		"PV_phase":       pv.Status.Phase,
 		"PV_size":        pvSize.String(),
-		"PV_uid":         volume.UID,
-		"PV_accessModes": volume.Spec.AccessModes,
-		"PV_annotations": volume.Annotations,
+		"PV_uid":         pv.UID,
+		"PV_accessModes": pv.Spec.AccessModes,
+		"PV_annotations": pv.Annotations,
 		"PV_eventType":   eventType,
 	}).Debug("Kubernetes frontend got notified of a PV.")
 
 	// Validating the PV (making sure it's provisioned by Trident)
-	if volume.ObjectMeta.Annotations[AnnDynamicallyProvisioned] !=
+	if pv.ObjectMeta.Annotations[AnnDynamicallyProvisioned] !=
 		AnnOrchestrator {
+		return
+	}
+
+	if p.isVolumeNotManaged(pv) != nil {
 		return
 	}
 
 	switch eventType {
 	case "delete":
-		p.processDeletedVolume(volume)
+		p.processDeletedVolume(pv)
 		return
 	case "add", "update":
-		p.processUpdatedVolume(volume)
+		p.processUpdatedVolume(pv)
 	default:
 		log.WithFields(log.Fields{
-			"PV":    volume.Name,
+			"PV":    pv.Name,
 			"event": eventType,
 		}).Error("Kubernetes frontend didn't recognize the notification event corresponding to the PV!")
 		return
@@ -855,7 +1154,7 @@ func (p *Plugin) processVolume(
 }
 
 // processDeletedVolume cleans up Trident-created PVs.
-func (p *Plugin) processDeletedVolume(volume *v1.PersistentVolume) {
+func (p *Plugin) processDeletedVolume(pv *v1.PersistentVolume) {
 	// This method can get called under two scenarios:
 	// (1) Deletion of a PVC has resulted in deletion of a PV and the
 	//     corresponding volume.
@@ -865,7 +1164,7 @@ func (p *Plugin) processDeletedVolume(volume *v1.PersistentVolume) {
 	// stable in v.11.
 
 	// First, make sure the PVC is present and is in the Lost phase.
-	claim, err := p.GetPVCForPV(volume)
+	claim, err := p.GetPVCForPV(pv)
 	if claim == nil || err != nil {
 		return
 	}
@@ -874,36 +1173,36 @@ func (p *Plugin) processDeletedVolume(volume *v1.PersistentVolume) {
 	}
 
 	// Second, take the appropriate action based on the PV's reclaim policy.
-	if volume.Spec.PersistentVolumeReclaimPolicy == v1.PersistentVolumeReclaimRetain {
+	if pv.Spec.PersistentVolumeReclaimPolicy == v1.PersistentVolumeReclaimRetain {
 		return
 	}
 
 	// Third, we need to delete the corresponding volume.
-	if vol, _ := p.orchestrator.GetVolume(volume.Name); vol == nil {
+	if vol, _ := p.orchestrator.GetVolume(pv.Name); vol == nil {
 		return
 	}
-	err = p.orchestrator.DeleteVolume(volume.Name)
+	err = p.orchestrator.DeleteVolume(pv.Name)
 	if err != nil {
 		message := "failed to delete the provisioned volume for the lost PVC."
 		p.updatePVCWithEvent(claim, v1.EventTypeWarning, "FailedVolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
-			"volume": volume.Name,
+			"volume": pv.Name,
 		}).Errorf("Kubernetes frontend %s", message)
 	} else {
 		message := "deleted the provisioned volume for the lost PVC."
 		p.updatePVCWithEvent(claim, v1.EventTypeNormal, "VolumeDelete", message)
 		log.WithFields(log.Fields{
 			"PVC":    claim.Name,
-			"volume": volume.Name,
+			"volume": pv.Name,
 		}).Infof("Kubernetes frontend %s", message)
 	}
 	return
 }
 
 // processUpdatedVolume processes updated Trident-created PVs.
-func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
-	switch volume.Status.Phase {
+func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
+	switch pv.Status.Phase {
 	case v1.VolumePending:
 		return
 	case v1.VolumeAvailable:
@@ -911,20 +1210,20 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 	case v1.VolumeBound:
 		return
 	case v1.VolumeReleased, v1.VolumeFailed:
-		if volume.Spec.PersistentVolumeReclaimPolicy != v1.PersistentVolumeReclaimDelete {
+		if pv.Spec.PersistentVolumeReclaimPolicy != v1.PersistentVolumeReclaimDelete {
 			return
 		}
-		err := p.orchestrator.DeleteVolume(volume.Name)
+		err := p.orchestrator.DeleteVolume(pv.Name)
 		if err != nil && !core.IsNotFoundError(err) {
 			// Updating the PV's phase to "VolumeFailed", so that a storage admin can take action.
 			message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Will eventually retry, "+
-				"but volume and PV may need to be manually deleted.", volume.Name, err.Error())
-			p.updateVolumePhaseWithEvent(volume, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
+				"but volume and PV may need to be manually deleted.", pv.Name, err.Error())
+			p.updateVolumePhaseWithEvent(pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
 			log.Errorf("Kubernetes frontend %s", message)
 			// PV needs to be manually deleted by the admin after removing the volume.
 			return
 		}
-		err = p.kubeClient.CoreV1().PersistentVolumes().Delete(volume.Name, &metav1.DeleteOptions{})
+		err = p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			if !strings.HasSuffix(err.Error(), "not found") {
 				// PVs provisioned by external provisioners seem to end up in
@@ -934,13 +1233,13 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 			return
 		}
 		log.WithFields(log.Fields{
-			"PV":     volume.Name,
-			"volume": volume.Name,
+			"PV":     pv.Name,
+			"volume": pv.Name,
 		}).Info("Kubernetes frontend deleted the provisioned volume and PV.")
 	default:
 		log.WithFields(log.Fields{
-			"PV":       volume.Name,
-			"PV_phase": volume.Status.Phase,
+			"PV":       pv.Name,
+			"PV_phase": pv.Status.Phase,
 		}).Error("Kubernetes frontend doesn't recognize the volume phase.")
 	}
 }
@@ -950,14 +1249,14 @@ func (p *Plugin) processUpdatedVolume(volume *v1.PersistentVolume) {
 // the phase has actually changed from the version saved in API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updateVolumePhaseWithEvent(
-	volume *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventtype, reason, message string,
+	pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventtype, reason, message string,
 ) (*v1.PersistentVolume, error) {
 
-	if volume.Status.Phase == phase {
+	if pv.Status.Phase == phase {
 		// Nothing to do.
-		return volume, nil
+		return pv, nil
 	}
-	newVol, err := p.updateVolumePhase(volume, phase, message)
+	newVol, err := p.updateVolumePhase(pv, phase, message)
 	if err != nil {
 		return nil, err
 	}
@@ -970,15 +1269,15 @@ func (p *Plugin) updateVolumePhaseWithEvent(
 // updateVolumePhase saves new volume phase to API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updateVolumePhase(
-	volume *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
+	pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
 ) (*v1.PersistentVolume, error) {
 
-	if volume.Status.Phase == phase {
+	if pv.Status.Phase == phase {
 		// Nothing to do.
-		return volume, nil
+		return pv, nil
 	}
 
-	volumeClone := volume.DeepCopy()
+	volumeClone := pv.DeepCopy()
 
 	volumeClone.Status.Phase = phase
 	volumeClone.Status.Message = message
@@ -1437,13 +1736,13 @@ func (p *Plugin) GetPVForPVC(claim *v1.PersistentVolumeClaim) (*v1.PersistentVol
 }
 
 // GetPVCForPV returns the PVC for a PV.
-func (p *Plugin) GetPVCForPV(volume *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
-	if volume.Spec.ClaimRef == nil {
+func (p *Plugin) GetPVCForPV(pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
+	if pv.Spec.ClaimRef == nil {
 		return nil, nil
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(
-		volume.Spec.ClaimRef.Namespace).Get(volume.Spec.ClaimRef.Name, metav1.GetOptions{})
+		pv.Spec.ClaimRef.Namespace).Get(pv.Spec.ClaimRef.Name, metav1.GetOptions{})
 }
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the PV size.
@@ -1507,4 +1806,23 @@ func (p *Plugin) updatePVCSize(
 	}).Info("Kubernetes frontend updated the PVC after resize.")
 
 	return pvcUpdated, nil
+}
+
+// This func was added to validate the provisioner for volume import. Once processClaim
+// also checks the storageClass for the provisioner the code can be refactored with getClaimProvisioner
+func (p *Plugin) getClaimOrClassProvisioner(claim *v1.PersistentVolumeClaim) string {
+
+	provisioner := getClaimProvisioner(claim)
+	if provisioner != "" {
+		return provisioner
+	}
+	storageClassName := *claim.Spec.StorageClassName
+	_, err := p.orchestrator.GetStorageClass(storageClassName)
+	if err != nil {
+		log.WithField("storageClass", storageClassName).Errorf("error occurred getting storageclass: %v", err)
+		return ""
+	} else {
+		// We have the storageClass so Trident is the provisioner
+		return AnnOrchestrator
+	}
 }

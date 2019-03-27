@@ -148,6 +148,7 @@ func (d *StorageDriver) Initialize(
 	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
+	d.Config.CommonStorageDriverConfig = commonConfig
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
 	if err != nil {
 		return fmt.Errorf("unable to initialize fake driver: %v", err)
@@ -173,6 +174,35 @@ func (d *StorageDriver) Initialize(
 	err = d.validate()
 	if err != nil {
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
+	}
+
+	for _, volume := range d.Config.Volumes {
+
+		var requestedPool *storage.Pool
+		if pool, ok := d.virtualPools[volume.RequestedPool]; ok {
+			requestedPool = pool
+		} else if pool, ok = d.physicalPools[volume.RequestedPool]; ok {
+			requestedPool = pool
+		} else {
+			return fmt.Errorf("requested pool %s for volume %s does not exist", volume.RequestedPool, volume.Name)
+		}
+
+		volConfig := &storage.VolumeConfig{
+			Version:      "1",
+			InternalName: volume.Name,
+			Size:         strconv.FormatUint(volume.SizeBytes, 10),
+		}
+		if err = d.Create(volConfig, requestedPool, make(map[string]sa.Request)); err != nil {
+			return fmt.Errorf("error creating volume %s; %v", volume.Name, err)
+		}
+
+		newVolume := d.Volumes[volume.Name]
+		log.WithFields(log.Fields{
+			"Name":          newVolume.Name,
+			"Size":          newVolume.SizeBytes,
+			"RequestedPool": newVolume.RequestedPool,
+			"PhysicalPool":  newVolume.PhysicalPool,
+		}).Debug("Added new volume.")
 	}
 
 	d.initialized = true
@@ -528,6 +558,45 @@ func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return nil
 }
 
+func (d *StorageDriver) Import(volumeConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+
+	log.WithFields(log.Fields{
+		"volumeConfig": volumeConfig,
+		"originalName": originalName,
+	}).Debug("Import")
+
+	importVolume, ok := d.Volumes[originalName]
+	if !ok {
+		return fmt.Errorf("import volume %s not found", originalName)
+	}
+
+	volumeConfig.Size = strconv.FormatUint(importVolume.SizeBytes, 10)
+
+	if !notManaged {
+		d.Volumes[volumeConfig.InternalName] = importVolume
+		delete(d.Volumes, originalName)
+	}
+
+	return nil
+}
+
+func (d *StorageDriver) Rename(name string, newName string) error {
+
+	log.WithFields(log.Fields{
+		"name":    name,
+		"newName": newName,
+	}).Debug("Rename")
+
+	volume, ok := d.Volumes[name]
+	if !ok {
+		return fmt.Errorf("volume to rename %s not found", name)
+	}
+	d.Volumes[newName] = volume
+	delete(d.Volumes, name)
+
+	return nil
+}
+
 func (d *StorageDriver) Destroy(name string) error {
 
 	d.DestroyedVolumes[name] = true
@@ -723,7 +792,10 @@ func (d *StorageDriver) GetVolumeExternalWrappers(
 func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
 
 	internalName := volume.Name
-	name := internalName[len(*d.Config.StoragePrefix):]
+	name := internalName
+	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
+		name = internalName[len(*d.Config.StoragePrefix):]
+	}
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:      tridentconfig.OrchestratorAPIVersion,

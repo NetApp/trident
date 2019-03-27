@@ -39,4 +39,5 @@ const (
 	AnnFileSystem      = AnnPrefix + "/fileSystem"
 	AnnCloneFromPVC    = AnnPrefix + "/cloneFromPVC"
 	AnnSplitOnClone    = AnnPrefix + "/splitOnClone"
+	AnnNotManaged      = AnnPrefix + "/notManaged"
 )

@@ -361,6 +361,14 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return CreateOntapClone(name, source, snapshot, split, &d.Config, d.API)
 }
 
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *SANStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
+}
+
 // Destroy the requested (volume,lun) storage tuple
 func (d *SANStorageDriver) Destroy(name string) error {
 

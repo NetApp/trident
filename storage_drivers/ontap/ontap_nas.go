@@ -3,6 +3,7 @@
 package ontap
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -317,6 +318,14 @@ func (d *NASStorageDriver) Destroy(name string) error {
 	}
 
 	return nil
+}
+
+func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *NASStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host

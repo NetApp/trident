@@ -658,6 +658,14 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return errors.New("cloning with E-Series is not supported")
 }
 
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *SANStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
+}
+
 // Get test for the existence of a volume
 func (d *SANStorageDriver) Get(name string) error {
 

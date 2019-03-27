@@ -63,6 +63,10 @@ func (m *MockOrchestrator) AddFrontend(f frontend.Plugin) {
 	// NOP for the time being, since users of MockOrchestrator don't need this
 }
 
+func (m *MockOrchestrator) GetFrontend(name string) (frontend.Plugin, error) {
+	return nil, nil
+}
+
 func (m *MockOrchestrator) GetVersion() (string, error) {
 	return config.OrchestratorVersion.String(), nil
 }
@@ -220,6 +224,19 @@ func (m *MockOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (*stora
 
 func (m *MockOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error) {
 	// TODO: write this method to enable CloneVolume unit tests
+	return nil, nil
+}
+
+func (o *MockOrchestrator) GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error) {
+	// TODO: write this method to enable GetVolumeExternal unit tests
+	return nil, nil
+}
+
+func (o *MockOrchestrator) ImportVolume(
+	volumeConfig *storage.VolumeConfig, originalName string, backendName string, notManaged bool, createPVandPVC Operation,
+) (externalVol *storage.VolumeExternal, err error) {
+
+	// TODO: write this method to enable GetVolumeExternal unit tests
 	return nil, nil
 }
 

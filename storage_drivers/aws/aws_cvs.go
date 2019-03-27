@@ -756,6 +756,14 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return d.waitForVolumeCreate(clone, name)
 }
 
+func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *NFSStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
+}
+
 // getTelemetryLabels builds the labels that are set on each volume.
 func (d *NFSStorageDriver) getTelemetryLabels() []string {
 
