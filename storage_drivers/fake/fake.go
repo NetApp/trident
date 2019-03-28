@@ -589,23 +589,19 @@ func (d *StorageDriver) CreateSnapshot(snapshotName string, volConfig *storage.V
 	if !ok {
 		return nil, fmt.Errorf("source volume %s not found", internalVolName)
 	}
-	// Check if a snapshot with same name exists
-	if _, ok := d.Snapshots[snapshotName]; ok {
-		return nil, fmt.Errorf("snapshot %s already exists", snapshotName)
-	}
 
 	snapshot := &storage.Snapshot{
 		Name:    snapshotName,
 		Created: time.Now().UTC().Format(time.RFC3339),
 		ID:      strconv.FormatInt(time.Now().UnixNano(), 10),
+		Backend: d.Config.InstanceName,
 	}
-	d.Snapshots[snapshotName] = snapshot
+	d.Snapshots[snapshot.ID] = snapshot
 
 	log.WithFields(log.Fields{
 		"backend":      d.Config.InstanceName,
-		"snapshotName": snapshotName,
 		"sourceVolume": internalVolName,
-	}).Info("Created fake snapshot.")
+	}).Infof("Created fake snapshot: %+v", snapshot)
 
 	return snapshot, nil
 }

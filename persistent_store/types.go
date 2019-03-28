@@ -63,7 +63,7 @@ type Client interface {
 	DeleteStorageClass(sc *storageclass.StorageClass) error
 
 	AddSnapshot(snapshot *storage.Snapshot) error
-	GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error)
+	GetSnapshot(snapshotID string) (*storage.SnapshotExternal, error)
 }
 
 type EtcdClient interface {

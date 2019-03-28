@@ -270,16 +270,16 @@ func (c *InMemoryClient) DeleteStorageClass(s *sc.StorageClass) error {
 
 func (c *InMemoryClient) AddSnapshot(snapshot *storage.Snapshot) error {
 	snapExternal := snapshot.ConstructExternal()
-	c.snapshots[snapshot.Name] = snapExternal
+	c.snapshots[snapshot.ID] = snapExternal
 	c.snapshotsAdded++
 	return nil
 }
 
 // GetSnapshot retrieves a snapshot state from the persistent store
-func (c *InMemoryClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
-	ret, ok := c.snapshots[snapshotName]
+func (c *InMemoryClient) GetSnapshot(snapshotID string) (*storage.SnapshotExternal, error) {
+	ret, ok := c.snapshots[snapshotID]
 	if !ok {
-		return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
+		return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotID)
 	}
 	return ret, nil
 }

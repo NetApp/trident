@@ -738,7 +738,7 @@ func TestEtcdv2Snapshot(t *testing.T) {
 
 	// Getting a snapshot
 	var recoveredSnapshot *storage.SnapshotExternal
-	recoveredSnapshot, err = p.GetSnapshot(snap1.Name)
+	recoveredSnapshot, err = p.GetSnapshot(snap1.ID)
 	if err != nil {
 		t.Error(err.Error())
 	}

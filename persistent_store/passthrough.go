@@ -396,6 +396,6 @@ func (c *PassthroughClient) AddSnapshot(snapshot *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
+func (c *PassthroughClient) GetSnapshot(snapshotID string) (*storage.SnapshotExternal, error) {
 	return nil, nil
 }

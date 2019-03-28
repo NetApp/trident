@@ -789,12 +789,12 @@ func (p *EtcdClientV3) AddSnapshot(snapshot *storage.Snapshot) error {
 	if err != nil {
 		return err
 	}
-	return p.Create(config.SnapshotURL+"/"+snapshot.Name, string(snapJSON))
+	return p.Create(config.SnapshotURL+"/"+snapshot.ID, string(snapJSON))
 }
 
 // GetSnapshot fetches a snapshot's state from the persistent store
-func (p *EtcdClientV3) GetSnapshot(snapshotName string) (*storage.SnapshotExternal, error) {
-	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotName)
+func (p *EtcdClientV3) GetSnapshot(snapshotID string) (*storage.SnapshotExternal, error) {
+	snapJSON, err := p.Read(config.SnapshotURL + "/" + snapshotID)
 	if err != nil {
 		return nil, err
 	}

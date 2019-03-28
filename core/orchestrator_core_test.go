@@ -2180,7 +2180,7 @@ func TestSnapshotVolumes(t *testing.T) {
 
 		orchestrator.mutex.Lock()
 		// Snapshot should be registered in the store
-		externalSnapshot, err := orchestrator.storeClient.GetSnapshot(snapshotName)
+		externalSnapshot, err := orchestrator.storeClient.GetSnapshot(snapshotResult.ID)
 		if err != nil {
 			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
 		}
