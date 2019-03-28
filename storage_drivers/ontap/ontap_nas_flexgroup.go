@@ -267,6 +267,14 @@ func (d *NASFlexGroupStorageDriver) CreateClone(volConfig *storage.VolumeConfig)
 	return errors.New("clones are not supported for FlexGroups")
 }
 
+func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+	return errors.New("import is not implemented")
+}
+
+func (d *NASFlexGroupStorageDriver) Rename(name string, new_name string) error {
+	return errors.New("rename is not implemented")
+}
+
 // Destroy the volume
 func (d *NASFlexGroupStorageDriver) Destroy(name string) error {
 

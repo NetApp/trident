@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -20,6 +20,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -946,6 +947,128 @@ func TestEtcdv3FailedReplaceBackendAndUpdateVolumes(t *testing.T) {
 	if err = p.DeleteVolumes(); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func TestEtcdv3AddGetDeleteNode(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+	initialNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	retrievedNode, err := p.GetNode(initialNode.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !reflect.DeepEqual(retrievedNode, initialNode) {
+		t.Errorf("Incorrect node added to persistence; expected %v, found %v", initialNode, retrievedNode)
+	}
+
+	if err := p.DeleteNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestEtcdv3UpdateNode(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+	initialNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode)
+
+	updateNode := &utils.Node{
+		Name: "testNode",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+
+	if err := p.AddOrUpdateNode(updateNode); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	retrievedNode, err := p.GetNode(initialNode.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !reflect.DeepEqual(retrievedNode, updateNode) {
+		t.Errorf("Incorrect node added to persistence; expected %v, found %v", updateNode, retrievedNode)
+	}
+}
+
+func TestEtcdv3GetNodes(t *testing.T) {
+	p, err := NewEtcdClientV3(*etcdV3)
+	initialNodes := make([]*utils.Node, 0)
+	initialNode1 := &utils.Node{
+		Name: "testNode",
+		IQN:  "myIQN",
+		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode1); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode1)
+	initialNodes = append(initialNodes, initialNode1)
+
+	initialNode2 := &utils.Node{
+		Name: "testNode2",
+		IQN:  "myOtherIQN",
+		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+	}
+
+	if err := p.AddOrUpdateNode(initialNode2); err != nil {
+		t.Fatal(err.Error())
+	}
+	defer p.DeleteNode(initialNode2)
+	initialNodes = append(initialNodes, initialNode2)
+
+	retrievedNodes, err := p.GetNodes()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !unorderedNodeSlicesEqual(retrievedNodes, initialNodes) {
+		t.Error("Incorrect nodes returned from persistence")
+	}
+}
+
+func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	// create a map of node names -> int
+	diff := make(map[string]int, len(x))
+	for _, _x := range x {
+		// 0 value for int is 0, so just increment a counter for the string
+		diff[_x.Name]++
+	}
+	for _, _y := range y {
+		// If the node _y is not in diff bail out early
+		if _, ok := diff[_y.Name]; !ok {
+			return false
+		}
+		diff[_y.Name] -= 1
+		if diff[_y.Name] == 0 {
+			delete(diff, _y.Name)
+		}
+	}
+	if len(diff) == 0 {
+		return true
+	}
+	return false
 }
 
 func TestEtcdv3Snapshot(t *testing.T) {

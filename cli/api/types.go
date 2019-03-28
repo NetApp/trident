@@ -3,6 +3,7 @@
 package api
 
 import "github.com/netapp/trident/storage"
+import "github.com/netapp/trident/utils"
 
 type ErrorResponse struct {
 	Error string `json:"error"`
@@ -39,6 +40,10 @@ type MultipleStorageClassResponse struct {
 
 type MultipleVolumeResponse struct {
 	Items []storage.VolumeExternal `json:"items"`
+}
+
+type MultipleNodeResponse struct {
+	Items []utils.Node `json:"items"`
 }
 
 type Version struct {

@@ -71,7 +71,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
     verbs: ["patch"]
@@ -97,7 +97,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "update"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update"]
+    verbs: ["get", "list", "watch", "create", "update"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]
@@ -126,7 +126,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
     verbs: ["patch"]
@@ -152,7 +152,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "update"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update"]
+    verbs: ["get", "list", "watch", "create", "update"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]
@@ -181,7 +181,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
     verbs: ["patch"]
@@ -430,6 +430,7 @@ spec:
         - "--https_port=8443"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
         {DEBUG}
         livenessProbe:
           exec:
@@ -573,6 +574,7 @@ spec:
         - "--rest=false"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=node"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME

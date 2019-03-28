@@ -5,7 +5,7 @@ package rest
 import "time"
 
 const (
-	httpTimeout = 90 * time.Second
+	HTTPTimeout = 90 * time.Second
 
 	CACertName     = "trident-ca"
 	ServerCertName = "trident-csi" // Must match CSI service name

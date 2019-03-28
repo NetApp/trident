@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -36,4 +36,10 @@ type VolumePublishInfo struct {
 	SharedTarget   bool     `json:"sharedTarget,omitempty"`
 	DevicePath     string   `json:"devicePath,omitempty"`
 	VolumeAccessInfo
+}
+
+type Node struct {
+	Name string   `json:"name"`
+	IQN  string   `json:"iqn,omitempty"`
+	IPs  []string `json:"ips,omitempty"`
 }

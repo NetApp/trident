@@ -241,6 +241,19 @@ func (s *StorageClass) CheckAndAddBackend(b *storage.Backend) int {
 	return added
 }
 
+func (s *StorageClass) IsAddedToBackend(backend *storage.Backend, storageClassName string) bool {
+
+	for _, storagePool := range backend.Storage {
+		for _, storageClass := range storagePool.StorageClasses {
+			if storageClass == storageClassName {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (s *StorageClass) RemovePoolsForBackend(backend *storage.Backend) {
 	newStoragePools := make([]*storage.Pool, 0)
 	for _, storagePool := range s.pools {

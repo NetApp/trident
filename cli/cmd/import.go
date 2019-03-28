@@ -5,12 +5,12 @@ package cmd
 import "github.com/spf13/cobra"
 
 func init() {
-	RootCmd.AddCommand(createCmd)
+	RootCmd.AddCommand(importCmd)
 }
 
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Add a resource to Trident",
+var importCmd = &cobra.Command{
+	Use:   "import",
+	Short: "Import an existing resource to Trident",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		err := discoverOperatingMode(cmd)
 		return err
