@@ -281,8 +281,7 @@ func newKubernetesPlugin(
 		&k8ssnapshotv1alpha1.VolumeSnapshot{},
 		KubernetesSyncPeriod,
 		cache.ResourceEventHandlerFuncs{
-			AddFunc:    ret.addVolumeSnapshot,
-			UpdateFunc: ret.updateVolumeSnapshot,
+			AddFunc: ret.addVolumeSnapshot,
 		},
 	)
 
@@ -1871,15 +1870,6 @@ func (p *Plugin) addVolumeSnapshot(obj interface{}) {
 	p.processVolumeSnapshot(volumeSnapshot)
 }
 
-func (p *Plugin) updateVolumeSnapshot(oldObj, newObj interface{}) {
-	volumeSnapshot, ok := newObj.(*k8ssnapshotv1alpha1.VolumeSnapshot)
-	if !ok {
-		log.Errorf("Kubernetes frontend expected VolumeSnapshot CR; handler got %v", newObj)
-		return
-	}
-	p.processVolumeSnapshot(volumeSnapshot)
-}
-
 func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) {
 
 	// Validate the VolumeSnapshot CR
@@ -1888,7 +1878,7 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 		return
 	}
 
-	// 2. Snapshot must not be created before
+	// 2. Snapshot must not exist
 	if volSnap.Status.CreationTime != nil && volSnap.Status.ReadyToUse {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
@@ -1906,11 +1896,34 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 		return
 	}
 
+	// 4. VolumeSnapshotClass must be present
+	volSnapClass := *volSnap.Spec.VolumeSnapshotClassName
+	vsClass, err := p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshotClasses().Get(volSnapClass, metav1.GetOptions{})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot":      volSnap.Name,
+			"volumeSnapshotClass": volSnapClass,
+		}).Debug("Kubernetes frontend ignored this VolumeSnapshot as " +
+			"the VolumeSnapshotClass is not present")
+		return
+	}
+
+	// 5. Trident must set as the snapshotter
+	if vsClass.Snapshotter != AnnOrchestrator {
+		log.WithFields(log.Fields{
+			"volumeSnapshot":      volSnap.Name,
+			"volumeSnapshotClass": volSnapClass,
+		}).Debugf("Kubernetes frontend ignored this VolumeSnapshot as "+
+			"%s is not set as the snapshotter", AnnOrchestrator)
+		return
+	}
+
 	log.WithFields(log.Fields{
-		"volumeSnapshot": volSnap.Name,
-		"namespace":      volSnap.Namespace,
-		"sourceKind":     volSnap.Spec.Source.Kind,
-		"sourceName":     volSnap.Spec.Source.Name,
+		"volumeSnapshot":      volSnap.Name,
+		"namespace":           volSnap.Namespace,
+		"volumeSnapshotClass": volSnapClass,
+		"sourceKind":          volSnap.Spec.Source.Kind,
+		"sourceName":          volSnap.Spec.Source.Name,
 	}).Debug("Kubernetes frontend got notified of a VolumeSnapshot.")
 
 	// Validate the source PVC
@@ -1960,52 +1973,112 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 	}
 
 	// Create the snapshot
-	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, claim.Spec.VolumeName)
+	pvName := claim.Spec.VolumeName
+	snapshotExt, err := p.orchestrator.CreateVolumeSnapshot(volSnap.Name, pvName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
 			"sourcePVC":      claim.Name,
 			"error":          err.Error(),
 		}).Error("Kubernetes frontend failed to create snapshot")
-		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		_, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
-			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Controller failed to update VolumeSnapshot.Status.Error")
+			log.WithError(uerr).Error("Kubernetes frontend failed to update VolumeSnapshot error status")
 			return
 		}
-		p.eventRecorder.Event(newVolSnap, v1.EventTypeWarning, "CreateSnapshotFailed", err.Error())
 		return
 	}
 
-	// Update VolumeSnapshot status with snapshot info
-	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, snapshotExt)
+	// Create the VolumeSnapshotContent
+	pv, err := p.kubeClient.CoreV1().PersistentVolumes().Get(pvName, metav1.GetOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot": volSnap.Name,
 			"sourcePVC":      claim.Name,
 			"error":          err.Error(),
-		}).Error("Controller failed to update VolumeSnapshot status")
-		newVolSnap, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		}).Errorf("Failed to get PV %s", pvName)
+		_, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
 		if uerr != nil {
-			p.eventRecorder.Event(volSnap, v1.EventTypeWarning, "UpdateStatusFailed",
-				"Controller failed to update VolumeSnapshot.Status.Error")
+			log.WithError(uerr).Error("Kubernetes frontend failed to update VolumeSnapshot error status")
 			return
 		}
-		p.eventRecorder.Event(newVolSnap, v1.EventTypeWarning, "UpdateStatusFailed", err.Error())
+		return
+	}
+	volumeRef := &v1.ObjectReference{
+		Kind:      "PersistentVolume",
+		Name:      pvName,
+		Namespace: pv.Namespace,
+		UID:       pv.UID,
+	}
+
+	contentName := getVolumeSnapshotContentName(volSnap)
+	volSnapContent := &k8ssnapshotv1alpha1.VolumeSnapshotContent{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: contentName,
+		},
+		Spec: k8ssnapshotv1alpha1.VolumeSnapshotContentSpec{
+			VolumeSnapshotRef: &v1.ObjectReference{
+				Kind:       "VolumeSnapshot",
+				Namespace:  volSnap.Namespace,
+				Name:       volSnap.Name,
+				UID:        volSnap.UID,
+				APIVersion: "snapshot.storage.k8s.io/v1alpha1",
+			},
+			VolumeSnapshotSource: k8ssnapshotv1alpha1.VolumeSnapshotSource{
+				CSI: &k8ssnapshotv1alpha1.CSIVolumeSnapshotSource{
+					Driver:         "trident-snapshotter",
+					SnapshotHandle: snapshotExt.ID,
+				},
+			},
+			PersistentVolumeRef:     volumeRef,
+			VolumeSnapshotClassName: &volSnapClass,
+		},
+	}
+
+	volSnapContent, err = p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshotContents().Create(volSnapContent)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot": volSnap.Name,
+			"sourcePVC":      claim.Name,
+			"error":          err.Error(),
+		}).Error("Failed to create VolumeSnapshotContent")
+		_, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		if uerr != nil {
+			log.WithError(uerr).Error("Kubernetes frontend failed to update VolumeSnapshot error status")
+			return
+		}
+		return
+	}
+
+	// Update VolumeSnapshot status with snapshot info and bind with snapshot content
+	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, volSnapContent, snapshotExt)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeSnapshot":        volSnap.Name,
+			"volumeSnapshotContent": volSnapContent.Name,
+			"sourcePVC":             claim.Name,
+			"error":                 err.Error(),
+		}).Error("Kubernetes frontend failed to update VolumeSnapshot status")
+		_, uerr := p.updateVolumeSnapshotErrorStatus(volSnap, err.Error())
+		if uerr != nil {
+			log.WithError(uerr).Error("Kubernetes frontend failed to update VolumeSnapshot error status")
+			return
+		}
 		return
 	}
 
 	message := "created a volume snapshot for the PVC."
-	p.eventRecorder.Event(newVolSnap, v1.EventTypeNormal, "CreateSnapshotSuccess", message)
 	log.WithFields(log.Fields{
-		"volumeSnapshot": volSnap.Name,
-		"sourcePVC":      claim.Name,
+		"volumeSnapshot":        volSnap.Name,
+		"volumeSnapshotContent": volSnapContent.Name,
+		"sourcePVC":             claim.Name,
 	}).Infof("Kubernetes frontend %s", message)
 }
 
 // updateVolumeSnapshotStatus updates the VolumeSnapshot.Status with given info
 func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot,
-	snapshotExt *storage.SnapshotExternal) (*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
+	volSnapContent *k8ssnapshotv1alpha1.VolumeSnapshotContent, snapshotExt *storage.SnapshotExternal) (
+	*k8ssnapshotv1alpha1.VolumeSnapshot, error) {
 
 	// Parse create time
 	createdAt, err := time.Parse(time.RFC3339, snapshotExt.Snapshot.Created)
@@ -2024,6 +2097,7 @@ func (p *Plugin) updateVolumeSnapshotStatus(volSnap *k8ssnapshotv1alpha1.VolumeS
 	}
 
 	volSnapClone := volSnap.DeepCopy()
+	volSnapClone.Spec.SnapshotContentName = volSnapContent.Name
 	volSnapClone.Status = status
 	return p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(
 		volSnapClone.Namespace).Update(volSnapClone)

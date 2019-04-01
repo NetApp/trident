@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	k8ssnapshotv1alpha1 "github.com/kubernetes-csi/external-snapshotter/pkg/apis/volumesnapshot/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	commontypes "k8s.io/apimachinery/pkg/types"
@@ -158,4 +159,12 @@ func PatchPVCStatus(kubeClient kubernetes.Interface,
 
 	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(pvcUpdated.Name,
 		commontypes.StrategicMergePatchType, patchBytes, "status")
+}
+
+func getVolumeSnapshotContentName(volSnap *k8ssnapshotv1alpha1.VolumeSnapshot) string {
+	// Return the name if already set
+	if len(volSnap.Spec.SnapshotContentName) > 0 {
+		return volSnap.Spec.SnapshotContentName
+	}
+	return "snapcontent-" + string(volSnap.UID)
 }
