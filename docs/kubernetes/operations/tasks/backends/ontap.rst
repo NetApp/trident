@@ -175,7 +175,7 @@ Example configuration
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
-        "username": "vsadmin",
+        "username": "admin",
         "password": "secret",
         "limitAggregateUsage": "80%",
         "limitVolumeSize": "50Gi",
