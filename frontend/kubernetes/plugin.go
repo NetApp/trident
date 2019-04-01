@@ -2051,7 +2051,7 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 	}
 
 	// Update VolumeSnapshot status with snapshot info and bind with snapshot content
-	newVolSnap, err := p.updateVolumeSnapshotStatus(volSnap, volSnapContent, snapshotExt)
+	_, err = p.updateVolumeSnapshotStatus(volSnap, volSnapContent, snapshotExt)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volumeSnapshot":        volSnap.Name,
