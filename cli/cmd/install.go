@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -20,12 +21,17 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/ghodss/yaml"
 	"github.com/go-logfmt/logfmt"
+	snapshotv1alpha1 "github.com/kubernetes-csi/external-snapshotter/pkg/apis/volumesnapshot/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/api"
@@ -832,6 +838,14 @@ func installTrident() (returnError error) {
 				"backendName": backendName,
 			}).Info("Added backend to Trident.")
 		}
+	}
+
+	// Create the VolumeSnapshot, VolumeSnapshotContent and VolumeSnapshotClass CRDs
+	if client.Flavor() == k8sclient.FlavorKubernetes {
+		if returnError = createSnapshotCRD(); returnError != nil {
+			return
+		}
+		log.Info("Created Volume Snapshot CRD.")
 	}
 
 	log.Info("Trident installation succeeded.")
@@ -2082,4 +2096,76 @@ func logLogFmtMessage(message string) {
 	default:
 		entry.Info(msg)
 	}
+}
+
+func createSnapshotCRD() error {
+	kubeConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return err
+	}
+	aeclient, err := apiextensionsclient.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+	// VolumeSnapshotClass
+	crd := &apiextensionsv1beta1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: snapshotv1alpha1.VolumeSnapshotClassResourcePlural + "." + snapshotv1alpha1.GroupName,
+		},
+		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
+			Group:   snapshotv1alpha1.GroupName,
+			Version: snapshotv1alpha1.SchemeGroupVersion.Version,
+			Scope:   apiextensionsv1beta1.ClusterScoped,
+			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
+				Plural: snapshotv1alpha1.VolumeSnapshotClassResourcePlural,
+				Kind:   reflect.TypeOf(snapshotv1alpha1.VolumeSnapshotClass{}).Name(),
+			},
+		},
+	}
+	res, err := aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		log.WithError(err).Errorf("failed to create VolumeSnapshotClass resource: %+v", res)
+		return err
+	}
+	// VolumeSnapshotContent
+	crd = &apiextensionsv1beta1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: snapshotv1alpha1.VolumeSnapshotContentResourcePlural + "." + snapshotv1alpha1.GroupName,
+		},
+		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
+			Group:   snapshotv1alpha1.GroupName,
+			Version: snapshotv1alpha1.SchemeGroupVersion.Version,
+			Scope:   apiextensionsv1beta1.ClusterScoped,
+			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
+				Plural: snapshotv1alpha1.VolumeSnapshotContentResourcePlural,
+				Kind:   reflect.TypeOf(snapshotv1alpha1.VolumeSnapshotContent{}).Name(),
+			},
+		},
+	}
+	res, err = aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		log.WithError(err).Errorf("failed to create VolumeSnapshotContent resource: %+v", res)
+		return err
+	}
+	// VolumeSnapshot
+	crd = &apiextensionsv1beta1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: snapshotv1alpha1.VolumeSnapshotResourcePlural + "." + snapshotv1alpha1.GroupName,
+		},
+		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
+			Group:   snapshotv1alpha1.GroupName,
+			Version: snapshotv1alpha1.SchemeGroupVersion.Version,
+			Scope:   apiextensionsv1beta1.NamespaceScoped,
+			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
+				Plural: snapshotv1alpha1.VolumeSnapshotResourcePlural,
+				Kind:   reflect.TypeOf(snapshotv1alpha1.VolumeSnapshot{}).Name(),
+			},
+		},
+	}
+	res, err = aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		log.WithError(err).Errorf("failed to create VolumeSnapshot resource: %+v", res)
+		return err
+	}
+	return nil
 }
