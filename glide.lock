@@ -1,5 +1,5 @@
-hash: cb7f5b11a2e4c4f0485cf3ace8941fd6a5556d8e54132a577935760badcaa0ff
-updated: 2019-02-20T10:09:06.587982376-05:00
+hash: f1a2673d3ddb5de72062c76b889564b51299b134d63ca5decd804808c7cc25d6
+updated: 2019-03-31T22:39:31.033759-07:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 62661b46c4093e2c1f38d943e663db1a29873e80
@@ -23,7 +23,7 @@ imports:
   - pkg/types
   - version
 - name: github.com/coreos/go-semver
-  version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
+  version: e214231b295a8ea9479f11b70b35d5acf3556d9b
   subpackages:
   - semver
 - name: github.com/coreos/go-systemd
@@ -83,7 +83,7 @@ imports:
   - ptypes/timestamp
   - ptypes/wrappers
 - name: github.com/golang/snappy
-  version: 2a8bb927dd31d8daada140a5d09578521ce5c36a
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/gofuzz
@@ -118,6 +118,13 @@ imports:
   version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/kubernetes-csi/external-snapshotter
+  version: 0d2cdd7bde5ea9d41ae47ef4184ca20ebe0435e1
+  subpackages:
+  - pkg/apis/volumesnapshot/v1alpha1
+  - pkg/client/clientset/versioned
+  - pkg/client/clientset/versioned/scheme
+  - pkg/client/clientset/versioned/typed/volumesnapshot/v1alpha1
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
@@ -163,7 +170,7 @@ imports:
 - name: github.com/willf/bitset
   version: 20ad246f50b49590afcb1ed8ad143da7163869cb
 - name: golang.org/x/crypto
-  version: a4c6cb3142f211c99e4bf4cd769535b29a9b616f
+  version: 193df9c0f06f8bb35fba505183eaf0acc0136505
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -211,7 +218,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/genproto
-  version: 082222b4a5c572e33e82ee9162d1352c7cf38682
+  version: 09f6ed296fc66555a25fe4ce95173148778dfa85
   subpackages:
   - googleapis/rpc/status
 - name: google.golang.org/grpc
@@ -277,6 +284,14 @@ imports:
   - storage/v1
   - storage/v1alpha1
   - storage/v1beta1
+- name: k8s.io/apiextensions-apiserver
+  version: 20c909e7c8c3fec1a0e345b1d4e57f1c1623c368
+  subpackages:
+  - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/v1beta1
+  - pkg/client/clientset/clientset
+  - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
   version: 2b1284ed4c93a43499e781493253e2ac5959c4fd
   subpackages:
@@ -435,6 +450,10 @@ imports:
 - name: k8s.io/kube-openapi
   version: c59034cc13d587f5ef4e85ca0ade0c1866ae8e1d
   subpackages:
+  - pkg/builder
+  - pkg/common
+  - pkg/handler
+  - pkg/util
   - pkg/util/proto
 - name: sigs.k8s.io/yaml
   version: fd68e9863619f6ec2fdd8625fe1f02e7c877e480
