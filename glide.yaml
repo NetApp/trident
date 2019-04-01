@@ -65,6 +65,8 @@ import:
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
+- package: k8s.io/apiextensions-apiserver
+  version: kubernetes-1.13.0
 - package: github.com/docker/go-plugins-helpers
   version: 1e6269c305b8c75cfda1c8aa91349c38d7335814
   subpackages:
