@@ -271,6 +271,11 @@ func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, orig
 	return errors.New("import is not implemented")
 }
 
+func (d *NASFlexGroupStorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+	return errors.New("creating volume from snapshot is not supported for FlexGroups")
+}
+
 func (d *NASFlexGroupStorageDriver) Rename(name string, new_name string) error {
 	return errors.New("rename is not implemented")
 }

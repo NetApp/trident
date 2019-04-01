@@ -26,6 +26,8 @@ type Orchestrator interface {
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	AttachVolume(volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	CreateVolumeFromSnapshot(snapshotID string, volumeConfig *storage.VolumeConfig) (
+		externalVol *storage.VolumeExternal, err error)
 	DetachVolume(volumeName, mountpoint string) error
 	DeleteVolume(volume string) error
 	GetVolume(volume string) (*storage.VolumeExternal, error)

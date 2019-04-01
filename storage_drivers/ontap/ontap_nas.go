@@ -324,6 +324,11 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	return errors.New("import is not implemented")
 }
 
+func (d *NASStorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+	return errors.New("creating volume from snapshot with ONTAP NAS driver is not implemented")
+}
+
 func (d *NASStorageDriver) Rename(name string, new_name string) error {
 	return errors.New("rename is not implemented")
 }

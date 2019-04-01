@@ -662,6 +662,11 @@ func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	return errors.New("import is not implemented")
 }
 
+func (d *SANStorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+	return errors.New("creating volume from snapshot with E-Series is not supported")
+}
+
 func (d *SANStorageDriver) Rename(name string, new_name string) error {
 	return errors.New("rename is not implemented")
 }

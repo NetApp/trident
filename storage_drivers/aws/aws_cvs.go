@@ -764,6 +764,161 @@ func (d *NFSStorageDriver) Rename(name string, new_name string) error {
 	return errors.New("rename is not implemented")
 }
 
+func (d *NFSStorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+
+	name := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":         "CreateVolumeFromSnapshot",
+			"Type":           "NFSStorageDriver",
+			"name":           name,
+			"sourceSnapshot": snapshot.ID,
+			"attrs":          volAttributes,
+		}
+		log.WithFields(fields).Debug(">>>> CreateVolumeFromSnapshot")
+		defer log.WithFields(fields).Debug("<<<< CreateVolumeFromSnapshot")
+	}
+
+	// Make sure we got a valid name
+	if err := d.validateName(name); err != nil {
+		return err
+	}
+
+	// Get the pool since most default values are pool-specific
+	if storagePool == nil {
+		return errors.New("pool not specified")
+	}
+	pool, ok := d.pools[storagePool.Name]
+	if !ok {
+		return fmt.Errorf("pool %s does not exist", storagePool.Name)
+	}
+
+	// Check if the source snapshot exists and is available
+	sourceSnapshot, err := d.API.GetSnapshotByID(snapshot.ID)
+	if err != nil {
+		return fmt.Errorf("could not find source snapshot %s: %v", snapshot.ID, err)
+	}
+	if sourceSnapshot.LifeCycleState != api.StateAvailable {
+		return fmt.Errorf("source snapshot state is '%s', it must be '%s'",
+			sourceSnapshot.LifeCycleState, api.StateAvailable)
+	}
+
+	// If the volume already exists, bail out
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volumeExists {
+		if extantVolume.Region != d.Config.APIRegion {
+			return fmt.Errorf("volume %s requested in region %s, but it already exists in region %s",
+				name, d.Config.APIRegion, extantVolume.Region)
+		}
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes[Size])
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
+	}
+
+	// TODO: remove this code once CVS can handle smaller volumes
+	if sizeBytes < MinimumCVSVolumeSizeBytes {
+
+		log.WithFields(log.Fields{
+			"name": name,
+			"size": sizeBytes,
+		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (100 GB).")
+
+		sizeBytes = MinimumCVSVolumeSizeBytes
+		volConfig.Size = fmt.Sprintf("%d", sizeBytes)
+	}
+
+	if _, _, err := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
+		return err
+	}
+
+	// Take service level from volume config first (handles Docker case), then from pool
+	userServiceLevel := volConfig.ServiceLevel
+	if userServiceLevel == "" {
+		userServiceLevel = pool.InternalAttributes[ServiceLevel]
+	}
+	switch userServiceLevel {
+	case api.UserServiceLevel1, api.UserServiceLevel2, api.UserServiceLevel3:
+		break
+	default:
+		return fmt.Errorf("invalid service level: %s", userServiceLevel)
+	}
+	apiServiceLevel := api.APIServiceLevelFromUserServiceLevel(userServiceLevel)
+
+	log.WithFields(log.Fields{
+		"creationToken":  name,
+		"size":           sizeBytes,
+		"serviceLevel":   userServiceLevel,
+		"sourceSnapshot": snapshot.Name,
+	}).Debug("Creating volume.")
+
+	apiExportRule := api.ExportRule{
+		AllowedClients: pool.InternalAttributes[ExportRule],
+		Cifs:           false,
+		Nfsv3:          true,
+		Nfsv4:          true,
+		RuleIndex:      1,
+		UnixReadOnly:   false,
+		UnixReadWrite:  true,
+	}
+	exportPolicy := api.ExportPolicy{
+		Rules: []api.ExportRule{apiExportRule},
+	}
+
+	snapshotPolicy := api.SnapshotPolicy{
+		Enabled: false,
+		MonthlySchedule: api.MonthlySchedule{
+			DaysOfMonth: "1",
+		},
+		WeeklySchedule: api.WeeklySchedule{
+			Day: "Sunday",
+		},
+	}
+
+	createRequest := &api.FilesystemCreateRequest{
+		Name:           volConfig.Name,
+		Region:         d.Config.APIRegion,
+		CreationToken:  name,
+		ExportPolicy:   exportPolicy,
+		Labels:         d.getTelemetryLabels(),
+		ProtocolTypes:  []string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv4},
+		QuotaInBytes:   int64(sizeBytes),
+		SecurityStyle:  defaultSecurityStyle,
+		ServiceLevel:   apiServiceLevel,
+		SnapshotPolicy: snapshotPolicy,
+		SnapshotID:     snapshot.ID,
+	}
+
+	// Create the volume
+	volume, err := d.API.CreateVolume(createRequest)
+	if err != nil {
+		return err
+	}
+
+	// Wait for creation to complete so that the mount targets are available
+	return d.waitForVolumeCreate(volume, name)
+}
+
 // getTelemetryLabels builds the labels that are set on each volume.
 func (d *NFSStorageDriver) getTelemetryLabels() []string {
 

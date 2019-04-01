@@ -159,3 +159,13 @@ func PatchPVCStatus(kubeClient kubernetes.Interface,
 	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(pvcUpdated.Name,
 		commontypes.StrategicMergePatchType, patchBytes, "status")
 }
+
+func getPersistentVolumeClaimDataSource(claim *v1.PersistentVolumeClaim) string {
+	if claim.Spec.DataSource == nil {
+		return ""
+	}
+	if claim.Spec.DataSource.Kind != "VolumeSnapshot" {
+		return ""
+	}
+	return claim.Spec.DataSource.Name
+}

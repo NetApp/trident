@@ -789,9 +789,13 @@ func (p *Plugin) createVolumeFromConfig(
 	storageClass string,
 	namespace string,
 	claimName string,
+	dataSourceSnapshot string,
 ) (*storage.VolumeExternal, error) {
 
-	var vol *storage.VolumeExternal
+	var (
+		vol     *storage.VolumeExternal
+		options metav1.GetOptions
+	)
 
 	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, namespace)
 	if err != nil {
@@ -801,16 +805,52 @@ func (p *Plugin) createVolumeFromConfig(
 		}).Warn("Kubernetes frontend couldn't create a client to namespace!")
 	}
 
-	if volConfig.CloneSourceVolume == "" {
+	if volConfig.CloneSourceVolume == "" && dataSourceSnapshot == "" {
 		vol, err = p.orchestrator.AddVolume(volConfig)
 		if err != nil {
 			return nil, err
 		}
+	} else if dataSourceSnapshot != "" {
+		// Get source volume snapshot
+		volSnap, err := p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshots(namespace).Get(dataSourceSnapshot, options)
+		if err != nil {
+			err = fmt.Errorf("could not find the data source snapshot %s", dataSourceSnapshot)
+			log.WithFields(log.Fields{
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for creating a PVC with data source: %v", err.Error())
+			return nil, err
+		}
+		// Get the corresponding volume snapshot content
+		contentName := volSnap.Spec.SnapshotContentName
+		if contentName == "" {
+			err = fmt.Errorf("no snapshot content bound to snapshot %s", dataSourceSnapshot)
+			log.WithFields(log.Fields{
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for creating a PVC with data source: %v", err.Error())
+			return nil, err
+		}
+		volSnapContent, err := p.kubeSnapClient.VolumesnapshotV1alpha1().VolumeSnapshotContents().Get(contentName, options)
+		if err != nil {
+			err = fmt.Errorf("failed to find snapshot content %s for snapshot %s", contentName, dataSourceSnapshot)
+			log.WithFields(log.Fields{
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for creating a PVC with data source: %v", err.Error())
+			return nil, err
+		}
+		internalSnapshotID := volSnapContent.Spec.CSI.SnapshotHandle
+		// Create volume from snapshot
+		vol, err = p.orchestrator.CreateVolumeFromSnapshot(internalSnapshotID, volConfig)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		var (
-			options metav1.GetOptions
-			pvc     *v1.PersistentVolumeClaim
-		)
+		var pvc *v1.PersistentVolumeClaim
 
 		// If cloning an existing PVC, process the source PVC name:
 		// 1) Validate that the source PVC is in the same namespace.
@@ -1011,11 +1051,13 @@ func (p *Plugin) createVolumeAndPV(
 
 	storageClass := GetPersistentVolumeClaimClass(claim)
 	annotations := p.processStorageClassAnnotations(claim, storageClass)
+	// dataSource is set if the PVC is being created from a VolumeSnapshot
+	dataSourceSnapshot := getPersistentVolumeClaimDataSource(claim)
 
 	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	accessModes := claim.Spec.AccessModes
 	volConfig := getVolumeConfig(accessModes, uniqueName, size, annotations)
-	volExternal, err = p.createVolumeFromConfig(volConfig, storageClass, claim.Namespace, claim.Name)
+	volExternal, err = p.createVolumeFromConfig(volConfig, storageClass, claim.Namespace, claim.Name, dataSourceSnapshot)
 	if err != nil {
 		return nil, err
 	}

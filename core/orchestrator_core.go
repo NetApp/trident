@@ -1138,6 +1138,127 @@ func (o *TridentOrchestrator) ImportVolume(
 	return volExternal, nil
 }
 
+// CreateVolumeFromSnapshot creates a new volume with data from the given snapshot
+func (o *TridentOrchestrator) CreateVolumeFromSnapshot(snapshotID string, volumeConfig *storage.VolumeConfig) (
+	externalVol *storage.VolumeExternal, err error) {
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	var (
+		backend *storage.Backend
+		vol     *storage.Volume
+	)
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	// Check if volume already exists
+	if _, ok := o.volumes[volumeConfig.Name]; ok {
+		return nil, fmt.Errorf("volume %s already exists", volumeConfig.Name)
+	}
+	volumeConfig.Version = config.OrchestratorAPIVersion
+
+	// Get the snapshot object from persistent store
+	snapshotExt, err := o.storeClient.GetSnapshot(snapshotID)
+	if err != nil {
+		return nil, fmt.Errorf("snapshot %s does not exist", snapshotID)
+	}
+
+	// Get the protocol based on the specified access mode & protocol
+	protocol, err := o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	if err != nil {
+		return nil, err
+	}
+	// Get the storage class
+	sc, ok := o.storageClasses[volumeConfig.StorageClass]
+	if !ok {
+		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
+	}
+
+	// Get storage class pools and look for source snapshot pool
+	pools := sc.GetStoragePoolsForProtocol(protocol)
+	if len(pools) == 0 {
+		return nil, fmt.Errorf("no available backends for storage class %s",
+			volumeConfig.StorageClass)
+	}
+
+	// Get the backend of the source snapshot
+	if backend, ok = o.backends[snapshotExt.Backend]; !ok {
+		// Should never get here but just to be safe
+		return nil, notFoundError(fmt.Sprintf("backend %s for the source snapshot not found: %s",
+			snapshotExt.Snapshot.Backend, snapshotID))
+	}
+
+	// Add a transaction in case the operation must be rolled back later
+	volTxn := &persistentstore.VolumeTransaction{
+		Config: volumeConfig,
+		Op:     persistentstore.AddVolume,
+	}
+	if err = o.addVolumeTransaction(volTxn); err != nil {
+		return nil, err
+	}
+
+	// Recovery function in case of error
+	defer func() {
+		err = o.addVolumeCleanup(err, backend, vol, volTxn, volumeConfig)
+	}()
+
+	// Randomize the storage pool list for better distribution of load across all pools.
+	rand.Seed(time.Now().UnixNano())
+
+	log.WithFields(log.Fields{
+		"volume": volumeConfig.Name,
+	}).Debugf("Looking through %d storage pools.", len(pools))
+
+	errorMessages := make([]string, 0)
+
+	// Choose a pool at random.
+	for _, num := range rand.Perm(len(pools)) {
+
+		// Add volume to the backend of the snapshot
+		vol, err = backend.CreateVolumeFromSnapshot(&snapshotExt.Snapshot, volumeConfig, pools[num], sc.GetAttributes())
+		if err != nil {
+			log.WithFields(log.Fields{
+				"backend":          backend.Name,
+				"pool":             pools[num].Name,
+				"volume":           volumeConfig.Name,
+				"sourceSnapshotID": snapshotID,
+				"error":            err,
+			}).Warn("Failed to create the volume from snapshot on this backend")
+			errorMessages = append(errorMessages,
+				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
+					volumeConfig.Name, pools[num].Name, backend.Name, err.Error()))
+		} else {
+			if vol.Config.Protocol == config.ProtocolAny {
+				vol.Config.Protocol = backend.GetProtocol()
+			}
+
+			// Add new volume to persistent store
+			err = o.storeClient.AddVolume(vol)
+			if err != nil {
+				return nil, err
+			}
+
+			// Update internal cache and return external form of the new volume
+			o.volumes[volumeConfig.Name] = vol
+			externalVol = vol.ConstructExternal()
+			return externalVol, nil
+		}
+	}
+
+	externalVol = nil
+	if len(errorMessages) == 0 {
+		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class and %s of free space was found",
+			protocol, volumeConfig.StorageClass, volumeConfig.Size)
+	} else {
+		err = fmt.Errorf("encountered error(s) in creating the volume: %s",
+			strings.Join(errorMessages, ", "))
+	}
+	return nil, err
+}
+
 // addVolumeTransaction is called from the volume create, clone, and resize
 // methods to save a record of the operation in case it fails and must be
 // cleaned up later.

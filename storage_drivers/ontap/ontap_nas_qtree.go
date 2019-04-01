@@ -347,6 +347,11 @@ func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, original
 	return errors.New("import is not implemented")
 }
 
+func (d *NASQtreeStorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+	return errors.New("creating volume from snapshot with ONTAP NAS Economy driver is not supported")
+}
+
 func (d *NASQtreeStorageDriver) Rename(name string, new_name string) error {
 	return errors.New("rename is not implemented")
 }

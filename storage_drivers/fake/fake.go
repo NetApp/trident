@@ -580,6 +580,93 @@ func (d *StorageDriver) Import(volumeConfig *storage.VolumeConfig, originalName 
 	return nil
 }
 
+func (d *StorageDriver) CreateVolumeFromSnapshot(snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+	storagePool *storage.Pool, volAttributes map[string]sa.Request) error {
+
+	name := volConfig.InternalName
+	if _, ok := d.Volumes[name]; ok {
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	// Check if the snapshot exists
+	if _, ok := d.Snapshots[snapshot.Name]; !ok {
+		return fmt.Errorf("source snapshot %s not found", snapshot.Name)
+	}
+
+	// Get candidate physical pools
+	physicalPools, err := d.getPoolsForCreate(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
+	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
+	if sizeBytes == 0 {
+		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
+		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+	}
+	if sizeBytes < MinimumVolumeSizeBytes {
+		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
+	}
+
+	if _, _, err = drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
+		return err
+	}
+
+	createErrors := make([]error, 0)
+
+	for _, physicalPool := range physicalPools {
+
+		fakePoolName := physicalPool.Name
+		fakePool, ok := d.Config.Pools[physicalPool.Name]
+		if !ok {
+			errMessage := fmt.Sprintf("fake pool %s not found.", fakePoolName)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
+		}
+
+		if sizeBytes > fakePool.Bytes {
+			errMessage := fmt.Sprintf("requested volume is too large, requested %d bytes, "+
+				"have %d available in pool %s", sizeBytes, fakePool.Bytes, fakePoolName)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
+		}
+
+		d.Volumes[name] = fake.Volume{
+			Name:          name,
+			RequestedPool: storagePool.Name,
+			PhysicalPool:  fakePoolName,
+			SizeBytes:     sizeBytes,
+		}
+		d.DestroyedVolumes[name] = false
+		fakePool.Bytes -= sizeBytes
+
+		log.WithFields(log.Fields{
+			"backend":        d.Config.InstanceName,
+			"name":           name,
+			"sourceSnapshot": snapshot.Name,
+			"requestedPool":  storagePool.Name,
+			"physicalPool":   fakePoolName,
+			"sizeBytes":      sizeBytes,
+		}).Info("Created fake volume from snapshot.")
+
+		return nil
+	}
+
+	// All physical pools that were eligible ultimately failed, so don't try this backend again
+	return drivers.NewBackendIneligibleError(name, createErrors)
+}
+
 func (d *StorageDriver) Rename(name string, newName string) error {
 
 	log.WithFields(log.Fields{

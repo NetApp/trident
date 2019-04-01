@@ -34,6 +34,8 @@ type Driver interface {
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
 	CreateClone(volConfig *VolumeConfig) error
+	CreateVolumeFromSnapshot(snapshot *Snapshot, volConfig *VolumeConfig,
+		storagePool *Pool, volAttributes map[string]sa.Request) error
 	Import(volConfig *VolumeConfig, originalName string, notManaged bool) error
 	Destroy(name string) error
 	Rename(name string, newName string) error
@@ -341,6 +343,76 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, originalName string, not
 		b.Volumes[volume.Config.Name] = volume
 	}
 	return volume, nil
+}
+
+func (b *Backend) CreateVolumeFromSnapshot(
+	snapshot *Snapshot, volConfig *VolumeConfig,
+	storagePool *Pool, volAttributes map[string]sa.Request,
+) (*Volume, error) {
+
+	var err error
+
+	log.WithFields(log.Fields{
+		"backend":          b.Name,
+		"volume":           volConfig.InternalName,
+		"storagePool":      storagePool.Name,
+		"storageClass":     volConfig.StorageClass,
+		"sourceSnapshotID": snapshot.ID,
+	}).Debug("Attempting volume create from snapshot.")
+
+	// CreatePrepare should perform the following tasks:
+	// 1. Generate the internal volume name
+	// 2. Optionally perform any other steps that could veto volume creation
+	if err = b.Driver.CreatePrepare(volConfig); err != nil {
+		return nil, err
+	}
+
+	// Add volume to the backend
+	volumeExists := false
+	if err = b.Driver.CreateVolumeFromSnapshot(snapshot, volConfig, storagePool, volAttributes); err != nil {
+
+		if drivers.IsVolumeExistsError(err) {
+
+			// Implement idempotency by ignoring the error if the volume exists already
+			volumeExists = true
+
+			log.WithFields(log.Fields{
+				"backend":        b.Name,
+				"volume":         volConfig.InternalName,
+				"sourceSnapshot": snapshot.Name,
+			}).Warning("Volume already exists.")
+
+		} else {
+			// If the volume doesn't exist but the create failed, return the error
+			return nil, err
+		}
+	}
+
+	// Always perform the follow-up steps
+	if err = b.Driver.CreateFollowup(volConfig); err != nil {
+
+		// If follow-up fails and we just created the volume, clean up by deleting it
+		if !volumeExists {
+			errDestroy := b.Driver.Destroy(volConfig.InternalName)
+			if errDestroy != nil {
+				log.WithFields(log.Fields{
+					"backend":        b.Name,
+					"volume":         volConfig.InternalName,
+					"sourceSnapshot": snapshot.Name,
+				}).Warnf("Mapping the created volume failed "+
+					"and %s wasn't able to delete it afterwards: %s. "+
+					"Volume must be manually deleted.",
+					tridentconfig.OrchestratorName, errDestroy)
+			}
+		}
+
+		// In all cases where follow-up fails, return the follow-up error
+		return nil, err
+	}
+
+	vol := NewVolume(volConfig, b.Name, storagePool.Name, false)
+	b.Volumes[vol.Config.Name] = vol
+	return vol, nil
 }
 
 func (b *Backend) ResizeVolume(volName, newSize string) error {
