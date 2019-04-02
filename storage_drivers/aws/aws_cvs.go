@@ -739,7 +739,7 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 		CreationToken:  name,
 		ExportPolicy:   sourceVolume.ExportPolicy,
 		Labels:         d.getTelemetryLabels(),
-		ProtocolTypes:  []string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv4},
+		ProtocolTypes:  sourceVolume.ProtocolTypes,
 		QuotaInBytes:   sourceVolume.QuotaInBytes,
 		ServiceLevel:   sourceVolume.ServiceLevel,
 		SnapshotPolicy: sourceVolume.SnapshotPolicy,
@@ -757,11 +757,61 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 }
 
 func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
-	return errors.New("import is not implemented")
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "Import",
+			"Type":         "NFSStorageDriver",
+			"originalName": originalName,
+			"newName":      volConfig.InternalName,
+		}
+		log.WithFields(fields).Debug(">>>> Import")
+		defer log.WithFields(fields).Debug("<<<< Import")
+	}
+
+	// Get the volume
+	creationToken := originalName
+
+	volume, err := d.API.GetVolumeByCreationToken(creationToken)
+	if err != nil {
+		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	// Get the volume size
+	volConfig.Size = strconv.FormatInt(int64(volume.QuotaInBytes), 10)
+
+	// Update the volume labels if Trident will manage its lifecycle
+	if !notManaged {
+		_, err = d.API.RelabelVolume(volume, d.updateTelemetryLabels(volume))
+		if err != nil {
+			log.WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
+			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
+		}
+	}
+
+	// The CVS creation token cannot be changed, so use it as the internal name
+	volConfig.InternalName = creationToken
+
+	return nil
 }
 
-func (d *NFSStorageDriver) Rename(name string, new_name string) error {
-	return errors.New("rename is not implemented")
+func (d *NFSStorageDriver) Rename(name string, newName string) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "Rename",
+			"Type":    "NFSStorageDriver",
+			"name":    name,
+			"newName": newName,
+		}
+		log.WithFields(fields).Debug(">>>> Rename")
+		defer log.WithFields(fields).Debug("<<<< Rename")
+	}
+
+	// Rename is only needed for the import workflow, and we aren't currently renaming the
+	// CVS volume when importing, so do nothing here lest we set the volume name incorrectly
+	// during an import failure cleanup.
+	return nil
 }
 
 // getTelemetryLabels builds the labels that are set on each volume.
@@ -776,6 +826,33 @@ func (d *NFSStorageDriver) getTelemetryLabels() []string {
 		telemetryLabel = strings.Replace(string(telemetryJSON), " ", "", -1)
 	}
 	return []string{telemetryLabel}
+}
+
+func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
+
+	var telemetry map[string]Telemetry
+	err := json.Unmarshal([]byte(label), &telemetry)
+	if err != nil {
+		return false
+	}
+	if _, ok := telemetry["trident"]; !ok {
+		return false
+	}
+	return true
+}
+
+// getTelemetryLabels builds the labels that are set on each volume.
+func (d *NFSStorageDriver) updateTelemetryLabels(volume *api.FileSystem) []string {
+
+	newLabels := d.getTelemetryLabels()
+
+	for _, label := range volume.Labels {
+		if !d.isTelemetryLabel(label) {
+			newLabels = append(newLabels, label)
+		}
+	}
+
+	return newLabels
 }
 
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the

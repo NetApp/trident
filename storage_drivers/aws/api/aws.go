@@ -26,7 +26,7 @@ import (
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 110
+const createTimeoutSeconds = 170
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
@@ -254,6 +254,30 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 	return &filesystems, nil
 }
 
+func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
+
+	filesystems, err := d.GetVolumes()
+	if err != nil {
+		return nil, err
+	}
+
+	matchingFilesystems := make([]FileSystem, 0)
+
+	for _, filesystem := range *filesystems {
+		if filesystem.Name == name {
+			matchingFilesystems = append(matchingFilesystems, filesystem)
+		}
+	}
+
+	if len(matchingFilesystems) == 0 {
+		return nil, fmt.Errorf("filesystem with name %s not found", name)
+	} else if len(matchingFilesystems) > 1 {
+		return nil, fmt.Errorf("multiple filesystems with name %s found", name)
+	}
+
+	return &matchingFilesystems[0], nil
+}
+
 func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
@@ -461,6 +485,87 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
 	}).Debug("Filesystem renamed.")
+
+	return filesystem, nil
+}
+
+func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSystem, error) {
+
+	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+
+	request := &FilesystemRenameRelabelRequest{
+		Region:        filesystem.Region,
+		CreationToken: filesystem.CreationToken,
+		ServiceLevel:  filesystem.ServiceLevel,
+		Labels:        labels,
+	}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(responseBody, filesystem)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":          request.Name,
+		"creationToken": request.CreationToken,
+		"statusCode":    response.StatusCode,
+	}).Debug("Filesystem relabeled.")
+
+	return filesystem, nil
+}
+
+func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, labels []string) (*FileSystem, error) {
+
+	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+
+	request := &FilesystemRenameRelabelRequest{
+		Name:          newName,
+		Region:        filesystem.Region,
+		CreationToken: filesystem.CreationToken,
+		ServiceLevel:  filesystem.ServiceLevel,
+		Labels:        labels,
+	}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(responseBody, filesystem)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":          request.Name,
+		"creationToken": request.CreationToken,
+		"statusCode":    response.StatusCode,
+	}).Debug("Filesystem renamed & relabeled.")
 
 	return filesystem, nil
 }

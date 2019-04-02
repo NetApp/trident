@@ -51,6 +51,7 @@ type Region struct {
 type FileSystem struct {
 	Created               time.Time      `json:"created,omitempty"`
 	ExportPolicy          ExportPolicy   `json:"exportPolicy,omitempty"`
+	Labels                []string       `json:"labels,omitempty"`
 	FileSystemID          string         `json:"fileSystemId,omitempty"`
 	LifeCycleState        string         `json:"lifeCycleState,omitempty"`
 	LifeCycleStateDetails string         `json:"lifeCycleStateDetails,omitempty"`
@@ -58,6 +59,7 @@ type FileSystem struct {
 	OwnerID               string         `json:"ownerId,omitempty"`
 	Region                string         `json:"region,omitempty"`
 	CreationToken         string         `json:"creationToken,omitempty"`
+	ProtocolTypes         []string       `json:"protocolTypes"`
 	QuotaInBytes          int64          `json:"quotaInBytes,omitempty"`
 	ServiceLevel          string         `json:"serviceLevel,omitempty"`
 	SnapReserve           int            `json:"snapReserve,omitempty"`
@@ -99,6 +101,14 @@ type FilesystemResizeRequest struct {
 	CreationToken string `json:"creationToken"`
 	QuotaInBytes  int64  `json:"quotaInBytes"`
 	ServiceLevel  string `json:"serviceLevel"`
+}
+
+type FilesystemRenameRelabelRequest struct {
+	Name          string   `json:"name"`
+	Region        string   `json:"region"`
+	CreationToken string   `json:"creationToken"`
+	ServiceLevel  string   `json:"serviceLevel"`
+	Labels        []string `json:"labels"`
 }
 
 type BackupPolicy struct {
