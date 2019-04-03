@@ -2010,6 +2010,10 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 		Namespace: pv.Namespace,
 		UID:       pv.UID,
 	}
+	if vsClass.DeletionPolicy == nil {
+		vsClass.DeletionPolicy = new(k8ssnapshotv1alpha1.DeletionPolicy)
+		*vsClass.DeletionPolicy = k8ssnapshotv1alpha1.VolumeSnapshotContentRetain
+	}
 
 	contentName := getVolumeSnapshotContentName(volSnap)
 	volSnapContent := &k8ssnapshotv1alpha1.VolumeSnapshotContent{
@@ -2032,6 +2036,7 @@ func (p *Plugin) processVolumeSnapshot(volSnap *k8ssnapshotv1alpha1.VolumeSnapsh
 			},
 			PersistentVolumeRef:     volumeRef,
 			VolumeSnapshotClassName: &volSnapClass,
+			DeletionPolicy:          vsClass.DeletionPolicy,
 		},
 	}
 
