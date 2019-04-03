@@ -1138,6 +1138,16 @@ func (p *Plugin) processVolume(pv *v1.PersistentVolume, eventType string) {
 		return
 	}
 
+	if pv.Status.Phase == v1.VolumePending {
+		if _, ok := pv.ObjectMeta.Annotations[AnnNotManaged]; ok {
+			log.WithFields(log.Fields{
+				"PV":         pv.Name,
+				"notManaged": pv.ObjectMeta.Annotations[AnnNotManaged],
+			}).Debug("Kubernetes frontend ignored PV, in Pending phase, created via volume import")
+			return
+		}
+	}
+
 	switch eventType {
 	case "delete":
 		p.processDeletedVolume(pv)

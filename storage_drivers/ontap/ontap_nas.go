@@ -1,9 +1,8 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -321,11 +320,84 @@ func (d *NASStorageDriver) Destroy(name string) error {
 }
 
 func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
-	return errors.New("import is not implemented")
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "Import",
+			"Type":         "NASStorageDriver",
+			"originalName": originalName,
+			"newName":      volConfig.InternalName,
+			"notManaged":   notManaged,
+		}
+		log.WithFields(fields).Debug(">>>> Import")
+		defer log.WithFields(fields).Debug("<<<< Import")
+	}
+
+	// Ensure the volume exists
+	flexvol, err := d.API.VolumeGet(originalName)
+	if err != nil {
+		return err
+	} else if flexvol == nil {
+		return fmt.Errorf("volume %s not found", originalName)
+	}
+
+	// Validate the volume is what it should be
+	if flexvol.VolumeIdAttributesPtr != nil {
+		volumeIdAttrs := flexvol.VolumeIdAttributes()
+		if volumeIdAttrs.TypePtr != nil && volumeIdAttrs.Type() != "rw" {
+			log.WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
+			return fmt.Errorf("volume %s type is %s, not rw", originalName, volumeIdAttrs.Type())
+		}
+	}
+
+	// Get the volume size
+	if flexvol.VolumeSpaceAttributesPtr == nil || flexvol.VolumeSpaceAttributesPtr.SizePtr == nil {
+		log.WithField("originalName", originalName).Errorf("Could not import volume, size not available")
+		return fmt.Errorf("volume %s size not available", originalName)
+	}
+	volConfig.Size = strconv.FormatInt(int64(flexvol.VolumeSpaceAttributesPtr.Size()), 10)
+
+	// Rename the volume if Trident will manage its lifecycle
+	if !notManaged {
+		renameResponse, err := d.API.VolumeRename(originalName, volConfig.InternalName)
+		if err = api.GetError(renameResponse, err); err != nil {
+			log.WithField("originalName", originalName).Errorf("Could not import volume, rename failed: %v", err)
+			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
+		}
+	}
+
+	// Make sure we're not importing a volume without a junction path when not managed
+	if notManaged {
+		if flexvol.VolumeIdAttributesPtr == nil {
+			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
+		} else if flexvol.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexvol.VolumeIdAttributesPtr.JunctionPath() == "" {
+			return fmt.Errorf("junction path is not set for volume %s", originalName)
+		}
+	}
+
+	return nil
 }
 
+// Rename changes the name of a volume
 func (d *NASStorageDriver) Rename(name string, new_name string) error {
-	return errors.New("rename is not implemented")
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "Rename",
+			"Type":   "NASStorageDriver",
+			"name":   name,
+		}
+		log.WithFields(fields).Debug(">>>> Rename")
+		defer log.WithFields(fields).Debug("<<<< Rename")
+	}
+
+	renameResponse, err := d.API.VolumeRename(name, new_name)
+	if err = api.GetError(renameResponse, err); err != nil {
+		log.WithField("name", name).Warnf("Could not rename volume: %v", err)
+		return fmt.Errorf("could not rename volume %s: %v", name, err)
+	}
+
+	return nil
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -419,13 +491,33 @@ func (d *NASStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error 
 	return createPrepareCommon(d, volConfig)
 }
 
-func (d *NASStorageDriver) CreateFollowup(
-	volConfig *storage.VolumeConfig,
-) error {
+func (d *NASStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
 	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 	volConfig.FileSystem = ""
+
+	// Set correct junction path
+	flexvol, err := d.API.VolumeGet(volConfig.InternalName)
+	if err != nil {
+		return err
+	} else if flexvol == nil {
+		return fmt.Errorf("volume %s not found", volConfig.InternalName)
+	}
+
+	if flexvol.VolumeIdAttributesPtr == nil {
+		return fmt.Errorf("error reading volume id attributes for volume %s", volConfig.InternalName)
+	}
+	if flexvol.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexvol.VolumeIdAttributesPtr.JunctionPath() == "" {
+		// Flexvol is not mounted, we need to mount it
+		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+		mountResponse, err := d.API.VolumeMount(volConfig.InternalName, volConfig.AccessInfo.NfsPath)
+		if err = api.GetError(mountResponse, err); err != nil {
+			return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
+		}
+	} else {
+		volConfig.AccessInfo.NfsPath = flexvol.VolumeIdAttributesPtr.JunctionPath()
+	}
 	return nil
 }
 

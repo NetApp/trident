@@ -1197,6 +1197,15 @@ func (d Client) VolumeGetRootName() (*azgo.VolumeGetRootNameResponse, error) {
 	return response, err
 }
 
+// VolumeRename changes the name of a FlexVol (but not a FlexGroup!)
+func (d Client) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRenameResponse, error) {
+	response, err := azgo.NewVolumeRenameRequest().
+		SetVolume(volumeName).
+		SetNewVolumeName(newVolumeName).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
 // VOLUME operations END
 /////////////////////////////////////////////////////////////////////////////
 
