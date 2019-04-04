@@ -281,7 +281,7 @@ func newTestPlugin(
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(
 		&corev1.EventSinkImpl{
-			Interface: client.Core().Events(""),
+			Interface: client.CoreV1().Events(""),
 		})
 	ret.eventRecorder = broadcaster.NewRecorder(runtime.NewScheme(),
 		v1.EventSource{Component: AnnOrchestrator})

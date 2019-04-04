@@ -11,7 +11,7 @@
 
 **Enhancements:**
 - Trident driver for NetApp Cloud Volumes Service in AWS.
-- **Kubernetes:** Updated etcd to v3.3.11.
+- **Kubernetes:** Updated etcd to v3.3.12 and client-go to v11.0.0.
 
 **Deprecations:**
 

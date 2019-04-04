@@ -1,9 +1,9 @@
 package: github.com/netapp/trident
 import:
 - package: github.com/sirupsen/logrus
-  version: v1.2.0
+  version: v1.4.1
 - package: github.com/coreos/etcd
-  version: v3.3.11
+  version: v3.3.12
   subpackages:
   - client
   - clientv3
@@ -18,7 +18,7 @@ import:
 - package: github.com/gorilla/context
   version: v1.1.1
 - package: github.com/gorilla/mux
-  version: v1.6.2
+  version: v1.7.0
 - package: github.com/pborman/uuid
   version: v1.2.0
 - package: github.com/spf13/pflag
@@ -26,20 +26,20 @@ import:
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: golang.org/x/net
-  version: 0ed95abb35c445290478a5348a7b38bb154135fd
+  version: 65e2d4e15006aab9813ff8769e768bbf4bb667a0 # kubernetes-1.14.0
   subpackages:
   - context
 - package: google.golang.org/grpc
   version: v1.8.0
 - package: k8s.io/api
-  version: 89a74a8d264df0e993299876a8cde88379b940ee # kubernetes-1.13.0
+  version: 40a48860b5abbba9aa891b02b32da429b08d96a0 # kubernetes-1.14.0
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/client-go
-  version: v10.0.0
+  version: v11.0.0
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -52,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: 2b1284ed4c93a43499e781493253e2ac5959c4fd # kubernetes-1.13.0
+  version: d7deff9243b165ee192f5551710ea4285dcfd615 # kubernetes-1.14.0
   subpackages:
   - pkg/api/errors
   - pkg/api/resource
@@ -76,14 +76,14 @@ import:
 - package: github.com/olekukonko/tablewriter
   version: v0.0.1
 - package: github.com/cenkalti/backoff
-  version: v2.1.0
+  version: v2.1.1
 - package: github.com/rs/xid
   version: v1.2.1
 - package: github.com/RoaringBitmap/roaring
-  version: v0.4.16
+  version: v0.4.17
 - package: github.com/container-storage-interface/spec
   version: v1.0.0
 - package: github.com/go-logfmt/logfmt
   version: v0.4.0
 - package: github.com/stretchr/testify
-  version: ^v1.2.2
+  version: ^v1.3.0
