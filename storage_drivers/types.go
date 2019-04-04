@@ -85,6 +85,13 @@ type OntapStorageDriverConfig struct {
 	QtreeQuotaResizePeriod           string `json:"qtreeQuotaResizePeriod"`   // in seconds, default to 60
 	NfsMountOptions                  string `json:"nfsMountOptions"`
 	LimitAggregateUsage              string `json:"limitAggregateUsage"`
+        QtreePoolVolUnixPermissions      string `json:"qtreePoolVolUnixPermissions"`            // format: "711"
+        QtreePoolVolKeepIfEmpty          string `json:"qtreePoolVolKeepIfEmpty"`                // format: "1" or "0"
+        QtreePoolVolPrefix               string `json:"qtreePoolVolPrefix"`                     // format: "TRIDENT_"
+        QtreePoolVolSnapPolicyLookupPattern string `json:"qtreePoolVolSnapPolicyLookupPattern"` // format: "*"
+        QtreePoolVolExportPolicy         string `json:"qtreePoolVolExportPolicy"`               // format: "EP_CUSTOM"
+        QtreePoolVolMaxMumberOfQtrees    string `json:"qtreePoolVolMaxMumberOfQtrees"`          // format: "100"
+        LimitQtreeSize                   string `json:"limitQtreeSize"`                         // format: "20Ti"
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }
 

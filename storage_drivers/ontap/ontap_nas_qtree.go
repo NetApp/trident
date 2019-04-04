@@ -112,9 +112,18 @@ func (d *NASQtreeStorageDriver) Initialize(
 
 	// Set up internal driver state
 	d.quotaResizeMap = make(map[string]bool)
-	d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
+        if d.Config.QtreePoolVolPrefix == "" { 
+                d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix) 
+        } else {  
+                d.flexvolNamePrefix = d.Config.QtreePoolVolPrefix 
+        } 
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
 	d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
+        if d.Config.QtreePoolVolExportPolicy == "" { 
+                d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix) 
+        } else { 
+                d.flexvolExportPolicy = d.Config.QtreePoolVolExportPolicy 
+        } 
 	d.sharedLockID = d.API.SVMUUID + "-" + *d.Config.StoragePrefix
 
 	log.WithFields(log.Fields{
@@ -135,6 +144,9 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.housekeepingWaitGroup = &sync.WaitGroup{}
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
 	pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
+        if d.Config.QtreePoolVolKeepIfEmpty == "1" { 
+                pruneTasks = []func(){d.reapDeletedQtrees} 
+        } 
 	d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
 	resizeTasks := []func(){d.resizeQuotas}
 	d.housekeepingTasks[resizeTask] = NewResizeTask(d, resizeTasks)
@@ -203,6 +215,40 @@ func (d *NASQtreeStorageDriver) validate() error {
 	return nil
 }
 
+// CheckQtreeSizeLimits if a limit has been set, ensures the requestedSize is under it. 
+func (d *NASQtreeStorageDriver) CheckQtreeSizeLimit(requestedSizeInt uint64) (uint64, error) {
+
+        requestedSize := float64(requestedSizeInt)
+        // if the user specified a limit for qtree size, parse and enforce it
+        limitQtreeSize := d.Config.LimitQtreeSize
+        log.WithFields(log.Fields{
+                "limitQtreeSize": limitQtreeSize,
+        }).Debugf("Limits")
+        if limitQtreeSize == "" {
+                log.Debugf("No limits specified, not limiting qtree size")
+                return 0, nil
+        }
+
+        qtreeSizeLimit := uint64(0)
+        qtreeSizeLimitStr, parseErr := utils.ConvertSizeToBytes(limitQtreeSize)
+        if parseErr != nil {
+                return 0, fmt.Errorf("error parsing limitQtreeSize: %v", parseErr)
+        }
+        qtreeSizeLimit, _ = strconv.ParseUint(qtreeSizeLimitStr, 10, 64)
+
+        log.WithFields(log.Fields{
+                "limitQtreeSize":    limitQtreeSize,
+                "qtreeSizeLimit":    qtreeSizeLimit,
+                "requestedSizeBytes": requestedSize,
+        }).Debugf("Comparing limits")
+
+        if requestedSize > float64(qtreeSizeLimit) {
+                return qtreeSizeLimit, fmt.Errorf("requested size: %1.f > the qtree size limit: %d", requestedSize, qtreeSizeLimit)
+        }
+
+        return qtreeSizeLimit, nil
+}
+
 // Create a qtree-backed volume with the specified options
 func (d *NASQtreeStorageDriver) Create(
 	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
@@ -252,6 +298,11 @@ func (d *NASQtreeStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+        // Check if volume PV) size is over the limit 
+        _, err = d.CheckQtreeSizeLimit(sizeBytes) 
+        if err != nil {  
+                return err  
+        }  
 
 	// Ensure qtree name isn't too long
 	if len(name) > maxQtreeNameLength {
@@ -529,7 +580,10 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
 	size := "1g"
-	unixPermissions := "0700"
+        unixPermissions := d.Config.QtreePoolVolUnixPermissions  
+        if unixPermissions == "" { 
+           unixPermissions = "0700" 
+        } 
 	exportPolicy := d.flexvolExportPolicy
 	securityStyle := "unix"
 
@@ -605,8 +659,12 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
+        snapshotPolicyPattern := snapshotPolicy  
+        if d.Config.QtreePoolVolSnapPolicyLookupPattern != "" { 
+                snapshotPolicyPattern = d.Config.QtreePoolVolSnapPolicyLookupPattern  
+        }  
 	volListResponse, err := d.API.VolumeListByAttrs(
-		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt)
+		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicyPattern, enableSnapshotDir, encrypt)
 
 	if err = api.GetError(volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)
@@ -639,7 +697,17 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 				return "", fmt.Errorf("error enumerating qtrees: %v", err)
 			}
 
-			if count < maxQtreesPerFlexvol {
+                        limitQtreesPerFlexvol := maxQtreesPerFlexvol  
+                        if d.Config.QtreePoolVolMaxMumberOfQtrees != "" { 
+                                QtreePoolVolMaxMumberOfQtreesInt, err := strconv.Atoi(d.Config.QtreePoolVolMaxMumberOfQtrees)
+                                if err == nil {  
+                                        limitQtreesPerFlexvol = QtreePoolVolMaxMumberOfQtreesInt  
+                                } else {  
+                                        limitQtreesPerFlexvol = maxQtreesPerFlexvol 
+                                        log.Errorf("Error cannot convert qtreePoolVolMaxMumberOfQtrees value (%v) to integer:%v", d.Config.QtreePoolVolMaxMumberOfQtrees, err) 
+                                }  
+                        } 
+                        if count < limitQtreesPerFlexvol { 
 				volumes = append(volumes, volName)
 			}
 		}
@@ -1461,6 +1529,12 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
+
+        // Check if volume (PV) size is over the limit  
+        _, err = d.CheckQtreeSizeLimit(sizeBytes) 
+        if err != nil {  
+                return err 
+        } 
 
 	err = d.resizeFlexvol(flexvol, deltaQuotaSize)
 	if err != nil {

@@ -113,23 +113,30 @@ they should be removed when nodes are removed as well.
 Backend configuration options
 -----------------------------
 
-========================= ======================================================================= ================================================
-Parameter                 Description                                                             Default
-========================= ======================================================================= ================================================
-version                   Always 1
-storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
-backendName               Custom name for the storage backend                                     Driver name + "_" + dataLIF
-managementLIF             IP address of a cluster or SVM management LIF                           "10.0.0.1"
-dataLIF                   IP address of protocol LIF                                              Derived by the SVM unless specified
-svm                       Storage virtual machine to use                                          Derived if an SVM managementLIF is specified
-igroupName                Name of the igroup for SAN volumes to use                               "trident"
-username                  Username to connect to the cluster/SVM
-password                  Password to connect to the cluster/SVM
-storagePrefix             Prefix used when provisioning new volumes in the SVM                    "trident"
-limitAggregateUsage       Fail provisioning if usage is above this percentage                     "" (not enforced by default)
-limitVolumeSize           Fail provisioning if requested volume size is above this value          "" (not enforced by default)
-nfsMountOptions           Comma-separated list of NFS mount options (except ontap-san)            ""
-========================= ======================================================================= ================================================
+=================================== =========================================================================== ===============================================
+Parameter                           Description                                                                 Default
+=================================== =========================================================================== ===============================================
+version                             Always 1
+storageDriverName                   "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
+backendName                         Custom name for the storage backend                                         Driver name + "_" + dataLIF
+managementLIF                       IP address of a cluster or SVM management LIF                               "10.0.0.1"
+dataLIF                             IP address of protocol LIF                                                  Derived by the SVM unless specified
+svm                                 Storage virtual machine to use                                              Derived if an SVM managementLIF is specified
+igroupName                          Name of the igroup for SAN volumes to use                                   "trident"
+username                            Username to connect to the cluster/SVM
+password                            Password to connect to the cluster/SVM
+storagePrefix                       Prefix used when provisioning new volumes in the SVM                        "trident"
+limitAggregateUsage                 Fail provisioning if usage is above this percentage                         "" (not enforced by default)
+limitVolumeSize                     Fail provisioning if requested volume size is above this value              "" (not enforced by default)
+limitQtreeSize                      ontap-nas-economy only: fail provisioning if qtree size is above this value "" (not enforced by default)
+qtreePoolVolUnixPermissions         ontap-nas-economy only: define permissions of Flexvols                      "700"
+qtreePoolVolKeepIfEmpty             ontap-nas-economy only: disable automatic Flexvol deletion if empty         "" (not enforced by default)
+qtreePoolVolPrefix                  ontap-nas-economy only: define a specific prefix for Flexvols               "trident_qtree_pool_" + storagePrefix
+qtreePoolVolSnapPolicyLookupPattern ontap-nas-economy only: allow to lookup Flexvol with modified snap policy   "" (not enforced by default)
+qtreePoolVolExportPolicy            ontap-nas-economy only: define a specific Export Policy for Flexvol         "trident_qtree_pool_export_policy"
+qtreePoolVolMaxNumberOfQtrees       ontap-nas-economy only: the maximum of qtree that a flexvol can host        "200"
+nfsMountOptions                     Comma-separated list of NFS mount options (except ontap-san)                ""
+=================================== =========================================================================== ===============================================
 
 A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
 drivers only, a FQDN may also be specified for the dataLIF option, in which case the FQDN will
@@ -137,6 +144,18 @@ be used for the NFS mount operations. For the ontap-san driver, the default is t
 the SVM and to use iSCSI multipath. Specifying an IP address for the dataLIF for the ontap-san driver forces
 the driver to disable multipath and use only the specified address.  For the ontap-nas-economy driver,
 the limitVolumeSize option will also restrict the maximum size of the volumes it manages for qtrees.
+
+For ontap-nas-economy only, limitQtreeSize define the maximum size of the created qtree (PV). qtreePoolVolUnixPermissions
+allow to set specific permissions on the Flexvol which hosts qtrees. qtreePoolVolKeepIfEmpty disable the automatic
+deletion of empty Flexvol (use case: this is useful if you enable a snapvault relationship on the volume and you do not
+wish to break it). qtreePoolVolPrefix allow to have distinct prefix for Flexvol name and qtree name.
+qtreePoolVolSnapPolicyLookupPattern make trident to lookup existing Flexvol for reuse with less constrain on
+the snapshot policy set on the Flexvol. By default only Flexvol with a snapshot policy set to the snapshotPolicy
+attribute of the backend are reused. The qtreePoolVolSnapPolicyLookupPattern allow to define a pattern of
+snapshot policy name, so can set it to "*" to admit all snapshot policy or "SP_*" to accept only snapshot policy
+name starting with the "EP_" string (use case: setting a Snapvault backup can need an snapshot policy modification).
+qtreePoolVolExportPolicy allow to set a specific Export Policy on the Flexvol instead of the default one.
+qtreePoolVolMaxNumberOfQtrees set the maximum of qtrees hosted on a Flexvol.
 
 The nfsMountOptions parameter applies to all ONTAP drivers except ontap-san.  The mount options for Kubernetes
 persistent volumes are normally specified in storage classes, but if no mount options are specified in a storage
