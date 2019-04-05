@@ -660,10 +660,12 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 		return nil, fmt.Errorf("a valid PVC namespace is required for volume import")
 	}
 
+	// Set required annotations
 	if claim.Annotations == nil {
 		claim.Annotations = map[string]string{}
 	}
 	claim.Annotations[AnnNotManaged] = strconv.FormatBool(request.NoManage)
+	claim.Annotations[AnnStorageProvisioner] = AnnOrchestrator
 
 	// Set the PVC's storage field to the actual volume size.
 	volExternal, err := p.orchestrator.GetVolumeExternal(request.InternalName, request.Backend)
@@ -869,10 +871,7 @@ func (p *Plugin) createPV(
 	claimRef = v1.ObjectReference{
 		Namespace: claim.Namespace,
 		Name:      claim.Name,
-	}
-
-	if isImport {
-		claimRef.UID = claim.UID
+		UID:       claim.UID,
 	}
 
 	pv = &v1.PersistentVolume{
