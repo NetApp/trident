@@ -822,6 +822,15 @@ func (p *Plugin) createVolumeFromConfig(
 				"for creating a PVC with data source: %v", err.Error())
 			return nil, err
 		}
+		if volSnap.Status.ReadyToUse == false {
+			err = fmt.Errorf("data source snapshot %s is not Ready", dataSourceSnapshot)
+			log.WithFields(log.Fields{
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for creating a PVC with data source: %v", err.Error())
+			return nil, err
+		}
 		// Get the corresponding volume snapshot content
 		contentName := volSnap.Spec.SnapshotContentName
 		if contentName == "" {
@@ -843,7 +852,16 @@ func (p *Plugin) createVolumeFromConfig(
 				"for creating a PVC with data source: %v", err.Error())
 			return nil, err
 		}
-		internalSnapshotID := volSnapContent.Spec.CSI.SnapshotHandle
+		if volSnapContent.Spec.VolumeSnapshotSource.CSI == nil {
+			err = fmt.Errorf("failed to get snapshot source from snapshot content %s", contentName)
+			log.WithFields(log.Fields{
+				"PVC":           claimName,
+				"PVC_namespace": namespace,
+			}).Debugf("Kubernetes frontend detected an invalid configuration "+
+				"for creating a PVC with data source: %v", err.Error())
+			return nil, err
+		}
+		internalSnapshotID := volSnapContent.Spec.VolumeSnapshotSource.CSI.SnapshotHandle
 		// Create volume from snapshot
 		vol, err = p.orchestrator.CreateVolumeFromSnapshot(internalSnapshotID, volConfig)
 		if err != nil {
