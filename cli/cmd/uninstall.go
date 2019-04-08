@@ -6,12 +6,9 @@ import (
 	"os"
 	"runtime"
 
-	snapshotv1alpha1 "github.com/kubernetes-csi/external-snapshotter/pkg/apis/volumesnapshot/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
@@ -389,11 +386,6 @@ func uninstallTrident() error {
 			"the PVC and PV deleted.")
 	}
 
-	// Delete the snapshot CRDs
-	if client.Flavor() == k8sclient.FlavorKubernetes {
-		anyErrors = deleteSnapshotCRD() || anyErrors
-	}
-
 	if !anyErrors {
 		log.Info("Trident uninstallation succeeded.")
 	} else {
@@ -522,40 +514,4 @@ func uninstallTridentInCluster() (returnError error) {
 	}
 
 	return
-}
-
-func deleteSnapshotCRD() bool {
-	kubeConfig, err := rest.InClusterConfig()
-	if err != nil {
-		log.WithError(err).Error("failed to get InClusterConfig")
-		return true
-	}
-	aeclient, err := apiextensionsclient.NewForConfig(kubeConfig)
-	if err != nil {
-		log.WithError(err).Error("failed to create Kubernetes API Extensions client")
-		return true
-	}
-	// VolumeSnapshotClass
-	anyErrors := false
-	crdName := snapshotv1alpha1.VolumeSnapshotClassResourcePlural + "." + snapshotv1alpha1.GroupName
-	if err = aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, nil); err != nil {
-		log.WithError(err).Error("failed to delete VolumeSnapshotClass resource")
-		anyErrors = true
-	}
-	// VolumeSnapshotContent
-	crdName = snapshotv1alpha1.VolumeSnapshotContentResourcePlural + "." + snapshotv1alpha1.GroupName
-	if err = aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, nil); err != nil {
-		log.WithError(err).Error("failed to delete VolumeSnapshotContent resource")
-		anyErrors = true
-	}
-	// VolumeSnapshot
-	crdName = snapshotv1alpha1.VolumeSnapshotResourcePlural + "." + snapshotv1alpha1.GroupName
-	if err = aeclient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, nil); err != nil {
-		log.WithError(err).Error("failed to delete VolumeSnapshot resource")
-		anyErrors = true
-	}
-	if !anyErrors {
-		log.Info("Deleted Volume Snapshot CRD.")
-	}
-	return anyErrors
 }
