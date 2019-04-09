@@ -47,7 +47,7 @@ Install the appropriate version of kubeadm, kubectl and kubelet
   deb http://apt.kubernetes.io/ kubernetes-xenial main
   EOF
   apt-get update
-  apt-get install -y kubeadm=1.13\* kubectl=1.13\* kubelet=1.13\* kubernetes-cni=0.6\*
+  apt-get install -y kubeadm=1.14\* kubectl=1.14\* kubelet=1.14\* kubernetes-cni=0.7\*
 
 Configure the host
 ==================
@@ -63,7 +63,7 @@ Create the cluster
 
 .. code-block:: bash
 
-  kubeadm init --kubernetes-version stable-1.13 --token-ttl 0 --pod-network-cidr=192.168.0.0/16
+  kubeadm init --kubernetes-version stable-1.14 --token-ttl 0 --pod-network-cidr=192.168.0.0/16
 
 Install the kubectl creds and untaint the cluster
 =================================================

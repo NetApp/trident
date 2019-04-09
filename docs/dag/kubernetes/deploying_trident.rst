@@ -66,57 +66,6 @@ Kubernetes has two features which, when combined, provide a powerful mechanism f
 
 These values are defined on a per-namespace basis, which means that each namespace will need to have values defined which fall in line with their resource requirements.  An example of `how to leverage quotas <https://netapp.io/2017/06/09/self-provisioning-storage-kubernetes-without-worry/>`_ can be found on `netapp.io <https://netapp.io>`_.
 
-Use PVC protection to protect in-use resources
-----------------------------------------------
-
-This feature is on by default if running Kubernetes 1.10 or greater. Follow this process only if running Kubernetes 1.09 or less.
-
-`Storage object in use protection <https://kubernetes.io/docs/tasks/administer-cluster/storage-object-in-use-protection/>`_, or simply PVC protection, is a Kubernetes feature which prevents the deletion of PVCs which are in use by a pod and PVs which are bound to a PVC.  This is important as it prevents a volume from being destroyed while it's actively being used by an application, which can result in data loss.
-
-Implementing PVC protection is slightly different depending on your host operating system and Kubernetes distribution.  Generically, the following process can be followed when using CentOS with "vanilla" Kubernetes, however be sure to follow the documentation for your particular operating system and Kubernetes version.
-
-.. code-block:: console
-
-   # from each master server in the cluster, edit the api server config
-   vi /etc/kubernetes/manifests/kube-apiserver.yaml
-   
-   # search for the line under the "kube-apiserver" command stanza which 
-   # starts with "- --admission-control" and append the value 
-   # "StorageObjectInUseProtection"
-   
-   # alternatively, backup the file and use the following sed command 
-   cp /etc/kubernetes/manifests/kube-apiserver.yaml \
-      /etc/kubernetes/manifests/kube-apiserver.yaml.orig
-   
-   sed -i '/admission-control/ s/$/,StorageObjectInUseProtection/' \
-     /etc/kubernetes/manifests/kube-apiserver.yaml
-   
-   # after editing, restart the kube-apiserver service
-   systemctl restart kube-apiserver.service
-
-After adding the admission controller for storage object protection you can verify it's functioning by viewing the details of a PVC and verifying the presence of the finalizer.
-
-.. code-block:: console
-   :emphasize-lines: 11
-
-   [root@kubemaster ~]# kubectl describe pvc pvc-protection
-   Name:          pvc-protection
-   Namespace:     default
-   StorageClass:  performance
-   Status:        Bound
-   Volume:        default-pvc-protection-3bcc8
-   Labels:        <none>
-   Annotations:   pv.kubernetes.io/bind-completed=yes
-                  pv.kubernetes.io/bound-by-controller=yes
-                  volume.beta.kubernetes.io/storage-provisioner=netapp.io/trident
-   Finalizers:    [kubernetes.io/pvc-protection]
-   Capacity:      3972844748800m
-   Access Modes:  RWO
-   Events:
-     Type    Reason                Age                From                         Message
-     ----    ------                ----               ----                         -------
-     Normal  ExternalProvisioning  23s (x2 over 23s)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "netapp.io/trident" or manually created by system administrator
-     Normal  ProvisioningSuccess   21s                netapp.io/trident            Kubernetes frontend provisioned a volume and a PV for the PVC
 
 Deploying Trident to OpenShift
 ==============================

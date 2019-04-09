@@ -68,8 +68,8 @@ const (
 	ContextCSI        DriverContext = "csi"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin    = "v1.9.0"
-	KubernetesVersionMax    = "v1.13.0"
+	KubernetesVersionMin    = "v1.10.0"
+	KubernetesVersionMax    = "v1.14.0"
 	KubernetesCSIVersionMin = "v1.13.0"
 
 	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
