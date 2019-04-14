@@ -233,7 +233,7 @@ func (o *MockOrchestrator) GetVolumeExternal(volumeName string, backendName stri
 }
 
 func (o *MockOrchestrator) ImportVolume(
-	volumeConfig *storage.VolumeConfig, originalName string, backendName string, notManaged bool, createPVandPVC Operation,
+	volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	// TODO: write this method to enable GetVolumeExternal unit tests

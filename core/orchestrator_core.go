@@ -414,13 +414,39 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 		// 2) We created a PVC and renamed the volume on the backend.
 		// 3) We created a PVC, renamed the volume, and persisted the volume.
 		// 4) We created a PVC, renamed the vol, persisted the vol, and created a PV
-		// If the import failed the PVC and PV can be deleted by the user and the
-		// import can be attempted again.
+		// If the import failed the PVC and PV should be cleaned up by the K8S frontend
+		// code. There is a situation where the PVC/PV bind operation may fail after the
+		// import operation is complete. In this case the end user needs to delete the PVC and
+		// PV via kubectl. The volume import process sets the reclaim policy to "retain" by default.
+		// In the case where notManaged is true then the volume is not renamed or persisted.
 
-		// TODO now what
-		// Determine the original name
-		// Remove vol if persisted
+		if volume, ok := o.volumes[v.Config.Name]; ok {
+			o.deleteVolumeFromPersistentStoreIgnoreError(volume)
+			delete(o.volumes, v.Config.Name)
+		}
+		// The volume could be renamed (notManaged = false) without being persisted.
+		// If the volume wasn't added into etcd, we attempt to rename
+		// it at each backend, since we don't know where it might have
+		// landed.  We're guaranteed that the volume name will be
+		// unique across backends, thanks to the StoragePrefix field,
+		// so this should be idempotent.
+		// Handles case 2)
+		for _, backend := range o.backends {
+			if !backend.State.IsOnline() {
+				// Backend offlining is serialized with volume creation,
+				// so we can safely skip offline backends.
+				continue
+			}
+			if err := backend.Driver.Rename(v.Config.InternalName, v.Config.ImportOriginalName); err != nil {
+				return fmt.Errorf("error attempting to rename the volume %s from backend %s: %v", v.Config.Name,
+					backend.Name, err)
+			}
+		}
 
+		// Finally, we need to clean up the volume transaction
+		if err := o.deleteVolumeTransaction(v); err != nil {
+			return fmt.Errorf("failed to clean up volume addition transaction: %v", err)
+		}
 	}
 
 	return nil
@@ -1034,8 +1060,9 @@ func (o *TridentOrchestrator) GetVolumeExternal(volumeName string, backendName s
 	return volExternal, nil
 }
 
-func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeConfig, originalName string, backend *storage.Backend) error {
+func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeConfig, backend *storage.Backend) error {
 
+	originalName := volumeConfig.ImportOriginalName
 	for volumeName, volume := range o.volumes {
 		if volume.Config.InternalName == originalName && volume.Backend == backend.Name {
 			return foundError(fmt.Sprintf("PV %s already exists for volume %s", originalName, volumeName))
@@ -1048,7 +1075,7 @@ func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeC
 	}
 
 	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
-		return nil, fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backendName)
+		return fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backend.Name)
 	}
 
 	if backend.Driver.Get(originalName) != nil {
@@ -1075,7 +1102,7 @@ func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeC
 }
 
 func (o *TridentOrchestrator) ImportVolume(
-	volumeConfig *storage.VolumeConfig, originalName string, backendName string, notManaged bool, createPVandPVC Operation,
+	volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	if o.bootstrapError != nil {
@@ -1087,7 +1114,6 @@ func (o *TridentOrchestrator) ImportVolume(
 
 	log.WithFields(log.Fields{
 		"volumeConfig": volumeConfig,
-		"originalName": originalName,
 		"backendName":  backendName,
 	}).Debug("Orchestrator#ImportVolume")
 
@@ -1096,7 +1122,7 @@ func (o *TridentOrchestrator) ImportVolume(
 		return nil, notFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
 
-	err = o.validateImportVolume(volumeConfig, originalName, backend)
+	err = o.validateImportVolume(volumeConfig, backend)
 	if err != nil {
 		return nil, err
 	}
@@ -1112,12 +1138,12 @@ func (o *TridentOrchestrator) ImportVolume(
 
 	// Recover function in case or error
 	defer func() {
-		err = o.importVolumeCleanup(err, volumeConfig, originalName, backend, notManaged, volTxn)
+		err = o.importVolumeCleanup(err, volumeConfig, backend, notManaged, volTxn)
 	}()
 
-	volume, err := backend.ImportVolume(volumeConfig, originalName, notManaged)
+	volume, err := backend.ImportVolume(volumeConfig, notManaged)
 	if err != nil {
-		return nil, fmt.Errorf("failed to import volume %s on backend %s: %v", originalName, backendName, err)
+		return nil, fmt.Errorf("failed to import volume %s on backend %s: %v", volumeConfig.ImportOriginalName, backendName, err)
 	}
 
 	if !notManaged {
@@ -1262,24 +1288,30 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 }
 
 func (o *TridentOrchestrator) importVolumeCleanup(
-	err error, volumeConfig *storage.VolumeConfig, originalName string, backend *storage.Backend, notManaged bool, volTxn *persistentstore.VolumeTransaction) error {
+	err error, volumeConfig *storage.VolumeConfig, backend *storage.Backend, notManaged bool, volTxn *persistentstore.VolumeTransaction) error {
 
 	var (
 		cleanupErr, txErr error
 	)
 	if err != nil {
 		// We failed somewhere. Most likely we failed to rename the volume or retrieve its size.
+		// Rename the volume
 		if !notManaged {
-			cleanupErr = backend.Driver.Rename(volumeConfig.InternalName, originalName)
+			cleanupErr = backend.Driver.Rename(volumeConfig.InternalName, volumeConfig.ImportOriginalName)
 			log.WithFields(log.Fields{
-				"InternalName": volumeConfig.InternalName,
-				"originalName": originalName,
-				"cleanupErr":   cleanupErr,
-			}).Warn("importVolumeCleanup: renamed volume to originalName.")
+				"InternalName":       volumeConfig.InternalName,
+				"importOriginalName": volumeConfig.ImportOriginalName,
+				"cleanupErr":         cleanupErr,
+			}).Warn("importVolumeCleanup: failed to cleanup volume import1466G.")
+		}
 
-			// Remove the volume from memory since import failed.
+		// Remove volume from backend cache
+		backend.RemoveCachedVolume(volumeConfig.Name)
+
+		// Remove volume from orchestrator cache
+		if volume, ok := o.volumes[volumeConfig.Name]; ok {
 			delete(o.volumes, volumeConfig.Name)
-			log.Warnf("importVolumeCleanup: removed volume %s from memory", volumeConfig.Name)
+			o.deleteVolumeFromPersistentStoreIgnoreError(volume)
 		}
 	}
 	txErr = o.deleteVolumeTransaction(volTxn)
@@ -1298,7 +1330,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 		err = fmt.Errorf(strings.Join(errList, ", "))
 		log.Warnf("Unable to clean up artifacts of volume import: %v. "+
 			"Repeat importing the volume %v.",
-			err, originalName)
+			err, volumeConfig.ImportOriginalName)
 	}
 
 	return err
@@ -1408,16 +1440,10 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 		}).Error("Unable to delete volume from backend.")
 		return err
 	}
-	// Ignore failures to find the volume being deleted, as this may be called
-	// during recovery of a volume that has already been deleted from etcd.
-	// During normal operation, checks on whether the volume is present in the
-	// volume map should suffice to prevent deletion of non-existent volumes.
-	if err := o.storeClient.DeleteVolumeIgnoreNotFound(volume); err != nil {
-		log.WithFields(log.Fields{
-			"volume": volumeName,
-		}).Error("Unable to delete volume from persistent store.")
+	if err := o.deleteVolumeFromPersistentStoreIgnoreError(volume); err != nil {
 		return err
 	}
+
 	if volumeBackend.State.IsDeleting() && !volumeBackend.HasVolumes() {
 		if err := o.storeClient.DeleteBackend(volumeBackend); err != nil {
 			log.WithFields(log.Fields{
@@ -1432,6 +1458,20 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 		delete(o.backends, volume.Backend)
 	}
 	delete(o.volumes, volumeName)
+	return nil
+}
+
+func (o *TridentOrchestrator) deleteVolumeFromPersistentStoreIgnoreError(volume *storage.Volume) error {
+	// Ignore failures to find the volume being deleted, as this may be called
+	// during recovery of a volume that has already been deleted from etcd.
+	// During normal operation, checks on whether the volume is present in the
+	// volume map should suffice to prevent deletion of non-existent volumes.
+	if err := o.storeClient.DeleteVolumeIgnoreNotFound(volume); err != nil {
+		log.WithFields(log.Fields{
+			"volume": volume.Config.Name,
+		}).Error("Unable to delete volume from persistent store.")
+		return err
+	}
 	return nil
 }
 

@@ -39,6 +39,7 @@ type VolumeConfig struct {
 	QoS                       string                 `json:"qos,omitempty"`
 	QoSType                   string                 `json:"type,omitempty"`
 	ServiceLevel              string                 `json:"serviceLevel,omitempty"`
+	ImportOriginalName        string                 `json:"importOriginalName,omitempty"`
 }
 
 func (c *VolumeConfig) Validate() error {
