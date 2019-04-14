@@ -306,16 +306,16 @@ func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) 
 	return volExternal, nil
 }
 
-func (b *Backend) ImportVolume(volConfig *VolumeConfig, originalName string, notManaged bool) (*Volume, error) {
+func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volume, error) {
 	log.WithFields(log.Fields{
 		"backend":    b.Name,
-		"volume":     originalName,
+		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": notManaged,
 	}).Debug("Backend#ImportVolume")
 
 	if notManaged {
 		// The volume is not managed and will not be renamed during import.
-		volConfig.InternalName = originalName
+		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
 		// CreatePrepare should perform the following tasks:
 		// 1. Sanitize the volume name
@@ -325,7 +325,7 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, originalName string, not
 		}
 	}
 
-	err := b.Driver.Import(volConfig, originalName, notManaged)
+	err := b.Driver.Import(volConfig, volConfig.ImportOriginalName, notManaged)
 	if err != nil {
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
@@ -369,10 +369,15 @@ func (b *Backend) RemoveVolume(vol *Volume) error {
 		// for volumes that aren't found.
 		return err
 	}
-	if _, ok := b.Volumes[vol.Config.Name]; ok {
-		delete(b.Volumes, vol.Config.Name)
-	}
+	b.RemoveCachedVolume(vol.Config.Name)
 	return nil
+}
+
+func (b *Backend) RemoveCachedVolume(volumeName string) {
+
+	if _, ok := b.Volumes[volumeName]; ok {
+		delete(b.Volumes, volumeName)
+	}
 }
 
 const (

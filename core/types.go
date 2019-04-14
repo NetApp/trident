@@ -31,7 +31,7 @@ type Orchestrator interface {
 	GetVolume(volume string) (*storage.VolumeExternal, error)
 	GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error)
 	GetVolumeType(vol *storage.VolumeExternal) (config.VolumeType, error)
-	ImportVolume(volumeConfig *storage.VolumeConfig, originalVolName string, backendName string, notManaged bool, createPVandPVC Operation) (*storage.VolumeExternal, error)
+	ImportVolume(volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
 	ListVolumes() ([]*storage.VolumeExternal, error)
 	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
 	ListVolumeSnapshots(volumeName string) ([]*storage.SnapshotExternal, error)
@@ -82,4 +82,4 @@ type UnsupportedError struct {
 
 func (e *UnsupportedError) Error() string { return e.message }
 
-type Operation func(*storage.VolumeExternal, string) error
+type VolumeCallback func(*storage.VolumeExternal, string) error

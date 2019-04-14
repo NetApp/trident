@@ -2,17 +2,22 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v19.01.0
+## Changes since v19.04.0
+
+**Fixes:**
+- **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
+
+## v19.04.0
 
 **Fixes:**
 - Fixed panic if no aggregates are assigned to an ONTAP SVM.
 - **Kubernetes:** Updated CSI driver for 1.0 spec and Kubernetes 1.13. (Alpha release - unsupported)
 - **Kubernetes:** Allow Trident to start if one or more backend drivers fail to initialize.
-- **Kubernetes:** - Fixed Trident to install on Kubectl 1.14. (Issue [#241](https://github.com/NetApp/trident/issues/241))
+- **Kubernetes:** Fixed Trident to install on Kubectl 1.14. (Issue [#241](https://github.com/NetApp/trident/issues/241))
 
 **Enhancements:**
 - Trident driver for NetApp Cloud Volumes Service in AWS.
-- **Kubernetes:** Import pre-existing volumes using the `ontap-nas`, `ontap-nas-flexgroup`, `solidfire-san`, and `aws-cvs` drivers."  (Issue [#74](https://github.com/NetApp/trident/issues/74))
+- **Kubernetes:** Import pre-existing volumes using the `ontap-nas`, `ontap-nas-flexgroup`, `solidfire-san`, and `aws-cvs` drivers.  (Issue [#74](https://github.com/NetApp/trident/issues/74))
 - **Kubernetes:** Added support for Kubernetes 1.14.
 - **Kubernetes:** Updated etcd to v3.3.12.
 
