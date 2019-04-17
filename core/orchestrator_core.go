@@ -1055,7 +1055,7 @@ func (o *TridentOrchestrator) ImportVolume(
 	}
 
 	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
-		return nil, fmt.Errorf("storageClass %s is not added to backend %s", volumeConfig.StorageClass, backendName)
+		return nil, fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backendName)
 	}
 
 	if backend.Driver.Get(originalName) != nil {

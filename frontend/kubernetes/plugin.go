@@ -754,7 +754,7 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 			"PVC.UID":  pvc.UID,
 			"PVC.Name": pvc.Name,
 		}).Warn("ImportVolume: error occurred; deleting PVC.")
-		p.deleteClaim(pvc)
+		p.deletePVC(pvc)
 		return nil, fmt.Errorf("frontend failed to import volume: %v", err)
 	}
 	log.WithField("volumeExternal", volumeExternal).Debug("ImportVolume: import completed.")
@@ -768,6 +768,13 @@ func (p *Plugin) deletePV(pvName string) {
 	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(pvName, do)
 	if err != nil {
 		log.Errorf("error occurred while trying to delete PV %s: %v", pvName, err)
+	}
+}
+
+func (p *Plugin) deletePVC(pvc *v1.PersistentVolumeClaim) {
+	err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &metav1.DeleteOptions{})
+	if err != nil {
+		log.Errorf("error occurred while trying to delete PVC %s: %v", pvc.Name, err)
 	}
 }
 
@@ -906,6 +913,8 @@ func (p *Plugin) createPV(
 	if isImport {
 		// Apply annotation to indicate this PV was created by volume import process
 		pv.Annotations[AnnNotManaged] = claim.Annotations[AnnNotManaged]
+		// Protect the PV from deletion until the PV and PVC are bound for imported volume.
+		pv.Spec.PersistentVolumeReclaimPolicy = v1.PersistentVolumeReclaimRetain
 	}
 
 	// We create the CHAP secret in Trident's namespace
@@ -1137,7 +1146,7 @@ func (p *Plugin) processVolume(pv *v1.PersistentVolume, eventType string) {
 		return
 	}
 
-	if pv.Status.Phase == v1.VolumePending {
+	if pv.Status.Phase == v1.VolumePending || pv.Status.Phase == v1.VolumeAvailable {
 		if _, ok := pv.ObjectMeta.Annotations[AnnNotManaged]; ok {
 			log.WithFields(log.Fields{
 				"PV":         pv.Name,
@@ -1217,6 +1226,34 @@ func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
 	case v1.VolumeAvailable:
 		return
 	case v1.VolumeBound:
+		// Update the reclaim policy to match the StorageClass for an imported volume if needed.
+		if _, ok := pv.ObjectMeta.Annotations[AnnNotManaged]; ok {
+			if pv.Spec.PersistentVolumeReclaimPolicy == v1.PersistentVolumeReclaimRetain {
+				// If the imported volume's reclaim policy is retain then this check will be made every time we receive an PV udpate event.
+				p.mutex.Lock()
+				class := p.storageClassCache[pv.Spec.StorageClassName]
+				classReclaimPolicy := *class.PersistentVolumeReclaimPolicy
+				p.mutex.Unlock()
+				if classReclaimPolicy != v1.PersistentVolumeReclaimRetain {
+					pv.Spec.PersistentVolumeReclaimPolicy = classReclaimPolicy
+					_, err := p.kubeClient.CoreV1().PersistentVolumes().Update(pv)
+					if err != nil {
+						message := fmt.Sprintf("failed to update PersistentVolumeReclaimPolicy for PV %s:%s "+
+							"Will eventually retry.", pv.Name, err.Error())
+						p.updateVolumePhaseWithEvent(pv, v1.VolumeBound, v1.EventTypeWarning, "FailedVolumeUpdate", message)
+						log.Errorf("Kubernetes frontend %s", message)
+						return
+					}
+					message := "updated the PersistentVolumeReclaimPolicy from Retain to the " +
+						"policy set in the storage class. The imported volume's PVC and PV are now bound."
+					log.WithFields(log.Fields{
+						"PV": pv.Name,
+						"PersistentVolumeReclaimPolicy": classReclaimPolicy,
+						"StorageClassName":              pv.Spec.StorageClassName,
+					}).Infof("Kubernetes frontend %s", message)
+				}
+			}
+		}
 		return
 	case v1.VolumeReleased, v1.VolumeFailed:
 		if pv.Spec.PersistentVolumeReclaimPolicy != v1.PersistentVolumeReclaimDelete {
