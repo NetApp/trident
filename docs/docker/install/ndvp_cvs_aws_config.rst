@@ -54,7 +54,7 @@ Example CVS on AWS Config File
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
         "region": "us-east-1",
         "serviceLevel": "premium",
-        "storagePrefix": "cvs_",
+        "storagePrefix": "cvs-",
         "limitVolumeSize": "200Gi",
         "defaults": {
             "snapshotReserve": "5",

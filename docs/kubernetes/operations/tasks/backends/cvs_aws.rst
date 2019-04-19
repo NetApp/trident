@@ -25,7 +25,6 @@ apiRegion                 CVS account region
 apiURL                    CVS account API URL
 apiKey                    CVS account API key
 secretKey                 CVS account secret key
-storagePrefix             Prefix used when provisioning new volumes                       "trident\_"
 nfsMountOptions           Fine-grained control of NFS mount options                       "-o nfsvers=3"
 limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 serviceLevel              The CVS service level for new volumes                           "standard"
@@ -82,7 +81,6 @@ Example configuration
         "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1",
         "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
-        "storagePrefix": "cvs_",
         "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
         "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",

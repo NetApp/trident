@@ -12,7 +12,7 @@ These configuration variables apply to all Trident configurations, regardless of
 |                       | | ``ontap-nas-flexgroup``, ``eseries-iscsi``,                                                |             |
 |                       | | ``solidfire-san``, or ``aws-cvs``                                                          |             |
 +-----------------------+----------------------------------------------------------------------------------------------+-------------+
-| ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_"                                    | netappdvp\_ |
+| ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_".                                   | staging\_   |
 +-----------------------+----------------------------------------------------------------------------------------------+-------------+
 | ``limitVolumeSize``   | Optional restriction on volume sizes.  Default: "" (not enforced)                            | 10g         |
 +-----------------------+----------------------------------------------------------------------------------------------+-------------+
