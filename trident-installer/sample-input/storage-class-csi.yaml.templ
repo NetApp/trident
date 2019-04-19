@@ -2,6 +2,6 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: basic-csi
-provisioner: io.netapp.trident.csi
+provisioner: csi.trident.netapp.io
 parameters:
   backendType: "__BACKEND_TYPE__"

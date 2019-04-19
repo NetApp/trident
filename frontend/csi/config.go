@@ -4,5 +4,5 @@ package csi
 
 const (
 	csiVersion    = "1.0"
-	csiPluginName = "io.netapp.trident.csi"
+	csiPluginName = "csi.trident.netapp.io"
 )

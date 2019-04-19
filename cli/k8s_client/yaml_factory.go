@@ -498,7 +498,7 @@ spec:
         image: quay.io/k8scsi/csi-provisioner:v1.0.1
         args:
         - "--v=9"
-        - "--provisioner=io.netapp.trident.csi"
+        - "--provisioner=csi.trident.netapp.io"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -529,7 +529,7 @@ func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.
 		debugLine = "#- -debug"
 	}
 	if version.AtLeast(utils.MustParseSemantic("v1.13.0")) {
-		registrationPath = "/var/lib/kubelet/plugins/io.netapp.trident.csi/csi.sock"
+		registrationPath = "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
 	}
 
 	daemonSetYAML := strings.Replace(daemonSetYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
@@ -627,7 +627,7 @@ spec:
       volumes:
       - name: plugin-dir
         hostPath:
-          path: /var/lib/kubelet/plugins/io.netapp.trident.csi/
+          path: /var/lib/kubelet/plugins/csi.trident.netapp.io/
           type: DirectoryOrCreate
       - name: registration-dir
         hostPath:

@@ -73,7 +73,7 @@ Using CSI Trident
 -----------------
 
 To provision storage with CSI Trident, define one or more storage classes with the provisioner value
-``io.netapp.trident.csi``.  The simplest storage class to start with is one based on the
+``csi.trident.netapp.io``.  The simplest storage class to start with is one based on the
 ``sample-input/storage-class-csi.yaml.templ`` file that comes with the installer, replacing ``__BACKEND_TYPE__``
 with the storage driver name.:
 
@@ -83,7 +83,7 @@ with the storage driver name.:
    kind: StorageClass
    metadata:
      name: basic-csi
-   provisioner: io.netapp.trident.csi
+   provisioner: csi.trident.netapp.io
    parameters:
      backendType: "__BACKEND_TYPE__"
 
