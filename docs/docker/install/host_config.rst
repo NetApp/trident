@@ -213,8 +213,7 @@ Note that anytime the unit file is modified you will need to issue the command `
 Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 -----------------------------------------------------
 
-**Note:** If you have used Trident pre-1.13/17.03 in the traditional daemon method, please ensure that you stop the
-          Trident process and restart your Docker daemon before using the managed plugin method.
+**Note:** If you have used Trident pre-1.13/17.03 in the traditional daemon method, please ensure that you stop the          Trident process and restart your Docker daemon before using the managed plugin method.
 
 .. code-block:: bash
 
