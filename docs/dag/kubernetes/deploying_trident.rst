@@ -46,7 +46,7 @@ Trident can be installed on a Kubernetes cluster from a remote machine. To do a 
 
 Trident CSI installation
 ========================
-The Container Storage Interface (CSI) is a standardized API for container orchestrators to manage storage plugins. CSI still in early stages and has not yet integrated much functionality. However, using the early specs, NetApp developed a Trident CSI for Kubernetes alpha driver for the Kubernetes CSI Beta integration for testing purposes only. As of Trident 19.01, NetApp recommends not deploying CSI in production environments until CSI becomes more mature. More information regarding CSI can be found in the :ref:`Trident documentation <CSI Trident for Kubernetes>`.
+NetApp does not support running Trident in CSI mode in production. It is reserved for development purposes at this time. You're welcome to try it, and we would love to hear any feedback you may have if you do! More information regarding CSI can be found in the :ref:`Trident documentation <CSI Trident for Kubernetes>`.
 
 
 Recommendations for all deployments

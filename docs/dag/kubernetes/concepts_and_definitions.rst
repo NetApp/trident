@@ -128,5 +128,5 @@ To maintain a persistent pod that will always be deployed on the same node with 
 Container Storage Interface
 ===========================
 
-The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). The CSI is meant to be a standard mechanism used by various container orchestrators to expose storage systems to containers. Trident v19.01 with CSI is currently in alpha stage and runs with Kubernetes version <= 1.12. However, today CSI is in very early stages and does not provide the features NetApp's interface provides for Kubernetes. Therefore, NetApp recommends deploying Trident without CSI at this time and waiting until CSI is more mature. 
+The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). The CSI is meant to be a standard mechanism used by various container orchestrators to expose storage systems to containers. Trident v19.04 with CSI is currently in alpha stage and runs with Kubernetes version >= 1.13. However, today CSI does not provide the features NetApp's interface provides for Kubernetes. Therefore, NetApp recommends deploying Trident without CSI at this time and waiting until CSI is more mature.
 
