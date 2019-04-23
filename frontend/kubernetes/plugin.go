@@ -849,10 +849,28 @@ func (p *Plugin) createVolumeFromConfig(
 			return nil, err
 		}
 
-		// 3) Set the source PVC name as it's understood by Trident.
+		// 3) Validate that the requested size is <= to the source's size
+		pvcSize := pvc.Spec.Resources.Requests[v1.ResourceStorage]
+		srcSize := pvcSize.Value()
+		reqSize, err := strconv.ParseInt(volConfig.Size, 10, 64)
+		if err != nil {
+			err = fmt.Errorf("could not read requested size")
+			return nil, err
+		}
+
+		if srcSize < reqSize {
+			err = fmt.Errorf("requested PVC size is too large for the clone source")
+			log.WithFields(log.Fields{
+				"reqSize": reqSize,
+				"srcSize": srcSize,
+			}).Error("requested PVC size is too large for the clone source")
+			return nil, err
+		}
+
+		// 4) Set the source PVC name as it's understood by Trident.
 		volConfig.CloneSourceVolume = getUniqueClaimName(pvc)
 
-		// 4) Clone the existing volume
+		// 5) Clone the existing volume
 		vol, err = p.orchestrator.CloneVolume(volConfig)
 		if err != nil {
 			return nil, err
