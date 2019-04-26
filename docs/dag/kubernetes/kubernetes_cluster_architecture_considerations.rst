@@ -11,28 +11,28 @@ Cluster concepts and components
 
 A Kubernetes cluster typically consists of two types of nodes, each responsible for different aspects of functionality:
 
-* Master nodes – These nodes host the control plane aspects of the cluster and are responsible for, among other things, the API endpoint which the users interact with and provide scheduling for pods across resources. Typically,  these nodes are not used to schedule application workloads.
+* Master nodes – These nodes host the control plane aspects of the cluster and are responsible for, among other things, the API endpoint which the users interact with and provides scheduling for pods across resources. Typically,  these nodes are not used to schedule application workloads.
 * Compute nodes – Nodes which are responsible for executing workloads for the cluster users.
 
 The cluster has a number of Kubernetes intrinsic services which are deployed in the cluster. Depending on the service type, each service is deployed on only one type of node (master or compute) or on a mixture of node types. Some of these services, such as etcd and DNS, are mandatory for the cluster to be functional, while other services are optional. All of these services are deployed as pods within Kubernetes.
 
-* etcd – etcd is a distributed key-value datastore.  It is used heavily by Kubernetes to track the state and manage the resources associated with the cluster.
+* etcd – It is a distributed key-value datastore.  It is used heavily by Kubernetes to track the state and manage the resources associated with the cluster.
 * DNS – Kubernetes maintains an internal DNS service to provide local resolution for the applications which have been deployed.  This enables inter-pod communication to happen while referencing friendly names instead of internal IP addresses which can change as the container instances are scheduled.
 * API Server - Kubernetes deploys the API server to allow interaction between kubernetes and the outside world. This is deployed on the master node(s).
-* The dashboard – an optional component which provides a graphical interface to the cluster.
-* Monitoring and logging – optional components which can aid with resource reporting.
+* Dashboard – An optional component which provides a graphical interface to the cluster.
+* Monitoring and logging – An optional components which can aid with resource reporting.
 
 .. note::
-   We have not discussed Kubernetes container networking to allow pods to communicate with each other, or to outside the cluster. The choice of using a overlay network (e.g. Flannel) or a straight layer 3 solution (e.g. Calico) is out of scope of this document and does not affect access to storage resources by the pods.  
+   We have not discussed Kubernetes container networking to allow pods to communicate with each other, or to outside the cluster. The choice of using an overlay network (e.g. Flannel) or a straight Layer-3 solution (e.g. Calico) is out of the scope of this document and does not affect access to storage resources by the pods.  
 
 Cluster architectures
 =====================
 
-There are three primary Kubernetes cluster architectures. These accommodate various methods of high availablility and recoverability of the cluster, it's services, and the applications running. Trident is installed the same no matter which kubernetes architecture is chosen.
+There are three primary Kubernetes cluster architectures. These accommodate various methods of high availability and recoverability of the cluster, its services, and the applications running. Trident is installed the same no matter which Kubernetes architecture is chosen.
 
-Master nodes are critical to the operation of the cluster.  If no masters are running, or the master nodes are unable to reach a quorum, then the cluster is unable to schedule and execute applications.  The master nodes are the control plane for the cluster and consequentially there should be special consideration given to their `sizing <https://kubernetes.io/docs/setup/cluster-large/#size-of-master-and-master-components>`_ and quantity.
+Master nodes are critical to the operation of the cluster.  If no masters are running, or the master nodes are unable to reach a quorum, then the cluster is unable to schedule and execute applications.  The master nodes are the control plane for the cluster and consequentially there should be special consideration given to their `sizing <https://kubernetes.io/docs/setup/cluster-large/#size-of-master-and-master-components>`_ and count.
 
-Compute nodes are, generally speaking, much more disposable. However, extra resources must be built into the compute infrastructure to accomodate any workloads from failed nodes. Compute nodes can be added and removed from the cluster as needed quickly and easily to accommodate the scale of the applications which are being hosted.  This makes it very easy to burst, and reclaim, resources based on real-time application workload.
+Compute nodes are, generally speaking, much more disposable. However, extra resources must be built into the compute infrastructure to accommodate any workloads from failed nodes. Compute nodes can be added and removed from the cluster as needed quickly and easily to accommodate the scale of the applications which are being hosted.  This makes it very easy to burst, and reclaim, resources based on real-time application workload.
 
 Single master, compute
 ----------------------
@@ -46,13 +46,13 @@ A single node used to host both the master service and the workloads is a varian
 Multiple master, compute
 ------------------------
 
-Having multiple master nodes ensures that services remain available should master node(s) fail. In order to facilitate availability of master services, they should be deployed with odd numbers (e.g. 3,5,7,9 etc.) so quorum (master node majority) can be maintained should one or more masters fail. In the HA scenario, Kubernetes will maintain a copy of the etcd databases on each master, but hold elections for the control plane function leaders `kube-controller-manager` and `kube-scheduler` to avoid conflicts. The worker nodes can communicate with any master's API server through a load balancer. 
+Having multiple master nodes ensures that services remain available should master node(s) fail. In order to facilitate availability of master services, they should be deployed with odd numbers (e.g. 3,5,7,9 etc.) so that quorum (master node majority) can be maintained should one or more masters fail. In the HA scenario, Kubernetes will maintain a copy of the etcd databases on each master, but hold elections for the control plane function leaders `kube-controller-manager` and `kube-scheduler` to avoid conflicts. The worker nodes can communicate with any master's API server through a load balancer. 
 
  Deploying with multiple masters is the minimum recommended configuration for most production clusters.
 
 .. _figMultiMasterCluster:
 
-.. figure:: images/MultiMasterCluster1.png
+.. figure:: images/MultiMasterCluster2.png
      :align: center
      :figclass: align-center
      
@@ -60,7 +60,7 @@ Having multiple master nodes ensures that services remain available should maste
  
 Pros:
  
-* Provides highly available master services, ensuring that the loss of up to (n/2) – 1 master nodes will not affect cluster operations.
+* Provides highly-available master services, ensuring that the loss of up to (n/2) – 1 master nodes will not affect cluster operations.
 
 Cons:
 
@@ -70,11 +70,11 @@ Master, etcd, compute
 ---------------------
 
 This architecture isolates the etcd cluster from the other master server services.  This removes workload from the master servers, enabling them to be sized smaller, and makes their scale out (or in) more simple.
-Deploying a Kubernetes cluster using this model adds a degree of complexity, however it adds flexibility to the scale, support, and management of the etcd service used by Kubernetes, which may be desirable to some organizations.
+Deploying a Kubernetes cluster using this model adds a degree of complexity, however, it adds flexibility to the scale, support, and management of the etcd service used by Kubernetes, which may be desirable to some organizations.
 
 .. _figMultietcdCluster:
 
-.. figure:: images/MultietcdCluster.png
+.. figure:: images/MultietcdCluster1.png
      :align: center
      :figclass: align-center
 
@@ -85,8 +85,8 @@ Deploying a Kubernetes cluster using this model adds a degree of complexity, how
 
 Pros:
 
-* Provides highly available master services, ensuring that the loss of up to (n/2) – 1 master nodes will not affect cluster operations.
-* Isolating etcd from the other master services reduces workload for master servers.
+* Provides highly-available master services, ensuring that the loss of up to (n/2) – 1 master nodes will not affect cluster operations.
+* Isolating etcd from the other master services reduces the workload for master servers.
 * Decoupling etcd from the masters makes etcd administration and protection easier. Independent management allows for different protection and scaling schemes.
 
 Cons:
@@ -109,7 +109,7 @@ This architecture enables the services which are critical to the cluster, i.e. r
 
 .. _figMultiinfraCluster:
 
-.. figure:: images/MultiInfraCluster.png
+.. figure:: images/MultiInfraCluster1.png
      :align: center
      :figclass: align-center
      
@@ -124,30 +124,5 @@ An additional option involves separating out the master and etcd roles into diff
 Choosing an architecture
 ========================
 
-Regardless of the architecture that you choose, it's important to understand the ramifications to high availability, scalability, and serviceability of the component services. Be sure to consider the affect on the applications being hosted by the Kubernetes or OpenShift cluster. The architecture of the storage infrastructure supporting the Kubernetes/OpenShift cluster and the hosted applications can also be affected by the chosen cluster architecture, such as where etcd is hosted.
-
-
-Persistent storage for cluster services
-=======================================
-
-Dynamically provisioned persistent storage for the applications is provided using the storage class mechanism, with Trident acting as the interface to the NetApp portfolio. However, as you may have noted above there are several critical services hosted on the master servers and other cluster critical services which may be hosted on other node types.
-
-Etcd persistent storage
------------------------
-
-When Kubernetes etcd is hosted by the master server it uses local storage. Instead, if you desire to leverage an enterprise storage array for etcd, you must mount a volume to the master node at the correct location prior to kubernetes deployment. This storage cannot be dynamically provisioned by Trident or any other storage class provisioner as it is needed prior to the Kubernetes cluster being operational.
-This same paradigm holds true if dedicated etcd nodes are being used. Prior to deploying etcd, the volume from the storage system must be mounted to the host’s file system at the location etcd is configured to use.
-Refer to your Kubernetes’ provider documentation on where to mount the volume and/or customize the etcd configuration to use non-default storage.
-
-Persistent storage for logging services
----------------------------------------
-
-Centralized logging for applications deployed to the Kubernetes cluster is an optional service. Depending on how, and when, the service is deployed the storage class concepts may be able to dynamically provision storage for the service.
-Refer to your vendor’s documentation on how to customize the storage for logging services.  Additionally, this document discusses Red Hat’s OpenShift logging service best practices in a later chapter.
-
-Metrics and analytics services
-------------------------------
-
-Many third-party metrics and analytics tools are available for monitoring, reporting, and providing status of the applications and cluster. These tools may require persistent storage, often with specific performance characteristics.
-Each vendor has different storage recommendations and deployment methodology. Work with your vendor to identify requirements and, if needed, provision storage from an enterprise array to meet the requirements. This document will discuss the Red Hat OpenShift metrics service in a later chapter.
+Regardless of the architecture that you choose, it's important to understand the ramifications to high availability, scalability, and serviceability of the component services. Be sure to consider the effect on the applications being hosted by the Kubernetes or OpenShift cluster. The architecture of the storage infrastructure supporting the Kubernetes/OpenShift cluster and the hosted applications can also be affected by the chosen cluster architecture, such as where etcd is hosted.
 

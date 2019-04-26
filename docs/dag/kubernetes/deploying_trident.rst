@@ -42,12 +42,32 @@ In such scenarios, make sure that a private registry instance is available. Then
 
 **Remote install mode**
 
-Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command remotely. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps. 
+Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps. 
 
 Trident CSI installation
 ========================
 NetApp does not support running Trident in CSI mode in production. It is reserved for development purposes at this time. You're welcome to try it, and we would love to hear any feedback you may have if you do! More information regarding CSI can be found in the :ref:`Trident documentation <CSI Trident for Kubernetes>`.
 
+Trident Installation on Docker UCP 3.1 
+======================================
+
+Docker EE Universal Control Plane (UCP) is the cluster management layer that sits on top of the Docker Enterprise Engine. Once deployed, administrators interact with their cluster via UCP instead of each node's individual Docker engines. Since the UCP supports both Kubernetes and Docker via a Web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
+
+Installing Trident for Kubernetes on UCP managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Install Trident>` for instructions on how to install Trident for Kubernetes.
+
+Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes. 
+
+
+Trident Installation on NetApp Kubernetes Service 
+=================================================
+
+NetApp Kubernetes Service (NKS) is a universal control plane through which production grade Kubernetes clusters can be provisioned and run on the cloud provider of choice. NKS can quickly build a cluster on the cloud of your choice and easily manage your Kubernetes cluster from a single pane of glass. 
+
+Installing Trident for Kubernetes on NKS is similar to installing Trident on Kubernetes when used with Cloud Volumes ONTAP. Refer to the following :ref:`documentation <Install Trident>` for instructions on how to install Trident for Kubernetes.
+
+Using Trident we can set Cloud Volumes ONTAP (CVO) and Cloud Volumes Services (CVS) with AWS  as a storage backend for NKS. CVO and CVS are storage services that can be spun up on different cloud providers giving flexibility for users to maintain their Kubernetes persistent data in their respective cloud. To use Cloud Volume ONTAP as persistent storage for the Kubernetes cluster provisioned through NKS, upload the configuration file (kubeconfig) in YAML format on the OnCommand Cloud Manager (OCCM). Cloud Manager can automate the deployment of NetApp Trident on Kubernetes clusters so you can use Cloud Volumes ONTAP as persistent storage for containers.
+
+You can connect different clusters to different Cloud Volumes ONTAP systems and multiple clusters to the same Cloud Volumes ONTAP system. 
 
 Recommendations for all deployments
 ===================================
@@ -55,7 +75,7 @@ Recommendations for all deployments
 Deploy Trident to a dedicated namespace
 ---------------------------------------
 
-`Namespaces <https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/>`_ provide administrative separation between different applications and are a barrier for resource sharing, for example a PVC from one namespace cannot be consumed from another.  Trident provides PV resources to all namespaces in the Kubernetes cluster and consequently leverages a service account which has elevated privileges.  
+`Namespaces <https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/>`_ provide administrative separation between different applications and are a barrier for resource sharing, for example, a PVC from one namespace cannot be consumed from another.  Trident provides PV resources to all namespaces in the Kubernetes cluster and consequently leverages a service account which has elevated privileges.  
 
 Additionally, access to the Trident pod may enable a user to access storage system credentials and other sensitive information.  It is important to ensure that application users and management applications do not have the ability to access the Trident object definitions or the pods themselves.
 
@@ -88,4 +108,4 @@ To deploy Trident to the infrastructure nodes, the project for Trident must be c
    # deploy Trident using the project name
    tridentctl install -n <project_name>
 
-The result of the above command is that any pod deployed to the project will be scheduled to nodes which have the tag "``region=infra``".  This also removes the default node selector used by other projects which schedules pods to nodes which have the label "``node-role.kubernetes.io/compute=true``".
+The result of the above command is that any pod deployed to the project will be scheduled to nodes which have the tag "``region=infra``".  This also removes the default node selector used by other projects which schedule pods to nodes which have the label "``node-role.kubernetes.io/compute=true``".
