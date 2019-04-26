@@ -78,6 +78,23 @@ Get one or more resources from Trident
     storageclass Get one or more storage classes from Trident
     volume       Get one or more volumes from Trident
 
+import volume
+-------------
+Import an existing volume to Trident
+
+.. code-block:: console
+
+Usage:
+  tridentctl import volume <backendName> <volumeName> [flags]
+
+Aliases:
+  volume, v
+
+Flags:
+  -f, --filename string   Path to YAML or JSON PVC file
+  -h, --help              help for volume
+      --no-manage         Create PV/PVC only, don't assume volume lifecycle management
+
 install
 -------
 
