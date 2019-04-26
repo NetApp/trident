@@ -7,7 +7,4 @@
     "svm": "trident_svm",
     "username": "vsadmin",
     "password": "password",
-    "defaults": {
-        "size": "100G"
-    }
 }

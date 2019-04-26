@@ -73,8 +73,6 @@ Example configuration
     "storageDriverName": "eseries-iscsi",
     "webProxyHostname": "localhost",
     "webProxyPort": "8443",
-    "webProxyUseHTTP": false,
-    "webProxyVerifyTLS": true,
     "username": "rw",
     "password": "rw",
     "controllerA": "10.0.0.5",

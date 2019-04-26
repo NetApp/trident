@@ -177,15 +177,7 @@ Example configuration
         "svm": "svm_nfs",
         "username": "admin",
         "password": "secret",
-        "limitAggregateUsage": "80%",
-        "limitVolumeSize": "50Gi",
         "nfsMountOptions": "nfsvers=4",
-        "defaults": {
-          "spaceReserve": "volume",
-          "exportPolicy": "myk8scluster",
-          "snapshotPolicy": "default",
-          "snapshotReserve": "10"
-        }
     }
 
 **NFS Example for ontap-nas-flexgroup driver**
@@ -200,11 +192,6 @@ Example configuration
         "svm": "svm_nfs",
         "username": "vsadmin",
         "password": "secret",
-        "defaults": {
-          "size": "100G",
-          "spaceReserve": "volume",
-          "exportPolicy": "myk8scluster"
-        }
     }
 
 

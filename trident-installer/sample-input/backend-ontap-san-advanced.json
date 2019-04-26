@@ -7,5 +7,10 @@
     "username": "admin",
     "password": "password",
     "storagePrefix": "alternate-trident",
-    "igroupName": "custom"
+    "igroupName": "custom",
+    "defaults": {
+        "spaceReserve": "volume",
+        "snapshotPolicy": "default",
+        "snapshotReserve": "10"
+    }
 }
