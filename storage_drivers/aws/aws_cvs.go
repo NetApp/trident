@@ -782,10 +782,12 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !notManaged {
-		_, err = d.API.RelabelVolume(volume, d.updateTelemetryLabels(volume))
-		if err != nil {
+		if _, err := d.API.RelabelVolume(volume, d.updateTelemetryLabels(volume)); err != nil {
 			log.WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
+		}
+		if err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}); err != nil {
+			return fmt.Errorf("could not import volume %s: %v", originalName, err)
 		}
 	}
 
