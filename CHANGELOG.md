@@ -7,6 +7,7 @@
 **Fixes:**
 - **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
+- **Kubernetes:** Prevent operations on failed backends. 
 
 ## v19.04.0
 

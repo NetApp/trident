@@ -176,6 +176,14 @@ func (b *Backend) AddVolume(
 		"storage_class": volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
 
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	}
+
 	// CreatePrepare should perform the following tasks:
 	// 1. Generate the internal volume name
 	// 2. Optionally perform any other steps that could veto volume creation
@@ -241,6 +249,14 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		"clone_volume_internal":  volConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	}
+
 	// CreatePrepare should perform the following tasks:
 	// 1. Sanitize the volume name
 	// 2. Ensure no volume with the same name exists on that backend
@@ -295,6 +311,14 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) {
 
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	}
+
 	if b.Driver.Get(volumeName) != nil {
 		return nil, fmt.Errorf("volume %s was not found", volumeName)
 	}
@@ -312,6 +336,14 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": notManaged,
 	}).Debug("Backend#ImportVolume")
+
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return nil, fmt.Errorf("backend %s is not Online", b.Name)
+	}
 
 	if notManaged {
 		// The volume is not managed and will not be renamed during import.
@@ -345,6 +377,14 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 
 func (b *Backend) ResizeVolume(volName, newSize string) error {
 
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return fmt.Errorf("backend %s is not Online", b.Name)
+	}
+
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(newSize)
 	if err != nil {
@@ -364,6 +404,20 @@ func (b *Backend) ResizeVolume(volName, newSize string) error {
 }
 
 func (b *Backend) RemoveVolume(vol *Volume) error {
+
+	log.WithFields(log.Fields{
+		"backend": b.Name,
+		"volume":  vol.Config.Name,
+	}).Debug("Backend#RemoveVolume")
+
+	if b.State != Online && b.State != Deleting {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online) + "/" + string(Deleting),
+		}).Error("Invalid backend state.")
+		return fmt.Errorf("backend %s is not Online or Deleting", b.Name)
+	}
+
 	if err := b.Driver.Destroy(vol.Config.InternalName); err != nil {
 		// TODO:  Check the error being returned once the nDVP throws errors
 		// for volumes that aren't found.
@@ -407,12 +461,14 @@ func (b *Backend) HasVolumes() bool {
 // driver to clean up and stop any ongoing operations.
 func (b *Backend) Terminate() {
 
-	log.WithFields(log.Fields{
-		"backend": b.Name,
-		"driver":  b.GetDriverName(),
-	}).Debug("Terminating backend.")
+	logFields := log.Fields{"backend": b.Name, "driver": b.GetDriverName(), "state": string(b.State)}
 
-	b.Driver.Terminate()
+	if !b.Driver.Initialized() {
+		log.WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
+	} else {
+		log.WithFields(logFields).Debug("Terminating backend.")
+		b.Driver.Terminate()
+	}
 }
 
 type BackendExternal struct {
