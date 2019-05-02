@@ -172,7 +172,9 @@ func (o *TridentOrchestrator) bootstrapBackends() error {
 		if backendErr != nil {
 			newBackend.State = storage.Failed
 		} else {
-			newBackend.State = b.State
+			if b.State == storage.Deleting {
+				newBackend.State = storage.Deleting
+			}
 		}
 
 		log.WithFields(log.Fields{
