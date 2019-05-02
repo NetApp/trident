@@ -171,7 +171,7 @@ volume must allow read/write access and be accessible by the specified Trident b
 
 The ``-f string`` argument is required and specifies the path to the YAML or JSON PVC file. The PVC file is
 used by the volume import process to create the PVC. At a minimum, the PVC file must include the name, namespace,
-accessModes, storage size, and storageClassName fields as shown in the following example.
+accessModes, and storageClassName fields as shown in the following example.
 
 .. code-block:: yaml
 
@@ -183,9 +183,6 @@ accessModes, storage size, and storageClassName fields as shown in the following
   spec:
     accessModes:
       - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
     storageClassName: my_storage_class
 
 When Trident receives the import volume request the existing volume size is determined and set in the PVC. Once the

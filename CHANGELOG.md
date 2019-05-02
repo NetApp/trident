@@ -8,6 +8,7 @@
 - **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
 - **Kubernetes:** Prevent operations on failed backends. 
+- **Kubernetes:** Removed size requirement for volume import PVC file.
 
 ## v19.04.0
 
