@@ -670,6 +670,10 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed to get size of volume: %v", err)
 	}
+
+	if claim.Spec.Resources.Requests == nil {
+		claim.Spec.Resources.Requests = v1.ResourceList{}
+	}
 	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(volExternal.Config.Size)
 	log.WithFields(log.Fields{
 		"size":      volExternal.Config.Size,
