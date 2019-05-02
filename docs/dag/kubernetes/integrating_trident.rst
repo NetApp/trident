@@ -12,7 +12,7 @@ ONTAP
 
 **Choosing a backend driver for ONTAP**
 
-Four different backend drivers are available for ONTAP systems. These drivers are differentiated by the protocol being used and how the volumes are provisioned on the storage system. Therefore, give careful consideration regarding which driver to deploy.  
+Four different backend drivers are available for ONTAP systems. These drivers are differentiated by the protocol being used and how the volumes are provisioned on the storage system. Therefore, give careful consideration regarding which driver to deploy.
 
 At a higher level, if your application has components which need shared storage (multiple pods accessing the same PVC) NAS based drivers would be the default choice, while the block-based iSCSI driver meets the needs of non-shared storage. Choose the protocol based on the requirements of the application and the comfort level of the storage and infrastructure teams. Generally speaking, there is little difference between them for most applications, so often the decision is based upon whether or not shared storage (where more than one pod will need simultaneous access) is needed.
 
@@ -232,11 +232,17 @@ If you have requirements to customize volumes in ways which Trident does not sup
 Import an existing volume into Kubernetes
 =========================================
 
-Volume Import provides the ability to import an existing storage volume into a Kubernetes environment. This is currently supported on the ``ontap-san``, ``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers. This feature is useful when porting an existing application into Kubernetes or during disaster recovery scenarios.
+Volume Import provides the ability to import an existing storage volume into a Kubernetes environment. This is currently
+supported by the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers. This feature is
+useful when porting an existing application into Kubernetes or during disaster recovery scenarios.
 
-When using the ontap and solidfire drivers, use the command ``tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml`` to import an existing volume into Kubernetes to be managed by Trident. The PVC created with the .yaml file during the volume import command points to a storage class which identifies Trident as the provisioner. When using a SolidFire backend, ensure the volume names are unique. If the volume names are duplicated, clone the volume to a unique name so the volume import feature can distinguish between them.
+When using the ontap and solidfire drivers, use the command ``tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml``
+to import an existing volume into Kubernetes to be managed by Trident. The PVC YAML or JSON file used in the import volume
+command points to a storage class which identifies Trident as the provisioner. When using a SolidFire
+backend, ensure the volume names are unique. If the volume names are duplicated, clone the volume to a unique name so
+the volume import feature can distinguish between them.
 
-If the aws-cvs driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This always ensures a unique volume reference.
+If the aws-cvs driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This ensures a unique volume reference.
 
 When the above command is executed, Trident will find the volume on the backend and read its size. It will automatically add (and overwrite if necessary) the configured PVC’s volume size.  Trident then creates the new PV and Kubernetes binds the PVC to the PV.
 
