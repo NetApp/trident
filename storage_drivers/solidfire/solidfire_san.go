@@ -971,14 +971,14 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return nil
 }
 
-func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
 			"Type":         "SANStorageDriver",
 			"originalName": originalName,
-			"notManaged":   notManaged,
+			"notManaged":   volConfig.ImportNotManaged,
 		}
 		log.WithFields(fields).Debug(">>>> Import")
 		defer log.WithFields(fields).Debug("<<<< Import")
@@ -995,7 +995,7 @@ func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	// We cannot rename solidfire volumes, so internal name should match the imported name
 	volConfig.InternalName = originalName
 
-	if !notManaged {
+	if !volConfig.ImportNotManaged {
 		// Gather and update telemetry labels
 		telemetry, err := json.Marshal(d.getTelemetry())
 		if err != nil {

@@ -1,3 +1,4 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -475,6 +476,55 @@ func (p *Plugin) waitForCachedPVCByUID(uid string, maxElapsedTime time.Duration)
 	}
 
 	return pvc, nil
+}
+
+func (p *Plugin) getCachedPVByName(name string) (*v1.PersistentVolume, error) {
+
+	logFields := log.Fields{"name": name}
+
+	item, exists, err := p.pvIndexer.GetByKey(name)
+	if err != nil {
+		log.WithFields(logFields).Error("Could not search cache for PV by name.")
+		return nil, fmt.Errorf("could not search cache for PV: %v", err)
+	} else if !exists {
+		log.WithFields(logFields).Debug("PV object not found in cache by name.")
+		return nil, fmt.Errorf("PV not found in cache")
+	} else if pv, ok := item.(*v1.PersistentVolume); !ok {
+		log.WithFields(logFields).Error("Non-PV cached object found by name.")
+		return nil, fmt.Errorf("non-PV object found in cache")
+	} else {
+		log.WithFields(logFields).Debug("Found cached PV by name.")
+		return pv, nil
+	}
+}
+
+func (p *Plugin) waitForCachedPVByName(name string, maxElapsedTime time.Duration) (*v1.PersistentVolume, error) {
+
+	var pv *v1.PersistentVolume
+
+	checkForCachedPV := func() error {
+		var pvError error
+		pv, pvError = p.getCachedPVByName(name)
+		return pvError
+	}
+	pvNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name":      name,
+			"increment": duration,
+		}).Debugf("PV not yet in cache, waiting.")
+	}
+	pvBackoff := backoff.NewExponentialBackOff()
+	pvBackoff.InitialInterval = CacheBackoffInitialInterval
+	pvBackoff.RandomizationFactor = CacheBackoffRandomizationFactor
+	pvBackoff.Multiplier = CacheBackoffMultiplier
+	pvBackoff.MaxInterval = CacheBackoffMaxInterval
+	pvBackoff.MaxElapsedTime = maxElapsedTime
+
+	if err := backoff.RetryNotify(checkForCachedPV, pvBackoff, pvNotify); err != nil {
+		return nil, fmt.Errorf("PV %s was not cache after %3.2f seconds", name, maxElapsedTime.Seconds())
+	}
+
+	return pv, nil
 }
 
 // addStorageClass is the add handler for the storage class watcher.

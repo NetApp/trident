@@ -713,6 +713,8 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 	annotations := p.processStorageClassAnnotations(pvc, storageClass)
 	volConfig := getVolumeConfig(accessModes, uniqueName, claim.Spec.Resources.Requests[v1.ResourceStorage], annotations)
 	volConfig.ImportOriginalName = request.InternalName
+	volConfig.ImportBackendUUID = volExternal.BackendUUID
+	volConfig.ImportNotManaged = request.NoManage
 
 	// We don't really know what filesystem is applied to imported volumes, so to be safe we shouldn't set it
 	volConfig.FileSystem = ""
@@ -768,7 +770,7 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 		return nil
 	}
 
-	volumeExternal, err := p.orchestrator.ImportVolume(volConfig, request.Backend, request.NoManage, createPVandPVC)
+	volumeExternal, err := p.orchestrator.LegacyImportVolume(volConfig, request.Backend, request.NoManage, createPVandPVC)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"name":     volConfig.Name,

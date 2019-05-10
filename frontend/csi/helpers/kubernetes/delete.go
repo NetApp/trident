@@ -25,7 +25,7 @@ func (p *Plugin) updateLegacyPV(oldObj, newObj interface{}) {
 	// Ensure we got PV objects
 	pv, ok := newObj.(*v1.PersistentVolume)
 	if !ok {
-		log.Errorf("K8S helper expected PV; got %v", oldObj)
+		log.Errorf("K8S helper expected PV; got %v", newObj)
 		return
 	}
 

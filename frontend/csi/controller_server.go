@@ -146,10 +146,12 @@ func (p *Plugin) CreateVolume(
 
 	// Invoke the orchestrator to create or clone the new volume
 	var newVolume *storage.VolumeExternal
-	if volConfig.CloneSourceVolume == "" {
-		newVolume, err = p.orchestrator.AddVolume(volConfig)
-	} else {
+	if volConfig.CloneSourceVolume != "" {
 		newVolume, err = p.orchestrator.CloneVolume(volConfig)
+	} else if volConfig.ImportOriginalName != "" {
+		newVolume, err = p.orchestrator.ImportVolume(volConfig)
+	} else {
+		newVolume, err = p.orchestrator.AddVolume(volConfig)
 	}
 
 	if err != nil {

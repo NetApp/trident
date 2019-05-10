@@ -1,3 +1,4 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -190,4 +191,17 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 		return provisioner
 	}
 	return ""
+}
+
+func (p *Plugin) checkValidStorageClassReceived(claim *v1.PersistentVolumeClaim) error {
+
+	// Filter unrelated claims
+	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
+		log.WithFields(log.Fields{
+			"PVC": claim.Name,
+		}).Error("PVC has no storage class specified")
+		return fmt.Errorf("PVC %s has no storage class specified", claim.Name)
+	}
+
+	return nil
 }

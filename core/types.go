@@ -34,7 +34,8 @@ type Orchestrator interface {
 	GetVolume(volume string) (*storage.VolumeExternal, error)
 	GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error)
 	GetVolumeType(vol *storage.VolumeExternal) (config.VolumeType, error)
-	ImportVolume(volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
+	LegacyImportVolume(volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
+	ImportVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes() ([]*storage.VolumeExternal, error)
 	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
 	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error

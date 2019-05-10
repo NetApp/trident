@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -145,7 +145,7 @@ func WriteVolumes(volumes []storage.VolumeExternal) {
 func writeVolumeTable(volumes []storage.VolumeExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "Pool", "State"})
+	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "State", "Managed"})
 
 	for _, volume := range volumes {
 
@@ -157,8 +157,8 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 			volume.Config.StorageClass,
 			string(volume.Config.Protocol),
 			volume.BackendUUID,
-			volume.Pool,
 			string(volume.State),
+			strconv.FormatBool(!volume.Config.ImportNotManaged),
 		})
 	}
 
@@ -176,8 +176,8 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 		"Protocol",
 		"Backend UUID",
 		"Backend",
-		"Pool",
 		"State",
+		"Managed",
 		"Access Mode",
 	}
 	table.SetHeader(header)
@@ -199,8 +199,8 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 			string(volume.Config.Protocol),
 			volume.BackendUUID,
 			backendName,
-			volume.Pool,
 			string(volume.State),
+			strconv.FormatBool(!volume.Config.ImportNotManaged),
 			string(volume.Config.AccessMode),
 		})
 	}

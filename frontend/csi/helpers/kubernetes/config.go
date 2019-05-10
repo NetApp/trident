@@ -13,6 +13,7 @@ const (
 	PreSyncCacheWaitPeriod  = 10 * time.Second
 	PostSyncCacheWaitPeriod = 30 * time.Second
 	ResizeSyncPeriod        = 3 * time.Minute
+	ImportPVCacheWaitPeriod = 75 * time.Second
 
 	CacheBackoffInitialInterval     = 1 * time.Second
 	CacheBackoffRandomizationFactor = 0.1
@@ -29,16 +30,18 @@ const (
 	AnnStorageProvisioner     = "volume.beta.kubernetes.io/storage-provisioner"
 
 	// Orchestrator-defined annotations
-	annPrefix          = config.OrchestratorName + ".netapp.io"
-	AnnProtocol        = annPrefix + "/protocol"
-	AnnSnapshotPolicy  = annPrefix + "/snapshotPolicy"
-	AnnSnapshotReserve = annPrefix + "/snapshotReserve"
-	AnnSnapshotDir     = annPrefix + "/snapshotDirectory"
-	AnnUnixPermissions = annPrefix + "/unixPermissions"
-	AnnExportPolicy    = annPrefix + "/exportPolicy"
-	AnnBlockSize       = annPrefix + "/blockSize"
-	AnnFileSystem      = annPrefix + "/fileSystem"
-	AnnCloneFromPVC    = annPrefix + "/cloneFromPVC"
-	AnnSplitOnClone    = annPrefix + "/splitOnClone"
-	AnnNotManaged      = annPrefix + "/notManaged"
+	annPrefix             = config.OrchestratorName + ".netapp.io"
+	AnnProtocol           = annPrefix + "/protocol"
+	AnnSnapshotPolicy     = annPrefix + "/snapshotPolicy"
+	AnnSnapshotReserve    = annPrefix + "/snapshotReserve"
+	AnnSnapshotDir        = annPrefix + "/snapshotDirectory"
+	AnnUnixPermissions    = annPrefix + "/unixPermissions"
+	AnnExportPolicy       = annPrefix + "/exportPolicy"
+	AnnBlockSize          = annPrefix + "/blockSize"
+	AnnFileSystem         = annPrefix + "/fileSystem"
+	AnnCloneFromPVC       = annPrefix + "/cloneFromPVC"
+	AnnSplitOnClone       = annPrefix + "/splitOnClone"
+	AnnNotManaged         = annPrefix + "/notManaged"
+	AnnImportOriginalName = annPrefix + "/importOriginalName"
+	AnnImportBackendUUID  = annPrefix + "/importBackendUUID"
 )

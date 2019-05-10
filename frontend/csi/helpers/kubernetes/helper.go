@@ -1,7 +1,9 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
 	"fmt"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -295,20 +297,28 @@ func getVolumeConfig(
 		annotations[AnnFileSystem] = "ext4"
 	}
 
+	notManaged, err := strconv.ParseBool(getAnnotation(annotations, AnnNotManaged))
+	if err != nil {
+		log.Errorf("unable to parse notManaged annotation into bool; %v", err)
+	}
+
 	return &storage.VolumeConfig{
-		Name:            name,
-		Size:            fmt.Sprintf("%d", size.Value()),
-		Protocol:        config.Protocol(getAnnotation(annotations, AnnProtocol)),
-		SnapshotPolicy:  getAnnotation(annotations, AnnSnapshotPolicy),
-		SnapshotReserve: getAnnotation(annotations, AnnSnapshotReserve),
-		SnapshotDir:     getAnnotation(annotations, AnnSnapshotDir),
-		ExportPolicy:    getAnnotation(annotations, AnnExportPolicy),
-		UnixPermissions: getAnnotation(annotations, AnnUnixPermissions),
-		StorageClass:    storageClassName,
-		BlockSize:       getAnnotation(annotations, AnnBlockSize),
-		FileSystem:      getAnnotation(annotations, AnnFileSystem),
-		SplitOnClone:    getAnnotation(annotations, AnnSplitOnClone),
-		AccessMode:      accessMode,
+		Name:               name,
+		Size:               fmt.Sprintf("%d", size.Value()),
+		Protocol:           config.Protocol(getAnnotation(annotations, AnnProtocol)),
+		SnapshotPolicy:     getAnnotation(annotations, AnnSnapshotPolicy),
+		SnapshotReserve:    getAnnotation(annotations, AnnSnapshotReserve),
+		SnapshotDir:        getAnnotation(annotations, AnnSnapshotDir),
+		ExportPolicy:       getAnnotation(annotations, AnnExportPolicy),
+		UnixPermissions:    getAnnotation(annotations, AnnUnixPermissions),
+		StorageClass:       storageClassName,
+		BlockSize:          getAnnotation(annotations, AnnBlockSize),
+		FileSystem:         getAnnotation(annotations, AnnFileSystem),
+		SplitOnClone:       getAnnotation(annotations, AnnSplitOnClone),
+		AccessMode:         accessMode,
+		ImportOriginalName: getAnnotation(annotations, AnnImportOriginalName),
+		ImportBackendUUID:  getAnnotation(annotations, AnnImportBackendUUID),
+		ImportNotManaged:   notManaged,
 	}
 }
 

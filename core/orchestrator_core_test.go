@@ -329,6 +329,7 @@ func generateVolumeConfig(
 ) *storage.VolumeConfig {
 	return &storage.VolumeConfig{
 		Name:            name,
+		InternalName:    name,
 		Size:            fmt.Sprintf("%d", gb*1024*1024*1024),
 		Protocol:        protocol,
 		StorageClass:    storageClass,
@@ -1170,8 +1171,8 @@ func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string,
 ) {
 	volumes := []fake.Volume{
-		fake.Volume{"origVolume01", "primary", "primary", 1000000000},
-		fake.Volume{"origVolume02", "primary", "primary", 1000000000},
+		{"origVolume01", "primary", "primary", 1000000000},
+		{"origVolume02", "primary", "primary", 1000000000},
 	}
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
@@ -1829,6 +1830,7 @@ func runSnapshotRecoveryTests(
 		// easier to store the results of a partially completed snapshot addition
 		// than to actually inject a failure.
 		volTxn := &persistentstore.VolumeTransaction{
+			Config:         c.volumeConfig,
 			SnapshotConfig: c.snapshotConfig,
 			Op:             op,
 		}
@@ -1904,8 +1906,8 @@ func TestAddSnapshotRecovery(t *testing.T) {
 	// will not be called to delete the snapshot.
 	runSnapshotRecoveryTests(t, orchestrator, backendName, persistentstore.AddSnapshot,
 		[]recoveryTest{
-			{name: "full", snapshotConfig: fullSnapshotConfig, expectDestroy: true},
-			{name: "txOnly", snapshotConfig: txOnlySnapshotConfig, expectDestroy: false},
+			{name: "full", volumeConfig: volumeConfig, snapshotConfig: fullSnapshotConfig, expectDestroy: true},
+			{name: "txOnly", volumeConfig: volumeConfig, snapshotConfig: txOnlySnapshotConfig, expectDestroy: false},
 		})
 	cleanup(t, orchestrator)
 }
@@ -2261,8 +2263,21 @@ func importVolumeSetup(t *testing.T, backendName string, scName string, volumeNa
 	}
 	orchestrator.mutex.Unlock()
 
+	backendUUID := ""
+	for _, b := range orchestrator.backends {
+		if b.Name == backendName {
+			backendUUID = b.BackendUUID
+			break
+		}
+	}
+
+	if backendUUID == "" {
+		t.Fatal("BackendUUID not found")
+	}
+
 	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
 	volumeConfig.ImportOriginalName = importOriginalName
+	volumeConfig.ImportBackendUUID = backendUUID
 	return orchestrator, volumeConfig
 }
 
@@ -2280,7 +2295,7 @@ func TestImportVolumeFailures(t *testing.T) {
 
 	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName01)
 
-	_, err := orchestrator.ImportVolume(volumeConfig, backendName, false, createPVandPVCError)
+	_, err := orchestrator.LegacyImportVolume(volumeConfig, backendName, false, createPVandPVCError)
 
 	// verify that importVolumeCleanup renamed volume to originalName
 	backend, _ := orchestrator.getBackendByBackendName(backendName)
@@ -2304,7 +2319,7 @@ func TestImportVolumeFailures(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
-func TestImportVolume(t *testing.T) {
+func TestLegacyImportVolume(t *testing.T) {
 	const (
 		backendName    = "backend02"
 		scName         = "sc01"
@@ -2328,6 +2343,7 @@ func TestImportVolume(t *testing.T) {
 	notManagedVolConfig.Name = volumeName02
 	notManagedVolConfig.InternalName = volumeName02
 	notManagedVolConfig.ImportOriginalName = originalName02
+	notManagedVolConfig.ImportNotManaged = true
 
 	// Test configuration
 	for _, c := range []struct {
@@ -2343,7 +2359,7 @@ func TestImportVolume(t *testing.T) {
 			createFunc: createPVandPVCNoOp, expectedInternalName: originalName02},
 	} {
 		// The test code
-		volExternal, err := orchestrator.ImportVolume(c.volumeConfig, backendName, c.notManaged, c.createFunc)
+		volExternal, err := orchestrator.LegacyImportVolume(c.volumeConfig, backendName, c.notManaged, c.createFunc)
 		if err != nil {
 			t.Errorf("%s: unexpected error %v", c.name, err)
 		} else {
@@ -2359,6 +2375,50 @@ func TestImportVolume(t *testing.T) {
 				t.Errorf("%s: managed volume %s should be persisted", c.name, volExternal.Config.Name)
 			}
 
+		}
+
+	}
+	cleanup(t, orchestrator)
+}
+
+func TestImportVolume(t *testing.T) {
+	const (
+		backendName    = "backend02"
+		scName         = "sc01"
+		volumeName01   = "volume01"
+		volumeName02   = "volume02"
+		originalName01 = "origVolume01"
+		originalName02 = "origVolume02"
+	)
+
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName01, originalName01)
+
+	notManagedVolConfig := volumeConfig.ConstructClone()
+	notManagedVolConfig.Name = volumeName02
+	notManagedVolConfig.ImportOriginalName = originalName02
+	notManagedVolConfig.ImportNotManaged = true
+
+	// Test configuration
+	for _, c := range []struct {
+		name                 string
+		volumeConfig         *storage.VolumeConfig
+		expectedInternalName string
+	}{
+		{name: "managed", volumeConfig: volumeConfig, expectedInternalName: volumeName01},
+		{name: "notManaged", volumeConfig: notManagedVolConfig, expectedInternalName: originalName02},
+	} {
+		// The test code
+		volExternal, err := orchestrator.ImportVolume(c.volumeConfig)
+		if err != nil {
+			t.Errorf("%s: unexpected error %v", c.name, err)
+		} else {
+			if volExternal.Config.InternalName != c.expectedInternalName {
+				t.Errorf("%s: expected matching internal names %s - %s",
+					c.name, c.expectedInternalName, volExternal.Config.InternalName)
+			}
+			if _, ok := orchestrator.volumes[volExternal.Config.Name]; !ok {
+				t.Errorf("%s: managed volume %s should be persisted", c.name, volExternal.Config.Name)
+			}
 		}
 
 	}
@@ -2416,8 +2476,7 @@ func TestValidateImportVolume(t *testing.T) {
 		{name: "protocol", volumeConfig: protocolVolConfig, valid: false, error: "does not match backend protocol file"},
 	} {
 		// The test code
-		backend, _ := orchestrator.getBackendByBackendName(backendName)
-		err = orchestrator.validateImportVolume(c.volumeConfig, backend)
+		err = orchestrator.validateImportVolume(c.volumeConfig)
 		if err != nil {
 			if c.valid {
 				t.Errorf("%s: unexpected error %v", c.name, err)

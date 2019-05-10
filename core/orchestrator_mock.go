@@ -399,8 +399,16 @@ func (m *MockOrchestrator) GetVolumeExternal(volumeName string, backendName stri
 	return nil, nil
 }
 
-func (m *MockOrchestrator) ImportVolume(
+func (m *MockOrchestrator) LegacyImportVolume(
 	volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback,
+) (externalVol *storage.VolumeExternal, err error) {
+
+	// TODO: write this method to enable GetVolumeExternal unit tests
+	return nil, nil
+}
+
+func (m *MockOrchestrator) ImportVolume(
+	volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	// TODO: write this method to enable GetVolumeExternal unit tests

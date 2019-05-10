@@ -950,7 +950,7 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
 
-func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 	return errors.New("import is not implemented")
 }
 

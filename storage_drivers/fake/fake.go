@@ -615,10 +615,10 @@ func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return nil
 }
 
-func (d *StorageDriver) Import(volumeConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *StorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 
 	log.WithFields(log.Fields{
-		"volumeConfig": volumeConfig,
+		"volumeConfig": volConfig,
 		"originalName": originalName,
 	}).Debug("Import")
 
@@ -627,10 +627,10 @@ func (d *StorageDriver) Import(volumeConfig *storage.VolumeConfig, originalName 
 		return fmt.Errorf("import volume %s not found", originalName)
 	}
 
-	volumeConfig.Size = strconv.FormatUint(importVolume.SizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(importVolume.SizeBytes, 10)
 
-	if !notManaged {
-		d.Volumes[volumeConfig.InternalName] = importVolume
+	if !volConfig.ImportNotManaged {
+		d.Volumes[volConfig.InternalName] = importVolume
 		delete(d.Volumes, originalName)
 	}
 
@@ -648,6 +648,7 @@ func (d *StorageDriver) Rename(name string, newName string) error {
 	if !ok {
 		return fmt.Errorf("volume to rename %s not found", name)
 	}
+	volume.Name = newName
 	d.Volumes[newName] = volume
 	delete(d.Volumes, name)
 

@@ -343,7 +343,7 @@ func (d *NASQtreeStorageDriver) CreateClone(volConfig *storage.VolumeConfig) err
 	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
 
-func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 	return errors.New("import is not implemented")
 }
 

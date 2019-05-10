@@ -363,7 +363,7 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return CreateOntapClone(name, source, snapshot, split, &d.Config, d.API)
 }
 
-func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 	return errors.New("import is not implemented")
 }
 

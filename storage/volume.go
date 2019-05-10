@@ -40,6 +40,8 @@ type VolumeConfig struct {
 	QoSType                   string                 `json:"type,omitempty"`
 	ServiceLevel              string                 `json:"serviceLevel,omitempty"`
 	ImportOriginalName        string                 `json:"importOriginalName,omitempty"`
+	ImportBackendUUID         string                 `json:"importBackendUUID,omitempty"`
+	ImportNotManaged          bool                   `json:"importNotManaged,omitempty"`
 }
 
 func (c *VolumeConfig) Validate() error {

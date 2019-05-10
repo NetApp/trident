@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -34,7 +34,7 @@ type Driver interface {
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
 	CreateClone(volConfig *VolumeConfig) error
-	Import(volConfig *VolumeConfig, originalName string, notManaged bool) error
+	Import(volConfig *VolumeConfig, originalName string) error
 	Destroy(name string) error
 	Rename(name string, newName string) error
 	Resize(name string, sizeBytes uint64) error
@@ -74,6 +74,14 @@ type Backend struct {
 
 type UpdateBackendStateRequest struct {
 	State string `json:"state"`
+}
+
+type NotManagedError struct {
+	volumeName string
+}
+
+func (e *NotManagedError) Error() string {
+	return fmt.Sprintf("volume %s is not managed by Trident", e.volumeName)
 }
 
 type BackendState string
@@ -253,6 +261,11 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		"clone_volume_internal":  volConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return nil, &NotManagedError{volConfig.InternalName}
+	}
+
 	// Ensure backend is ready
 	if err := b.ensureOnline(); err != nil {
 		return nil, err
@@ -330,12 +343,12 @@ func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) 
 	return volExternal, nil
 }
 
-func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volume, error) {
+func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
 		"backend":    b.Name,
 		"volume":     volConfig.ImportOriginalName,
-		"NotManaged": notManaged,
+		"NotManaged": volConfig.ImportNotManaged,
 	}).Debug("Backend#ImportVolume")
 
 	// Ensure backend is ready
@@ -343,7 +356,7 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 		return nil, err
 	}
 
-	if notManaged {
+	if volConfig.ImportNotManaged {
 		// The volume is not managed and will not be renamed during import.
 		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
@@ -355,7 +368,7 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 		}
 	}
 
-	err := b.Driver.Import(volConfig, volConfig.ImportOriginalName, notManaged)
+	err := b.Driver.Import(volConfig, volConfig.ImportOriginalName)
 	if err != nil {
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
@@ -366,14 +379,18 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 	}
 
 	volume := NewVolume(volConfig, b.BackendUUID, drivers.UnsetPool, false)
-	if !notManaged {
-		// The volume is managed
-		b.Volumes[volume.Config.Name] = volume
-	}
+	b.Volumes[volume.Config.Name] = volume
 	return volume, nil
 }
 
-func (b *Backend) ResizeVolume(volName, newSize string) error {
+func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
+
+	volName := volConfig.InternalName
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return &NotManagedError{volName}
+	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(); err != nil {
@@ -398,24 +415,55 @@ func (b *Backend) ResizeVolume(volName, newSize string) error {
 	return b.Driver.Resize(volName, newSizeBytes)
 }
 
-func (b *Backend) RemoveVolume(vol *Volume) error {
+func (b *Backend) RenameVolume(volConfig *VolumeConfig, newName string) error {
+
+	oldName := volConfig.InternalName
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return &NotManagedError{oldName}
+	}
+
+	if b.State != Online {
+		log.WithFields(log.Fields{
+			"state":         b.State,
+			"expectedState": string(Online),
+		}).Error("Invalid backend state.")
+		return fmt.Errorf("backend %s is not Online", b.Name)
+	}
+
+	if err := b.Driver.Get(oldName); err != nil {
+		return fmt.Errorf("volume %s not found on backend %s; %v", oldName, b.Name, err)
+	}
+	if err := b.Driver.Rename(oldName, newName); err != nil {
+		return fmt.Errorf("error attempting to rename volume %s on backend %s: %v", oldName, b.Name, err)
+	}
+	return nil
+}
+
+func (b *Backend) RemoveVolume(volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
 		"backend": b.Name,
-		"volume":  vol.Config.Name,
+		"volume":  volConfig.Name,
 	}).Debug("Backend#RemoveVolume")
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return &NotManagedError{volConfig.InternalName}
+	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnlineOrDeleting(); err != nil {
 		return err
 	}
 
-	if err := b.Driver.Destroy(vol.Config.InternalName); err != nil {
+	if err := b.Driver.Destroy(volConfig.InternalName); err != nil {
 		// TODO:  Check the error being returned once the nDVP throws errors
 		// for volumes that aren't found.
 		return err
 	}
-	b.RemoveCachedVolume(vol.Config.Name)
+	b.RemoveCachedVolume(volConfig.Name)
 	return nil
 }
 
@@ -465,13 +513,18 @@ func (b *Backend) GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error) {
 	return b.Driver.GetSnapshots(volConfig)
 }
 
-func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
+func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error) {
 
 	log.WithFields(log.Fields{
 		"backend":      b.Name,
 		"volumeName":   snapConfig.VolumeName,
 		"snapshotName": snapConfig.Name,
 	}).Debug("Attempting snapshot create.")
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return nil, &NotManagedError{volConfig.InternalName}
+	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(); err != nil {
@@ -504,13 +557,18 @@ func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) 
 	return b.Driver.CreateSnapshot(snapConfig)
 }
 
-func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig) error {
+func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
 		"backend":      b.Name,
 		"volumeName":   snapConfig.VolumeName,
 		"snapshotName": snapConfig.Name,
 	}).Debug("Attempting snapshot restore.")
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return &NotManagedError{volConfig.InternalName}
+	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(); err != nil {
@@ -521,13 +579,18 @@ func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig) error {
 	return b.Driver.RestoreSnapshot(snapConfig)
 }
 
-func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig) error {
+func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
 		"backend":      b.Name,
 		"volumeName":   snapConfig.VolumeName,
 		"snapshotName": snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return &NotManagedError{volConfig.InternalName}
+	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnlineOrDeleting(); err != nil {

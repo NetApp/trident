@@ -319,7 +319,7 @@ func (d *NASStorageDriver) Destroy(name string) error {
 	return nil
 }
 
-func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -327,7 +327,7 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 			"Type":         "NASStorageDriver",
 			"originalName": originalName,
 			"newName":      volConfig.InternalName,
-			"notManaged":   notManaged,
+			"notManaged":   volConfig.ImportNotManaged,
 		}
 		log.WithFields(fields).Debug(">>>> Import")
 		defer log.WithFields(fields).Debug("<<<< Import")
@@ -358,7 +358,7 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	volConfig.Size = strconv.FormatInt(int64(flexvol.VolumeSpaceAttributesPtr.Size()), 10)
 
 	// Rename the volume if Trident will manage its lifecycle
-	if !notManaged {
+	if !volConfig.ImportNotManaged {
 		renameResponse, err := d.API.VolumeRename(originalName, volConfig.InternalName)
 		if err = api.GetError(renameResponse, err); err != nil {
 			log.WithField("originalName", originalName).Errorf("Could not import volume, rename failed: %v", err)
@@ -367,7 +367,7 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	}
 
 	// Make sure we're not importing a volume without a junction path when not managed
-	if notManaged {
+	if volConfig.ImportNotManaged {
 		if flexvol.VolumeIdAttributesPtr == nil {
 			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
 		} else if flexvol.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexvol.VolumeIdAttributesPtr.JunctionPath() == "" {

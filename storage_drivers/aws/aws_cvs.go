@@ -755,7 +755,7 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	return d.waitForVolumeCreate(clone, name)
 }
 
-func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -780,7 +780,7 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	volConfig.Size = strconv.FormatInt(int64(volume.QuotaInBytes), 10)
 
 	// Update the volume labels if Trident will manage its lifecycle
-	if !notManaged {
+	if !volConfig.ImportNotManaged {
 		if _, err := d.API.RelabelVolume(volume, d.updateTelemetryLabels(volume)); err != nil {
 			log.WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)

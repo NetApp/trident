@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -128,7 +128,6 @@ func volumeImport(backendName, internalVolumeName string, noManage bool, pvcData
 	if err != nil {
 		return err
 	}
-
 	volume := *importVolumeResponse.Volume
 
 	volumes := make([]storage.VolumeExternal, 0, 10)

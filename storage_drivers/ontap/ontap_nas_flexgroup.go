@@ -269,14 +269,14 @@ func (d *NASFlexGroupStorageDriver) CreateClone(volConfig *storage.VolumeConfig)
 }
 
 // Import brings an existing volume under trident's control
-func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string, notManaged bool) error {
+func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
 			"Type":         "NASFlexGroupStorageDriver",
 			"originalName": originalName,
-			"notManaged":   notManaged,
+			"notManaged":   volConfig.ImportNotManaged,
 		}
 		log.WithFields(fields).Debug(">>>> Import")
 		defer log.WithFields(fields).Debug("<<<< Import")
@@ -310,7 +310,7 @@ func (d *NASFlexGroupStorageDriver) Import(volConfig *storage.VolumeConfig, orig
 	volConfig.InternalName = originalName
 
 	// Make sure we're not importing a volume without a junction path when not managed
-	if notManaged {
+	if volConfig.ImportNotManaged {
 		if flexgroup.VolumeIdAttributesPtr == nil {
 			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
 		} else if flexgroup.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexgroup.VolumeIdAttributesPtr.

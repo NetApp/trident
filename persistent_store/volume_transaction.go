@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -29,11 +29,9 @@ type VolumeTransaction struct {
 // should overwrite this.
 func (t *VolumeTransaction) getKey() string {
 	switch t.Op {
-	case AddVolume, DeleteVolume, ImportVolume, ResizeVolume:
-		return t.Config.Name
 	case AddSnapshot, DeleteSnapshot:
 		return t.SnapshotConfig.ID()
 	default:
-		return ""
+		return t.Config.Name
 	}
 }

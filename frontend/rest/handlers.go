@@ -9,12 +9,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -627,11 +628,17 @@ func (i *ImportVolumeResponse) isError() bool {
 }
 
 func (i *ImportVolumeResponse) logSuccess() {
-	log.WithFields(log.Fields{
-		"handler":     "ImportVolume",
-		"backendUUID": i.Volume.BackendUUID,
-		"volume":      i.Volume.Config.Name,
-	}).Info("Imported an existing volume.")
+	if i.Volume != nil {
+		log.WithFields(log.Fields{
+			"handler":     "ImportVolume",
+			"backendUUID": i.Volume.BackendUUID,
+			"volume":      i.Volume.Config.Name,
+		}).Info("Imported an existing volume.")
+	} else {
+		log.WithFields(log.Fields{
+			"handler": "ImportVolume",
+		}).Info("Imported an existing volume.")
+	}
 }
 func (i *ImportVolumeResponse) logFailure() {
 	log.WithFields(log.Fields{
@@ -654,6 +661,9 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 			k8sFrontend, err := orchestrator.GetFrontend(string(config.ContextKubernetes))
+			if err != nil {
+				k8sFrontend, err = orchestrator.GetFrontend(string(helpers.KubernetesHelper))
+			}
 			if err != nil {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
