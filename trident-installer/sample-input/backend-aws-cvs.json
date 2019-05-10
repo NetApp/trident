@@ -2,7 +2,7 @@
   "version": 1,
   "storageDriverName": "aws-cvs",
   "apiRegion": "us-east-1",
-  "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1",
+  "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1 for us-east-1, https://cv.<apiRegion>.netapp.com:8080/v1 for all other regions",
   "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
   "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU"
 }
