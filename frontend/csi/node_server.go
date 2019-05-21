@@ -238,18 +238,13 @@ func (p *Plugin) nodeDeregisterWithController() error {
 
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	mountOptions := make([]string, 0)
-	mountCapability := req.GetVolumeCapability().GetMount()
-	if mountCapability != nil && mountCapability.GetMountFlags() != nil {
-		mountOptions = mountCapability.GetMountFlags()
-	}
 
 	publishInfo := &utils.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: "nfs",
 	}
 
-	publishInfo.MountOptions = strings.Join(mountOptions, ",")
+	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
 	publishInfo.NfsPath = req.PublishContext["nfsPath"]
 
@@ -384,6 +379,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
@@ -443,25 +439,20 @@ func (p *Plugin) nodePublishISCSIVolume(
 
 	var err error
 
-	mountOptions := make([]string, 0)
-	mountCapability := req.GetVolumeCapability().GetMount()
-	if mountCapability != nil {
-		if mountCapability.GetMountFlags() != nil {
-			mountOptions = mountCapability.GetMountFlags()
-		}
-	}
-	if req.GetReadonly() {
-		mountOptions = append(mountOptions, "ro")
-	}
-
 	// Read the device info from the staging path
 	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	if req.GetReadonly() {
+		mountOptions := strings.Split(publishInfo.MountOptions, ",")
+		mountOptions = append(mountOptions, "ro")
+		publishInfo.MountOptions = strings.Join(mountOptions, ",")
+	}
+
 	// Mount the device
-	err = utils.MountDevice(publishInfo.DevicePath, req.TargetPath, strings.Join(mountOptions, ","))
+	err = utils.MountDevice(publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

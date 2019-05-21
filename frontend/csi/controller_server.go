@@ -5,6 +5,7 @@ package csi
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -254,11 +255,17 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	mount := req.VolumeCapability.GetMount()
+	if len(mount.MountFlags) > 0 {
+		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
+	}
+
 	// Build CSI controller publish info from volume publish info
 	publishInfo := map[string]string{
 		"protocol": string(volume.Config.Protocol),
 	}
 
+	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
 	if volume.Config.Protocol == tridentconfig.File {
 		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
 		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
