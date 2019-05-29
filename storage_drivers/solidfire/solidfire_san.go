@@ -575,9 +575,21 @@ func (d *SANStorageDriver) Create(
 			log.Warning("QoS values appear to have been set using -o qos, but " +
 				"type is set as well, overriding with type option.")
 		}
-		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
-		if err != nil {
-			return err
+
+		// First need to check if storage pool has a default QoS type assigned
+		// if not then only check if the type specified is valid or not
+		if strings.EqualFold(sfDefaultVolTypeName, typeOpt) {
+			qos = api.QoS{
+				MinIOPS: sfDefaultMinIOPS,
+				MaxIOPS: sfDefaultMaxIOPS,
+			}
+		} else if d.Client.VolumeTypes != nil {
+			qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("unsupported type option: %s", typeOpt)
 		}
 	}
 
@@ -668,9 +680,21 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 			log.Warning("qos values appear to have been set using -o qos, but type is set as well, " +
 				"overriding with type option")
 		}
-		qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
-		if err != nil {
-			return err
+
+		// First need to check if storage pool has a default QoS type assigned
+		// if not then only check if the type specified is valid or not
+		if strings.EqualFold(sfDefaultVolTypeName, typeOpt) {
+			qos = api.QoS{
+				MinIOPS: sfDefaultMinIOPS,
+				MaxIOPS: sfDefaultMaxIOPS,
+			}
+		} else if d.Client.VolumeTypes != nil {
+			qos, err = parseType(*d.Client.VolumeTypes, typeOpt)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("unsupported type option: %s", typeOpt)
 		}
 	}
 
@@ -1040,8 +1064,12 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 		backend.Name = d.Config.BackendName
 	}
 
-	volTypes := *d.Client.VolumeTypes
-	if len(volTypes) == 0 {
+	typesDefined := d.Client.VolumeTypes != nil
+	volTypes := []api.VolType{}
+
+	if typesDefined {
+		volTypes = *d.Client.VolumeTypes
+	} else {
 		volTypes = []api.VolType{
 			{
 				Type: sfDefaultVolTypeName,
