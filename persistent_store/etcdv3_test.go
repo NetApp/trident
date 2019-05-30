@@ -620,14 +620,21 @@ func TestEtcdv3DuplicateVolumeTransaction(t *testing.T) {
 
 func TestEtcdv3AddSolidFireBackend(t *testing.T) {
 	p, err := NewEtcdClientV3(*etcdV3)
+
+	commonConfigDefaults := drivers.CommonStorageDriverConfigDefaults{Size: "1GiB"}
+	solidfireConfigDefaults := drivers.SolidfireStorageDriverConfigDefaults{
+		CommonStorageDriverConfigDefaults: commonConfigDefaults,
+	}
+
 	sfConfig := drivers.SolidfireStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: drivers.SolidfireSANStorageDriverName,
 		},
-		SolidfireStorageDriverConfigDefaults: drivers.SolidfireStorageDriverConfigDefaults{
-			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
-				Size: "1GiB",
-			},
+		SolidfireStorageDriverPool: drivers.SolidfireStorageDriverPool{
+			Labels: map[string]string{"performance": "bronze", "cost": "1"},
+			Region: "us-east",
+			Zone:   "us-east-1",
+			SolidfireStorageDriverConfigDefaults: solidfireConfigDefaults,
 		},
 		TenantName: "docker",
 	}

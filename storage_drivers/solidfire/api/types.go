@@ -329,6 +329,18 @@ type GetClusterHardwareInfoResult struct {
 	} `json:"result"`
 }
 
+type DefaultQoSRequest struct {
+}
+
+type DefaultQoSResult struct {
+	ID     int `json:"id"`
+	Result struct {
+		BurstIOPS int64 `json:"burstIOPS"`
+		MaxIOPS   int64 `json:"maxIOPS"`
+		MinIOPS   int64 `json:"minIOPS"`
+	} `json:"result"`
+}
+
 type ClusterHardwareInfo struct {
 	Drives interface{} `json:"drives"`
 	Nodes  interface{} `json:"nodes"`

@@ -33,6 +33,10 @@ const (
 	SSD    = "ssd"
 	Hybrid = "hybrid"
 
+	// Values for provisioning type
+	Thick = "thick"
+	Thin  = "thin"
+
 	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
 	StoragePools           = "storagePools"
 	AdditionalStoragePools = "additionalStoragePools"

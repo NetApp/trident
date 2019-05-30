@@ -17,16 +17,23 @@ const (
 )
 
 func getDriver() *SANStorageDriver {
+
+	commonConfigDefaults := drivers.CommonStorageDriverConfigDefaults{Size: "100GiB"}
+	solidfireConfigDefaults := drivers.SolidfireStorageDriverConfigDefaults{
+		CommonStorageDriverConfigDefaults: commonConfigDefaults,
+	}
+
 	return &SANStorageDriver{
 		Config: drivers.SolidfireStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
 				StorageDriverName: "solidfire-san",
 			},
-			SolidfireStorageDriverConfigDefaults: drivers.SolidfireStorageDriverConfigDefaults{
-				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
-					Size: "100GiB",
-				},
+			SolidfireStorageDriverPool: drivers.SolidfireStorageDriverPool{
+				Labels: map[string]string{"performance": "bronze", "cost": "1"},
+				Region: "us-east",
+				Zone:   "us-east-1",
+				SolidfireStorageDriverConfigDefaults: solidfireConfigDefaults,
 			},
 			TenantName:     "test",
 			EndPoint:       configEndpoint,

@@ -104,16 +104,26 @@ type OntapStorageDriverConfigDefaults struct {
 
 // SolidfireStorageDriverConfig holds settings for SolidfireStorageDrivers
 type SolidfireStorageDriverConfig struct {
-	*CommonStorageDriverConfig           // embedded types replicate all fields
-	TenantName                           string
-	EndPoint                             string
-	SVIP                                 string
-	InitiatorIFace                       string //iface to use of iSCSI initiator
-	Types                                *[]sfapi.VolType
-	LegacyNamePrefix                     string //name prefix used in earlier ndvp versions
-	AccessGroups                         []int64
-	UseCHAP                              bool
-	DefaultBlockSize                     int64 //blocksize to use on create when not specified  (512|4096, 512 is default)
+	*CommonStorageDriverConfig // embedded types replicate all fields
+	TenantName                 string
+	EndPoint                   string
+	SVIP                       string
+	InitiatorIFace             string //iface to use of iSCSI initiator
+	Types                      *[]sfapi.VolType
+	LegacyNamePrefix           string //name prefix used in earlier ndvp versions
+	AccessGroups               []int64
+	UseCHAP                    bool
+	DefaultBlockSize           int64 //blocksize to use on create when not specified  (512|4096, 512 is default)
+
+	SolidfireStorageDriverPool
+	Storage []SolidfireStorageDriverPool `json:"storage"`
+}
+
+type SolidfireStorageDriverPool struct {
+	Labels                               map[string]string `json:"labels"`
+	Region                               string            `json:"region"`
+	Zone                                 string            `json:"zone"`
+	Type                                 string            `json:"type"`
 	SolidfireStorageDriverConfigDefaults `json:"defaults"`
 }
 
