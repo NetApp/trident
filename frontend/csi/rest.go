@@ -12,7 +12,6 @@ import (
 	"net/http"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/utils"
 )
 
@@ -92,21 +91,17 @@ func (c *RestClient) InvokeAPI(requestBody []byte, method string, resourcePath s
 	}
 	defer response.Body.Close()
 
-	responseBody := []byte{}
-	if err == nil {
-
-		responseBody, err = ioutil.ReadAll(response.Body)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error reading response body; %v", err)
-		}
-
-		if responseBody != nil {
-			if err = json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
-				return nil, nil, fmt.Errorf("error formating response body; %v", err)
-			}
-		}
-		utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error reading response body; %v", err)
 	}
+
+	if responseBody != nil {
+		if err = json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
+			return nil, nil, fmt.Errorf("error formating response body; %v", err)
+		}
+	}
+	utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
 
 	return response, responseBody, err
 }
@@ -128,6 +123,11 @@ func (c *RestClient) CreateNode(node *utils.Node) error {
 	return nil
 }
 
+type ListNodesResponse struct {
+	Nodes []string `json:"nodes"`
+	Error string   `json:"error,omitempty"`
+}
+
 // GetNodes returns a list of nodes registered with the controller
 func (c *RestClient) GetNodes() ([]string, error) {
 	resp, respBody, err := c.InvokeAPI(nil, "GET", config.NodeURL)
@@ -140,7 +140,7 @@ func (c *RestClient) GetNodes() ([]string, error) {
 	}
 
 	// Parse JSON data
-	respData := rest.ListNodesResponse{}
+	respData := ListNodesResponse{}
 	if err := json.Unmarshal(respBody, &respData); err != nil {
 		return nil, fmt.Errorf("could not parse node list: %s; %v", string(respBody), err)
 	}

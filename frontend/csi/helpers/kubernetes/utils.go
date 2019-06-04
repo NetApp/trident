@@ -96,6 +96,30 @@ func (p *Plugin) patchPV(oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume)
 	return p.kubeClient.CoreV1().PersistentVolumes().Patch(newPV.Name, commontypes.StrategicMergePatchType, patchBytes)
 }
 
+// patchPVC patches a PVC after an update.
+func (p *Plugin) patchPVC(
+	oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
+) (*v1.PersistentVolumeClaim, error) {
+
+	oldPVCData, err := json.Marshal(oldPVC)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling the PVC %q: %v", oldPVC.Name, err)
+	}
+
+	newPVCData, err := json.Marshal(newPVC)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling the PVC %q: %v", newPVC.Name, err)
+	}
+
+	patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldPVCData, newPVCData, newPVC)
+	if err != nil {
+		return nil, fmt.Errorf("error creating the two-way merge patch for PVC %q: %v", newPVC.Name, err)
+	}
+
+	return p.kubeClient.CoreV1().PersistentVolumeClaims(oldPVC.Namespace).Patch(
+		newPVC.Name, commontypes.StrategicMergePatchType, patchBytes)
+}
+
 // patchPVCStatus patches a PVC status after an update.
 func (p *Plugin) patchPVCStatus(
 	oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,

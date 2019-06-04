@@ -13,6 +13,8 @@ const (
 	PreSyncCacheWaitPeriod  = 10 * time.Second
 	PostSyncCacheWaitPeriod = 30 * time.Second
 	ResizeSyncPeriod        = 3 * time.Minute
+	PVDeleteWaitPeriod      = 30 * time.Second
+	PodDeleteWaitPeriod     = 60 * time.Second
 	ImportPVCacheWaitPeriod = 75 * time.Second
 
 	CacheBackoffInitialInterval     = 1 * time.Second
@@ -27,7 +29,11 @@ const (
 	// (Based on kubernetes/pkg/controller/volume/persistentvolume/controller.go)
 	AnnClass                  = "volume.beta.kubernetes.io/storage-class"
 	AnnDynamicallyProvisioned = "pv.kubernetes.io/provisioned-by"
+	AnnBindCompleted          = "pv.kubernetes.io/bind-completed"
 	AnnStorageProvisioner     = "volume.beta.kubernetes.io/storage-provisioner"
+
+	// Kubernetes-defined finalizers
+	FinalizerPVProtection = "kubernetes.io/pv-protection"
 
 	// Orchestrator-defined annotations
 	annPrefix             = config.OrchestratorName + ".netapp.io"

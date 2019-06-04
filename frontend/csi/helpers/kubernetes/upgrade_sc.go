@@ -1,8 +1,6 @@
 package kubernetes
 
 import (
-	"encoding/json"
-
 	log "github.com/sirupsen/logrus"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
@@ -10,6 +8,12 @@ import (
 
 	"github.com/netapp/trident/frontend/csi"
 )
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// This file contains the code to replace legacy storage classes.
+//
+/////////////////////////////////////////////////////////////////////////////
 
 // addLegacyStorageClass is the add handler for the legacy storage class watcher.
 func (p *Plugin) addLegacyStorageClass(obj interface{}) {
@@ -80,23 +84,7 @@ func (p *Plugin) processLegacyStorageClass(sc *k8sstoragev1.StorageClass, eventT
 func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 
 	// Clone the storage class
-	scBytes, err := json.Marshal(oldSC)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"name":  oldSC.Name,
-			"error": err,
-		}).Error("Could not marshal legacy storage class.")
-		return
-	}
-
-	var newSC k8sstoragev1.StorageClass
-	if err := json.Unmarshal(scBytes, &newSC); err != nil {
-		log.WithFields(log.Fields{
-			"name":  oldSC.Name,
-			"error": err,
-		}).Error("Could not unmarshal legacy storage class.")
-		return
-	}
+	newSC := oldSC.DeepCopy()
 	newSC.Provisioner = csi.Provisioner
 	newSC.ResourceVersion = ""
 	newSC.UID = ""
@@ -111,7 +99,7 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 	}
 
 	// Create the new storage class
-	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(&newSC); err != nil {
+	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(newSC); err != nil {
 
 		log.WithFields(log.Fields{
 			"name":  newSC.Name,

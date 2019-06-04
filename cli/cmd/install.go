@@ -25,7 +25,6 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
-	frontendrest "github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
@@ -663,7 +662,7 @@ func installTrident() (returnError error) {
 
 		// Create the certificates for the CSI controller's HTTPS REST interface
 		certInfo, err := utils.MakeHTTPCertInfo(
-			frontendrest.CACertName, frontendrest.ServerCertName, frontendrest.ClientCertName)
+			tridentconfig.CACertName, tridentconfig.ServerCertName, tridentconfig.ClientCertName)
 		if err != nil {
 			returnError = fmt.Errorf("could not create Trident X509 certificates; %v", err)
 			return
@@ -671,12 +670,12 @@ func installTrident() (returnError error) {
 
 		// Create the secret for the HTTP certs & keys
 		secretMap := map[string]string{
-			frontendrest.CAKeyFile:      certInfo.CAKey,
-			frontendrest.CACertFile:     certInfo.CACert,
-			frontendrest.ServerKeyFile:  certInfo.ServerKey,
-			frontendrest.ServerCertFile: certInfo.ServerCert,
-			frontendrest.ClientKeyFile:  certInfo.ClientKey,
-			frontendrest.ClientCertFile: certInfo.ClientCert,
+			tridentconfig.CAKeyFile:      certInfo.CAKey,
+			tridentconfig.CACertFile:     certInfo.CACert,
+			tridentconfig.ServerKeyFile:  certInfo.ServerKey,
+			tridentconfig.ServerCertFile: certInfo.ServerCert,
+			tridentconfig.ClientKeyFile:  certInfo.ClientKey,
+			tridentconfig.ClientCertFile: certInfo.ClientCert,
 		}
 		err = client.CreateObjectByYAML(
 			k8sclient.GetSecretYAML("trident-csi", TridentPodNamespace, appLabelValue, secretMap, nil))

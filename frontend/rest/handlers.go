@@ -16,6 +16,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -677,7 +678,6 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 			volume, err := k8s.ImportVolume(importVolumeRequest)
-
 			if err != nil {
 				response.setError(err)
 			}
@@ -685,6 +685,69 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.Volume = volume
 			}
 			return httpStatusCodeForAdd(err)
+		},
+	)
+}
+
+type UpgradeVolumeResponse struct {
+	Volume *storage.VolumeExternal `json:"volume"`
+	Error  string                  `json:"error,omitempty"`
+}
+
+func (i *UpgradeVolumeResponse) setError(err error) {
+	i.Error = err.Error()
+}
+
+func (i *UpgradeVolumeResponse) isError() bool {
+	return i.Error != ""
+}
+
+func (i *UpgradeVolumeResponse) logSuccess() {
+	log.WithFields(log.Fields{
+		"handler": "UpgradeVolume",
+		"volume":  i.Volume.Config.Name,
+	}).Info("Upgraded an existing volume.")
+}
+func (i *UpgradeVolumeResponse) logFailure() {
+	log.WithFields(log.Fields{
+		"handler": "UpgradeVolume",
+	}).Error(i.Error)
+}
+
+func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
+	response := &UpgradeVolumeResponse{}
+	UpdateGeneric(w, r, "volume", response,
+		func(volumeName string, body []byte) int {
+			upgradeVolumeRequest := new(storage.UpgradeVolumeRequest)
+			err := json.Unmarshal(body, upgradeVolumeRequest)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForGetUpdateList(err)
+			}
+			if err = upgradeVolumeRequest.Validate(); err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8sHelperFrontend, err := orchestrator.GetFrontend(helpers.KubernetesHelper)
+			if err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SHelperPlugin)
+			if !ok {
+				err = fmt.Errorf("unable to obtain K8S helper frontend")
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+
+			volume, err := k8sHelper.UpgradeVolume(upgradeVolumeRequest)
+			if err != nil {
+				response.Error = err.Error()
+			}
+			if volume != nil {
+				response.Volume = volume
+			}
+			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }

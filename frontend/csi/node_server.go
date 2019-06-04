@@ -14,7 +14,6 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/netapp/trident/frontend/rest"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -212,7 +211,7 @@ func (p *Plugin) nodeRegisterWithController() error {
 	backChannelBackoff.InitialInterval = 1 * time.Second
 	backChannelBackoff.Multiplier = 2
 	backChannelBackoff.RandomizationFactor = 0.1
-	backChannelBackoff.MaxElapsedTime = rest.HTTPTimeout
+	backChannelBackoff.MaxElapsedTime = tridentconfig.HTTPTimeout
 
 	// Run the check using an exponential backoff
 	if err := backoff.RetryNotify(checkBackChannelReady, backChannelBackoff, backChannelReadyNotify); err != nil {

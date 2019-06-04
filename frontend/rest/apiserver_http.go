@@ -27,8 +27,8 @@ func NewHTTPServer(p core.Orchestrator, address, port string) *APIServerHTTP {
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),
 			Handler:      NewRouter(),
-			ReadTimeout:  HTTPTimeout,
-			WriteTimeout: HTTPTimeout,
+			ReadTimeout:  config.HTTPTimeout,
+			WriteTimeout: config.HTTPTimeout,
 		},
 	}
 
@@ -50,7 +50,7 @@ func (s *APIServerHTTP) Activate() error {
 
 func (s *APIServerHTTP) Deactivate() error {
 	log.WithField("address", s.server.Addr).Info("Deactivating HTTP REST frontend.")
-	ctx, cancel := context.WithTimeout(context.Background(), HTTPTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
 }

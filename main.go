@@ -81,11 +81,11 @@ var (
 	httpsAddress    = flag.String("https_address", "", "Storage orchestrator HTTPS API address")
 	httpsPort       = flag.String("https_port", "8443", "Storage orchestrator HTTPS API port")
 	enableHTTPSREST = flag.Bool("https_rest", false, "Enable HTTPS REST interface")
-	httpsCACert     = flag.String("https_ca_cert", rest.CACertPath, "HTTPS CA certificate")
-	httpsServerKey  = flag.String("https_server_key", rest.ServerKeyPath, "HTTPS server private key")
-	httpsServerCert = flag.String("https_server_cert", rest.ServerCertPath, "HTTPS server certificate")
-	httpsClientKey  = flag.String("https_client_key", rest.ClientKeyPath, "HTTPS client private key")
-	httpsClientCert = flag.String("https_client_cert", rest.ClientCertPath, "HTTPS client certificate")
+	httpsCACert     = flag.String("https_ca_cert", config.CACertPath, "HTTPS CA certificate")
+	httpsServerKey  = flag.String("https_server_key", config.ServerKeyPath, "HTTPS server private key")
+	httpsServerCert = flag.String("https_server_cert", config.ServerCertPath, "HTTPS server certificate")
+	httpsClientKey  = flag.String("https_client_key", config.ClientKeyPath, "HTTPS client private key")
+	httpsClientCert = flag.String("https_client_cert", config.ClientCertPath, "HTTPS client certificate")
 
 	storeClient      persistentstore.Client
 	enableKubernetes bool

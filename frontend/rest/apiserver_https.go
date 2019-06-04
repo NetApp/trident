@@ -34,8 +34,8 @@ func NewHTTPSServer(
 			Addr:         fmt.Sprintf("%s:%s", address, port),
 			Handler:      &tlsAuthHandler{handler: NewRouter()},
 			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert},
-			ReadTimeout:  HTTPTimeout,
-			WriteTimeout: HTTPTimeout,
+			ReadTimeout:  config.HTTPTimeout,
+			WriteTimeout: config.HTTPTimeout,
 		},
 		caCertFile:     caCertFile,
 		serverCertFile: serverCertFile,
@@ -70,7 +70,7 @@ func (s *APIServerHTTPS) Activate() error {
 
 func (s *APIServerHTTPS) Deactivate() error {
 	log.WithField("address", s.server.Addr).Infof("Deactivating HTTPS REST frontend.")
-	ctx, cancel := context.WithTimeout(context.Background(), HTTPTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
 }
@@ -90,8 +90,8 @@ type tlsAuthHandler struct {
 func (h *tlsAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Service requests from Trident nodes with a valid client certificate
-	if len(r.TLS.PeerCertificates) > 0 && r.TLS.PeerCertificates[0].Subject.CommonName == ClientCertName {
-		log.WithField("peerCert", ClientCertName).Debug("Authenticated by HTTPS REST frontend.")
+	if len(r.TLS.PeerCertificates) > 0 && r.TLS.PeerCertificates[0].Subject.CommonName == config.ClientCertName {
+		log.WithField("peerCert", config.ClientCertName).Debug("Authenticated by HTTPS REST frontend.")
 		h.handler.ServeHTTP(w, r)
 	} else {
 		w.Header().Set("WWW-Authenticate", fmt.Sprintf("Basic realm=\"%s\"", config.OrchestratorName))

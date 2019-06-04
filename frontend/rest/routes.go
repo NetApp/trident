@@ -98,6 +98,12 @@ var routes = Routes{
 		ImportVolume,
 	},
 	Route{
+		"UpgradeVolume",
+		"POST",
+		config.VolumeURL + "/{volume}/upgrade",
+		UpgradeVolume,
+	},
+	Route{
 		"AddStorageClass",
 		"POST",
 		config.StorageClassURL,

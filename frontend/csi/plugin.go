@@ -14,7 +14,6 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
-	"github.com/netapp/trident/frontend/rest"
 )
 
 const (
@@ -105,7 +104,7 @@ func NewNodePlugin(
 			break
 		}
 	}
-	restURL := "https://" + rest.ServerCertName + ":" + port
+	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
 	var err error
 	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
@@ -160,7 +159,7 @@ func NewAllInOnePlugin(
 			break
 		}
 	}
-	restURL := "https://" + rest.ServerCertName + ":" + port
+	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
 	var err error
 	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {

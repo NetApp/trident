@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/storage"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -47,6 +49,11 @@ var (
 	pvcRegex = regexp.MustCompile(
 		`^pvc-(?P<uid>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$`)
 )
+
+type K8SHelperPlugin interface {
+	frontend.Plugin
+	UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error)
+}
 
 type Plugin struct {
 	orchestrator  core.Orchestrator
@@ -413,7 +420,7 @@ func (p *Plugin) waitForCachedPVCByName(
 	pvcBackoff.MaxElapsedTime = maxElapsedTime
 
 	if err := backoff.RetryNotify(checkForCachedPVC, pvcBackoff, pvcNotify); err != nil {
-		return nil, fmt.Errorf("PVC %s/%s was not cache after %3.2f seconds",
+		return nil, fmt.Errorf("PVC %s/%s was not in cache after %3.2f seconds",
 			namespace, name, maxElapsedTime.Seconds())
 	}
 
@@ -472,7 +479,7 @@ func (p *Plugin) waitForCachedPVCByUID(uid string, maxElapsedTime time.Duration)
 	pvcBackoff.MaxElapsedTime = maxElapsedTime
 
 	if err := backoff.RetryNotify(checkForCachedPVC, pvcBackoff, pvcNotify); err != nil {
-		return nil, fmt.Errorf("PVC %s was not cache after %3.2f seconds", uid, maxElapsedTime.Seconds())
+		return nil, fmt.Errorf("PVC %s was not in cache after %3.2f seconds", uid, maxElapsedTime.Seconds())
 	}
 
 	return pvc, nil
@@ -525,6 +532,26 @@ func (p *Plugin) waitForCachedPVByName(name string, maxElapsedTime time.Duration
 	}
 
 	return pv, nil
+}
+
+func (p *Plugin) isPVInCache(name string) (*v1.PersistentVolume, error) {
+
+	logFields := log.Fields{"name": name}
+
+	item, exists, err := p.pvIndexer.GetByKey(name)
+	if err != nil {
+		log.WithFields(logFields).Error("Could not search cache for PV.")
+		return nil, fmt.Errorf("could not find PV %s in cache: %v", name, err)
+	} else if !exists {
+		log.WithFields(logFields).Debug("Could not find cached PV object by name.")
+		return nil, fmt.Errorf("could not find PV %s in cache", name)
+	} else if pv, ok := item.(*v1.PersistentVolume); !ok {
+		log.WithFields(logFields).Error("Non-PV cached object found by name.")
+		return nil, fmt.Errorf("non-PV object %s found in cache", name)
+	} else {
+		log.WithFields(logFields).Debug("Found cached PV by name.")
+		return pv, nil
+	}
 }
 
 // addStorageClass is the add handler for the storage class watcher.
@@ -743,7 +770,8 @@ func (p *Plugin) waitForCachedStorageClassByName(
 	scBackoff.MaxElapsedTime = maxElapsedTime
 
 	if err := backoff.RetryNotify(checkForCachedSC, scBackoff, scNotify); err != nil {
-		return nil, fmt.Errorf("storage class %s was not cache after %3.2f seconds", name, maxElapsedTime.Seconds())
+		return nil, fmt.Errorf("storage class %s was not in cache after %3.2f seconds",
+			name, maxElapsedTime.Seconds())
 	}
 
 	return sc, nil

@@ -175,3 +175,18 @@ func (r *ImportVolumeRequest) Validate() error {
 	}
 	return nil
 }
+
+type UpgradeVolumeRequest struct {
+	Type   string `json:"type"`
+	Volume string `json:"volume"`
+}
+
+func (r *UpgradeVolumeRequest) Validate() error {
+	if r.Volume == "" {
+		return fmt.Errorf("the following field is mandatory: volume")
+	}
+	if r.Type != "csi" {
+		return fmt.Errorf("the only supported type for volume upgrade is 'csi'")
+	}
+	return nil
+}
