@@ -54,6 +54,10 @@ func (o *stringOffer) String() string {
 	return fmt.Sprintf("{Offers: %s}", strings.Join(o.Offers, ","))
 }
 
+func (o *stringOffer) ToString() string {
+	return fmt.Sprintf("%s", strings.Join(o.Offers, ","))
+}
+
 func NewStringRequest(request string) Request {
 	return &stringRequest{
 		Request: request,

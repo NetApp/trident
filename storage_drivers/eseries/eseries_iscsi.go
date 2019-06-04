@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -20,13 +20,22 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
+	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/eseries/api"
 	"github.com/netapp/trident/utils"
 )
 
-const DefaultHostType = "linux_dm_mp"
-const MinimumVolumeSizeBytes = 1048576 // 1 MiB
+const (
+	DefaultHostType        = "linux_dm_mp"
+	MinimumVolumeSizeBytes = 1048576 // 1 MiB
+
+	// Constants for internal pool attributes
+	Size   = "size"
+	Region = "region"
+	Zone   = "zone"
+	Media  = "media"
+)
 
 // SANStorageDriver is for storage provisioning via the Web Services Proxy RESTful interface that communicates
 // with E-Series controllers via the SYMbol API.
@@ -34,10 +43,31 @@ type SANStorageDriver struct {
 	initialized bool
 	Config      drivers.ESeriesStorageDriverConfig
 	API         *api.Client
+
+	physicalPools map[string]*storage.Pool
+	virtualPools  map[string]*storage.Pool
 }
 
 func (d *SANStorageDriver) Name() string {
 	return drivers.EseriesIscsiStorageDriverName
+}
+
+// backendName returns the name of the backend managed by this driver instance
+func (d *SANStorageDriver) backendName() string {
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		return "eseries_" + d.Config.HostDataIP
+	} else {
+		return d.Config.BackendName
+	}
+}
+
+// poolName constructs the name of the pool reported by this driver instance
+func (d *SANStorageDriver) poolName(name string) string {
+
+	return fmt.Sprintf("%s_%s",
+		d.backendName(),
+		strings.Replace(name, "-", "", -1))
 }
 
 func (d *SANStorageDriver) Protocol() string {
@@ -70,8 +100,7 @@ func (d *SANStorageDriver) Initialize(
 	d.Config = *config
 
 	// Apply config defaults
-	err = d.populateConfigurationDefaults(config)
-	if err != nil {
+	if err := d.populateConfigurationDefaults(config); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 	d.Config = *config
@@ -83,12 +112,6 @@ func (d *SANStorageDriver) Initialize(
 		"DisableDelete":     config.DisableDelete,
 		"StoragePrefix":     *config.StoragePrefix,
 	}).Debug("Reparsed into ESeriesStorageDriverConfig")
-
-	// Ensure the config is valid
-	err = d.validate()
-	if err != nil {
-		return fmt.Errorf("could not validate SANStorageDriver config: %v", err)
-	}
 
 	telemetry := make(map[string]string)
 	telemetry["version"] = tridentconfig.OrchestratorVersion.ShortString()
@@ -120,6 +143,16 @@ func (d *SANStorageDriver) Initialize(
 	_, err = d.API.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to Web Services Proxy: %v", err)
+	}
+
+	// After connected to web service, identify physical and virtual pools
+	if err := d.initializeStoragePools(); err != nil {
+		return fmt.Errorf("could not configure storage pools: %v", err)
+	}
+
+	// Ensure the config is valid, including virtual pool config
+	if err := d.validate(); err != nil {
+		return fmt.Errorf("could not validate SANStorageDriver config: %v", err)
 	}
 
 	// Log chassis serial number
@@ -236,6 +269,108 @@ func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.ESeries
 	return nil
 }
 
+func (d *SANStorageDriver) initializeStoragePools() error {
+
+	d.physicalPools = make(map[string]*storage.Pool)
+	d.virtualPools = make(map[string]*storage.Pool)
+
+	// To identify list of media types supported by physcial pools
+	mediaOffers := make([]sa.Offer, 0)
+
+	// Get pools
+	physicalStoragePools, err := d.API.GetVolumePools("", 0, "")
+	if err != nil {
+		return fmt.Errorf("could not get storage pools from array: %v", err)
+	}
+
+	// Define physical pools
+	for _, physicalStoragePool := range physicalStoragePools {
+
+		pool := storage.NewStoragePool(nil, physicalStoragePool.Label)
+
+		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+
+		if d.Config.Region != "" {
+			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+		}
+		if d.Config.Zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+		}
+
+		// E-series supports both "hdd" and "ssd" media types
+		switch physicalStoragePool.DriveMediaType {
+		case "hdd":
+			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.HDD)
+			pool.InternalAttributes[Media] = sa.HDD
+		case "ssd":
+			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+			pool.InternalAttributes[Media] = sa.SSD
+		}
+
+		if mediaOffer, ok := pool.Attributes[sa.Media]; ok {
+			mediaOffers = append(mediaOffers, mediaOffer)
+		}
+
+		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
+
+		pool.InternalAttributes[Size] = d.Config.Size
+		pool.InternalAttributes[Region] = d.Config.Region
+		pool.InternalAttributes[Zone] = d.Config.Zone
+
+		d.physicalPools[pool.Name] = pool
+	}
+
+	// Define virtual pools
+	for index, vpool := range d.Config.Storage {
+
+		region := d.Config.Region
+		if vpool.Region != "" {
+			region = vpool.Region
+		}
+
+		zone := d.Config.Zone
+		if vpool.Zone != "" {
+			zone = vpool.Zone
+		}
+
+		size := d.Config.Size
+		if vpool.Size != "" {
+			size = vpool.Size
+		}
+
+		pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
+
+		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+
+		if region != "" {
+			pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+		}
+		if zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+		}
+		if len(mediaOffers) > 0 {
+			pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+			pool.InternalAttributes[sa.Media] = pool.Attributes[sa.Media].ToString()
+		}
+
+		pool.InternalAttributes[Size] = size
+		pool.InternalAttributes[Region] = region
+		pool.InternalAttributes[Zone] = zone
+
+		d.virtualPools[pool.Name] = pool
+	}
+
+	return nil
+}
+
 // Validate the driver configuration
 func (d *SANStorageDriver) validate() error {
 
@@ -256,6 +391,36 @@ func (d *SANStorageDriver) validate() error {
 	if d.Config.HostDataIP == "" {
 		return errors.New("HostDataIP is empty! You need to specify at least one of the iSCSI interface " +
 			"IP addresses that is connected to the E-Series array")
+	}
+
+	// Validate pool-level attributes
+	allPools := make([]*storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
+
+	for _, pool := range d.physicalPools {
+		allPools = append(allPools, pool)
+	}
+	for _, pool := range d.virtualPools {
+		allPools = append(allPools, pool)
+	}
+
+	for _, pool := range allPools {
+
+		// Validate default size
+		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
+		}
+
+		// Validate media type
+		if pool.InternalAttributes[Media] != "" {
+			for _, mediaType := range strings.Split(pool.InternalAttributes[Media], ",") {
+				switch mediaType {
+				case sa.HDD, sa.SSD:
+					break
+				default:
+					log.Error("invalid media type in pool %s: %s", pool.Name, mediaType)
+				}
+			}
+		}
 	}
 
 	return nil
@@ -288,6 +453,12 @@ func (d *SANStorageDriver) Create(
 	}
 	if d.API.IsRefValid(extantVolume.VolumeRef) {
 		return drivers.NewVolumeExistsError(name)
+	}
+
+	// Get candidate physical pools
+	physicalPools, err := d.getPoolsForCreate(volConfig, storagePool, volAttributes)
+	if err != nil {
+		return err
 	}
 
 	// Determine volume size in bytes
@@ -329,37 +500,89 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("unsupported fileSystemType option: %s", fstype)
 	}
 
-	// Get pool name, or default to all pools if not specified
-	poolName := utils.GetV(opts, "pool", "")
+	createErrors := make([]error, 0)
 
-	pools, err := d.API.GetVolumePools(mediaType, sizeBytes, poolName)
-	if err != nil {
-		return fmt.Errorf("create failed: %v", err)
-	} else if len(pools) == 0 {
-		return errors.New("create failed: no storage pools matched specified parameters")
+	for _, physicalPool := range physicalPools {
+
+		poolName := physicalPool.Name
+
+		// expect pool of size 1
+		pools, err := d.API.GetVolumePools(mediaType, sizeBytes, poolName)
+		if err != nil {
+			errMessage := fmt.Sprintf("E-series pool %s not found", poolName)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
+		}
+
+		// get first element of the pools
+		pool := pools[0]
+
+		// Create the volume
+		vol, err := d.API.CreateVolume(name, pool.VolumeGroupRef, sizeBytes, mediaType, fstype)
+		if err != nil {
+			return fmt.Errorf("could not create volume %s: %v", name, err)
+		}
+
+		log.WithFields(log.Fields{
+			"Name":          name,
+			"Size":          sizeBytes,
+			"MediaType":     mediaType,
+			"RequestedPool": storagePool.Name,
+			"PhysicalPool":  poolName,
+			"VolumeRef":     vol.VolumeRef,
+		}).Debug("Create succeeded.")
+
+		return nil
 	}
 
-	log.Debugf("Got pools for create: %v", pools)
+	// All physical pools that were eligible ultimately failed, so don't try this backend again
+	return drivers.NewBackendIneligibleError(name, createErrors)
+}
 
-	// Pick the pool with the largest free space
-	sort.Sort(sort.Reverse(api.ByFreeSpace(pools)))
-	pool := pools[0]
+// getPoolsForCreate returns candidate storage pools for creating volumes
+func (d *SANStorageDriver) getPoolsForCreate(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+) ([]*storage.Pool, error) {
 
-	// Create the volume
-	vol, err := d.API.CreateVolume(name, pool.VolumeGroupRef, sizeBytes, mediaType, fstype)
-	if err != nil {
-		return fmt.Errorf("could not create volume %s: %v", name, err)
+	// If a physical pool was requested, just use it
+	if _, ok := d.physicalPools[storagePool.Name]; ok {
+		return []*storage.Pool{storagePool}, nil
 	}
 
-	log.WithFields(log.Fields{
-		"Name":      name,
-		"Size":      sizeBytes,
-		"MediaType": mediaType,
-		"VolumeRef": vol.VolumeRef,
-		"Pool":      pool.Label,
-	}).Debug("Create succeeded.")
+	// If a virtual pool was requested, find a physical pool to satisfy it
+	if _, ok := d.virtualPools[storagePool.Name]; !ok {
+		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
+	}
 
-	return nil
+	// Make a storage class from the volume attributes to simplify pool matching
+	attributesCopy := make(map[string]sa.Request)
+	for k, v := range volAttributes {
+		attributesCopy[k] = v
+	}
+	delete(attributesCopy, sa.Selector)
+	storageClass := sc.NewFromAttributes(attributesCopy)
+
+	// Find matching pools
+	candidatePools := make([]*storage.Pool, 0)
+
+	for _, pool := range d.physicalPools {
+		if storageClass.Matches(pool) {
+			candidatePools = append(candidatePools, pool)
+		}
+	}
+
+	if len(candidatePools) == 0 {
+		err := errors.New("backend has no physical pools that can satisfy request")
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+	}
+
+	// Shuffle physical pools
+	rand.Shuffle(len(candidatePools), func(i, j int) {
+		candidatePools[i], candidatePools[j] = candidatePools[j], candidatePools[i]
+	})
+
+	return candidatePools, nil
 }
 
 // Destroy is called by Docker to delete a container volume.
@@ -702,45 +925,22 @@ func (d *SANStorageDriver) getVolume(name string) (api.VolumeEx, error) {
 
 // GetStorageBackendSpecs retrieve storage capabilities and register pools with specified backend.
 func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-	if d.Config.BackendName == "" {
-		// Use the old naming scheme if no name is specified
-		backend.Name = "eseries_" + d.Config.HostDataIP
-	} else {
-		backend.Name = d.Config.BackendName
-	}
+	backend.Name = d.backendName()
 
-	// Get pools
-	pools, err := d.API.GetVolumePools("", 0, "")
-	if err != nil {
-		return fmt.Errorf("could not get storage pools from array: %v", err)
-	}
+	virtual := len(d.virtualPools) > 0
 
-	for _, pool := range pools {
-
-		vc := storage.NewStoragePool(backend, pool.Label)
-		vc.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-
-		// E-series supports both "hdd" and "ssd" media types
-		switch pool.DriveMediaType {
-		case "hdd":
-			vc.Attributes[sa.Media] = sa.NewStringOffer(sa.HDD)
-		case "ssd":
-			vc.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+	for _, pool := range d.physicalPools {
+		pool.Backend = backend
+		if !virtual {
+			backend.AddStoragePool(pool)
 		}
+	}
 
-		// No snapshots, clones or thin provisioning on E-series
-		vc.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
-		vc.Attributes[sa.Clones] = sa.NewBoolOffer(false)
-		vc.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-		vc.Attributes[sa.ProvisioningType] = sa.NewStringOffer("thick")
-
-		backend.AddStoragePool(vc)
-
-		log.WithFields(log.Fields{
-			"attributes": fmt.Sprintf("%+v", vc.Attributes),
-			"pool":       pool.Label,
-			"backend":    backend.Name,
-		}).Debug("EseriesStorageDriver#GetStorageBackendSpecs : Added pool for E-series backend.")
+	for _, pool := range d.virtualPools {
+		pool.Backend = backend
+		if virtual {
+			backend.AddStoragePool(pool)
+		}
 	}
 
 	return nil
@@ -975,12 +1175,7 @@ func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 		return nil, fmt.Errorf("volume %s not found", name)
 	}
 
-	poolAttrs, err := d.API.GetVolumePoolByRef(volumeAttrs.VolumeGroupRef)
-	if err != nil {
-		return nil, err
-	}
-
-	return d.getVolumeExternal(&volumeAttrs, &poolAttrs), nil
+	return d.getVolumeExternal(&volumeAttrs), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1000,19 +1195,6 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 		return
 	}
 
-	// Get all pools
-	pools, err := d.API.GetVolumePools("", 0, "")
-	if err != nil {
-		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
-		return
-	}
-
-	// Make a map of pools for faster correlation with volumes
-	poolMap := make(map[string]api.VolumeGroupEx)
-	for _, pool := range pools {
-		poolMap[pool.VolumeGroupRef] = pool
-	}
-
 	prefix := *d.Config.StoragePrefix
 	reposRegex, _ := regexp.Compile("^repos_\\d{4}$")
 
@@ -1029,13 +1211,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 			continue
 		}
 
-		pool, ok := poolMap[volume.VolumeGroupRef]
-		if !ok {
-			log.WithField("volume", volume.Label).Warning("Pool not found for volume.")
-			continue
-		}
-
-		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume, &pool), Error: nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume), Error: nil}
 	}
 }
 
@@ -1043,7 +1219,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *SANStorageDriver) getVolumeExternal(
-	volumeAttrs *api.VolumeEx, poolAttrs *api.VolumeGroupEx) *storage.VolumeExternal {
+	volumeAttrs *api.VolumeEx) *storage.VolumeExternal {
 
 	internalName := volumeAttrs.Label
 	name := internalName
@@ -1070,7 +1246,7 @@ func (d *SANStorageDriver) getVolumeExternal(
 
 	return &storage.VolumeExternal{
 		Config: volumeConfig,
-		Pool:   poolAttrs.Label,
+		Pool:   drivers.UnsetPool,
 	}
 }
 

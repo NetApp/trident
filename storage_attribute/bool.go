@@ -54,6 +54,10 @@ func (o *boolOffer) String() string {
 	return fmt.Sprintf("{Offer:  %t}", o.Offer)
 }
 
+func (o *boolOffer) ToString() string {
+	return fmt.Sprintf("%t", o.Offer)
+}
+
 func NewBoolRequest(request bool) Request {
 	return &boolRequest{
 		Request: request,

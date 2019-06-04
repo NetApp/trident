@@ -267,7 +267,9 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 		pool.Attributes = fakeStoragePool.Attrs
 		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+		if d.Config.Region != "" {
+			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+		}
 		if d.Config.Zone != "" {
 			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 		}

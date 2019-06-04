@@ -66,6 +66,8 @@ limitVolumeSize       Fail provisioning if requested volume size is above this v
 Example configuration
 ---------------------
 
+**Example 1 - Minimal backend configuration for eseries-iscsi driver**
+
 .. code-block:: json
 
   {
@@ -80,3 +82,92 @@ Example configuration
     "passwordArray": "",
     "hostDataIP": "10.0.0.101"
   }
+
+**Example 2 - Backend and storage class configuration for eseries-iscsi driver with virtual storage pools**
+
+This example shows the backend definition file configured with virtual storage pools along with StorageClasses that refer back to them.
+
+In the sample backend definition file shown below, the virtual storage pools are defined in the ``storage`` section.
+
+.. code-block:: json
+
+    {
+        "version": 1,
+        "storageDriverName": "eseries-iscsi",
+        "controllerA": "10.0.0.1",
+        "controllerB": "10.0.0.2",
+        "hostDataIP": "10.0.1.1",
+        "username": "user",
+        "password": "password",
+        "passwordArray": "password",
+        "webProxyHostname": "10.0.2.1",
+
+        "labels":{"store":"eseries"},
+        "region":"us-east",
+
+        "storage":[
+            {
+                "labels":{"performance":"gold", "cost":"4"},
+                "zone":"us-east-1a"
+            },
+            {
+                "labels":{"performance":"silver", "cost":"3"},
+                "zone":"us-east-1b"
+            },
+            {
+                "labels":{"performance":"bronze", "cost":"2"},
+                "zone":"us-east-1c"
+            },
+            {
+                "labels":{"performance":"bronze", "cost":"1"},
+                "zone":"us-east-1d"
+            }
+        ]
+    }
+
+The following StorageClass definitions refer to the above virtual storage pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume. The volume will have the aspects defined in the chosen virtual pool.
+
+The first StorageClass (``eseries-gold-four``) will map to the first virtual storage pool. This is the only pool offering gold performance in zone ``us-east-1a``. The last StorageClass (``eseries-bronze``) calls out any storage pool which offers a bronze performance. Trident will decide which virtual storage pool is selected and will ensure the storage requirement is met.
+
+.. code-block:: yaml
+
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: eseries-gold-four
+    provisioner: netapp.io/trident
+    parameters:
+      selector: "performance=gold; cost=4"
+    ---
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: eseries-silver-three
+    provisioner: netapp.io/trident
+    parameters:
+      selector: "performance=silver; cost=3"
+    ---
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: eseries-bronze-two
+    provisioner: netapp.io/trident
+    parameters:
+      selector: "performance=bronze; cost=2"
+    ---
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: eseries-bronze-one
+    provisioner: netapp.io/trident
+    parameters:
+      selector: "performance=bronze; cost=1"
+    ---
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: eseries-bronze
+    provisioner: netapp.io/trident
+    parameters:
+      selector: "performance=bronze"
+

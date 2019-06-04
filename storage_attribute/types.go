@@ -4,6 +4,7 @@ package storageattribute
 
 type Offer interface {
 	Matches(requested Request) bool
+	ToString() string
 }
 
 // At the moment, there aren't any terribly useful methods to put here, but

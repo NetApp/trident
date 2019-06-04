@@ -25,6 +25,10 @@ func (o *intOffer) String() string {
 	return fmt.Sprintf("{Min: %d, Max: %d}", o.Min, o.Max)
 }
 
+func (o *intOffer) ToString() string {
+	return o.String()
+}
+
 func NewIntRequest(request int) Request {
 	return &intRequest{
 		Request: request,

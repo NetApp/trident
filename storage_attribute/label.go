@@ -64,6 +64,10 @@ func (o *labelOffer) String() string {
 	return fmt.Sprintf("{Offers: %v}", o.Offers)
 }
 
+func (o *labelOffer) ToString() string {
+	return fmt.Sprintf("%v", o.Offers)
+}
+
 func NewLabelRequest(request string) (Request, error) {
 
 	log.WithField("request", request).Debug("NewLabelRequest")

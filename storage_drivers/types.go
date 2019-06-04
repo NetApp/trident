@@ -63,6 +63,14 @@ type ESeriesStorageDriverConfig struct {
 	AccessGroup          string `json:"accessGroupName"`       // name for host group
 	HostType             string `json:"hostType"`              // host type, default is 'linux_dm_mp'
 
+	EseriesStorageDriverPool
+	Storage []EseriesStorageDriverPool `json:"storage"`
+}
+
+type EseriesStorageDriverPool struct {
+	Labels                             map[string]string `json:"labels"`
+	Region                             string            `json:"region"`
+	Zone                               string            `json:"zone"`
 	EseriesStorageDriverConfigDefaults `json:"defaults"`
 }
 
