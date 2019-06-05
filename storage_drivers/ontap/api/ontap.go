@@ -361,7 +361,7 @@ func (d Client) IgroupList() (*azgo.IgroupGetIterResponse, error) {
 // LUN operations BEGIN
 
 // LunCreate creates a lun with the specified attributes
-// equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled
+// equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
 func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error) {
 	response, err := azgo.NewLunCreateBySizeRequest().
 		SetPath(lunPath).

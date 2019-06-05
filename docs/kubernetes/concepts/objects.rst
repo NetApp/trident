@@ -76,7 +76,6 @@ trident.netapp.io/snapshotReserve   snapshotReserve   ontap-nas, ontap-nas-flexg
 trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/blockSize         blockSize         solidfire-san
-trident.netapp.io/spaceAllocate     spaceAllocate     ontap-san
 =================================== ================= ======================================================
 
 If the created PV has the ``Delete`` reclaim policy, Trident will delete both

@@ -89,7 +89,6 @@ func getVolumeConfig(
 		Name:              name,
 		Size:              fmt.Sprintf("%d", size.Value()),
 		Protocol:          config.Protocol(getAnnotation(annotations, AnnProtocol)),
-		SpaceAllocate:     getAnnotation(annotations, AnnSpaceAllocate),
 		SnapshotPolicy:    getAnnotation(annotations, AnnSnapshotPolicy),
 		SnapshotReserve:   getAnnotation(annotations, AnnSnapshotReserve),
 		SnapshotDir:       getAnnotation(annotations, AnnSnapshotDir),

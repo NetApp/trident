@@ -10,6 +10,7 @@
     "igroupName": "custom",
     "defaults": {
         "spaceReserve": "volume",
+        "spaceAllocation": "false",
         "snapshotPolicy": "default",
         "snapshotReserve": "10"
     }

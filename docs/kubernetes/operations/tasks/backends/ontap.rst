@@ -151,6 +151,7 @@ configuration examples below.
 ========================= =============================================================== ================================================
 Parameter                 Description                                                     Default
 ========================= =============================================================== ================================================
+spaceAllocation           ontap-san* only: space-allocation for LUNs                      "true"
 spaceReserve              Space reservation mode; "none" (thin) or "volume" (thick)       "none"
 snapshotPolicy            Snapshot policy to use                                          "none"
 snapshotReserve           Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""

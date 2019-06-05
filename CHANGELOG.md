@@ -9,6 +9,9 @@
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
 - **Kubernetes:** Prevent operations on failed backends. 
 - **Kubernetes:** Removed size requirement for volume import PVC file.
+- Trident now allows Solidfire backends without `Types` defined. However, such backends
+  will have one default storage pool with the default backend QoS values.
+- **Behavioural change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation` parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for those LUNs.
 
 ## v19.04.0
 

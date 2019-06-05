@@ -20,7 +20,6 @@ type VolumeConfig struct {
 	Size                      string                 `json:"size"`
 	Protocol                  config.Protocol        `json:"protocol"`
 	SpaceReserve              string                 `json:"spaceReserve"`
-	SpaceAllocate             string                 `json:"spaceAllocate"`
 	SecurityStyle             string                 `json:"securityStyle"`
 	SnapshotPolicy            string                 `json:"snapshotPolicy,omitempty"`
 	SnapshotReserve           string                 `json:"snapshotReserve,omitempty"`

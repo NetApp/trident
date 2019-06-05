@@ -22,6 +22,7 @@ NFS has additional options that aren't relevant when using iSCSI:
 iSCSI has an additional option that isn't relevant when using NFS:
 
 * ``fileSystemType`` - sets the file system used to format iSCSI volumes.  The default is ``ext4``.  Valid values are ``ext3``, ``ext4``, and ``xfs``.
+* ``spaceAllocation`` - setting this to ``false`` will turn off the LUN's space-allocation feature. The default value is ``true``, meaning ONTAP notifies the host when the volume has run out of space and the LUN in the volume cannot accept writes. This option also enables ONTAP to reclaim space automatically when your host deletes data.
 
 
 Using these options during the docker volume create operation is super simple, just provide the option and the value using the ``-o`` operator during the CLI operation.  These override any equivalent values from the JSON configuration file.

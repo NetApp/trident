@@ -327,7 +327,7 @@ func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {
 // Enable space-allocation by default. If not enabled, Data ONTAP takes the LUNs offline
 // when they're seen as full.
 // see: https://github.com/NetApp/trident/issues/135
-const DefaultSpaceAllocate = "true"
+const DefaultSpaceAllocation = "true"
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
 const DefaultSnapshotReserve = ""
@@ -367,8 +367,8 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		config.StoragePrefix = &prefix
 	}
 
-	if config.SpaceAllocate == "" {
-		config.SpaceAllocate = DefaultSpaceAllocate
+	if config.SpaceAllocation == "" {
+		config.SpaceAllocation = DefaultSpaceAllocation
 	}
 
 	if config.SpaceReserve == "" {
@@ -435,7 +435,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 
 	log.WithFields(log.Fields{
 		"StoragePrefix":       *config.StoragePrefix,
-		"SpaceAllocate":       config.SpaceAllocate,
+		"SpaceAllocation":     config.SpaceAllocation,
 		"SpaceReserve":        config.SpaceReserve,
 		"SnapshotPolicy":      config.SnapshotPolicy,
 		"SnapshotReserve":     config.SnapshotReserve,
@@ -1171,9 +1171,6 @@ func getVolumeOptsCommon(
 	}
 	if volConfig.ExportPolicy != "" {
 		opts["exportPolicy"] = volConfig.ExportPolicy
-	}
-	if volConfig.SpaceAllocate != "" {
-		opts["spaceAllocate"] = volConfig.SpaceAllocate
 	}
 	if volConfig.SpaceReserve != "" {
 		opts["spaceReserve"] = volConfig.SpaceReserve

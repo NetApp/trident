@@ -10,7 +10,6 @@ metadata:
     trident.netapp.io/protocol: "file"
     trident.netapp.io/snapshotDirectory: "false"
     trident.netapp.io/unixPermissions: "---rwxrwxrwx"
-    trident.netapp.io/spaceAllocate: "false"
 spec:
   accessModes:
     - ReadWriteMany
