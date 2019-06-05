@@ -59,12 +59,13 @@ type Driver interface {
 }
 
 type Backend struct {
-	Driver  Driver
-	Name    string
-	Online  bool
-	State   BackendState
-	Storage map[string]*Pool
-	Volumes map[string]*Volume
+	Driver      Driver
+	Name        string
+	BackendUUID string
+	Online      bool
+	State       BackendState
+	Storage     map[string]*Pool
+	Volumes     map[string]*Volume
 }
 
 type UpdateBackendStateRequest struct {
@@ -170,6 +171,7 @@ func (b *Backend) AddVolume(
 
 	log.WithFields(log.Fields{
 		"backend":       b.Name,
+		"backendUUID":   b.BackendUUID,
 		"volume":        volConfig.InternalName,
 		"storage_pool":  storagePool.Name,
 		"size":          volConfig.Size,
@@ -232,7 +234,7 @@ func (b *Backend) AddVolume(
 		return nil, err
 	}
 
-	vol := NewVolume(volConfig, b.Name, storagePool.Name, false)
+	vol := NewVolume(volConfig, b.BackendUUID, storagePool.Name, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -240,7 +242,8 @@ func (b *Backend) AddVolume(
 func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 	log.WithFields(log.Fields{
-		"backend":                b.Name,
+		"backend":                volConfig.Name,
+		"backendUUID":            b.BackendUUID,
 		"storage_class":          volConfig.StorageClass,
 		"source_volume":          volConfig.CloneSourceVolume,
 		"source_volume_internal": volConfig.CloneSourceVolumeInternal,
@@ -304,7 +307,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		}
 		return nil, err
 	}
-	vol := NewVolume(volConfig, b.Name, drivers.UnsetPool, false)
+	vol := NewVolume(volConfig, b.BackendUUID, drivers.UnsetPool, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -327,6 +330,8 @@ func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error requesting volume size: %v", err)
 	}
+	volExternal.Backend = b.Name
+	volExternal.BackendUUID = b.BackendUUID
 	return volExternal, nil
 }
 
@@ -367,7 +372,7 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig, notManaged bool) (*Volum
 		return nil, fmt.Errorf("failed post import volume operations : %v", err)
 	}
 
-	volume := NewVolume(volConfig, b.Name, drivers.UnsetPool, false)
+	volume := NewVolume(volConfig, b.BackendUUID, drivers.UnsetPool, false)
 	if !notManaged {
 		// The volume is managed
 		b.Volumes[volume.Config.Name] = volume
@@ -461,7 +466,12 @@ func (b *Backend) HasVolumes() bool {
 // driver to clean up and stop any ongoing operations.
 func (b *Backend) Terminate() {
 
-	logFields := log.Fields{"backend": b.Name, "driver": b.GetDriverName(), "state": string(b.State)}
+	logFields := log.Fields{
+		"backend":     b.Name,
+		"backendUUID": b.BackendUUID,
+		"driver":      b.GetDriverName(),
+		"state":       string(b.State),
+	}
 
 	if !b.Driver.Initialized() {
 		log.WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
@@ -472,24 +482,26 @@ func (b *Backend) Terminate() {
 }
 
 type BackendExternal struct {
-	Name     string                 `json:"name"`
-	Protocol tridentconfig.Protocol `json:"protocol"`
-	Config   interface{}            `json:"config"`
-	Storage  map[string]interface{} `json:"storage"`
-	State    BackendState           `json:"state"`
-	Online   bool                   `json:"online"`
-	Volumes  []string               `json:"volumes"`
+	Name        string                 `json:"name"`
+	BackendUUID string                 `json:"backendUUID"`
+	Protocol    tridentconfig.Protocol `json:"protocol"`
+	Config      interface{}            `json:"config"`
+	Storage     map[string]interface{} `json:"storage"`
+	State       BackendState           `json:"state"`
+	Online      bool                   `json:"online"`
+	Volumes     []string               `json:"volumes"`
 }
 
 func (b *Backend) ConstructExternal() *BackendExternal {
 	backendExternal := BackendExternal{
-		Name:     b.Name,
-		Protocol: b.GetProtocol(),
-		Config:   b.Driver.GetExternalConfig(),
-		Storage:  make(map[string]interface{}),
-		Online:   b.Online,
-		State:    b.State,
-		Volumes:  make([]string, 0),
+		Name:        b.Name,
+		BackendUUID: b.BackendUUID,
+		Protocol:    b.GetProtocol(),
+		Config:      b.Driver.GetExternalConfig(),
+		Storage:     make(map[string]interface{}),
+		Online:      b.Online,
+		State:       b.State,
+		Volumes:     make([]string, 0),
 	}
 
 	for name, pool := range b.Storage {
@@ -514,20 +526,22 @@ type PersistentStorageBackendConfig struct {
 }
 
 type BackendPersistent struct {
-	Version string                         `json:"version"`
-	Config  PersistentStorageBackendConfig `json:"config"`
-	Name    string                         `json:"name"`
-	Online  bool                           `json:"online"`
-	State   BackendState                   `json:"state"`
+	Version     string                         `json:"version"`
+	Config      PersistentStorageBackendConfig `json:"config"`
+	Name        string                         `json:"name"`
+	BackendUUID string                         `json:"backendUUID"`
+	Online      bool                           `json:"online"`
+	State       BackendState                   `json:"state"`
 }
 
 func (b *Backend) ConstructPersistent() *BackendPersistent {
 	persistentBackend := &BackendPersistent{
-		Version: tridentconfig.OrchestratorAPIVersion,
-		Config:  PersistentStorageBackendConfig{},
-		Name:    b.Name,
-		Online:  b.Online,
-		State:   b.State,
+		Version:     tridentconfig.OrchestratorAPIVersion,
+		Config:      PersistentStorageBackendConfig{},
+		Name:        b.Name,
+		Online:      b.Online,
+		State:       b.State,
+		BackendUUID: b.BackendUUID,
 	}
 	b.Driver.StoreConfig(&persistentBackend.Config)
 	return persistentBackend

@@ -96,5 +96,7 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		log.WithField("backend", sb).Info("Created new storage backend.")
 	}
 
+	sb.State = storage.Online
+
 	return sb, err
 }

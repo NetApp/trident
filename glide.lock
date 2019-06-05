@@ -1,5 +1,5 @@
-hash: fb226d17fd67b03e0d619ee17e2e461fc856ab44f7e22ba2f64f583fe2b2ecef
-updated: 2019-04-04T11:17:25.717490239-04:00
+hash: 57e551422775e43c4bb13fd70fe8d3ea6fd114511b7bb5ff5a3f6457e7f880ee
+updated: 2019-05-13T10:59:17.155087-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 1e4cf3da559842a91afcb6ea6141451e6c30c618
@@ -23,16 +23,15 @@ imports:
   - pkg/types
   - version
 - name: github.com/coreos/go-semver
-  version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
+  version: e214231b295a8ea9479f11b70b35d5acf3556d9b
   subpackages:
   - semver
 - name: github.com/coreos/go-systemd
-  version: d2196463941895ee908e13531a23a39feb9e1243
+  version: 39ca1b05acc7ad1220e09f133283b8859a8b71ab
   subpackages:
   - activation
   - daemon
   - journal
-  - util
 - name: github.com/davecgh/go-spew
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
@@ -84,6 +83,8 @@ imports:
   - ptypes/wrappers
 - name: github.com/golang/snappy
   version: 2a8bb927dd31d8daada140a5d09578521ce5c36a
+- name: github.com/google/go-cmp
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
 - name: github.com/google/gofuzz
   version: 24818f796faf91cd76ec7bddd72458fbced7a6c1
 - name: github.com/google/uuid
@@ -177,6 +178,10 @@ imports:
   - internal
   - jws
   - jwt
+- name: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:
@@ -193,6 +198,10 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
+- name: golang.org/x/tools
+  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
+  subpackages:
+  - imports
 - name: google.golang.org/appengine
   version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:
@@ -274,6 +283,14 @@ imports:
   - storage/v1
   - storage/v1alpha1
   - storage/v1beta1
+- name: k8s.io/apiextensions-apiserver
+  version: 0fe22c71c47604641d9aa352c785b7912c200562
+  subpackages:
+  - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/v1beta1
+  - pkg/client/clientset/clientset
+  - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
   version: d7deff9243b165ee192f5551710ea4285dcfd615
   subpackages:
@@ -435,6 +452,11 @@ imports:
   - util/homedir
   - util/keyutil
   - util/retry
+- name: k8s.io/code-generator
+  version: 50b561225d70b3eb79a1faafd3dfe7b1a62cbe73
+  subpackages:
+  - cmd/client-gen
+  - cmd/deepcopy-gen
 - name: k8s.io/klog
   version: 8e90cee79f823779174776412c13478955131846
 - name: k8s.io/kube-openapi

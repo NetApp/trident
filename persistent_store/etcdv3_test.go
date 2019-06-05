@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	uuid "github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -392,6 +393,7 @@ func TestEtcdv3Volume(t *testing.T) {
 		},
 		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
 	}
+	NFSServer.BackendUUID = uuid.New().String()
 	vol1Config := storage.VolumeConfig{
 		Version:      string(config.OrchestratorAPIVersion),
 		Name:         "vol1",
@@ -400,9 +402,9 @@ func TestEtcdv3Volume(t *testing.T) {
 		StorageClass: "gold",
 	}
 	vol1 := &storage.Volume{
-		Config:  &vol1Config,
-		Backend: NFSServer.Name,
-		Pool:    storagePool,
+		Config:      &vol1Config,
+		BackendUUID: NFSServer.BackendUUID,
+		Pool:        storagePool,
 	}
 	err = p.AddVolume(vol1)
 	if err != nil {
@@ -416,7 +418,7 @@ func TestEtcdv3Volume(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	if recoveredVolume.Backend != vol1.Backend || recoveredVolume.Config.Size != vol1.Config.Size {
+	if recoveredVolume.BackendUUID != vol1.BackendUUID || recoveredVolume.Config.Size != vol1.Config.Size {
 		t.Error("Recovered volume does not match!")
 	}
 
@@ -473,6 +475,7 @@ func TestEtcdv3Volumes(t *testing.T) {
 		},
 		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
 	}
+	NFSServer.BackendUUID = uuid.New().String()
 
 	for i := 1; i <= newVolumeCount; i++ {
 		volConfig := storage.VolumeConfig{
@@ -483,8 +486,8 @@ func TestEtcdv3Volumes(t *testing.T) {
 			StorageClass: "gold",
 		}
 		vol := &storage.Volume{
-			Config:  &volConfig,
-			Backend: NFSServer.Name,
+			Config:      &volConfig,
+			BackendUUID: NFSServer.BackendUUID,
 		}
 		err = p.AddVolume(vol)
 		if err != nil {
@@ -757,9 +760,9 @@ func TestEtcdv3ReplaceBackendAndUpdateVolumes(t *testing.T) {
 			StorageClass: "gold",
 		}
 		vol := &storage.Volume{
-			Config:  &volConfig,
-			Backend: NFSServer.Name,
-			Pool:    storagePool,
+			Config:      &volConfig,
+			BackendUUID: NFSServer.BackendUUID,
+			Pool:        storagePool,
 		}
 		err = p.AddVolume(vol)
 	}
@@ -783,7 +786,7 @@ func TestEtcdv3ReplaceBackendAndUpdateVolumes(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
 		if err != nil ||
-			volume.Backend != NFSServer.Name {
+			volume.BackendUUID != NFSServer.BackendUUID {
 			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
 		}
 		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
@@ -821,7 +824,7 @@ func TestEtcdv3ReplaceBackendAndUpdateVolumes(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
 		if err != nil ||
-			volume.Backend != newNFSServer.Name {
+			volume.BackendUUID != backend.BackendUUID {
 			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
 		}
 		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
@@ -875,9 +878,9 @@ func TestEtcdv3FailedReplaceBackendAndUpdateVolumes(t *testing.T) {
 			StorageClass: "gold",
 		}
 		vol := &storage.Volume{
-			Config:  &volConfig,
-			Backend: NFSServer.Name,
-			Pool:    storagePool,
+			Config:      &volConfig,
+			BackendUUID: NFSServer.BackendUUID,
+			Pool:        storagePool,
 		}
 		err = p.AddVolume(vol)
 	}
@@ -898,7 +901,7 @@ func TestEtcdv3FailedReplaceBackendAndUpdateVolumes(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
 		if err != nil ||
-			volume.Backend != NFSServer.Name {
+			volume.BackendUUID != NFSServer.BackendUUID {
 			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
 		}
 	}
@@ -937,7 +940,7 @@ func TestEtcdv3FailedReplaceBackendAndUpdateVolumes(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
 		if err != nil ||
-			volume.Backend != NFSServer.Name {
+			volume.BackendUUID != NFSServer.BackendUUID {
 			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
 		}
 		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)

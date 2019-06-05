@@ -5,6 +5,7 @@ package persistentstore
 import (
 	"crypto/tls"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
@@ -16,13 +17,10 @@ const (
 	MemoryStore      StoreType = "memory"
 	EtcdV2Store      StoreType = "etcdv2"
 	EtcdV3Store      StoreType = "etcdv3"
+	EtcdV3bStore     StoreType = "etcdv3b"
 	PassthroughStore StoreType = "passthrough"
+	CRDV1Store       StoreType = "crdv1"
 )
-
-type PersistentStateVersion struct {
-	PersistentStoreVersion string `json:"store_version"`
-	OrchestratorAPIVersion string `json:"orchestrator_api_version"`
-}
 
 type ClientConfig struct {
 	endpoints string
@@ -30,23 +28,27 @@ type ClientConfig struct {
 }
 
 type Client interface {
-	GetVersion() (*PersistentStateVersion, error)
-	SetVersion(version *PersistentStateVersion) error
+	GetVersion() (*config.PersistentStateVersion, error)
+	SetVersion(version *config.PersistentStateVersion) error
 	GetConfig() *ClientConfig
 	GetType() StoreType
 	Stop() error
 
 	AddBackend(b *storage.Backend) error
+	AddBackendPersistent(b *storage.BackendPersistent) error
 	GetBackend(backendName string) (*storage.BackendPersistent, error)
 	UpdateBackend(b *storage.Backend) error
+	UpdateBackendPersistent(b *storage.BackendPersistent) error
 	DeleteBackend(backend *storage.Backend) error
 	GetBackends() ([]*storage.BackendPersistent, error)
 	DeleteBackends() error
 	ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error
 
 	AddVolume(vol *storage.Volume) error
+	AddVolumePersistent(vol *storage.VolumeExternal) error
 	GetVolume(volName string) (*storage.VolumeExternal, error)
 	UpdateVolume(vol *storage.Volume) error
+	UpdateVolumePersistent(vol *storage.VolumeExternal) error
 	DeleteVolume(vol *storage.Volume) error
 	DeleteVolumeIgnoreNotFound(vol *storage.Volume) error
 	GetVolumes() ([]*storage.VolumeExternal, error)
@@ -54,8 +56,7 @@ type Client interface {
 
 	AddVolumeTransaction(volTxn *VolumeTransaction) error
 	GetVolumeTransactions() ([]*VolumeTransaction, error)
-	GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction,
-		error)
+	GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error)
 	DeleteVolumeTransaction(volTxn *VolumeTransaction) error
 
 	AddStorageClass(sc *storageclass.StorageClass) error
@@ -78,4 +79,13 @@ type EtcdClient interface {
 	Set(key, value string) error
 	Delete(key string) error
 	DeleteKeys(keyPrefix string) error
+}
+
+type CRDClient interface {
+	Client
+	HasBackends() (bool, error)
+	AddStorageClassPersistent(b *storageclass.Persistent) error
+	HasStorageClasses() (bool, error)
+	HasVolumes() (bool, error)
+	HasVolumeTransactions() (bool, error)
 }

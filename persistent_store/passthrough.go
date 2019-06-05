@@ -25,7 +25,7 @@ import (
 type PassthroughClient struct {
 	liveBackends map[string]*storage.Backend
 	bootBackends []*storage.BackendPersistent
-	version      *PersistentStateVersion
+	version      *config.PersistentStateVersion
 }
 
 // NewPassthroughClient returns a client that satisfies the
@@ -45,9 +45,9 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 	client := &PassthroughClient{
 		liveBackends: make(map[string]*storage.Backend),
 		bootBackends: make([]*storage.BackendPersistent, 0),
-		version: &PersistentStateVersion{
-			"passthrough",
-			config.OrchestratorAPIVersion,
+		version: &config.PersistentStateVersion{
+			PersistentStoreVersion: "passthrough",
+			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
 	}
 
@@ -201,11 +201,11 @@ func (c *PassthroughClient) GetConfig() *ClientConfig {
 	return &ClientConfig{}
 }
 
-func (c *PassthroughClient) GetVersion() (*PersistentStateVersion, error) {
+func (c *PassthroughClient) GetVersion() (*config.PersistentStateVersion, error) {
 	return c.version, nil
 }
 
-func (c *PassthroughClient) SetVersion(version *PersistentStateVersion) error {
+func (c *PassthroughClient) SetVersion(version *config.PersistentStateVersion) error {
 	return nil
 }
 
@@ -218,6 +218,10 @@ func (c *PassthroughClient) AddBackend(backend *storage.Backend) error {
 	log.WithField("backend", backend.Name).Debugf("Passthrough store adding backend.")
 	c.liveBackends[backend.Name] = backend
 	return nil
+}
+
+func (c *PassthroughClient) AddBackendPersistent(backend *storage.BackendPersistent) error {
+	return NewPersistentStoreError(NotSupported, "")
 }
 
 func (c *PassthroughClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
@@ -238,6 +242,11 @@ func (c *PassthroughClient) UpdateBackend(backend *storage.Backend) error {
 
 	log.Debugf("Passthrough store updating backend: %s", backend.Name)
 	c.liveBackends[backend.Name] = backend
+	return nil
+}
+
+// UpdateBackendPersistent updates a backend's persistent state
+func (c *PassthroughClient) UpdateBackendPersistent(update *storage.BackendPersistent) error {
 	return nil
 }
 
@@ -282,6 +291,11 @@ func (c *PassthroughClient) AddVolume(vol *storage.Volume) error {
 	return nil
 }
 
+// AddVolumePersistent saves a volume's persistent state to the persistent store
+func (c *PassthroughClient) AddVolumePersistent(volume *storage.VolumeExternal) error {
+	return nil
+}
+
 // GetVolume is not called by the orchestrator, which caches all volumes in
 // memory after bootstrapping.  So this method need not do anything.
 func (c *PassthroughClient) GetVolume(volName string) (*storage.VolumeExternal, error) {
@@ -289,6 +303,11 @@ func (c *PassthroughClient) GetVolume(volName string) (*storage.VolumeExternal, 
 }
 
 func (c *PassthroughClient) UpdateVolume(vol *storage.Volume) error {
+	return nil
+}
+
+// UpdateVolumePersistent updates a volume's persistent state
+func (c *PassthroughClient) UpdateVolumePersistent(volume *storage.VolumeExternal) error {
 	return nil
 }
 
@@ -351,7 +370,8 @@ func (c *PassthroughClient) getVolumesFromBackend(
 	go backend.Driver.GetVolumeExternalWrappers(backendChannel)
 	for volume := range backendChannel {
 		if volume.Volume != nil {
-			volume.Volume.Backend = backend.Name
+			//volume.Volume.Backend = backend.Name
+			volume.Volume.BackendUUID = backend.BackendUUID
 		}
 		volumeChannel <- volume
 	}

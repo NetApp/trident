@@ -38,6 +38,10 @@ func getFakePools(count int) map[string]*fake.StoragePool {
 }
 
 func getFakeBackend() *storage.Backend {
+	return getFakeBackendWithName("fake_backend")
+}
+
+func getFakeBackendWithName(name string) *storage.Backend {
 
 	fakeConfig := drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -46,7 +50,7 @@ func getFakeBackend() *storage.Backend {
 		},
 		Protocol:     config.File,
 		Pools:        getFakePools(2),
-		InstanceName: "fake_backend",
+		InstanceName: name,
 	}
 
 	fakeStorageDriver := fakedriver.NewFakeStorageDriver(fakeConfig)
@@ -54,38 +58,48 @@ func getFakeBackend() *storage.Backend {
 	return fakeBackend
 }
 
-func getFakeVolume() *storage.Volume {
+func getFakeVolume(fakeBackend *storage.Backend) *storage.Volume {
+	return getFakeVolumeWithName("fake_volume", fakeBackend)
+}
 
-	fakeBackend := getFakeBackend()
+func getFakeVolumeWithName(name string, fakeBackend *storage.Backend) *storage.Volume {
 
 	volumeConfig := &storage.VolumeConfig{
-		Name:         "fake_volume",
-		InternalName: "really_fake_volume",
+		Name:         name,
+		InternalName: name + "_internal",
 	}
 
-	return storage.NewVolume(volumeConfig, fakeBackend.Name,
+	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID,
 		fakeBackend.Storage["pool-0"].Name, false)
 }
 
 func getFakeVolumeTransaction() *VolumeTransaction {
+	return getFakeVolumeTransactionWithName("fake_volume")
+}
+
+func getFakeVolumeTransactionWithName(name string) *VolumeTransaction {
 
 	volumeConfig := &storage.VolumeConfig{
-		Name:         "fake_volume",
-		InternalName: "really_fake_volume",
+		Name:         name,
+		InternalName: name + "_internal",
 	}
 
 	return &VolumeTransaction{volumeConfig, AddVolume}
 }
 
 func getFakeStorageClass() *sc.StorageClass {
+	return getFakeStorageClassWithName("fake_sc", 40, true, "thin")
+}
+
+func getFakeStorageClassWithName(name string, iops int, snapshots bool, provType string) *sc.StorageClass {
 
 	scConfig := &sc.Config{
 		Version: config.OrchestratorAPIVersion,
-		Name:    "fake_sc",
+		Name:    name,
 		Attributes: map[string]sa.Request{
-			sa.IOPS:             sa.NewIntRequest(40),
-			sa.Snapshots:        sa.NewBoolRequest(true),
-			sa.ProvisioningType: sa.NewStringRequest("thin"),
+			sa.IOPS:             sa.NewIntRequest(iops),
+			sa.Snapshots:        sa.NewBoolRequest(snapshots),
+			sa.ProvisioningType: sa.NewStringRequest(provType),
 		},
 	}
 	return sc.New(scConfig)
@@ -103,9 +117,9 @@ func newPassthroughClient() *PassthroughClient {
 	return &PassthroughClient{
 		bootBackends: make([]*storage.BackendPersistent, 0),
 		liveBackends: make(map[string]*storage.Backend),
-		version: &PersistentStateVersion{
-			"passthrough",
-			config.OrchestratorAPIVersion,
+		version: &config.PersistentStateVersion{
+			PersistentStoreVersion: "passthrough",
+			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
 	}
 }
@@ -205,7 +219,7 @@ func TestPassthroughClient_GetVersion(t *testing.T) {
 
 	result, _ := p.GetVersion()
 
-	expected := &PersistentStateVersion{
+	expected := &config.PersistentStateVersion{
 		"passthrough",
 		config.OrchestratorAPIVersion,
 	}
@@ -217,10 +231,10 @@ func TestPassthroughClient_GetVersion(t *testing.T) {
 func TestPassthroughClient_SetVersion(t *testing.T) {
 	p := newPassthroughClient()
 
-	p.SetVersion(&PersistentStateVersion{"invalid", "unknown"})
+	p.SetVersion(&config.PersistentStateVersion{"invalid", "unknown"})
 
 	result, _ := p.GetVersion()
-	expected := &PersistentStateVersion{
+	expected := &config.PersistentStateVersion{
 		"passthrough",
 		config.OrchestratorAPIVersion,
 	}
@@ -413,7 +427,7 @@ func TestPassthroughClient_AddVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 
 	err := p.AddVolume(fakeVolume)
 
@@ -426,7 +440,7 @@ func TestPassthroughClient_GetVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 	p.AddVolume(fakeVolume)
 
 	vol, err := p.GetVolume("fake_volume")
@@ -452,7 +466,7 @@ func TestPassthroughClient_UpdateVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 	p.AddVolume(fakeVolume)
 
 	err := p.UpdateVolume(fakeVolume)
@@ -466,7 +480,7 @@ func TestPassthroughClient_UpdateVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 
 	err := p.UpdateVolume(fakeVolume)
 
@@ -479,7 +493,7 @@ func TestPassthroughClient_DeleteVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 	p.AddVolume(fakeVolume)
 
 	err := p.DeleteVolume(fakeVolume)
@@ -493,7 +507,7 @@ func TestPassthroughClient_DeleteVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 
 	err := p.DeleteVolume(fakeVolume)
 
@@ -506,7 +520,7 @@ func TestPassthroughClient_DeleteVolumeIgnoreNotFound(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 	p.AddVolume(fakeVolume)
 
 	err := p.DeleteVolumeIgnoreNotFound(fakeVolume)
@@ -520,7 +534,7 @@ func TestPassthroughClient_DeleteVolumeIgnoreNotFoundNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 
 	err := p.DeleteVolumeIgnoreNotFound(fakeVolume)
 
@@ -593,7 +607,7 @@ func TestPassthroughClient_DeleteVolumes(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	p.AddBackend(fakeBackend)
-	fakeVolume := getFakeVolume()
+	fakeVolume := getFakeVolume(fakeBackend)
 	p.AddVolume(fakeVolume)
 
 	err := p.DeleteVolumes()

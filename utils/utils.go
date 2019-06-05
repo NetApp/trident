@@ -355,3 +355,24 @@ func NewHTTPError(response *http.Response) *HTTPError {
 	}
 	return &HTTPError{response.Status, response.StatusCode}
 }
+
+// SliceContainsString checks to see if a []string contains a string
+func SliceContainsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+// RemoveStringFromSlice removes a string from a []string
+func RemoveStringFromSlice(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
+}

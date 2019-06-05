@@ -12,7 +12,9 @@ import (
 )
 
 func findVolumeInMap(
-	t *testing.T, backendMap map[string]*mockBackend, name string,
+	t *testing.T,
+	backendMap map[string]*mockBackend,
+	name string,
 ) *storage.Volume {
 	var ret *storage.Volume
 	matches := 0
@@ -33,19 +35,33 @@ func findVolumeInMap(
 
 func TestAddMockBackend(t *testing.T) {
 	m := NewMockOrchestrator()
-	m.addMockBackend("test-nfs", config.File)
-	m.addMockBackend("test-iscsi", config.Block)
-	if _, ok := m.mockBackends["test-nfs"]; !ok {
+
+	// add an NFS FILE backend
+	m.AddMockONTAPNFSBackend("test-nfs", "192.0.0.2")
+	nfsBackend, err := m.GetBackend("test-nfs")
+	if err != nil {
+		t.Fatalf("cannot find backend '%v' error: %v", "test-nfs", err.Error())
+	}
+	nfsBackendUUID := nfsBackend.BackendUUID
+	if _, ok := m.mockBackendsByUUID[nfsBackendUUID]; !ok {
 		t.Error("NFS backend not added to mock backends.")
 	}
-	if _, ok := m.backends["test-nfs"]; !ok {
+	if _, ok := m.backendsByUUID[nfsBackendUUID]; !ok {
 		t.Error("NFS backend not added to real backends.")
 	}
-	if _, ok := m.mockBackends["test-iscsi"]; !ok {
-		t.Error("NFS backend not added to mock backends.")
+
+	// add an SAN iSCSI BLOCK backend
+	m.AddMockONTAPSANBackend("test-iscsi", "192.0.0.2")
+	iscsiBackend, err := m.GetBackend("test-iscsi")
+	if err != nil {
+		t.Fatalf("cannot find backend '%v' error: %v", "test-iscsi", err.Error())
 	}
-	if _, ok := m.backends["test-iscsi"]; !ok {
-		t.Error("ISCSI backend not added to real backends.")
+	iscsiBackendUUID := iscsiBackend.BackendUUID
+	if _, ok := m.mockBackendsByUUID[iscsiBackendUUID]; !ok {
+		t.Error("iSCSI backend not added to mock backends.")
+	}
+	if _, ok := m.backendsByUUID[iscsiBackendUUID]; !ok {
+		t.Error("iSCSI backend not added to real backends.")
 	}
 }
 
@@ -65,7 +81,8 @@ func addAndRetrieveVolume(
 		t.Fatalf("Wrong config returned for volume %s (%s)", vc.Name,
 			vc.Protocol)
 	}
-	found := findVolumeInMap(t, m.mockBackends, vc.Name)
+	//found := findVolumeInMap(t, m.mockBackends, vc.Name)
+	found := findVolumeInMap(t, m.mockBackendsByUUID, vc.Name)
 	if found == nil {
 		t.Errorf("Volume %s (%s) not found.", vc.Name,
 			string(vc.Protocol))
@@ -85,8 +102,12 @@ func addAndRetrieveVolume(
 
 func TestAddVolume(t *testing.T) {
 	m := NewMockOrchestrator()
-	m.addMockBackend("test-nfs", config.File)
-	m.addMockBackend("test-iscsi", config.Block)
+	m.AddMockONTAPNFSBackend("test-nfs", "192.0.0.2")
+	m.AddMockONTAPSANBackend("test-iscsi", "192.0.0.2")
+	m.AddMockFakeNASBackend("fake-nfs")
+	m.AddMockFakeSANBackend("fake-iscsi")
+	// m.addMockBackend("test-nfs", config.File)
+	// m.addMockBackend("test-iscsi", config.Block)
 	for _, v := range []*storage.VolumeConfig{
 		{
 			Name:         "test-nfs-vol",
@@ -97,6 +118,18 @@ func TestAddVolume(t *testing.T) {
 		{
 			Name:         "test-iscsi-vol",
 			Size:         "10MB",
+			Protocol:     config.Block,
+			StorageClass: "silver",
+		},
+		{
+			Name:         "fake-nfs-vol",
+			Size:         "20MB",
+			Protocol:     config.File,
+			StorageClass: "silver",
+		},
+		{
+			Name:         "fake-iscsi-vol",
+			Size:         "20MB",
 			Protocol:     config.Block,
 			StorageClass: "silver",
 		},

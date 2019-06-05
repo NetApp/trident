@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	uuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -400,11 +401,39 @@ type GetBackendResponse struct {
 	Error   string                   `json:"error,omitempty"`
 }
 
+// IsValidUUID returns true if the supplied string 's' is a UUID, otherwise false
+func IsValidUUID(s string) bool {
+	_, err := uuid.Parse(s)
+	return err == nil
+}
+
 func GetBackend(w http.ResponseWriter, r *http.Request) {
 	response := &GetBackendResponse{}
 	GetGeneric(w, r, "backend", response,
-		func(backendName string) int {
-			backend, err := orchestrator.GetBackend(backendName)
+		func(backend string) int {
+			var result *storage.BackendExternal
+			var err error
+			if IsValidUUID(backend) {
+				result, err = orchestrator.GetBackendByBackendUUID(backend)
+			} else {
+				result, err = orchestrator.GetBackend(backend)
+			}
+
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Backend = result
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func GetBackendByBackendUUID(w http.ResponseWriter, r *http.Request) {
+	response := &GetBackendResponse{}
+	GetGeneric(w, r, "backendUUID", response,
+		func(backendUUID string) int {
+			backend, err := orchestrator.GetBackendByBackendUUID(backendUUID)
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -466,7 +495,7 @@ func AddVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 			}
 			if volume != nil {
-				response.BackendID = volume.Backend
+				response.BackendID = volume.BackendUUID
 			}
 			return httpStatusCodeForAdd(err)
 		},
@@ -540,9 +569,9 @@ func (i *ImportVolumeResponse) isError() bool {
 
 func (i *ImportVolumeResponse) logSuccess() {
 	log.WithFields(log.Fields{
-		"handler": "ImportVolume",
-		"backend": i.Volume.Backend,
-		"volume":  i.Volume.Config.Name,
+		"handler":     "ImportVolume",
+		"backendUUID": i.Volume.BackendUUID,
+		"volume":      i.Volume.Config.Name,
 	}).Info("Imported an existing volume.")
 }
 func (i *ImportVolumeResponse) logFailure() {

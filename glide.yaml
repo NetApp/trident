@@ -38,6 +38,8 @@ import:
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
+- package: k8s.io/apiextensions-apiserver
+  version: kubernetes-1.14.0
 - package: k8s.io/client-go
   version: v11.0.0
   subpackages:
@@ -87,3 +89,18 @@ import:
   version: v0.4.0
 - package: github.com/stretchr/testify
   version: ^v1.3.0
+- package: k8s.io/code-generator
+  version: kubernetes-1.14.0
+  subpackages:
+  - cmd/deepcopy-gen
+  - cmd/client-gen
+- package: golang.org/x/tools
+  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
+  subpackages:
+  - imports
+- package: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - errgroup
+- package: github.com/google/go-cmp
+  version: v0.2.0

@@ -51,6 +51,10 @@ const (
 	TridentInstallerLabelKey   = "app"
 	TridentInstallerLabelValue = "trident-installer.netapp.io"
 	TridentInstallerLabel      = TridentInstallerLabelKey + "=" + TridentInstallerLabelValue
+
+	TridentMigratorLabelKey   = "app"
+	TridentMigratorLabelValue = "trident-migrator.netapp.io"
+	TridentMigratorLabel      = TridentMigratorLabelKey + "=" + TridentMigratorLabelValue
 )
 
 var (

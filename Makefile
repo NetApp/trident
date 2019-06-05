@@ -7,6 +7,7 @@ GOGC ?= ""
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
+TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 
 ## build flags variables
 GITHASH ?= `git rev-parse HEAD || echo unknown`
@@ -77,9 +78,7 @@ BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_
 get:
 	@mkdir -p vendor
 	@chmod 777 vendor
-	@go get github.com/Masterminds/glide
-	@go install github.com/Masterminds/glide
-	@${GOPATH}/bin/glide install --force --strip-vendor
+	glide install --force --strip-vendor
 
 trident_retag:
 	-docker volume rm $(TRIDENT_VOLUME) || true
@@ -199,3 +198,6 @@ install: build
 
 vet:
 	@go vet $(shell go list ./... | grep -v /vendor/)
+
+k8s_codegen: get
+	./vendor/k8s.io/code-generator/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt

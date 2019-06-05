@@ -1,0 +1,94 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: mutexes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: mutexes
+    singular: mutex
+    kind: Mutex
+    categories:
+    - trident
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: volumes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: volumes
+    singular: volume
+    kind: Volume
+    categories:
+    - trident
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: backends.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: backends
+    singular: backend
+    kind: Backend
+    categories:
+    - trident
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: storageclasses.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: storageclasses
+    singular: storageclass
+    kind: StorageClass
+    categories:
+    - trident
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: volumetransactions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: volumetransactions
+    singular: volumetransaction
+    kind: VolumeTransaction
+    categories:
+    - trident

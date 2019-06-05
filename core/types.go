@@ -18,9 +18,12 @@ type Orchestrator interface {
 
 	AddBackend(configJSON string) (*storage.BackendExternal, error)
 	DeleteBackend(backend string) error
+	DeleteBackendByBackendUUID(backendName, backendUUID string) error
 	GetBackend(backend string) (*storage.BackendExternal, error)
+	GetBackendByBackendUUID(backendUUID string) (*storage.BackendExternal, error)
 	ListBackends() ([]*storage.BackendExternal, error)
 	UpdateBackend(backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendByBackendUUID(backendName, configJSON, backendUUID string) (storageBackendExternal *storage.BackendExternal, err error)
 	UpdateBackendState(backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
 
 	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)

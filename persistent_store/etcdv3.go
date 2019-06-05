@@ -13,6 +13,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	log "github.com/sirupsen/logrus"
+
 	//TODO: Change for the later versions of etcd (etcd v3.1.5 doesn't return any error for unfound keys but later versions do)
 	//"github.com/coreos/etcd/etcdserver"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
@@ -21,7 +22,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -301,7 +302,7 @@ func (p *EtcdClientV3) DeleteKeys(keyPrefix string) error {
 
 // GetType returns the persistent store type
 func (p *EtcdClientV3) GetType() StoreType {
-	return EtcdV3Store
+	return EtcdV3bStore
 }
 
 // Stop shuts down the etcd client
@@ -318,12 +319,12 @@ func (p *EtcdClientV3) GetConfig() *ClientConfig {
 }
 
 // GetVersion returns the version of the persistent data
-func (p *EtcdClientV3) GetVersion() (*PersistentStateVersion, error) {
+func (p *EtcdClientV3) GetVersion() (*config.PersistentStateVersion, error) {
 	versionJSON, err := p.Read(config.StoreURL)
 	if err != nil {
 		return nil, err
 	}
-	version := &PersistentStateVersion{}
+	version := &config.PersistentStateVersion{}
 	err = json.Unmarshal([]byte(versionJSON), version)
 	if err != nil {
 		return nil, err
@@ -332,11 +333,12 @@ func (p *EtcdClientV3) GetVersion() (*PersistentStateVersion, error) {
 }
 
 // SetVersion sets the version of the persistent data
-func (p *EtcdClientV3) SetVersion(version *PersistentStateVersion) error {
+func (p *EtcdClientV3) SetVersion(version *config.PersistentStateVersion) error {
 	versionJSON, err := json.Marshal(version)
 	if err != nil {
 		return err
 	}
+	log.Debugf("Setting version: %v", string(versionJSON))
 	return p.Set(config.StoreURL, string(versionJSON))
 }
 
@@ -368,6 +370,18 @@ func (p *EtcdClientV3) AddBackendSTM(s conc.STM, b *storage.Backend) error {
 	return nil
 }
 
+func (p *EtcdClientV3) AddBackendPersistent(backend *storage.BackendPersistent) error {
+	backendJSON, err := json.Marshal(backend)
+	if err != nil {
+		return err
+	}
+	err = p.Create(config.BackendURL+"/"+backend.Name, string(backendJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetBackend retrieves a backend from the persistent store
 func (p *EtcdClientV3) GetBackend(backendName string) (*storage.BackendPersistent, error) {
 	var backend storage.BackendPersistent
@@ -385,6 +399,19 @@ func (p *EtcdClientV3) GetBackend(backendName string) (*storage.BackendPersisten
 // UpdateBackend updates the backend state on the persistent store
 func (p *EtcdClientV3) UpdateBackend(b *storage.Backend) error {
 	backend := b.ConstructPersistent()
+	backendJSON, err := json.Marshal(backend)
+	if err != nil {
+		return err
+	}
+	err = p.Update(config.BackendURL+"/"+backend.Name, string(backendJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateBackendPersistent updates a backend's persistent state
+func (p *EtcdClientV3) UpdateBackendPersistent(backend *storage.BackendPersistent) error {
 	backendJSON, err := json.Marshal(backend)
 	if err != nil {
 		return err
@@ -458,31 +485,14 @@ func (p *EtcdClientV3) ReplaceBackendAndUpdateVolumes(origBackend, newBackend *s
 	_, err := conc.NewSTMSerializable(context.TODO(), p.clientV3,
 		func(s conc.STM) error {
 
-			// First, create the new backend.
+			// Create the new backend.
+			newBackend.BackendUUID = origBackend.BackendUUID
 			err := p.AddBackendSTM(s, newBackend)
 			if err != nil {
 				return err
 			}
 
-			// Second, find all the volumes.
-			volExternalList, err := p.GetVolumesSTM(s)
-			if err != nil {
-				return err
-			}
-
-			// Third, update the volumes mapped to the old backend to the new backend.
-			for _, volExternal := range volExternalList {
-				if volExternal.Backend == origBackend.Name {
-					vol := storage.NewVolume(volExternal.Config,
-						newBackend.Name, volExternal.Pool, volExternal.Orphaned)
-					err = p.UpdateVolumeSTM(s, vol)
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			// Forth, delete the old backend.
+			// Delete the old backend.
 			return p.DeleteBackendSTM(s, origBackend)
 		})
 	return err
@@ -530,6 +540,19 @@ func (p *EtcdClientV3) AddVolume(vol *storage.Volume) error {
 	return nil
 }
 
+// AddVolumePersistent saves a volume's persistent state to the persistent store
+func (p *EtcdClientV3) AddVolumePersistent(volExternal *storage.VolumeExternal) error {
+	volJSON, err := json.Marshal(volExternal)
+	if err != nil {
+		return err
+	}
+	err = p.Create(config.VolumeURL+"/"+volExternal.Config.Name, string(volJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetVolume retrieves a volume's state from the persistent store
 func (p *EtcdClientV3) GetVolume(volName string) (*storage.VolumeExternal, error) {
 	volJSON, err := p.Read(config.VolumeURL + "/" + volName)
@@ -566,6 +589,19 @@ func (p *EtcdClientV3) UpdateVolume(vol *storage.Volume) error {
 		return err
 	}
 	err = p.Update(config.VolumeURL+"/"+vol.Config.Name, string(volJSON))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateVolumePersistent updates a volume's persistent state
+func (p *EtcdClientV3) UpdateVolumePersistent(volExternal *storage.VolumeExternal) error {
+	volJSON, err := json.Marshal(volExternal)
+	if err != nil {
+		return err
+	}
+	err = p.Update(config.VolumeURL+"/"+volExternal.Config.Name, string(volJSON))
 	if err != nil {
 		return err
 	}

@@ -388,7 +388,7 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (
 	}
 
 	attributes := map[string]string{
-		"backend":      volume.Backend,
+		"backendUUID":  volume.BackendUUID,
 		"name":         volume.Config.Name,
 		"internalName": volume.Config.InternalName,
 		"protocol":     string(volume.Config.Protocol),

@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -937,6 +940,35 @@ func (c *KubectlClient) DeletePVByLabel(label string) error {
 	return nil
 }
 
+func (c *KubectlClient) GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error) {
+
+	var crd apiextensionv1beta1.CustomResourceDefinition
+
+	args := []string{"get", "crd", crdName, "-o=json"}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("%s; %v", string(out), err)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("CRD %s does not exist", crdName)
+	}
+
+	err = yaml.Unmarshal(out, &crd)
+	if err != nil {
+		return nil, err
+	}
+	return &crd, nil
+}
+
+func (c *KubectlClient) CheckCRDExists(crdName string) (bool, error) {
+	args := []string{"get", "crd", crdName, "--ignore-not-found"}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("%s; %v", string(out), err)
+	}
+	return len(out) > 0, nil
+}
+
 // CheckSecretExists returns true if the specified secret exists, false otherwise.
 // It only returns an error if the check failed, not if the secret doesn't exist.
 func (c *KubectlClient) CheckSecretExists(secretName string) (bool, error) {
@@ -1089,7 +1121,7 @@ func (c *KubectlClient) CheckNamespaceExists(namespace string) (bool, error) {
 	return len(out) > 0, nil
 }
 
-// CreateObjectByFile creates an object on the server from a YAML/JSON file at the specified path.
+// CreateObjectByFile creates one or more objects on the server from a YAML/JSON file at the specified path.
 func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 
 	args := []string{
@@ -1108,7 +1140,7 @@ func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 	return nil
 }
 
-// CreateObjectByYAML creates an object on the server from a YAML/JSON document.
+// CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
 func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
 
 	args := []string{fmt.Sprintf("--namespace=%s", c.namespace), "create", "-f", "-"}
@@ -1133,7 +1165,7 @@ func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
 	return nil
 }
 
-// DeleteObjectByFile deletes an object on the server from a YAML/JSON file at the specified path.
+// DeleteObjectByFile deletes one or more objects on the server from a YAML/JSON file at the specified path.
 func (c *KubectlClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) error {
 
 	args := []string{
@@ -1153,7 +1185,7 @@ func (c *KubectlClient) DeleteObjectByFile(filePath string, ignoreNotFound bool)
 	return nil
 }
 
-// DeleteObjectByYAML deletes an object on the server from a YAML/JSON document.
+// DeleteObjectByYAML deletes one or more objects on the server from a YAML/JSON document.
 func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) error {
 
 	args := []string{
@@ -1231,5 +1263,105 @@ func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) erro
 	if err != nil {
 		return fmt.Errorf("%s; %v", string(out), err)
 	}
+	return nil
+}
+
+func (c *KubectlClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {
+
+	var (
+		err error
+		cmd *exec.Cmd
+	)
+
+RetryLoop:
+	for {
+		time.Sleep(1 * time.Second)
+
+		args := []string{
+			fmt.Sprintf("--namespace=%s", namespace),
+			"logs",
+			pod,
+			"-f",
+		}
+		if container != "" {
+			args = append(args, []string{"-c", container}...)
+		}
+
+		log.WithField("cmd", c.cli+" "+strings.Join(args, " ")).Debug("Getting logs.")
+
+		cmd = exec.Command(c.cli, args...)
+
+		// Create a pipe that holds stdout
+		stdout, _ := cmd.StdoutPipe()
+		stderr, _ := cmd.StderrPipe()
+
+		// Start the child process
+		err = cmd.Start()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"pod":       pod,
+				"container": container,
+				"namespace": namespace,
+				"error":     err,
+			}).Error("Could not get pod logs.")
+			return
+		}
+
+		// Create a new scanner
+		buff := bufio.NewScanner(io.MultiReader(stdout, stderr))
+
+		// Iterate over buff and handle one line at a time
+		for buff.Scan() {
+			line := buff.Text()
+
+			// If we get an error from Kubernetes, just try again
+			if strings.Contains(line, "Error from server") {
+
+				log.WithFields(log.Fields{
+					"pod":       pod,
+					"container": container,
+					"error":     line,
+				}).Debug("Got server error, retrying.")
+
+				_ = cmd.Wait()
+				continue RetryLoop
+			}
+
+			logLineCallback(line)
+		}
+
+		log.WithFields(log.Fields{
+			"pod":       pod,
+			"container": container,
+		}).Debug("Received EOF from pod logs.")
+		break
+	}
+
+	// Clean up
+	_ = cmd.Wait()
+}
+
+// AddFinalizerToCRD patches the CRD object to include our Trident finalizer (definitions are not namespaced)
+func (k *KubectlClient) AddFinalizerToCRD(crdName string) error {
+
+	log.Debugf("Adding finalizers to Kubernetes CRD object %v", crdName)
+
+	// k.cli patch crd ${crd} -p '{"metadata":{"finalizers": ["trident.netapp.io"]}}' --type=merge
+	args := []string{
+		"patch",
+		"crd",
+		crdName,
+		"-p",
+		"{\"metadata\":{\"finalizers\": [\"" + TridentFinalizer + "\"]}}",
+		"--type=merge",
+	}
+
+	out, err := exec.Command(k.cli, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+
 	return nil
 }

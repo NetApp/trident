@@ -18,6 +18,12 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["backends","mutexes","storageclasses","volumes","volumetransactions"]
+    verbs: ["get", "list", "watch", "create", "delete"]
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1alpha1
@@ -38,4 +44,10 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: [""]
     resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["backends","mutexes","storageclasses","volumes","volumetransactions"]
     verbs: ["get", "list", "watch", "create", "delete"]

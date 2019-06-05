@@ -808,9 +808,8 @@ func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExt
 	}
 
 	volumeExternal := &storage.VolumeExternal{
-		Config:  volumeConfig,
-		Backend: d.Name(),
-		Pool:    drivers.UnsetPool,
+		Config: volumeConfig,
+		Pool:   drivers.UnsetPool,
 	}
 
 	return volumeExternal
@@ -827,6 +826,45 @@ func (d *StorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap
 	}
 
 	return roaring.New()
+}
+
+func (d *StorageDriver) BootstrapVolume(volume *storage.Volume) {
+
+	var pool *storage.Pool
+
+	// If a physical pool was requested, just use it
+	if ppool, ok := d.physicalPools[volume.Pool]; ok {
+		pool = ppool
+	} else if vpool, ok := d.virtualPools[volume.Pool]; ok {
+		pool = vpool
+	} else {
+		for poolName := range d.physicalPools {
+			pool = d.physicalPools[poolName]
+			break
+		}
+	}
+
+	volAttrs := make(map[string]sa.Request)
+
+	logFields := log.Fields{
+		"backend":       d.Config.InstanceName,
+		"name":          volume.Config.Name,
+		"requestedPool": volume.Pool,
+		"sizeBytes":     volume.Config.Size,
+	}
+
+	if err := d.Create(volume.Config, pool, volAttrs); err != nil {
+		log.WithFields(logFields).Error("Failed to bootstrap fake volume.")
+	} else {
+		log.WithFields(logFields).Debug("Bootstrapped fake volume.")
+	}
+}
+
+// CopyVolumes copies Volumes into this instance; there is no "storage system of truth" to use
+func (d StorageDriver) CopyVolumes(volumes map[string]fake.Volume) {
+	for name, vol := range volumes {
+		d.Volumes[name] = vol
+	}
 }
 
 func Clone(a, b interface{}) {

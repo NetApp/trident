@@ -110,6 +110,27 @@ func GetBackend(baseURL, backendName string) (storage.BackendExternal, error) {
 	return getBackendResponse.Backend, nil
 }
 
+func GetBackendByBackendUUID(baseURL, backendUUID string) (storage.BackendExternal, error) {
+
+	url := baseURL + "/backend/" + backendUUID
+
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	if err != nil {
+		return storage.BackendExternal{}, err
+	} else if response.StatusCode != http.StatusOK {
+		return storage.BackendExternal{}, fmt.Errorf("could not get backend uuid %s: %v", backendUUID,
+			GetErrorFromHTTPResponse(response, responseBody))
+	}
+
+	var getBackendResponse api.GetBackendResponse
+	err = json.Unmarshal(responseBody, &getBackendResponse)
+	if err != nil {
+		return storage.BackendExternal{}, err
+	}
+
+	return getBackendResponse.Backend, nil
+}
+
 func WriteBackends(backends []storage.BackendExternal) {
 	switch OutputFormat {
 	case FormatJSON:
@@ -182,7 +203,7 @@ func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drive
 func writeBackendTable(backends []storage.BackendExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Storage Driver", "State", "Volumes"})
+	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "Volumes"})
 
 	for _, b := range backends {
 		if b.Config == nil {
@@ -194,6 +215,7 @@ func writeBackendTable(backends []storage.BackendExternal) {
 			table.Append([]string{
 				b.Name,
 				storageDriverName,
+				b.BackendUUID,
 				b.State.String(),
 				strconv.Itoa(len(b.Volumes)),
 			})

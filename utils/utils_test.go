@@ -101,3 +101,52 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 	}
 
 }
+
+func TestSliceContainsString(t *testing.T) {
+	log.Debug("Running TestSliceContainsString...")
+
+	slice := []string{
+		"foo",
+		"bar",
+	}
+
+	if !SliceContainsString(slice, "foo") {
+		t.Errorf("Slice SHOULD contain string %v", "foo")
+	}
+	if !SliceContainsString(slice, "bar") {
+		t.Errorf("Slice SHOULD contain string %v", "bar")
+	}
+	if SliceContainsString(slice, "baz") {
+		t.Errorf("Slice should NOT contain string %v", "baz")
+	}
+}
+
+func TestRemoveStringFromSlice(t *testing.T) {
+	log.Debug("Running TestRemoveStringFromSlice...")
+
+	slice := []string{
+		"foo",
+		"bar",
+		"baz",
+	}
+	updatedSlice := slice
+
+	updatedSlice = RemoveStringFromSlice(updatedSlice, "foo")
+	if SliceContainsString(updatedSlice, "foo") {
+		t.Errorf("Slice should NOT contain string %v", "foo")
+	}
+
+	updatedSlice = RemoveStringFromSlice(updatedSlice, "bar")
+	if SliceContainsString(updatedSlice, "bar") {
+		t.Errorf("Slice should NOT contain string %v", "bar")
+	}
+
+	updatedSlice = RemoveStringFromSlice(updatedSlice, "baz")
+	if SliceContainsString(updatedSlice, "foo") {
+		t.Errorf("Slice should NOT contain string %v", "baz")
+	}
+
+	if len(updatedSlice) != 0 {
+		t.Errorf("Slice should be empty")
+	}
+}

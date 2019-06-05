@@ -21,7 +21,7 @@ import (
 	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
-	"github.com/netapp/trident/persistent_store"
+	persistentstore "github.com/netapp/trident/persistent_store"
 )
 
 var (
@@ -64,6 +64,7 @@ var (
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
 	usePassthrough = flag.Bool("passthrough", false, "Uses the storage backends "+
 		"as the source of truth.  No data is stored anywhere else.")
+	useCRD = flag.Bool("crd_persistence", false, "Uses CRDs for persisting orchestrator state.")
 
 	// HTTP REST interface
 	address    = flag.String("address", "127.0.0.1", "Storage orchestrator HTTP API address")
@@ -149,6 +150,9 @@ func processCmdLineArgs() {
 	if *usePassthrough {
 		storeCount++
 	}
+	if *useCRD {
+		storeCount++
+	}
 	// Infer persistent store type if not explicitly specified
 	if storeCount == 0 && enableDocker {
 		log.Debug("Inferred passthrough persistent store.")
@@ -186,6 +190,16 @@ func processCmdLineArgs() {
 	} else if *useInMemory {
 		log.Debug("Trident is configured with an in-memory store client.")
 		storeClient = persistentstore.NewInMemoryClient()
+	} else if *useCRD {
+		log.Debug("Trident is configured with a CRD client.")
+		if *k8sAPIServer != "" || *k8sConfigPath != "" {
+			storeClient, err = persistentstore.NewCRDClientV1(*k8sAPIServer, *k8sConfigPath)
+		} else {
+			storeClient, err = persistentstore.NewCRDClientV1InCluster()
+		}
+		if err != nil {
+			log.Fatalf("Unable to create the Kubernetes store client. %v", err)
+		}
 	} else if *usePassthrough {
 		log.Debug("Trident is configured with passthrough store client.")
 		storeClient, err = persistentstore.NewPassthroughClient(*configPath)
@@ -269,6 +283,20 @@ func main() {
 		}
 		orchestrator.AddFrontend(kubernetesFrontend)
 		frontends = append(frontends, kubernetesFrontend)
+
+		if *useCRD {
+			var crdController frontend.Plugin
+			if *k8sAPIServer != "" {
+				crdController, err = kubernetes.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			} else {
+				crdController, err = kubernetes.NewTridentCrdControllerInCluster(orchestrator)
+			}
+			if err != nil {
+				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
+			}
+			orchestrator.AddFrontend(crdController)
+			frontends = append(frontends, crdController)
+		}
 
 	} else if enableDocker {
 

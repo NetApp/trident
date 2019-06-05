@@ -231,12 +231,12 @@ func (p *EtcdClientV2) GetConfig() *ClientConfig {
 }
 
 // GetVersion returns the version of the persistent data
-func (p *EtcdClientV2) GetVersion() (*PersistentStateVersion, error) {
+func (p *EtcdClientV2) GetVersion() (*config.PersistentStateVersion, error) {
 	versionJSON, err := p.Read(config.StoreURL)
 	if err != nil {
 		return nil, err
 	}
-	version := &PersistentStateVersion{}
+	version := &config.PersistentStateVersion{}
 	err = json.Unmarshal([]byte(versionJSON), version)
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func (p *EtcdClientV2) GetVersion() (*PersistentStateVersion, error) {
 }
 
 // SetVersion sets the version of the persistent data
-func (p *EtcdClientV2) SetVersion(version *PersistentStateVersion) error {
+func (p *EtcdClientV2) SetVersion(version *config.PersistentStateVersion) error {
 	versionJSON, err := json.Marshal(version)
 	if err != nil {
 		return err
@@ -265,6 +265,10 @@ func (p *EtcdClientV2) AddBackend(b *storage.Backend) error {
 		return err
 	}
 	return nil
+}
+
+func (p *EtcdClientV2) AddBackendPersistent(backend *storage.BackendPersistent) error {
+	return NewPersistentStoreError(NotSupported, "")
 }
 
 // GetBackend retrieves a backend from the persistent store
@@ -293,6 +297,11 @@ func (p *EtcdClientV2) UpdateBackend(b *storage.Backend) error {
 		return err
 	}
 	return nil
+}
+
+// UpdateBackendPersistent updates a backend's persistent state
+func (p *EtcdClientV2) UpdateBackendPersistent(update *storage.BackendPersistent) error {
+	return NewPersistentStoreError(NotSupported, "")
 }
 
 // DeleteBackend deletes the backend state on the persistent store
@@ -358,6 +367,16 @@ func (p *EtcdClientV2) AddVolume(vol *storage.Volume) error {
 		return err
 	}
 	return nil
+}
+
+// AddVolumePersistent saves a volume's persistent state to the persistent store
+func (p *EtcdClientV2) AddVolumePersistent(volume *storage.VolumeExternal) error {
+	return NewPersistentStoreError(NotSupported, "")
+}
+
+// UpdateVolumePersistent updates a volume's persistent state
+func (p *EtcdClientV2) UpdateVolumePersistent(volume *storage.VolumeExternal) error {
+	return NewPersistentStoreError(NotSupported, "")
 }
 
 // GetVolume retrieves a volume's state from the persistent store

@@ -3,10 +3,7 @@
 package k8sclient
 
 import (
-	"encoding/base64"
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/netapp/trident/utils"
@@ -39,7 +36,7 @@ metadata:
   name: {NAME}
 `
 
-func GetClusterRoleYAML(flavor OrchestratorFlavor, version *utils.Version, csi bool) string {
+func GetClusterRoleYAML(flavor OrchestratorFlavor, csi bool) string {
 	switch flavor {
 	case FlavorOpenShift:
 		if csi {
@@ -52,10 +49,8 @@ func GetClusterRoleYAML(flavor OrchestratorFlavor, version *utils.Version, csi b
 	case FlavorKubernetes:
 		if csi {
 			return clusterRoleKubernetesV1CSIYAML
-		} else if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
-			return clusterRoleKubernetesV1YAML
 		} else {
-			return clusterRoleKubernetesV1Alpha1YAML
+			return clusterRoleKubernetesV1YAML
 		}
 	}
 }
@@ -84,6 +79,12 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 `
 
 const clusterRoleOpenShiftCSIYAML = `---
@@ -113,6 +114,15 @@ rules:
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["csi.storage.k8s.io"]
+    resources: ["csinodeinfos"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 `
 
 const clusterRoleKubernetesV1YAML = `---
@@ -139,6 +149,12 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 `
 
 const clusterRoleKubernetesV1CSIYAML = `---
@@ -168,35 +184,15 @@ rules:
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["csi.storage.k8s.io"]
+    resources: ["csinodeinfos"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]    
 `
 
-const clusterRoleKubernetesV1Alpha1YAML = `---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1alpha1
-metadata:
-  name: trident
-rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["patch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-`
-
-func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, version *utils.Version, csi bool) string {
+func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, csi bool) string {
 
 	var name string
 	var crbYAML string
@@ -213,11 +209,7 @@ func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, vers
 	default:
 		fallthrough
 	case FlavorKubernetes:
-		if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
-			crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
-		} else {
-			crbYAML = clusterRoleBindingKubernetesV1Alpha1YAMLTemplate
-		}
+		crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
 	}
 
 	crbYAML = strings.Replace(crbYAML, "{NAMESPACE}", namespace, 1)
@@ -253,22 +245,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-const clusterRoleBindingKubernetesV1Alpha1YAMLTemplate = `---
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1alpha1
-metadata:
-  name: {NAME}
-subjects:
-  - kind: ServiceAccount
-    name: {NAME}
-    namespace: {NAMESPACE}
-roleRef:
-  kind: ClusterRole
-  name: {NAME}
-  apiGroup: rbac.authorization.k8s.io
-`
-
-func GetDeploymentYAML(pvcName, tridentImage, etcdImage, label string, debug bool) string {
+func GetDeploymentYAML(tridentImage, label string, debug bool) string {
 
 	var debugLine string
 	if debug {
@@ -278,9 +255,7 @@ func GetDeploymentYAML(pvcName, tridentImage, etcdImage, label string, debug boo
 	}
 
 	deploymentYAML := strings.Replace(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{ETCD_IMAGE}", etcdImage, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{PVC_NAME}", pvcName, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
 	return deploymentYAML
 }
@@ -306,8 +281,7 @@ spec:
         command:
         - /usr/local/bin/trident_orchestrator
         args:
-        - -etcd_v3
-        - http://127.0.0.1:8001
+        - -crd_persistence
         - -k8s_pod
         #- -k8s_api_server
         #- __KUBERNETES_SERVER__:__KUBERNETES_PORT__
@@ -324,42 +298,6 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
-      - name: etcd
-        image: {ETCD_IMAGE}
-        command:
-        - /usr/local/bin/etcd
-        args:
-        - -name
-        - etcd1
-        - -advertise-client-urls
-        - http://127.0.0.1:8001
-        - -listen-client-urls
-        - http://127.0.0.1:8001
-        - -initial-advertise-peer-urls
-        - http://127.0.0.1:8002
-        - -listen-peer-urls
-        - http://127.0.0.1:8002
-        - -data-dir
-        - /var/etcd/data
-        - -initial-cluster
-        - etcd1=http://127.0.0.1:8002
-        volumeMounts:
-        - name: etcd-vol
-          mountPath: /var/etcd/data
-        livenessProbe:
-          exec:
-            command:
-            - etcdctl
-            - -endpoint=http://127.0.0.1:8001/
-            - cluster-health
-          failureThreshold: 2
-          initialDelaySeconds: 15
-          periodSeconds: 15
-          timeoutSeconds: 10
-      volumes:
-      - name: etcd-vol
-        persistentVolumeClaim:
-          claimName: {PVC_NAME}
 `
 
 func GetCSIServiceYAML(label string) string {
@@ -384,7 +322,7 @@ spec:
       targetPort: 8443
 `
 
-func GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, label string, debug bool) string {
+func GetCSIStatefulSetYAML(tridentImage, label string, debug bool) string {
 
 	var debugLine string
 	if debug {
@@ -394,9 +332,7 @@ func GetCSIStatefulSetYAML(pvcName, tridentImage, etcdImage, label string, debug
 	}
 
 	statefulSetYAML := strings.Replace(statefulSetYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
-	statefulSetYAML = strings.Replace(statefulSetYAML, "{ETCD_IMAGE}", etcdImage, 1)
 	statefulSetYAML = strings.Replace(statefulSetYAML, "{DEBUG}", debugLine, 1)
-	statefulSetYAML = strings.Replace(statefulSetYAML, "{PVC_NAME}", pvcName, 1)
 	statefulSetYAML = strings.Replace(statefulSetYAML, "{LABEL}", label, -1)
 	return statefulSetYAML
 }
@@ -425,7 +361,7 @@ spec:
         command:
         - /usr/local/bin/trident_orchestrator
         args:
-        - "--etcd_v3=http://127.0.0.1:8001"
+        - "--crd_persistence"
         - "--https_rest"
         - "--https_port=8443"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
@@ -458,31 +394,6 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
-      - name: etcd
-        image: {ETCD_IMAGE}
-        command:
-        - /usr/local/bin/etcd
-        args:
-        - "--name=etcd1"
-        - "--advertise-client-urls=http://127.0.0.1:8001"
-        - "--listen-client-urls=http://127.0.0.1:8001"
-        - "--initial-advertise-peer-urls=http://127.0.0.1:8002"
-        - "--listen-peer-urls=http://127.0.0.1:8002"
-        - "--data-dir=/var/etcd/data"
-        - "--initial-cluster=etcd1=http://127.0.0.1:8002"
-        volumeMounts:
-        - name: etcd-vol
-          mountPath: /var/etcd/data
-        livenessProbe:
-          exec:
-            command:
-            - etcdctl
-            - -endpoint=http://127.0.0.1:8001/
-            - cluster-health
-          failureThreshold: 2
-          initialDelaySeconds: 15
-          periodSeconds: 15
-          timeoutSeconds: 10
       - name: csi-attacher
         image: quay.io/k8scsi/csi-attacher:v1.0.1
         args:
@@ -507,9 +418,6 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       volumes:
-      - name: etcd-vol
-        persistentVolumeClaim:
-          claimName: {PVC_NAME}
       - name: socket-dir
         emptyDir:
       - name: certs
@@ -658,220 +566,6 @@ spec:
           secretName: trident-csi
 `
 
-func GetPVCYAML(pvcName, namespace, size, label string) string {
-
-	pvcYAML := strings.Replace(persistentVolumeClaimYAMLTemplate, "{PVC_NAME}", pvcName, 1)
-	pvcYAML = strings.Replace(pvcYAML, "{NAMESPACE}", namespace, 1)
-	pvcYAML = strings.Replace(pvcYAML, "{SIZE}", size, 1)
-	pvcYAML = strings.Replace(pvcYAML, "{LABEL}", label, -1)
-	return pvcYAML
-}
-
-const persistentVolumeClaimYAMLTemplate = `---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: {LABEL}
-  name: {PVC_NAME}
-  namespace: {NAMESPACE}
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: {SIZE}
-  selector:
-    matchLabels:
-      app: {LABEL}
-  storageClassName: ''
-`
-
-func addMountOptionsToPVYAML(pvYAML, mountOptions string) string {
-
-	mountOptions = strings.TrimPrefix(mountOptions, "-o ")
-	if len(mountOptions) > 0 {
-		pvYAML += "  mountOptions:\n"
-		for _, option := range regexp.MustCompile(`\s*,\s*`).Split(mountOptions, -1) {
-			pvYAML += fmt.Sprintf("  - %s\n", option)
-		}
-	}
-
-	return pvYAML
-}
-
-func GetNFSPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, nfsServer, nfsPath, label string) string {
-
-	pvYAML := strings.Replace(persistentVolumeNFSYAMLTemplate, "{PV_NAME}", pvName, 1)
-	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
-	pvYAML = strings.Replace(pvYAML, "{SERVER}", nfsServer, 1)
-	pvYAML = strings.Replace(pvYAML, "{PATH}", nfsPath, 1)
-	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
-
-	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
-
-	return pvYAML
-}
-
-const persistentVolumeNFSYAMLTemplate = `---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  labels:
-    app: {LABEL}
-  name: {PV_NAME}
-spec:
-  capacity:
-    storage: {SIZE}
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  claimRef:
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    name: {PVC_NAME}
-    namespace: {PVC_NAMESPACE}
-  nfs:
-    server: {SERVER}
-    path: {PATH}
-`
-
-func GetISCSIPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, targetPortal string, portals []string,
-	iqn string, lun int32, label string) string {
-
-	pvYAML := strings.Replace(persistentVolumeISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
-	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
-	pvYAML = strings.Replace(pvYAML, "{TARGET_PORTAL}", targetPortal, 1)
-	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
-	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
-	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
-
-	if 0 != len(portals) {
-		pvYAML += "    portals:\n"
-		for _, portal := range portals {
-			pvYAML += "      - " + portal + "\n"
-		}
-	}
-
-	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
-
-	return pvYAML
-}
-
-const persistentVolumeISCSIYAMLTemplate = `---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  labels:
-    app: {LABEL}
-  name: {PV_NAME}
-spec:
-  capacity:
-    storage: {SIZE}
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  claimRef:
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    name: {PVC_NAME}
-    namespace: {PVC_NAMESPACE}
-  iscsi:
-    targetPortal: {TARGET_PORTAL}
-    iqn: {IQN}
-    lun: {LUN}
-    fsType: ext4
-    readOnly: false
-`
-
-func GetCHAPISCSIPVYAML(pvName, size, mountOptions, pvcName, pvcNamespace, secretName, targetPortal string,
-	portals []string, iqn string, lun int32, label string) string {
-
-	pvYAML := strings.Replace(persistentVolumeCHAPISCSIYAMLTemplate, "{PV_NAME}", pvName, 1)
-	pvYAML = strings.Replace(pvYAML, "{SIZE}", size, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAME}", pvcName, 1)
-	pvYAML = strings.Replace(pvYAML, "{PVC_NAMESPACE}", pvcNamespace, 1)
-	pvYAML = strings.Replace(pvYAML, "{TARGET_PORTAL}", targetPortal, 1)
-	pvYAML = strings.Replace(pvYAML, "{IQN}", iqn, 1)
-	pvYAML = strings.Replace(pvYAML, "{LUN}", strconv.FormatInt(int64(lun), 10), 1)
-	pvYAML = strings.Replace(pvYAML, "{SECRET_NAME}", secretName, 1)
-	pvYAML = strings.Replace(pvYAML, "{LABEL}", label, 1)
-	if 0 != len(portals) {
-		pvYAML += "    portals:\n"
-		for _, portal := range portals {
-			pvYAML += "      - " + portal + "\n"
-		}
-	}
-
-	pvYAML = addMountOptionsToPVYAML(pvYAML, mountOptions)
-
-	return pvYAML
-}
-
-const persistentVolumeCHAPISCSIYAMLTemplate = `---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  labels:
-    app: {LABEL}
-  name: {PV_NAME}
-spec:
-  capacity:
-    storage: {SIZE}
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  claimRef:
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    name: {PVC_NAME}
-    namespace: {PVC_NAMESPACE}
-  iscsi:
-    targetPortal: {TARGET_PORTAL}
-    iqn: {IQN}
-    lun: {LUN}
-    fsType: ext4
-    readOnly: false
-    chapAuthDiscovery: true
-    chapAuthSession: true
-    secretRef:
-      name: {SECRET_NAME}
-`
-
-func GetCHAPSecretYAML(secretName, userName, initiatorSecret, targetSecret string) string {
-
-	encodedUserName := base64.StdEncoding.EncodeToString([]byte(userName))
-	encodedInitiatorSecret := base64.StdEncoding.EncodeToString([]byte(initiatorSecret))
-	encodedTargetSecret := base64.StdEncoding.EncodeToString([]byte(targetSecret))
-
-	secretYAML := strings.Replace(chapSecretYAMLTemplate, "{SECRET_NAME}", secretName, 1)
-	secretYAML = strings.Replace(secretYAML, "{USER_NAME}", encodedUserName, -1)
-	secretYAML = strings.Replace(secretYAML, "{INITIATOR_SECRET}", encodedInitiatorSecret, -1)
-	secretYAML = strings.Replace(secretYAML, "{TARGET_SECRET}", encodedTargetSecret, -1)
-	return secretYAML
-}
-
-const chapSecretYAMLTemplate = `---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {SECRET_NAME}
-type: "kubernetes.io/iscsi-chap"
-data:
-  discovery.sendtargets.auth.username: {USER_NAME}
-  discovery.sendtargets.auth.password: {INITIATOR_SECRET}
-  discovery.sendtargets.auth.username_in: {USER_NAME}
-  discovery.sendtargets.auth.password_in: {TARGET_SECRET}
-  node.session.auth.username: {USER_NAME}
-  node.session.auth.password: {INITIATOR_SECRET}
-  node.session.auth.username_in: {USER_NAME}
-  node.session.auth.password_in: {TARGET_SECRET}
-`
-
 func GetInstallerServiceAccountYAML() string {
 
 	return installerServiceAccountYAML
@@ -884,18 +578,14 @@ metadata:
   name: trident-installer
 `
 
-func GetInstallerClusterRoleYAML(flavor OrchestratorFlavor, version *utils.Version) string {
+func GetInstallerClusterRoleYAML(flavor OrchestratorFlavor) string {
 	switch flavor {
 	case FlavorOpenShift:
 		return installerClusterRoleOpenShiftYAML
 	default:
 		fallthrough
 	case FlavorKubernetes:
-		if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
-			return strings.Replace(installerClusterRoleKubernetesYAMLTemplate, "{API_VERSION}", "rbac.authorization.k8s.io/v1", 1)
-		} else {
-			return strings.Replace(installerClusterRoleKubernetesYAMLTemplate, "{API_VERSION}", "rbac.authorization.k8s.io/v1alpha1", 1)
-		}
+		return installerClusterRoleKubernetesYAMLTemplate
 	}
 }
 
@@ -905,50 +595,62 @@ apiVersion: "authorization.openshift.io/v1"
 metadata:
   name: trident-installer
 rules:
-- apiGroups: [""]
-  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
-  verbs: ["*"]
-- apiGroups: ["extensions"]
-  resources: ["deployments", "daemonsets"]
-  verbs: ["*"]
-- apiGroups: ["apps"]
-  resources: ["statefulsets", "daemonsets", "deployments"]
-  verbs: ["*"]
-- apiGroups: ["authorization.openshift.io", "rbac.authorization.k8s.io"]
-  resources: ["clusterroles", "clusterrolebindings"]
-  verbs: ["*"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses", "volumeattachments"]
-  verbs: ["*"]
-- apiGroups: ["security.openshift.io"]
-  resources: ["securitycontextconstraints"]
-  verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["namespaces", "pods", "pods/exec", "pods/log", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+    verbs: ["*"]
+  - apiGroups: ["extensions"]
+    resources: ["deployments", "daemonsets"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "daemonsets", "deployments"]
+    verbs: ["*"]
+  - apiGroups: ["authorization.openshift.io", "rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["*"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "volumeattachments"]
+    verbs: ["*"]
+  - apiGroups: ["security.openshift.io"]
+    resources: ["securitycontextconstraints"]
+    verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["*"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["*"]
 `
 
 const installerClusterRoleKubernetesYAMLTemplate = `---
 kind: ClusterRole
-apiVersion: {API_VERSION}
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: trident-installer
 rules:
-- apiGroups: [""]
-  resources: ["namespaces", "pods", "pods/exec", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
-  verbs: ["*"]
-- apiGroups: ["extensions"]
-  resources: ["deployments", "daemonsets"]
-  verbs: ["*"]
-- apiGroups: ["apps"]
-  resources: ["statefulsets", "daemonsets", "deployments"]
-  verbs: ["*"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["clusterroles", "clusterrolebindings"]
-  verbs: ["*"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses", "volumeattachments"]
-  verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["namespaces", "pods", "pods/exec", "pods/log", "persistentvolumes", "persistentvolumeclaims", "persistentvolumeclaims/status", "secrets", "serviceaccounts", "services", "events", "nodes", "configmaps"]
+    verbs: ["*"]
+  - apiGroups: ["extensions"]
+    resources: ["deployments", "daemonsets"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "daemonsets", "deployments"]
+    verbs: ["*"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["*"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "volumeattachments"]
+    verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["*"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions"]
+    verbs: ["*"]
 `
 
-func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, version *utils.Version) string {
+func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor) string {
 
 	var crbYAML string
 
@@ -958,11 +660,7 @@ func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFla
 	default:
 		fallthrough
 	case FlavorKubernetes:
-		if version.AtLeast(utils.MustParseSemantic("v1.8.0")) {
-			crbYAML = installerClusterRoleBindingKubernetesV1YAMLTemplate
-		} else {
-			crbYAML = installerClusterRoleBindingKubernetesV1Alpha1YAMLTemplate
-		}
+		crbYAML = installerClusterRoleBindingKubernetesV1YAMLTemplate
 	}
 
 	crbYAML = strings.Replace(crbYAML, "{NAMESPACE}", namespace, 1)
@@ -997,19 +695,51 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-const installerClusterRoleBindingKubernetesV1Alpha1YAMLTemplate = `---
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1alpha1
+func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, debug bool, commandArgs []string) string {
+
+	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
+
+	podYAML := strings.Replace(migratorPodYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
+	podYAML = strings.Replace(podYAML, "{ETCD_IMAGE}", etcdImage, 1)
+	podYAML = strings.Replace(podYAML, "{PVC_NAME}", pvcName, 1)
+	podYAML = strings.Replace(podYAML, "{LABEL}", label, 1)
+	podYAML = strings.Replace(podYAML, "{COMMAND}", command, 1)
+	return podYAML
+}
+
+const migratorPodYAMLTemplate = `---
+apiVersion: v1
+kind: Pod
 metadata:
-  name: trident-installer
-subjects:
-  - kind: ServiceAccount
-    name: trident-installer
-    namespace: {NAMESPACE}
-roleRef:
-  kind: ClusterRole
-  name: trident-installer
-  apiGroup: rbac.authorization.k8s.io
+  name: trident-migrator
+  labels:
+    app: {LABEL}
+spec:
+  serviceAccount: trident
+  restartPolicy: Never
+  containers:
+  - name: trident-migrator
+    image: {TRIDENT_IMAGE}
+    command: {COMMAND}
+  - name: etcd
+    image: {ETCD_IMAGE}
+    command:
+    - /usr/local/bin/etcd
+    args:
+    - "--name=etcd1"
+    - "--advertise-client-urls=http://127.0.0.1:8001"
+    - "--listen-client-urls=http://127.0.0.1:8001"
+    - "--initial-advertise-peer-urls=http://127.0.0.1:8002"
+    - "--listen-peer-urls=http://127.0.0.1:8002"
+    - "--data-dir=/var/etcd/data"
+    - "--initial-cluster=etcd1=http://127.0.0.1:8002"
+    volumeMounts:
+    - name: etcd-vol
+      mountPath: /var/etcd/data
+  volumes:
+  - name: etcd-vol
+    persistentVolumeClaim:
+      claimName: {PVC_NAME}
 `
 
 func GetInstallerPodYAML(label, tridentImage string, commandArgs []string) string {
@@ -1107,4 +837,173 @@ metadata:
   labels:
     app: {LABEL}
 data:
+`
+
+func GetCRDsYAML() string {
+	return customResourceDefinitionYAMLTemplate
+}
+
+/*
+kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+
+kubectl delete crd tridentversions.trident.netapp.io
+kubectl delete crd tridentbackends.trident.netapp.io
+kubectl delete crd tridentstorageclasses.trident.netapp.io
+kubectl delete crd tridentvolumes.trident.netapp.io
+kubectl delete crd tridentnodes.trident.netapp.io
+kubectl delete crd tridenttransactions.trident.netapp.io
+*/
+const customResourceDefinitionYAMLTemplate = `
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentversions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentversions
+    singular: tridentversion
+    kind: TridentVersion
+    shortNames:
+    - tver
+    - tversion
+    categories:
+    - trident
+    - trident-internal
+  additionalPrinterColumns:
+    - name: Version
+      type: string
+      description: The Trident version
+      priority: 0
+      JSONPath: .trident_version
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackends.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentbackends
+    singular: tridentbackend
+    kind: TridentBackend
+    shortNames:
+    - tbe
+    - tbackend
+    categories:
+    - trident
+    - trident-internal
+  additionalPrinterColumns:
+    - name: Backend
+      type: string
+      description: The backend name
+      priority: 0
+      JSONPath: .backendName
+    - name: Backend UUID
+      type: string
+      description: The backend UUID
+      priority: 0
+      JSONPath: .backendUUID
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentstorageclasses.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentstorageclasses
+    singular: tridentstorageclass
+    kind: TridentStorageClass
+    shortNames:
+    - tsc
+    - tstorageclass
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentvolumes
+    singular: tridentvolume
+    kind: TridentVolume
+    shortNames:
+    - tvol
+    - tvolume
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnodes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridentnodes
+    singular: tridentnode
+    kind: TridentNode
+    shortNames:
+    - tnode
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridenttransactions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: tridenttransactions
+    singular: tridenttransaction
+    kind: TridentTransaction
+    shortNames:
+    - ttx
+    - ttransaction
+    categories:
+    - trident-internal
 `

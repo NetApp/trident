@@ -20,7 +20,7 @@ type InMemoryClient struct {
 	storageClassesAdded int
 	volumeTxns          map[string]*VolumeTransaction
 	volumeTxnsAdded     int
-	version             *PersistentStateVersion
+	version             *config.PersistentStateVersion
 	nodes               map[string]*utils.Node
 	nodesAdded          int
 }
@@ -32,7 +32,7 @@ func NewInMemoryClient() *InMemoryClient {
 		storageClasses: make(map[string]*sc.Persistent),
 		volumeTxns:     make(map[string]*VolumeTransaction),
 		nodes:          make(map[string]*utils.Node),
-		version: &PersistentStateVersion{
+		version: &config.PersistentStateVersion{
 			"memory", config.OrchestratorAPIVersion,
 		},
 	}
@@ -55,16 +55,25 @@ func (c *InMemoryClient) GetConfig() *ClientConfig {
 	return &ClientConfig{}
 }
 
-func (c *InMemoryClient) GetVersion() (*PersistentStateVersion, error) {
+func (c *InMemoryClient) GetVersion() (*config.PersistentStateVersion, error) {
 	return c.version, nil
 }
 
-func (c *InMemoryClient) SetVersion(version *PersistentStateVersion) error {
+func (c *InMemoryClient) SetVersion(version *config.PersistentStateVersion) error {
 	return nil
 }
 
 func (c *InMemoryClient) AddBackend(b *storage.Backend) error {
 	backend := b.ConstructPersistent()
+	if _, ok := c.backends[backend.Name]; ok {
+		return fmt.Errorf("backend %s already exists", backend.Name)
+	}
+	c.backends[backend.Name] = backend
+	c.backendsAdded++
+	return nil
+}
+
+func (c *InMemoryClient) AddBackendPersistent(backend *storage.BackendPersistent) error {
 	if _, ok := c.backends[backend.Name]; ok {
 		return fmt.Errorf("backend %s already exists", backend.Name)
 	}
@@ -87,6 +96,16 @@ func (c *InMemoryClient) UpdateBackend(b *storage.Backend) error {
 		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
 	}
 	c.backends[b.Name] = b.ConstructPersistent()
+	return nil
+}
+
+// UpdateBackendPersistent updates a backend's persistent state
+func (c *InMemoryClient) UpdateBackendPersistent(update *storage.BackendPersistent) error {
+	// UpdateBackend requires the backend to already exist.
+	if _, ok := c.backends[update.Name]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, update.Name)
+	}
+	c.backends[update.Name] = update
 	return nil
 }
 
@@ -134,6 +153,22 @@ func (c *InMemoryClient) AddVolume(vol *storage.Volume) error {
 	}
 	c.volumes[volume.Config.Name] = volume
 	c.volumesAdded++
+	return nil
+}
+
+// AddVolumePersistent saves a volume's persistent state to the persistent store
+func (c *InMemoryClient) AddVolumePersistent(volume *storage.VolumeExternal) error {
+	if _, ok := c.volumes[volume.Config.Name]; ok {
+		return fmt.Errorf("volume %s already exists", volume.Config.Name)
+	}
+	c.volumes[volume.Config.Name] = volume
+	c.volumesAdded++
+	return nil
+}
+
+// UpdateVolumePersistent updates a volume's persistent state
+func (c *InMemoryClient) UpdateVolumePersistent(volume *storage.VolumeExternal) error {
+	c.volumes[volume.Config.Name] = volume
 	return nil
 }
 

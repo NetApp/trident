@@ -66,30 +66,31 @@ func (c *VolumeConfig) ConstructClone() *VolumeConfig {
 }
 
 type Volume struct {
-	Config   *VolumeConfig
-	Backend  string // Name of the storage backend
-	Pool     string // Name of the pool on which this volume was first provisioned
-	Orphaned bool   // An Orphaned volume isn't currently tracked by the storage backend
+	Config      *VolumeConfig
+	BackendUUID string // UUID of the storage backend
+	Pool        string // Name of the pool on which this volume was first provisioned
+	Orphaned    bool   // An Orphaned volume isn't currently tracked by the storage backend
 }
 
-func NewVolume(conf *VolumeConfig, backend string, pool string, orphaned bool) *Volume {
+func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned bool) *Volume {
 	return &Volume{
-		Config:   conf,
-		Backend:  backend,
-		Pool:     pool,
-		Orphaned: orphaned,
+		Config:      conf,
+		BackendUUID: backendUUID,
+		Pool:        pool,
+		Orphaned:    orphaned,
 	}
 }
 
 type VolumeExternal struct {
-	Config   *VolumeConfig
-	Backend  string `json:"backend"`
-	Pool     string `json:"pool"`
-	Orphaned bool   `json:"orphaned"`
+	Config      *VolumeConfig
+	Backend     string `json:"backend"`     // replaced w/ backendUUID, remains to read old records
+	BackendUUID string `json:"backendUUID"` // UUID of the storage backend
+	Pool        string `json:"pool"`
+	Orphaned    bool   `json:"orphaned"`
 }
 
 func (v *VolumeExternal) GetCHAPSecretName() string {
-	secretName := fmt.Sprintf("trident-chap-%v-%v", v.Backend, v.Config.AccessInfo.IscsiUsername)
+	secretName := fmt.Sprintf("trident-chap-%v-%v", v.BackendUUID, v.Config.AccessInfo.IscsiUsername)
 	secretName = strings.Replace(secretName, "_", "-", -1)
 	secretName = strings.Replace(secretName, ".", "-", -1)
 	secretName = strings.ToLower(secretName)
@@ -98,10 +99,10 @@ func (v *VolumeExternal) GetCHAPSecretName() string {
 
 func (v *Volume) ConstructExternal() *VolumeExternal {
 	return &VolumeExternal{
-		Config:   v.Config,
-		Backend:  v.Backend,
-		Pool:     v.Pool,
-		Orphaned: v.Orphaned,
+		Config:      v.Config,
+		BackendUUID: v.BackendUUID,
+		Pool:        v.Pool,
+		Orphaned:    v.Orphaned,
 	}
 }
 

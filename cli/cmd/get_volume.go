@@ -17,8 +17,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	backendsByUUID map[string]*storage.BackendExternal
+)
+
 func init() {
 	getCmd.AddCommand(getVolumeCmd)
+	backendsByUUID = make(map[string]*storage.BackendExternal)
 }
 
 var getVolumeCmd = &cobra.Command{
@@ -60,6 +65,18 @@ func volumeList(volumeNames []string) error {
 		if err != nil {
 			return err
 		}
+
+		if OutputFormat == FormatWide {
+			// look up and cache the backends by UUID
+			if backendsByUUID[volume.BackendUUID] == nil {
+				backend, err := GetBackendByBackendUUID(baseURL, volume.BackendUUID)
+				if err != nil {
+					return err
+				}
+				backendsByUUID[volume.BackendUUID] = &backend
+			}
+		}
+
 		volumes = append(volumes, volume)
 	}
 
@@ -128,7 +145,7 @@ func WriteVolumes(volumes []storage.VolumeExternal) {
 func writeVolumeTable(volumes []storage.VolumeExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend", "Pool"})
+	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "Pool"})
 
 	for _, volume := range volumes {
 
@@ -139,7 +156,7 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 			humanize.IBytes(volumeSize),
 			volume.Config.StorageClass,
 			string(volume.Config.Protocol),
-			volume.Backend,
+			volume.BackendUUID,
 			volume.Pool,
 		})
 	}
@@ -156,6 +173,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 		"Size",
 		"Storage Class",
 		"Protocol",
+		"Backend UUID",
 		"Backend",
 		"Pool",
 		"Access Mode",
@@ -166,13 +184,19 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 
 		volumeSize, _ := strconv.ParseUint(volume.Config.Size, 10, 64)
 
+		backendName := "unknown"
+		if backend := backendsByUUID[volume.BackendUUID]; backend != nil {
+			backendName = backend.Name
+		}
+
 		table.Append([]string{
 			volume.Config.Name,
 			volume.Config.InternalName,
 			humanize.IBytes(volumeSize),
 			volume.Config.StorageClass,
 			string(volume.Config.Protocol),
-			volume.Backend,
+			volume.BackendUUID,
+			backendName,
 			volume.Pool,
 			string(volume.Config.AccessMode),
 		})

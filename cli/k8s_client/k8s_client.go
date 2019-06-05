@@ -8,13 +8,19 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -40,7 +46,14 @@ const (
 
 	FlavorKubernetes OrchestratorFlavor = "k8s"
 	FlavorOpenShift  OrchestratorFlavor = "openshift"
+
+	YAMLSeparator = `\n---\s*\n`
+
+	// CRD Finalizer name
+	TridentFinalizer = "trident.netapp.io"
 )
+
+type LogLineCallback func(string)
 
 type Interface interface {
 	Version() *version.Info
@@ -84,6 +97,8 @@ type Interface interface {
 	GetPVByLabel(label string) (*v1.PersistentVolume, error)
 	CheckPVExists(pvName string) (bool, error)
 	DeletePVByLabel(label string) error
+	GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error)
+	CheckCRDExists(crdName string) (bool, error)
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
@@ -98,35 +113,50 @@ type Interface interface {
 	DeleteObjectByYAML(yaml string, ignoreNotFound bool) error
 	AddTridentUserToOpenShiftSCC(user, scc string) error
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
+	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
+	AddFinalizerToCRD(crdName string) error
 }
 
 type KubeClient struct {
-	clientset   *kubernetes.Clientset
-	restConfig  *rest.Config
-	namespace   string
-	versionInfo *version.Info
-	cli         string
-	flavor      OrchestratorFlavor
+	clientset    *kubernetes.Clientset
+	extClientset *apiextension.Clientset
+	restConfig   *rest.Config
+	namespace    string
+	versionInfo  *version.Info
+	cli          string
+	flavor       OrchestratorFlavor
+	timeout      time.Duration
 }
 
-func NewKubeClient(config *rest.Config, namespace string) (Interface, error) {
+func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Duration) (Interface, error) {
 	var versionInfo *version.Info
 	if namespace == "" {
 		return nil, errors.New("an empty namespace is not acceptable")
 	}
+
+	// Create core client
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
+
+	// Create extension client
+	extClientset, err := apiextension.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	versionInfo, err = clientset.Discovery().ServerVersion()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't retrieve API server's version: %v", err)
 	}
 	kubeClient := &KubeClient{
-		clientset:   clientset,
-		restConfig:  config,
-		namespace:   namespace,
-		versionInfo: versionInfo,
+		clientset:    clientset,
+		extClientset: extClientset,
+		restConfig:   config,
+		namespace:    namespace,
+		versionInfo:  versionInfo,
+		timeout:      k8sTimeout,
 	}
 
 	kubeClient.flavor = kubeClient.discoverKubernetesFlavor()
@@ -142,6 +172,7 @@ func NewKubeClient(config *rest.Config, namespace string) (Interface, error) {
 		"cli":       kubeClient.cli,
 		"flavor":    kubeClient.flavor,
 		"version":   versionInfo.String(),
+		"timeout":   kubeClient.timeout,
 		"namespace": namespace,
 	}).Debug("Initialized Kubernetes API client.")
 
@@ -875,6 +906,21 @@ func (k *KubeClient) DeletePVByLabel(label string) error {
 	return nil
 }
 
+func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error) {
+	var options metav1.GetOptions
+	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, options)
+}
+
+func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
+	if _, err := k.GetCRD(crdName); err != nil {
+		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 
 	getOptions := metav1.GetOptions{}
@@ -985,7 +1031,7 @@ func (k *KubeClient) DeleteSecretByLabel(label string) error {
 	return nil
 }
 
-// CreateObjectByFile creates an object on the server from a YAML/JSON file at the specified path.
+// CreateObjectByFile creates one or more objects on the server from a YAML/JSON file at the specified path.
 func (k *KubeClient) CreateObjectByFile(filePath string) error {
 
 	content, err := ioutil.ReadFile(filePath)
@@ -996,8 +1042,42 @@ func (k *KubeClient) CreateObjectByFile(filePath string) error {
 	return k.CreateObjectByYAML(string(content))
 }
 
-// CreateObjectByYAML creates an object on the server from a YAML/JSON document.
+// CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
 func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
+	for _, yamlDocument := range regexp.MustCompile(YAMLSeparator).Split(yamlData, -1) {
+		checkCreateObjectByYAML := func() error {
+			if returnError := k.createObjectByYAML(yamlDocument); returnError != nil {
+				log.WithFields(log.Fields{
+					"yamlDocument": yamlDocument,
+					"err":          returnError,
+				}).Errorf("Object creation failed.")
+				return returnError
+			}
+			return nil
+		}
+
+		createObjectNotify := func(err error, duration time.Duration) {
+			log.WithFields(log.Fields{
+				"yamlDocument": yamlDocument,
+				"increment":    duration,
+				"err":          err,
+			}).Debugf("Object not created, waiting.")
+		}
+		createObjectBackoff := backoff.NewExponentialBackOff()
+		createObjectBackoff.MaxElapsedTime = k.timeout
+
+		log.WithField("yamlDocument", yamlDocument).Info("Waiting for object to be created.")
+
+		if err := backoff.RetryNotify(checkCreateObjectByYAML, createObjectBackoff, createObjectNotify); err != nil {
+			returnError := fmt.Errorf("yamlDocument %s was not created after %3.2f seconds", yamlDocument, k.timeout.Seconds())
+			return returnError
+		}
+	}
+	return nil
+}
+
+// createObjectByYAML creates an object on the server from a YAML/JSON document.
+func (k *KubeClient) createObjectByYAML(yamlData string) error {
 
 	// Parse the data
 	unstruct, gvk, err := k.convertYAMLToUnstructuredObject(yamlData)
@@ -1054,7 +1134,7 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 	return nil
 }
 
-// DeleteObjectByFile deletes an object on the server from a YAML/JSON file at the specified path.
+// DeleteObjectByFile deletes one or more objects on the server from a YAML/JSON file at the specified path.
 func (k *KubeClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) error {
 
 	content, err := ioutil.ReadFile(filePath)
@@ -1065,8 +1145,19 @@ func (k *KubeClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) er
 	return k.DeleteObjectByYAML(string(content), ignoreNotFound)
 }
 
-// DeleteObjectByYAML deletes an object on the server from a YAML/JSON document.
+// DeleteObjectByYAML deletes one or more objects on the server from a YAML/JSON document.
 func (k *KubeClient) DeleteObjectByYAML(yamlData string, ignoreNotFound bool) error {
+
+	for _, yamlDocument := range regexp.MustCompile(YAMLSeparator).Split(yamlData, -1) {
+		if err := k.deleteObjectByYAML(yamlDocument, ignoreNotFound); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// DeleteObjectByYAML deletes an object on the server from a YAML/JSON document.
+func (k *KubeClient) deleteObjectByYAML(yamlData string, ignoreNotFound bool) error {
 
 	// Parse the data
 	unstruct, gvk, err := k.convertYAMLToUnstructuredObject(yamlData)
@@ -1481,4 +1572,130 @@ func (k *KubeClient) deleteOptions() *metav1.DeleteOptions {
 	}
 
 	return deleteOptions
+}
+
+func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {
+
+	logOptions := &v1.PodLogOptions{
+		Container:  container,
+		Follow:     true,
+		Previous:   false,
+		Timestamps: false,
+	}
+
+	req := k.clientset.CoreV1().RESTClient().
+		Get().
+		Namespace(namespace).
+		Name(pod).
+		Resource("pods").
+		SubResource("log").
+		Param("follow", strconv.FormatBool(logOptions.Follow)).
+		Param("container", logOptions.Container).
+		Param("previous", strconv.FormatBool(logOptions.Previous)).
+		Param("timestamps", strconv.FormatBool(logOptions.Timestamps))
+
+	readCloser, err := req.Stream()
+	if err != nil {
+		log.Errorf("Could not follow pod logs; %v", err)
+		return
+	}
+	defer func() {
+		_ = readCloser.Close()
+	}()
+
+	// Create a new scanner
+	buff := bufio.NewScanner(readCloser)
+
+	// Iterate over buff and handle one line at a time
+	for buff.Scan() {
+		line := buff.Text()
+		logLineCallback(line)
+	}
+
+	log.WithFields(log.Fields{
+		"pod":       pod,
+		"container": container,
+	}).Debug("Received EOF from pod logs.")
+}
+
+// AddFinalizerToCRD updates the CRD object to include our Trident finalizer (definitions are not namespaced)
+func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
+	/*
+	   $ kubectl api-resources -o wide | grep -i crd
+	    NAME                              SHORTNAMES          APIGROUP                       NAMESPACED   KIND                             VERBS
+	   customresourcedefinitions         crd,crds            apiextensions.k8s.io           false        CustomResourceDefinition         [create delete deletecollection get list patch update watch]
+
+	   $ kubectl  api-versions | grep apiextensions
+	   apiextensions.k8s.io/v1beta1
+	*/
+	gvk := &schema.GroupVersionKind{
+		Group:   "apiextensions.k8s.io",
+		Version: "v1beta1",
+		Kind:    "CustomResourceDefinition",
+	}
+	// Get a matching API resource
+	gvr, _, err := k.getDynamicResource(gvk)
+	if err != nil {
+		return err
+	}
+
+	// Get a dynamic REST client
+	client, err := dynamic.NewForConfig(k.restConfig)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"name": crdName,
+		"kind": gvk.Kind,
+	}).Debugf("Adding finalizers to CRD object.")
+
+	// Get the CRD object
+	getOptions := metav1.GetOptions{}
+
+	var unstruct *unstructured.Unstructured
+	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+		return err
+	}
+
+	// Check the CRD object
+	addedFinalizer := false
+	if md, ok := unstruct.Object["metadata"]; ok {
+		if metadata, ok := md.(map[string]interface{}); ok {
+			if finalizers, ok := metadata["finalizers"]; ok {
+				if finalizersSlice, ok := finalizers.([]interface{}); ok {
+					// check if the Trident finalizer is already present
+					for _, element := range finalizersSlice {
+						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
+							log.Debugf("Trident finalizer already present on Kubernetes CRD object %v, nothing to do", crdName)
+							return nil
+						}
+					}
+					// checked the list and didn't find it, let's add it to the list
+					metadata["finalizers"] = append(finalizersSlice, TridentFinalizer)
+					addedFinalizer = true
+				} else {
+					return fmt.Errorf("unexpected finalizer type %T", finalizers)
+				}
+			} else {
+				// no finalizers present, this will be the first one for this CRD
+				metadata["finalizers"] = []string{TridentFinalizer}
+				addedFinalizer = true
+			}
+		}
+	}
+	if !addedFinalizer {
+		return fmt.Errorf("could not determine finalizer metadata for CRD %v", crdName)
+	}
+
+	// Update the object with the newly added finalizer
+	updateOptions := metav1.UpdateOptions{}
+
+	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+		return err
+	}
+
+	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+
+	return nil
 }

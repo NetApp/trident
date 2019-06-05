@@ -3,29 +3,24 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"runtime"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
-	"github.com/netapp/trident/cli/k8s_client"
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
-)
-
-var (
-	deleteAll bool
 )
 
 func init() {
 	RootCmd.AddCommand(uninstallCmd)
-	uninstallCmd.Flags().BoolVarP(&deleteAll, "all", "a", false, "Deletes almost all artifacts of Trident, including the PVC and PV used by Trident; however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!")
 	uninstallCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during uninstallation.")
 	uninstallCmd.Flags().BoolVar(&csi, "csi", false, "Uninstall CSI Trident (alpha, not for production clusters).")
 	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
-	uninstallCmd.Flags().MarkHidden("trident-image")
 	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a job in the cluster.")
+
+	uninstallCmd.Flags().MarkHidden("trident-image")
 	uninstallCmd.Flags().MarkHidden("in-cluster")
 }
 
@@ -342,49 +337,7 @@ func uninstallTrident() error {
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
-	if deleteAll {
-
-		// Ensure the Trident PVC may be uniquely identified, then delete it
-		if pvc, err := client.GetPVCByLabel(appLabel, false); err != nil {
-			log.WithField("error", err).Warning("Could not uniquely identify Trident PVC.")
-			anyErrors = true
-		} else if err = client.DeletePVCByLabel(appLabel); err != nil {
-			log.WithFields(log.Fields{
-				"pvc":       pvc.Name,
-				"namespace": pvc.Namespace,
-				"error":     err,
-			}).Warning("Could not delete Trident PVC.")
-			anyErrors = true
-		} else {
-			log.WithFields(log.Fields{
-				"pvc":       pvc.Name,
-				"namespace": pvc.Namespace,
-			}).Info("Deleted Trident PVC.")
-		}
-
-		// Ensure the Trident PV may be uniquely identified, then delete it
-		if pv, err := client.GetPVByLabel(appLabel); err != nil {
-			log.WithField("error", err).Warning("Could not uniquely identify Trident PV.")
-			anyErrors = true
-		} else if err = client.DeletePVByLabel(appLabel); err != nil {
-			log.WithFields(log.Fields{
-				"pv":    pv.Name,
-				"error": err,
-			}).Warning("Could not delete Trident PV.")
-			anyErrors = true
-		} else {
-			log.WithField("pv", pv.Name).Info("Deleted Trident PV.")
-		}
-
-		log.Info("If desired, the volume on the storage backend must be manually deleted. " +
-			"Deleting the volume would result in losing all the state that Trident maintains " +
-			"to manage storage backends, storage classes, and provisioned volumes!")
-	} else {
-
-		log.Info("The uninstaller did not delete the Trident's namespace, PVC, and PV " +
-			"in case they are going to be reused. Please use the --all option if you need " +
-			"the PVC and PV deleted.")
-	}
+	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
 
 	if !anyErrors {
 		log.Info("Trident uninstallation succeeded.")
@@ -394,11 +347,6 @@ func uninstallTrident() error {
 	}
 
 	return nil
-}
-
-func fileExists(filePath string) bool {
-	_, err := os.Stat(filePath)
-	return err == nil
 }
 
 func uninstallTridentInCluster() (returnError error) {
@@ -457,9 +405,6 @@ func uninstallTridentInCluster() (returnError error) {
 	if Debug {
 		commandArgs = append(commandArgs, "--debug")
 	}
-	if deleteAll {
-		commandArgs = append(commandArgs, "--all")
-	}
 	if silent {
 		commandArgs = append(commandArgs, "--silent")
 	}
@@ -483,15 +428,15 @@ func uninstallTridentInCluster() (returnError error) {
 
 	// Wait for Trident installation pod to start
 	var uninstallPod *v1.Pod
-	uninstallPod, returnError = waitForTridentInstallationPodToStart()
+	uninstallPod, returnError = waitForPodToStart(TridentInstallerLabel, "installer")
 	if returnError != nil {
 		return
 	}
 
 	// Wait for pod to finish & output logs
-	followInstallationLogs(uninstallPod.Name, "", uninstallPod.Namespace)
+	client.FollowPodLogs(uninstallPod.Name, "", uninstallPod.Namespace, logLogFmtMessage)
 
-	uninstallPod, returnError = waitForTridentInstallationPodToFinish()
+	uninstallPod, returnError = waitForPodToFinish(TridentInstallerLabel, "installer")
 	if returnError != nil {
 		return
 	}

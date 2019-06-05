@@ -22,6 +22,11 @@ type Telemetry struct {
 	PlatformVersion string `json:"platformVersion"`
 }
 
+type PersistentStateVersion struct {
+	PersistentStoreVersion string `json:"store_version"`
+	OrchestratorAPIVersion string `json:"orchestrator_api_version"`
+}
+
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
@@ -66,6 +71,7 @@ const (
 	ContextDocker     DriverContext = "docker"
 	ContextKubernetes DriverContext = "kubernetes"
 	ContextCSI        DriverContext = "csi"
+	ContextCRD        DriverContext = "crd"
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin    = "v1.10.0"
@@ -109,6 +115,7 @@ var (
 	BaseURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
 	VersionURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
 	BackendURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
+	BackendUUIDURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
 	VolumeURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
 	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
 	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"

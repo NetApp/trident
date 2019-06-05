@@ -417,7 +417,7 @@ func (d *SANStorageDriver) validate() error {
 				case sa.HDD, sa.SSD:
 					break
 				default:
-					log.Error("invalid media type in pool %s: %s", pool.Name, mediaType)
+					log.Errorf("invalid media type in pool %s: %s", pool.Name, mediaType)
 				}
 			}
 		}

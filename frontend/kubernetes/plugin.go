@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,10 +33,12 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/k8s_client"
+	k8sclient "github.com/netapp/trident/k8s_client"
+	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	trident_informers "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_class"
+	storageattribute "github.com/netapp/trident/storage_attribute"
+	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
 
@@ -56,6 +58,7 @@ type StorageClassSummary struct {
 type Plugin struct {
 	orchestrator             core.Orchestrator
 	kubeClient               kubernetes.Interface
+	crdClient                *versioned.Clientset
 	getNamespacedKubeClient  func(*rest.Config, string) (k8sclient.Interface, error)
 	kubeConfig               rest.Config
 	eventRecorder            record.EventRecorder
@@ -77,6 +80,7 @@ type Plugin struct {
 	defaultStorageClasses    map[string]bool
 	storageClassCache        map[string]*StorageClassSummary
 	tridentNamespace         string
+	crdInformerFactory       trident_informers.SharedInformerFactory
 }
 
 func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin, error) {
@@ -127,9 +131,15 @@ func newKubernetesPlugin(
 		return nil, err
 	}
 
+	crdClient, err := versioned.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	ret := &Plugin{
 		orchestrator:             orchestrator,
 		kubeClient:               kubeClient,
+		crdClient:                crdClient,
 		getNamespacedKubeClient:  k8sclient.NewKubeClient,
 		kubeConfig:               *kubeConfig,
 		claimControllerStopChan:  make(chan struct{}),
@@ -713,7 +723,7 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 			"fileSystem":         volExternal.Config.FileSystem,
 			"snapshotPolicy":     volExternal.Config.SnapshotPolicy,
 			"protocol":           volExternal.Config.Protocol,
-			"backend":            volExternal.Backend,
+			"backendUUID":        volExternal.BackendUUID,
 		}).Debug("ImportVolume: ready to create the PV.")
 
 		pv, pvErr := p.createPV(pvc, volConfig, storageClass, volExternal, true, driverType)
@@ -932,7 +942,12 @@ func (p *Plugin) createPV(
 
 	// Apply Storage Class mount options and reclaim policy
 	pv.Spec.MountOptions = p.getPVMountOptions(p.storageClassCache[storageClass], volume)
-	pv.Spec.PersistentVolumeReclaimPolicy = *p.storageClassCache[storageClass].PersistentVolumeReclaimPolicy
+	scSummaryFromCache, ok := p.storageClassCache[storageClass]
+	if !ok {
+		err = fmt.Errorf("cannot find storageClassSummary %v in cache", storageClass)
+		return nil, err
+	}
+	pv.Spec.PersistentVolumeReclaimPolicy = *scSummaryFromCache.PersistentVolumeReclaimPolicy
 
 	if isImport {
 		// Apply annotation to indicate this PV was created by volume import process
@@ -1031,8 +1046,8 @@ func (p *Plugin) createVolumeAndPV(
 			if err != nil {
 				err2 := "Kubernetes frontend couldn't delete the volume after failed creation: " + err.Error()
 				log.WithFields(log.Fields{
-					"volume":  volExternal.Config.Name,
-					"backend": volExternal.Backend,
+					"volume":      volExternal.Config.Name,
+					"backendUUID": volExternal.BackendUUID,
 				}).Error(err2)
 				err = fmt.Errorf("%s => %s", err1.Error(), err2)
 			} else {

@@ -1,85 +1,53 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
 import (
+	"errors"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type DataMigrator struct {
-	SourceType   StoreType
 	SourceClient Client
 	DestClient   Client
+	dryRun       bool
 }
 
-func NewDataMigrator(destClient Client, sourceType StoreType) *DataMigrator {
+func NewDataMigrator(SourceClient, DestClient Client, dryRun bool) *DataMigrator {
 	return &DataMigrator{
-		SourceType: sourceType,
-		DestClient: destClient,
+		SourceClient: SourceClient,
+		DestClient:   DestClient,
+		dryRun:       dryRun,
 	}
 }
 
-func (m *DataMigrator) Run(keyPrefix string, deleteSrc bool) error {
-	var err error
-	if m.DestClient.GetType() == m.SourceType {
-		return nil
-	}
-	// Determine if this is a supported data migration
-	// 1) DataMigrator currently only supports etcdv2 to etcdv3 migration
-	if m.DestClient.GetType() != EtcdV3Store &&
-		m.SourceType != EtcdV2Store {
-		// No transformation
-		log.Debug("DataMigrator currently only supports etcdv2 to etcdv3 migration.")
-		return nil
-	}
-	// 2) No transformation from etcdv2 to etcdv3 when the etcd server is
-	// configured with TLS because etcdv2 doesn't support TLS.
-	if m.DestClient.GetConfig().TLSConfig != nil {
-		log.Debug("No persistent state transformation happens between etcdv2 " +
-			"and etcdv3 when the etcd server requires client certificates!")
+func (m *DataMigrator) Run() error {
+
+	// Determine if this is a supported data migration.
+	// DataMigrator currently only supports etcdv3 to crdv1 migration.
+	if m.SourceClient.GetType() != EtcdV3Store || m.DestClient.GetType() != CRDV1Store {
+		log.Debug("DataMigrator currently only supports etcdv3 to crdv1 migration.")
 		return nil
 	}
 
-	log.WithFields(log.Fields{
-		"current_store_version": string(m.SourceType),
-		"desired_store_version": string(m.DestClient.GetType()),
-	}).Info("Transforming persistent state.")
-	var srcClient, destinationClient EtcdClient
-	switch m.DestClient.GetType() {
-	case EtcdV3Store:
-		destinationClient, err = NewEtcdClientV3FromConfig(
-			m.DestClient.GetConfig())
-	default:
-		return fmt.Errorf("%v is not a valid persistent store version",
-			m.DestClient.GetType())
+	etcdClient, ok := m.SourceClient.(EtcdClient)
+	if !ok {
+		return errors.New("SourceClient is not an ETCDv3 client")
 	}
-	if err != nil {
-		return fmt.Errorf("failed to create the destination etcd client for data migration: %v",
-			err)
+	crdClient, ok := m.DestClient.(CRDClient)
+	if !ok {
+		return errors.New("DestClient is not a CRDv1 client")
 	}
-	switch m.SourceType {
-	case EtcdV2Store:
-		srcClient, err = NewEtcdClientV2FromConfig(
-			m.DestClient.GetConfig())
-	default:
-		return fmt.Errorf("%v is not a valid persistent store version",
-			m.SourceType)
+
+	shouldPersist := false
+	transformer := NewEtcdDataTransformer(etcdClient, m.dryRun, shouldPersist)
+	crdDataMigrator := NewCRDDataMigrator(etcdClient, crdClient, m.dryRun, transformer)
+
+	if err := crdDataMigrator.RunPrechecks(); err != nil {
+		return fmt.Errorf("CRD data migration prechecks failed: %v", err)
 	}
-	if err != nil {
-		return fmt.Errorf("failed to create the source etcd client for data migration: %v",
-			err)
-	}
-	etcdDataMigrator := NewEtcdDataMigrator(srcClient,
-		destinationClient)
-	// Moving all Trident objects for all API versions
-	if err = etcdDataMigrator.Start(keyPrefix, deleteSrc); err != nil {
-		return fmt.Errorf("etcd data migration failed: %v", err)
-	}
-	if err = etcdDataMigrator.Stop(); err != nil {
-		return fmt.Errorf("failed to shut down the etcd data migrator: %v",
-			err)
-	}
-	return nil
+
+	return crdDataMigrator.Run()
 }
