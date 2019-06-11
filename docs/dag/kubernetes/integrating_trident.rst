@@ -66,7 +66,7 @@ As we can see in the above tables, much of the functionality between the ``ontap
 
 **Choosing a backend driver for Cloud Volume ONTAP**
 
-Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``,``ontap-nas-economy`` or ``ontap-san`` .These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP. 
+Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy`` or ``ontap-san`` .These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP. 
 
 
 SolidFire Backend Driver
@@ -159,7 +159,7 @@ Virtual Storage Pools are available for Cloud Volumes Service for AWS only.
 
 Virtual Storage Pools allow an administrator to abstract away specific backend characteristics from storage class criteria. Different backends may be defined with similar class of service in mind. Each of these are configured specific to the backend type. When a storage class calls out a specific class of service or criteria, Trident decides where to place the volume. For example, ``extreme`` pool may be defined with certain characteristics in one AWS location and defined differently in a different location. When the ``extreme`` pool is called from a Storage Class, Trident decided where to put the volume with the appropriate criteria.
 
-Please refer to "ref:`Virtual Storage Pools <Virtual Storage Pools>` for more information and applicable parameters. 
+Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more information and applicable parameters. 
 
 PVC characteristics which affect storage provisioning
 =====================================================
@@ -248,7 +248,7 @@ When the above command is executed, Trident will find the volume on the backend 
 
 If a container was deployed such that it required the specific imported PVC, it would remain in a pending state until the PVC/PV pair are bound via the volume import process. After the PVC/PV pair are bound, the container should come up, provided there are no other issues.
 
-For information, please see the :ref:`documentation <Volume Import>`.
+For information, please see the :ref:`documentation <Importing a Volume>`.
 
 
 Deploying OpenShift services using Trident

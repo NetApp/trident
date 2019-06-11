@@ -17,3 +17,4 @@ Design and Architecture Guide
    integrating_trident
    backup_disaster_recovery 
    security_recommendations
+   frequently_asked_questions
