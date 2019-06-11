@@ -15,23 +15,27 @@ import (
 	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
 )
 
 const (
 	defaultZapiRecords   = 100
+	maxZapiRecords       = 0xfffffffe
 	NumericalValueNotSet = -1
 	maxFlexGroupWait     = 30 * time.Second
 )
 
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
-	ManagementLIF   string
-	SVM             string
-	Username        string
-	Password        string
-	DebugTraceFlags map[string]bool
+	ManagementLIF           string
+	SVM                     string
+	Username                string
+	Password                string
+	DriverContext           tridentconfig.DriverContext
+	ContextBasedZapiRecords int
+	DebugTraceFlags         map[string]bool
 }
 
 // Client is the object to use for interacting with ONTAP controllers
@@ -44,6 +48,13 @@ type Client struct {
 
 // NewClient is a factory method for creating a new instance
 func NewClient(config ClientConfig) *Client {
+
+	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
+	config.ContextBasedZapiRecords = defaultZapiRecords
+	if config.DriverContext == tridentconfig.ContextDocker {
+		config.ContextBasedZapiRecords = maxZapiRecords
+	}
+
 	d := &Client{
 		config: config,
 		zr: &azgo.ZapiRunner{
@@ -516,7 +527,7 @@ func (d Client) LunGet(path string) (*azgo.LunInfoType, error) {
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -545,7 +556,7 @@ func (d Client) lunGetAllCommon(query *azgo.LunGetIterRequestQuery) (*azgo.LunGe
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1041,7 +1052,7 @@ func (d Client) volumeGetIterCommon(name string,
 	query.SetVolumeAttributes(*volAttrs)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(d.zr)
 
@@ -1109,7 +1120,7 @@ func (d Client) volumeGetIterAll(prefix string, queryVolIDAttrs *azgo.VolumeIdAt
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1138,7 +1149,7 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1183,7 +1194,7 @@ func (d Client) VolumeListByAttrs(
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1261,7 +1272,7 @@ func (d Client) QtreeList(prefix, volumePrefix string) (*azgo.QtreeListIterRespo
 	desiredAttributes.SetQtreeInfo(*desiredInfo)
 
 	response, err := azgo.NewQtreeListIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1282,7 +1293,7 @@ func (d Client) QtreeCount(volume string) (int, error) {
 	desiredAttributes.SetQtreeInfo(*desiredInfo)
 
 	response, err := azgo.NewQtreeListIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1316,7 +1327,7 @@ func (d Client) QtreeExists(name, volumePrefix string) (bool, string, error) {
 	desiredAttributes.SetQtreeInfo(*desiredInfo)
 
 	response, err := azgo.NewQtreeListIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -1351,7 +1362,7 @@ func (d Client) QtreeGet(name, volumePrefix string) (*azgo.QtreeInfoType, error)
 	query.SetQtreeInfo(*info)
 
 	response, err := azgo.NewQtreeListIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(d.zr)
 
@@ -1389,7 +1400,7 @@ func (d Client) QtreeGetAll(volumePrefix string) (*azgo.QtreeListIterResponse, e
 	desiredAttributes.SetQtreeInfo(*desiredInfo)
 
 	response, err := azgo.NewQtreeListIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(d.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)

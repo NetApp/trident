@@ -211,6 +211,7 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 		SVM:             config.SVM,
 		Username:        config.Username,
 		Password:        config.Password,
+		DriverContext:   config.DriverContext,
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 
@@ -246,6 +247,7 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 		SVM:             config.SVM,
 		Username:        config.Username,
 		Password:        config.Password,
+		DriverContext:   config.DriverContext,
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 	client.SVMUUID = svmUUID
