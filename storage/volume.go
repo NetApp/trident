@@ -70,6 +70,48 @@ type Volume struct {
 	BackendUUID string // UUID of the storage backend
 	Pool        string // Name of the pool on which this volume was first provisioned
 	Orphaned    bool   // An Orphaned volume isn't currently tracked by the storage backend
+	State       VolumeState
+}
+
+type UpdateVolumeStateRequest struct {
+	State string `json:"state"`
+}
+
+type VolumeState string
+
+const (
+	VolumeStateUnknown  = VolumeState("unknown")
+	VolumeStateOnline   = VolumeState("online")
+	VolumeStateDeleting = VolumeState("deleting")
+	// TODO should Orphaned be moved to a VolumeState?
+)
+
+func (s VolumeState) String() string {
+	switch s {
+	case VolumeStateUnknown, VolumeStateOnline, VolumeStateDeleting:
+		return string(s)
+	default:
+		return "unknown"
+	}
+}
+
+func (s VolumeState) IsUnknown() bool {
+	switch s {
+	case VolumeStateOnline, VolumeStateDeleting:
+		return false
+	case VolumeStateUnknown:
+		return true
+	default:
+		return true
+	}
+}
+
+func (s VolumeState) IsOnline() bool {
+	return s == VolumeStateOnline
+}
+
+func (s VolumeState) IsDeleting() bool {
+	return s == VolumeStateDeleting
 }
 
 func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned bool) *Volume {
@@ -78,15 +120,17 @@ func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned boo
 		BackendUUID: backendUUID,
 		Pool:        pool,
 		Orphaned:    orphaned,
+		State:       VolumeStateOnline,
 	}
 }
 
 type VolumeExternal struct {
 	Config      *VolumeConfig
-	Backend     string `json:"backend"`     // replaced w/ backendUUID, remains to read old records
-	BackendUUID string `json:"backendUUID"` // UUID of the storage backend
-	Pool        string `json:"pool"`
-	Orphaned    bool   `json:"orphaned"`
+	Backend     string      `json:"backend"`     // replaced w/ backendUUID, remains to read old records
+	BackendUUID string      `json:"backendUUID"` // UUID of the storage backend
+	Pool        string      `json:"pool"`
+	Orphaned    bool        `json:"orphaned"`
+	State       VolumeState `json:"state"`
 }
 
 func (v *VolumeExternal) GetCHAPSecretName() string {
@@ -103,6 +147,7 @@ func (v *Volume) ConstructExternal() *VolumeExternal {
 		BackendUUID: v.BackendUUID,
 		Pool:        v.Pool,
 		Orphaned:    v.Orphaned,
+		State:       v.State,
 	}
 }
 

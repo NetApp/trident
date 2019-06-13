@@ -48,6 +48,7 @@ type TestingCache struct {
 	transactionCache  map[string]*tridentv1.TridentTransaction
 	versionCache      map[string]*tridentv1.TridentVersion
 	volumeCache       map[string]*tridentv1.TridentVolume
+	snapshotCache     map[string]*tridentv1.TridentSnapshot
 }
 
 func NewTestingCache() *TestingCache {
@@ -58,6 +59,7 @@ func NewTestingCache() *TestingCache {
 		transactionCache:  make(map[string]*tridentv1.TridentTransaction, 0),
 		versionCache:      make(map[string]*tridentv1.TridentVersion, 0),
 		volumeCache:       make(map[string]*tridentv1.TridentVolume, 0),
+		snapshotCache:     make(map[string]*tridentv1.TridentSnapshot, 0),
 	}
 	return result
 }
@@ -108,6 +110,10 @@ func (o *TestingCache) addVersion(version *tridentv1.TridentVersion) {
 
 func (o *TestingCache) addVolume(volume *tridentv1.TridentVolume) {
 	o.volumeCache[volume.Name] = volume
+}
+
+func (o *TestingCache) addSnapshot(snapshot *tridentv1.TridentSnapshot) {
+	o.snapshotCache[snapshot.Name] = snapshot
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,7 +237,7 @@ func addCrdTestReactors(crdFakeClient *crd_fake.Clientset, testingCache *Testing
 		})
 }
 
-func TestFoo(t *testing.T) {
+func TestCrdController(t *testing.T) {
 
 	testingCache := NewTestingCache()
 	orchestrator := core.NewMockOrchestrator()
@@ -313,7 +319,7 @@ func TestFoo(t *testing.T) {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// good to go with setup, now we can start activate and start monitoring
+	// good to go with setup, now we can activate and start monitoring
 	if err := crdController.Activate(); err != nil {
 		t.Fatalf("error while activating: %v", err.Error())
 	}
@@ -383,6 +389,168 @@ func TestFoo(t *testing.T) {
 		t.Fatalf("expected the CRD backend '%v' to be deleted", crdName)
 	} else if !persistentstore.IsStatusNotFoundError(getErr) {
 		t.Fatalf("unexpected error getting CRD backend '%v' error: %v", crdName, getErr)
+	}
+
+	//	delaySeconds(2)
+	if err := crdController.Deactivate(); err != nil {
+		t.Fatalf("error while deactivating: %v", err.Error())
+	}
+}
+
+func TestCrdController2(t *testing.T) {
+
+	testingCache := NewTestingCache()
+	orchestrator := core.NewMockOrchestrator()
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	crdClient := GetTestCrdClientset()
+	addCrdTestReactors(crdClient, testingCache)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// make sure these aren't nil
+	assertNotNil(t, "kubeClient", kubeClient)
+	assertNotNil(t, "crdClient", crdClient)
+	assertNotNil(t, "crdController", crdController)
+	assertNotNil(t, "crdController.crdInformerFactory", crdController.crdInformerFactory)
+
+	expectedVersion := "0.1"
+	if crdController.Version() != expectedVersion {
+		t.Fatalf("%v differs:  '%v' != '%v'", "Version()", expectedVersion, crdController.Version())
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Setup work required for the crdController's logic to work
+	// * create a fake backend
+	// ** add it to the mock orchestator
+	// ** initialize it
+	// * create a CRD version from the fake backend
+	fakeConfig := fake.StorageDriver{
+		Config: drivers.FakeStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				Version:           1,
+				StorageDriverName: "fake",
+			},
+			Protocol: config.File,
+		},
+	}
+	fakeDriver := fake.StorageDriver{
+		Config: fakeConfig.Config,
+	}
+	fakeBackend := &storage.Backend{
+		Driver:      &fakeDriver,
+		Name:        "fake1",
+		BackendUUID: uuid.New().String(),
+	}
+	orchestrator.AddFakeBackend(fakeBackend)
+	fakeBackendFound, err := orchestrator.GetBackend(fakeBackend.Name)
+	if err != nil {
+		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
+	}
+
+	configJSON, jsonErr := newFakeStorageDriverConfigJSON(t, fakeBackendFound.Name)
+	if jsonErr != nil {
+		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
+	}
+	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
+	if initializeErr := fakeBackend.Driver.Initialize("testing", configJSON, commonConfig); initializeErr != nil {
+		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
+	}
+	fakeBackend.Online = true
+	fakeBackend.State = storage.BackendState("online")
+
+	// create a k8s CRD Object for use by the client-go bindings and crd persistence layer
+	backendCRD, err := tridentv1.NewTridentBackend(fakeBackend.ConstructPersistent())
+	if err != nil {
+		t.Fatal("Unable to construct TridentBackend CRD: ", err)
+	}
+	if backendCRD.BackendName != fakeBackend.Name {
+		t.Fatalf("error creating backend backendCRD.BackendName '%v' != fakeBackend.Name '%v'",
+			backendCRD.BackendName, fakeBackend.Name)
+	}
+
+	// create a new Backend CRD object through the client-go api
+	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(backendCRD)
+	if err != nil {
+		t.Fatalf("error creating backend: %v", err.Error())
+	}
+
+	// Build a storage.volume
+	volConfig := storage.VolumeConfig{
+		Version:      string(config.OrchestratorAPIVersion),
+		Name:         "vol1",
+		InternalName: "internal_vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	vol := &storage.Volume{
+		Config:      &volConfig,
+		BackendUUID: backendCRD.BackendUUID,
+		Pool:        "aggr1",
+		State:       storage.VolumeStateOnline,
+	}
+
+	// Convert to Kubernetes Object using NewTridentVolume
+	volumeCRD, err := tridentv1.NewTridentVolume(vol.ConstructExternal())
+	if err != nil {
+		t.Fatal("Unable to construct TridentVolume CRD: ", err)
+	}
+
+	// create a new Volume CRD object through the client-go api
+	_, err = crdClient.TridentV1().TridentVolumes(tridentNamespace).Create(volumeCRD)
+	if err != nil {
+		t.Fatalf("error creating volume: %v", err.Error())
+	}
+
+	// Build a storage.Snapshot
+	testSnapshotConfig := &storage.SnapshotConfig{
+		Version:            string(config.OrchestratorAPIVersion),
+		Name:               "testsnap1",
+		InternalName:       "internal_testsnap1",
+		VolumeName:         volConfig.Name,
+		VolumeInternalName: volConfig.InternalName,
+	}
+	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
+	size := int64(1000000000)
+	snapshot := storage.NewSnapshot(testSnapshotConfig, now, size)
+	snapshotCRD, err := tridentv1.NewTridentSnapshot(snapshot.ConstructPersistent())
+	if err != nil {
+		t.Fatal("Unable to construct TridentSnapshot CRD: ", err)
+	}
+
+	// create a new Snapshot CRD object through the client-go api
+	_, err = crdClient.TridentV1().TridentSnapshots(tridentNamespace).Create(snapshotCRD)
+	if err != nil {
+		t.Fatalf("error creating volume: %v", err.Error())
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// good to go with setup, now we can activate and start monitoring
+	if err := crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(2)
+
+	// validate our Volume is present
+	volumeList, listErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).List(listOpts)
+	if listErr != nil {
+		t.Fatalf("error listing CRD volumes: %v", err.Error())
+	}
+	if len(volumeList.Items) != 1 {
+		t.Fatalf("error while listing volumes, unexpected volume list length: %v", len(volumeList.Items))
+	}
+
+	// validate our Snapshot is present
+	snapshotList, listErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).List(listOpts)
+	if listErr != nil {
+		t.Fatalf("error listing CRD snapshots: %v", err.Error())
+	}
+	if len(snapshotList.Items) != 1 {
+		t.Fatalf("error while listing snapshots, unexpected snapshot list length: %v", len(snapshotList.Items))
 	}
 
 	//	delaySeconds(2)

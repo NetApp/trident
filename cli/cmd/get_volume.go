@@ -145,7 +145,7 @@ func WriteVolumes(volumes []storage.VolumeExternal) {
 func writeVolumeTable(volumes []storage.VolumeExternal) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "Pool"})
+	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "Pool", "State"})
 
 	for _, volume := range volumes {
 
@@ -158,6 +158,7 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 			string(volume.Config.Protocol),
 			volume.BackendUUID,
 			volume.Pool,
+			string(volume.State),
 		})
 	}
 
@@ -176,6 +177,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 		"Backend UUID",
 		"Backend",
 		"Pool",
+		"State",
 		"Access Mode",
 	}
 	table.SetHeader(header)
@@ -198,6 +200,7 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 			volume.BackendUUID,
 			backendName,
 			volume.Pool,
+			string(volume.State),
 			string(volume.Config.AccessMode),
 		})
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 
@@ -91,5 +91,11 @@ type UnsupportedError struct {
 }
 
 func (e *UnsupportedError) Error() string { return e.message }
+
+type VolumeDeletingError struct {
+	message string
+}
+
+func (e *VolumeDeletingError) Error() string { return e.message }
 
 type VolumeCallback func(*storage.VolumeExternal, string) error

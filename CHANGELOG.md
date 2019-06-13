@@ -9,9 +9,14 @@
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
 - **Kubernetes:** Prevent operations on failed backends. 
 - **Kubernetes:** Removed size requirement for volume import PVC file.
+- **Kubernetes:** Implemented CSI Trident (optional for Kubernetes 1.13, exclusive for Kubernetes 1.14+).
+- **Kubernetes:** Added support to CSI Trident for volume snapshots.
+- **Kubernetes:** Converted Trident to use custom resource definitions instead of etcd.
 - Trident now allows Solidfire backends without `Types` defined. However, such backends
   will have one default storage pool with the default backend QoS values.
-- **Behavioural change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation` parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for those LUNs.
+- **Behavioral change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation`
+  parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for
+  those LUNs.
 
 ## v19.04.0
 

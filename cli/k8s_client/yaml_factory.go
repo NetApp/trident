@@ -1190,6 +1190,41 @@ spec:
     categories:
     - trident
     - trident-internal
+  additionalPrinterColumns:
+    - name: Age
+      type: date
+      priority: 0
+      JSONPath: .metadata.creationTimestamp
+    - name: Size
+      type: string
+      description: The volume's size
+      priority: 1
+      JSONPath: .config.size
+    - name: Storage Class
+      type: string
+      description: The volume's storage class
+      priority: 1
+      JSONPath: .config.storageClass
+    - name: State
+      type: string
+      description: The volume's state
+      priority: 1
+      JSONPath: .state
+    - name: Protocol
+      type: string
+      description: The volume's protocol
+      priority: 1
+      JSONPath: .config.protocol
+    - name: Backend UUID
+      type: string
+      description: The volume's backend UUID
+      priority: 1
+      JSONPath: .backendUUID
+    - name: Pool
+      type: string
+      description: The volume's pool
+      priority: 1
+      JSONPath: .pool
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition

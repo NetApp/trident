@@ -433,6 +433,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 		if err := o.deleteVolumeTransaction(v); err != nil {
 			return fmt.Errorf("failed to clean up volume addition transaction: %v", err)
 		}
+
 	case persistentstore.DeleteVolume:
 		// Because we remove the volume from persistent store after we remove
 		// it from the backend, we need to take any special measures only when
@@ -1745,6 +1746,22 @@ func (o *TridentOrchestrator) ListVolumes() ([]*storage.VolumeExternal, error) {
 	return volumes, nil
 }
 
+// volumeSnapshots returns any Snapshots for the specified volume
+func (o *TridentOrchestrator) volumeSnapshots(volumeName string) ([]*storage.Snapshot, error) {
+	volume, volumeFound := o.volumes[volumeName]
+	if !volumeFound {
+		return nil, fmt.Errorf("could not find volume %v", volumeName)
+	}
+
+	result := make([]*storage.Snapshot, 0, len(o.snapshots))
+	for _, snapshot := range o.snapshots {
+		if snapshot.Config.VolumeName == volume.Config.Name {
+			result = append(result, snapshot)
+		}
+	}
+	return result, nil
+}
+
 // deleteVolume does the necessary work to delete a volume entirely.  It does
 // not construct a transaction, nor does it take locks; it assumes that the
 // caller will take care of both of these.  It also assumes that the volume
@@ -1752,6 +1769,29 @@ func (o *TridentOrchestrator) ListVolumes() ([]*storage.VolumeExternal, error) {
 func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 	volume := o.volumes[volumeName]
 	volumeBackend := o.backends[volume.BackendUUID]
+
+	// if there are any snapshots for this volume, we need to "soft" delete.
+	// only hard delete this volume when its last snapshot is deleted.
+	snapshotsForVolume, err := o.volumeSnapshots(volumeName)
+	if err != nil {
+		return err
+	}
+	if len(snapshotsForVolume) > 0 {
+		log.WithFields(log.Fields{
+			"volume":                  volumeName,
+			"backendUUID":             volume.BackendUUID,
+			"len(snapshotsForVolume)": len(snapshotsForVolume),
+		}).Debug("Soft deleting.")
+		volume.State = storage.VolumeStateDeleting
+		if updateErr := o.updateVolumeOnPersistentStore(volume); updateErr != nil {
+			log.WithFields(log.Fields{
+				"volume":    volume.Config.Name,
+				"updateErr": updateErr.Error(),
+			}).Error("Unable to update the volume's state to deleting in the persistent store.")
+			return updateErr
+		}
+		return nil
+	}
 
 	// Note that this call will only return an error if the backend actually
 	// fails to delete the volume.  If the volume does not exist on the backend,
@@ -1888,6 +1928,9 @@ func (o *TridentOrchestrator) PublishVolume(
 	if !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
+	if volume.State.IsDeleting() {
+		return volumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
+	}
 
 	return o.backends[volume.BackendUUID].Driver.Publish(volume.Config.InternalName, publishInfo)
 }
@@ -1906,8 +1949,12 @@ func (o *TridentOrchestrator) AttachVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	if _, ok := o.volumes[volumeName]; !ok {
+	volume, ok := o.volumes[volumeName]
+	if !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+	if volume.State.IsDeleting() {
+		return volumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Mounting volume.")
@@ -1955,8 +2002,12 @@ func (o *TridentOrchestrator) DetachVolume(volumeName, mountpoint string) error 
 		return o.bootstrapError
 	}
 
-	if _, ok := o.volumes[volumeName]; !ok {
+	volume, ok := o.volumes[volumeName]
+	if !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+	if volume.State.IsDeleting() {
+		return volumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	log.WithFields(log.Fields{"volume": volumeName, "mountpoint": mountpoint}).Debug("Unmounting volume.")
@@ -2003,8 +2054,12 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	}
 
 	// Get the volume
-	if volume, ok = o.volumes[snapshotConfig.VolumeName]; !ok {
+	volume, ok = o.volumes[snapshotConfig.VolumeName]
+	if !ok {
 		return nil, notFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
+	}
+	if volume.State.IsDeleting() {
+		return nil, volumeDeletingError(fmt.Sprintf("source volume %s is deleting", snapshotConfig.VolumeName))
 	}
 
 	// Get the backend
@@ -2153,23 +2208,22 @@ func (o *TridentOrchestrator) deleteSnapshot(snapshotConfig *storage.SnapshotCon
 		return err
 	}
 
-	// TODO: handle deleting volume & backend, if one or both are in a deleting state
-
-	//if volumeBackend.State.IsDeleting() && !volumeBackend.HasVolumes() {
-	//	if err := o.storeClient.DeleteBackend(volumeBackend); err != nil {
-	//		log.WithFields(log.Fields{
-	//			"backend": volume.Backend,
-	//			"volume":  volumeName,
-	//		}).Error("Unable to delete offline backend from the backing store" +
-	//			" after its last volume was deleted.  Delete the volume again" +
-	//			" to remove the backend.")
-	//		return err
-	//	}
-	//	volumeBackend.Terminate()
-	//	delete(o.backends, volume.Backend)
-	//}
-
 	delete(o.snapshots, snapshot.ID())
+
+	snapshotsForVolume, err := o.volumeSnapshots(snapshotConfig.VolumeName)
+	if err != nil {
+		return err
+	}
+
+	if len(snapshotsForVolume) == 0 && volume.State.IsDeleting() {
+		log.WithFields(log.Fields{
+			"snapshotConfig.VolumeName": snapshotConfig.VolumeName,
+			"backendUUID":               volume.BackendUUID,
+			"volume.State":              volume.State,
+		}).Debug("Hard deleting volume.")
+		return o.deleteVolume(snapshotConfig.VolumeName)
+	}
+
 	return nil
 }
 
@@ -2377,19 +2431,22 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	vol, found := o.volumes[volumeName]
+	volume, found := o.volumes[volumeName]
 	if !found {
-		return fmt.Errorf("volume %s wasn't found", volumeName)
+		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
-	if vol.Orphaned {
+	if volume.Orphaned {
 		log.WithFields(log.Fields{
 			"volume":      volumeName,
-			"backendUUID": vol.BackendUUID,
+			"backendUUID": volume.BackendUUID,
 		}).Warnf("Resize operation is likely to fail with an orphaned volume!")
+	}
+	if volume.State.IsDeleting() {
+		return volumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	// Create a new config to capture the volume size change.
-	cloneConfig := vol.Config.ConstructClone()
+	cloneConfig := volume.Config.ConstructClone()
 	cloneConfig.Size = newSize
 
 	// Add a transaction in case the operation must be retried during bootstraping.
@@ -2408,11 +2465,11 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 				"volume_size": newSize,
 			}).Info("Orchestrator resized the volume on the storage backend.")
 		}
-		err = o.resizeVolumeCleanup(err, vol, volTxn)
+		err = o.resizeVolumeCleanup(err, volume, volTxn)
 	}()
 
 	// Resize the volume.
-	return o.resizeVolume(vol, newSize)
+	return o.resizeVolume(volume, newSize)
 }
 
 // resizeVolume does the necessary work to resize a volume. It doesn't
@@ -2779,4 +2836,8 @@ func foundError(message string) error {
 
 func unsupportedError(message string) error {
 	return &UnsupportedError{message}
+}
+
+func volumeDeletingError(message string) error {
+	return &VolumeDeletingError{message}
 }

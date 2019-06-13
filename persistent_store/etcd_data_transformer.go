@@ -76,6 +76,11 @@ func (m *EtcdDataTransformer) Run() (*EtcdDataTransformerResult, error) {
 		return nil, err
 	}
 
+	volumes, err = m.upgradeVolumesToUseVolumeState(volumes)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := m.persistBackends(backends); err != nil {
 		return nil, err
 	}
@@ -187,6 +192,36 @@ func (m *EtcdDataTransformer) upgradeVolumesToUseBackendUUIDs(backends []*storag
 		}
 	}
 	log.WithField("count", len(volumes)).Info("Transformed volumes to use backend UUIDs.")
+
+	return volumes, nil
+}
+
+func (m *EtcdDataTransformer) upgradeVolumesToUseVolumeState(volumes []*storage.VolumeExternal) ([]*storage.VolumeExternal, error) {
+
+	if len(volumes) == 0 {
+		return nil, nil
+	}
+
+	if m.dryRun {
+		return nil, nil
+	}
+
+	// update volumes to use volumeState
+	for _, volume := range volumes {
+		if volume.State.IsUnknown() {
+			volume.State = storage.VolumeStateOnline
+			log.WithFields(log.Fields{
+				"volume":       volume.Config.Name,
+				"volume.state": volume.State,
+			}).Debug("Transformed volume.")
+		} else {
+			log.WithFields(log.Fields{
+				"volume":       volume.Config.Name,
+				"volume.state": volume.State,
+			}).Debug("Skipped volume.")
+		}
+	}
+	log.WithField("count", len(volumes)).Info("Transformed volumes to use volume state.")
 
 	return volumes, nil
 }

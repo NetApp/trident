@@ -4,13 +4,14 @@ package v1
 
 import (
 	"encoding/json"
-	"reflect"
 	"testing"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestNewVolume(t *testing.T) {
@@ -26,6 +27,7 @@ func TestNewVolume(t *testing.T) {
 		Config:      &volConfig,
 		BackendUUID: "686979c7-6960-4380-a14d-2d740a13f0f5",
 		Pool:        "aggr1",
+		State:       storage.VolumeStateOnline,
 	}
 
 	// Convert to Kubernetes Object using NewTridentVolume
@@ -50,12 +52,15 @@ func TestNewVolume(t *testing.T) {
 		Config: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(vol.ConstructExternal().Config)),
 		},
+		State: string(storage.VolumeStateOnline),
 	}
 	expected.BackendUUID = volume.BackendUUID
 
 	// Compare
-	if !reflect.DeepEqual(volume, expected) {
-		t.Fatalf("TridentVolume does not match expected result, got %v expected %v", volume, expected)
+	if !cmp.Equal(volume, expected) {
+		if diff := cmp.Diff(volume, expected); diff != "" {
+			t.Fatalf("TridentVolume does not match expected result, difference (-expected +actual):%s", diff)
+		}
 	}
 }
 
@@ -72,6 +77,7 @@ func TestVolume_Persistent(t *testing.T) {
 		Config:      &volConfig,
 		BackendUUID: "686979c7-6960-4380-a14d-2d740a13f0f5",
 		Pool:        "aggr1",
+		State:       storage.VolumeStateOnline,
 	}
 
 	// Build Kubernetes Object
@@ -86,6 +92,7 @@ func TestVolume_Persistent(t *testing.T) {
 		},
 		BackendUUID: vol.BackendUUID,
 		Orphaned:    false,
+		State:       string(storage.VolumeStateOnline),
 		Pool:        vol.Pool,
 		Config: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(vol.ConstructExternal().Config)),
@@ -102,7 +109,9 @@ func TestVolume_Persistent(t *testing.T) {
 	expected := vol.ConstructExternal()
 
 	// Compare
-	if !reflect.DeepEqual(peristent, expected) {
-		t.Fatalf("TridentVolume does not match expected result, got %v expected %v", peristent, expected)
+	if !cmp.Equal(peristent, expected) {
+		if diff := cmp.Diff(peristent, expected); diff != "" {
+			t.Fatalf("TridentVolume does not match expected result, difference (-expected +actual):%s", diff)
+		}
 	}
 }

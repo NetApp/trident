@@ -73,6 +73,8 @@ type TridentVolume struct {
 	Pool string `json:"pool"`
 	// Orphaned defines if the backend is orphaned
 	Orphaned bool `json:"orphaned"`
+	// State records the TridentVolume's state
+	State string `json:"state"`
 }
 
 // TridentVolumeList is a list of TridentVolume objects.

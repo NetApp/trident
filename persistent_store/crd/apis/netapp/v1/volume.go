@@ -49,6 +49,7 @@ func (in *TridentVolume) Apply(persistent *storage.VolumeExternal) error {
 		"persistent.BackendUUID": persistent.BackendUUID,
 		"persistent.Orphaned":    persistent.Orphaned,
 		"persistent.Pool":        persistent.Pool,
+		"persistent.State":       persistent.State,
 	}).Debug("Applying volume update.")
 
 	if NameFix(persistent.Config.Name) != in.ObjectMeta.Name {
@@ -64,6 +65,7 @@ func (in *TridentVolume) Apply(persistent *storage.VolumeExternal) error {
 	in.BackendUUID = persistent.BackendUUID
 	in.Orphaned = persistent.Orphaned
 	in.Pool = persistent.Pool
+	in.State = string(persistent.State)
 
 	return nil
 }
@@ -76,6 +78,7 @@ func (in *TridentVolume) Persistent() (*storage.VolumeExternal, error) {
 		Orphaned:    in.Orphaned,
 		Pool:        in.Pool,
 		Config:      &storage.VolumeConfig{},
+		State:       storage.VolumeState(in.State),
 	}
 
 	return persistent, json.Unmarshal(in.Config.Raw, persistent.Config)
