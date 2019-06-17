@@ -964,6 +964,19 @@ func (c *KubectlClient) CheckCRDExists(crdName string) (bool, error) {
 	return len(out) > 0, nil
 }
 
+func (c *KubectlClient) DeleteCRD(crdName string) error {
+	// kubectl delete crd tridentversions.trident.netapp.io --wait=false
+	args := []string{"delete", "crd", crdName, "--wait=false"}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithField("crd", crdName).Debug("Deleted CRD.")
+
+	return nil
+}
+
 // CheckSecretExists returns true if the specified secret exists, false otherwise.
 // It only returns an error if the check failed, not if the secret doesn't exist.
 func (c *KubectlClient) CheckSecretExists(secretName string) (bool, error) {
@@ -1357,6 +1370,31 @@ func (c *KubectlClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+
+	return nil
+}
+
+// RemoveFinalizerFromCRD patches the CRD object to remove our Trident finalizer (definitions are not namespaced)
+func (c *KubectlClient) RemoveFinalizerFromCRD(crdName string) error {
+
+	log.Debugf("Removing finalizers from Kubernetes CRD object %v", crdName)
+
+	// k.cli patch crd ${crd} -p '{"metadata":{"finalizers": []}}' --type=merge
+	args := []string{
+		"patch",
+		"crd",
+		crdName,
+		"-p",
+		"{\"metadata\":{\"finalizers\": []}}",
+		"--type=merge",
+	}
+
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
 }

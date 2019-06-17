@@ -11,11 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AllStorageClasses bool
+var allStorageClasses bool
 
 func init() {
 	deleteCmd.AddCommand(deleteStorageClassCmd)
-	deleteStorageClassCmd.Flags().BoolVarP(&AllStorageClasses, "all", "", false, "Delete all storage classes")
+	deleteStorageClassCmd.Flags().BoolVarP(&allStorageClasses, "all", "", false, "Delete all storage classes")
 }
 
 var deleteStorageClassCmd = &cobra.Command{
@@ -25,7 +25,7 @@ var deleteStorageClassCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "storageclass"}
-			if AllStorageClasses {
+			if allStorageClasses {
 				command = append(command, "--all")
 			}
 			TunnelCommand(append(command, args...))
@@ -43,7 +43,7 @@ func storageClassDelete(storageClassNames []string) error {
 		return err
 	}
 
-	if AllStorageClasses {
+	if allStorageClasses {
 		// Make sure --all isn't being used along with specific storage classes
 		if len(storageClassNames) > 0 {
 			return errors.New("cannot use --all switch and specify individual storage classes")

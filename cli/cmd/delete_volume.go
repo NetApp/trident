@@ -11,11 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AllVolumes bool
+var allVolumes bool
 
 func init() {
 	deleteCmd.AddCommand(deleteVolumeCmd)
-	deleteVolumeCmd.Flags().BoolVarP(&AllVolumes, "all", "", false, "Delete all volumes")
+	deleteVolumeCmd.Flags().BoolVarP(&allVolumes, "all", "", false, "Delete all volumes")
 }
 
 var deleteVolumeCmd = &cobra.Command{
@@ -25,7 +25,7 @@ var deleteVolumeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "volume"}
-			if AllVolumes {
+			if allVolumes {
 				command = append(command, "--all")
 			}
 			TunnelCommand(append(command, args...))
@@ -43,7 +43,7 @@ func volumeDelete(volumeNames []string) error {
 		return err
 	}
 
-	if AllVolumes {
+	if allVolumes {
 		// Make sure --all isn't being used along with specific volumes
 		if len(volumeNames) > 0 {
 			return errors.New("cannot use --all switch and specify individual volumes")

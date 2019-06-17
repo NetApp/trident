@@ -11,11 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AllBackends bool
+var allBackends bool
 
 func init() {
 	deleteCmd.AddCommand(deleteBackendCmd)
-	deleteBackendCmd.Flags().BoolVarP(&AllBackends, "all", "", false, "Delete all backends")
+	deleteBackendCmd.Flags().BoolVarP(&allBackends, "all", "", false, "Delete all backends")
 }
 
 var deleteBackendCmd = &cobra.Command{
@@ -25,7 +25,7 @@ var deleteBackendCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"delete", "backend"}
-			if AllBackends {
+			if allBackends {
 				command = append(command, "--all")
 			}
 			TunnelCommand(append(command, args...))
@@ -43,7 +43,7 @@ func backendDelete(backendNames []string) error {
 		return err
 	}
 
-	if AllBackends {
+	if allBackends {
 		// Make sure --all isn't being used along with specific backends
 		if len(backendNames) > 0 {
 			return errors.New("cannot use --all switch and specify individual backends")

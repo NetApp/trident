@@ -99,6 +99,7 @@ type Interface interface {
 	DeletePVByLabel(label string) error
 	GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error)
 	CheckCRDExists(crdName string) (bool, error)
+	DeleteCRD(crdName string) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
@@ -115,6 +116,7 @@ type Interface interface {
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
 	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
+	RemoveFinalizerFromCRD(crdName string) error
 }
 
 type KubeClient struct {
@@ -921,6 +923,10 @@ func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
 	return true, nil
 }
 
+func (k *KubeClient) DeleteCRD(crdName string) error {
+	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, k.deleteOptions())
+}
+
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 
 	getOptions := metav1.GetOptions{}
@@ -1697,6 +1703,95 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+
+	return nil
+}
+
+// RemoveFinalizerFromCRD updates the CRD object to remove our Trident finalizer (definitions are not namespaced)
+func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
+	/*
+	   $ kubectl api-resources -o wide | grep -i crd
+	    NAME                              SHORTNAMES          APIGROUP                       NAMESPACED   KIND                             VERBS
+	   customresourcedefinitions         crd,crds            apiextensions.k8s.io           false        CustomResourceDefinition         [create delete deletecollection get list patch update watch]
+
+	   $ kubectl  api-versions | grep apiextensions
+	   apiextensions.k8s.io/v1beta1
+	*/
+	gvk := &schema.GroupVersionKind{
+		Group:   "apiextensions.k8s.io",
+		Version: "v1beta1",
+		Kind:    "CustomResourceDefinition",
+	}
+	// Get a matching API resource
+	gvr, _, err := k.getDynamicResource(gvk)
+	if err != nil {
+		return err
+	}
+
+	// Get a dynamic REST client
+	client, err := dynamic.NewForConfig(k.restConfig)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"name": crdName,
+		"kind": gvk.Kind,
+	}).Debugf("Removing finalizers from CRD object.")
+
+	// Get the CRD object
+	getOptions := metav1.GetOptions{}
+
+	var unstruct *unstructured.Unstructured
+	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+		return err
+	}
+
+	// Check the CRD object
+	removedFinalizer := false
+	newFinalizers := make([]string, 0)
+	if md, ok := unstruct.Object["metadata"]; ok {
+		if metadata, ok := md.(map[string]interface{}); ok {
+			if finalizers, ok := metadata["finalizers"]; ok {
+				if finalizersSlice, ok := finalizers.([]interface{}); ok {
+					// Check if the Trident finalizer is already present
+					for _, element := range finalizersSlice {
+						if finalizer, ok := element.(string); ok {
+							if finalizer == TridentFinalizer {
+								removedFinalizer = true
+							} else {
+								newFinalizers = append(newFinalizers, finalizer)
+							}
+						}
+					}
+					if !removedFinalizer {
+						log.Debugf("Trident finalizer not present on Kubernetes CRD object %v, nothing to do", crdName)
+						return nil
+					}
+					// Checked the list and found it, let's remove it from the list
+					metadata["finalizers"] = newFinalizers
+				} else {
+					return fmt.Errorf("unexpected finalizer type %T", finalizers)
+				}
+			} else {
+				// No finalizers present, nothing to do
+				log.Debugf("No finalizer found on Kubernetes CRD object %v, nothing to do", crdName)
+				return nil
+			}
+		}
+	}
+	if !removedFinalizer {
+		return fmt.Errorf("could not determine finalizer metadata for CRD %v", crdName)
+	}
+
+	// Update the object with the updated finalizers
+	updateOptions := metav1.UpdateOptions{}
+
+	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+		return err
+	}
+
+	log.Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
 }

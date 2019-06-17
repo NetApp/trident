@@ -3,19 +3,22 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
 	k8s "k8s.io/api/core/v1"
+
+	"github.com/netapp/trident/cli/api"
+	"github.com/netapp/trident/config"
 )
 
 const (
@@ -83,7 +86,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 }
 
-func discoverOperatingMode(cmd *cobra.Command) error {
+func discoverOperatingMode(_ *cobra.Command) error {
 
 	defer func() {
 		if !Debug {
@@ -325,4 +328,45 @@ func GetExitCodeFromError(err error) int {
 
 		return code
 	}
+}
+
+func getUserConfirmation(s string) (bool, error) {
+
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("%s [y/n]: ", s)
+
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return false, err
+		}
+
+		input = strings.ToLower(strings.TrimSpace(input))
+
+		if input == "y" || input == "yes" {
+			return true, nil
+		} else if input == "n" || input == "no" {
+			return false, nil
+		}
+	}
+}
+
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE")
+}
+
+func kubeConfigPath() string {
+	if path := os.Getenv("KUBECONFIG"); path != "" {
+		return path
+	}
+
+	if home := homeDir(); home != "" {
+		return filepath.Join(home, ".kube", "config")
+	}
+
+	return ""
 }
