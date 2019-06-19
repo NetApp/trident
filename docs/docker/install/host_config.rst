@@ -127,8 +127,8 @@ Traditional Install Method (Docker <= 1.12)
    .. code-block:: bash
 
       # download and unpack the application
-      wget https://github.com/NetApp/trident/releases/download/v19.04.0/trident-installer-19.04.0.tar.gz
-      tar zxf trident-installer-19.04.0.tar.gz
+      wget https://github.com/NetApp/trident/releases/download/v19.07.0/trident-installer-19.07.0.tar.gz
+      tar zxf trident-installer-19.07.0.tar.gz
 
       # move to a location in the bin path
       sudo mv trident-installer/extras/bin/trident /usr/local/bin
@@ -266,7 +266,7 @@ Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 
    .. code-block:: bash
    
-     docker plugin install --grant-all-permissions --alias netapp netapp/trident-plugin:19.04 config=myConfigFile.json
+     docker plugin install --grant-all-permissions --alias netapp netapp/trident-plugin:19.07 config=myConfigFile.json
 
 #. Begin using Trident to consume storage from the configured system.
 
