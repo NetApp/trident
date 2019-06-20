@@ -5,26 +5,33 @@ package persistentstore
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
+	storageclass "github.com/netapp/trident/storage_class"
 )
 
 type CRDDataMigrator struct {
-	etcdClient  EtcdClient
-	crdClient   CRDClient
-	dryRun      bool
-	transformer *EtcdDataTransformer
+	etcdClient    EtcdClient
+	crdClient     CRDClient
+	dryRun        bool
+	transformer   *EtcdDataTransformer
+	totalCount    int
+	migratedCount int
+	startTime     time.Time
 }
 
 func NewCRDDataMigrator(etcdClient EtcdClient, crdClient CRDClient, dryRun bool, t *EtcdDataTransformer) *CRDDataMigrator {
 	return &CRDDataMigrator{
-		etcdClient:  etcdClient,
-		crdClient:   crdClient,
-		dryRun:      dryRun,
-		transformer: t,
+		etcdClient:    etcdClient,
+		crdClient:     crdClient,
+		dryRun:        dryRun,
+		transformer:   t,
+		totalCount:    0,
+		migratedCount: 0,
 	}
 }
 
@@ -112,27 +119,64 @@ func (m *CRDDataMigrator) RunPrechecks() error {
 
 func (m *CRDDataMigrator) Run() error {
 
+	var (
+		backends       []*storage.BackendPersistent
+		storageClasses []*storageclass.Persistent
+		volumes        []*storage.VolumeExternal
+		transactions   []*VolumeTransaction
+	)
+
+	// Transform data into the latest schema
 	transformerResult, err := m.transformer.Run()
 	if err != nil {
 		return err
 	}
 
-	if err := m.migrateBackends(transformerResult.Backends); err != nil {
+	// Backends and volumes are returned by the schema transformer
+	backends = transformerResult.Backends
+	volumes = transformerResult.Volumes
+
+	// Read storage classes from etcd
+	storageClasses, err = m.etcdClient.GetStorageClasses()
+	if err != nil {
+		return fmt.Errorf("could not read storage classes from etcd; %v", err)
+	}
+
+	// Read transactions from etcd
+	transactions, err = m.etcdClient.GetVolumeTransactions()
+	if err != nil {
+		return fmt.Errorf("could not read transactions from etcd; %v", err)
+	}
+
+	// Determine number of objects to migrate
+	m.totalCount = len(backends) + len(storageClasses) + len(volumes) + len(transactions)
+
+	// Save start time
+	m.startTime = time.Now()
+
+	log.Infof("Migrating %d objects. Please do not interrupt this operation!", m.totalCount)
+
+	// Migrate backends
+	if err := m.migrateBackends(backends); err != nil {
 		return err
 	}
 
-	if err := m.migrateStorageClasses(); err != nil {
+	// Migrate storage classes
+	if err := m.migrateStorageClasses(storageClasses); err != nil {
 		return err
 	}
 
-	if err := m.migrateVolumes(transformerResult.Volumes); err != nil {
+	// Migrate volumes
+	if err := m.migrateVolumes(volumes); err != nil {
 		return err
 	}
 
-	if err := m.migrateTransactions(); err != nil {
+	// Migrate transactions
+	if err := m.migrateTransactions(transactions); err != nil {
 		return err
 	}
 
+	// Write schema version to prevent future migrations
 	if err := m.writeCRDSchemaVersion(); err != nil {
 		return err
 	}
@@ -140,7 +184,7 @@ func (m *CRDDataMigrator) Run() error {
 	if m.dryRun {
 		log.Info("Migration dry run completed, no problems found.")
 	} else {
-		log.Info("Migration succeeded.")
+		log.WithField("count", m.migratedCount).Info("Migration succeeded.")
 	}
 
 	return nil
@@ -167,18 +211,16 @@ func (m *CRDDataMigrator) migrateBackends(backends []*storage.BackendPersistent)
 			return fmt.Errorf("could not write backend resource; %v", err)
 		}
 		log.WithField("backend", backend.Name).Debug("Copied backend.")
+
+		m.migratedCount++
+		m.logTimeRemainingEstimate()
 	}
 	log.WithField("count", len(backends)).Info("Copied all backends to CRD resources.")
 
 	return nil
 }
 
-func (m *CRDDataMigrator) migrateStorageClasses() error {
-
-	storageClasses, err := m.etcdClient.GetStorageClasses()
-	if err != nil {
-		return fmt.Errorf("could not read storage classes from etcd; %v", err)
-	}
+func (m *CRDDataMigrator) migrateStorageClasses(storageClasses []*storageclass.Persistent) error {
 
 	if len(storageClasses) == 0 {
 		if m.dryRun {
@@ -195,10 +237,13 @@ func (m *CRDDataMigrator) migrateStorageClasses() error {
 	}
 
 	for _, sc := range storageClasses {
-		if err = m.crdClient.AddStorageClassPersistent(sc); err != nil {
+		if err := m.crdClient.AddStorageClassPersistent(sc); err != nil {
 			return fmt.Errorf("could not write storage class resource; %v", err)
 		}
 		log.WithField("sc", sc.GetName()).Debug("Copied storage class.")
+
+		m.migratedCount++
+		m.logTimeRemainingEstimate()
 	}
 	log.WithField("count", len(storageClasses)).Info("Copied all storage classes to CRD resources.")
 
@@ -226,18 +271,16 @@ func (m *CRDDataMigrator) migrateVolumes(volumes []*storage.VolumeExternal) erro
 			return fmt.Errorf("could not write volume resource; %v", err)
 		}
 		log.WithField("volume", volume.Config.Name).Debug("Copied volume.")
+
+		m.migratedCount++
+		m.logTimeRemainingEstimate()
 	}
 	log.WithField("count", len(volumes)).Info("Copied all volumes to CRD resources.")
 
 	return nil
 }
 
-func (m *CRDDataMigrator) migrateTransactions() error {
-
-	transactions, err := m.etcdClient.GetVolumeTransactions()
-	if err != nil {
-		return fmt.Errorf("could not read transactions from etcd; %v", err)
-	}
+func (m *CRDDataMigrator) migrateTransactions(transactions []*VolumeTransaction) error {
 
 	if len(transactions) == 0 {
 		if m.dryRun {
@@ -254,10 +297,13 @@ func (m *CRDDataMigrator) migrateTransactions() error {
 	}
 
 	for _, txn := range transactions {
-		if err = m.crdClient.AddVolumeTransaction(txn); err != nil {
+		if err := m.crdClient.AddVolumeTransaction(txn); err != nil {
 			return fmt.Errorf("could not write transaction resource; %v", err)
 		}
 		log.WithField("volume", txn.Config.Name).Debug("Copied transaction.")
+
+		m.migratedCount++
+		m.logTimeRemainingEstimate()
 	}
 	log.WithField("count", len(transactions)).Info("Copied all transactions to CRD resources.")
 
@@ -306,4 +352,28 @@ func (m *CRDDataMigrator) writeEtcdSchemaVersion() error {
 	}).Info("Wrote Etcd-based persistent state version.")
 
 	return nil
+}
+
+func (m *CRDDataMigrator) logTimeRemainingEstimate() {
+
+	// Ensure we have migrated something, and log the time remaining every 100 objects
+	if (m.migratedCount%100) != 0 || m.migratedCount <= 0 {
+		return
+	}
+
+	// Determine time elapsed and ensure it is positive
+	timeElapsed := time.Since(m.startTime)
+	if timeElapsed <= 0 {
+		return
+	}
+
+	// Determine average time per object
+	nanosecondsPerObject := timeElapsed.Nanoseconds() / int64(m.migratedCount)
+
+	// Determine time remaining
+	objectsRemaining := m.totalCount - m.migratedCount
+	timeRemaining := time.Duration(nanosecondsPerObject * int64(objectsRemaining)).Truncate(time.Second)
+
+	log.WithField("estimatedTimeRemaining", timeRemaining).Infof("Migrated %d of %d objects.",
+		m.migratedCount, m.totalCount)
 }
