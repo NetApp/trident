@@ -704,7 +704,7 @@ func (d Client) FlexGroupExists(name string) (bool, error) {
 	return true, nil
 }
 
-// FlexGroupVolumeSize retrieves the size of the specified volume
+// FlexGroupSize retrieves the size of the specified volume
 func (d Client) FlexGroupSize(name string) (int, error) {
 	volAttrs, err := d.FlexGroupGet(name)
 	if err != nil {

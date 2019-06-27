@@ -586,7 +586,7 @@ func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*sto
 		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshot(snapConfig, &d.Config, d.API)
+	return GetSnapshot(snapConfig, &d.Config, d.API, d.API.VolumeSize)
 }
 
 // Return the list of snapshots associated with the specified volume
@@ -602,7 +602,7 @@ func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*sto
 		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshots(volConfig, &d.Config, d.API)
+	return GetSnapshots(volConfig, &d.Config, d.API, d.API.VolumeSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -622,7 +622,7 @@ func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshot(snapConfig, &d.Config, d.API)
+	return CreateSnapshot(snapConfig, &d.Config, d.API, d.API.VolumeSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.

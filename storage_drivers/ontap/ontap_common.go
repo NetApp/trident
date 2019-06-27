@@ -777,6 +777,7 @@ func CreateOntapClone(
 // and a non-existent snapshot, this method may return (nil, nil).
 func GetSnapshot(
 	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+	sizeGetter func(string) (int, error),
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -793,7 +794,7 @@ func GetSnapshot(
 		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	size, err := client.VolumeSize(internalVolName)
+	size, err := sizeGetter(internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
@@ -833,6 +834,7 @@ func GetSnapshot(
 // GetSnapshots returns the list of snapshots associated with the named volume.
 func GetSnapshots(
 	volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+	sizeGetter func(string) (int, error),
 ) ([]*storage.Snapshot, error) {
 
 	internalVolName := volConfig.InternalName
@@ -847,7 +849,7 @@ func GetSnapshots(
 		defer log.WithFields(fields).Debug("<<<< GetSnapshotList")
 	}
 
-	size, err := client.VolumeSize(internalVolName)
+	size, err := sizeGetter(internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
@@ -890,6 +892,7 @@ func GetSnapshots(
 // CreateSnapshot creates a snapshot for the given volume.
 func CreateSnapshot(
 	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
+	sizeGetter func(string) (int, error),
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -915,7 +918,7 @@ func CreateSnapshot(
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
 	}
 
-	size, err := client.VolumeSize(internalVolName)
+	size, err := sizeGetter(internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
