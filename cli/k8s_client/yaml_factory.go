@@ -275,10 +275,15 @@ func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils
 	}
 
 	var deploymentYAML string
-	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
+	switch version.MinorVersion() {
+	case 13:
 		deploymentYAML = csiDeployment113YAMLTemplate
-	} else {
+	case 14:
 		deploymentYAML = csiDeployment114YAMLTemplate
+	case 15:
+		fallthrough
+	default:
+		deploymentYAML = csiDeployment115YAMLTemplate
 	}
 
 	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
@@ -479,6 +484,110 @@ spec:
         args:
         - "--v=9"
         - "--timeout=60s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-snapshotter
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.0
+        args:
+        - "--v=9"
+        - "--timeout=60s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      volumes:
+      - name: socket-dir
+        emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
+`
+
+const csiDeployment115YAMLTemplate = `---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: trident-csi
+  labels:
+    app: {LABEL}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {LABEL}
+    spec:
+      serviceAccount: trident-csi
+      containers:
+      - name: trident-main
+        image: {TRIDENT_IMAGE}
+        ports:
+        - containerPort: 8443
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - "--crd_persistence"
+        - "--k8s_pod"
+        - "--https_rest"
+        - "--https_port=8443"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
+        {DEBUG}
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - 127.0.0.1:8000
+            - get
+            - backend
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /plugin
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: csi-provisioner
+        image: quay.io/k8scsi/csi-provisioner:v1.3.0
+        args:
+        - "--v=9"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-attacher
+        image: quay.io/k8scsi/csi-attacher:v1.2.0
+        args:
+        - "--v=9"
+        - "--timeout=60s"
+        - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS

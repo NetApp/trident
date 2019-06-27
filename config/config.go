@@ -80,7 +80,7 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.11.0"
-	KubernetesVersionMax = "v1.14.0"
+	KubernetesVersionMax = "v1.15.0"
 
 	// Minimum Kubernetes version for CSI Trident (non-CSI is the default)
 	KubernetesCSIVersionMinOptional = "v1.13.0"

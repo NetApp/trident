@@ -1045,6 +1045,7 @@ func (k *KubeClient) CreateObjectByFile(filePath string) error {
 // CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
 func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 	for _, yamlDocument := range regexp.MustCompile(YAMLSeparator).Split(yamlData, -1) {
+
 		checkCreateObjectByYAML := func() error {
 			if returnError := k.createObjectByYAML(yamlDocument); returnError != nil {
 				log.WithFields(log.Fields{

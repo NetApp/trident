@@ -12,6 +12,7 @@
 - **Kubernetes:** Implemented CSI Trident (optional for Kubernetes 1.13, exclusive for Kubernetes 1.14+).
 - **Kubernetes:** Added support to CSI Trident for volume snapshots.
 - **Kubernetes:** Converted Trident to use custom resource definitions instead of etcd.
+- **Kubernetes:** Added support for Kubernetes 1.15.
 - Trident now allows Solidfire backends without `Types` defined. However, such backends
   will have one default storage pool with the default backend QoS values.
 - Added CONTRIBUTING.md file to describe the process for contributing changes to Trident.

@@ -256,115 +256,109 @@ func uninstallTrident() error {
 		}
 	}
 
-	// Next handle all the other common CSI components (daemonset, service)
+	// Next handle all the other common CSI components (daemonset, service).  Some/all of these may
+	// not be present if uninstalling legacy Trident or preview CSI Trident, in which case we log
+	// warnings only.
 
-	if csi {
+	if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
 
-		// Delete CSI Trident components
-		if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
+		log.WithFields(log.Fields{
+			"label": TridentNodeLabel,
+			"error": err,
+		}).Warning("Trident daemonset not found.")
 
-			log.WithFields(log.Fields{
-				"label": TridentNodeLabel,
-				"error": err,
-			}).Warning("Trident daemonset not found.")
-			anyErrors = true
+	} else {
 
-		} else {
+		// Daemonset found by label, so ensure there isn't a namespace clash
+		if TridentPodNamespace != daemonset.Namespace {
+			return fmt.Errorf("a Trident daemonset was found in namespace '%s', "+
+				"not in specified namespace '%s'", daemonset.Namespace, TridentPodNamespace)
+		}
 
-			// Daemonset found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != daemonset.Namespace {
-				return fmt.Errorf("a Trident daemonset was found in namespace '%s', "+
-					"not in specified namespace '%s'", daemonset.Namespace, TridentPodNamespace)
-			}
+		log.WithFields(log.Fields{
+			"daemonset": daemonset.Name,
+			"namespace": daemonset.Namespace,
+		}).Debug("Trident daemonset found by label.")
 
+		// Delete the daemonset
+		if err = client.DeleteDaemonSetByLabel(TridentNodeLabel); err != nil {
 			log.WithFields(log.Fields{
 				"daemonset": daemonset.Name,
 				"namespace": daemonset.Namespace,
-			}).Debug("Trident daemonset found by label.")
+				"label":     TridentNodeLabel,
+				"error":     err,
+			}).Warning("Could not delete Trident daemonset.")
+			anyErrors = true
+		} else {
+			log.Info("Deleted Trident daemonset.")
+		}
+	}
 
-			// Delete the daemonset
-			if err = client.DeleteDaemonSetByLabel(TridentNodeLabel); err != nil {
-				log.WithFields(log.Fields{
-					"daemonset": daemonset.Name,
-					"namespace": daemonset.Namespace,
-					"label":     TridentNodeLabel,
-					"error":     err,
-				}).Warning("Could not delete Trident daemonset.")
-				anyErrors = true
-			} else {
-				log.Info("Deleted Trident daemonset.")
-			}
+	if service, err := client.GetServiceByLabel(TridentCSILabel, true); err != nil {
+
+		log.WithFields(log.Fields{
+			"label": TridentCSILabel,
+			"error": err,
+		}).Warning("Trident service not found.")
+
+	} else {
+
+		// Service found by label, so ensure there isn't a namespace clash
+		if TridentPodNamespace != service.Namespace {
+			return fmt.Errorf("a Trident service was found in namespace '%s', "+
+				"not in specified namespace '%s'", service.Namespace, TridentPodNamespace)
 		}
 
-		if service, err := client.GetServiceByLabel(appLabel, true); err != nil {
+		log.WithFields(log.Fields{
+			"service":   service.Name,
+			"namespace": service.Namespace,
+		}).Debug("Trident service found by label.")
 
-			log.WithFields(log.Fields{
-				"label": appLabel,
-				"error": err,
-			}).Warning("Trident service not found.")
-			anyErrors = true
-
-		} else {
-
-			// Service found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != service.Namespace {
-				return fmt.Errorf("a Trident service was found in namespace '%s', "+
-					"not in specified namespace '%s'", service.Namespace, TridentPodNamespace)
-			}
-
+		// Delete the service
+		if err = client.DeleteServiceByLabel(TridentCSILabel); err != nil {
 			log.WithFields(log.Fields{
 				"service":   service.Name,
 				"namespace": service.Namespace,
-			}).Debug("Trident service found by label.")
+				"label":     TridentCSILabel,
+				"error":     err,
+			}).Warning("Could not delete service.")
+			anyErrors = true
+		} else {
+			log.Info("Deleted Trident service.")
+		}
+	}
 
-			// Delete the service
-			if err = client.DeleteServiceByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
-					"service":   service.Name,
-					"namespace": service.Namespace,
-					"label":     appLabel,
-					"error":     err,
-				}).Warning("Could not delete service.")
-				anyErrors = true
-			} else {
-				log.Info("Deleted Trident service.")
-			}
+	if secret, err := client.GetSecretByLabel(TridentCSILabel, true); err != nil {
+
+		log.WithFields(log.Fields{
+			"label": TridentCSILabel,
+			"error": err,
+		}).Warning("Trident secret not found.")
+
+	} else {
+
+		// Secret found by label, so ensure there isn't a namespace clash
+		if TridentPodNamespace != secret.Namespace {
+			return fmt.Errorf("a Trident secret was found in namespace '%s', "+
+				"not in specified namespace '%s'", secret.Namespace, TridentPodNamespace)
 		}
 
-		if secret, err := client.GetSecretByLabel(appLabel, true); err != nil {
+		log.WithFields(log.Fields{
+			"service":   secret.Name,
+			"namespace": secret.Namespace,
+		}).Debug("Trident secret found by label.")
 
-			log.WithFields(log.Fields{
-				"label": appLabel,
-				"error": err,
-			}).Warning("Trident secret not found.")
-
-			// The secret was added in 19.04, so it isn't an error if it wasn't found.
-
-		} else {
-
-			// Secret found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != secret.Namespace {
-				return fmt.Errorf("a Trident secret was found in namespace '%s', "+
-					"not in specified namespace '%s'", secret.Namespace, TridentPodNamespace)
-			}
-
+		// Delete the secret
+		if err = client.DeleteSecretByLabel(TridentCSILabel); err != nil {
 			log.WithFields(log.Fields{
 				"service":   secret.Name,
 				"namespace": secret.Namespace,
-			}).Debug("Trident secret found by label.")
-
-			// Delete the secret
-			if err = client.DeleteSecretByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
-					"service":   secret.Name,
-					"namespace": secret.Namespace,
-					"label":     appLabel,
-					"error":     err,
-				}).Warning("Could not delete secret.")
-				anyErrors = true
-			} else {
-				log.Info("Deleted Trident secret.")
-			}
+				"label":     TridentCSILabel,
+				"error":     err,
+			}).Warning("Could not delete secret.")
+			anyErrors = true
+		} else {
+			log.Info("Deleted Trident secret.")
 		}
 	}
 

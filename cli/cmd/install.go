@@ -529,36 +529,25 @@ func installTrident() (returnError error) {
 
 		logFields = log.Fields{"pv": pvName, "pvc": pvcName}
 
-		// Limit 19.07-alpha.1 to a greenfield deployment
-		if pvcExists || pvExists {
-			log.WithFields(logFields).Error("PV and/or PVC exist.")
-			returnError = fmt.Errorf("data from a previous Trident installation exists; " +
-				"this installer only supports creating a fresh Trident deployment.")
+		if pvcExists && pvExists {
+			log.WithFields(logFields).Debug("PV and PVC exist, installer will migrate etcd data to CRDs.")
+			migrateToCRDs = true
+		} else if !pvcExists && !pvExists {
+			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
+				"CRD-based deployment.")
+		} else if pvcExists && !pvExists {
+			log.WithFields(logFields).Error("PVC exists but PV does not.")
+			returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
+				"Trident installation, please use the installer from that version to recreate the missing PV, "+
+				"else delete the PVC and try again", pvcName, pvName)
 			return
-		} else {
-			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will " +
-				"create a fresh CRD-based deployment.")
+		} else if !pvcExists && pvExists {
+			log.WithFields(logFields).Error("PV exists but PVC does not.")
+			returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
+				"Trident installation, please use the installer from that version to recreate the missing PVC, "+
+				"else delete the PV and try again", pvName, pvcName)
+			return
 		}
-
-		//if pvcExists && pvExists {
-		//	log.WithFields(logFields).Debug("PV and PVC exist, installer will migrate etcd data to CRDs.")
-		//	migrateToCRDs = true
-		//} else if !pvcExists && !pvExists {
-		//	log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
-		//		"CRD-based deployment.")
-		//} else if pvcExists && !pvExists {
-		//	log.WithFields(logFields).Error("PVC exists but PV does not.")
-		//	returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
-		//		"Trident installation, please use the installer from that version to recreate the missing PV, "+
-		//		"else delete the PVC and try again", pvcName, pvName)
-		//	return
-		//} else if !pvcExists && pvExists {
-		//	log.WithFields(logFields).Error("PV exists but PVC does not.")
-		//	returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
-		//		"Trident installation, please use the installer from that version to recreate the missing PVC, "+
-		//		"else delete the PV and try again", pvName, pvcName)
-		//	return
-		//}
 	}
 
 	// If dry-run was specified, stop before we change anything
@@ -639,17 +628,17 @@ func installTrident() (returnError error) {
 
 	} else {
 
-		// Create the CSI CRDs if necessary
+		// Create the CSI CRDs if necessary (1.13 only)
 		returnError = createK8S113CSICustomResourceDefinitions()
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Kubernetes 1.13 CSI CRDs; %v", returnError)
 			return
 		}
 
-		// Create the CSI Driver object if necessary
-		returnError = createK8S114CSIDriver()
+		// Create the CSI Driver object if necessary (1.14+)
+		returnError = createK8SCSIDriver()
 		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Kubernetes 1.14 CSI Driver object; %v", returnError)
+			returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
 			return
 		}
 
@@ -955,10 +944,10 @@ func createK8S113CSICustomResourceDefinitions() error {
 	return nil
 }
 
-func createK8S114CSIDriver() error {
+func createK8SCSIDriver() error {
 
-	// We only have to create this object on Kubernetes 1.14
-	if client.ServerVersion().MajorVersion() != 1 || client.ServerVersion().MinorVersion() != 14 {
+	// We only have to create this object on Kubernetes 1.14+
+	if client.ServerVersion().MajorVersion() != 1 || client.ServerVersion().MinorVersion() < 14 {
 		return nil
 	}
 
