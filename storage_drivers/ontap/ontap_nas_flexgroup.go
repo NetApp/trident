@@ -396,7 +396,8 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConf
 		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	//return GetSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // Return the list of snapshots associated with the specified volume
@@ -412,7 +413,8 @@ func (d *NASFlexGroupStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig
 		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshots(volConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	//return GetSnapshots(volConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return make([]*storage.Snapshot, 0), nil
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -432,7 +434,8 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotC
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	//return CreateSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -449,7 +452,8 @@ func (d *NASFlexGroupStorageDriver) RestoreSnapshot(snapConfig *storage.Snapshot
 		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return RestoreSnapshot(snapConfig, &d.Config, d.API)
+	//return RestoreSnapshot(snapConfig, &d.Config, d.API)
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -466,7 +470,8 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotC
 		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	return DeleteSnapshot(snapConfig, &d.Config, d.API)
+	//return DeleteSnapshot(snapConfig, &d.Config, d.API)
+	return drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // Tests the existence of a FlexGroup. Returns nil if the FlexGroup

@@ -528,25 +528,37 @@ func installTrident() (returnError error) {
 		migrateToCRDs = false
 
 		logFields = log.Fields{"pv": pvName, "pvc": pvcName}
-		if pvcExists && pvExists {
-			log.WithFields(logFields).Debug("PV and PVC exist, installer will migrate etcd data to CRDs.")
-			migrateToCRDs = true
-		} else if !pvcExists && !pvExists {
-			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
-				"CRD-based deployment.")
-		} else if pvcExists && !pvExists {
-			log.WithFields(logFields).Error("PVC exists but PV does not.")
-			returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
-				"Trident installation, please use the installer from that version to recreate the missing PV, "+
-				"else delete the PVC and try again", pvcName, pvName)
+
+		// Limit 19.07-alpha.1 to a greenfield deployment
+		if pvcExists || pvExists {
+			log.WithFields(logFields).Error("PV and/or PVC exist.")
+			returnError = fmt.Errorf("data from a previous Trident installation exists; " +
+				"this installer only supports creating a fresh Trident deployment.")
 			return
-		} else if !pvcExists && pvExists {
-			log.WithFields(logFields).Error("PV exists but PVC does not.")
-			returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
-				"Trident installation, please use the installer from that version to recreate the missing PVC, "+
-				"else delete the PV and try again", pvName, pvcName)
-			return
+		} else {
+			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will " +
+				"create a fresh CRD-based deployment.")
 		}
+
+		//if pvcExists && pvExists {
+		//	log.WithFields(logFields).Debug("PV and PVC exist, installer will migrate etcd data to CRDs.")
+		//	migrateToCRDs = true
+		//} else if !pvcExists && !pvExists {
+		//	log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
+		//		"CRD-based deployment.")
+		//} else if pvcExists && !pvExists {
+		//	log.WithFields(logFields).Error("PVC exists but PV does not.")
+		//	returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
+		//		"Trident installation, please use the installer from that version to recreate the missing PV, "+
+		//		"else delete the PVC and try again", pvcName, pvName)
+		//	return
+		//} else if !pvcExists && pvExists {
+		//	log.WithFields(logFields).Error("PV exists but PVC does not.")
+		//	returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
+		//		"Trident installation, please use the installer from that version to recreate the missing PVC, "+
+		//		"else delete the PV and try again", pvName, pvcName)
+		//	return
+		//}
 	}
 
 	// If dry-run was specified, stop before we change anything
