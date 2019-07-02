@@ -38,10 +38,7 @@ var deleteBackendCmd = &cobra.Command{
 
 func backendDelete(backendNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	if allBackends {
 		// Make sure --all isn't being used along with specific backends
@@ -50,7 +47,7 @@ func backendDelete(backendNames []string) error {
 		}
 
 		// Get list of backend names so we can delete them all
-		backendNames, err = GetBackends(baseURL)
+		backendNames, err = GetBackends()
 		if err != nil {
 			return err
 		}
@@ -62,7 +59,7 @@ func backendDelete(backendNames []string) error {
 	}
 
 	for _, backendName := range backendNames {
-		url := baseURL + "/backend/" + backendName
+		url := BaseURL() + "/backend/" + backendName
 
 		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {

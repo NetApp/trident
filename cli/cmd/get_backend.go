@@ -38,14 +38,11 @@ var getBackendCmd = &cobra.Command{
 
 func backendList(backendNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	// If no backends were specified, we'll get all of them
 	if len(backendNames) == 0 {
-		backendNames, err = GetBackends(baseURL)
+		backendNames, err = GetBackends()
 		if err != nil {
 			return err
 		}
@@ -56,7 +53,7 @@ func backendList(backendNames []string) error {
 	// Get the actual backend objects
 	for _, backendName := range backendNames {
 
-		backend, err := GetBackend(baseURL, backendName)
+		backend, err := GetBackend(backendName)
 		if err != nil {
 			return err
 		}
@@ -68,9 +65,9 @@ func backendList(backendNames []string) error {
 	return nil
 }
 
-func GetBackends(baseURL string) ([]string, error) {
+func GetBackends() ([]string, error) {
 
-	url := baseURL + "/backend"
+	url := BaseURL() + "/backend"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
@@ -89,9 +86,9 @@ func GetBackends(baseURL string) ([]string, error) {
 	return listBackendsResponse.Backends, nil
 }
 
-func GetBackend(baseURL, backendName string) (storage.BackendExternal, error) {
+func GetBackend(backendName string) (storage.BackendExternal, error) {
 
-	url := baseURL + "/backend/" + backendName
+	url := BaseURL() + "/backend/" + backendName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
@@ -110,9 +107,9 @@ func GetBackend(baseURL, backendName string) (storage.BackendExternal, error) {
 	return getBackendResponse.Backend, nil
 }
 
-func GetBackendByBackendUUID(baseURL, backendUUID string) (storage.BackendExternal, error) {
+func GetBackendByBackendUUID(backendUUID string) (storage.BackendExternal, error) {
 
-	url := baseURL + "/backend/" + backendUUID
+	url := BaseURL() + "/backend/" + backendUUID
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

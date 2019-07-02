@@ -74,12 +74,7 @@ var versionCmd = &cobra.Command{
 // getVersion retrieves the Trident server version directly using the REST API
 func getVersionFromRest() (rest.GetVersionResponse, error) {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return rest.GetVersionResponse{}, err
-	}
-
-	url := baseURL + "/version"
+	url := BaseURL() + "/version"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

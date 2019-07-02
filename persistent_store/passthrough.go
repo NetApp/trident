@@ -381,19 +381,19 @@ func (c *PassthroughClient) DeleteVolumes() error {
 	return nil
 }
 
-func (c *PassthroughClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
+func (c *PassthroughClient) AddVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
-	return make([]*VolumeTransaction, 0), nil
+func (c *PassthroughClient) GetVolumeTransactions() ([]*storage.VolumeTransaction, error) {
+	return make([]*storage.VolumeTransaction, 0), nil
 }
 
-func (c *PassthroughClient) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error) {
+func (c *PassthroughClient) GetExistingVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
 	return nil, nil
 }
 
-func (c *PassthroughClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
+func (c *PassthroughClient) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	return nil
 }
 

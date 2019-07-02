@@ -371,18 +371,18 @@ func (o *TridentOrchestrator) bootstrap() error {
 	return nil
 }
 
-func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeTransaction) error {
+func (o *TridentOrchestrator) handleFailedTransaction(v *storage.VolumeTransaction) error {
 
 	switch v.Op {
-	case persistentstore.AddVolume, persistentstore.DeleteVolume,
-		persistentstore.ImportVolume, persistentstore.ResizeVolume:
+	case storage.AddVolume, storage.DeleteVolume,
+		storage.ImportVolume, storage.ResizeVolume:
 		log.WithFields(log.Fields{
 			"volume":       v.Config.Name,
 			"size":         v.Config.Size,
 			"storageClass": v.Config.StorageClass,
 			"op":           v.Op,
 		}).Info("Processed volume transaction log.")
-	case persistentstore.AddSnapshot, persistentstore.DeleteSnapshot:
+	case storage.AddSnapshot, storage.DeleteSnapshot:
 		log.WithFields(log.Fields{
 			"volume":   v.SnapshotConfig.VolumeName,
 			"snapshot": v.SnapshotConfig.Name,
@@ -391,7 +391,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 	}
 
 	switch v.Op {
-	case persistentstore.AddVolume:
+	case storage.AddVolume:
 		// Regardless of whether the transaction succeeded or not, we need
 		// to roll it back.  There are three possible states:
 		// 1) Volume transaction created only
@@ -433,7 +433,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			return fmt.Errorf("failed to clean up volume addition transaction: %v", err)
 		}
 
-	case persistentstore.DeleteVolume:
+	case storage.DeleteVolume:
 		// Because we remove the volume from persistent store after we remove
 		// it from the backend, we need to take any special measures only when
 		// the volume is still in the persistent store. In this case, the
@@ -457,7 +457,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			return fmt.Errorf("failed to clean up volume deletion transaction: %v", err)
 		}
 
-	case persistentstore.AddSnapshot:
+	case storage.AddSnapshot:
 		// Regardless of whether the transaction succeeded or not, we need
 		// to roll it back.  There are three possible states:
 		// 1) Snapshot transaction created only
@@ -494,7 +494,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			return fmt.Errorf("failed to clean up snapshot addition transaction: %v", err)
 		}
 
-	case persistentstore.DeleteSnapshot:
+	case storage.DeleteSnapshot:
 		// Because we remove the snapshot from persistent store after we remove
 		// it from the backend, we need to take any special measures only when
 		// the snapshot is still in the persistent store. In this case, the
@@ -516,7 +516,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 			return fmt.Errorf("failed to clean up snapshot deletion transaction: %v", err)
 		}
 
-	case persistentstore.ResizeVolume:
+	case storage.ResizeVolume:
 		// There are a few possible states:
 		// 1) We failed to resize the volume on the backend.
 		// 2) We successfully resized the volume on the backend.
@@ -545,7 +545,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(v *persistentstore.VolumeT
 		}
 		return o.resizeVolumeCleanup(err, vol, v)
 
-	case persistentstore.ImportVolume:
+	case storage.ImportVolume:
 		/*
 			There are a few possible states:
 				1) We created a PVC.
@@ -1202,9 +1202,9 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	}
 
 	// Add a transaction in case the operation must be rolled back later
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: volumeConfig,
-		Op:     persistentstore.AddVolume,
+		Op:     storage.AddVolume,
 	}
 	if err = o.addVolumeTransaction(volTxn); err != nil {
 		return nil, err
@@ -1321,9 +1321,9 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 	cloneConfig.QoSType = volumeConfig.QoSType
 
 	// Add transaction in case the operation must be rolled back later
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: cloneConfig,
-		Op:     persistentstore.AddVolume,
+		Op:     storage.AddVolume,
 	}
 	if err = o.addVolumeTransaction(volTxn); err != nil {
 		return nil, err
@@ -1465,9 +1465,9 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 	}
 
 	// Add transaction in case operation must be rolled back
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: volumeConfig,
-		Op:     persistentstore.ImportVolume,
+		Op:     storage.ImportVolume,
 	}
 	if err = o.addVolumeTransaction(volTxn); err != nil {
 		return nil, fmt.Errorf("failed to add volume transaction: %v", err)
@@ -1480,7 +1480,8 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 
 	volume, err := backend.ImportVolume(volumeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to import volume %s on backend %s: %v", volumeConfig.ImportOriginalName, backendName, err)
+		return nil, fmt.Errorf("failed to import volume %s on backend %s: %v",
+			volumeConfig.ImportOriginalName, backendName, err)
 	}
 
 	if !notManaged {
@@ -1557,9 +1558,9 @@ func (o *TridentOrchestrator) ImportVolume(
 	}
 
 	// Add transaction in case operation must be rolled back
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: volumeConfig,
-		Op:     persistentstore.ImportVolume,
+		Op:     storage.ImportVolume,
 	}
 	if err = o.addVolumeTransaction(volTxn); err != nil {
 		return nil, fmt.Errorf("failed to add volume transaction: %v", err)
@@ -1610,7 +1611,7 @@ func (o *TridentOrchestrator) ImportVolume(
 // addVolumeTransaction is called from the volume create, clone, and resize
 // methods to save a record of the operation in case it fails and must be
 // cleaned up later.
-func (o *TridentOrchestrator) addVolumeTransaction(volTxn *persistentstore.VolumeTransaction) error {
+func (o *TridentOrchestrator) addVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 
 	// Check if a transaction already exists for this volume. This condition
 	// can occur if we failed to clean up the transaction object during the
@@ -1639,7 +1640,7 @@ func (o *TridentOrchestrator) addVolumeTransaction(volTxn *persistentstore.Volum
 		}
 
 		switch oldTxn.Op {
-		case persistentstore.DeleteVolume, persistentstore.DeleteSnapshot:
+		case storage.DeleteVolume, storage.DeleteSnapshot:
 			return fmt.Errorf("rejecting the %v transaction after successful completion "+
 				"of a preexisting %v transaction", volTxn.Op, oldTxn.Op)
 		}
@@ -1650,7 +1651,7 @@ func (o *TridentOrchestrator) addVolumeTransaction(volTxn *persistentstore.Volum
 
 // deleteVolumeTransaction deletes a volume transaction created by
 // addVolumeTransaction.
-func (o *TridentOrchestrator) deleteVolumeTransaction(volTxn *persistentstore.VolumeTransaction) error {
+func (o *TridentOrchestrator) deleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	return o.storeClient.DeleteVolumeTransaction(volTxn)
 }
 
@@ -1658,7 +1659,7 @@ func (o *TridentOrchestrator) deleteVolumeTransaction(volTxn *persistentstore.Vo
 // to clean up in case anything goes wrong during the operation.
 func (o *TridentOrchestrator) addVolumeCleanup(
 	err error, backend *storage.Backend, vol *storage.Volume,
-	volTxn *persistentstore.VolumeTransaction, volumeConfig *storage.VolumeConfig) error {
+	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig) error {
 
 	var (
 		cleanupErr, txErr error
@@ -1710,7 +1711,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 }
 
 func (o *TridentOrchestrator) importVolumeCleanup(
-	err error, volumeConfig *storage.VolumeConfig, volTxn *persistentstore.VolumeTransaction) error {
+	err error, volumeConfig *storage.VolumeConfig, volTxn *storage.VolumeTransaction) error {
 
 	var (
 		cleanupErr, txErr error
@@ -1974,9 +1975,9 @@ func (o *TridentOrchestrator) DeleteVolume(volumeName string) (err error) {
 		}).Warnf("Delete operation is likely to fail with an orphaned volume!")
 	}
 
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: volume.Config,
-		Op:     persistentstore.DeleteVolume,
+		Op:     storage.DeleteVolume,
 	}
 	if err := o.addVolumeTransaction(volTxn); err != nil {
 		return err
@@ -2185,10 +2186,10 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
 
 	// Add transaction in case the operation must be rolled back later
-	txn := &persistentstore.VolumeTransaction{
+	txn := &storage.VolumeTransaction{
 		Config:         volume.Config,
 		SnapshotConfig: snapshotConfig,
-		Op:             persistentstore.AddSnapshot,
+		Op:             storage.AddSnapshot,
 	}
 	if err = o.addVolumeTransaction(txn); err != nil {
 		return nil, err
@@ -2219,7 +2220,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 // to clean up in case anything goes wrong during the operation.
 func (o *TridentOrchestrator) addSnapshotCleanup(
 	err error, backend *storage.Backend, snapshot *storage.Snapshot,
-	volTxn *persistentstore.VolumeTransaction, snapConfig *storage.SnapshotConfig) error {
+	volTxn *storage.VolumeTransaction, snapConfig *storage.SnapshotConfig) error {
 
 	var (
 		cleanupErr, txErr error
@@ -2388,10 +2389,10 @@ func (o *TridentOrchestrator) DeleteSnapshot(volumeName, snapshotName string) (e
 		}).Warnf("Delete operation is likely to fail with an orphaned volume!")
 	}
 
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config:         volume.Config,
 		SnapshotConfig: snapshot.Config,
-		Op:             persistentstore.DeleteSnapshot,
+		Op:             storage.DeleteSnapshot,
 	}
 	if err := o.addVolumeTransaction(volTxn); err != nil {
 		return err
@@ -2463,6 +2464,10 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(volumeName string) ([]*stor
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+
+	if _, ok := o.volumes[volumeName]; !ok {
+		return nil, notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
 
 	snapshots := make([]*storage.SnapshotExternal, 0, len(o.snapshots))
 	for _, s := range o.snapshots {
@@ -2562,9 +2567,9 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 	cloneConfig.Size = newSize
 
 	// Add a transaction in case the operation must be retried during bootstraping.
-	volTxn := &persistentstore.VolumeTransaction{
+	volTxn := &storage.VolumeTransaction{
 		Config: cloneConfig,
-		Op:     persistentstore.ResizeVolume,
+		Op:     storage.ResizeVolume,
 	}
 	if err = o.addVolumeTransaction(volTxn); err != nil {
 		return
@@ -2627,7 +2632,7 @@ func (o *TridentOrchestrator) resizeVolume(volume *storage.Volume, newSize strin
 // resizeVolumeCleanup is used to clean up artifacts of volume resize in case
 // anything goes wrong during the operation.
 func (o *TridentOrchestrator) resizeVolumeCleanup(
-	err error, vol *storage.Volume, volTxn *persistentstore.VolumeTransaction) error {
+	err error, vol *storage.Volume, volTxn *storage.VolumeTransaction) error {
 
 	if vol == nil || err == nil ||
 		(err != nil && vol.Config.Size != volTxn.Config.Size) {

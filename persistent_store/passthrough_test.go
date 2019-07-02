@@ -74,18 +74,23 @@ func getFakeVolumeWithName(name string, fakeBackend *storage.Backend) *storage.V
 		fakeBackend.Storage["pool-0"].Name, false)
 }
 
-func getFakeVolumeTransaction() *VolumeTransaction {
+func getFakeVolumeTransaction() *storage.VolumeTransaction {
 	return getFakeVolumeTransactionWithName("fake_volume")
 }
 
-func getFakeVolumeTransactionWithName(name string) *VolumeTransaction {
+func getFakeVolumeTransactionWithName(name string) *storage.VolumeTransaction {
 
 	volumeConfig := &storage.VolumeConfig{
 		Name:         name,
 		InternalName: name + "_internal",
 	}
+	snapshotConfig := &storage.SnapshotConfig{}
 
-	return &VolumeTransaction{Config: volumeConfig, Op: AddVolume}
+	return &storage.VolumeTransaction{
+		Config:         volumeConfig,
+		SnapshotConfig: snapshotConfig,
+		Op:             storage.AddVolume,
+	}
 }
 
 func getFakeStorageClass() *sc.StorageClass {

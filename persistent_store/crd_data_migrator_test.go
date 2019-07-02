@@ -239,7 +239,7 @@ func TestEtcdV3ToCRDV1Migration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading transactions from etcd: %v", err)
 	}
-	etcdTxnMap := make(map[string]*VolumeTransaction)
+	etcdTxnMap := make(map[string]*storage.VolumeTransaction)
 	for _, t := range etcdTxns {
 		etcdTxnMap[t.Config.Name] = t
 	}
@@ -248,7 +248,7 @@ func TestEtcdV3ToCRDV1Migration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading transactions from K8S: %v", err)
 	}
-	crdTxnMap := make(map[string]*VolumeTransaction)
+	crdTxnMap := make(map[string]*storage.VolumeTransaction)
 	for _, t := range crdTxns {
 		crdTxnMap[t.Config.Name] = t
 	}

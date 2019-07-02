@@ -588,35 +588,23 @@ func (k *CRDClientV1) DeleteVolumes() error {
 	return nil
 }
 
-func (k *CRDClientV1) AddVolumeTransaction(volTxn *VolumeTransaction) error {
+func (k *CRDClientV1) AddVolumeTransaction(txn *storage.VolumeTransaction) error {
 
-	newTtxn, err := v1.NewTridentTransaction(string(volTxn.Op), volTxn.Config)
+	newTxn, err := v1.NewTridentTransaction(txn)
 	if err != nil {
 		return err
 	}
 
-	_, err = k.client.TridentV1().TridentTransactions(k.namespace).Create(newTtxn)
+	log.WithFields(log.Fields{
+		"op":   txn.Op,
+		"name": v1.NameFix(txn.Name()),
+	}).Debug("AddVolumeTransaction")
 
-	// Update if already exists
-	if errors.IsAlreadyExists(err) {
-		existingTtxn, err := k.client.TridentV1().TridentTransactions(k.namespace).Get(newTtxn.ObjectMeta.Name, getOpts)
-		if err != nil {
-			return err
-		}
-
-		if err = existingTtxn.Apply(string(volTxn.Op), volTxn.Config); err != nil {
-			return err
-		}
-
-		_, err = k.client.TridentV1().TridentTransactions(k.namespace).Update(existingTtxn)
-		if err != nil {
-			return err
-		}
-
-		return nil
+	if _, err = k.client.TridentV1().TridentTransactions(k.namespace).Create(newTxn); err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func (k *CRDClientV1) HasVolumeTransactions() (bool, error) {
@@ -630,14 +618,14 @@ func (k *CRDClientV1) HasVolumeTransactions() (bool, error) {
 	return len(txnList.Items) > 0, nil
 }
 
-func (k *CRDClientV1) GetVolumeTransactions() ([]*VolumeTransaction, error) {
+func (k *CRDClientV1) GetVolumeTransactions() ([]*storage.VolumeTransaction, error) {
 
 	txnList, err := k.client.TridentV1().TridentTransactions(k.namespace).List(listOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]*VolumeTransaction, 0)
+	results := make([]*storage.VolumeTransaction, 0)
 
 	for _, item := range txnList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -648,23 +636,21 @@ func (k *CRDClientV1) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 			continue
 		}
 
-		op, cfg, err := item.Persistent()
-		if err != nil {
+		if txn, err := item.Persistent(); err != nil {
 			return nil, err
+		} else {
+			results = append(results, txn)
 		}
-
-		results = append(results, &VolumeTransaction{
-			Op:     VolumeOperation(op),
-			Config: cfg,
-		})
 	}
 
 	return results, nil
 }
 
-func (k *CRDClientV1) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error) {
+func (k *CRDClientV1) GetExistingVolumeTransaction(
+	volTxn *storage.VolumeTransaction,
+) (*storage.VolumeTransaction, error) {
 
-	ttxn, err := k.client.TridentV1().TridentTransactions(k.namespace).Get(v1.NameFix(volTxn.Config.Name), getOpts)
+	ttxn, err := k.client.TridentV1().TridentTransactions(k.namespace).Get(v1.NameFix(volTxn.Name()), getOpts)
 
 	if errors.IsNotFound(err) {
 		return nil, nil
@@ -680,20 +666,15 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*
 		return nil, err
 	}
 
-	op, cfg, err := ttxn.Persistent()
-
-	if err != nil {
+	if txn, err := ttxn.Persistent(); err != nil {
 		return nil, err
+	} else {
+		return txn, nil
 	}
-
-	return &VolumeTransaction{
-		Op:     VolumeOperation(op),
-		Config: cfg,
-	}, nil
 }
 
-func (k *CRDClientV1) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
-	return k.client.TridentV1().TridentTransactions(k.namespace).Delete(v1.NameFix(volTxn.Config.Name), k.deleteOpts())
+func (k *CRDClientV1) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	return k.client.TridentV1().TridentTransactions(k.namespace).Delete(v1.NameFix(volTxn.Name()), k.deleteOpts())
 }
 
 func (k *CRDClientV1) AddStorageClass(sc *storageclass.StorageClass) error {

@@ -38,14 +38,11 @@ var getNodeCmd = &cobra.Command{
 
 func nodeList(nodeNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	// If no nodes were specified, we'll get all of them
 	if len(nodeNames) == 0 {
-		nodeNames, err = GetNodes(baseURL)
+		nodeNames, err = GetNodes()
 		if err != nil {
 			return err
 		}
@@ -56,7 +53,7 @@ func nodeList(nodeNames []string) error {
 	// Get the actual node objects
 	for _, nodeName := range nodeNames {
 
-		node, err := GetNode(baseURL, nodeName)
+		node, err := GetNode(nodeName)
 		if err != nil {
 			return err
 		}
@@ -68,9 +65,9 @@ func nodeList(nodeNames []string) error {
 	return nil
 }
 
-func GetNodes(baseURL string) ([]string, error) {
+func GetNodes() ([]string, error) {
 
-	url := baseURL + "/node"
+	url := BaseURL() + "/node"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
@@ -89,9 +86,9 @@ func GetNodes(baseURL string) ([]string, error) {
 	return listNodesResponse.Nodes, nil
 }
 
-func GetNode(baseURL, nodeName string) (*utils.Node, error) {
+func GetNode(nodeName string) (*utils.Node, error) {
 
-	url := baseURL + "/node/" + nodeName
+	url := BaseURL() + "/node/" + nodeName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

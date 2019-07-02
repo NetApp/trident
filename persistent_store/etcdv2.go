@@ -445,17 +445,17 @@ func (p *EtcdClientV2) DeleteVolumes() error {
 }
 
 // AddVolumeTransaction logs an AddVolume operation
-func (p *EtcdClientV2) AddVolumeTransaction(volTxn *VolumeTransaction) error {
+func (p *EtcdClientV2) AddVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	if volTxnJSON, err := json.Marshal(volTxn); err != nil {
 		return err
 	} else {
-		return p.Set(config.TransactionURL+"/"+volTxn.getKey(), string(volTxnJSON))
+		return p.Set(config.TransactionURL+"/"+volTxn.Name(), string(volTxnJSON))
 	}
 }
 
 // GetVolumeTransactions retrieves AddVolume logs
-func (p *EtcdClientV2) GetVolumeTransactions() ([]*VolumeTransaction, error) {
-	volTxnList := make([]*VolumeTransaction, 0)
+func (p *EtcdClientV2) GetVolumeTransactions() ([]*storage.VolumeTransaction, error) {
+	volTxnList := make([]*storage.VolumeTransaction, 0)
 	keys, err := p.ReadKeys(config.TransactionURL)
 	if err != nil && MatchKeyNotFoundErr(err) {
 		return volTxnList, nil
@@ -463,7 +463,7 @@ func (p *EtcdClientV2) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 		return nil, err
 	}
 	for _, key := range keys {
-		volTxn := &VolumeTransaction{}
+		volTxn := &storage.VolumeTransaction{}
 		volTxnJSON, err := p.Read(key)
 		if err != nil {
 			return nil, err
@@ -481,11 +481,11 @@ func (p *EtcdClientV2) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 // volume transaction, if it exists.  If no volume transaction with the same
 // key exists, it returns nil.
 func (p *EtcdClientV2) GetExistingVolumeTransaction(
-	volTxn *VolumeTransaction,
-) (*VolumeTransaction, error) {
-	var ret VolumeTransaction
+	volTxn *storage.VolumeTransaction,
+) (*storage.VolumeTransaction, error) {
+	var ret storage.VolumeTransaction
 
-	key := volTxn.getKey()
+	key := volTxn.Name()
 	txnJSON, err := p.Read(config.TransactionURL + "/" + key)
 	if err != nil {
 		if !MatchKeyNotFoundErr(err) {
@@ -501,8 +501,8 @@ func (p *EtcdClientV2) GetExistingVolumeTransaction(
 }
 
 // DeleteVolumeTransaction deletes an AddVolume log
-func (p *EtcdClientV2) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
-	err := p.Delete(config.TransactionURL + "/" + volTxn.getKey())
+func (p *EtcdClientV2) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	err := p.Delete(config.TransactionURL + "/" + volTxn.Name())
 	if err != nil {
 		return err
 	}

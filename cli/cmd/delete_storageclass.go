@@ -38,10 +38,7 @@ var deleteStorageClassCmd = &cobra.Command{
 
 func storageClassDelete(storageClassNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	if allStorageClasses {
 		// Make sure --all isn't being used along with specific storage classes
@@ -50,7 +47,7 @@ func storageClassDelete(storageClassNames []string) error {
 		}
 
 		// Get list of storage class names so we can delete them all
-		storageClassNames, err = GetStorageClasses(baseURL)
+		storageClassNames, err = GetStorageClasses()
 		if err != nil {
 			return err
 		}
@@ -62,7 +59,7 @@ func storageClassDelete(storageClassNames []string) error {
 	}
 
 	for _, storageClassName := range storageClassNames {
-		url := baseURL + "/storageclass/" + storageClassName
+		url := BaseURL() + "/storageclass/" + storageClassName
 
 		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {

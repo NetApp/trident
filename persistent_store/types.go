@@ -54,10 +54,10 @@ type Client interface {
 	GetVolumes() ([]*storage.VolumeExternal, error)
 	DeleteVolumes() error
 
-	AddVolumeTransaction(volTxn *VolumeTransaction) error
-	GetVolumeTransactions() ([]*VolumeTransaction, error)
-	GetExistingVolumeTransaction(volTxn *VolumeTransaction) (*VolumeTransaction, error)
-	DeleteVolumeTransaction(volTxn *VolumeTransaction) error
+	AddVolumeTransaction(volTxn *storage.VolumeTransaction) error
+	GetVolumeTransactions() ([]*storage.VolumeTransaction, error)
+	GetExistingVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
+	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
 
 	AddStorageClass(sc *storageclass.StorageClass) error
 	GetStorageClass(scName string) (*storageclass.Persistent, error)

@@ -1,10 +1,6 @@
 // Copyright 2019 NetApp, Inc. All Rights Reserved.
 
-package persistentstore
-
-import (
-	"github.com/netapp/trident/storage"
-)
+package storage
 
 type VolumeOperation string
 
@@ -18,16 +14,16 @@ const (
 )
 
 type VolumeTransaction struct {
-	Config         *storage.VolumeConfig
-	SnapshotConfig *storage.SnapshotConfig
+	Config         *VolumeConfig
+	SnapshotConfig *SnapshotConfig
 	Op             VolumeOperation
 }
 
-// getKey returns a unique identifier for the VolumeTransaction.  Volume
-// transactions should only be identified by their name.  It's possible that
-// some situations will leave a delete transaction dangling; an add transaction
-// should overwrite this.
-func (t *VolumeTransaction) getKey() string {
+// Name returns a unique identifier for the VolumeTransaction.  Volume transactions should only
+// be identified by their name, while snapshot transactions should be identified by their name as
+// well as their volume name.  It's possible that some situations will leave a delete transaction
+// dangling; an add transaction should overwrite this.
+func (t *VolumeTransaction) Name() string {
 	switch t.Op {
 	case AddSnapshot, DeleteSnapshot:
 		return t.SnapshotConfig.ID()

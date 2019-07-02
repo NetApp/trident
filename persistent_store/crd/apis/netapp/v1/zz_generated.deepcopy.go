@@ -275,7 +275,8 @@ func (in *TridentTransaction) DeepCopyInto(out *TridentTransaction) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	in.Config.DeepCopyInto(&out.Config)
+	in.VolumeConfig.DeepCopyInto(&out.VolumeConfig)
+	in.SnapshotConfig.DeepCopyInto(&out.SnapshotConfig)
 	return
 }
 

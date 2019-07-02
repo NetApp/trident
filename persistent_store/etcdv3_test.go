@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -531,9 +531,9 @@ func TestEtcdv3VolumeTransactions(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "gold",
 		}
-		volTxn := &VolumeTransaction{
+		volTxn := &storage.VolumeTransaction{
 			Config: &volConfig,
-			Op:     AddVolume,
+			Op:     storage.AddVolume,
 		}
 		if err = p.AddVolumeTransaction(volTxn); err != nil {
 			t.Error(err.Error())
@@ -575,7 +575,7 @@ func TestEtcdv3VolumeTransactions(t *testing.T) {
 }
 
 func TestEtcdv3DuplicateVolumeTransaction(t *testing.T) {
-	firstTxn := &VolumeTransaction{
+	firstTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
 			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
@@ -583,9 +583,9 @@ func TestEtcdv3DuplicateVolumeTransaction(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "gold",
 		},
-		Op: AddVolume,
+		Op: storage.AddVolume,
 	}
-	secondTxn := &VolumeTransaction{
+	secondTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
 			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
@@ -593,7 +593,7 @@ func TestEtcdv3DuplicateVolumeTransaction(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "silver",
 		},
-		Op: AddVolume,
+		Op: storage.AddVolume,
 	}
 	p, err := NewEtcdClientV3(*etcdV3)
 	if err != nil {

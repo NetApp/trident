@@ -119,8 +119,10 @@ type TridentTransaction struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	// Operation is the volume transaction operation
 	Operation string `json:"operation"`
-	// Config is the volume config
-	Config runtime.RawExtension `json:"config"`
+	// VolumeConfig is the volume config
+	VolumeConfig runtime.RawExtension `json:"volumeConfig"`
+	// SnapshotConfig is the snapshot config
+	SnapshotConfig runtime.RawExtension `json:"snapshotConfig"`
 }
 
 // TridentTransactionList is a list of TridentTransaction objects.

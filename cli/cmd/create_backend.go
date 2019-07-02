@@ -84,13 +84,8 @@ func getBackendData(filename, b64Data string) ([]byte, error) {
 
 func backendCreate(postData []byte) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
-
 	// Send the file to Trident
-	url := baseURL + "/backend"
+	url := BaseURL() + "/backend"
 
 	response, responseBody, err := api.InvokeRESTAPI("POST", url, postData, Debug)
 	if err != nil {
@@ -109,7 +104,7 @@ func backendCreate(postData []byte) error {
 	backendName := addBackendResponse.BackendID
 
 	// Retrieve the newly created backend and write to stdout
-	backend, err := GetBackend(baseURL, backendName)
+	backend, err := GetBackend(backendName)
 	if err != nil {
 		return err
 	}

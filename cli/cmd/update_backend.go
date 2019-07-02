@@ -63,13 +63,8 @@ func backendUpdate(backendNames []string, postData []byte) error {
 		return errors.New("multiple backend names specified")
 	}
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
-
 	// Send the file to Trident
-	url := baseURL + "/backend/" + backendNames[0]
+	url := BaseURL() + "/backend/" + backendNames[0]
 
 	response, responseBody, err := api.InvokeRESTAPI("POST", url, postData, Debug)
 	if err != nil {
@@ -89,7 +84,7 @@ func backendUpdate(backendNames []string, postData []byte) error {
 	backendName := updateBackendResponse.BackendID
 
 	// Retrieve the updated backend and write to stdout
-	backend, err := GetBackend(baseURL, backendName)
+	backend, err := GetBackend(backendName)
 	if err != nil {
 		return err
 	}

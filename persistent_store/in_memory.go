@@ -18,7 +18,7 @@ type InMemoryClient struct {
 	volumesAdded        int
 	storageClasses      map[string]*sc.Persistent
 	storageClassesAdded int
-	volumeTxns          map[string]*VolumeTransaction
+	volumeTxns          map[string]*storage.VolumeTransaction
 	volumeTxnsAdded     int
 	version             *config.PersistentStateVersion
 	nodes               map[string]*utils.Node
@@ -32,7 +32,7 @@ func NewInMemoryClient() *InMemoryClient {
 		backends:       make(map[string]*storage.BackendPersistent),
 		volumes:        make(map[string]*storage.VolumeExternal),
 		storageClasses: make(map[string]*sc.Persistent),
-		volumeTxns:     make(map[string]*VolumeTransaction),
+		volumeTxns:     make(map[string]*storage.VolumeTransaction),
 		nodes:          make(map[string]*utils.Node),
 		snapshots:      make(map[string]*storage.SnapshotPersistent),
 		version: &config.PersistentStateVersion{
@@ -229,19 +229,19 @@ func (c *InMemoryClient) DeleteVolumes() error {
 	return nil
 }
 
-func (c *InMemoryClient) AddVolumeTransaction(volTxn *VolumeTransaction) error {
+func (c *InMemoryClient) AddVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	// AddVolumeTransaction overwrites existing keys, unlike the other methods
-	c.volumeTxns[volTxn.getKey()] = volTxn
+	c.volumeTxns[volTxn.Name()] = volTxn
 	c.volumeTxnsAdded++
 	return nil
 }
 
-func (c *InMemoryClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
+func (c *InMemoryClient) GetVolumeTransactions() ([]*storage.VolumeTransaction, error) {
 	if c.volumeTxnsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
 		return nil, NewPersistentStoreError(KeyNotFoundErr, "VolumesTransactions")
 	}
-	ret := make([]*VolumeTransaction, 0, len(c.volumeTxns))
+	ret := make([]*storage.VolumeTransaction, 0, len(c.volumeTxns))
 	for _, v := range c.volumeTxns {
 		ret = append(ret, v)
 	}
@@ -249,20 +249,20 @@ func (c *InMemoryClient) GetVolumeTransactions() ([]*VolumeTransaction, error) {
 }
 
 func (c *InMemoryClient) GetExistingVolumeTransaction(
-	volTxn *VolumeTransaction) (*VolumeTransaction, error,
+	volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error,
 ) {
-	vt, ok := c.volumeTxns[volTxn.getKey()]
+	vt, ok := c.volumeTxns[volTxn.Name()]
 	if !ok {
 		return nil, nil
 	}
 	return vt, nil
 }
 
-func (c *InMemoryClient) DeleteVolumeTransaction(volTxn *VolumeTransaction) error {
-	if _, ok := c.volumeTxns[volTxn.getKey()]; !ok {
+func (c *InMemoryClient) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	if _, ok := c.volumeTxns[volTxn.Name()]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, "VolumesTransactions")
 	}
-	delete(c.volumeTxns, volTxn.getKey())
+	delete(c.volumeTxns, volTxn.Name())
 	return nil
 }
 

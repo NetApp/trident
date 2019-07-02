@@ -233,7 +233,7 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 	return name, nil
 }
 
-func GetBaseURL() (string, error) {
+func BaseURL() string {
 
 	url := fmt.Sprintf("http://%s%s", Server, config.BaseURL)
 
@@ -241,7 +241,7 @@ func GetBaseURL() (string, error) {
 		fmt.Printf("Trident URL: %s\n", url)
 	}
 
-	return url, nil
+	return url
 }
 
 func TunnelCommand(commandArgs []string) {

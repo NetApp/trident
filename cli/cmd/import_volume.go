@@ -96,11 +96,6 @@ func getPVCData(filename, b64Data string) ([]byte, error) {
 
 func volumeImport(backendName, internalVolumeName string, noManage bool, pvcDataJSON []byte) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
-
 	request := &storage.ImportVolumeRequest{
 		Backend:      backendName,
 		InternalName: internalVolumeName,
@@ -114,7 +109,7 @@ func volumeImport(backendName, internalVolumeName string, noManage bool, pvcData
 	}
 
 	// Send the request to Trident
-	url := baseURL + "/volume/import"
+	url := BaseURL() + "/volume/import"
 
 	response, responseBody, err := api.InvokeRESTAPI("POST", url, requestBytes, Debug)
 	if err != nil {

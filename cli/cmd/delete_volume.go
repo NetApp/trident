@@ -38,10 +38,7 @@ var deleteVolumeCmd = &cobra.Command{
 
 func volumeDelete(volumeNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	if allVolumes {
 		// Make sure --all isn't being used along with specific volumes
@@ -50,7 +47,7 @@ func volumeDelete(volumeNames []string) error {
 		}
 
 		// Get list of volume names so we can delete them all
-		volumeNames, err = GetVolumes(baseURL)
+		volumeNames, err = GetVolumes()
 		if err != nil {
 			return err
 		}
@@ -62,7 +59,7 @@ func volumeDelete(volumeNames []string) error {
 	}
 
 	for _, volumeName := range volumeNames {
-		url := baseURL + "/volume/" + volumeName
+		url := BaseURL() + "/volume/" + volumeName
 
 		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {

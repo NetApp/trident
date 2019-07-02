@@ -123,7 +123,7 @@ func (m *CRDDataMigrator) Run() error {
 		backends       []*storage.BackendPersistent
 		storageClasses []*storageclass.Persistent
 		volumes        []*storage.VolumeExternal
-		transactions   []*VolumeTransaction
+		transactions   []*storage.VolumeTransaction
 	)
 
 	// Transform data into the latest schema
@@ -280,7 +280,7 @@ func (m *CRDDataMigrator) migrateVolumes(volumes []*storage.VolumeExternal) erro
 	return nil
 }
 
-func (m *CRDDataMigrator) migrateTransactions(transactions []*VolumeTransaction) error {
+func (m *CRDDataMigrator) migrateTransactions(transactions []*storage.VolumeTransaction) error {
 
 	if len(transactions) == 0 {
 		if m.dryRun {

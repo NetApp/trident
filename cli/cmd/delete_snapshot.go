@@ -46,10 +46,7 @@ var deleteSnapshotCmd = &cobra.Command{
 
 func snapshotDelete(snapshotIDs []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	if allSnapshotsInVolume != "" {
 		// Make sure --volume isn't being used along with specific snapshots
@@ -58,7 +55,7 @@ func snapshotDelete(snapshotIDs []string) error {
 		}
 
 		// Get list of snapshot IDs in the specified volume so we can delete them all
-		snapshotIDs, err = GetSnapshots(baseURL, allSnapshotsInVolume)
+		snapshotIDs, err = GetSnapshots(allSnapshotsInVolume)
 		if err != nil {
 			return err
 		}
@@ -70,7 +67,7 @@ func snapshotDelete(snapshotIDs []string) error {
 		}
 
 		// Get list of snapshot IDs so we can delete them all
-		snapshotIDs, err = GetSnapshots(baseURL, "")
+		snapshotIDs, err = GetSnapshots("")
 		if err != nil {
 			return err
 		}
@@ -82,7 +79,7 @@ func snapshotDelete(snapshotIDs []string) error {
 	}
 
 	for _, snapshotID := range snapshotIDs {
-		url := baseURL + "/snapshot/" + snapshotID
+		url := BaseURL() + "/snapshot/" + snapshotID
 
 		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
 		if err != nil {

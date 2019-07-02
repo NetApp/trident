@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -383,9 +383,9 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "gold",
 		}
-		volTxn := &VolumeTransaction{
+		volTxn := &storage.VolumeTransaction{
 			Config: &volConfig,
-			Op:     AddVolume,
+			Op:     storage.AddVolume,
 		}
 		if err = p.AddVolumeTransaction(volTxn); err != nil {
 			t.Error(err.Error())
@@ -431,7 +431,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 
 	p := GetTestKubernetesClient()
 
-	firstTxn := &VolumeTransaction{
+	firstTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
 			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
@@ -439,9 +439,9 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "gold",
 		},
-		Op: AddVolume,
+		Op: storage.AddVolume,
 	}
-	secondTxn := &VolumeTransaction{
+	secondTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
 			Version:      string(config.OrchestratorAPIVersion),
 			Name:         "testVol",
@@ -449,14 +449,14 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 			Protocol:     config.File,
 			StorageClass: "silver",
 		},
-		Op: AddVolume,
+		Op: storage.AddVolume,
 	}
 
 	if err = p.AddVolumeTransaction(firstTxn); err != nil {
 		t.Error("Unable to add first volume transaction: ", err)
 	}
-	if err = p.AddVolumeTransaction(secondTxn); err != nil {
-		t.Error("Unable to add second volume transaction: ", err)
+	if err = p.AddVolumeTransaction(secondTxn); err == nil {
+		t.Error("Should not have been able to add second volume transaction: ", err)
 	}
 	volTxns, err := p.GetVolumeTransactions()
 	if err != nil {
@@ -464,8 +464,8 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 	}
 	if len(volTxns) != 1 {
 		t.Errorf("Expected one volume transaction; got %d", len(volTxns))
-	} else if volTxns[0].Config.StorageClass != "silver" {
-		t.Errorf("Vol transaction not updated.  Expected storage class silver;"+
+	} else if volTxns[0].Config.StorageClass != "gold" {
+		t.Errorf("Vol transaction changed.  Expected storage class gold;"+
 			" got %s.", volTxns[0].Config.StorageClass)
 	}
 	for i, volTxn := range volTxns {

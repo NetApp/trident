@@ -68,13 +68,8 @@ func backendUpdateState(backendNames []string, backendState string) error {
 		return errors.New("multiple backend names specified")
 	}
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
-
 	// Send the new backend state to Trident
-	url := baseURL + "/backend/" + backendNames[0] + "/state"
+	url := BaseURL() + "/backend/" + backendNames[0] + "/state"
 
 	request := storage.UpdateBackendStateRequest{
 		State: backendState,
@@ -102,7 +97,7 @@ func backendUpdateState(backendNames []string, backendState string) error {
 	backendName := updateBackendResponse.BackendID
 
 	// Retrieve the updated backend and write to stdout
-	backend, err := GetBackend(baseURL, backendName)
+	backend, err := GetBackend(backendName)
 	if err != nil {
 		return err
 	}

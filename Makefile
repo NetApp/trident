@@ -162,7 +162,7 @@ test_core:
 	@docker rm etcd-test > /dev/null
 
 test_other:
-	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store)
+	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store && echo github.com/netapp/trident/persistent_store/crd/apis/netapp/v1)
 
 test_coverage_report:
 	@sed 1,1d ${COVERAGE_DIR}/persistent_store-coverage.out >>${COVERAGE_DIR}/coverage.out

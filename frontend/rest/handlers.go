@@ -440,12 +440,13 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 	response := &ListBackendsResponse{}
 	ListGeneric(w, r, response,
 		func() int {
+			backendNames := make([]string, 0)
 			backends, err := orchestrator.ListBackends()
-			backendNames := make([]string, 0, len(backends))
 			if err != nil {
 				log.Errorf("ListBackends: %v", err)
 				response.Error = err.Error()
-			} else if backends != nil {
+			} else if backends != nil && len(backends) > 0 {
+				backendNames = make([]string, 0, len(backends))
 				for _, backend := range backends {
 					backendNames = append(backendNames, backend.Name)
 				}
@@ -575,11 +576,12 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 	response := &ListVolumesResponse{}
 	ListGeneric(w, r, response,
 		func() int {
+			volumeNames := make([]string, 0)
 			volumes, err := orchestrator.ListVolumes()
-			volumeNames := make([]string, 0, len(volumes))
 			if err != nil {
 				response.Error = err.Error()
-			} else if volumes != nil {
+			} else if volumes != nil && len(volumes) > 0 {
+				volumeNames = make([]string, 0, len(volumes))
 				for _, volume := range volumes {
 					volumeNames = append(volumeNames, volume.Config.Name)
 				}
@@ -751,11 +753,12 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 	response := &ListStorageClassesResponse{}
 	ListGeneric(w, r, response,
 		func() int {
+			storageClassNames := make([]string, 0)
 			storageClasses, err := orchestrator.ListStorageClasses()
-			storageClassNames := make([]string, 0, len(storageClasses))
 			if err != nil {
 				response.Error = err.Error()
-			} else if storageClasses != nil {
+			} else if storageClasses != nil && len(storageClasses) > 0 {
+				storageClassNames = make([]string, 0, len(storageClasses))
 				for _, sc := range storageClasses {
 					storageClassNames = append(storageClassNames, sc.GetName())
 				}
@@ -873,11 +876,12 @@ func ListNodes(w http.ResponseWriter, r *http.Request) {
 	response := &ListNodesResponse{}
 	ListGeneric(w, r, response,
 		func() int {
+			nodeNames := make([]string, 0)
 			nodes, err := orchestrator.ListNodes()
-			nodeNames := make([]string, 0, len(nodes))
 			if err != nil {
 				response.Error = err.Error()
-			} else if nodes != nil {
+			} else if nodes != nil && len(nodes) > 0 {
+				nodeNames = make([]string, 0, len(nodes))
 				for _, node := range nodes {
 					nodeNames = append(nodeNames, node.Name)
 				}
@@ -925,11 +929,12 @@ func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
 	ListGeneric(w, r, response,
 		func() int {
+			snapshotIDs := make([]string, 0)
 			snapshots, err := orchestrator.ListSnapshots()
-			snapshotIDs := make([]string, 0, len(snapshots))
 			if err != nil {
 				response.Error = err.Error()
-			} else if snapshots != nil {
+			} else if snapshots != nil && len(snapshots) > 0 {
+				snapshotIDs = make([]string, 0, len(snapshots))
 				for _, snapshot := range snapshots {
 					snapshotIDs = append(snapshotIDs, snapshot.ID())
 				}
@@ -944,11 +949,12 @@ func ListSnapshotsForVolume(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
 	ListGenericOneArg(w, r, "volume", response,
 		func(volumeName string) int {
+			snapshotIDs := make([]string, 0)
 			snapshots, err := orchestrator.ListSnapshotsForVolume(volumeName)
-			snapshotIDs := make([]string, 0, len(snapshots))
 			if err != nil {
 				response.Error = err.Error()
-			} else if snapshots != nil {
+			} else if snapshots != nil && len(snapshots) > 0 {
+				snapshotIDs = make([]string, 0, len(snapshots))
 				for _, snapshot := range snapshots {
 					snapshotIDs = append(snapshotIDs, snapshot.ID())
 				}

@@ -43,14 +43,11 @@ var getVolumeCmd = &cobra.Command{
 
 func volumeList(volumeNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	// If no volumes were specified, we'll get all of them
 	if len(volumeNames) == 0 {
-		volumeNames, err = GetVolumes(baseURL)
+		volumeNames, err = GetVolumes()
 		if err != nil {
 			return err
 		}
@@ -61,7 +58,7 @@ func volumeList(volumeNames []string) error {
 	// Get the actual volume objects
 	for _, volumeName := range volumeNames {
 
-		volume, err := GetVolume(baseURL, volumeName)
+		volume, err := GetVolume(volumeName)
 		if err != nil {
 			return err
 		}
@@ -69,7 +66,7 @@ func volumeList(volumeNames []string) error {
 		if OutputFormat == FormatWide {
 			// look up and cache the backends by UUID
 			if backendsByUUID[volume.BackendUUID] == nil {
-				backend, err := GetBackendByBackendUUID(baseURL, volume.BackendUUID)
+				backend, err := GetBackendByBackendUUID(volume.BackendUUID)
 				if err != nil {
 					return err
 				}
@@ -85,9 +82,9 @@ func volumeList(volumeNames []string) error {
 	return nil
 }
 
-func GetVolumes(baseURL string) ([]string, error) {
+func GetVolumes() ([]string, error) {
 
-	url := baseURL + "/volume"
+	url := BaseURL() + "/volume"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
@@ -106,9 +103,9 @@ func GetVolumes(baseURL string) ([]string, error) {
 	return listVolumesResponse.Volumes, nil
 }
 
-func GetVolume(baseURL, volumeName string) (storage.VolumeExternal, error) {
+func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 
-	url := baseURL + "/volume/" + volumeName
+	url := BaseURL() + "/volume/" + volumeName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

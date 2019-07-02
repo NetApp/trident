@@ -44,14 +44,11 @@ var getSnapshotCmd = &cobra.Command{
 
 func snapshotList(snapshotIDs []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	// If no snapshots were specified, we'll get all of them
 	if len(snapshotIDs) == 0 {
-		snapshotIDs, err = GetSnapshots(baseURL, getSnapshotVolume)
+		snapshotIDs, err = GetSnapshots(getSnapshotVolume)
 		if err != nil {
 			return err
 		}
@@ -62,7 +59,7 @@ func snapshotList(snapshotIDs []string) error {
 	// Get the actual snapshot objects
 	for _, snapshotID := range snapshotIDs {
 
-		snapshot, err := GetSnapshot(baseURL, snapshotID)
+		snapshot, err := GetSnapshot(snapshotID)
 		if err != nil {
 			return err
 		}
@@ -74,13 +71,13 @@ func snapshotList(snapshotIDs []string) error {
 	return nil
 }
 
-func GetSnapshots(baseURL, volume string) ([]string, error) {
+func GetSnapshots(volume string) ([]string, error) {
 
 	var url string
 	if volume == "" {
-		url = baseURL + "/snapshot"
+		url = BaseURL() + "/snapshot"
 	} else {
-		url = baseURL + "/volume/" + volume + "/snapshot"
+		url = BaseURL() + "/volume/" + volume + "/snapshot"
 	}
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -99,9 +96,9 @@ func GetSnapshots(baseURL, volume string) ([]string, error) {
 	return listSnapshotsResponse.Snapshots, nil
 }
 
-func GetSnapshot(baseURL, snapshotID string) (storage.SnapshotExternal, error) {
+func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 
-	url := baseURL + "/snapshot/" + snapshotID
+	url := BaseURL() + "/snapshot/" + snapshotID
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

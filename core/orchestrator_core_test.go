@@ -1692,14 +1692,14 @@ func runRecoveryTests(
 	t *testing.T,
 	orchestrator *TridentOrchestrator,
 	backendName string,
-	op persistentstore.VolumeOperation,
+	op storage.VolumeOperation,
 	testCases []recoveryTest,
 ) {
 	for _, c := range testCases {
 		// Manipulate the persistent store directly, since it's
 		// easier to store the results of a partially completed volume addition
 		// than to actually inject a failure.
-		volTxn := &persistentstore.VolumeTransaction{
+		volTxn := &storage.VolumeTransaction{
 			Config: c.volumeConfig,
 			Op:     op,
 		}
@@ -1766,7 +1766,7 @@ func TestAddVolumeRecovery(t *testing.T) {
 	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
-	runRecoveryTests(t, orchestrator, backendName, persistentstore.AddVolume,
+	runRecoveryTests(t, orchestrator, backendName, storage.AddVolume,
 		[]recoveryTest{
 			{name: "full", volumeConfig: fullVolumeConfig, expectDestroy: true},
 			{name: "txOnly", volumeConfig: txOnlyVolumeConfig, expectDestroy: true},
@@ -1800,7 +1800,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 
 	// BEGIN actual test
 	runRecoveryTests(t, orchestrator, backendName,
-		persistentstore.DeleteVolume, []recoveryTest{
+		storage.DeleteVolume, []recoveryTest{
 			{name: "full", volumeConfig: fullVolumeConfig, expectDestroy: false},
 			{name: "txOnly", volumeConfig: txOnlyVolumeConfig, expectDestroy: true},
 		})
@@ -1822,14 +1822,14 @@ func runSnapshotRecoveryTests(
 	t *testing.T,
 	orchestrator *TridentOrchestrator,
 	backendName string,
-	op persistentstore.VolumeOperation,
+	op storage.VolumeOperation,
 	testCases []recoveryTest,
 ) {
 	for _, c := range testCases {
 		// Manipulate the persistent store directly, since it's
 		// easier to store the results of a partially completed snapshot addition
 		// than to actually inject a failure.
-		volTxn := &persistentstore.VolumeTransaction{
+		volTxn := &storage.VolumeTransaction{
 			Config:         c.volumeConfig,
 			SnapshotConfig: c.snapshotConfig,
 			Op:             op,
@@ -1904,7 +1904,7 @@ func TestAddSnapshotRecovery(t *testing.T) {
 	// BEGIN actual test.  Note that the delete idempotency is handled at the backend layer
 	// (above the driver), so if the snapshot doesn't exist after bootstrapping, the driver
 	// will not be called to delete the snapshot.
-	runSnapshotRecoveryTests(t, orchestrator, backendName, persistentstore.AddSnapshot,
+	runSnapshotRecoveryTests(t, orchestrator, backendName, storage.AddSnapshot,
 		[]recoveryTest{
 			{name: "full", volumeConfig: volumeConfig, snapshotConfig: fullSnapshotConfig, expectDestroy: true},
 			{name: "txOnly", volumeConfig: volumeConfig, snapshotConfig: txOnlySnapshotConfig, expectDestroy: false},
@@ -1946,7 +1946,7 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 	// BEGIN actual test.  Note that the delete idempotency is handled at the backend layer
 	// (above the driver), so if the snapshot doesn't exist after bootstrapping, the driver
 	// will not be called to delete the snapshot.
-	runSnapshotRecoveryTests(t, orchestrator, backendName, persistentstore.DeleteSnapshot,
+	runSnapshotRecoveryTests(t, orchestrator, backendName, storage.DeleteSnapshot,
 		[]recoveryTest{
 			{name: "full", snapshotConfig: fullSnapshotConfig, expectDestroy: false},
 			{name: "txOnly", snapshotConfig: txOnlySnapshotConfig, expectDestroy: true},
@@ -2103,7 +2103,7 @@ func TestFirstVolumeRecovery(t *testing.T) {
 	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
-	runRecoveryTests(t, orchestrator, backendName, persistentstore.AddVolume,
+	runRecoveryTests(t, orchestrator, backendName, storage.AddVolume,
 		[]recoveryTest{
 			{name: "firstTXOnly", volumeConfig: txOnlyVolumeConfig,
 				expectDestroy: true},

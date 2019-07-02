@@ -35,14 +35,11 @@ var getStorageClassCmd = &cobra.Command{
 
 func storageClassList(storageClassNames []string) error {
 
-	baseURL, err := GetBaseURL()
-	if err != nil {
-		return err
-	}
+	var err error
 
 	// If no storage classes were specified, we'll get all of them
 	if len(storageClassNames) == 0 {
-		storageClassNames, err = GetStorageClasses(baseURL)
+		storageClassNames, err = GetStorageClasses()
 		if err != nil {
 			return err
 		}
@@ -53,7 +50,7 @@ func storageClassList(storageClassNames []string) error {
 	// Get the actual storage class objects
 	for _, storageClassName := range storageClassNames {
 
-		storageClass, err := GetStorageClass(baseURL, storageClassName)
+		storageClass, err := GetStorageClass(storageClassName)
 		if err != nil {
 			return err
 		}
@@ -65,9 +62,9 @@ func storageClassList(storageClassNames []string) error {
 	return nil
 }
 
-func GetStorageClasses(baseURL string) ([]string, error) {
+func GetStorageClasses() ([]string, error) {
 
-	url := baseURL + "/storageclass"
+	url := BaseURL() + "/storageclass"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
@@ -86,9 +83,9 @@ func GetStorageClasses(baseURL string) ([]string, error) {
 	return listStorageClassesResponse.StorageClasses, nil
 }
 
-func GetStorageClass(baseURL, storageClassName string) (api.StorageClass, error) {
+func GetStorageClass(storageClassName string) (api.StorageClass, error) {
 
-	url := baseURL + "/storageclass/" + storageClassName
+	url := BaseURL() + "/storageclass/" + storageClassName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
