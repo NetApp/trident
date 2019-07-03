@@ -26,7 +26,7 @@ import (
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 170
+const createTimeoutSeconds = 300
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
@@ -889,32 +889,6 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		}
 	} else {
 		return nil
-	}
-}
-
-func UserServiceLevelFromAPIServiceLevel(apiServiceLevel string) string {
-	switch apiServiceLevel {
-	default:
-		fallthrough
-	case APIServiceLevel1:
-		return UserServiceLevel1
-	case APIServiceLevel2:
-		return UserServiceLevel2
-	case APIServiceLevel3:
-		return UserServiceLevel3
-	}
-}
-
-func APIServiceLevelFromUserServiceLevel(userServiceLevel string) string {
-	switch userServiceLevel {
-	default:
-		fallthrough
-	case UserServiceLevel1:
-		return APIServiceLevel1
-	case UserServiceLevel2:
-		return APIServiceLevel2
-	case UserServiceLevel3:
-		return APIServiceLevel3
 	}
 }
 

@@ -17,13 +17,9 @@ const (
 	ProtocolTypeNFSv4 = "NFSv4"
 	ProtocolTypeCIFS  = "CIFS"
 
-	APIServiceLevel1 = "basic"
-	APIServiceLevel2 = "standard"
-	APIServiceLevel3 = "extreme"
-
-	UserServiceLevel1 = "standard"
-	UserServiceLevel2 = "premium"
-	UserServiceLevel3 = "extreme"
+	ServiceLevelStandard = "standard"
+	ServiceLevelPremium  = "premium"
+	ServiceLevelExtreme  = "extreme"
 )
 
 // CallResponseError is used for errors on RESTful calls to return what went wrong

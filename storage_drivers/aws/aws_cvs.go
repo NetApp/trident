@@ -29,9 +29,9 @@ const (
 	MinimumVolumeSizeBytes    = 1000000000   // 1 GB
 	MinimumCVSVolumeSizeBytes = 100000000000 // 100 GB
 	MinimumAPIVersion         = "1.0.0"
-	MinimumSDEVersion         = "1.1.42"
+	MinimumSDEVersion         = "1.66.3"
 
-	defaultServiceLevel    = api.UserServiceLevel1
+	defaultServiceLevel    = api.ServiceLevelStandard
 	defaultNfsMountOptions = "-o nfsvers=3"
 	defaultSecurityStyle   = "unix"
 	defaultSnapshotReserve = ""
@@ -438,7 +438,7 @@ func (d *NFSStorageDriver) validate() error {
 
 		// Validate service level
 		switch pool.InternalAttributes[ServiceLevel] {
-		case api.UserServiceLevel1, api.UserServiceLevel2, api.UserServiceLevel3:
+		case api.ServiceLevelStandard, api.ServiceLevelPremium, api.ServiceLevelExtreme:
 			break
 		default:
 			return fmt.Errorf("invalid service level in pool %s: %s",
@@ -555,17 +555,16 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	// Take service level from volume config first (handles Docker case), then from pool
-	userServiceLevel := volConfig.ServiceLevel
-	if userServiceLevel == "" {
-		userServiceLevel = pool.InternalAttributes[ServiceLevel]
+	serviceLevel := volConfig.ServiceLevel
+	if serviceLevel == "" {
+		serviceLevel = pool.InternalAttributes[ServiceLevel]
 	}
-	switch userServiceLevel {
-	case api.UserServiceLevel1, api.UserServiceLevel2, api.UserServiceLevel3:
+	switch serviceLevel {
+	case api.ServiceLevelStandard, api.ServiceLevelPremium, api.ServiceLevelExtreme:
 		break
 	default:
-		return fmt.Errorf("invalid service level: %s", userServiceLevel)
+		return fmt.Errorf("invalid service level: %s", serviceLevel)
 	}
-	apiServiceLevel := api.APIServiceLevelFromUserServiceLevel(userServiceLevel)
 
 	// Take snapshot reserve from volume config first (handles Docker case), then from pool
 	snapshotReserve := volConfig.SnapshotReserve
@@ -584,7 +583,7 @@ func (d *NFSStorageDriver) Create(
 	log.WithFields(log.Fields{
 		"creationToken":   name,
 		"size":            sizeBytes,
-		"serviceLevel":    userServiceLevel,
+		"serviceLevel":    serviceLevel,
 		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating volume.")
 
@@ -620,7 +619,7 @@ func (d *NFSStorageDriver) Create(
 		ProtocolTypes:  []string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv4},
 		QuotaInBytes:   int64(sizeBytes),
 		SecurityStyle:  defaultSecurityStyle,
-		ServiceLevel:   apiServiceLevel,
+		ServiceLevel:   serviceLevel,
 		SnapshotPolicy: snapshotPolicy,
 		SnapReserve:    snapshotReservePtr,
 	}
@@ -1466,7 +1465,7 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
-		ServiceLevel:    api.UserServiceLevelFromAPIServiceLevel(volumeAttrs.ServiceLevel),
+		ServiceLevel:    volumeAttrs.ServiceLevel,
 	}
 
 	return &storage.VolumeExternal{
