@@ -50,7 +50,10 @@ func NewKubectlClient(namespace string) (Interface, error) {
 		k8sVersion, err = discoverKubernetesServerVersion(cli)
 	case CLIOpenShift:
 		flavor = FlavorOpenShift
-		k8sVersion, err = discoverOpenShiftServerVersion(cli)
+		k8sVersion, err = discoverKubernetesServerVersion(cli)
+		if err != nil {
+			k8sVersion, err = discoverOpenShiftServerVersion(cli)
+		}
 	}
 	if err != nil {
 		return nil, err
