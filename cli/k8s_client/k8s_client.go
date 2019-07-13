@@ -102,6 +102,7 @@ type Interface interface {
 	DeleteCRD(crdName string) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
+	UpdateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
 	GetSecret(secretName string) (*v1.Secret, error)
 	GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error)
@@ -942,6 +943,11 @@ func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 // CreateSecret creates a new Secret
 func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 	return k.clientset.CoreV1().Secrets(k.namespace).Create(secret)
+}
+
+// UpdateSecret updates an existing Secret
+func (k *KubeClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
+	return k.clientset.CoreV1().Secrets(k.namespace).Update(secret)
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication

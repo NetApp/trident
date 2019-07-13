@@ -4,12 +4,14 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/cenkalti/backoff"
+	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -776,4 +778,97 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		return "", err
 	}
 	return string(bytes), err
+}
+
+// ExtractBackendSecrets clones itself (a BackendPersistent struct), builds a map of any secret data it
+// contains (credentials, etc.), clears those fields in the clone, and returns the clone and the map.
+func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPersistent, map[string]string, error) {
+
+	clone, err := copystructure.Copy(*p)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	backend, ok := clone.(BackendPersistent)
+	if !ok {
+		return nil, nil, err
+	}
+
+	secretName = fmt.Sprintf("secret:%s", secretName)
+	secretMap := make(map[string]string)
+
+	switch {
+	case backend.Config.OntapConfig != nil:
+		secretMap["Username"] = backend.Config.OntapConfig.Username
+		secretMap["Password"] = backend.Config.OntapConfig.Password
+		backend.Config.OntapConfig.Username = secretName
+		backend.Config.OntapConfig.Password = secretName
+	case p.Config.SolidfireConfig != nil:
+		secretMap["EndPoint"] = backend.Config.SolidfireConfig.EndPoint
+		backend.Config.SolidfireConfig.EndPoint = secretName
+	case p.Config.EseriesConfig != nil:
+		secretMap["Username"] = backend.Config.EseriesConfig.Username
+		secretMap["Password"] = backend.Config.EseriesConfig.Password
+		secretMap["PasswordArray"] = backend.Config.EseriesConfig.PasswordArray
+		backend.Config.EseriesConfig.Username = secretName
+		backend.Config.EseriesConfig.Password = secretName
+		backend.Config.EseriesConfig.PasswordArray = secretName
+	case p.Config.AWSConfig != nil:
+		secretMap["APIKey"] = backend.Config.AWSConfig.APIKey
+		secretMap["SecretKey"] = backend.Config.AWSConfig.SecretKey
+		backend.Config.AWSConfig.APIKey = secretName
+		backend.Config.AWSConfig.SecretKey = secretName
+	case p.Config.FakeStorageDriverConfig != nil:
+		// Nothing to do
+	default:
+		return nil, nil, errors.New("cannot extract secrets, unknown backend type")
+	}
+
+	return &backend, secretMap, nil
+}
+
+func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) error {
+
+	makeError := func(fieldName string) error {
+		return fmt.Errorf("%s field missing from backend secrets", fieldName)
+	}
+
+	var ok bool
+
+	switch {
+	case p.Config.OntapConfig != nil:
+		if p.Config.OntapConfig.Username, ok = secretMap["Username"]; !ok {
+			return makeError("Username")
+		}
+		if p.Config.OntapConfig.Password, ok = secretMap["Password"]; !ok {
+			return makeError("Password")
+		}
+	case p.Config.SolidfireConfig != nil:
+		if p.Config.SolidfireConfig.EndPoint, ok = secretMap["EndPoint"]; !ok {
+			return makeError("EndPoint")
+		}
+	case p.Config.EseriesConfig != nil:
+		if p.Config.EseriesConfig.Username, ok = secretMap["Username"]; !ok {
+			return makeError("Username")
+		}
+		if p.Config.EseriesConfig.Password, ok = secretMap["Password"]; !ok {
+			return makeError("Password")
+		}
+		if p.Config.EseriesConfig.PasswordArray, ok = secretMap["PasswordArray"]; !ok {
+			return makeError("PasswordArray")
+		}
+	case p.Config.AWSConfig != nil:
+		if p.Config.AWSConfig.APIKey, ok = secretMap["APIKey"]; !ok {
+			return makeError("APIKey")
+		}
+		if p.Config.AWSConfig.SecretKey, ok = secretMap["SecretKey"]; !ok {
+			return makeError("SecretKey")
+		}
+	case p.Config.FakeStorageDriverConfig != nil:
+		// Nothing to do
+	default:
+		return errors.New("cannot inject secrets, unknown backend type")
+	}
+
+	return nil
 }

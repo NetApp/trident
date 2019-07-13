@@ -679,7 +679,7 @@ func installTrident() (returnError error) {
 			frontendrest.ClientCertFile: certInfo.ClientCert,
 		}
 		err = client.CreateObjectByYAML(
-			k8sclient.GetSecretYAML("trident-csi", TridentPodNamespace, appLabelValue, secretMap))
+			k8sclient.GetSecretYAML("trident-csi", TridentPodNamespace, appLabelValue, secretMap, nil))
 		if err != nil {
 			returnError = fmt.Errorf("could not create Trident secret; %v", err)
 			return

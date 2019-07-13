@@ -5,13 +5,12 @@ package v1
 import (
 	"encoding/json"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // NewTridentBackend creates a new backend CRD object from an internal storage.BackendPersistent object

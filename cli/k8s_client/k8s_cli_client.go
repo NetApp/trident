@@ -1008,6 +1008,26 @@ func (c *KubectlClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 	return c.GetSecret(secret.Name)
 }
 
+// UpdateSecret updates an existing Secret
+func (c *KubectlClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
+
+	// Convert to YAML
+	jsonBytes, err := json.Marshal(secret)
+	if err != nil {
+		return nil, err
+	}
+	yamlBytes, _ := yaml.JSONToYAML(jsonBytes)
+
+	// Create object
+	err = c.updateObjectByYAML(string(yamlBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get secret
+	return c.GetSecret(secret.Name)
+}
+
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
 func (c *KubectlClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string,
 ) (*v1.Secret, error) {
@@ -1220,6 +1240,31 @@ func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) err
 	}
 
 	log.Debug("Deleted Kubernetes object by YAML.")
+
+	return nil
+}
+
+// updateObjectByYAML updates one or more objects on the server from a YAML/JSON document..
+func (c *KubectlClient) updateObjectByYAML(yaml string) error {
+
+	args := []string{fmt.Sprintf("--namespace=%s", c.namespace), "apply", "-f", "-"}
+	cmd := exec.Command(c.cli, args...)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer stdin.Close()
+		stdin.Write([]byte(yaml))
+	}()
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.Debug("Applied changes to Kubernetes object by YAML.")
 
 	return nil
 }

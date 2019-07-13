@@ -71,6 +71,8 @@ import:
   - volume
 - package: github.com/mitchellh/hashstructure
   version: v1.0.0
+- package: github.com/mitchellh/copystructure
+  version: v1.0.0
 - package: github.com/dustin/go-humanize
   version: v1.0.0
 - package: github.com/olekukonko/tablewriter
@@ -101,13 +103,5 @@ import:
   - namer
   - generator
   - types
-#- package: golang.org/x/tools
-#  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
-#  subpackages:
-#  - imports
-#- package: golang.org/x/sync
-#  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
-#  subpackages:
-#  - errgroup
 - package: github.com/google/go-cmp
   version: v0.3.0

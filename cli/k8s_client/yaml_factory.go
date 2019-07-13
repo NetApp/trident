@@ -1139,14 +1139,24 @@ metadata:
   name: {SCC}
 `
 
-func GetSecretYAML(secretName, namespace, label string, secretData map[string]string) string {
+func GetSecretYAML(secretName, namespace, label string, data map[string]string, stringData map[string]string) string {
 
 	secretYAML := strings.Replace(secretYAMLTemplate, "{SECRET_NAME}", secretName, 1)
 	secretYAML = strings.Replace(secretYAML, "{NAMESPACE}", namespace, 1)
 	secretYAML = strings.Replace(secretYAML, "{LABEL}", label, 1)
 
-	for key, value := range secretData {
-		secretYAML += fmt.Sprintf("  %s: %s\n", key, value)
+	if data != nil {
+		secretYAML += "data:\n"
+		for key, value := range data {
+			secretYAML += fmt.Sprintf("  %s: %s\n", key, value)
+		}
+	}
+
+	if stringData != nil {
+		secretYAML += "stringData:\n"
+		for key, value := range stringData {
+			secretYAML += fmt.Sprintf("  %s: %s\n", key, value)
+		}
 	}
 
 	return secretYAML
@@ -1160,7 +1170,6 @@ metadata:
   namespace: {NAMESPACE}
   labels:
     app: {LABEL}
-data:
 `
 
 func GetCRDsYAML() string {

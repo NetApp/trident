@@ -1,5 +1,5 @@
-hash: 630f663025e753788baffada731338cea62ffb25ce3aca4c36ac0a79550cd0e6
-updated: 2019-07-13T13:04:34.392541132-04:00
+hash: 7e3acaee3fc65df68d2fcfae30237c5e8ada0c50d5a9ff0927dc0b2d9fcab6a9
+updated: 2019-07-18T12:32:44.778949477-04:00
 imports:
 - name: github.com/cenkalti/backoff
   version: 4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f
@@ -35,7 +35,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: fd1b1942c4d55f7f210a8387e612dc6ffee78ff6
+  version: 97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -120,11 +120,13 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
-  version: 881e3d46423d592d11da9873ff6581dc577a1d0f
-  subpackages:
-  - pkg/guid
+  version: dd3d7fa178461d37438bd33f75407cf9755e4339
+- name: github.com/mitchellh/copystructure
+  version: 9a1b6f44e8da0e0e374624fb0a825a231b00c537
 - name: github.com/mitchellh/hashstructure
   version: a38c50148365edc8df43c1580c48fb2b3a1e9cd7
+- name: github.com/mitchellh/reflectwalk
+  version: 3e2c75dfad4fbf904b58782a80fd595c760ad185
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
@@ -144,17 +146,17 @@ imports:
 - name: github.com/spf13/cobra
   version: f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5
 - name: github.com/spf13/pflag
-  version: 24fa6976df40757dce6aea913e7b81ade90530e1
+  version: 298182f68c66c05229eb03ac171abe6e309ee79a
 - name: github.com/stretchr/testify
   version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
-  version: efe20429c9b7b2a358aba9ba2d40ad56d966ce00
+  version: ade0ca4ace05af96235d107023ab018ee921309c
   subpackages:
   - msgp
 - name: github.com/willf/bitset
-  version: 77892cd8d53fa6524772426bc444dd2e3b4fb18f
+  version: 18bd95f470f9494ca07c36d877424729edc2455c
 - name: golang.org/x/crypto
   version: e84da0312774c21d64ee2317962ef669b27ffb41
   subpackages:
@@ -168,7 +170,9 @@ imports:
   - http2
   - http2/hpack
   - idna
+  - internal/socks
   - internal/timeseries
+  - proxy
   - trace
 - name: golang.org/x/oauth2
   version: 9f3314589c9a9136388751d9adae6b0ed400978a

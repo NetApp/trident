@@ -154,7 +154,7 @@ func TestKubernetesBackends(t *testing.T) {
 
 		persistentBackend, err := v1.NewTridentBackend(NFSServer.ConstructPersistent())
 		persistentBackend.ObjectMeta.Name = NFSServer.Name
-		err = p.addBackendCRD(persistentBackend)
+		_, err = p.addBackendCRD(persistentBackend)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -219,12 +219,12 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 
 	persistentBackend, err := v1.NewTridentBackend(NFSServer.ConstructPersistent())
 	persistentBackend.ObjectMeta.Name = NFSServer.Name
-	err = p.addBackendCRD(persistentBackend)
+	_, err = p.addBackendCRD(persistentBackend)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
-	err = p.addBackendCRD(persistentBackend)
+	_, err = p.addBackendCRD(persistentBackend)
 	if err == nil {
 		t.Error("Second Create should have failed!")
 	}

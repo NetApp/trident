@@ -160,7 +160,7 @@ func newKubernetesPlugin(
 	log.WithFields(log.Fields{
 		"version":    ret.kubernetesVersion.Major + "." + ret.kubernetesVersion.Minor,
 		"gitVersion": ret.kubernetesVersion.GitVersion,
-	}).Info("Kubernetes frontend determined the container orchestrator  version.")
+	}).Info("Kubernetes frontend determined the container orchestrator version.")
 	_, err = ValidateKubeVersion(ret.kubernetesVersion)
 	if err != nil {
 		if IsPanicKubeVersion(err) {
