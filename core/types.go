@@ -40,6 +40,7 @@ type Orchestrator interface {
 	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
 	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error
 	ResizeVolume(volumeName, newSize string) error
+	SetVolumeState(volumeName string, state storage.VolumeState) error
 
 	CreateSnapshot(snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
 	GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotExternal, error)
@@ -61,6 +62,10 @@ type Orchestrator interface {
 	GetNode(nName string) (*utils.Node, error)
 	ListNodes() ([]*utils.Node, error)
 	DeleteNode(nName string) error
+
+	AddVolumeTransaction(volTxn *storage.VolumeTransaction) error
+	GetVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
+	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
 }
 
 type NotReadyError struct {

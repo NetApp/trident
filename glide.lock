@@ -1,5 +1,5 @@
 hash: 85d445e82f973d847376f19d33fbb71d9ac8cd5b298987f79cfeddc99cfa7a0e
-updated: 2019-07-23T14:18:35.575105068-04:00
+updated: 2019-07-26T18:53:52.747014-04:00
 imports:
 - name: contrib.go.opencensus.io/exporter/ocagent
   version: 8110e6c0236bb231b19119275a6be6ec666d05c8
@@ -184,8 +184,6 @@ imports:
   version: 90eadee771aeab36e8bf796039b8c261bebebe4f
 - name: github.com/olekukonko/tablewriter
   version: e6d60cf7ba1f42d86d54cdf5508611c4aafb3970
-- name: github.com/pborman/uuid
-  version: 8b1b92947f46224e3b97bb1a3a5b0382be00d31e
 - name: github.com/philhofer/fwd
   version: bb6d471dc95d4fe11e432687f8b70ff496cf3136
 - name: github.com/RoaringBitmap/roaring

@@ -266,6 +266,10 @@ func TestEtcdV3ToCRDV1Migration(t *testing.T) {
 			t.Fatalf("Transaction not found in CRD: %v", txnName)
 		}
 		if !reflect.DeepEqual(etcdTxn, crdTxn) {
+			log.WithFields(log.Fields{
+				"etcdTxn": etcdTxn,
+				"crdTxn":  crdTxn,
+			}).Error("Comparing.")
 			t.Fatal("Transactions are not equal")
 		}
 	}

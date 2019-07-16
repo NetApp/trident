@@ -86,10 +86,13 @@ func getFakeVolumeTransactionWithName(name string) *storage.VolumeTransaction {
 	}
 	snapshotConfig := &storage.SnapshotConfig{}
 
+	upgradeConfig := &storage.PVUpgradeConfig{}
+
 	return &storage.VolumeTransaction{
-		Config:         volumeConfig,
-		SnapshotConfig: snapshotConfig,
-		Op:             storage.AddVolume,
+		Config:          volumeConfig,
+		SnapshotConfig:  snapshotConfig,
+		PVUpgradeConfig: upgradeConfig,
+		Op:              storage.AddVolume,
 	}
 }
 

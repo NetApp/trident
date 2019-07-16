@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -82,9 +82,10 @@ type UpdateVolumeStateRequest struct {
 type VolumeState string
 
 const (
-	VolumeStateUnknown  = VolumeState("unknown")
-	VolumeStateOnline   = VolumeState("online")
-	VolumeStateDeleting = VolumeState("deleting")
+	VolumeStateUnknown   = VolumeState("unknown")
+	VolumeStateOnline    = VolumeState("online")
+	VolumeStateDeleting  = VolumeState("deleting")
+	VolumeStateUpgrading = VolumeState("upgrading")
 	// TODO should Orphaned be moved to a VolumeState?
 )
 

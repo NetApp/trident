@@ -297,9 +297,12 @@ func getVolumeConfig(
 		annotations[AnnFileSystem] = "ext4"
 	}
 
+	if getAnnotation(annotations, AnnNotManaged) == "" {
+		annotations[AnnNotManaged] = "false"
+	}
 	notManaged, err := strconv.ParseBool(getAnnotation(annotations, AnnNotManaged))
 	if err != nil {
-		log.Errorf("unable to parse notManaged annotation into bool; %v", err)
+		log.Warnf("unable to parse notManaged annotation into bool; %v", err)
 	}
 
 	return &storage.VolumeConfig{

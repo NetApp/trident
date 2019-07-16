@@ -1,4 +1,5 @@
 // Copyright 2019 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -8,8 +9,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/storage"
+
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -30,8 +30,10 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 )
@@ -288,6 +290,10 @@ func (p *Plugin) Activate() error {
 	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
 	config.OrchestratorTelemetry.PlatformVersion = p.Version()
 
+	if err := p.handleFailedPVUpgrades(); err != nil {
+		return fmt.Errorf("error cleaning up previously failed PV upgrades; %v", err)
+	}
+
 	return nil
 }
 
@@ -494,14 +500,34 @@ func (p *Plugin) getCachedPVByName(name string) (*v1.PersistentVolume, error) {
 		log.WithFields(logFields).Error("Could not search cache for PV by name.")
 		return nil, fmt.Errorf("could not search cache for PV: %v", err)
 	} else if !exists {
-		log.WithFields(logFields).Debug("PV object not found in cache by name.")
-		return nil, fmt.Errorf("PV not found in cache")
+		log.WithFields(logFields).Debug("Could not find cached PV object by name.")
+		return nil, fmt.Errorf("could not find PV in cache")
 	} else if pv, ok := item.(*v1.PersistentVolume); !ok {
 		log.WithFields(logFields).Error("Non-PV cached object found by name.")
 		return nil, fmt.Errorf("non-PV object found in cache")
 	} else {
 		log.WithFields(logFields).Debug("Found cached PV by name.")
 		return pv, nil
+	}
+}
+
+func (p *Plugin) isPVInCache(name string) (bool, error) {
+
+	logFields := log.Fields{"name": name}
+
+	item, exists, err := p.pvIndexer.GetByKey(name)
+	if err != nil {
+		log.WithFields(logFields).Error("Could not search cache for PV.")
+		return false, fmt.Errorf("could not search cache for PV: %v", err)
+	} else if !exists {
+		log.WithFields(logFields).Debug("Could not find cached PV object by name.")
+		return false, nil
+	} else if _, ok := item.(*v1.PersistentVolume); !ok {
+		log.WithFields(logFields).Error("Non-PV cached object found by name.")
+		return false, fmt.Errorf("non-PV object found in cache")
+	} else {
+		log.WithFields(logFields).Debug("Found cached PV by name.")
+		return true, nil
 	}
 }
 
@@ -532,26 +558,6 @@ func (p *Plugin) waitForCachedPVByName(name string, maxElapsedTime time.Duration
 	}
 
 	return pv, nil
-}
-
-func (p *Plugin) isPVInCache(name string) (*v1.PersistentVolume, error) {
-
-	logFields := log.Fields{"name": name}
-
-	item, exists, err := p.pvIndexer.GetByKey(name)
-	if err != nil {
-		log.WithFields(logFields).Error("Could not search cache for PV.")
-		return nil, fmt.Errorf("could not find PV %s in cache: %v", name, err)
-	} else if !exists {
-		log.WithFields(logFields).Debug("Could not find cached PV object by name.")
-		return nil, fmt.Errorf("could not find PV %s in cache", name)
-	} else if pv, ok := item.(*v1.PersistentVolume); !ok {
-		log.WithFields(logFields).Error("Non-PV cached object found by name.")
-		return nil, fmt.Errorf("non-PV object %s found in cache", name)
-	} else {
-		log.WithFields(logFields).Debug("Found cached PV by name.")
-		return pv, nil
-	}
 }
 
 // addStorageClass is the add handler for the storage class watcher.

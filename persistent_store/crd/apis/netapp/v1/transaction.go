@@ -38,19 +38,12 @@ func (in *TridentTransaction) Apply(txn *storage.VolumeTransaction) error {
 		return ErrNamesDontMatch
 	}
 
-	volumeConfig, err := json.Marshal(txn.Config)
+	transaction, err := json.Marshal(txn)
 	if err != nil {
 		return err
 	}
 
-	snapshotConfig, err := json.Marshal(txn.SnapshotConfig)
-	if err != nil {
-		return err
-	}
-
-	in.Operation = string(txn.Op)
-	in.VolumeConfig.Raw = volumeConfig
-	in.SnapshotConfig.Raw = snapshotConfig
+	in.Transaction.Raw = transaction
 
 	return nil
 }
@@ -59,17 +52,9 @@ func (in *TridentTransaction) Apply(txn *storage.VolumeTransaction) error {
 // operation and internal storage.VolumeConfig
 func (in *TridentTransaction) Persistent() (*storage.VolumeTransaction, error) {
 
-	persistent := &storage.VolumeTransaction{
-		Op:             storage.VolumeOperation(in.Operation),
-		Config:         &storage.VolumeConfig{},
-		SnapshotConfig: &storage.SnapshotConfig{},
-	}
+	persistent := &storage.VolumeTransaction{}
 
-	if err := json.Unmarshal(in.VolumeConfig.Raw, persistent.Config); err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(in.SnapshotConfig.Raw, persistent.SnapshotConfig); err != nil {
+	if err := json.Unmarshal(in.Transaction.Raw, persistent); err != nil {
 		return nil, err
 	}
 

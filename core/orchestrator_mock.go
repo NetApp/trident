@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -447,6 +447,18 @@ func (m *MockOrchestrator) GetVolume(volume string) (*storage.VolumeExternal, er
 	return vol.ConstructExternal(), nil
 }
 
+func (m *MockOrchestrator) SetVolumeState(volumeName string, state storage.VolumeState) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	vol, found := m.volumes[volumeName]
+	if !found {
+		return notFoundError("not found")
+	}
+	vol.State = state
+	return nil
+}
+
 // Copied verbatim from TridentOrchestrator
 func (m *MockOrchestrator) GetDriverTypeForVolume(
 	vol *storage.VolumeExternal,
@@ -647,5 +659,17 @@ func (m *MockOrchestrator) DeleteNode(nName string) error {
 		return notFoundError(fmt.Sprintf("node %s not found", nName))
 	}
 	delete(m.nodes, nName)
+	return nil
+}
+
+func (m *MockOrchestrator) AddVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	return nil
+}
+
+func (m *MockOrchestrator) GetVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
+	return nil, nil
+}
+
+func (m *MockOrchestrator) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	return nil
 }

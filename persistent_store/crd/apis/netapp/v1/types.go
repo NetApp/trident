@@ -117,12 +117,8 @@ type TridentTransaction struct {
 	metav1.TypeMeta `json:",inline"`
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Operation is the volume transaction operation
-	Operation string `json:"operation"`
-	// VolumeConfig is the volume config
-	VolumeConfig runtime.RawExtension `json:"volumeConfig"`
-	// SnapshotConfig is the snapshot config
-	SnapshotConfig runtime.RawExtension `json:"snapshotConfig"`
+	// Transaction is the transaction struct
+	Transaction runtime.RawExtension `json:"transaction"`
 }
 
 // TridentTransactionList is a list of TridentTransaction objects.

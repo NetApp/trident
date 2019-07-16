@@ -49,7 +49,7 @@ func (in *TridentVolume) Apply(persistent *storage.VolumeExternal) error {
 		"persistent.BackendUUID": persistent.BackendUUID,
 		"persistent.Orphaned":    persistent.Orphaned,
 		"persistent.Pool":        persistent.Pool,
-		"persistent.State":       persistent.State,
+		"persistent.State":       string(persistent.State),
 	}).Debug("Applying volume update.")
 
 	if NameFix(persistent.Config.Name) != in.ObjectMeta.Name {

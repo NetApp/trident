@@ -940,7 +940,7 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(
 	if errors.IsNotFound(err) {
 		return nil, nil
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting volumeTransaction from CRD; %v", err)
 	}
 
 	if !ttxn.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -952,7 +952,7 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(
 	}
 
 	if txn, err := ttxn.Persistent(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing volumeTransaction; %v", err)
 	} else {
 		return txn, nil
 	}

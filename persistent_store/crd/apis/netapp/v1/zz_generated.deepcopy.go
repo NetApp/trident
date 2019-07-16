@@ -41,7 +41,7 @@ func (in *TridentBackend) DeepCopyObject() runtime.Object {
 func (in *TridentBackendList) DeepCopyInto(out *TridentBackendList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentBackend, len(*in))
@@ -109,7 +109,7 @@ func (in *TridentNode) DeepCopyObject() runtime.Object {
 func (in *TridentNodeList) DeepCopyInto(out *TridentNodeList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentNode, len(*in))
@@ -173,7 +173,7 @@ func (in *TridentSnapshot) DeepCopyObject() runtime.Object {
 func (in *TridentSnapshotList) DeepCopyInto(out *TridentSnapshotList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentSnapshot, len(*in))
@@ -237,7 +237,7 @@ func (in *TridentStorageClass) DeepCopyObject() runtime.Object {
 func (in *TridentStorageClassList) DeepCopyInto(out *TridentStorageClassList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentStorageClass, len(*in))
@@ -275,8 +275,7 @@ func (in *TridentTransaction) DeepCopyInto(out *TridentTransaction) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	in.VolumeConfig.DeepCopyInto(&out.VolumeConfig)
-	in.SnapshotConfig.DeepCopyInto(&out.SnapshotConfig)
+	in.Transaction.DeepCopyInto(&out.Transaction)
 	return
 }
 
@@ -302,7 +301,7 @@ func (in *TridentTransaction) DeepCopyObject() runtime.Object {
 func (in *TridentTransactionList) DeepCopyInto(out *TridentTransactionList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentTransaction, len(*in))
@@ -365,7 +364,7 @@ func (in *TridentVersion) DeepCopyObject() runtime.Object {
 func (in *TridentVersionList) DeepCopyInto(out *TridentVersionList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentVersion, len(*in))
@@ -429,7 +428,7 @@ func (in *TridentVolume) DeepCopyObject() runtime.Object {
 func (in *TridentVolumeList) DeepCopyInto(out *TridentVolumeList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]*TridentVolume, len(*in))
