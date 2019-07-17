@@ -14,6 +14,7 @@
 - **Kubernetes:** Converted Trident to use custom resource definitions instead of etcd.
 - Trident now allows Solidfire backends without `Types` defined. However, such backends
   will have one default storage pool with the default backend QoS values.
+- Added CONTRIBUTING.md file to describe the process for contributing changes to Trident.
 - **Behavioral change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation`
   parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for
   those LUNs.
