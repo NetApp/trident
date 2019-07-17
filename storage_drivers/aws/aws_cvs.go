@@ -1195,7 +1195,16 @@ func (d *NFSStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) er
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
-	return d.API.DeleteSnapshot(volume, snapshot)
+	if err := d.API.DeleteSnapshot(volume, snapshot); err != nil {
+		return err
+	}
+
+	// Wait for snapshot deletion to complete
+	if err := d.API.WaitForSnapshotState(snapshot, api.StateDeleted, []string{api.StateError}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Return the list of volumes associated with this tenant
