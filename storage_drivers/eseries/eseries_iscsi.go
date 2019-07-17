@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -1038,7 +1038,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 		// UID is not persisted past the highest levels of Trident. So we borrow a
 		// page from the E-series OpenStack driver and return a Base64-encoded form
 		// of a new random (version 4) UUID.
-		uuid4string := uuid.New()
+		uuid4string := uuid.New().String()
 		b64string, err := d.uuidToBase64(uuid4string)
 		if err != nil {
 			// This is unlikely, but if the UUID encoding fails, just return the original string (capped to 30 chars)

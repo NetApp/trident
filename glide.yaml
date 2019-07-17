@@ -1,15 +1,15 @@
 package: github.com/netapp/trident
 import:
 - package: github.com/sirupsen/logrus
-  version: v1.4.1
+  version: v1.4.2
 - package: github.com/coreos/etcd
-  version: v3.3.12
+  version: v3.3.13
   subpackages:
   - client
   - clientv3
   - etcdserver
 - package: github.com/golang/protobuf
-  version: b4deda0973fb4c70b50d226b1af49f3da59f5265 # v1.1.0
+  version: v1.2.0
   subpackages:
   - jsonpb
   - proto
@@ -18,30 +18,28 @@ import:
 - package: github.com/gorilla/context
   version: v1.1.1
 - package: github.com/gorilla/mux
-  version: v1.7.0
-- package: github.com/pborman/uuid
-  version: v1.2.0
-#- package: github.com/spf13/pflag
-#  version: v1.0.3
+  version: v1.7.3
+- package: github.com/google/uuid
+  version: v1.1.1
 - package: github.com/spf13/cobra
-  version: v0.0.3
+  version: v0.0.5
 - package: golang.org/x/net
-  version: 65e2d4e15006aab9813ff8769e768bbf4bb667a0 # kubernetes-1.14.0
+  version: 65e2d4e15006
   subpackages:
   - context
 - package: google.golang.org/grpc
-  version: v1.8.0
+  version: v1.13.0
 - package: k8s.io/api
-  version: 40a48860b5abbba9aa891b02b32da429b08d96a0 # kubernetes-1.14.0
+  version: 7cf5895f2711 # kubernetes-1.15.0
   subpackages:
   - core/v1
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
 - package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.14.0
+  version: 14e95df34f1f469647f494f5185a036e26fddcab # kubernetes-1.15.0
 - package: k8s.io/client-go
-  version: v11.0.0
+  version: 78d2af792bab # v12.0.0 == kubernetes-1.15.0
   subpackages:
   - kubernetes
   - kubernetes/fake
@@ -54,7 +52,7 @@ import:
   - tools/cache/testing
   - tools/record
 - package: k8s.io/apimachinery
-  version: d7deff9243b165ee192f5551710ea4285dcfd615 # kubernetes-1.14.0
+  version: 1799e75a0719 # kubernetes-1.15.0
   subpackages:
   - pkg/api/errors
   - pkg/api/resource
@@ -78,11 +76,11 @@ import:
 - package: github.com/olekukonko/tablewriter
   version: v0.0.1
 - package: github.com/cenkalti/backoff
-  version: v2.1.1
+  version: v3.0.0
 - package: github.com/rs/xid
   version: v1.2.1
 - package: github.com/RoaringBitmap/roaring
-  version: v0.4.17
+  version: v0.4.18
 - package: github.com/container-storage-interface/spec
   version: v1.1.0
 - package: github.com/go-logfmt/logfmt
@@ -90,12 +88,12 @@ import:
 - package: github.com/stretchr/testify
   version: ^v1.3.0
 - package: k8s.io/code-generator
-  version: kubernetes-1.14.0
+  version: kubernetes-1.15.0
   subpackages:
   - cmd/deepcopy-gen
   - cmd/client-gen
 - package: k8s.io/gengo
-  version: e17681d19d3ac4837a019ece36c2a0ec31ffe985 #4242d8e6c5dba56827bb7bcf14ad11cda38f3991
+  version: e17681d19d3ac4837a019ece36c2a0ec31ffe985
   subpackages: 
   - args
   - examples/defaulter-gen/generators
@@ -103,13 +101,13 @@ import:
   - namer
   - generator
   - types
-- package: golang.org/x/tools
-  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
-  subpackages:
-  - imports
-- package: golang.org/x/sync
-  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
-  subpackages:
-  - errgroup
+#- package: golang.org/x/tools
+#  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
+#  subpackages:
+#  - imports
+#- package: golang.org/x/sync
+#  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+#  subpackages:
+#  - errgroup
 - package: github.com/google/go-cmp
-  version: v0.2.0
+  version: v0.3.0

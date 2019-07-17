@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -1339,7 +1339,7 @@ func (d *NFSStorageDriver) GetInternalVolumeName(name string) string {
 		// Cloud volumes have strict limits on volume mount paths, so for cloud
 		// infrastructure like Trident, the simplest approach is to generate a
 		// UUID-based name with a prefix that won't exceed the 36-character limit.
-		return "cvs-" + strings.Replace(uuid.New(), "-", "", -1)
+		return "cvs-" + strings.Replace(uuid.New().String(), "-", "", -1)
 	}
 }
 

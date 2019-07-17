@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -2755,7 +2755,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		orchestrator.mutex.Unlock()
 
 		// Now take a snapshot and ensure everything looks fine
-		snapshotName := "snapshot-" + uuid.New()
+		snapshotName := "snapshot-" + uuid.New().String()
 		snapshotConfig := &storage.SnapshotConfig{
 			Version:    config.OrchestratorAPIVersion,
 			Name:       snapshotName,

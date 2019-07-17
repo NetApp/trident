@@ -1,14 +1,14 @@
-hash: a7e8c432ad5a656f02a8fe6374d08ea2b004bc49d00422982d81c7cab9d21dfe
-updated: 2019-06-27T16:08:38.939407608-04:00
+hash: 630f663025e753788baffada731338cea62ffb25ce3aca4c36ac0a79550cd0e6
+updated: 2019-07-13T13:04:34.392541132-04:00
 imports:
 - name: github.com/cenkalti/backoff
-  version: 1e4cf3da559842a91afcb6ea6141451e6c30c618
+  version: 4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f
 - name: github.com/container-storage-interface/spec
   version: f750e6765f5f6b4ac0e13e95214d58901290fb4b
   subpackages:
   - lib/go/csi
 - name: github.com/coreos/etcd
-  version: d57e8b8d97adfc4a6c224fe116714bf1a1f3beb9
+  version: 98d308426819d892e149fe45f6fd542464cb1f9d
   subpackages:
   - auth/authpb
   - client
@@ -30,14 +30,12 @@ imports:
   version: 39ca1b05acc7ad1220e09f133283b8859a8b71ab
   subpackages:
   - activation
-  - daemon
-  - journal
 - name: github.com/davecgh/go-spew
-  version: 782f4967f2dc4564575ca782fe2d04090b5faca8
+  version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
   - spew
 - name: github.com/docker/go-connections
-  version: 97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e
+  version: fd1b1942c4d55f7f210a8387e612dc6ffee78ff6
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -71,7 +69,7 @@ imports:
   subpackages:
   - lru
 - name: github.com/golang/protobuf
-  version: b4deda0973fb4c70b50d226b1af49f3da59f5265
+  version: aa810b61a9c79d51363740d207bb46cf8e620ed5
   subpackages:
   - jsonpb
   - proto
@@ -84,10 +82,11 @@ imports:
 - name: github.com/golang/snappy
   version: 2a8bb927dd31d8daada140a5d09578521ce5c36a
 - name: github.com/google/go-cmp
-  version: 3af367b6b30c263d47e8895973edcca9a49cf029
+  version: 6f77996f0c42f7b84e5a2b252227263f93432e9b
   subpackages:
   - cmp
   - cmp/internal/diff
+  - cmp/internal/flags
   - cmp/internal/function
   - cmp/internal/value
 - name: github.com/google/gofuzz
@@ -103,7 +102,7 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: a7962380ca08b5a188038c69871b8d3fbdf31e89
+  version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
 - name: github.com/hashicorp/golang-lru
   version: 20f1fb78b0740ba8c3cb143a61e86ba5c8669768
   subpackages:
@@ -121,7 +120,9 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
-  version: dd3d7fa178461d37438bd33f75407cf9755e4339
+  version: 881e3d46423d592d11da9873ff6581dc577a1d0f
+  subpackages:
+  - pkg/guid
 - name: github.com/mitchellh/hashstructure
   version: a38c50148365edc8df43c1580c48fb2b3a1e9cd7
 - name: github.com/modern-go/concurrent
@@ -132,68 +133,54 @@ imports:
   version: 90eadee771aeab36e8bf796039b8c261bebebe4f
 - name: github.com/olekukonko/tablewriter
   version: e6d60cf7ba1f42d86d54cdf5508611c4aafb3970
-- name: github.com/pborman/uuid
-  version: 8b1b92947f46224e3b97bb1a3a5b0382be00d31e
 - name: github.com/philhofer/fwd
   version: bb6d471dc95d4fe11e432687f8b70ff496cf3136
 - name: github.com/RoaringBitmap/roaring
-  version: 8d778e47dd84f169ef4436abb474b0e0101a6dae
+  version: df298267d3e5c232b8b7bdf28d891d0b57253843
 - name: github.com/rs/xid
   version: 15d26544def341f036c5f8dca987a4cbe575032c
 - name: github.com/sirupsen/logrus
-  version: 8bdbc7bcc01dcbb8ec23dc8a28e332258d25251f
+  version: 839c75faf7f98a33d445d181f3018b5c3409a45e
 - name: github.com/spf13/cobra
-  version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
+  version: f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5
 - name: github.com/spf13/pflag
-  version: 298182f68c66c05229eb03ac171abe6e309ee79a
+  version: 24fa6976df40757dce6aea913e7b81ade90530e1
 - name: github.com/stretchr/testify
   version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
-  version: ade0ca4ace05af96235d107023ab018ee921309c
+  version: efe20429c9b7b2a358aba9ba2d40ad56d966ce00
   subpackages:
   - msgp
-- name: github.com/ugorji/go
-  version: bdcc60b419d136a85cdf2e7cbcac34b3f1cd6e57
-  subpackages:
-  - codec
 - name: github.com/willf/bitset
-  version: 18bd95f470f9494ca07c36d877424729edc2455c
+  version: 77892cd8d53fa6524772426bc444dd2e3b4fb18f
 - name: golang.org/x/crypto
-  version: de0752318171da717af4ce24d0a2e8626afaeb11
+  version: e84da0312774c21d64ee2317962ef669b27ffb41
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
   version: 65e2d4e15006aab9813ff8769e768bbf4bb667a0
   subpackages:
   - context
+  - context/ctxhttp
   - http/httpguts
   - http2
   - http2/hpack
   - idna
-  - internal/socks
   - internal/timeseries
-  - proxy
   - trace
 - name: golang.org/x/oauth2
-  version: a6bd8cefa1811bd24b86f8902872e4e8225f74c4
+  version: 9f3314589c9a9136388751d9adae6b0ed400978a
   subpackages:
-  - google
   - internal
-  - jws
-  - jwt
-- name: golang.org/x/sync
-  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
-  subpackages:
-  - errgroup
 - name: golang.org/x/sys
-  version: 95c6576299259db960f6c5b9b69ea52422860fce
+  version: 3b5209105503162ded1863c307ac66fec31120dd
   subpackages:
   - unix
   - windows
 - name: golang.org/x/text
-  version: b19bf474d317b857955b12035d2c5acb57ce8b01
+  version: e6919f6577db79269a6443b9dc46d18f2238fb5d
   subpackages:
   - secure/bidirule
   - transform
@@ -203,10 +190,6 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
-- name: golang.org/x/tools
-  version: cf99646d84d2e5f25f0853f1f3b3233efb3ceff2
-  subpackages:
-  - imports
 - name: google.golang.org/appengine
   version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:
@@ -222,18 +205,22 @@ imports:
   subpackages:
   - googleapis/rpc/status
 - name: google.golang.org/grpc
-  version: 5a9f7b402fe85096d2e1d0383435ee1876e863d0
+  version: 168a6198bcb0ef175f7dacec0b8691fc141dc9b8
   subpackages:
   - balancer
+  - balancer/base
   - balancer/roundrobin
   - codes
   - connectivity
   - credentials
   - encoding
-  - grpclb/grpc_lb_v1/messages
+  - encoding/proto
   - grpclog
   - health/grpc_health_v1
   - internal
+  - internal/backoff
+  - internal/channelz
+  - internal/grpcrand
   - keepalive
   - metadata
   - naming
@@ -250,7 +237,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - name: k8s.io/api
-  version: 40a48860b5abbba9aa891b02b32da429b08d96a0
+  version: 7cf5895f2711098d7d9527db0a4a49fb0dff7de2
   subpackages:
   - admissionregistration/v1beta1
   - apps/v1
@@ -289,7 +276,7 @@ imports:
   - storage/v1alpha1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 53c4693659ed354d76121458fb819202dd1635fa
+  version: 14e95df34f1f469647f494f5185a036e26fddcab
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1
@@ -297,7 +284,7 @@ imports:
   - pkg/client/clientset/clientset/scheme
   - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
-  version: d7deff9243b165ee192f5551710ea4285dcfd615
+  version: 1799e75a07195de9460b8ef7300883499f12127b
   subpackages:
   - pkg/api/errors
   - pkg/api/meta
@@ -346,7 +333,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 6ee68ca5fd8355d024d02f9db0b3b667e8357a0f
+  version: 78d2af792babf2dd937ba2e2a8d99c753a5eda89
   subpackages:
   - discovery
   - discovery/fake
@@ -459,7 +446,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/code-generator
-  version: 50b561225d70b3eb79a1faafd3dfe7b1a62cbe73
+  version: 18da4a14b22b17d2fa761e50037fabfbacec225b
   subpackages:
   - cmd/client-gen
   - cmd/deepcopy-gen
@@ -473,7 +460,7 @@ imports:
   - namer
   - types
 - name: k8s.io/klog
-  version: 8e90cee79f823779174776412c13478955131846
+  version: 89e63fd5117f8c20208186ef85f096703a280c20
 - name: k8s.io/kube-openapi
   version: b3a7cee44a305be0a69e1b9ac03018307287e1b0
   subpackages:
@@ -483,11 +470,12 @@ imports:
   subpackages:
   - buffer
   - integer
+  - pointer
   - trace
 - name: sigs.k8s.io/yaml
   version: fd68e9863619f6ec2fdd8625fe1f02e7c877e480
 testImports:
 - name: github.com/pmezard/go-difflib
-  version: 5d4384ee4fb2527b0a1256a821ebfc92f91efefc
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
   subpackages:
   - difflib
