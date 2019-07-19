@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
@@ -121,7 +122,7 @@ type Interface interface {
 }
 
 type KubeClient struct {
-	clientset    *kubernetes.Clientset
+	clientset    kubernetes.Interface
 	extClientset *apiextension.Clientset
 	restConfig   *rest.Config
 	namespace    string
@@ -178,6 +179,17 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 		"timeout":   kubeClient.timeout,
 		"namespace": namespace,
 	}).Debug("Initialized Kubernetes API client.")
+
+	return kubeClient, nil
+}
+
+func NewFakeKubeClient() (Interface, error) {
+
+	// Create core client
+	clientset := fake.NewSimpleClientset()
+	kubeClient := &KubeClient{
+		clientset: clientset,
+	}
 
 	return kubeClient, nil
 }

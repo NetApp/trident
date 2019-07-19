@@ -8,12 +8,20 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
 
+	//k8s_fake "k8s.io/client-go/kubernetes/fake"
+
+	k8stesting "k8s.io/client-go/testing"
+
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
@@ -33,20 +41,147 @@ func init() {
 	}
 }
 
-func GetTestKubernetesClient() *CRDClientV1 {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Simple cache for our CRD objects, since we don't have a real database layer here
+// TODO merge this and the equivalent in frontends/crd/crd_controller_test ??
+
+type TestingCache struct {
+	backendCache map[string]*v1.TridentBackend
+}
+
+func NewTestingCache() *TestingCache {
+	result := &TestingCache{
+		backendCache: make(map[string]*v1.TridentBackend, 0),
+	}
+	return result
+}
+
+func (o *TestingCache) addBackend(backend *v1.TridentBackend) {
+	o.backendCache[backend.Name] = backend
+}
+
+func (o *TestingCache) updateBackend(updatedBackend *v1.TridentBackend) {
+	log.Debug(">>>> updateBackend")
+	defer log.Debug("<<<< updateBackend")
+	currentBackend := o.backendCache[updatedBackend.Name]
+	if !cmp.Equal(updatedBackend, currentBackend) {
+		if diff := cmp.Diff(currentBackend, updatedBackend); diff != "" {
+			log.Debugf("updated object fields (-old +new):%s", diff)
+			if currentBackend.ResourceVersion == "" {
+				currentBackend.ResourceVersion = "1"
+			}
+			if currentResourceVersion, err := strconv.Atoi(currentBackend.ResourceVersion); err == nil {
+				updatedBackend.ResourceVersion = strconv.Itoa(currentResourceVersion + 1)
+			}
+			log.WithFields(log.Fields{
+				"currentBackend.ResourceVersion": currentBackend.ResourceVersion,
+				"updatedBackend.ResourceVersion": updatedBackend.ResourceVersion,
+			}).Debug("Incremented ResourceVersion.")
+		}
+	} else {
+		log.Debug("No difference, leaving ResourceVersion unchanged.")
+	}
+	o.backendCache[updatedBackend.Name] = updatedBackend
+}
+
+func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCache) {
+
+	crdFakeClient.Fake.PrependReactor(
+		"*" /* all operations */, "*", /* all object types */
+		//"create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
+		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+
+			log.Tracef("actionCopy: %T\n", actionCopy) // use this to find any other types to add
+			switch action := actionCopy.(type) {
+
+			case k8stesting.CreateActionImpl:
+				obj := action.GetObject()
+				log.Tracef("~~ obj: %T\n", obj)
+				log.Tracef("~~ obj: %v\n", obj)
+				switch crd := obj.(type) {
+				case *v1.TridentBackend:
+					log.Tracef("~~ crd: %T\n", crd)
+					if crd.ObjectMeta.GenerateName != "" {
+						if crd.Name == "" {
+							crd.Name = crd.ObjectMeta.GenerateName + strings.ToLower(utils.RandomString(5))
+							log.Tracef("~~~ generated crd.Name: %v\n", crd.Name)
+						}
+					}
+					if crd.ResourceVersion == "" {
+						crd.ResourceVersion = "1"
+						log.Tracef("~~~ generated crd.ResourceVersion: %v\n", crd.ResourceVersion)
+					}
+					crd.ObjectMeta.Namespace = action.GetNamespace()
+					testingCache.addBackend(crd)
+					return false, crd, nil
+
+				default:
+					log.Tracef("~~ crd: %T\n", crd)
+				}
+
+			case k8stesting.DeleteActionImpl:
+				name := action.GetName()
+				log.Tracef("~~ name: %v\n", name)
+
+			case k8stesting.GetActionImpl:
+				name := action.GetName()
+				log.Tracef("~~ name: %v\n", name)
+
+			case k8stesting.ListActionImpl:
+				kind := action.GetKind()
+				listRestrictions := action.GetListRestrictions()
+				log.Tracef("~~ kind: %T\n", kind)
+				log.Tracef("~~ listRestrictions: %v\n", listRestrictions)
+
+			case k8stesting.PatchActionImpl:
+				name := action.GetName()
+				patch := action.GetPatch()
+				patchType := action.GetPatchType()
+				log.Tracef("~~ name: %v\n", name)
+				log.Tracef("~~ patch: %v\n", patch)
+				log.Tracef("~~ patchType: %v\n", patchType)
+
+			case k8stesting.UpdateActionImpl:
+				obj := action.GetObject()
+				log.Tracef("~~ obj: %T\n", obj)
+				log.Tracef("~~ obj: %v\n", obj)
+
+				switch crd := obj.(type) {
+				case *v1.TridentBackend:
+					testingCache.updateBackend(crd)
+					return false, crd, nil
+
+				default:
+				}
+
+			default:
+				log.Tracef("~~~ unhandled type: %T\n", actionCopy) // use this to find any other types to add
+			}
+			return false, nil, nil
+		})
+}
+
+func GetTestKubernetesClient() (*CRDClientV1, k8sclient.Interface) {
+	testingCache := NewTestingCache()
+
 	client := fake.NewSimpleClientset()
+	addCrdTestReactors(client, testingCache)
+
+	k8sclientFake, _ := k8sclient.NewFakeKubeClient()
+	// TODO add more reactors here if needed for the k8s api (not just CRD)
 
 	return &CRDClientV1{
-		client: client,
+		crdClient: client,
+		k8sClient: k8sclientFake,
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: string(CRDV1Store),
 			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
-	}
+	}, k8sclientFake
 }
 
 func TestKubernetesBackend(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding storage backend
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -66,6 +201,7 @@ func TestKubernetesBackend(t *testing.T) {
 		Driver: &NFSDriver,
 		Name:   "nfs-server-1-" + NFSServerConfig.ManagementLIF,
 	}
+	NFSServer.BackendUUID = uuid.New().String()
 
 	err := p.AddBackend(NFSServer)
 	if err != nil {
@@ -128,7 +264,7 @@ func TestKubernetesBackend(t *testing.T) {
 }
 
 func TestKubernetesBackends(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	var backends []*storage.BackendPersistent
 	var err error
@@ -149,12 +285,11 @@ func TestKubernetesBackends(t *testing.T) {
 			Driver: &ontap.NASStorageDriver{
 				Config: NFSServerConfig,
 			},
-			Name: "nfs-server-" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF,
+			Name:        "nfs-server-" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF,
+			BackendUUID: uuid.New().String(),
 		}
 
-		persistentBackend, err := v1.NewTridentBackend(NFSServer.ConstructPersistent())
-		persistentBackend.ObjectMeta.Name = NFSServer.Name
-		_, err = p.addBackendCRD(persistentBackend)
+		err = p.AddBackend(NFSServer)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -162,18 +297,46 @@ func TestKubernetesBackends(t *testing.T) {
 
 		log.Info(">>CHECKING BACKENDS.")
 		backends, err = p.GetBackends()
-		for _, backend := range backends {
-			log.WithFields(log.Fields{
-				"backend.Name": backend.Name,
-				"backend":      backend,
-			}).Info("Currently have.")
-		}
-		log.Info("<<CHECKING BACKENDS.")
-
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
 		}
+		for _, backend := range backends {
+			secretName := p.backendSecretName(backend.BackendUUID)
+			log.WithFields(log.Fields{
+				"backend.Name":        backend.Name,
+				"backend.BackendUUID": backend.BackendUUID,
+				"backend":             backend,
+				"secretName":          secretName,
+			}).Info("Currently have.")
+
+			secret, err := p.k8sClient.GetSecret(secretName)
+			if err != nil {
+				t.Error(err.Error())
+				t.FailNow()
+			}
+			log.WithFields(log.Fields{
+				"secret": secret,
+			}).Info("Found secret.")
+
+			// Decode secret data into map.  The fake client returns only StringData while the real
+			// API returns only Data, so we must use both here to support the unit tests.
+			secretMap := make(map[string]string)
+			for key, value := range secret.Data {
+				secretMap[key] = string(value)
+			}
+			for key, value := range secret.StringData {
+				secretMap[key] = string(value)
+			}
+
+			if secretMap["Username"] != NFSServerConfig.Username {
+				t.FailNow()
+			}
+			if secretMap["Password"] != NFSServerConfig.Password {
+				t.FailNow()
+			}
+		}
+		log.Info("<<CHECKING BACKENDS.")
 	}
 
 	// Retrieving all backends
@@ -198,7 +361,7 @@ func TestKubernetesBackends(t *testing.T) {
 }
 
 func TestKubernetesDuplicateBackend(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -216,18 +379,19 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 		},
 		Name: "nfs-server-1-" + NFSServerConfig.ManagementLIF,
 	}
+	NFSServer.BackendUUID = uuid.New().String()
 
-	persistentBackend, err := v1.NewTridentBackend(NFSServer.ConstructPersistent())
-	persistentBackend.ObjectMeta.Name = NFSServer.Name
-	_, err = p.addBackendCRD(persistentBackend)
+	err := p.AddBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
-	_, err = p.addBackendCRD(persistentBackend)
+
+	err = p.AddBackend(NFSServer)
 	if err == nil {
 		t.Error("Second Create should have failed!")
 	}
+
 	err = p.DeleteBackend(NFSServer)
 	if err != nil {
 		t.Error(err.Error())
@@ -235,7 +399,7 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 }
 
 func TestKubernetesVolume(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding a volume
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -307,7 +471,7 @@ func TestKubernetesVolume(t *testing.T) {
 func TestKubernetesVolumes(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding volumes
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -372,7 +536,7 @@ func TestKubernetesVolumes(t *testing.T) {
 func TestKubernetesVolumeTransactions(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding volume transactions
 	for i := 1; i <= 5; i++ {
@@ -429,7 +593,7 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	firstTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
@@ -478,7 +642,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 func TestKubernetesAddSolidFireBackend(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	sfConfig := drivers.SolidfireStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -492,6 +656,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 		},
 		Name: "solidfire" + "_10.0.0.9",
 	}
+	sfBackend.BackendUUID = uuid.New().String()
 	if err = p.AddBackend(sfBackend); err != nil {
 		t.Fatal(err.Error())
 	}
@@ -520,7 +685,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 func TestKubernetesAddStorageClass(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	bronzeConfig := &storageclass.Config{
 		Name:            "bronze",
@@ -577,7 +742,7 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Initialize the state by adding a storage backend and volumes
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -597,6 +762,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 		Driver: &NFSDriver,
 		Name:   "ontapnas_" + NFSServerConfig.DataLIF,
 	}
+	NFSServer.BackendUUID = uuid.New().String()
 	err = p.AddBackend(NFSServer)
 	if err != nil {
 		t.Fatalf("Backend creation failed: %v\n", err)
@@ -658,7 +824,8 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	newNFSServer := &storage.Backend{
 		Driver: &NFSDriver,
 		// Renaming the NFS server
-		Name: "AFF",
+		Name:        "AFF",
+		BackendUUID: NFSServer.BackendUUID,
 	}
 	err = p.ReplaceBackendAndUpdateVolumes(NFSServer, newNFSServer)
 	if err != nil {
@@ -715,7 +882,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 }
 
 func TestKubernetesAddOrUpdateNode(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	utilsNode := &utils.Node{
 		Name: "test",
@@ -786,7 +953,7 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 }
 
 func TestKubernetesSnapshot(t *testing.T) {
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding a snapshot
 	NFSServerConfig := drivers.OntapStorageDriverConfig{
@@ -876,7 +1043,7 @@ func TestKubernetesSnapshot(t *testing.T) {
 func TestKubernetesSnapshots(t *testing.T) {
 	var err error
 
-	p := GetTestKubernetesClient()
+	p, _ := GetTestKubernetesClient()
 
 	// Adding volumes
 	NFSServerConfig := drivers.OntapStorageDriverConfig{

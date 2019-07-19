@@ -410,12 +410,15 @@ func (k *CRDClientV1) addSecretToBackend(
 		return nil, err
 	}
 
-	// Decode secret data into map
+	// Decode secret data into map.  The fake client returns only StringData while the real
+	// API returns only Data, so we must use both here to support the unit tests.
 	secretMap := make(map[string]string)
 	for key, value := range secret.Data {
 		secretMap[key] = string(value)
 	}
-
+	for key, value := range secret.StringData {
+		secretMap[key] = string(value)
+	}
 	// Set all sensitive fields on the backend
 	if err := backendPersistent.InjectBackendSecrets(secretMap); err != nil {
 		return nil, err

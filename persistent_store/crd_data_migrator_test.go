@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -47,7 +48,7 @@ func getClients() (*EtcdClientV3, *CRDClientV1, error) {
 	_ = etcdClient.DeleteKeys("/trident")
 
 	// Set up crdv1 client
-	crdClient := GetTestKubernetesClient()
+	crdClient, _ := GetTestKubernetesClient()
 
 	return etcdClient, crdClient, nil
 }
@@ -336,6 +337,7 @@ func TestEtcdV3ToCRDV1MigrationCRDBackendsExist(t *testing.T) {
 	}
 
 	fakeBackend := getFakeBackend()
+	fakeBackend.BackendUUID = uuid.New().String()
 	if err := crdClient.AddBackend(fakeBackend); err != nil {
 		t.Fatalf("Could not add CRD backend: %v", err)
 	}
