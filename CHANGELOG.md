@@ -9,6 +9,9 @@
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
 - **Kubernetes:** Prevent operations on failed backends. 
 - **Kubernetes:** Removed size requirement for volume import PVC file.
+
+**Enhancements:**
+- Trident driver for Azure NetApp Files.
 - **Kubernetes:** Implemented CSI Trident (optional for Kubernetes 1.13, exclusive for Kubernetes 1.14+).
 - **Kubernetes:** Added support to CSI Trident for volume snapshots.
 - **Kubernetes:** Converted Trident to use custom resource definitions instead of etcd.
