@@ -56,7 +56,6 @@ type VolType struct {
 
 // NewFromParameters is a factory method to create a new sfapi.Client object using the supplied parameters
 func NewFromParameters(pendpoint string, psvip string, pcfg Config) (c *Client, err error) {
-	rand.Seed(time.Now().UTC().UnixNano())
 	SFClient := &Client{
 		Endpoint:         pendpoint,
 		SVIP:             psvip,

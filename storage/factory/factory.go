@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/aws"
+	"github.com/netapp/trident/storage_drivers/azure"
 	"github.com/netapp/trident/storage_drivers/eseries"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/ontap"
@@ -65,6 +66,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		storageDriver = &eseries.SANStorageDriver{}
 	case drivers.AWSNFSStorageDriverName:
 		storageDriver = &aws.NFSStorageDriver{}
+	case drivers.AzureNFSStorageDriverName:
+		storageDriver = &azure.NFSStorageDriver{}
 	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:

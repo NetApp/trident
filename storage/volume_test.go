@@ -4,6 +4,8 @@ package storage
 
 import (
 	"testing"
+
+	"github.com/netapp/trident/testutils"
 )
 
 func TestVolumeState(t *testing.T) {
@@ -45,7 +47,7 @@ func TestVolumeState(t *testing.T) {
 	for testName, test := range tests {
 		t.Logf("Running test case '%s'", testName)
 
-		assertEqual(t, "Strings not equal", test.input.String(), test.output)
-		assertTrue(t, "Predicate failed", test.predicate(test.input))
+		testutils.AssertEqual(t, "Strings not equal", test.input.String(), test.output)
+		testutils.AssertTrue(t, "Predicate failed", test.predicate(test.input))
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -274,7 +273,6 @@ func GetV(opts map[string]string, keys string, defaultValue string) string {
 func RandomString(strSize int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	var bytes = make([]byte, strSize)
-	rand.Seed(time.Now().UnixNano())
 	rand.Read(bytes)
 	for i, b := range bytes {
 		bytes[i] = chars[b%byte(len(chars))]

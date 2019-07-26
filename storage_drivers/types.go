@@ -165,6 +165,35 @@ type AWSNFSStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
 }
 
+type AzureNFSStorageDriverConfig struct {
+	*CommonStorageDriverConfig
+	SubscriptionID  string `json:"subscriptionID"`
+	TenantID        string `json:"tenantID"`
+	ClientID        string `json:"clientID"`
+	ClientSecret    string `json:"clientSecret"`
+	NfsMountOptions string `json:"nfsMountOptions"`
+	AzureNFSStorageDriverPool
+	Storage []AzureNFSStorageDriverPool `json:"storage"`
+}
+
+// Note that 'Region' and 'Zone' are internal specifiers, not related to Azure's
+// 'Location' field.
+type AzureNFSStorageDriverPool struct {
+	Labels                              map[string]string `json:"labels"`
+	Region                              string            `json:"region"`
+	Zone                                string            `json:"zone"`
+	Location                            string            `json:"location"`
+	ServiceLevel                        string            `json:"serviceLevel"`
+	VirtualNetwork                      string            `json:"virtualNetwork"`
+	Subnet                              string            `json:"subnet"`
+	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type AzureNFSStorageDriverConfigDefaults struct {
+	ExportRule string `json:"exportRule"`
+	CommonStorageDriverConfigDefaults
+}
+
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`

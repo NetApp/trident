@@ -111,7 +111,7 @@ func NewZapiError(zapiResult interface{}) (err ZapiError) {
 	} else {
 		err = ZapiError{}
 		err.code = azgo.EINTERNALERROR
-		err.reason = "unexpcted nil ZAPI result"
+		err.reason = "unexpected nil ZAPI result"
 		err.status = "failed"
 	}
 

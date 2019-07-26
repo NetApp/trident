@@ -1,8 +1,42 @@
-hash: 7e3acaee3fc65df68d2fcfae30237c5e8ada0c50d5a9ff0927dc0b2d9fcab6a9
-updated: 2019-07-18T12:32:44.778949477-04:00
+hash: 85d445e82f973d847376f19d33fbb71d9ac8cd5b298987f79cfeddc99cfa7a0e
+updated: 2019-07-23T14:18:35.575105068-04:00
 imports:
+- name: contrib.go.opencensus.io/exporter/ocagent
+  version: 8110e6c0236bb231b19119275a6be6ec666d05c8
+- name: github.com/Azure/azure-sdk-for-go
+  version: 784a56e5c68f892e337b82c8e1feb5fb6cd7a58a
+  subpackages:
+  - profiles/latest/netapp/mgmt/netapp
+  - profiles/latest/network/mgmt/network
+  - profiles/latest/resources/mgmt/resources
+  - services/netapp/mgmt/2019-05-01/netapp
+  - services/network/mgmt/2019-02-01/network
+  - services/resources/mgmt/2019-03-01/resources
+  - version
+- name: github.com/Azure/go-autorest
+  version: f29a2eccaa178b367df0405778cd85e0af7b4225
+  subpackages:
+  - autorest
+  - autorest/adal
+  - autorest/azure
+  - autorest/azure/auth
+  - autorest/azure/cli
+  - autorest/date
+  - autorest/to
+  - autorest/validation
+  - logger
+  - tracing
 - name: github.com/cenkalti/backoff
   version: 4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f
+- name: github.com/census-instrumentation/opencensus-proto
+  version: d89fa54de508111353cb0b06403c00569be780d8
+  subpackages:
+  - gen-go/agent/common/v1
+  - gen-go/agent/metrics/v1
+  - gen-go/agent/trace/v1
+  - gen-go/metrics/v1
+  - gen-go/resource/v1
+  - gen-go/trace/v1
 - name: github.com/container-storage-interface/spec
   version: f750e6765f5f6b4ac0e13e95214d58901290fb4b
   subpackages:
@@ -34,8 +68,12 @@ imports:
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
   - spew
+- name: github.com/dgrijalva/jwt-go
+  version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
+- name: github.com/dimchansky/utfbom
+  version: d2133a1ce379ef6fa992b0514a77146c60db9d1c
 - name: github.com/docker/go-connections
-  version: 97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e
+  version: fd1b1942c4d55f7f210a8387e612dc6ffee78ff6
   subpackages:
   - sockets
 - name: github.com/docker/go-plugins-helpers
@@ -69,7 +107,7 @@ imports:
   subpackages:
   - lru
 - name: github.com/golang/protobuf
-  version: aa810b61a9c79d51363740d207bb46cf8e620ed5
+  version: b5d812f8a3706043e23a9cd5babf2e5423744d30
   subpackages:
   - jsonpb
   - proto
@@ -77,6 +115,7 @@ imports:
   - ptypes
   - ptypes/any
   - ptypes/duration
+  - ptypes/struct
   - ptypes/timestamp
   - ptypes/wrappers
 - name: github.com/golang/snappy
@@ -103,6 +142,12 @@ imports:
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
+- name: github.com/grpc-ecosystem/grpc-gateway
+  version: 8cc3a55af3bcf171a1c23a90c4df9cf591706104
+  subpackages:
+  - runtime
+  - runtime/internal
+  - utilities
 - name: github.com/hashicorp/golang-lru
   version: 20f1fb78b0740ba8c3cb143a61e86ba5c8669768
   subpackages:
@@ -120,9 +165,13 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
-  version: dd3d7fa178461d37438bd33f75407cf9755e4339
+  version: a969fb018bd3439cc50861ce06796c40430e3a65
+  subpackages:
+  - pkg/guid
 - name: github.com/mitchellh/copystructure
   version: 9a1b6f44e8da0e0e374624fb0a825a231b00c537
+- name: github.com/mitchellh/go-homedir
+  version: af06845cf3004701891bf4fdb884bfe4920b3727
 - name: github.com/mitchellh/hashstructure
   version: a38c50148365edc8df43c1580c48fb2b3a1e9cd7
 - name: github.com/mitchellh/reflectwalk
@@ -135,6 +184,8 @@ imports:
   version: 90eadee771aeab36e8bf796039b8c261bebebe4f
 - name: github.com/olekukonko/tablewriter
   version: e6d60cf7ba1f42d86d54cdf5508611c4aafb3970
+- name: github.com/pborman/uuid
+  version: 8b1b92947f46224e3b97bb1a3a5b0382be00d31e
 - name: github.com/philhofer/fwd
   version: bb6d471dc95d4fe11e432687f8b70ff496cf3136
 - name: github.com/RoaringBitmap/roaring
@@ -146,20 +197,42 @@ imports:
 - name: github.com/spf13/cobra
   version: f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5
 - name: github.com/spf13/pflag
-  version: 298182f68c66c05229eb03ac171abe6e309ee79a
+  version: 24fa6976df40757dce6aea913e7b81ade90530e1
 - name: github.com/stretchr/testify
   version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
-  version: ade0ca4ace05af96235d107023ab018ee921309c
+  version: efe20429c9b7b2a358aba9ba2d40ad56d966ce00
   subpackages:
   - msgp
 - name: github.com/willf/bitset
-  version: 18bd95f470f9494ca07c36d877424729edc2455c
+  version: 77892cd8d53fa6524772426bc444dd2e3b4fb18f
+- name: go.opencensus.io
+  version: b4a14686f0a98096416fe1b4cb848e384fb2b22b
+  subpackages:
+  - internal
+  - internal/tagencoding
+  - metric/metricdata
+  - metric/metricproducer
+  - plugin/ocgrpc
+  - plugin/ochttp
+  - plugin/ochttp/propagation/b3
+  - plugin/ochttp/propagation/tracecontext
+  - resource
+  - stats
+  - stats/internal
+  - stats/view
+  - tag
+  - trace
+  - trace/internal
+  - trace/propagation
+  - trace/tracestate
 - name: golang.org/x/crypto
   version: e84da0312774c21d64ee2317962ef669b27ffb41
   subpackages:
+  - pkcs12
+  - pkcs12/internal/rc2
   - ssh/terminal
 - name: golang.org/x/net
   version: 65e2d4e15006aab9813ff8769e768bbf4bb667a0
@@ -170,16 +243,18 @@ imports:
   - http2
   - http2/hpack
   - idna
-  - internal/socks
   - internal/timeseries
-  - proxy
   - trace
 - name: golang.org/x/oauth2
   version: 9f3314589c9a9136388751d9adae6b0ed400978a
   subpackages:
   - internal
+- name: golang.org/x/sync
+  version: 42b317875d0fa942474b76e1b46a6060d720ae6e
+  subpackages:
+  - semaphore
 - name: golang.org/x/sys
-  version: 3b5209105503162ded1863c307ac66fec31120dd
+  version: 1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded
   subpackages:
   - unix
   - windows
@@ -194,6 +269,10 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
+- name: google.golang.org/api
+  version: aa15faf3c8a1cffc77fc3dabe95703bb12c5f6a9
+  subpackages:
+  - support/bundler
 - name: google.golang.org/appengine
   version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:

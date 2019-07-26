@@ -720,7 +720,6 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	case 1:
 		return volumes[0], nil
 	default:
-		rand.Seed(time.Now().UnixNano())
 		return volumes[rand.Intn(len(volumes))], nil
 	}
 }

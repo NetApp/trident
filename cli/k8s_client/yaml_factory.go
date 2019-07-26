@@ -235,8 +235,7 @@ spec:
             - tridentctl
             - -s
             - 127.0.0.1:8000
-            - get
-            - backend
+            - version
           failureThreshold: 2
           initialDelaySeconds: 120
           periodSeconds: 120
@@ -331,8 +330,7 @@ spec:
             - tridentctl
             - -s
             - 127.0.0.1:8000
-            - get
-            - backend
+            - version
           failureThreshold: 2
           initialDelaySeconds: 120
           periodSeconds: 120
@@ -447,8 +445,7 @@ spec:
             - tridentctl
             - -s
             - 127.0.0.1:8000
-            - get
-            - backend
+            - version
           failureThreshold: 2
           initialDelaySeconds: 120
           periodSeconds: 120
@@ -471,7 +468,7 @@ spec:
         image: quay.io/k8scsi/csi-provisioner:v1.2.1
         args:
         - "--v=9"
-        - "--timeout=300s"
+        - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -495,7 +492,7 @@ spec:
         image: quay.io/k8scsi/csi-snapshotter:v1.2.0
         args:
         - "--v=9"
-        - "--timeout=60s"
+        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -550,8 +547,7 @@ spec:
             - tridentctl
             - -s
             - 127.0.0.1:8000
-            - get
-            - backend
+            - version
           failureThreshold: 2
           initialDelaySeconds: 120
           periodSeconds: 120
@@ -574,7 +570,7 @@ spec:
         image: quay.io/k8scsi/csi-provisioner:v1.3.0
         args:
         - "--v=9"
-        - "--timeout=300s"
+        - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -599,7 +595,7 @@ spec:
         image: quay.io/k8scsi/csi-snapshotter:v1.2.0
         args:
         - "--v=9"
-        - "--timeout=60s"
+        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS

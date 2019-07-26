@@ -22,6 +22,7 @@ const (
 	OntapSANStorageDriverName          = "ontap-san"
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AWSNFSStorageDriverName            = "aws-cvs"
+	AzureNFSStorageDriverName          = "azure-netapp-files"
 	FakeStorageDriverName              = "fake"
 )
 

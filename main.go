@@ -5,11 +5,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/netapp/trident/frontend/crd"
 	log "github.com/sirupsen/logrus"
@@ -223,6 +225,9 @@ func main() {
 	flag.Parse()
 	preBootstrapFrontends := make([]frontend.Plugin, 0)
 	postBootstrapFrontends := make([]frontend.Plugin, 0)
+
+	// Seed RNG one time
+	rand.Seed(time.Now().UnixNano())
 
 	// Set log level
 	err = logging.InitLogLevel(*debug, *logLevel)

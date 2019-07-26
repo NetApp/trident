@@ -118,7 +118,7 @@ func init() {
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
-	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 30*time.Minute, "The timeout for etcd-to-CRD migration.")
+	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 300*time.Minute, "The timeout for etcd-to-CRD migration.")
 
 	installCmd.Flags().MarkHidden("in-cluster")
 	installCmd.Flags().MarkHidden("migrator-timeout")

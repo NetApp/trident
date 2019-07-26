@@ -726,6 +726,7 @@ type PersistentStorageBackendConfig struct {
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	EseriesConfig           *drivers.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
 	AWSConfig               *drivers.AWSNFSStorageDriverConfig    `json:"aws_config,omitempty"`
+	AzureConfig             *drivers.AzureNFSStorageDriverConfig  `json:"azure_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -769,6 +770,8 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.EseriesConfig)
 	case p.Config.AWSConfig != nil:
 		bytes, err = json.Marshal(p.Config.AWSConfig)
+	case p.Config.AzureConfig != nil:
+		bytes, err = json.Marshal(p.Config.AzureConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
@@ -818,6 +821,11 @@ func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPe
 		secretMap["SecretKey"] = backend.Config.AWSConfig.SecretKey
 		backend.Config.AWSConfig.APIKey = secretName
 		backend.Config.AWSConfig.SecretKey = secretName
+	case p.Config.AzureConfig != nil:
+		secretMap["ClientID"] = backend.Config.AzureConfig.ClientID
+		secretMap["ClientSecret"] = backend.Config.AzureConfig.ClientSecret
+		backend.Config.AzureConfig.ClientID = secretName
+		backend.Config.AzureConfig.ClientSecret = secretName
 	case p.Config.FakeStorageDriverConfig != nil:
 		// Nothing to do
 	default:
@@ -863,6 +871,13 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 		}
 		if p.Config.AWSConfig.SecretKey, ok = secretMap["SecretKey"]; !ok {
 			return makeError("SecretKey")
+		}
+	case p.Config.AzureConfig != nil:
+		if p.Config.AzureConfig.ClientID, ok = secretMap["ClientID"]; !ok {
+			return makeError("ClientID")
+		}
+		if p.Config.AzureConfig.ClientSecret, ok = secretMap["ClientSecret"]; !ok {
+			return makeError("ClientSecret")
 		}
 	case p.Config.FakeStorageDriverConfig != nil:
 		// Nothing to do
