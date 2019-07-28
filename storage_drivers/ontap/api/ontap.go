@@ -136,14 +136,35 @@ func NewZapiAsyncResult(zapiResult interface{}) (result ZapiAsyncResult, err err
 		val = reflect.Indirect(val)
 	}
 
-	if s := val.FieldByName("ResultStatusPtr"); !s.IsNil() {
-		status = s.Elem().String()
-	}
-	if j := val.FieldByName("ResultJobidPtr"); !j.IsNil() {
-		jobId = j.Elem().Int()
-	}
-	if e := val.FieldByName("ResultErrorCodePtr"); !e.IsNil() {
-		errorCode = e.Elem().Int()
+	switch obj := zapiResult.(type) {
+	case azgo.VolumeModifyIterAsyncResponse:
+		log.Debugf("NewZapiAsyncResult - processing VolumeModifyIterAsyncResponse: %v", obj)
+		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
+		volModifyResult := val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)
+		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
+			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {
+				volInfoType := volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr[0]
+				if volInfoType.JobidPtr != nil {
+					jobId = int64(*volInfoType.JobidPtr)
+				}
+				if volInfoType.StatusPtr != nil {
+					status = *volInfoType.StatusPtr
+				}
+				if volInfoType.ErrorCodePtr != nil {
+					errorCode = int64(*volInfoType.ErrorCodePtr)
+				}
+			}
+		}
+	default:
+		if s := val.FieldByName("ResultStatusPtr"); !s.IsNil() {
+			status = s.Elem().String()
+		}
+		if j := val.FieldByName("ResultJobidPtr"); !j.IsNil() {
+			jobId = j.Elem().Int()
+		}
+		if e := val.FieldByName("ResultErrorCodePtr"); !e.IsNil() {
+			errorCode = e.Elem().Int()
+		}
 	}
 
 	result = ZapiAsyncResult{

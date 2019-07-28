@@ -22,6 +22,7 @@
 - **Behavioral change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation`
   parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for
   those LUNs.
+- **Kubernetes:** Fix failure to set snapshot directory access during FlexGroup creation.
 
 ## v19.04.0
 
