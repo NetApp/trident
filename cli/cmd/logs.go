@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -16,8 +16,6 @@ import (
 )
 
 const (
-	LogLimitBytes = 10485760 // 10 MiB
-
 	logNameTrident         = "trident"
 	logNameTridentPrevious = "trident-previous"
 	logNameEtcd            = "etcd"
@@ -211,9 +209,8 @@ func getTridentLogs(logName string, logMap map[string][]byte) error {
 	}
 
 	// Build command to get K8S logs
-	limitArg := fmt.Sprintf("--limit-bytes=%d", LogLimitBytes)
 	prevArg := fmt.Sprintf("--previous=%v", prev)
-	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, limitArg, prevArg}
+	logsCommand := []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", container, prevArg}
 
 	if Debug {
 		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
