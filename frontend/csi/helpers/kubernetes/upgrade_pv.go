@@ -502,7 +502,7 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	// Load the original PV config
 	pv = volTxn.PVUpgradeConfig.PVConfig
 
-	// Delete all owned pods that were using the PV
+	// Try to delete all owned pods that were using the PV
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
 
 		// Delete pod
@@ -513,8 +513,7 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 				"PVC":   pvcDisplayName,
 				"pod":   podName,
 				"error": err,
-			}).Errorf("%s.", message)
-			return fmt.Errorf("%s: %v", message, err)
+			}).Warnf("%s.", message)
 		} else {
 			log.WithFields(log.Fields{
 				"PV":  pv.Name,
