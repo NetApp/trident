@@ -1156,8 +1156,52 @@ func (d *NFSStorageDriver) Get(name string) error {
 	return err
 }
 
+// Resize increases a volume's quota
 func (d *NFSStorageDriver) Resize(name string, sizeBytes uint64) error {
-	return errors.New("resize is not supported in Azure NetApp Files")
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "Resize",
+			"Type":      "NFSStorageDriver",
+			"name":      name,
+			"sizeBytes": sizeBytes,
+		}
+		log.WithFields(fields).Debug(">>>> Resize")
+		defer log.WithFields(fields).Debug("<<<< Resize")
+	}
+
+	// Get the volume
+	creationToken := name
+
+	volume, err := d.SDK.GetVolumeByCreationToken(creationToken)
+	if err != nil {
+		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	// If the volume state isn't Available, return an error
+	if volume.ProvisioningState != sdk.StateAvailable {
+		return fmt.Errorf("volume %s state is %s, not available", creationToken, volume.ProvisioningState)
+	}
+
+	// If the volume is already the requested size, there's nothing to do
+	if int64(sizeBytes) == volume.QuotaInBytes {
+		return nil
+	}
+
+	// Make sure we're not shrinking the volume
+	if int64(sizeBytes) < volume.QuotaInBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volume.QuotaInBytes)
+	}
+
+	// Make sure the request isn't above the configured maximum volume size (if any)
+	if _, _, err = drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
+		return err
+	}
+
+	// Resize the volume
+	_, err = d.SDK.ResizeVolume(volume, int64(sizeBytes))
+
+	return err
 }
 
 // Retrieve storage capabilities and register pools with specified backend.
