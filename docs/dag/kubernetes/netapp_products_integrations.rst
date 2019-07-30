@@ -23,7 +23,7 @@ ONTAP is NetApp’s multiprotocol, unified storage operating system that provide
 Cloud Volumes ONTAP 
 ===================
 
-`Cloud Volumes ONTAP <http://cloud.netapp.com/ontap-cloud?utm_source=GitHub&utm_campaign=Trident>`_ is a software-only storage appliance that runs the ONTAP data management software in the cloud. You can use Cloud Volumes ONTAP for production workloads, disaster recovery, DevOps, file shares, and database management. It extends enterprise storage to the cloud by offering storage efficiencies, high availability, data replication, data tiering and application consistency.
+`Cloud Volumes ONTAP <http://cloud.netapp.com/ontap-cloud?utm_source=GitHub&utm_campaign=Trident>`_ is a software-only storage appliance that runs the ONTAP data management software in the cloud. You can use Cloud Volumes ONTAP for production workloads, disaster recovery, DevOps, file shares, and database management.It extends enterprise storage to the cloud by offering storage efficiencies, high availability, data replication, data tiering and application consistency.
 
 
 Element OS
@@ -34,7 +34,7 @@ Element OS enables the storage administrator to consolidate workloads by guarant
 Trident supports all Element OS clusters, more information can be found at `Element Software <https://www.netapp.com/us/products/data-management-software/element-os.aspx>`_.
 
 NetApp HCI
-----------
+==========
 
 NetApp HCI simplifies the management and scale of the datacenter by automating routine tasks and enabling infrastructure administrators to focus on more important functions.
 
@@ -49,9 +49,15 @@ Trident can create and manage SANtricity volumes across the portfolio of product
 
 For more information about SANtricity and the storage platforms which use it, see `SANtricity Software <https://www.netapp.com/us/products/data-management-software/santricity-os.aspx>`_.
 
+Azure NetApp Files
+------------------
+
+`Azure NetApp Files`_ is an enterprise-grade Azure file share service, powered by NetApp. Run your most demanding
+file-based workloads in Azure natively, with the performance and rich data management you expect from NetApp.
+
+.. _Azure NetApp Files: https://azure.microsoft.com/en-us/services/netapp/
+
 Cloud Volumes Service for AWS
 -----------------------------
 
 `NetApp Cloud Volumes Service <https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=GitHub&utm_campaign=Trident>`_ is a cloud native file service that provides NAS volumes over NFS and SMB with all-flash performance. This service enables any workload, including legacy applications, to run in the AWS cloud. It provides a fully managed service which offers consistent high performance, instant cloning, data protection and secure access to Elastic Container Service (ECS) instances.
-
-  

@@ -18,9 +18,10 @@ Some of the best practices guides are listed below, however, refer to the `NetAp
   * `SAN Administration Guide <http://docs.netapp.com/ontap-9/index.jsp?topic=%2Fcom.netapp.doc.dot-cm-sanag%2Fhome.html>`_ (for iSCSI)
   * `iSCSI Express Configuration for RHEL <http://docs.netapp.com/ontap-9/index.jsp?topic=%2Fcom.netapp.doc.exp-iscsi-rhel-cg%2Fhome.html>`_
   
-* SolidFire
+* Element
 
   * `Configuring SolidFire for Linux <http://www.netapp.com/us/media/tr-4639.pdf>`_
+  * `NetApp HCI Deployment Guide <https://library.netapp.com/ecm/ecm_download_file/ECMLP2847696>`_
 
 * E-Series
 
@@ -79,19 +80,11 @@ For example, a 2-node ONTAP cluster has the ability to host a maximum of 2000 Fl
 
 In addition to controlling the volume count at the storage array, Kubernetes capabilities should also be leveraged as explained in the next chapter.
 
-Limit the maximum size of volumes created by the Trident user
--------------------------------------------------------------
+Limit the maximum size of volumes created by Trident
+----------------------------------------------------
 
-ONTAP can prevent a user from creating a volume above a maximum size, as defined by the administrator.  This is implemented using the permissions system and should be applied to the user which Trident uses to authenticate, e.g. ``vsadmin``.
-
-.. code-block:: console
-
-   security login role modify -vserver <svm_name> -role <username> -access all -cmddirname "volume create" -query "-size <=50g"
-
-The above example command will prevent the user from creating volume larger than 50GiB in size.  The value should be modified to what is appropriate for your applications and the expected size of volumes desired.
-
-.. note::
-   This does not apply when using the ``ontap-nas-economy`` driver.  The economy driver will create the FlexVolume with a size equal to the first PVC provisioned to that FlexVolume.  Subsequent PVCs provisioned to that FlexVolume will result in the volume being resized, which is not subject to the limitation described above.
+To configure the maximum size for volumes that can be created by Trident, use the ``limitVolumeSize`` parameter in your
+``backend.json`` definition.
 
 In addition to controlling the volume size at the storage array, Kubernetes capabilities should also be leveraged as explained in the next chapter.
 
@@ -153,16 +146,9 @@ Disable showmount using SVM level ONTAP CLI command:
 
    vserver nfs modify -vserver <svm_name> -showmount disabled
 
-Use NFSv4 for Trident's etcd when possible
-------------------------------------------
-
-NFSv3 locks are handled by Network Lock Manager (NLM), which is a sideband mechanism not using the NFS protocol. Therefore, during a failure scenario and a server hosting the Trident pod ungracefully leaves the network (either by a hard reboot or all access being abruptly severed), the NFS lock is held indefinitely. This results in Trident failure because etcd's volume cannot be mounted from another node.  
-
-NFSv4 has session management and locking built into the protocol and the locks are released automatically when the session times out. In a recovery situation, the Trident pod will be redeployed on another node, mount, and come back up after the v4 locks are automatically released.
-
 
 Best practices for configuring SolidFire
-=========================================
+========================================
 
 **Solidfire Account**
 
@@ -216,8 +202,8 @@ Host groups are used by Trident to access the volumes (LUNs) that it provisions.
 
 Create a snapshot schedule and assign the volume created by Trident to a snapshot schedule so that volume backups can be taken at the required interval. Based on the snapshots taken as per the snapshot policy, rollback operations can be done on volumes by restoring a snapshot image to the base volume. Setting up Snapshot Consistency Groups are also ideal for applications that span multiple volumes. The purpose of a consistency group is to take simultaneous snapshot images of multiple volumes, thus ensuring consistent copies of a collection of volumes at a particular point in time. Snapshot schedule and Consistency group cannot be set through Trident. It has to be configured through SANtricity System Manager 
 
-Best practices for configuring Cloud Volumes Service 
-====================================================
+Best practices for configuring Cloud Volumes Service on AWS 
+===========================================================
 
 **Create Export Policy** 
 

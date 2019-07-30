@@ -8,6 +8,7 @@ from systems running any combination of NetApp's
 `Element`_ (HCI/SolidFire), and
 `SANtricity`_ (E/EF-Series) data management platforms,
 plus our
+`Azure NetApp Files`_ service in Azure and 
 `Cloud Volumes Service`_ in AWS.
 
 Relative to other Kubernetes provisioners, Trident is novel in the following
@@ -43,7 +44,9 @@ deployments Trident and the rest of the infrastructure is completely hidden
 from the user.
 
 Let's lift up the covers a bit to better understand Trident and what it is
-doing. This `introductory video`_ provides a great way to do just that.
+doing. This `introductory video`_ is a good place to start. While based on 
+an earlier version of Trident, it explains the core concepts involved 
+and is a great way to get started on the Trident journey.
 
 .. .. raw:: html
   <!--
@@ -94,15 +97,15 @@ doing. This `introductory video`_ provides a great way to do just that.
 .. toctree::
     :maxdepth: 2
     :caption: Contents:
-
+    
+    upgrading
     deploying
     operations/tasks/index
-    operations/production/index
     concepts/index
     known-issues
     troubleshooting
-    trident-csi
 
+.. _Azure NetApp Files: https://cloud.netapp.com/azure-netapp-files
 .. _Kubernetes: https://kubernetes.io
 .. _Persistent Volume framework: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 .. _ONTAP: https://www.netapp.com/us/products/data-management-software/ontap.aspx

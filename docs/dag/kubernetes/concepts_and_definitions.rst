@@ -52,7 +52,8 @@ More information about PVs can be found in the `Kubernetes <https://kubernetes.i
 Storage Class
 -------------
 
-Kubernetes uses the Storage Class object to describe storage with specific characteristics. An administrator may define several Storage Classes that each define different storage properties. The Storage Classes are used by the :ref:`PVC <Persistent Volume Claim>` to provision storage. A Storage Class may have a provisioner associated with it that will trigger Kubernetes to wait for the volume to be provisioned by the specified provider. In the case of NetApp, the provisioner identifier used is ``netapp.io/trident``.
+Kubernetes uses the Storage Class object to describe storage with specific characteristics. An administrator may define several Storage Classes that each define different storage properties. The Storage Classes are used by the :ref:`PVC <Persistent Volume Claim>` to provision storage. A Storage Class may have a provisioner associated with it that will trigger Kubernetes to wait for the volume to be provisioned by the specified provider. In the case of Trident, the provisioner identifier used is ``netapp.io/trident``.
+The value of the provisioner for Trident using its enhanced CSI provisioner is ``csi.trident.netapp.io``.
 
 A Storage Class object in Kubernetes has only two required fields:
 
@@ -127,5 +128,9 @@ To maintain a persistent pod that will always be deployed on the same node with 
 Container Storage Interface
 ===========================
 
-The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). The CSI is meant to be a standard mechanism used by various container orchestrators to expose storage systems to containers. Trident v19.04 with CSI is currently in alpha stage and runs with Kubernetes version >= 1.13. However, today CSI does not provide the features NetApp's interface provides for Kubernetes. Therefore, NetApp recommends deploying Trident without CSI at this time and waiting until CSI is more mature.
-
+The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container
+Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). CSI
+is meant to be a standard mechanism used by various container orchestrators to expose
+storage systems to containers. Trident v19.07 fully conforms with CSI 1.1 specifications
+and supports all volume operations. Trident's enhanced CSI support is production ready and currently supported
+on Kubernetes versions ``1.13`` and above.

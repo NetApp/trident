@@ -1,13 +1,13 @@
 .. _sf_vol_opts:
 
-SolidFire Volume Options
-========================
+Element OS/SolidFire Volume Options
+===================================
 
 The SolidFire driver options expose the size and quality of service (QoS) policies associated with the volume. When the volume is created, the QoS policy associated with it is specified using the ``-o type=service_level`` nomenclature.
 
 The first step to defining a QoS service level with the SolidFire driver is to create at least one type and specify the minimum, maximum, and burst IOPS associated with a name in the configuration file.
 
-**Example SolidFire Configuration File with QoS Definitions**
+**Example Configuration File with QoS Definitions**
 
 .. code-block:: json
 

@@ -9,21 +9,19 @@ The guidelines in this section provide recommendations for Trident installation 
 Supported Kubernetes cluster architectures
 ==========================================
 
-Trident is supported with the following Kubernetes architectures. In each of the Kubernetes architectures below, the installation steps remain relatively the same except for the ones which have an asterick.
+Trident is supported with the following Kubernetes architectures.
 
    +-----------------------------------------------+-----------+---------------------+
-   |         Kubernetes Cluster Architectures      | Supported | Normal Installation |
+   |         Kubernetes Cluster Architectures      | Supported | Default Install     |
    +===============================================+===========+=====================+
    | Single master, compute                        | Yes       |       Yes           |
    +-----------------------------------------------+-----------+---------------------+
    | Multiple master, compute                      | Yes       |       Yes           |
    +-----------------------------------------------+-----------+---------------------+
-   | Master, etcd, compute                         | Yes*      |       No            |
+   | Master, etcd, compute                         | Yes       |       Yes           |
    +-----------------------------------------------+-----------+---------------------+
    | Master, infrastructure, compute               | Yes       |       Yes           |
    +-----------------------------------------------+-----------+---------------------+
-
-The cell marked with an asterik above has an external production etcd cluster and requires different installation steps for deploying Trident. The :ref:`Trident etcd documentation <etcd>` discusses in detail how to freshly deploy Trident on an external etcd cluster. It also mentions how to migrate existing Trident deployment to an external etcd cluster as well.  
 
 Trident installation modes 
 ==========================
@@ -36,38 +34,88 @@ Normal installation involves running the ``tridentctl install -n trident`` comma
 
 **Offline install mode**
 
-In many organizations, production and development environments do not have access to public repositories for pulling and posting images as these environments are completely secured and restricted. Such environments only allow pulling images from trusted private repositories. 
-In such scenarios, make sure that a private registry instance is available. Then trident and etcd images should be downloaded from a bastion host with internet access and pushed on to the private registry. To install Trident in offline mode, just issue the ``tridentctl install -n trident`` command with the  ``--etcd-image`` and  the ``--trident-image`` parameter with the appropriate image name and location. For more information on how to install Trident in offline mode, please examine the blog on `Installing Trident for Kubernetes from a Private Registry <https://netapp.io/2018/12/19/installing-trident-from-a-private-registry/>`_.
-
+In many organizations, production and development environments do not have access to public repositories for pulling and posting images as these environments are completely secured and restricted. Such environments only allow pulling images from trusted private repositories.
+In such scenarios, make sure that a private registry instance is available. The trident image should be downloaded from a bastion host with internet access and pushed on to the private registry. To install Trident in offline mode, just issue the ``tridentctl install -n trident`` command with the ``--trident-image`` parameter set to the appropriate image name and location.
 
 **Remote install mode**
 
 Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps. 
-
-Trident CSI installation
-========================
-NetApp does not support running Trident in CSI mode in production. It is reserved for development purposes at this time. You're welcome to try it, and we would love to hear any feedback you may have if you do! More information regarding CSI can be found in the :ref:`Trident documentation <CSI Trident for Kubernetes>`.
 
 Trident Installation on Docker UCP 3.1 
 ======================================
 
 Docker EE Universal Control Plane (UCP) is the cluster management layer that sits on top of the Docker Enterprise Engine. Once deployed, administrators interact with their cluster via UCP instead of each node's individual Docker engines. Since the UCP supports both Kubernetes and Docker via a Web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
 
-Installing Trident for Kubernetes on UCP managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Install Trident>` for instructions on how to install Trident for Kubernetes.
+Installing Trident for Kubernetes on UCP managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for Kubernetes.
 
 Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes. 
 
 
-Trident Installation on NetApp Kubernetes Service 
+Using Trident with the NetApp Kubernetes Service
 =================================================
 
-NetApp Kubernetes Service (NKS) is a universal control plane through which production grade Kubernetes clusters can be provisioned and run on the cloud provider of choice. NKS can quickly build a cluster on the cloud of your choice and easily manage your Kubernetes cluster from a single pane of glass. 
+The `NetApp Kubernetes Service`_ (NKS) is a universal control plane through which production grade Kubernetes clusters
+can be provisioned and run on the cloud provider of choice.
 
-Installing Trident for Kubernetes on NKS is similar to installing Trident on Kubernetes when used with Cloud Volumes ONTAP. Refer to the following :ref:`documentation <Install Trident>` for instructions on how to install Trident for Kubernetes.
+.. _NetApp Kubernetes Service: https://cloud.netapp.com/kubernetes-service
 
-Using Trident we can set Cloud Volumes ONTAP (CVO) and Cloud Volumes Services (CVS) with AWS  as a storage backend for NKS. CVO and CVS are storage services that can be spun up on different cloud providers giving flexibility for users to maintain their Kubernetes persistent data in their respective cloud. To use Cloud Volume ONTAP as persistent storage for the Kubernetes cluster provisioned through NKS, upload the configuration file (kubeconfig) in YAML format on the OnCommand Cloud Manager (OCCM). Cloud Manager can automate the deployment of NetApp Trident on Kubernetes clusters so you can use Cloud Volumes ONTAP as persistent storage for containers.
+Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for NKS.
 
-You can connect different clusters to different Cloud Volumes ONTAP systems and multiple clusters to the same Cloud Volumes ONTAP system. 
+Deploying Trident as an enhanced CSI Provisioner
+================================================
+
+The Trident 19.07 release is built on a production-ready CSI 1.1 provisioner implementation. This allows
+Trident to absorb standardized features like snapshots, while still retaining its ability to innovate on the storage model.
+
+To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <deploying-in-kubernetes>`. Ensure
+that the required :ref:`Feature Gates <Feature Gates>` are enabled.
+After deploying, you should consider :ref:`Upgrading existing PVs to CSI volumes <Upgrading legacy volumes to CSI volumes>`
+if you would like to
+use new features such as :ref:`On-demand snapshots <Creating Snapshots of Persistent Volumes>`.
+
+.. _installer bundle: https://github.com/NetApp/trident/releases/latest
+
+CRDs for maintaining Trident's state
+====================================
+
+The 19.07 release of Trident introduces a set of :ref:`Custom Resource Definitions(CRDs) <Kubernetes CustomResourceDefinition objects>`
+for maintaining
+Trident's stateful information. CRDs are a Kubernetes construct used to group a set of similar objects
+together and classify them as user-defined resources. This translates to Trident no longer needing a
+dedicated etcd and a PV that it needs to use on the backend storage. All stateful objects used by Trident 
+will be CRD objects that are present in the Kubernetes cluster's etcd.
+
+Things to keep in mind about Trident's CRDs
+-------------------------------------------
+
+1. When Trident is installed, a set of CRDs are created and can be used like any other resource type.
+
+2. When :ref:`upgrading from a previous version of Trident <Upgrading Trident>` (one that used etcd to maintain state), the Trident
+   installer will migrate data from the etcd key-value data store and create corresponding CRD objects.
+
+3. :ref:`Downgrading <Downgrading Trident>` to a previous Trident version is not recommended.
+
+4. When uninstalling Trident using the ``tridentctl uninstall`` command, Trident pods are deleted but the created CRDs will not be cleaned up. Refer to the :ref:`Uninstalling Guide <Uninstalling Trident>` to understand how Trident can be completely removed and reconfigured from scratch. 
+
+5. Since the CRD objects that are used by Trident are stored in the Kubernetes cluster's etcd, :ref:`Trident disaster recovery workflows <Backup and Disaster Recovery>` will be different when compared to previous versions of Trident.
+
+Trident Upgrade/Downgrade Process
+=================================
+
+Upgrading Trident
+-----------------
+
+If you are looking to upgrade to the latest version of Trident, the :ref:`Upgrade section <Upgrading Trident>`
+provides a complete overview of the upgrade process.
+
+Downgrading Trident
+-------------------
+
+**Downgrading to a previous release is not recommended**. If you choose to downgrade, ensure that the PV
+used by the previous Trident installation is available.
+
+Refer to the :ref:`Troubleshooting <Troubleshooting>` section to understand what happens when a downgrade is
+attempted.
 
 Recommendations for all deployments
 ===================================

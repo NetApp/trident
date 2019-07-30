@@ -60,6 +60,7 @@ Remove one or more resources from Trident
 
   Available Commands:
     backend      Delete one or more storage backends from Trident
+    snapshot     Delete one or more volume snapshots from Trident    
     storageclass Delete one or more storage classes from Trident
     volume       Delete one or more storage volumes from Trident
 
@@ -75,6 +76,7 @@ Get one or more resources from Trident
 
   Available Commands:
     backend      Get one or more storage backends from Trident
+    snapshot     Get one or more snapshots from Trident
     storageclass Get one or more storage classes from Trident
     volume       Get one or more volumes from Trident
 
@@ -84,16 +86,16 @@ Import an existing volume to Trident
 
 .. code-block:: console
 
-Usage:
-  tridentctl import volume <backendName> <volumeName> [flags]
+  Usage:
+    tridentctl import volume <backendName> <volumeName> [flags]
 
-Aliases:
-  volume, v
+  Aliases:
+    volume, v
 
-Flags:
-  -f, --filename string   Path to YAML or JSON PVC file
-  -h, --help              help for volume
-      --no-manage         Create PV/PVC only, don't assume volume lifecycle management
+  Flags:
+    -f, --filename string   Path to YAML or JSON PVC file
+    -h, --help              help for volume
+        --no-manage         Create PV/PVC only, don't assume volume lifecycle management
 
 install
 -------
@@ -106,6 +108,7 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
+        --csi                       Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
         --dry-run                   Run all the pre-checks, but don't install anything.
         --etcd-image string         The etcd image to install.
         --generate-custom-yaml      Generate YAML files, but don't install anything.
@@ -163,6 +166,19 @@ Modify a resource in Trident
 
   Available Commands:
     backend     Update a backend in Trident
+
+upgrade
+-------
+
+Upgrade a resource in Trident
+
+.. code-block:: console
+
+   Usage:
+  tridentctl upgrade [command]
+
+   Available Commands:
+     volume      Upgrade one or more persistent volumes from NFS/iSCSI to CSI
 
 version
 -------

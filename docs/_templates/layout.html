@@ -1,5 +1,13 @@
 {% extends '!layout.html' %}
+{% block footer %} {{ super() }}
+<style>
+    .highlight {
+        background-color: #f0f0f0;
+    }
+</style>
+{% endblock %}
 
+/* REMOVE EVERYTHING BELOW IN STABLE BUILDS */
 {% block extrabody %}
 <br/>
 <div class="wy-nav-content-wrap">
@@ -7,6 +15,10 @@
         <h4 style="color:red">This is the absolute latest documentation from the master branch.</h4>
         It may contain details that differ from the release you are running. To see the documentation
         for your release, select the appropriate version at the bottom of the table of contents.
+    </div>
+    <div class="wy-nav-content">
+        <h4 style="color:red">Upgrading to the latest version of Trident?</h4>
+        Refer to <a class="reference internal" href="kubernetes/upgrading.html">Upgrading Trident</a>.
     </div>
 </div>
 {% endblock %}

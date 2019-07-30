@@ -8,10 +8,62 @@ Protecting application data is one of the fundamental purposes of any storage sy
 
 NetApp's storage platforms provide data protection and recoverability options which vary based on recovery time and acceptable data loss requirements. Trident can provision volumes which can take advantage of some of these features, however, a full data protection and recovery strategy should be evaluated for each application with a persistence requirement.
 
+Backing Up Kubernetes and Trident's state
+=========================================
+
+Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage
+its state. As a result, Trident will store its metadata in the Kubernetes cluster's etcd database.
+All Kubernetes objects are stored in the cluster's etcd. Periodically backing up the etcd cluster
+data is important to recover Kubernetes clusters under disaster scenarios.
+
+This example provides a sample workflow to create etcd snapshots on a Kubernetes cluster using
+``etcdctl``. 
+
+etcdctl snapshot backup
+-----------------------
+
+The command ``etcdctl snapshot save`` enables us to take a point-in-time snapshot of the etcd cluster.
+
+.. code-block:: console 
+
+   sudo docker run --rm -v /backup:/backup \
+    --network host \
+    -v /etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd \
+    --env ETCDCTL_API=3 \
+    k8s.gcr.io/etcd-amd64:3.2.18 \
+    etcdctl --endpoints=https://127.0.0.1:2379 \
+    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+    --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+    snapshot save /backup/etcd-snapshot.db
+
+This command creates an etcd snapshot by spinning up an etcd container
+and saves it in the ``/backup`` directory.
+
+etcdctl snapshot restore
+------------------------
+
+In the event of a disaster, it is possible to spin up a Kubernetes cluster using the etcd snapshots.
+Use the ``etcdctl snapshot restore``
+command to restore a specific snapshot taken to the ``/var/lib/etcd folder``. After restoring, confirm if
+the ``/var/lib/etcd`` folder has been populated with the ``member`` folder. The following is an example of
+``etcdctl snapshot restore`` command.
+
+.. code-block:: console
+
+   # etcdctl snapshot restore '/backup/etcd-snapshot-latest.db' ; mv /default.etcd/member/ /var/lib/etcd/
+
+Before you initialize the Kubernetes cluster, copy all the necessary certificates.
+Create the cluster with the ``--ignore-preflight-errors=DirAvailable--var-lib-etcd`` flag.
+After the cluster comes up make sure that the kube-system pods have started. Use the ``kubectl get crd``
+command to verify if the custom resources created by Trident are present and retrieve Trident objects
+to make sure that all the data is available. 
+
+
 ONTAP Snapshots
 ===============
 
-Snapshots play an important role by providing point-in-time recovery options for application data. However, snapshots are not backups by themselves, they will not protect against storage system failure or other catastrophes. But, they are a convenient, quick, and easy way to recover data in most scenarios.
+The following sections talk in general about how ONTAP Snapshot technology can be used to take backups of the volume and how these snapshots can be restored. Snapshots play an important role by providing point-in-time recovery options for application data. However, snapshots are not backups by themselves, they will not protect against storage system failure or other catastrophes. But, they are a convenient, quick, and easy way to recover data in most scenarios.  
 
 Using ONTAP snapshots with containers
 -------------------------------------
@@ -23,7 +75,7 @@ The snapshot directory is hidden by default. This helps facilitate maximum compa
 Accessing the snapshot directory
 --------------------------------
 
-Enable the ``.snapshot`` directory when using the ``ontap-nas`` and ``ontap-nas-economy`` drivers to allow applications to recover data from snapshots directly. More information about how to enable access and enable self-service data recovery can be found in `this blog post <https://netapp.io/2018/04/03/self-service-data-recovery-using-trident-nfs/>`_ on `netapp.io <https://netapp.io/>`_.
+Enable the ``.snapshot`` directory when using the ``ontap-nas`` and ``ontap-nas-economy`` drivers to allow applications to recover data from snapshots directly. 
 
 Restoring the snapshots
 -----------------------
@@ -34,32 +86,6 @@ Restore a volume to a state recorded in a prior snapshot using the ``volume snap
 
    cluster1::*> volume snapshot restore -vserver vs0 -volume vol3 -snapshot vol3_snap_archive
    
-
-SolidFire snapshots
-===================
-
-Backup data on a SolidFire Volume by setting a snapshot schedule to a SolidFire volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element OS Web UI or Element OS APIs.
-
-In the event of data corruption, we can choose a particular snapshot and rollback the volume to the snapshot manually using the Element OS Web UI or Element OS APIs. This reverts any changes made to the volume since the snapshot was created.
-
-
-Trident etcd snapshots using ``etcdctl`` command line utility
-=============================================================
-
-The etcdctl command line utility offers the provision to take snapshots of an etcd cluster. It also enables us to restore the previously taken snapshot.
-
-etcdctl snapshot backup
------------------------
-
-The command ``etcdctl snapshot save /var/etcd/data/snapshot.db`` enables us to take a point-in-time snapshot of the etcd cluster. NetApp recommends using a script to take timely backups. This command can be executed from within the etcd container or the command can be deployed using the ``kubectl exec`` command directly. Store the periodic snapshots under the persistent Trident NetApp volume `/var/etcd/data` so that snapshots are stored securely and can safely be recovered should the trident pod be lost. Periodically check the volume to be sure it does not run out of space.
-
-etcdctl snapshot restore
-------------------------
-
-In the event of accidental deletion or corruption of Trident etcd data, we can choose the appropriate snapshot and restore it back using the command ``etcdctl snapshot restore snapshot.db --data-dir /var/etcd/data/etcd-test2 --name etcd1``.  Take note to restore the snapshot on to a different folder [shown in the above command as /var/etcd/data/etcd-test2 which is on the mount] inside the Trident NetApp volume.
-
-After the restore is complete, uninstall Trident. Take note not to use the "-a" flag during uninstallation. Mount the Trident volume manually on the host and make sure that the current "member" folder under /var/etcd/data is deleted. Copy the "member" folder from the restored folder /var/etcd/data/etcd-test2 to /var/etcd/data. After the copy is complete, re-install Trident. Verify if the restore and recovery has been completed successfully by making sure all the required data is present.
-
 Data replication using ONTAP
 ============================
 
@@ -83,7 +109,7 @@ Since Trident is unable to configure replication relationships itself, the stora
 
 
 ONTAP SnapMirror SVM Replication Setup 
---------------------------------------
+**************************************
 
 * Set up peering between the Source and Destination Cluster and SVM.
 
@@ -101,34 +127,39 @@ ONTAP SnapMirror SVM Replication Setup
      :figclass: align-center
 
 SnapMirror SVM Replication Setup
- 
 
+SnapMirror SVM Disaster Recovery Workflow for Trident 
+*****************************************************
 
+The following steps describe how Trident 19.07 and other containerized applications can resume functioning during a catastrophe using the SnapMirror SVM replication. 
 
-SnapMirror SVM Disaster Recovery Workflow for Trident
------------------------------------------------------
+**Disaster Recovery Workflow for Trident**
 
-The following steps describe how Trident can resume functioning during a catastrophe from the secondary site (SnapMirror destination) using the SnapMirror SVM replication. 
+Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. It will use the Kubernetes cluster's etcd to store its metadata. Here we assume that the Kubernetes etcd data files and the certifcates are stored on NetApp FlexVolume. This FlexVolume resides in a SVM which has Snapmirror SVM DR relationship with a destination SVM at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident 19.07 in the event of a disaster.
 
 1. In the event of the source SVM failure, activate the SnapMirror destination SVM. Activating the destination SVM involves stopping scheduled SnapMirror transfers, aborting ongoing SnapMirror transfers, breaking the replication relationship, stopping the source SVM, and starting the destination SVM.
 
-2. Uninstall Trident from the Kubernetes cluster using the ``tridentctl uninstall -n <namespace>`` command. Don't use the ``-a`` flag during the uninstall.
+2. From the destination SVM, mount the volume which contains the Kubernetes etcd data files and certificates on to the host which will be setup as a master node.
 
-3. Before re-installing Trident, make sure to change the backend.json file to reflect the new destination SVM name.
- 
-4. Re-install Trident using “tridentctl install -n <namespace>” command.
+3. Copy all the required certificates pertaining to the Kubernetes cluster under ``/etc/kubernetes/pki`` and the etcd ``member`` files under ``/var/lib/etcd``.
 
-5. Update all the required backends to reflect the new destination SVM name using the "./tridentctl update backend <backend-name> -f <backend-json-file> -n <namespace>" command.
+4. Now create a Kubernetes cluster with the ``kubeadm init`` command along with the ``--ignore-preflight-errors=DirAvailable--var-lib-etcd`` flag. Please note that the hostnames used for the Kubernetes nodes must same as the source Kubernetes cluster.
 
-6. All the volumes provisioned by Trident will start serving data as soon as the destination SVM is activated. 
+5. Use the ``kubectl get crd`` command to verify if all the Trident custom resources have come up and retrieve Trident objects to make sure that all the data is available. 
 
-ONTAP SnapMirror Volume Replication 
------------------------------------
+6. Update all the required backends to reflect the new destination SVM name using the ``./tridentctl update backend <backend-name> -f <backend-json-file> -n <namespace>`` command.
+
+**Disaster Recovery Workflow for Application Persistent Volumes**
+
+When the destination SVM is activated, all the volumes provisioned by Trident will start serving data. Once the Kubernetes cluster is setup on the destination side using the above mentioned procedure,	all the deployments and pods are started and the containerized applications should run without any issues.
+
+ONTAP SnapMirror Volume Replication
+----------------------------------- 
 
 ONTAP SnapMirror Volume Replication  is a disaster recovery feature which enables failover to destination storage from primary storage on a volume level. SnapMirror creates a volume replica or mirror of the primary storage on to the secondary storage by syncing snapshots.
 
 ONTAP SnapMirror Volume Replication Setup
------------------------------------------
+*****************************************
 
 * The clusters in which the volumes reside and the SVMs that serve data from the volumes must be peered.
 
@@ -147,26 +178,48 @@ ONTAP SnapMirror Volume Replication Setup
 SnapMirror Volume Replication Setup
 
 SnapMirror Volume Disaster Recovery Workflow for Trident
---------------------------------------------------------
+********************************************************
 
 Disaster recovery using SnapMirror Volume Replication is not as seamless as the SnapMirror SVM Replication.
+The following steps describe how Trident and other applications can resume functioning during a
+catastrophe, from the secondary site .
 
-1. In the event of a disaster, stop all the scheduled SnapMirror transfers and abort all ongoing SnapMirror transfers. Break the replication relationship between the destination and source Trident etcd volume so that the destination volume becomes Read/Write.
+**Disaster Recovery Workflow for Trident**
 
-2. Uninstall Trident from the Kubernetes cluster using the "tridentctl uninstall -n <namespace>" command. Don't use the ``-a`` flag during the uninstall.
+Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. Trident will store its metadata in the Kubernetes clusters’s etcd database. Here we assume that the Kubernetes etcd data files and the certificates are stored on NetApp FlexVolume which is snapmirrored to the destination volume at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident 19.07.
 
-3. Create a new backend.json file with the new IP and new SVM name of the destination SVM where the Trident etcd volume resides.
+1. In the event of a disaster, stop all the scheduled SnapMirror transfers and abort all ongoing SnapMirror transfers. Break the replication relationship between the destination and source volumes so that the destination volume becomes Read/Write.
 
-4. Re-install Trident using “tridentctl install -n <namespace>” command along with the --volume-name option.
+2. From the destination SVM, mount the volume which contains the Kubernetes etcd data files and certificates on to the host which will be setup as a master node.
 
-5. Create new backends on Trident, specify the new IP and the new SVM name of the destination SVM.
+3. Copy all the required certificates pertaining the Kubernetes cluster under ``/etc/kubernetes/pki`` and the etcd ``member`` files under ``/var/lib/etcd``.
 
-6. Clean up the deployments which were consuming PVC bound to volumes on the source SVM.
+4. Now create a Kubernetes cluster with the ``kubeadm init`` command along with the ``--ignore-preflight-errors=DirAvailable--var-lib-etcd`` flag. Please note that the hostnames must same as the source Kubernetes cluster.
 
-7. Now import the required volumes as a PV bound to a new PVC using the Trident import feature. 
+5. Use the ``kubectl get crd`` command to verify if all the Trident custom resources have come up and retrieve Trident objects to make sure that all the data is available. 
 
-8. Re-deploy the application deployments with the newly created PVCs.
+6. Clean up the previous backends and create new backends on Trident. Specify the new Management and Data LIF, new SVM name and password of the destination SVM.
 
+**Disaster Recovery Workflow for Application Persistent Volumes**
 
+In this section, let us examine how SnapMirror destination volumes can be made available for containerized workloads in the event of a disaster.
+ 
+1. Stop all the scheduled SnapMirror transfers and abort all ongoing SnapMirror transfers. Break the replication relationship between the destination and source volume so that the destination volume becomes Read/Write. Clean up the deployments which were consuming PVC bound to volumes on the source SVM.
 
-         
+2. Once the Kubernetes cluster is setup on the destination side using the above mentioned procedure, clean up the deployments, PVCs and PV, from the Kubernetes cluster.
+
+3. Create new backends on Trident by specifying the new Management and Data LIF, new SVM name and password of the destination SVM.
+
+4. Now import the required volumes as a PV bound to a new PVC using the Trident import feature. 
+
+5. Re-deploy the application deployments with the newly created PVCs. 
+  
+SolidFire snapshots
+===================
+
+Backup data on a SolidFire Volume by setting a snapshot schedule to a SolidFire volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element OS Web UI or Element OS APIs.
+
+In the event of data corruption, we can choose a particular snapshot and rollback the volume to the snapshot manually using the Element OS Web UI or Element OS APIs. This reverts any changes made to the volume since the snapshot was created.
+
+The :ref:`Creating Snapshots of Persistent Volumes <On-Demand Volume Snapshots>` section details a complete workflow
+for creating Volume Snapshots and then using them to create PVCs.

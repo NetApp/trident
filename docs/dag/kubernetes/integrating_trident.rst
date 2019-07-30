@@ -30,15 +30,15 @@ Note that, in the tables below, not all of the capabilities are exposed through 
 .. table:: ONTAP NAS driver capabilities
    :align: left
 
-   +-----------------------------+--------------+--------+--------------+---------------+--------+--------------+
-   | ONTAP NFS Drivers           | Snapshots    | Clones | Multi-attach | QoS           | Resize | Replication  |
-   +=============================+==============+========+==============+===============+========+==============+
-   | ``ontap-nas``               | Yes          | Yes    | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1`|
-   +-----------------------------+--------------+--------+--------------+---------------+--------+--------------+
-   | ``ontap-nas-economy``       | Yes\ :sup:`2`| No     | Yes          | Yes\ :sup:`12`| Yes    | Yes\ :sup:`1`|
-   +-----------------------------+--------------+--------+--------------+---------------+--------+--------------+
-   | ``ontap-nas-flexgroup``     | Yes          | No     | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1`|
-   +-----------------------------+--------------+--------+--------------+---------------+--------+--------------+
+   +-----------------------------+---------------+-----------------+--------------+---------------+--------+--------------+
+   | ONTAP NFS Drivers           | Snapshots     |      Clones     | Multi-attach | QoS           | Resize | Replication  |
+   +=============================+===============+=================+==============+===============+========+==============+
+   | ``ontap-nas``               | Yes           |        Yes      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1`|
+   +-----------------------------+---------------+-----------------+--------------+---------------+--------+--------------+
+   | ``ontap-nas-economy``       | Yes\ :sup:`12`|  Yes\ :sup:`1`  | Yes          | Yes\ :sup:`12`| Yes    | Yes\ :sup:`1`|
+   +-----------------------------+---------------+-----------------+--------------+---------------+--------+--------------+
+   | ``ontap-nas-flexgroup``     | Yes\ :sup:`1` |         No      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1`|
+   +-----------------------------+---------------+-----------------+--------------+---------------+--------+--------------+
 
 
 The SAN driver capabilities are shown below.
@@ -64,14 +64,14 @@ The features that are not PV granular are applied to the entire FlexVolume and a
 As we can see in the above tables, much of the functionality between the ``ontap-nas`` and ``ontap-nas-economy`` is the same. However, since the ``ontap-nas-economy`` driver limits the ability to control the schedule at per-PV granularity, this may affect your disaster recovery and backup planning in particular. For development teams which desire to leverage PVC clone functionality on ONTAP storage, this is only possible when using the ``ontap-nas`` or ``ontap-san`` drivers (note, the ``solidfire-san`` driver is also capable of cloning PVCs).
 
 
-**Choosing a backend driver for Cloud Volume ONTAP**
+**Choosing a backend driver for Cloud Volumes ONTAP**
 
-Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy`` or ``ontap-san`` .These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP. 
+Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy`` or ``ontap-san`` .These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
 
 
-SolidFire Backend Driver
-------------------------
-The ``solidfire-san`` driver used with the SolidFire platform, helps the admin configure a SolidFire backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, SolidFire storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element OS Web UI. 
+Element (HCI/SolidFire)
+-----------------------
+The ``solidfire-san`` driver used with the HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element OS storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element OS Web UI. 
 
 .. table:: SolidFire SAN driver capabilities
    :align: left
@@ -79,7 +79,7 @@ The ``solidfire-san`` driver used with the SolidFire platform, helps the admin c
    +-------------------+----------------+--------+--------------+------+-------------------+---------------+
    | SolidFire Driver  | Snapshots      | Clones | Multi-attach | QoS  | Resize            | Replication   |
    +===================+================+========+==============+======+===================+===============+
-   | ``solidfire-san`` | Yes\ :sup:`1`  | Yes    | No           | Yes  | Yes\ :sup:`1`     | Yes\ :sup:`1` |
+   | ``solidfire-san`` | Yes            | Yes    | No           | Yes  | Yes\ :sup:`1`     | Yes\ :sup:`1` |
    +-------------------+----------------+--------+--------------+------+-------------------+---------------+
   
 
@@ -103,10 +103,32 @@ To configure an E-Series backend for Trident, set the ``storageDriverName`` para
 | Footnote:
 | Yes\ :sup:`1`:  Not Trident managed
 
+Azure NetApp Files Backend Driver
+---------------------------------
+
+Trident uses the ``azure-netapp-files`` driver to manage the `Azure NetApp Files`_ service.
+
+.. _Azure NetApp Files: https://azure.microsoft.com/en-us/services/netapp/
+
+More information about this driver and how to configure it can be found in Trident's
+:ref:`Azure NetApp Files backend documentation <Azure NetApp Files>`.
+
+.. table:: Azure NetApp Files driver capabilities
+   :align: left
+
+   +---------------------------+--------------+--------+--------------+------+-------------------+---------------+
+   | Azure NetApp Files Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
+   +===========================+==============+========+==============+======+===================+===============+
+   | ``azure-netapp-files``    | Yes          | Yes    | Yes          | Yes  | Yes               | Yes\ :sup:`1` |
+   +---------------------------+--------------+--------+--------------+------+-------------------+---------------+
+
+| Footnote:
+| Yes\ :sup:`1`:  Not Trident managed
+
 Cloud Volumes Service with AWS Backend Driver
 ---------------------------------------------
 
-Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on AWS backend. You specify the required values, ``apiRegion``, ``apiURL``, ``apiKey``, and the ``secretKey``. These values can be found in the CVS web portal in Account settings/API access. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for AWS Documentation <Cloud Volumes Service for AWS>`. Currently, 100G is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction. Cloud Volume Service for AWS support fully-managed file services for both NFS, SMB, or dual protocol support.
+Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on the AWS backend. To configure the AWS backend on Trident, you are required specify ``apiRegion``, ``apiURL``, ``apiKey``, and the ``secretKey`` in the backend file. These values can be found in the CVS web portal in Account settings/API access. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for AWS Documentation <Cloud Volumes Service for AWS>`. Currently, 100G is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction. Cloud Volume Service for AWS support fully-managed file services for both NFS, SMB, or dual protocol support.
 
 .. table:: Cloud Volume Service driver capabilities
    :align: left
@@ -114,13 +136,14 @@ Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on AW
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
    | CVS for AWS Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
    +====================+==============+========+==============+======+===================+===============+
-   | ``aws-cvs``        | Yes\ :sup:`1`| Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
+   | ``aws-cvs``        | Yes          | Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
 
 | Footnote:
 | Yes\ :sup:`1`:  Not Trident managed
 
 The ``aws-cvs`` driver uses virtual storage pools. Virtual storage pools abstract the backend, letting Trident decide volume placement. The administrator defines the virtual storage pools in the backend.json file(s). Storage classes identify the virtual storage pools with the use of labels. More information on the virtual storage pools feature can be found in :ref:`Virtual Storage Pools Documentation <Virtual Storage Pools>`.
+
 
 Storage Class design
 ====================
@@ -141,7 +164,7 @@ Please refer to :ref:`Trident StorageClass Objects <Trident StorageClass objects
 Storage Class design to emulate QoS policies
 --------------------------------------------
 
-If you would like to design Storage Classes to emulate Quality of Service policies, create a Storage Class with the `media` attribute as `hdd` or `ssd`. Based on the `media` attribute mentioned in the storage class, Trident will select the appropriate backend that serves `hdd` or `ssd` aggregates to match the media attribute and then direct the provisioning of the volumes on to the specific aggregate. Therefore we can create a storage class PREMIUM which would have `media` attribute set as `ssd` which could be classified as the PREMIUM QoS policy. We can create another storage class STANDARD which would have the media attribute set as 'hdd' which could be classified as the STANDARD QoS policy. We could also use the “IOPS” attribute in the storage class to redirect provisioning to a SolidFire appliance which can be defined as a QoS Policy.
+If you would like to design Storage Classes to emulate Quality of Service policies, create a Storage Class with the `media` attribute as `hdd` or `ssd`. Based on the `media` attribute mentioned in the storage class, Trident will select the appropriate backend that serves `hdd` or `ssd` aggregates to match the media attribute and then direct the provisioning of the volumes on to the specific aggregate. Therefore we can create a storage class PREMIUM which would have `media` attribute set as `ssd` which could be classified as the PREMIUM QoS policy. We can create another storage class STANDARD which would have the media attribute set as 'hdd' which could be classified as the STANDARD QoS policy. We could also use the “IOPS” attribute in the storage class to redirect provisioning to an Element appliance which can be defined as a QoS Policy.
 
 
 Please refer to :ref:`Trident StorageClass Objects <Trident StorageClass objects>` on how these parameters can be used.
@@ -155,11 +178,27 @@ Please refer to :ref:`Trident StorageClass Objects <Trident StorageClass objects
 
 Storage Class Design for Virtual Storage Pools
 ----------------------------------------------
-Virtual Storage Pools are available for Cloud Volumes Service for AWS only. 
+Virtual Storage Pools are available for Cloud Volumes Service for AWS, ANF, Element and E-Series backends. 
 
-Virtual Storage Pools allow an administrator to abstract away specific backend characteristics from storage class criteria. Different backends may be defined with similar class of service in mind. Each of these are configured specific to the backend type. When a storage class calls out a specific class of service or criteria, Trident decides where to place the volume. For example, ``extreme`` pool may be defined with certain characteristics in one AWS location and defined differently in a different location. When the ``extreme`` pool is called from a Storage Class, Trident decided where to put the volume with the appropriate criteria.
+Virtual Storage Pools allow an administrator to create a level of abstraction over backends which can be referenced through storage classes for more flexible and efficient placement of volumes on backends. Virtual pools allows us to define different backends with the same class of service and also, allow us to define storage pools on the same backend but with different characteristics.When a storage class is configured with a selector with the specific labels , Trident chooses a backend which matches all the selector labels to place the volume. If the storage class selector labels matches multiple backend storage pools, Trident will choose one of the backend storage pools to provision the volume from.
 
 Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more information and applicable parameters. 
+
+Virtual Storage Pool Design
+===========================
+
+While creating a backend , you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way. Currently Virtual Storage Pool is supported for Cloud Volumes Service for AWS , E-Series and SolidFire. 
+
+Design Virtual Storage Pools for emulating different Service Levels/QoS
+-----------------------------------------------------------------------
+
+It is possible to design Virtual Storage Pools for emulating service classes. Using the virtual pool implementation for Cloud Volume Service for AWS, let us examine how we can setup up different service classes. Configure the AWS-CVS backend with multiple labels, representing different performance levels. Set "servicelevel" aspect to the appropriate performance level and add other required aspects under each labels. Now create different Kubernetes Storage Classes that would map to different virtual Storage Pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume. 
+
+Design Virtual Pools for Assigning Specifc Set of Aspects
+---------------------------------------------------------
+
+Multiple Virtual Storage pools with a specific set of aspects can be designed from a single storage backend. For doing so, configure the backend with multiple labels and set the required aspects under each label. Now create different Kubernetes Storage Classes using the parameters.selector field that would map to different virtual Storage Pools.The volumes that get provisioned on the backend will have the aspects defined in the chosen virtual pool.  
+
 
 PVC characteristics which affect storage provisioning
 =====================================================
@@ -186,8 +225,11 @@ Trident will attempt to match the storage protocol used with the access method s
    
 A request for a ReadWriteMany PVC submitted to a Trident deployment without an NFS backend configured will result in no volume being provisioned.  For this reason, the requestor should use the access mode which is appropriate for their application.
 
+Volume Operations
+=================
+
 Modifying persistent volumes
-============================
+----------------------------
 
 Persistent volumes are, with two exceptions, immutable objects in Kubernetes. Once created, the reclaim policy and the size can be modified. However, this doesn't prevent some aspects of the volume from being modified outside of Kubernetes. This may be desirable in order to customize the volume for specific applications, to ensure that capacity is not accidentally consumed, or simply to move the volume to a different storage controller for any reason.
 
@@ -196,14 +238,40 @@ Persistent volumes are, with two exceptions, immutable objects in Kubernetes. On
 
 The connection details of the PV cannot be modified after creation.
 
-Volume move operations
+On-Demand Volume Snapshots with Trident's Enhanced CSI Provisioner
+------------------------------------------------------------------
+
+Trident supports on-demand volume snapshot creation and
+the creation of PVCs from snapshots using the CSI framework. Snapshots
+provide a convenient method of maintaining point-in-time copies of the data and have
+a lifecycle independent of the source PV in Kubernetes. These snapshots can be used
+to clone PVCs.
+
+The :ref:`Volume Snapshots <On-Demand Volume Snapshots>` section provides
+an example that explains how volume snapshots work.
+
+Creating Volumes from Snapshots with Trident's Enhanced CSI Provisioner
+-----------------------------------------------------------------------
+
+Trident also supports the creation of PersistentVolumes from volume snapshots.
+To accomplish this, just create a PersistentVolumeClaim and mention the ``datasource``
+as the required snapshot from which the volume needs to be created. Trident will handle this
+PVC by creating a volume with the data present on the snapshot. With this feature, it is possible
+to duplicate data across regions, create test environments, replace a damaged or corrupted production
+volume in its entirety, or retrieve specific files and directories and transfer them to another attached volume.
+
+Take a look at :ref:`Creating PVCs from Snapshots <Create PVCs from VolumeSnapshots>`
+for more information.
+
+
+Volume Move Operations
 ----------------------
 
 Storage administrators have the ability to move volumes between aggregates and controllers in the ONTAP cluster non-disruptively to the storage consumer.  This operation does not affect Trident or the Kubernetes cluster, as long as the destination aggregate is one which the SVM Trident is using has access to.  Importantly, if the aggregate has been newly added to the SVM, the backend will need to be "refreshed" by re-adding it to Trident. This will trigger Trident to reinventory the SVM so that the new aggregate is recognized.
 
 However, moving volumes across backends is not supported automatically by Trident. This includes between SVMs in the same cluster, between clusters, or onto a different storage platform (even if that storage system is one which is connected to Trident).
 
-If a volume is copied to another location, the :ref:`volume import feature <Volume Import>` may be used to import current volumes into Trident.
+If a volume is copied to another location, the :ref:`volume import feature <Importing a volume>` may be used to import current volumes into Trident.
 
 Expanding volumes with ONTAP
 ----------------------------
@@ -214,42 +282,26 @@ To allow possible expansion later, set `allowVolumeExpansion` to `true` in your 
    2. Kubernetes, prior to version 1.12, does not support NFS PV resize as the admission controller may reject PVC size updates. The Trident team has changed Kubernetes to allow such changes starting with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still possible to resize NFS PVs for earlier versions of Kubernetes that support resize. This is done by disabling the PersistentVolumeClaimResize admission plugin when the Kubernetes API server is started. 
 
 
-When to manually provision a volume instead of using Trident
-============================================================
-
-Trident's goal is to be the provisioning engine for all storage consumed by containers.  However, we understand that there are scenarios which may still need a manually provisioned PV.  Generally speaking, these situations are limited to needing to customize the properties of the underlying storage device in ways which Trident does not support.
-
-There are two ways in which the desired settings can be applied:
-
-#.  Use the backend configuration, or PVC attributes, to customize the volume properties at provisioning time
-#.  After the volume is provisioned, the storage administrator applies the configuration to the volume which is bound to the PVC
-
-Option number 1 is limited by the volume options with Trident supports, which do not encompass all of the options available.  Option 2 may be the only viable solution for fully customizing storage for a particular application.  Finally, you can always provision a volume manually and introduce a matching PV outside of Trident if you do not want Trident to manage it for some reason.
-
-If you have requirements to customize volumes in ways which Trident does not support, please let us know using resources on the :ref:`Getting help` page.
-
-
 Import an existing volume into Kubernetes
-=========================================
+-----------------------------------------
 
 Volume Import provides the ability to import an existing storage volume into a Kubernetes environment. This is currently
-supported by the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers. This feature is
+supported by the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``, ``azure-netapp-files`` and ``aws-cvs`` drivers. This feature is
 useful when porting an existing application into Kubernetes or during disaster recovery scenarios.
 
-When using the ontap and solidfire drivers, use the command ``tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml``
+When using the ONTAP and ``solidfire-san`` drivers, use the command ``tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml``
 to import an existing volume into Kubernetes to be managed by Trident. The PVC YAML or JSON file used in the import volume
-command points to a storage class which identifies Trident as the provisioner. When using a SolidFire
+command points to a storage class which identifies Trident as the provisioner. When using a HCI/SolidFire
 backend, ensure the volume names are unique. If the volume names are duplicated, clone the volume to a unique name so
 the volume import feature can distinguish between them.
 
-If the aws-cvs driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This ensures a unique volume reference.
+If the ``aws-cvs`` driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This ensures a unique volume reference.
 
 When the above command is executed, Trident will find the volume on the backend and read its size. It will automatically add (and overwrite if necessary) the configured PVC’s volume size.  Trident then creates the new PV and Kubernetes binds the PVC to the PV.
 
 If a container was deployed such that it required the specific imported PVC, it would remain in a pending state until the PVC/PV pair are bound via the volume import process. After the PVC/PV pair are bound, the container should come up, provided there are no other issues.
 
 For information, please see the :ref:`documentation <Importing a Volume>`.
-
 
 Deploying OpenShift services using Trident
 ==========================================

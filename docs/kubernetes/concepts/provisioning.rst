@@ -28,7 +28,7 @@ Trident then uses the associations between storage classes and storage pools to
 determine where to provision volumes.  When a user creates a volume, Trident
 first gets the set of storage pools for that volume's storage class, and, if
 the user specifies a protocol for the volume, it removes those storage pools
-that cannot provide the requested protocol (a SolidFire backend cannot provide
+that cannot provide the requested protocol (a HCI/SolidFire backend cannot provide
 a file-based volume while an ONTAP NAS backend cannot provide a block-based
 volume, for instance).  Trident randomizes the order of this resulting set, to
 facilitate an even distribution of volumes, and then iterates through it,

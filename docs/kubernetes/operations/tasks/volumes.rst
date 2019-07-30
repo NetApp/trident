@@ -2,47 +2,144 @@
 Managing volumes
 ################
 
+On-Demand Volume Snapshots
+==========================
+
+The 19.07 release of Trident introduces support for the creation of snapshots
+of PVs. Snapshots provide an easy method to maintain a copy of the
+volume and use them for creating additional volumes (clones). 
+
+.. note::
+
+   Volume snapshot is supported by the ``ontap-nas``,
+   ``ontap-san``, ``solidfire-san``, ``aws-cvs`` and ``azure-netapp-files`` drivers.
+   This feature requires the CSI Provisioner and :ref:`feature gates <Feature Gates>`
+   enabled for it to work.
+
+The example detailed
+below explains the constructs required for working with snapshots and
+shows how snapshots can be created and used.
+
+Before creating a Volume Snapshot, a :ref:`VolumeSnapshotClass <Kubernetes VolumeSnapshotClass Objects>`
+must be set up. 
+
+.. code-block:: bash
+     
+   $ cat snap-sc.yaml
+   apiVersion: snapshot.storage.k8s.io/v1alpha1
+   kind: VolumeSnapshotClass
+   metadata:
+     name: csi-snapclass
+   snapshotter: csi.trident.netapp.io
+
+Create a VolumeSnapshot
+-----------------------
+
+We can now create a snapshot of an existing PVC.
+
+.. code-block:: bash
+   
+   $ cat snap.yaml  
+   apiVersion: snapshot.storage.k8s.io/v1alpha1 
+   kind: VolumeSnapshot
+   metadata:
+     name: pvc1-snap
+   spec:
+     snapshotClassName: csi-snapclass
+     source:
+       name: pvc1
+       kind: PersistentVolumeClaim
+
+The snapshot is being created for a PVC named ``pvc1``, and the
+name of the snapshot is set to ``pvc1-snap``.
+
+.. code-block:: bash
+
+   $ kubectl create -f snap-create.yaml
+   volumesnapshot.snapshot.storage.k8s.io/pvc1-snap created
+
+   $ kubectl get volumesnapshots
+   NAME                   AGE
+   pvc1-snap              50s
+
+This created a :ref:`VolumeSnapshot <Kubernetes VolumeSnapshot Objects>`
+object. A VolumeSnapshot is analogous to a PVC and is associated with a
+:ref:`VolumeSnapshotContent <Kubernetes VolumeSnapshotContent Objects>`
+object that represents the actual snapshot.
+
+It is possible to identify the VolumeSnapshotContent object for the 
+``pvc1-snap`` VolumeSnapshot by describing it.
+
+.. code-block:: bash
+
+   $ kubectl describe volumesnapshots pvc1-snap
+   Name:         pvc1-snap
+   Namespace:    default 
+   .
+   .
+   .
+   Spec:
+     Snapshot Class Name:    pvc1-snap
+     Snapshot Content Name:  snapcontent-e8d8a0ca-9826-11e9-9807-525400f3f660
+     Source:
+       API Group:
+       Kind:       PersistentVolumeClaim
+       Name:       pvc1
+   Status:
+     Creation Time:  2019-06-26T15:27:29Z
+     Ready To Use:   true
+     Restore Size:   3Gi
+   .
+   .
+
+The ``Snapshot Content Name`` identifies the VolumeSnapshotContent
+object which serves this snapshot. The ``Ready To Use`` parameter indicates that the
+Snapshot can be used to create a new PVC.
+
+Create PVCs from VolumeSnapshots
+--------------------------------
+
+A PVC can be created using the snapshot as shown in the example below:
+
+.. code-block:: bash
+
+   $ cat pvc-from-snap.yaml
+   apiVersion: v1
+   kind: PersistentVolumeClaim
+   metadata:
+     name: pvc-from-snap
+   spec:
+     accessModes:
+       - ReadWriteOnce
+     storageClassName: golden
+     resources:
+       requests:
+         storage: 3Gi
+     dataSource:
+       name: pvc1-snap
+       kind: VolumeSnapshot
+       apiGroup: snapshot.storage.k8s.io
+
+The ``dataSource`` shows that the PVC must be created using a VolumeSnapshot
+named ``pvc1-snap`` as the source of the data. This instructs Trident
+to create a PVC from the snapshot. Once the PVC is created, it can be attached to
+a pod and used just like any other PVC.
+
+.. note::
+      When deleting a Persistent Volume with associated snapshots, the corresponding
+      Trident volume is updated to a "Deleting state". For the Trident volume to be
+      deleted, the snapshots of the volume must be removed.
+
 Resizing an NFS volume
-----------------------
+======================
 
-Starting with v18.10, Trident supports volume resize for NFS PVs. More 
+Starting with ``v18.10``, Trident supports volume resize for NFS PVs. More 
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,
-``ontap-nas-flexgroup``, and ``aws-cvs`` backends can be expanded.
-
-`Resizing Persistent Volumes using Kubernetes`_ blog post describes the
-workflows involved in resizing a PV. Volume resize was introduced in
-Kubernetes v1.8 as an alpha feature and was promoted to beta in v1.11,
+``ontap-nas-flexgroup``, ``aws-cvs`` and ``azure-netapp-files`` backends can be expanded.
+Volume resize was introduced in
+Kubernetes ``v1.8`` as an alpha feature and was promoted to beta in ``v1.11``,
 which means this feature is enabled by default starting with Kubernetes
-v1.11.
-
-.. _Resizing Persistent Volumes using Kubernetes: https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/
-
-Because NFS PV resize is not supported by Kubernetes, and is implemented by the
-Trident orchestrator externally, Kubernetes admission controller may reject PVC
-size updates for in-tree volume plugins that don't support resize (e.g., NFS).
-The Trident team has changed Kubernetes to allow such changes starting
-with Kubernetes 1.12. Therefore, we recommend using this feature with Kubernetes
-1.12 or later as it would just work.
-
-While we recommend using Kubernetes 1.12 or later, it is still possible to
-resize NFS PVs with earlier versions of Kubernetes that support resize.
-This is done by disabling the ``PersistentVolumeClaimResize`` admission plugin
-when the Kubernetes API server is started:
-
-.. code-block:: bash
-  
-  kube-apiserver --disable-admission-plugins=PersistentVolumeClaimResize
-
-
-With Kubernetes 1.8-1.10 that offer this feature as alpha, the
-``ExpandPersistentVolumes`` `Feature Gate`_ should also be turned on:
-
-.. _Feature Gate: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
-
-.. code-block:: bash
-  
-  kube-apiserver --feature-gates=ExpandPersistentVolumes=true --disable-admission-plugins=PersistentVolumeClaimResize
-
+``v1.11``.
 
 To resize an NFS PV, the admin first needs to configure the storage class to
 allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``:
@@ -54,7 +151,7 @@ allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``
   kind: StorageClass
   metadata:
     name: ontapnas
-  provisioner: netapp.io/trident
+  provisioner: csi.trident.netapp.io
   parameters:
     backendType: ontap-nas
   allowVolumeExpansion: true
@@ -85,12 +182,12 @@ Trident should create a 20MiB NFS PV for this PVC:
 .. code-block:: bash
   
     $ kubectl get pvc
-    NAME                    STATUS    VOLUME                                CAPACITY   ACCESS MODES   STORAGECLASS        AGE
-    ontapnas20mb            Bound     default-ontapnas20mb-c1bd7            20Mi       RWO            ontapnas            14s
-    
-    $ kubectl get pv default-ontapnas20mb-c1bd7
-    NAME                         CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                  STORAGECLASS       REASON    AGE
-    default-ontapnas20mb-c1bd7   20Mi       RWO            Delete           Bound     default/ontapnas20mb   ontapnas                     1m
+    NAME           STATUS   VOLUME                                     CAPACITY     ACCESS MODES   STORAGECLASS    AGE
+    ontapnas20mb   Bound    pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7   20Mi         RWO            ontapnas        9s
+
+    $ kubectl get pv pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7
+    NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS    REASON   AGE
+    pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7   20Mi       RWO            Delete           Bound    default/ontapnas20mb   ontapnas                 2m42s
 
 To resize the newly created 20MiB PV to 1GiB, we edit the PVC and set
 ``spec.resources.requests.storage`` to 1GB:
@@ -108,7 +205,7 @@ To resize the newly created 20MiB PV to 1GiB, we edit the PVC and set
       annotations:
         pv.kubernetes.io/bind-completed: "yes"
         pv.kubernetes.io/bound-by-controller: "yes"
-        volume.beta.kubernetes.io/storage-provisioner: netapp.io/trident
+        volume.beta.kubernetes.io/storage-provisioner: csi.trident.netapp.io
       creationTimestamp: 2018-08-21T18:26:44Z
       finalizers:
       - kubernetes.io/pvc-protection
@@ -131,32 +228,32 @@ PV, and the Trident volume:
 .. code-block:: bash
 
     $ kubectl get pvc ontapnas20mb
-    NAME           STATUS    VOLUME                       CAPACITY   ACCESS MODES   STORAGECLASS       AGE
-    ontapnas20mb   Bound     default-ontapnas20mb-c1bd7   1Gi        RWO            ontapnas           6m
-    
-    $ kubectl get pv default-ontapnas20mb-c1bd7
-    NAME                         CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                  STORAGECLASS       REASON    AGE
-    default-ontapnas20mb-c1bd7   1Gi        RWO            Delete           Bound     default/ontapnas20mb   ontapnas             6m
-    
-    $ tridentctl get volume default-ontapnas20mb-c1bd7 -n trident
-    +----------------------------+---------+------------------+----------+------------------------+--------------+
-    |            NAME            |  SIZE   |  STORAGE CLASS   | PROTOCOL |        BACKEND         |     POOL     |
-    +----------------------------+---------+------------------+----------+------------------------+--------------+
-    | default-ontapnas20mb-c1bd7 | 1.0 GiB | ontapnas         | file     | ontapnas_10.63.171.111 | VICE08_aggr1 |
-    +----------------------------+---------+------------------+----------+------------------------+--------------+
+    NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+    ontapnas20mb   Bound    pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7   1Gi        RWO            ontapnas        4m44s
+ 
+    $ kubectl get pv pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7
+    NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS    REASON   AGE
+    pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7   1Gi        RWO            Delete           Bound    default/ontapnas20mb   ontapnas                 5m35s 
 
+    $ tridentctl get volume pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7 -n trident
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    |                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    | pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7 | 1.0 GiB | ontapnas      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | true    |
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
 Importing a volume
-------------------------
+==================
 
 Trident version 19.04 and above allows importing an existing storage volume into Kubernetes with the ``ontap-nas``,
 ``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers.
 
 There are several use cases for importing a volume into Trident:
-   * Containerizing an application and reusing its existing data set
-   * Using a clone of a data set for an ephemeral application
-   * Rebuilding a failed Kubernetes cluster
-   * Migrating application data during disaster recovery
+
+         * Containerizing an application and reusing its existing data set
+         * Using a clone of a data set for an ephemeral application
+         * Rebuilding a failed Kubernetes cluster
+         * Migrating application data during disaster recovery
 
 The ``tridentctl`` client is used to import an existing storage volume. Trident imports the volume by persisting volume
 metadata and creating the PVC and PV.
@@ -200,68 +297,66 @@ want to manage the lifecycle of the storage volume outside of Kubernetes.
 An annotation is added to the PVC and PV that serves a dual purpose of indicating that the volume was imported and
 if the PVC and PV are managed. This annotation should not be modified or removed.
 
-As Trident doesn't currently perform operations in the data path, the volume import process does not verify if the
+Trident ``19.07`` handles the attachment of PVs and mounts the volume as part of importing it. For imports using earlier versions
+of Trident,
+there will not be any operations in the data path and the volume import will not verify if the
 volume can be mounted. If a mistake is made with volume import (e.g. the StorageClass is incorrect), you can recover by
 changing the reclaim policy on the PV to "Retain", deleting the PVC and PV, and retrying the volume import command.
 
-You can use the ``--no-manage`` argument to verify that the volume import process will work as expected. Once you verify
-the volume can be mounted by Kubernetes, you can safely delete the PVC & PV and then repeat the volume import without
-the ``--no-manage`` argument.
-
 .. note::
-    SolidFire supports duplicate volume names. If there are duplicate volume names Trident's volume import process
-    will return an error. As a workaround, clone the SolidFire volume and provide a unique volume name. Then import
+    The Element driver supports duplicate volume names. If there are duplicate volume names Trident's volume import process
+    will return an error. As a workaround, clone the volume and provide a unique volume name. Then import
     the cloned volume.
 
-For example, to import a volume named ``test_volume`` on a backend named ``nas_blog`` use the following command:
+For example, to import a volume named ``managed_volume`` on a backend named ``ontap_nas`` use the following command:
 
 .. code-block:: bash
 
-   $ tridentctl import volume nas_blog test_volume -f <path-to-pvc-file> -n blog
+   $ tridentctl import volume ontap_nas managed_volume -f <path-to-pvc-file>
+ 
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   |                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   | pvc-bf5ad463-afbb-11e9-8d9f-5254004dfdb7 | 1.0 GiB | standard      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | true    |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
-+------------------------------------+---------+------------------------+----------+----------+------+
-|                NAME                |  SIZE   |     STORAGE CLASS      | PROTOCOL | BACKEND  | POOL |
-+------------------------------------+---------+------------------------+----------+----------+------+
-| blog-blog-content-deployment-5deb1 | 1.0 GiB | storage-class-nas-blog | file     | nas_blog |      |
-+------------------------------------+---------+------------------------+----------+----------+------+
-
-To import a volume named "test_volume2" on the backend called `nas_blog`, which Trident will not manage, use the
+To import a volume named ``unmanaged_volume`` (on the ``ontap_nas`` backend) which Trident will not manage, use the
 following command:
 
 .. code-block:: bash
 
-   $ tridentctl import volume nas_blog test-volume2 -f <path-to-pvc-file> --no-manage -n blog
+   $ tridentctl import volume nas_blog unmanaged_volume -f <path-to-pvc-file> --no-manage
+ 
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   |                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   | pvc-df07d542-afbc-11e9-8d9f-5254004dfdb7 | 1.0 GiB | standard      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | false   |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
-+------------------------------------+---------+------------------------+----------+----------+------+
-|                NAME                |  SIZE   |     STORAGE CLASS      | PROTOCOL | BACKEND  | POOL |
-+------------------------------------+---------+------------------------+----------+----------+------+
-| test-volume2                       | 1.0 GiB | storage-class-nas-blog | file     | nas_blog |      |
-+------------------------------------+---------+------------------------+----------+----------+------+
-
-.. note::
-  The name of the volume does not change since no-manage is specified.
+When using the ``--no-manage`` flag, Trident renames the volume, but it does not validate if the volume was mounted.
+The import operation will fail if the volume was not mounted manually.
 
 To import an ``aws-cvs`` volume on the backend called `awscvs_YEppr` with the volume path of `adroit-jolly-swift`
 use the following command:
 
 .. code-block:: bash
+
     $ tridentctl import volume awscvs_YEppr adroit-jolly-swift -f <path-to-pvc-file> -n trident
 
-+---------------------------+---------+-------------------+----------+--------------+------+
-|           NAME            |  SIZE   | STORAGE CLASS     | PROTOCOL |   BACKEND    | POOL |
-+---------------------------+---------+-------------------+----------+--------------+------+
-| trident-aws-claim01-41970 | 1.0 GiB | storage-class-aws | file     | awscvs_YEppr |      |
-+---------------------------+---------+-------------------+----------+--------------+------+
+    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    |            NAME            |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    | trident-aws-claim01-41970  | 1.0 GiB | aws-sc        | file     | b570e4af-f38c-4504-9d05-02dcc14bb95d | online | false   |
+    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
 .. note::
   The AWS volume path is the portion of the volume's export path after the `:/`. For example, if the export path is
   ``10.0.0.1:/adroit-jolly-swift`` then the volume path is ``adroit-jolly-swift``.
 
 Behavior of Drivers for Volume Import
---------------------------------------
+-------------------------------------
 
   * The ``ontap-nas`` and ``ontap-nas-flexgroup`` drivers do not allow duplicate volume names.
-  * The ``ontap-nas`` driver renames the storage volume unless the ``--no-manage`` argument is used.
   * To import a volume backed by the NetApp Cloud Volumes Service in AWS, identify the volume by its volume path instead
     of its name. An example is provided in the previous section.
   * An ONTAP volume must be of type `rw` to be imported by Trident. If a volume is of type `dp` it is a SnapMirror

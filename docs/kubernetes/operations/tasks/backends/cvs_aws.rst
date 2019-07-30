@@ -2,7 +2,7 @@
 Cloud Volumes Service for AWS
 #############################
 
-.. warning::
+.. note::
   The NetApp Cloud Volumes Service for AWS does not support volumes less than 100 GB in size. To
   make it easier to deploy applications, Trident automatically creates 100 GB volumes if a
   smaller volume is requested. Future releases of the Cloud Volumes Service may remove this restriction.
@@ -57,47 +57,6 @@ size                      The size of new volumes                               
 The ``exportRule`` value must be a comma-separated list of any combination of
 IPv4 addresses or IPv4 subnets in CIDR notation.
 
-Virtual storage pools
----------------------
-
-Trident's integration with the NetApp Cloud Volume Service for AWS supports virtual storage pools, which provide a layer of abstraction between Trident's storage backends and Kubernetes' StorageClasses. They allow an administrator to define aspects like location, performance, and protection for each backend in a common, backend-agnostic way without making a StorageClass specify which physical backend, backend pool, or backend type to use to meet desired criteria.
-
-.. _figVirtualStoragePools:
-
-.. figure:: images/virtual_storage_pools.png
-    :align: center
-    :figclass: alight-center
-
-    Virtual Storage Pools
-
-
-The storage administrator defines the virtual pools and their aspects in a backend's JSON or YAML definition file.  Any aspect specified outside the virtual pools list is global to the backend and will apply to all virtual pools, while each virtual pool may specify one or more aspects individually (overriding any backend-global aspects).
-
-Most aspects are specified in backend-specific terms, such as ``serviceLevel`` for the aws-cvs driver. Crucially, the aspect values are not exposed outside the backend's driver and are not available for matching in StorageClasses. Instead, the administrator defines one or more labels for each virtual pool. Each label is a key:value pair, and labels may be common across unique backends. Like aspects, labels may be specified per-pool or global to the backend.  Unlike aspects, which have predefined names and values, the administrator has full discretion to define label keys and values as needed.
-
-A StorageClass identifies which virtual pool(s) to use by referencing the labels within a selector parameter. Virtual pool selectors support six operators:
-
-+------------+------------------------------------+-------------------------------------------------------+
-| Operator   | Example                            | Description                                           |
-+============+====================================+=======================================================+
-| ``=``      | performance=premium                | A pool's label value must match                       |
-+------------+------------+-----------------------+-------------------------------------------------------+
-| ``!=``     | performance!=extreme               | A pool's label value must not match                   |
-+------------+------------------------------------+-------------------------------------------------------+
-| ``in``     | location in (east, west)           | A pool's label value must be in the set of values     |
-+------------+------------------------------------+-------------------------------------------------------+
-| ``notin``  | performance notin (silver, bronze) | A pool's label value must not be in the set of values |
-+------------+------------+-----------------------+-------------------------------------------------------+
-| ``<key>``  | protection                         | A pool's label key must exist with any value          |
-+------------+------------+-----------------------+-------------------------------------------------------+
-| ``!<key>`` | !protection                        | A pool's label key must not exist                     |
-+------------+------------------------------------+-------------------------------------------------------+
-
-A selector may consist of multiple operators, delimited by semicolons; all operators must succeed to match a virtual pool.
-
-Some example configurations are shown below. The first two examples show backend configurations without virtual pools. The last example shows a backend configuration with virtual pools and sample StorageClass definitions.
-
-
 Example configurations
 ----------------------
 
@@ -140,7 +99,8 @@ This example shows a backend file that applies the same aspects to all Trident c
 
 **Example 3 - Backend and storage class configuration for aws-cvs driver with virtual storage pools**
 
-This example shows the backend definition file configured with virtual storage pools along with StorageClasses that refer back to them.
+This example shows the backend definition file configured with :ref:`Virtual Storage Pools <Virtual Storage Pools>`
+along with StorageClasses that refer back to them.
 
 In the sample backend definition file shown below, specific defaults are set for all storage pools, which set the ``snapshotReserve`` at 5% and the ``exportRule`` to 0.0.0.0/0. The virtual storage pools are defined in the ``storage`` section. In this example, each individual storage pool sets its own ``serviceLevel``, and some pools overwrite the default values set above.
 
@@ -212,9 +172,9 @@ In the sample backend definition file shown below, specific defaults are set for
         ]
     }
 
-The following StorageClass definitions refer to the above virtual storage pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume. The volume will have the aspects defined in the chosen virtual pool.
+The following StorageClass definitions refer to the above Virtual Storage Pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume. The volume will have the aspects defined in the chosen virtual pool.
 
-The first StorageClass (``cvs-extreme-extra-protection``) will map to the first virtual storage pool. This is the only pool offering extreme performance with a snapshot reserve of 10%. The last StorageClass (``cvs-extra-protection``) calls out any storage pool which provides a snapshot reserve of 10%. Trident will decide which virtual storage pool is selected and will ensure the snapshot reserve requirement is met.
+The first StorageClass (``cvs-extreme-extra-protection``) will map to the first Virtual Storage Pool. This is the only pool offering extreme performance with a snapshot reserve of 10%. The last StorageClass (``cvs-extra-protection``) calls out any storage pool which provides a snapshot reserve of 10%. Trident will decide which Virtual Storage Pool is selected and will ensure the snapshot reserve requirement is met.
 
 .. code-block:: yaml
 

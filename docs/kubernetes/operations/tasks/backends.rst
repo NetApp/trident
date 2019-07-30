@@ -31,10 +31,11 @@ Deleting a backend
 ------------------
 
 .. note::
-  If Trident has provisioned volumes from this backend that still exist,
-  deleting the backend will prevent new volumes from being provisioned by it
-  but the backend will continue to exist and Trident will continue to manage
-  those volumes until they are deleted.
+
+  If Trident has provisioned volumes and snapshots from this backend that still exist,
+  deleting the backend will prevent new volumes from being provisioned by it.
+  The backend will continue to exist in a "Deleting" state and Trident
+  will continue to manage those volumes and snapshots until they are deleted.
 
 To delete a backend from Trident, run:
 
@@ -57,6 +58,7 @@ To view the backends that Trident knows about, run:
 
   # Full details
   tridentctl get backend -o json
+
 
 Identifying the storage classes that will use a backend
 -------------------------------------------------------

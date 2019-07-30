@@ -47,7 +47,7 @@ Install the appropriate version of kubeadm, kubectl and kubelet
   deb http://apt.kubernetes.io/ kubernetes-xenial main
   EOF
   apt-get update
-  apt-get install -y kubeadm=1.14\* kubectl=1.14\* kubelet=1.14\* kubernetes-cni=0.7\*
+  apt-get install -y kubeadm=1.15.1 kubectl=1.15.1 kubelet=1.15.1 kubernetes-cni=0.7.5
 
 Configure the host
 ==================
@@ -80,7 +80,7 @@ Add an overlay network
 
 .. code-block:: bash
 
-  kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+   kubectl apply -f https://docs.projectcalico.org/v3.7/manifests/calico.yaml
 
 Verify that all of the services started
 =======================================
@@ -91,16 +91,17 @@ few minutes:
 .. code-block:: console
 
   # kubectl get po -n kube-system
-  NAME                                       READY     STATUS    RESTARTS   AGE
-  calico-etcd-rvgzs                          1/1       Running   0          9d
-  calico-kube-controllers-6ff88bf6d4-db64s   1/1       Running   0          9d
-  calico-node-xpg2l                          2/2       Running   0          9d
-  etcd-scspa0333127001                       1/1       Running   0          9d
-  kube-apiserver-scspa0333127001             1/1       Running   0          9d
-  kube-controller-manager-scspa0333127001    1/1       Running   0          9d
-  kube-dns-545bc4bfd4-qgkrn                  3/3       Running   0          9d
-  kube-proxy-zvjcf                           1/1       Running   0          9d
-  kube-scheduler-scspa0333127001             1/1       Running   0          9d
+
+    NAMESPACE     NAME                                         READY   STATUS    RESTARTS   AGE
+    kube-system   calico-kube-controllers-658558ddf8-4hwf4     1/1     Running   0          20m
+    kube-system   calico-node-75zdm                            1/1     Running   0          20m
+    kube-system   coredns-5c98db65d4-bgtlq                     1/1     Running   0          20m
+    kube-system   coredns-5c98db65d4-pr8rf                     1/1     Running   0          20m
+    kube-system   etcd-trident-1907                            1/1     Running   0          20m
+    kube-system   kube-apiserver-trident-1907                  1/1     Running   0          20m
+    kube-system   kube-controller-manager-trident-1907         1/1     Running   0          20m
+    kube-system   kube-proxy-q4c75                             1/1     Running   0          20m
+    kube-system   kube-scheduler-trident-1907                  1/1     Running   0          20m
 
 Notice that all of the Kubernetes services are in a *Running* state.
 Congratulations! At this point your cluster is operational.

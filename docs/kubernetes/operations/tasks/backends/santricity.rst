@@ -83,11 +83,12 @@ Example configuration
     "hostDataIP": "10.0.0.101"
   }
 
-**Example 2 - Backend and storage class configuration for eseries-iscsi driver with virtual storage pools**
+**Example 2 - Backend and Storage Class configuration for eseries-iscsi driver with Virtual Storage Pools**
 
-This example shows the backend definition file configured with virtual storage pools along with StorageClasses that refer back to them.
+This example shows the backend definition file configured with :ref:`Virtual Storage Pools <Virtual Storage Pools>` 
+along with StorageClasses that refer back to them.
 
-In the sample backend definition file shown below, the virtual storage pools are defined in the ``storage`` section.
+In the sample backend definition file shown below, the Virtual Storage Pools are defined in the ``storage`` section.
 
 .. code-block:: json
 

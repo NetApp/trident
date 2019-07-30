@@ -20,55 +20,8 @@ This section covers Trident Installation on a Kubernetes cluster.
 What are the supported versions of etcd?
 ----------------------------------------
   
-Trident v18.01 and later deploy etcd v3. Trident v19.04 deploys etcd v3.3.12. To verify the
-version of etcd used, check
-the `dependency file <https://github.com/NetApp-openstack-dev/trident/blob/master/glide.yaml>`_ on Github.
-
-
-Where is etcd installed?
-------------------------
-
-By default, the etcd container is installed in the same pod as the trident-main container.
-
-Refer to :ref:`Trident's use of etcd <Trident's use of etcd>` for additional information.
-
-
-Can we install a specific version of etcd?
-------------------------------------------
-
-We can install a specific version of etcd.  
-
-Refer to :ref:`Customized Installation <Customized Installation>` for instructions.
-
-
-By default, what is Trident's etcd volume size? Can we change it?
------------------------------------------------------------------
-
-The default etcd volume size for Trident is 2 GiB and can accomodate about a million objects (i.e. Volumes, StorageClasses, Backends). If more space is needed, it can be configured during Trident install. 
-
-Refer to :ref:`Customized Installation <Customized Installation>` for instructions.
-
-
-Can we give a custom-name for the PersistentVolumeClaim and the PersistentVolume used by Trident itself?
---------------------------------------------------------------------------------------------------------
-
-We can define a custom-name for the PVC and/or PV used by Trident itself.  
-
-Refer to :ref:`Customized Installation <Customized Installation>` for instructions and more information.
-
-
-What is the default volume name for Trident on ONTAP?
------------------------------------------------------
-
-By default, the volume is assigned the ``trident_trident`` name. The volume name is prefaced by the config file's storage prefix which defaults to `trident`. 
-
-
-Can we give a custom-name for Trident’s volume?
------------------------------------------------
-
-A custom name can be used for Trident's volume. However, the volume name on ONTAP will always be prefaced with the config file's storage prefix. By default, the storage prefix is `trident`.
-
-Refer to :ref:`Customized Installation <Customized Installation>` for more information on customizing Trident's volume name
+Trident v19.07 does not require an etcd. It uses CRDs to maintain
+state.
 
 
 Does Trident support an offline install from a private registry?
@@ -76,15 +29,13 @@ Does Trident support an offline install from a private registry?
 
 Yes, Trident can be installed offline. 
 
-Refer to the
-`Installing Trident from a Private Registry blog <https://netapp.io/2018/12/19/installing-trident-from-a-private-registry>`_
+Refer to the :ref:`Offline install <Trident installation modes>` section
 for a step by step procedure.
-
 
 Can Trident be installed remotely?
 ----------------------------------
 
-Trident v18.10 and above supports remote install capability from any machine that has kubectl access to the cluster. After kubectl access is verified (e.g. initiate a `kubectl get nodes` command from the remote machine to verify), follow the installation instructions.
+Trident v18.10 and above supports :ref:`remote install capability <Trident installation modes>` from any machine that has kubectl access to the cluster. After kubectl access is verified (e.g. initiate a `kubectl get nodes` command from the remote machine to verify), follow the installation instructions.
 
 Refer to :ref:`Deploying <Deploying>` for more information on how to install Trident.
  
@@ -95,8 +46,7 @@ Can we configure High Availability with Trident?
 Since Trident is installed as a Kubernetes Deployment (ReplicaSet) with one instance, it has HA built in. Do not increase the number of replicas in the Trident deployment.
 
 If the node where Trident is installed is lost or the pod is otherwise inaccessible, Kubernetes will automatically
-re-deploy the pod to a healthy node in your cluster. As with application pods, the new Trident pod will have immediate
-access to the etcd volume (i.e. no data will be lost).  
+re-deploy the pod to a healthy node in your cluster.
 
 Since Trident is control-plane only, currently mounted pods will not be affected if Trident is re-deployed.
 
@@ -153,11 +103,48 @@ Refer to :ref:`Supported backends <Supported backends (storage)>` for more infor
 Does Trident work with Cloud Volumes Services?
 ----------------------------------------------
 
-Starting with Trident version 19.04, Trident is supported with Cloud Volumes Services on AWS only. Other providers are
-planned for a later date.
+Yes, Trident supports the Azure NetApp Files service in Azure as well as the Cloud Volumes Service in AWS.
 
 Refer to :ref:`Supported backends <Supported backends (storage)>` for more information.
 
+What versions of Kubernetes support Trident as an enhanced CSI Provisioner? 
+---------------------------------------------------------------------------
+
+Kubernetes versions ``1.13`` and above support running Trident as a CSI Provisioner. Before installing
+Trident, ensure the required :ref:`feature gates <Feature Gates>` are enabled.
+
+Refer to :ref:`Requirements <Supported frontends (orchestrators)>` for a list
+of supported orchestrators.
+
+Why should I install Trident to work as a CSI Provisioner?
+----------------------------------------------------------
+
+With the 19.07 release, Trident now fully adheres to the latest
+CSI 1.1 specification and is production ready. This enables users to
+experience all features exposed by the current release, as well as future
+releases. Trident can continue to fix issues or add features without touching
+the Kubernetes core, while also absorbing any standardized future changes or features efficiently.
+
+How do I install Trident to work as a CSI Provisioner?
+------------------------------------------------------
+ 
+The installation procedure is detailed under the :ref:`Deployment <deploying-in-kubernetes>` section.
+Ensure that the :ref:`feature gates <Feature Gates>` are enabled.
+
+How does Trident maintain state if it doesn't use etcd?
+-------------------------------------------------------
+
+Trident uses :ref:`Custom Resource Definitions(CRDs) <Kubernetes CustomResourceDefinition objects>`
+to maintain its state. This eliminates
+the requirement for etcd and a Trident volume on the storage cluster. Trident no longer
+needs its separate PV; the information is stored as CRD objects that will be present
+in the Kubernetes cluster’s etcd.
+
+How do I uninstall Trident?
+---------------------------
+
+The :ref:`Uninstalling Trident <Uninstalling Trident>` section explains how
+you can remove Trident.
 
 Trident Backend Configuration and Use
 =====================================
@@ -183,12 +170,32 @@ Configure it in the backend.json file as
 port is 1000, configure ``"managementLIF": "192.0.2.1:1000"``,
 
 
+Is it possible to update the Management LIF on the backend ?
+------------------------------------------------------------
+
+Yes, it is possible to update the backend Management LIF using the ``tridentctl update backend`` command.
+
+Refer to :ref:`Backend configuration <Backend configuration>` for more information on updating the backend. 
+
+
+Is it possible to update the Data LIF on the backend ?
+------------------------------------------------------
+
+No, it is not possible to update the Data LIF on the backend. 
+
+
 Can we create multiple backends in Trident for Kubernetes?
 ----------------------------------------------------------
 
 Trident can support many backends simultaneously, either with the same driver or different drivers. 
 
 Refer to :ref:`Backend configuration <Backend configuration>` for more information on creating backend definition files.
+
+
+How does Trident store backend credentials?
+-------------------------------------------
+
+Trident stores the backend credentials as Kubernetes Secrets.
 
 
 How does Trident select a specific backend?
@@ -283,7 +290,7 @@ Refer to :ref:`Storage Class design to emulate QoS policies <Storage Class desig
 How do we specify thin or thick provisioning through Trident?
 -------------------------------------------------------------
 
-The ONTAP drivers support either thin or thick provisioning. E-series only support thick provisioning. Solidfire only supports thin provisioning.
+The ONTAP drivers support either thin or thick provisioning. E-series only support thick provisioning. Element OS backends only support thin provisioning.
 
 The ONTAP drivers default to thin provisioning. If thick provisioning is desired, you may configure either the backend definition file or the `StorageClass`. If both are configured, the StorageClass takes precedence. Configure the following for ONTAP:
 
@@ -321,7 +328,13 @@ Refer to :ref:`Importing a volume <Importing a volume>` for more information.
 Can I import a volume while it is in Snapmirror Data Protection (DP) or offline mode?
 -------------------------------------------------------------------------------------
 
-The volume import will fail if the external volume is in DP mode or offline. You will receive an error message ``Error: could not import volume: volume import failed to get size of volume: volume <name> was not found (400 Bad Request) command terminated with exit code 1.`` Make sure to remove the DP mode or put the volume online before importing the volume.
+The volume import will fail if the external volume is in DP mode or offline. You will receive an error message.
+
+.. code-block:: console 
+   
+   Error: could not import volume: volume import failed to get size of volume: volume <name> was not found (400 Bad Request) command terminated with exit code 1.
+
+Make sure to remove the DP mode or put the volume online before importing the volume.
 
 Refer to: :ref:`Behavior of Drivers for Volume Import <Behavior of Drivers for Volume Import>` for additional information.
 
@@ -332,32 +345,27 @@ Can we use PVC resize functionality with iSCSI, Trident, and ONTAP?
 PVC resize functionality with iSCSI is not supported with Trident. 
 
 
-Do we encrypt the password in etcd? Can we use a secret to attach the password?
--------------------------------------------------------------------------------
-
-The passwords are not encrypted in etcd. It is not possible to use secrets for backend credentials since the Kubernetes
-Secrets must exist before a pod is started. Additionally, Trident supports dynamic addition, removal, and updates of
-backends, which wouldn’t be possible if we use secrets for backend credentials.
-
-Refer to :ref:`Security Recommendations <Security Recommendations>` in the Design and Architecture Guide for additional information on how to secure etcd.
-
-
 How is resource quota translated to a NetApp cluster?
 -----------------------------------------------------
 
 Kubernetes Storage Resource Quota should work as long as NetApp Storage has capacity. When the NetApp storage cannot
 honor the Kubernetes quota settings due to lack of capacity, Trident will try to provision but will error out.
 
+Can you create Volume Snapshots using Trident?
+---------------------------------------------- 
 
-In what ways can the backup of Trident etcd data be taken?
-----------------------------------------------------------
+Yes. On-demand volume snapshotting and creating Persistent Volumes from Snapshots is supported
+by Trident beginning with 19.07. To create PVs from snapshots, ensure that the ``VolumeSnapshotDataSource``
+feature-gate has been enabled.
 
-Backup of the etcd can be done in 2 ways:
+Refer to :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>`
+for more information.
 
-  * After quiescing the Trident application, take a snapshot using the `etcdctl snapshot` command. More information can
-    be found `here <https://netapp.io/2019/03/12/backup-restore-trident-etcd-using-etcdctl-with-ontap/>`_ .
-  * Take a snapshot on the Trident volume where the etcd data files resides. Assign the Trident volume to a snapshot policy or by taking a manual snapshot after quiescing the Trident application.
+What are the drivers which support Trident Volume Snapshots?
+------------------------------------------------------------
 
+As of today, on-demand snapshot support is available for our ``ontap-nas``, ``ontap-san``, ``solidfire-san``,
+``aws-cvs`` and ``azure-netapp-files`` backend drivers.
 
 How do we take a snapshot backup of a volume provisioned by Trident with ONTAP?
 -------------------------------------------------------------------------------
@@ -397,20 +405,10 @@ Can we set up SnapMirror for Trident volumes through Trident?
 Currently, SnapMirror has be set externally using ONTAP CLI or OnCommand System Manager.
 
 
-How do I restore the etcd backend?
-----------------------------------
+How do I restore Persistent Volumes to a specific ONTAP snapshot?
+-----------------------------------------------------------------
 
-Restore of etcd can be done in 2 ways:
-
-  * Quiesce the Trident application and do a ``etcdctl snapshot restore``. Next, restart the Trident Application. More information can be found `here <https://netapp.io/2019/03/12/backup-restore-trident-etcd-using-etcdctl-with-ontap/>`_.
-  * If the backup taken was by taking a snapshot on the Trident Volume, then Quiesce the Trident application, revert
-    to an appropriate snapshot on the Trident volume which has the etcd object store.
-
-
-How do I restore Persistent Volumes to a specific snapshot?
------------------------------------------------------------
-
-To restore a volume to a snapshot, follow the following steps:
+To restore a volume to an ONTAP snapshot, follow the following steps:
 
   * Quiesce the application pod which is using the Persistent volume .
   * Revert to the required snapshot through ONTAP CLI or OnCommand System Manager.
@@ -440,6 +438,20 @@ Does Trident provide insight into the capacity of the storage?
 This is out of scope for Trident. NetApp offers `Cloud Insights <https://cloud.netapp.com/cloud-insights>`_ for
 monitoring and analysis.
 
+
+Does the user experience change when using Trident as a CSI Provisioner?
+------------------------------------------------------------------------
+
+No. From the user's point of view, there are no changes as far as the user experience
+and functionalities are concerned. The provisioner name used will be ``csi.trident.netapp.io``.
+This method of installing Trident is recommended to use all new features provided by current
+and future releases.
+
+How do I design a Disaster Workflow for Trident v19.07?
+-------------------------------------------------------
+
+The :ref:`Data replication using ONTAP <Data replication using ONTAP>` section
+talks about backup and DR workflows using ONTAP. 
 
 Trident Upgrade, Support, Licensing, and Troubleshooting
 ========================================================
@@ -516,14 +528,26 @@ Can I upgrade from a older version of Trident directly to a newer version (skipp
 
 We support upgrading directly from a version up to one year back. For example, if you are currently on v18.04, v18.07,
 or v19.01, we will support directly upgrading to v19.04. We suggest testing upgrading in a lab prior to production deployment.
+Information on upgrading Trident can be obtained :ref:`here <Upgrading Trident>`.
 
 
-If the Trident pod is destroyed, will we lose the data? Will new Trident pods reconnect to existing etcd database? 
-------------------------------------------------------------------------------------------------------------------
+How can I upgrade to the most recent version of Trident?
+--------------------------------------------------------
 
-As long as the volume containing the Trident database isn't lost, you can redeploy Trident and it will automatically
-connect to etcd's persistent volume. No data should be lost.
+Refer to :ref:`Upgrading Trident <Upgrading Trident>` for the steps involved in
+Upgrading Trident to the latest release.
 
+
+Is it possible to downgrade Trident to a previous release?
+----------------------------------------------------------
+
+**Downgrading Trident is not recommended** for the :ref:`following reasons <Downgrading Trident>`.
+
+If the Trident pod is destroyed, will we lose the data? 
+-------------------------------------------------------
+
+No data will be lost if the Trident pod is destroyed. Trident's metadata will be stored in CRD objects.
+All PVs that have been provisioned by Trident will function normally.
 
 My storage system's password has changed and Trident no longer works, how do I recover? 
 ---------------------------------------------------------------------------------------
@@ -531,5 +555,3 @@ My storage system's password has changed and Trident no longer works, how do I r
 Update the backend's password with a ``tridentctl update backend myBackend -f </path/to_new_backend.json> -n trident``.
 Replace `myBackend` in the example with your backend name, and `/path/to_new_backend.json` with the path to the correct
 backend.json file.
-
-Refer to :ref:`update <update>`.

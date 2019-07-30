@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Trident'
-copyright = u'2018 NetApp'
+copyright = u'2019 NetApp'
 author = u'NetApp'
 
 # The version info for the project you're documenting, acts as replacement for

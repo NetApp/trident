@@ -7,10 +7,11 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
+* `NetApp Kubernetes Service <https://cloud.netapp.com/kubernetes-service>`_
+* Kubernetes 1.9 or later (latest: 1.15)
+* OpenShift 3.9 or later (latest: 3.11)
 * Docker 17.06 (CE or EE) or later (latest: 18.09)
 * Docker Enterprise Edition 17.06 or later (latest: 2.1)
-* Kubernetes 1.10 or later (latest: 1.14)
-* OpenShift 3.8 or later (latest: 3.11)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
 that uses one of the supported versions as a base, such as Rancher or Tectonic.
@@ -21,9 +22,36 @@ Supported backends (storage)
 To use Trident, you need one or more of the following supported backends:
 
 * FAS/AFF/Select/Cloud ONTAP 8.3 or later
-* SolidFire Element OS 8 or later
+* HCI/SolidFire Element OS 8 or later
 * E/EF-Series SANtricity
+* Azure NetApp Files
 * Cloud Volumes Service for AWS
+
+Feature Gates
+=============
+
+Trident requires some feature gates to be enabled for it to work.
+These feature gates are detailed below:
+
+======================== ======= ===== ===== =====
+Feature Gate             Default Stage Since Until
+======================== ======= ===== ===== =====
+CSIDriverRegistry        False   Alpha 1.12  1.13
+CSIDriverRegistry        True    Beta  1.14    -
+CSINodeInfo              False   Alpha 1.12  1.13
+CSINodeInfo              True    Beta  1.14    -
+VolumeSnapshotDataSource False   Alpha 1.12    -
+======================== ======= ===== ===== =====
+
+If using Kubernetes ``1.13``:
+
+- Enable the ``CSIDriverRegistry``, ``CSINodeInfo`` and
+  ``VolumeSnapshotDataSource`` flags.
+
+If using Kubernetes ``1.14`` and above:
+
+- Enable the ``VolumeSnapshotDataSource`` flag. The other
+  flags are enabled by default.
 
 Supported host operating systems
 ================================
@@ -58,15 +86,3 @@ Storage system configuration
 Trident may require some changes to a storage system before a backend
 configuration can use it. See the
 :ref:`backend configuration <Backend configuration>` guide for details.
-
-External etcd cluster (Optional)
-================================
-
-Trident uses etcd v3.1.3 or later to store its metadata. The standard
-installation process includes an etcd container that is managed by Trident and
-backed by a volume from a supported storage system, so there is no need to
-install it separately.
-
-If you would prefer to use a separate external etcd cluster instead, Trident
-can easily be configured to do so. See the :ref:`external etcd guide <etcd>`
-for details.

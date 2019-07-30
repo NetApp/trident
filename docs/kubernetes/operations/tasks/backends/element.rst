@@ -1,14 +1,14 @@
-###################
-Element (SolidFire)
-###################
+#######################
+Element (HCI/SolidFire)
+#######################
 
-To create and use a SolidFire backend, you will need:
+To create and use an Element backend, you will need:
 
-* A :ref:`supported SolidFire storage system <Supported backends (storage)>`
-* Complete `SolidFire backend preparation`_
-* Credentials to a SolidFire cluster admin or tenant user that can manage volumes
+* A :ref:`supported Element storage system <Supported backends (storage)>`
+* Complete `HCI/SolidFire backend preparation`_
+* Credentials to a HCI/SolidFire cluster admin or tenant user that can manage volumes
 
-.. _SolidFire backend preparation:
+.. _HCI/SolidFire backend preparation:
 
 Preparation
 -----------
@@ -68,11 +68,17 @@ to consume each of these using the ``IOPS`` storage class parameter.
                 {"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}]
   }
 
-**Example 2 - Backend and storage class configuration for solidfire-san driver with virtual storage pools**
+**Example 2 - Backend and Storage Class configuration for solidfire-san driver with Virtual Storage Pools**
 
-This example shows the backend definition file configured with virtual storage pools along with StorageClasses that refer back to them.
+This example shows the backend definition file configured with
+:ref:`Virtual Storage Pools <Virtual Storage Pools>`
+along with StorageClasses that refer back to them.
 
-In the sample backend definition file shown below, specific defaults are set for all storage pools, which set the ``type`` at Silver. The virtual storage pools are defined in the ``storage`` section. In this example, some of the storage pool sets their own ``type``, and some pools overwrite the default values set above.
+In the sample backend definition file shown below, specific defaults are set
+for all storage pools, which set the ``type`` at Silver. The Virtual Storage
+Pools are defined in the ``storage`` section. In this example, some of the
+storage pool sets their own ``type``, and some pools overwrite the default
+values set above.
 
 .. code-block:: json
 
@@ -117,9 +123,16 @@ In the sample backend definition file shown below, specific defaults are set for
       ]
   }
 
-The following StorageClass definitions refer to the above virtual storage pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume. The volume will have the aspects defined in the chosen virtual pool.
+The following StorageClass definitions refer to the above Virtual Storage
+Pools. Using the ``parameters.selector`` field, each StorageClass calls
+out which virtual pool(s) may be used to host a volume. The volume will
+have the aspects defined in the chosen virtual pool.
 
-The first StorageClass (``solidfire-gold-four``) will map to the first virtual storage pool. This is the only pool offering offering gold performance with a ``Volume Type QoS`` of Gold. The last StorageClass (``solidfire-silver``) calls out any storage pool which offers a silver performance. Trident will decide which virtual storage pool is selected and will ensure the storage requirement is met.
+The first StorageClass (``solidfire-gold-four``) will map to the first
+Virtual Storage Pool. This is the only pool offering gold performance
+with a ``Volume Type QoS`` of Gold. The last StorageClass (``solidfire-silver``)
+calls out any storage pool which offers a silver performance. Trident will decide
+which Virtual Storage Pool is selected and will ensure the storage requirement is met.
 
 .. code-block:: yaml
 

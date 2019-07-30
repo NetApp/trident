@@ -1,5 +1,5 @@
-SolidFire Configuration
-=======================
+Element OS/SolidFire Configuration
+==================================
 
 In addition to the global configuration values above, when using SolidFire, these options are available.
 

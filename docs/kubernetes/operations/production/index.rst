@@ -1,7 +1,0 @@
-Production considerations
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-  :glob:
-
-  *
