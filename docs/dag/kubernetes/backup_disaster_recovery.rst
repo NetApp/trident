@@ -131,11 +131,11 @@ SnapMirror SVM Replication Setup
 SnapMirror SVM Disaster Recovery Workflow for Trident 
 *****************************************************
 
-The following steps describe how Trident 19.07 and other containerized applications can resume functioning during a catastrophe using the SnapMirror SVM replication. 
+The following steps describe how Trident and other containerized applications can resume functioning during a catastrophe using the SnapMirror SVM replication. 
 
 **Disaster Recovery Workflow for Trident**
 
-Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. It will use the Kubernetes cluster's etcd to store its metadata. Here we assume that the Kubernetes etcd data files and the certifcates are stored on NetApp FlexVolume. This FlexVolume resides in a SVM which has Snapmirror SVM DR relationship with a destination SVM at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident 19.07 in the event of a disaster.
+Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. It will use the Kubernetes cluster's etcd to store its metadata. Here we assume that the Kubernetes etcd data files and the certifcates are stored on NetApp FlexVolume. This FlexVolume resides in a SVM which has Snapmirror SVM DR relationship with a destination SVM at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident in the event of a disaster.
 
 1. In the event of the source SVM failure, activate the SnapMirror destination SVM. Activating the destination SVM involves stopping scheduled SnapMirror transfers, aborting ongoing SnapMirror transfers, breaking the replication relationship, stopping the source SVM, and starting the destination SVM.
 
@@ -151,7 +151,7 @@ Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage i
 
 **Disaster Recovery Workflow for Application Persistent Volumes**
 
-When the destination SVM is activated, all the volumes provisioned by Trident will start serving data. Once the Kubernetes cluster is setup on the destination side using the above mentioned procedure,	all the deployments and pods are started and the containerized applications should run without any issues.
+When the destination SVM is activated, all the volumes provisioned by Trident will start serving data. Once the Kubernetes cluster is setup on the destination side using the above mentioned procedure, all the deployments and pods are started and the containerized applications should run without any issues.
 
 ONTAP SnapMirror Volume Replication
 ----------------------------------- 
@@ -186,13 +186,13 @@ catastrophe, from the secondary site .
 
 **Disaster Recovery Workflow for Trident**
 
-Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. Trident will store its metadata in the Kubernetes clusters’s etcd database. Here we assume that the Kubernetes etcd data files and the certificates are stored on NetApp FlexVolume which is snapmirrored to the destination volume at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident 19.07.
+Trident v19.07 and beyond will now utilize Kubernetes CRDs to store and manage its own state. Trident will store its metadata in the Kubernetes cluster's etcd database. Here we assume that the Kubernetes etcd data files and the certificates are stored on NetApp FlexVolume which is SnapMirrored to the destination volume at the secondary site. The following steps describe how we can recover a single master Kubernetes Cluster with Trident.
 
 1. In the event of a disaster, stop all the scheduled SnapMirror transfers and abort all ongoing SnapMirror transfers. Break the replication relationship between the destination and source volumes so that the destination volume becomes Read/Write.
 
 2. From the destination SVM, mount the volume which contains the Kubernetes etcd data files and certificates on to the host which will be setup as a master node.
 
-3. Copy all the required certificates pertaining the Kubernetes cluster under ``/etc/kubernetes/pki`` and the etcd ``member`` files under ``/var/lib/etcd``.
+3. Copy all the required certificates pertaining to the Kubernetes cluster under ``/etc/kubernetes/pki`` and the etcd ``member`` files under ``/var/lib/etcd``.
 
 4. Now create a Kubernetes cluster with the ``kubeadm init`` command along with the ``--ignore-preflight-errors=DirAvailable--var-lib-etcd`` flag. Please note that the hostnames must same as the source Kubernetes cluster.
 
@@ -214,10 +214,10 @@ In this section, let us examine how SnapMirror destination volumes can be made a
 
 5. Re-deploy the application deployments with the newly created PVCs. 
   
-SolidFire snapshots
+ElementOS snapshots
 ===================
 
-Backup data on a SolidFire Volume by setting a snapshot schedule to a SolidFire volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element OS Web UI or Element OS APIs.
+Backup data on an Element volume by setting a snapshot schedule for the volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element OS Web UI or Element OS APIs.
 
 In the event of data corruption, we can choose a particular snapshot and rollback the volume to the snapshot manually using the Element OS Web UI or Element OS APIs. This reverts any changes made to the volume since the snapshot was created.
 

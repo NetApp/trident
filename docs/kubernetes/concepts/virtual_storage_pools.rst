@@ -25,7 +25,7 @@ Files service.
 The storage administrator defines the virtual pools and their aspects
 in a backend's JSON or YAML definition file. Any aspect specified
 outside the virtual pools list is global to the backend and will apply
-to all virtual pools, while each virtual pool may specify one or more
+to all the virtual pools, while each virtual pool may specify one or more
 aspects individually (overriding any backend-global aspects).
 
 Most aspects are specified in backend-specific terms. Crucially, the

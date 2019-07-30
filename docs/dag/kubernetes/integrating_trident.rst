@@ -66,7 +66,7 @@ As we can see in the above tables, much of the functionality between the ``ontap
 
 **Choosing a backend driver for Cloud Volumes ONTAP**
 
-Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy`` or ``ontap-san`` .These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
+Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy`` or ``ontap-san``. These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
 
 
 Element (HCI/SolidFire)
@@ -180,7 +180,7 @@ Storage Class Design for Virtual Storage Pools
 ----------------------------------------------
 Virtual Storage Pools are available for Cloud Volumes Service for AWS, ANF, Element and E-Series backends. 
 
-Virtual Storage Pools allow an administrator to create a level of abstraction over backends which can be referenced through storage classes for more flexible and efficient placement of volumes on backends. Virtual pools allows us to define different backends with the same class of service and also, allow us to define storage pools on the same backend but with different characteristics.When a storage class is configured with a selector with the specific labels , Trident chooses a backend which matches all the selector labels to place the volume. If the storage class selector labels matches multiple backend storage pools, Trident will choose one of the backend storage pools to provision the volume from.
+Virtual Storage Pools allow an administrator to create a level of abstraction over backends which can be referenced through Storage Classes, for greater flexibility and efficient placement of volumes on backends. Different backends can be defined with the same class of service. Moreover, multiple Storage Pools can be created on the same backend but with different characteristics. When a Storage Class is configured with a selector with the specific labels , Trident chooses a backend which matches all the selector labels to place the volume. If the Storage Class selector labels matches multiple Storage Pools, Trident will choose one of them to provision the volume from.
 
 Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more information and applicable parameters. 
 
@@ -197,8 +197,7 @@ It is possible to design Virtual Storage Pools for emulating service classes. Us
 Design Virtual Pools for Assigning Specifc Set of Aspects
 ---------------------------------------------------------
 
-Multiple Virtual Storage pools with a specific set of aspects can be designed from a single storage backend. For doing so, configure the backend with multiple labels and set the required aspects under each label. Now create different Kubernetes Storage Classes using the parameters.selector field that would map to different virtual Storage Pools.The volumes that get provisioned on the backend will have the aspects defined in the chosen virtual pool.  
-
+Multiple Virtual Storage pools with a specific set of aspects can be designed from a single storage backend. For doing so, configure the backend with multiple labels and set the required aspects under each label. Now create different Kubernetes Storage Classes using the ``parameters.selector`` field that would map to different Virtual Storage Pools.The volumes that get provisioned on the backend will have the aspects defined in the chosen Virtual Storage Pool.
 
 PVC characteristics which affect storage provisioning
 =====================================================
