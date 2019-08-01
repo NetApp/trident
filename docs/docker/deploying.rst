@@ -8,9 +8,9 @@ Deploying
 #. Ensure that you have a supported version of Docker installed.
 
    .. code-block:: bash
-   
+
      docker --version
-   
+
    If your version is out of date, `follow the instructions for your distribution <https://docs.docker.com/engine/installation/>`_
    to install or update.
 
@@ -20,10 +20,10 @@ Deploying
    options for your storage system.
 
    .. code-block:: bash
-   
+
      # create a location for the config files
      sudo mkdir -p /etc/netappdvp
- 
+
      # create the configuration file, see below for more configuration examples
      cat << EOF > /etc/netappdvp/config.json
      {
@@ -41,18 +41,18 @@ Deploying
 #. Start Trident using the managed plugin system.
 
    .. code-block:: bash
-   
-     docker plugin install netapp/trident-plugin:19.07 --alias netapp --grant-all-permissions
+
+     docker plugin install netapp/trident-plugin:19.10 --alias netapp --grant-all-permissions
 
 #. Begin using Trident to consume storage from the configured system.
 
    .. code-block:: bash
-   
+
      # create a volume named "firstVolume"
      docker volume create -d netapp --name firstVolume
-     
+
      # create a default volume at container instantiation
      docker run --rm -it --volume-driver netapp --volume secondVolume:/my_vol alpine ash
-     
+
      # remove the volume "firstVolume"
      docker volume rm firstVolume

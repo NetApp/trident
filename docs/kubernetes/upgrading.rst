@@ -3,7 +3,7 @@ Upgrading Trident
 #################
 
 This section walks you through the upgrade process to move to the
-latest release of Trident. 
+latest release of Trident.
 
 Initiate the upgrade
 ====================
@@ -107,13 +107,13 @@ provisioner and supports upgrading legacy volumes.
 .. code-block:: console
 
    $ tridentctl version
-    
+
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 19.07.0        | 19.07.0        |
+   | 19.10.0        | 19.10.0        |
    +----------------+----------------+
-   
+
    $ kubectl get pods -n <trident-namespace>
    NAME                          READY   STATUS    RESTARTS   AGE
    trident-csi-426nx             2/2     Running   0          20m
@@ -143,7 +143,7 @@ Example volume upgrade
 Here is an example that shows how a volume upgrade is performed.
 
 .. code-block:: bash
-         
+
    $ kubectl get pv
    NAME                         CAPACITY     ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS    REASON   AGE
    default-pvc-1-a8475          1073741824   RWO            Delete           Bound    default/pvc-1          standard                 19h
@@ -172,7 +172,7 @@ There are currently 4 PVs that have been created by Trident  ``19.04``, using th
    VolumeMode:      Filesystem
    Capacity:        1073741824
    Node Affinity:   <none>
-   Message:         
+   Message:
    Source:
        Type:      NFS (an NFS mount that lasts the lifetime of a pod)
        Server:    10.xx.xx.xx
@@ -224,7 +224,7 @@ that the volume is a CSI volume.
    VolumeMode:      Filesystem
    Capacity:        1073741824
    Node Affinity:   <none>
-   Message:         
+   Message:
    Source:
        Type:              CSI (a Container Storage Interface (CSI) volume source)
        Driver:            csi.trident.netapp.io

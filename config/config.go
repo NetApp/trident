@@ -32,7 +32,7 @@ const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
-	orchestratorVersion              = "19.07.0"
+	orchestratorVersion              = "19.10.0"
 	OrchestratorAPIVersion           = "1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second

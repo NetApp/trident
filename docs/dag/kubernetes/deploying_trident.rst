@@ -23,7 +23,7 @@ Trident is supported with the following Kubernetes architectures.
    | Master, infrastructure, compute               | Yes       |       Yes           |
    +-----------------------------------------------+-----------+---------------------+
 
-Trident installation modes 
+Trident installation modes
 ==========================
 
 Three ways to install Trident are discussed in this chapter.
@@ -39,16 +39,16 @@ In such scenarios, make sure that a private registry instance is available. The 
 
 **Remote install mode**
 
-Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps. 
+Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps.
 
-Trident Installation on Docker UCP 3.1 
+Trident Installation on Docker UCP 3.1
 ======================================
 
 Docker EE Universal Control Plane (UCP) is the cluster management layer that sits on top of the Docker Enterprise Engine. Once deployed, administrators interact with their cluster via UCP instead of each node's individual Docker engines. Since the UCP supports both Kubernetes and Docker via a Web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
 
 Installing Trident for Kubernetes on UCP managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for Kubernetes.
 
-Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes. 
+Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes.
 
 
 Using Trident with the NetApp Kubernetes Service
@@ -64,7 +64,7 @@ Refer to the following :ref:`documentation <Deploying>` for instructions on how 
 Deploying Trident as an enhanced CSI Provisioner
 ================================================
 
-The Trident 19.07 release is built on a production-ready CSI 1.1 provisioner implementation. This allows
+The Trident 19.10 release is built on a production-ready CSI 1.1 provisioner implementation. This allows
 Trident to absorb standardized features like snapshots, while still retaining its ability to innovate on the storage model.
 
 To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <deploying-in-kubernetes>`. Ensure
@@ -82,7 +82,7 @@ The 19.07 release of Trident introduces a set of :ref:`Custom Resource Definitio
 for maintaining
 Trident's stateful information. CRDs are a Kubernetes construct used to group a set of similar objects
 together and classify them as user-defined resources. This translates to Trident no longer needing a
-dedicated etcd and a PV that it needs to use on the backend storage. All stateful objects used by Trident 
+dedicated etcd and a PV that it needs to use on the backend storage. All stateful objects used by Trident
 will be CRD objects that are present in the Kubernetes cluster's etcd.
 
 Things to keep in mind about Trident's CRDs
@@ -95,7 +95,7 @@ Things to keep in mind about Trident's CRDs
 
 3. :ref:`Downgrading <Downgrading Trident>` to a previous Trident version is not recommended.
 
-4. When uninstalling Trident using the ``tridentctl uninstall`` command, Trident pods are deleted but the created CRDs will not be cleaned up. Refer to the :ref:`Uninstalling Guide <Uninstalling Trident>` to understand how Trident can be completely removed and reconfigured from scratch. 
+4. When uninstalling Trident using the ``tridentctl uninstall`` command, Trident pods are deleted but the created CRDs will not be cleaned up. Refer to the :ref:`Uninstalling Guide <Uninstalling Trident>` to understand how Trident can be completely removed and reconfigured from scratch.
 
 5. Since the CRD objects that are used by Trident are stored in the Kubernetes cluster's etcd, :ref:`Trident disaster recovery workflows <Backup and Disaster Recovery>` will be different when compared to previous versions of Trident.
 
@@ -123,7 +123,7 @@ Recommendations for all deployments
 Deploy Trident to a dedicated namespace
 ---------------------------------------
 
-`Namespaces <https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/>`_ provide administrative separation between different applications and are a barrier for resource sharing, for example, a PVC from one namespace cannot be consumed from another.  Trident provides PV resources to all namespaces in the Kubernetes cluster and consequently leverages a service account which has elevated privileges.  
+`Namespaces <https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/>`_ provide administrative separation between different applications and are a barrier for resource sharing, for example, a PVC from one namespace cannot be consumed from another.  Trident provides PV resources to all namespaces in the Kubernetes cluster and consequently leverages a service account which has elevated privileges.
 
 Additionally, access to the Trident pod may enable a user to access storage system credentials and other sensitive information.  It is important to ensure that application users and management applications do not have the ability to access the Trident object definitions or the pods themselves.
 
@@ -152,7 +152,7 @@ To deploy Trident to the infrastructure nodes, the project for Trident must be c
    # create the project which Trident will be deployed to using
    # the non-default node selector
    oc adm new-project <project_name> --node-selector="region=infra"
-   
+
    # deploy Trident using the project name
    tridentctl install -n <project_name>
 

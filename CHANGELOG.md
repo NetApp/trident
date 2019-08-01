@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v19.04.0
+## Changes since v19.07.0
+
+**Fixes:**
+
+**Enhancements:**
+
+## v19.07.0
 
 **Fixes:**
 - **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
