@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -134,7 +134,6 @@ func discoverOperatingMode(_ *cobra.Command) error {
 
 	// Find the CSI Trident pod
 	if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
-
 		// Fall back to non-CSI Trident pod
 		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLegacyLabel); err != nil {
 			return err
@@ -210,15 +209,15 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := cmd.Start(); err != nil {
+	if err = cmd.Start(); err != nil {
 		return "", err
 	}
 
 	var tridentPod k8s.PodList
-	if err := json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
+	if err = json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
 		return "", err
 	}
-	if err := cmd.Wait(); err != nil {
+	if err = cmd.Wait(); err != nil {
 		return "", err
 	}
 
@@ -231,6 +230,121 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 	name := tridentPod.Items[0].ObjectMeta.Name
 
 	return name, nil
+}
+
+// listTridentSidecars returns a list of sidecar container names inside the trident controller pod
+func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
+	// Get 'trident' pod info
+	var sidecarNames []string
+	cmd := exec.Command(
+		KubernetesCLI,
+		"get", "pod",
+		podName,
+		"-n", podNameSpace,
+		"-o=json",
+	)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return sidecarNames, err
+	}
+	if err = cmd.Start(); err != nil {
+		return sidecarNames, err
+	}
+
+	var tridentPod k8s.Pod
+	if err = json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
+		return sidecarNames, err
+	}
+	if err = cmd.Wait(); err != nil {
+		return sidecarNames, err
+	}
+
+	for _, sidecar := range tridentPod.Spec.Containers {
+		// Ignore Trident's main container
+		if sidecar.Name != config.ContainerTrident {
+			sidecarNames = append(sidecarNames, sidecar.Name)
+		}
+	}
+
+	return sidecarNames, nil
+}
+
+func getTridentNode(nodeName, namespace string) (string, error) {
+	selector := fmt.Sprintf("--field-selector=spec.nodeName=%s", nodeName)
+	cmd := exec.Command(
+		KubernetesCLI,
+		"get", "pod",
+		"-n", namespace,
+		"-l", TridentNodeLabel,
+		"-o=json",
+		selector,
+	)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", err
+	}
+	if err = cmd.Start(); err != nil {
+		return "", err
+	}
+
+	var tridentPods k8s.PodList
+	if err = json.NewDecoder(stdout).Decode(&tridentPods); err != nil {
+		return "", err
+	}
+	if err = cmd.Wait(); err != nil {
+		return "", err
+	}
+
+	if len(tridentPods.Items) != 1 {
+		return "", fmt.Errorf("could not find a Trident node pod in the %s namespace on node %s. "+
+			"You may need to use the -n option to specify the correct namespace", namespace, nodeName)
+	}
+
+	// Get Trident node pod name
+	name := tridentPods.Items[0].ObjectMeta.Name
+
+	return name, nil
+}
+
+// listTridentNodes returns a list of names of the Trident node pods in the specified namespace
+func listTridentNodes(namespace string) (map[string]string, error) {
+	// Get trident node pods info
+	tridentNodes := make(map[string]string)
+	cmd := exec.Command(
+		KubernetesCLI,
+		"get", "pod",
+		"-n", namespace,
+		"-l", TridentNodeLabel,
+		"-o=json",
+		"--field-selector=status.phase=Running",
+	)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return tridentNodes, err
+	}
+	if err = cmd.Start(); err != nil {
+		return tridentNodes, err
+	}
+
+	var tridentPods k8s.PodList
+	if err = json.NewDecoder(stdout).Decode(&tridentPods); err != nil {
+		return tridentNodes, err
+	}
+	if err = cmd.Wait(); err != nil {
+		return tridentNodes, err
+	}
+
+	if len(tridentPods.Items) < 1 {
+		return tridentNodes, fmt.Errorf("could not find any Trident node pods in the %s namespace. "+
+			"You may need to use the -n option to specify the correct namespace", namespace)
+	}
+
+	// Get Trident node and pod name
+	for _, pod := range tridentPods.Items {
+		tridentNodes[pod.Spec.NodeName] = pod.Name
+	}
+
+	return tridentNodes, nil
 }
 
 func BaseURL() string {

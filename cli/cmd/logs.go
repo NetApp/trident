@@ -16,30 +16,36 @@ import (
 )
 
 const (
-	logNameTrident         = "trident"
-	logNameTridentPrevious = "trident-previous"
-	logNameEtcd            = "etcd"
-	logNameEtcdPrevious    = "etcd-previous"
+	logNameTrident         = "trident-controller"
+	logNameTridentPrevious = "trident-controller-previous"
+	logNameNode            = "trident-node"
+	logNameNodePrevious    = "trident-node-previous"
 
 	logTypeAuto    = "auto"
 	logTypeTrident = "trident"
-	logTypeEtcd    = "etcd"
 	logTypeAll     = "all"
 
 	archiveFilenameFormat = "support-2006-01-02T15-04-05-MST.zip"
 )
 
 var (
-	logType  string
-	archive  bool
-	previous bool
+	logType     string
+	archive     bool
+	previous    bool
+	node        string
+	sidecars    bool
+	zipFileName string
+	zipWriter   *zip.Writer
+	logErrors   []byte
 )
 
 func init() {
 	RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto, "Trident log to display. One of trident|etcd|auto|all")
+	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto, "Trident log to display. One of trident|auto|all")
 	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
 	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false, "Get the logs for the previous container instance if it exists.")
+	logsCmd.Flags().StringVar(&node, "node", "", "The kubernetes node name to gather node pod logs from.")
+	logsCmd.Flags().BoolVar(&sidecars, "sidecars", false, "Get the logs for the sidecar containers as well.")
 }
 
 var logsCmd = &cobra.Command{
@@ -65,51 +71,56 @@ var logsCmd = &cobra.Command{
 	},
 }
 
+func writeLogs(logName string, logEntry []byte) error {
+	if archive {
+		entry, err := zipWriter.Create(logName)
+		if err != nil {
+			return err
+		}
+		_, err = entry.Write(logEntry)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Wrote %s log to %s archive file.\n", logName, zipFileName)
+	} else {
+		fmt.Printf("%s log:\n", logName)
+		fmt.Printf("%s\n", string(logEntry))
+	}
+	return nil
+}
+
 func archiveLogs() error {
 
 	// In archive mode, "auto" means to attempt to get all logs (current & previous).
 	if logType == logTypeAuto {
 		logType = logTypeAll
 		previous = true
-	}
-
-	logMap := make(map[string][]byte)
-	getLogs(logMap)
-
-	// If there aren't any logs, bail out.
-	anyLogs := false
-	for log := range logMap {
-		if log != "error" {
-			anyLogs = true
-			break
-		}
-	}
-	if !anyLogs {
-		return errors.New("no Trident-related logs found")
+		sidecars = true
 	}
 
 	// Create archive file.
-	zipFileName := time.Now().Format(archiveFilenameFormat)
+	zipFileName = time.Now().Format(archiveFilenameFormat)
 	zipFile, err := os.Create(zipFileName)
 	if err != nil {
 		return err
 	}
 	defer zipFile.Close()
 
-	zipWriter := zip.NewWriter(zipFile)
+	zipWriter = zip.NewWriter(zipFile)
 	defer zipWriter.Close()
 
-	// Write to the archive file.
-	for log, logBytes := range logMap {
-		entry, err := zipWriter.Create(log)
+	getLogs()
+
+	if len(logErrors) > 0 {
+		entry, err := zipWriter.Create("errors")
 		if err != nil {
 			return err
 		}
-		_, err = entry.Write(logBytes)
+		_, err = entry.Write(logErrors)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Wrote %s log to %s archive file.\n", log, zipFileName)
+		fmt.Printf("Wrote %s log to %s archive file.\n", "errors", zipFileName)
 	}
 
 	return nil
@@ -117,13 +128,12 @@ func archiveLogs() error {
 
 func consoleLogs() error {
 
-	logMap := make(map[string][]byte)
-	err := getLogs(logMap)
+	err := getLogs()
 
 	SetExitCodeFromError(err)
 	if err != nil {
 		// Preserve anything written to stdout/stderr
-		logMessage := strings.TrimSuffix(strings.TrimSpace(string(logMap["error"])), ".")
+		logMessage := strings.TrimSuffix(strings.TrimSpace(string(logErrors)), ".")
 		if len(logMessage) > 0 {
 			errMessage := strings.TrimSuffix(strings.TrimSpace(err.Error()), ".")
 			return fmt.Errorf("%s. %s", errMessage, logMessage)
@@ -131,24 +141,10 @@ func consoleLogs() error {
 			return err
 		}
 	}
-
-	// Print to the console
-	anyLogs := false
-	for log, logBytes := range logMap {
-		if log != "error" {
-			fmt.Printf("%s log:\n", log)
-			fmt.Printf("%s\n", string(logBytes))
-			anyLogs = true
-		}
-	}
-	if !anyLogs {
-		return errors.New("no Trident-related logs found")
-	}
-
 	return nil
 }
 
-func getLogs(logMap map[string][]byte) error {
+func getLogs() error {
 
 	var err error
 
@@ -158,23 +154,35 @@ func getLogs(logMap map[string][]byte) error {
 
 	switch logType {
 	case logTypeTrident, logTypeAuto:
-		err = getTridentLogs(logNameTrident, logMap)
-	case logTypeEtcd:
-		err = getTridentLogs(logNameEtcd, logMap)
+		if node == "" {
+			err = getTridentLogs(logNameTrident)
+		} else {
+			err = getNodeLogs(logNameNode, node)
+		}
 	case logTypeAll:
-		getTridentLogs(logNameTrident, logMap)
-		getTridentLogs(logNameEtcd, logMap)
+		getTridentLogs(logNameTrident)
+		if node == "" {
+			getAllNodeLogs(logNameNode)
+		} else {
+			getNodeLogs(logNameNode, node)
+		}
 	}
 
 	if previous {
 		switch logType {
 		case logTypeTrident, logTypeAuto:
-			getTridentLogs(logNameTridentPrevious, logMap)
-		case logTypeEtcd:
-			getTridentLogs(logNameEtcdPrevious, logMap)
+			if node == "" {
+				getTridentLogs(logNameTridentPrevious)
+			} else {
+				getNodeLogs(logNameNodePrevious, node)
+			}
 		case logTypeAll:
-			getTridentLogs(logNameTridentPrevious, logMap)
-			getTridentLogs(logNameEtcdPrevious, logMap)
+			getTridentLogs(logNameTridentPrevious)
+			if node == "" {
+				getAllNodeLogs(logNameNodePrevious)
+			} else {
+				getNodeLogs(logNameNodePrevious, node)
+			}
 		}
 	}
 
@@ -183,14 +191,14 @@ func getLogs(logMap map[string][]byte) error {
 
 func checkValidLog() error {
 	switch logType {
-	case logTypeTrident, logTypeEtcd, logTypeAuto, logTypeAll:
+	case logTypeTrident, logTypeAuto, logTypeAll:
 		return nil
 	default:
 		return fmt.Errorf("%s is not a valid Trident log", logType)
 	}
 }
 
-func getTridentLogs(logName string, logMap map[string][]byte) error {
+func getTridentLogs(logName string) error {
 
 	var container string
 	var prev bool
@@ -200,10 +208,6 @@ func getTridentLogs(logName string, logMap map[string][]byte) error {
 		container, prev = config.ContainerTrident, false
 	case logNameTridentPrevious:
 		container, prev = config.ContainerTrident, true
-	case logNameEtcd:
-		container, prev = config.ContainerEtcd, false
-	case logNameEtcdPrevious:
-		container, prev = config.ContainerEtcd, true
 	default:
 		return fmt.Errorf("%s is not a valid Trident log", logName)
 	}
@@ -219,11 +223,184 @@ func getTridentLogs(logName string, logMap map[string][]byte) error {
 	// Get logs
 	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
 	if err != nil {
-		logMap["error"] = appendError(logMap["error"], logBytes)
+		logErrors = appendError(logErrors, logBytes)
 	} else {
-		logMap[logName] = logBytes
+		if err = writeLogs(logName, logBytes); err != nil {
+			writeError := fmt.Sprintf("could not write log %s; %v", logName, err)
+			logErrors = appendError(logErrors, []byte(writeError))
+		}
 	}
+
+	if sidecars {
+		var tridentSidecars []string
+		tridentSidecars, err = listTridentSidecars(TridentPodName, TridentPodNamespace)
+		if err != nil {
+			return fmt.Errorf("error listing trident sidecar containers; %v", err)
+		}
+		for _, sidecar := range tridentSidecars {
+			logsCommand = []string{"logs", TridentPodName, "-n", TridentPodNamespace, "-c", sidecar, prevArg}
+
+			if Debug {
+				fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+			}
+
+			// Get logs
+			logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+			if err != nil {
+				logErrors = appendError(logErrors, logBytes)
+			} else {
+				if err = writeLogs(logName+"-sidecar-"+sidecar, logBytes); err != nil {
+					writeError := fmt.Sprintf("could not write log %s; %v", logName+"-sidecar-"+sidecar, err)
+					logErrors = appendError(logErrors, []byte(writeError))
+				}
+			}
+		}
+	}
+
 	return err
+}
+
+func getNodeLogs(logName, nodeName string) error {
+
+	var container string
+	var prev bool
+
+	switch logName {
+	case logNameNode:
+		container, prev = config.ContainerTrident, false
+	case logNameNodePrevious:
+		container, prev = config.ContainerTrident, true
+	default:
+		return fmt.Errorf("%s is not a valid Trident node log", logName)
+	}
+
+	pod, err := getTridentNode(nodeName, TridentPodNamespace)
+	if err != nil {
+		return fmt.Errorf("error listing trident node pods; %v", err)
+	}
+
+	nodeLogName := "trident-node-" + nodeName
+	if prev == true {
+		nodeLogName = nodeLogName + "-previous"
+	}
+	// Build command to get K8S logs
+	prevArg := fmt.Sprintf("--previous=%v", prev)
+	logsCommand := []string{"logs", pod, "-n", TridentPodNamespace, "-c", container, prevArg}
+
+	if Debug {
+		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+	}
+
+	// Get logs
+	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+	if err != nil {
+		logErrors = appendError(logErrors, logBytes)
+	} else {
+		if err = writeLogs(nodeLogName, logBytes); err != nil {
+			writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName, err)
+			logErrors = appendError(logErrors, []byte(writeError))
+		}
+	}
+
+	if sidecars {
+		var tridentSidecars []string
+		tridentSidecars, err = listTridentSidecars(pod, TridentPodNamespace)
+		if err != nil {
+			return fmt.Errorf("error listing trident sidecar containers; %v", err)
+		}
+		for _, sidecar := range tridentSidecars {
+			logsCommand = []string{"logs", pod, "-n", TridentPodNamespace, "-c", sidecar, prevArg}
+
+			if Debug {
+				fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+			}
+
+			// Get logs
+			logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+			if err != nil {
+				logErrors = appendError(logErrors, logBytes)
+			} else {
+				if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
+					writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
+					logErrors = appendError(logErrors, []byte(writeError))
+				}
+			}
+		}
+
+	}
+	return nil
+}
+
+func getAllNodeLogs(logName string) error {
+
+	var container string
+	var prev bool
+
+	switch logName {
+	case logNameNode:
+		container, prev = config.ContainerTrident, false
+	case logNameNodePrevious:
+		container, prev = config.ContainerTrident, true
+	default:
+		return fmt.Errorf("%s is not a valid Trident node log", logName)
+	}
+
+	tridentNodeNames, err := listTridentNodes(TridentPodNamespace)
+	if err != nil {
+		return fmt.Errorf("error listing trident node pods; %v", err)
+	}
+
+	for node, pod := range tridentNodeNames {
+		nodeLogName := "trident-node-" + node
+		if prev == true {
+			nodeLogName = nodeLogName + "-previous"
+		}
+		// Build command to get K8S logs
+		prevArg := fmt.Sprintf("--previous=%v", prev)
+		logsCommand := []string{"logs", pod, "-n", TridentPodNamespace, "-c", container, prevArg}
+
+		if Debug {
+			fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+		}
+
+		// Get logs
+		logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+		if err != nil {
+			logErrors = appendError(logErrors, logBytes)
+		} else {
+			if err = writeLogs(nodeLogName, logBytes); err != nil {
+				writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName, err)
+				logErrors = appendError(logErrors, []byte(writeError))
+			}
+		}
+
+		if sidecars {
+			var tridentSidecars []string
+			tridentSidecars, err = listTridentSidecars(pod, TridentPodNamespace)
+			if err != nil {
+				return fmt.Errorf("error listing trident sidecar containers; %v", err)
+			}
+			for _, sidecar := range tridentSidecars {
+				logsCommand = []string{"logs", pod, "-n", TridentPodNamespace, "-c", sidecar, prevArg}
+
+				if Debug {
+					fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+				}
+
+				// Get logs
+				logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+				if err != nil {
+					logErrors = appendError(logErrors, logBytes)
+				} else {
+					if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
+						writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
+						logErrors = appendError(logErrors, []byte(writeError))
+					}
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func appendError(oldErrors, newError []byte) []byte {
