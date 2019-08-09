@@ -122,12 +122,12 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	}
 
 	// If LUN isn't present, rescan the target and wait for the device(s) to appear
-	if !isAlreadyAttached(lunID, targetIQN) {
-		err = rescanTargetAndWaitForDevice(lunID, targetIQN)
-		if err != nil {
-			log.Errorf("Could not find iSCSI device: %+v", err)
-			return err
-		}
+	// if not attached need to rescan
+	shouldRescan := !isAlreadyAttached(lunID, targetIQN)
+	err = waitForDeviceRescanIfNeeded(lunID, targetIQN, shouldRescan)
+	if err != nil {
+		log.Errorf("Could not find iSCSI device: %+v", err)
+		return err
 	}
 
 	err = waitForMultipathDeviceForLUN(lunID, targetIQN)
@@ -307,9 +307,9 @@ func getDevicesForLUN(paths []string) ([]string, error) {
 	return devices, nil
 }
 
-// rescanTargetAndWaitForDevice rescans all paths to a specific LUN and waits until all
+// waitForDeviceRescanIfNeeded rescans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func rescanTargetAndWaitForDevice(lunID int, iSCSINodeName string) error {
+func waitForDeviceRescanIfNeeded(lunID int, iSCSINodeName string, shouldRescan bool) error {
 
 	fields := log.Fields{
 		"lunID":         lunID,
@@ -329,8 +329,10 @@ func rescanTargetAndWaitForDevice(lunID int, iSCSINodeName string) error {
 		hosts = append(hosts, hostNumber)
 	}
 
-	if err := iSCSIRescanTargetLUN(lunID, hosts); err != nil {
-		log.WithField("rescanError", err).Error("Could not rescan for new LUN.")
+	if shouldRescan {
+		if err := iSCSIRescanTargetLUN(lunID, hosts); err != nil {
+			log.WithField("rescanError", err).Error("Could not rescan for new LUN.")
+		}
 	}
 
 	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
