@@ -23,6 +23,7 @@ const (
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AWSNFSStorageDriverName            = "aws-cvs"
 	AzureNFSStorageDriverName          = "azure-netapp-files"
+	GCPNFSStorageDriverName            = "gcp-cvs"
 	FakeStorageDriverName              = "fake"
 )
 

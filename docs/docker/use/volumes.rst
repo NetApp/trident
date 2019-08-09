@@ -41,6 +41,7 @@ Refer to the documentation below for your configured storage system to determine
    backends/solidfire_options
    backends/eseries_options
    backends/cvs_aws_options
+   backends/cvs_gcp_options
 
 Destroy a Volume
 ----------------
@@ -53,7 +54,7 @@ Destroy a Volume
 Volume Cloning
 --------------
 
-When using the ontap-nas, ontap-san, solidfire-san and aws-cvs storage drivers, Trident can clone volumes.
+When using the ontap-nas, ontap-san, solidfire-san, aws-cvs, and gcp-cvs storage drivers, Trident can clone volumes.
 When using the ontap-nas-flexgroup or ontap-nas-economy drivers, cloning is not supported.
 
 .. code-block:: bash

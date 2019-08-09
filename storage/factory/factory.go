@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 
 	"github.com/ghodss/yaml"
+	"github.com/netapp/trident/storage_drivers/gcp"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -68,6 +69,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		storageDriver = &aws.NFSStorageDriver{}
 	case drivers.AzureNFSStorageDriverName:
 		storageDriver = &azure.NFSStorageDriver{}
+	case drivers.GCPNFSStorageDriverName:
+		storageDriver = &gcp.NFSStorageDriver{}
 	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:

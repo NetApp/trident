@@ -727,6 +727,7 @@ type PersistentStorageBackendConfig struct {
 	EseriesConfig           *drivers.ESeriesStorageDriverConfig   `json:"eseries_config,omitempty"`
 	AWSConfig               *drivers.AWSNFSStorageDriverConfig    `json:"aws_config,omitempty"`
 	AzureConfig             *drivers.AzureNFSStorageDriverConfig  `json:"azure_config,omitempty"`
+	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -772,6 +773,8 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.AWSConfig)
 	case p.Config.AzureConfig != nil:
 		bytes, err = json.Marshal(p.Config.AzureConfig)
+	case p.Config.GCPConfig != nil:
+		bytes, err = json.Marshal(p.Config.GCPConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
@@ -826,6 +829,11 @@ func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPe
 		secretMap["ClientSecret"] = backend.Config.AzureConfig.ClientSecret
 		backend.Config.AzureConfig.ClientID = secretName
 		backend.Config.AzureConfig.ClientSecret = secretName
+	case p.Config.GCPConfig != nil:
+		secretMap["Private_Key"] = backend.Config.GCPConfig.APIKey.PrivateKey
+		secretMap["Private_Key_ID"] = backend.Config.GCPConfig.APIKey.PrivateKeyID
+		backend.Config.GCPConfig.APIKey.PrivateKey = secretName
+		backend.Config.GCPConfig.APIKey.PrivateKeyID = secretName
 	case p.Config.FakeStorageDriverConfig != nil:
 		// Nothing to do
 	default:
@@ -878,6 +886,13 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 		}
 		if p.Config.AzureConfig.ClientSecret, ok = secretMap["ClientSecret"]; !ok {
 			return makeError("ClientSecret")
+		}
+	case p.Config.GCPConfig != nil:
+		if p.Config.GCPConfig.APIKey.PrivateKey, ok = secretMap["Private_Key"]; !ok {
+			return makeError("Private_Key")
+		}
+		if p.Config.GCPConfig.APIKey.PrivateKeyID, ok = secretMap["Private_Key_ID"]; !ok {
+			return makeError("Private_Key_ID")
 		}
 	case p.Config.FakeStorageDriverConfig != nil:
 		// Nothing to do

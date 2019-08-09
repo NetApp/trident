@@ -365,7 +365,7 @@ What are the drivers which support Trident Volume Snapshots?
 ------------------------------------------------------------
 
 As of today, on-demand snapshot support is available for our ``ontap-nas``, ``ontap-san``, ``solidfire-san``,
-``aws-cvs`` and ``azure-netapp-files`` backend drivers.
+``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files`` backend drivers.
 
 How do we take a snapshot backup of a volume provisioned by Trident with ONTAP?
 -------------------------------------------------------------------------------

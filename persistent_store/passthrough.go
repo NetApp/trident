@@ -169,6 +169,8 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 		configType = "aws_config"
 	case drivers.AzureNFSStorageDriverName:
 		configType = "azure_config"
+	case drivers.GCPNFSStorageDriverName:
+		configType = "gcp_config"
 	case drivers.FakeStorageDriverName:
 		configType = "fake_config"
 	default:

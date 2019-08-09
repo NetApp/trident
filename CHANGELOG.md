@@ -20,6 +20,7 @@
 - **Kubernetes:** Made installer setup directory optional and relative to working directory. (Issue [#230](https://github.com/NetApp/trident/issues/230))
 - Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 - Added snapshotDir option to NetApp Cloud Volumes Service in AWS driver.
+- Added driver for NetApp Cloud Volumes Service in Google Cloud Platform.
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.

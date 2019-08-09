@@ -554,7 +554,7 @@ func (p *Plugin) waitForCachedPVByName(name string, maxElapsedTime time.Duration
 	pvBackoff.MaxElapsedTime = maxElapsedTime
 
 	if err := backoff.RetryNotify(checkForCachedPV, pvBackoff, pvNotify); err != nil {
-		return nil, fmt.Errorf("PV %s was not cache after %3.2f seconds", name, maxElapsedTime.Seconds())
+		return nil, fmt.Errorf("PV %s was not in cache after %3.2f seconds", name, maxElapsedTime.Seconds())
 	}
 
 	return pv, nil

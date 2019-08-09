@@ -1324,8 +1324,7 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 			"source_volume": sourceVolume.Config.Name,
 			"volume":        volumeConfig.Name,
 			"backendUUID":   sourceVolume.BackendUUID,
-		}).Warnf("Clone operation is likely to fail with an orphaned " +
-			"source volume!")
+		}).Warnf("Clone operation is likely to fail with an orphaned source volume!")
 	}
 
 	sourceVolumeMode := sourceVolume.Config.VolumeMode

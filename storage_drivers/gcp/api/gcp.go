@@ -1,6 +1,6 @@
 // Copyright 2019 NetApp, Inc. All Rights Reserved.
 
-// This package provides a high-level interface to the NetApp AWS Cloud Volumes NFS REST API.
+// This package provides a high-level interface to the NetApp GCP Cloud Volumes NFS REST API.
 package api
 
 import (
@@ -17,33 +17,48 @@ import (
 
 	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
 
 // Sample curl command to invoke the REST interface:
-// curl -H "Api-Key:<apiKey>" -H "Secret-Key:<secretKey>" https://cds-aws-bundles.netapp.com:8080/v1/Snapshots
+// Get fresh token from Trident debug logs
+// export Bearer="<token>"
+// curl https://cloudvolumesgcp-api.netapp.com/version --insecure -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $Bearer"
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 480
+const createTimeoutSeconds = 300
+const apiServer = "https://cloudvolumesgcp-api.netapp.com"
+const apiAudience = apiServer
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
 
-	// AWS CVS API authentication parameters
-	APIURL    string
-	APIKey    string
-	SecretKey string
-	ProxyURL  string
+	// GCP project number
+	ProjectNumber string
+
+	// GCP CVS API authentication parameters
+	APIKey drivers.GCPPrivateKey
+
+	// GCP region
+	APIRegion string
+
+	// URL for accessing the API via an HTTP/HTTPS proxy
+	ProxyURL string
 
 	// Options
 	DebugTraceFlags map[string]bool
 }
 
 type Client struct {
-	config *ClientConfig
-	m      *sync.Mutex
+	config      *ClientConfig
+	tokenSource *oauth2.TokenSource
+	token       *oauth2.Token
+	m           *sync.Mutex
 }
 
 // NewDriver is a factory method for creating a new instance.
@@ -58,29 +73,88 @@ func NewDriver(config ClientConfig) *Client {
 }
 
 func (d *Client) makeURL(resourcePath string) string {
-	return fmt.Sprintf("%s%s", d.config.APIURL, resourcePath)
+	return fmt.Sprintf("%s/v2/projects/%s/locations/%s%s", apiServer, d.config.ProjectNumber, d.config.APIRegion, resourcePath)
+}
+
+func (d *Client) initTokenSource() error {
+
+	keyBytes, err := json.Marshal(d.config.APIKey)
+	if err != nil {
+		return err
+	}
+
+	tokenSource, err := google.JWTAccessTokenSourceFromJSON(keyBytes, apiAudience)
+	if err != nil {
+		return err
+	}
+	d.tokenSource = &tokenSource
+
+	log.Debug("Got token source.")
+
+	return nil
+}
+
+func (d *Client) refreshToken() error {
+
+	var err error
+
+	// Get token source (once per API client instance)
+	if d.tokenSource == nil {
+		if err = d.initTokenSource(); err != nil {
+			return err
+		}
+	}
+
+	// If we have a valid token, just return
+	if d.token != nil && d.token.Valid() {
+
+		log.WithFields(log.Fields{
+			"type":    d.token.Type(),
+			"token":   d.token.AccessToken,
+			"expires": d.token.Expiry.String(),
+		}).Trace("Token still valid.")
+
+		return nil
+	}
+
+	// Get a fresh token
+	d.token, err = (*d.tokenSource).Token()
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"type":    d.token.Type(),
+		"token":   d.token.AccessToken,
+		"expires": d.token.Expiry.String(),
+	}).Debug("Got fresh token.")
+
+	return nil
 }
 
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
-func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*http.Response, []byte, error) {
+func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*http.Response, []byte, error) {
 
 	var request *http.Request
 	var response *http.Response
 	var err error
 
+	if err = d.refreshToken(); err != nil {
+		return nil, nil, fmt.Errorf("cannot invoke API %s, no valid token; %v", gcpURL, err)
+	}
+
 	if requestBody == nil {
-		request, err = http.NewRequest(method, awsURL, nil)
+		request, err = http.NewRequest(method, gcpURL, nil)
 	} else {
-		request, err = http.NewRequest(method, awsURL, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequest(method, gcpURL, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
-	request.Header.Set("API-Key", d.config.APIKey)
-	request.Header.Set("Secret-Key", d.config.SecretKey)
+	d.token.SetAuthHeader(request)
 
 	tr := &http.Transport{}
 	// Use ProxyUrl if set
@@ -115,10 +189,10 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 		Transport: tr,
 		Timeout:   time.Duration(httpTimeoutSeconds * time.Second),
 	}
-	response, err = d.invokeAPINoRetry(client, request)
+	response, err = d.invokeAPIWithRetry(client, request)
 
 	if response == nil && err != nil {
-		log.Warnf("Error communicating with AWS REST interface. %v", err)
+		log.Warnf("Error communicating with GCP REST interface. %v", err)
 		return nil, nil, err
 	} else if response != nil {
 		defer response.Body.Close()
@@ -183,13 +257,9 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 
 func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 
-	versionURL, err := url.Parse(d.config.APIURL)
-	if err != nil {
-		return nil, nil, err
-	}
-	versionURL.Path = "/version"
+	resourcePath := "/version"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", versionURL.String())
+	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, nil, errors.New("failed to read version")
 	}
@@ -223,13 +293,13 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 	return apiVersion, sdeVersion, nil
 }
 
-func (d *Client) GetRegions() (*[]Region, error) {
+func (d *Client) GetServiceLevels() (map[string]string, error) {
 
-	resourcePath := "/Storage/Regions"
+	resourcePath := "/Storage/ServiceLevels"
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, errors.New("failed to read regions")
+		return nil, errors.New("failed to read service levels")
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -237,24 +307,32 @@ func (d *Client) GetRegions() (*[]Region, error) {
 		return nil, err
 	}
 
-	var regions []Region
-	err = json.Unmarshal(responseBody, &regions)
+	var serviceLevels ServiceLevelsResponse
+	err = json.Unmarshal(responseBody, &serviceLevels)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse region data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse service level data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(regions)).Info("Read regions.")
+	serviceLevelMap := make(map[string]string)
+	for _, serviceLevel := range serviceLevels {
+		serviceLevelMap[serviceLevel.Name] = serviceLevel.Performance
+	}
 
-	return &regions, nil
+	log.WithFields(log.Fields{
+		"count":  len(serviceLevels),
+		"levels": serviceLevelMap,
+	}).Info("Read service levels.")
+
+	return serviceLevelMap, nil
 }
 
-func (d *Client) GetVolumes() (*[]FileSystem, error) {
+func (d *Client) GetVolumes() (*[]Volume, error) {
 
-	resourcePath := "/FileSystems"
+	resourcePath := "/Volumes"
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, errors.New("failed to read filesystems")
+		return nil, errors.New("failed to read volume")
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -262,48 +340,48 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 		return nil, err
 	}
 
-	var filesystems []FileSystem
-	err = json.Unmarshal(responseBody, &filesystems)
+	var volumes []Volume
+	err = json.Unmarshal(responseBody, &volumes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(filesystems)).Debug("Read filesystems.")
+	log.WithField("count", len(volumes)).Debug("Read volumes.")
 
-	return &filesystems, nil
+	return &volumes, nil
 }
 
-func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
+func (d *Client) GetVolumeByName(name string) (*Volume, error) {
 
-	filesystems, err := d.GetVolumes()
+	volumes, err := d.GetVolumes()
 	if err != nil {
 		return nil, err
 	}
 
-	matchingFilesystems := make([]FileSystem, 0)
+	matchingVolumes := make([]Volume, 0)
 
-	for _, filesystem := range *filesystems {
-		if filesystem.Name == name {
-			matchingFilesystems = append(matchingFilesystems, filesystem)
+	for _, volume := range *volumes {
+		if volume.Name == name {
+			matchingVolumes = append(matchingVolumes, volume)
 		}
 	}
 
-	if len(matchingFilesystems) == 0 {
-		return nil, fmt.Errorf("filesystem with name %s not found", name)
-	} else if len(matchingFilesystems) > 1 {
-		return nil, fmt.Errorf("multiple filesystems with name %s found", name)
+	if len(matchingVolumes) == 0 {
+		return nil, fmt.Errorf("volume with name %s not found", name)
+	} else if len(matchingVolumes) > 1 {
+		return nil, fmt.Errorf("multiple volumes with name %s found", name)
 	}
 
-	return &matchingFilesystems[0], nil
+	return &matchingVolumes[0], nil
 }
 
-func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, error) {
+func (d *Client) GetVolumeByCreationToken(creationToken string) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
+	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, errors.New("failed to get filesystem")
+		return nil, errors.New("failed to get volume")
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -311,28 +389,28 @@ func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, er
 		return nil, err
 	}
 
-	var filesystems []FileSystem
-	err = json.Unmarshal(responseBody, &filesystems)
+	var volumes []Volume
+	err = json.Unmarshal(responseBody, &volumes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	if len(filesystems) == 0 {
-		return nil, fmt.Errorf("filesystem with creationToken %s not found", creationToken)
-	} else if len(filesystems) > 1 {
-		return nil, fmt.Errorf("multiple filesystems with creationToken %s found", creationToken)
+	if len(volumes) == 0 {
+		return nil, fmt.Errorf("volume with creationToken %s not found", creationToken)
+	} else if len(volumes) > 1 {
+		return nil, fmt.Errorf("multiple volumes with creationToken %s found", creationToken)
 	}
 
-	return &filesystems[0], nil
+	return &volumes[0], nil
 }
 
-func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileSystem, error) {
+func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
+	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return false, nil, errors.New("failed to get filesystem")
+		return false, nil, errors.New("failed to get volume")
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -340,25 +418,25 @@ func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileS
 		return false, nil, err
 	}
 
-	var filesystems []FileSystem
-	err = json.Unmarshal(responseBody, &filesystems)
+	var volumes []Volume
+	err = json.Unmarshal(responseBody, &volumes)
 	if err != nil {
-		return false, nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return false, nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	if len(filesystems) == 0 {
+	if len(volumes) == 0 {
 		return false, nil, nil
 	}
-	return true, &filesystems[0], nil
+	return true, &volumes[0], nil
 }
 
-func (d *Client) GetVolumeByID(fileSystemId string) (*FileSystem, error) {
+func (d *Client) GetVolumeByID(volumeId string) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", fileSystemId)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volumeId)
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, errors.New("failed to get filesystem")
+		return nil, errors.New("failed to get volume")
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -366,20 +444,20 @@ func (d *Client) GetVolumeByID(fileSystemId string) (*FileSystem, error) {
 		return nil, err
 	}
 
-	var filesystem FileSystem
-	err = json.Unmarshal(responseBody, &filesystem)
+	var volume Volume
+	err = json.Unmarshal(responseBody, &volume)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	return &filesystem, nil
+	return &volume, nil
 }
 
-func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string, abortStates []string) error {
+func (d *Client) WaitForVolumeState(volume *Volume, desiredState string, abortStates []string) error {
 
 	checkVolumeState := func() error {
 
-		f, err := d.GetVolumeByID(filesystem.FileSystemID)
+		f, err := d.GetVolumeByID(volume.VolumeID)
 		if err != nil {
 			return fmt.Errorf("could not get volume status; %v", err)
 		}
@@ -434,49 +512,50 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 	return nil
 }
 
-func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, error) {
+func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
 
-	resourcePath := "/FileSystems"
+	resourcePath := "/Volumes"
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var filesystem FileSystem
-	err = json.Unmarshal(responseBody, &filesystem)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
-	}
+	//var volume Volume
+	//err = json.Unmarshal(responseBody, &volume)
+	//if err != nil {
+	//	return fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
+	//}
 
 	log.WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Info("Filesystem created.")
+	}).Info("Volume created.")
 
-	return &filesystem, nil
+	return nil
 }
 
-func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSystem, error) {
+func (d *Client) RenameVolume(volume *Volume, newName string) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
-	request := &FilesystemRenameRequest{
+	request := &VolumeRenameRequest{
 		Name:          newName,
-		Region:        filesystem.Region,
-		CreationToken: filesystem.CreationToken,
-		ServiceLevel:  filesystem.ServiceLevel,
+		Region:        volume.Region,
+		CreationToken: volume.CreationToken,
+		ServiceLevel:  volume.ServiceLevel,
+		QuotaInBytes:  volume.QuotaInBytes,
 	}
 
 	jsonRequest, err := json.Marshal(request)
@@ -494,29 +573,30 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 		return nil, err
 	}
 
-	err = json.Unmarshal(responseBody, filesystem)
+	err = json.Unmarshal(responseBody, volume)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Info("Filesystem renamed.")
+	}).Info("Volume renamed.")
 
-	return filesystem, nil
+	return volume, nil
 }
 
-func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSystem, error) {
+func (d *Client) RelabelVolume(volume *Volume, labels []string) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
-	request := &FilesystemRenameRelabelRequest{
-		Region:        filesystem.Region,
-		CreationToken: filesystem.CreationToken,
-		ServiceLevel:  filesystem.ServiceLevel,
+	request := &VolumeRenameRelabelRequest{
+		Region:        volume.Region,
+		CreationToken: volume.CreationToken,
+		ProtocolTypes: volume.ProtocolTypes,
 		Labels:        labels,
+		QuotaInBytes:  volume.QuotaInBytes,
 	}
 
 	jsonRequest, err := json.Marshal(request)
@@ -534,30 +614,31 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 		return nil, err
 	}
 
-	err = json.Unmarshal(responseBody, filesystem)
+	err = json.Unmarshal(responseBody, volume)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Debug("Filesystem relabeled.")
+	}).Debug("Volume relabeled.")
 
-	return filesystem, nil
+	return volume, nil
 }
 
-func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, labels []string) (*FileSystem, error) {
+func (d *Client) RenameRelabelVolume(volume *Volume, newName string, labels []string) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
-	request := &FilesystemRenameRelabelRequest{
+	request := &VolumeRenameRelabelRequest{
 		Name:          newName,
-		Region:        filesystem.Region,
-		CreationToken: filesystem.CreationToken,
-		ServiceLevel:  filesystem.ServiceLevel,
-		Labels:        labels,
+		Region:        volume.Region,
+		CreationToken: volume.CreationToken,
+		ProtocolTypes: volume.ProtocolTypes,
+		//ServiceLevel:  volume.ServiceLevel,
+		Labels: labels,
 	}
 
 	jsonRequest, err := json.Marshal(request)
@@ -575,29 +656,30 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 		return nil, err
 	}
 
-	err = json.Unmarshal(responseBody, filesystem)
+	err = json.Unmarshal(responseBody, volume)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Debug("Filesystem renamed & relabeled.")
+	}).Debug("Volume renamed & relabeled.")
 
-	return filesystem, nil
+	return volume, nil
 }
 
-func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
+func (d *Client) ResizeVolume(volume *Volume, newSizeBytes int64) (*Volume, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
-	request := &FilesystemResizeRequest{
-		Region:        filesystem.Region,
-		CreationToken: filesystem.CreationToken,
+	request := &VolumeResizeRequest{
+		Region:        volume.Region,
+		CreationToken: volume.CreationToken,
+		ProtocolTypes: volume.ProtocolTypes,
 		QuotaInBytes:  newSizeBytes,
-		ServiceLevel:  filesystem.ServiceLevel,
+		ServiceLevel:  volume.ServiceLevel,
 	}
 
 	jsonRequest, err := json.Marshal(request)
@@ -615,23 +697,23 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		return nil, err
 	}
 
-	err = json.Unmarshal(responseBody, filesystem)
+	err = json.Unmarshal(responseBody, volume)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
 	log.WithFields(log.Fields{
 		"size":          newSizeBytes,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
-	}).Info("Filesystem resized.")
+	}).Info("Volume resized.")
 
-	return filesystem, nil
+	return volume, nil
 }
 
-func (d *Client) DeleteVolume(filesystem *FileSystem) error {
+func (d *Client) DeleteVolume(volume *Volume) error {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
@@ -644,40 +726,15 @@ func (d *Client) DeleteVolume(filesystem *FileSystem) error {
 	}
 
 	log.WithFields(log.Fields{
-		"volume": filesystem.CreationToken,
-	}).Info("Filesystem deleted.")
+		"volume": volume.CreationToken,
+	}).Info("Volume deleted.")
 
 	return nil
 }
 
-func (d *Client) GetMountTargetsForVolume(filesystem *FileSystem) (*[]MountTarget, error) {
+func (d *Client) GetSnapshotsForVolume(volume *Volume) (*[]Snapshot, error) {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s/MountTargets", filesystem.FileSystemID)
-
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
-	if err != nil {
-		return nil, errors.New("failed to read mount targets")
-	}
-
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return nil, err
-	}
-
-	var mountTargets []MountTarget
-	err = json.Unmarshal(responseBody, &mountTargets)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse mount target data: %s; %v", string(responseBody), err)
-	}
-
-	log.WithField("count", len(mountTargets)).Debug("Read mount targets for filesystem.")
-
-	return &mountTargets, nil
-}
-
-func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, error) {
-
-	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots", volume.VolumeID)
 
 	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
@@ -695,14 +752,14 @@ func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, err
 		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(snapshots)).Debug("Read filesystem snapshots.")
+	log.WithField("count", len(snapshots)).Debug("Read volume snapshots.")
 
 	return &snapshots, nil
 }
 
-func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName string) (*Snapshot, error) {
+func (d *Client) GetSnapshotForVolume(volume *Volume, snapshotName string) (*Snapshot, error) {
 
-	snapshots, err := d.GetSnapshotsForVolume(filesystem)
+	snapshots, err := d.GetSnapshotsForVolume(volume)
 	if err != nil {
 		return nil, err
 	}
@@ -711,17 +768,17 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 		if snapshot.Name == snapshotName {
 
 			log.WithFields(log.Fields{
-				"snapshot":   snapshotName,
-				"filesystem": filesystem.CreationToken,
-			}).Debug("Found filesystem snapshot.")
+				"snapshot": snapshotName,
+				"volume":   volume.CreationToken,
+			}).Debug("Found volume snapshot.")
 
 			return &snapshot, nil
 		}
 	}
 
 	log.WithFields(log.Fields{
-		"snapshot":   snapshotName,
-		"filesystem": filesystem.CreationToken,
+		"snapshot": snapshotName,
+		"volume":   volume.CreationToken,
 	}).Error("Snapshot not found.")
 
 	return nil, fmt.Errorf("snapshot %s not found", snapshotName)
@@ -809,47 +866,46 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, desiredState string, a
 	return nil
 }
 
-func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, error) {
+func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) error {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", request.FileSystemID)
+	resourcePath := "/Snapshots"
 
 	jsonRequest, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
 	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var snapshot Snapshot
-	err = json.Unmarshal(responseBody, &snapshot)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
-	}
+	//var snapshot Snapshot
+	//err = json.Unmarshal(responseBody, &snapshot)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
+	//}
 
 	log.WithFields(log.Fields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
-	}).Info("Filesystem snapshot created.")
+	}).Info("Volume snapshot created.")
 
-	return &snapshot, nil
+	return nil
 }
 
-func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+func (d *Client) RestoreSnapshot(volume *Volume, snapshot *Snapshot) error {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s/Revert", filesystem.FileSystemID)
+	resourcePath := fmt.Sprintf("/Volumes/%s/Revert", volume.VolumeID)
 
 	snapshotRevertRequest := &SnapshotRevertRequest{
-		FileSystemID: filesystem.FileSystemID,
-		Region:       filesystem.Region,
-		SnapshotID:   snapshot.SnapshotID,
+		Name:   snapshot.Name,
+		Region: volume.Region,
 	}
 
 	jsonRequest, err := json.Marshal(snapshotRevertRequest)
@@ -867,16 +923,16 @@ func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) err
 	}
 
 	log.WithFields(log.Fields{
-		"snapshot":   snapshot.Name,
-		"filesystem": filesystem.CreationToken,
-	}).Info("Filesystem reverted to snapshot.")
+		"snapshot": snapshot.Name,
+		"volume":   volume.CreationToken,
+	}).Info("Volume reverted to snapshot.")
 
 	return nil
 }
 
-func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+func (d *Client) DeleteSnapshot(volume *Volume, snapshot *Snapshot) error {
 
-	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots/%s", filesystem.FileSystemID, snapshot.SnapshotID)
+	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots/%s", volume.VolumeID, snapshot.SnapshotID)
 
 	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
@@ -890,8 +946,8 @@ func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) erro
 
 	log.WithFields(log.Fields{
 		"snapshot": snapshot.Name,
-		"volume":   filesystem.CreationToken,
-	}).Info("Deleted filesystem snapshot.")
+		"volume":   volume.CreationToken,
+	}).Info("Deleted volume snapshot.")
 
 	return nil
 }
@@ -908,6 +964,41 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		}
 	} else {
 		return nil
+	}
+}
+
+func IsValidUserServiceLevel(userServiceLevel string) bool {
+	switch userServiceLevel {
+	case UserServiceLevel1, UserServiceLevel2, UserServiceLevel3:
+		return true
+	default:
+		return false
+	}
+}
+
+func UserServiceLevelFromAPIServiceLevel(apiServiceLevel string) string {
+	switch apiServiceLevel {
+	default:
+		fallthrough
+	case APIServiceLevel1:
+		return UserServiceLevel1
+	case APIServiceLevel2:
+		return UserServiceLevel2
+	case APIServiceLevel3:
+		return UserServiceLevel3
+	}
+}
+
+func GCPAPIServiceLevelFromUserServiceLevel(userServiceLevel string) string {
+	switch userServiceLevel {
+	default:
+		fallthrough
+	case UserServiceLevel1:
+		return APIServiceLevel1
+	case UserServiceLevel2:
+		return APIServiceLevel2
+	case UserServiceLevel3:
+		return APIServiceLevel3
 	}
 }
 

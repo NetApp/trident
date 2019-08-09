@@ -128,7 +128,7 @@ More information about this driver and how to configure it can be found in Tride
 Cloud Volumes Service with AWS Backend Driver
 ---------------------------------------------
 
-Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on the AWS backend. To configure the AWS backend on Trident, you are required specify ``apiRegion``, ``apiURL``, ``apiKey``, and the ``secretKey`` in the backend file. These values can be found in the CVS web portal in Account settings/API access. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for AWS Documentation <Cloud Volumes Service for AWS>`. Currently, 100G is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction. Cloud Volume Service for AWS support fully-managed file services for both NFS, SMB, or dual protocol support.
+Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on the AWS backend. To configure the AWS backend on Trident, you are required specify ``apiRegion``, ``apiURL``, ``apiKey``, and the ``secretKey`` in the backend file. These values can be found in the CVS web portal in Account settings/API access. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for AWS Documentation <Cloud Volumes Service for AWS>`. Currently, 100G is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
 
 .. table:: Cloud Volume Service driver capabilities
    :align: left
@@ -143,6 +143,25 @@ Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on th
 | Yes\ :sup:`1`:  Not Trident managed
 
 The ``aws-cvs`` driver uses virtual storage pools. Virtual storage pools abstract the backend, letting Trident decide volume placement. The administrator defines the virtual storage pools in the backend.json file(s). Storage classes identify the virtual storage pools with the use of labels. More information on the virtual storage pools feature can be found in :ref:`Virtual Storage Pools Documentation <Virtual Storage Pools>`.
+
+Cloud Volumes Service with GCP Backend Driver
+---------------------------------------------
+
+Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on the GCP backend. To configure the GCP backend on Trident, you are required specify ``projectNumber``, ``apiRegion``, and ``apiKey`` in the backend file. The project number may be found in the GCP web portal, while the API key must be taken from the service account private key file that you created while setting up API access for Cloud Volumes on GCP. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`. Currently, 1 TiB is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
+
+.. table:: Cloud Volume Service driver capabilities
+   :align: left
+
+   +--------------------+--------------+--------+--------------+------+-------------------+---------------+
+   | CVS for GCP Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
+   +====================+==============+========+==============+======+===================+===============+
+   | ``gcp-cvs``        | Yes          | Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
+   +--------------------+--------------+--------+--------------+------+-------------------+---------------+
+
+| Footnote:
+| Yes\ :sup:`1`:  Not Trident managed
+
+The ``gcp-cvs`` driver uses virtual storage pools. Virtual storage pools abstract the backend, letting Trident decide volume placement. The administrator defines the virtual storage pools in the backend.json file(s). Storage classes identify the virtual storage pools with the use of labels. More information on the virtual storage pools feature can be found in :ref:`Virtual Storage Pools Documentation <Virtual Storage Pools>`.
 
 
 Storage Class design
@@ -285,8 +304,9 @@ Import an existing volume into Kubernetes
 -----------------------------------------
 
 Volume Import provides the ability to import an existing storage volume into a Kubernetes environment. This is currently
-supported by the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``, ``azure-netapp-files`` and ``aws-cvs`` drivers. This feature is
-useful when porting an existing application into Kubernetes or during disaster recovery scenarios.
+supported by the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``, ``azure-netapp-files``, ``aws-cvs``, and
+``gcp-cvs`` drivers. This feature is useful when porting an existing application into Kubernetes or during disaster
+recovery scenarios.
 
 When using the ONTAP and ``solidfire-san`` drivers, use the command ``tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml``
 to import an existing volume into Kubernetes to be managed by Trident. The PVC YAML or JSON file used in the import volume
@@ -294,7 +314,7 @@ command points to a storage class which identifies Trident as the provisioner. W
 backend, ensure the volume names are unique. If the volume names are duplicated, clone the volume to a unique name so
 the volume import feature can distinguish between them.
 
-If the ``aws-cvs`` driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This ensures a unique volume reference.
+If the ``aws-cvs`` or ``gcp-cvs`` driver is used, use the command ``tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml`` to import the volume into Kubernetes to be managed by Trident. This ensures a unique volume reference.
 
 When the above command is executed, Trident will find the volume on the backend and read its size. It will automatically add (and overwrite if necessary) the configured PVC’s volume size.  Trident then creates the new PV and Kubernetes binds the PVC to the PV.
 

@@ -188,6 +188,46 @@ type AzureNFSStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
 }
 
+type GCPNFSStorageDriverConfig struct {
+	*CommonStorageDriverConfig
+	ProjectNumber   string        `json:"projectNumber"`
+	APIKey          GCPPrivateKey `json:"apiKey"`
+	APIRegion       string        `json:"apiRegion"`
+	ProxyURL        string        `json:"proxyURL"`
+	NfsMountOptions string        `json:"nfsMountOptions"`
+	GCPNFSStorageDriverPool
+	Storage []GCPNFSStorageDriverPool `json:"storage"`
+}
+
+type GCPNFSStorageDriverPool struct {
+	Labels                            map[string]string `json:"labels"`
+	Region                            string            `json:"region"`
+	Zone                              string            `json:"zone"`
+	ServiceLevel                      string            `json:"serviceLevel"`
+	Network                           string            `json:"network"`
+	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type GCPNFSStorageDriverConfigDefaults struct {
+	ExportRule      string `json:"exportRule"`
+	SnapshotDir     string `json:"snapshotDir"`
+	SnapshotReserve string `json:"snapshotReserve"`
+	CommonStorageDriverConfigDefaults
+}
+
+type GCPPrivateKey struct {
+	Type                    string `json:"type"`
+	ProjectID               string `json:"project_id"`
+	PrivateKeyID            string `json:"private_key_id"`
+	PrivateKey              string `json:"private_key"`
+	ClientEmail             string `json:"client_email"`
+	ClientID                string `json:"client_id"`
+	AuthURI                 string `json:"auth_uri"`
+	TokenURI                string `json:"token_uri"`
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
+	ClientX509CertURL       string `json:"client_x509_cert_url"`
+}
+
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`

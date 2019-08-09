@@ -11,5 +11,6 @@ Host and storage configuration
    ndvp_sf_config
    ndvp_e_config
    ndvp_cvs_aws_config
+   ndvp_cvs_gcp_config
    ndvp_anf_config
    multi_instance

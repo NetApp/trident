@@ -52,6 +52,8 @@ import:
   version: v32.0.0
 - package: github.com/Azure/go-autorest
   version: v12.4.3
+- package: github.com/golang/oauth2
+  version: 0f29369cfe4552d0e4bcddc57cc75f4d7e672a33
 
 - package: k8s.io/api
   version: 95b840bb6a1f # kubernetes-1.16.0

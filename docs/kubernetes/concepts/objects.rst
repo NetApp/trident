@@ -79,12 +79,12 @@ defaults that you set in the backend configuration:
 Annotation                          Volume Option     Supported Drivers
 =================================== ================= ======================================================
 trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi
-trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san, aws-cvs
+trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
 trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
 trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san
-trident.netapp.io/snapshotReserve   snapshotReserve   ontap-nas, ontap-nas-flexgroup, ontap-san, aws-cvs
+trident.netapp.io/snapshotReserve   snapshotReserve   ontap-nas, ontap-nas-flexgroup, ontap-san, aws-cvs, gcp-cvs
 trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
 trident.netapp.io/blockSize         blockSize         solidfire-san
@@ -189,12 +189,14 @@ Storage attributes and their possible values can be classified into two groups:
 Attribute         Type   Values                                  Offer                                                      Request                        Supported by
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
 media\ :sup:`1`   string hdd, hybrid, ssd                        Pool contains media of this type; hybrid means both        Media type specified           ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san, solidfire-san
-provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all but solidfire-san & aws-cvs, thin: all but eseries-iscsi
+provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all ontap & eseries-iscsi;
+                                                                                                                                                           thin: all ontap & solidfire-san
 backendType       string | ontap-nas, ontap-nas-economy,         Pool belongs to this type of backend                       Backend specified              All drivers
                          | ontap-nas-flexgroup, ontap-san,
-                         | solidfire-san, eseries-iscsi, aws-cvs
-snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san, aws-cvs
-clones            bool   true, false                             Pool supports cloning volumes                              Volume with clones enabled     ontap-nas, ontap-san, solidfire-san, aws-cvs
+                         | solidfire-san, eseries-iscsi,
+                         | aws-cvs, gcp-cvs
+snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
+clones            bool   true, false                             Pool supports cloning volumes                              Volume with clones enabled     ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
 encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-nas-flexgroups, ontap-san
 IOPS              int    positive integer                        Pool is capable of guaranteeing IOPS in this range         Volume guaranteed these IOPS   solidfire-san
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
@@ -241,7 +243,7 @@ use ``tridentctl get backend`` to get the list of backends and their pools.
 2. Kubernetes attributes: These attributes have no impact on the selection of
    storage pools/backends by Trident during dynamic provisioning. Instead,
    these attributes simply supply parameters supported by Kubernetes Persistent
-   Volumes. Worker nodes are responsible for filesystem create operations and 
+   Volumes. Worker nodes are responsible for filesystem create operations and
    may require appropriate filesystem utilities such as xfsprogs.
 
 ================= ======= ======================================= ================================================= ======================================================= ===================

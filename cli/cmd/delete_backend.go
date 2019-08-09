@@ -59,6 +59,11 @@ func backendDelete(backendNames []string) error {
 	}
 
 	for _, backendName := range backendNames {
+
+		if backendName == "" {
+			continue
+		}
+
 		url := BaseURL() + "/backend/" + backendName
 
 		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)

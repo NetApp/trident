@@ -11,8 +11,8 @@ volume and use them for creating additional volumes (clones).
 
 .. note::
 
-   Volume snapshot is supported by the ``ontap-nas``,
-   ``ontap-san``, ``solidfire-san``, ``aws-cvs`` and ``azure-netapp-files`` drivers.
+   Volume snapshot is supported by the ``ontap-nas``, ``ontap-san``, ``solidfire-san``,
+   ``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files`` drivers.
    This feature requires the CSI Provisioner and :ref:`feature gates <Feature Gates>`
    enabled for it to work.
 
@@ -135,7 +135,9 @@ Resizing an NFS volume
 
 Starting with ``v18.10``, Trident supports volume resize for NFS PVs. More 
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,
-``ontap-nas-flexgroup``, ``aws-cvs`` and ``azure-netapp-files`` backends can be expanded.
+``ontap-nas-flexgroup``, ``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files``
+backends can be expanded.
+
 Volume resize was introduced in
 Kubernetes ``v1.8`` as an alpha feature and was promoted to beta in ``v1.11``,
 which means this feature is enabled by default starting with Kubernetes
@@ -246,7 +248,7 @@ Importing a volume
 ==================
 
 Trident version 19.04 and above allows importing an existing storage volume into Kubernetes with the ``ontap-nas``,
-``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers.
+``ontap-nas-flexgroup``, ``solidfire-san``, ``aws-cvs``, and ``gcp-cvs`` drivers.
 
 There are several use cases for importing a volume into Trident:
 
@@ -350,8 +352,10 @@ use the following command:
     +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
 .. note::
-  The AWS volume path is the portion of the volume's export path after the `:/`. For example, if the export path is
+  The volume path is the portion of the volume's export path after the `:/`. For example, if the export path is
   ``10.0.0.1:/adroit-jolly-swift`` then the volume path is ``adroit-jolly-swift``.
+
+Importing a ``gcp-cvs`` volume works the same as importing an ``aws-cvs`` volume.
 
 Behavior of Drivers for Volume Import
 -------------------------------------

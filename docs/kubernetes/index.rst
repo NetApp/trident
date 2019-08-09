@@ -8,8 +8,9 @@ from systems running any combination of NetApp's
 `Element`_ (HCI/SolidFire), and
 `SANtricity`_ (E/EF-Series) data management platforms,
 plus our
-`Azure NetApp Files`_ service in Azure and 
-`Cloud Volumes Service`_ in AWS.
+`Azure NetApp Files`_ service in Azure,
+`Cloud Volumes Service for AWS`_, and
+`Cloud Volumes Service for GCP`_.
 
 Relative to other Kubernetes provisioners, Trident is novel in the following
 respects:
@@ -111,6 +112,7 @@ and is a great way to get started on the Trident journey.
 .. _ONTAP: https://www.netapp.com/us/products/data-management-software/ontap.aspx
 .. _Element: https://www.netapp.com/us/products/data-management-software/element-os.aspx
 .. _SANtricity: https://www.netapp.com/us/products/data-management-software/santricity-os.aspx
-.. _Cloud Volumes Service: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
+.. _Cloud Volumes Service for AWS: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
+.. _Cloud Volumes Service for GCP: https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _perspective of an end user: https://youtu.be/WZ3nwl4aILU
 .. _introductory video: https://youtu.be/NbhR81peqF8

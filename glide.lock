@@ -1,6 +1,10 @@
-hash: dbfdb1c07baa0c5156a822627354afa59961fa63a114c7f1e6e4165d0dd0133a
-updated: 2019-10-07T09:22:06.232470968-04:00
+hash: 5e2ca3235826569d9613e83dbc21bb2b492f227c9427e1dd578161ce5ef96764
+updated: 2019-10-07T20:11:43.070572733-04:00
 imports:
+- name: cloud.google.com/go
+  version: 8c41231e01b2085512d98153bcffb847ff9b4b9f
+  subpackages:
+  - compute/metadata
 - name: contrib.go.opencensus.io/exporter/ocagent
   version: a8a6f458bbc1d5042322ad1f9b65eeb0b69be9ea
 - name: github.com/Azure/azure-sdk-for-go
@@ -119,6 +123,8 @@ imports:
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
   - lru
+- name: github.com/golang/oauth2
+  version: 0f29369cfe4552d0e4bcddc57cc75f4d7e672a33
 - name: github.com/golang/protobuf
   version: b5d812f8a3706043e23a9cd5babf2e5423744d30
   subpackages:
@@ -269,7 +275,10 @@ imports:
 - name: golang.org/x/oauth2
   version: 9f3314589c9a9136388751d9adae6b0ed400978a
   subpackages:
+  - google
   - internal
+  - jws
+  - jwt
 - name: golang.org/x/sync
   version: 42b317875d0fa942474b76e1b46a6060d720ae6e
   subpackages:
@@ -298,9 +307,11 @@ imports:
   version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:
   - internal
+  - internal/app_identity
   - internal/base
   - internal/datastore
   - internal/log
+  - internal/modules
   - internal/remote_api
   - internal/urlfetch
   - urlfetch

@@ -15,8 +15,9 @@ Today, that includes our
 `ONTAP`_ (AFF/FAS/Select/Cloud),
 `Element`_ (HCI/SolidFire), and
 `SANtricity`_ (E/EF-Series) data management software,
-plus the `Azure NetApp Files`_ service in `Azure`_ and our
-`Cloud Volumes Service`_ in `AWS`_.
+plus the `Azure NetApp Files`_ service in `Azure`_, the
+`Cloud Volumes Service for AWS`_ in `Amazon Web Services`_, and the
+`Cloud Volumes Service for GCP`_ in `Google Cloud`_.
 That list continues to grow.
 
 .. _open source project: https://github.com/netapp/trident
@@ -28,5 +29,7 @@ That list continues to grow.
 .. _SANtricity: https://www.netapp.com/us/products/data-management-software/santricity-os.aspx
 .. _Azure NetApp Files: https://azure.microsoft.com/en-us/services/netapp/
 .. _Azure: https://azure.microsoft.com/
-.. _Cloud Volumes Service: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
-.. _AWS: https://aws.amazon.com/
+.. _Cloud Volumes Service for AWS: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
+.. _Cloud Volumes Service for GCP: https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
+.. _Amazon Web Services: https://aws.amazon.com/
+.. _Google Cloud: https://cloud.google.com/
