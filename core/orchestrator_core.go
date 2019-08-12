@@ -238,6 +238,7 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 	if err != nil {
 		return err
 	}
+	volCount := 0
 	for _, v := range volumes {
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.Backend
@@ -262,8 +263,10 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 			"pool":         vol.Pool,
 			"orphaned":     vol.Orphaned,
 			"handler":      "Bootstrap",
-		}).Info("Added an existing volume.")
+		}).Trace("Added an existing volume.")
+		volCount++
 	}
+	log.Infof("Added %v existing volume(s)", volCount)
 	return nil
 }
 
