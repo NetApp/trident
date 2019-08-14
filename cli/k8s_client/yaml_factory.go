@@ -492,7 +492,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.0
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
         args:
         - "--v=9"
         - "--timeout=300s"
@@ -595,7 +595,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.0
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
         args:
         - "--v=9"
         - "--timeout=300s"
