@@ -160,6 +160,9 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		return fmt.Errorf("could not determine device to use for %v", name)
 	}
 	devicePath := "/dev/" + deviceToUse
+	if err := waitForDevice(devicePath); err != nil {
+		return fmt.Errorf("could not find device %v: %v", devicePath, err)
+	}
 
 	// Put a filesystem on the device if there isn't one already there
 	existingFstype := deviceInfo.Filesystem
@@ -605,6 +608,41 @@ func waitForMultipathDeviceForDevices(devices []string) string {
 		log.WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
 	}
 	return multipathDevice
+}
+
+// waitForDevice accepts a device name and waits until it is present and returns error if it times out
+func waitForDevice(device string) error {
+
+	fields := log.Fields{"device": device}
+	log.WithFields(fields).Debug(">>>> osutils.waitForDevice")
+	defer log.WithFields(fields).Debug("<<<< osutils.waitForDevice")
+
+	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
+
+	checkDeviceExists := func() error {
+		if !PathExists(device) {
+			return errors.New("device not yet present")
+		}
+		return nil
+	}
+
+	deviceNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Device not yet present, waiting.")
+	}
+
+	deviceBackoff := backoff.NewExponentialBackOff()
+	deviceBackoff.InitialInterval = 1 * time.Second
+	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
+	deviceBackoff.RandomizationFactor = 0.1
+	deviceBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkDeviceExists, deviceBackoff, deviceNotify); err != nil {
+		return fmt.Errorf("could not find device after %3.2f seconds", maxDuration.Seconds())
+	} else {
+		log.WithField("device", device).Debug("Device found.")
+		return nil
+	}
 }
 
 // findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
