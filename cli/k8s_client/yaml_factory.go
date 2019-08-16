@@ -138,6 +138,11 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames:
+      - tridentpods
 `
 
 func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, csi bool) string {
@@ -964,6 +969,9 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["*"]
 `
 
 func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor) string {
@@ -1522,4 +1530,55 @@ metadata:
   name: csi.trident.netapp.io
 spec:
   attachRequired: true
+`
+
+func GetPodSecurityPolicyYAML() string {
+	return PodSecurityPolicyYAML
+}
+
+const PodSecurityPolicyYAML = `
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: tridentpods
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - "SYS_ADMIN"
+  hostIPC: true
+  hostNetwork: true
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+  - '*'
+`
+
+func GetInstallerSecurityPolicyYAML() string {
+	return InstallerSecurityPolicyYAML
+}
+
+const InstallerSecurityPolicyYAML = `
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: tridentinstaller
+spec:
+  privileged: false
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+    - '*'
 `

@@ -1,3 +1,4 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package cmd
 
 import (
@@ -364,7 +365,18 @@ func uninstallTrident() error {
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
-	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
+	if csi {
+		// Delete pod security policy
+		podSecurityPolicyYAML := k8sclient.GetPodSecurityPolicyYAML()
+		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete pod security policy.")
+			anyErrors = true
+		} else {
+			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+		}
+
+		log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
+	}
 
 	if !anyErrors {
 		log.Info("Trident uninstallation succeeded.")
@@ -440,6 +452,28 @@ func uninstallTridentInCluster() (returnError error) {
 		commandArgs = append(commandArgs, tridentImage)
 	}
 	commandArgs = append(commandArgs, "--in-cluster=false")
+
+	if csi {
+		// Create installer pod security policy
+		errMessage := "could not create installer pod security policy"
+		returnError = createObjectsByYAML("installerPodSecurityPolicy",
+			k8sclient.GetInstallerSecurityPolicyYAML(), errMessage)
+		if returnError != nil {
+			return returnError
+		}
+		log.WithFields(log.Fields{"podsecuritypolicy": "tridentinstaller"}).Info("Created installer pod security policy.")
+
+		defer func() {
+			// Delete pod security policy
+			podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
+			if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+				log.WithField("error", err).Errorf("could not delete installer pod security policy; " +
+					"please delete it manually")
+			} else {
+				log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted installer pod security policy.")
+			}
+		}()
+	}
 
 	// Create the uninstall pod
 	returnError = client.CreateObjectByYAML(k8sclient.GetUninstallerPodYAML(

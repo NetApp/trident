@@ -1,5 +1,5 @@
-hash: 85d445e82f973d847376f19d33fbb71d9ac8cd5b298987f79cfeddc99cfa7a0e
-updated: 2019-07-26T18:53:52.747014-04:00
+hash: 5296e8f9fff802a16a3e49792a93432b0b57a9d9b3e8bbc081c48dc57035fd31
+updated: 2019-08-08T16:14:14.757086-04:00
 imports:
 - name: contrib.go.opencensus.io/exporter/ocagent
   version: 8110e6c0236bb231b19119275a6be6ec666d05c8
@@ -546,6 +546,11 @@ imports:
   version: b3a7cee44a305be0a69e1b9ac03018307287e1b0
   subpackages:
   - pkg/util/proto
+- name: k8s.io/kubernetes
+  version: e8462b5b5dc2584fdcd18e6bcfe9f1e4d970a529
+  subpackages:
+  - pkg/apis/core
+  - pkg/apis/policy
 - name: k8s.io/utils
   version: c2654d5206da6b7b6ace12841e8f359bb89b443c
   subpackages:

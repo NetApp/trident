@@ -36,6 +36,8 @@ import:
   - extensions/v1beta1
   - storage/v1
   - storage/v1beta1
+- package: k8s.io/kubernetes/pkg/apis/policy
+  version: e8462b5b5dc2584fdcd18e6bcfe9f1e4d970a529 # kubernetes-1.15.0
 - package: k8s.io/apiextensions-apiserver
   version: 14e95df34f1f469647f494f5185a036e26fddcab # kubernetes-1.15.0
 - package: k8s.io/client-go
@@ -96,7 +98,7 @@ import:
   - cmd/client-gen
 - package: k8s.io/gengo
   version: e17681d19d3ac4837a019ece36c2a0ec31ffe985
-  subpackages: 
+  subpackages:
   - args
   - examples/defaulter-gen/generators
   - examples/deepcopy-gen/generators
