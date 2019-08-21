@@ -1535,7 +1535,7 @@ func (d *SANStorageDriver) mapSolidfireLun(volConfig *storage.VolumeConfig) erro
 	volConfig.AccessInfo.IscsiTargetPortal = d.Config.SVIP
 	volConfig.AccessInfo.IscsiTargetIQN = v.Iqn
 	volConfig.AccessInfo.IscsiLunNumber = 0
-	volConfig.AccessInfo.IscsiInterface = d.Config.InitiatorIFace
+	volConfig.AccessInfo.IscsiInterface = d.InitiatorIFace
 
 	if d.Config.UseCHAP {
 		var req api.GetAccountByIDRequest
