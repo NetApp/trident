@@ -12,6 +12,7 @@
 
 **Enhancements:**
 - **Kubernetes** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
+- Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.

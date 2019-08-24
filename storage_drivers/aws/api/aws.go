@@ -35,6 +35,7 @@ type ClientConfig struct {
 	APIURL    string
 	APIKey    string
 	SecretKey string
+	ProxyURL  string
 
 	// Options
 	DebugTraceFlags map[string]bool
@@ -62,16 +63,16 @@ func (d *Client) makeURL(resourcePath string) string {
 
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
-func (d *Client) InvokeAPI(requestBody []byte, method string, url string) (*http.Response, []byte, error) {
+func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*http.Response, []byte, error) {
 
 	var request *http.Request
 	var response *http.Response
 	var err error
 
 	if requestBody == nil {
-		request, err = http.NewRequest(method, url, nil)
+		request, err = http.NewRequest(method, awsURL, nil)
 	} else {
-		request, err = http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequest(method, awsURL, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
@@ -81,11 +82,28 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, url string) (*http
 	request.Header.Set("API-Key", d.config.APIKey)
 	request.Header.Set("Secret-Key", d.config.SecretKey)
 
-	// Allow certificate validation override
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
+	tr := &http.Transport{}
+	// Use ProxyUrl if set
+	proxyURL := d.config.ProxyURL
+
+	if proxyURL != "" {
+		proxy, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		tr.Proxy = http.ProxyURL(proxy)
+
+		// Skip certificate validation
+		tr.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	} else {
+
+		// Allow certificate validation override
+		tr.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: false,
-		},
+		}
 	}
 
 	if d.config.DebugTraceFlags["api"] {

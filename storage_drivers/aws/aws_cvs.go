@@ -370,6 +370,7 @@ func (d *NFSStorageDriver) initializeAWSAPIClient(
 		APIURL:          config.APIURL,
 		APIKey:          config.APIKey,
 		SecretKey:       config.SecretKey,
+		ProxyURL:        config.ProxyURL,
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 

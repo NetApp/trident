@@ -20,6 +20,8 @@ required values are all available in the CVS web user interface.
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``secretKey``         | CVS account secret key (required)                                        |                                              |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
+| ``proxyURL``          | Proxy URL if proxy server required to connect to CVS account             | "http://proxy-server-hostname/"              |
++-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``nfsMountOptions``   | NFS mount options; defaults to "-o nfsvers=3"                            | "vers=3,proto=tcp,timeo=600"                 |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``serviceLevel``      | Performance level (standard, premium, extreme), defaults to "standard"   | "premium"                                    |
@@ -27,6 +29,10 @@ required values are all available in the CVS web user interface.
 
 The required values ``apiRegion``, ``apiURL``, ``apiKey``, and ``secretKey`` may be found in the CVS web portal in
 Account settings / API access.
+
+The proxyURL config option must be used if a proxy server is needed to communicate with AWS. The proxy server may either
+be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
+self-signed certificates in the proxy server. Proxy servers with authentication enabled are not supported.
 
 Also, when using CVS on AWS, these default volume option settings are available.
 
@@ -53,6 +59,7 @@ Example CVS on AWS Config File
         "apiKey":    "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
         "region": "us-east-1",
+        "proxyURL": "http://proxy-server-hostname/",
         "serviceLevel": "premium",
         "storagePrefix": "cvs-",
         "limitVolumeSize": "200Gi",

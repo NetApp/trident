@@ -29,6 +29,7 @@ apiRegion                 CVS account region
 apiURL                    CVS account API URL
 apiKey                    CVS account API key
 secretKey                 CVS account secret key
+proxyURL                  Proxy URL if proxy server required to connect to CVS Account
 nfsMountOptions           Fine-grained control of NFS mount options                       "-o nfsvers=3"
 limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 serviceLevel              The CVS service level for new volumes                           "standard"
@@ -36,6 +37,10 @@ serviceLevel              The CVS service level for new volumes                 
 
 The required values ``apiRegion``, ``apiURL``, ``apiKey``, and ``secretKey``
 may be found in the CVS web portal in Account settings / API access.
+
+The proxyURL config option must be used if a proxy server is needed to communicate with AWS. The proxy server may either
+be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
+self-signed certificates in the proxy server. Proxy servers with authentication enabled are not supported.
 
 Each backend provisions volumes in a single AWS region. To create volumes in
 other regions, you can define additional backends.
@@ -75,7 +80,7 @@ Example configurations
 
 **Example 2 -  Backend configuration for aws-cvs driver with single service level**
 
-This example shows a backend file that applies the same aspects to all Trident created storage in the AWS us-east-1 region.
+This example shows a backend file that applies the same aspects to all Trident created storage in the AWS us-east-1 region. This example also shows the usage of proxyURL config option in a backend file.
 
 .. code-block:: json
 
@@ -87,6 +92,7 @@ This example shows a backend file that applies the same aspects to all Trident c
         "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1",
         "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
+        "proxyURL": "http://proxy-server-hostname/",
         "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
         "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",
@@ -231,5 +237,5 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     parameters:
       selector: "protection=extra"
     allowVolumeExpansion: true
- 
+
 .. _AWS account configured with NetApp CVS: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident

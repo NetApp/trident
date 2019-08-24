@@ -146,6 +146,7 @@ type AWSNFSStorageDriverConfig struct {
 	APIKey          string `json:"apiKey"`
 	APIRegion       string `json:"apiRegion"`
 	SecretKey       string `json:"secretKey"`
+	ProxyURL        string `json:"proxyURL"`
 	NfsMountOptions string `json:"nfsMountOptions"`
 	AWSNFSStorageDriverPool
 	Storage []AWSNFSStorageDriverPool `json:"storage"`
