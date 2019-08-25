@@ -243,6 +243,9 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        beta.kubernetes.io/arch: amd64
 `
 
 func GetCSIServiceYAML(label string) string {
@@ -401,6 +404,9 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        beta.kubernetes.io/arch: amd64
       volumes:
       - name: socket-dir
         emptyDir:
@@ -503,6 +509,9 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       volumes:
       - name: socket-dir
         emptyDir:
@@ -606,6 +615,9 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       volumes:
       - name: socket-dir
         emptyDir:
@@ -723,6 +735,9 @@ spec:
           mountPath: /plugin
         - name: registration-dir
           mountPath: /registration
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        beta.kubernetes.io/arch: amd64
       volumes:
       - name: plugin-dir
         hostPath:
@@ -842,6 +857,9 @@ spec:
           mountPath: /plugin
         - name: registration-dir
           mountPath: /registration
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       volumes:
       - name: plugin-dir
         hostPath:
@@ -1059,6 +1077,9 @@ spec:
     volumeMounts:
     - name: etcd-vol
       mountPath: /var/etcd/data
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    beta.kubernetes.io/arch: amd64
   volumes:
   - name: etcd-vol
     persistentVolumeClaim:
@@ -1093,6 +1114,9 @@ spec:
     - name: setup-dir
       mountPath: /setup
   restartPolicy: Never
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    beta.kubernetes.io/arch: amd64
   volumes:
   - name: setup-dir
     configMap:
@@ -1123,6 +1147,9 @@ spec:
     image: {TRIDENT_IMAGE}
     workingDir: /
     command: {COMMAND}
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    beta.kubernetes.io/arch: amd64
   restartPolicy: Never
 `
 
