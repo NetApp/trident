@@ -5,6 +5,7 @@
 ## Changes since v19.07.0
 
 **Fixes:**
+- **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
 
 **Enhancements:**
 
