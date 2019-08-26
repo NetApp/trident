@@ -16,6 +16,11 @@ most of the issues you are likely to come across.
 The method you use to access or tune those logs varies based on how you are
 running the plugin.
 
+If there are problems with mounting a PV to a container, ensure that ``rpcbind`` is
+installed and running. Use the required package manager for the host OS and check if
+``rpcbind`` is running. You can check the status of the ``rpcbind`` service by running
+a ``systemctl status rpcbind`` or its equivalent.
+
 Managed plugin method
 ^^^^^^^^^^^^^^^^^^^^^
 

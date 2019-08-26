@@ -55,7 +55,7 @@ name of the snapshot is set to ``pvc1-snap``.
 
 .. code-block:: bash
 
-   $ kubectl create -f snap-create.yaml
+   $ kubectl create -f snap.yaml
    volumesnapshot.snapshot.storage.k8s.io/pvc1-snap created
 
    $ kubectl get volumesnapshots

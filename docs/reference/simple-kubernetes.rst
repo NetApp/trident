@@ -63,7 +63,7 @@ Create the cluster
 
 .. code-block:: bash
 
-  kubeadm init --kubernetes-version stable-1.14 --token-ttl 0 --pod-network-cidr=192.168.0.0/16
+  kubeadm init --kubernetes-version stable-1.15 --token-ttl 0 --pod-network-cidr=192.168.0.0/16
 
 Install the kubectl creds and untaint the cluster
 =================================================

@@ -16,9 +16,17 @@ Preparation
 All of your Kubernetes worker nodes must have the appropriate iSCSI tools
 installed. See the :ref:`worker configuration guide <iSCSI>` for more details.
 
-If you're using CHAP (``UseCHAP`` is *true*), no further preparation is
-required. It is recommended to explicitly set the ``UseCHAP`` option to use CHAP.
+.. note::
+   Trident will use CHAP when functioning as an enhanced CSI Provisioner.
+
+If you're using CHAP (which is the default for CSI), no further preparation is
+required. It is recommended to explicitly set the ``UseCHAP`` option to use CHAP
+with non-CSI Trident.
 Otherwise, see the :ref:`access groups guide <Using access groups>` below.
+
+.. warning::
+   Volume Access Groups are only supported by the conventional, non-CSI framework for
+   Trident. When configured to work in CSI mode, Trident uses CHAP.
 
 If neither ``AccessGroups`` or ``UseCHAP`` are set then one of the following
 rules applies:
@@ -140,7 +148,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     kind: StorageClass
     metadata:
       name: solidfire-gold-four
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=gold; cost=4"
     ---
@@ -148,7 +156,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     kind: StorageClass
     metadata:
       name: solidfire-silver-three
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver; cost=3"
     ---
@@ -156,7 +164,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     kind: StorageClass
     metadata:
       name: solidfire-bronze-two
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=bronze; cost=2"
     ---
@@ -164,7 +172,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     kind: StorageClass
     metadata:
       name: solidfire-silver-one
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver; cost=1"
     ---
@@ -172,7 +180,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     kind: StorageClass
     metadata:
       name: solidfire-silver
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver"
 
@@ -183,6 +191,8 @@ Using access groups
 .. note::
   Ignore this section if you are using CHAP, which we recommend to simplify
   management and avoid the scaling limit described below.
+  In addition, if using Trident in CSI mode, you can safely ignore this section. Trident
+  uses CHAP when installed as an enhanced CSI provisioner.
 
 Trident can use volume access groups to control access to the volumes that it
 provisions. If CHAP is disabled it expects to find an access group called

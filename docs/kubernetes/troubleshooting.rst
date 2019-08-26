@@ -2,7 +2,8 @@ Troubleshooting
 ^^^^^^^^^^^^^^^
 
 * If there was a failure during install, run ``tridentctl logs -l all -n trident``
-  and look for problems in the logs for the ``trident-main`` and ``etcd`` containers.
+  and look for problems in the logs for the ``trident-main`` and CSI containers (when
+  using the CSI provisioner).
   Alternatively, you can use ``kubectl logs`` to retrieve the logs for the
   ``trident-********-****`` pod.
 * If the Trident pod fails to come up properly (e.g., when Trident pod is stuck
@@ -10,11 +11,18 @@ Troubleshooting
   running ``kubectl -n trident describe deployment trident`` and
   ``kubectl -n trident describe pod trident-********-****`` can provide
   additional insights. Obtaining kubelet logs
-  (e.g., via ``journalctl -xeu kubelet``) can also be helpful if there is a
-  problem in mounting the ``trident`` PVC (the ``etcd`` volume).
+  (e.g., via ``journalctl -xeu kubelet``) can also be helpful.
 * If there's not enough information in the Trident logs, you can try enabling
   the debug mode for Trident by passing the ``-d`` flag to the install
   parameter: ``./tridentctl install -d -n trident``.
+* If there are problems with mounting a PV to a container, ensure that ``rpcbind`` is
+  installed and running. Use the required package manager for the host OS and check if
+  ``rpcbind`` is running. You can check the status of the ``rpcbind`` service by running
+  a ``systemctl status rpcbind`` or its equivalent.
+* If you encounter permission issues when installing Trident with Docker as the container
+  runtime, attempt the installation of Trident with the ``--in-cluster=false`` flag. This
+  will not use an installer pod and avoid permission troubles seen due to the ``trident-installer``
+  user.
 * The :ref:`uninstall parameter <Uninstalling Trident>` can help with cleaning up
   after a failed run. By default the script does not remove the CRDs that have
   been created by Trident, making it safe to uninstall and install again even in a running
