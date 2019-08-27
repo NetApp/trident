@@ -5,9 +5,12 @@
 ## Changes since v19.07.0
 
 **Fixes:**
+- Resolved an issue when iFace is not specified in the Solidfire backend configuration file.
+- **Docker:** Fixed a lock contention issue when doing log file rotations.
+- Reduced amount of log spam by moving some messages to debug.
+- **Kubernetes:** `tridentctl logs` command can now gather node pod and sidecar logs. 
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
-
-**Enhancements:**
+- Fixed some iSCSI connection logic.
 
 ## v19.07.0
 
