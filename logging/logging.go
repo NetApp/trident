@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -44,6 +46,14 @@ func InitLogging(logName string) error {
 		"logFileLocation": logFileHook.GetLocation(),
 		"buildTime":       config.BuildTime,
 	}).Info("Initialized logging.")
+
+	customInterval := os.Getenv(RandomLogcheckEnvVar)
+	if customInterval != "" {
+		customIntervalValue, err := strconv.Atoi(customInterval)
+		if err == nil {
+			randomLogcheckInterval = customIntervalValue
+		}
+	}
 
 	return nil
 }
@@ -179,7 +189,7 @@ func (hook *FileHook) Fire(entry *log.Entry) error {
 	logFile.Close()
 
 	// Rotate the file as needed
-	hook.doLogfileRotation()
+	hook.maybeDoLogfileRotation()
 
 	return nil
 }
@@ -198,33 +208,55 @@ func (hook *FileHook) openFile() (*os.File, error) {
 	return logFile, nil
 }
 
-func (hook *FileHook) doLogfileRotation() error {
-
-	// Protect rotation from concurrent loggers
-	hook.mutex.Lock()
-	defer hook.mutex.Unlock()
-
+// logfileNeedsRotation checks to see if a file has grown too large
+func (hook *FileHook) logfileNeedsRotation() bool {
 	logFile, err := hook.openFile()
 	if err != nil {
-		return err
+		return false
 	}
 
 	fileInfo, err := logFile.Stat()
 	if err != nil {
 		logFile.Close()
-		return err
+		return false
 	}
 
 	size := fileInfo.Size()
 	logFile.Close()
 
-	if size < LogRotationThreshold {
-		return nil
+	if size >= LogRotationThreshold {
+		return true
 	}
 
-	// Do the rotation.  The Rename call will overwrite any previous .old file.
-	oldLogFileLocation := hook.logFileLocation + ".old"
-	os.Rename(hook.logFileLocation, oldLogFileLocation)
+	return false
+}
+
+// maybeDoLogfileRotation prevents descending into doLogfileRotation on every call as the inner
+// func is somewhat expensive and doesn't really need to happen every log entry.
+func (hook *FileHook) maybeDoLogfileRotation() error {
+	// Could use a counter or some other heuristic to decide when to do this, but it's
+	// more a less a wash to let rand() do it every 1/n times.
+	if rand.Intn(randomLogcheckInterval) == 0 {
+		return hook.doLogfileRotation()
+	}
+	return nil
+}
+
+func (hook *FileHook) doLogfileRotation() error {
+	// We use a mutex to protect rotation from concurrent loggers, but in order to avoid
+	// contention over this resource with high logging levels, check the file before taking
+	// the lock.  Only if the file needs rotating do we then acquire the lock and recheck
+	// the size under it.  The winner of the lock race will rotate the file.
+	if hook.logfileNeedsRotation() {
+		hook.mutex.Lock()
+		defer hook.mutex.Unlock()
+
+		if hook.logfileNeedsRotation() {
+			// Do the rotation.  The Rename call will overwrite any previous .old file.
+			oldLogFileLocation := hook.logFileLocation + ".old"
+			os.Rename(hook.logFileLocation, oldLogFileLocation)
+		}
+	}
 
 	return nil
 }
