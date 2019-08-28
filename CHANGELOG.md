@@ -6,6 +6,7 @@
 
 **Fixes:**
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
+- **Kubernetes:** Reduced log verbosity in CSI sidecars.
 
 **Enhancements:**
 

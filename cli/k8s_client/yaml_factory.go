@@ -278,10 +278,14 @@ spec:
 func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils.Version) string {
 
 	var debugLine string
+	var logLevel string
+
 	if debug {
 		debugLine = "- -debug"
+		logLevel = "9"
 	} else {
 		debugLine = "#- -debug"
+		logLevel = "2"
 	}
 
 	var deploymentYAML string
@@ -299,6 +303,7 @@ func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils
 	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_LEVEL}", logLevel, -1)
 	return deploymentYAML
 }
 
@@ -363,7 +368,7 @@ spec:
       - name: csi-provisioner
         image: quay.io/k8scsi/csi-provisioner:v1.0.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -375,7 +380,7 @@ spec:
       - name: csi-attacher
         image: quay.io/k8scsi/csi-attacher:v1.0.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--timeout=60s"
         - "--csi-address=$(ADDRESS)"
@@ -388,7 +393,7 @@ spec:
       - name: csi-snapshotter
         image: quay.io/k8scsi/csi-snapshotter:v1.0.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -400,7 +405,7 @@ spec:
       - name: csi-cluster-driver-registrar
         image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -481,7 +486,7 @@ spec:
       - name: csi-provisioner
         image: quay.io/k8scsi/csi-provisioner:v1.2.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -493,7 +498,7 @@ spec:
       - name: csi-attacher
         image: quay.io/k8scsi/csi-attacher:v1.1.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=60s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -505,7 +510,7 @@ spec:
       - name: csi-snapshotter
         image: quay.io/k8scsi/csi-snapshotter:v1.2.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -586,7 +591,7 @@ spec:
       - name: csi-provisioner
         image: quay.io/k8scsi/csi-provisioner:v1.3.0
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -598,7 +603,7 @@ spec:
       - name: csi-attacher
         image: quay.io/k8scsi/csi-attacher:v1.2.0
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
@@ -611,7 +616,7 @@ spec:
       - name: csi-snapshotter
         image: quay.io/k8scsi/csi-snapshotter:v1.2.1
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -634,11 +639,14 @@ spec:
 func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
 
 	var debugLine string
+	var logLevel string
 
 	if debug {
 		debugLine = "- -debug"
+		logLevel = "9"
 	} else {
 		debugLine = "#- -debug"
+		logLevel = "2"
 	}
 
 	var daemonSetYAML string
@@ -651,6 +659,7 @@ func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_LEVEL}", logLevel, -1)
 	return daemonSetYAML
 }
 
@@ -722,7 +731,7 @@ spec:
       - name: driver-registrar
         image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
@@ -845,7 +854,7 @@ spec:
       - name: driver-registrar
         image: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
         env:
