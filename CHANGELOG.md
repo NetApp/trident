@@ -9,6 +9,9 @@
 
 **Enhancements:**
 
+**Deprecations:**
+- Changed minimum supported ONTAP version to 9.1.
+  
 ## v19.07.0
 
 **Fixes:**

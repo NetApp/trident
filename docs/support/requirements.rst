@@ -21,7 +21,7 @@ Supported backends (storage)
 
 To use Trident, you need one or more of the following supported backends:
 
-* FAS/AFF/Select/Cloud ONTAP 8.3 or later
+* FAS/AFF/Select/Cloud ONTAP 9.1 or later
 * HCI/SolidFire Element OS 8 or later
 * E/EF-Series SANtricity
 * Azure NetApp Files

@@ -255,9 +255,9 @@ func (d *SANStorageDriver) Create(
 		return checkVolumeSizeLimitsError
 	}
 
-	encrypt, err := ValidateEncryptionAttribute(encryption, d.API)
+	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
@@ -286,13 +286,13 @@ func (d *SANStorageDriver) Create(
 		"exportPolicy":    exportPolicy,
 		"aggregate":       aggregate,
 		"securityStyle":   securityStyle,
-		"encryption":      encryption,
+		"encryption":      enableEncryption,
 	}).Debug("Creating Flexvol.")
 
 	// Create the volume
 	volCreateResponse, err := d.API.VolumeCreate(
-		name, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserveInt)
+		name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
 
 	if err = api.GetError(volCreateResponse, err); err != nil {
 		if zerr, ok := err.(api.ZapiError); ok {
@@ -689,7 +689,7 @@ func (d *SANStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Clones:           sa.NewBoolOffer(true),
-		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
+		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

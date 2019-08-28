@@ -210,9 +210,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
-	encrypt, err := ValidateEncryptionAttribute(encryption, d.API)
+	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
@@ -231,13 +231,13 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"exportPolicy":    exportPolicy,
 		"aggregates":      vserverAggrNames,
 		"securityStyle":   securityStyle,
-		"encryption":      encryption,
+		"encryption":      enableEncryption,
 	}).Debug("Creating FlexGroup.")
 
 	// Create the FlexGroup
 	_, err = d.API.FlexGroupCreate(
-		name, size, vserverAggrNames, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserveInt)
+		name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
 
 	if err != nil {
 		return fmt.Errorf("error creating FlexGroup %v: %v", name, err)
@@ -554,7 +554,7 @@ func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Off
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
-		sa.Encryption:       sa.NewBoolOffer(d.API.SupportsFeature(api.NetAppVolumeEncryption)),
+		sa.Encryption:       sa.NewBoolOffer(true),
 		sa.Clones:           sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}

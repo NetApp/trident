@@ -284,22 +284,16 @@ type feature string
 
 // Define new version-specific feature constants here
 const (
-	MinimumONTAPIVersion   feature = "MINIMUM_ONTAPI_VERSION"
-	VServerShowAggr        feature = "VSERVER_SHOW_AGGR"
-	FlexGroupsFilter       feature = "FLEX_GROUPS_FILTER"
-	NetAppVolumeEncryption feature = "NETAPP_VOLUME_ENCRYPTION"
-	NetAppFlexGroups       feature = "NETAPP_FLEX_GROUPS"
-	LunGeometrySkip        feature = "LUN_GEOMETRY_SKIP"
+	MinimumONTAPIVersion feature = "MINIMUM_ONTAPI_VERSION"
+	NetAppFlexGroups     feature = "NETAPP_FLEX_GROUPS"
+	LunGeometrySkip      feature = "LUN_GEOMETRY_SKIP"
 )
 
 // Indicate the minimum Ontapi version for each feature here
 var features = map[feature]*utils.Version{
-	MinimumONTAPIVersion:   utils.MustParseSemantic("1.30.0"),  // cDOT 8.3.0
-	VServerShowAggr:        utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
-	FlexGroupsFilter:       utils.MustParseSemantic("1.100.0"), // cDOT 9.0.0
-	NetAppVolumeEncryption: utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
-	NetAppFlexGroups:       utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	LunGeometrySkip:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	MinimumONTAPIVersion: utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
+	NetAppFlexGroups:     utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	LunGeometrySkip:      utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -634,8 +628,11 @@ func (d Client) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse,
 
 // FlexGroupCreate creates a FlexGroup with the specified options
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-func (d Client) FlexGroupCreate(name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt *bool, snapshotReserve int) (*azgo.VolumeCreateAsyncResponse, error) {
+func (d Client) FlexGroupCreate(
+	name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int,
+) (*azgo.VolumeCreateAsyncResponse, error) {
+
 	junctionPath := fmt.Sprintf("/%s", name)
 
 	aggrList := azgo.VolumeCreateAsyncRequestAggrList{}
@@ -649,7 +646,7 @@ func (d Client) FlexGroupCreate(name string, size int, aggrs []azgo.AggrNameType
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetEncrypt(*encrypt).
+		SetEncrypt(encrypt).
 		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath)
 
@@ -908,8 +905,9 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 
 // VolumeCreate creates a volume with the specified options
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-func (d Client) VolumeCreate(name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt *bool, snapshotReserve int,
+func (d Client) VolumeCreate(
+	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -919,12 +917,8 @@ func (d Client) VolumeCreate(name, aggregateName, size, spaceReserve, snapshotPo
 		SetSnapshotPolicy(snapshotPolicy).
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
-		SetVolumeSecurityStyle(securityStyle)
-
-	// Don't send 'encrypt' unless needed, as pre-9.1 ONTAP won't accept it.
-	if encrypt != nil {
-		request.SetEncrypt(*encrypt)
-	}
+		SetVolumeSecurityStyle(securityStyle).
+		SetEncrypt(encrypt)
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1055,10 +1049,9 @@ func (d Client) VolumeDestroy(name string, force bool) (*azgo.VolumeDestroyRespo
 func (d Client) VolumeGet(name string) (*azgo.VolumeAttributesType, error) {
 
 	// Limit the Flexvols to the one matching the name
-	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
-	if d.SupportsFeature(FlexGroupsFilter) {
-		queryVolIDAttrs.SetStyleExtended("flexvol")
-	}
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
+		SetName(azgo.VolumeNameType(name)).
+		SetStyleExtended("flexvol")
 	return d.volumeGetIterCommon(name, queryVolIDAttrs)
 }
 
@@ -1097,11 +1090,10 @@ func (d Client) volumeGetIterCommon(name string,
 func (d Client) VolumeGetAll(prefix string) (response *azgo.VolumeGetIterResponse, err error) {
 
 	// Limit the Flexvols to those matching the name prefix
-	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
+		SetName(azgo.VolumeNameType(prefix + "*")).
+		SetStyleExtended("flexvol")
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
-	if d.SupportsFeature(FlexGroupsFilter) {
-		queryVolIDAttrs.SetStyleExtended("flexvol")
-	}
 
 	return d.volumeGetIterAll(prefix, queryVolIDAttrs, queryVolStateAttrs)
 }
@@ -1154,10 +1146,9 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 	// Limit the Flexvols to those matching the name prefix
 	query := &azgo.VolumeGetIterRequestQuery{}
-	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(prefix + "*"))
-	if d.SupportsFeature(FlexGroupsFilter) {
-		queryVolIDAttrs.SetStyleExtended("flexvol")
-	}
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
+		SetName(azgo.VolumeNameType(prefix + "*")).
+		SetStyleExtended("flexvol")
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
 	volumeAttributes := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
@@ -1180,17 +1171,15 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (d Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy string, snapshotDir bool, encrypt *bool,
+	prefix, aggregate, spaceReserve, snapshotPolicy string, snapshotDir bool, encrypt bool,
 ) (*azgo.VolumeGetIterResponse, error) {
 
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName(azgo.VolumeNameType(prefix + "*")).
-		SetContainingAggregateName(aggregate)
-	if d.SupportsFeature(FlexGroupsFilter) {
-		queryVolIDAttrs.SetStyleExtended("flexvol")
-	}
+		SetContainingAggregateName(aggregate).
+		SetStyleExtended("flexvol")
 	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
 		SetSpaceGuarantee(spaceReserve)
 	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().
@@ -1202,12 +1191,9 @@ func (d Client) VolumeListByAttrs(
 		SetVolumeIdAttributes(*queryVolIDAttrs).
 		SetVolumeSpaceAttributes(*queryVolSpaceAttrs).
 		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs).
-		SetVolumeStateAttributes(*queryVolStateAttrs)
+		SetVolumeStateAttributes(*queryVolStateAttrs).
+		SetEncrypt(encrypt)
 	query.SetVolumeAttributes(*volumeAttributes)
-
-	if encrypt != nil {
-		volumeAttributes.SetEncrypt(*encrypt)
-	}
 
 	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
@@ -1827,21 +1813,6 @@ func (d Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterRes
 
 /////////////////////////////////////////////////////////////////////////////
 // AGGREGATE operations BEGIN
-
-// AggrGetIterRequest returns the aggregates on the system
-// equivalent to filer::> storage aggregate show
-func (d Client) AggrGetIterRequest() (*azgo.AggrGetIterResponse, error) {
-
-	// If we tunnel to an SVM, which is the default case, this API will never work.
-	// It will still fail if the non-tunneled ZapiRunner addresses a vserver management LIF,
-	// but that possibility must be handled by the caller.
-	zr := d.GetNontunneledZapiRunner()
-
-	response, err := azgo.NewAggrGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
-		ExecuteUsing(zr)
-	return response, err
-}
 
 // AggrSpaceGetIterRequest returns the aggregates on the system
 // equivalent to filer::> storage aggregate show-space -aggregate-name aggregate

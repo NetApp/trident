@@ -174,7 +174,7 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Clien
 		return nil, fmt.Errorf("could not determine Data ONTAP API version: %v", err)
 	}
 	if !client.SupportsFeature(api.MinimumONTAPIVersion) {
-		return nil, errors.New("ONTAP 8.3 or later is required")
+		return nil, errors.New("ONTAP 9.1 or later is required")
 	}
 	log.WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
@@ -454,27 +454,6 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	}).Debugf("Configuration defaults")
 
 	return nil
-}
-
-// ValidateEncryptionAttribute returns true/false if encryption is being requested of a backend that
-// supports NetApp Volume Encryption, and nil otherwise so that the ZAPIs may be sent without
-// any reference to encryption.
-func ValidateEncryptionAttribute(encryption string, client *api.Client) (*bool, error) {
-
-	enableEncryption, err := strconv.ParseBool(encryption)
-	if err != nil {
-		return nil, fmt.Errorf("invalid boolean value for encryption: %v", err)
-	}
-
-	if client.SupportsFeature(api.NetAppVolumeEncryption) {
-		return &enableEncryption, nil
-	} else {
-		if enableEncryption {
-			return nil, errors.New("encrypted volumes are not supported on this storage backend")
-		} else {
-			return nil, nil
-		}
-	}
 }
 
 func checkAggregateLimitsForFlexvol(
@@ -1239,13 +1218,8 @@ func getStorageBackendSpecsCommon(
 		storagePools[config.Aggregate] = storage.NewStoragePool(backend, config.Aggregate)
 	}
 
-	// Update pools with aggregate info (i.e. MediaType) using the best means possible
-	var aggrErr error
-	if client.SupportsFeature(api.VServerShowAggr) {
-		aggrErr = getVserverAggregateAttributes(d, &storagePools)
-	} else {
-		aggrErr = getClusterAggregateAttributes(d, &storagePools)
-	}
+	// Update pools with aggregate info (i.e. MediaType)
+	aggrErr := getVserverAggregateAttributes(d, &storagePools)
 
 	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
 		log.WithFields(log.Fields{
@@ -1286,57 +1260,6 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 		for _, aggr := range result.Result.AttributesListPtr.ShowAggregatesPtr {
 			aggrName := string(aggr.AggregateName())
 			aggrType := aggr.AggregateType()
-
-			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
-			pool, ok := (*storagePools)[aggrName]
-			if !ok {
-				continue
-			}
-
-			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
-			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
-			if !ok {
-				log.WithFields(log.Fields{
-					"aggregate": aggrName,
-					"mediaType": aggrType,
-				}).Debug("Aggregate has unknown performance characteristics.")
-
-				continue
-			}
-
-			log.WithFields(log.Fields{
-				"aggregate": aggrName,
-				"mediaType": aggrType,
-			}).Debug("Read aggregate attributes.")
-
-			// Update the pool with the aggregate storage attributes
-			for attrName, attr := range storageAttrs {
-				pool.Attributes[attrName] = attr
-			}
-		}
-	}
-
-	return nil
-}
-
-// getClusterAggregateAttributes gets pool attributes using aggr-get-iter, which will only succeed for cluster-scoped users
-// with adequate permissions.  If the aggregate attributes are read successfully, the pools passed to this function are updated
-// accordingly.
-func getClusterAggregateAttributes(d StorageDriver, storagePools *map[string]*storage.Pool) error {
-
-	result, err := d.GetAPI().AggrGetIterRequest()
-	if err != nil {
-		return err
-	}
-	if zerr := api.NewZapiError(result.Result); !zerr.IsPassed() {
-		return zerr
-	}
-
-	if result.Result.AttributesListPtr != nil {
-		for _, aggr := range result.Result.AttributesListPtr.AggrAttributesPtr {
-			aggrName := aggr.AggregateName()
-			aggrRaidAttrs := aggr.AggrRaidAttributes()
-			aggrType := aggrRaidAttrs.AggregateType()
 
 			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
 			pool, ok := (*storagePools)[aggrName]

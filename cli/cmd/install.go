@@ -459,7 +459,7 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	podSecurityPolicyYAML := k8sclient.GetPodSecurityPolicyYAML()
-	if err = writeFile(crdsPath, podSecurityPolicyYAML); err != nil {
+	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
 		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
 	}
 
