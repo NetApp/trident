@@ -11,6 +11,7 @@
 - **Kubernetes:** `tridentctl logs` command can now gather node pod and sidecar logs. 
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
 - Fixed some iSCSI connection logic.
+- **Kubernetes:** Reduced log verbosity in CSI sidecars.
 
 ## v19.07.0
 
