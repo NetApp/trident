@@ -1457,7 +1457,12 @@ spec:
     categories:
     - trident
     - trident-internal
-`
+  additionalPrinterColumns:
+    - name: State
+      type: string
+      description: The snapshot's state
+      priority: 1
+      JSONPath: .state`
 
 func GetCSIDriverCRDYAML() string {
 	return CSIDriverCRDYAML

@@ -75,17 +75,14 @@ type Volume struct {
 	State       VolumeState
 }
 
-type UpdateVolumeStateRequest struct {
-	State string `json:"state"`
-}
-
 type VolumeState string
 
 const (
-	VolumeStateUnknown   = VolumeState("unknown")
-	VolumeStateOnline    = VolumeState("online")
-	VolumeStateDeleting  = VolumeState("deleting")
-	VolumeStateUpgrading = VolumeState("upgrading")
+	VolumeStateUnknown        = VolumeState("unknown")
+	VolumeStateOnline         = VolumeState("online")
+	VolumeStateDeleting       = VolumeState("deleting")
+	VolumeStateUpgrading      = VolumeState("upgrading")
+	VolumeStateMissingBackend = VolumeState("missing_backend")
 	// TODO should Orphaned be moved to a VolumeState?
 )
 
@@ -115,6 +112,10 @@ func (s VolumeState) IsOnline() bool {
 
 func (s VolumeState) IsDeleting() bool {
 	return s == VolumeStateDeleting
+}
+
+func (s VolumeState) IsMissingBackend() bool {
+	return s == VolumeStateMissingBackend
 }
 
 func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned bool) *Volume {

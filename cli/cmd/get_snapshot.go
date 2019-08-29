@@ -156,6 +156,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		"Volume",
 		"Created",
 		"Size",
+		"State",
 	}
 	table.SetHeader(header)
 

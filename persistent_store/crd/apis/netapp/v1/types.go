@@ -197,6 +197,8 @@ type TridentSnapshot struct {
 	Created string `json:"dateCreated"`
 	// The size of the volume at the time the snapshot was created
 	SizeBytes int64 `json:"size"`
+	// State records the TridentVolume's state
+	State string `json:"state"`
 }
 
 // TridentSnapshotList is a list of TridentSnapshot objects.

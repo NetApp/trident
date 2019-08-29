@@ -243,16 +243,21 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.Backend
 		var ok bool
-		if backend, ok = o.backends[v.BackendUUID]; !ok {
-			return fmt.Errorf("couldn't find backend %s for volume %s", v.BackendUUID, v.Config.Name)
-		}
-
-		vol := storage.NewVolume(v.Config, backend.BackendUUID, v.Pool, v.Orphaned)
-		backend.Volumes[vol.Config.Name] = vol
+		var vol *storage.Volume
+		vol = storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned)
 		o.volumes[vol.Config.Name] = vol
 
-		if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
-			fakeDriver.BootstrapVolume(vol)
+		if backend, ok = o.backends[v.BackendUUID]; !ok {
+			log.WithFields(log.Fields{
+				"volume":      v.Config.Name,
+				"backendUUID": v.BackendUUID,
+			}).Warning("Couldn't find backend. Setting state to MissingBackend.")
+			vol.State = storage.VolumeStateMissingBackend
+		} else {
+			backend.Volumes[vol.Config.Name] = vol
+			if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+				fakeDriver.BootstrapVolume(vol)
+			}
 		}
 
 		log.WithFields(log.Fields{
@@ -277,26 +282,27 @@ func (o *TridentOrchestrator) bootstrapSnapshots() error {
 	}
 	for _, s := range snapshots {
 		// TODO:  If the API evolves, check the Version field here.
+		var snapshot *storage.Snapshot
+		snapshot = storage.NewSnapshot(s.Config, s.Created, s.SizeBytes)
+		o.snapshots[snapshot.ID()] = snapshot
 		volume, ok := o.volumes[s.Config.VolumeName]
 		if !ok {
-			return fmt.Errorf("couldn't find volume %s for snapshot %s", s.Config.VolumeName, s.Config.Name)
-		}
-		backend, ok := o.backends[volume.BackendUUID]
-		if !ok {
-			return fmt.Errorf("couldn't find backend %s for volume %s", volume.BackendUUID, volume.Config.Name)
-		}
-
-		snapshot := storage.NewSnapshot(s.Config, s.Created, s.SizeBytes)
-		o.snapshots[snapshot.ID()] = snapshot
-
-		if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
-			fakeDriver.BootstrapSnapshot(snapshot)
+			log.Warnf("Couldn't find volume %s for snapshot %s. Setting snapshot state to MissingVolume.", s.Config.VolumeName, s.Config.Name)
+			snapshot.State = storage.SnapshotStateMissingVolume
+		} else {
+			backend, ok := o.backends[volume.BackendUUID]
+			if !ok {
+				snapshot.State = storage.SnapshotStateMissingBackend
+			} else {
+				if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+					fakeDriver.BootstrapSnapshot(snapshot)
+				}
+			}
 		}
 
 		log.WithFields(log.Fields{
 			"snapshot": snapshot.Config.Name,
 			"volume":   snapshot.Config.VolumeName,
-			"backend":  backend.Name,
 			"handler":  "Bootstrap",
 		}).Info("Added an existing snapshot.")
 	}
@@ -1923,6 +1929,17 @@ func (o *TridentOrchestrator) deleteVolume(volumeName string) error {
 		return nil
 	}
 
+	// Note that this block will only be entered in the case that the volume
+	// is missing it's backend and the backend is nil. If the backend does not
+	// exist, delete the volume and clean up, then return.
+	if volumeBackend == nil {
+		if err := o.deleteVolumeFromPersistentStoreIgnoreError(volume); err != nil {
+			return err
+		}
+		delete(o.volumes, volumeName)
+		return nil
+	}
+
 	// Note that this call will only return an error if the backend actually
 	// fails to delete the volume.  If the volume does not exist on the backend,
 	// the driver will not return an error.  Thus, we're fine.
@@ -2339,6 +2356,13 @@ func (o *TridentOrchestrator) GetSnapshot(volumeName, snapshotName string) (*sto
 // take care of both of these.
 func (o *TridentOrchestrator) deleteSnapshot(snapshotConfig *storage.SnapshotConfig) error {
 
+	snapshotID := snapshotConfig.ID()
+	snapshot, ok := o.snapshots[snapshotID]
+	if !ok {
+		return notFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
+			snapshotConfig.Name, snapshotConfig.VolumeName))
+	}
+
 	volume, ok := o.volumes[snapshotConfig.VolumeName]
 	if !ok {
 		return notFoundError(fmt.Sprintf("volume %s not found", snapshotConfig.VolumeName))
@@ -2347,13 +2371,6 @@ func (o *TridentOrchestrator) deleteSnapshot(snapshotConfig *storage.SnapshotCon
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		return notFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
-	}
-
-	snapshotID := snapshotConfig.ID()
-	snapshot, ok := o.snapshots[snapshotID]
-	if !ok {
-		return notFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
-			snapshotConfig.Name, snapshotConfig.VolumeName))
 	}
 
 	// Note that this call will only return an error if the backend actually
@@ -2415,20 +2432,46 @@ func (o *TridentOrchestrator) DeleteSnapshot(volumeName, snapshotName string) (e
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	volume, ok := o.volumes[volumeName]
-	if !ok {
-		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
-	}
-
-	_, ok = o.backends[volume.BackendUUID]
-	if !ok {
-		return notFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
-	}
-
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
 		return notFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+	}
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		if !snapshot.State.IsMissingVolume() {
+			return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		}
+	}
+
+	// Note that this block will only be entered in the case that the snapshot
+	// is missing it's volume and the volume is nil. If the volume does not
+	// exist, delete the snapshot and clean up, then return.
+	if volume == nil {
+		if err := o.deleteSnapshotFromPersistentStoreIgnoreError(snapshot); err != nil {
+			return err
+		}
+		delete(o.snapshots, snapshot.ID())
+		return nil
+	}
+
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		if !snapshot.State.IsMissingBackend() {
+			return notFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+		}
+	}
+
+	// Note that this block will only be entered in the case that the snapshot
+	// is missing it's backend and the backend is nil. If the backend does not
+	// exist, delete the snapshot and clean up, then return.
+	if backend == nil {
+		if err := o.deleteSnapshotFromPersistentStoreIgnoreError(snapshot); err != nil {
+			return err
+		}
+		delete(o.snapshots, snapshot.ID())
+		return nil
 	}
 
 	// TODO: Is this needed?

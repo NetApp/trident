@@ -89,6 +89,7 @@ func getFakeSnapshotCRD(snapshot *storage.Snapshot) *TridentSnapshot {
 		},
 		Created:   snapshot.Created,
 		SizeBytes: snapshot.SizeBytes,
+		State:     string(storage.SnapshotStateOnline),
 	}
 
 	return crd

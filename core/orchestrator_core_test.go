@@ -1554,6 +1554,150 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestBootstrapSnapshotMissingVolume(t *testing.T) {
+	const (
+		offlineBackendName = "snapNoVolBackend"
+		scName             = "snapNoVolSC"
+		volumeName         = "snapNoVolVolume"
+		snapName           = "snapNoVolSnapshot"
+	)
+
+	orchestrator := getOrchestrator()
+	defer cleanup(t, orchestrator)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+		scName, config.File))
+	if err != nil {
+		t.Fatal("Unable to create volume: ", err)
+	}
+
+	// For the full test, we create everything and recreate the AddSnapshot transaction.
+	snapshotConfig := generateSnapshotConfig(snapName, volumeName, volumeName)
+	if _, err := orchestrator.CreateSnapshot(snapshotConfig); err != nil {
+		t.Fatal("Unable to add snapshot: ", err)
+	}
+
+	// Simulate deleting the existing volume without going through Trident then bootstrapping
+	vol, ok := orchestrator.volumes[volumeName]
+	if !ok {
+		t.Fatalf("Unable to find volume %s in backend.", volumeName)
+	}
+	orchestrator.mutex.Lock()
+	err = orchestrator.storeClient.DeleteVolume(vol)
+	if err != nil {
+		t.Fatalf("Unable to delete volume from etcd: %v", err)
+	}
+	orchestrator.mutex.Unlock()
+
+	newOrchestrator := getOrchestrator()
+	bootstrappedSnapshot, _ := newOrchestrator.GetSnapshot(snapshotConfig.VolumeName, snapshotConfig.Name)
+	if bootstrappedSnapshot == nil {
+		t.Error("Volume not found during bootstrap.")
+	}
+	if !bootstrappedSnapshot.State.IsMissingVolume() {
+		t.Error("Unexpected snapshot state.")
+	}
+	//delete volume in missing_volume state
+	err = newOrchestrator.DeleteSnapshot(volumeName, snapName)
+	if err != nil {
+		t.Error("could not delete snapshot with missing volume")
+	}
+}
+
+func TestBootstrapSnapshotMissingBackend(t *testing.T) {
+	const (
+		offlineBackendName = "snapNoBackBackend"
+		scName             = "snapNoBackSC"
+		volumeName         = "snapNoBackVolume"
+		snapName           = "snapNoBackSnapshot"
+	)
+
+	orchestrator := getOrchestrator()
+	defer cleanup(t, orchestrator)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+		scName, config.File))
+	if err != nil {
+		t.Fatal("Unable to create volume: ", err)
+	}
+
+	// For the full test, we create everything and recreate the AddSnapshot transaction.
+	snapshotConfig := generateSnapshotConfig(snapName, volumeName, volumeName)
+	if _, err := orchestrator.CreateSnapshot(snapshotConfig); err != nil {
+		t.Fatal("Unable to add snapshot: ", err)
+	}
+
+	// Simulate deleting the existing backend without going through Trident then bootstrapping
+	backend, err := orchestrator.getBackendByBackendName(offlineBackendName)
+	if err != nil {
+		t.Fatalf("Unable to get backend from etcd: %v", err)
+	}
+	orchestrator.mutex.Lock()
+	err = orchestrator.storeClient.DeleteBackend(backend)
+	if err != nil {
+		t.Fatalf("Unable to delete volume from etcd: %v", err)
+	}
+	orchestrator.mutex.Unlock()
+
+	newOrchestrator := getOrchestrator()
+	bootstrappedSnapshot, _ := newOrchestrator.GetSnapshot(snapshotConfig.VolumeName, snapshotConfig.Name)
+	if bootstrappedSnapshot == nil {
+		t.Error("Volume not found during bootstrap.")
+	}
+	if !bootstrappedSnapshot.State.IsMissingBackend() {
+		t.Error("Unexpected snapshot state.")
+	}
+	//delete snapshot in missing_backend state
+	err = newOrchestrator.DeleteSnapshot(volumeName, snapName)
+	if err != nil {
+		t.Error("could not delete snapshot with missing backend")
+	}
+}
+
+func TestBootstrapVolumeMissingBackend(t *testing.T) {
+	const (
+		offlineBackendName = "bootstrapVolBackend"
+		scName             = "bootstrapVolSC"
+		volumeName         = "bootstrapVolVolume"
+	)
+
+	orchestrator := getOrchestrator()
+	defer cleanup(t, orchestrator)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+		scName, config.File))
+	if err != nil {
+		t.Fatal("Unable to create volume: ", err)
+	}
+
+	// Simulate deleting the existing backend without going through Trident then bootstrapping
+	backend, err := orchestrator.getBackendByBackendName(offlineBackendName)
+	if err != nil {
+		t.Fatalf("Unable to get backend from etcd: %v", err)
+	}
+	orchestrator.mutex.Lock()
+	err = orchestrator.storeClient.DeleteBackend(backend)
+	if err != nil {
+		t.Fatalf("Unable to delete volume from etcd: %v", err)
+	}
+	orchestrator.mutex.Unlock()
+
+	newOrchestrator := getOrchestrator()
+	bootstrappedVolume, _ := newOrchestrator.GetVolume(volumeName)
+	if bootstrappedVolume == nil {
+		t.Error("volume not found during bootstrap")
+	}
+	if !bootstrappedVolume.State.IsMissingBackend() {
+		t.Error("unexpected volume state")
+	}
+
+	//delete volume in missing_backend state
+	err = newOrchestrator.DeleteVolume(volumeName)
+	if err != nil {
+		t.Error("could not delete volume with missing backend")
+	}
+}
+
 func TestBackendCleanup(t *testing.T) {
 	const (
 		offlineBackendName = "cleanupBackend"

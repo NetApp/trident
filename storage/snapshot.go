@@ -35,6 +35,27 @@ type Snapshot struct {
 	Config    *SnapshotConfig
 	Created   string `json:"dateCreated"` // The UTC time that the snapshot was created, in RFC3339 format
 	SizeBytes int64  `json:"size"`        // The size of the volume at the time the snapshot was created
+	State     SnapshotState
+}
+
+type SnapshotState string
+
+const (
+	SnapshotStateOnline         = SnapshotState("online")
+	SnapshotStateMissingBackend = SnapshotState("missing_backend")
+	SnapshotStateMissingVolume  = SnapshotState("missing_volume")
+)
+
+func (s SnapshotState) IsOnline() bool {
+	return s == SnapshotStateOnline
+}
+
+func (s SnapshotState) IsMissingBackend() bool {
+	return s == SnapshotStateMissingBackend
+}
+
+func (s SnapshotState) IsMissingVolume() bool {
+	return s == SnapshotStateMissingVolume
 }
 
 type SnapshotExternal struct {
@@ -54,6 +75,7 @@ func NewSnapshot(config *SnapshotConfig, created string, sizeBytes int64) *Snaps
 		Config:    config,
 		Created:   created,
 		SizeBytes: sizeBytes,
+		State:     SnapshotStateOnline,
 	}
 }
 
@@ -78,6 +100,7 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 		},
 		Created:   s.Created,
 		SizeBytes: s.SizeBytes,
+		State:     s.State,
 	}
 }
 
