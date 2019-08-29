@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -347,7 +348,7 @@ func (d *NASQtreeStorageDriver) Import(volConfig *storage.VolumeConfig, original
 	return errors.New("import is not implemented")
 }
 
-func (d *NASQtreeStorageDriver) Rename(name string, new_name string) error {
+func (d *NASQtreeStorageDriver) Rename(name string, newName string) error {
 	return errors.New("rename is not implemented")
 }
 
@@ -768,14 +769,12 @@ func (d *NASQtreeStorageDriver) addDefaultQuotaForFlexvol(flexvol string) error 
 		return fmt.Errorf("error adding default quota: %v", err)
 	}
 
-	d.disableQuotas(flexvol, true)
-	if err != nil {
-		return fmt.Errorf("error adding default quota: %v", err)
+	if err := d.disableQuotas(flexvol, true); err != nil {
+		log.Warning("Could not disable quotas after adding a default quota: %v", err)
 	}
 
-	d.enableQuotas(flexvol, true)
-	if err != nil {
-		return fmt.Errorf("error adding default quota: %v", err)
+	if err := d.enableQuotas(flexvol, true); err != nil {
+		log.Warning("Could not enable quotas after adding a default quota: %v", err)
 	}
 
 	return nil
@@ -1127,7 +1126,34 @@ func (d *NASQtreeStorageDriver) GetVolumeOpts(
 }
 
 func (d *NASQtreeStorageDriver) GetInternalVolumeName(name string) string {
-	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
+
+	if tridentconfig.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
+		return *d.Config.StoragePrefix + name
+	} else {
+		// With an external store, any transformation of the name is fine
+		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
+		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
+		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+
+		if len(internal) > 64 {
+			// ONTAP imposes a 64-character limit on qtree names.  We are unlikely to exceed
+			// that with CSI unless the storage prefix is really long, but non-CSI can hit the
+			// limit more easily.  If the computed name is over the limit, the safest approach is
+			// simply to generate a new name.
+			internal = fmt.Sprintf("%s_%s",
+				strings.Replace(drivers.GetDefaultStoragePrefix(d.Config.DriverContext), "_", "", -1),
+				strings.Replace(uuid.New().String(), "-", "", -1))
+
+			log.WithFields(log.Fields{
+				"Name":         name,
+				"InternalName": internal,
+			}).Debug("Created UUID-based name for ontap-nas-economy volume.")
+		}
+
+		return internal
+	}
 }
 
 func (d *NASQtreeStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {

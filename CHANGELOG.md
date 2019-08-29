@@ -12,6 +12,7 @@
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
 - Fixed some iSCSI connection logic.
 - **Kubernetes:** Reduced log verbosity in CSI sidecars.
+- **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.
 
 ## v19.07.0
 
