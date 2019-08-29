@@ -5,8 +5,9 @@
 ## Changes since v19.07.0
 
 **Fixes:**
-- **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes.
-- **Kubernetes:** Reduced log verbosity in CSI sidecars.
+- **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes. (Issue [#264](https://github.com/NetApp/trident/issues/264))
+- **Kubernetes:** Reduced log verbosity in CSI sidecars. (Issue [#275](https://github.com/NetApp/trident/issues/275))
+- **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.  (Issue [#260](https://github.com/NetApp/trident/issues/260), Issue [#273](https://github.com/NetApp/trident/issues/273))
 
 **Enhancements:**
 

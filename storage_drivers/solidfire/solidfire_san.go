@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/RoaringBitmap/roaring"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -1479,12 +1480,28 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
 	if tridentconfig.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
 		return strings.Replace(name, "_", "-", -1)
 	} else {
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
-		internal = strings.Replace(internal, "_", "-", -1)
-		internal = strings.Replace(internal, ".", "-", -1)
+		internal = strings.Replace(internal, "_", "-", -1)  // ElementOS disallows underscores
+		internal = strings.Replace(internal, ".", "-", -1)  // ElementOS disallows periods
 		internal = strings.Replace(internal, "--", "-", -1) // Remove any double hyphens
+
+		if len(internal) > 64 {
+			// ElementOS imposes a 64-character limit on volume names.  We are unlikely to exceed
+			// that with CSI, but non-CSI can hit the limit more easily.  If the computed name is
+			// over the limit, the safest approach is simply to generate a new name.
+			internal = fmt.Sprintf("%s-%s",
+				strings.Replace(drivers.GetDefaultStoragePrefix(d.Config.DriverContext), "_", "", -1),
+				strings.Replace(uuid.New().String(), "-", "", -1))
+
+			log.WithFields(log.Fields{
+				"Name":         name,
+				"InternalName": internal,
+			}).Debug("Created UUID-based name for solidfire volume.")
+		}
+
 		return internal
 	}
 }
