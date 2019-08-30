@@ -991,7 +991,8 @@ func (p *Plugin) createPV(
 	case drivers.OntapNASStorageDriverName,
 		drivers.OntapNASQtreeStorageDriverName,
 		drivers.OntapNASFlexGroupStorageDriverName,
-		drivers.AWSNFSStorageDriverName:
+		drivers.AWSNFSStorageDriverName,
+		drivers.AzureNFSStorageDriverName:
 
 		nfsSource = CreateNFSVolumeSource(volume)
 		pv.Spec.NFS = nfsSource

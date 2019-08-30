@@ -13,6 +13,7 @@
 - Fixed some iSCSI connection logic.
 - **Kubernetes:** Reduced log verbosity in CSI sidecars.
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.
+- **Kubernetes:** Fix for Azure NetApp Files to work with non-CSI deployments.
 
 ## v19.07.0
 
