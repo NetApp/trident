@@ -665,6 +665,12 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 
 // RelabelVolume updates the 'trident' telemetry label on a volume
 func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSystem, error) {
+
+	// Only updating trident labels
+	if len(labels) > 1 {
+		log.Errorf("too many labels (%d) passed to RelabelVolume", len(labels))
+	}
+
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
@@ -678,16 +684,31 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 		return nil, errors.New("couldn't get volume for RelabelVolume")
 	}
 
-	// Only updating trident labels
-	if len(labels) > 1 {
-		log.Errorf("too many labels (%d) passed to RelabelVolume", len(labels))
-	}
-
 	tags := make(map[string]string)
+	// Copy any existing tags first in order to make sure to preserve any custom tags that might've
+	// been applied prior to a volume import
+	if nv.Tags != nil {
+		m := nv.Tags.(map[string]interface{})
+		for idx, val := range m {
+			switch vv := val.(type) {
+			case string:
+				tags[idx] = vv
+			default:
+				return nil, errors.New("strange tag type detected in existing tags")
+			}
+		}
+	}
+	// Now update the working copy with the incoming change
 	for _, val := range labels {
 		tags[tridentLabelTag] = val
 	}
 	nv.Tags = tags
+
+	// Workaround: nv.BaremetalTenantID is an Azure-supplied field, but we find that sometimes its
+	// length exceeds limits imposed by Azure's own validation rules.  This is not something we care
+	// about, nor can we even change it, so in order to fix the validation issues we nuke this field
+	// here before "updating" the volume.
+	nv.BaremetalTenantID = nil
 
 	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(d.SDKClient.Ctx, nv, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name); err != nil {
