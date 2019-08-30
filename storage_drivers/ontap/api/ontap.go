@@ -1251,13 +1251,6 @@ func (d Client) VolumeListAllBackedBySnapshot(volumeName, snapshotName string) (
 	return volumeNames, nil
 }
 
-// VolumeGetRootName gets the name of the root volume of a vserver
-func (d Client) VolumeGetRootName() (*azgo.VolumeGetRootNameResponse, error) {
-	response, err := azgo.NewVolumeGetRootNameRequest().
-		ExecuteUsing(d.zr)
-	return response, err
-}
-
 // VolumeRename changes the name of a FlexVol (but not a FlexGroup!)
 func (d Client) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRenameResponse, error) {
 	response, err := azgo.NewVolumeRenameRequest().
@@ -1969,39 +1962,6 @@ func (d Client) AggregateCommitment(aggregate string) (*AggregateCommitment, err
 
 /////////////////////////////////////////////////////////////////////////////
 // SNAPMIRROR operations BEGIN
-
-// SnapmirrorGetLoadSharingMirrors gets load-sharing SnapMirror relationships for a volume
-// equivalent to filer::> snapmirror -type LS -source-volume
-func (d Client) SnapmirrorGetLoadSharingMirrors(volume string) (*azgo.SnapmirrorGetIterResponse, error) {
-
-	// Limit the mirrors to load-sharing mirrors matching the source FlexVol
-	query := &azgo.SnapmirrorGetIterRequestQuery{}
-	info := azgo.NewSnapmirrorInfoType().SetSourceVolume(volume).SetRelationshipType("load_sharing")
-	query.SetSnapmirrorInfo(*info)
-
-	// Limit the returned data to only the source location
-	desiredAttributes := &azgo.SnapmirrorGetIterRequestDesiredAttributes{}
-	desiredInfo := azgo.NewSnapmirrorInfoType().SetSourceLocation("").SetRelationshipStatus("")
-	desiredAttributes.SetSnapmirrorInfo(*desiredInfo)
-
-	response, err := azgo.NewSnapmirrorGetIterRequest().
-		SetQuery(*query).
-		SetDesiredAttributes(*desiredAttributes).
-		ExecuteUsing(d.zr)
-	return response, err
-}
-
-// SnapmirrorUpdateLoadSharingMirrors updates the destination volumes of a set of load-sharing mirrors
-// equivalent to filer::> snapmirror update-ls-set -source-path
-func (d Client) SnapmirrorUpdateLoadSharingMirrors(
-	sourceLocation string,
-) (*azgo.SnapmirrorUpdateLsSetResponse, error) {
-
-	response, err := azgo.NewSnapmirrorUpdateLsSetRequest().
-		SetSourceLocation(sourceLocation).
-		ExecuteUsing(d.zr)
-	return response, err
-}
 
 // SNAPMIRROR operations END
 /////////////////////////////////////////////////////////////////////////////

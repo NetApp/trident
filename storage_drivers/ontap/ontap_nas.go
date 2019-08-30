@@ -243,9 +243,6 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("error mounting volume to junction: %v", err)
 	}
 
-	// If LS mirrors are present on the SVM root volume, update them
-	UpdateLoadSharingMirrors(d.API)
-
 	return nil
 }
 

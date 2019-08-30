@@ -649,9 +649,6 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		return "", fmt.Errorf("error mounting Flexvol: %v", err)
 	}
 
-	// If LS mirrors are present on the SVM root volume, update them
-	UpdateLoadSharingMirrors(d.API)
-
 	// Create the default quota rule so we can use quota-resize for new qtrees
 	err = d.addDefaultQuotaForFlexvol(flexvol)
 	if err != nil {
