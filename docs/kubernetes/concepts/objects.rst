@@ -239,7 +239,8 @@ use ``tridentctl get backend`` to get the list of backends and their pools.
 2. Kubernetes attributes: These attributes have no impact on the selection of
    storage pools/backends by Trident during dynamic provisioning. Instead,
    these attributes simply supply parameters supported by Kubernetes Persistent
-   Volumes.
+   Volumes. Worker nodes are responsible for filesystem create operations and 
+   may require appropriate filesystem utilities such as xfsprogs.
 
 ================= ======= ======================================= ================================================= ======================================================= ===================
 Attribute         Type    Values                                  Description                                       Relevant Drivers                                        Kubernetes Version
