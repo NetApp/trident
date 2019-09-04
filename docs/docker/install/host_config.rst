@@ -108,27 +108,27 @@ Traditional Install Method (Docker <= 1.12)
 -------------------------------------------
 
 #. Ensure you have Docker version 1.10 or above
-   
+
    .. code-block:: bash
-   
+
       docker --version
 
    If your version is out of date, update to the latest.
-   
+
    .. code-block:: bash
-   
+
       curl -fsSL https://get.docker.com/ | sh
 
    Or, `follow the instructions for your distribution <https://docs.docker.com/engine/installation/>`_.
-   
+
 
 #. After ensuring the correct version of Docker is installed, install and configure the NetApp Docker Volume Plugin.  Note, you will need to ensure that NFS and/or iSCSI is configured for your system.  See the installation instructions below for detailed information on how to do this.
 
    .. code-block:: bash
 
       # download and unpack the application
-      wget https://github.com/NetApp/trident/releases/download/v19.07.0/trident-installer-19.07.0.tar.gz
-      tar zxf trident-installer-19.07.0.tar.gz
+      wget https://github.com/NetApp/trident/releases/download/v19.07.1/trident-installer-19.07.1.tar.gz
+      tar zxf trident-installer-19.07.1.tar.gz
 
       # move to a location in the bin path
       sudo mv trident-installer/extras/bin/trident /usr/local/bin
@@ -187,24 +187,24 @@ Starting Trident at System Startup
 A sample unit file for systemd based systems can be found at ``contrib/trident.service.example`` in the git repo.  To use the file, with CentOS/RHEL:
 
 .. code-block:: bash
-   
+
    # copy the file to the correct location.  you must use unique names for the
    # unit files if you have more than one instance running
    cp contrib/trident.service.example /usr/lib/systemd/system/trident.service
-   
+
    # edit the file, change the description (line 2) to match the driver name and the
    # configuration file path (line 9) to reflect your environment.
-   
+
    # reload systemd for it to ingest changes
    systemctl daemon-reload
-   
+
    # enable the service, note this name will change depending on what you named the
    # file in the /usr/lib/systemd/system directory
    systemctl enable trident
-   
+
    # start the service, see note above about service name
    systemctl start trident
-   
+
    # view the status
    systemctl status trident
 
@@ -232,22 +232,22 @@ Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 * ``debug`` - Specify whether debug logging is enabled.  Default is false.  Overrides log-level if true.
 
 **Installing the Managed Plugin**
-   
+
 #. Ensure you have Docker Engine 17.03 (nee 1.13) or above installed.
 
    .. code-block:: bash
-   
+
      docker --version
-   
+
    If your version is out of date, `follow the instructions for your distribution <https://docs.docker.com/engine/installation/>`_ to install or update.
 
 #. Create a configuration file.  The config file must be located in the ``/etc/netappdvp`` directory.  The default filename is ``config.json``, however you can use any name you choose by specifying the ``config`` option with the file name.  Be sure to use the correct options for your storage system.
 
    .. code-block:: bash
-   
+
      # create a location for the config files
      sudo mkdir -p /etc/netappdvp
- 
+
      # create the configuration file, see below for more configuration examples
      cat << EOF > /etc/netappdvp/config.json
      {
@@ -265,18 +265,18 @@ Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 #. Start Trident using the managed plugin system.
 
    .. code-block:: bash
-   
+
      docker plugin install --grant-all-permissions --alias netapp netapp/trident-plugin:19.07 config=myConfigFile.json
 
 #. Begin using Trident to consume storage from the configured system.
 
    .. code-block:: bash
-   
+
      # create a volume named "firstVolume"
      docker volume create -d netapp --name firstVolume
-     
+
      # create a default volume at container instantiation
      docker run --rm -it --volume-driver netapp --volume secondVolume:/my_vol alpine ash
-     
+
      # remove the volume "firstVolume"
      docker volume rm firstVolume

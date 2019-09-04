@@ -15,6 +15,10 @@
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.
 - **Kubernetes:** Fix for Azure NetApp Files to work with non-CSI deployments.
 
+**Deprecations:**
+- **Kubernetes:** Deprecated support for external etcd stores for storing Trident's data in favor of CRDs. Will be
+ removed in 19.10.0.
+
 ## v19.07.0
 
 **Fixes:**

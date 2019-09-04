@@ -83,12 +83,12 @@ Identify your Kubernetes server version. You will be using it when you
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 19.07.0:
+For example, if the latest version is 19.07.1:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v19.07.0/trident-installer-19.07.0.tar.gz
-   tar -xf trident-installer-19.07.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v19.07.1/trident-installer-19.07.1.tar.gz
+   tar -xf trident-installer-19.07.1.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -128,19 +128,19 @@ Install Trident in the desired namespace by executing the
    $ ./tridentctl install -n trident
    ....
    INFO Starting Trident installation.                namespace=trident
-   INFO Created service account.                     
-   INFO Created cluster role.                        
-   INFO Created cluster role binding.                
-   INFO Added finalizers to custom resource definitions. 
-   INFO Created Trident service.                     
-   INFO Created Trident secret.                      
-   INFO Created Trident deployment.                  
-   INFO Created Trident daemonset.                   
-   INFO Waiting for Trident pod to start.            
+   INFO Created service account.
+   INFO Created cluster role.
+   INFO Created cluster role binding.
+   INFO Added finalizers to custom resource definitions.
+   INFO Created Trident service.
+   INFO Created Trident secret.
+   INFO Created Trident deployment.
+   INFO Created Trident daemonset.
+   INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-679648bd45-cv2mx
-   INFO Waiting for Trident REST interface.          
-   INFO Trident REST interface is up.                 version=19.07.0
-   INFO Trident installation succeeded.              
+   INFO Waiting for Trident REST interface.
+   INFO Trident REST interface is up.                 version=19.07.1
+   INFO Trident installation succeeded.
    ....
 
 It will look like this when the installer is complete. Depending on
@@ -157,7 +157,7 @@ the number of nodes in your Kubernetes cluster, you may observe more pods:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 19.07.0        | 19.07.0        |
+   | 19.07.1        | 19.07.1        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -408,7 +408,7 @@ mounts the PV under ``/usr/share/nginx/html``.
   kubectl exec -it task-pv-pod -- df -h /usr/share/nginx/html
   Filesystem                                                          Size  Used Avail Use% Mounted on
   10.xx.xx.xx:/trid_1907_pvc_3acb0d1c_b1ae_11e9_8d9f_5254004dfdb7     1.0G  256K  1.0G   1% /usr/share/nginx/html
-  
+
 
   # Delete the pod
   kubectl delete pod task-pv-pod
