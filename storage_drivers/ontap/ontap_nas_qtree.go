@@ -602,7 +602,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
 	size := "1g"
-	unixPermissions := "0700"
+	unixPermissions := "0711"
 	exportPolicy := d.flexvolExportPolicy
 	securityStyle := "unix"
 

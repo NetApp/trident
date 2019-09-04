@@ -11,6 +11,7 @@
 - **Kubernetes:** Node now retries registration with controller indefinitely (Issue [#283](https://github.com/NetApp/trident/issues/283))
 - **Kubernetes:** Fixed a panic when adding a storage backend fails.
 - Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
+- Fixed NFS 4.1 access denied issue in ontap-nas-economy driver (Issue [#256](https://github.com/NetApp/trident/issues/256))
 
 **Enhancements:**
 - **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
