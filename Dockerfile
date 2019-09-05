@@ -33,7 +33,7 @@ ARG K8S=""
 ENV K8S $K8S
 ENV TRIDENT_IP localhost
 
-COPY ./scripts/* $BIN $CLI_BIN ./extras/external-etcd/bin/etcd-copy /usr/local/bin/
+COPY ./scripts/* $BIN $CLI_BIN /usr/local/bin/
 
 RUN mkdir /netapp
 ADD chroot-host-wrapper.sh /netapp
@@ -60,4 +60,4 @@ RUN    ln -s /netapp/chroot-host-wrapper.sh /netapp/blkid \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/umount
 
 
-CMD ["/usr/bin/env -i PATH='/netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/local/bin/$BIN -port $PORT -etcd_v3 $ETCDV3 -k8s_api_server $K8S"]
+CMD ["/usr/bin/env -i PATH='/netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/local/bin/$BIN -port $PORT -crd_persistence -k8s_api_server $K8S"]

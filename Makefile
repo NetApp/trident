@@ -39,7 +39,7 @@ DR=docker run --rm \
 
 GO=${DR} go
 
-.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist build_container_tools dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
+.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
 default: dist
 
@@ -88,11 +88,8 @@ trident_retag:
 trident_build: trident_retag
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
-	@mkdir -p ${ROOT}/extras/external-etcd/bin
-	@chmod 777 ${ROOT}/extras/external-etcd/bin
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
-	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/extras/external-etcd/bin/etcd-copy github.com/netapp/trident/extras/external-etcd/etcd-copy
 	cp ${BIN_DIR}/${BIN} .
 	cp ${BIN_DIR}/${CLI_BIN} .
 	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV3=${ETCD_SERVER} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
@@ -113,10 +110,6 @@ tridentctl_build:
 
 trident_build_all: get *.go trident_build
 
-## Build targets for constructing trident and the trident installer bundle
-build_container_tools:
-	make -C extras/container-tools container_tools
-
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
 	-docker rmi ${TRIDENT_DIST_TAG}
@@ -127,18 +120,11 @@ dist_tar: build
 	-rm -rf /tmp/trident-installer
 	@cp -a trident-installer /tmp/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
-	@cp -a extras /tmp/trident-installer/
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
-	-rm -rf /tmp/trident-installer/setup/backend.json /tmp/trident-installer/extras/container-tools
-	@rm -rf /tmp/trident-installer/extras/external-etcd/etcd-copy
+	-rm -rf /tmp/trident-installer/setup/backend.json
 	-find /tmp/trident-installer -name \*.swp | xargs -0 -r rm
 	@mkdir -p /tmp/trident-installer/setup
-	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/trident-deployment-external-etcd.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/trident-deployment-external-etcd.yaml
-	@sed "s|__TRIDENT_IMAGE__|${TRIDENT_DIST_TAG}|g" kubernetes-yaml/etcdcopy-job.yaml.templ > /tmp/trident-installer/extras/external-etcd/trident/etcdcopy-job.yaml
-	@cp kubernetes-yaml/trident-namespace.yaml /tmp/trident-installer/extras/external-etcd/trident/
-	@cp kubernetes-yaml/trident-serviceaccounts.yaml /tmp/trident-installer/extras/external-etcd/trident/
-	@cp kubernetes-yaml/trident-clusterrole* /tmp/trident-installer/extras/external-etcd/trident/
 	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 	-rm -rf /tmp/trident-installer
 

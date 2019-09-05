@@ -13,6 +13,7 @@
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.
+- Removed support for running Trident with an external etcd instance.
   
 ## v19.07.0
 
