@@ -329,7 +329,7 @@ The logging service can, optionally, be deployed for both applications as well a
 Configuring the Ansible variables according to the deployment method is important in order to ensure that the correct storage is utilized by the underlying services.  Let's look at the options for each of the deployment methods
 
 .. note::
-   The tables below only contain the variables which are relevant for storage configuration as it relates to the logging service.  There are many other options found in `the documentation <https://docs.openshift.com/container-platform/latest/install_config/aggregate_logging.html>`_ which should be reviewed, configured, and used according to your deployment.
+   The tables below only contain the variables which are relevant for storage configuration as it relates to the logging service.  There are many other options found in the `logging documentation <https://docs.openshift.com/container-platform/3.11/install_config/aggregate_logging.html>`_ which should be reviewed, configured, and used according to your deployment.
 
 The variables in the below table will result in the Ansible playbook creating a PV and PVC for the logging service using the details provided.  This method is significantly less flexible than using the component installation playbook after OpenShift installation, however, if you have existing volumes available, it is an option.
 
@@ -447,4 +447,4 @@ If your OpenShift cluster is already running, and therefore Trident has been dep
 
 With the appropriate Ansible variables defined in your hosts/inventory file, deploy the service using Ansible.  If you are deploying at OpenShift install time, then the PV will be created and used automatically.  If you're deploying using the component playbooks, after OpenShift install, then Ansible will create any PVCs which are needed and, after Trident has provisioned storage for them, deploy the service.
 
-The variables above, and the process for deploying, may change with each version of OpenShift.  Ensure you review and follow `the deployment guide <https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html>`_ for your version so that it is configured for your environment.
+The variables above, and the process for deploying, may change with each version of OpenShift.  Ensure you review and follow the `deployment guide <https://docs.openshift.com/container-platform/3.11/install_config/cluster_metrics.html>`_ for your version so that it is configured for your environment.

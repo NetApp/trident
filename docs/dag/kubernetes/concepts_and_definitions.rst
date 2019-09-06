@@ -25,7 +25,7 @@ Persistent Volume Claims (PVCs) are used by applications to request access to st
 
 * •	Storage Class (optional) - Identifies which Storage Class to request for this PVC. See below for Storage Class information.
 
-More information about PVCs can be found in the `Kubernetes <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims>`_ or `OpenShift <https://docs.openshift.com/container-platform/latest/architecture/additional_concepts/storage.html#persistent-volume-claims>`_ documentation.
+More information about PVCs can be found in the `Kubernetes PVC <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims>`_ or `OpenShift PVC <https://docs.openshift.com/container-platform/3.11/architecture/additional_concepts/storage.html#persistent-volume-claims>`_ documentation.
 
 Persistent Volume
 -----------------
@@ -47,7 +47,7 @@ At a minimum, the PV must contain these parameters:
   * Recycle - Kubernetes will connect the volume to a temporary pod and issue a ``rm -rf`` command to clear the data after the volume is released. For our interests, this is only supported by NFS volumes.
   * Delete - Kubernetes will delete the PV when it is released. However, Kubernetes does not delete the storage which was referenced by the PV. A storage administrator will need to delete the volume on the backend.
 
-More information about PVs can be found in the `Kubernetes <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes>`_ or `OpenShift <https://docs.openshift.com/container-platform/latest/architecture/additional_concepts/storage.html#persistent-volumes>`_ documentation.
+More information about PVs can be found in the `Kubernetes PV <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes>`_ or `OpenShift PV <https://docs.openshift.com/container-platform/3.11/architecture/additional_concepts/storage.html#persistent-volumes>`_ documentation.
 
 Storage Class
 -------------
@@ -62,7 +62,7 @@ A Storage Class object in Kubernetes has only two required fields:
 
 The provisioner used may require additional attributes which will be specific to the provisioner used. Additionally, the Storage Class may have a reclaim policy and mount options specified which will be applied to all volumes created for that storage class.
 
-More information about storage classes can be found in the `Kubernetes <https://kubernetes.io/docs/concepts/storage/storage-classes/>`_ or `OpenShift <https://docs.openshift.com/container-platform/latest/install_config/persistent_storage/dynamically_provisioning_pvs.html>`_ documentation.
+More information about storage classes can be found in the `Kubernetes <https://kubernetes.io/docs/concepts/storage/storage-classes/>`_ or `OpenShift <https://docs.openshift.com/container-platform/3.11/install_config/persistent_storage/dynamically_provisioning_pvs.html>`_ documentation.
 
 Kubernetes compute concepts
 ===========================

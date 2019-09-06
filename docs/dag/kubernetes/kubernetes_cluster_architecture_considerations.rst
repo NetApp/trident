@@ -101,9 +101,9 @@ Cons:
 Red Hat OpenShift infrastructure architecture
 ---------------------------------------------
 
-In addition to the architectures referenced above, Red Hat's OpenShift introduces the concept of `infrastructure nodes <https://docs.openshift.com/container-platform/latest/admin_guide/manage_nodes.html#infrastructure-nodes>`_. These nodes host cluster services such as log aggregation, metrics collection and reporting, container registry services, and overlay network management and routing.
+In addition to the architectures referenced above, Red Hat's OpenShift introduces the concept of `infrastructure nodes <https://docs.openshift.com/container-platform/3.11/admin_guide/manage_nodes.html#infrastructure-nodes>`_. These nodes host cluster services such as log aggregation, metrics collection and reporting, container registry services, and overlay network management and routing.
 
-`Red Hat recommends <https://docs.openshift.com/container-platform/latest/admin_guide/manage_nodes.html#infrastructure-nodes>`_ a minimum of three infrastructure nodes for production deployments.  This ensures that the services have resources available and are able to migrate in the event of host maintenance or failure.
+`Red Hat recommends <https://docs.openshift.com/container-platform/3.11/admin_guide/manage_nodes.html#infrastructure-nodes>`_ a minimum of three infrastructure nodes for production deployments.  This ensures that the services have resources available and are able to migrate in the event of host maintenance or failure.
 
 This architecture enables the services which are critical to the cluster, i.e. registry, overlay network routing, and others to be hosted on dedicated nodes. These dedicated nodes may have additional redundancy, different CPU/RAM requirements, and other low-level differences from compute nodes. This also makes adding and removing compute nodes as needed easier, without needing to worry about core services being affected by a node being evacuated.
 
@@ -118,7 +118,7 @@ This architecture enables the services which are critical to the cluster, i.e. r
 
 
 
-An additional option involves separating out the master and etcd roles into different servers in the same way as can be done in Kubernetes. This results in having master, etcd, infrastructure, and compute node roles. Further details, including examples of OpenShift node roles and potential deployment options, can be found in the `Red Hat documentation <https://docs.openshift.com/container-platform/latest/install/index.html>`_.
+An additional option involves separating out the master and etcd roles into different servers in the same way as can be done in Kubernetes. This results in having master, etcd, infrastructure, and compute node roles. Further details, including examples of OpenShift node roles and potential deployment options, can be found in the `Red Hat documentation <https://docs.openshift.com/container-platform/3.11/install/index.html>`_.
  
 
 Choosing an architecture
