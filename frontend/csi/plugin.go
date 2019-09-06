@@ -184,11 +184,7 @@ func (p *Plugin) Activate() error {
 		p.grpc = NewNonBlockingGRPCServer()
 		p.grpc.Start(p.endpoint, p, p, p)
 		if p.role == CSINode || p.role == CSIAllInOne {
-			err := p.nodeRegisterWithController()
-			if err != nil {
-				log.Errorf("Error registering node %s with controller; %v", p.nodeName, err)
-				p.grpc.GracefulStop()
-			}
+			go p.nodeRegisterWithController()
 		}
 	}()
 	return nil

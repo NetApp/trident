@@ -196,43 +196,39 @@ func (p *Plugin) nodeGetInfo() *utils.Node {
 	return node
 }
 
-func (p *Plugin) nodeRegisterWithController() error {
-	node := p.nodeGetInfo()
-	// The controller may not be fully initialized by the time the node is ready to register,
-	// so wait here until it is ready.
-	checkBackChannelReady := func() error {
-		_, err := p.restClient.GetNodes()
-		return err
-	}
-	backChannelReadyNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Controller not yet ready, waiting.")
-	}
-	backChannelBackoff := backoff.NewExponentialBackOff()
-	backChannelBackoff.InitialInterval = 1 * time.Second
-	backChannelBackoff.Multiplier = 2
-	backChannelBackoff.RandomizationFactor = 0.1
-	backChannelBackoff.MaxElapsedTime = tridentconfig.HTTPTimeout
+func (p *Plugin) nodeRegisterWithController() {
 
-	// Run the check using an exponential backoff
-	if err := backoff.RetryNotify(checkBackChannelReady, backChannelBackoff, backChannelReadyNotify); err != nil {
-		log.WithField("node", p.nodeName).Errorf("Could not communicate with controller after %3.2f seconds; %v",
-			backChannelBackoff.MaxElapsedTime.Seconds(), err)
-	} else {
-		log.WithField("node", p.nodeName).Debug("Communication with controller established.")
+	// Assemble the node details that we will register with the controller
+	node := p.nodeGetInfo()
+
+	// The controller may not be fully initialized by the time the node is ready to register,
+	// so retry until it is responding on the back channel and we have registered the node.
+	registerNode := func() error {
+		return p.restClient.CreateNode(node)
 	}
-	err := p.restClient.CreateNode(node)
-	if err != nil {
-		return err
+
+	registerNodeNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration,
+			"error":     err,
+		}).Debug("Controller not yet ready, waiting.")
 	}
-	return nil
+
+	registerNodeBackoff := backoff.NewExponentialBackOff()
+	registerNodeBackoff.InitialInterval = 1 * time.Second
+	registerNodeBackoff.Multiplier = 2
+	registerNodeBackoff.MaxInterval = 5 * time.Second
+	registerNodeBackoff.RandomizationFactor = 0.1
+	registerNodeBackoff.MaxElapsedTime = 0 // Indefinite
+
+	// Retry using an exponential backoff that never ends until it succeeds
+	backoff.RetryNotify(registerNode, registerNodeBackoff, registerNodeNotify)
+
+	log.WithField("node", p.nodeName).Debug("Communication with controller established, node registered.")
 }
 
 func (p *Plugin) nodeDeregisterWithController() error {
-	err := p.restClient.DeleteNode(p.nodeName)
-	if err != nil {
-		return err
-	}
-	return nil
+	return p.restClient.DeleteNode(p.nodeName)
 }
 
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
