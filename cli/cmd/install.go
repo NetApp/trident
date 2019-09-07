@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 
@@ -212,11 +211,6 @@ func discoverInstallationEnvironment() error {
 		etcdImage = tridentconfig.BuildEtcdImage
 	} else if !strings.Contains(etcdImage, tridentconfig.BuildEtcdVersion) {
 		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", tridentconfig.BuildEtcdVersion)
-	}
-
-	// Ensure we're on Linux
-	if runtime.GOOS != "linux" {
-		return errors.New("the Trident installer only runs on Linux")
 	}
 
 	// Create the Kubernetes client

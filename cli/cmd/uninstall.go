@@ -2,9 +2,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"runtime"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -65,11 +63,6 @@ func discoverUninstallationEnvironment() error {
 	// Default deployment image to what Trident was built with
 	if tridentImage == "" {
 		tridentImage = tridentconfig.BuildImage
-	}
-
-	// Ensure we're on Linux
-	if runtime.GOOS != "linux" {
-		return errors.New("the Trident uninstaller only runs on Linux")
 	}
 
 	// Create the Kubernetes client

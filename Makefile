@@ -1,9 +1,9 @@
 # Copyright 2018 NetApp, Inc. All Rights Reserved.
 
 
-GOOS ?= linux
 GOARCH ?= amd64
 GOGC ?= ""
+GO_IMAGE = golang:1.12
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
@@ -19,6 +19,7 @@ BUILD_TIME = `date`
 PORT ?= 8000
 ROOT = $(shell pwd)
 BIN_DIR = ${ROOT}/bin
+MACOS_BIN_DIR = ${BIN_DIR}/macos
 COVERAGE_DIR = ${ROOT}/coverage
 BIN ?= trident_orchestrator
 TARBALL_BIN ?= trident
@@ -27,17 +28,29 @@ CLI_PKG ?= github.com/netapp/trident/cli
 K8S ?= ""
 BUILD = build
 
-DR=docker run --rm \
+DR_LINUX = docker run --rm \
 	--net=host \
-	-e GOOS=$(GOOS) \
+	-e GOOS=linux \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
 	-v $(TRIDENT_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
-	golang:1.12
+	$(GO_IMAGE)
 
-GO=${DR} go
+DR_MACOS = docker run --rm \
+	--net=host \
+	-e GOOS=darwin \
+	-e GOARCH=$(GOARCH) \
+	-e GOGC=$(GOGC) \
+	-v $(TRIDENT_VOLUME):/go \
+	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
+	-w $(TRIDENT_VOLUME_PATH) \
+	$(GO_IMAGE)
+
+GO_LINUX = ${DR_LINUX} go
+
+GO_MACOS = ${DR_MACOS} go
 
 .PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
@@ -88,8 +101,8 @@ trident_retag:
 trident_build: trident_retag
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
-	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
-	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
+	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	cp ${BIN_DIR}/${BIN} .
 	cp ${BIN_DIR}/${CLI_BIN} .
 	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV3=${ETCD_SERVER} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
@@ -103,12 +116,17 @@ endif
 tridentctl_build:
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
-	@${GO} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	cp ${BIN_DIR}/${CLI_BIN} .
 	# docker build --build-arg PORT=${PORT} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 	rm ${CLI_BIN}
 
-trident_build_all: get *.go trident_build
+tridentctl_macos_build:
+	@mkdir -p ${MACOS_BIN_DIR}
+	@chmod 777 ${MACOS_BIN_DIR}
+	@${GO_MACOS} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/macos/${CLI_BIN} ${CLI_PKG}
+
+trident_build_all: get *.go trident_build tridentctl_macos_build
 
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
@@ -122,6 +140,8 @@ dist_tar: build
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
+	@mkdir -p /tmp/trident-installer/extras/macos/bin
+	@cp ${MACOS_BIN_DIR}/${CLI_BIN} /tmp/trident-installer/extras/macos/bin/${CLI_BIN}
 	-rm -rf /tmp/trident-installer/setup/backend.json
 	-find /tmp/trident-installer -name \*.swp | xargs -0 -r rm
 	@mkdir -p /tmp/trident-installer/setup
@@ -177,10 +197,10 @@ clean:
 	-rm -rf ${COVERAGE_DIR}
 
 fmt:
-	@$(GO) fmt
+	@$(GO_LINUX) fmt
 
 install: build
-	@$(GO) install
+	@$(GO_LINUX) install
 
 vet:
 	@go vet $(shell go list ./... | grep -v /vendor/)

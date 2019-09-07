@@ -11,6 +11,7 @@
 - Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 
 **Enhancements:**
+- **Kubernetes** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.
