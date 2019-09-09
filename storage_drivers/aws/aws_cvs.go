@@ -29,7 +29,7 @@ const (
 	MinimumVolumeSizeBytes    = 1000000000   // 1 GB
 	MinimumCVSVolumeSizeBytes = 100000000000 // 100 GB
 	MinimumAPIVersion         = "1.0.0"
-	MinimumSDEVersion         = "1.66.3"
+	MinimumSDEVersion         = "1.126.1"
 
 	defaultServiceLevel    = api.ServiceLevelStandard
 	defaultNfsMountOptions = "-o nfsvers=3"
@@ -591,7 +591,7 @@ func (d *NFSStorageDriver) Create(
 		AllowedClients: pool.InternalAttributes[ExportRule],
 		Cifs:           false,
 		Nfsv3:          true,
-		Nfsv4:          true,
+		Nfsv4:          false,
 		RuleIndex:      1,
 		UnixReadOnly:   false,
 		UnixReadWrite:  true,
@@ -616,7 +616,7 @@ func (d *NFSStorageDriver) Create(
 		CreationToken:  name,
 		ExportPolicy:   exportPolicy,
 		Labels:         d.getTelemetryLabels(),
-		ProtocolTypes:  []string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv4},
+		ProtocolTypes:  []string{api.ProtocolTypeNFSv3},
 		QuotaInBytes:   int64(sizeBytes),
 		SecurityStyle:  defaultSecurityStyle,
 		ServiceLevel:   serviceLevel,

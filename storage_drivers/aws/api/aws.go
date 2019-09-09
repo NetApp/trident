@@ -26,7 +26,7 @@ import (
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 300
+const createTimeoutSeconds = 480
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
