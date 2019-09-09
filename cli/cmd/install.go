@@ -1461,6 +1461,16 @@ func installTridentInCluster() (returnError error) {
 	}
 
 	if csi {
+		// Delete any previous installer pod security policy
+		podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
+		if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+			log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
+				"please delete it manually.")
+		} else {
+			log.WithField("podSecurityPolicy", "tridentinstaller").Info(
+				"Deleted previous installer pod security policy.")
+		}
+
 		// Create installer pod security policy
 		errMessage := "could not create installer pod security policy"
 		returnError = createObjectsByYAML("installerPodSecurityPolicy",
@@ -1474,8 +1484,8 @@ func installTridentInCluster() (returnError error) {
 			// Delete pod security policy
 			podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
 			if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-				log.WithField("error", err).Errorf("could not delete installer pod security policy; " +
-					"please delete it manually")
+				log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
+					"please delete it manually.")
 			} else {
 				log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted installer pod security policy.")
 			}
