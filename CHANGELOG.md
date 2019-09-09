@@ -14,6 +14,7 @@
 - **Kubernetes:** Reduced log verbosity in CSI sidecars.
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.
 - **Kubernetes:** Fix for Azure NetApp Files to work with non-CSI deployments.
+- Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 
 **Deprecations:**
 - **Kubernetes:** Deprecated support for external etcd stores for storing Trident's data in favor of CRDs. Will be
