@@ -305,7 +305,7 @@ installer, replacing ``__BACKEND_TYPE__`` with the storage driver name.
     | nas-backend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       0 |
     +-------------+----------------+--------------------------------------+--------+---------+
 
-    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic.yaml
+    cp sample-input/storage-class-basic.yaml.templ sample-input/storage-class-basic.yaml
 
     # Modify __BACKEND_TYPE__ with the storage driver field above (e.g., ontap-nas)
     vi sample-input/storage-class-basic.yaml
