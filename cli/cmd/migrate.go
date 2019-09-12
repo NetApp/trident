@@ -15,7 +15,6 @@ import (
 var (
 	// CLI flags
 	migrateDryRun bool
-	shouldPersist bool
 	k8sAPIServer  string
 	k8sConfigPath string
 	etcdV3        string
@@ -106,8 +105,7 @@ func discoverMigrationEnvironment() error {
 		return fmt.Errorf("could not create the etcd V3 client; %v", err)
 	}
 
-	shouldPersist := false
-	transformer := persistentstore.NewEtcdDataTransformer(etcdClient, migrateDryRun, shouldPersist)
+	transformer := persistentstore.NewEtcdDataTransformer(etcdClient, migrateDryRun, false)
 	migrator = persistentstore.NewCRDDataMigrator(etcdClient, crdClient, migrateDryRun, transformer)
 
 	return migrator.RunPrechecks()

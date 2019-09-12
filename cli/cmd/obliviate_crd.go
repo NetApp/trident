@@ -123,7 +123,7 @@ func initClients() error {
 		}
 
 		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
-		log.Debug("Running outside a pod, creating CLI-based client.")
+		log.WithField("kubeConfigPath", configPath).Debug("Running outside a pod, creating CLI-based client.")
 
 		if kubeClient, err = k8sclient.NewKubectlClient(""); err != nil {
 			return err
@@ -141,13 +141,6 @@ func initClients() error {
 }
 
 func obliviateCRDs() error {
-
-	var err error
-
-	// Create the Kubernetes client
-	if client, err = initClient(); err != nil {
-		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
 
 	// Delete all instances of custom resources
 	if err := deleteCRs(); err != nil {

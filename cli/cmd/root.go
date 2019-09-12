@@ -162,7 +162,8 @@ func discoverKubernetesCLI() error {
 	}
 
 	if ee, ok := err.(*exec.ExitError); ok {
-		return fmt.Errorf("could find the Kubernetes CLI, but it exited with error: %s", strings.TrimRight(string(ee.Stderr), "\n"))
+		return fmt.Errorf("found the Kubernetes CLI, but it exited with error: %s",
+			strings.TrimRight(string(ee.Stderr), "\n"))
 	}
 
 	return fmt.Errorf("could not find the Kubernetes CLI: %v", err)
@@ -478,8 +479,14 @@ func homeDir() string {
 }
 
 func kubeConfigPath() string {
-	if path := os.Getenv("KUBECONFIG"); path != "" {
-		return path
+
+	// If KUBECONFIG contains multiple paths, return the first one.
+	if paths := os.Getenv("KUBECONFIG"); paths != "" {
+		for _, path := range strings.Split(paths, ":") {
+			if len(path) > 0 {
+				return path
+			}
+		}
 	}
 
 	if home := homeDir(); home != "" {

@@ -22,10 +22,12 @@ commands and global options:
     delete      Remove one or more resources from Trident
     get         Get one or more resources from Trident
     help        Help about any command
+    import      Import an existing resource to Trident
     install     Install Trident
     logs        Print the logs from Trident
     uninstall   Uninstall Trident
     update      Modify a resource in Trident
+    upgrade     Upgrade a resource in Trident
     version     Print the version of Trident
 
   Flags:
@@ -108,19 +110,16 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
-        --csi                       Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
-        --dry-run                   Run all the pre-checks, but don't install anything.
-        --etcd-image string         The etcd image to install.
-        --generate-custom-yaml      Generate YAML files, but don't install anything.
-    -h, --help                      help for install
-        --k8s-timeout duration      The number of seconds to wait before timing out on Kubernetes operations. (default 3m0s)
-        --pv string                 The name of the PV used by Trident.
-        --pvc string                The name of the PVC used by Trident.
-        --silent                    Disable most output during installation.
-        --trident-image string      The Trident image to install.
-        --use-custom-yaml           Use any existing YAML files that exist in setup directory.
-        --volume-name string        The name of the storage volume used by Trident.
-        --volume-size string        The size of the storage volume used by Trident. (default "2Gi")
+        --csi                    Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
+        --etcd-image string      The etcd image to install.
+        --generate-custom-yaml   Generate YAML files, but don't install anything.
+    -h, --help                   help for install
+        --k8s-timeout duration   The timeout for all Kubernetes operations. (default 3m0s)
+        --pv string              The name of the legacy PV used by Trident, will be migrated to CRDs. (default "trident")
+        --pvc string             The name of the legacy PVC used by Trident, will be migrated to CRDs. (default "trident")
+        --silent                 Disable most output during installation.
+        --trident-image string   The Trident image to install.
+        --use-custom-yaml        Use any existing YAML files that exist in setup directory.
 
 logs
 ----
@@ -133,10 +132,12 @@ Print the logs from Trident
     tridentctl logs [flags]
 
   Flags:
-    -a, --archive      Create a support archive with all logs unless otherwise specified.
-    -h, --help         help for logs
-    -l, --log string   Trident log to display. One of trident|etcd|auto|all (default "auto")
-    -p, --previous     Get the logs for the previous container instance if it exists.
+    -a, --archive       Create a support archive with all logs unless otherwise specified.
+    -h, --help          help for logs
+    -l, --log string    Trident log to display. One of trident|auto|all (default "auto")
+        --node string   The kubernetes node name to gather node pod logs from.
+    -p, --previous      Get the logs for the previous container instance if it exists.
+        --sidecars      Get the logs for the sidecar containers as well.
 
 uninstall
 ---------
@@ -149,10 +150,8 @@ Uninstall Trident
     tridentctl uninstall [flags]
 
   Flags:
-    -a, --all                       Deletes almost all artifacts of Trident, including the PVC and PV used by Trident;
-                                    however, it doesn't delete the volume used by Trident from the storage backend. Use with caution!
-    -h, --help                      help for uninstall
-        --silent                    Disable most output during uninstallation.
+    -h, --help     help for uninstall
+        --silent   Disable most output during uninstallation.
 
 update
 ------

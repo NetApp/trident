@@ -57,7 +57,6 @@ const (
 
 var (
 	// CLI flags
-	dryRun          bool
 	generateYAML    bool
 	useYAML         bool
 	silent          bool
@@ -107,7 +106,6 @@ var (
 
 func init() {
 	RootCmd.AddCommand(installCmd)
-	installCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Run all the pre-checks, but don't install anything.")
 	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false, "Generate YAML files, but don't install anything.")
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
@@ -551,12 +549,6 @@ func installTrident() (returnError error) {
 				"else delete the PV and try again", pvName, pvcName)
 			return
 		}
-	}
-
-	// If dry-run was specified, stop before we change anything
-	if dryRun {
-		log.Info("Dry run completed, no problems found.")
-		return
 	}
 
 	// All checks succeeded, so proceed with installation
@@ -1435,12 +1427,6 @@ func installTridentInCluster() (returnError error) {
 	} else {
 		log.WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
 
-		if dryRun {
-			returnError = fmt.Errorf("namespace %s must exist to perform an in-cluster dry run; "+
-				"please create it manually", TridentPodNamespace)
-			return
-		}
-
 		returnError = createNamespace()
 		if returnError != nil {
 			return
@@ -1514,9 +1500,6 @@ func installTridentInCluster() (returnError error) {
 	}
 	if Debug {
 		commandArgs = append(commandArgs, "--debug")
-	}
-	if dryRun {
-		commandArgs = append(commandArgs, "--dry-run")
 	}
 	if useYAML {
 		commandArgs = append(commandArgs, "--use-custom-yaml")
@@ -1620,12 +1603,6 @@ func runTridentMigrator() (returnError error) {
 	} else {
 		log.WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
 
-		if dryRun {
-			returnError = fmt.Errorf("namespace %s must exist to perform an in-cluster dry run; "+
-				"please create it manually", TridentPodNamespace)
-			return
-		}
-
 		returnError = createNamespace()
 		if returnError != nil {
 			return
@@ -1640,9 +1617,6 @@ func runTridentMigrator() (returnError error) {
 	}
 	if Debug {
 		commandArgs = append(commandArgs, "--debug")
-	}
-	if dryRun {
-		commandArgs = append(commandArgs, "--dry-run")
 	}
 	if silent {
 		commandArgs = append(commandArgs, "--silent")
