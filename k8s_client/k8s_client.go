@@ -8,8 +8,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
@@ -20,9 +20,9 @@ import (
 
 type Interface interface {
 	Version() *version.Info
-	GetDeployment(deploymentName string, options metav1.GetOptions) (*v1beta1.Deployment, error)
+	GetDeployment(deploymentName string, options metav1.GetOptions) (*appsv1.Deployment, error)
 	CheckDeploymentExists(deploymentName string) (bool, error)
-	CreateDeployment(deployment *v1beta1.Deployment) (*v1beta1.Deployment, error)
+	CreateDeployment(deployment *appsv1.Deployment) (*appsv1.Deployment, error)
 	GetPod(podName string, options metav1.GetOptions) (*v1.Pod, error)
 	GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, error)
 	GetPodPhase(podName string, options metav1.GetOptions) (v1.PodPhase, error)
@@ -83,9 +83,8 @@ func (k *KubeClient) Version() *version.Info {
 
 func (k *KubeClient) GetDeployment(
 	deploymentName string,
-	options metav1.GetOptions) (*v1beta1.Deployment, error) {
-	return k.clientset.ExtensionsV1beta1().Deployments(k.namespace).Get(
-		deploymentName, options)
+	options metav1.GetOptions) (*appsv1.Deployment, error) {
+	return k.clientset.AppsV1().Deployments(k.namespace).Get(deploymentName, options)
 }
 
 func (k *KubeClient) CheckDeploymentExists(deploymentName string) (bool, error) {
@@ -99,9 +98,8 @@ func (k *KubeClient) CheckDeploymentExists(deploymentName string) (bool, error) 
 	return true, nil
 }
 
-func (k *KubeClient) CreateDeployment(deployment *v1beta1.Deployment) (*v1beta1.Deployment, error) {
-	return k.clientset.ExtensionsV1beta1().Deployments(k.namespace).Create(
-		deployment)
+func (k *KubeClient) CreateDeployment(deployment *appsv1.Deployment) (*appsv1.Deployment, error) {
+	return k.clientset.AppsV1().Deployments(k.namespace).Create(deployment)
 }
 
 func (k *KubeClient) GetPod(podName string, options metav1.GetOptions) (*v1.Pod, error) {
@@ -117,15 +115,16 @@ func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, e
 	timeout = *listOptions.TimeoutSeconds
 	listOptions.TimeoutSeconds = nil //no timeout
 	pods, err := k.ListPod(listOptions)
+	if err != nil {
+		return nil, err
+	}
 	if len(pods.Items) == 1 {
 		return &pods.Items[0], nil
 	} else if len(pods.Items) > 1 {
-		return nil, fmt.Errorf("multiple pods have the label %s: %v",
-			listOptions.LabelSelector, pods.Items)
+		return nil, fmt.Errorf("multiple pods have the label %s: %v", listOptions.LabelSelector, pods.Items)
 	}
 	listOptions.TimeoutSeconds = &timeout
-	log.Debugf("KubeClient took %v to retrieve pods: %v.",
-		time.Since(startTime), pods.Items)
+	log.Debugf("KubeClient took %v to retrieve pods: %v.", time.Since(startTime), pods.Items)
 	podWatch, err := k.WatchPod(listOptions)
 	if err != nil {
 		return nil, err

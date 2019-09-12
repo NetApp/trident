@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sort"
 
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
@@ -17,7 +17,7 @@ import (
 
 type FakeKubeClient struct {
 	version     *version.Info
-	Deployments map[string]*v1beta1.Deployment
+	Deployments map[string]*appsv1.Deployment
 	PVCs        map[string]*v1.PersistentVolumeClaim
 	failMatrix  map[string]bool
 }
@@ -29,7 +29,7 @@ func NewFakeKubeClientBasic(config *rest.Config, namespace string) (Interface, e
 			Minor:      "8",
 			GitVersion: "v1.8.0",
 		},
-		Deployments: make(map[string]*v1beta1.Deployment, 0),
+		Deployments: make(map[string]*appsv1.Deployment, 0),
 		PVCs:        make(map[string]*v1.PersistentVolumeClaim, 0),
 		failMatrix:  make(map[string]bool, 0),
 	}, nil
@@ -42,7 +42,7 @@ func NewFakeKubeClient(failMatrix map[string]bool, versionMajor, versionMinor st
 			Minor:      versionMinor,
 			GitVersion: "v" + versionMajor + "." + versionMinor + ".0",
 		},
-		Deployments: make(map[string]*v1beta1.Deployment, 0),
+		Deployments: make(map[string]*appsv1.Deployment, 0),
 		PVCs:        make(map[string]*v1.PersistentVolumeClaim, 0),
 		failMatrix:  failMatrix,
 	}
@@ -74,7 +74,7 @@ func (k *FakeKubeClient) Version() *version.Info {
 }
 
 func (k *FakeKubeClient) GetDeployment(deploymentName string,
-	options metav1.GetOptions) (*v1beta1.Deployment, error) {
+	options metav1.GetOptions) (*appsv1.Deployment, error) {
 	if fail, ok := k.failMatrix["GetDeployment"]; fail && ok {
 		return nil, fmt.Errorf("GetDeployment failed")
 	}
@@ -97,7 +97,7 @@ func (k *FakeKubeClient) CheckDeploymentExists(deploymentName string) (bool, err
 	return true, nil
 }
 
-func (k *FakeKubeClient) CreateDeployment(deployment *v1beta1.Deployment) (*v1beta1.Deployment, error) {
+func (k *FakeKubeClient) CreateDeployment(deployment *appsv1.Deployment) (*appsv1.Deployment, error) {
 	if fail, ok := k.failMatrix["CreateDeployment"]; fail && ok {
 		return deployment, fmt.Errorf("CreateDeployment failed")
 	}

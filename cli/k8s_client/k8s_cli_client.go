@@ -14,7 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -240,7 +239,7 @@ func (c *KubectlClient) Exec(podName, containerName string, commandArgs []string
 }
 
 // GetDeploymentByLabel returns a deployment object matching the specified label if it is unique
-func (c *KubectlClient) GetDeploymentByLabel(label string, allNamespaces bool) (*v1beta1.Deployment, error) {
+func (c *KubectlClient) GetDeploymentByLabel(label string, allNamespaces bool) (*appsv1.Deployment, error) {
 
 	deployments, err := c.GetDeploymentsByLabel(label, allNamespaces)
 	if err != nil {
@@ -257,7 +256,7 @@ func (c *KubectlClient) GetDeploymentByLabel(label string, allNamespaces bool) (
 }
 
 // GetDeploymentByLabel returns all deployment objects matching the specified label
-func (c *KubectlClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]v1beta1.Deployment, error) {
+func (c *KubectlClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]appsv1.Deployment, error) {
 
 	// Get deployment info
 	cmdArgs := []string{"get", "deployment", "-l", label, "-o=json"}
@@ -275,7 +274,7 @@ func (c *KubectlClient) GetDeploymentsByLabel(label string, allNamespaces bool) 
 		return nil, err
 	}
 
-	var deploymentList v1beta1.DeploymentList
+	var deploymentList appsv1.DeploymentList
 	if err := json.NewDecoder(stdout).Decode(&deploymentList); err != nil {
 		return nil, err
 	}
@@ -492,7 +491,7 @@ func (c *KubectlClient) DeleteStatefulSetByLabel(label string) error {
 }
 
 // GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
-func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error) {
+func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error) {
 
 	daemonsets, err := c.GetDaemonSetsByLabel(label, allNamespaces)
 	if err != nil {
@@ -509,7 +508,7 @@ func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*
 }
 
 // GetDaemonSetsByLabel returns all daemonset objects matching the specified label
-func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error) {
+func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error) {
 
 	// Get daemonset info
 	cmdArgs := []string{"get", "daemonset", "-l", label, "-o=json"}
@@ -527,7 +526,7 @@ func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) (
 		return nil, err
 	}
 
-	var daemonsetList v1beta1.DaemonSetList
+	var daemonsetList appsv1.DaemonSetList
 	if err := json.NewDecoder(stdout).Decode(&daemonsetList); err != nil {
 		return nil, err
 	}

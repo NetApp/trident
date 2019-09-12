@@ -18,7 +18,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -64,8 +63,8 @@ type Interface interface {
 	Flavor() OrchestratorFlavor
 	CLI() string
 	Exec(podName, containerName string, commandArgs []string) ([]byte, error)
-	GetDeploymentByLabel(label string, allNamespaces bool) (*v1beta1.Deployment, error)
-	GetDeploymentsByLabel(label string, allNamespaces bool) ([]v1beta1.Deployment, error)
+	GetDeploymentByLabel(label string, allNamespaces bool) (*appsv1.Deployment, error)
+	GetDeploymentsByLabel(label string, allNamespaces bool) ([]appsv1.Deployment, error)
 	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDeploymentByLabel(label string) error
 	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
@@ -76,8 +75,8 @@ type Interface interface {
 	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
 	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteStatefulSetByLabel(label string) error
-	GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error)
-	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error)
+	GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error)
+	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error)
 	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDaemonSetByLabel(label string) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
@@ -199,7 +198,7 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 	// Read the API groups/resources available from the server
 	discoveryClient := k.clientset.Discovery()
 
-	resourcesList, err := discoveryClient.ServerResources()
+	_, resourcesList, err := discoveryClient.ServerGroupsAndResources()
 	if err != nil {
 		log.WithField("error", err).Warning("Could not get server resources, defaulting to Kubernetes flavor.")
 		return FlavorKubernetes
@@ -324,7 +323,7 @@ func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) (
 }
 
 // GetDeploymentByLabel returns a deployment object matching the specified label if it is unique
-func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*v1beta1.Deployment, error) {
+func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*appsv1.Deployment, error) {
 
 	deployments, err := k.GetDeploymentsByLabel(label, allNamespaces)
 	if err != nil {
@@ -341,7 +340,7 @@ func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*v1
 }
 
 // GetDeploymentByLabel returns all deployment objects matching the specified label
-func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]v1beta1.Deployment, error) {
+func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]appsv1.Deployment, error) {
 
 	listOptions, err := k.listOptionsFromLabel(label)
 	if err != nil {
@@ -353,7 +352,7 @@ func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]
 		namespace = ""
 	}
 
-	deploymentList, err := k.clientset.ExtensionsV1beta1().Deployments(namespace).List(listOptions)
+	deploymentList, err := k.clientset.AppsV1().Deployments(namespace).List(listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +388,7 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.ExtensionsV1beta1().Deployments(k.namespace).Delete(deployment.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.AppsV1().Deployments(k.namespace).Delete(deployment.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -561,7 +560,7 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 }
 
 // GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
-func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*v1beta1.DaemonSet, error) {
+func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error) {
 
 	daemonsets, err := k.GetDaemonSetsByLabel(label, allNamespaces)
 	if err != nil {
@@ -578,7 +577,7 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*v1b
 }
 
 // GetDaemonSetsByLabel returns all daemonset objects matching the specified label
-func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v1beta1.DaemonSet, error) {
+func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error) {
 
 	listOptions, err := k.listOptionsFromLabel(label)
 	if err != nil {
@@ -590,7 +589,7 @@ func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]v
 		namespace = ""
 	}
 
-	daemonSetList, err := k.clientset.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
+	daemonSetList, err := k.clientset.AppsV1().DaemonSets(namespace).List(listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +625,7 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.ExtensionsV1beta1().DaemonSets(k.namespace).Delete(daemonset.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(daemonset.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1397,7 +1396,7 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 	// Read the API groups/resources available from the server
 	discoveryClient := k.clientset.Discovery()
 
-	resourcesList, err := discoveryClient.ServerResources()
+	_, resourcesList, err := discoveryClient.ServerGroupsAndResources()
 	if err != nil {
 		log.WithFields(log.Fields{
 			"group":   gvk.Group,

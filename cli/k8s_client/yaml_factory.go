@@ -214,7 +214,7 @@ func GetDeploymentYAML(tridentImage, label string, debug bool) string {
 }
 
 const deploymentYAMLTemplate = `---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trident
@@ -222,6 +222,11 @@ metadata:
     app: {LABEL}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL}
   template:
     metadata:
       labels:
@@ -308,7 +313,7 @@ func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils
 }
 
 const csiDeployment113YAMLTemplate = `---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trident-csi
@@ -318,6 +323,9 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL}
   template:
     metadata:
       labels:
@@ -426,7 +434,7 @@ spec:
 `
 
 const csiDeployment114YAMLTemplate = `---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trident-csi
@@ -436,6 +444,9 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL}
   template:
     metadata:
       labels:
@@ -531,7 +542,7 @@ spec:
 `
 
 const csiDeployment115YAMLTemplate = `---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trident-csi
@@ -541,6 +552,9 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL}
   template:
     metadata:
       labels:
@@ -664,7 +678,7 @@ func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.
 }
 
 const daemonSet113YAMLTemplate = `---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: trident-csi
@@ -787,7 +801,7 @@ spec:
 `
 
 const daemonSet114YAMLTemplate = `---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: trident-csi

@@ -18,8 +18,8 @@ import (
 	"github.com/go-logfmt/logfmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/apis/policy"
 
@@ -1331,9 +1331,9 @@ func waitForRESTInterface() error {
 }
 
 // readDeploymentFromFile parses and returns a deployment object from a file.
-func readDeploymentFromFile(filePath string) (*v1beta1.Deployment, error) {
+func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
 
-	var deployment v1beta1.Deployment
+	var deployment appsv1.Deployment
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -1379,9 +1379,9 @@ func readServiceFromFile(filePath string) (*v1.Service, error) {
 }
 
 // readDaemonSetFromFile parses and returns a daemonset object from a file.
-func readDaemonSetFromFile(filePath string) (*v1beta1.DaemonSet, error) {
+func readDaemonSetFromFile(filePath string) (*appsv1.DaemonSet, error) {
 
-	var daemonset v1beta1.DaemonSet
+	var daemonset appsv1.DaemonSet
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
