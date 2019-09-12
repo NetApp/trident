@@ -770,11 +770,11 @@ func (d *NASQtreeStorageDriver) addDefaultQuotaForFlexvol(flexvol string) error 
 	}
 
 	if err := d.disableQuotas(flexvol, true); err != nil {
-		log.Warning("Could not disable quotas after adding a default quota: %v", err)
+		log.Warningf("Could not disable quotas after adding a default quota: %v", err)
 	}
 
 	if err := d.enableQuotas(flexvol, true); err != nil {
-		log.Warning("Could not enable quotas after adding a default quota: %v", err)
+		log.Warningf("Could not enable quotas after adding a default quota: %v", err)
 	}
 
 	return nil
