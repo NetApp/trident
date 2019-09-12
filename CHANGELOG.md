@@ -12,7 +12,8 @@
 - Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 
 **Enhancements:**
-- **Kubernetes** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
+- **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
+- **Kubernetes:** Added support to CSI Trident for raw block volumes for iSCSI PVs.
 - Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 
 **Deprecations:**

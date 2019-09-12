@@ -193,6 +193,8 @@ func (d *SANStorageDriver) Create(
 
 	name := volConfig.InternalName
 
+	var fstype string
+
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Create",
@@ -265,13 +267,9 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
-	// Check for a supported file system type
-	fstype := strings.ToLower(utils.GetV(opts, "fstype|fileSystemType", d.Config.FileSystemType))
-	switch fstype {
-	case "xfs", "ext3", "ext4":
-		log.WithFields(log.Fields{"fileSystemType": fstype, "name": name}).Debug("Filesystem format.")
-	default:
-		return fmt.Errorf("unsupported fileSystemType option: %s", fstype)
+	fstype, err = drivers.CheckSupportedFilesystem(utils.GetV(opts, "fstype|fileSystemType", d.Config.FileSystemType), name)
+	if err != nil {
+		return err
 	}
 
 	log.WithFields(log.Fields{
@@ -494,7 +492,7 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	}
 
 	// Get the fstype
-	fstype := DefaultFileSystemType
+	fstype := drivers.DefaultFileSystemType
 	attrResponse, err := d.API.LunGetAttribute(lunPath, LUNAttributeFSType)
 	if err = api.GetError(attrResponse, err); err != nil {
 		log.WithFields(log.Fields{

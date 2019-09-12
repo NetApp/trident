@@ -1210,6 +1210,22 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 		return nil, err
 	}
 
+	// VolumeConfig FS type is set to "raw" when AccessType is set to `block`.
+	if volumeConfig.FileSystem == drivers.FsRaw {
+		// Protocol: file (NFS), AccessType: block, is an unsupported config i.e. we do not support raw block volumes
+		// with NFS protocol.
+		if protocol == config.File {
+			return nil, fmt.Errorf("protocol file is not compatible with a raw block volume")
+		}
+
+		// Reason for this override:
+		// 1. Here protocol value might be `any` (or block),
+		// and `any` protocol and `block` accesstype is a valid combination.
+		// 2. However, if we do not make it more specific and let the protocol be `any`,
+		// the storage pools that we discover later may list invalid pools that cannot support iSCSI raw block volumes.
+		protocol = config.Block
+	}
+
 	sc, ok := o.storageClasses[volumeConfig.StorageClass]
 	if !ok {
 		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
@@ -2792,6 +2808,8 @@ func (o *TridentOrchestrator) getProtocol(
 	accessMode config.AccessMode, protocol config.Protocol,
 ) (config.Protocol, error) {
 
+	// Protocol: block (iSCSI), AccessMode: ReadWriteMany, is an unsupported config i.e.  RWX is only supported by file
+	// and file-like protocols only, such as NFS
 	if accessMode == config.ReadWriteMany {
 		if protocol == config.Block {
 			return config.ProtocolAny, fmt.Errorf("incompatible access mode (%s) and protocol (%s)",

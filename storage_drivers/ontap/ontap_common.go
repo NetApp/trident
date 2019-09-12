@@ -338,7 +338,6 @@ const DefaultSecurityStyle = "unix"
 const DefaultNfsMountOptionsDocker = "-o nfsvers=3"
 const DefaultNfsMountOptionsKubernetes = ""
 const DefaultSplitOnClone = "false"
-const DefaultFileSystemType = "ext4"
 const DefaultEncryption = "false"
 const DefaultLimitAggregateUsage = ""
 const DefaultLimitVolumeSize = ""
@@ -418,7 +417,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 	}
 
 	if config.FileSystemType == "" {
-		config.FileSystemType = DefaultFileSystemType
+		config.FileSystemType = drivers.DefaultFileSystemType
 	}
 
 	if config.Encryption == "" {

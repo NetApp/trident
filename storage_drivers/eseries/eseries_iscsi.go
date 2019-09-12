@@ -435,6 +435,8 @@ func (d *SANStorageDriver) Create(
 
 	name := volConfig.InternalName
 
+	var fstype string
+
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Create",
@@ -491,13 +493,9 @@ func (d *SANStorageDriver) Create(
 	// Get media type, or default to "hdd" if not specified
 	mediaType := utils.GetV(opts, "mediaType", "")
 
-	// Check for a supported file system type
-	fstype := strings.ToLower(utils.GetV(opts, "fstype|fileSystemType", "ext4"))
-	switch fstype {
-	case "xfs", "ext3", "ext4":
-		log.WithFields(log.Fields{"fileSystemType": fstype, "name": name}).Debug("Filesystem format.")
-	default:
-		return fmt.Errorf("unsupported fileSystemType option: %s", fstype)
+	fstype, err = drivers.CheckSupportedFilesystem(utils.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
+	if err != nil {
+		return err
 	}
 
 	createErrors := make([]error, 0)
@@ -686,7 +684,7 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 		}
 	}
 	if fstype == "" {
-		fstype = "ext4"
+		fstype = drivers.DefaultFileSystemType
 		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Warn("LUN fstype not found, using default.")
 	}
 

@@ -25,7 +25,7 @@ type HybridPlugin interface {
 	// a VolumeConfig structure as needed by Trident to create a new volume.
 	GetVolumeConfig(
 		name string, sizeBytes int64, parameters map[string]string,
-		protocol config.Protocol, accessMode config.AccessMode, fsType string,
+		protocol config.Protocol, accessModes []config.AccessMode, fsType string,
 	) (*storage.VolumeConfig, error)
 
 	// GetSnapshotConfig accepts the attributes of a snapshot being requested byt the CSI

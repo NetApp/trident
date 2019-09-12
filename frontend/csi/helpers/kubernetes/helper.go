@@ -28,7 +28,7 @@ import (
 // as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
 	name string, sizeBytes int64, parameters map[string]string,
-	protocol config.Protocol, accessMode config.AccessMode, fsType string,
+	protocol config.Protocol, accessModes []config.AccessMode, fsType string,
 ) (*storage.VolumeConfig, error) {
 
 	// Kubernetes CSI passes us the name of what will become a new PV

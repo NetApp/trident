@@ -21,9 +21,16 @@ const (
 	// How many times to retry for a consistent read of /proc/mounts.
 	maxListTries = 3
 	// Number of fields per line in /proc/mounts as per the fstab man page.
-	expectedNumFieldsPerLine = 6
+	expectedNumProcMntFieldsPerLine = 6
+	// Number of fields per line in /proc/self/mountinfo as per the fstab man page.
+	expectedNumProcSelfMntInfoFieldsPerLine = 11
 	// Location of the mount file to use
 	procMountsPath = "/proc/mounts"
+	// Location of the mount file to use
+	procSelfMountinfoPath = "/proc/self/mountinfo"
+	// Location of the mount file to use
+	udevSource     = "udev"
+	devTmpFsSource = "devTmpFsSource"
 )
 
 // This represents a single line in /proc/mounts or /etc/fstab.
@@ -34,6 +41,30 @@ type MountPoint struct {
 	Opts   []string
 	Freq   int
 	Pass   int
+}
+
+// This represents a single line in /proc/self/mountinfo.
+type MountInfo struct {
+	MountId        int
+	ParentId       int
+	DeviceId       string
+	Root           string
+	MountPoint     string
+	MountOptions   []string
+	OptionalFields []string
+	FsType         string
+	MountSource    string
+	SuperOptions   []string
+}
+
+// IsLikelyDir determines if mountpoint is a directory
+func IsLikelyDir(mountpoint string) (bool, error) {
+	stat, err := os.Stat(mountpoint)
+	if err != nil {
+		return false, err
+	}
+
+	return stat.IsDir(), nil
 }
 
 // IsLikelyNotMountPoint determines if a directory is not a mountpoint.
@@ -97,6 +128,68 @@ func GetDeviceNameFromMount(mountpath string) (string, int, error) {
 	return device, refCount, nil
 }
 
+// listProcSelfMountinfo (Available since Linux 2.6.26) lists information about mount points
+// in the process's mount namespace. Ref: http://man7.org/linux/man-pages/man5/proc.5.html
+func listProcSelfMountinfo(mountFilePath string) ([]MountInfo, error) {
+	content, err := ConsistentRead(mountFilePath, maxListTries)
+	if err != nil {
+		return nil, err
+	}
+	return parseProcSelfMountinfo(content)
+}
+
+// parseProcSelfMountinfo parses the output of /proc/self/mountinfo file into a slice of MountInfo struct
+func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
+	out := make([]MountInfo, 0)
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if line == "" {
+			// The last split() item is empty string following the last \n
+			continue
+		}
+		fields := strings.Fields(line)
+		expectedFieldsPerLine := expectedNumProcSelfMntInfoFieldsPerLine
+		if len(fields) > expectedFieldsPerLine || len(fields) < (expectedFieldsPerLine-1) {
+			return nil, fmt.Errorf("wrong number of fields (expected %d or %d, got %d): %s", expectedFieldsPerLine,
+				(expectedFieldsPerLine - 1), len(fields), line)
+		}
+
+		mp := MountInfo{
+			DeviceId:     fields[2],
+			Root:         fields[3],
+			MountPoint:   fields[4],
+			MountOptions: strings.Split(fields[5], ","),
+		}
+
+		mountId, err := strconv.Atoi(fields[0])
+		if err != nil {
+			return nil, err
+		}
+		mp.MountId = mountId
+
+		parentId, err := strconv.Atoi(fields[1])
+		if err != nil {
+			return nil, err
+		}
+		mp.ParentId = parentId
+
+		if fields[6] != "-" {
+			mp.OptionalFields = strings.Split(fields[6], ",")
+			mp.FsType = fields[8]
+			mp.MountSource = fields[9]
+			mp.SuperOptions = strings.Split(fields[10], ",")
+		} else {
+			mp.OptionalFields = nil
+			mp.FsType = fields[7]
+			mp.MountSource = fields[8]
+			mp.SuperOptions = strings.Split(fields[9], ",")
+		}
+
+		out = append(out, mp)
+	}
+	return out, nil
+}
+
 func listProcMounts(mountFilePath string) ([]MountPoint, error) {
 	content, err := ConsistentRead(mountFilePath, maxListTries)
 	if err != nil {
@@ -114,8 +207,9 @@ func parseProcMounts(content []byte) ([]MountPoint, error) {
 			continue
 		}
 		fields := strings.Fields(line)
-		if len(fields) != expectedNumFieldsPerLine {
-			return nil, fmt.Errorf("wrong number of fields (expected %d, got %d): %s", expectedNumFieldsPerLine, len(fields), line)
+		if len(fields) != expectedNumProcMntFieldsPerLine {
+			return nil, fmt.Errorf("wrong number of fields (expected %d, got %d): %s",
+				expectedNumProcMntFieldsPerLine, len(fields), line)
 		}
 
 		mp := MountPoint{

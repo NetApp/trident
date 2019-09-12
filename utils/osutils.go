@@ -19,9 +19,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const iSCSIErrNoObjsFound = 21
-const iSCSIDeviceDiscoveryTimeoutSecs = 90
-const multipathDeviceDiscoveryTimeoutSecs = 90
+const (
+	iSCSIErrNoObjsFound                 = 21
+	iSCSIDeviceDiscoveryTimeoutSecs     = 90
+	multipathDeviceDiscoveryTimeoutSecs = 90
+	resourceDeletionTimeoutSecs         = 40
+	fsRaw                               = "raw"
+)
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
 var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
@@ -161,10 +165,16 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	}
 	devicePath := "/dev/" + deviceToUse
 	if err := waitForDevice(devicePath); err != nil {
-		return fmt.Errorf("could not find device %v: %v", devicePath, err)
+		return fmt.Errorf("could not find device %v; %s", devicePath, err)
 	}
 
-	// Put a filesystem on the device if there isn't one already there
+	// Return the device in the publish info in case the mount will be done later
+	publishInfo.DevicePath = devicePath
+
+	if fstype == fsRaw {
+		return nil
+	}
+
 	existingFstype := deviceInfo.Filesystem
 	if existingFstype == "" {
 		log.WithFields(log.Fields{"volume": name, "fstype": fstype}).Debug("Formatting LUN.")
@@ -189,14 +199,12 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 
 	// Optionally mount the device
 	if mountpoint != "" {
-		if err := MountDevice(devicePath, mountpoint, options); err != nil {
-			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v: %v",
+		if err := MountDevice(devicePath, mountpoint, options, false); err != nil {
+			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountpoint, err)
 		}
 	}
 
-	// Return the device in the publish info in case the mount will be done later
-	publishInfo.DevicePath = devicePath
 	return nil
 }
 
@@ -269,6 +277,103 @@ func PathExists(path string) bool {
 		return true
 	}
 	return false
+}
+
+// EnsureFileExists makes sure that file of given name exists
+func EnsureFileExists(path string) error {
+	fields := log.Fields{"path": path}
+	if info, err := os.Stat(path); err == nil {
+		if info.IsDir() {
+			log.WithFields(fields).Error("Path exists but is a directory")
+			return fmt.Errorf("path exists but is a directory: %s", path)
+		}
+		return nil
+	} else if !os.IsNotExist(err) {
+		log.WithFields(fields).Errorf("Can't determine if file exists; %s", err)
+		return fmt.Errorf("can't determine if file %s exists; %s", path, err)
+	}
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC, 0600)
+	if nil != err {
+		log.WithFields(fields).Errorf("OpenFile failed; %s", err)
+		return fmt.Errorf("failed to create file %s; %s", path, err)
+	}
+	file.Close()
+
+	return nil
+}
+
+// DeleteResourceAtPath makes sure that given named file or (empty) directory is removed
+func DeleteResourceAtPath(resource string) error {
+	return waitForResourceDeletionAtPath(resource)
+}
+
+// waitForResourceDeletionAtPath accepts a resource name and waits until it is deleted and returns error if it times out
+func waitForResourceDeletionAtPath(resource string) error {
+
+	fields := log.Fields{"resource": resource}
+	log.WithFields(fields).Debug(">>>> osutils.waitForResourceDeletionAtPath")
+	defer log.WithFields(fields).Debug("<<<< osutils.waitForResourceDeletionAtPath")
+
+	maxDuration := resourceDeletionTimeoutSecs * time.Second
+
+	checkResourceDeletion := func() error {
+		if _, err := os.Stat(resource); err == nil {
+			if err = os.Remove(resource); err != nil {
+				log.WithFields(fields).Errorf("Failed to remove resource, %s", err)
+				return fmt.Errorf("Failed to remove resource %s; %s", resource, err)
+			}
+			return nil
+		} else if !os.IsNotExist(err) {
+			log.WithFields(fields).Errorf("Can't determine if resource exists; %s", err)
+			return fmt.Errorf("can't determine if resource %s exists; %s", resource, err)
+		}
+
+		return nil
+	}
+
+	deleteNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debug("Resource not deleted yet, waiting.")
+	}
+
+	deleteBackoff := backoff.NewExponentialBackOff()
+	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.Multiplier = 1.414 // approx sqrt(2)
+	deleteBackoff.RandomizationFactor = 0.1
+	deleteBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkResourceDeletion, deleteBackoff, deleteNotify); err != nil {
+		return fmt.Errorf("could not delete resource after %3.2f seconds", maxDuration.Seconds())
+	} else {
+		log.WithField("resource", resource).Debug("Resource deleted.")
+		return nil
+	}
+}
+
+// EnsureDirExists makes sure that given directory structure exists
+func EnsureDirExists(path string) error {
+	fields := log.Fields{
+		"path": path,
+	}
+	if info, err := os.Stat(path); err == nil {
+		if !info.IsDir() {
+			log.WithFields(fields).Error("Path exists but is not a directory")
+			return fmt.Errorf("path exists but is not a directory: %s", path)
+		}
+		return nil
+	} else if !os.IsNotExist(err) {
+		log.WithFields(fields).Errorf("Can't determine if directory exists; %s", err)
+		return fmt.Errorf("can't determine if directory %s exists; %s", path, err)
+	}
+
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		log.WithFields(fields).Errorf("Mkdir failed; %s", err)
+		return fmt.Errorf("failed to mkdir %s; %s", path, err)
+	}
+
+	return nil
 }
 
 // getSysfsBlockDirsForLUN returns the list of directories in sysfs where the block devices should appear
@@ -1258,33 +1363,107 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	return devices, nil
 }
 
+// IsMounted verifies if the supplied device is attached at the supplied location.
+func IsMounted(sourceDevice, mountpoint string) (bool, error) {
+
+	fields := log.Fields{
+		"source": sourceDevice,
+		"target": mountpoint,
+	}
+	log.WithFields(fields).Debug(">>>> osutils.IsMounted")
+	defer log.WithFields(fields).Debug("<<<< osutils.IsMounted")
+
+	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
+
+	if err != nil {
+		log.WithFields(fields).Errorf("checking mounted failed; %s", err)
+		return false, fmt.Errorf("checking mounted failed; %s", err)
+	}
+
+	var sourceDeviceName string
+	if sourceDevice != "" && strings.HasPrefix(sourceDevice, "/dev/") {
+		sourceDeviceName = strings.TrimPrefix(sourceDevice, "/dev/")
+	}
+
+	for _, procMount := range procSelfMountinfo {
+
+		if mountpoint != procMount.MountPoint {
+			continue
+		}
+
+		log.Debugf("Mountpoint found: %v", procMount)
+
+		if sourceDevice == "" {
+			log.Debugf("Source device: none, Target: %s, is mounted: true", mountpoint)
+			return true, nil
+		}
+
+		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/")
+		hasUdevMountSource := (procMount.MountSource == udevSource) || (procMount.MountSource == devTmpFsSource)
+
+		if !(hasDevMountSourcePrefix || hasUdevMountSource) {
+			continue
+		}
+
+		var mountedDevice string
+		// Resolve any symlinks to get the real device
+		if hasDevMountSourcePrefix {
+			device, err := filepath.EvalSymlinks(procMount.MountSource)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			mountedDevice = strings.TrimPrefix(device, "/dev/")
+		} else {
+			mountedDevice = strings.TrimPrefix(procMount.Root, "/")
+		}
+
+		if sourceDeviceName == mountedDevice {
+			log.Debugf("Source device: %s, Target: %s, is mounted: true", sourceDeviceName, mountpoint)
+			return true, nil
+		}
+	}
+
+	log.Debugf("Source device: %s, Target: %s, is mounted: false", sourceDevice, mountpoint)
+	return false, nil
+}
+
 // GetMountedISCSIDevices returns a list of iSCSI devices that are *mounted* on this host.
 func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 
 	log.Debug(">>>> osutils.GetMountedISCSIDevices")
 	defer log.Debug("<<<< osutils.GetMountedISCSIDevices")
 
-	procMounts, err := listProcMounts(procMountsPath)
+	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get a list of all mounted /dev devices
 	mountedDevices := make([]string, 0)
-	for _, procMount := range procMounts {
+	for _, procMount := range procSelfMountinfo {
 
-		if !strings.HasPrefix(procMount.Device, "/dev/") {
+		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/")
+		hasUdevMountSource := (procMount.MountSource == udevSource) || (procMount.MountSource == devTmpFsSource)
+
+		if !(hasDevMountSourcePrefix || hasUdevMountSource) {
 			continue
 		}
 
+		var mountedDevice string
 		// Resolve any symlinks to get the real device
-		mountedDevice, err := filepath.EvalSymlinks(procMount.Device)
-		if err != nil {
-			log.Error(err)
-			continue
+		if hasDevMountSourcePrefix {
+			device, err := filepath.EvalSymlinks(procMount.MountSource)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			mountedDevice = strings.TrimPrefix(device, "/dev/")
+		} else {
+			mountedDevice = strings.TrimPrefix(procMount.Root, "/")
 		}
 
-		mountedDevices = append(mountedDevices, strings.TrimPrefix(mountedDevice, "/dev/"))
+		mountedDevices = append(mountedDevices, mountedDevice)
 	}
 
 	// Get all known iSCSI devices
@@ -1525,7 +1704,7 @@ func formatVolume(device, fstype string) error {
 }
 
 // MountDevice attaches the supplied device at the supplied location.  Use this for iSCSI devices.
-func MountDevice(device, mountpoint, options string) (err error) {
+func MountDevice(device, mountpoint, options string, isMountPointFile bool) (err error) {
 
 	log.WithFields(log.Fields{
 		"device":     device,
@@ -1542,15 +1721,29 @@ func MountDevice(device, mountpoint, options string) (err error) {
 		args = []string{device, mountpoint}
 	}
 
-	if _, err = execCommand("mkdir", "-p", mountpoint); err != nil {
-		log.WithField("error", err).Warning("Mkdir failed.")
+	mounted, _ := IsMounted(device, mountpoint)
+	exists := PathExists(mountpoint)
+
+	log.Debugf("Already mounted: %v, mountpoint exists: %v", mounted, exists)
+
+	if !exists {
+		if isMountPointFile {
+			if err = EnsureFileExists(mountpoint); err != nil {
+				log.WithField("error", err).Warning("File check failed.")
+			}
+		} else {
+			if err = EnsureDirExists(mountpoint); err != nil {
+				log.WithField("error", err).Warning("Mkdir failed.")
+			}
+		}
 	}
-	if _, err = execCommand("mount", args...); err != nil {
-		log.WithField("error", err).Error("Mount failed.")
+
+	if !mounted {
+		if _, err = execCommand("mount", args...); err != nil {
+			log.WithField("error", err).Error("Mount failed.")
+		}
 	}
-	if _, err = execCommand("chmod", "777", mountpoint); err != nil {
-		log.WithField("error", err).Warning("Chmod failed.")
-	}
+
 	return
 }
 

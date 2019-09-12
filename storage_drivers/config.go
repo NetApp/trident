@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
@@ -25,6 +25,17 @@ const (
 	AzureNFSStorageDriverName          = "azure-netapp-files"
 	FakeStorageDriverName              = "fake"
 )
+
+// Filesystem types
+const (
+	FsXfs  = "xfs"
+	FsExt3 = "ext3"
+	FsExt4 = "ext4"
+	FsRaw  = "raw"
+)
+
+// Default Filesystem value
+const DefaultFileSystemType = FsExt4
 
 const UnsetPool = ""
 const DefaultVolumeSize = "1G"

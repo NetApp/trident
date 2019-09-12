@@ -73,34 +73,67 @@ func (p *Plugin) CreateVolume(
 		return &csi.CreateVolumeResponse{Volume: csiVolume}, nil
 	}
 
+	// Note: Some of the terms mentioned here might be confusing, I hope below explanation helps:
+	// AccessType (VolumeMode): It can take values - `Block` for raw block device or `Filesystem` to use a filesystem
+	// Protocol (trident.netapp.io/protocol): It can take values - `block` for iSCSI protocol or `file` for NFS protocol
+	// AccessMode: It can take values - Read Write Once (RWO), Read Only Many (ROX) or Read Write Many (RWX)
+
 	// Check for matching volume capabilities
 	log.Debugf("Volume capabilities (%d): %v", len(req.GetVolumeCapabilities()), req.GetVolumeCapabilities())
+	var accessModes []tridentconfig.AccessMode
+	var isRawBlockAccessType, isFileMountAccessType bool
+	var isBlockProtocol, isFileProtocol bool
+	var fsType string
 	protocol := tridentconfig.ProtocolAny
-	accessMode := tridentconfig.ModeAny
-	fsType := ""
 	//var mountFlags []string
 
 	if req.GetVolumeCapabilities() != nil {
 		for _, capability := range req.GetVolumeCapabilities() {
 
-			// Ensure access type is "MountVolume"
+			// Make a list of all the accessModes and translate that into a single protocol
+			accessMode := capability.GetAccessMode().Mode
+			accessModes = append(accessModes, p.getAccessForCSIAccessMode(accessMode))
+			protocolLocal := p.getProtocolForCSIAccessMode(accessMode)
+
+			if protocolLocal == tridentconfig.Block {
+				isBlockProtocol = true
+			} else if protocolLocal == tridentconfig.File {
+				isFileProtocol = true
+			}
+
+			// Is AccessType(VolumeMode) = block (raw block)?
 			if block := capability.GetBlock(); block != nil {
-				return nil, status.Error(codes.InvalidArgument, "block access type not supported")
+				isRawBlockAccessType = true
 			}
 
-			// See if we have a backend for the specified access mode
-			accessMode = p.getAccessForCSIAccessMode(capability.GetAccessMode().Mode)
-			protocol = p.getProtocolForCSIAccessMode(capability.GetAccessMode().Mode)
-			if !p.hasBackendForProtocol(protocol) {
-				return nil, status.Error(codes.InvalidArgument, "no available storage for access mode")
-			}
-
-			// See if fsType was specified
+			// Is AccessType(VolumeMode) = Mount (file mount)? If so, see if fsType has been specified
 			if mount := capability.GetMount(); mount != nil {
+				isFileMountAccessType = true
 				fsType = mount.GetFsType()
 				//mountFlags = mount.GetMountFlags()
 			}
 		}
+	}
+
+	// AccessType (VolumeMode) can either be block (raw-block volume) or mount (file mount)
+	if isRawBlockAccessType && isFileMountAccessType {
+		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
+	} else if isRawBlockAccessType {
+		fsType = fsRaw
+	}
+
+	// Cannot have both the protocols block (iSCSI) and file (NFS) together
+	if isBlockProtocol && isFileProtocol {
+		return nil, status.Error(codes.InvalidArgument,
+			"specified access-modes: %s, translates to both both file and block protocols")
+	} else if isBlockProtocol {
+		protocol = tridentconfig.Block
+	} else if isFileProtocol {
+		protocol = tridentconfig.File
+	}
+
+	if !p.hasBackendForProtocol(protocol) {
+		return nil, status.Errorf(codes.InvalidArgument, "no available storage for access modes: %s", accessModes)
 	}
 
 	var sizeBytes int64
@@ -109,7 +142,7 @@ func (p *Plugin) CreateVolume(
 	}
 
 	// Convert volume creation options into a Trident volume config
-	volConfig, err := p.helper.GetVolumeConfig(req.Name, sizeBytes, req.Parameters, protocol, accessMode, fsType)
+	volConfig, err := p.helper.GetVolumeConfig(req.Name, sizeBytes, req.Parameters, protocol, accessModes, fsType)
 	if err != nil {
 		p.helper.RecordVolumeEvent(req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
@@ -258,7 +291,7 @@ func (p *Plugin) ControllerPublishVolume(
 	}
 
 	mount := req.VolumeCapability.GetMount()
-	if len(mount.MountFlags) > 0 {
+	if mount != nil && len(mount.MountFlags) > 0 {
 		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
 	}
 

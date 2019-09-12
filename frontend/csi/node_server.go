@@ -23,11 +23,17 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-const volumePublishInfoFilename = "volumePublishInfo.json"
+const (
+	volumePublishInfoFilename = "volumePublishInfo.json"
+	fsRaw                     = "raw"
+)
 
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	fields := log.Fields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeStageVolume")
@@ -47,6 +53,9 @@ func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	fields := log.Fields{"Method": "NodeUnstageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnstageVolume")
@@ -64,11 +73,11 @@ func (p *Plugin) NodeUnstageVolume(
 	// Read the device info from the staging path
 	publishInfo, err := p.readStagedDeviceInfo(targetPath)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "unable to read the staging target %s; %s", targetPath, err)
 	}
 	protocol, err := p.getVolumeProtocolFromPublishInfo(publishInfo)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, "unable to read protocol info from publish info; %s", err)
 	}
 
 	switch protocol {
@@ -84,6 +93,9 @@ func (p *Plugin) NodeUnstageVolume(
 func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	fields := log.Fields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodePublishVolume")
@@ -103,6 +115,9 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	fields := log.Fields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnpublishVolume")
@@ -117,23 +132,54 @@ func (p *Plugin) NodeUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no target path provided")
 	}
 
-	notMnt, err := utils.IsLikelyNotMountPoint(targetPath)
+	isDir, err := utils.IsLikelyDir(targetPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound,
+				"target path (%s) not found; could not check if the target path is a directory.", targetPath)
+		} else {
+			return nil, status.Errorf(codes.Internal,
+				"could not check if the target path (%s) is a directory; %s", targetPath, err)
+		}
+	}
+
+	var notMountPoint bool
+	if isDir {
+		notMountPoint, err = utils.IsLikelyNotMountPoint(targetPath)
+	} else {
+		var mounted bool
+		mounted, err = utils.IsMounted("", targetPath)
+		notMountPoint = !mounted
+	}
 
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, status.Error(codes.NotFound, "target path not found")
 		} else {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, status.Errorf(codes.Internal, "unable to check if targetPath (%s) is mounted or not; %s",
+				targetPath, err)
 		}
 	}
-	if notMnt {
+
+	if notMountPoint {
 		return nil, status.Error(codes.NotFound, "volume not mounted")
 	}
 
-	if err := utils.Umount(targetPath); err != nil {
+	if err = utils.Umount(targetPath); err != nil {
 		log.WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
 	}
+
+	// As per the CSI spec SP i.e. Trident is responsible for deleting the target path,
+	// however today Kubernetes performs this deletion. Here we are making best efforts
+	// to delete the resource at target path. Sometimes this fails resulting CSI calling
+	// NodeUnpublishVolume again and usually deletion goes through in the second attempt.
+	// As a viable solution making it run as a goroutine
+	go func() {
+		if err = utils.DeleteResourceAtPath(targetPath); err != nil {
+			log.Debugf("Unable to delete resource at target path: %s; %s", targetPath, err)
+		}
+	}()
 
 	return &csi.NodeUnpublishVolumeResponse{}, nil
 }
@@ -335,17 +381,29 @@ func (p *Plugin) nodeStageISCSIVolume(
 ) (*csi.NodeStageVolumeResponse, error) {
 
 	var err error
+	var fstype string
 
-	fstype := "ext4"
 	mountCapability := req.GetVolumeCapability().GetMount()
-	if mountCapability != nil {
-		if mountCapability.GetFsType() != "" {
-			fstype = mountCapability.GetFsType()
-		}
+	blockCapability := req.GetVolumeCapability().GetBlock()
+
+	if mountCapability == nil && blockCapability == nil {
+		return nil, status.Error(codes.InvalidArgument, "mount or block capability required")
+	} else if mountCapability != nil && blockCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
+	}
+
+	if mountCapability != nil && mountCapability.GetFsType() != "" {
+		fstype = mountCapability.GetFsType()
 	}
 
 	if fstype == "" {
 		fstype = req.PublishContext["filesystemType"]
+	}
+
+	if fstype == fsRaw && mountCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
+	} else if fstype != fsRaw && blockCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fstype))
 	}
 
 	useCHAP, err := strconv.ParseBool(req.PublishContext["useCHAP"])
@@ -383,7 +441,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.IscsiInitiatorSecret = req.PublishContext["iscsiInitiatorSecret"]
 	publishInfo.IscsiTargetSecret = req.PublishContext["iscsiTargetSecret"]
 
-	// Perform the login/rescan/discovery/format & get the device back in the publish info
+	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolume(req.VolumeContext["internalName"], "", publishInfo); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -446,10 +504,28 @@ func (p *Plugin) nodePublishISCSIVolume(
 		publishInfo.MountOptions = strings.Join(mountOptions, ",")
 	}
 
-	// Mount the device
-	err = utils.MountDevice(publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	isRawBlock := publishInfo.FilesystemType == fsRaw
+	if isRawBlock {
+
+		if len(publishInfo.MountOptions) > 0 {
+			mountOptions := strings.Split(publishInfo.MountOptions, ",")
+			mountOptions = append(mountOptions, "bind")
+			publishInfo.MountOptions = strings.Join(mountOptions, ",")
+		} else {
+			publishInfo.MountOptions = "bind"
+		}
+
+		// Place the block device at the target path for the raw-block
+		err = utils.MountDevice(publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
+		}
+	} else {
+		// Mount the device
+		err = utils.MountDevice(publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
+		}
 	}
 
 	return &csi.NodePublishVolumeResponse{}, nil
@@ -492,7 +568,21 @@ func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePu
 
 func (p *Plugin) clearStagedDeviceInfo(stagingTargetPath string) error {
 	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
-	return os.Remove(filename)
+
+	fields := log.Fields{"filename": filename}
+
+	if _, err := os.Stat(filename); err == nil {
+		if err = os.Remove(filename); err != nil {
+			log.WithFields(fields).Errorf("Failed to remove staging target path; %s", err)
+			return fmt.Errorf("Failed to remove staging target path %s; %s", filename, err)
+		}
+		return nil
+	} else if !os.IsNotExist(err) {
+		log.WithFields(fields).Errorf("Can't determine if staging target path exists; %s", err)
+		return fmt.Errorf("can't determine if staging target path %s exists; %s", filename, err)
+	}
+
+	return nil
 }
 
 func (p *Plugin) getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (tridentconfig.Protocol, error) {

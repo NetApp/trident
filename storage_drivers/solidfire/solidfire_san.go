@@ -721,6 +721,7 @@ func (d *SANStorageDriver) Create(
 
 	var req api.CreateVolumeRequest
 	var qos api.QoS
+	var fstype string
 	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
 		"trident":     string(telemetry),
@@ -825,15 +826,12 @@ func (d *SANStorageDriver) Create(
 		"enable512e": req.Enable512e,
 	}).Debug("Parsed blocksize option.")
 
-	// Check for a supported file system type
-	fstype := strings.ToLower(utils.GetV(opts, "fstype|fileSystemType", "ext4"))
-	switch fstype {
-	case "xfs", "ext3", "ext4":
-		log.WithFields(log.Fields{"fileSystemType": fstype, "name": name}).Debug("Filesystem format.")
-		meta["fstype"] = fstype
-	default:
-		return fmt.Errorf("unsupported fileSystemType option: %s", fstype)
+	fstype, err = drivers.CheckSupportedFilesystem(utils.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
+	if err != nil {
+		return err
 	}
+
+	meta["fstype"] = fstype
 
 	req.Qos = qos
 	req.TotalSize = int64(sizeBytes)
@@ -1093,7 +1091,7 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 
 	// Get the fstype
 	attrs, _ := v.Attributes.(map[string]interface{})
-	fstype := "ext4"
+	fstype := drivers.DefaultFileSystemType
 	if str, ok := attrs["fstype"].(string); ok {
 		fstype = str
 	}
