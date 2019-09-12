@@ -692,13 +692,15 @@ func (o *TridentOrchestrator) addBackend(configJSON, backendUUID string) (backen
 	}()
 
 	backend, err = factory.NewStorageBackendForConfig(configJSON)
-	backend.BackendUUID = backendUUID
+	if backend != nil {
+		backend.BackendUUID = backendUUID
+	}
 	if err != nil {
 		log.WithFields(log.Fields{
-			"err":                 err.Error(),
-			"backend":             backend,
-			"backend.BackendUUID": backend.BackendUUID,
-		}).Debug("NewStorageBackendForConfig had an error.")
+			"err":         err.Error(),
+			"backend":     backend,
+			"backendUUID": backendUUID,
+		}).Debug("NewStorageBackendForConfig failed.")
 
 		if backend != nil && backend.State.IsFailed() {
 			o.backends[backend.BackendUUID] = backend
