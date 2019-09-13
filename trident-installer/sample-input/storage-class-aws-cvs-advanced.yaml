@@ -1,26 +1,26 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-name: cvs-extreme
+  name: cvs-extreme
 provisioner: netapp.io/trident
 parameters:
-selector: "performance=extreme"
+  selector: "performance=extreme"
 allowVolumeExpansion: true
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-name: cvs-premium
+  name: cvs-premium
 provisioner: netapp.io/trident
 parameters:
-selector: "performance=premium"
+  selector: "performance=premium"
 allowVolumeExpansion: true
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-name: cvs-standard
+  name: cvs-standard
 provisioner: netapp.io/trident
 parameters:
-selector: "performance=standard"
+  selector: "performance=standard"
 allowVolumeExpansion: true

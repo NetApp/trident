@@ -188,7 +188,7 @@ Storage attributes and their possible values can be classified into two groups:
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
 Attribute         Type   Values                                  Offer                                                      Request                        Supported by
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
-media             string hdd, hybrid, ssd                        Pool contains media of this type; hybrid means both        Media type specified           All drivers but aws-cvs
+media\ :sup:`1`   string hdd, hybrid, ssd                        Pool contains media of this type; hybrid means both        Media type specified           ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san, solidfire-san
 provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all but solidfire-san & aws-cvs, thin: all but eseries-iscsi
 backendType       string | ontap-nas, ontap-nas-economy,         Pool belongs to this type of backend                       Backend specified              All drivers
                          | ontap-nas-flexgroup, ontap-san,
@@ -198,6 +198,8 @@ clones            bool   true, false                             Pool supports c
 encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-nas-flexgroups, ontap-san
 IOPS              int    positive integer                        Pool is capable of guaranteeing IOPS in this range         Volume guaranteed these IOPS   solidfire-san
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
+
+| :sup:`1`: Not supported by ONTAP Select systems
 
 In most cases, the values requested will directly influence provisioning; for
 instance, requesting thick provisioning will result in a thickly provisioned

@@ -181,9 +181,16 @@ Block size and bandwidth have a direct influence on the number of IOPS. As block
 
 SolidFire Element supports two methods for authentication: CHAP and Volume Access Groups (VAG). CHAP uses the CHAP protocol to authenticate the host to the backend. Volume Access Groups controls access to the volumes it provisions. NetApp recommends using CHAP for authentication as it's simpler and has no scaling limits.
 
+.. note::
+   Trident as an enhanced CSI provisioner supports the use of CHAP authentication. VAGs should only be used in the traditional
+   non-CSI mode of operation.
+
 CHAP authentication (verification that the initiator is the intended volume user) is supported only with account-based access control. If you are using CHAP for authentication, 2 options are available: unidirectional CHAP and bidirectional CHAP. Unidirectional CHAP authenticates volume access by using the SolidFire account name and initiator secret. The bidirectional CHAP option provides the most secure way of authenticating the volume since the volume authenticates the host through the account name and the initiator secret, and then the host authenticates the volume through the account name and the target secret.
 
 However, if CHAP is cannot be enabled and VAGs are required, create the access group and add the host initiators and volumes to the access group. Each IQN that you add to an access group can access each volume in the group with or without CHAP authentication. If the iSCSI initiator is configured to use CHAP authentication, account-based access control is used. If the iSCSI initiator is not configured to use CHAP authentication, then Volume Access Group access control is used.
+
+.. note::
+   VAGs are only supported by Trident in non-CSI mode of operation.
 
 For more information on how to setup Volume Access Groups and CHAP authentication, please refer the NetApp HCI Installation and setup guide.
 
