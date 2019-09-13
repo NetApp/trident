@@ -125,7 +125,7 @@ func initClients() error {
 		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
 		log.WithField("kubeConfigPath", configPath).Debug("Running outside a pod, creating CLI-based client.")
 
-		if kubeClient, err = k8sclient.NewKubectlClient(""); err != nil {
+		if kubeClient, err = k8sclient.NewKubectlClient("", k8sTimeout); err != nil {
 			return err
 		}
 		resetNamespace = kubeClient.Namespace()
