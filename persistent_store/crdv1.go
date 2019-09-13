@@ -58,7 +58,7 @@ func NewCRDClientV1(apiServerIP, kubeConfigPath string) (*CRDClientV1, error) {
 	}
 
 	// Create the CLI-based Kubernetes client
-	k8sClient, err := k8sclient.NewKubectlClient("")
+	k8sClient, err := k8sclient.NewKubectlClient("", 30*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}

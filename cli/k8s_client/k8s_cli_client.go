@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,9 +30,10 @@ type KubectlClient struct {
 	flavor    OrchestratorFlavor
 	version   *utils.Version
 	namespace string
+	timeout   time.Duration
 }
 
-func NewKubectlClient(namespace string) (Interface, error) {
+func NewKubectlClient(namespace string, k8sTimeout time.Duration) (Interface, error) {
 
 	// Discover which CLI to use (kubectl or oc)
 	cli, err := discoverKubernetesCLI()
@@ -74,6 +77,7 @@ func NewKubectlClient(namespace string) (Interface, error) {
 		flavor:    flavor,
 		version:   k8sVersion,
 		namespace: namespace,
+		timeout:   k8sTimeout,
 	}
 
 	// Get current namespace if one wasn't specified
@@ -88,6 +92,7 @@ func NewKubectlClient(namespace string) (Interface, error) {
 		"cli":       cli,
 		"flavor":    flavor,
 		"version":   k8sVersion.String(),
+		"timeout":   client.timeout,
 		"namespace": client.namespace,
 	}).Debug("Initialized Kubernetes CLI client.")
 
@@ -1172,7 +1177,43 @@ func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 }
 
 // CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
-func (c *KubectlClient) CreateObjectByYAML(yaml string) error {
+func (c *KubectlClient) CreateObjectByYAML(yamlData string) error {
+	for _, yamlDocument := range regexp.MustCompile(YAMLSeparator).Split(yamlData, -1) {
+
+		checkCreateObjectByYAML := func() error {
+			if returnError := c.createObjectByYAML(yamlDocument); returnError != nil {
+				log.WithFields(log.Fields{
+					"yamlDocument": yamlDocument,
+					"err":          returnError,
+				}).Errorf("Object creation failed.")
+				return returnError
+			}
+			return nil
+		}
+
+		createObjectNotify := func(err error, duration time.Duration) {
+			log.WithFields(log.Fields{
+				"yamlDocument": yamlDocument,
+				"increment":    duration,
+				"err":          err,
+			}).Debugf("Object not created, waiting.")
+		}
+		createObjectBackoff := backoff.NewExponentialBackOff()
+		createObjectBackoff.MaxElapsedTime = c.timeout
+
+		log.WithField("yamlDocument", yamlDocument).Trace("Waiting for object to be created.")
+
+		if err := backoff.RetryNotify(checkCreateObjectByYAML, createObjectBackoff, createObjectNotify); err != nil {
+			returnError := fmt.Errorf("yamlDocument %s was not created after %3.2f seconds",
+				yamlDocument, c.timeout.Seconds())
+			return returnError
+		}
+	}
+	return nil
+}
+
+// CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
+func (c *KubectlClient) createObjectByYAML(yaml string) error {
 
 	args := []string{fmt.Sprintf("--namespace=%s", c.namespace), "create", "-f", "-"}
 	cmd := exec.Command(c.cli, args...)

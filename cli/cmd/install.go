@@ -269,7 +269,7 @@ func initClient() (k8sclient.Interface, error) {
 		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
 		log.Debug("Running outside a pod, creating CLI-based client.")
 
-		return k8sclient.NewKubectlClient("")
+		return k8sclient.NewKubectlClient("", k8sTimeout)
 	}
 }
 
@@ -578,10 +578,13 @@ func installTrident() (returnError error) {
 		return
 	}
 
-	// Create the CRDs
+	// Create the CRDs and wait for them to be registered in Kubernetes
 	crdsCreated := false
 	if !crdsExist {
 		if returnError = createCustomResourceDefinitions(); returnError != nil {
+			return
+		}
+		if returnError = ensureCRDsRegistered(k8sclient.GetCRDNames()); returnError != nil {
 			return
 		}
 		crdsCreated = true
@@ -880,6 +883,50 @@ func createCustomResourceDefinitions() (returnError error) {
 		return
 	}
 	log.WithFields(logFields).Info("Created custom resource definitions.")
+	return nil
+}
+
+func ensureCRDsRegistered(crdNames []string) error {
+
+	for _, crdName := range crdNames {
+		if err := ensureCRDRegistered(crdName); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ensureCRDRegistered waits until a CRD is known to Kubernetes.
+func ensureCRDRegistered(crdName string) error {
+
+	checkCRDRegistered := func() error {
+		if exists, err := client.CheckCRDExists(crdName); err != nil {
+			return err
+		} else if !exists {
+			return errors.New("CRD not registered")
+		}
+		return nil
+	}
+
+	checkCRDNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"CRD": crdName,
+			"err": err,
+		}).Debug("CRD not registered, waiting.")
+	}
+
+	checkCRDBackoff := backoff.NewExponentialBackOff()
+	checkCRDBackoff.MaxInterval = 5 * time.Second
+	checkCRDBackoff.MaxElapsedTime = k8sTimeout
+
+	log.WithField("CRD", crdName).Trace("Waiting for CRD to be registered.")
+
+	if err := backoff.RetryNotify(checkCRDRegistered, checkCRDBackoff, checkCRDNotify); err != nil {
+		return fmt.Errorf("CRD was not registered after %3.2f seconds", k8sTimeout.Seconds())
+	}
+
+	log.WithField("CRD", crdName).Debug("CRD registered.")
 	return nil
 }
 

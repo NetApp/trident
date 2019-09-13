@@ -115,7 +115,7 @@ func NewTridentCrdController(o core.Orchestrator, apiServerIP, kubeConfigPath st
 	}
 
 	// Create the CLI-based Kubernetes client
-	client, err := clik8sclient.NewKubectlClient("")
+	client, err := clik8sclient.NewKubectlClient("", 30*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}

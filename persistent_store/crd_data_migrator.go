@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 )
+
+const crRegistrationTimeout = 3 * time.Minute
 
 type CRDDataMigrator struct {
 	etcdClient    EtcdClient
@@ -58,62 +61,92 @@ func (m *CRDDataMigrator) RunPrechecks() error {
 		}
 	}
 
-	// Ensure there are no CRD-based backends
-	if hasBackends, err := m.crdClient.HasBackends(); err != nil {
-		return fmt.Errorf("could not check for CRD-based backends; %v", err)
-	} else if hasBackends {
-		return errors.New("CRD-based backends are already present, aborting migration")
-	} else {
-		log.Debug("No CRD-based backends found.")
-	}
-
-	// Ensure there are no CRD-based storage classes
-	if hasStorageClasses, err := m.crdClient.HasStorageClasses(); err != nil {
-		return fmt.Errorf("could not check for CRD-based storage classes; %v", err)
-	} else if hasStorageClasses {
-		return errors.New("CRD-based storage classes are already present, aborting migration")
-	} else {
-		log.Debug("No CRD-based storage classes found.")
-	}
-
-	// Ensure there are no CRD-based volumes
-	if hasVolumes, err := m.crdClient.HasVolumes(); err != nil {
-		return fmt.Errorf("could not check for CRD-based volumes; %v", err)
-	} else if hasVolumes {
-		return errors.New("CRD-based volumes are already present, aborting migration")
-	} else {
-		log.Debug("No CRD-based volumes found.")
-	}
-
-	// Ensure there are no CRD-based volume transactions
-	if hasVolumeTransactions, err := m.crdClient.HasVolumeTransactions(); err != nil {
-		return fmt.Errorf("could not check for CRD-based volume transactions; %v", err)
-	} else if hasVolumeTransactions {
-		return errors.New("CRD-based volume transactions are already present, aborting migration")
-	} else {
-		log.Debug("No CRD-based volume transactions found.")
-	}
-
-	// Ensure there is no CRD-based version
-	crdVersion, err := m.crdClient.GetVersion()
-	if err != nil {
-		if MatchKeyNotFoundErr(err) {
-			log.Debug("Trident CRDs not found, migration can proceed.")
-		} else {
-			return fmt.Errorf("could not check for Trident CRDs; %v", err)
-		}
-	} else {
-		log.WithFields(log.Fields{
-			"PersistentStoreVersion": crdVersion.PersistentStoreVersion,
-			"OrchestratorAPIVersion": crdVersion.OrchestratorAPIVersion,
-		}).Debug("Found CRD-based persistent state version.")
-		return errors.New("Trident CRDs are already present, aborting migration")
+	// Ensure there are no Trident objects already stored in custom resources
+	if err := m.ensureNoExistingCRs(); err != nil {
+		return err
 	}
 
 	if err := m.transformer.RunPrechecks(); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (m *CRDDataMigrator) ensureNoExistingCRs() error {
+
+	checkCRs := func() error {
+
+		// Ensure there are no CRD-based backends
+		if hasBackends, err := m.crdClient.HasBackends(); err != nil {
+			return fmt.Errorf("could not check for CRD-based backends; %v", err)
+		} else if hasBackends {
+			return backoff.Permanent(errors.New("CRD-based backends are already present, aborting migration"))
+		} else {
+			log.Debug("No CRD-based backends found.")
+		}
+
+		// Ensure there are no CRD-based storage classes
+		if hasStorageClasses, err := m.crdClient.HasStorageClasses(); err != nil {
+			return fmt.Errorf("could not check for CRD-based storage classes; %v", err)
+		} else if hasStorageClasses {
+			return backoff.Permanent(errors.New("CRD-based storage classes are already present, aborting migration"))
+		} else {
+			log.Debug("No CRD-based storage classes found.")
+		}
+
+		// Ensure there are no CRD-based volumes
+		if hasVolumes, err := m.crdClient.HasVolumes(); err != nil {
+			return fmt.Errorf("could not check for CRD-based volumes; %v", err)
+		} else if hasVolumes {
+			return backoff.Permanent(errors.New("CRD-based volumes are already present, aborting migration"))
+		} else {
+			log.Debug("No CRD-based volumes found.")
+		}
+
+		// Ensure there are no CRD-based volume transactions
+		if hasVolumeTransactions, err := m.crdClient.HasVolumeTransactions(); err != nil {
+			return fmt.Errorf("could not check for CRD-based transactions; %v", err)
+		} else if hasVolumeTransactions {
+			return backoff.Permanent(errors.New("CRD-based transactions are already present, aborting migration"))
+		} else {
+			log.Debug("No CRD-based transactions found.")
+		}
+
+		// Ensure there is no CRD-based version
+		crdVersion, err := m.crdClient.GetVersion()
+		if err != nil {
+			if MatchKeyNotFoundErr(err) {
+				log.Debug("Trident CRDs not found, migration can proceed.")
+			} else {
+				return fmt.Errorf("could not check for Trident CRDs; %v", err)
+			}
+		} else {
+			log.WithFields(log.Fields{
+				"PersistentStoreVersion": crdVersion.PersistentStoreVersion,
+				"OrchestratorAPIVersion": crdVersion.OrchestratorAPIVersion,
+			}).Debug("Found CRD-based persistent state version.")
+			return backoff.Permanent(errors.New("Trident CRDs are already present, aborting migration"))
+		}
+
+		return nil
+	}
+
+	checkCRsNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Debug("Could not check for existing CRs, waiting.")
+	}
+
+	checkCRsBackoff := backoff.NewExponentialBackOff()
+	checkCRsBackoff.MaxInterval = 5 * time.Second
+	checkCRsBackoff.MaxElapsedTime = crRegistrationTimeout
+
+	if err := backoff.RetryNotify(checkCRs, checkCRsBackoff, checkCRsNotify); err != nil {
+		return err
+	}
+
+	log.Debug("No CRD-based Trident objects found.")
 	return nil
 }
 

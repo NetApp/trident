@@ -1207,6 +1207,18 @@ metadata:
     app: {LABEL}
 `
 
+func GetCRDNames() []string {
+	return []string{
+		"tridentversions.trident.netapp.io",
+		"tridentbackends.trident.netapp.io",
+		"tridentstorageclasses.trident.netapp.io",
+		"tridentvolumes.trident.netapp.io",
+		"tridentnodes.trident.netapp.io",
+		"tridenttransactions.trident.netapp.io",
+		"tridentsnapshots.trident.netapp.io",
+	}
+}
+
 func GetCRDsYAML() string {
 	return customResourceDefinitionYAML
 }
