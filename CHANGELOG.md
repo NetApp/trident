@@ -9,13 +9,14 @@
 - **Kubernetes:** Reduced log verbosity in CSI sidecars. (Issue [#275](https://github.com/NetApp/trident/issues/275))
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.  (Issue [#260](https://github.com/NetApp/trident/issues/260), Issue [#273](https://github.com/NetApp/trident/issues/273))
 - **Kubernetes:** Node now retries registration with controller indefinitely (Issue [#283](https://github.com/NetApp/trident/issues/283))
-- Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 - **Kubernetes:** Fixed a panic when adding a storage backend fails.
+- Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 
 **Enhancements:**
 - **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
 - **Kubernetes:** Added support to CSI Trident for raw block volumes for iSCSI PVs.
 - **Kubernetes:** Added support for Kubernetes 1.16.
+- **Kubernetes:** Made installer setup directory optional and relative to working directory. (Issue [#230](https://github.com/NetApp/trident/issues/230))
 - Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 
 **Deprecations:**

@@ -142,9 +142,8 @@ dist_tar: build
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
 	@mkdir -p /tmp/trident-installer/extras/macos/bin
 	@cp ${MACOS_BIN_DIR}/${CLI_BIN} /tmp/trident-installer/extras/macos/bin/${CLI_BIN}
-	-rm -rf /tmp/trident-installer/setup/backend.json
+	-rm -rf /tmp/trident-installer/setup
 	-find /tmp/trident-installer -name \*.swp | xargs -0 -r rm
-	@mkdir -p /tmp/trident-installer/setup
 	@tar -C /tmp -czf trident-installer-${TRIDENT_VERSION}.tar.gz trident-installer
 	-rm -rf /tmp/trident-installer
 

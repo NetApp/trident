@@ -1184,6 +1184,26 @@ spec:
   restartPolicy: Never
 `
 
+func GetEmptyConfigMapYAML(label, name, namespace string) string {
+
+	configMapYAML := emptyConfigMapTemplate
+
+	configMapYAML = strings.Replace(configMapYAML, "{LABEL}", label, 1)
+	configMapYAML = strings.Replace(configMapYAML, "{NAMESPACE}", namespace, 1)
+	configMapYAML = strings.Replace(configMapYAML, "{NAME}", name, 1)
+	return configMapYAML
+}
+
+const emptyConfigMapTemplate = `---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {LABEL}
+  name: {NAME}
+  namespace: {NAMESPACE}
+`
+
 func GetOpenShiftSCCQueryYAML(scc string) string {
 	return strings.Replace(openShiftSCCQueryYAMLTemplate, "{SCC}", scc, 1)
 }

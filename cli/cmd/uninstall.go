@@ -16,7 +16,7 @@ func init() {
 	RootCmd.AddCommand(uninstallCmd)
 	uninstallCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during uninstallation.")
 	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
-	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a job in the cluster.")
+	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the uninstaller as a job in the cluster.")
 
 	uninstallCmd.Flags().MarkHidden("trident-image")
 	uninstallCmd.Flags().MarkHidden("in-cluster")
@@ -77,11 +77,6 @@ func discoverUninstallationEnvironment() error {
 
 	// Direct all subsequent client commands to the chosen namespace
 	client.SetNamespace(TridentPodNamespace)
-
-	// Prepare input file paths
-	if err = prepareYAMLFilePaths(); err != nil {
-		return err
-	}
 
 	log.WithFields(log.Fields{
 		"kubernetesVersion": client.Version().String(),

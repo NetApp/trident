@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -110,7 +109,7 @@ func init() {
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).")
-	installCmd.Flags().BoolVar(&inCluster, "in-cluster", true, "Run the installer as a pod in the cluster.")
+	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
@@ -142,6 +141,11 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if generateYAML {
+
+			// Ensure the setup directory exists
+			if err := ensureSetupDirExists(); err != nil {
+				log.Fatalf("Could not find or create setup directory; %v", err)
+			}
 
 			// If generate-custom-yaml was specified, write the YAML files to the setup directory
 			if csi {
@@ -334,7 +338,7 @@ func prepareYAMLFilePaths() error {
 	var err error
 
 	// Get directory of installer
-	installerDirectoryPath, err = filepath.Abs(filepath.Dir(os.Args[0]))
+	installerDirectoryPath, err = os.Getwd()
 	if err != nil {
 		return fmt.Errorf("could not determine installer working directory; %v", err)
 	}
@@ -465,6 +469,16 @@ func fileExists(filePath string) bool {
 
 func writeFile(filePath, data string) error {
 	return ioutil.WriteFile(filePath, []byte(data), 0644)
+}
+
+func ensureSetupDirExists() error {
+	if !fileExists(setupPath) {
+		if err := os.MkdirAll(setupPath, os.ModePerm); err != nil {
+			return err
+		}
+		log.WithField("path", setupPath).Info("Created setup directory.")
+	}
+	return nil
 }
 
 func installTrident() (returnError error) {
@@ -614,8 +628,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(deploymentPath)
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
-			returnError = client.CreateObjectByYAML(
-				k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, Debug))
+			returnError = client.CreateObjectByYAML(k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -1533,9 +1546,17 @@ func installTridentInCluster() (returnError error) {
 	}()
 
 	// Create the configmap
-	if returnError = client.CreateConfigMapFromDirectory(
-		setupPath, "trident-installer", TridentInstallerLabel); returnError != nil {
-		return
+	if fileExists(setupPath) {
+		if returnError = client.CreateConfigMapFromDirectory(
+			setupPath, "trident-installer", TridentInstallerLabel); returnError != nil {
+			return
+		}
+	} else {
+		emptyConfigMapYAML := k8sclient.GetEmptyConfigMapYAML(
+			TridentInstallerLabelValue, "trident-installer", TridentPodNamespace)
+		if returnError = client.CreateObjectByYAML(emptyConfigMapYAML); returnError != nil {
+			return
+		}
 	}
 	log.WithFields(log.Fields{"configmap": "trident-installer"}).Info("Created installer configmap.")
 
