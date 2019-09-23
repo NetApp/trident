@@ -78,8 +78,8 @@ defaults that you set in the backend configuration:
 =================================== ================= ======================================================
 Annotation                          Volume Option     Supported Drivers
 =================================== ================= ======================================================
-trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi
-trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
+trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi, ontap-san-economy
+trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san, aws-cvs, azure-netapp-files, gcp-cvs, ontap-san-economy
 trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
 trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
@@ -194,8 +194,9 @@ provisioningType  string thin, thick                             Pool supports t
 backendType       string | ontap-nas, ontap-nas-economy,         Pool belongs to this type of backend                       Backend specified              All drivers
                          | ontap-nas-flexgroup, ontap-san,
                          | solidfire-san, eseries-iscsi,
-                         | aws-cvs, gcp-cvs
-snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
+                         | aws-cvs, gcp-cvs,
+                         | azure-netapp-files, ontap-san-economy
+snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san, aws-cvs,  gcp-cvs
 clones            bool   true, false                             Pool supports cloning volumes                              Volume with clones enabled     ontap-nas, ontap-san, solidfire-san, aws-cvs, gcp-cvs
 encryption        bool   true, false                             Pool supports encrypted volumes                            Volume with encryption enabled ontap-nas, ontap-nas-economy, ontap-nas-flexgroups, ontap-san
 IOPS              int    positive integer                        Pool is capable of guaranteeing IOPS in this range         Volume guaranteed these IOPS   solidfire-san
@@ -246,11 +247,11 @@ use ``tridentctl get backend`` to get the list of backends and their pools.
    Volumes. Worker nodes are responsible for filesystem create operations and
    may require appropriate filesystem utilities such as xfsprogs.
 
-================= ======= ======================================= ================================================= ======================================================= ===================
-Attribute         Type    Values                                  Description                                       Relevant Drivers                                        Kubernetes Version
-================= ======= ======================================= ================================================= ======================================================= ===================
-fsType            string  ext4, ext3, xfs, etc.                   The file system type for block volumes            solidfire-san, ontap-san, eseries-iscsi                 All
-================= ======= ======================================= ================================================= ======================================================= ===================
+================= ======= ======================================= ================================================= ========================================================== ==================
+Attribute         Type    Values                                  Description                                       Relevant Drivers                                           Kubernetes Version
+================= ======= ======================================= ================================================= ========================================================== ==================
+fsType            string  ext4, ext3, xfs, etc.                   The file system type for block volumes            solidfire-san, ontap-san, ontap-san-economy, eseries-iscsi All
+================= ======= ======================================= ================================================= ========================================================== ==================
 
 The Trident installer bundle provides several example storage class definitions
 for use with Trident in ``sample-input/storage-class-*.yaml``. Deleting a
@@ -286,7 +287,7 @@ Kubernetes VolumeSnapshot Objects
 A `Kubernetes VolumeSnapshot`_ object is a request to create a snapshot of
 a volume. Just as a PVC represents a
 request made by a user for a volume, a Volume Snapshot is a request made by
-a user to create a snapshot of an existing PVC.  
+a user to create a snapshot of an existing PVC.
 
 When a Volume Snapshot is requested, Trident automatically manages the
 creation of the snapshot for the volume on the backend and exposes the
@@ -301,8 +302,8 @@ DataSource when creating new PVCs.
 
    The lifecyle of a VolumeSnapshot is independent of the source PVC: a snapshot
    persists even after the source PVC is deleted. When deleting a PVC
-   which has associated snapshots, Trident marks the backing volume for this PVC 
-   in a "Deleting" state, but does not remove it completely. The volume is 
+   which has associated snapshots, Trident marks the backing volume for this PVC
+   in a "Deleting" state, but does not remove it completely. The volume is
    removed when all associated snapshots are deleted.
 
 Kubernetes VolumeSnapshotContent Objects
@@ -327,7 +328,7 @@ of the name of the PV and the name of the VolumeSnapshotContent object.
 When a snapshot request comes in, Trident takes care of the actual creation of
 the snapshot on the backend. After the snapshot is created, Trident configures a
 VolumeSnapshotContent object and thus exposes the snapshot to the Kubernetes API.
- 
+
 Kubernetes CustomResourceDefinition objects
 -------------------------------------------
 

@@ -20,21 +20,31 @@ ontap-nas           NFS
 ontap-nas-economy   NFS
 ontap-nas-flexgroup NFS
 ontap-san           iSCSI
+ontap-san-economy   iSCSI
 =================== ========
 
 The ``ontap-nas`` and ``ontap-san`` drivers create an ONTAP FlexVol for each
-volume. ONTAP supports up to 1000 FlexVols per cluster node with a cluster
+PV. ONTAP supports up to 1000 FlexVols per cluster node with a cluster
 maximum of 12,000 FlexVols. If your persistent volume requirements fit within
 that limitation, those drivers are the preferred solution due to the granular
 data management capabilities they afford.
 
 If you need more persistent volumes than may be accommodated by the FlexVol
-limits, choose the ``ontap-nas-economy`` driver, which creates volumes as ONTAP
+limits, choose the ``ontap-nas-economy`` or the ``ontap-san-economy`` driver.
+
+The ``ontap-nas-economy`` driver creates PVs as ONTAP
 Qtrees within a pool of automatically managed FlexVols. Qtrees offer far
 greater scaling, up to 100,000 per cluster node and 2,400,000 per cluster, at
 the expense of granular data management features.
 
-Choose the ontap-nas-flexgroup driver to increase parallelism to a single volume
+The ``ontap-san-economy`` driver creates PVs as ONTAP LUNs within a pool of
+automatically managed FlexVols. Each PV maps to an ONTAP LUN and this driver offers
+higher scalability for SAN workloads. Depending on the storage array, ONTAP supports
+up to 8192 LUNs per cluster node and 16384 LUNs for an HA pair. Since PVs map to LUNs
+within shared FlexVols, Kubernetes VolumeSnapshots are created using ONTAP's FlexClone
+technology. FlexClone LUNs and their parent LUNs share blocks, minimizing disk usage. 
+
+Choose the ``ontap-nas-flexgroup`` driver to increase parallelism to a single volume
 that can grow into the petabyte range with billions of files. Some ideal use cases
 for FlexGroups include AI/ML/DL, big data and analytics, software builds, streaming,
 file repositories, etc. Trident uses all aggregates assigned to an SVM when
@@ -90,8 +100,8 @@ If the export policy is locked down to specific hosts, it will need to be
 updated when new nodes are added to the cluster, and that access should be
 removed when nodes are removed as well.
 
-ontap-san
-^^^^^^^^^
+ontap-san, ontap-san-economy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All of your Kubernetes worker nodes must have the appropriate iSCSI tools
 installed. See the :ref:`worker configuration guide <iSCSI>` for more details.
@@ -113,35 +123,44 @@ they should be removed when nodes are removed as well.
 Backend configuration options
 -----------------------------
 
-========================= ======================================================================= ================================================
-Parameter                 Description                                                             Default
-========================= ======================================================================= ================================================
+========================= ========================================================================================= ================================================
+Parameter                 Description                                                                               Default
+========================= ========================================================================================= ================================================
 version                   Always 1
-storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", or "ontap-san"
-backendName               Custom name for the storage backend                                     Driver name + "_" + dataLIF
-managementLIF             IP address of a cluster or SVM management LIF                           "10.0.0.1"
-dataLIF                   IP address of protocol LIF                                              Derived by the SVM unless specified
-svm                       Storage virtual machine to use                                          Derived if an SVM managementLIF is specified
-igroupName                Name of the igroup for SAN volumes to use                               "trident"
+storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy"
+backendName               Custom name for the storage backend                                                       Driver name + "_" + dataLIF
+managementLIF             IP address of a cluster or SVM management LIF                                             "10.0.0.1"
+dataLIF                   IP address of protocol LIF                                                                Derived by the SVM unless specified
+svm                       Storage virtual machine to use                                                            Derived if an SVM managementLIF is specified
+igroupName                Name of the igroup for SAN volumes to use                                                 "trident"
 username                  Username to connect to the cluster/SVM
 password                  Password to connect to the cluster/SVM
-storagePrefix             Prefix used when provisioning new volumes in the SVM                    "trident"
-limitAggregateUsage       Fail provisioning if usage is above this percentage                     "" (not enforced by default)
-limitVolumeSize           Fail provisioning if requested volume size is above this value          "" (not enforced by default)
-nfsMountOptions           Comma-separated list of NFS mount options (except ontap-san)            ""
-========================= ======================================================================= ================================================
+storagePrefix             Prefix used when provisioning new volumes in the SVM                                      "trident"
+limitAggregateUsage       Fail provisioning if usage is above this percentage                                       "" (not enforced by default)
+limitVolumeSize           Fail provisioning if requested volume size is above this value                            "" (not enforced by default)
+nfsMountOptions           Comma-separated list of NFS mount options (except ontap-san)                              ""
+========================= ========================================================================================= ================================================
 
-A fully-qualified domain name (FQDN) can be specified for the managementLIF option. For the ontap-nas*
-drivers only, a FQDN may also be specified for the dataLIF option, in which case the FQDN will
-be used for the NFS mount operations. For the ontap-san driver, the default is to use all data LIF IPs from
-the SVM and to use iSCSI multipath. Specifying an IP address for the dataLIF for the ontap-san driver forces
-the driver to disable multipath and use only the specified address.  For the ontap-nas-economy driver,
-the limitVolumeSize option will also restrict the maximum size of the volumes it manages for qtrees.
+A fully-qualified domain name (FQDN) can be specified for the ``managementLIF``
+option. For the ``ontap-nas*`` drivers only, a FQDN may also be specified for
+the ``dataLIF`` option, in which case the FQDN will be used for the NFS mount
+operations.
 
-The nfsMountOptions parameter applies to all ONTAP drivers except ontap-san.  The mount options for Kubernetes
-persistent volumes are normally specified in storage classes, but if no mount options are specified in a storage
-class, Trident will fall back to using the mount options specified in the storage backend's config file.  If
-no mount options are specified in either the storage class or the config file, then Trident will not set any
+For the ``ontap-san*`` drivers, the default is to use all data LIF IPs from
+the SVM and to use iSCSI multipath. Specifying an IP address for the ``dataLIF``
+for the ``ontap-san*`` drivers forces them to disable multipath and use only the
+specified address.
+
+For the ``ontap-nas-economy`` and the ``ontap-san-economy``
+drivers, the ``limitVolumeSize`` option will also restrict the maximum size of
+the volumes it manages for qtrees and LUNs.
+
+The ``nfsMountOptions`` parameter applies to all ONTAP drivers except ``ontap-san*``.
+The mount options for Kubernetes persistent volumes are normally specified in
+storage classes, but if no mount options are specified in a storage
+class, Trident will fall back to using the mount options specified in the
+storage backend's config file. If no mount options are specified in either the
+storage class or the config file, then Trident will not set any
 mount options on an associated persistent volume.
 
 You can control how each volume is provisioned by default using these options
@@ -221,6 +240,20 @@ Example configuration
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
+        "igroupName": "trident",
+        "username": "vsadmin",
+        "password": "secret"
+    }
+
+**iSCSI Example for ontap-san-economy driver**
+
+.. code-block:: json
+
+    {
+        "version": 1,
+        "storageDriverName": "ontap-san-economy",
+        "managementLIF": "10.0.0.1",
+        "svm": "svm_iscsi_eco",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret"

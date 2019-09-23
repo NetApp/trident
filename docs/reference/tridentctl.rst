@@ -115,6 +115,7 @@ Install Trident
         --generate-custom-yaml   Generate YAML files, but don't install anything.
     -h, --help                   help for install
         --k8s-timeout duration   The timeout for all Kubernetes operations. (default 3m0s)
+        --log-format string      The Trident logging format (text, json). (default "text")
         --pv string              The name of the legacy PV used by Trident, will be migrated to CRDs. (default "trident")
         --pvc string             The name of the legacy PVC used by Trident, will be migrated to CRDs. (default "trident")
         --silent                 Disable most output during installation.

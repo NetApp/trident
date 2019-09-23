@@ -60,20 +60,14 @@ size             The default size of new volumes                                
 The ``exportRule`` value must be a comma-separated list of any combination of IPv4 addresses or IPv4 subnets in CIDR
 notation.
 
-Example configurations
+Example Configurations
 ----------------------
 
 **Example 1 - Minimal backend configuration for azure-netapp-files**
 
-This is the absolute minimum backend configuration. With this Trident will discover all of your NetApp accounts,
-capacity pools, and subnets delegated to ANF in every location worldwide, and place new volumes on one of them
-randomly.
+This is the absolute minimum backend configuration. With this Trident will discover all of your NetApp accounts, capacity pools, and subnets delegated to ANF in every location worldwide, and place new volumes on one of them randomly.
 
-This configuration is useful when you're just getting started with ANF and trying things out, but in practice you're
-going to want to provide additional scoping for the volumes you provision in order to make sure that they have the
-characteristics you want and end up on a network that's close to the compute that's using it. See the subsequent
-examples for more details.
-
+This configuration is useful when you're just getting started with ANF and trying things out, but in practice you're going to want to provide additional scoping for the volumes you provision in order to make sure that they have the characteristics you want and end up on a network that's close to the compute that's using it. See the subsequent examples for more details.
 
 .. code-block:: json
 
@@ -86,12 +80,9 @@ examples for more details.
         "clientSecret": "SECRET"
     }
 
-
 **Example 2 - Single location and specific service level for azure-netapp-files**
 
-This backend configuration will place volumes in Azure's "eastus" location in a "Premium" capacity pool. Trident
-automatically discovers all of the subnets delegated to ANF in that location and will place a new volume on one of
-them randomly.
+This backend configuration will place volumes in Azure's "eastus" location in a "Premium" capacity pool. Trident automatically discovers all of the subnets delegated to ANF in that location and will place a new volume on one of them randomly.
 
 .. code-block:: json
 
@@ -109,8 +100,7 @@ them randomly.
 
 **Example 3 - Advanced configuration for azure-netapp-files**
 
-This backend configuration further reduces the scope of volume placement to a single subnet, and also modifies some
-volume provisioning defaults.
+This backend configuration further reduces the scope of volume placement to a single subnet, and also modifies some volume provisioning defaults.
 
 .. code-block:: json
 
@@ -136,9 +126,7 @@ volume provisioning defaults.
 
 **Example 4 - Virtual storage pools with azure-netapp-files**
 
-This backend configuration defines multiple :ref:`pools of storage <Virtual Storage Pools>` in a single file. This is useful when you have
-multiple capacity pools supporting different service levels and you want to create storage classes in Kubernetes that
-represent those.
+This backend configuration defines multiple :ref:`pools of storage <Virtual Storage Pools>` in a single file. This is useful when you have multiple capacity pools supporting different service levels and you want to create storage classes in Kubernetes that represent those.
 
 This is just scratching the surface of the power of virtual storage pools and their labels.
 
@@ -178,38 +166,3 @@ This is just scratching the surface of the power of virtual storage pools and th
             }
         ]
     }
-
-
-The following StorageClass definitions refer to the storage pools above. Using the ``parameters.selector`` field, each
-StorageClass calls out which pool may be used to host a volume. The volume will have the aspects defined in the chosen
-pool.
-
-
-.. code-block:: yaml
-
-    apiVersion: storage.k8s.io/v1
-    kind: StorageClass
-    metadata:
-      name: gold
-    provisioner: csi.trident.netapp.io
-    parameters:
-      selector: "performance=gold"
-    allowVolumeExpansion: true
-    ---
-    apiVersion: storage.k8s.io/v1
-    kind: StorageClass
-    metadata:
-      name: silver
-    provisioner: csi.trident.netapp.io
-    parameters:
-      selector: "performance=silver"
-    allowVolumeExpansion: true
-    ---
-    apiVersion: storage.k8s.io/v1
-    kind: StorageClass
-    metadata:
-      name: bronze
-    provisioner: csi.trident.netapp.io
-    parameters:
-      selector: "performance=bronze"
-    allowVolumeExpansion: true
