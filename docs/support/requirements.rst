@@ -8,10 +8,9 @@ Supported frontends (orchestrators)
 Trident supports multiple container engines and orchestrators, including:
 
 * `NetApp Kubernetes Service <https://cloud.netapp.com/kubernetes-service>`_
-* Kubernetes 1.9 or later (latest: 1.15)
-* OpenShift 3.9 or later (latest: 3.11)
-* Docker 17.06 (CE or EE) or later (latest: 18.09)
-* Docker Enterprise Edition 17.06 or later (latest: 2.1)
+* Kubernetes 1.11 to 1.15
+* OpenShift 3.11 
+* Docker Enterprise 17.06 or later (latest: 3.0)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
 that uses one of the supported versions as a base, such as Rancher or Tectonic.

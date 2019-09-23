@@ -24,7 +24,7 @@ Before creating a Volume Snapshot, a :ref:`VolumeSnapshotClass <Kubernetes Volum
 must be set up. 
 
 .. code-block:: bash
-     
+    
    $ cat snap-sc.yaml
    apiVersion: snapshot.storage.k8s.io/v1alpha1
    kind: VolumeSnapshotClass
@@ -38,7 +38,7 @@ Create a VolumeSnapshot
 We can now create a snapshot of an existing PVC.
 
 .. code-block:: bash
-   
+
    $ cat snap.yaml  
    apiVersion: snapshot.storage.k8s.io/v1alpha1 
    kind: VolumeSnapshot
@@ -145,7 +145,7 @@ To resize an NFS PV, the admin first needs to configure the storage class to
 allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``:
 
 .. code-block:: bash
-  
+
   $ cat storageclass-ontapnas.yaml 
   apiVersion: storage.k8s.io/v1
   kind: StorageClass
@@ -163,7 +163,7 @@ volume expansion.
 Next, we create a PVC using this storage class:
 
 .. code-block:: bash
-  
+
   $ cat pvc-ontapnas.yaml 
   kind: PersistentVolumeClaim
   apiVersion: v1
@@ -180,7 +180,7 @@ Next, we create a PVC using this storage class:
 Trident should create a 20MiB NFS PV for this PVC:
 
 .. code-block:: bash
-  
+
     $ kubectl get pvc
     NAME           STATUS   VOLUME                                     CAPACITY     ACCESS MODES   STORAGECLASS    AGE
     ontapnas20mb   Bound    pvc-08f3d561-b199-11e9-8d9f-5254004dfdb7   20Mi         RWO            ontapnas        9s
@@ -246,7 +246,7 @@ Importing a volume
 ==================
 
 Trident version 19.04 and above allows importing an existing storage volume into Kubernetes with the ``ontap-nas``,
-``ontap-nas-flexgroup``, ``solidfire-san``, and ``aws-cvs`` drivers.
+``ontap-nas-flexgroup``, ``solidfire-san``, ``azure-netapp-files`` and ``aws-cvs`` drivers.
 
 There are several use cases for importing a volume into Trident:
 
@@ -336,22 +336,39 @@ following command:
 When using the ``--no-manage`` flag, Trident renames the volume, but it does not validate if the volume was mounted.
 The import operation will fail if the volume was not mounted manually.
 
-To import an ``aws-cvs`` volume on the backend called `awscvs_YEppr` with the volume path of `adroit-jolly-swift`
+To import an ``aws-cvs`` volume on the backend called ``awscvs_YEppr`` with the volume path of ``adroit-jolly-swift``
 use the following command:
 
 .. code-block:: bash
 
     $ tridentctl import volume awscvs_YEppr adroit-jolly-swift -f <path-to-pvc-file> -n trident
 
-    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
-    |            NAME            |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
-    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
-    | trident-aws-claim01-41970  | 1.0 GiB | aws-sc        | file     | b570e4af-f38c-4504-9d05-02dcc14bb95d | online | false   |
-    +----------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    |                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+    | pvc-a46ccab7-44aa-4433-94b1-e47fc8c0fa55 | 100 GiB | aws-storage   | file     | e1a6e65b-299e-4568-ad05-4f0a105c888f | online | true    |
+    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
 .. note::
-  The AWS volume path is the portion of the volume's export path after the `:/`. For example, if the export path is
-  ``10.0.0.1:/adroit-jolly-swift`` then the volume path is ``adroit-jolly-swift``.
+     The AWS volume path is the portion of the volume's export path after the `:/`. For example, if the export path is
+     ``10.0.0.1:/adroit-jolly-swift`` then the volume path is ``adroit-jolly-swift``.
+
+To import an ``azure-netapp-files`` volume on the backend called ``azurenetappfiles_40517`` with the volume path
+``importvol1``, you will use the following command:
+
+.. code-block:: bash
+
+   $ tridentctl import volume azurenetappfiles_40517 importvol1 -f <path-to-pvc-file> -n trident
+ 
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   |                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   | pvc-0ee95d60-fd5c-448d-b505-b72901b3a4ab | 100 GiB | anf-storage   | file     | 1c01274f-d94b-44a3-98a3-04c953c9a51e | online | true    |
+   +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+   
+.. note::
+     The volume path for the ANF volume is present in the mount path after the `:/`. For example, if the mount path is
+     ``10.0.0.2:/importvol1``, the volume path is ``importvol1``.
 
 Behavior of Drivers for Volume Import
 -------------------------------------
