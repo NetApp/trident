@@ -3,7 +3,7 @@
 
 GOARCH ?= amd64
 GOGC ?= ""
-GO_IMAGE = golang:1.12
+GO_IMAGE = golang:1.13
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config

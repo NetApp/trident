@@ -17,7 +17,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	flag.Parse()
+	testing.Init()
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}

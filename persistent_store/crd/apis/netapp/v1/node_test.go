@@ -3,7 +3,6 @@
 package v1
 
 import (
-	"flag"
 	"testing"
 
 	"github.com/netapp/trident/utils"
@@ -12,7 +11,7 @@ import (
 )
 
 func init() {
-	flag.Parse()
+	testing.Init()
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}

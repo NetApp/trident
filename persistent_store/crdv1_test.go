@@ -4,7 +4,6 @@ package persistentstore
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -35,7 +34,7 @@ import (
 )
 
 func init() {
-	flag.Parse()
+	testing.Init()
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}

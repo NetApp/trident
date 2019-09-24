@@ -3,7 +3,6 @@
 package persistentstore
 
 import (
-	"flag"
 	"fmt"
 	"reflect"
 	"testing"
@@ -32,7 +31,7 @@ var (
 )
 
 func init() {
-	flag.Parse()
+	testing.Init()
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}

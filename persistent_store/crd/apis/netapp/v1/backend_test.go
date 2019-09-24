@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	flag.Parse()
+	testing.Init()
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
