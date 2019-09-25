@@ -103,7 +103,9 @@ func discoverKubernetesCLI() (string, error) {
 	// Try the OpenShift CLI first
 	_, err := exec.Command(CLIOpenShift, "version").CombinedOutput()
 	if err == nil {
-		return CLIOpenShift, nil
+		if verifyOpenShiftAPIResources() {
+			return CLIOpenShift, nil
+		}
 	}
 
 	// Fall back to the K8S CLI
@@ -113,6 +115,24 @@ func discoverKubernetesCLI() (string, error) {
 	}
 
 	return "", fmt.Errorf("could not find the Kubernetes CLI; %s", string(out))
+}
+
+func verifyOpenShiftAPIResources() bool {
+
+	out, err := exec.Command("oc", "api-resources").CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	lines := strings.Split(string(out), "\n")
+	for _, l := range lines {
+		if strings.Contains(l, "config.openshift.io") {
+			return true
+		}
+	}
+
+	log.Debug("Couldn't find OpenShift api-resources, hence not using oc tools for CLI")
+	return false
 }
 
 func discoverKubernetesServerVersion(kubernetesCLI string) (*utils.Version, error) {
