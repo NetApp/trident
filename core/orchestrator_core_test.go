@@ -2280,125 +2280,125 @@ func TestOrchestratorNotReady(t *testing.T) {
 
 	orchestrator := getOrchestrator()
 	orchestrator.bootstrapped = false
-	orchestrator.bootstrapError = notReadyError()
+	orchestrator.bootstrapError = utils.NotReadyError()
 
 	backend, err = orchestrator.AddBackend("")
-	if backend != nil || !IsNotReadyError(err) {
+	if backend != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AddBackend to return an error.")
 	}
 
 	backend, err = orchestrator.GetBackend("")
-	if backend != nil || !IsNotReadyError(err) {
+	if backend != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetBackend to return an error.")
 	}
 
 	backends, err = orchestrator.ListBackends()
-	if backends != nil || !IsNotReadyError(err) {
+	if backends != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListBackends to return an error.")
 	}
 
 	err = orchestrator.DeleteBackend("")
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteBackend to return an error.")
 	}
 
 	volume, err = orchestrator.AddVolume(nil)
-	if volume != nil || !IsNotReadyError(err) {
+	if volume != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AddVolume to return an error.")
 	}
 
 	volume, err = orchestrator.CloneVolume(nil)
-	if volume != nil || !IsNotReadyError(err) {
+	if volume != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected CloneVolume to return an error.")
 	}
 
 	volume, err = orchestrator.GetVolume("")
-	if volume != nil || !IsNotReadyError(err) {
+	if volume != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetVolume to return an error.")
 	}
 
 	_, err = orchestrator.GetDriverTypeForVolume(nil)
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetDriverTypeForVolume to return an error.")
 	}
 
 	_, err = orchestrator.GetVolumeType(nil)
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetVolumeType to return an error.")
 	}
 
 	volumes, err = orchestrator.ListVolumes()
-	if volumes != nil || !IsNotReadyError(err) {
+	if volumes != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListVolumes to return an error.")
 	}
 
 	err = orchestrator.DeleteVolume("")
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteVolume to return an error.")
 	}
 
 	volumes, err = orchestrator.ListVolumesByPlugin("")
-	if volumes != nil || !IsNotReadyError(err) {
+	if volumes != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListVolumesByPlugin to return an error.")
 	}
 
 	err = orchestrator.AttachVolume("", "", nil)
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AttachVolume to return an error.")
 	}
 
 	err = orchestrator.DetachVolume("", "")
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected DetachVolume to return an error.")
 	}
 
 	snapshot, err = orchestrator.CreateSnapshot(nil)
-	if snapshot != nil || !IsNotReadyError(err) {
+	if snapshot != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected CreateSnapshot to return an error.")
 	}
 
 	snapshot, err = orchestrator.GetSnapshot("", "")
-	if snapshot != nil || !IsNotReadyError(err) {
+	if snapshot != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetSnapshot to return an error.")
 	}
 
 	snapshots, err = orchestrator.ListSnapshots()
-	if snapshots != nil || !IsNotReadyError(err) {
+	if snapshots != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListSnapshots to return an error.")
 	}
 
 	snapshots, err = orchestrator.ReadSnapshotsForVolume("")
-	if snapshots != nil || !IsNotReadyError(err) {
+	if snapshots != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ReadSnapshotsForVolume to return an error.")
 	}
 
 	err = orchestrator.DeleteSnapshot("", "")
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteSnapshot to return an error.")
 	}
 
 	err = orchestrator.ReloadVolumes()
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ReloadVolumes to return an error.")
 	}
 
 	storageClass, err = orchestrator.AddStorageClass(nil)
-	if storageClass != nil || !IsNotReadyError(err) {
+	if storageClass != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AddStorageClass to return an error.")
 	}
 
 	storageClass, err = orchestrator.GetStorageClass("")
-	if storageClass != nil || !IsNotReadyError(err) {
+	if storageClass != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected GetStorageClass to return an error.")
 	}
 
 	storageClasses, err = orchestrator.ListStorageClasses()
-	if storageClasses != nil || !IsNotReadyError(err) {
+	if storageClasses != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListStorageClasses to return an error.")
 	}
 
 	err = orchestrator.DeleteStorageClass("")
-	if !IsNotReadyError(err) {
+	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteStorageClass to return an error.")
 	}
 }

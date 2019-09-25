@@ -14,7 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
 	"github.com/netapp/trident/frontend/kubernetes"
@@ -30,49 +29,40 @@ type listResponse interface {
 func httpStatusCodeForAdd(err error) int {
 	if err == nil {
 		return http.StatusCreated
+	} else if utils.IsNotReadyError(err) {
+		return http.StatusServiceUnavailable
+	} else if utils.IsBootstrapError(err) {
+		return http.StatusInternalServerError
 	} else {
-		switch err.(type) {
-		case *core.NotReadyError:
-			return http.StatusServiceUnavailable
-		case *core.BootstrapError:
-			return http.StatusInternalServerError
-		default:
-			return http.StatusBadRequest
-		}
+		return http.StatusBadRequest
 	}
 }
 
 func httpStatusCodeForGetUpdateList(err error) int {
 	if err == nil {
 		return http.StatusOK
+	} else if utils.IsNotReadyError(err) {
+		return http.StatusServiceUnavailable
+	} else if utils.IsBootstrapError(err) {
+		return http.StatusInternalServerError
+	} else if utils.IsNotFoundError(err) {
+		return http.StatusNotFound
 	} else {
-		switch err.(type) {
-		case *core.NotReadyError:
-			return http.StatusServiceUnavailable
-		case *core.BootstrapError:
-			return http.StatusInternalServerError
-		case *core.NotFoundError:
-			return http.StatusNotFound
-		default:
-			return http.StatusBadRequest
-		}
+		return http.StatusBadRequest
 	}
 }
 
 func httpStatusCodeForDelete(err error) int {
 	if err == nil {
 		return http.StatusOK
+	} else if utils.IsNotReadyError(err) {
+		return http.StatusServiceUnavailable
+	} else if utils.IsBootstrapError(err) {
+		return http.StatusInternalServerError
+	} else if utils.IsNotFoundError(err) {
+		return http.StatusNotFound
 	} else {
-		switch err.(type) {
-		case *core.NotReadyError:
-			return http.StatusServiceUnavailable
-		case *core.BootstrapError:
-			return http.StatusInternalServerError
-		case *core.NotFoundError:
-			return http.StatusNotFound
-		default:
-			return http.StatusBadRequest
-		}
+		return http.StatusBadRequest
 	}
 }
 

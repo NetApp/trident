@@ -3,11 +3,12 @@
 package storage
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/gob"
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/mitchellh/copystructure"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
@@ -46,6 +47,13 @@ type VolumeConfig struct {
 	ImportNotManaged          bool                   `json:"importNotManaged,omitempty"`
 }
 
+type VolumeCreatingConfig struct {
+	StartTime   time.Time `json:"startTime"`   // Time this create operation began
+	BackendUUID string    `json:"backendUUID"` // UUID of the storage backend
+	Pool        string    `json:"pool"`        // Name of the pool on which this volume was first provisioned
+	VolumeConfig
+}
+
 func (c *VolumeConfig) Validate() error {
 	if c.Name == "" || c.Size == "" {
 		return fmt.Errorf("the following fields for \"Volume\" are mandatory: name and size")
@@ -60,13 +68,18 @@ func (c *VolumeConfig) Validate() error {
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
-	clone := &VolumeConfig{}
-	buff := new(bytes.Buffer)
-	enc := gob.NewEncoder(buff)
-	dec := gob.NewDecoder(buff)
-	_ = enc.Encode(c)
-	_ = dec.Decode(clone)
-	return clone
+
+	clone, err := copystructure.Copy(*c)
+	if err != nil {
+		return &VolumeConfig{}
+	}
+
+	volConfig, ok := clone.(VolumeConfig)
+	if !ok {
+		return &VolumeConfig{}
+	}
+
+	return &volConfig
 }
 
 type Volume struct {

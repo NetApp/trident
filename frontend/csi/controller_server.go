@@ -18,7 +18,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
@@ -50,7 +49,7 @@ func (p *Plugin) CreateVolume(
 
 	// Check for pre-existing volume with the same name
 	existingVolume, err := p.orchestrator.GetVolume(req.Name)
-	if err != nil && !core.IsNotFoundError(err) {
+	if err != nil && !utils.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -234,7 +233,7 @@ func (p *Plugin) DeleteVolume(
 		}).Debugf("Could not delete volume.")
 
 		// In CSI, delete is idempotent, so don't return an error if the volume doesn't exist
-		if !core.IsNotFoundError(err) {
+		if !utils.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 	}
@@ -347,7 +346,7 @@ func (p *Plugin) ControllerUnpublishVolume(
 	}
 
 	// Check if volume exists.  If not, return success.
-	if _, err := p.orchestrator.GetVolume(volumeID); err != nil && !core.IsNotFoundError(err) {
+	if _, err := p.orchestrator.GetVolume(volumeID); err != nil && !utils.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -412,7 +411,7 @@ func (p *Plugin) ListVolumes(
 	// Verify volume named same as starting-token exists or not.
 	if req.StartingToken != "" {
 		existingVolume, err := p.orchestrator.GetVolume(req.StartingToken)
-		if err != nil && !core.IsNotFoundError(err) {
+		if err != nil && !utils.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 
@@ -500,7 +499,7 @@ func (p *Plugin) CreateSnapshot(
 
 	// Check for pre-existing snapshot with the same name on the same volume
 	existingSnapshot, err := p.orchestrator.GetSnapshot(volumeName, snapshotName)
-	if err != nil && !core.IsNotFoundError(err) {
+	if err != nil && !utils.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -536,7 +535,7 @@ func (p *Plugin) CreateSnapshot(
 	// Create the snapshot
 	newSnapshot, err := p.orchestrator.CreateSnapshot(snapshotConfig)
 	if err != nil {
-		if core.IsNotFoundError(err) {
+		if utils.IsNotFoundError(err) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -579,7 +578,7 @@ func (p *Plugin) DeleteSnapshot(
 		}).Debugf("Could not delete snapshot.")
 
 		// In CSI, delete is idempotent, so don't return an error if the snapshot doesn't exist
-		if !core.IsNotFoundError(err) {
+		if !utils.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 	}

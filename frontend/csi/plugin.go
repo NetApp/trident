@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -255,11 +256,11 @@ func (p *Plugin) addVolumeCapabilityAccessModes(vc []csi.VolumeCapability_Access
 }
 
 func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
-	if core.IsNotReadyError(err) {
+	if utils.IsNotReadyError(err) {
 		return status.Error(codes.Unavailable, err.Error())
-	} else if core.IsBootstrapError(err) {
+	} else if utils.IsBootstrapError(err) {
 		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if core.IsNotFoundError(err) {
+	} else if utils.IsNotFoundError(err) {
 		return status.Error(codes.NotFound, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())

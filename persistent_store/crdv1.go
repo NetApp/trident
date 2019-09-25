@@ -931,6 +931,21 @@ func (k *CRDClientV1) GetVolumeTransactions() ([]*storage.VolumeTransaction, err
 	return results, nil
 }
 
+func (k *CRDClientV1) UpdateVolumeTransaction(update *storage.VolumeTransaction) error {
+
+	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(v1.NameFix(update.Name()), getOpts)
+	if err != nil {
+		return err
+	}
+
+	if err = ttxn.Apply(update); err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentTransactions(k.namespace).Update(ttxn)
+	return err
+}
+
 func (k *CRDClientV1) GetExistingVolumeTransaction(
 	volTxn *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {

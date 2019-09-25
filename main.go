@@ -424,6 +424,7 @@ func main() {
 	for _, f := range postBootstrapFrontends {
 		f.Deactivate()
 	}
+	orchestrator.Stop()
 	for _, f := range preBootstrapFrontends {
 		f.Deactivate()
 	}

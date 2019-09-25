@@ -12,9 +12,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -195,7 +195,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 		Op:              storage.UpgradeVolume,
 	}
 	txnErr := p.orchestrator.AddVolumeTransaction(volTxn)
-	if core.IsFoundError(txnErr) {
+	if utils.IsFoundError(txnErr) {
 		oldTxn, getErr := p.orchestrator.GetVolumeTransaction(volTxn)
 		if getErr != nil {
 			return nil, fmt.Errorf("PV upgrade: error gathering old upgrade transaction; %v", getErr)

@@ -36,6 +36,7 @@ import (
 	trident_informers_v1 "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp/v1"
 	listers "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 type CrdPlugin interface {
@@ -234,7 +235,7 @@ func newTridentCrdControllerImpl(
 
 					b, err := controller.orchestrator.GetBackend(newBackend.BackendName)
 					if err != nil {
-						if core.IsNotFoundError(err) {
+						if utils.IsNotFoundError(err) {
 							// it's gone from core, has no volumes, time to let it go
 							log.Debug("backendInformer#UpdateFunc no reason to keep CRD object, removing finalizers for deletion")
 							controller.removeFinalizers(newBackend, false)
@@ -623,7 +624,7 @@ func (c *TridentCrdController) deleteCRD(obj interface{}) {
 		return
 	}
 
-	if _, getBackendErr := c.orchestrator.GetBackend(backend.BackendName); core.IsNotFoundError(getBackendErr) {
+	if _, getBackendErr := c.orchestrator.GetBackend(backend.BackendName); utils.IsNotFoundError(getBackendErr) {
 		log.WithFields(log.Fields{
 			"BackendName": backend.BackendName,
 		}).Warn("Could not find backend.")
@@ -631,7 +632,7 @@ func (c *TridentCrdController) deleteCRD(obj interface{}) {
 		log.WithFields(log.Fields{
 			"BackendName": backend.BackendName,
 		}).Debug("Deleting backend.")
-		if deleteBackendErr := c.orchestrator.DeleteBackend(backend.BackendName); core.IsNotFoundError(deleteBackendErr) {
+		if deleteBackendErr := c.orchestrator.DeleteBackend(backend.BackendName); utils.IsNotFoundError(deleteBackendErr) {
 			log.WithFields(log.Fields{
 				"BackendName": backend.BackendName,
 			}).Warn("Could not find backend.")

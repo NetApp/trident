@@ -68,40 +68,4 @@ type Orchestrator interface {
 	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
 }
 
-type NotReadyError struct {
-	message string
-}
-
-func (e *NotReadyError) Error() string { return e.message }
-
-type BootstrapError struct {
-	message string
-}
-
-func (e *BootstrapError) Error() string { return e.message }
-
-type NotFoundError struct {
-	Message string
-}
-
-func (e *NotFoundError) Error() string { return e.Message }
-
-type FoundError struct {
-	message string
-}
-
-func (e *FoundError) Error() string { return e.message }
-
-type UnsupportedError struct {
-	message string
-}
-
-func (e *UnsupportedError) Error() string { return e.message }
-
-type VolumeDeletingError struct {
-	message string
-}
-
-func (e *VolumeDeletingError) Error() string { return e.message }
-
 type VolumeCallback func(*storage.VolumeExternal, string) error

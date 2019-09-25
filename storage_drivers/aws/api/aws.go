@@ -26,7 +26,8 @@ import (
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 480
+const VolumeCreateTimeout = 10 * time.Second
+const DefaultTimeout = 120 * time.Second
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
@@ -375,29 +376,35 @@ func (d *Client) GetVolumeByID(fileSystemId string) (*FileSystem, error) {
 	return &filesystem, nil
 }
 
-func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string, abortStates []string) error {
+func (d *Client) WaitForVolumeState(
+	filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) (string, error) {
+
+	volumeState := ""
 
 	checkVolumeState := func() error {
 
 		f, err := d.GetVolumeByID(filesystem.FileSystemID)
 		if err != nil {
+			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
 		}
 
-		if f.LifeCycleState == desiredState {
+		volumeState = f.LifeCycleState
+
+		if volumeState == desiredState {
 			return nil
 		}
 
 		if f.LifeCycleStateDetails != "" {
-			err = fmt.Errorf("volume state is %s, not %s: %s",
-				f.LifeCycleState, desiredState, f.LifeCycleStateDetails)
+			err = fmt.Errorf("volume state is %s, not %s: %s", volumeState, desiredState, f.LifeCycleStateDetails)
 		} else {
-			err = fmt.Errorf("volume state is %s, not %s", f.LifeCycleState, desiredState)
+			err = fmt.Errorf("volume state is %s, not %s", volumeState, desiredState)
 		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
 		for _, abortState := range abortStates {
-			if f.LifeCycleState == abortState {
+			if volumeState == abortState {
 				return backoff.Permanent(TerminalState(err))
 			}
 		}
@@ -411,7 +418,7 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 		}).Debugf("Waiting for volume state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = createTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
 	stateBackoff.InitialInterval = 2 * time.Second
@@ -426,12 +433,12 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 			log.Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
-		return err
+		return volumeState, err
 	}
 
 	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
-	return nil
+	return volumeState, nil
 }
 
 func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, error) {
@@ -750,7 +757,9 @@ func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
 	return &snapshot, nil
 }
 
-func (d *Client) WaitForSnapshotState(snapshot *Snapshot, desiredState string, abortStates []string) error {
+func (d *Client) WaitForSnapshotState(
+	snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) error {
 
 	checkSnapshotState := func() error {
 
@@ -786,7 +795,7 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, desiredState string, a
 		}).Debugf("Waiting for snapshot state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = createTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
 	stateBackoff.InitialInterval = 2 * time.Second
@@ -908,6 +917,15 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		}
 	} else {
 		return nil
+	}
+}
+
+func IsTransitionalState(volumeState string) bool {
+	switch volumeState {
+	case StateCreating, StateUpdating, StateDeleting:
+		return true
+	default:
+		return false
 	}
 }
 

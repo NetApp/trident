@@ -398,6 +398,10 @@ func (c *PassthroughClient) GetExistingVolumeTransaction(volTxn *storage.VolumeT
 	return nil, nil
 }
 
+func (c *PassthroughClient) UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	return nil
+}
+
 func (c *PassthroughClient) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
 	return nil
 }

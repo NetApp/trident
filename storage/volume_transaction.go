@@ -7,6 +7,7 @@ import v1 "k8s.io/api/core/v1"
 type VolumeOperation string
 
 const (
+	// Transactions for synchronous operations
 	AddVolume      VolumeOperation = "addVolume"
 	DeleteVolume   VolumeOperation = "deleteVolume"
 	ImportVolume   VolumeOperation = "importVolume"
@@ -14,13 +15,17 @@ const (
 	UpgradeVolume  VolumeOperation = "upgradeVolume"
 	AddSnapshot    VolumeOperation = "addSnapshot"
 	DeleteSnapshot VolumeOperation = "deleteSnapshot"
+
+	// Transactions for long-running operations
+	VolumeCreating VolumeOperation = "volumeCreating"
 )
 
 type VolumeTransaction struct {
-	Config          *VolumeConfig
-	SnapshotConfig  *SnapshotConfig
-	PVUpgradeConfig *PVUpgradeConfig
-	Op              VolumeOperation
+	Config               *VolumeConfig
+	VolumeCreatingConfig *VolumeCreatingConfig
+	SnapshotConfig       *SnapshotConfig
+	PVUpgradeConfig      *PVUpgradeConfig
+	Op                   VolumeOperation
 }
 
 type PVUpgradeConfig struct {
@@ -37,6 +42,8 @@ func (t *VolumeTransaction) Name() string {
 	switch t.Op {
 	case AddSnapshot, DeleteSnapshot:
 		return t.SnapshotConfig.ID()
+	case VolumeCreating:
+		return t.VolumeCreatingConfig.Name
 	default:
 		return t.Config.Name
 	}

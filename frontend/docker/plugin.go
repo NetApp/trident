@@ -416,8 +416,8 @@ func (p *Plugin) dockerError(err error) error {
 		log.Errorf("Docker frontend method returning error: %v", err)
 	}
 
-	if berr, ok := err.(*core.BootstrapError); ok {
-		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", berr.Error())
+	if utils.IsBootstrapError(err) {
+		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", err.Error())
 	} else {
 		return err
 	}
@@ -434,7 +434,7 @@ func (p *Plugin) reloadVolumes() error {
 		err := p.orchestrator.ReloadVolumes()
 		if err == nil {
 			return nil
-		} else if core.IsNotReadyError(err) {
+		} else if utils.IsNotReadyError(err) {
 			return err
 		} else {
 			return backoff.Permanent(err)

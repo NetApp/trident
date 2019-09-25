@@ -248,6 +248,11 @@ func (c *InMemoryClient) GetVolumeTransactions() ([]*storage.VolumeTransaction, 
 	return ret, nil
 }
 
+func (c *InMemoryClient) UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	c.volumeTxns[volTxn.Name()] = volTxn
+	return nil
+}
+
 func (c *InMemoryClient) GetExistingVolumeTransaction(
 	volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error,
 ) {

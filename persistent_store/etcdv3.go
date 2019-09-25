@@ -686,8 +686,7 @@ func (p *EtcdClientV3) AddVolumeTransaction(volTxn *storage.VolumeTransaction) e
 	if err != nil {
 		return err
 	}
-	err = p.Set(config.TransactionURL+"/"+volTxn.Name(),
-		string(volTxnJSON))
+	err = p.Set(config.TransactionURL+"/"+volTxn.Name(), string(volTxnJSON))
 	if err != nil {
 		return err
 	}
@@ -716,6 +715,14 @@ func (p *EtcdClientV3) GetVolumeTransactions() ([]*storage.VolumeTransaction, er
 		volTxnList = append(volTxnList, volTxn)
 	}
 	return volTxnList, nil
+}
+
+func (p *EtcdClientV3) UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	if volTxnJSON, err := json.Marshal(volTxn); err != nil {
+		return err
+	} else {
+		return p.Update(config.TransactionURL+"/"+volTxn.Name(), string(volTxnJSON))
+	}
 }
 
 // GetExistingVolumeTransaction returns an existing version of the current

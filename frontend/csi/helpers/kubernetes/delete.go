@@ -8,8 +8,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ func (p *Plugin) updateLegacyPV(oldObj, newObj interface{}) {
 	}
 
 	// Delete the volume on the backend
-	if err := p.orchestrator.DeleteVolume(pv.Name); err != nil && !core.IsNotFoundError(err) {
+	if err := p.orchestrator.DeleteVolume(pv.Name); err != nil && !utils.IsNotFoundError(err) {
 		// Updating the PV's phase to "VolumeFailed", so that a storage admin can take action.
 		message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Will eventually retry, "+
 			"but the volume and PV may need to be manually deleted.", pv.Name, err.Error())

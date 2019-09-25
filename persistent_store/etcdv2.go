@@ -477,6 +477,14 @@ func (p *EtcdClientV2) GetVolumeTransactions() ([]*storage.VolumeTransaction, er
 	return volTxnList, nil
 }
 
+func (p *EtcdClientV2) UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+	if volTxnJSON, err := json.Marshal(volTxn); err != nil {
+		return err
+	} else {
+		return p.Update(config.TransactionURL+"/"+volTxn.Name(), string(volTxnJSON))
+	}
+}
+
 // GetExistingVolumeTransaction returns an existing version of the current
 // volume transaction, if it exists.  If no volume transaction with the same
 // key exists, it returns nil.

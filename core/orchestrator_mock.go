@@ -217,7 +217,7 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(backendName, configJSON, b
 	originalBackend, found := m.backendsByUUID[backendUUID]
 	if !found {
 		m.dumpKnownBackends()
-		return nil, notFoundError(fmt.Sprintf("backend name:%v uuid:%v was not found", backendName, backendUUID))
+		return nil, utils.NotFoundError(fmt.Sprintf("backend name:%v uuid:%v was not found", backendName, backendUUID))
 	}
 
 	newBackend, err := factory.NewStorageBackendForConfig(configJSON)
@@ -273,7 +273,7 @@ func (m *MockOrchestrator) getBackendByName(backendName string) (*storage.Backen
 	}
 
 	log.Debug("MockOrchestrator#getBackendByName giving up, not found")
-	return nil, notFoundError("not found")
+	return nil, utils.NotFoundError("not found")
 }
 
 func (m *MockOrchestrator) GetBackend(backendName string) (*storage.BackendExternal, error) {
@@ -296,7 +296,7 @@ func (m *MockOrchestrator) GetBackendByBackendUUID(backendUUID string) (*storage
 	//b, found := m.backends[backendUUID]
 	b, found := m.backendsByUUID[backendUUID]
 	if !found {
-		return nil, notFoundError("not found")
+		return nil, utils.NotFoundError("not found")
 	}
 	return b.ConstructExternal(), nil
 }
@@ -442,7 +442,7 @@ func (m *MockOrchestrator) GetVolume(volume string) (*storage.VolumeExternal, er
 
 	vol, found := m.volumes[volume]
 	if !found {
-		return nil, notFoundError("not found")
+		return nil, utils.NotFoundError("not found")
 	}
 	return vol.ConstructExternal(), nil
 }
@@ -453,7 +453,7 @@ func (m *MockOrchestrator) SetVolumeState(volumeName string, state storage.Volum
 
 	vol, found := m.volumes[volumeName]
 	if !found {
-		return notFoundError("not found")
+		return utils.NotFoundError("not found")
 	}
 	vol.State = state
 	return nil
@@ -514,7 +514,7 @@ func (m *MockOrchestrator) DeleteVolume(volumeName string) error {
 	// Copied verbatim from orchestrator_core so that error returns are identical
 	volume, ok := m.volumes[volumeName]
 	if !ok {
-		return notFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	//delete(m.mockBackends[volume.BackendUUID].volumes, volume.Config.Name)
@@ -604,7 +604,7 @@ func (m *MockOrchestrator) GetStorageClass(scName string) (*storageclass.Externa
 
 	sc, found := m.storageClasses[scName]
 	if !found {
-		return nil, notFoundError("not found")
+		return nil, utils.NotFoundError("not found")
 	}
 	return sc.ConstructExternal(), nil
 }
@@ -619,7 +619,7 @@ func (m *MockOrchestrator) ListStorageClasses() ([]*storageclass.External, error
 
 func (m *MockOrchestrator) DeleteStorageClass(scName string) error {
 	if _, ok := m.storageClasses[scName]; !ok {
-		return notFoundError(fmt.Sprintf("storage class %s not found", scName))
+		return utils.NotFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
 	delete(m.storageClasses, scName)
 	return nil
@@ -637,7 +637,7 @@ func (m *MockOrchestrator) GetNode(nName string) (*utils.Node, error) {
 	defer m.mutex.Unlock()
 	node, found := m.nodes[nName]
 	if !found {
-		return nil, notFoundError(fmt.Sprintf("node %s not found", nName))
+		return nil, utils.NotFoundError(fmt.Sprintf("node %s not found", nName))
 	}
 	return node, nil
 }
@@ -656,7 +656,7 @@ func (m *MockOrchestrator) DeleteNode(nName string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if _, ok := m.nodes[nName]; !ok {
-		return notFoundError(fmt.Sprintf("node %s not found", nName))
+		return utils.NotFoundError(fmt.Sprintf("node %s not found", nName))
 	}
 	delete(m.nodes, nName)
 	return nil

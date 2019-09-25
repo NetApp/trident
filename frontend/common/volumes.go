@@ -34,7 +34,7 @@ func GetStorageClass(options map[string]string, o core.Orchestrator) (*storagecl
 
 	// Check existing storage classes for a match based on the name
 	sc, err := o.GetStorageClass(newScConfig.Name)
-	if err != nil && !core.IsNotFoundError(err) {
+	if err != nil && !utils.IsNotFoundError(err) {
 		return nil, err
 	}
 	if sc != nil {

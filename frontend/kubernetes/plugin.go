@@ -41,6 +41,7 @@ import (
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/utils"
 )
 
 type KubernetesPlugin interface {
@@ -1137,7 +1138,7 @@ func (p *Plugin) getPVMountOptions(scSummary *StorageClassSummary, volume *stora
 
 func (p *Plugin) deleteVolumeAndPV(pv *v1.PersistentVolume) error {
 	err := p.orchestrator.DeleteVolume(pv.GetName())
-	if err != nil && !core.IsNotFoundError(err) {
+	if err != nil && !utils.IsNotFoundError(err) {
 		message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Volume and PV may "+
 			"need to be manually deleted.", pv.GetName(), err.Error())
 		p.updateVolumePhaseWithEvent(pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
@@ -1313,7 +1314,7 @@ func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
 			return
 		}
 		err := p.orchestrator.DeleteVolume(pv.Name)
-		if err != nil && !core.IsNotFoundError(err) {
+		if err != nil && !utils.IsNotFoundError(err) {
 			// Updating the PV's phase to "VolumeFailed", so that a storage admin can take action.
 			message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Will eventually retry, "+
 				"but volume and PV may need to be manually deleted.", pv.Name, err.Error())

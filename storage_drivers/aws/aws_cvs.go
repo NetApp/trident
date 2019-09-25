@@ -120,6 +120,27 @@ func (d *NFSStorageDriver) validateName(name string) error {
 	return nil
 }
 
+// createTimeout controls the driver timeout for volume create/delete operations.  Docker gets more time, since
+// it doesn't have a mechanism to retry.
+func (d *NFSStorageDriver) createTimeout() time.Duration {
+	switch d.Config.DriverContext {
+	case tridentconfig.ContextDocker:
+		return tridentconfig.DockerCreateTimeout
+	default:
+		return api.VolumeCreateTimeout
+	}
+}
+
+// defaultTimeout controls the driver timeout for most API operations.
+func (d *NFSStorageDriver) defaultTimeout() time.Duration {
+	switch d.Config.DriverContext {
+	case tridentconfig.ContextDocker:
+		return tridentconfig.DockerDefaultTimeout
+	default:
+		return api.DefaultTimeout
+	}
+}
+
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
@@ -541,6 +562,11 @@ func (d *NFSStorageDriver) Create(
 			return fmt.Errorf("volume %s requested in region %s, but it already exists in region %s",
 				name, d.Config.APIRegion, extantVolume.Region)
 		}
+		if extantVolume.LifeCycleState == api.StateCreating {
+			// This is a retry and the volume still isn't ready, so no need to wait further.
+			return utils.VolumeCreatingError(
+				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
+		}
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -701,11 +727,16 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	}
 
 	// If the volume already exists, bail out
-	volumeExists, _, err := d.API.VolumeExistsByCreationToken(name)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volumeExists {
+		if extantVolume.LifeCycleState == api.StateCreating {
+			// This is a retry and the volume still isn't ready, so no need to wait further.
+			return utils.VolumeCreatingError(
+				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
+		}
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -756,7 +787,7 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 		}
 
 		// Wait for snapshot creation to complete
-		err = d.API.WaitForSnapshotState(sourceSnapshot, api.StateAvailable, []string{api.StateError})
+		err = d.API.WaitForSnapshotState(sourceSnapshot, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
 		if err != nil {
 			return err
 		}
@@ -822,7 +853,8 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 			log.WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
 		}
-		if err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}); err != nil {
+		_, err = d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
+		if err != nil {
 			return fmt.Errorf("could not import volume %s: %v", originalName, err)
 		}
 	}
@@ -894,26 +926,34 @@ func (d *NFSStorageDriver) updateTelemetryLabels(volume *api.FileSystem) []strin
 }
 
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
-// volume reaches a terminal state (Error), or if the wait operation times out, the volume is deleted.
+// volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
+// is still creating, a VolumeCreatingError is returned so the caller may try again.
 // This method is used by both Create & CreateClone.
 func (d *NFSStorageDriver) waitForVolumeCreate(volume *api.FileSystem, volumeName string) error {
 
-	err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError})
+	state, err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.createTimeout())
 	if err != nil {
 
-		// Don't leave a CVS volume laying around in error state
-		errDelete := d.API.DeleteVolume(volume)
-		if errDelete != nil {
-			log.WithFields(log.Fields{
-				"volume": volumeName,
-			}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDelete)
-		} else {
-			// Wait for deletion to complete
-			errDeleteWait := d.API.WaitForVolumeState(volume, api.StateDeleted, []string{api.StateError})
-			if errDeleteWait != nil {
+		if state == api.StateCreating {
+			return utils.VolumeCreatingError(err.Error())
+		}
+
+		// Don't leave a CVS volume in a non-transitional state laying around in error state
+		if !api.IsTransitionalState(state) {
+			errDelete := d.API.DeleteVolume(volume)
+			if errDelete != nil {
 				log.WithFields(log.Fields{
 					"volume": volumeName,
-				}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDeleteWait)
+				}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDelete)
+			} else {
+				// Wait for deletion to complete
+				_, errDeleteWait := d.API.WaitForVolumeState(
+					volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
+				if errDeleteWait != nil {
+					log.WithFields(log.Fields{
+						"volume": volumeName,
+					}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDeleteWait)
+				}
 			}
 		}
 
@@ -937,13 +977,17 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 	}
 
 	// If volume doesn't exist, return success
-	volumeExists, _, err := d.API.VolumeExistsByCreationToken(name)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(name)
 	if err != nil {
 		return err
 	}
 	if !volumeExists {
 		log.WithField("volume", name).Warn("Volume already deleted.")
 		return nil
+	} else if extantVolume.LifeCycleState == api.StateDeleting {
+		// This is a retry, so give it more time before giving up again.
+		_, err = d.API.WaitForVolumeState(extantVolume, api.StateDeleted, []string{api.StateError}, d.createTimeout())
+		return err
 	}
 
 	// Get the volume
@@ -958,7 +1002,8 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 	}
 
 	// Wait for deletion to complete
-	return d.API.WaitForVolumeState(volume, api.StateDeleted, []string{api.StateError})
+	_, err = d.API.WaitForVolumeState(volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
+	return err
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -1157,7 +1202,7 @@ func (d *NFSStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*
 	}
 
 	// Wait for snapshot creation to complete
-	err = d.API.WaitForSnapshotState(snapshot, api.StateAvailable, []string{api.StateError})
+	err = d.API.WaitForSnapshotState(snapshot, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
 	if err != nil {
 		return nil, err
 	}
@@ -1237,11 +1282,7 @@ func (d *NFSStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) er
 	}
 
 	// Wait for snapshot deletion to complete
-	if err := d.API.WaitForSnapshotState(snapshot, api.StateDeleted, []string{api.StateError}); err != nil {
-		return err
-	}
-
-	return nil
+	return d.API.WaitForSnapshotState(snapshot, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
 }
 
 // Return the list of volumes associated with this tenant

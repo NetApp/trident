@@ -56,6 +56,7 @@ type Client interface {
 
 	AddVolumeTransaction(volTxn *storage.VolumeTransaction) error
 	GetVolumeTransactions() ([]*storage.VolumeTransaction, error)
+	UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error
 	GetExistingVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
 

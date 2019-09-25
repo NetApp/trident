@@ -38,6 +38,8 @@ const (
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
+	DockerCreateTimeout              = 115 * time.Second
+	DockerDefaultTimeout             = 55 * time.Second
 
 	/* REST/HTTP constants */
 	HTTPTimeout = 90 * time.Second

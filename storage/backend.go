@@ -178,18 +178,19 @@ func (b *Backend) GetProtocol() tridentconfig.Protocol {
 }
 
 func (b *Backend) AddVolume(
-	volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request,
+	volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request, retry bool,
 ) (*Volume, error) {
 
 	var err error
 
 	log.WithFields(log.Fields{
-		"backend":       b.Name,
-		"backendUUID":   b.BackendUUID,
-		"volume":        volConfig.InternalName,
-		"storage_pool":  storagePool.Name,
-		"size":          volConfig.Size,
-		"storage_class": volConfig.StorageClass,
+		"backend":        b.Name,
+		"backendUUID":    b.BackendUUID,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
+		"storage_pool":   storagePool.Name,
+		"size":           volConfig.Size,
+		"storage_class":  volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
 
 	// Ensure backend is ready
@@ -197,11 +198,9 @@ func (b *Backend) AddVolume(
 		return nil, err
 	}
 
-	// CreatePrepare should perform the following tasks:
-	// 1. Generate the internal volume name
-	// 2. Optionally perform any other steps that could veto volume creation
-	if err = b.Driver.CreatePrepare(volConfig); err != nil {
-		return nil, err
+	// Ensure the internal name exists
+	if volConfig.InternalName == "" {
+		return nil, errors.New("internal name not set")
 	}
 
 	// Add volume to the backend
@@ -228,7 +227,7 @@ func (b *Backend) AddVolume(
 	if err = b.Driver.CreateFollowup(volConfig); err != nil {
 
 		// If follow-up fails and we just created the volume, clean up by deleting it
-		if !volumeExists {
+		if !volumeExists || retry {
 			errDestroy := b.Driver.Destroy(volConfig.InternalName)
 			if errDestroy != nil {
 				log.WithFields(log.Fields{
@@ -250,7 +249,7 @@ func (b *Backend) AddVolume(
 	return vol, nil
 }
 
-func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
+func (b *Backend) CloneVolume(volConfig *VolumeConfig, retry bool) (*Volume, error) {
 
 	log.WithFields(log.Fields{
 		"backend":                volConfig.Name,
@@ -273,16 +272,32 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		return nil, err
 	}
 
-	// CreatePrepare should perform the following tasks:
-	// 1. Sanitize the volume name
-	// 2. Ensure no volume with the same name exists on that backend
-	if err := b.Driver.CreatePrepare(volConfig); err != nil {
-		return nil, fmt.Errorf("failed to prepare clone create: %v", err)
+	// Ensure the internal names exist
+	if volConfig.InternalName == "" {
+		return nil, errors.New("internal name not set")
+	}
+	if volConfig.CloneSourceVolumeInternal == "" {
+		return nil, errors.New("clone source volume internal name not set")
 	}
 
-	err := b.Driver.CreateClone(volConfig)
-	if err != nil {
-		return nil, err
+	// Clone volume on the backend
+	volumeExists := false
+	if err := b.Driver.CreateClone(volConfig); err != nil {
+
+		if drivers.IsVolumeExistsError(err) {
+
+			// Implement idempotency by ignoring the error if the volume exists already
+			volumeExists = true
+
+			log.WithFields(log.Fields{
+				"backend": b.Name,
+				"volume":  volConfig.InternalName,
+			}).Warning("Volume already exists.")
+
+		} else {
+			// If the volume doesn't exist but the create failed, return the error
+			return nil, err
+		}
 	}
 
 	// The clone may not be fully created when the clone API returns, so wait here until it exists.
@@ -306,20 +321,26 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig) (*Volume, error) {
 		log.WithField("clone_volume", volConfig.Name).Debug("Clone found.")
 	}
 
-	err = b.Driver.CreateFollowup(volConfig)
-	if err != nil {
-		errDestroy := b.Driver.Destroy(volConfig.InternalName)
-		if errDestroy != nil {
-			log.WithFields(log.Fields{
-				"backend": b.Name,
-				"volume":  volConfig.InternalName,
-			}).Warnf("Mapping the created volume failed "+
-				"and %s wasn't able to delete it afterwards: %s. "+
-				"Volume needs to be manually deleted.",
-				tridentconfig.OrchestratorName, errDestroy)
+	if err := b.Driver.CreateFollowup(volConfig); err != nil {
+
+		// If follow-up fails and we just created the volume, clean up by deleting it
+		if !volumeExists || retry {
+			errDestroy := b.Driver.Destroy(volConfig.InternalName)
+			if errDestroy != nil {
+				log.WithFields(log.Fields{
+					"backend": b.Name,
+					"volume":  volConfig.InternalName,
+				}).Warnf("Mapping the created volume failed "+
+					"and %s wasn't able to delete it afterwards: %s. "+
+					"Volume must be manually deleted.",
+					tridentconfig.OrchestratorName, errDestroy)
+			}
 		}
+
+		// In all cases where follow-up fails, return the follow-up error
 		return nil, err
 	}
+
 	vol := NewVolume(volConfig, b.BackendUUID, drivers.UnsetPool, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
@@ -444,8 +465,9 @@ func (b *Backend) RenameVolume(volConfig *VolumeConfig, newName string) error {
 func (b *Backend) RemoveVolume(volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
-		"backend": b.Name,
-		"volume":  volConfig.Name,
+		"backend":        b.Name,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
 	}).Debug("Backend#RemoveVolume")
 
 	// Ensure volume is managed
@@ -477,9 +499,10 @@ func (b *Backend) RemoveCachedVolume(volumeName string) {
 func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
 
 	log.WithFields(log.Fields{
-		"backend":      b.Name,
-		"volumeName":   snapConfig.VolumeName,
-		"snapshotName": snapConfig.Name,
+		"backend":        b.Name,
+		"volume":         snapConfig.Name,
+		"volumeInternal": snapConfig.InternalName,
+		"snapshotName":   snapConfig.Name,
 	}).Debug("GetSnapshot.")
 
 	// Ensure backend is ready
@@ -501,8 +524,9 @@ func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
 func (b *Backend) GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error) {
 
 	log.WithFields(log.Fields{
-		"backend":    b.Name,
-		"volumeName": volConfig.Name,
+		"backend":        b.Name,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
 	}).Debug("GetSnapshots.")
 
 	// Ensure backend is ready
@@ -516,9 +540,10 @@ func (b *Backend) GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error) {
 func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error) {
 
 	log.WithFields(log.Fields{
-		"backend":      b.Name,
-		"volumeName":   snapConfig.VolumeName,
-		"snapshotName": snapConfig.Name,
+		"backend":        b.Name,
+		"volume":         snapConfig.Name,
+		"volumeInternal": snapConfig.InternalName,
+		"snapshot":       snapConfig.Name,
 	}).Debug("Attempting snapshot create.")
 
 	// Ensure volume is managed
@@ -560,9 +585,10 @@ func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
-		"backend":      b.Name,
-		"volumeName":   snapConfig.VolumeName,
-		"snapshotName": snapConfig.Name,
+		"backend":        b.Name,
+		"volume":         snapConfig.Name,
+		"volumeInternal": snapConfig.InternalName,
+		"snapshot":       snapConfig.Name,
 	}).Debug("Attempting snapshot restore.")
 
 	// Ensure volume is managed
@@ -582,9 +608,10 @@ func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeC
 func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
 	log.WithFields(log.Fields{
-		"backend":      b.Name,
-		"volumeName":   snapConfig.VolumeName,
-		"snapshotName": snapConfig.Name,
+		"backend":        b.Name,
+		"volume":         snapConfig.Name,
+		"volumeInternal": snapConfig.InternalName,
+		"snapshot":       snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
 
 	// Ensure volume is managed

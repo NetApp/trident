@@ -15,7 +15,6 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/netapp/trident/core"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -232,7 +231,7 @@ func (p *Plugin) NodeExpandVolume(
 	// to set the stagingTargetPath to this location if the tracking file does not exist.
 	stagingTargetPath, err := p.readStagedTrackingFile(volumeId)
 	if err != nil {
-		if core.IsNotFoundError(err) {
+		if utils.IsNotFoundError(err) {
 			// Verify the volumePath is the stagingTargetPath
 			filePath := path.Join(volumePath, volumePublishInfoFilename)
 			if _, err = os.Stat(filePath); !os.IsNotExist(err) {
@@ -778,7 +777,7 @@ func (p *Plugin) readStagedTrackingFile(volumeId string) (string, error) {
 			"volumeId": volumeId,
 			"error":    err.Error(),
 		}).Error("Unable to find tracking file matching volumeId.")
-		return "", &core.NotFoundError{Message: "tracking file not found"}
+		return "", utils.NotFoundError("tracking file not found")
 	}
 
 	publishInfoLocationBytes, err := ioutil.ReadFile(trackingFilename)
