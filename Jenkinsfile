@@ -904,13 +904,7 @@ node {
 
     // Checkout the source from Github
     stage('Checkout-Source') {
-      if (env.BLACK_DUCK_SCAN) {
-        _clone_black_duck_scan()
-      } else if (env.DEPLOY_TRIDENT) {
-        _clone_deploy_trident()
-      } else {
-        _clone()
-      }
+      _clone()
     }
 
     // Read the plan variable and create the appropriate stages
@@ -928,7 +922,7 @@ node {
       if (env.DEPLOY_TRIDENT) {
         echo "Skipping change propagation because DEPLOY_TRIDENT=true"
       } else if (env.BLACK_DUCK_SCAN) {
-        echo "Skipping change propagation because DEPLOY_TRIDENT=true"
+        echo "Skipping change propagation because BLACK_DUCK_SCAN=true"
       } else {
          _propagate_changes()
       }
@@ -1003,7 +997,6 @@ node {
 
 // Create List of stages to execute
 def _create_stages(String ssh_options, List plan, Integer parallelism) {
-
   // The coverage var MUST consist of ONE of the following:
   //
   // docker-ee
@@ -1026,34 +1019,83 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
   //
   // If a feature branch or PR has only documentation changes then the
   // coverage should be documentation
-
   def coverage = 'post-commit'
 
-  // If jenkins is telling us what the branch name/ref is then override
-  // coverage if:
-  //   There are changes only in the docs directory
+  // If jenkins is telling us what the branch name/ref is using BRANCH_NAME 
+  // then override coverage if:
+  //   There are only documentation changes
   //   The branch name contains PR-
   if (env.BRANCH_NAME) {
-    dir('src/github.com/netapp/trident') {
-      // Are there doc changes?
-      def doc_changes = sh(
-        label: "Check for doc only changes",
-        returnStatus: true,
-        script: "git diff HEAD~1..HEAD | grep 'git \\-\\-diff' | grep docs"
-      )
+    if (env.BRANCH_NAME != 'master' && branch_name.startsWith('stable') != true) {
 
-      // Are there non doc changes?
-      def non_doc_changes = sh(
-        label: "Check for non doc changes",
-        returnStatus: true,
-        script: "git diff HEAD~1..HEAD | grep 'git \\-\\-diff' | grep -v docs"
-      )
+      def full_clone_commit_hash = ''
+      def full_clone_branch_name = 'master'
+      dir('src2/github.com/netapp/trident') {
+        if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
+          full_clone_branch_name = env.CHANGE_TARGET
+          sh(
+            label: "Checkout CHANGE_TARGET($env.CHANGE_TARGET)",
+            script: "git checkout $env.CHANGE_TARGET"
+          )
+        }
 
-      if (doc_changes == 0 && non_doc_changes != 0) {
-        coverage = "documentation"
+        full_clone_commit_hash = sh(
+          label: "Get git commit hash from $full_clone_branch_name",
+          returnStdout: true,
+          script: "git rev-parse HEAD"
+        ).trim()
+
+        if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
+          sh(
+            label: "Checkout master",
+            script: "git checkout master"
+          )
+        }
       }
+      
+      def jenkins_checkout_commit_hash = ''
+      dir('src/github.com/netapp/trident') {
+        jenkins_checkout_commit_hash = sh(
+          label: "Get git commit hash from jenkins checkout",
+          returnStdout: true,
+          script: "git rev-parse HEAD"
+        ).trim()
 
-      if (env.BRANCH_NAME.contains('PR-')) { coverage = 'pre-merge' }
+        def changes = sh(
+            label: "Check if the jenkins checkout contains only documentation changes",
+            returnStdout: true,
+            script: "git diff --name-only $full_clone_commit_hash " + 
+              "$jenkins_checkout_commit_hash | " + 
+              "grep -v '^docs/' | grep -v '^.*\\.md' || true"
+        )
+
+        echo "Changes between $full_clone_branch_name($full_clone_commit_hash) and " +
+          "jenkins checkout($jenkins_checkout_commit_hash):\n $changes"
+        if (changes) {
+          if (changes.contains('fatal:') || changes.contains('usage:'))  {
+            echo "Error executing git diff, coverage remains $coverage"
+          } else {
+            if (env.BRANCH_NAME.contains('PR-')) { 
+              echo "The jenkins checkout contains more than documentation " +
+                "changes on PR branch $env.BRANCH_NAME, changing coverage " + 
+                "to pre-merge"
+              coverage = 'pre-merge' 
+            } else {
+              echo "The jenkins checkout contains more than documentation " +
+                "changes, coverage remains $coverage"
+            }
+          }
+        } else {
+          echo "The jenkins checkout contains only documentation " + 
+            "changes, changing coverage to documentation"
+          coverage = "documentation"
+        }
+      }
+    } else {
+      echo (
+        "Skipping documentation change detection because $env.BRANCH_NAME " + 
+        "is master or stable/*, coverage remains $coverage"
+      )
     }
   }
 
@@ -3220,43 +3262,90 @@ def _clone_from_github(url, credentials, branch, destination) {
 
 def _clone() {
 
-  // Display some SCM variables
-  echo (
-    "CHANGE_ID: $env.CHANGE_ID\n " +
-    "CHANGE_URL: $env.CHANGE_URL\n " +
-    "CHANGE_TITLE: $env.CHANGE_TITLE\n " +
-    "CHANGE_AUTHOR: $env.CHANGE_AUTHOR\n " +
-    "CHANGE_AUTHOR_DISPLAY_NAME: $env.CHANGE_AUTHOR_DISPLAY_NAME\n " +
-    "CHANGE_AUTHOR_EMAIL: $env.CHANGE_AUTHOR_EMAIL\n " +
-    "CHANGE_TARGET: $env.CHANGE_TARGET\n"
-  )
-
-  // Define shortcut vars to save line space
   def branch_type = '*'
   if (env.BRANCH_TYPE) {
-      branch_type = env.BRANCH_TYPE
+    branch_type = env.BRANCH_TYPE
   }
-
+  
   def branch_name = env.BRANCH_NAME
   if (env.BRANCH_NAME.contains('/')) {
     (branch_type, branch_name) = env.BRANCH_NAME.split('/')
   }
+  
+  def branch = "$branch_type/$branch_name"
+  if (branch_type == '*') {
+    branch = branch_name
+  }
 
-  echo "Clone trident $branch_type/$branch_name"
+  def private_org = env.TRIDENT_PRIVATE_GITHUB_ORG
+  def private_repo = env.TRIDENT_PRIVATE_GITHUB_REPO
+  def public_org = env.TRIDENT_PUBLIC_GITHUB_ORG
+  def public_repo = env.TRIDENT_PUBLIC_GITHUB_REPO
+  def user = env.GITHUB_USERNAME
+  def token = env.GITHUB_TOKEN
 
-  // Create the directory for the trident source since it's unclear hot to
-  // call checkout scm with a destination dir
-  def trident_path = 'src/github.com/netapp/trident'
-  sh (
-    label: "Create directory $trident_path",
-    script: "mkdir -p $trident_path"
-  )
-  sh (label: "Sleep", script: "sleep 1")
+  if (env.DEPLOY_TRIDENT) {
 
-  // Change to the directory we just created and call checkout scm
-  // We need to use checkout scm becasue it handles PRs
-  dir('src/github.com/netapp/trident') {
-    checkout scm
+    sh (
+      label: "Full clone $branch for deployment",
+      script: "git clone https://$user:$token@github.com/$private_org/$private_repo -b $branch src/github.com/netapp/trident"
+    )
+  } else { 
+  
+    echo "Clone trident $branch_type/$branch_name"
+    
+    // Create the directory for the trident source since it's unclear hot to
+    // call checkout scm with a destination dir
+    def jenkins_trident_src = 'src/github.com/netapp/trident'
+    sh (
+      label: "Create directory $jenkins_trident_src",
+      script: "mkdir -p $jenkins_trident_src"
+    )
+    sh (label: "Sleep", script: "sleep 1")
+  
+    // Change to the directory we just created and call checkout scm
+    // We need to use checkout scm becasue it handles PRs
+    def commit_hash = ''
+    dir(jenkins_trident_src) {
+      checkout scm
+    
+      sh (label: "Sleep", script: "sleep 1")
+    
+      if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+        commit_hash = sh(
+          label: "Get git hash from the jenkins checkout",
+          returnStdout: true,
+          script: "git rev-parse HEAD"
+        ).trim()
+      }
+    }
+
+    def full_trident_src = 'src2/github.com/netapp/trident'
+    sh (
+      label: "Full clone for change processing",
+      script: "git clone https://$user:$token@github.com/$private_org/$private_repo $full_trident_src"
+    )
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+      dir(full_trident_src) {
+
+        // src2/github.com/netapp/trident$ git name-rev b50c870e0d0546eed138cc29f224ccab1472a217
+        // b50c870e0d0546eed138cc29f224ccab1472a217 remotes/origin/doc-change-detection
+        def output = sh(
+          label: "Get branch name from commit hash",
+          returnStdout: true,
+          script: "git name-rev $commit_hash || true",
+        ).trim()
+        
+        if (output.contains('/')) {
+          def fields = output.split('/')
+          branch_name = fields.last()
+          echo "Detected $branch_name from commit hash $commit_hash"
+        }
+      }
+    }
   }
 
   // Try to checkout the corresponding tools branch and if that fails fall
@@ -3279,158 +3368,40 @@ def _clone() {
        'tools')
   }
 
-  // Try to checkout the corresponding whelk branch and if that failed fall
-  // back to use the master branch
-  try {
-    echo "Clone whelk $branch_type/$branch_name"
-    _clone_from_github(
-      env.WHELK_PRIVATE_GITHUB_URL,
-      env.GITHUB_CREDENTIAL_ID,
-      "$branch_type/$branch_name",
-      'test')
-  } catch(Exception e) {
-     echo "Clone whelk master"
-     sh (label: "Remove test directory", script: "rm -rf test")
-     sh (label: "Sleep", script: "sleep 1")
-     _clone_from_github(
-       env.WHELK_PRIVATE_GITHUB_URL,
-       env.GITHUB_CREDENTIAL_ID,
-       '*/master',
-       'test')
-  }
-
-  // Clone the csi-sanity source
-  echo "Clone csi-sanity"
-  _clone_from_github(
-    'https://github.com/kubernetes-csi/csi-test.git',
-    env.GITHUB_CREDENTIAL_ID,
-    'v1.1.1',
-    'src/github.com/kubernetes-csi/csi-test')
-
-  sh (
-    label: "Change permissions on private key",
-    script: "chmod 700 tools/" + env.SSH_PRIVATE_KEY_PATH
-  )
-}
-
-def _clone_black_duck_scan() {
-
-  // Display some SCM variables
-  echo (
-    "CHANGE_ID: $env.CHANGE_ID\n " +
-    "CHANGE_URL: $env.CHANGE_URL\n " +
-    "CHANGE_TITLE: $env.CHANGE_TITLE\n " +
-    "CHANGE_AUTHOR: $env.CHANGE_AUTHOR\n " +
-    "CHANGE_AUTHOR_DISPLAY_NAME: $env.CHANGE_AUTHOR_DISPLAY_NAME\n " +
-    "CHANGE_AUTHOR_EMAIL: $env.CHANGE_AUTHOR_EMAIL\n " +
-    "CHANGE_TARGET: $env.CHANGE_TARGET\n"
-  )
-
-  // Define shortcut vars to save line space
-  def branch_type = env.BRANCH_TYPE
-  def branch_name = env.BRANCH_NAME
-
-  // Clone the trident source
-  echo "Clone trident master"
-  _clone_from_github(
-    env.TRIDENT_PRIVATE_GITHUB_URL,
-    env.GITHUB_CREDENTIAL_ID,
-    "$branch_type/$branch_name",
-    'src/github.com/netapp/trident')
-
-  // Try to checkout the corresponding tools branch and if that fails fall
-  // back to use the master branch
-  try {
-    echo "Clone tools $branch_type/$branch_name"
-    _clone_from_github(
-      env.TOOLS_PRIVATE_GITHUB_URL,
-      env.GITHUB_CREDENTIAL_ID,
-      "$branch_type/$branch_name",
-      'tools')
-  } catch(Exception e) {
-    echo "Clone tools master"
-    sh (label: "Remove tools directory", script: "rm -rf tools")
-    sh (label: "Sleep", script: "sleep 1")
-     _clone_from_github(
-       env.TOOLS_PRIVATE_GITHUB_URL,
-       env.GITHUB_CREDENTIAL_ID,
-       '*/master',
-       'tools')
-  }
-
   sh (
     label: "Change permissions on private key",
     script: "chmod 700 tools/" + env.SSH_PRIVATE_KEY_PATH
   )
 
-}
+  if (env.BLACK_DUCK_SCAN == null && env.DEPLOY_TRIDENT == null) {
 
-def _clone_deploy_trident() {
-
-  // Display some SCM variables
-  echo (
-    "CHANGE_ID: $env.CHANGE_ID\n " +
-    "CHANGE_URL: $env.CHANGE_URL\n " +
-    "CHANGE_TITLE: $env.CHANGE_TITLE\n " +
-    "CHANGE_AUTHOR: $env.CHANGE_AUTHOR\n " +
-    "CHANGE_AUTHOR_DISPLAY_NAME: $env.CHANGE_AUTHOR_DISPLAY_NAME\n " +
-    "CHANGE_AUTHOR_EMAIL: $env.CHANGE_AUTHOR_EMAIL\n " +
-    "CHANGE_TARGET: $env.CHANGE_TARGET\n"
-  )
-
-  def name = "Deploy-Trident"
-  try {
-
-    // Define shortcut vars to save line space
-    def branch_type = env.BRANCH_TYPE
-    def branch_name = env.BRANCH_NAME
-    def branch = "$branch_type/$branch_name"
-    if (branch_type == '*') {
-      branch = branch_name
-    }
-
-    def private_org = env.TRIDENT_PRIVATE_GITHUB_ORG
-    def private_repo = env.TRIDENT_PRIVATE_GITHUB_REPO
-    def public_org = env.TRIDENT_PUBLIC_GITHUB_ORG
-    def public_repo = env.TRIDENT_PUBLIC_GITHUB_REPO
-    def user = env.GITHUB_USERNAME
-    def token = env.GITHUB_TOKEN
-
-    // Try to checkout the corresponding tools branch and if that fails fall
+    // Try to checkout the corresponding whelk branch and if that failed fall
     // back to use the master branch
     try {
-      echo "Clone tools $branch_type/$branch_name"
+      echo "Clone whelk $branch_type/$branch_name"
       _clone_from_github(
-        env.TOOLS_PRIVATE_GITHUB_URL,
+        env.WHELK_PRIVATE_GITHUB_URL,
         env.GITHUB_CREDENTIAL_ID,
         "$branch_type/$branch_name",
-        'tools')
+        'test')
     } catch(Exception e) {
-      echo "Clone tools */master"
-      sh (label: "Remove the tools directory", script: "rm -rf tools")
-      sh (label: "Sleep", script: "sleep 1")
+       echo "Clone whelk master"
+       sh (label: "Remove test directory", script: "rm -rf test")
+       sh (label: "Sleep", script: "sleep 1")
        _clone_from_github(
-         env.TOOLS_PRIVATE_GITHUB_URL,
+         env.WHELK_PRIVATE_GITHUB_URL,
          env.GITHUB_CREDENTIAL_ID,
          '*/master',
-         'tools')
+         'test')
     }
-    echo "Clone $private_org/$private_repo $branch_name"
 
-    sh (
-      label: "Clone using HTTPS URL",
-      script: "git clone https://$user:$token@github.com/$private_org/$private_repo -b $branch src/github.com/netapp/trident"
-    )
-
-    sh (
-      label: "Change permissions on private key",
-      script: "chmod 700 tools/" + env.SSH_PRIVATE_KEY_PATH
-    )
-
-  } catch(Exception e) {
-
-    error e.getMessage()
-
+    // Clone the csi-sanity source
+    echo "Clone csi-sanity"
+    _clone_from_github(
+      'https://github.com/kubernetes-csi/csi-test.git',
+      env.GITHUB_CREDENTIAL_ID,
+      'v1.1.1',
+      'src/github.com/kubernetes-csi/csi-test')
   }
 
 }
@@ -4175,13 +4146,15 @@ def _ndvp_plugin_config(
 
 def _notify_github(Map spec, String git_commit, String dir, String description, String state) {
 
-  name = spec['name']
-  sh (
-    label: "Create $dir if it does not exist",
-    script: "mkdir -p $dir"
-  )
+  def name = spec['name']
+  if (fileExists(dir) == false) {
+    sh (
+      label: "Create $dir",
+      script: "mkdir -p $dir"
+    )
 
-  sh (label: "Sleep", script: "sleep 1")
+    sh (label: "Sleep", script: "sleep 1")
+  }
 
   sh (
     label: "Set Github status for $name to $state",
@@ -4453,14 +4426,12 @@ def _propagate_changes() {
 
         // Create the propagate.sh script
         def content = (
-          "git clone https://$user:$token@github.com/$private_org/$private_repo -b $branch trident\n" +
           "sleep 1\n" +
-          "cd trident\n" +
+          "cd src2/github.com/netapp/trident\n" +
+          "git checkout $branch\n" +
           "git status\n" +
           "git show-ref\n" +
-          "git push -f https://$user:$token@github.com/$public_org/$public_repo $branch:$branch\n" +
-          "cd ..\n" +
-          "rm -rf trident\n"
+          "git push -f https://$user:$token@github.com/$public_org/$public_repo $branch:$branch\n"
         )
 
         writeFile file: "$env.WORKSPACE/$name/propagate.sh", text: content
