@@ -13,6 +13,7 @@ import (
 
 type Protocol string
 type AccessMode string
+type VolumeMode string
 type VolumeType string
 type DriverContext string
 type Platform string
@@ -61,7 +62,8 @@ const (
 	ClientKeyPath  = certsPath + ClientKeyFile
 	ClientCertPath = certsPath + ClientCertFile
 
-	/* Protocol constants */
+	/* Protocol constants. This value denotes a volume's backing storage protocol. For example,
+	a Trident volume with  'file' protocol is most likely NFS, while a 'block' protocol volume is probably iSCSI. */
 	File        Protocol = "file"
 	Block       Protocol = "block"
 	ProtocolAny Protocol = ""
@@ -71,6 +73,13 @@ const (
 	ReadOnlyMany  AccessMode = "ReadOnlyMany"
 	ReadWriteMany AccessMode = "ReadWriteMany"
 	ModeAny       AccessMode = ""
+
+	/* Volume mode constants. This value describes how a volume will be consumed by application containers.
+	Most Trident volumes (regardless of protocol) probably use the 'Filesystem' mode, where the volume contains
+	a filesystem and is mounted into a container. By contrast, volumes with 'Block' mode always use 'block' protocol
+	and are attached to a container as raw block devices. */
+	RawBlock   VolumeMode = "Block"
+	Filesystem VolumeMode = "Filesystem"
 
 	/* Volume type constants */
 	OntapNFS          VolumeType = "ONTAP_NFS"

@@ -1,6 +1,6 @@
 // Copyright 2019 NetApp, Inc. All Rights Reserved.
 
-package plain
+package common
 
 import (
 	"testing"
@@ -33,7 +33,7 @@ func TestCombineAccessModes(t *testing.T) {
 	}
 
 	for _, tc := range accessModesTests {
-		accessMode := combineAccessModes(tc.accessModes)
+		accessMode := CombineAccessModes(tc.accessModes)
 		testutils.AssertEqual(t, "Access Modes not combining as expected!", tc.expected, accessMode)
 	}
 }

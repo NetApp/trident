@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/netapp/trident/testutils"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -1168,7 +1170,7 @@ func TestCloneVolumes(t *testing.T) {
 }
 
 func addBackend(
-	t *testing.T, orchestrator *TridentOrchestrator, backendName string,
+	t *testing.T, orchestrator *TridentOrchestrator, backendName string, backendProtocol config.Protocol,
 ) {
 	volumes := []fake.Volume{
 		{"origVolume01", "primary", "primary", 1000000000},
@@ -1176,7 +1178,7 @@ func addBackend(
 	}
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
-		config.File,
+		backendProtocol,
 		map[string]*fake.StoragePool{
 			"primary": {
 				Attrs: map[string]sa.Offer{
@@ -1207,8 +1209,9 @@ func addBackendStorageClass(
 	orchestrator *TridentOrchestrator,
 	backendName string,
 	scName string,
+	backendProtocol config.Protocol,
 ) {
-	addBackend(t, orchestrator, backendName)
+	addBackend(t, orchestrator, backendName, backendProtocol)
 	_, err := orchestrator.AddStorageClass(
 		&storageclass.Config{
 			Name: scName,
@@ -1231,10 +1234,11 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		newSCName         = "updateBackendTest2"
 		volumeName        = "updateVolume"
 		offlineVolumeName = "offlineVolume"
+		backendProtocol   = config.File
 	)
 	// Test setup
 	orchestrator := getOrchestrator()
-	addBackendStorageClass(t, orchestrator, backendName, scName)
+	addBackendStorageClass(t, orchestrator, backendName, scName, backendProtocol)
 
 	orchestrator.mutex.Lock()
 	sc, ok := orchestrator.storageClasses[scName]
@@ -1522,13 +1526,14 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 
 func TestEmptyBackendDeletion(t *testing.T) {
 	const (
-		backendName = "emptyBackend"
+		backendName     = "emptyBackend"
+		backendProtocol = config.File
 	)
 
 	orchestrator := getOrchestrator()
 	// Note that we don't care about the storage class here, but it's easier
 	// to reuse functionality.
-	addBackendStorageClass(t, orchestrator, backendName, "none")
+	addBackendStorageClass(t, orchestrator, backendName, "none", backendProtocol)
 	backend, errLookup := orchestrator.getBackendByBackendName(backendName)
 	if backend == nil || errLookup != nil {
 		t.Fatalf("Backend %s not stored in orchestrator", backendName)
@@ -1560,11 +1565,12 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 		scName             = "snapNoVolSC"
 		volumeName         = "snapNoVolVolume"
 		snapName           = "snapNoVolSnapshot"
+		backendProtocol    = config.File
 	)
 
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
-	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
@@ -1610,11 +1616,12 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 		scName             = "snapNoBackSC"
 		volumeName         = "snapNoBackVolume"
 		snapName           = "snapNoBackSnapshot"
+		backendProtocol    = config.File
 	)
 
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
-	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
@@ -1659,11 +1666,12 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 		offlineBackendName = "bootstrapVolBackend"
 		scName             = "bootstrapVolSC"
 		volumeName         = "bootstrapVolVolume"
+		backendProtocol    = config.File
 	)
 
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
-	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
@@ -1704,10 +1712,11 @@ func TestBackendCleanup(t *testing.T) {
 		onlineBackendName  = "onlineBackend"
 		scName             = "cleanupBackendTest"
 		volumeName         = "cleanupVolume"
+		backendProtocol    = config.File
 	)
 
 	orchestrator := getOrchestrator()
-	addBackendStorageClass(t, orchestrator, offlineBackendName, scName)
+	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
@@ -1716,7 +1725,7 @@ func TestBackendCleanup(t *testing.T) {
 
 	// This needs to go after the volume addition to ensure that the volume
 	// ends up on the backend to be offlined.
-	addBackend(t, orchestrator, onlineBackendName)
+	addBackend(t, orchestrator, onlineBackendName, backendProtocol)
 
 	err = orchestrator.DeleteBackend(offlineBackendName)
 	if err != nil {
@@ -2395,10 +2404,10 @@ func TestOrchestratorNotReady(t *testing.T) {
 }
 
 func importVolumeSetup(t *testing.T, backendName string, scName string, volumeName string, importOriginalName string,
-) (*TridentOrchestrator, *storage.VolumeConfig) {
+	backendProtocol config.Protocol) (*TridentOrchestrator, *storage.VolumeConfig) {
 	// Object setup
 	orchestrator := getOrchestrator()
-	addBackendStorageClass(t, orchestrator, backendName, scName)
+	addBackendStorageClass(t, orchestrator, backendName, scName, backendProtocol)
 
 	orchestrator.mutex.Lock()
 	_, ok := orchestrator.storageClasses[scName]
@@ -2419,7 +2428,7 @@ func importVolumeSetup(t *testing.T, backendName string, scName string, volumeNa
 		t.Fatal("BackendUUID not found")
 	}
 
-	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	volumeConfig := generateVolumeConfig(volumeName, 50, scName, backendProtocol)
 	volumeConfig.ImportOriginalName = importOriginalName
 	volumeConfig.ImportBackendUUID = backendUUID
 	return orchestrator, volumeConfig
@@ -2427,17 +2436,18 @@ func importVolumeSetup(t *testing.T, backendName string, scName string, volumeNa
 
 func TestImportVolumeFailures(t *testing.T) {
 	const (
-		backendName    = "backend82"
-		scName         = "sc01"
-		volumeName     = "volume82"
-		originalName01 = "origVolume01"
+		backendName     = "backend82"
+		scName          = "sc01"
+		volumeName      = "volume82"
+		originalName01  = "origVolume01"
+		backendProtocol = config.File
 	)
 
 	createPVandPVCError := func(volExternal *storage.VolumeExternal, driverType string) error {
 		return fmt.Errorf("failed to create PV")
 	}
 
-	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName01)
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName01, backendProtocol)
 
 	_, err := orchestrator.LegacyImportVolume(volumeConfig, backendName, false, createPVandPVCError)
 
@@ -2465,19 +2475,21 @@ func TestImportVolumeFailures(t *testing.T) {
 
 func TestLegacyImportVolume(t *testing.T) {
 	const (
-		backendName    = "backend02"
-		scName         = "sc01"
-		volumeName01   = "volume01"
-		volumeName02   = "volume02"
-		originalName01 = "origVolume01"
-		originalName02 = "origVolume02"
+		backendName     = "backend02"
+		scName          = "sc01"
+		volumeName01    = "volume01"
+		volumeName02    = "volume02"
+		originalName01  = "origVolume01"
+		originalName02  = "origVolume02"
+		backendProtocol = config.File
 	)
 
 	createPVandPVCNoOp := func(volExternal *storage.VolumeExternal, driverType string) error {
 		return nil
 	}
 
-	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName01, originalName01)
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName01, originalName01,
+		backendProtocol)
 
 	// The volume exists on the backend with the original name.
 	// Set volumeConfig.InternalName to the expected volumeName post import.
@@ -2527,15 +2539,16 @@ func TestLegacyImportVolume(t *testing.T) {
 
 func TestImportVolume(t *testing.T) {
 	const (
-		backendName    = "backend02"
-		scName         = "sc01"
-		volumeName01   = "volume01"
-		volumeName02   = "volume02"
-		originalName01 = "origVolume01"
-		originalName02 = "origVolume02"
+		backendName     = "backend02"
+		scName          = "sc01"
+		volumeName01    = "volume01"
+		volumeName02    = "volume02"
+		originalName01  = "origVolume01"
+		originalName02  = "origVolume02"
+		backendProtocol = config.File
 	)
 
-	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName01, originalName01)
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName01, originalName01, backendProtocol)
 
 	notManagedVolConfig := volumeConfig.ConstructClone()
 	notManagedVolConfig.Name = volumeName02
@@ -2569,15 +2582,16 @@ func TestImportVolume(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
-func TestValidateImportVolume(t *testing.T) {
+func TestValidateImportVolumeNasBackend(t *testing.T) {
 	const (
-		backendName  = "backend01"
-		scName       = "sc01"
-		volumeName   = "volume01"
-		originalName = "origVolume01"
+		backendName     = "backend01"
+		scName          = "sc01"
+		volumeName      = "volume01"
+		originalName    = "origVolume01"
+		backendProtocol = config.File
 	)
 
-	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName)
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName, backendProtocol)
 
 	_, err := orchestrator.AddVolume(volumeConfig)
 	if err != nil {
@@ -2602,10 +2616,13 @@ func TestValidateImportVolume(t *testing.T) {
 	accessModeVolConfig.AccessMode = config.ReadWriteMany
 	accessModeVolConfig.Protocol = config.Block
 
+	volumeModeVolConfig := volumeConfig.ConstructClone()
+	volumeModeVolConfig.VolumeMode = config.RawBlock
+	volumeModeVolConfig.Protocol = config.File
+
 	protocolVolConfig := volumeConfig.ConstructClone()
 	protocolVolConfig.Protocol = config.Block
 
-	// Test configuration
 	for _, c := range []struct {
 		name         string
 		volumeConfig *storage.VolumeConfig
@@ -2616,8 +2633,9 @@ func TestValidateImportVolume(t *testing.T) {
 		{name: "pvExists", volumeConfig: pvExistsVolConfig, valid: false, error: "already exists"},
 		{name: "unknownSC", volumeConfig: unknownSCVolConfig, valid: false, error: "unknown storage class"},
 		{name: "missingVolume", volumeConfig: missingVolConfig, valid: false, error: "volume noVol was not found"},
-		{name: "accessMode", volumeConfig: accessModeVolConfig, valid: false, error: "incompatible access mode"},
-		{name: "protocol", volumeConfig: protocolVolConfig, valid: false, error: "does not match backend protocol file"},
+		{name: "accessMode", volumeConfig: accessModeVolConfig, valid: false, error: "incompatible volume mode (), access mode"},
+		{name: "volumeMode", volumeConfig: volumeModeVolConfig, valid: false, error: "incompatible volume mode "},
+		{name: "protocol", volumeConfig: protocolVolConfig, valid: false, error: "incompatible with the backend"},
 	} {
 		// The test code
 		err = orchestrator.validateImportVolume(c.volumeConfig)
@@ -2632,8 +2650,64 @@ func TestValidateImportVolume(t *testing.T) {
 		} else if !c.valid {
 			t.Errorf("%s: expected error but passed test", c.name)
 		}
-
 	}
+
+	cleanup(t, orchestrator)
+}
+
+func TestValidateImportVolumeSanBackend(t *testing.T) {
+	const (
+		backendName     = "backend01"
+		scName          = "sc01"
+		volumeName      = "volume01"
+		originalName    = "origVolume01"
+		backendProtocol = config.Block
+	)
+
+	orchestrator, volumeConfig := importVolumeSetup(t, backendName, scName, volumeName, originalName, backendProtocol)
+
+	_, err := orchestrator.AddVolume(volumeConfig)
+	if err != nil {
+		t.Fatal("Unable to add volume: ", err)
+	}
+
+	// The volume exists on the backend with the original name since we added it above.
+	// Set volumeConfig.InternalName to the expected volumeName post import.
+	volumeConfig.InternalName = volumeName
+
+	// Create VolumeConfig objects for the remaining error conditions
+	protocolVolConfig := volumeConfig.ConstructClone()
+	protocolVolConfig.Protocol = config.File
+
+	ext4RawBlockFSVolConfig := volumeConfig.ConstructClone()
+	ext4RawBlockFSVolConfig.VolumeMode = config.RawBlock
+	ext4RawBlockFSVolConfig.Protocol = config.Block
+	ext4RawBlockFSVolConfig.FileSystem = "ext4"
+
+	for _, c := range []struct {
+		name         string
+		volumeConfig *storage.VolumeConfig
+		valid        bool
+		error        string
+	}{
+		{name: "protocol", volumeConfig: protocolVolConfig, valid: false, error: "incompatible with the backend"},
+		{name: "invalidFS", volumeConfig: ext4RawBlockFSVolConfig, valid: false, error: "cannot create raw-block volume"},
+	} {
+		// The test code
+		err = orchestrator.validateImportVolume(c.volumeConfig)
+		if err != nil {
+			if c.valid {
+				t.Errorf("%s: unexpected error %v", c.name, err)
+			} else {
+				if !strings.Contains(err.Error(), c.error) {
+					t.Errorf("%s: expected %s but received error %v", c.name, c.error, err)
+				}
+			}
+		} else if !c.valid {
+			t.Errorf("%s: expected error but passed test", c.name)
+		}
+	}
+
 	cleanup(t, orchestrator)
 }
 
@@ -2951,4 +3025,62 @@ func TestSnapshotVolumes(t *testing.T) {
 	}
 
 	cleanup(t, orchestrator)
+}
+
+func TestGetProtocol(t *testing.T) {
+	orchestrator := getOrchestrator()
+
+	type accessVariables struct {
+		volumeMode config.VolumeMode
+		accessMode config.AccessMode
+		protocol   config.Protocol
+		expected   config.Protocol
+	}
+
+	var accessModesPositiveTests = []accessVariables{
+		{config.Filesystem, config.ModeAny, config.ProtocolAny, config.ProtocolAny},
+		{config.Filesystem, config.ModeAny, config.File, config.File},
+		{config.Filesystem, config.ModeAny, config.Block, config.Block},
+		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny, config.ProtocolAny},
+		{config.Filesystem, config.ReadWriteOnce, config.File, config.File},
+		{config.Filesystem, config.ReadWriteOnce, config.Block, config.Block},
+		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.ProtocolAny},
+		{config.Filesystem, config.ReadOnlyMany, config.File, config.File},
+		{config.Filesystem, config.ReadOnlyMany, config.Block, config.Block},
+		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny, config.File},
+		{config.Filesystem, config.ReadWriteMany, config.File, config.File},
+		//{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		{config.RawBlock, config.ModeAny, config.ProtocolAny, config.Block},
+		//{config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ModeAny, config.Block, config.Block},
+		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny, config.Block},
+		//{config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteOnce, config.Block, config.Block},
+		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny, config.Block},
+		//{config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadOnlyMany, config.Block, config.Block},
+		{config.RawBlock, config.ReadWriteMany, config.ProtocolAny, config.Block},
+		//{config.RawBlock, config.ReadWriteMany, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteMany, config.Block, config.Block},
+	}
+
+	var accessModesNegativeTests = []accessVariables{
+		{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		{config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteMany, config.File, config.ProtocolAny},
+	}
+
+	for _, tc := range accessModesPositiveTests {
+		protocolLocal, err := orchestrator.getProtocol(tc.volumeMode, tc.accessMode, tc.protocol)
+		testutils.AssertTrue(t, "error should be nil!", err == nil)
+		testutils.AssertTrue(t, "expected both the protocols to be equal!", tc.expected == protocolLocal)
+	}
+
+	for _, tc := range accessModesNegativeTests {
+		protocolLocal, err := orchestrator.getProtocol(tc.volumeMode, tc.accessMode, tc.protocol)
+		testutils.AssertTrue(t, "error should not be nil!", err != nil)
+		testutils.AssertTrue(t, "expected both the protocols to be equal!", tc.expected == protocolLocal)
+	}
 }

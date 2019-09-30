@@ -320,12 +320,12 @@ func waitForResourceDeletionAtPath(resource string) error {
 	checkResourceDeletion := func() error {
 		if _, err := os.Stat(resource); err == nil {
 			if err = os.Remove(resource); err != nil {
-				log.WithFields(fields).Errorf("Failed to remove resource, %s", err)
+				log.WithFields(fields).Debugf("Failed to remove resource, %s", err)
 				return fmt.Errorf("Failed to remove resource %s; %s", resource, err)
 			}
 			return nil
 		} else if !os.IsNotExist(err) {
-			log.WithFields(fields).Errorf("Can't determine if resource exists; %s", err)
+			log.WithFields(fields).Debugf("Can't determine if resource exists; %s", err)
 			return fmt.Errorf("can't determine if resource %s exists; %s", resource, err)
 		}
 
@@ -1387,7 +1387,7 @@ func IsMounted(sourceDevice, mountpoint string) (bool, error) {
 
 	for _, procMount := range procSelfMountinfo {
 
-		if mountpoint != procMount.MountPoint {
+		if !strings.Contains(procMount.MountPoint, mountpoint) {
 			continue
 		}
 
@@ -1399,11 +1399,6 @@ func IsMounted(sourceDevice, mountpoint string) (bool, error) {
 		}
 
 		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/")
-		hasUdevMountSource := (procMount.MountSource == udevSource) || (procMount.MountSource == devTmpFsSource)
-
-		if !(hasDevMountSourcePrefix || hasUdevMountSource) {
-			continue
-		}
 
 		var mountedDevice string
 		// Resolve any symlinks to get the real device
@@ -1444,9 +1439,9 @@ func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	for _, procMount := range procSelfMountinfo {
 
 		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/")
-		hasUdevMountSource := (procMount.MountSource == udevSource) || (procMount.MountSource == devTmpFsSource)
+		hasPvcMountPoint := strings.Contains(procMount.MountPoint, "/pvc-")
 
-		if !(hasDevMountSourcePrefix || hasUdevMountSource) {
+		if !hasPvcMountPoint {
 			continue
 		}
 

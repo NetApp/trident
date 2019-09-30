@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/config"
+	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	k8sutilversion "github.com/netapp/trident/utils"
@@ -66,20 +67,24 @@ func getAnnotation(annotations map[string]string, key string) string {
 // getVolumeConfig generates a NetApp DVP volume config from the specs pulled
 // from the PVC.
 func getVolumeConfig(
-	accessModes []v1.PersistentVolumeAccessMode,
+	pvcAccessModes []v1.PersistentVolumeAccessMode,
+	volumeMode *v1.PersistentVolumeMode,
 	name string,
 	size resource.Quantity,
 	annotations map[string]string,
 ) *storage.VolumeConfig {
-	var accessMode config.AccessMode
+	var accessModes []config.AccessMode
 
-	if len(accessModes) > 1 {
-		accessMode = config.ReadWriteMany
-	} else if len(accessModes) == 0 {
-		accessMode = config.ModeAny //or config.ReadWriteMany?
-	} else {
-		accessMode = config.AccessMode(accessModes[0])
+	if volumeMode == nil {
+		volumeModeVal := v1.PersistentVolumeFilesystem
+		volumeMode = &volumeModeVal
 	}
+
+	for _, pvcAccessMode := range pvcAccessModes {
+		accessModes = append(accessModes, config.AccessMode(pvcAccessMode))
+	}
+
+	accessMode := frontendcommon.CombineAccessModes(accessModes)
 
 	if getAnnotation(annotations, AnnFileSystem) == "" {
 		annotations[AnnFileSystem] = "ext4"
@@ -99,6 +104,7 @@ func getVolumeConfig(
 		FileSystem:        getAnnotation(annotations, AnnFileSystem),
 		CloneSourceVolume: getAnnotation(annotations, AnnCloneFromPVC),
 		SplitOnClone:      getAnnotation(annotations, AnnSplitOnClone),
+		VolumeMode:        config.VolumeMode(*volumeMode),
 		AccessMode:        accessMode,
 	}
 }

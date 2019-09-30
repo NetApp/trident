@@ -5,7 +5,6 @@ package csi
 import (
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
@@ -35,8 +34,6 @@ type Plugin struct {
 	restClient *RestClient
 	helper     helpers.HybridPlugin
 
-	mutex sync.Mutex
-
 	grpc NonBlockingGRPCServer
 
 	csCap []*csi.ControllerServiceCapability
@@ -58,7 +55,6 @@ func NewControllerPlugin(
 		endpoint:     endpoint,
 		role:         CSIController,
 		helper:       *helper,
-		mutex:        sync.Mutex{},
 		opCache:      make(map[string]bool),
 	}
 

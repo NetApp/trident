@@ -113,7 +113,7 @@ func makeStorageClass(options map[string]string) (*storageclass.Config, error) {
 // and returns a volume config structure suitable for passing to the orchestrator core.
 func GetVolumeConfig(
 	name, storageClass string, sizeBytes int64, opts map[string]string,
-	protocol config.Protocol, accessMode config.AccessMode,
+	protocol config.Protocol, accessMode config.AccessMode, volumeMode config.VolumeMode,
 ) (*storage.VolumeConfig, error) {
 
 	return &storage.VolumeConfig{
@@ -122,6 +122,7 @@ func GetVolumeConfig(
 		StorageClass:        storageClass,
 		Protocol:            protocol,
 		AccessMode:          accessMode,
+		VolumeMode:          volumeMode,
 		SpaceReserve:        utils.GetV(opts, "spaceReserve", ""),
 		SecurityStyle:       utils.GetV(opts, "securityStyle", ""),
 		SplitOnClone:        utils.GetV(opts, "splitOnClone", ""),
@@ -139,4 +140,45 @@ func GetVolumeConfig(
 		CloneSourceSnapshot: utils.GetV(opts, "fromSnapshot", ""),
 		ServiceLevel:        utils.GetV(opts, "serviceLevel", ""),
 	}, nil
+}
+
+func CombineAccessModes(accessModes []config.AccessMode) config.AccessMode {
+	volConfigAccessMode := config.ModeAny
+	for _, accessMode := range accessModes {
+
+		// Rules for combining multiple access modes into a single access mode:
+
+		// Current AccessMode       Next AccessMode     Result
+		// Any                      Any                 Any
+		// Any                      ReadWriteOnce       ReadWriteOnce
+		// Any                      ReadOnlyMany        ReadOnlyMany
+		// Any                      ReadWriteMany       ReadWriteMany
+
+		// ReadWriteOnce            Any                 ReadWriteOnce
+		// ReadWriteOnce            ReadWriteOnce       ReadWriteOnce
+		// ReadWriteOnce            ReadOnlyMany        ReadWriteMany
+		// ReadWriteOnce            ReadWriteMany       ReadWriteMany
+
+		// ReadOnlyMany             Any                 ReadOnlyMany
+		// ReadOnlyMany             ReadWriteOnce       ReadWriteMany
+		// ReadOnlyMany             ReadOnlyMany        ReadOnlyMany
+		// ReadOnlyMany             ReadWriteMany       ReadWriteMany
+
+		// ReadWriteMany            Any                 ReadWriteMany
+		// ReadWriteMany            ReadWriteOnce       ReadWriteMany
+		// ReadWriteMany            ReadOnlyMany        ReadWriteMany
+		// ReadWriteMany            ReadWriteMany       ReadWriteMany
+		if volConfigAccessMode == config.ModeAny {
+			volConfigAccessMode = accessMode
+		} else if volConfigAccessMode == config.ReadWriteOnce {
+			if accessMode == config.ReadOnlyMany || accessMode == config.ReadWriteMany {
+				volConfigAccessMode = config.ReadWriteMany
+			}
+		} else if volConfigAccessMode == config.ReadOnlyMany {
+			if accessMode == config.ReadWriteOnce || accessMode == config.ReadWriteMany {
+				volConfigAccessMode = config.ReadWriteMany
+			}
+		}
+	}
+	return volConfigAccessMode
 }

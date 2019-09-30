@@ -24,16 +24,18 @@ import (
 )
 
 const (
-	volumePublishInfoFilename = "volumePublishInfo.json"
 	fsRaw                     = "raw"
+	lockID                    = "csi_node_server"
+	volumePublishInfoFilename = "volumePublishInfo.json"
 )
 
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	context := "NodeStageVolume"
+	utils.Lock(context, lockID)
+	defer utils.Unlock(context, lockID)
 
 	fields := log.Fields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeStageVolume")
@@ -53,8 +55,9 @@ func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	context := "NodeUnstageVolume"
+	utils.Lock(context, lockID)
+	defer utils.Unlock(context, lockID)
 
 	fields := log.Fields{"Method": "NodeUnstageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
@@ -94,8 +97,9 @@ func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	context := "NodePublishVolume"
+	utils.Lock(context, lockID)
+	defer utils.Unlock(context, lockID)
 
 	fields := log.Fields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodePublishVolume")
@@ -115,8 +119,9 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	context := "NodeUnpublishVolume"
+	utils.Lock(context, lockID)
+	defer utils.Unlock(context, lockID)
 
 	fields := log.Fields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnpublishVolume")

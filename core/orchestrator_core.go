@@ -1207,25 +1207,9 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
 	// Get the protocol based on the specified access mode & protocol
-	protocol, err := o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	protocol, err := o.getProtocol(volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
 	if err != nil {
 		return nil, err
-	}
-
-	// VolumeConfig FS type is set to "raw" when AccessType is set to `block`.
-	if volumeConfig.FileSystem == drivers.FsRaw {
-		// Protocol: file (NFS), AccessType: block, is an unsupported config i.e. we do not support raw block volumes
-		// with NFS protocol.
-		if protocol == config.File {
-			return nil, fmt.Errorf("protocol file is not compatible with a raw block volume")
-		}
-
-		// Reason for this override:
-		// 1. Here protocol value might be `any` (or block),
-		// and `any` protocol and `block` accesstype is a valid combination.
-		// 2. However, if we do not make it more specific and let the protocol be `any`,
-		// the storage pools that we discover later may list invalid pools that cannot support iSCSI raw block volumes.
-		protocol = config.Block
 	}
 
 	sc, ok := o.storageClasses[volumeConfig.StorageClass]
@@ -1344,6 +1328,13 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 			"source volume!")
 	}
 
+	sourceVolumeMode := sourceVolume.Config.VolumeMode
+	if sourceVolumeMode != "" && sourceVolumeMode != volumeConfig.VolumeMode {
+		return nil, notFoundError(fmt.Sprintf("source volume's volume-mode ("+
+			"%s) is incompatible with requested clone's volume-mode (%s) ", sourceVolume.Config.VolumeMode,
+			volumeConfig.VolumeMode))
+	}
+
 	// Clone the source config, as most of its attributes will apply to the clone
 	cloneConfig := sourceVolume.Config.ConstructClone()
 
@@ -1456,19 +1447,31 @@ func (o *TridentOrchestrator) validateImportVolume(volumeConfig *storage.VolumeC
 		return notFoundError(fmt.Sprintf("volume %s was not found", originalName))
 	}
 
-	// Check that the specified protocol and access mode are compatible
-	_, err = o.getProtocol(volumeConfig.AccessMode, volumeConfig.Protocol)
+	// Identify the resultant protocol based on the VolumeMode, AccessMode and the Protocol. Fro a valid case
+	// o.getProtocol returns a protocol that is either same as volumeConfig.Protocol or `file/block` protocol
+	// in place of `Any` Protocol.
+	protocol, err := o.getProtocol(volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
 	if err != nil {
 		return err
 	}
 
-	// Validate the protocol
+	backendProtocol := backend.GetProtocol()
+	// Make sure the resultant protocol matches the backend protocol
+	if protocol != config.ProtocolAny && protocol != backendProtocol {
+		return fmt.Errorf("requested volume mode (%s), access mode (%s), protocol (%s) are incompatible "+
+			"with the backend %s", volumeConfig.VolumeMode, volumeConfig.AccessMode,
+			volumeConfig.Protocol, backend.Name)
+	}
+
+	// For `Any` protocol make it same as the requested backend's protocol
 	if len(volumeConfig.Protocol) == 0 {
 		volumeConfig.Protocol = backend.GetProtocol()
-	} else {
-		backendProtocol := backend.GetProtocol()
-		if volumeConfig.Protocol != backendProtocol {
-			return fmt.Errorf("requested protocol %s does not match backend protocol %s", volumeConfig.Protocol, backendProtocol)
+	}
+
+	// Make sure that for the Raw-block volume import we do not have ext3, ext4 or xfs filesystem specified
+	if volumeConfig.VolumeMode == config.RawBlock {
+		if volumeConfig.FileSystem != "" && volumeConfig.FileSystem != drivers.FsRaw {
+			return fmt.Errorf("cannot create raw-block volume %s with the filesystem %s", originalName, volumeConfig.FileSystem)
 		}
 	}
 
@@ -2780,48 +2783,76 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 	return err
 }
 
-// getProtocol returns the appropriate protocol based on a specified volume access mode and protocol, or
+// getProtocol returns the appropriate protocol based on a specified volume mode, access mode and protocol, or
 // an error if the two settings are incompatible.
 //
-// Generally, the access mode maps to a protocol as follows:
+// The below truth table depicts these combinations:
 //
-//  ReadWriteOnce -> Any (File + Block)
-//  ReadOnlyMany  -> Any (File + Block)
-//  ReadWriteMany -> File
-//
-// But if the protocol is explicitly set to File or Block, then it may override ProtocolAny or generate a conflict.
-// The truth table below yields two special cases (RWX/Block) and (RWX/Any); all other rows simply echo the protocol.
-//
-//   AccessMode     Protocol     Result
-//      RWO          File        File
-//      RWO          Block       Block
-//      RWO          Any         Any
-//      ROX          File        File
-//      ROX          Block       Block
-//      ROX          Any         Any
-//      RWX          File        File
-//      RWX          Block       *ERROR*
-//      RWX          Any         *File*
-//      Any          File        File
-//      Any          Block       Block
-//      Any          Any         Any
+//  VolumeMode/AccessType   AccessMode    Protocol(block or file)       Result Protocol
+//  Filesystem              Any           Any                           Any
+//  Filesystem              Any           NFS                           NFS
+//  Filesystem              Any           iSCSI                         iSCSI
+//  Filesystem              RWO           Any                           Any
+//  Filesystem              RWO           NFS                           NFS
+//  Filesystem              RWO           iSCSI                         iSCSI
+//  Filesystem              ROX           Any                           Any
+//  Filesystem              ROX           NFS                           NFS
+//  Filesystem              ROX           iSCSI                         iSCSI
+//  Filesystem              RWX           Any                           **NFS**
+//  Filesystem              RWX           NFS                           NFS
+//  Filesystem              RWX           iSCSI                         **Error**
+//  RawBlock                Any           Any                           **iSCSI**
+//  RawBlock                Any           NFS                           **Error**
+//  RawBlock                Any           iSCSI                         iSCSI
+//  RawBlock                RWO           Any                           **iSCSI**
+//  RawBlock                RWO           NFS                           **Error**
+//  RawBlock                RWO           iSCSI                         iSCSI
+//  RawBlock                ROX           Any                           **iSCSI**
+//  RawBlock                ROX           NFS                           **Error**
+//  RawBlock                ROX           iSCSI                         iSCSI
+//  RawBlock                RWX           Any                           **iSCSI**
+//  RawBlock                RWX           NFS                           **Error**
+//  RawBlock                RWX           iSCSI                         iSCSI
 //
 func (o *TridentOrchestrator) getProtocol(
-	accessMode config.AccessMode, protocol config.Protocol,
+	volumeMode config.VolumeMode, accessMode config.AccessMode, protocol config.Protocol,
 ) (config.Protocol, error) {
 
-	// Protocol: block (iSCSI), AccessMode: ReadWriteMany, is an unsupported config i.e.  RWX is only supported by file
-	// and file-like protocols only, such as NFS
-	if accessMode == config.ReadWriteMany {
-		if protocol == config.Block {
-			return config.ProtocolAny, fmt.Errorf("incompatible access mode (%s) and protocol (%s)",
-				accessMode, protocol)
+	log.WithFields(log.Fields{
+		"volumeMode": volumeMode,
+		"accessMode": accessMode,
+		"protocol":   protocol,
+	}).Debug("Orchestrator#getProtocol")
+
+	resultProtocol := protocol
+	var err error = nil
+
+	if volumeMode == config.RawBlock {
+		// In `Block` volume-mode, Protocol: file (NFS) is unsupported i.e. we do not support raw block volumes
+		// with NFS protocol.
+		if protocol == config.File {
+			resultProtocol = config.ProtocolAny
+			err = fmt.Errorf("incompatible volume mode (%s) and protocol (%s)", volumeMode, protocol)
 		} else if protocol == config.ProtocolAny {
-			return config.File, nil
+			resultProtocol = config.Block
+		}
+	} else {
+		// In `Filesystem` volume-mode, Protocol: block (iSCSI), AccessMode: ReadWriteMany, is an unsupported config
+		// i.e.  RWX is only supported by file and file-like protocols only, such as NFS.
+		if accessMode == config.ReadWriteMany {
+			if protocol == config.Block {
+				resultProtocol = config.ProtocolAny
+				err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)",
+					volumeMode, accessMode, protocol)
+			} else if protocol == config.ProtocolAny {
+				resultProtocol = config.File
+			}
 		}
 	}
 
-	return protocol, nil
+	log.Debugf("Result Protocol: %v", resultProtocol)
+
+	return resultProtocol, err
 }
 
 func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error) {

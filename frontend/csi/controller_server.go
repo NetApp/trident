@@ -81,9 +81,11 @@ func (p *Plugin) CreateVolume(
 	// Check for matching volume capabilities
 	log.Debugf("Volume capabilities (%d): %v", len(req.GetVolumeCapabilities()), req.GetVolumeCapabilities())
 	var accessModes []tridentconfig.AccessMode
+	var csiAccessModes []csi.VolumeCapability_AccessMode_Mode
 	var isRawBlockAccessType, isFileMountAccessType bool
 	var isBlockProtocol, isFileProtocol bool
 	var fsType string
+	volumeMode := tridentconfig.Filesystem
 	protocol := tridentconfig.ProtocolAny
 	//var mountFlags []string
 
@@ -91,15 +93,7 @@ func (p *Plugin) CreateVolume(
 		for _, capability := range req.GetVolumeCapabilities() {
 
 			// Make a list of all the accessModes and translate that into a single protocol
-			accessMode := capability.GetAccessMode().Mode
-			accessModes = append(accessModes, p.getAccessForCSIAccessMode(accessMode))
-			protocolLocal := p.getProtocolForCSIAccessMode(accessMode)
-
-			if protocolLocal == tridentconfig.Block {
-				isBlockProtocol = true
-			} else if protocolLocal == tridentconfig.File {
-				isFileProtocol = true
-			}
+			csiAccessModes = append(csiAccessModes, capability.GetAccessMode().Mode)
 
 			// Is AccessType(VolumeMode) = block (raw block)?
 			if block := capability.GetBlock(); block != nil {
@@ -119,7 +113,19 @@ func (p *Plugin) CreateVolume(
 	if isRawBlockAccessType && isFileMountAccessType {
 		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
 	} else if isRawBlockAccessType {
+		volumeMode = tridentconfig.RawBlock
 		fsType = fsRaw
+	}
+
+	for _, csiAccessMode := range csiAccessModes {
+		accessModes = append(accessModes, p.getAccessForCSIAccessMode(csiAccessMode))
+		protocolLocal := p.getProtocolForCSIAccessMode(csiAccessMode, volumeMode)
+
+		if protocolLocal == tridentconfig.Block {
+			isBlockProtocol = true
+		} else if protocolLocal == tridentconfig.File {
+			isFileProtocol = true
+		}
 	}
 
 	// Cannot have both the protocols block (iSCSI) and file (NFS) together
@@ -142,7 +148,8 @@ func (p *Plugin) CreateVolume(
 	}
 
 	// Convert volume creation options into a Trident volume config
-	volConfig, err := p.helper.GetVolumeConfig(req.Name, sizeBytes, req.Parameters, protocol, accessModes, fsType)
+	volConfig, err := p.helper.GetVolumeConfig(req.Name, sizeBytes, req.Parameters, protocol, accessModes,
+		volumeMode, fsType)
 	if err != nil {
 		p.helper.RecordVolumeEvent(req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
@@ -614,21 +621,31 @@ func (p *Plugin) getAccessForCSIAccessMode(accessMode csi.VolumeCapability_Acces
 	}
 }
 
-func (p *Plugin) getProtocolForCSIAccessMode(accessMode csi.VolumeCapability_AccessMode_Mode) tridentconfig.Protocol {
-	switch accessMode {
-	case csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER: // block or file OK
-		return tridentconfig.ProtocolAny
-	case csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY: // block or file OK
-		return tridentconfig.ProtocolAny
-	case csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY: // block or file OK
-		return tridentconfig.ProtocolAny
-	case csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER: // block or file OK
-		return tridentconfig.ProtocolAny
-	case csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER: // file required
-		return tridentconfig.File
-	default:
-		return tridentconfig.ProtocolAny
+func (p *Plugin) getProtocolForCSIAccessMode(accessMode csi.VolumeCapability_AccessMode_Mode,
+	volumeMode tridentconfig.VolumeMode) tridentconfig.Protocol {
+	protocol := tridentconfig.ProtocolAny
+
+	// Mapping of AccessMode to equivalent an protocol:
+
+	// AccessMode                       AccessType              Result: Protocol
+	// SINGLE_NODE_WRITER               Any                     Any
+	// SINGLE_NODE_READER_ONLY          Any                     Any
+	// MULTI_NODE_READER_ONLY           Any                     Any
+	// MULTI_NODE_SINGLE_WRITER         Block                   block
+	// MULTI_NODE_SINGLE_WRITER         Any/Filesystem          file
+	// MULTI_NODE_MULTI_WRITER          Block                   block
+	// MULTI_NODE_MULTI_WRITER          Any/Filesystem          file
+
+	if accessMode == csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER ||
+		accessMode == csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER {
+		if volumeMode == tridentconfig.RawBlock {
+			protocol = tridentconfig.Block
+		} else {
+			protocol = tridentconfig.File
+		}
 	}
+
+	return protocol
 }
 
 func (p *Plugin) hasBackendForProtocol(protocol tridentconfig.Protocol) bool {

@@ -709,10 +709,12 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 	log.WithField("PVC", pvc).Debug("ImportVolume: created pending PVC.")
 
 	accessModes := pvc.Spec.AccessModes
+	volumeMode := pvc.Spec.VolumeMode
 	uniqueName := getUniqueClaimName(pvc)
 	storageClass := GetPersistentVolumeClaimClass(pvc)
 	annotations := p.processStorageClassAnnotations(pvc, storageClass)
-	volConfig := getVolumeConfig(accessModes, uniqueName, claim.Spec.Resources.Requests[v1.ResourceStorage], annotations)
+	volConfig := getVolumeConfig(accessModes, volumeMode, uniqueName,
+		claim.Spec.Resources.Requests[v1.ResourceStorage], annotations)
 	volConfig.ImportOriginalName = request.InternalName
 	volConfig.ImportBackendUUID = volExternal.BackendUUID
 	volConfig.ImportNotManaged = request.NoManage
@@ -1070,7 +1072,8 @@ func (p *Plugin) createVolumeAndPV(
 
 	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	accessModes := claim.Spec.AccessModes
-	volConfig := getVolumeConfig(accessModes, uniqueName, size, annotations)
+	volumeMode := claim.Spec.VolumeMode
+	volConfig := getVolumeConfig(accessModes, volumeMode, uniqueName, size, annotations)
 	volExternal, err = p.createVolumeFromConfig(volConfig, storageClass, claim.Namespace, claim.Name)
 	if err != nil {
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/config"
+	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/storage"
@@ -28,7 +29,7 @@ import (
 // as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
 	name string, sizeBytes int64, parameters map[string]string,
-	protocol config.Protocol, accessModes []config.AccessMode, fsType string,
+	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 ) (*storage.VolumeConfig, error) {
 
 	// Kubernetes CSI passes us the name of what will become a new PV
@@ -80,7 +81,8 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Create the volume config
-	volumeConfig := getVolumeConfig(pvc.Spec.AccessModes, pvName, pvcSize, processPVCAnnotations(pvc, fsType), scName)
+	volumeConfig := getVolumeConfig(pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
+		processPVCAnnotations(pvc, fsType), scName)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
 	if cloneSourcePVName, err := p.getCloneSourceInfo(pvc); err != nil {
@@ -279,18 +281,22 @@ func mapEventType(eventType string) string {
 // getVolumeConfig accepts the attributes of a new volume and assembles them into a
 // VolumeConfig structure as needed by Trident to create a new volume.
 func getVolumeConfig(
-	accessModes []v1.PersistentVolumeAccessMode, name string, size resource.Quantity,
+	pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode, name string,
+	size resource.Quantity,
 	annotations map[string]string, storageClassName string,
 ) *storage.VolumeConfig {
 
-	var accessMode config.AccessMode
+	var accessModes []config.AccessMode
 
-	if len(accessModes) > 1 {
-		accessMode = config.ReadWriteMany
-	} else if len(accessModes) == 0 {
-		accessMode = config.ModeAny
-	} else {
-		accessMode = config.AccessMode(accessModes[0])
+	for _, pvcAccessMode := range pvcAccessModes {
+		accessModes = append(accessModes, config.AccessMode(pvcAccessMode))
+	}
+
+	accessMode := frontendcommon.CombineAccessModes(accessModes)
+
+	if volumeMode == nil {
+		volumeModeVal := v1.PersistentVolumeFilesystem
+		volumeMode = &volumeModeVal
 	}
 
 	if getAnnotation(annotations, AnnFileSystem) == "" {
@@ -318,6 +324,7 @@ func getVolumeConfig(
 		BlockSize:          getAnnotation(annotations, AnnBlockSize),
 		FileSystem:         getAnnotation(annotations, AnnFileSystem),
 		SplitOnClone:       getAnnotation(annotations, AnnSplitOnClone),
+		VolumeMode:         config.VolumeMode(*volumeMode),
 		AccessMode:         accessMode,
 		ImportOriginalName: getAnnotation(annotations, AnnImportOriginalName),
 		ImportBackendUUID:  getAnnotation(annotations, AnnImportBackendUUID),

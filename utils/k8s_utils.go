@@ -28,9 +28,6 @@ const (
 	procMountsPath = "/proc/mounts"
 	// Location of the mount file to use
 	procSelfMountinfoPath = "/proc/self/mountinfo"
-	// Location of the mount file to use
-	udevSource     = "udev"
-	devTmpFsSource = "devTmpFsSource"
 )
 
 // This represents a single line in /proc/mounts or /etc/fstab.
@@ -45,16 +42,16 @@ type MountPoint struct {
 
 // This represents a single line in /proc/self/mountinfo.
 type MountInfo struct {
-	MountId        int
-	ParentId       int
-	DeviceId       string
-	Root           string
-	MountPoint     string
-	MountOptions   []string
-	OptionalFields []string
-	FsType         string
-	MountSource    string
-	SuperOptions   []string
+	MountId      int
+	ParentId     int
+	DeviceId     string
+	Root         string
+	MountPoint   string
+	MountOptions []string
+	//OptionalFields []string
+	FsType       string
+	MountSource  string
+	SuperOptions []string
 }
 
 // IsLikelyDir determines if mountpoint is a directory
@@ -130,6 +127,7 @@ func GetDeviceNameFromMount(mountpath string) (string, int, error) {
 
 // listProcSelfMountinfo (Available since Linux 2.6.26) lists information about mount points
 // in the process's mount namespace. Ref: http://man7.org/linux/man-pages/man5/proc.5.html
+// for /proc/[pid]/mountinfo
 func listProcSelfMountinfo(mountFilePath string) ([]MountInfo, error) {
 	content, err := ConsistentRead(mountFilePath, maxListTries)
 	if err != nil {
@@ -148,10 +146,16 @@ func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
 			continue
 		}
 		fields := strings.Fields(line)
+		fieldLines := len(fields)
 		expectedFieldsPerLine := expectedNumProcSelfMntInfoFieldsPerLine
-		if len(fields) > expectedFieldsPerLine || len(fields) < (expectedFieldsPerLine-1) {
+		if fieldLines > expectedFieldsPerLine || fieldLines < (expectedFieldsPerLine-1) {
 			return nil, fmt.Errorf("wrong number of fields (expected %d or %d, got %d): %s", expectedFieldsPerLine,
 				(expectedFieldsPerLine - 1), len(fields), line)
+		}
+
+		// If root value is marked deleted, skip the entry
+		if strings.Contains(fields[3], "deleted") {
+			continue
 		}
 
 		mp := MountInfo{
@@ -173,17 +177,9 @@ func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
 		}
 		mp.ParentId = parentId
 
-		if fields[6] != "-" {
-			mp.OptionalFields = strings.Split(fields[6], ",")
-			mp.FsType = fields[8]
-			mp.MountSource = fields[9]
-			mp.SuperOptions = strings.Split(fields[10], ",")
-		} else {
-			mp.OptionalFields = nil
-			mp.FsType = fields[7]
-			mp.MountSource = fields[8]
-			mp.SuperOptions = strings.Split(fields[9], ",")
-		}
+		mp.FsType = fields[fieldLines-3]
+		mp.MountSource = fields[fieldLines-2]
+		mp.SuperOptions = strings.Split(fields[fieldLines-1], ",")
 
 		out = append(out, mp)
 	}

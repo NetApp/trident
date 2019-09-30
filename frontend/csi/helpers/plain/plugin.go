@@ -54,55 +54,15 @@ func (p *Plugin) Version() string {
 	return csi.Version
 }
 
-func combineAccessModes(accessModes []config.AccessMode) config.AccessMode {
-	volConfigAccessMode := config.ModeAny
-	for _, accessMode := range accessModes {
-
-		// Rules for combining multiple access modes into a single access mode:
-		// Current AccessMode		Next AccessMode		Result
-		// Any						Any					Any
-		// Any						ReadWriteOnce		ReadWriteOnce
-		// Any						ReadOnlyMany		ReadOnlyMany
-		// Any						ReadWriteMany		ReadWriteMany
-
-		// ReadWriteOnce			Any					ReadWriteOnce
-		// ReadWriteOnce			ReadWriteOnce		ReadWriteOnce
-		// ReadWriteOnce			ReadOnlyMany		ReadWriteMany
-		// ReadWriteOnce			ReadWriteMany		ReadWriteMany
-
-		// ReadOnlyMany				Any					ReadOnlyMany
-		// ReadOnlyMany				ReadWriteOnce		ReadWriteMany
-		// ReadOnlyMany				ReadOnlyMany		ReadOnlyMany
-		// ReadOnlyMany				ReadWriteMany		ReadWriteMany
-
-		// ReadWriteMany			Any					ReadWriteMany
-		// ReadWriteMany			ReadWriteOnce		ReadWriteMany
-		// ReadWriteMany			ReadOnlyMany		ReadWriteMany
-		// ReadWriteMany			ReadWriteMany		ReadWriteMany
-		if volConfigAccessMode == config.ModeAny {
-			volConfigAccessMode = accessMode
-		} else if volConfigAccessMode == config.ReadWriteOnce {
-			if accessMode == config.ReadOnlyMany || accessMode == config.ReadWriteMany {
-				volConfigAccessMode = config.ReadWriteMany
-			}
-		} else if volConfigAccessMode == config.ReadOnlyMany {
-			if accessMode == config.ReadWriteOnce || accessMode == config.ReadWriteMany {
-				volConfigAccessMode = config.ReadWriteMany
-			}
-		}
-	}
-	return volConfigAccessMode
-}
-
 // GetVolumeConfig accepts the attributes of a volume being requested by the CSI
 // provisioner, finds or creates/registers a matching storage class, and returns
 // a VolumeConfig structure as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
 	name string, sizeBytes int64, parameters map[string]string,
-	protocol config.Protocol, accessModes []config.AccessMode, fsType string,
+	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 ) (*storage.VolumeConfig, error) {
 
-	accessMode := combineAccessModes(accessModes)
+	accessMode := frontendcommon.CombineAccessModes(accessModes)
 
 	if parameters == nil {
 		parameters = make(map[string]string)
@@ -119,7 +79,7 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Create the volume config from all available info from the CSI request
-	return frontendcommon.GetVolumeConfig(name, scConfig.Name, sizeBytes, parameters, protocol, accessMode)
+	return frontendcommon.GetVolumeConfig(name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode)
 }
 
 // GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI

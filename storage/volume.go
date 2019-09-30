@@ -28,6 +28,7 @@ type VolumeConfig struct {
 	UnixPermissions           string                 `json:"unixPermissions,omitempty"`
 	StorageClass              string                 `json:"storageClass,omitempty"`
 	AccessMode                config.AccessMode      `json:"accessMode,omitempty"`
+	VolumeMode                config.VolumeMode      `json:"volumeMode,omitempty"`
 	AccessInfo                utils.VolumeAccessInfo `json:"accessInformation"`
 	BlockSize                 string                 `json:"blockSize"`
 	FileSystem                string                 `json:"fileSystem"`

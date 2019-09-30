@@ -165,13 +165,14 @@ func testClaim(
 
 func testVolumeConfig(
 	accessModes []v1.PersistentVolumeAccessMode,
+	volumeMode *v1.PersistentVolumeMode,
 	name string,
 	pvcUID types.UID,
 	size string,
 	annotations map[string]string,
 	kubeVersion *k8sversion.Info,
 ) *storage.VolumeConfig {
-	ret := getVolumeConfig(accessModes,
+	ret := getVolumeConfig(accessModes, volumeMode,
 		getUniqueClaimName(testClaim(name, pvcUID, size, accessModes,
 			v1.ClaimPending, annotations, kubeVersion)),
 		resource.MustParse(size), annotations)
