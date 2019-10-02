@@ -1,5 +1,15 @@
 node {
 
+  // Define a var to store the resolved or provided branch
+  // This can be in one of the following forms
+  // master
+  // stable/v19.10
+  // The */my-branch-name is converted to my-branch-name
+  def branch = ''
+
+  // Define a var to store the git commit hash
+  def commit = ''
+
   // Define a var for HOLD_JIG so we can overwrite it later for debugging
   def hold_jig = 'never'
   if (env.HOLD_JIG) {
@@ -891,11 +901,37 @@ node {
     ]
   }
 
+  // If the branch is a PR-# branch query Github for the PR info
+  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+    def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
+      "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
+      "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
+    def response = sh(
+      label: "Query Github for $env.BRANCH_NAME",
+      returnStdout: true,
+      script: cmd
+    ).trim()
+
+    def pr = readJSON text: response
+
+    if (pr.containsKey('head') == false) {
+      error "Error getting the PR info from Github for $env.BRANCH_NAME"
+    }
+
+    branch = pr['head']['ref']
+  }
+
   def slack_result = 'PENDING'
   def slack_message = (
     "${env.JOB_NAME} #${env.BUILD_NUMBER}:\n" +
     "${env.BUILD_URL}\n"
   )
+  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+    slack_message = (
+      "${env.JOB_NAME} $branch #${env.BUILD_NUMBER}:\n" +
+      "${env.BUILD_URL}\n"
+    )
+  }
 
   try {
 
@@ -1021,16 +1057,18 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
   // coverage should be documentation
   def coverage = 'post-commit'
 
-  // If jenkins is telling us what the branch name/ref is using BRANCH_NAME 
+  // If jenkins is telling us what the branch name/ref is using BRANCH_NAME
   // then override coverage if:
   //   There are only documentation changes
   //   The branch name contains PR-
   if (env.BRANCH_NAME) {
-    if (env.BRANCH_NAME != 'master' && branch_name.startsWith('stable') != true) {
+    if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME.startsWith('stable') != true) {
 
       def full_clone_commit_hash = ''
       def full_clone_branch_name = 'master'
       dir('src2/github.com/netapp/trident') {
+
+        // If CHANGE_TARGET is not master then checkout the branch
         if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
           full_clone_branch_name = env.CHANGE_TARGET
           sh(
@@ -1045,6 +1083,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           script: "git rev-parse HEAD"
         ).trim()
 
+        // If we checked out a branch make sure we checkout master
         if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
           sh(
             label: "Checkout master",
@@ -1052,48 +1091,39 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           )
         }
       }
-      
-      def jenkins_checkout_commit_hash = ''
+
       dir('src/github.com/netapp/trident') {
-        jenkins_checkout_commit_hash = sh(
-          label: "Get git commit hash from jenkins checkout",
-          returnStdout: true,
-          script: "git rev-parse HEAD"
-        ).trim()
 
         def changes = sh(
-            label: "Check if the jenkins checkout contains only documentation changes",
+            label: "Check if $branch contains only documentation changes",
             returnStdout: true,
-            script: "git diff --name-only $full_clone_commit_hash " + 
-              "$jenkins_checkout_commit_hash | " + 
+            script: "git diff --name-only $full_clone_commit_hash $commit | " +
               "grep -v '^docs/' | grep -v '^.*\\.md' || true"
         )
 
-        echo "Changes between $full_clone_branch_name($full_clone_commit_hash) and " +
-          "jenkins checkout($jenkins_checkout_commit_hash):\n $changes"
+        echo "Non doumentation changes between $full_clone_branch_name and $branch:\n$changes"
         if (changes) {
           if (changes.contains('fatal:') || changes.contains('usage:'))  {
             echo "Error executing git diff, coverage remains $coverage"
           } else {
-            if (env.BRANCH_NAME.contains('PR-')) { 
-              echo "The jenkins checkout contains more than documentation " +
-                "changes on PR branch $env.BRANCH_NAME, changing coverage " + 
-                "to pre-merge"
-              coverage = 'pre-merge' 
+            if (env.BRANCH_NAME.contains('PR-')) {
+              echo "$env.BRANCH_NAME($branch) contains more than " +
+                "documentation changes, changing coverage to pre-merge"
+              coverage = 'pre-merge'
             } else {
-              echo "The jenkins checkout contains more than documentation " +
+              echo "$branch contains more than documentation " +
                 "changes, coverage remains $coverage"
             }
           }
         } else {
-          echo "The jenkins checkout contains only documentation " + 
+          echo "$branch contains only documentation " +
             "changes, changing coverage to documentation"
           coverage = "documentation"
         }
       }
     } else {
       echo (
-        "Skipping documentation change detection because $env.BRANCH_NAME " + 
+        "Skipping documentation change detection because $env.BRANCH_NAME " +
         "is master or stable/*, coverage remains $coverage"
       )
     }
@@ -1112,11 +1142,10 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
 
   echo "Creating stages based on $coverage coverage and stage name matching $stage_name_regexp"
 
-  // Define a var to hold the git commit hash
-  def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-  def git_commit = sh(label: "Retrieve commit hash", returnStdout: true, script: cmd).trim()
+  // Define a var to track stage names
+  def stage_list = ''
 
-  // Defined the stage map
+  // Define the stage map
   def map = []
 
   // Define some counter vars
@@ -1180,7 +1209,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           // Documentation coverage should report all other pre-merge stages as skipped
           if (coverage == 'documentation' && _coverage_match(cos, 'pre-merge') == true) {
             // Notify Github the stage has been a success because it's been skipped
-            _notify_github(cos, git_commit, 'skipped', 'Stage has been skipped', 'success')
+            _notify_github(cos, commit, 'skipped', 'Stage has been skipped', 'success')
           }
 
           continue
@@ -1197,43 +1226,47 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
       // Create the stage based on the stage attribute
       if (cos['stage'] == '_build_documentation') {
 
-         if(map[group_index] == null) { map[group_index] = [:] }
-         stage_index++
-         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-         echo 'Creating documentation build stage ' + name
-         map[group_index].put(name, _build_documentation(name, ssh_options, cos))
-         parallel_stages++
-         allocated_stages_this_phase++
+        if(map[group_index] == null) { map[group_index] = [:] }
+        stage_index++
+        def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
+        echo 'Creating documentation build stage ' + name
+        map[group_index].put(name, _build_documentation(name, ssh_options, cos))
+        parallel_stages++
+        allocated_stages_this_phase++
+        stage_list += "$name\n"
 
       } else if (cos['stage'] == '_build_trident') {
 
-         if(map[group_index] == null) { map[group_index] = [:] }
-         stage_index++
-         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-         echo 'Creating compile stage ' + name
-         map[group_index].put(name, _build_trident(name, ssh_options, cos))
-         parallel_stages++
-         allocated_stages_this_phase++
+        if(map[group_index] == null) { map[group_index] = [:] }
+        stage_index++
+        def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
+        echo 'Creating compile stage ' + name
+        map[group_index].put(name, _build_trident(name, ssh_options, cos))
+        parallel_stages++
+        allocated_stages_this_phase++
+        stage_list += "$name\n"
 
       } else if (cos['stage'] == '_csi_sanity') {
 
-         if(map[group_index] == null) { map[group_index] = [:] }
-         stage_index++
-         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-         echo 'Creating CSI Sanity test stage ' + name
-         map[group_index].put(name, _csi_sanity(name, ssh_options, cos))
-         parallel_stages++
-         allocated_stages_this_phase++
+        if(map[group_index] == null) { map[group_index] = [:] }
+        stage_index++
+        def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
+        echo 'Creating CSI Sanity test stage ' + name
+        map[group_index].put(name, _csi_sanity(name, ssh_options, cos))
+        parallel_stages++
+        allocated_stages_this_phase++
+        stage_list += "$name\n"
 
       } else if (cos['stage'] == '_unit_test') {
 
-         if(map[group_index] == null) { map[group_index] = [:] }
-         stage_index++
-         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-         echo 'Creating unit test stage ' + name
-         map[group_index].put(name, _unit_test(name, ssh_options, cos))
-         parallel_stages++
-         allocated_stages_this_phase++
+        if(map[group_index] == null) { map[group_index] = [:] }
+        stage_index++
+        def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
+        echo 'Creating unit test stage ' + name
+        map[group_index].put(name, _unit_test(name, ssh_options, cos))
+        parallel_stages++
+        allocated_stages_this_phase++
+        stage_list += "$name\n"
 
       } else if (cos['stage'] == '_whelk_test') {
 
@@ -1248,6 +1281,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         map[group_index].put(name, _whelk_test(name, ssh_options, cos))
         parallel_stages++
         allocated_stages_this_phase++
+        stage_list += "$name\n"
 
       } else {
         echo cos['name'] + ' has an unkown stage: ' + cos['stage']
@@ -1263,6 +1297,11 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
       }
     }
   }
+
+  writeFile file: "stage_list.log", text: stage_list
+  sh (label: "Sleep", script: "sleep 1")
+  archiveArtifacts allowEmptyArchive: true, artifacts: "stage_list.log"
+
   return map
 }
 
@@ -1297,10 +1336,6 @@ def _build_documentation(String name, String ssh_options, Map spec) {
       // Initialize the result file for this stage
       _initialize_status_file(name, status)
 
-      // Define a var to hold the git commit hash
-      def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-      def git_commit = sh(label: "Retrieve commit hash", returnStdout: true, script: cmd).trim()
-
       try {
 
         sh (
@@ -1311,7 +1346,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage is running', status)
+        _notify_github(spec, commit, name, 'Stage is running', status)
 
         // Create SCS VM(s) and create attribe variables we can use later
         def request = spec['request']
@@ -1438,7 +1473,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage has completed', status)
+        _notify_github(spec, commit, name, 'Stage has completed', status)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -1479,17 +1514,9 @@ def _build_trident(String name, String ssh_options, Map spec) {
       // Initialize the result file for this stage
       _initialize_status_file(name, status)
 
-      // Define a var to hold the git commit hash
-      def git_commit = ''
       if (env.DEPLOY_TRIDENT && env.COMMIT_HASH) {
         echo "Using the supplied git commit hash $env.COMMIT_HASH"
-        git_commit = env.COMMIT_HASH.trim()
-      } else {
-        def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-        git_commit = sh(
-          label: "Retrieve git commit hash using git rev-parse HEAD",
-          returnStdout: true,
-          script: cmd).trim()
+        commit = env.COMMIT_HASH.trim()
       }
 
       try {
@@ -1502,7 +1529,13 @@ def _build_trident(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage is running', status)
+        if (env.DEPLOY_TRIDENT) {
+          echo "DEPLOY_TRIDENT=true, skipping Github notification"
+        } else if (env.BLACK_DUCK_SCAN) {
+          echo "BLACK_DUCK_SCAN=true, skipping Github notification"
+        } else {
+          _notify_github(spec, commit, name, 'Stage is running', status)
+        }
 
         // Create SCS VM(s) and create attribe variables we can use later
         def request = spec['request']
@@ -1590,43 +1623,43 @@ def _build_trident(String name, String ssh_options, Map spec) {
             echo "Creating the build script for stable/master deployment"
             content = (
               "cd $vm_path/go/src/github.com/netapp/trident\n" +
-              "docker login $env.DOCKER_REGISTRY " +
-              "-u $env.DOCKER_REGISTRY_USERNAME " +
-              "-p $env.DOCKER_REGISTRY_PASSWORD\n" +
+              "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+              "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+              "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
               "export GOPATH=$vm_path/go\n" +
               "export BUILD_TYPE=$env.BUILD_TYPE\n" +
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
-              "export REGISTRY_ADDR=$env.DOCKER_REGISTRY\n" +
-              "export DIST_REGISTRY=$env.DOCKER_REGISTRY\n" +
+              "export REGISTRY_ADDR=$env.PUBLIC_DOCKER_REGISTRY\n" +
+              "export DIST_REGISTRY=$env.PUBLIC_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
             )
           } else if (env.DEPLOY_TRIDENT && env.BUILD_TYPE != 'stable') {
             echo "Creating the build script for alpha or beta deployment"
             content = (
               "cd $vm_path/go/src/github.com/netapp/trident\n" +
-              "docker login $env.DOCKER_REGISTRY " +
-              "-u $env.DOCKER_REGISTRY_USERNAME " +
-              "-p $env.DOCKER_REGISTRY_PASSWORD\n" +
+              "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+              "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+              "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
               "export GOPATH=$vm_path/go\n" +
               "export BUILD_TYPE=$env.BUILD_TYPE\n" +
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
               "export BUILD_TYPE_REV=$env.TRIDENT_REVISION\n" +
-              "export REGISTRY_ADDR=$env.DOCKER_REGISTRY\n" +
-              "export DIST_REGISTRY=$env.DOCKER_REGISTRY\n" +
+              "export REGISTRY_ADDR=$env.PUBLIC_DOCKER_REGISTRY\n" +
+              "export DIST_REGISTRY=$env.PUBLIC_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
             )
           } else {
             echo "Creating the build script for testing"
             content = (
               "cd $vm_path/go/src/github.com/netapp/trident\n" +
-              "docker login $env.DOCKER_REGISTRY " +
-              "-u $env.DOCKER_REGISTRY_USERNAME " +
-              "-p $env.DOCKER_REGISTRY_PASSWORD\n" +
+              "docker login $env.PRIVATE_DOCKER_REGISTRY " +
+              "-u $env.PRIVATE_DOCKER_REGISTRY_USERNAME " +
+              "-p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n" +
               "export GOPATH=$vm_path/go\n" +
               "export BUILD_TYPE=test\n" +
-              "export BUILD_TYPE_REV=$git_commit\n" +
-              "export REGISTRY_ADDR=$env.DOCKER_REGISTRY\n" +
-              "export DIST_REGISTRY=$env.DOCKER_REGISTRY\n" +
+              "export BUILD_TYPE_REV=$env.BUILD_TAG\n" +
+              "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
+              "export DIST_REGISTRY=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
             )
           }
@@ -1705,7 +1738,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             def patch = fields[2]
             def tag = trident_version
             def major_minor_tag = "${major}.${minor}"
-            def repository = env.DOCKER_REGISTRY + '/trident'
+            def repository = env.PUBLIC_DOCKER_REGISTRY + '/trident'
 
             // Tag and push the image appropriately
             if (env.BUILD_TYPE == 'stable' && env.BRANCH_NAME == 'master') {
@@ -1716,27 +1749,27 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
               )
 
               sh (
                 label: "Tag $repository:$tag $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:$major_minor_tag'"
               )
 
               sh (
                 label: "Push $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$major_minor_tag'"
               )
             } else if (env.BUILD_TYPE == 'stable' && env.BRANCH_TYPE == 'stable') {
@@ -1747,27 +1780,27 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
               )
 
               sh (
                 label: "Tag $repository:$tag $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:$major_minor_tag'"
               )
 
               sh (
                 label: "Push $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$major_minor_tag'"
               )
 
@@ -1783,9 +1816,9 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
               )
             }
@@ -1794,18 +1827,18 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Tag $repository:$tag $repository:latest from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:latest'"
               )
 
               sh (
                 label: "Push $repository:latest from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.DOCKER_REGISTRY " +
-                  "-u $env.DOCKER_REGISTRY_USERNAME " +
-                  "-p $env.DOCKER_REGISTRY_PASSWORD;" +
+                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+                  "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:latest'"
               )
             }
@@ -1816,7 +1849,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
           } else {
 
             // Get the trident image string using the git commit hash
-            image = _get_image(ssh_options, ip_address, git_commit)
+            image = _get_image(ssh_options, ip_address, env.BUILD_TAG)
 
           }
 
@@ -1861,20 +1894,36 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
         try {
           // Create the script to create and push the docker plugin image
-          def content = (
-            "docker login $env.DOCKER_REGISTRY " +
-            "-u $env.DOCKER_REGISTRY_USERNAME " +
-            "-p $env.DOCKER_REGISTRY_PASSWORD\n" +
-            "sudo ./createFS\n" +
-            "sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh\n" +
-            "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
-            "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
-            "sudo docker logout\n" +
-            "sudo docker login $env.DOCKER_REGISTRY -u $env.DOCKER_REGISTRY_USERNAME -p $env.DOCKER_REGISTRY_PASSWORD\n"
-          )
+          def content = ''
 
-          def repository = env.DOCKER_REGISTRY + '/trident-plugin'
           if (env.DEPLOY_TRIDENT) {
+            content += (
+              "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+              "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
+              "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
+              "sudo ./createFS\n" +
+              "sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh\n" +
+              "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
+              "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
+              "sudo docker logout\n" +
+              "sudo docker login $env.PUBLIC_DOCKER_REGISTRY -u $env.PUBLIC_DOCKER_REGISTRY_USERNAME -p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n"
+            )
+          } else {
+            content += (
+              "docker login $env.PRIVATE_DOCKER_REGISTRY " +
+              "-u $env.PRIVATE_DOCKER_REGISTRY_USERNAME " +
+              "-p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n" +
+              "sudo ./createFS\n" +
+              "sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh\n" +
+              "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
+              "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
+              "sudo docker logout\n" +
+              "sudo docker login $env.PRIVATE_DOCKER_REGISTRY -u $env.PRIVATE_DOCKER_REGISTRY_USERNAME -p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n"
+            )
+          }
+
+          if (env.DEPLOY_TRIDENT) {
+            def repository = env.PUBLIC_DOCKER_REGISTRY + '/trident-plugin'
             def trident_version = env.TRIDENT_VERSION
             def tag = trident_version
             def fields = trident_version.split("\\.")
@@ -1942,10 +1991,12 @@ def _build_trident(String name, String ssh_options, Map spec) {
               )
             }
           } else {
+            def repository = env.PRIVATE_DOCKER_REGISTRY + '/trident-plugin'
+
             // For test builds we need the git commit hash as the image tag
             content += (
-              "sudo docker plugin create $repository:$git_commit ./myplugin\n" +
-              "sudo docker plugin push $repository:$git_commit\n"
+              "sudo docker plugin create $repository:$env.BUILD_TAG ./myplugin\n" +
+              "sudo docker plugin push $repository:$env.BUILD_TAG\n"
             )
           }
 
@@ -2073,10 +2124,10 @@ def _build_trident(String name, String ssh_options, Map spec) {
             echo "Creating script to tag the release"
 
             def content = (
-              "tag=`git tag --points-at $git_commit`\n" +
+              "tag=`git tag --points-at $commit`\n" +
               "if [ \"$release_name\" != \"\$tag\" ]; then\n" +
-              "    echo \"Creating tag $release_name at commit $git_commit\"\n" +
-              "    git tag $release_name $git_commit\n" +
+              "    echo \"Creating tag $release_name at commit $commit\"\n" +
+              "    git tag $release_name $commit\n" +
               "    git push origin tag $release_name\n" +
               "fi\n"
             )
@@ -2152,7 +2203,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--github-repo $env.TRIDENT_PUBLIC_GITHUB_REPO " +
                 "--github-user $env.GITHUB_USERNAME " +
                 "--release-name $release_name " +
-                "--release-hash $git_commit " +
+                "--release-hash $commit " +
                 "--tarball " +
                 "trident-installer-${env.TRIDENT_VERSION}.tar.gz'"
             )
@@ -2169,7 +2220,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--github-user $env.GITHUB_USERNAME " +
                 "--prerelease " +
                 "--release-name ${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION} " +
-                "--release-hash $git_commit " +
+                "--release-hash $commit " +
                 "--tarball " +
                 "trident-installer-${env.TRIDENT_VERSION}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION}.tar.gz'"
             )
@@ -2214,7 +2265,13 @@ def _build_trident(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage has completed', status)
+        if (env.DEPLOY_TRIDENT) {
+          echo "DEPLOY_TRIDENT=true, skipping Github notification"
+        } else if (env.BLACK_DUCK_SCAN) {
+          echo "BLACK_DUCK_SCAN=true, skipping Github notification"
+        } else {
+          _notify_github(spec, commit, name, 'Stage has completed', status)
+        }
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -2261,10 +2318,6 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
       // Initialize the result file for this stage
       _initialize_status_file(name, status)
 
-      // Define a var to hold the git commit hash
-      def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-      def git_commit = sh(label: "Retrieve git commit hash", returnStdout: true, script: cmd).trim()
-
       try {
 
         sh (
@@ -2278,7 +2331,7 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         )
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage is running', status)
+        _notify_github(spec, commit, name, 'Stage is running', status)
 
         if (spec['vm_provider'] == 'SCS') {
 
@@ -2466,7 +2519,7 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage has completed', status)
+        _notify_github(spec, commit, name, 'Stage has completed', status)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -2507,10 +2560,6 @@ def _unit_test(String name, String ssh_options, Map spec) {
       // Initialize the result file for this stage
       _initialize_status_file(name, status)
 
-      // Define a var to hold the git commit hash
-      def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-      def git_commit = sh(label: "Retrieve git commit hash", returnStdout: true, script: cmd).trim()
-
       try {
 
         // Create a working dir for this spec
@@ -2521,7 +2570,7 @@ def _unit_test(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage is running', status)
+        _notify_github(spec, commit, name, 'Stage is running', status)
 
         // Create SCS VM(s) and create attribe variables we can use later
         def request = spec['request']
@@ -2719,7 +2768,7 @@ fi
         }
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage has completed', status)
+        _notify_github(spec, commit, name, 'Stage has completed', status)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -2769,10 +2818,6 @@ def _whelk_test(String name, String ssh_options, Map spec) {
       // Initialize the result file for this stage
       _initialize_status_file(name, status)
 
-      // Define a var to hold the git commit hash
-      def cmd = "cd $env.WORKSPACE/src/github.com/netapp/trident;git rev-parse HEAD"
-      def git_commit = sh(label: "Retrieve git commit hash", returnStdout: true, script: cmd).trim()
-
       try {
 
         sh (
@@ -2788,7 +2833,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage is running', status)
+        _notify_github(spec, commit, name, 'Stage is running', status)
 
         if (spec['vm_provider'] == 'SCS') {
 
@@ -2955,7 +3000,6 @@ def _whelk_test(String name, String ssh_options, Map spec) {
             ip_address,
             target,
             scs_password,
-            git_commit,
             spec)
 
         } else if (test == 'kubeadm')  {
@@ -2970,7 +3014,6 @@ def _whelk_test(String name, String ssh_options, Map spec) {
             ip_address,
             target,
             scs_password,
-            git_commit,
             spec)
 
         } else if (test == 'ndvp_binary')  {
@@ -3012,7 +3055,6 @@ def _whelk_test(String name, String ssh_options, Map spec) {
           ip_address,
           target,
           scs_password,
-          git_commit,
           spec)
 
         } else if (test == 'upgrade')  {
@@ -3028,13 +3070,12 @@ def _whelk_test(String name, String ssh_options, Map spec) {
           ip_address,
           target,
           scs_password,
-          git_commit,
           spec)
 
         }
 
         // Run the whelk tests
-        _run_whelk_tests(name, ssh_options, ip_address, vm_path, git_commit, spec)
+        _run_whelk_tests(name, ssh_options, ip_address, vm_path, spec)
 
         // Set the status to success
         status = 'success'
@@ -3111,7 +3152,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, git_commit, name, 'Stage has completed', status)
+        _notify_github(spec, commit, name, 'Stage has completed', status)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -3262,25 +3303,25 @@ def _clone_from_github(url, credentials, branch, destination) {
 
 def _clone() {
 
+  // Some pipelines populate BRANCH_TYPE
   def branch_type = '*'
   if (env.BRANCH_TYPE) {
     branch_type = env.BRANCH_TYPE
   }
-  
+
+  // All pipelines populate BRANCH_NAME
   def branch_name = env.BRANCH_NAME
   if (env.BRANCH_NAME.contains('/')) {
     (branch_type, branch_name) = env.BRANCH_NAME.split('/')
   }
-  
-  def branch = "$branch_type/$branch_name"
+
+  branch = "$branch_type/$branch_name"
   if (branch_type == '*') {
     branch = branch_name
   }
 
   def private_org = env.TRIDENT_PRIVATE_GITHUB_ORG
   def private_repo = env.TRIDENT_PRIVATE_GITHUB_REPO
-  def public_org = env.TRIDENT_PUBLIC_GITHUB_ORG
-  def public_repo = env.TRIDENT_PUBLIC_GITHUB_REPO
   def user = env.GITHUB_USERNAME
   def token = env.GITHUB_TOKEN
 
@@ -3290,10 +3331,10 @@ def _clone() {
       label: "Full clone $branch for deployment",
       script: "git clone https://$user:$token@github.com/$private_org/$private_repo -b $branch src/github.com/netapp/trident"
     )
-  } else { 
-  
-    echo "Clone trident $branch_type/$branch_name"
-    
+  } else {
+
+    echo "Clone trident $branch"
+
     // Create the directory for the trident source since it's unclear hot to
     // call checkout scm with a destination dir
     def jenkins_trident_src = 'src/github.com/netapp/trident'
@@ -3302,70 +3343,90 @@ def _clone() {
       script: "mkdir -p $jenkins_trident_src"
     )
     sh (label: "Sleep", script: "sleep 1")
-  
+
     // Change to the directory we just created and call checkout scm
     // We need to use checkout scm becasue it handles PRs
-    def commit_hash = ''
     dir(jenkins_trident_src) {
-      checkout scm
-    
-      sh (label: "Sleep", script: "sleep 1")
-    
-      if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-        commit_hash = sh(
-          label: "Get git hash from the jenkins checkout",
-          returnStdout: true,
-          script: "git rev-parse HEAD"
-        ).trim()
-      }
+      def co = checkout scm
+      commit = co.GIT_COMMIT
     }
 
     def full_trident_src = 'src2/github.com/netapp/trident'
     sh (
-      label: "Full clone for change processing",
+      label: "Full clone master for change processing",
       script: "git clone https://$user:$token@github.com/$private_org/$private_repo $full_trident_src"
     )
 
-    sh (label: "Sleep", script: "sleep 1")
-
     if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-      dir(full_trident_src) {
+      def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
+        "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
+        "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
+      def response = sh(
+        label: "Query Github for $env.BRANCH_NAME",
+        returnStdout: true,
+        script: cmd
+      ).trim()
+  
+      def pr = readJSON text: response
 
-        // src2/github.com/netapp/trident$ git name-rev b50c870e0d0546eed138cc29f224ccab1472a217
-        // b50c870e0d0546eed138cc29f224ccab1472a217 remotes/origin/doc-change-detection
-        def output = sh(
-          label: "Get branch name from commit hash",
-          returnStdout: true,
-          script: "git name-rev $commit_hash || true",
-        ).trim()
-        
-        if (output.contains('/')) {
-          def fields = output.split('/')
-          branch_name = fields.last()
-          echo "Detected $branch_name from commit hash $commit_hash"
-        }
+      if (pr.containsKey('head') == false) {
+        error "Error getting the PR info from Github for $env.BRANCH_NAME"
       }
+
+      branch = pr['head']['ref']
+
+      echo "The branch name for $env.BRANCH_NAME is $branch"
+  
+      commit = pr['head']['sha']
+
     }
+
+  }
+
+  echo "The commit hash for $env.BRANCH_NAME is $commit"
+
+  def fallback_branch = "master"
+  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+    fallback_branch = env.CHANGE_TARGET
   }
 
   // Try to checkout the corresponding tools branch and if that fails fall
   // back to use the master branch
+  echo "Clone tools $branch"
   try {
-    echo "Clone tools $branch_type/$branch_name"
     _clone_from_github(
       env.TOOLS_PRIVATE_GITHUB_URL,
       env.GITHUB_CREDENTIAL_ID,
-      "$branch_type/$branch_name",
+      branch,
       'tools')
-  } catch(Exception e) {
-    echo "Clone tools */master"
-    sh (label: "Remove tools directory", script: "rm -rf tools")
-    sh (label: "Sleep", script: "sleep 1")
-     _clone_from_github(
-       env.TOOLS_PRIVATE_GITHUB_URL,
-       env.GITHUB_CREDENTIAL_ID,
-       '*/master',
-       'tools')
+  } catch(Exception e1) {
+    echo "Clone tools $fallback_branch"
+    try {
+      sh (label: "Remove tools directory", script: "rm -rf tools")
+      sh (label: "Sleep", script: "sleep 1")
+       _clone_from_github(
+         env.TOOLS_PRIVATE_GITHUB_URL,
+         env.GITHUB_CREDENTIAL_ID,
+         fallback_branch,
+         'tools')
+    } catch(Exception e2) {
+      if (fallback_branch != 'master') {
+        echo "Clone tools master"
+        try {
+          sh (label: "Remove tools directory", script: "rm -rf tools")
+          sh (label: "Sleep", script: "sleep 1")
+           _clone_from_github(
+             env.TOOLS_PRIVATE_GITHUB_URL,
+             env.GITHUB_CREDENTIAL_ID,
+             'master',
+             'tools')
+        } catch(Exception e3) {
+          error "Error cloning tools"
+        }
+      } else {
+        error "Error cloning tools"
+      }
+    }
   }
 
   sh (
@@ -3377,22 +3438,41 @@ def _clone() {
 
     // Try to checkout the corresponding whelk branch and if that failed fall
     // back to use the master branch
+    echo "Clone whelk $branch"
     try {
-      echo "Clone whelk $branch_type/$branch_name"
       _clone_from_github(
         env.WHELK_PRIVATE_GITHUB_URL,
         env.GITHUB_CREDENTIAL_ID,
-        "$branch_type/$branch_name",
+        branch,
         'test')
-    } catch(Exception e) {
-       echo "Clone whelk master"
-       sh (label: "Remove test directory", script: "rm -rf test")
-       sh (label: "Sleep", script: "sleep 1")
-       _clone_from_github(
-         env.WHELK_PRIVATE_GITHUB_URL,
-         env.GITHUB_CREDENTIAL_ID,
-         '*/master',
-         'test')
+    } catch(Exception e1) {
+      echo "Clone whelk $fallback_branch"
+      try {
+         sh (label: "Remove test directory", script: "rm -rf test")
+         sh (label: "Sleep", script: "sleep 1")
+         _clone_from_github(
+           env.WHELK_PRIVATE_GITHUB_URL,
+           env.GITHUB_CREDENTIAL_ID,
+           fallback_branch,
+           'test')
+      } catch(Exception e2) {
+        if (fallback_branch != 'master') {
+          echo "Clone whelk master"
+          try {
+            sh (label: "Remove test directory", script: "rm -rf test")
+            sh (label: "Sleep", script: "sleep 1")
+            _clone_from_github(
+              env.WHELK_PRIVATE_GITHUB_URL,
+              env.GITHUB_CREDENTIAL_ID,
+              'master',
+              'test')
+          } catch(Exception e3) {
+            error "Error cloning whelk"
+          }
+        } else {
+          error "Error cloning whelk"
+        }
+      }
     }
 
     // Clone the csi-sanity source
@@ -3676,20 +3756,6 @@ def _create_cleanup_script(Map spec, String name, String purpose, String ip_addr
 
 }
 
-def _get_image(String ssh_options, String ip_address, String regexp) {
-
-  // Get the trident image string
-  def cmd = "ssh $ssh_options root@$ip_address 'docker images | grep \'$regexp\''"
-  def output = sh(
-    label: "List docker images matching $regexp",
-    returnStdout: true,
-    script: cmd).trim()
-
-  def fields = output.split()
-  def image = fields[0] + ':' + fields[1]
-  return image
-}
-
 def _csi_sanity_config(
   String name,
   String ssh_options,
@@ -3729,7 +3795,6 @@ def _docker_ee_config(
   String ip_address,
   String target,
   String scs_password,
-  String git_commit,
   Map spec) {
 
     def image = sh(returnStdout: true, script: 'cat trident_docker_image.log').trim()
@@ -3762,8 +3827,8 @@ def _docker_ee_config(
     }
 
     // Determine the trident installer name
-    // trident-installer-19.04.0-test.45f6134d001c420f4cb2bf2d58eb03ebb31e70f2.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + git_commit + '.tar.gz'
+    // trident-installer-19.04.0-test.trident-ci_master.tar.gz
+    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -3877,6 +3942,137 @@ def _docker_ee_config(
     return backends_configured
 }
 
+def _gather_triage_information(Map spec, String ssh_options, String ip_address, String name, String vm_path) {
+
+  if (_whelk_test_match(spec, 'docker_ee|kubeadm|openshift|upgrade')) {
+
+    try {
+      sh (
+        label: "Execute journalctl -u kube*",
+        script: "ssh $ssh_options root@$ip_address 'journalctl -u kube* > $vm_path/kubernetes.log'"
+      )
+      sh (label: "Sleep", script: "sleep 1")
+    } catch(Exception e) {
+      echo "Error executing journalctl -u kube*"
+    } finally {
+      _scp(
+        ssh_options,
+        'root',
+        ip_address,
+        "$vm_path/kubernetes.log",
+        name,
+        false,
+        false,
+        false
+      )
+    }
+
+    try {
+      def cmd = "'cd $vm_path;tridentctl logs -a "
+      if (_whelk_test_match(spec, 'docker_ee')) {
+        cmd = (
+          "'export DOCKER_TLS_VERIFY=1;" +
+          "export COMPOSE_TLS_VERSION=TLSv1_2;" +
+          "export DOCKER_CERT_PATH=/root;" +
+          "export DOCKER_HOST=tcp://$ip_address:443;" +
+          "export KUBECONFIG=/root/kube.yml;" +
+          "cd $vm_path;tridentctl logs -a "
+        )
+      }
+      if (_whelk_test_match(spec, 'docker_ee|kubeadm')) {
+        cmd += "-n trident"
+      } else if (_whelk_test_match(spec, 'openshift')) {
+        cmd += "-n myproject"
+      }
+      cmd += "'"
+
+      sh (
+        label: "Execute tridentctl logs -a",
+        script: "ssh $ssh_options root@$ip_address $cmd"
+      )
+
+      sh (label: "Sleep", script: "sleep 1")
+    } catch(Exception e) {
+      echo "Error executing tridentctl logs -a"
+    } finally {
+      _scp(
+        ssh_options,
+        'root',
+        ip_address,
+        "$vm_path/support*.zip",
+        name,
+        false,
+        false,
+        false
+      )
+    }
+  }
+
+  def os = sh (
+    label: "Get the OS name from os-release",
+    returnStdout: true,
+    script: "ssh $ssh_options root@$ip_address 'grep \"^NAME=\" /etc/os-release'"
+  ).trim()
+
+  if (os.contains('Ubuntu')) {
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "/var/log/kern.log",
+      name,
+      false,
+      false,
+      false
+    )
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "/var/log/syslog",
+      name,
+      false,
+      false,
+      false
+    )
+  } else if (os.contains('CentOS')) {
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "/var/log/dmesg",
+      name,
+      false,
+      false,
+      false
+    )
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "/var/log/messages",
+      name,
+      false,
+      false,
+      false
+    )
+  }
+}
+
+def _get_image(String ssh_options, String ip_address, String regexp) {
+
+  // Get the trident image string
+  def cmd = "ssh $ssh_options root@$ip_address 'docker images | grep \'$regexp\''"
+  def output = sh(
+    label: "List docker images matching $regexp",
+    returnStdout: true,
+    script: cmd).trim()
+
+  def fields = output.split()
+  def image = fields[0] + ':' + fields[1]
+  return image
+}
+
 def _initialize_status_file(String name, String status) {
 
   sh (
@@ -3899,7 +4095,6 @@ def _kubeadm_config(
   String ip_address,
   String target,
   String scs_password,
-  String git_commit,
   Map spec) {
 
     def image = sh(returnStdout: true, script: 'cat trident_docker_image.log').trim()
@@ -3932,8 +4127,8 @@ def _kubeadm_config(
     }
 
     // Determine the trident installer name
-    // trident-installer-19.04.0-test.45f6134d001c420f4cb2bf2d58eb03ebb31e70f2.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + git_commit + '.tar.gz'
+    // trident-installer-19.04.0-test.trident-ci_master.tar.gz
+    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -4005,7 +4200,7 @@ def _kubeadm_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=kubeadm ' +
-        'namespace=trident ' + 
+        'namespace=trident ' +
         'remote_path=' + vm_path + '\'']
     } else {
       options = [
@@ -4144,7 +4339,7 @@ def _ndvp_plugin_config(
 }
 
 
-def _notify_github(Map spec, String git_commit, String dir, String description, String state) {
+def _notify_github(Map spec, String commit, String dir, String description, String state) {
 
   def name = spec['name']
   if (fileExists(dir) == false) {
@@ -4161,7 +4356,7 @@ def _notify_github(Map spec, String git_commit, String dir, String description, 
     script: "curl -s -S -H \"Authorization: token $env.GITHUB_TOKEN\" --request POST --data " +
     "'{\"state\": \"$state\", \"context\": \"$name\", \"description\": " +
     "\"$description\", \"target_url\": \"$env.BUILD_URL\"}' " +
-    "$env.TRIDENT_GITHUB_STATUS_URL/$git_commit > $dir/notify_github_${state}.log 2>&1"
+    "$env.TRIDENT_GITHUB_STATUS_URL/$commit > $dir/notify_github_${state}.log 2>&1"
   )
 
 }
@@ -4191,7 +4386,6 @@ def _openshift_config(
   String ip_address,
   String target,
   String scs_password,
-  String git_commit,
   Map spec) {
 
     def image = sh(returnStdout: true, script: 'cat trident_docker_image.log').trim()
@@ -4224,8 +4418,8 @@ def _openshift_config(
     }
 
     // Determine the trident installer name
-    // trident-installer-19.04.0-test.45f6134d001c420f4cb2bf2d58eb03ebb31e70f2.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + git_commit + '.tar.gz'
+    // trident-installer-19.04.0-test.trident-ci_master.tar.gz
+    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -4297,7 +4491,7 @@ def _openshift_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=openshift ' +
-        'namespace=myproject ' + 
+        'namespace=myproject ' +
         'remote_path=' + vm_path + '\'']
     } else {
       options = [
@@ -4305,7 +4499,7 @@ def _openshift_config(
         '\'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=openshift ' +
-        'namespace=myproject ' + 
+        'namespace=myproject ' +
         'remote_path=' + vm_path + '\'']
     }
 
@@ -4353,17 +4547,11 @@ def _print_hold_jig_message() {
     (job_name) = jn.split('/')
   }
 
-  // Get the branch name if it eixsts otherwise use master
-  def branch_name = 'master'
-  if(env.BRANCH_NAME) {
-      branch_name = env.BRANCH_NAME
-  }
-
   // Display the message
   echo ("HOLD_JIG is set to $hold_jig, skipping stage cleanup.\n" +
         "When you are done debugging run:\n" +
         "tools/utils/ci_cleanup_by_artifact.sh $url " +
-        "$job_name $branch_name $env.BUILD_NUMBER")
+        "$job_name $branch $env.BUILD_NUMBER")
 }
 
 def _propagate_changes() {
@@ -4397,12 +4585,11 @@ def _propagate_changes() {
       }
     }
     echo "Based on test status propagation is $propagate"
-    def branch_name = env.BRANCH_NAME
 
     // If all the tests are success and the branch name is master or stable/*
     // propagate the commit to the public repo
 
-    if (propagate && (branch_name == 'master' || branch_name.startsWith('stable'))) {
+    if (propagate && (branch == 'master' || branch.startsWith('stable'))) {
 
       def name = "Propagate-Changes"
       try {
@@ -4415,7 +4602,6 @@ def _propagate_changes() {
         def public_repo = env.TRIDENT_PUBLIC_GITHUB_REPO
         def user = env.GITHUB_USERNAME
         def token = env.GITHUB_TOKEN
-        def branch = env.BRANCH_NAME
 
         sh (
           label: "Create directory $env.WORKSPACE/$name",
@@ -4426,8 +4612,7 @@ def _propagate_changes() {
 
         // Create the propagate.sh script
         def content = (
-          "sleep 1\n" +
-          "cd src2/github.com/netapp/trident\n" +
+          "cd $env.WORKSPACE/src2/github.com/netapp/trident\n" +
           "git checkout $branch\n" +
           "git status\n" +
           "git show-ref\n" +
@@ -4457,8 +4642,8 @@ def _propagate_changes() {
       // Explain why there is no propagation
       echo ("Skipping change propagation due to one or more of the following reasons: \n" +
             "- One or more tests failed \n" +
-            "- The current branch name $branch_name is not master \n" +
-            "- The current branch name $branch_name does not start with stable")
+            "- The current branch name $branch is not master \n" +
+            "- The current branch name $branch does not start with stable")
     }
   }
 }
@@ -4565,6 +4750,7 @@ def _run_csi_sanity_tests(String name, String ssh_options, String ip_address, St
     } catch(Exception e) {
       echo "Failed to copy $name/csi_sanity.xml"
     }
+
   }
 }
 
@@ -4596,7 +4782,7 @@ def _run_playbook(String name, String playbook, String target, List options=[]){
   }
 }
 
-def _run_whelk_tests(String name, String ssh_options, String ip_address, String vm_path, String git_commit, Map spec) {
+def _run_whelk_tests(String name, String ssh_options, String ip_address, String vm_path, Map spec) {
 
   def test = spec['test']
   try {
@@ -4667,7 +4853,7 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
         label: "Execute run_plugin_tests.sh on $ip_address",
         script: "ssh $ssh_options root@$ip_address " +
           "'cd $vm_path/test;" +
-          "$vm_path/test/run_plugin_tests.sh -i $env.DOCKER_REGISTRY/trident-plugin:$git_commit > " +
+          "$vm_path/test/run_plugin_tests.sh -i $env.PRIVATE_DOCKER_REGISTRY/trident-plugin:$env.BUILD_TAG > " +
           "$vm_path/test/whelk_stdout.log 2>&1'"
         )
     }
@@ -4691,8 +4877,8 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
     if (test == 'upgrade') {
 
       // Determine the trident installer name
-      // trident-installer-19.04.0-test.45f6134d001c420f4cb2bf2d58eb03ebb31e70f2.tar.gz
-      def cmd = 'ls trident-installer-*-test.' + git_commit + '.tar.gz'
+      // trident-installer-19.04.0-test.trident-ci_master.tar.gz
+      def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
       def installer = sh(
         label: cmd,
         returnStdout: true,
@@ -4756,7 +4942,7 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
       )
 
     } catch(Exception e) {
-      echo "Failure coping whelk logs"
+      echo "Error removing whelk_color.log"
     }
 
     _scp(
@@ -4780,6 +4966,9 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
     } catch(Exception e) {
       echo "Failure copying $name/nosetests.xml"
     }
+
+    _gather_triage_information(spec, ssh_options, ip_address, name, vm_path)
+
   }
 }
 
@@ -4915,15 +5104,28 @@ def _scs_create(String name, String request, String purpose) {
 
 def _scs_delete(String purpose) {
 
-  sh (
-    label: "Delete SCS VMs",,
-    script: "python3 tools/utils/scs.py " +
-      "--action delete-vms " +
-      "--endpoint $env.SCS_ENDPOINT " +
-      "--token $env.SCS_TOKEN " +
-      "--user $env.SCS_USERNAME " +
-      "--purpose $purpose"
-  )
+  def attempt = 0
+  def deleted = false
+  while(deleted == false && attempt < 3) {
+    attempt++
+    try {
+      sh (
+        label: "Delete SCS VMs attempt #" + attempt + "/3",
+        script: "python3 tools/utils/scs.py " +
+          "--action delete-vms " +
+          "--endpoint $env.SCS_ENDPOINT " +
+          "--token $env.SCS_TOKEN " +
+          "--user $env.SCS_USERNAME " +
+          "--purpose $purpose"
+      )
+      deleted = true
+    } catch(Exception e) {
+      if(attempt == 3) {
+        error "Failed to delete VMs after 3 attempts"
+      }
+      sh (label: "Sleep", script: "sleep 10")
+    }
+  }
 }
 
 def _setup_backends(String ssh_options, String ip_address, String name, String vm_path, String dst_path) {
@@ -4988,7 +5190,6 @@ def _upgrade_config(
   String ip_address,
   String target,
   String scs_password,
-  String git_commit,
   Map spec) {
 
     def image = sh(returnStdout: true, script: 'cat trident_docker_image.log').trim()
@@ -5021,8 +5222,8 @@ def _upgrade_config(
     }
 
     // Determine the trident installer name
-    // trident-installer-19.04.0-test.45f6134d001c420f4cb2bf2d58eb03ebb31e70f2.tar.gz
-    cmd = 'ls trident-installer-*-test.' + git_commit + '.tar.gz'
+    // trident-installer-19.04.0-test.trident-ci_master.tar.gz
+    cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -5184,17 +5385,6 @@ def _get_hostname_from_fqdn(String line) {
 }
 
 @NonCPS
-def _stage_name_match(Map spec, String regexp) {
-
-  def m = spec['name'] =~ /$regexp/
-  if (m) {
-    return true
-  } else {
-    return false
-  }
-}
-
-@NonCPS
 def _parse_testsuite_line(String line) {
 
   def errors = 0
@@ -5219,3 +5409,24 @@ def _parse_testsuite_line(String line) {
   return [tests, errors, failures]
 }
 
+@NonCPS
+def _stage_name_match(Map spec, String regexp) {
+
+  def m = spec['name'] =~ /$regexp/
+  if (m) {
+    return true
+  } else {
+    return false
+  }
+}
+
+@NonCPS
+def _whelk_test_match(Map spec, String regexp) {
+
+  def m = spec['test'] =~ /$regexp/
+  if (m) {
+    return true
+  } else {
+    return false
+  }
+}
