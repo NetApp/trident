@@ -862,6 +862,10 @@ node {
   ]
 
   if (env.BLACK_DUCK_SCAN) {
+    if (env.BLACK_DUCK_PROJECT_VERSION == null) {
+      error "BLACK_DUCK_PROJECT_VERSION must be the " +
+        "trident version in the form of X.Y.Z"
+    }
     plan = [
       [
         [
@@ -2097,7 +2101,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--detect.code.location.name=$code_location_name " +
                 "--detect.bom.aggregate.name=$bom_aggregate_name " +
                 "--logging.level.com.blackducksoftware.integration=$env.BLACK_DUCK_SOFTWARE_INTEGRATION " +
-                "--detect.blackduck.signature.scanner.paths=$vm_path/go/src/github.com/netapp/trident > black_duck.log 2>&1'"
+                "--detect.blackduck.signature.scanner.paths=$vm_path/go/src/github.com/netapp/trident > black_duck.log 2>&1 || true'"
             )
 
           } catch(Exception e) {
