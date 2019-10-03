@@ -42,7 +42,7 @@ node {
       [
         'name': 'Build-Trident',
         'context': 'openlab',
-        'coverage': 'docker-ee,kubeadm,docker-volume-binary,docker-volume-plugin,openshift,pre-merge,post-commit,upgrade',
+        'coverage': 'docker-ee,kubeadm,kubeadm-legacy,docker-volume-binary,docker-volume-plugin,openshift,pre-merge,post-commit,upgrade',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -858,6 +858,60 @@ node {
         'trident_install_playbook': 'ci_trident.playbook',
         'vm_provider': 'SCS'
       ],
+      [
+        'name': 'KubeAdm-1.14-CentOS-Solidfire-SAN',
+        'backend': 'solidfire-san',
+        'context': 'openlab',
+        'coverage': 'kubeadm-legacy',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': 'v1.14.6',
+        'k8s_api_version': 'kubeadm.k8s.io/v1beta1',
+        'k8s_cni_version': '0.7.5*',
+        'kubeadm_version': '1.14.6*',
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'solidfire-san': [
+            'username': env.SOLIDFIRE_KUBEADM_USERNAME,
+            'password': env.SOLIDFIRE_KUBEADM_PASSWORD,
+            'mvip': env.SOLIDFIRE_MVIP,
+            'svip': env.SOLIDFIRE_SVIP
+        ],
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'KubeAdm-1.15-CentOS-Solidfire-SAN',
+        'backend': 'solidfire-san',
+        'context': 'openlab',
+        'coverage': 'kubeadm-legacy',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': 'v1.15.4',
+        'k8s_api_version': 'kubeadm.k8s.io/v1beta1',
+        'k8s_cni_version': '0.7.5*',
+        'kubeadm_version': '1.15.4*',
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'solidfire-san': [
+            'username': env.SOLIDFIRE_KUBEADM_USERNAME,
+            'password': env.SOLIDFIRE_KUBEADM_PASSWORD,
+            'mvip': env.SOLIDFIRE_MVIP,
+            'svip': env.SOLIDFIRE_SVIP
+        ],
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS'
+      ]
     ]
   ]
 

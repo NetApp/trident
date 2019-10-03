@@ -3,6 +3,7 @@
 package persistentstore
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -10,7 +11,6 @@ import (
 
 	etcdclientv2 "github.com/coreos/etcd/client"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"

@@ -19,8 +19,8 @@ import (
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	"k8s.io/client-go/rest"
-	"k8s.io/kubernetes/pkg/apis/policy"
 
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -1221,7 +1221,7 @@ func validateTridentPodSecurityPolicy() error {
 	if !spec.Privileged {
 		return fmt.Errorf("trident's pod security policy must allow privileged pods")
 	}
-	if !spec.AllowPrivilegeEscalation {
+	if spec.AllowPrivilegeEscalation != nil && !*spec.AllowPrivilegeEscalation {
 		return fmt.Errorf("trident's pod security policy must allow privilege escalation")
 	}
 	if !spec.HostIPC {

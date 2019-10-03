@@ -3,6 +3,7 @@
 package csi
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
@@ -341,8 +341,8 @@ func (p *Plugin) ControllerUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
 	}
 
-	// Make sure volume exists
-	if _, err := p.orchestrator.GetVolume(volumeID); err != nil {
+	// Check if volume exists.  If not, return success.
+	if _, err := p.orchestrator.GetVolume(volumeID); err != nil && !core.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 

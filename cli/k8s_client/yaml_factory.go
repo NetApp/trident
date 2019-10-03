@@ -116,7 +116,7 @@ rules:
     verbs: ["get", "list", "watch", "update"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update"]
+    verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots", "volumesnapshotclasses"]
     verbs: ["get", "list", "watch", "update", "patch"]
@@ -298,11 +298,13 @@ func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils
 	case 13:
 		deploymentYAML = csiDeployment113YAMLTemplate
 	case 14:
-		deploymentYAML = csiDeployment114YAMLTemplate
+		fallthrough
 	case 15:
+		deploymentYAML = csiDeployment114YAMLTemplate
+	case 16:
 		fallthrough
 	default:
-		deploymentYAML = csiDeployment115YAMLTemplate
+		deploymentYAML = csiDeployment116YAMLTemplate
 	}
 
 	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
@@ -495,7 +497,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.2.1
+        image: quay.io/k8scsi/csi-provisioner:v1.3.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -507,10 +509,11 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v1.1.1
+        image: quay.io/k8scsi/csi-attacher:v2.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
+        - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -541,7 +544,7 @@ spec:
           secretName: trident-csi
 `
 
-const csiDeployment115YAMLTemplate = `---
+const csiDeployment116YAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -615,7 +618,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v1.2.0
+        image: quay.io/k8scsi/csi-attacher:v2.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -766,6 +769,11 @@ spec:
       nodeSelector:
         beta.kubernetes.io/os: linux
         beta.kubernetes.io/arch: amd64
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
       volumes:
       - name: plugin-dir
         hostPath:
@@ -866,7 +874,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
+        image: quay.io/k8scsi/csi-node-driver-registrar:v1.2.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -888,6 +896,11 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
       volumes:
       - name: plugin-dir
         hostPath:

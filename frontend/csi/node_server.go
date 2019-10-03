@@ -3,6 +3,7 @@
 package csi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,7 +16,6 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -33,9 +33,9 @@ func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 
-	context := "NodeStageVolume"
-	utils.Lock(context, lockID)
-	defer utils.Unlock(context, lockID)
+	lockContext := "NodeStageVolume"
+	utils.Lock(lockContext, lockID)
+	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeStageVolume")
@@ -55,9 +55,9 @@ func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
-	context := "NodeUnstageVolume"
-	utils.Lock(context, lockID)
-	defer utils.Unlock(context, lockID)
+	lockContext := "NodeUnstageVolume"
+	utils.Lock(lockContext, lockID)
+	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeUnstageVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
@@ -97,9 +97,9 @@ func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 
-	context := "NodePublishVolume"
-	utils.Lock(context, lockID)
-	defer utils.Unlock(context, lockID)
+	lockContext := "NodePublishVolume"
+	utils.Lock(lockContext, lockID)
+	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodePublishVolume")
@@ -119,9 +119,9 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 
-	context := "NodeUnpublishVolume"
-	utils.Lock(context, lockID)
-	defer utils.Unlock(context, lockID)
+	lockContext := "NodeUnpublishVolume"
+	utils.Lock(lockContext, lockID)
+	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	log.WithFields(fields).Debug(">>>> NodeUnpublishVolume")

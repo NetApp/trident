@@ -3,6 +3,7 @@
 package persistentstore
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -17,7 +18,6 @@ import (
 	//TODO: Change for the later versions of etcd (etcd v3.1.5 doesn't return any error for unfound keys but later versions do)
 	//"github.com/coreos/etcd/etcdserver"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"

@@ -1,5 +1,5 @@
-hash: b22a5f0c927c3f1d6ceac663508ef451178214e7d16e960ec9c588f5382aef90
-updated: 2019-10-01T14:44:49.800590914-04:00
+hash: dbfdb1c07baa0c5156a822627354afa59961fa63a114c7f1e6e4165d0dd0133a
+updated: 2019-10-07T09:22:06.232470968-04:00
 imports:
 - name: contrib.go.opencensus.io/exporter/ocagent
   version: a8a6f458bbc1d5042322ad1f9b65eeb0b69be9ea
@@ -41,19 +41,28 @@ imports:
   subpackages:
   - lib/go/csi
 - name: github.com/coreos/etcd
-  version: 98d308426819d892e149fe45f6fd542464cb1f9d
+  version: 94745a4eed0425653b3b4275a208d38babceeaec
   subpackages:
   - auth/authpb
   - client
   - clientv3
+  - clientv3/balancer
+  - clientv3/balancer/connectivity
+  - clientv3/balancer/picker
+  - clientv3/balancer/resolver/endpoint
   - clientv3/concurrency
+  - clientv3/credentials
   - etcdserver
   - etcdserver/api/v3rpc/rpctypes
   - etcdserver/etcdserverpb
   - mvcc/mvccpb
+  - pkg/logutil
   - pkg/pathutil
   - pkg/srv
+  - pkg/systemd
   - pkg/types
+  - raft
+  - raft/raftpb
   - version
 - name: github.com/coreos/go-semver
   version: e214231b295a8ea9479f11b70b35d5acf3556d9b
@@ -63,12 +72,17 @@ imports:
   version: 39ca1b05acc7ad1220e09f133283b8859a8b71ab
   subpackages:
   - activation
+  - journal
+- name: github.com/coreos/pkg
+  version: 97fdf19511ea361ae1c100dd393cc47f8dcfa1e1
+  subpackages:
+  - capnslog
 - name: github.com/davecgh/go-spew
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
   - spew
 - name: github.com/dgrijalva/jwt-go
-  version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
+  version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
 - name: github.com/dimchansky/utfbom
   version: d2133a1ce379ef6fa992b0514a77146c60db9d1c
 - name: github.com/docker/go-connections
@@ -95,7 +109,7 @@ imports:
 - name: github.com/go-logfmt/logfmt
   version: 07c9b44f60d7ffdfb7d8efe1ad539965737836dc
 - name: github.com/gogo/protobuf
-  version: 342cbe0a04158f6dcb03ca0079991a51a4248c02
+  version: 65acae22fc9d1fe290b33faa2bd64cdc20a463a0
   subpackages:
   - gogoproto
   - proto
@@ -128,7 +142,7 @@ imports:
   - cmp/internal/function
   - cmp/internal/value
 - name: github.com/google/gofuzz
-  version: 24818f796faf91cd76ec7bddd72458fbced7a6c1
+  version: f140a6486e521aad38f5917de355cbf147cc0496
 - name: github.com/google/uuid
   version: 0cd6bf5da1e1c83f8b45653022c74f71af0538a4
 - name: github.com/googleapis/gnostic
@@ -137,8 +151,6 @@ imports:
   - OpenAPIv2
   - compiler
   - extensions
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
 - name: github.com/grpc-ecosystem/grpc-gateway
@@ -148,7 +160,7 @@ imports:
   - runtime/internal
   - utilities
 - name: github.com/hashicorp/golang-lru
-  version: 20f1fb78b0740ba8c3cb143a61e86ba5c8669768
+  version: 7087cb70de9f7a8bc0a10c375cb0d2280a8edf9c
   subpackages:
   - simplelru
 - name: github.com/imdario/mergo
@@ -156,7 +168,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/json-iterator/go
-  version: ab8a2e0c74be9d3be70b3184d9acc634935ded82
+  version: 27518f6661eba504be5a7a9a9f6d9460d892ade3
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: f55edac94c9bbba5d6182a4be46d86a2c9b5b50e
 - name: github.com/kr/logfmt
@@ -186,7 +198,7 @@ imports:
 - name: github.com/philhofer/fwd
   version: bb6d471dc95d4fe11e432687f8b70ff496cf3136
 - name: github.com/RoaringBitmap/roaring
-  version: df298267d3e5c232b8b7bdf28d891d0b57253843
+  version: 4676818d7478f72f5041418f5afbb15a5080dbb7
 - name: github.com/rs/xid
   version: 15d26544def341f036c5f8dca987a4cbe575032c
 - name: github.com/sirupsen/logrus
@@ -206,7 +218,7 @@ imports:
 - name: github.com/willf/bitset
   version: 04e62ff6a0bf1233cd03086e5757172bd9b7d6ef
 - name: go.opencensus.io
-  version: fa651b05963cfb6060755dc887e7d156ba66e792
+  version: df6e2001952312404b06f5f6f03fcb4aec1648e5
   subpackages:
   - internal
   - internal/tagencoding
@@ -225,6 +237,18 @@ imports:
   - trace/internal
   - trace/propagation
   - trace/tracestate
+- name: go.uber.org/atomic
+  version: 8dc6146f7569370a472715e178d8ae31172ee6da
+- name: go.uber.org/multierr
+  version: ddea229ff1dff9e6fe8a6c0344ac73b09e81fce5
+- name: go.uber.org/zap
+  version: 67bc79d13d155c02fd008f721863ff8cc5f30659
+  subpackages:
+  - buffer
+  - internal/bufferpool
+  - internal/color
+  - internal/exit
+  - zapcore
 - name: golang.org/x/crypto
   version: e84da0312774c21d64ee2317962ef669b27ffb41
   subpackages:
@@ -232,7 +256,7 @@ imports:
   - pkcs12/internal/rc2
   - ssh/terminal
 - name: golang.org/x/net
-  version: 65e2d4e15006aab9813ff8769e768bbf4bb667a0
+  version: cdfb69ac37fc6fa907650654115ebebb3aae2087
   subpackages:
   - context
   - context/ctxhttp
@@ -251,7 +275,7 @@ imports:
   subpackages:
   - semaphore
 - name: golang.org/x/sys
-  version: 1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded
+  version: 3b5209105503162ded1863c307ac66fec31120dd
   subpackages:
   - unix
   - windows
@@ -267,7 +291,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: 6a149848833881cf9a0f77f7595c64550f285d87
+  version: 067bed655e9cbc26f4dbac8f8897b30756d90990
   subpackages:
   - support/bundler
 - name: google.golang.org/appengine
@@ -281,26 +305,33 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/genproto
-  version: 09f6ed296fc66555a25fe4ce95173148778dfa85
+  version: e7d98fc518a78c9f8b5ee77be7b0b317475d89e1
   subpackages:
+  - googleapis/api/annotations
   - googleapis/rpc/status
 - name: google.golang.org/grpc
-  version: 168a6198bcb0ef175f7dacec0b8691fc141dc9b8
+  version: 2fdaae294f38ed9a121193c51ec99fecd3b13eb7
   subpackages:
   - balancer
   - balancer/base
   - balancer/roundrobin
+  - binarylog/grpc_binarylog_v1
   - codes
   - connectivity
   - credentials
+  - credentials/internal
   - encoding
   - encoding/proto
   - grpclog
-  - health/grpc_health_v1
   - internal
   - internal/backoff
+  - internal/binarylog
   - internal/channelz
+  - internal/envconfig
   - internal/grpcrand
+  - internal/grpcsync
+  - internal/syscall
+  - internal/transport
   - keepalive
   - metadata
   - naming
@@ -311,14 +342,14 @@ imports:
   - stats
   - status
   - tap
-  - transport
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: bb4e33bf68bf89cad44d386192cbed201f35b241
+  version: f221b8435cfb71e54062f6c6e99e9ade30b124d5
 - name: k8s.io/api
-  version: 7cf5895f2711098d7d9527db0a4a49fb0dff7de2
+  version: 95b840bb6a1f5f0462af804c8589396d294d4914
   subpackages:
+  - admissionregistration/v1
   - admissionregistration/v1beta1
   - apps/v1
   - apps/v1beta1
@@ -338,6 +369,7 @@ imports:
   - coordination/v1
   - coordination/v1beta1
   - core/v1
+  - discovery/v1alpha1
   - events/v1beta1
   - extensions/v1beta1
   - networking/v1
@@ -356,16 +388,19 @@ imports:
   - storage/v1alpha1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 14e95df34f1f469647f494f5185a036e26fddcab
+  version: 8f644eb6e783291c4b8cb8cb25a9983be1a74f5c
   subpackages:
   - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/v1
   - pkg/apis/apiextensions/v1beta1
   - pkg/client/clientset/clientset
   - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1
   - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
-  version: 1799e75a07195de9460b8ef7300883499f12127b
+  version: 27d36303b6556f377b4f34e64705fa9024a12b0c
   subpackages:
+  - pkg/api/equality
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
@@ -413,7 +448,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 78d2af792babf2dd937ba2e2a8d99c753a5eda89
+  version: 1fbdaa4c8d908275eee958429b1cafc2591a2c5d
   subpackages:
   - discovery
   - discovery/fake
@@ -421,6 +456,8 @@ imports:
   - kubernetes
   - kubernetes/fake
   - kubernetes/scheme
+  - kubernetes/typed/admissionregistration/v1
+  - kubernetes/typed/admissionregistration/v1/fake
   - kubernetes/typed/admissionregistration/v1beta1
   - kubernetes/typed/admissionregistration/v1beta1/fake
   - kubernetes/typed/apps/v1
@@ -459,6 +496,8 @@ imports:
   - kubernetes/typed/coordination/v1beta1/fake
   - kubernetes/typed/core/v1
   - kubernetes/typed/core/v1/fake
+  - kubernetes/typed/discovery/v1alpha1
+  - kubernetes/typed/discovery/v1alpha1/fake
   - kubernetes/typed/events/v1beta1
   - kubernetes/typed/events/v1beta1/fake
   - kubernetes/typed/extensions/v1beta1
@@ -526,12 +565,12 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/code-generator
-  version: 18da4a14b22b17d2fa761e50037fabfbacec225b
+  version: cd179ad6a2693011d6f2fa5cd64c6680ee99379f
   subpackages:
   - cmd/client-gen
   - cmd/deepcopy-gen
 - name: k8s.io/gengo
-  version: e17681d19d3ac4837a019ece36c2a0ec31ffe985
+  version: ebc107f98eab922ef99d645781b87caca01f4f48
   subpackages:
   - args
   - examples/deepcopy-gen/generators
@@ -540,18 +579,13 @@ imports:
   - namer
   - types
 - name: k8s.io/klog
-  version: 89e63fd5117f8c20208186ef85f096703a280c20
+  version: 3ca30a56d8a775276f9cdae009ba326fdc05af7f
 - name: k8s.io/kube-openapi
-  version: b3a7cee44a305be0a69e1b9ac03018307287e1b0
+  version: 743ec37842bffe49dd4221d9026f30fb1d5adbc4
   subpackages:
   - pkg/util/proto
-- name: k8s.io/kubernetes
-  version: e8462b5b5dc2584fdcd18e6bcfe9f1e4d970a529
-  subpackages:
-  - pkg/apis/core
-  - pkg/apis/policy
 - name: k8s.io/utils
-  version: c2654d5206da6b7b6ace12841e8f359bb89b443c
+  version: 581e00157fb1a0435d4fac54a52d1ca1e481d60e
   subpackages:
   - buffer
   - integer
