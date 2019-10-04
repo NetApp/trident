@@ -1,20 +1,19 @@
-hash: 5296e8f9fff802a16a3e49792a93432b0b57a9d9b3e8bbc081c48dc57035fd31
-updated: 2019-08-08T16:14:14.757086-04:00
+hash: b22a5f0c927c3f1d6ceac663508ef451178214e7d16e960ec9c588f5382aef90
+updated: 2019-10-01T14:44:49.800590914-04:00
 imports:
 - name: contrib.go.opencensus.io/exporter/ocagent
-  version: 8110e6c0236bb231b19119275a6be6ec666d05c8
+  version: a8a6f458bbc1d5042322ad1f9b65eeb0b69be9ea
 - name: github.com/Azure/azure-sdk-for-go
-  version: 784a56e5c68f892e337b82c8e1feb5fb6cd7a58a
+  version: 7a9d2769e4a581b0b1bc609c71b59af043e05c98
   subpackages:
-  - profiles/latest/netapp/mgmt/netapp
+  - profiles/2019-03-01/resources/mgmt/resources
   - profiles/latest/network/mgmt/network
-  - profiles/latest/resources/mgmt/resources
   - services/netapp/mgmt/2019-05-01/netapp
-  - services/network/mgmt/2019-02-01/network
-  - services/resources/mgmt/2019-03-01/resources
+  - services/network/mgmt/2019-06-01/network
+  - services/resources/mgmt/2018-05-01/resources
   - version
 - name: github.com/Azure/go-autorest
-  version: f29a2eccaa178b367df0405778cd85e0af7b4225
+  version: 880eb0e2aca291c40538ddef66e5914fb1cc1d7f
   subpackages:
   - autorest
   - autorest/adal
@@ -29,7 +28,7 @@ imports:
 - name: github.com/cenkalti/backoff
   version: 4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f
 - name: github.com/census-instrumentation/opencensus-proto
-  version: d89fa54de508111353cb0b06403c00569be780d8
+  version: 5cec5ea58c3efa81fa808f2bd38ce182da9ee731
   subpackages:
   - gen-go/agent/common/v1
   - gen-go/agent/metrics/v1
@@ -92,7 +91,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/glycerine/go-unsnap-stream
-  version: f9677308dec2b35e76737f9713df328ad11b1fea
+  version: 81cf024a9e0a906651886e23cb984a852a30b622
 - name: github.com/go-logfmt/logfmt
   version: 07c9b44f60d7ffdfb7d8efe1ad539965737836dc
 - name: github.com/gogo/protobuf
@@ -119,7 +118,7 @@ imports:
   - ptypes/timestamp
   - ptypes/wrappers
 - name: github.com/golang/snappy
-  version: 2a8bb927dd31d8daada140a5d09578521ce5c36a
+  version: ff6b7dc882cf4cfba7ee0b9f7dcc1ac096c554aa
 - name: github.com/google/go-cmp
   version: 6f77996f0c42f7b84e5a2b252227263f93432e9b
   subpackages:
@@ -165,7 +164,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: 703b5e6b11ae25aeb2af9ebb5d5fdf8fa2575211
 - name: github.com/Microsoft/go-winio
-  version: a969fb018bd3439cc50861ce06796c40430e3a65
+  version: fc70bd9a86b5562b3b5eb1040e803febee1e90a1
   subpackages:
   - pkg/guid
 - name: github.com/mitchellh/copystructure
@@ -195,9 +194,9 @@ imports:
 - name: github.com/spf13/cobra
   version: f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5
 - name: github.com/spf13/pflag
-  version: 24fa6976df40757dce6aea913e7b81ade90530e1
+  version: 2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab
 - name: github.com/stretchr/testify
-  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
+  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
@@ -205,9 +204,9 @@ imports:
   subpackages:
   - msgp
 - name: github.com/willf/bitset
-  version: 77892cd8d53fa6524772426bc444dd2e3b4fb18f
+  version: 04e62ff6a0bf1233cd03086e5757172bd9b7d6ef
 - name: go.opencensus.io
-  version: b4a14686f0a98096416fe1b4cb848e384fb2b22b
+  version: fa651b05963cfb6060755dc887e7d156ba66e792
   subpackages:
   - internal
   - internal/tagencoding
@@ -268,7 +267,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: aa15faf3c8a1cffc77fc3dabe95703bb12c5f6a9
+  version: 6a149848833881cf9a0f77f7595c64550f285d87
   subpackages:
   - support/bundler
 - name: google.golang.org/appengine
@@ -316,7 +315,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
+  version: bb4e33bf68bf89cad44d386192cbed201f35b241
 - name: k8s.io/api
   version: 7cf5895f2711098d7d9527db0a4a49fb0dff7de2
   subpackages:

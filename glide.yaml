@@ -108,9 +108,9 @@ import:
 - package: github.com/google/go-cmp
   version: v0.3.0
 - package: github.com/Azure/azure-sdk-for-go
-  version: v30.1.0
+  version: v32.0.0
 - package: github.com/Azure/go-autorest
-  version: v12.1.0
+  version: v12.4.3
 - package: golang.org/x/sys
   version: 1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded
   subpackages:

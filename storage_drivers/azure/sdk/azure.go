@@ -10,9 +10,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/netapp/mgmt/netapp"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
+	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-05-01/netapp"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/cenkalti/backoff"
@@ -562,6 +563,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		ServiceLevel:   cpool.ServiceLevel,
 		UsageThreshold: &request.QuotaInBytes,
 		ExportPolicy:   exportPolicyExport(&request.ExportPolicy),
+		ProtocolTypes:  &request.ProtocolTypes,
 	}
 
 	// Figure out what we need to do about vnets and subnets.  The basic plan for a normal

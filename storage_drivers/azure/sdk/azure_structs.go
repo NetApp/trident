@@ -51,6 +51,7 @@ type FileSystem struct {
 	OwnerID           string       `json:"ownerId,omitempty"`
 	Location          string       `json:"location,omitempty"`
 	CreationToken     string       `json:"creationToken,omitempty"`
+	ProtocolTypes     []string     `json:"protocolTypes,omitempty"`
 	QuotaInBytes      int64        `json:"quotaInBytes,omitempty"`
 	ServiceLevel      string       `json:"serviceLevel,omitempty"`
 	Timezone          string       `json:"timezone,omitempty"`
@@ -68,6 +69,7 @@ type FilesystemCreateRequest struct {
 	ExportPolicy   ExportPolicy `json:"exportPolicy,omitempty"`
 	Labels         []string     `json:"labels,omitempty"`
 	PoolID         string       `json:"poolId,omitempty"`
+	ProtocolTypes  []string     `json:"protocolTypes,omitempty"`
 	QuotaInBytes   int64        `json:"quotaInBytes"`
 	ServiceLevel   string       `json:"serviceLevel"`
 	Timezone       string       `json:"timezone,omitempty"`
