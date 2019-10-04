@@ -59,30 +59,32 @@ type FileSystem struct {
 	QuotaInBytes          int64          `json:"quotaInBytes,omitempty"`
 	ServiceLevel          string         `json:"serviceLevel,omitempty"`
 	SnapReserve           int            `json:"snapReserve,omitempty"`
+	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
 	SnapshotPolicy        SnapshotPolicy `json:"snapshotPolicy,omitempty"`
 	Timezone              string         `json:"timezone,omitempty"`
 	UsedBytes             int            `json:"usedBytes,omitempty"`
 }
 
 type FilesystemCreateRequest struct {
-	Name           string         `json:"name"`
-	Region         string         `json:"region"`
-	BackupPolicy   *BackupPolicy  `json:"backupPolicy,omitempty"`
-	CreationToken  string         `json:"creationToken"`
-	ExportPolicy   ExportPolicy   `json:"exportPolicy,omitempty"`
-	Jobs           []Job          `json:"jobs,omitempty"`
-	Labels         []string       `json:"labels,omitempty"`
-	PoolID         string         `json:"poolId,omitempty"`
-	ProtocolTypes  []string       `json:"protocolTypes"`
-	QuotaInBytes   int64          `json:"quotaInBytes"`
-	SecurityStyle  string         `json:"securityStyle"`
-	ServiceLevel   string         `json:"serviceLevel"`
-	SnapReserve    *int64         `json:"snapReserve,omitempty"`
-	SnapshotPolicy SnapshotPolicy `json:"snapshotPolicy,omitempty"`
-	Timezone       string         `json:"timezone,omitempty"`
-	VendorID       string         `json:"vendorID,omitempty"`
-	BackupID       string         `json:"backupId,omitempty"`
-	SnapshotID     string         `json:"snapshotId,omitempty"`
+	Name              string         `json:"name"`
+	Region            string         `json:"region"`
+	BackupPolicy      *BackupPolicy  `json:"backupPolicy,omitempty"`
+	CreationToken     string         `json:"creationToken"`
+	ExportPolicy      ExportPolicy   `json:"exportPolicy,omitempty"`
+	Jobs              []Job          `json:"jobs,omitempty"`
+	Labels            []string       `json:"labels,omitempty"`
+	PoolID            string         `json:"poolId,omitempty"`
+	ProtocolTypes     []string       `json:"protocolTypes"`
+	QuotaInBytes      int64          `json:"quotaInBytes"`
+	SecurityStyle     string         `json:"securityStyle"`
+	ServiceLevel      string         `json:"serviceLevel"`
+	SnapReserve       *int64         `json:"snapReserve,omitempty"`
+	SnapshotDirectory bool           `json:"snapshotDirectory"`
+	SnapshotPolicy    SnapshotPolicy `json:"snapshotPolicy,omitempty"`
+	Timezone          string         `json:"timezone,omitempty"`
+	VendorID          string         `json:"vendorID,omitempty"`
+	BackupID          string         `json:"backupId,omitempty"`
+	SnapshotID        string         `json:"snapshotId,omitempty"`
 }
 
 type FilesystemRenameRequest struct {

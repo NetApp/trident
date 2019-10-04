@@ -55,6 +55,7 @@ configuration examples below.
 Parameter                 Description                                                     Default
 ========================= =============================================================== ================================================
 exportRule                The export rule(s) for new volumes                              "0.0.0.0/0"
+snapshotDir               Access to the .snapshot directory                               "false"
 snapshotReserve           Percentage of volume reserved for snapshots                     "" (accept CVS default of 0)
 size                      The size of new volumes                                         "100G"
 ========================= =============================================================== ================================================
@@ -97,6 +98,7 @@ This example shows a backend file that applies the same aspects to all Trident c
         "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",
         "defaults": {
+            "snapshotDir": "true",
             "snapshotReserve": "5",
             "exportRule": "10.0.0.0/24,10.0.1.0/24,10.0.2.100",
             "size": "200Gi"
@@ -139,6 +141,7 @@ In the sample backend definition file shown below, specific defaults are set for
                 },
                 "serviceLevel": "extreme",
                 "defaults": {
+                    "snapshotDir": "true",
                     "snapshotReserve": "10",
                     "exportRule": "10.0.0.0/24"
                 }
@@ -157,6 +160,7 @@ In the sample backend definition file shown below, specific defaults are set for
                 },
                 "serviceLevel": "premium",
                 "defaults": {
+                    "snapshotDir": "true",
                     "snapshotReserve": "10"
                 }
             },

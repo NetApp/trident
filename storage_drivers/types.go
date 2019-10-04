@@ -154,6 +154,7 @@ type AWSNFSStorageDriverPool struct {
 
 type AWSNFSStorageDriverConfigDefaults struct {
 	ExportRule      string `json:"exportRule"`
+	SnapshotDir     string `json:"snapshotDir"`
 	SnapshotReserve string `json:"snapshotReserve"`
 	CommonStorageDriverConfigDefaults
 }

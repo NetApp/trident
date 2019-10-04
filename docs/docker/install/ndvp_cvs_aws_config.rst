@@ -41,6 +41,8 @@ Also, when using CVS on AWS, these default volume option settings are available.
 +=======================+==========================================================================+==========================+
 | ``exportRule``        | NFS access list (addresses and/or CIDR subnets), defaults to "0.0.0.0/0" | "10.0.1.0/24,10.0.2.100" |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
+| ``snapshotDir``       | Access to the .snapshot directory, defaults to "false"                   | "true"                   |
++-----------------------+--------------------------------------------------------------------------+--------------------------+
 | ``snapshotReserve``   | Snapshot reserve percentage, default is "" to accept CVS default of 0    | "10"                     |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
 | ``size``              | Volume size, defaults to "100GB"                                         | "500G"                   |
@@ -64,6 +66,7 @@ Example CVS on AWS Config File
         "storagePrefix": "cvs-",
         "limitVolumeSize": "200Gi",
         "defaults": {
+            "snapshotDir": "true",
             "snapshotReserve": "5",
             "exportRule": "10.0.0.0/24,10.0.1.0/24,10.0.2.100",
             "size": "100Gi"

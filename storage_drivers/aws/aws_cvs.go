@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -34,6 +33,7 @@ const (
 	defaultServiceLevel    = api.ServiceLevelStandard
 	defaultNfsMountOptions = "-o nfsvers=3"
 	defaultSecurityStyle   = "unix"
+	defaultSnapshotDir     = "false"
 	defaultSnapshotReserve = ""
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
@@ -41,6 +41,7 @@ const (
 	// Constants for internal pool attributes
 	Size            = "size"
 	ServiceLevel    = "serviceLevel"
+	SnapshotDir     = "snapshotDir"
 	SnapshotReserve = "snapshotReserve"
 	ExportRule      = "exportRule"
 	Region          = "region"
@@ -55,6 +56,7 @@ type NFSStorageDriver struct {
 	apiVersion  *utils.Version
 	sdeVersion  *utils.Version
 	tokenRegexp *regexp.Regexp
+	csiRegexp   *regexp.Regexp
 	apiRegions  []string
 	pools       map[string]*storage.Pool
 }
@@ -112,8 +114,8 @@ func (d *NFSStorageDriver) poolName(name string) string {
 // validateName checks that the name of a new volume matches the requirements of a creation token
 func (d *NFSStorageDriver) validateName(name string) error {
 	if !d.tokenRegexp.MatchString(name) {
-		return fmt.Errorf("volume name '%s' is not allowed; it must be 16-36 characters long, "+
-			"begin with a character, and contain only characters, digits, and hyphens", name)
+		return fmt.Errorf("volume name '%s' is not allowed; it must be at most 80 characters long, "+
+			"begin with a character, and contain only characters, digits, hyphens and underscores", name)
 	}
 	return nil
 }
@@ -130,7 +132,8 @@ func (d *NFSStorageDriver) Initialize(
 	}
 
 	commonConfig.DriverContext = context
-	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{15,35}$`)
+	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-_]{0,79}$`)
+	d.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 	// Parse the config
 	config, err := d.initializeAWSConfig(configJSON, commonConfig)
@@ -203,6 +206,10 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(config *drivers.AWSNFSS
 		config.NfsMountOptions = defaultNfsMountOptions
 	}
 
+	if config.SnapshotDir == "" {
+		config.SnapshotDir = defaultSnapshotDir
+	}
+
 	if config.SnapshotReserve == "" {
 		config.SnapshotReserve = defaultSnapshotReserve
 	}
@@ -220,6 +227,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(config *drivers.AWSNFSS
 		"Size":            config.Size,
 		"ServiceLevel":    config.ServiceLevel,
 		"NfsMountOptions": config.NfsMountOptions,
+		"SnapshotDir":     config.SnapshotDir,
 		"SnapshotReserve": config.SnapshotReserve,
 		"LimitVolumeSize": config.LimitVolumeSize,
 		"ExportRule":      config.ExportRule,
@@ -254,6 +262,7 @@ func (d *NFSStorageDriver) initializeStoragePools() error {
 
 		pool.InternalAttributes[Size] = d.Config.Size
 		pool.InternalAttributes[ServiceLevel] = d.Config.ServiceLevel
+		pool.InternalAttributes[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes[SnapshotReserve] = d.Config.SnapshotReserve
 		pool.InternalAttributes[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes[Region] = d.Config.Region
@@ -288,6 +297,11 @@ func (d *NFSStorageDriver) initializeStoragePools() error {
 				serviceLevel = vpool.ServiceLevel
 			}
 
+			snapshotDir := d.Config.SnapshotDir
+			if vpool.SnapshotDir != "" {
+				snapshotDir = vpool.SnapshotDir
+			}
+
 			snapshotReserve := d.Config.SnapshotReserve
 			if vpool.SnapshotReserve != "" {
 				snapshotReserve = vpool.SnapshotReserve
@@ -314,6 +328,7 @@ func (d *NFSStorageDriver) initializeStoragePools() error {
 
 			pool.InternalAttributes[Size] = size
 			pool.InternalAttributes[ServiceLevel] = serviceLevel
+			pool.InternalAttributes[SnapshotDir] = snapshotDir
 			pool.InternalAttributes[SnapshotReserve] = snapshotReserve
 			pool.InternalAttributes[ExportRule] = exportRule
 			pool.InternalAttributes[Region] = region
@@ -427,7 +442,7 @@ func (d *NFSStorageDriver) validate() error {
 	}
 
 	// Ensure storage prefix is compatible with cloud service
-	matched, err := regexp.MatchString(`[^a-zA-Z-]+`, *d.Config.StoragePrefix)
+	matched, err := regexp.MatchString(`[^a-zA-Z-_]+`, *d.Config.StoragePrefix)
 	if err != nil {
 		return fmt.Errorf("could not check storage prefix; %v", err)
 	} else if matched {
@@ -452,6 +467,14 @@ func (d *NFSStorageDriver) validate() error {
 			_, netAddr, _ := net.ParseCIDR(rule)
 			if ipAddr == nil && netAddr == nil {
 				return fmt.Errorf("invalid address/CIDR for exportRule in pool %s: %s", poolName, rule)
+			}
+		}
+
+		// Validate snapshot dir
+		if pool.InternalAttributes[SnapshotDir] != "" {
+			_, err := strconv.ParseBool(pool.InternalAttributes[SnapshotDir])
+			if err != nil {
+				return fmt.Errorf("invalid value for snapshotDir in pool %s: %v", poolName, err)
 			}
 		}
 
@@ -567,6 +590,16 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("invalid service level: %s", serviceLevel)
 	}
 
+	// Take snapshot directory from volume config first (handles Docker case), then from pool
+	snapshotDir := volConfig.SnapshotDir
+	if snapshotDir == "" {
+		snapshotDir = pool.InternalAttributes[SnapshotDir]
+	}
+	snapshotDirBool, err := strconv.ParseBool(snapshotDir)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotDir: %v", err)
+	}
+
 	// Take snapshot reserve from volume config first (handles Docker case), then from pool
 	snapshotReserve := volConfig.SnapshotReserve
 	if snapshotReserve == "" {
@@ -585,6 +618,7 @@ func (d *NFSStorageDriver) Create(
 		"creationToken":   name,
 		"size":            sizeBytes,
 		"serviceLevel":    serviceLevel,
+		"snapshotDir":     snapshotDirBool,
 		"snapshotReserve": snapshotReserve,
 	}).Debug("Creating volume.")
 
@@ -612,17 +646,18 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	createRequest := &api.FilesystemCreateRequest{
-		Name:           volConfig.Name,
-		Region:         d.Config.APIRegion,
-		CreationToken:  name,
-		ExportPolicy:   exportPolicy,
-		Labels:         d.getTelemetryLabels(),
-		ProtocolTypes:  []string{api.ProtocolTypeNFSv3},
-		QuotaInBytes:   int64(sizeBytes),
-		SecurityStyle:  defaultSecurityStyle,
-		ServiceLevel:   serviceLevel,
-		SnapshotPolicy: snapshotPolicy,
-		SnapReserve:    snapshotReservePtr,
+		Name:              volConfig.Name,
+		Region:            d.Config.APIRegion,
+		CreationToken:     name,
+		ExportPolicy:      exportPolicy,
+		Labels:            d.getTelemetryLabels(),
+		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
+		QuotaInBytes:      int64(sizeBytes),
+		SecurityStyle:     defaultSecurityStyle,
+		ServiceLevel:      serviceLevel,
+		SnapshotPolicy:    snapshotPolicy,
+		SnapshotDirectory: snapshotDirBool,
+		SnapReserve:       snapshotReservePtr,
 	}
 
 	// Create the volume
@@ -734,16 +769,17 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
-		Name:           volConfig.Name,
-		Region:         sourceVolume.Region,
-		CreationToken:  name,
-		ExportPolicy:   sourceVolume.ExportPolicy,
-		Labels:         d.getTelemetryLabels(),
-		ProtocolTypes:  sourceVolume.ProtocolTypes,
-		QuotaInBytes:   sourceVolume.QuotaInBytes,
-		ServiceLevel:   sourceVolume.ServiceLevel,
-		SnapshotPolicy: sourceVolume.SnapshotPolicy,
-		SnapshotID:     sourceSnapshot.SnapshotID,
+		Name:              volConfig.Name,
+		Region:            sourceVolume.Region,
+		CreationToken:     name,
+		ExportPolicy:      sourceVolume.ExportPolicy,
+		Labels:            d.getTelemetryLabels(),
+		ProtocolTypes:     sourceVolume.ProtocolTypes,
+		QuotaInBytes:      sourceVolume.QuotaInBytes,
+		ServiceLevel:      sourceVolume.ServiceLevel,
+		SnapshotDirectory: sourceVolume.SnapshotDirectory,
+		SnapshotPolicy:    sourceVolume.SnapshotPolicy,
+		SnapshotID:        sourceSnapshot.SnapshotID,
 	}
 
 	// Clone the volume
@@ -1336,11 +1372,15 @@ func (d *NFSStorageDriver) GetInternalVolumeName(name string) string {
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
+	} else if d.csiRegexp.MatchString(name) {
+		// If the name is from CSI (i.e. contains a UUID), just use it as-is
+		log.WithField("volumeInternal", name).Debug("Using volume name as internal name.")
+		return name
 	} else {
-		// Cloud volumes have strict limits on volume mount paths, so for cloud
-		// infrastructure like Trident, the simplest approach is to generate a
-		// UUID-based name with a prefix that won't exceed the 36-character limit.
-		return "cvs-" + strings.Replace(uuid.New().String(), "-", "", -1)
+		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+		internal = strings.Replace(internal, ".", "-", -1) // CVS disallows periods
+		log.WithField("volumeInternal", internal).Debug("Modified volume name for internal name.")
+		return internal
 	}
 }
 
