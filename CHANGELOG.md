@@ -24,6 +24,7 @@
 - Added snapshotDir option to NetApp Cloud Volumes Service in AWS driver.
 - Added driver for NetApp Cloud Volumes Service in Google Cloud Platform.
 - Added option for JSON-formatted logging. (Issue [#286](https://github.com/NetApp/trident/issues/286))
+- **Kubernetes:** Support volume cloning using a PVC as the source.
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.

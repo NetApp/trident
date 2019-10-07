@@ -65,6 +65,7 @@ func NewControllerPlugin(
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
 		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
+		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
 	})
 
 	// Define volume capabilities
@@ -149,6 +150,7 @@ func NewAllInOnePlugin(
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
+		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
 	})
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{

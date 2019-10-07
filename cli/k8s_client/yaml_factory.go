@@ -502,7 +502,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.3.0
+        image: quay.io/k8scsi/csi-provisioner:v1.3.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -527,7 +527,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -612,7 +612,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.3.0
+        image: quay.io/k8scsi/csi-provisioner:v1.3.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -649,7 +649,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
+        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
