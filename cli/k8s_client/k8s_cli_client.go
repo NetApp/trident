@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -18,10 +19,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/version"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
-	"k8s.io/apimachinery/pkg/version"
 )
 
 type KubectlClient struct {
@@ -30,6 +31,32 @@ type KubectlClient struct {
 	version   *utils.Version
 	namespace string
 	timeout   time.Duration
+}
+
+type Version struct {
+	ClientVersion struct {
+		Major        string    `json:"major"`
+		Minor        string    `json:"minor"`
+		GitVersion   string    `json:"gitVersion"`
+		GitCommit    string    `json:"gitCommit"`
+		GitTreeState string    `json:"gitTreeState"`
+		BuildDate    time.Time `json:"buildDate"`
+		GoVersion    string    `json:"goVersion"`
+		Compiler     string    `json:"compiler"`
+		Platform     string    `json:"platform"`
+	} `json:"clientVersion"`
+	ServerVersion struct {
+		Major        string    `json:"major"`
+		Minor        string    `json:"minor"`
+		GitVersion   string    `json:"gitVersion"`
+		GitCommit    string    `json:"gitCommit"`
+		GitTreeState string    `json:"gitTreeState"`
+		BuildDate    time.Time `json:"buildDate"`
+		GoVersion    string    `json:"goVersion"`
+		Compiler     string    `json:"compiler"`
+		Platform     string    `json:"platform"`
+	} `json:"serverVersion"`
+	OpenshiftVersion string `json:"openshiftVersion"`
 }
 
 func NewKubectlClient(namespace string, k8sTimeout time.Duration) (Interface, error) {
@@ -54,7 +81,7 @@ func NewKubectlClient(namespace string, k8sTimeout time.Duration) (Interface, er
 		flavor = FlavorOpenShift
 		k8sVersion, err = discoverKubernetesServerVersion(cli)
 		if err != nil {
-			k8sVersion, err = discoverOpenShiftServerVersion(cli)
+			k8sVersion, err = discoverOpenShift3ServerVersion(cli)
 		}
 	}
 	if err != nil {
@@ -137,9 +164,7 @@ func verifyOpenShiftAPIResources() bool {
 
 func discoverKubernetesServerVersion(kubernetesCLI string) (*utils.Version, error) {
 
-	const k8SServerVersionPrefix = "Server Version: "
-
-	cmd := exec.Command(kubernetesCLI, "version", "--short")
+	cmd := exec.Command(kubernetesCLI, "version", "-o", "json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -148,19 +173,21 @@ func discoverKubernetesServerVersion(kubernetesCLI string) (*utils.Version, erro
 		return nil, err
 	}
 
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, k8SServerVersionPrefix) {
-			serverVersion := strings.TrimPrefix(line, k8SServerVersionPrefix)
-			return utils.ParseSemantic(serverVersion)
-		}
+	versionBytes, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		return nil, fmt.Errorf("could not read version data from stdout; %v", err)
 	}
 
-	return nil, errors.New("could not get Kubernetes server version")
+	var cliVersion Version
+	err = json.Unmarshal(versionBytes, &cliVersion)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse version data: %s; %v", string(versionBytes), err)
+	}
+
+	return utils.ParseSemantic(cliVersion.ServerVersion.GitVersion)
 }
 
-func discoverOpenShiftServerVersion(kubernetesCLI string) (*utils.Version, error) {
+func discoverOpenShift3ServerVersion(kubernetesCLI string) (*utils.Version, error) {
 
 	cmd := exec.Command(kubernetesCLI, "version")
 	stdout, err := cmd.StdoutPipe()
