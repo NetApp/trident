@@ -199,7 +199,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
       name: cvs-extreme-standard-protection
     provisioner: netapp.io/trident
     parameters:
-      selector: "performance=premium; protection=standard"
+      selector: "performance=extreme; protection=standard"
     allowVolumeExpansion: true
     ---
     apiVersion: storage.k8s.io/v1
