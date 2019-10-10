@@ -3633,11 +3633,12 @@ def _clone() {
     }
 
     // Clone the csi-sanity source
+    // https://github.com/kubernetes-csi/csi-test/releases
     echo "Clone csi-sanity"
     _clone_from_github(
       'https://github.com/kubernetes-csi/csi-test.git',
       env.GITHUB_CREDENTIAL_ID,
-      'v1.1.1',
+      'v2.3.0',
       'src/github.com/kubernetes-csi/csi-test')
   }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -1899,6 +1900,8 @@ func (o *TridentOrchestrator) ListVolumes() ([]*storage.VolumeExternal, error) {
 	for _, v := range o.volumes {
 		volumes = append(volumes, v.ConstructExternal())
 	}
+
+	sort.Sort(storage.ByVolumeExternalName(volumes))
 	return volumes, nil
 }
 

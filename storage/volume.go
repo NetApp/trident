@@ -194,3 +194,9 @@ func (r *UpgradeVolumeRequest) Validate() error {
 	}
 	return nil
 }
+
+type ByVolumeExternalName []*VolumeExternal
+
+func (a ByVolumeExternalName) Len() int           { return len(a) }
+func (a ByVolumeExternalName) Less(i, j int) bool { return a[i].Config.Name < a[j].Config.Name }
+func (a ByVolumeExternalName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

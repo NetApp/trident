@@ -5,6 +5,7 @@ package csi
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -180,7 +181,7 @@ func (p *Plugin) CreateVolume(
 					"volumeName": req.Name,
 					"snapshotID": contentSource.Snapshot.SnapshotId,
 				}).Error("Cannot create clone, invalid snapshot ID.")
-				return nil, status.Error(codes.InvalidArgument, "invalid snapshot ID")
+				return nil, status.Error(codes.NotFound, "invalid snapshot ID")
 			} else {
 				volConfig.CloneSourceVolume = cloneSourceVolume
 				volConfig.CloneSourceSnapshot = cloneSourceSnapshot
@@ -408,20 +409,56 @@ func (p *Plugin) ListVolumes(
 	log.WithFields(fields).Debug(">>>> ListVolumes")
 	defer log.WithFields(fields).Debug("<<<< ListVolumes")
 
+	// Verify volume named same as starting-token exists or not.
+	if req.StartingToken != "" {
+		existingVolume, err := p.orchestrator.GetVolume(req.StartingToken)
+		if err != nil && !core.IsNotFoundError(err) {
+			return nil, p.getCSIErrorForOrchestratorError(err)
+		}
+
+		if existingVolume == nil {
+			return nil, status.Errorf(codes.Aborted, "starting_token '%s' is not valid", req.StartingToken)
+		}
+	}
+
 	volumes, err := p.orchestrator.ListVolumes()
 	if err != nil {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
 	entries := make([]*csi.ListVolumesResponse_Entry, 0)
+	maxPageEntries := int(req.MaxEntries)
+	encounteredStartingToken := req.StartingToken == ""
+	nextToken := ""
 
+	if maxPageEntries < 0 {
+		return  nil, status.Errorf(codes.InvalidArgument, "max_entries value '%d' is not valid", maxPageEntries)
+	} else if maxPageEntries == 0 {
+		maxPageEntries = math.MaxInt16
+	}
+
+	// NextToken might get set only when requested number of entries < number of volumes returned by the core,
+	// it also depends on the condition whether the starting token (if any) has been found or not.
 	for _, volume := range volumes {
-		if csiVolume, err := p.getCSIVolumeFromTridentVolume(volume); err == nil {
-			entries = append(entries, &csi.ListVolumesResponse_Entry{Volume: csiVolume})
+		if !encounteredStartingToken {
+			if volume.Config.Name == req.StartingToken {
+				encounteredStartingToken = true
+			} else {
+				continue
+			}
+		}
+
+		if len(entries) < maxPageEntries {
+			if csiVolume, err := p.getCSIVolumeFromTridentVolume(volume); err == nil {
+				entries = append(entries, &csi.ListVolumesResponse_Entry{Volume: csiVolume})
+			}
+		} else {
+			nextToken = volume.Config.Name
+			break
 		}
 	}
 
-	return &csi.ListVolumesResponse{Entries: entries}, nil
+	return &csi.ListVolumesResponse{Entries: entries, NextToken: nextToken}, nil
 }
 
 func (p *Plugin) GetCapacity(
@@ -567,6 +604,14 @@ func (p *Plugin) ControllerExpandVolume(
 	defer log.WithFields(fields).Debug("<<<< ControllerExpandVolume")
 
 	volumeId := req.GetVolumeId()
+	if volumeId == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	if req.GetCapacityRange() == nil {
+		return nil, status.Error(codes.InvalidArgument, "no capacity range provided")
+	}
+
 	minSize := req.GetCapacityRange().GetRequiredBytes()
 	maxSize := req.GetCapacityRange().GetLimitBytes()
 	if 0 < maxSize && maxSize < minSize {
