@@ -1117,53 +1117,77 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
 
   // If jenkins is telling us what the branch name/ref is using BRANCH_NAME
   // then override coverage if:
-  //   There are only documentation changes
-  //   The branch name contains PR-
+  //   There are only documentation changes, set coverage to documentation
+  //   The branch name contains PR-, set coverage to pre-merge
   if (env.BRANCH_NAME) {
     if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME.startsWith('stable') != true) {
 
-      def full_clone_commit_hash = ''
-      def full_clone_branch_name = 'master'
+      def diff_target_branch_name = 'master'
       dir('src2/github.com/netapp/trident') {
 
         // If CHANGE_TARGET is not master then checkout the branch
         if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
-          full_clone_branch_name = env.CHANGE_TARGET
+          diff_target_branch_name = env.CHANGE_TARGET
           sh(
             label: "Checkout CHANGE_TARGET($env.CHANGE_TARGET)",
             script: "git checkout $env.CHANGE_TARGET"
           )
-        }
+        } 
 
-        full_clone_commit_hash = sh(
-          label: "Get git commit hash from $full_clone_branch_name",
-          returnStdout: true,
-          script: "git rev-parse HEAD"
-        ).trim()
+        sh (label: "Sleep", script: "sleep 1") 
 
-        // If we checked out a branch make sure we checkout master
-        if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
-          sh(
-            label: "Checkout master",
-            script: "git checkout master"
-          )
-        }
       }
 
+      def src_git_log = []
       dir('src/github.com/netapp/trident') {
+        src_git_log = sh(
+          label: "Get the git log for src/github.com/netapp/trident", 
+          returnStdout: true, 
+          script: "git --no-pager log --max-count 100 --pretty=oneline --no-color --decorate=short"
+        ).split('\\n')
+      }
 
-        def changes = sh(
-            label: "Check if $branch contains only documentation changes",
-            returnStdout: true,
-            script: "git diff --name-only $full_clone_commit_hash $commit | " +
-              "grep -v '^docs/' | grep -v '^.*\\.md' || true"
-        )
+      def src2_git_log = []
+      dir('src2/github.com/netapp/trident') {
+        src2_git_log = sh(
+          label: "Get the git log for src2/github.com/netapp/trident", 
+          returnStdout: true, 
+          script: "git --no-pager log --max-count 25 --pretty=oneline --no-color --decorate=short"
+        ).split('\\n')
+      }
 
-        echo "Non doumentation changes between $full_clone_branch_name and $branch:\n$changes"
-        if (changes) {
-          if (changes.contains('fatal:') || changes.contains('usage:'))  {
-            echo "Error executing git diff, coverage remains $coverage"
-          } else {
+      def diff_target_commit = ''
+      for(src2_line in src2_git_log) {
+        def src2_fields = src2_line.split(' ')
+        def src2_commit = src2_fields[0]
+
+        for(src_line in src_git_log) {
+          def src_fields = src_line.split(' ')
+          def src_commit = src_fields[0]
+          if (src_commit == src2_commit) {
+              diff_target_commit = src2_commit
+              break
+          }
+        }
+        if (diff_target_commit) { break }
+      }
+
+      if (diff_target_commit) {
+        try {
+  
+          dir('src/github.com/netapp/trident') {
+          
+            changes = sh(
+              label: "Check if $branch contains only documentation changes",
+              returnStdout: true,
+              script: "git diff --name-only $diff_target_commit $commit | " +
+                "grep -v '^docs/' | grep -v '^.*\\.md'"
+            ) 
+          }
+  
+          echo "Non doumentation changes between $diff_target_branch_name and $branch:\n$changes"
+  
+          if (changes) {
             if (env.BRANCH_NAME.contains('PR-')) {
               echo "$env.BRANCH_NAME($branch) contains more than " +
                 "documentation changes, changing coverage to pre-merge"
@@ -1172,12 +1196,28 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
               echo "$branch contains more than documentation " +
                 "changes, coverage remains $coverage"
             }
+          } else {
+            echo "$branch contains only documentation " +
+              "changes, changing coverage to documentation"
+            coverage = "documentation"
           }
-        } else {
-          echo "$branch contains only documentation " +
-            "changes, changing coverage to documentation"
-          coverage = "documentation"
+        } catch(Exception e) {
+          echo "Error diffing $diff_target_commit and $commit, coverage remains $coverage: " + e.getMessage()
         }
+  
+        // If we checked out a branch make sure we checkout master
+        dir('src2/github.com/netapp/trident') {
+          if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
+            sh(
+              label: "Checkout master",
+              script: "git checkout master"
+            )
+          }
+        }
+      } else {
+        echo "Unable to check for documentaion only changes " +
+          "because a common commit between $diff_target_branch_name " + 
+          "and $branch could not be found, coverage remains $coverage"
       }
     } else {
       echo (
@@ -1190,6 +1230,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
   // If COVERAGE is defined by a build form, override coverage
   if (env.COVERAGE) {
     coverage = env.COVERAGE
+    echo "COVERAGE is defined changing coverage to $coverage"
   }
 
   // If STAGE_NAME_REGEXP is defined override stage_name_regexp
@@ -3391,7 +3432,7 @@ def _clone() {
     )
   } else {
 
-    echo "Clone trident $branch"
+    echo "Clone trident:$branch"
 
     // Create the directory for the trident source since it's unclear hot to
     // call checkout scm with a destination dir
@@ -3450,7 +3491,8 @@ def _clone() {
 
   // Try to checkout the corresponding tools branch and if that fails fall
   // back to use the master branch
-  echo "Clone tools $branch"
+  def tools_src = 'tools'
+  echo "Clone tools:$branch"
   try {
     _clone_from_github(
       env.TOOLS_PRIVATE_GITHUB_URL,
@@ -3458,9 +3500,10 @@ def _clone() {
       branch,
       'tools')
   } catch(Exception e1) {
-    echo "Clone tools $fallback_branch"
+    echo "Error cloning tools $branch: " + e1.getMessage()
+    echo "Clone tools:$fallback_branch"
     try {
-      sh (label: "Remove tools directory", script: "rm -rf tools")
+      sh (label: "Remove tools directory", script: "rm -rf $tools_src")
       sh (label: "Sleep", script: "sleep 1")
        _clone_from_github(
          env.TOOLS_PRIVATE_GITHUB_URL,
@@ -3468,10 +3511,11 @@ def _clone() {
          fallback_branch,
          'tools')
     } catch(Exception e2) {
+      echo "Error cloning $fallback_branch: " + e2.getMessage()
       if (fallback_branch != 'master') {
-        echo "Clone tools master"
+        echo "Clone tools:master"
         try {
-          sh (label: "Remove tools directory", script: "rm -rf tools")
+          sh (label: "Remove tools directory", script: "rm -rf $tools_src")
           sh (label: "Sleep", script: "sleep 1")
            _clone_from_github(
              env.TOOLS_PRIVATE_GITHUB_URL,
@@ -3479,10 +3523,10 @@ def _clone() {
              'master',
              'tools')
         } catch(Exception e3) {
-          error "Error cloning tools"
+          error "Error cloning tools:master: " + e3.getMessage()
         }
       } else {
-        error "Error cloning tools"
+        error "Error cloning tools: " + e2.getMessage()
       }
     }
   }
@@ -3496,17 +3540,19 @@ def _clone() {
 
     // Try to checkout the corresponding whelk branch and if that failed fall
     // back to use the master branch
-    echo "Clone whelk $branch"
+    def whelk_src = 'test'
+    echo "Clone whelk:$branch"
     try {
       _clone_from_github(
         env.WHELK_PRIVATE_GITHUB_URL,
         env.GITHUB_CREDENTIAL_ID,
         branch,
-        'test')
+        whelk_src)
     } catch(Exception e1) {
-      echo "Clone whelk $fallback_branch"
+      echo "Error cloning whelk:$branch:" + e1.getMessage()
+      echo "Clone whelk:$fallback_branch"
       try {
-         sh (label: "Remove test directory", script: "rm -rf test")
+         sh (label: "Remove test directory", script: "rm -rf $whelk_src")
          sh (label: "Sleep", script: "sleep 1")
          _clone_from_github(
            env.WHELK_PRIVATE_GITHUB_URL,
@@ -3514,10 +3560,11 @@ def _clone() {
            fallback_branch,
            'test')
       } catch(Exception e2) {
+        echo "Error cloning whelk:$fallback_branch:" + e2.getMessage()
         if (fallback_branch != 'master') {
-          echo "Clone whelk master"
+          echo "Clone whelk:master"
           try {
-            sh (label: "Remove test directory", script: "rm -rf test")
+            sh (label: "Remove test directory", script: "rm -rf $whelk_src")
             sh (label: "Sleep", script: "sleep 1")
             _clone_from_github(
               env.WHELK_PRIVATE_GITHUB_URL,
@@ -3525,10 +3572,10 @@ def _clone() {
               'master',
               'test')
           } catch(Exception e3) {
-            error "Error cloning whelk"
+            error "Error cloning whelk: " + e3.getMessages()
           }
         } else {
-          error "Error cloning whelk"
+          error "Error cloning whelk: " + e2.getMessages()
         }
       }
     }
@@ -4706,14 +4753,22 @@ def _propagate_changes() {
   }
 }
 
-def _random_string(Integer length){
+def _random_string(Integer length) {
 
-  def rs = ['jci']
-  def alphabet = (('a'..'z')+('0'..'9')).join('')
+  // Define the random string prefix for easy cleanup
+  def rs = ['ci']
+
+  // Define the list of potential characters
+  def alphabet = (('a'..'z')+('A'..'Z')+('0'..'9')).join('')
+
+  // Define a new random number object
   def rnd = new Random()
+
+  // Build the random string array
   while(rs.size() <= (length + 1)) {
     rs.add(alphabet[rnd.nextInt(alphabet.length())])
   }
+
   return rs
 }
 
