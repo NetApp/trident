@@ -25,27 +25,30 @@ import (
 )
 
 const (
-	deletedQtreeNamePrefix         = "deleted_"
-	maxQtreeNameLength             = 64
-	maxQtreesPerFlexvol            = 200
-	defaultPruneFlexvolsPeriodSecs = uint64(600) // default to 10 minutes
-	defaultResizeQuotasPeriodSecs  = uint64(60)  // default to 1 minute
-	pruneTask                      = "prune"
-	resizeTask                     = "resize"
+	deletedQtreeNamePrefix                      = "deleted_"
+	maxQtreeNameLength                          = 64
+	maxQtreesPerFlexvol                         = 200
+	defaultPruneFlexvolsPeriodSecs              = uint64(600)   // default to 10 minutes
+	defaultResizeQuotasPeriodSecs               = uint64(60)    // default to 1 minute
+	defaultEmptyFlexvolDeferredDeletePeriodSecs = uint64(28800) // default to 8 hours
+	pruneTask                                   = "prune"
+	resizeTask                                  = "resize"
 )
 
 // NASQtreeStorageDriver is for NFS storage provisioning of qtrees
 type NASQtreeStorageDriver struct {
-	initialized           bool
-	Config                drivers.OntapStorageDriverConfig
-	API                   *api.Client
-	Telemetry             *Telemetry
-	quotaResizeMap        map[string]bool
-	flexvolNamePrefix     string
-	flexvolExportPolicy   string
-	housekeepingTasks     map[string]*HousekeepingTask
-	housekeepingWaitGroup *sync.WaitGroup
-	sharedLockID          string
+	initialized                      bool
+	Config                           drivers.OntapStorageDriverConfig
+	API                              *api.Client
+	Telemetry                        *Telemetry
+	quotaResizeMap                   map[string]bool
+	flexvolNamePrefix                string
+	flexvolExportPolicy              string
+	housekeepingTasks                map[string]*HousekeepingTask
+	housekeepingWaitGroup            *sync.WaitGroup
+	sharedLockID                     string
+	emptyFlexvolMap                  map[string]time.Time
+	emptyFlexvolDeferredDeletePeriod time.Duration
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -111,6 +114,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
 	d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
 	d.sharedLockID = d.API.SVMUUID + "-" + *d.Config.StoragePrefix
+	d.emptyFlexvolMap = make(map[string]time.Time)
 
 	log.WithFields(log.Fields{
 		"FlexvolNamePrefix":   d.flexvolNamePrefix,
@@ -983,7 +987,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 	// Get list of Flexvols managed by this driver
 	volumeListResponse, err := d.API.VolumeList(d.FlexvolNamePrefix())
 	if err = api.GetError(volumeListResponse, err); err != nil {
-		log.Errorf("Error listing Flexvols. %v", err)
+		log.WithField("error", err).Error("Could not list Flexvols.")
 		return
 	}
 
@@ -996,12 +1000,54 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols() {
 		}
 	}
 
-	// Destroy any Flexvol if it is devoid of qtrees
+	// Update map of empty Flexvols
 	for _, flexvol := range flexvols {
+
 		qtreeCount, err := d.API.QtreeCount(flexvol)
-		if err == nil && qtreeCount == 0 {
-			log.WithField("flexvol", flexvol).Debug("Housekeeping, deleting managed Flexvol with no qtrees.")
-			d.API.VolumeDestroy(flexvol, true)
+		if err != nil {
+			// Couldn't count qtrees, so remove Flexvol from deletion map as a precaution
+			log.WithFields(log.Fields{"flexvol": flexvol, "error": err}).Warning("Could not count qtrees in Flexvol.")
+			delete(d.emptyFlexvolMap, flexvol)
+		} else if qtreeCount == 0 {
+			// No qtrees exist, so add Flexvol to map if it isn't there already
+			if _, ok := d.emptyFlexvolMap[flexvol]; !ok {
+				log.WithField("flexvol", flexvol).Debug("Flexvol has no qtrees, saving to delete deferral map.")
+				d.emptyFlexvolMap[flexvol] = time.Now()
+			} else {
+				log.WithField("flexvol", flexvol).Debug("Flexvol has no qtrees, already in delete deferral map.")
+			}
+		} else {
+			// Qtrees exist, so ensure Flexvol isn't in deletion map
+			log.WithFields(log.Fields{"flexvol": flexvol, "qtrees": qtreeCount}).Debug("Flexvol has qtrees.")
+			delete(d.emptyFlexvolMap, flexvol)
+		}
+	}
+
+	// Destroy any Flexvol if it is devoid of qtrees and has remained empty for the configured time to live
+	for flexvol, initialEmptyTime := range d.emptyFlexvolMap {
+
+		// If Flexvol is no longer known to the driver, remove from map and move on
+		if !utils.StringInSlice(flexvol, flexvols) {
+			log.WithField("flexvol", flexvol).Debug("Flexvol no longer extant, removing from delete deferral map.")
+			delete(d.emptyFlexvolMap, flexvol)
+			continue
+		}
+
+		now := time.Now()
+		expirationTime := initialEmptyTime.Add(d.emptyFlexvolDeferredDeletePeriod)
+		if expirationTime.Before(now) {
+			log.WithField("flexvol", flexvol).Debug("Deleting managed Flexvol with no qtrees.")
+			volDestroyResponse, err := d.API.VolumeDestroy(flexvol, true)
+			if err = api.GetError(volDestroyResponse, err); err != nil {
+				log.WithFields(log.Fields{"flexvol": flexvol, "error": err}).Error("Could not delete Flexvol.")
+			} else {
+				delete(d.emptyFlexvolMap, flexvol)
+			}
+		} else {
+			log.WithFields(log.Fields{
+				"flexvol":          flexvol,
+				"timeToExpiration": expirationTime.Sub(now),
+			}).Debug("Flexvol with no qtrees not past expiration time.")
 		}
 	}
 }
@@ -1434,6 +1480,7 @@ func (t *HousekeepingTask) run(tick time.Time) {
 }
 
 func NewPruneTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
+
 	// Read background task timings from config file, use defaults if missing or invalid
 	pruneFlexvolsPeriodSecs := defaultPruneFlexvolsPeriodSecs
 	if d.Config.QtreePruneFlexvolsPeriod != "" {
@@ -1445,8 +1492,20 @@ func NewPruneTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
 			pruneFlexvolsPeriodSecs = i
 		}
 	}
+	emptyFlexvolDeferredDeletePeriodSecs := defaultEmptyFlexvolDeferredDeletePeriodSecs
+	if d.Config.EmptyFlexvolDeferredDeletePeriod != "" {
+		i, err := strconv.ParseUint(d.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+		if err != nil {
+			log.WithField("interval", d.Config.EmptyFlexvolDeferredDeletePeriod).Warnf(
+				"Invalid Flexvol deferred delete period. %v", err)
+		} else {
+			emptyFlexvolDeferredDeletePeriodSecs = i
+		}
+	}
+	d.emptyFlexvolDeferredDeletePeriod = time.Duration(emptyFlexvolDeferredDeletePeriodSecs) * time.Second
 	log.WithFields(log.Fields{
 		"IntervalSeconds": pruneFlexvolsPeriodSecs,
+		"EmptyFlexvolTTL": emptyFlexvolDeferredDeletePeriodSecs,
 	}).Debug("Configured Flexvol pruning period.")
 
 	task := &HousekeepingTask{
@@ -1570,14 +1629,14 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64) 
 		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
 		size := strconv.FormatUint(sizeBytes, 10)
 		resizeResponse, err := d.API.VolumeSetSize(flexvol, "+"+size)
-		if err = api.GetError(resizeResponse.Result, err); err != nil {
+		if err = api.GetError(resizeResponse, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	} else {
 		// Got optimal size, so just set the Flexvol to that value
 		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
 		resizeResponse, err := d.API.VolumeSetSize(flexvol, flexvolSizeStr)
-		if err = api.GetError(resizeResponse.Result, err); err != nil {
+		if err = api.GetError(resizeResponse, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	}
