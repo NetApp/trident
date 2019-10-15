@@ -284,16 +284,20 @@ type feature string
 
 // Define new version-specific feature constants here
 const (
-	MinimumONTAPIVersion feature = "MINIMUM_ONTAPI_VERSION"
-	NetAppFlexGroups     feature = "NETAPP_FLEX_GROUPS"
-	LunGeometrySkip      feature = "LUN_GEOMETRY_SKIP"
+	MinimumONTAPIVersion      feature = "MINIMUM_ONTAPI_VERSION"
+	NetAppFlexGroups          feature = "NETAPP_FLEXGROUPS"
+	NetAppFabricPoolFlexVol   feature = "NETAPP_FABRICPOOL_FLEXVOL"
+	NetAppFabricPoolFlexGroup feature = "NETAPP_FABRICPOOL_FLEXGROUP"
+	LunGeometrySkip           feature = "LUN_GEOMETRY_SKIP"
 )
 
 // Indicate the minimum Ontapi version for each feature here
 var features = map[feature]*utils.Version{
-	MinimumONTAPIVersion: utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
-	NetAppFlexGroups:     utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	LunGeometrySkip:      utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	MinimumONTAPIVersion:      utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
+	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -690,6 +694,10 @@ func (d Client) FlexGroupCreate(
 		request.SetPercentageSnapshotReserve(snapshotReserve)
 	}
 
+	if d.SupportsFeature(NetAppFabricPoolFlexGroup) {
+		request.SetTieringPolicy("none")
+	}
+
 	response, err := request.ExecuteUsing(d.zr)
 	if zerr := GetError(*response, err); zerr != nil {
 		return response, zerr
@@ -958,6 +966,10 @@ func (d Client) VolumeCreate(
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
+	}
+
+	if d.SupportsFeature(NetAppFabricPoolFlexVol) {
+		request.SetTieringPolicy("none")
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
