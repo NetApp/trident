@@ -1,5 +1,5 @@
-hash: 5e2ca3235826569d9613e83dbc21bb2b492f227c9427e1dd578161ce5ef96764
-updated: 2019-10-07T20:11:43.070572733-04:00
+hash: b165edc0c2f4efcf9adfe009c6dd998781da746dc333765377c5870e7f701ac4
+updated: 2019-10-15T14:03:11.934363-04:00
 imports:
 - name: cloud.google.com/go
   version: 8c41231e01b2085512d98153bcffb847ff9b4b9f
@@ -45,28 +45,19 @@ imports:
   subpackages:
   - lib/go/csi
 - name: github.com/coreos/etcd
-  version: 94745a4eed0425653b3b4275a208d38babceeaec
+  version: 98d308426819d892e149fe45f6fd542464cb1f9d
   subpackages:
   - auth/authpb
   - client
   - clientv3
-  - clientv3/balancer
-  - clientv3/balancer/connectivity
-  - clientv3/balancer/picker
-  - clientv3/balancer/resolver/endpoint
   - clientv3/concurrency
-  - clientv3/credentials
   - etcdserver
   - etcdserver/api/v3rpc/rpctypes
   - etcdserver/etcdserverpb
   - mvcc/mvccpb
-  - pkg/logutil
   - pkg/pathutil
   - pkg/srv
-  - pkg/systemd
   - pkg/types
-  - raft
-  - raft/raftpb
   - version
 - name: github.com/coreos/go-semver
   version: e214231b295a8ea9479f11b70b35d5acf3556d9b
@@ -76,11 +67,6 @@ imports:
   version: 39ca1b05acc7ad1220e09f133283b8859a8b71ab
   subpackages:
   - activation
-  - journal
-- name: github.com/coreos/pkg
-  version: 97fdf19511ea361ae1c100dd393cc47f8dcfa1e1
-  subpackages:
-  - capnslog
 - name: github.com/davecgh/go-spew
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
@@ -218,7 +204,7 @@ imports:
   subpackages:
   - assert
 - name: github.com/tinylib/msgp
-  version: efe20429c9b7b2a358aba9ba2d40ad56d966ce00
+  version: 490d90d0e69181d9cfedd28343d876cd361adcc3
   subpackages:
   - msgp
 - name: github.com/willf/bitset
@@ -243,18 +229,6 @@ imports:
   - trace/internal
   - trace/propagation
   - trace/tracestate
-- name: go.uber.org/atomic
-  version: 8dc6146f7569370a472715e178d8ae31172ee6da
-- name: go.uber.org/multierr
-  version: ddea229ff1dff9e6fe8a6c0344ac73b09e81fce5
-- name: go.uber.org/zap
-  version: 67bc79d13d155c02fd008f721863ff8cc5f30659
-  subpackages:
-  - buffer
-  - internal/bufferpool
-  - internal/color
-  - internal/exit
-  - zapcore
 - name: golang.org/x/crypto
   version: e84da0312774c21d64ee2317962ef669b27ffb41
   subpackages:
@@ -318,7 +292,6 @@ imports:
 - name: google.golang.org/genproto
   version: e7d98fc518a78c9f8b5ee77be7b0b317475d89e1
   subpackages:
-  - googleapis/api/annotations
   - googleapis/rpc/status
 - name: google.golang.org/grpc
   version: 2fdaae294f38ed9a121193c51ec99fecd3b13eb7
@@ -334,6 +307,7 @@ imports:
   - encoding
   - encoding/proto
   - grpclog
+  - health/grpc_health_v1
   - internal
   - internal/backoff
   - internal/binarylog

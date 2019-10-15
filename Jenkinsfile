@@ -1482,7 +1482,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         )
 
         sh (
-          label: "Create direcctory go/src/github.com/netapp on $ip_address",
+          label: "Create directory go/src/github.com/netapp on $ip_address",
           script: "ssh $ssh_options root@$ip_address mkdir -p $vm_path/go/src/github.com/netapp"
         )
 
@@ -1507,15 +1507,6 @@ def _build_documentation(String name, String ssh_options, Map spec) {
           true,
           true,
           true
-        )
-
-        sh (
-          label: "Install glide",
-          script: "ssh $ssh_options root@$ip_address " +
-            "'cd $vm_path/go/src/github.com/netapp/trident;" +
-            "export GOPATH=$vm_path/go;" +
-            "export GOBIN=/usr/local/go/bin;" +
-            "curl https://glide.sh/get | sh'"
         )
 
         sh (
@@ -2699,21 +2690,21 @@ def _unit_test(String name, String ssh_options, Map spec) {
         _run_playbook(name, spec['post_deploy_playbook'], target, options)
 
         // Create a var for the GOPATH on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG/go"
+        vm_path = "/tmp/$env.BUILD_TAG"
 
         sh (
-          label: "Create directory $vm_path on $ip_address",
-          script: "ssh $ssh_options root@$ip_address mkdir -p $vm_path"
+          label: "Create directory go/src/github.com/netapp on $ip_address",
+          script: "ssh $ssh_options root@$ip_address mkdir -p $vm_path/go/src/github.com/netapp"
         )
 
         sh (
           label: "Create directory go/pkg on $ip_address",
-          script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/pkg'"
+          script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/go/pkg'"
         )
 
         sh (
           label: "Create directory go/bin on $ip_address",
-          script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/bin'"
+          script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/go/bin'"
         )
 
         sh (label: "Sleep", script: "sleep 1")
@@ -2721,7 +2712,7 @@ def _unit_test(String name, String ssh_options, Map spec) {
         sh (
           label: "Get goimports",
           script: "ssh $ssh_options root@$ip_address " +
-            "'export GOPATH=$vm_path;" +
+            "'export GOPATH=$vm_path/go;" +
             "go get golang.org/x/tools/cmd/goimports'"
         )
 
@@ -2730,7 +2721,7 @@ def _unit_test(String name, String ssh_options, Map spec) {
           'root',
           ip_address,
           "src",
-          vm_path,
+          "$vm_path/go",
           true,
           true,
           true
@@ -2740,9 +2731,18 @@ def _unit_test(String name, String ssh_options, Map spec) {
           label: "Install glide",
           script: "ssh $ssh_options root@$ip_address " +
             "'cd $vm_path/go/src/github.com/netapp/trident;" +
-            "export GOPATH=$vm_path;" +
+            "export GOPATH=$vm_path/go;" +
             "export GOBIN=/usr/local/go/bin;" +
             "curl https://glide.sh/get | sh'"
+        )
+
+        sh (
+          label: "Install dependencies with glide",
+          script: "ssh $ssh_options root@$ip_address " +
+            "'cd $vm_path/go/src/github.com/netapp/trident;" +
+            "export GOPATH=$vm_path/go;" +
+            "export GOBIN=/usr/local/go/bin;" +
+            "glide install -v'"
         )
 
         echo "Creating syntax checker script lint.sh"
@@ -2763,7 +2763,7 @@ fi
           'root',
           ip_address,
           "$name/lint.sh",
-          "$vm_path/src/github.com/netapp/trident",
+          "$vm_path/go/src/github.com/netapp/trident",
           true,
           false,
           true
@@ -2774,8 +2774,8 @@ fi
           sh (
             label: "Run lint.sh and direct the output to lint.log",
             script: "ssh $ssh_options root@$ip_address " +
-              "'cd $vm_path/src/github.com/netapp/trident;" +
-              "export GOPATH=$vm_path;" +
+              "'cd $vm_path/go/src/github.com/netapp/trident;" +
+              "export GOPATH=$vm_path/go;" +
               "sh lint.sh > lint.log 2>&1'")
         } catch(Exception e) {
 
@@ -2788,7 +2788,7 @@ fi
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/src/github.com/netapp/trident/lint.log",
+            "$vm_path/go/src/github.com/netapp/trident/lint.log",
             name,
             false,
             false,
@@ -2801,8 +2801,9 @@ fi
           sh (
             label: "Execute the unit tests on $ip_address and direct the output to unit_tests.log",
             script: "ssh $ssh_options root@$ip_address " +
-              "'cd $vm_path/src/github.com/netapp/trident;" +
-              "export GOPATH=$vm_path;" +
+              "'cd $vm_path/go/src/github.com/netapp/trident;" +
+              "export GOPATH=$vm_path/go;" +
+              "set -o pipefail;" +
               "make test | tee unit_tests.log'"
           )
 
@@ -2816,7 +2817,7 @@ fi
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/src/github.com/netapp/trident/unit_tests.log",
+            "$vm_path/go/src/github.com/netapp/trident/unit_tests.log",
             name,
             false,
             false,
@@ -3465,7 +3466,7 @@ def _clone() {
         returnStdout: true,
         script: cmd
       ).trim()
-  
+
       def pr = readJSON text: response
 
       if (pr.containsKey('head') == false) {
@@ -3475,7 +3476,7 @@ def _clone() {
       branch = pr['head']['ref']
 
       echo "The branch name for $env.BRANCH_NAME is $branch"
-  
+
       commit = pr['head']['sha']
 
     }

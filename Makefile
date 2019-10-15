@@ -77,7 +77,7 @@ TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
 
 ## etcd variables
 ifeq ($(ETCD_VERSION),)
-ETCD_VERSION := v3.3.15
+ETCD_VERSION := v3.3.13
 endif
 ETCD_PORT ?= 8001
 ETCD_SERVER ?= http://localhost:${ETCD_PORT}
