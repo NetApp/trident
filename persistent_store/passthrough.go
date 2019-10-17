@@ -159,7 +159,8 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 	case drivers.OntapNASStorageDriverName,
 		drivers.OntapNASQtreeStorageDriverName,
 		drivers.OntapNASFlexGroupStorageDriverName,
-		drivers.OntapSANStorageDriverName:
+		drivers.OntapSANStorageDriverName,
+		drivers.OntapSANEconomyStorageDriverName:
 		configType = "ontap_config"
 	case drivers.SolidfireSANStorageDriverName:
 		configType = "solidfire_config"

@@ -20,6 +20,7 @@ const (
 	OntapNASFlexGroupStorageDriverName = "ontap-nas-flexgroup"
 	OntapNASQtreeStorageDriverName     = "ontap-nas-economy"
 	OntapSANStorageDriverName          = "ontap-san"
+	OntapSANEconomyStorageDriverName   = "ontap-san-economy"
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AWSNFSStorageDriverName            = "aws-cvs"
 	AzureNFSStorageDriverName          = "azure-netapp-files"

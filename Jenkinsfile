@@ -182,6 +182,32 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'KubeAdm-CentOS-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
+        'context': 'openlab',
+        'coverage': 'kubeadm,pre-merge',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-san-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS'
+      ],
+      [
         'name': 'KubeAdm-CentOS-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
@@ -495,26 +521,6 @@ node {
         'vm_provider': 'SCS'
       ],
       [
-        'name': 'NDVB-Ubuntu-ONTAP-SAN',
-        'backend': 'ontap-san',
-        'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
-        'docker_ce_version': env.DOCKER_CE_VERSION,
-        'enabled': true,
-        'go_download_url': env.GO_DOWNLOAD_URL,
-        'hold_jig': hold_jig,
-        'ontap-san': [
-          'username': env.ONTAP_ADMIN_USERNAME,
-          'password': env.ONTAP_ADMIN_PASSWORD,
-          'management_lif': env.ONTAP_SAN_MLIF,
-        ],
-        'post_deploy_playbook': 'ci_docker_ce.playbook',
-        'request': 'ci_ubuntu_bionic.yaml',
-        'stage': '_whelk_test',
-        'test': 'ndvp_binary',
-        'vm_provider': 'SCS'
-      ],
-      [
         'name': 'NDVB-CentOS-ONTAP-SAN',
         'backend': 'ontap-san',
         'context': 'openlab',
@@ -530,6 +536,26 @@ node {
         ],
         'post_deploy_playbook': 'ci_docker_ce.playbook',
         'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'ndvp_binary',
+        'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'NDVB-Ubuntu-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
+        'context': 'openlab',
+        'coverage': 'docker-volume-binary,pre-merge',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'ontap-san-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ce.playbook',
+        'request': 'ci_ubuntu_bionic.yaml',
         'stage': '_whelk_test',
         'test': 'ndvp_binary',
         'vm_provider': 'SCS'
@@ -725,6 +751,26 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'NDVP-Ubuntu-ONTAP-SAN',
+        'backend': 'ontap-san',
+        'context': 'openlab',
+        'coverage': 'docker-volume-plugin,pre-merge',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'ontap-san': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ce.playbook',
+        'request': 'ci_ubuntu_bionic.yaml',
+        'stage': '_whelk_test',
+        'test': 'ndvp_plugin',
+        'vm_provider': 'SCS'
+      ],
+      [
         'name': 'NDVP-CentOS-ONTAP-SAN',
         'backend': 'ontap-san',
         'context': 'openlab',
@@ -745,21 +791,21 @@ node {
         'vm_provider': 'SCS'
       ],
       [
-        'name': 'NDVP-Ubuntu-ONTAP-SAN',
-        'backend': 'ontap-san',
+        'name': 'NDVP-CentOS-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
         'context': 'openlab',
         'coverage': 'docker-volume-plugin,pre-merge',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
         'hold_jig': hold_jig,
-        'ontap-san': [
+        'ontap-san-economy': [
           'username': env.ONTAP_ADMIN_USERNAME,
           'password': env.ONTAP_ADMIN_PASSWORD,
           'management_lif': env.ONTAP_SAN_MLIF,
         ],
         'post_deploy_playbook': 'ci_docker_ce.playbook',
-        'request': 'ci_ubuntu_bionic.yaml',
+        'request': 'ci_centos_7.yaml',
         'stage': '_whelk_test',
         'test': 'ndvp_plugin',
         'vm_provider': 'SCS'
@@ -3715,6 +3761,20 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '            {"Type": "Silver", "Qos": {"minIOPS": 4000, "maxIOPS": 6000, "burstIOPS": 8000}},\n' +
     '            {"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}],\n' +
     '  "debugTraceFlags": {"method": true, "api": true, "sensitive": true}\n' +
+    '}')
+  }
+
+  if (backend == 'ontap-san-economy') {
+    content = ('\n' +
+    '{\n' +
+    '  "version": 1,\n' +
+    '  "storageDriverName": "ontap-san-economy",\n' +
+    '  "managementLIF": "' + spec[backend]['management_lif'] + '",\n' +
+    '  "svm": "' + id + '",\n' +
+    '  "username": "' + spec[backend]['username'] + '",\n' +
+    '  "password": "' + spec[backend]['password'] + '",\n' +
+    '  "storagePrefix": "' + id + '_",\n' +
+    '  "debugTraceFlags": {"method": true, "api": true}\n' +
     '}')
   }
 

@@ -5,7 +5,6 @@ package ontap
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strconv"
 	"strings"
 
@@ -20,8 +19,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
 )
-
-const LUNAttributeFSType = "com.netapp.ndvp.fstype"
 
 func lunPath(name string) string {
 	return fmt.Sprintf("/vol/%v/lun0", name)
@@ -72,10 +69,6 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	if config.IgroupName == "" {
-		config.IgroupName = drivers.GetDefaultIgroupName(context)
-	}
-
 	d.API, err = InitializeOntapDriver(config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
@@ -88,33 +81,14 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	if len(d.ips) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.Config.SVM)
+		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", config.SVM)
 	} else {
 		log.WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 
-	err = d.validate()
+	err = InitializeSANDriver(context, d.API, &d.Config, d.validate)
 	if err != nil {
-		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
-	}
-
-	// Create igroup
-	igroupResponse, err := d.API.IgroupCreate(d.Config.IgroupName, "iscsi", "linux")
-	if err != nil {
-		return fmt.Errorf("error creating igroup: %v", err)
-	}
-	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
-		// Handle case where the igroup already exists
-		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
-			return fmt.Errorf("error creating igroup %v: %v", d.Config.IgroupName, zerr)
-		}
-	}
-	if context == tridentconfig.ContextKubernetes {
-		log.WithFields(log.Fields{
-			"driver": drivers.OntapSANStorageDriverName,
-			"SVM":    d.Config.SVM,
-			"igroup": d.Config.IgroupName,
-		}).Warn("Please ensure all relevant hosts are added to the initiator group.")
+		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
 	// Set up the autosupport heartbeat
@@ -151,36 +125,8 @@ func (d *SANStorageDriver) validate() error {
 		defer log.WithFields(fields).Debug("<<<< validate")
 	}
 
-	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
-	if d.Config.DataLIF != "" {
-		// Make sure it's actually a valid address
-		if ip := net.ParseIP(d.Config.DataLIF); nil == ip {
-			return fmt.Errorf("data LIF is not a valid IP: %s", d.Config.DataLIF)
-		}
-		// Make sure the IP matches one of the LIFs
-		found := false
-		for _, ip := range d.ips {
-			if d.Config.DataLIF == ip {
-				found = true
-				break
-			}
-		}
-		if found {
-			log.WithField("ip", d.Config.DataLIF).Debug("Found matching Data LIF.")
-		} else {
-			log.WithField("ip", d.Config.DataLIF).Debug("Could not find matching Data LIF.")
-			return fmt.Errorf("could not find Data LIF for %s", d.Config.DataLIF)
-		}
-		// Replace the IPs with a singleton list
-		d.ips = []string{d.Config.DataLIF}
-	}
-
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		// Make sure this host is logged into the ONTAP iSCSI target
-		err := utils.EnsureISCSISessions(d.ips)
-		if err != nil {
-			return fmt.Errorf("error establishing iSCSI session: %v", err)
-		}
+	if err := ValidateSANDriver(d.API, &d.Config, d.ips); err != nil {
+		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
 	return nil
@@ -243,7 +189,7 @@ func (d *SANStorageDriver) Create(
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
 	snapshotReserve := utils.GetV(opts, "snapshotReserve", d.Config.SnapshotReserve)
 	unixPermissions := utils.GetV(opts, "unixPermissions", d.Config.UnixPermissions)
-	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
+	snapshotDir := "false"
 	exportPolicy := utils.GetV(opts, "exportPolicy", d.Config.ExportPolicy)
 	aggregate := utils.GetV(opts, "aggregate", d.Config.Aggregate)
 	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
@@ -401,7 +347,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
-		iSCSINodeName, _, err = d.getISCSITargetInfo()
+		iSCSINodeName, _, err = GetISCSITargetInfo(d.API, &d.Config)
 		if err != nil {
 			log.WithField("error", err).Error("Could not get target info.")
 			return err
@@ -459,114 +405,21 @@ func (d *SANStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
-	var iqn string
-	var err error
-
 	lunPath := lunPath(name)
 	igroupName := d.Config.IgroupName
 
-	if publishInfo.Localhost {
-
-		// Lookup local host IQNs
-		iqns, err := utils.GetInitiatorIqns()
-		if err != nil {
-			return fmt.Errorf("error determining host initiator IQN: %v", err)
-		} else if len(iqns) == 0 {
-			return errors.New("could not determine host initiator IQN")
-		}
-		iqn = iqns[0]
-
-	} else {
-
-		// Host IQN must have been passed in
-		if len(publishInfo.HostIQN) == 0 {
-			return errors.New("host initiator IQN not specified")
-		}
-		iqn = publishInfo.HostIQN[0]
-	}
-
 	// Get target info
-	iSCSINodeName, _, err := d.getISCSITargetInfo()
+	iSCSINodeName, _, err := GetISCSITargetInfo(d.API, &d.Config)
 	if err != nil {
 		return err
 	}
 
-	// Get the fstype
-	fstype := drivers.DefaultFileSystemType
-	attrResponse, err := d.API.LunGetAttribute(lunPath, LUNAttributeFSType)
-	if err = api.GetError(attrResponse, err); err != nil {
-		log.WithFields(log.Fields{
-			"LUN":    lunPath,
-			"fstype": fstype,
-		}).Warn("LUN attribute fstype not found, using default.")
-	} else {
-		fstype = attrResponse.Result.Value()
-		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
-	}
-
-	// Add IQN to igroup
-	igroupAddResponse, err := d.API.IgroupAdd(igroupName, iqn)
-	err = api.GetError(igroupAddResponse, err)
-	zerr, zerrOK := err.(api.ZapiError)
-	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-		log.WithFields(log.Fields{
-			"IQN":    iqn,
-			"igroup": igroupName,
-		}).Debug("Host IQN already in igroup.")
-	} else {
-		return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
-	}
-
-	// Map LUN (it may already be mapped)
-	lunID, err := d.API.LunMapIfNotMapped(igroupName, lunPath)
+	err = PublishLUN(d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 	if err != nil {
-		return err
+		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
-
-	// Add fields needed by Attach
-	publishInfo.IscsiLunNumber = int32(lunID)
-	publishInfo.IscsiTargetPortal = d.ips[0]
-	publishInfo.IscsiPortals = d.ips[1:]
-	publishInfo.IscsiTargetIQN = iSCSINodeName
-	publishInfo.IscsiIgroup = igroupName
-	publishInfo.FilesystemType = fstype
-	publishInfo.UseCHAP = false
-	publishInfo.SharedTarget = true
 
 	return nil
-}
-
-func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
-
-	// Get the SVM iSCSI IQN
-	nodeNameResponse, err := d.API.IscsiNodeGetNameRequest()
-	if err != nil {
-		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
-		return
-	}
-	iSCSINodeName = nodeNameResponse.Result.NodeName()
-
-	// Get the SVM iSCSI interfaces
-	interfaceResponse, err := d.API.IscsiInterfaceGetIterRequest()
-	if err != nil {
-		returnError = fmt.Errorf("could not get SVM iSCSI interfaces: %v", err)
-		return
-	}
-	if interfaceResponse.Result.AttributesListPtr != nil {
-		for _, iscsiAttrs := range interfaceResponse.Result.AttributesListPtr.IscsiInterfaceListEntryInfoPtr {
-			if !iscsiAttrs.IsInterfaceEnabled() {
-				continue
-			}
-			iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
-			iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
-		}
-	}
-	if len(iSCSIInterfaces) == 0 {
-		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", d.Config.SVM)
-		return
-	}
-
-	return
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -730,48 +583,18 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 }
 
 func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error {
-	var (
-		targetIQN string
-		lunID     int
-	)
 
-	response, err := d.API.IscsiServiceGetIterRequest()
-	if response.Result.ResultStatusAttr != "passed" || err != nil {
-		return fmt.Errorf("problem retrieving iSCSI services: %v, %v",
-			err, response.Result.ResultErrnoAttr)
-	}
-	if response.Result.AttributesListPtr != nil {
-		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
-			if serviceInfo.Vserver() == d.Config.SVM {
-				targetIQN = serviceInfo.NodeName()
-				log.WithFields(log.Fields{
-					"volume":    volConfig.Name,
-					"targetIQN": targetIQN,
-				}).Debug("Discovered target IQN for volume.")
-				break
-			}
-		}
-	}
-
-	// Map LUN
+	// get the lunPath and lunID
 	lunPath := fmt.Sprintf("/vol/%v/lun0", volConfig.InternalName)
-	lunID, err = d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath)
+	lunID, err := d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath)
 	if err != nil {
 		return err
 	}
 
-	volConfig.AccessInfo.IscsiTargetPortal = d.ips[0]
-	volConfig.AccessInfo.IscsiPortals = d.ips[1:]
-	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
-	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
-	volConfig.AccessInfo.IscsiIgroup = d.Config.IgroupName
-	log.WithFields(log.Fields{
-		"volume":          volConfig.Name,
-		"volume_internal": volConfig.InternalName,
-		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
-		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
-		"igroup":          volConfig.AccessInfo.IscsiIgroup,
-	}).Debug("Mapped ONTAP LUN.")
+	err = PopulateOntapLunMapping(d.API, &d.Config, d.ips, volConfig, lunID)
+	if err != nil {
+		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
+	}
 
 	return nil
 }
@@ -859,7 +682,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 	}
 }
 
-// getExternalVolume is a private method that accepts info about a volume
+// getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *SANStorageDriver) getVolumeExternal(

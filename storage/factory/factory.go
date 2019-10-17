@@ -61,6 +61,8 @@ func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err err
 		storageDriver = &ontap.NASQtreeStorageDriver{}
 	case drivers.OntapSANStorageDriverName:
 		storageDriver = &ontap.SANStorageDriver{}
+	case drivers.OntapSANEconomyStorageDriverName:
+		storageDriver = &ontap.SANEconomyStorageDriver{}
 	case drivers.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
 	case drivers.EseriesIscsiStorageDriverName:

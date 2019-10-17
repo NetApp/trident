@@ -31,6 +31,13 @@ const (
 	HousekeepingStartupDelaySecs = 10
 )
 
+//For legacy reasons, these strings mustn't change
+const (
+	artifactPrefixDocker     = "ndvp"
+	artifactPrefixKubernetes = "trident"
+	LUNAttributeFSType       = "com.netapp.ndvp.fstype"
+)
+
 type Telemetry struct {
 	tridentconfig.Telemetry
 	Plugin        string        `json:"plugin"`
@@ -135,6 +142,213 @@ func (t *Telemetry) Stop() {
 		close(t.done)
 		t.stopped = true
 	}
+}
+
+// GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
+func GetISCSITargetInfo(
+	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
+) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
+
+	// Get the SVM iSCSI IQN
+	nodeNameResponse, err := clientAPI.IscsiNodeGetNameRequest()
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
+		return
+	}
+	iSCSINodeName = nodeNameResponse.Result.NodeName()
+
+	// Get the SVM iSCSI interfaces
+	interfaceResponse, err := clientAPI.IscsiInterfaceGetIterRequest()
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM iSCSI interfaces: %v", err)
+		return
+	}
+	if interfaceResponse.Result.AttributesListPtr != nil {
+		for _, iscsiAttrs := range interfaceResponse.Result.AttributesListPtr.IscsiInterfaceListEntryInfoPtr {
+			if !iscsiAttrs.IsInterfaceEnabled() {
+				continue
+			}
+			iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
+			iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
+		}
+	}
+	if len(iSCSIInterfaces) == 0 {
+		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", config.SVM)
+		return
+	}
+
+	return
+}
+
+// PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
+func PopulateOntapLunMapping(
+	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
+	ips []string, volConfig *storage.VolumeConfig, lunID int,
+) error {
+
+	var (
+		targetIQN string
+	)
+	response, err := clientAPI.IscsiServiceGetIterRequest()
+	if response.Result.ResultStatusAttr != "passed" || err != nil {
+		return fmt.Errorf("problem retrieving iSCSI services: %v, %v",
+			err, response.Result.ResultErrnoAttr)
+	}
+	if response.Result.AttributesListPtr != nil {
+		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
+			if serviceInfo.Vserver() == config.SVM {
+				targetIQN = serviceInfo.NodeName()
+				log.WithFields(log.Fields{
+					"volume":    volConfig.Name,
+					"targetIQN": targetIQN,
+				}).Debug("Discovered target IQN for volume.")
+				break
+			}
+		}
+	}
+
+	volConfig.AccessInfo.IscsiTargetPortal = ips[0]
+	volConfig.AccessInfo.IscsiPortals = ips[1:]
+	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
+	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
+	volConfig.AccessInfo.IscsiIgroup = config.IgroupName
+	log.WithFields(log.Fields{
+		"volume":          volConfig.Name,
+		"volume_internal": volConfig.InternalName,
+		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
+		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
+		"igroup":          volConfig.AccessInfo.IscsiIgroup,
+	}).Debug("Mapped ONTAP LUN.")
+
+	return nil
+}
+
+// PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
+// ontap-san-economy. This method may or may not be running on the host where the volume will be
+// mounted, so it should limit itself to updating access rules, initiator groups, etc. that require
+// some host identity (but not locality) as well as storage controller API access.
+func PublishLUN(
+	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
+	publishInfo *utils.VolumePublishInfo, lunPath, igroupName string, iSCSINodeName string,
+) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "PublishLUN",
+			"Type":    "ontap_common",
+			"lunPath": lunPath,
+		}
+		log.WithFields(fields).Debug(">>>> PublishLUN")
+		defer log.WithFields(fields).Debug("<<<< PublishLUN")
+	}
+
+	var iqn string
+	var err error
+
+	if publishInfo.Localhost {
+
+		// Lookup local host IQNs
+		iqns, err := utils.GetInitiatorIqns()
+		if err != nil {
+			return fmt.Errorf("error determining host initiator IQN: %v", err)
+		} else if len(iqns) == 0 {
+			return errors.New("could not determine host initiator IQN")
+		}
+		iqn = iqns[0]
+
+	} else {
+
+		// Host IQN must have been passed in
+		if len(publishInfo.HostIQN) == 0 {
+			return errors.New("host initiator IQN not specified")
+		}
+		iqn = publishInfo.HostIQN[0]
+	}
+
+	// Get the fstype
+	fstype := drivers.DefaultFileSystemType
+	attrResponse, err := clientAPI.LunGetAttribute(lunPath, LUNAttributeFSType)
+	if err = api.GetError(attrResponse, err); err != nil {
+		log.WithFields(log.Fields{
+			"LUN":    lunPath,
+			"fstype": fstype,
+		}).Warn("LUN attribute fstype not found, using default.")
+	} else {
+		fstype = attrResponse.Result.Value()
+		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	}
+
+	// Add IQN to igroup
+	igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
+	err = api.GetError(igroupAddResponse, err)
+	zerr, zerrOK := err.(api.ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+		log.WithFields(log.Fields{
+			"IQN":    iqn,
+			"igroup": igroupName,
+		}).Debug("Host IQN already in igroup.")
+	} else {
+		return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+	}
+
+	// Map LUN (it may already be mapped)
+	lunID, err := clientAPI.LunMapIfNotMapped(igroupName, lunPath)
+	if err != nil {
+		return err
+	}
+
+	// Add fields needed by Attach
+	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiTargetPortal = ips[0]
+	publishInfo.IscsiPortals = ips[1:]
+	publishInfo.IscsiTargetIQN = iSCSINodeName
+	publishInfo.IscsiIgroup = igroupName
+	publishInfo.FilesystemType = fstype
+	publishInfo.UseCHAP = false
+	publishInfo.SharedTarget = true
+
+	return nil
+}
+
+// InitializeSANDriver performs common ONTAP SAN driver initialization.
+func InitializeSANDriver(context tridentconfig.DriverContext, clientAPI *api.Client,
+	config *drivers.OntapStorageDriverConfig, validate func() error) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "InitializeSANDriver", "Type": "ontap_common"}
+		log.WithFields(fields).Debug(">>>> InitializeSANDriver")
+		defer log.WithFields(fields).Debug("<<<< InitializeSANDriver")
+	}
+
+	if config.IgroupName == "" {
+		config.IgroupName = drivers.GetDefaultIgroupName(context)
+	}
+
+	// Defer validation to the driver's validate method
+	if err := validate(); err != nil {
+		return err
+	}
+
+	// Create igroup
+	igroupResponse, err := clientAPI.IgroupCreate(config.IgroupName, "iscsi", "linux")
+	if err != nil {
+		return fmt.Errorf("error creating igroup: %v", err)
+	}
+	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
+		// Handle case where the igroup already exists
+		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+			return fmt.Errorf("error creating igroup %v: %v", config.IgroupName, zerr)
+		}
+	}
+	if context == tridentconfig.ContextKubernetes {
+		log.WithFields(log.Fields{
+			"driver": drivers.OntapSANStorageDriverName,
+			"SVM":    config.SVM,
+			"igroup": config.IgroupName,
+		}).Warn("Please ensure all relevant hosts are added to the initiator group.")
+	}
+
+	return nil
 }
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
@@ -254,6 +468,50 @@ func InitializeOntapAPI(config *drivers.OntapStorageDriverConfig) (*api.Client, 
 
 	log.WithField("SVM", config.SVM).Debug("Using derived SVM.")
 	return client, nil
+}
+
+// ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
+func ValidateSANDriver(api *api.Client, config *drivers.OntapStorageDriverConfig, ips []string) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
+		log.WithFields(fields).Debug(">>>> ValidateSANDriver")
+		defer log.WithFields(fields).Debug("<<<< ValidateSANDriver")
+	}
+
+	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
+	if config.DataLIF != "" {
+		// Make sure it's actually a valid address
+		if ip := net.ParseIP(config.DataLIF); nil == ip {
+			return fmt.Errorf("data LIF is not a valid IP: %s", config.DataLIF)
+		}
+		// Make sure the IP matches one of the LIFs
+		found := false
+		for _, ip := range ips {
+			if config.DataLIF == ip {
+				found = true
+				break
+			}
+		}
+		if found {
+			log.WithField("ip", config.DataLIF).Debug("Found matching Data LIF.")
+		} else {
+			log.WithField("ip", config.DataLIF).Debug("Could not find matching Data LIF.")
+			return fmt.Errorf("could not find Data LIF for %s", config.DataLIF)
+		}
+		// Replace the IPs with a singleton list
+		ips = []string{config.DataLIF}
+	}
+
+	if config.DriverContext == tridentconfig.ContextDocker {
+		// Make sure this host is logged into the ONTAP iSCSI target
+		err := utils.EnsureISCSISessions(ips)
+		if err != nil {
+			return fmt.Errorf("error establishing iSCSI session: %v", err)
+		}
+	}
+
+	return nil
 }
 
 // ValidateNASDriver contains the validation logic shared between ontap-nas and ontap-nas-economy.

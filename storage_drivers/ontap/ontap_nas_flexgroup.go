@@ -657,7 +657,7 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 	}
 }
 
-// getExternalVolume is a private method that accepts info about a volume
+// getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *NASFlexGroupStorageDriver) getVolumeExternal(

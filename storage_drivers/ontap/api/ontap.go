@@ -388,6 +388,16 @@ func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceR
 	return response, err
 }
 
+// LunCloneCreate clones a LUN from a snapshot
+func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string) (*azgo.CloneCreateResponse, error) {
+	response, err := azgo.NewCloneCreateRequest().
+		SetVolume(volumeName).
+		SetSourcePath(sourceLun).
+		SetDestinationPath(destinationLun).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
 // LunGetSerialNumber returns the serial# for a lun
 func (d Client) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResponse, error) {
 	response, err := azgo.NewLunGetSerialNumberRequest().
@@ -495,7 +505,7 @@ func (d Client) LunOnline(lunPath string) (*azgo.LunOnlineResponse, error) {
 	return response, err
 }
 
-// LunDestroy destroys a lun
+// LunDestroy destroys a LUN
 // equivalent to filer::> lun destroy -vserver iscsi_vs -path /vol/v/lun0
 func (d Client) LunDestroy(lunPath string) (*azgo.LunDestroyResponse, error) {
 	response, err := azgo.NewLunDestroyRequest().
@@ -528,7 +538,6 @@ func (d Client) LunGetAttribute(lunPath, name string) (*azgo.LunGetAttributeResp
 func (d Client) LunGet(path string) (*azgo.LunInfoType, error) {
 
 	// Limit the LUNs to the one matching the path
-	//query := azgo.NewLunInfoType().SetPath(path)
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
 		SetPath(path)
@@ -539,7 +548,8 @@ func (d Client) LunGet(path string) (*azgo.LunInfoType, error) {
 	lunInfo = azgo.NewLunInfoType().
 		SetPath("").
 		SetVolume("").
-		SetSize(0)
+		SetSize(0).
+		SetCreationTimestamp(0)
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
@@ -568,7 +578,8 @@ func (d Client) lunGetAllCommon(query *azgo.LunGetIterRequestQuery) (*azgo.LunGe
 	lunInfo := azgo.NewLunInfoType().
 		SetPath("").
 		SetVolume("").
-		SetSize(0)
+		SetSize(0).
+		SetCreationTimestamp(0)
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
@@ -595,10 +606,10 @@ func (d Client) LunResize(path string, sizeBytes int) (*azgo.LunResizeResponse, 
 }
 
 // LunGetAll returns all relevant details for all LUNs whose paths match the supplied pattern
-// equivalent to filer::> lun show -path /vol/trident_*/lun0
+// equivalent to filer::> lun show -path /vol/trident_*/*
 func (d Client) LunGetAll(pathPattern string) (*azgo.LunGetIterResponse, error) {
 
-	// Limit LUNs to those matching the pathPattern; ex, "/vol/trident_*/lun0"
+	// Limit LUNs to those matching the pathPattern; ex, "/vol/trident_*/*"
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
 		SetPath(pathPattern)
@@ -618,6 +629,31 @@ func (d Client) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse,
 	query.SetLunInfo(*lunInfo)
 
 	return d.lunGetAllCommon(query)
+}
+
+// LunCount returns the number of LUNs that exist in a given volume
+func (d Client) LunCount(volume string) (int, error) {
+
+	// Limit the LUNs to those in the specified Flexvol
+	query := &azgo.LunGetIterRequestQuery{}
+	lunInfo := azgo.NewLunInfoType().SetVolume(volume)
+	query.SetLunInfo(*lunInfo)
+
+	// Limit the returned data to only the Flexvol and LUN names
+	desiredAttributes := &azgo.LunGetIterRequestDesiredAttributes{}
+	desiredInfo := azgo.NewLunInfoType().SetPath("").SetVolume("")
+	desiredAttributes.SetLunInfo(*desiredInfo)
+
+	response, err := azgo.NewLunGetIterRequest().
+		SetMaxRecords(defaultZapiRecords).
+		SetQuery(*query).
+		SetDesiredAttributes(*desiredAttributes).
+		ExecuteUsing(d.zr)
+	if err = GetError(response, err); err != nil {
+		return 0, err
+	}
+
+	return response.Result.NumRecords(), nil
 }
 
 // LUN operations END

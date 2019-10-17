@@ -27,6 +27,14 @@ func AssertEqual(t *testing.T, errorMessage string, obj1, obj2 interface{}) {
 	}
 }
 
+// AssertNotEqual produces an error if the passed-in objects are equal
+func AssertNotEqual(t *testing.T, errorMessage string, obj1, obj2 interface{}) {
+	if obj1 == obj2 {
+		t.Errorf("%s: '%v' == '%v'", errorMessage, obj1, obj2)
+		return
+	}
+}
+
 // AssertFalse produces an error if a deep inspection of the passed-in objects differ
 func AssertAllEqual(t *testing.T, errorMessage string, objs ...interface{}) {
 	allEqual := true

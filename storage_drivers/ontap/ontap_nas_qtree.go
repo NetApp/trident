@@ -34,12 +34,6 @@ const (
 	resizeTask                     = "resize"
 )
 
-// For legacy reasons, these strings mustn't change
-const (
-	artifactPrefixDocker     = "ndvp"
-	artifactPrefixKubernetes = "trident"
-)
-
 // NASQtreeStorageDriver is for NFS storage provisioning of qtrees
 type NASQtreeStorageDriver struct {
 	initialized           bool
@@ -1308,7 +1302,7 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 	}
 }
 
-// getExternalVolume is a private method that accepts info about a volume
+// getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *NASQtreeStorageDriver) getVolumeExternal(

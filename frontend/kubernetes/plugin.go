@@ -979,7 +979,8 @@ func (p *Plugin) createPV(
 
 	case drivers.SolidfireSANStorageDriverName,
 		drivers.OntapSANStorageDriverName,
-		drivers.EseriesIscsiStorageDriverName:
+		drivers.EseriesIscsiStorageDriverName,
+		drivers.OntapSANEconomyStorageDriverName:
 
 		iscsiSource, err = CreateISCSIPersistentVolumeSource(k8sClientCHAP, kubeVersion, volume)
 		if err != nil {
