@@ -437,9 +437,9 @@ func (f *JSONFormatter) Format(entry *log.Entry) ([]byte, error) {
 	}
 
 	if !f.DisableTimestamp {
-		data["time"] = entry.Time.Format(timestampFormat)
+		data["@timestamp"] = entry.Time.Format(timestampFormat)
 	}
-	data["msg"] = entry.Message
+	data["message"] = entry.Message
 	data["level"] = entry.Level.String()
 
 	var b *bytes.Buffer
