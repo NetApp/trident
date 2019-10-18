@@ -4,6 +4,7 @@ package logging
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,22 +24,32 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-// InitLogging configures logging for nDVP.  Logs are written both to a log file as well as stdout/stderr.
+const (
+	TextFormat             = "text"
+	JSONFormat             = "json"
+	defaultTimestampFormat = time.RFC3339
+)
+
+// InitLoggingForDocker configures logging for nDVP.  Logs are written both to a log file as well as stdout/stderr.
 // Since logrus doesn't support multiple writers, each log stream is implemented as a hook.
-func InitLogging(logName string) error {
+func InitLoggingForDocker(logName, logFormat string) error {
 
 	// No output except for the hooks
 	log.SetOutput(ioutil.Discard)
 
 	// Write to the log file
-	logFileHook, err := NewFileHook(logName)
+	logFileHook, err := NewFileHook(logName, logFormat)
 	if err != nil {
-		return fmt.Errorf("could not initialize logging to file %s: %v", logFileHook.GetLocation(), err)
+		return fmt.Errorf("could not initialize logging to file: %v", err)
 	}
 	log.AddHook(logFileHook)
 
 	// Write to stdout/stderr
-	log.AddHook(NewConsoleHook())
+	logConsoleHook, err := NewConsoleHook(logFormat)
+	if err != nil {
+		return fmt.Errorf("could not initialize logging to console: %v", err)
+	}
+	log.AddHook(logConsoleHook)
 
 	// Remind users where the log file lives
 	log.WithFields(log.Fields{
@@ -73,16 +84,39 @@ func InitLogLevel(debug bool, logLevel string) error {
 	return nil
 }
 
+// InitLogFormat configures the log format, allowing a choice of text or JSON.
+func InitLogFormat(logFormat string) error {
+	switch logFormat {
+	case TextFormat:
+		log.SetFormatter(&log.TextFormatter{})
+	case JSONFormat:
+		log.SetFormatter(&JSONFormatter{})
+	default:
+		return fmt.Errorf("unknown log format: %s", logFormat)
+	}
+	return nil
+}
+
 // ConsoleHook sends log entries to stdout.
 type ConsoleHook struct {
 	formatter log.Formatter
 }
 
 // NewConsoleHook creates a new log hook for writing to stdout/stderr.
-func NewConsoleHook() *ConsoleHook {
+func NewConsoleHook(logFormat string) (*ConsoleHook, error) {
 
-	formatter := &log.TextFormatter{FullTimestamp: true}
-	return &ConsoleHook{formatter}
+	var formatter log.Formatter
+
+	switch logFormat {
+	case TextFormat:
+		formatter = &log.TextFormatter{FullTimestamp: true}
+	case JSONFormat:
+		formatter = &JSONFormatter{}
+	default:
+		return nil, fmt.Errorf("unknown log format: %s", logFormat)
+	}
+
+	return &ConsoleHook{formatter}, nil
 }
 
 func (hook *ConsoleHook) Levels() []log.Level {
@@ -107,10 +141,15 @@ func (hook *ConsoleHook) Fire(entry *log.Entry) error {
 		logWriter = os.Stdout
 	case log.ErrorLevel, log.FatalLevel, log.PanicLevel:
 		logWriter = os.Stderr
+	default:
+		return fmt.Errorf("unknown log level: %v", entry.Level)
 	}
 
 	// Write log entry to output stream
-	hook.formatter.(*log.TextFormatter).ForceColors = hook.checkIfTerminal(logWriter)
+	if textFormatter, ok := hook.formatter.(*log.TextFormatter); ok {
+		textFormatter.ForceColors = hook.checkIfTerminal(logWriter)
+	}
+
 	lineBytes, err := hook.formatter.Format(entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
@@ -134,9 +173,18 @@ type FileHook struct {
 }
 
 // NewFileHook creates a new log hook for writing to a file.
-func NewFileHook(logName string) (*FileHook, error) {
+func NewFileHook(logName, logFormat string) (*FileHook, error) {
 
-	formatter := &PlainTextFormatter{}
+	var formatter log.Formatter
+
+	switch logFormat {
+	case TextFormat:
+		formatter = &PlainTextFormatter{}
+	case JSONFormat:
+		formatter = &JSONFormatter{}
+	default:
+		return nil, fmt.Errorf("unknown log format: %s", logFormat)
+	}
 
 	// If config.LogRoot doesn't exist, make it
 	dir, err := os.Lstat(LogRoot)
@@ -358,4 +406,56 @@ func (f *PlainTextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 	default:
 		fmt.Fprint(b, value)
 	}
+}
+
+type JSONFormatter struct {
+	// TimestampFormat sets the format used for marshaling timestamps.
+	TimestampFormat string
+	// DisableTimestamp allows disabling automatic timestamps in output
+	DisableTimestamp bool
+	// PrettyPrint will indent all json logs
+	PrettyPrint bool
+}
+
+func (f *JSONFormatter) Format(entry *log.Entry) ([]byte, error) {
+
+	data := make(map[string]string, len(entry.Data)+4)
+	for k, v := range entry.Data {
+		switch v := v.(type) {
+		case error:
+			// Otherwise errors are ignored by `encoding/json`
+			// https://github.com/sirupsen/logrus/issues/137
+			data[k] = v.Error()
+		default:
+			data[k] = fmt.Sprintf("%+v", v)
+		}
+	}
+
+	timestampFormat := f.TimestampFormat
+	if timestampFormat == "" {
+		timestampFormat = defaultTimestampFormat
+	}
+
+	if !f.DisableTimestamp {
+		data["time"] = entry.Time.Format(timestampFormat)
+	}
+	data["msg"] = entry.Message
+	data["level"] = entry.Level.String()
+
+	var b *bytes.Buffer
+	if entry.Buffer != nil {
+		b = entry.Buffer
+	} else {
+		b = &bytes.Buffer{}
+	}
+
+	encoder := json.NewEncoder(b)
+	if f.PrettyPrint {
+		encoder.SetIndent("", "  ")
+	}
+	if err := encoder.Encode(data); err != nil {
+		return nil, fmt.Errorf("failed to marshal fields to JSON, %v", err)
+	}
+
+	return b.Bytes(), nil
 }

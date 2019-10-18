@@ -198,7 +198,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-func GetDeploymentYAML(tridentImage, label string, debug bool) string {
+func GetDeploymentYAML(tridentImage, label, logFormat string, debug bool) string {
 
 	var debugLine string
 	if debug {
@@ -210,6 +210,7 @@ func GetDeploymentYAML(tridentImage, label string, debug bool) string {
 	deploymentYAML := strings.Replace(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_FORMAT}", logFormat, -1)
 	return deploymentYAML
 }
 
@@ -241,6 +242,7 @@ spec:
         args:
         - "--crd_persistence"
         - "--k8s_pod"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         livenessProbe:
           exec:
@@ -280,7 +282,7 @@ spec:
       targetPort: 8443
 `
 
-func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils.Version) string {
+func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug bool, version *utils.Version) string {
 
 	var debugLine string
 	var logLevel string
@@ -311,6 +313,7 @@ func GetCSIDeploymentYAML(tridentImage, label string, debug bool, version *utils
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_LEVEL}", logLevel, -1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_FORMAT}", logFormat, -1)
 	return deploymentYAML
 }
 
@@ -349,6 +352,7 @@ spec:
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         livenessProbe:
           exec:
@@ -470,6 +474,7 @@ spec:
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         livenessProbe:
           exec:
@@ -579,6 +584,7 @@ spec:
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         livenessProbe:
           exec:
@@ -653,7 +659,7 @@ spec:
           secretName: trident-csi
 `
 
-func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.Version) string {
+func GetCSIDaemonSetYAML(tridentImage, label, logFormat string, debug bool, version *utils.Version) string {
 
 	var debugLine string
 	var logLevel string
@@ -677,6 +683,7 @@ func GetCSIDaemonSetYAML(tridentImage, label string, debug bool, version *utils.
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_LEVEL}", logLevel, -1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_FORMAT}", logFormat, -1)
 	return daemonSetYAML
 }
 
@@ -716,6 +723,7 @@ spec:
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME
@@ -844,6 +852,7 @@ spec:
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
+        - "--log_format={LOG_FORMAT}"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME

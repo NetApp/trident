@@ -65,6 +65,7 @@ var (
 	pvcName         string
 	tridentImage    string
 	etcdImage       string
+	logFormat       string
 	k8sTimeout      time.Duration
 	migratorTimeout time.Duration
 
@@ -115,6 +116,7 @@ func init() {
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
+	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 300*time.Minute, "The timeout for etcd-to-CRD migration.")
@@ -329,6 +331,13 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid PV name; %s", pvName, subdomainFormat)
 	}
 
+	switch logFormat {
+	case "text", "json":
+		break
+	default:
+		return fmt.Errorf("'%s' is not a valid log format", logFormat)
+	}
+
 	return nil
 }
 
@@ -400,7 +409,7 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write custom resource definition YAML file; %v", err)
 	}
 
-	deploymentYAML := k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, Debug)
+	deploymentYAML := k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -444,12 +453,14 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write service YAML file; %v", err)
 	}
 
-	deploymentYAML := k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, Debug, client.ServerVersion())
+	deploymentYAML := k8sclient.GetCSIDeploymentYAML(
+		tridentImage, appLabelValue, logFormat, Debug, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug, client.ServerVersion())
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(
+		tridentImage, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -628,7 +639,8 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(deploymentPath)
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, Debug))
+			returnError = client.CreateObjectByYAML(k8sclient.GetDeploymentYAML(
+				tridentImage, appLabelValue, logFormat, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -727,7 +739,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, Debug, client.ServerVersion()))
+				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -747,7 +759,8 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": csiDaemonSetPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDaemonSetYAML(tridentImage, TridentNodeLabelValue, Debug, client.ServerVersion()))
+				k8sclient.GetCSIDaemonSetYAML(
+					tridentImage, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -1593,6 +1606,10 @@ func installTridentInCluster() (returnError error) {
 	if etcdImage != "" {
 		commandArgs = append(commandArgs, "--etcd-image")
 		commandArgs = append(commandArgs, etcdImage)
+	}
+	if logFormat != "" {
+		commandArgs = append(commandArgs, "--log-format")
+		commandArgs = append(commandArgs, logFormat)
 	}
 	commandArgs = append(commandArgs, "--in-cluster=false")
 

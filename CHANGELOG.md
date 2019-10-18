@@ -21,6 +21,7 @@
 - Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 - Added snapshotDir option to NetApp Cloud Volumes Service in AWS driver.
 - Added driver for NetApp Cloud Volumes Service in Google Cloud Platform.
+- Added option for JSON-formatted logging. (Issue [#286](https://github.com/NetApp/trident/issues/286))
 
 **Deprecations:**
 - Changed minimum supported ONTAP version to 9.1.

@@ -32,8 +32,9 @@ import (
 
 var (
 	// Logging
-	debug    = flag.Bool("debug", false, "Enable debugging output")
-	logLevel = flag.String("log_level", "info", "Logging level (debug, info, warn, error, fatal)")
+	debug     = flag.Bool("debug", false, "Enable debugging output")
+	logLevel  = flag.String("log_level", "info", "Logging level (debug, info, warn, error, fatal)")
+	logFormat = flag.String("log_format", "text", "Logging format (text, json)")
 
 	// Kubernetes
 	k8sAPIServer = flag.String("k8s_api_server", "", "Kubernetes API server "+
@@ -235,6 +236,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Set log format
+	err = logging.InitLogFormat(*logFormat)
+	if err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	// Print all env variables
 	for _, element := range os.Environ() {
 		v := strings.Split(element, "=")
@@ -313,7 +321,7 @@ func main() {
 		config.CurrentDriverContext = config.ContextDocker
 
 		// Set up multi-output logging
-		err = logging.InitLogging(*driverName)
+		err = logging.InitLoggingForDocker(*driverName, *logFormat)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
@@ -327,7 +335,9 @@ func main() {
 		preBootstrapFrontends = append(preBootstrapFrontends, dockerFrontend)
 
 	} else if enableCSI {
+
 		config.CurrentDriverContext = config.ContextCSI
+
 		if *csiRole != csi.CSIController && *csiRole != csi.CSINode && *csiRole != csi.CSIAllInOne {
 			log.Fatalf("CSI is enabled but an unknown role has been assigned: '%s'", *csiRole)
 		}
