@@ -1266,9 +1266,9 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           "and $branch could not be found, coverage remains $coverage"
       }
     } else {
+      coverage = 'pre-merge'
       echo (
-        "Skipping documentation change detection because $env.BRANCH_NAME " +
-        "is master or stable/*, coverage remains $coverage"
+        "$env.BRANCH_NAME is master or stable/*, changing coverage to $coverage"
       )
     }
   }
@@ -1461,7 +1461,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
       def rs = _random_string(15)
 
       // Define a unique SCS purpose
-      def purpose = rs.join('')
+      def purpose = rs
 
       // Define vars for the VM attributes
       def hostname = ''
@@ -1630,7 +1630,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
       def rs = _random_string(15)
 
       // Define a unique SCS purpose
-      def purpose = rs.join('')
+      def purpose = rs
 
       // Define vars for the VM attributes
       def hostname = ''
@@ -2431,7 +2431,7 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
       def rs = _random_string(15)
 
       // Define a unique SCS purpose
-      def purpose = rs.join('')
+      def purpose = rs
 
       // Define vars for the VM attributes
       def hostname = ''
@@ -2588,7 +2588,7 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
 
         // Perform the required test setup
         echo "CSI sanity configuration"
-        def id = rs.join('')
+        def id = rs
         backends_configured = _csi_sanity_config(
           name,
           ssh_options,
@@ -2676,7 +2676,7 @@ def _unit_test(String name, String ssh_options, Map spec) {
       def rs = _random_string(15)
 
       // Define a unique SCS purpose
-      def purpose = rs.join('')
+      def purpose = rs
 
       // Define vars for the VM attributes
       def hostname = ''
@@ -2938,7 +2938,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
       def rs = _random_string(15)
 
       // Define a unique SCS purpose
-      def purpose = rs.join('')
+      def purpose = rs
 
       // Define vars for the VM attributes
       def hostname = ''
@@ -3137,7 +3137,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         if (test == 'docker_ee')  {
 
           echo "Docker EE configuration"
-          def id = rs.join('')
+          def id = rs
           backends_configured = _docker_ee_config(
             name,
             ssh_options,
@@ -3151,7 +3151,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         } else if (test == 'kubeadm')  {
 
           echo "KubeAdm configuration"
-          def id = rs.join('')
+          def id = rs
           backends_configured = _kubeadm_config(
             name,
             ssh_options,
@@ -3165,7 +3165,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         } else if (test == 'ndvp_binary')  {
 
           echo "nDVP binary configuration"
-          def id = rs.join('')
+          def id = rs
           backends_configured = _ndvp_binary_config(
             name,
             ssh_options,
@@ -3178,7 +3178,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         } else if (test == 'ndvp_plugin')  {
 
           echo "nDVP plugin configuration"
-          def id = rs.join('')
+          def id = rs
           backends_configured = _ndvp_plugin_config(
             name,
             ssh_options,
@@ -3192,7 +3192,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
 
           echo "Openshift configuration"
 
-          def id = rs.join('')
+          def id = rs
           backends_configured = _openshift_config(
           name,
           ssh_options,
@@ -3207,7 +3207,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
 
           echo "Upgrade configuration"
 
-          def id = rs.join('')
+          def id = rs
           backends_configured = _upgrade_config(
           name,
           ssh_options,
@@ -4816,19 +4816,21 @@ def _propagate_changes() {
 
 def _random_string(Integer length) {
 
-  // Define the random string prefix for easy cleanup
-  def rs = ['ci']
-
-  // Define the list of potential characters
-  def alphabet = (('a'..'z')+('A'..'Z')+('0'..'9')).join('')
-
-  // Define a new random number object
-  def rnd = new Random()
-
-  // Build the random string array
-  while(rs.size() <= (length + 1)) {
-    rs.add(alphabet[rnd.nextInt(alphabet.length())])
+  // Start the random string with a known string for easier cleanup
+  if (length <= 4) {
+      error "Generating random strings less than 4 characters is not supported"
   }
+
+  // Find the real number of random strings needed
+  length -= 2
+
+  // Get a UUID from /dev/urandom with enought entropy
+  def rs = 'ci'
+  rs += sh (
+    label: "Retrieve random string using /def/urandom",
+    returnStdout: true,
+    script: "head -c 500 /dev/urandom",
+  ).trim().replaceAll("[^a-zA-Z0-9]+","").take(length)
 
   return rs
 }
