@@ -1027,12 +1027,12 @@ node {
 
   def slack_result = 'PENDING'
   def slack_message = (
-    "${env.JOB_NAME} #${env.BUILD_NUMBER}:\n" +
+    _decode(env.JOB_NAME) + " #${env.BUILD_NUMBER}:\n" +
     "${env.BUILD_URL}\n"
   )
   if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
     slack_message = (
-      "${env.JOB_NAME} $branch #${env.BUILD_NUMBER}:\n" +
+      _decode(env.JOB_NAME) + " $branch #${env.BUILD_NUMBER}:\n" +
       "${env.BUILD_URL}\n"
     )
   }
@@ -1178,17 +1178,17 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
             label: "Checkout CHANGE_TARGET($env.CHANGE_TARGET)",
             script: "git checkout $env.CHANGE_TARGET"
           )
-        } 
+        }
 
-        sh (label: "Sleep", script: "sleep 1") 
+        sh (label: "Sleep", script: "sleep 1")
 
       }
 
       def src_git_log = []
       dir('src/github.com/netapp/trident') {
         src_git_log = sh(
-          label: "Get the git log for src/github.com/netapp/trident", 
-          returnStdout: true, 
+          label: "Get the git log for src/github.com/netapp/trident",
+          returnStdout: true,
           script: "git --no-pager log --max-count 100 --pretty=oneline --no-color --decorate=short"
         ).split('\\n')
       }
@@ -1196,8 +1196,8 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
       def src2_git_log = []
       dir('src2/github.com/netapp/trident') {
         src2_git_log = sh(
-          label: "Get the git log for src2/github.com/netapp/trident", 
-          returnStdout: true, 
+          label: "Get the git log for src2/github.com/netapp/trident",
+          returnStdout: true,
           script: "git --no-pager log --max-count 25 --pretty=oneline --no-color --decorate=short"
         ).split('\\n')
       }
@@ -1220,19 +1220,19 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
 
       if (diff_target_commit) {
         try {
-  
+
           dir('src/github.com/netapp/trident') {
-          
+
             changes = sh(
               label: "Check if $branch contains only documentation changes",
               returnStdout: true,
               script: "git diff --name-only $diff_target_commit $commit | " +
                 "grep -v '^docs/' | grep -v '^.*\\.md'"
-            ) 
+            )
           }
-  
+
           echo "Non doumentation changes between $diff_target_branch_name and $branch:\n$changes"
-  
+
           if (changes) {
             if (env.BRANCH_NAME.contains('PR-')) {
               echo "$env.BRANCH_NAME($branch) contains more than " +
@@ -1250,7 +1250,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         } catch(Exception e) {
           echo "Error diffing $diff_target_commit and $commit, coverage remains $coverage: " + e.getMessage()
         }
-  
+
         // If we checked out a branch make sure we checkout master
         dir('src2/github.com/netapp/trident') {
           if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
@@ -1262,7 +1262,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         }
       } else {
         echo "Unable to check for documentaion only changes " +
-          "because a common commit between $diff_target_branch_name " + 
+          "because a common commit between $diff_target_branch_name " +
           "and $branch could not be found, coverage remains $coverage"
       }
     } else {
@@ -1520,7 +1520,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         _run_playbook(name, spec['post_deploy_playbook'], target, options)
 
         // Update the var for the path on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG"
+        vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
           label: "Install sphinx packages on $ip_address",
@@ -1701,7 +1701,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
         _run_playbook(name, spec['post_deploy_playbook'], target, options)
 
         // Create a var for the GOPATH on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG"
+        vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
           label: "Create directory go/src/github.com/netapp on $ip_address",
@@ -1793,7 +1793,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "-p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n" +
               "export GOPATH=$vm_path/go\n" +
               "export BUILD_TYPE=test\n" +
-              "export BUILD_TYPE_REV=$env.BUILD_TAG\n" +
+              "export BUILD_TYPE_REV=" + _replace(env.BUILD_TAG, '/', '-') + "\n" +
               "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "export DIST_REGISTRY=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
@@ -1985,7 +1985,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
           } else {
 
             // Get the trident image string using the git commit hash
-            image = _get_image(ssh_options, ip_address, env.BUILD_TAG)
+            image = _get_image(ssh_options, ip_address, _replace(env.BUILD_TAG, '/', '-'))
 
           }
 
@@ -2131,8 +2131,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
             // For test builds we need the git commit hash as the image tag
             content += (
-              "sudo docker plugin create $repository:$env.BUILD_TAG ./myplugin\n" +
-              "sudo docker plugin push $repository:$env.BUILD_TAG\n"
+              "sudo docker plugin create $repository:" + _replace(env.BUILD_TAG, '/', '-') + " ./myplugin\n" +
+              "sudo docker plugin push $repository:" + _replace(env.BUILD_TAG, '/', '-') + "\n"
             )
           }
 
@@ -2515,7 +2515,7 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         _run_playbook(name, spec['post_deploy_playbook'], target, options)
 
         // Create a var for the GOPATH on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG"
+        vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
           label: "Create directory go/src/github.com/kubernetes-csi on $ip_address",
@@ -2736,7 +2736,7 @@ def _unit_test(String name, String ssh_options, Map spec) {
         _run_playbook(name, spec['post_deploy_playbook'], target, options)
 
         // Create a var for the GOPATH on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG"
+        vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
           label: "Create directory go/src/github.com/netapp on $ip_address",
@@ -3113,7 +3113,7 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         }
 
         // Create a var for the path on $ip_address
-        vm_path = "/tmp/$env.BUILD_TAG"
+        vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
           label: "Create directory $vm_path on $ip_address",
@@ -3953,6 +3953,10 @@ def _csi_sanity_config(
     return backends_configured
 }
 
+def _decode(String string) {
+  return URLDecoder.decode(string)
+}
+
 def _docker_ee_config(
   String name,
   String ssh_options,
@@ -3994,7 +3998,7 @@ def _docker_ee_config(
 
     // Determine the trident installer name
     // trident-installer-19.04.0-test.trident-ci_master.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
+    def cmd = 'ls trident-installer-*-test.' + _replace(env.BUILD_TAG, '/', '-') + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -4294,7 +4298,7 @@ def _kubeadm_config(
 
     // Determine the trident installer name
     // trident-installer-19.04.0-test.trident-ci_master.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
+    def cmd = 'ls trident-installer-*-test.' + _replace(env.BUILD_TAG, '/', '-') + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -4585,7 +4589,7 @@ def _openshift_config(
 
     // Determine the trident installer name
     // trident-installer-19.04.0-test.trident-ci_master.tar.gz
-    def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
+    def cmd = 'ls trident-installer-*-test.' + _replace(env.BUILD_TAG, '/', '-') + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
@@ -4700,15 +4704,9 @@ def _openshift_config(
 
 def _print_hold_jig_message() {
 
-  // Get JENKINS_URL and Strip the trailing / if it exists
-  def url = env.JENKINS_URL
-  if (env.JENKINS_URL[-1] == '/') {
-    url = env.JENKINS_URL[0..-2]
-  }
-
   // Get the job name
   def job_name≡ = ''
-  def jn = env.JOB_NAME
+  def jn = _decode(env.JOB_NAME)
   if (jn.contains('/')) {
     (job_name) = jn.split('/')
   }
@@ -4716,7 +4714,7 @@ def _print_hold_jig_message() {
   // Display the message
   echo ("HOLD_JIG is set to $hold_jig, skipping stage cleanup.\n" +
         "When you are done debugging run:\n" +
-        "tools/utils/ci_cleanup_by_artifact.sh $url " +
+        "tools/utils/ci_cleanup_by_artifact.sh production " +
         "$job_name $branch $env.BUILD_NUMBER")
 }
 
@@ -4833,6 +4831,12 @@ def _random_string(Integer length) {
   ).trim().replaceAll("[^a-zA-Z0-9]+","").take(length)
 
   return rs
+}
+
+def _replace(String string, String regexp, String replacement) {
+  def new_string = _decode(string)
+  new_string.replaceAll(regexp, replacement)
+  return new_string
 }
 
 def _run_csi_sanity_tests(String name, String ssh_options, String ip_address, String vm_path, Map spec, String id) {
@@ -5029,7 +5033,9 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
         label: "Execute run_plugin_tests.sh on $ip_address",
         script: "ssh $ssh_options root@$ip_address " +
           "'cd $vm_path/test;" +
-          "$vm_path/test/run_plugin_tests.sh -i $env.PRIVATE_DOCKER_REGISTRY/trident-plugin:$env.BUILD_TAG > " +
+          "$vm_path/test/run_plugin_tests.sh -i $env.PRIVATE_DOCKER_REGISTRY/trident-plugin:" +
+          _replace(env.BUILD_TAG, '/', '-') +
+          " > " +
           "$vm_path/test/whelk_stdout.log 2>&1'"
         )
     }
@@ -5054,7 +5060,7 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
 
       // Determine the trident installer name
       // trident-installer-19.04.0-test.trident-ci_master.tar.gz
-      def cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
+      def cmd = 'ls trident-installer-*-test.' + _replace(env.BUILD_TAG, '/', '-') + '.tar.gz'
       def installer = sh(
         label: cmd,
         returnStdout: true,
@@ -5399,7 +5405,7 @@ def _upgrade_config(
 
     // Determine the trident installer name
     // trident-installer-19.04.0-test.trident-ci_master.tar.gz
-    cmd = 'ls trident-installer-*-test.' + env.BUILD_TAG + '.tar.gz'
+    cmd = 'ls trident-installer-*-test.' + _replace(env.BUILD_TAG, '/', '-') + '.tar.gz'
     def installer = sh(returnStdout: true, script: cmd).trim()
 
     // Configure the backend(s) with a unique object names and copy to the the VM
