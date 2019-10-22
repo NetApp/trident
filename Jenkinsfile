@@ -1235,7 +1235,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
 
           if (changes) {
             if (env.BRANCH_NAME.contains('PR-')) {
-              echo "$env.BRANCH_NAME($branch) contains more than " +
+              echo "BRANCH_NAME($branch) contains more than " +
                 "documentation changes, changing coverage to pre-merge"
               coverage = 'pre-merge'
             } else {
@@ -1268,7 +1268,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
     } else {
       coverage = 'pre-merge'
       echo (
-        "$env.BRANCH_NAME is master or stable/*, changing coverage to $coverage"
+        "BRANCH_NAME($branch) is master or stable/*, changing coverage to $coverage"
       )
     }
   }
@@ -1748,12 +1748,6 @@ def _build_trident(String name, String ssh_options, Map spec) {
         )
 
         try {
-            echo (
-              "Creating build for \n" +
-              "BUILD_TYPE: $env.BUILD_TYPE \n" +
-              "BRANCH_NAME: $env.BRANCH_NAME \n" +
-              "BRANCH_TYPE: $env.BRANCH_TYPE"
-            )
           def content = ''
           if (env.DEPLOY_TRIDENT && env.BUILD_TYPE == 'stable') {
             echo "Creating the build script for stable/master deployment"
@@ -2254,6 +2248,17 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
         if (env.DEPLOY_TRIDENT) {
 
+          _scp(
+            ssh_options,
+            'root',
+            ip_address,
+            "src2",
+            "$vm_path/go/src2",
+            true,
+            true,
+            true
+          )
+
           // Tag the release
           def release_name = 'v' + env.TRIDENT_VERSION
           try {
@@ -2277,7 +2282,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               'root',
               ip_address,
               "$name/tag_release.sh",
-              "$vm_path/go/src/github.com/netapp/trident",
+              "$vm_path/go/src2/github.com/netapp/trident",
               true,
               false,
               true
@@ -2286,7 +2291,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             sh (
               label: "Execute tag_release.sh on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
-                "cd $vm_path/go/src/github.com/netapp/trident/;" +
+                "cd $vm_path/go/src2/github.com/netapp/trident/;" +
                 "sh ./tag_release.sh > tag_release.log 2>&1'"
             )
 
@@ -2301,7 +2306,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               ssh_options,
               'root',
               ip_address,
-              "$vm_path/go/src/github.com/netapp/trident/tag_release.log",
+              "$vm_path/go/src2/github.com/netapp/trident/tag_release.log",
               name,
               false,
               false,
@@ -2328,10 +2333,22 @@ def _build_trident(String name, String ssh_options, Map spec) {
           )
 
           if (env.BUILD_TYPE == 'stable') {
+            
+            def tarball = "trident-installer-${env.TRIDENT_VERSION}.tar.gz"
+
+            sh (
+              label: "Copy $tarball to src2/github.com/netapp/trident",
+              script: "ssh $ssh_options root@$ip_address 'cp " +
+                "$vm_path/go/src/github.com/netapp/trident/$tarball " + 
+                "$vm_path/go/src2/github.com/netapp/trident'"
+            )
+
+            sh (label: "Sleep", script: "sleep 1")
+
             sh (
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
-                "cd $vm_path/go/src/github.com/netapp/trident;" +
+                "cd $vm_path/go/src2/github.com/netapp/trident;" +
                 "python $vm_path/tools/utils/release_to_github.py " +
                 "--changelog CHANGELOG.md " +
                 "--github-org $env.TRIDENT_PUBLIC_GITHUB_ORG " +
@@ -2340,14 +2357,25 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--github-user $env.GITHUB_USERNAME " +
                 "--release-name $release_name " +
                 "--release-hash $commit " +
-                "--tarball " +
-                "trident-installer-${env.TRIDENT_VERSION}.tar.gz'"
+                "--tarball $tarball'"
             )
           } else {
+
+            def tarball = "trident-installer-${env.TRIDENT_VERSION}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION}.tar.gz"
+
+            sh (
+              label: "Copy $tarball to src2/github.com/netapp/trident",
+              script: "ssh $ssh_options root@$ip_address 'cp " +
+                "$vm_path/go/src/github.com/netapp/trident/$tarball " + 
+                "$vm_path/go/src2/github.com/netapp/trident'"
+            )
+            
+            sh (label: "Sleep", script: "sleep 1")
+
             sh (
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
-                "cd $vm_path/go/src/github.com/netapp/trident;" +
+                "cd $vm_path/go/src2/github.com/netapp/trident;" +
                 "python $vm_path/tools/utils/release_to_github.py " +
                 "--changelog CHANGELOG.md " +
                 "--github-org $env.TRIDENT_PUBLIC_GITHUB_ORG " +
@@ -2357,8 +2385,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--prerelease " +
                 "--release-name ${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION} " +
                 "--release-hash $commit " +
-                "--tarball " +
-                "trident-installer-${env.TRIDENT_VERSION}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION}.tar.gz'"
+                "--tarball $tarball'"
             )
           }
         }
@@ -3476,61 +3503,51 @@ def _clone() {
   def user = env.GITHUB_USERNAME
   def token = env.GITHUB_TOKEN
 
-  if (env.DEPLOY_TRIDENT) {
+  echo "Clone trident:$branch"
 
-    sh (
-      label: "Full clone $branch for deployment",
-      script: "git clone https://$user:$token@github.com/$private_org/$private_repo -b $branch src/github.com/netapp/trident"
-    )
-  } else {
+  // Create the directory for the trident source since it's unclear hot to
+  // call checkout scm with a destination dir
+  def jenkins_trident_src = 'src/github.com/netapp/trident'
+  sh (
+    label: "Create directory $jenkins_trident_src",
+    script: "mkdir -p $jenkins_trident_src"
+  )
+  sh (label: "Sleep", script: "sleep 1")
 
-    echo "Clone trident:$branch"
+  // Change to the directory we just created and call checkout scm
+  // We need to use checkout scm becasue it handles PRs
+  dir(jenkins_trident_src) {
+    def co = checkout scm
+    commit = co.GIT_COMMIT
+  }
 
-    // Create the directory for the trident source since it's unclear hot to
-    // call checkout scm with a destination dir
-    def jenkins_trident_src = 'src/github.com/netapp/trident'
-    sh (
-      label: "Create directory $jenkins_trident_src",
-      script: "mkdir -p $jenkins_trident_src"
-    )
-    sh (label: "Sleep", script: "sleep 1")
+  def full_trident_src = 'src2/github.com/netapp/trident'
+  sh (
+    label: "Full clone master for change processing",
+    script: "git clone https://$user:$token@github.com/$private_org/$private_repo $full_trident_src"
+  )
 
-    // Change to the directory we just created and call checkout scm
-    // We need to use checkout scm becasue it handles PRs
-    dir(jenkins_trident_src) {
-      def co = checkout scm
-      commit = co.GIT_COMMIT
+  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+    def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
+      "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
+      "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
+    def response = sh(
+      label: "Query Github for $env.BRANCH_NAME",
+      returnStdout: true,
+      script: cmd
+    ).trim()
+
+    def pr = readJSON text: response
+
+    if (pr.containsKey('head') == false) {
+      error "Error getting the PR info from Github for $env.BRANCH_NAME"
     }
 
-    def full_trident_src = 'src2/github.com/netapp/trident'
-    sh (
-      label: "Full clone master for change processing",
-      script: "git clone https://$user:$token@github.com/$private_org/$private_repo $full_trident_src"
-    )
+    branch = pr['head']['ref']
 
-    if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-      def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
-        "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
-        "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
-      def response = sh(
-        label: "Query Github for $env.BRANCH_NAME",
-        returnStdout: true,
-        script: cmd
-      ).trim()
+    echo "The branch name for $env.BRANCH_NAME is $branch"
 
-      def pr = readJSON text: response
-
-      if (pr.containsKey('head') == false) {
-        error "Error getting the PR info from Github for $env.BRANCH_NAME"
-      }
-
-      branch = pr['head']['ref']
-
-      echo "The branch name for $env.BRANCH_NAME is $branch"
-
-      commit = pr['head']['sha']
-
-    }
+    commit = pr['head']['sha']
 
   }
 
@@ -4812,8 +4829,8 @@ def _propagate_changes() {
       // Explain why there is no propagation
       echo ("Skipping change propagation due to one or more of the following reasons: \n" +
             "- One or more tests failed \n" +
-            "- The current branch name $branch is not master \n" +
-            "- The current branch name $branch does not start with stable")
+            "- The current BRANCH_NAME($branch) is not master \n" +
+            "- The current BRANCH_NAME($branch) does not start with stable")
     }
   }
 }
