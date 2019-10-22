@@ -890,15 +890,15 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotCon
 	internalVolName = GetLUNPathEconomy(bucketVol, snapConfig.VolumeInternalName)
 
 	// If the specified volume doesn't exist, return error
-	_, err = d.API.LunGet(internalVolName)
+	lunInfo, err := d.API.LunGet(internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error checking for existing volume: %v", err)
 	}
 
-	size, err := d.API.VolumeSize(internalVolName)
-	if err != nil {
+	if lunInfo.SizePtr == nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
+	size := lunInfo.Size()
 
 	// Create the snapshot name/string
 	lunName := d.helper.GetSnapshotName(snapConfig.VolumeName, internalSnapName)
