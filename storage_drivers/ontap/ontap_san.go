@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -311,7 +311,7 @@ func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	return errors.New("import is not implemented")
 }
 
-func (d *SANStorageDriver) Rename(name string, new_name string) error {
+func (d *SANStorageDriver) Rename(name string, newName string) error {
 	return errors.New("rename is not implemented")
 }
 
@@ -662,7 +662,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(
 	volumeMap := make(map[string]azgo.VolumeAttributesType)
 	if volumesResponse.Result.AttributesListPtr != nil {
 		for _, volumeAttrs := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
-			internalName := string(volumeAttrs.VolumeIdAttributesPtr.Name())
+			internalName := volumeAttrs.VolumeIdAttributesPtr.Name()
 			volumeMap[internalName] = volumeAttrs
 		}
 	}
@@ -692,7 +692,7 @@ func (d *SANStorageDriver) getVolumeExternal(
 	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 
-	internalName := string(volumeIDAttrs.Name())
+	internalName := volumeIDAttrs.Name()
 	name := internalName
 	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
 		name = internalName[len(*d.Config.StoragePrefix):]
@@ -746,7 +746,9 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 }
 
 // Resize expands the volume size.
-func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -838,11 +840,12 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 	}
 
 	// Resize LUN0
-	_, err = d.API.LunResize(lunPath, int(sizeBytes))
+	returnSize, err := d.API.LunResize(lunPath, int(sizeBytes))
 	if err != nil {
 		log.WithField("error", err).Error("LUN resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
 
+	volConfig.Size = strconv.FormatUint(returnSize, 10)
 	return nil
 }

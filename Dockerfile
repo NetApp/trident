@@ -55,9 +55,11 @@ RUN    ln -s /netapp/chroot-host-wrapper.sh /netapp/blkid \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/multipath \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/multipathd \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/pgrep \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/resize2fs \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/rmdir \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/stat \
-    && ln -s /netapp/chroot-host-wrapper.sh /netapp/umount
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/umount \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/xfs_growfs
 
 
 CMD ["/usr/bin/env -i PATH='/netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/local/bin/$BIN -port $PORT -crd_persistence -k8s_api_server $K8S"]

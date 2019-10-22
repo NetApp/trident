@@ -81,10 +81,10 @@ type BootstrapError struct {
 func (e *BootstrapError) Error() string { return e.message }
 
 type NotFoundError struct {
-	message string
+	Message string
 }
 
-func (e *NotFoundError) Error() string { return e.message }
+func (e *NotFoundError) Error() string { return e.Message }
 
 type FoundError struct {
 	message string

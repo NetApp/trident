@@ -2676,7 +2676,7 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 		return volumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
-	// Create a new config to capture the volume size change.
+	// Create a new config for the volume transaction
 	cloneConfig := volume.Config.ConstructClone()
 	cloneConfig.Size = newSize
 
@@ -2686,7 +2686,7 @@ func (o *TridentOrchestrator) ResizeVolume(volumeName, newSize string) (err erro
 		Op:     storage.ResizeVolume,
 	}
 	if err = o.AddVolumeTransaction(volTxn); err != nil {
-		return
+		return err
 	}
 
 	defer func() {
@@ -2718,6 +2718,8 @@ func (o *TridentOrchestrator) resizeVolume(volume *storage.Volume, newSize strin
 	}
 
 	if volume.Config.Size != newSize {
+		// If the resize is successful the driver updates the volume.Config.Size, as a side effect, with the actual
+		// byte size of the expanded volume.
 		if err := volumeBackend.ResizeVolume(volume.Config, newSize); err != nil {
 			log.WithFields(log.Fields{
 				"volume":          volume.Config.Name,
@@ -2731,7 +2733,6 @@ func (o *TridentOrchestrator) resizeVolume(volume *storage.Volume, newSize strin
 		}
 	}
 
-	volume.Config.Size = newSize
 	if err := o.updateVolumeOnPersistentStore(volume); err != nil {
 		// It's ok not to revert volume size as we don't clean up the
 		// transaction object in this situation.

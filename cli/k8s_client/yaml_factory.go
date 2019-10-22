@@ -636,6 +636,18 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-resizer
+        image: quay.io/k8scsi/csi-resizer:v0.2.0
+        args:
+        - "--v=9"
+        - "--csiTimeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
         image: quay.io/k8scsi/csi-snapshotter:v1.2.1
         args:
@@ -750,6 +762,8 @@ spec:
         - name: host-dir
           mountPath: /host
           mountPropagation: "Bidirectional"
+        - name: trident-tracking-dir
+          mountPath: /var/lib/trident/tracking
         - name: certs
           mountPath: /certs
           readOnly: true
@@ -811,6 +825,10 @@ spec:
         hostPath:
           path: /
           type: Directory
+      - name: trident-tracking-dir
+        hostPath:
+          path: /var/lib/trident/tracking
+          type: DirectoryOrCreate
       - name: certs
         secret:
           secretName: trident-csi
@@ -879,6 +897,8 @@ spec:
         - name: host-dir
           mountPath: /host
           mountPropagation: "Bidirectional"
+        - name: trident-tracking-dir
+          mountPath: /var/lib/trident/tracking
         - name: certs
           mountPath: /certs
           readOnly: true
@@ -939,6 +959,10 @@ spec:
         hostPath:
           path: /
           type: Directory
+      - name: trident-tracking-dir
+        hostPath:
+          path: /var/lib/trident/tracking
+          type: DirectoryOrCreate
       - name: certs
         secret:
           secretName: trident-csi

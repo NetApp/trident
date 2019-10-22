@@ -15,6 +15,8 @@ const (
 	EventTypeWarning = "Warning"
 )
 
+type Feature string
+
 // HybridPlugin is the common interface used by the "helper" objects used by
 // the CSI controller.  The helpers supply CO-specific details at certain
 // points of CSI workflows.
@@ -36,6 +38,9 @@ type HybridPlugin interface {
 	// RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 	// event message in a manner appropriate to the container orchestrator.
 	RecordVolumeEvent(name, eventType, reason, message string)
+
+	//SupportsFeature accepts a CSI feature and returns true if the feature is supported.
+	SupportsFeature(feature Feature) bool
 
 	// Version returns the version of the CO this helper is managing, or the supported
 	// CSI version in the plain-CSI case.  This value is reported in Trident's telemetry.

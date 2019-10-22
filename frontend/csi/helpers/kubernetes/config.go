@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/netapp/trident/config"
+	csiConfig "github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/frontend/csi/helpers"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -51,3 +54,8 @@ const (
 	AnnImportOriginalName = annPrefix + "/importOriginalName"
 	AnnImportBackendUUID  = annPrefix + "/importBackendUUID"
 )
+
+var features = map[helpers.Feature]*utils.Version{
+	csiConfig.ExpandCSIVolumes: utils.MustParseSemantic("1.16.0"),
+	csiConfig.CSIBlockVolumes:  utils.MustParseSemantic("1.14.0"),
+}

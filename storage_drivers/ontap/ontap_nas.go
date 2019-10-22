@@ -719,7 +719,8 @@ func (d *NASStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 }
 
 // Resize expands the volume size.
-func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *NASStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -730,6 +731,7 @@ func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
 		log.WithFields(fields).Debug(">>>> Resize")
 		defer log.WithFields(fields).Debug("<<<< Resize")
 	}
+
 	flexvolSize, err := resizeValidation(name, sizeBytes, d.API.VolumeExists, d.API.VolumeSize)
 	if err != nil {
 		return err
@@ -753,5 +755,6 @@ func (d *NASStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return fmt.Errorf("volume resize failed")
 	}
 
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }

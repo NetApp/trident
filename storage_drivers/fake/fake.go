@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -851,7 +851,9 @@ func (d *StorageDriver) Get(name string) error {
 }
 
 // Resize expands the volume size.
-func (d *StorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *StorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	vol := d.Volumes[name]
 
 	if vol.SizeBytes == sizeBytes {
@@ -865,6 +867,7 @@ func (d *StorageDriver) Resize(name string, sizeBytes uint64) error {
 		d.Volumes[name] = vol
 	}
 
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }
 

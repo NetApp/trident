@@ -102,3 +102,14 @@ func (p *Plugin) RecordVolumeEvent(name, eventType, reason, message string) {
 		"message":   message,
 	}).Debug("Volume event.")
 }
+
+// SupportsFeature accepts a CSI feature and returns true if the
+// feature exists and is supported.
+func (p *Plugin) SupportsFeature(feature helpers.Feature) bool {
+
+	if supported, ok := features[feature]; ok {
+		return supported
+	} else {
+		return false
+	}
+}

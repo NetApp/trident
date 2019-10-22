@@ -15,6 +15,7 @@
 - Disabled FabricPool tiering for ONTAP volumes created by Trident. (Issue [#199](https://github.com/NetApp/trident/issues/199))
 
 **Enhancements:**
+- **Kubernetes:**  Added support to CSI Trident for volume expansion for iSCSI PVs.
 - **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
 - **Kubernetes:** Added support to CSI Trident for raw block volumes with multi-attach for iSCSI PVs.
 - **Kubernetes:** Added support for Kubernetes 1.16.

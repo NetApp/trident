@@ -15,6 +15,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/netapp/trident/core"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,6 +25,7 @@ import (
 )
 
 const (
+	tridentDeviceInfoPath     = "/var/lib/trident/tracking"
 	fsRaw                     = "raw"
 	lockID                    = "csi_node_server"
 	volumePublishInfoFilename = "volumePublishInfo.json"
@@ -63,20 +65,15 @@ func (p *Plugin) NodeUnstageVolume(
 	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer log.WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
-	if req.GetVolumeId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
-	}
-
-	targetPath := req.GetStagingTargetPath()
-
-	if targetPath == "" {
-		return nil, status.Error(codes.InvalidArgument, "no staging target path provided")
+	_, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Read the device info from the staging path
-	publishInfo, err := p.readStagedDeviceInfo(targetPath)
+	publishInfo, err := p.readStagedDeviceInfo(stagingTargetPath)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "unable to read the staging target %s; %s", targetPath, err)
+		return nil, status.Errorf(codes.FailedPrecondition, "unable to read the staging target %s; %s", stagingTargetPath, err)
 	}
 	protocol, err := p.getVolumeProtocolFromPublishInfo(publishInfo)
 	if err != nil {
@@ -85,7 +82,7 @@ func (p *Plugin) NodeUnstageVolume(
 
 	switch protocol {
 	case tridentconfig.File:
-		return p.nodeUnstageNFSVolume(ctx, req, publishInfo)
+		return p.nodeUnstageNFSVolume(ctx, req)
 	case tridentconfig.Block:
 		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo)
 	default:
@@ -197,12 +194,123 @@ func (p *Plugin) NodeGetVolumeStats(
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// The CO only calls NodeExpandVolume for the Block protocol as the filesystem has to be mounted to perform
+// the resize. This is enforced in our ControllerExpandVolume method where we return true for nodeExpansionRequired
+// when the protocol is Block and return false when the protocol is file.
 func (p *Plugin) NodeExpandVolume(
-	ctx context.Context, in *csi.NodeExpandVolumeRequest,
+	ctx context.Context, req *csi.NodeExpandVolumeRequest,
 ) (*csi.NodeExpandVolumeResponse, error) {
 
-	// Trident doesn't support expansion via CSI
-	return nil, status.Error(codes.Unimplemented, "")
+	fields := log.Fields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
+	log.WithFields(fields).Debug(">>>> NodeExpandVolume")
+	defer log.WithFields(fields).Debug("<<<< NodeExpandVolume")
+
+	volumeId := req.GetVolumeId()
+	if volumeId == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	volumePath := req.GetVolumePath()
+	if volumePath == "" {
+		return nil, status.Error(codes.InvalidArgument, "no volume path provided")
+	}
+
+	requiredBytes := req.GetCapacityRange().GetRequiredBytes()
+	limitBytes := req.GetCapacityRange().GetLimitBytes()
+
+	log.WithFields(log.Fields{
+		"volumeId":      volumeId,
+		"volumePath":    volumePath,
+		"requiredBytes": requiredBytes,
+		"limitBytes":    limitBytes,
+	}).Debug("NodeExpandVolumeRequest values")
+
+	// The CSI spec does not specify what the CO may pass as the staging_target_path. This is why the tracking file
+	// exists req order to locate the VolumePublishInfo file.
+	// If the PV was staged with a Trident version prior to 19.10 then the tracking file will not exist. The
+	// stagingTargetPath is likely to be the directory where the VolumePublishInfo file is located so we will attempt
+	// to set the stagingTargetPath to this location if the tracking file does not exist.
+	stagingTargetPath, err := p.readStagedTrackingFile(volumeId)
+	if err != nil {
+		if core.IsNotFoundError(err) {
+			// Verify the volumePath is the stagingTargetPath
+			filePath := path.Join(volumePath, volumePublishInfoFilename)
+			if _, err = os.Stat(filePath); !os.IsNotExist(err) {
+				stagingTargetPath = volumePath
+			} else {
+				log.WithField("filePath", filePath).Errorf("Unable to find volumePublishInfo.")
+				return nil, status.Errorf(codes.Internal, "unable to find volume publish info needed for resize")
+			}
+		} else {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+	}
+
+	// Current K8S behavior is to send the volumePath as the stagingTargetPath. Log what is received if the
+	// two variables don't match.
+	if stagingTargetPath != volumePath {
+		log.WithFields(log.Fields{
+			"stagingTargetPath": stagingTargetPath,
+			"volumePath":        volumePath,
+			"volumeId":          volumeId,
+		}).Info("Received something other than the expected stagingTargetPath.")
+	}
+
+	publishInfo, err := p.readStagedDeviceInfo(stagingTargetPath)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	lunID := int(publishInfo.IscsiLunNumber)
+
+	log.WithFields(log.Fields{
+		"targetIQN":      publishInfo.IscsiTargetIQN,
+		"lunID":          lunID,
+		"devicePath":     publishInfo.DevicePath,
+		"mountOptions":   publishInfo.MountOptions,
+		"filesystemType": publishInfo.FilesystemType,
+	}).Debug("PublishInfo for device to expand.")
+
+	// Make sure device is ready
+	if utils.IsAlreadyAttached(lunID, publishInfo.IscsiTargetIQN) {
+
+		// Rescan device to detect increased size
+		if err = utils.ISCSIRescanDevices(publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
+			log.WithFields(log.Fields{
+				"device": publishInfo.DevicePath,
+				"error":  err,
+			}).Error("Unable to scan device.")
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		// Expand filesystem
+		if publishInfo.FilesystemType != fsRaw {
+			filesystemSize, err := utils.ExpandISCSIFilesystem(publishInfo, stagingTargetPath)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"device":         publishInfo.DevicePath,
+					"filesystemType": publishInfo.FilesystemType,
+					"error":          err,
+				}).Error("Unable to expand filesystem.")
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			log.WithFields(log.Fields{
+				"filesystemSize": filesystemSize,
+				"requiredBytes":  requiredBytes,
+				"limitBytes":     limitBytes,
+			}).Debug("Filesystem size after expand.")
+		}
+	} else {
+		log.WithField("devicePath", publishInfo.DevicePath).Error("Unable to expand volume as device is not attached.")
+		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	log.WithFields(log.Fields{
+		"volumePath": volumePath,
+		"volumeId":   volumeId,
+	}).Debug("Filesystem expansion completed.")
+	return &csi.NodeExpandVolumeResponse{}, nil
 }
 
 func (p *Plugin) NodeGetCapabilities(
@@ -294,19 +402,29 @@ func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolum
 	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
 	publishInfo.NfsPath = req.PublishContext["nfsPath"]
 
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Save the device info to the staging path for use in the publish & unstage calls
-	if err := p.writeStagedDeviceInfo(req.StagingTargetPath, publishInfo); err != nil {
+	if err := p.writeStagedDeviceInfo(stagingTargetPath, publishInfo, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &csi.NodeStageVolumeResponse{}, nil
 }
 
 func (p *Plugin) nodeUnstageNFSVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
-) (*csi.NodeUnstageVolumeResponse, error) {
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest) (*csi.NodeUnstageVolumeResponse, error) {
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
 
 	// Delete the device info we saved to the staging path so unstage can succeed
-	if err := p.clearStagedDeviceInfo(req.StagingTargetPath); err != nil {
+	if err := p.clearStagedDeviceInfo(stagingTargetPath, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -451,8 +569,13 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Save the device info to the staging path for use in the publish & unstage calls
-	if err := p.writeStagedDeviceInfo(req.StagingTargetPath, publishInfo); err != nil {
+	if err := p.writeStagedDeviceInfo(stagingTargetPath, publishInfo, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -483,9 +606,22 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 	}
 
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Delete the device info we saved to the staging path so unstage can succeed
-	if err := p.clearStagedDeviceInfo(req.StagingTargetPath); err != nil {
+	if err := p.clearStagedDeviceInfo(stagingTargetPath, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
+	if err := utils.UmountAndRemoveTemporaryMountPoint(stagingTargetPath); err != nil {
+		log.WithField("stagingTargetPath", stagingTargetPath).Errorf(
+			"Failed to remove directory in staging target path; %s", err)
+		return nil, fmt.Errorf("failed to remove temporary directory in staging target path %s; %s",
+			stagingTargetPath, err)
 	}
 
 	return &csi.NodeUnstageVolumeResponse{}, nil
@@ -536,7 +672,9 @@ func (p *Plugin) nodePublishISCSIVolume(
 	return &csi.NodePublishVolumeResponse{}, nil
 }
 
-func (p *Plugin) writeStagedDeviceInfo(stagingTargetPath string, publishInfo *utils.VolumePublishInfo) error {
+func (p *Plugin) writeStagedDeviceInfo(
+	stagingTargetPath string, publishInfo *utils.VolumePublishInfo, volumeId string,
+) error {
 
 	publishInfoBytes, err := json.Marshal(publishInfo)
 	if err != nil {
@@ -547,6 +685,10 @@ func (p *Plugin) writeStagedDeviceInfo(stagingTargetPath string, publishInfo *ut
 
 	if err := ioutil.WriteFile(filename, publishInfoBytes, 0600); err != nil {
 		return err
+	}
+
+	if err := p.writeStagedTrackingFile(volumeId, stagingTargetPath); err != nil {
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	return nil
@@ -571,23 +713,108 @@ func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePu
 	return &publishInfo, nil
 }
 
-func (p *Plugin) clearStagedDeviceInfo(stagingTargetPath string) error {
-	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
+func (p *Plugin) clearStagedDeviceInfo(stagingTargetPath string, volumeId string) error {
+	fields := log.Fields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
+	log.WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
+	defer log.WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
 
-	fields := log.Fields{"filename": filename}
+	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 
 	if _, err := os.Stat(filename); err == nil {
 		if err = os.Remove(filename); err != nil {
-			log.WithFields(fields).Errorf("Failed to remove staging target path; %s", err)
-			return fmt.Errorf("Failed to remove staging target path %s; %s", filename, err)
+			log.WithField("filename", filename).Errorf("Failed to remove staging target path; %s", err)
+			return fmt.Errorf("failed to remove staging target path %s; %s", filename, err)
 		}
-		return nil
 	} else if !os.IsNotExist(err) {
 		log.WithFields(fields).Errorf("Can't determine if staging target path exists; %s", err)
 		return fmt.Errorf("can't determine if staging target path %s exists; %s", filename, err)
 	}
 
+	if err := p.clearStagedTrackingFile(volumeId); err != nil {
+		log.WithField("volumeId", volumeId).Errorf("Failed to remove tracking file: %s", err)
+	}
+
 	return nil
+}
+
+// writeStagedTrackingFile writes the serialized staged_target_path for a volumeId.
+func (p *Plugin) writeStagedTrackingFile(volumeId string, stagingTargetPath string) error {
+
+	volumeTrackingPublishInfo := &utils.VolumeTrackingPublishInfo{
+		StagingTargetPath: stagingTargetPath,
+	}
+
+	volumeTrackingPublishInfoBytes, err := json.Marshal(volumeTrackingPublishInfo)
+	if err != nil {
+		return err
+	}
+
+	trackingFile := volumeId + ".json"
+	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
+
+	if err := ioutil.WriteFile(trackingFilename, volumeTrackingPublishInfoBytes, 0600); err != nil {
+		log.WithFields(log.Fields{
+			"volumeId": volumeId,
+			"error":    err.Error(),
+		}).Error("Unable to write tracking file.")
+		return err
+	}
+
+	return nil
+}
+
+// readStagedTrackingFile returns the staged_target_path given the volumeId for a staged device.
+// Devices that were created with 19.07 and prior will not have a tracking file.
+// Returns a status.Error if an error is returned.
+func (p *Plugin) readStagedTrackingFile(volumeId string) (string, error) {
+
+	var publishInfoLocation utils.VolumeTrackingPublishInfo
+	trackingFile := volumeId + ".json"
+	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
+
+	// File may not exist so caller needs to handle not found error
+	if _, err := os.Stat(trackingFilename); err != nil {
+		log.WithFields(log.Fields{
+			"volumeId": volumeId,
+			"error":    err.Error(),
+		}).Error("Unable to find tracking file matching volumeId.")
+		return "", &core.NotFoundError{Message: "tracking file not found"}
+	}
+
+	publishInfoLocationBytes, err := ioutil.ReadFile(trackingFilename)
+	if err != nil {
+		return "", fmt.Errorf(err.Error())
+	}
+
+	err = json.Unmarshal(publishInfoLocationBytes, &publishInfoLocation)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeId": volumeId,
+			"error":    err.Error(),
+		})
+		return "", err
+	}
+
+	log.WithField("publishInfoLocation", publishInfoLocation).Debug("Publish info location found")
+	return publishInfoLocation.StagingTargetPath, nil
+}
+
+func (p *Plugin) clearStagedTrackingFile(volumeId string) error {
+	fields := log.Fields{"volumeId": volumeId}
+	log.WithFields(fields).Debug(">>>> clearStagedTrackingFile")
+	defer log.WithFields(fields).Debug("<<<< clearTrackingFile")
+
+	trackingFile := volumeId + ".json"
+	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
+
+	err := os.Remove(trackingFilename)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"trackingFilename": trackingFilename,
+			"error":            err,
+		}).Error("Removing tracking file failed.")
+	}
+	return err
 }
 
 func (p *Plugin) getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (tridentconfig.Protocol, error) {
@@ -598,4 +825,25 @@ func (p *Plugin) getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePubli
 	} else {
 		return "", fmt.Errorf("unable to infer volume protocol")
 	}
+}
+
+type RequestHandler interface {
+	GetVolumeId() string
+	GetStagingTargetPath() string
+}
+
+// getVolumeIdAndStagingPath is a helper method to reduce code duplication
+func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, error) {
+
+	volumeId := req.GetVolumeId()
+	if volumeId == "" {
+		return "", "", status.Error(codes.InvalidArgument, "no volume ID provided")
+	}
+
+	stagingTargetPath := req.GetStagingTargetPath()
+	if stagingTargetPath == "" {
+		return "", "", status.Error(codes.InvalidArgument, "no staging target path provided")
+	}
+
+	return volumeId, stagingTargetPath, nil
 }

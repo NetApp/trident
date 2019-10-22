@@ -58,7 +58,7 @@ func (p *Plugin) CreateVolume(
 
 		// Check if the size of existing volume is compatible with the new request
 		existingSize, _ := strconv.ParseInt(existingVolume.Config.Size, 10, 64)
-		if existingSize < int64(req.GetCapacityRange().GetRequiredBytes()) {
+		if existingSize < req.GetCapacityRange().GetRequiredBytes() {
 			return nil, status.Error(
 				codes.AlreadyExists,
 				fmt.Sprintf("volume %s (but with different size) already exists", req.GetName()))
@@ -113,6 +113,10 @@ func (p *Plugin) CreateVolume(
 	if isRawBlockAccessType && isFileMountAccessType {
 		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
 	} else if isRawBlockAccessType {
+		if !p.helper.SupportsFeature(CSIBlockVolumes) {
+			log.WithFields(fields).Error("Raw block volumes are not supported for this container orchestrator.")
+			return nil, status.Error(codes.FailedPrecondition, "raw block volumes are not supported for this container orchestrator")
+		}
 		volumeMode = tridentconfig.RawBlock
 		fsType = fsRaw
 	}
@@ -555,11 +559,71 @@ func (p *Plugin) ListSnapshots(
 }
 
 func (p *Plugin) ControllerExpandVolume(
-	ctx context.Context, in *csi.ControllerExpandVolumeRequest,
+	ctx context.Context, req *csi.ControllerExpandVolumeRequest,
 ) (*csi.ControllerExpandVolumeResponse, error) {
 
-	// Trident doesn't support expansion via CSI
-	return nil, status.Error(codes.Unimplemented, "")
+	fields := log.Fields{"Method": "ControllerExpandVolume", "Type": "CSI_Controller"}
+	log.WithFields(fields).Debug(">>>> ControllerExpandVolume")
+	defer log.WithFields(fields).Debug("<<<< ControllerExpandVolume")
+
+	volumeId := req.GetVolumeId()
+	minSize := req.GetCapacityRange().GetRequiredBytes()
+	maxSize := req.GetCapacityRange().GetLimitBytes()
+	if 0 < maxSize && maxSize < minSize {
+		return nil, status.Error(codes.InvalidArgument, "limitBytes are smaller than requiredBytes")
+	}
+	newSize := strconv.FormatInt(minSize, 10)
+
+	log.WithFields(log.Fields{
+		"volumeId":         volumeId,
+		"capRequiredBytes": newSize,
+		"capLimitBytes":    minSize,
+	}).Debug("ControllerExpandVolume")
+
+	volume, err := p.orchestrator.GetVolume(volumeId)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeId":          volumeId,
+			"requestedCapacity": newSize,
+		}).Error("Could not find volume.")
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	if err = p.orchestrator.ResizeVolume(volume.Config.Name, newSize); err != nil {
+		log.WithFields(log.Fields{
+			"volumeId":          volumeId,
+			"requestedCapacity": newSize,
+			"error":             err,
+		}).Error("Could not resize volume.")
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	// Get the volume again to get the real volume size
+	resizedVolume, err := p.orchestrator.GetVolume(volumeId)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeId": volumeId,
+		}).Error("Could not find resized volume.")
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	nodeExpansionRequired := resizedVolume.Config.Protocol == tridentconfig.Block
+	responseSize, err := strconv.ParseInt(resizedVolume.Config.Size, 10, 64)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volumeId":          volumeId,
+			"requestedCapacity": resizedVolume.Config.Size,
+			"error":             err,
+		}).Error("Invalid type conversion.")
+
+	}
+
+	response := csi.ControllerExpandVolumeResponse{
+		CapacityBytes:         responseSize,
+		NodeExpansionRequired: nodeExpansionRequired,
+	}
+
+	return &response, nil
 }
 
 func (p *Plugin) getCSIVolumeFromTridentVolume(volume *storage.VolumeExternal) (*csi.Volume, error) {

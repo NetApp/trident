@@ -36,6 +36,7 @@ import (
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
+	tridentutils "github.com/netapp/trident/utils"
 )
 
 const (
@@ -190,12 +191,15 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 			DeleteFunc: p.deletePVC,
 		},
 	)
-	p.pvcController.AddEventHandlerWithResyncPeriod(
-		cache.ResourceEventHandlerFuncs{
-			UpdateFunc: p.updatePVCResize,
-		},
-		ResizeSyncPeriod,
-	)
+
+	if !p.SupportsFeature(csi.ExpandCSIVolumes) {
+		p.pvcController.AddEventHandlerWithResyncPeriod(
+			cache.ResourceEventHandlerFuncs{
+				UpdateFunc: p.updatePVCResize,
+			},
+			ResizeSyncPeriod,
+		)
+	}
 
 	// Set up a watch for PVs
 	p.pvSource = &cache.ListWatch{
@@ -267,7 +271,7 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 // which implement meta.Interface.  The key is the object's UID.
 func MetaUIDKeyFunc(obj interface{}) ([]string, error) {
 	if key, ok := obj.(string); ok && uidRegex.MatchString(key) {
-		return []string{string(key)}, nil
+		return []string{key}, nil
 	}
 	objectMeta, err := meta.Accessor(obj)
 	if err != nil {
@@ -308,7 +312,7 @@ func (p *Plugin) Deactivate() error {
 
 // GetName returns the name of this Trident frontend.
 func (p *Plugin) GetName() string {
-	return string(helpers.KubernetesHelper)
+	return helpers.KubernetesHelper
 }
 
 // Version returns the version of this Trident frontend (the detected K8S version).
@@ -781,4 +785,24 @@ func (p *Plugin) waitForCachedStorageClassByName(
 	}
 
 	return sc, nil
+}
+
+// SupportsFeature accepts a CSI feature and returns true if the
+// feature exists and is supported.
+func (p *Plugin) SupportsFeature(feature helpers.Feature) bool {
+
+	kubeSemVersion, err := tridentutils.ParseSemantic(p.kubeVersion.GitVersion)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"version": p.kubeVersion.GitVersion,
+			"error":   err,
+		}).Errorf("unable to parse Kubernetes version")
+		return false
+	}
+
+	if minVersion, ok := features[feature]; ok {
+		return kubeSemVersion.AtLeast(minVersion)
+	} else {
+		return false
+	}
 }

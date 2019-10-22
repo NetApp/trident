@@ -724,7 +724,9 @@ func (d *NASFlexGroupStorageDriver) GetUpdateType(driverOrig storage.Driver) *ro
 }
 
 // Resize expands the FlexGroup size.
-func (d *NASFlexGroupStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *NASFlexGroupStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -735,6 +737,7 @@ func (d *NASFlexGroupStorageDriver) Resize(name string, sizeBytes uint64) error 
 		log.WithFields(fields).Debug(">>>> Resize")
 		defer log.WithFields(fields).Debug("<<<< Resize")
 	}
+
 	flexvolSize, err := resizeValidation(name, sizeBytes, d.API.FlexGroupExists, d.API.FlexGroupSize)
 	if err != nil {
 		return err
@@ -750,5 +753,6 @@ func (d *NASFlexGroupStorageDriver) Resize(name string, sizeBytes uint64) error 
 		return fmt.Errorf("flexgroup resize failed")
 	}
 
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }

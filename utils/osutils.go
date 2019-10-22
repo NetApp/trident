@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -25,6 +26,7 @@ const (
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	resourceDeletionTimeoutSecs         = 40
 	fsRaw                               = "raw"
+	temporaryMountDir                   = "/tmp_mnt"
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
@@ -95,7 +97,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		"targetPortals": bkportal,
 		"targetIQN":     targetIQN,
 		"fstype":        fstype,
-	}).Debug("Publishing iSCSI volume.")
+	}).Debug("Attaching iSCSI volume.")
 
 	if ISCSISupported() == false {
 		err := errors.New("unable to attach: open-iscsi tools not found on host")
@@ -125,10 +127,10 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		}
 	}
 
-	// If LUN isn't present, rescan the target and wait for the device(s) to appear
-	// if not attached need to rescan
-	shouldRescan := !isAlreadyAttached(lunID, targetIQN)
-	err = waitForDeviceRescanIfNeeded(lunID, targetIQN, shouldRescan)
+	// If LUN isn't present, scan the target and wait for the device(s) to appear
+	// if not attached need to scan
+	shouldScan := !IsAlreadyAttached(lunID, targetIQN)
+	err = waitForDeviceScanIfNeeded(lunID, targetIQN, shouldScan)
 	if err != nil {
 		log.Errorf("Could not find iSCSI device: %+v", err)
 		return err
@@ -415,16 +417,16 @@ func getDevicesForLUN(paths []string) ([]string, error) {
 	return devices, nil
 }
 
-// waitForDeviceRescanIfNeeded rescans all paths to a specific LUN and waits until all
+// waitForDeviceScanIfNeeded scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func waitForDeviceRescanIfNeeded(lunID int, iSCSINodeName string, shouldRescan bool) error {
+func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool) error {
 
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.rescanTargetAndWaitForDevice")
-	defer log.WithFields(fields).Debug("<<<< osutils.rescanTargetAndWaitForDevice")
+	log.WithFields(fields).Debug(">>>> osutils.waitForDeviceScanIfNeeded")
+	defer log.WithFields(fields).Debug("<<<< osutils.waitForDeviceScanIfNeeded")
 
 	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
 	if len(hostSessionMap) == 0 {
@@ -437,9 +439,9 @@ func waitForDeviceRescanIfNeeded(lunID int, iSCSINodeName string, shouldRescan b
 		hosts = append(hosts, hostNumber)
 	}
 
-	if shouldRescan {
-		if err := iSCSIRescanTargetLUN(lunID, hosts); err != nil {
-			log.WithField("rescanError", err).Error("Could not rescan for new LUN.")
+	if shouldScan {
+		if err := iSCSIScanTargetLUN(lunID, hosts); err != nil {
+			log.WithField("scanError", err).Error("Could not scan for new LUN.")
 		}
 	}
 
@@ -504,7 +506,7 @@ func waitForDeviceRescanIfNeeded(lunID int, iSCSINodeName string, shouldRescan b
 	deviceBackoff.RandomizationFactor = 0.1
 	deviceBackoff.MaxElapsedTime = (iSCSIDeviceDiscoveryTimeoutSecs - 5) * time.Second
 
-	// Run the check/rescan using an exponential backoff
+	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(checkAnyDeviceExists, deviceBackoff, devicesNotify); err != nil {
 		log.Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
 
@@ -536,7 +538,7 @@ type ScsiDeviceInfo struct {
 }
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
-// called after calling rescanTargetAndWaitForDevice so that the device paths are known to exist.
+// called after calling waitForDeviceScanIfNeeded so that the device paths are known to exist.
 func getDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{
@@ -706,7 +708,7 @@ func waitForMultipathDeviceForDevices(devices []string) string {
 	multipathDeviceBackoff.RandomizationFactor = 0.1
 	multipathDeviceBackoff.MaxElapsedTime = maxDuration
 
-	// Run the check/rescan using an exponential backoff
+	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
 		log.Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
 	} else {
@@ -1017,6 +1019,133 @@ func ISCSIDisableDelete(targetIQN, targetPortal string) error {
 	return err
 }
 
+// UmountAndRemoveTemporaryMountPoint unmounts and removes the TemporaryMountDir
+func UmountAndRemoveTemporaryMountPoint(mountPath string) error {
+	log.Debug(">>>> osutils.UmountAndRemoveTemporaryMountPoint")
+	defer log.Debug("<<<< osutils.UmountAndRemoveTemporaryMountPoint")
+
+	// Delete the temporary mount point if it exists.
+	tmpDir := path.Join(mountPath, temporaryMountDir)
+	if _, err := os.Stat(tmpDir); err == nil {
+		if err = removeMountPoint(tmpDir); err != nil {
+			return fmt.Errorf("failed to remove directory in staging target path %s; %s", tmpDir, err)
+		}
+	} else if !os.IsNotExist(err) {
+		log.WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s", err)
+		return fmt.Errorf("can't determine if temporary dir path %s exists; %s", tmpDir, err)
+	}
+
+	return nil
+}
+
+// removeMountPoint attempts to unmount and remove the directory of the mountPointPath
+func removeMountPoint(mountPointPath string) error {
+	log.Debug(">>>> osutils.removeMountPoint")
+	defer log.Debug("<<<< osutils.removeMountPoint")
+
+	err := Umount(mountPointPath)
+	if err != nil {
+		log.WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
+		return err
+	}
+
+	err = os.Remove(mountPointPath)
+	if err != nil {
+		log.WithField("mountPointPath", mountPointPath).Errorf("Remove dir failed; %s", err)
+		return fmt.Errorf("failed to remove dir %s; %s", mountPointPath, err)
+	}
+	return nil
+}
+
+// mountFilesystemForResize expands a filesystem. The xfs_growfs utility requires a mount point to expand the
+// filesystem. Determining the size of the filesystem requires that the filesystem be mounted.
+func mountFilesystemForResize(devicePath string, stagedTargetPath string, mountOptions string) (string, error) {
+	logFields := log.Fields{
+		"devicePath":       devicePath,
+		"stagedTargetPath": stagedTargetPath,
+		"mountOptions":     mountOptions,
+	}
+	log.WithFields(logFields).Debug(">>>> osutils.mountAndExpandFilesystem")
+	defer log.WithFields(logFields).Debug("<<<< osutils.mountAndExpandFilesystem")
+
+	tmpMountPoint := path.Join(stagedTargetPath, temporaryMountDir)
+	err := MountDevice(devicePath, tmpMountPoint, mountOptions, false)
+	if err != nil {
+		return "", fmt.Errorf("unable to mount device; %s", err)
+	}
+	return tmpMountPoint, nil
+}
+
+// ExpandISCSIFilesystem will expand the filesystem of an already expanded volume.
+func ExpandISCSIFilesystem(publishInfo *VolumePublishInfo, stagedTargetPath string) (int64, error) {
+	devicePath := publishInfo.DevicePath
+	logFields := log.Fields{
+		"devicePath":       devicePath,
+		"stagedTargetPath": stagedTargetPath,
+		"mountOptions":     publishInfo.MountOptions,
+		"filesystemType":   publishInfo.FilesystemType,
+	}
+	log.WithFields(logFields).Debug(">>>> osutils.ExpandISCSIFilesystem")
+	defer log.WithFields(logFields).Debug("<<<< osutils.ExpandISCSIFilesystem")
+
+	tmpMountPoint, err := mountFilesystemForResize(publishInfo.DevicePath, stagedTargetPath, publishInfo.MountOptions)
+	if err != nil {
+		return 0, err
+	}
+	defer removeMountPoint(tmpMountPoint)
+
+	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
+	// is not the correct type.
+	var size int64
+	switch publishInfo.FilesystemType {
+	case "xfs":
+		size, err = expandFilesystem("xfs_growfs", tmpMountPoint, tmpMountPoint)
+		if err != nil {
+			return 0, err
+		}
+	case "ext3", "ext4":
+		size, err = expandFilesystem("resize2fs", devicePath, tmpMountPoint)
+		if err != nil {
+			return 0, err
+		}
+	default:
+		err = fmt.Errorf("unsupported file system type: %s", publishInfo.FilesystemType)
+	}
+
+	return size, err
+}
+
+func expandFilesystem(cmd string, cmdArguments string, tmpMountPoint string) (int64, error) {
+	logFields := log.Fields{
+		"cmd":           cmd,
+		"cmdArguments":  cmdArguments,
+		"tmpMountPoint": tmpMountPoint,
+	}
+	log.WithFields(logFields).Debug(">>>> osutils.expandFilesystem")
+	defer log.WithFields(logFields).Debug("<<<< osutils.expandFilesystem")
+
+	preExpandSize, err := getFilesystemSize(tmpMountPoint)
+	if err != nil {
+		return 0, err
+	}
+	_, err = execCommand(cmd, cmdArguments)
+	if err != nil {
+		log.Errorf("Expanding filesystem failed; %s", err)
+		return 0, err
+	}
+
+	postExpandSize, err := getFilesystemSize(tmpMountPoint)
+	if err != nil {
+		return 0, err
+	}
+
+	if postExpandSize == preExpandSize {
+		log.Warnf("Failed to expand filesystem; size=%d", postExpandSize)
+	}
+
+	return postExpandSize, nil
+}
+
 // iSCSISessionExists checks to see if a session exists to the specified portal.
 func iSCSISessionExists(portal string) (bool, error) {
 
@@ -1059,12 +1188,138 @@ func iSCSISessionExistsToTargetIQN(targetIQN string) (bool, error) {
 	return false, nil
 }
 
-// iSCSIRescanTargetLUN rescans a single LUN on an iSCSI target.
-func iSCSIRescanTargetLUN(lunID int, hosts []int) error {
+func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
+	fields := log.Fields{"targetIQN": targetIQN, "lunID": lunID}
+	log.WithFields(fields).Debug(">>>> osutils.ISCSIRescanDevices")
+	defer log.WithFields(fields).Debug("<<<< osutils.ISCSIRescanDevices")
+
+	deviceInfo, err := getDeviceInfoForLUN(int(lunID), targetIQN)
+	if err != nil {
+		return fmt.Errorf("error getting iSCSI device information: %s", err)
+	} else if deviceInfo == nil {
+		return fmt.Errorf("could not get iSCSI device information for LUN: %d", lunID)
+	}
+
+	allLargeEnough := true
+	for _, diskDevice := range deviceInfo.Devices {
+		size, err := getISCSIDiskSize("/dev/" + diskDevice)
+		if err != nil {
+			return err
+		}
+		if size < minSize {
+			allLargeEnough = false
+		} else {
+			continue
+		}
+
+		err = iSCSIRescanDisk(diskDevice)
+		if err != nil {
+			log.WithField("diskDevice", diskDevice).Error("Failed to rescan disk.")
+			return fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err)
+		}
+	}
+
+	if !allLargeEnough {
+		time.Sleep(time.Second)
+		for _, diskDevice := range deviceInfo.Devices {
+			size, err := getISCSIDiskSize("/dev/" + diskDevice)
+			if err != nil {
+				return err
+			}
+			if size < minSize {
+				log.Error("Disk size not large enough after resize.")
+				return fmt.Errorf("disk size not large enough after resize: %d, %d", size, minSize)
+			}
+		}
+	}
+
+	if deviceInfo.MultipathDevice != "" {
+		multipathDevice := deviceInfo.MultipathDevice
+		size, err := getISCSIDiskSize("/dev/" + multipathDevice)
+		if err != nil {
+			return err
+		}
+
+		if size < minSize {
+			err := reloadMultipathDevice(multipathDevice)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second)
+			size, err = getISCSIDiskSize("/dev/" + multipathDevice)
+			if err != nil {
+				return err
+			}
+			if size < minSize {
+				log.Error("Multipath device not large enough after resize.")
+				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
+			}
+		}
+	}
+
+	return nil
+}
+
+func reloadMultipathDevice(multipathDevice string) error {
+	fields := log.Fields{"multipathDevice": multipathDevice}
+	log.WithFields(fields).Debug(">>>> osutils.reloadMultipathDevice")
+	defer log.WithFields(fields).Debug("<<<< osutils.reloadMultipathDevice")
+
+	if multipathDevice == "" {
+		return fmt.Errorf("cannot reload an empty multipathDevice")
+	}
+
+	_, err := execCommandWithTimeout("multipath", 30, "-r", "/dev/"+multipathDevice)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"device": multipathDevice,
+			"error":  err,
+		}).Error("Failed to reload multipathDevice.")
+		return fmt.Errorf("failed to reload multipathDevice %s: %s", multipathDevice, err)
+	}
+
+	log.WithFields(fields).Debug("Multipath device reloaded.")
+	return nil
+}
+
+// iSCSIRescanDisk causes the kernel to rescan a single iSCSI disk/block device.
+// This is how size changes are found when expanding a volume.
+func iSCSIRescanDisk(deviceName string) error {
+	fields := log.Fields{"deviceName": deviceName}
+	log.WithFields(fields).Debug(">>>> osutils.iSCSIRescanDisk")
+	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIRescanDisk")
+
+	filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
+	log.WithField("filename", filename).Debug("Opening file for writing.")
+
+	f, err := os.OpenFile(filename, os.O_WRONLY, 0)
+	if err != nil {
+		log.WithField("file", filename).Warning("Could not open file for writing.")
+		return err
+	}
+	defer f.Close()
+
+	written, err := f.WriteString("1")
+	if err != nil {
+		log.WithFields(log.Fields{
+			"file":  filename,
+			"error": err,
+		}).Warning("Could not write to file.")
+		return err
+	} else if written == 0 {
+		log.WithField("file", filename).Warning("Zero bytes written to file.")
+		return fmt.Errorf("no data written to %s", filename)
+	}
+
+	return nil
+}
+
+// iSCSIScanTargetLUN scans a single LUN on an iSCSI target to discover it.
+func iSCSIScanTargetLUN(lunID int, hosts []int) error {
 
 	fields := log.Fields{"hosts": hosts, "lunID": lunID}
-	log.WithFields(fields).Debug(">>>> osutils.iSCSIRescanTargetLUN")
-	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIRescanTargetLUN")
+	log.WithFields(fields).Debug(">>>> osutils.iSCSIScanTargetLUN")
+	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIScanTargetLUN")
 
 	var (
 		f   *os.File
@@ -1095,14 +1350,14 @@ func iSCSIRescanTargetLUN(lunID int, hosts []int) error {
 		log.WithFields(log.Fields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
-		}).Debug("Invoked single-LUN rescan.")
+		}).Debug("Invoked single-LUN scan.")
 	}
 
 	return nil
 }
 
-// isAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
-func isAlreadyAttached(lunID int, targetIqn string) bool {
+// IsAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
+func IsAlreadyAttached(lunID int, targetIqn string) bool {
 
 	hostSessionMap := getISCSIHostSessionMapForTarget(targetIqn)
 	if len(hostSessionMap) == 0 {
@@ -1688,7 +1943,7 @@ func formatVolume(device, fstype string) error {
 	formatBackoff.RandomizationFactor = 0.1
 	formatBackoff.MaxElapsedTime = maxDuration
 
-	// Run the check/rescan using an exponential backoff
+	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(formatVolume, formatBackoff, formatNotify); err != nil {
 		log.Warnf("Could not format device after %3.2f seconds.", maxDuration.Seconds())
 		return err

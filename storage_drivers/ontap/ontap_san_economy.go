@@ -572,7 +572,8 @@ func (d *SANEconomyStorageDriver) Destroy(name string) error {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("LUN %v does not exist", name)
+		log.Warnf("LUN %v does not exist", name)
+		return nil
 	}
 
 	lunPath := GetLUNPathEconomy(bucketVol, d.helper.GetInternalVolumeName(name))
@@ -1515,9 +1516,9 @@ func (d *SANEconomyStorageDriver) LUNExists(volName, bucketPrefix string) (bool,
 }
 
 // Resize expands the Flexvol containing the LUN and updates the LUN size
-func (d *SANEconomyStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
-	//name := volConfig.InternalName
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -1614,7 +1615,7 @@ func (d *SANEconomyStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return fmt.Errorf("volume resize failed")
 	}
 	log.WithField("size", returnSize).Debug("Returning.")
-	//volConfig.Size = strconv.FormatUint(returnSize, 10)
+	volConfig.Size = strconv.FormatUint(returnSize, 10)
 
 	return nil
 }

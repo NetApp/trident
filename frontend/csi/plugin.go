@@ -64,7 +64,7 @@ func NewControllerPlugin(
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
-		//csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
+		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
 	})
 
 	// Define volume capabilities
@@ -95,6 +95,7 @@ func NewNodePlugin(
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
 	})
 	port := "34571"
 	for _, envVar := range os.Environ() {
@@ -123,6 +124,9 @@ func NewNodePlugin(
 	return p, nil
 }
 
+// The NewAllInOnePlugin is required to support the CSI Sanity test suite.
+// CSI Sanity expects a single process to respond to controller, node, and
+// identity interfaces.
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey string,
 	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
@@ -145,7 +149,6 @@ func NewAllInOnePlugin(
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
-		//csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
 	})
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{

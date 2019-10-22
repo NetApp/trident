@@ -989,7 +989,7 @@ func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	}
 
 	// Get the volume size
-	volConfig.Size = strconv.FormatInt(int64(volume.TotalSize), 10)
+	volConfig.Size = strconv.FormatInt(volume.TotalSize, 10)
 
 	// We cannot rename solidfire volumes, so internal name should match the imported name
 	volConfig.InternalName = originalName
@@ -1745,7 +1745,7 @@ func (d *SANStorageDriver) getVolumeExternal(
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            externalName,
-		InternalName:    string(volumeAttrs.Name),
+		InternalName:    volumeAttrs.Name,
 		Size:            strconv.FormatInt(volumeAttrs.TotalSize, 10),
 		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  "",
@@ -1793,7 +1793,9 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 }
 
 // Resize expands the volume size.
-func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -1846,5 +1848,21 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 	req.VolumeID = volume.VolumeID
 	req.AccountID = volume.AccountID
 	req.TotalSize = int64(sizeBytes)
-	return d.Client.ModifyVolume(&req)
+	err = d.Client.ModifyVolume(&req)
+	if err != nil {
+		return err
+	}
+
+	// Get volume's size after resize
+	volume, err = d.GetVolume(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume": name,
+			"error":  err,
+		}).Error("Error checking for volume after resize.")
+		return errors.New("error occurred checking volume after resize")
+	}
+
+	volConfig.Size = strconv.FormatInt(volume.TotalSize, 10)
+	return nil
 }

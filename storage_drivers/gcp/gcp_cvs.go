@@ -1318,8 +1318,8 @@ func (d *NFSStorageDriver) Get(name string) error {
 	return err
 }
 
-func (d *NFSStorageDriver) Resize(name string, sizeBytes uint64) error {
-
+func (d *NFSStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -1366,9 +1366,10 @@ func (d *NFSStorageDriver) Resize(name string, sizeBytes uint64) error {
 
 	// Wait for resize operation to complete
 	if err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}); err != nil {
-		return fmt.Errorf("could not import volume %s: %v", name, err)
+		return fmt.Errorf("could not resize volume %s: %v", name, err)
 	}
 
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return err
 }
 

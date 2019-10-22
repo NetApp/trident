@@ -1159,8 +1159,9 @@ func (d *NFSStorageDriver) Get(name string) error {
 }
 
 // Resize increases a volume's quota
-func (d *NFSStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *NFSStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -1202,8 +1203,12 @@ func (d *NFSStorageDriver) Resize(name string, sizeBytes uint64) error {
 
 	// Resize the volume
 	_, err = d.SDK.ResizeVolume(volume, int64(sizeBytes))
+	if err != nil {
+		return err
+	}
 
-	return err
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	return nil
 }
 
 // Retrieve storage capabilities and register pools with specified backend.

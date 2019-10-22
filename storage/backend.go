@@ -39,7 +39,7 @@ type Driver interface {
 	Import(volConfig *VolumeConfig, originalName string) error
 	Destroy(name string) error
 	Rename(name string, newName string) error
-	Resize(name string, sizeBytes uint64) error
+	Resize(volConfig *VolumeConfig, sizeBytes uint64) error
 	Get(name string) error
 	GetInternalVolumeName(name string) string
 	GetStorageBackendSpecs(backend *Backend) error
@@ -387,11 +387,9 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
 
 func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
 
-	volName := volConfig.InternalName
-
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volName}
+		return &NotManagedError{volConfig.InternalName}
 	}
 
 	// Ensure backend is ready
@@ -411,10 +409,10 @@ func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
 
 	log.WithFields(log.Fields{
 		"backend":     b.Name,
-		"volume":      volName,
+		"volume":      volConfig.InternalName,
 		"volume_size": newSizeBytes,
 	}).Debug("Attempting volume resize.")
-	return b.Driver.Resize(volName, newSizeBytes)
+	return b.Driver.Resize(volConfig, newSizeBytes)
 }
 
 func (b *Backend) RenameVolume(volConfig *VolumeConfig, newName string) error {

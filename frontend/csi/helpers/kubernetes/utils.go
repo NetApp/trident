@@ -161,11 +161,6 @@ func (p *Plugin) getPVCForPV(pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim
 		pv.Spec.ClaimRef.Namespace).Get(pv.Spec.ClaimRef.Name, metav1.GetOptions{})
 }
 
-// isPVCNotManaged examines a PVC and determines whether the notManaged annotation is present.
-func isPVCNotManaged(pvc *v1.PersistentVolumeClaim) bool {
-	return isNotManaged(pvc.Annotations, pvc.Name, "PVC")
-}
-
 // isPVNotManaged examines a PV and determines whether the notManaged annotation is present.
 func isPVNotManaged(pv *v1.PersistentVolume) bool {
 	return isNotManaged(pv.Annotations, pv.Name, "PV")

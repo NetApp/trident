@@ -38,6 +38,10 @@ type VolumePublishInfo struct {
 	VolumeAccessInfo
 }
 
+type VolumeTrackingPublishInfo struct {
+	StagingTargetPath string `json:"stagingTargetPath`
+}
+
 type Node struct {
 	Name string   `json:"name"`
 	IQN  string   `json:"iqn,omitempty"`

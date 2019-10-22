@@ -952,7 +952,7 @@ func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	return errors.New("import is not implemented")
 }
 
-func (d *SANStorageDriver) Rename(name string, new_name string) error {
+func (d *SANStorageDriver) Rename(name string, newName string) error {
 	return errors.New("rename is not implemented")
 }
 
@@ -1343,7 +1343,9 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 // Resize expands the volume size. This method relies on the desired state model of Kubernetes
 // and will not work with Docker.
-func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	vol, err := d.getVolume(name)
 	if err != nil {
 		return err
@@ -1396,5 +1398,13 @@ func (d *SANStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return err
 	}
 
+	// Update volSizeBytes to return new volume size
+	vol, err = d.getVolume(name)
+	volSizeBytes, err = strconv.ParseUint(vol.VolumeSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("error occurred when checking final volume size")
+	}
+
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }

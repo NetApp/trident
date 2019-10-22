@@ -2518,6 +2518,11 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         vm_path = "/tmp/" + _replace(env.BUILD_TAG, '/', '-')
 
         sh (
+          label: "Create directory /var/lib/trident/tracking on $ip_address to support node volume expand",
+          script: "ssh $ssh_options root@$ip_address mkdir -p /var/lib/trident/tracking"
+        )
+
+        sh (
           label: "Create directory go/src/github.com/kubernetes-csi on $ip_address",
           script: "ssh $ssh_options root@$ip_address mkdir -p $vm_path/go/src/github.com/kubernetes-csi"
         )

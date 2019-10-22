@@ -601,12 +601,32 @@ func (d Client) LunGetGeometry(path string) (*azgo.LunGetGeometryResponse, error
 	return response, err
 }
 
-func (d Client) LunResize(path string, sizeBytes int) (*azgo.LunResizeResponse, error) {
+func (d Client) LunResize(path string, sizeBytes int) (uint64, error) {
 	response, err := azgo.NewLunResizeRequest().
 		SetPath(path).
 		SetSize(sizeBytes).
 		ExecuteUsing(d.zr)
-	return response, err
+
+	var errSize uint64 = 0
+	if err != nil {
+		return errSize, err
+	}
+
+	if zerr := NewZapiError(response); !zerr.IsPassed() {
+		return errSize, zerr
+	}
+
+	result := NewZapiResultValue(response)
+	if sizePtr := result.FieldByName("ActualSizePtr"); !sizePtr.IsNil() {
+		size := sizePtr.Elem().Int()
+		if size < 0 {
+			return errSize, fmt.Errorf("lun resize operation return an invalid size")
+		} else {
+			return uint64(size), nil
+		}
+	} else {
+		return errSize, fmt.Errorf("error parsing result size")
+	}
 }
 
 // LunGetAll returns all relevant details for all LUNs whose paths match the supplied pattern

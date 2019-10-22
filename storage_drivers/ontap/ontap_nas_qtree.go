@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -1549,7 +1549,9 @@ func NewResizeTask(d *NASQtreeStorageDriver, tasks []func()) *HousekeepingTask {
 }
 
 // Resize expands the Flexvol containing the Qtree and updates the Qtree quota.
-func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
+func (d *NASQtreeStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+
+	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
@@ -1617,6 +1619,7 @@ func (d *NASQtreeStorageDriver) Resize(name string, sizeBytes uint64) error {
 		return resizeError
 	}
 
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }
 
