@@ -16,8 +16,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_class"
+	storageattribute "github.com/netapp/trident/storage_attribute"
+	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
@@ -45,8 +45,7 @@ func TestNewEtcdClientV3(t *testing.T) {
 
 func TestEtcdv3InvalidClient(t *testing.T) {
 	_, err := NewEtcdClientV3("http://127.0.0.1:9999")
-	if err != nil && MatchUnavailableClusterErr(err) {
-	} else {
+	if err == nil || !MatchUnavailableClusterErr(err) {
 		t.Error("Invalid client wasn't caught!")
 	}
 }
@@ -635,9 +634,9 @@ func TestEtcdv3AddSolidFireBackend(t *testing.T) {
 			StorageDriverName: drivers.SolidfireSANStorageDriverName,
 		},
 		SolidfireStorageDriverPool: drivers.SolidfireStorageDriverPool{
-			Labels: map[string]string{"performance": "bronze", "cost": "1"},
-			Region: "us-east",
-			Zone:   "us-east-1",
+			Labels:                               map[string]string{"performance": "bronze", "cost": "1"},
+			Region:                               "us-east",
+			Zone:                                 "us-east-1",
 			SolidfireStorageDriverConfigDefaults: solidfireConfigDefaults,
 		},
 		TenantName: "docker",

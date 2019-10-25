@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
@@ -1369,7 +1368,7 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 	}
 
 	// Decode the JSON so we can get its group/version/kind info
-	_, gvk, err := unstructured.UnstructuredJSONScheme.Decode(jsonData, nil, &runtime.VersionedObjects{})
+	_, gvk, err := unstructured.UnstructuredJSONScheme.Decode(jsonData, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}

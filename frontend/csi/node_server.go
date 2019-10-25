@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/netapp/trident/core"
 	log "github.com/sirupsen/logrus"

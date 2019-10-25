@@ -43,11 +43,11 @@ func NewEtcdClientV3(endpoints string) (*EtcdClientV3, error) {
 	clientV3, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{endpoints}, //TODO: support for multiple IP addresses
 		DialTimeout: config.PersistentStoreBootstrapTimeout,
+		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 	})
 
 	if err != nil {
-		if err.Error() == grpc.ErrClientConnTimeout.Error() ||
-			strings.Contains(err.Error(), "dial tcp") {
+		if strings.Contains(err.Error(), ContextDeadlineExceeded) || strings.Contains(err.Error(), DialTCPError) {
 			return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 		}
 		return nil, err
@@ -87,12 +87,12 @@ func NewEtcdClientV3WithTLS(endpoints, etcdV3Cert, etcdV3CACert, etcdV3Key strin
 	clientV3, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{endpoints}, //TODO: support for multiple IP addresses
 		DialTimeout: config.PersistentStoreBootstrapTimeout,
+		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 		TLS:         tlsConfig,
 	})
 
 	if err != nil {
-		if err.Error() == grpc.ErrClientConnTimeout.Error() ||
-			strings.Contains(err.Error(), "dial tcp") {
+		if strings.Contains(err.Error(), ContextDeadlineExceeded) || strings.Contains(err.Error(), DialTCPError) {
 			return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 		}
 		return nil, err
@@ -116,6 +116,7 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 	clientV3, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{etcdConfig.endpoints}, //TODO: support for multiple IP addresses
 		DialTimeout: config.PersistentStoreBootstrapTimeout,
+		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 		TLS:         etcdConfig.TLSConfig,
 	})
 
@@ -126,8 +127,7 @@ func NewEtcdClientV3FromConfig(etcdConfig *ClientConfig) (*EtcdClientV3, error) 
 			tlsConfig: etcdConfig.TLSConfig,
 		}, nil
 	}
-	if err.Error() == grpc.ErrClientConnTimeout.Error() ||
-		strings.Contains(err.Error(), "dial tcp") {
+	if strings.Contains(err.Error(), ContextDeadlineExceeded) || strings.Contains(err.Error(), DialTCPError) {
 		return nil, NewPersistentStoreError(UnavailableClusterErr, "")
 	}
 	return nil, err

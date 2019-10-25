@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	KeyNotFoundErr        = "Unable to find key"
-	KeyExistsErr          = "Key already exists"
-	UnavailableClusterErr = "Unavailable etcd cluster"
-	NotSupported          = "Unsupported operation"
+	KeyNotFoundErr          = "Unable to find key"
+	KeyExistsErr            = "Key already exists"
+	UnavailableClusterErr   = "Unavailable etcd cluster"
+	NotSupported            = "Unsupported operation"
+	ContextDeadlineExceeded = "context deadline exceeded"
+	DialTCPError            = "dial tcp"
 )
 
 // Error is used to turn etcd errors into something that callers can understand without

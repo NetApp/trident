@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v3"
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/cenkalti/backoff"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	frontendcommon "github.com/netapp/trident/frontend/common"

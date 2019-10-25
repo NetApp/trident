@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
+	"github.com/cenkalti/backoff/v3"
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-05-01/netapp"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/storage"

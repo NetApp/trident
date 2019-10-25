@@ -16,7 +16,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 	log "github.com/sirupsen/logrus"
 )
 

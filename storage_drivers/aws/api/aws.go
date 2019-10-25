@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/utils"
