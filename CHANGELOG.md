@@ -10,23 +10,27 @@
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.  (Issue [#260](https://github.com/NetApp/trident/issues/260), Issue [#273](https://github.com/NetApp/trident/issues/273))
 - **Kubernetes:** Node now retries registration with controller indefinitely (Issue [#283](https://github.com/NetApp/trident/issues/283))
 - **Kubernetes:** Fixed a panic when adding a storage backend fails.
+- **Kubernetes:** Fixed Azure NetApp Files to work with non-CSI deployments. (Issue [#274](https://github.com/NetApp/trident/issues/274))
 - Worked around a breaking API change in NetApp Cloud Volumes Service in AWS. (Issue [#288](https://github.com/NetApp/trident/issues/288))
 - Fixed NFS 4.1 access denied issue in ontap-nas-economy driver (Issue [#256](https://github.com/NetApp/trident/issues/256))
 - Disabled FabricPool tiering for ONTAP volumes created by Trident. (Issue [#199](https://github.com/NetApp/trident/issues/199))
+- Fixed bug when IFace is not set in the Element backend config. (Issue [#272](https://github.com/NetApp/trident/issues/272))
 
 **Enhancements:**
-- **Kubernetes:**  Added support to CSI Trident for volume expansion for iSCSI PVs.
+- **Kubernetes:** Added support to CSI Trident for volume expansion for iSCSI PVs.
 - **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
 - **Kubernetes:** Added support to CSI Trident for raw block volumes with multi-attach for iSCSI PVs.
-- **Kubernetes:** Added support for Kubernetes 1.16.
+- **Kubernetes:** Added support for Kubernetes 1.16 and OpenShift 4.2.
 - **Kubernetes:** Made installer setup directory optional and relative to working directory. (Issue [#230](https://github.com/NetApp/trident/issues/230))
+- **Kubernetes:** Support volume cloning using a PVC as the source.
+- **Kubernetes:** Added enhancements to 'tridentctl logs' command for CSI mode.
 - Added HTTP proxy support for NetApp Cloud Volumes Service in AWS driver. (Issue [#246](https://github.com/NetApp/trident/issues/246))
 - Added snapshotDir option to NetApp Cloud Volumes Service in AWS driver.
 - Added driver for NetApp Cloud Volumes Service in Google Cloud Platform.
 - Added option for JSON-formatted logging. (Issue [#286](https://github.com/NetApp/trident/issues/286))
-- **Kubernetes:** Support volume cloning using a PVC as the source.
 
 **Deprecations:**
+- **Kubernetes:** Removed 'dry-run' switch from the installer. (Issue [#192](https://github.com/NetApp/trident/issues/192))
 - Changed minimum supported ONTAP version to 9.1.
 - Removed support for running Trident with an external etcd instance.
   
