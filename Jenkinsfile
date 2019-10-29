@@ -1759,8 +1759,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "export GOPATH=$vm_path/go\n" +
               "export BUILD_TYPE=$env.BUILD_TYPE\n" +
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
-              "export REGISTRY_ADDR=$env.PUBLIC_DOCKER_REGISTRY\n" +
-              "export DIST_REGISTRY=$env.PUBLIC_DOCKER_REGISTRY\n" +
+              "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
             )
           } else if (env.DEPLOY_TRIDENT && env.BUILD_TYPE != 'stable') {
@@ -1774,8 +1773,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "export BUILD_TYPE=$env.BUILD_TYPE\n" +
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
               "export BUILD_TYPE_REV=$env.TRIDENT_REVISION\n" +
-              "export REGISTRY_ADDR=$env.PUBLIC_DOCKER_REGISTRY\n" +
-              "export DIST_REGISTRY=$env.PUBLIC_DOCKER_REGISTRY\n" +
+              "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "make dist > build.log 2>&1"
             )
           } else {
@@ -1879,7 +1877,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
@@ -1888,7 +1886,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Tag $repository:$tag $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:$major_minor_tag'"
@@ -1897,7 +1895,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$major_minor_tag'"
@@ -1910,7 +1908,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
@@ -1919,7 +1917,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Tag $repository:$tag $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:$major_minor_tag'"
@@ -1928,7 +1926,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$major_minor_tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$major_minor_tag'"
@@ -1946,7 +1944,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:$tag from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:$tag'"
@@ -1957,7 +1955,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Tag $repository:$tag $repository:latest from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker tag $repository:$tag $repository:latest'"
@@ -1966,7 +1964,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               sh (
                 label: "Push $repository:latest from $ip_address",
                 script: "ssh $ssh_options root@$ip_address '" +
-                  "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+                  "docker login " +
                   "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
                   "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD;" +
                   "docker push $repository:latest'"
@@ -2028,7 +2026,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           if (env.DEPLOY_TRIDENT) {
             content += (
-              "docker login $env.PUBLIC_DOCKER_REGISTRY " +
+              "docker login " +
               "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
               "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
               "sudo ./createFS\n" +
@@ -2036,7 +2034,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
               "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
               "sudo docker logout\n" +
-              "sudo docker login $env.PUBLIC_DOCKER_REGISTRY -u $env.PUBLIC_DOCKER_REGISTRY_USERNAME -p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n"
+              "sudo docker login -u $env.PUBLIC_DOCKER_REGISTRY_USERNAME -p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n"
             )
           } else {
             content += (
@@ -2333,13 +2331,13 @@ def _build_trident(String name, String ssh_options, Map spec) {
           )
 
           if (env.BUILD_TYPE == 'stable') {
-            
+
             def tarball = "trident-installer-${env.TRIDENT_VERSION}.tar.gz"
 
             sh (
               label: "Copy $tarball to src2/github.com/netapp/trident",
               script: "ssh $ssh_options root@$ip_address 'cp " +
-                "$vm_path/go/src/github.com/netapp/trident/$tarball " + 
+                "$vm_path/go/src/github.com/netapp/trident/$tarball " +
                 "$vm_path/go/src2/github.com/netapp/trident'"
             )
 
@@ -2366,10 +2364,10 @@ def _build_trident(String name, String ssh_options, Map spec) {
             sh (
               label: "Copy $tarball to src2/github.com/netapp/trident",
               script: "ssh $ssh_options root@$ip_address 'cp " +
-                "$vm_path/go/src/github.com/netapp/trident/$tarball " + 
+                "$vm_path/go/src/github.com/netapp/trident/$tarball " +
                 "$vm_path/go/src2/github.com/netapp/trident'"
             )
-            
+
             sh (label: "Sleep", script: "sleep 1")
 
             sh (
