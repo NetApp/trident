@@ -4856,7 +4856,7 @@ def _random_string(Integer length) {
 
 def _replace(String string, String regexp, String replacement) {
   def new_string = _decode(string)
-  new_string.replaceAll(regexp, replacement)
+  new_string = new_string.replaceAll(regexp, replacement)
   return new_string
 }
 
