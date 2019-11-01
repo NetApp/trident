@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -1320,6 +1321,29 @@ func (o *TridentOrchestrator) CloneVolume(volumeConfig *storage.VolumeConfig) (
 	if !found {
 		return nil, notFoundError(fmt.Sprintf("source volume not found: %s", volumeConfig.CloneSourceVolume))
 	}
+
+	if volumeConfig.Size != "" {
+		cloneSourceVolumeSize, err := strconv.ParseInt(sourceVolume.Config.Size, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("could not get size of the clone source volume")
+		}
+
+		cloneVolumeSize, err := strconv.ParseInt(volumeConfig.Size, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("could not get size of the clone volume")
+		}
+
+		if cloneSourceVolumeSize < cloneVolumeSize {
+			log.WithFields(log.Fields{
+				"source_volume": sourceVolume.Config.Name,
+				"volume":        volumeConfig.Name,
+				"backendUUID":   sourceVolume.BackendUUID,
+			}).Error("requested PVC size is too large for the clone source")
+			return nil, fmt.Errorf("requested PVC size '%d' is too large for the clone source '%d'",
+				cloneVolumeSize, cloneSourceVolumeSize)
+		}
+	}
+
 	if sourceVolume.Orphaned {
 		log.WithFields(log.Fields{
 			"source_volume": sourceVolume.Config.Name,

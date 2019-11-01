@@ -187,6 +187,7 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 	}
 
 	// Check that the source PVC is in the same namespace.
+	// NOTE: For VolumeContentSource this check is performed by CSI
 	sourcePVC, err := p.waitForCachedPVCByName(sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -197,6 +198,7 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 	}
 
 	// Check that both source and clone PVCs have the same storage class
+	// NOTE: For VolumeContentSource this check is performed by CSI
 	if getStorageClassForPVC(sourcePVC) != getStorageClassForPVC(clonePVC) {
 		log.WithFields(log.Fields{
 			"clonePVCName":          clonePVC.Name,
@@ -217,20 +219,6 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 			"sourcePVCNamespace": sourcePVC.Namespace,
 		}).Error("Cloning from a PVC requires the source to be bound to a PV.")
 		return "", fmt.Errorf("cloning from a PVC requires the source to be bound to a PV")
-	}
-
-	// Check that the clone size is <= the source size
-	sourcePVCSizeResource := sourcePVC.Spec.Resources.Requests[v1.ResourceStorage]
-	sourcePVCSize := sourcePVCSizeResource.Value()
-	clonePVCSizeResource := clonePVC.Spec.Resources.Requests[v1.ResourceStorage]
-	clonePVCSize := clonePVCSizeResource.Value()
-
-	if sourcePVCSize < clonePVCSize {
-		log.WithFields(log.Fields{
-			"sourcePVCSize": sourcePVCSize,
-			"clonePVCSize":  clonePVCSize,
-		}).Error("requested PVC size is too large for the clone source")
-		return "", fmt.Errorf("requested PVC size is too large for the clone source")
 	}
 
 	return sourcePVName, nil
