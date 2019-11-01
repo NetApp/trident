@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -18,12 +18,12 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/cache/testing"
+	framework "k8s.io/client-go/tools/cache/testing"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/k8s_client"
+	k8sclient "github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	k8sutilversion "github.com/netapp/trident/utils"
@@ -209,10 +209,10 @@ func newTestPlugin(
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
 		resizeControllerStopChan: make(chan struct{}),
-		mutex:                 &sync.Mutex{},
-		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
-		defaultStorageClasses: make(map[string]bool, 1),
-		storageClassCache:     make(map[string]*StorageClassSummary),
+		mutex:                    &sync.Mutex{},
+		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
+		defaultStorageClasses:    make(map[string]bool, 1),
+		storageClassCache:        make(map[string]*StorageClassSummary),
 	}
 	ret.kubernetesVersion = kubeVersion
 	ret.claimSource = claimSource

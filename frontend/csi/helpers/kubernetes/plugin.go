@@ -10,7 +10,7 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"

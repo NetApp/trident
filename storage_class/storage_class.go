@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package storageclass
 
@@ -13,7 +13,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_attribute"
+	storageattribute "github.com/netapp/trident/storage_attribute"
 )
 
 func New(c *Config) *StorageClass {
@@ -81,7 +81,7 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 				"storagePool.Name":         storagePool.Name,
 				"storagePool.Backend.Name": storagePool.Backend.Name,
 				"storagePoolBackendName":   storagePoolBackendName,
-				"err": err,
+				"err":                      err,
 			}).Warning("Error comparing backend names in regexMatcher.")
 			continue
 		}

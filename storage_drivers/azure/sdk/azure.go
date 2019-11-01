@@ -12,6 +12,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/cenkalti/backoff/v3"
+
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-05-01/netapp"
@@ -753,9 +754,9 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 	}
 
 	patch := netapp.VolumePatch{
-		ID:       &filesystem.ID,
-		Location: &filesystem.Location,
-		Name:     &filesystem.Name,
+		ID:                    &filesystem.ID,
+		Location:              &filesystem.Location,
+		Name:                  &filesystem.Name,
 		VolumePatchProperties: &patchprop,
 	}
 

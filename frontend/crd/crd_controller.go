@@ -1,6 +1,4 @@
-/*
- * Copyright 2019 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -485,7 +483,7 @@ func (c *TridentCrdController) syncHandler(key string) error {
 
 	if !backend.ObjectMeta.DeletionTimestamp.IsZero() {
 		log.WithFields(log.Fields{
-			"key": key,
+			"key":                                  key,
 			"backend.ObjectMeta.DeletionTimestamp": backend.ObjectMeta.DeletionTimestamp,
 		}).Debug("TridentCrdController#syncHandler CRD object is being deleted, not updating.")
 		// TODO refactor the "updatebackend" logic above to a shared set of code?

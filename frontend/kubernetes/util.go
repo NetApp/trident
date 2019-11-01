@@ -1,3 +1,4 @@
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -6,7 +7,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	commontypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	k8sversion "k8s.io/apimachinery/pkg/version"

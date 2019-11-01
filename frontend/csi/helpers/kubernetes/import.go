@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/netapp/trident/storage"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/storage"
 )
 
 /////////////////////////////////////////////////////////////////////////////

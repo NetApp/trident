@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -6,12 +6,12 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
-	"github.com/netapp/trident/k8s_client"
+	k8sclient "github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
 	k8sutilversion "github.com/netapp/trident/utils"
 )

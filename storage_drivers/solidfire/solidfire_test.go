@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -30,9 +30,9 @@ func getDriver() *SANStorageDriver {
 				StorageDriverName: "solidfire-san",
 			},
 			SolidfireStorageDriverPool: drivers.SolidfireStorageDriverPool{
-				Labels: map[string]string{"performance": "bronze", "cost": "1"},
-				Region: "us-east",
-				Zone:   "us-east-1",
+				Labels:                               map[string]string{"performance": "bronze", "cost": "1"},
+				Region:                               "us-east",
+				Zone:                                 "us-east-1",
 				SolidfireStorageDriverConfigDefaults: solidfireConfigDefaults,
 			},
 			TenantName:     "test",

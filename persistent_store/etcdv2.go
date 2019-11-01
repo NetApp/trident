@@ -14,7 +14,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 

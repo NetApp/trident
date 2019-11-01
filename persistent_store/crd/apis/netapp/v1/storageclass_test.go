@@ -7,10 +7,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_class"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	storageattribute "github.com/netapp/trident/storage_attribute"
+	storageclass "github.com/netapp/trident/storage_class"
 )
 
 func TestNewStorageClass(t *testing.T) {

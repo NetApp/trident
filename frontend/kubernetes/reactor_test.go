@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -10,12 +10,12 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
-	"k8s.io/client-go/tools/cache/testing"
+	framework "k8s.io/client-go/tools/cache/testing"
 )
 
 // This file defines a k8stesting.Reactor used for testing purposes (see below).

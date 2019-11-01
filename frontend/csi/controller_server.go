@@ -432,7 +432,7 @@ func (p *Plugin) ListVolumes(
 	nextToken := ""
 
 	if maxPageEntries < 0 {
-		return  nil, status.Errorf(codes.InvalidArgument, "max_entries value '%d' is not valid", maxPageEntries)
+		return nil, status.Errorf(codes.InvalidArgument, "max_entries value '%d' is not valid", maxPageEntries)
 	} else if maxPageEntries == 0 {
 		maxPageEntries = math.MaxInt16
 	}

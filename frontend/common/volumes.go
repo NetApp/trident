@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package common
 
@@ -12,7 +12,7 @@ import (
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_class"
+	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 )
 

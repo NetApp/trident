@@ -1,9 +1,11 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package api
 
-import "github.com/netapp/trident/storage"
-import "github.com/netapp/trident/utils"
+import (
+	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
+)
 
 type ErrorResponse struct {
 	Error string `json:"error"`

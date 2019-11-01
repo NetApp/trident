@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2019 NetApp, Inc. All Rights Reserved.
 
 package testutils
 
@@ -41,9 +41,9 @@ func getFakeVirtualPool(size, region, zone string, labels map[string]string) dri
 	}
 
 	return drivers.FakeStorageDriverPool{
-		Labels: labels,
-		Region: region,
-		Zone:   zone,
+		Labels:                          labels,
+		Region:                          region,
+		Zone:                            zone,
 		FakeStorageDriverConfigDefaults: fakeConfigDefaults,
 	}
 }

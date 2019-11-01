@@ -201,9 +201,9 @@ func (o *TridentOrchestrator) bootstrapBackends() error {
 				"backend":                        newBackend.Name,
 				"backendUUID":                    newBackend.BackendUUID,
 				"persistentBackends.BackendUUID": b.BackendUUID,
-				"online":  newBackend.Online,
-				"state":   newBackend.State,
-				"handler": "Bootstrap",
+				"online":                         newBackend.Online,
+				"state":                          newBackend.State,
+				"handler":                        "Bootstrap",
 			}).Info("Added an existing backend.")
 		} else {
 			log.WithFields(log.Fields{

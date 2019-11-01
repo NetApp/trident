@@ -147,11 +147,11 @@ func newKubernetesPlugin(
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
 		resizeControllerStopChan: make(chan struct{}),
-		mutex:                 &sync.Mutex{},
-		pendingClaimMatchMap:  make(map[string]*v1.PersistentVolume),
-		defaultStorageClasses: make(map[string]bool, 1),
-		storageClassCache:     make(map[string]*StorageClassSummary),
-		tridentNamespace:      tridentNamespace,
+		mutex:                    &sync.Mutex{},
+		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
+		defaultStorageClasses:    make(map[string]bool, 1),
+		storageClassCache:        make(map[string]*StorageClassSummary),
+		tridentNamespace:         tridentNamespace,
 	}
 
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
@@ -365,12 +365,12 @@ func (p *Plugin) validClaimReceived(claim *v1.PersistentVolumeClaim, provisioner
 				break
 			}
 			log.WithFields(log.Fields{
-				"PVC": claim.Name,
+				"PVC":                  claim.Name,
 				"storageClass_default": defaultStorageClassName,
 			}).Info("Kubernetes frontend will use the default storage class for this PVC.")
 		} else if len(p.defaultStorageClasses) > 1 {
 			log.WithFields(log.Fields{
-				"PVC": claim.Name,
+				"PVC":                    claim.Name,
 				"default_storageClasses": p.getDefaultStorageClasses(),
 			}).Warn("Kubernetes frontend ignored this PVC as more than " +
 				"one default storage class has been configured!")
@@ -1300,7 +1300,7 @@ func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
 					message := "updated the PersistentVolumeReclaimPolicy from Retain to the " +
 						"policy set in the storage class. The imported volume's PVC and PV are now bound."
 					log.WithFields(log.Fields{
-						"PV": pv.Name,
+						"PV":                            pv.Name,
 						"PersistentVolumeReclaimPolicy": classReclaimPolicy,
 						"StorageClassName":              pv.Spec.StorageClassName,
 					}).Infof("Kubernetes frontend %s", message)
