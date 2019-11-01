@@ -1731,15 +1731,6 @@ def _build_trident(String name, String ssh_options, Map spec) {
         )
 
         sh (
-          label: "Install glide",
-          script: "ssh $ssh_options root@$ip_address " +
-            "'cd $vm_path/go/src/github.com/netapp/trident;" +
-            "export GOPATH=$vm_path/go;" +
-            "export GOBIN=/usr/local/go/bin;" +
-            "curl https://glide.sh/get | sh'"
-        )
-
-        sh (
           label: "Clean the source",
           script: "ssh $ssh_options root@$ip_address " +
             "'cd $vm_path/go/src/github.com/netapp/trident;" +
@@ -2801,32 +2792,14 @@ def _unit_test(String name, String ssh_options, Map spec) {
           true
         )
 
-        sh (
-          label: "Install glide",
-          script: "ssh $ssh_options root@$ip_address " +
-            "'cd $vm_path/go/src/github.com/netapp/trident;" +
-            "export GOPATH=$vm_path/go;" +
-            "export GOBIN=/usr/local/go/bin;" +
-            "curl https://glide.sh/get | sh'"
-        )
-
-        sh (
-          label: "Install dependencies with glide",
-          script: "ssh $ssh_options root@$ip_address " +
-            "'cd $vm_path/go/src/github.com/netapp/trident;" +
-            "export GOPATH=$vm_path/go;" +
-            "export GOBIN=/usr/local/go/bin;" +
-            "glide install -v'"
-        )
-
         echo "Creating syntax checker script lint.sh"
         writeFile file: "$name/lint.sh", text: '''
-files=`$GOPATH/bin/goimports -l $(echo $(/usr/bin/glide nv)/*.go | sed 's/\\.\\.\\.//g')`
+files=`$GOPATH/bin/goimports -l ./*.go | sed 's/\\.\\.\\.//g')`
 if [ -n "${files}" ]; then
   echo "Format errors detected in the following file(s):"
   echo "${files}"
   echo
-  $GOPATH/bin/goimports -d $(echo $(/usr/bin/glide nv)/*.go | sed 's/\\.\\.\\.//g')
+  $GOPATH/bin/goimports -d ./*.go | sed 's/\\.\\.\\.//g')
   exit 1
 fi
         '''

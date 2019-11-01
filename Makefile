@@ -52,7 +52,7 @@ GO_LINUX = ${DR_LINUX} go
 
 GO_MACOS = ${DR_MACOS} go
 
-.PHONY = default get build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
+.PHONY = default build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
 default: dist
 
@@ -88,10 +88,6 @@ ETCD_TAG := quay.io/coreos/etcd:${ETCD_VERSION}
 BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdVersion=$(ETCD_VERSION)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
 
 ## Trident build targets
-get:
-	@mkdir -p vendor
-	@chmod 777 vendor
-	glide install --force --strip-vendor
 
 trident_retag:
 	-docker volume rm $(TRIDENT_VOLUME) || true
@@ -126,7 +122,7 @@ tridentctl_macos_build:
 	@chmod 777 ${MACOS_BIN_DIR}
 	@${GO_MACOS} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/macos/${CLI_BIN} ${CLI_PKG}
 
-trident_build_all: get *.go trident_build tridentctl_macos_build
+trident_build_all: *.go trident_build tridentctl_macos_build
 
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
@@ -204,5 +200,5 @@ install: build
 vet:
 	@go vet $(shell go list ./... | grep -v /vendor/)
 
-k8s_codegen: get
+k8s_codegen:
 	./vendor/k8s.io/code-generator/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt

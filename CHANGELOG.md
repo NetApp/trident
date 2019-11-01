@@ -2,7 +2,12 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v19.07.0
+## Changes since v19.10.0
+
+**Enhancements**
+- Switched from glide to go modules for dependency management.
+
+## v19.10.0
 
 **Fixes:**
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes. (Issue [#264](https://github.com/NetApp/trident/issues/264))

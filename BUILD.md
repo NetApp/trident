@@ -1,39 +1,19 @@
 # Building Trident
 
 Building Trident has following requirements:
-* [Glide](https://github.com/Masterminds/glide) 0.12.2 or greater.   
 * Docker 1.10 or greater when using the Makefile targets.
-* Go 1.9 or greater is optionally required when building Trident natively.
+* Go 1.13 or greater is optionally required when building Trident natively.
 
-Use `make build` to fetch dependencies, run a containerized build, and generate
+Use `make build` to run a containerized build, and generate
 Trident images. This is the simplest and the recommended way to build Trident.
 
 ## Building Trident Natively 
 
-Before building Trident natively, its dependencies must be fetched using
-[Glide](https://github.com/Masterminds/glide) 0.12.2 or greater.  If Glide is
-already installed, run
-
-```bash
-glide install -v
-```
-
-The `-v` flag is necessary to strip vendored dependencies from the
-Kubernetes package.  Alternatively, if Glide is not installed, running
-
-```bash
-make get
-```
-
-will fetch, build, and install Glide natively and then runs the `glide install`
-command above.
-
-Once the dependencies have been fetched, Trident can be built with `go build`.
+Trident can be built with `go build`.
 
 ## Trident Makefile
 Multiple Makefile targets, many of which are containerized, are available for 
-building Trident. However, [Glide](https://github.com/Masterminds/glide) is a
-native dependency.  
+building Trident.
 
 The targets take the following environment variables as parameters:
 
@@ -45,11 +25,7 @@ The targets take the following environment variables as parameters:
 
 ### Targets
 
-* `make get`: Fetches, builds, and installs Glide natively. Then calls 
-  `glide install` to fetch dependencies.
-
-* `make build`: Builds Trident and builds Trident launcher. See `trident_build_all`
-  and `launcher_build` targets for additional detail.
+* `make build`: Builds Trident.
   
 * `make clean`: Removes containers, container images, and build artifacts in 
   `bin/`.
@@ -71,8 +47,8 @@ The targets take the following environment variables as parameters:
   the bracketed portion omitted if `$REGISTRY_ADDR` is unset.  This tag
   defaults to `trident`.
   
-* `make trident_build_all`: Executes the `get` target, which fetches Trident's
-   dependencies, prior to calling `trident_build`.
+* `make trident_build_all`: Executes the `trident_build` target as well as
+  building the MacOS version of tridentctl.
    
 * `make tridentctl_build`: Builds only the tridentctl binary. The `$GOOS` and 
   `$GOARCH` environment variables can be set to compile the tridentctl binary
