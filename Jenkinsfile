@@ -2029,10 +2029,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "docker login " +
               "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
               "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
-              "sudo ./createFS\n" +
-              "sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh\n" +
-              "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
-              "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
+              "./createFS\n" +
+              "sudo cp -f plugin.json myplugin/config.json\n" +
               "sudo docker logout\n" +
               "sudo docker login -u $env.PUBLIC_DOCKER_REGISTRY_USERNAME -p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n"
             )
@@ -2041,10 +2039,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "docker login $env.PRIVATE_DOCKER_REGISTRY " +
               "-u $env.PRIVATE_DOCKER_REGISTRY_USERNAME " +
               "-p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n" +
-              "sudo ./createFS\n" +
-              "sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh\n" +
-              "sudo cp -f ./trident ./myplugin/rootfs/netapp/trident\n" +
-              "sudo cp -f ./plugin.json ./myplugin/config.json\n" +
+              "./createFS\n" +
+              "sudo cp -f plugin.json myplugin/config.json\n" +
               "sudo docker logout\n" +
               "sudo docker login $env.PRIVATE_DOCKER_REGISTRY -u $env.PRIVATE_DOCKER_REGISTRY_USERNAME -p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n"
             )
@@ -2123,7 +2119,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
             // For test builds we need the git commit hash as the image tag
             content += (
-              "sudo docker plugin create $repository:" + _replace(env.BUILD_TAG, '/', '-') + " ./myplugin\n" +
+              "sudo docker plugin create $repository:" + _replace(env.BUILD_TAG, '/', '-') + " myplugin\n" +
               "sudo docker plugin push $repository:" + _replace(env.BUILD_TAG, '/', '-') + "\n"
             )
           }
@@ -2146,7 +2142,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             label: "Execute create_plugin.sh on $ip_address",
             script: "ssh $ssh_options root@$ip_address '" +
               "cd $vm_path/go/src/github.com/netapp/trident/contrib/docker/plugin;" +
-              "sh ./create_plugin.sh > create_plugin.log 2>&1'"
+              "sh create_plugin.sh > create_plugin.log 2>&1'"
           )
 
           sh (label: "Sleep", script: "sleep 1")
