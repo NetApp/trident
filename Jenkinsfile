@@ -347,7 +347,7 @@ node {
         'backend': 'ontap-nas',
         'context': 'openlab',
         'coverage': 'docker-ee,pre-merge',
-        'docker_ee_image': 'docker/ucp:3.1.10',
+        'docker_ee_image': 'docker/ucp:3.1.11',
         'docker_ee_user': env.DOCKER_EE_USERNAME,
         'docker_ee_password': env.DOCKER_EE_PASSWORD,
         'docker_ee_repo': env.DOCKER_EE_REPO,
