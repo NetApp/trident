@@ -1,5 +1,0 @@
-#!/bin/bash
-
-CMD="docker"
-
-chroot /host /usr/bin/env -i PATH="/usr/bin:/usr/local/bin:/sbin:/bin" ${CMD} "${@:1}"

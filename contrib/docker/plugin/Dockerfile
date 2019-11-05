@@ -9,23 +9,36 @@ RUN apk update || true && \
 # for go binaries to work inside an alpine container
 RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
-RUN mkdir /host /netapp
+RUN mkdir /netapp
 RUN mkdir -p /var/lib/docker-volumes/netapp
 
-RUN mkdir -p /usr/local/sbin
-ADD iscsiadm /usr/local/sbin
-ADD rescan-scsi-bus /sbin
-ADD docker /sbin
 ADD container-launch.sh /netapp
+ADD chroot-host-wrapper.sh /netapp
+
+RUN    ln -s /netapp/chroot-host-wrapper.sh /netapp/blkid \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/blockdev \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/cat \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/df \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/free \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/iscsiadm \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/ls \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/lsblk \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/lsscsi \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/mkdir \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/mkfs.ext3 \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/mkfs.ext4 \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/mkfs.xfs \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/multipath \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/multipathd \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/pgrep \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/resize2fs \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/rmdir \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/stat \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/xfs_growfs
 
 ADD trident /netapp
-RUN chmod 777 /sbin/rescan-scsi-bus \
-              /sbin/docker \
-              /usr/local/sbin/iscsiadm \
-              /netapp/container-launch.sh \
+RUN chmod 777 /netapp/container-launch.sh \
               /netapp/trident
-
-RUN ln -s /host/etc/iscsi /etc/iscsi
 
 ENV DOCKER_PLUGIN_MODE 1
 EXPOSE 8000

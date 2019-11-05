@@ -37,7 +37,6 @@ COPY ./scripts/* $BIN $CLI_BIN /usr/local/bin/
 
 RUN mkdir /netapp
 ADD chroot-host-wrapper.sh /netapp
-RUN chmod 777 /netapp/chroot-host-wrapper.sh
 RUN    ln -s /netapp/chroot-host-wrapper.sh /netapp/blkid \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/blockdev \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/cat \

@@ -2029,6 +2029,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "docker login " +
               "-u $env.PUBLIC_DOCKER_REGISTRY_USERNAME " +
               "-p $env.PUBLIC_DOCKER_REGISTRY_PASSWORD\n" +
+              "cp -f ../../../chroot-host-wrapper.sh .\n" +
               "./createFS\n" +
               "sudo cp -f plugin.json myplugin/config.json\n" +
               "sudo docker logout\n" +
@@ -2039,6 +2040,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "docker login $env.PRIVATE_DOCKER_REGISTRY " +
               "-u $env.PRIVATE_DOCKER_REGISTRY_USERNAME " +
               "-p $env.PRIVATE_DOCKER_REGISTRY_PASSWORD\n" +
+              "cp -f ../../../chroot-host-wrapper.sh .\n" +
               "./createFS\n" +
               "sudo cp -f plugin.json myplugin/config.json\n" +
               "sudo docker logout\n" +

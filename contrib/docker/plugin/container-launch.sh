@@ -32,6 +32,8 @@ basefile=$(basename ${MY_CONFIG})
 MY_CONFIG="/etc/netappdvp/${basefile}"
 export CONFIG_SWITCH="--config=${MY_CONFIG}"
 
+export PATH=/netapp:$PATH
+
 echo Running: /netapp/trident ${REST_SWITCH} --address=0.0.0.0 --port=8000 ${DEBUG_SWITCH} ${CONFIG_SWITCH} "${@:1}"
 /netapp/trident ${REST_SWITCH} --address=0.0.0.0 --port=8000 ${DEBUG_SWITCH} ${CONFIG_SWITCH} "${@:1}"
 
