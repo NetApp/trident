@@ -590,7 +590,12 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		// resource group in all cases here - it may differ from the Capacity Pool's.
 		vnetRG := ""
 		if subnet == "" {
-			log.Debugf("No subnet specified in volume creation request, selecting at random in %s", *cpool.Location)
+			logstr := "No subnet specified in volume creation request, selecting "
+			if vNet != "" {
+				log.Debugf(logstr+"from vnet %s", vNet)
+			} else {
+				log.Debugf(logstr+"at random in %s", *cpool.Location)
+			}
 			randomSubnet := d.randomSubnetForLocation(vNet, *cpool.Location)
 			if randomSubnet == nil {
 				return nil, fmt.Errorf("could not find a suitable subnet in %s", *cpool.Location)
