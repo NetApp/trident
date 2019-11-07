@@ -112,36 +112,41 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
 	var response []byte
 	var result CloneVolumeResult
 
-	// We use this loop to deal with things like trying to immediately clone
-	// from a volume that was just created.  Sometimes it can take a few
-	// seconds for the Slice to finalize even though the Volume reports ready.
-	// We'll do a backoff retry loop here, at some point would be handy go have
-	// a global util for us to use for any call
-	retry := 0
-	for retry < 10 {
+	cloneExists := func()  error {
 		response, cloneError = c.Request("CloneVolume", req, NewReqID())
 		if cloneError != nil {
 			errorMessage := cloneError.Error()
 			if strings.Contains(errorMessage, "SliceNotRegistered") {
-				log.Warningf("detected SliceNotRegistered on Clone operation, retrying in %d seconds", 2+retry)
-				time.Sleep(time.Second * time.Duration(2+retry))
-				retry++
+				return fmt.Errorf("detected SliceNotRegistered on Clone operation")
 			} else if strings.Contains(errorMessage, "xInvalidParameter") {
-				log.Warningf("detected xInvalidParameter on Clone operation, retrying in %d seconds", 2+retry)
-				time.Sleep(time.Second * time.Duration(2+retry))
-				retry++
+				return fmt.Errorf("detected xInvalidParameter on Clone operation")
+			} else if strings.Contains(errorMessage, "xNotReadyForIO") {
+				return fmt.Errorf("detected xNotReadyForIO on Clone operation")
 			} else {
-				break
+				log.Debugf("encountered err: %s during volume clone operation", cloneError)
+				backoff.Permanent(cloneError)
 			}
-		} else {
-			break
 		}
+		return  nil
+	}
+	cloneExistsNotify := func(err error, duration time.Duration) {
+		log.WithField("increment", duration).Debugf("Clone not yet present, waiting; err: %+v", err)
 	}
 
-	if cloneError != nil {
-		log.Errorf("Failed to clone volume: %+v", cloneError)
-		return Volume{}, cloneError
+	cloneBackoff := backoff.NewExponentialBackOff()
+	cloneBackoff.InitialInterval = 2 * time.Second
+	cloneBackoff.Multiplier = 1.414
+	cloneBackoff.RandomizationFactor = 0.1
+	cloneBackoff.MaxElapsedTime = 30 * time.Second
+	cloneBackoff.MaxInterval = 5 * time.Second
+
+	// Sometimes it can take a few seconds for the Slice to finalize even though the Volume reports ready.
+	if err := backoff.RetryNotify(cloneExists, cloneBackoff, cloneExistsNotify); err != nil {
+		log.WithField("clone", cloneBackoff).Warnf("Failed to clone volume after %3.2f seconds.",
+			cloneBackoff.MaxElapsedTime.Seconds())
+		return Volume{}, fmt.Errorf("failed to clone volume: %s", req.Name)
 	}
+
 	log.Info("Clone request succeeded")
 
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
