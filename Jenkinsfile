@@ -4089,6 +4089,7 @@ def _docker_ee_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=docker_ee ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=trident ' +
         'remote_path=' + vm_path + '\'']
     } else {
@@ -4098,6 +4099,7 @@ def _docker_ee_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=docker_ee ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=trident ' +
         'remote_path=' + vm_path + '\'']
     }
@@ -4389,6 +4391,7 @@ def _kubeadm_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=kubeadm ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=trident ' +
         'remote_path=' + vm_path + '\'']
     } else {
@@ -4397,6 +4400,7 @@ def _kubeadm_config(
         '\'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=kubeadm ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=trident ' +
         'remote_path=' + vm_path + '\'']
     }
@@ -4680,6 +4684,7 @@ def _openshift_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=openshift ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=myproject ' +
         'remote_path=' + vm_path + '\'']
     } else {
@@ -4688,6 +4693,7 @@ def _openshift_config(
         '\'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=openshift ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'namespace=myproject ' +
         'remote_path=' + vm_path + '\'']
     }
@@ -5495,6 +5501,7 @@ def _upgrade_config(
         'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=upgrade ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'remote_path=' + vm_path + '\'']
     } else {
       options = [
@@ -5502,6 +5509,7 @@ def _upgrade_config(
         '\'image=' + image + ' ' +
         'installer=' + env.WORKSPACE + '/' + installer + ' ' +
         'install_target=upgrade ' +
+        'k8s_version=' + spec['k8s_version'] + ' ' +
         'remote_path=' + vm_path + '\'']
     }
 
