@@ -1,0 +1,20 @@
+name: tridentctl
+base: core18
+version: '1.0'
+summary: Storage Orchestrator for Containers
+description: |
+    Trident is a fully supported open source project maintained by NetApp. It has been designed from the ground up to help you meet the sophisticated persistence demands of your containerized applications. |
+    Through its support for popular container platforms like Kubernetes and Docker, Trident understands the natural and evolving languages of those platforms, and translates requirements expressed or implied through them into an automated and orchestrated response from the infrastructure.
+grade: stable 
+confinement: strict 
+ 
+apps:
+  tridentctl:
+    command: ./tridentctl
+
+parts:
+  tridentctl:
+    plugin: dump
+    source: https://github.com/NetApp/trident/releases/download/v19.10.0/trident-installer-19.10.0.tar.gz
+    stage:
+      - tridentctl
