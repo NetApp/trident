@@ -50,15 +50,16 @@ const (
 
 // NFSStorageDriver is for storage provisioning using Cloud Volumes Service in AWS
 type NFSStorageDriver struct {
-	initialized bool
-	Config      drivers.AWSNFSStorageDriverConfig
-	API         *api.Client
-	apiVersion  *utils.Version
-	sdeVersion  *utils.Version
-	tokenRegexp *regexp.Regexp
-	csiRegexp   *regexp.Regexp
-	apiRegions  []string
-	pools       map[string]*storage.Pool
+	initialized         bool
+	Config              drivers.AWSNFSStorageDriverConfig
+	API                 *api.Client
+	apiVersion          *utils.Version
+	sdeVersion          *utils.Version
+	tokenRegexp         *regexp.Regexp
+	csiRegexp           *regexp.Regexp
+	apiRegions          []string
+	pools               map[string]*storage.Pool
+	volumeCreateTimeout time.Duration
 }
 
 type Telemetry struct {
@@ -120,14 +121,14 @@ func (d *NFSStorageDriver) validateName(name string) error {
 	return nil
 }
 
-// createTimeout controls the driver timeout for volume create/delete operations.  Docker gets more time, since
+// defaultCreateTimeout sets the driver timeout for volume create/delete operations.  Docker gets more time, since
 // it doesn't have a mechanism to retry.
-func (d *NFSStorageDriver) createTimeout() time.Duration {
+func (d *NFSStorageDriver) defaultCreateTimeout() time.Duration {
 	switch d.Config.DriverContext {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
 	default:
-		return api.VolumeCreateTimeout
+		return d.volumeCreateTimeout
 	}
 }
 
@@ -243,15 +244,29 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(config *drivers.AWSNFSS
 		config.ExportRule = defaultExportRule
 	}
 
+	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
+	volumeCreateTimeout := d.defaultCreateTimeout()
+	if config.VolumeCreateTimeout != "" {
+		i, err := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64)
+		if err != nil {
+			log.WithField("interval", d.Config.VolumeCreateTimeout).Errorf(
+				"Invalid Flexvol create timeout period. %v", err)
+			return err
+		}
+		volumeCreateTimeout = time.Duration(i) * time.Second
+	}
+	d.volumeCreateTimeout = volumeCreateTimeout
+
 	log.WithFields(log.Fields{
-		"StoragePrefix":   *config.StoragePrefix,
-		"Size":            config.Size,
-		"ServiceLevel":    config.ServiceLevel,
-		"NfsMountOptions": config.NfsMountOptions,
-		"SnapshotDir":     config.SnapshotDir,
-		"SnapshotReserve": config.SnapshotReserve,
-		"LimitVolumeSize": config.LimitVolumeSize,
-		"ExportRule":      config.ExportRule,
+		"StoragePrefix":              *config.StoragePrefix,
+		"Size":                       config.Size,
+		"ServiceLevel":               config.ServiceLevel,
+		"NfsMountOptions":            config.NfsMountOptions,
+		"SnapshotDir":                config.SnapshotDir,
+		"SnapshotReserve":            config.SnapshotReserve,
+		"LimitVolumeSize":            config.LimitVolumeSize,
+		"ExportRule":                 config.ExportRule,
+		"VolumeCreateTimeoutSeconds": config.VolumeCreateTimeout,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -931,10 +946,13 @@ func (d *NFSStorageDriver) updateTelemetryLabels(volume *api.FileSystem) []strin
 // This method is used by both Create & CreateClone.
 func (d *NFSStorageDriver) waitForVolumeCreate(volume *api.FileSystem, volumeName string) error {
 
-	state, err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.createTimeout())
+	state, err := d.API.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
 	if err != nil {
 
 		if state == api.StateCreating {
+			log.WithFields(log.Fields{
+				"volume": volumeName,
+			}).Debug("Volume is in creating state.")
 			return utils.VolumeCreatingError(err.Error())
 		}
 
@@ -986,7 +1004,7 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 		return nil
 	} else if extantVolume.LifeCycleState == api.StateDeleting {
 		// This is a retry, so give it more time before giving up again.
-		_, err = d.API.WaitForVolumeState(extantVolume, api.StateDeleted, []string{api.StateError}, d.createTimeout())
+		_, err = d.API.WaitForVolumeState(extantVolume, api.StateDeleted, []string{api.StateError}, d.volumeCreateTimeout)
 		return err
 	}
 

@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/testutils"
 )
 
 // ToStringPointer takes a string and returns a string pointer
@@ -49,141 +49,111 @@ func TestSnapshotNames_DockerContext(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextDocker)
 
 	snapName1 := helper.getInternalSnapshotName("snapshot-123")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot_snapshot_123", snapName1)
+	assert.Equal(t, "_snapshot_snapshot_123", snapName1, "Strings not equal")
 
 	snapName2 := helper.getInternalSnapshotName("snapshot")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot_snapshot", snapName2)
+	assert.Equal(t, "_snapshot_snapshot", snapName2, "Strings not equal")
 
 	snapName3 := helper.getInternalSnapshotName("_snapshot")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot__snapshot", snapName3)
+	assert.Equal(t, "_snapshot__snapshot", snapName3, "Strings not equal")
 
 	snapName4 := helper.getInternalSnapshotName("_____snapshot")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot______snapshot", snapName4)
+	assert.Equal(t, "_snapshot______snapshot", snapName4, "Strings not equal")
 
 	k8sSnapName1 := helper.getInternalSnapshotName("snapshot-0bf1ec69_da4b_11e9_bd10_000c29e763d8")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot_snapshot_0bf1ec69_da4b_11e9_bd10_000c29e763d8", k8sSnapName1)
+	assert.Equal(t, "_snapshot_snapshot_0bf1ec69_da4b_11e9_bd10_000c29e763d8", k8sSnapName1, "Strings not equal")
 }
 
 func TestSnapshotNames_KubernetesContext(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextKubernetes)
 
 	k8sSnapName1 := helper.getInternalSnapshotName("snapshot-0bf1ec69_da4b_11e9_bd10_000c29e763d8")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot_snapshot_0bf1ec69_da4b_11e9_bd10_000c29e763d8", k8sSnapName1)
+	assert.Equal(t, "_snapshot_snapshot_0bf1ec69_da4b_11e9_bd10_000c29e763d8", k8sSnapName1, "Strings not equal")
 
 	k8sSnapName2 := helper.getInternalSnapshotName("mySnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"_snapshot_mySnap", k8sSnapName2)
+	assert.Equal(t, "_snapshot_mySnap", k8sSnapName2, "Strings not equal")
 }
 
 func TestHelperGetters(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextDocker)
 
 	snapPathPattern := helper.GetSnapPathPattern("my-Bucket")
-	testutils.AssertEqual(t, "Strings not equal",
-		"/vol/my_Bucket/storagePrefix_*_snapshot_*", snapPathPattern)
+	assert.Equal(t, "/vol/my_Bucket/storagePrefix_*_snapshot_*", snapPathPattern, "Strings not equal")
 
 	snapPathPatternForVolume := helper.GetSnapPathPatternForVolume("my-Vol")
-	testutils.AssertEqual(t, "Strings not equal",
-		"/vol/*/storagePrefix_my_Vol_snapshot_*", snapPathPatternForVolume)
+	assert.Equal(t, "/vol/*/storagePrefix_my_Vol_snapshot_*", snapPathPatternForVolume, "Strings not equal")
 
 	snapPath := helper.GetSnapPath("my-Bucket", "storagePrefix_my-Lun", "snap-1")
-	testutils.AssertEqual(t, "Strings not equal",
-		"/vol/my_Bucket/storagePrefix_my_Lun_snapshot_snap_1", snapPath)
+	assert.Equal(t, "/vol/my_Bucket/storagePrefix_my_Lun_snapshot_snap_1", snapPath, "Strings not equal")
 
 	snapName1 := helper.GetSnapshotName("my-Lun", "my-Snapshot")
-	testutils.AssertEqual(t, "Strings not equal",
-		"storagePrefix_my_Lun_snapshot_my_Snapshot", snapName1)
+	assert.Equal(t, "storagePrefix_my_Lun_snapshot_my_Snapshot", snapName1, "Strings not equal")
 
 	snapName2 := helper.GetSnapshotName("my-Lun", "snapshot-123")
-	testutils.AssertEqual(t, "Strings not equal",
-		"storagePrefix_my_Lun_snapshot_snapshot_123", snapName2)
+	assert.Equal(t, "storagePrefix_my_Lun_snapshot_snapshot_123", snapName2, "Strings not equal")
 
 	internalSnapName := helper.GetInternalSnapshotName("storagePrefix_my-Lun", "my-Snapshot")
-	testutils.AssertEqual(t, "Strings not equal",
-		"storagePrefix_my_Lun_snapshot_my_Snapshot", internalSnapName)
+	assert.Equal(t, "storagePrefix_my_Lun_snapshot_my_Snapshot", internalSnapName, "Strings not equal")
 
 	internalVolName := helper.GetInternalVolumeName("my-Lun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"storagePrefix_my_Lun", internalVolName)
+	assert.Equal(t, "storagePrefix_my_Lun", internalVolName, "Strings not equal")
 
 	lunPath := helper.GetLUNPath("my-Bucket", "my-Lun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"/vol/my_Bucket/storagePrefix_my_Lun", lunPath)
+	assert.Equal(t, "/vol/my_Bucket/storagePrefix_my_Lun", lunPath, "Strings not equal")
 
 	lunPathPatternForVolume := helper.GetLUNPathPattern("my-Vol")
-	testutils.AssertEqual(t, "Strings not equal",
-		"/vol/*/storagePrefix_my_Vol", lunPathPatternForVolume)
+	assert.Equal(t, "/vol/*/storagePrefix_my_Vol", lunPathPatternForVolume, "Strings not equal")
 }
 
 func TestValidateLUN(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextDocker)
 
 	isValid := helper.IsValidSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertTrue(t, "boolean not true",
-		isValid)
+	assert.True(t, isValid, "boolean not true")
 }
 
 func TestGetComponents_DockerContext(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextDocker)
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"mysnap", snapName)
+	assert.Equal(t, "mysnap", snapName, "Strings not equal")
 
 	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myLun", volName)
+	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myBucket", bucketName)
+	assert.Equal(t, "myBucket", bucketName, "Strings not equal")
 }
 
 func TestGetComponents_KubernetesContext(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextKubernetes)
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_snapshot_123")
-	testutils.AssertEqual(t, "Strings not equal",
-		"snapshot_123", snapName)
+	assert.Equal(t, "snapshot_123", snapName, "Strings not equal")
 
 	snapName2 := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"mysnap", snapName2)
+	assert.Equal(t, "mysnap", snapName2, "Strings not equal")
 
 	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myLun", volName)
+	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myBucket", bucketName)
+	assert.Equal(t, "myBucket", bucketName, "Strings not equal")
 }
 
 func TestGetComponentsNoSnapshot(t *testing.T) {
 	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextDocker)
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"", snapName)
+	assert.Equal(t, "", snapName, "Strings not equal")
 
 	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myLun", volName)
+	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"myBucket", bucketName)
+	assert.Equal(t, "myBucket", bucketName, "Strings not equal")
 
 	snapName2 := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun")
-	testutils.AssertEqual(t, "Strings not equal",
-		"", snapName2)
+	assert.Equal(t, "", snapName2, "Strings not equal")
 
 	volName2 := helper.GetVolumeName("myBucket/storagePrefix_myLun")
-	testutils.AssertNotEqual(t, "Strings are equal",
-		"myLun", volName2)
-	testutils.AssertEqual(t, "Strings are NOT equal",
-		"", volName2)
+	assert.NotEqual(t, "myLun", volName2, "Strings are equal")
+	assert.Equal(t, "", volName2, "Strings are NOT equal")
 }

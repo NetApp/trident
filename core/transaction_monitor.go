@@ -11,26 +11,25 @@ import (
 )
 
 const (
-	txnMonitorStartupDelay = 30 * time.Second
-	txnMonitorPeriod       = 1 * time.Minute
-	txnMonitorMaxAge       = 3 * time.Minute
+	txnMonitorPeriod = 60 * time.Minute
+	txnMonitorMaxAge = 24 * time.Hour
 )
 
 // StartTransactionMonitor starts the thread that reaps abandoned long-running transactions.
-func (o *TridentOrchestrator) StartTransactionMonitor() {
+func (o *TridentOrchestrator) StartTransactionMonitor(txnPeriod time.Duration, txnMaxAge time.Duration) {
+
 	go func() {
-		o.txnMonitorTicker = time.NewTicker(txnMonitorPeriod)
+		o.txnMonitorTicker = time.NewTicker(txnPeriod)
 		o.txnMonitorChannel = make(chan struct{})
 		log.Debug("Transaction monitor started.")
 
-		time.Sleep(txnMonitorStartupDelay)
-		o.checkLongRunningTransactions()
+		o.checkLongRunningTransactions(txnMaxAge)
 
 		for {
 			select {
 			case tick := <-o.txnMonitorTicker.C:
 				log.WithField("tick", tick).Debug("Transaction monitor running.")
-				o.checkLongRunningTransactions()
+				o.checkLongRunningTransactions(txnMaxAge)
 			case <-o.txnMonitorChannel:
 				log.Debugf("Transaction monitor stopped.")
 				return
@@ -53,7 +52,7 @@ func (o *TridentOrchestrator) StopTransactionMonitor() {
 
 // checkLongRunningTransactions is called periodically by the transaction monitor to
 // see if any long-running transactions exist that have expired and must be reaped.
-func (o *TridentOrchestrator) checkLongRunningTransactions() {
+func (o *TridentOrchestrator) checkLongRunningTransactions(txnMaxAge time.Duration) {
 
 	if o.bootstrapError != nil {
 		log.WithField("error", o.bootstrapError).Errorf("Transaction monitor blocked by bootstrap error.")
@@ -82,7 +81,7 @@ func (o *TridentOrchestrator) checkLongRunningTransactions() {
 	// Reap each long-running transaction that has expired
 	for txn, startTime := range txnMap {
 
-		expirationTime := startTime.Add(txnMonitorMaxAge)
+		expirationTime := startTime.Add(txnMaxAge)
 
 		log.WithFields(log.Fields{
 			"started": startTime,

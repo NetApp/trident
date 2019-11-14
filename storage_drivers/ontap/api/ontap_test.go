@@ -6,18 +6,15 @@ import (
 	"testing"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-	"github.com/netapp/trident/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetError(t *testing.T) {
 	e := GetError(nil, nil)
 
-	testutils.AssertEqual(t, "Strings not equal",
-		"failed", e.(ZapiError).Status())
+	assert.Equal(t, "failed", e.(ZapiError).Status(), "Strings not equal")
 
-	testutils.AssertEqual(t, "Strings not equal",
-		azgo.EINTERNALERROR, e.(ZapiError).Code())
+	assert.Equal(t, azgo.EINTERNALERROR, e.(ZapiError).Code(), "Strings not equal")
 
-	testutils.AssertEqual(t, "Strings not equal",
-		"unexpected nil ZAPI result", e.(ZapiError).Reason())
+	assert.Equal(t, "unexpected nil ZAPI result", e.(ZapiError).Reason(), "Strings not equal")
 }

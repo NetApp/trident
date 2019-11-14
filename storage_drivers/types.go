@@ -136,12 +136,13 @@ type SolidfireStorageDriverConfigDefaults struct {
 
 type AWSNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	APIURL          string `json:"apiURL"`
-	APIKey          string `json:"apiKey"`
-	APIRegion       string `json:"apiRegion"`
-	SecretKey       string `json:"secretKey"`
-	ProxyURL        string `json:"proxyURL"`
-	NfsMountOptions string `json:"nfsMountOptions"`
+	APIURL              string `json:"apiURL"`
+	APIKey              string `json:"apiKey"`
+	APIRegion           string `json:"apiRegion"`
+	SecretKey           string `json:"secretKey"`
+	ProxyURL            string `json:"proxyURL"`
+	NfsMountOptions     string `json:"nfsMountOptions"`
+	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
 	AWSNFSStorageDriverPool
 	Storage []AWSNFSStorageDriverPool `json:"storage"`
 }

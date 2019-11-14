@@ -5,6 +5,7 @@ package testutils
 import (
 	"fmt"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -41,9 +42,9 @@ func getFakeVirtualPool(size, region, zone string, labels map[string]string) dri
 	}
 
 	return drivers.FakeStorageDriverPool{
-		Labels:                          labels,
-		Region:                          region,
-		Zone:                            zone,
+		Labels: labels,
+		Region: region,
+		Zone:   zone,
 		FakeStorageDriverConfigDefaults: fakeConfigDefaults,
 	}
 }
@@ -119,5 +120,36 @@ func GetFakePools() map[string]*fake.StoragePool {
 				sa.Labels:           sa.NewLabelOffer(map[string]string{"cloud": "azure", "performance": "silver"}),
 			},
 		},
+	}
+}
+
+func GenerateFakePools(count int) map[string]*fake.StoragePool {
+	ret := make(map[string]*fake.StoragePool, count)
+	for i := 0; i < count; i++ {
+		ret[fmt.Sprintf("pool-%d", i)] = &fake.StoragePool{
+			Bytes: 100 * 1024 * 1024 * 1024,
+			Attrs: map[string]sa.Offer{
+				sa.IOPS:             sa.NewIntOffer(0, 100),
+				sa.Snapshots:        sa.NewBoolOffer(false),
+				sa.Encryption:       sa.NewBoolOffer(false),
+				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+			},
+		}
+	}
+	return ret
+}
+
+func GenerateVolumeConfig(
+	name string, gb int, storageClass string, protocol config.Protocol,
+) *storage.VolumeConfig {
+	return &storage.VolumeConfig{
+		Name:            name,
+		InternalName:    name,
+		Size:            fmt.Sprintf("%d", gb*1024*1024*1024),
+		Protocol:        protocol,
+		StorageClass:    storageClass,
+		SnapshotPolicy:  "none",
+		SnapshotDir:     "none",
+		UnixPermissions: "",
 	}
 }

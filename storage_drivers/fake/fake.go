@@ -34,6 +34,11 @@ const (
 	Size   = "size"
 	Region = "region"
 	Zone   = "zone"
+
+	// Constants for special use cases
+	PVC_creating_01       = "creating-c44b-40f9-a0a2-a09172f1a1f6"
+	PVC_creating_02       = "creating-686e-4960-9135-b040c2d54332"
+	PVC_creating_clone_03 = "creating-382g-4ccj-k0k4-z88la30d9k22"
 )
 
 type StorageDriver struct {
@@ -42,6 +47,9 @@ type StorageDriver struct {
 
 	// Volumes saves info about Volumes created on this driver
 	Volumes map[string]fake.Volume
+
+	// CreatingVolumes is used to test VolumeCreatingTransactions
+	CreatingVolumes map[string]fake.CreatingVolume
 
 	// DestroyedVolumes is here so that tests can check whether destroy
 	// has been called on a volume during or after bootstrapping, since
@@ -179,6 +187,7 @@ func (d *StorageDriver) Initialize(
 	}
 
 	d.Volumes = make(map[string]fake.Volume)
+	d.CreatingVolumes = d.generateCreatingVolumes()
 	d.DestroyedVolumes = make(map[string]bool)
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 	d.Snapshots = make(map[string]map[string]*storage.Snapshot)
@@ -460,6 +469,10 @@ func (d *StorageDriver) Create(
 			continue
 		}
 
+		if err = d.handleVolumeCreatingTransaction(name); err != nil {
+			return err
+		}
+
 		d.Volumes[name] = fake.Volume{
 			Name:          name,
 			RequestedPool: storagePool.Name,
@@ -590,6 +603,10 @@ func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 	if sizeBytes > fakePool.Bytes {
 		return fmt.Errorf("requested clone is too large: requested %d bytes; have %d available in pool %s",
 			sizeBytes, fakePool.Bytes, physicalPool)
+	}
+
+	if err := d.handleVolumeCreatingTransaction(name); err != nil {
+		return err
 	}
 
 	d.Volumes[name] = fake.Volume{
@@ -1047,4 +1064,51 @@ func Clone(a, b interface{}) {
 	dec := gob.NewDecoder(buff)
 	_ = enc.Encode(a)
 	_ = dec.Decode(b)
+}
+
+func (d *StorageDriver) handleVolumeCreatingTransaction(volName string) error {
+	// Handle VolumeCreatingTransaction errors
+	if createVolume, ok := d.CreatingVolumes[volName]; ok {
+		if createVolume.FinalIteration == createVolume.Iterations {
+			if len(createVolume.Error) != 0 {
+				return fmt.Errorf(createVolume.Error)
+			}
+		} else {
+			createVolume.Iterations++
+			d.CreatingVolumes[createVolume.Name] = createVolume
+			log.Debug("createVolume.Iterations: " + strconv.Itoa(createVolume.Iterations))
+			return utils.VolumeCreatingError(
+				fmt.Sprintf("volume state is still creating, not available"))
+		}
+	}
+	return nil
+}
+
+func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume {
+	creatingVolumes := make(map[string]fake.CreatingVolume)
+	transaction01 := fake.CreatingVolume{
+		Name:           PVC_creating_01,
+		Iterations:     0,
+		FinalIteration: 3,
+		Error:          "",
+	}
+	creatingVolumes[transaction01.Name] = transaction01
+
+	transaction02 := fake.CreatingVolume{
+		Name:           PVC_creating_02,
+		Iterations:     0,
+		FinalIteration: 1,
+		Error:          "error occurred during creation on backend",
+	}
+	creatingVolumes[transaction02.Name] = transaction02
+
+	transaction03 := fake.CreatingVolume{
+		Name:           PVC_creating_clone_03,
+		Iterations:     0,
+		FinalIteration: 1,
+		Error:          "",
+	}
+	creatingVolumes[transaction03.Name] = transaction03
+
+	return creatingVolumes
 }

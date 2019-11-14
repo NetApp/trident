@@ -6,3 +6,10 @@ type Volume struct {
 	PhysicalPool  string
 	SizeBytes     uint64 `json:"size"`
 }
+
+type CreatingVolume struct {
+	Name string
+	Iterations int
+	FinalIteration int
+	Error string
+}

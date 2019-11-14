@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCombineAccessModes(t *testing.T) {
@@ -34,6 +34,6 @@ func TestCombineAccessModes(t *testing.T) {
 
 	for _, tc := range accessModesTests {
 		accessMode := CombineAccessModes(tc.accessModes)
-		testutils.AssertEqual(t, "Access Modes not combining as expected!", tc.expected, accessMode)
+		assert.Equal(t, tc.expected, accessMode, "Access Modes not combining as expected!")
 	}
 }

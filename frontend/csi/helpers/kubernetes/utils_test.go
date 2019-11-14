@@ -4,10 +4,10 @@ package kubernetes
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/version"
 
 	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/testutils"
 )
 
 func TestSupportsFeature(t *testing.T) {
@@ -26,10 +26,10 @@ func TestSupportsFeature(t *testing.T) {
 		supported := plugin.SupportsFeature(csi.ExpandCSIVolumes)
 		if tc.expected {
 			print("bluh\n")
-			testutils.AssertTrue(t, "Expected true", supported)
+			assert.True(t, supported, "Expected true")
 		} else {
 			print("bar\n")
-			testutils.AssertFalse(t, "Expected false", supported)
+			assert.False(t, supported, "Expected false")
 		}
 	}
 }

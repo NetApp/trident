@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	persistentstore "github.com/netapp/trident/persistent_store"
@@ -24,7 +26,6 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type TridentOrchestrator struct {
@@ -123,7 +124,7 @@ func (o *TridentOrchestrator) Bootstrap() error {
 	}
 
 	// Start transaction monitor
-	o.StartTransactionMonitor()
+	o.StartTransactionMonitor(txnMonitorPeriod, txnMonitorMaxAge)
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
@@ -842,7 +843,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(backendName, configJSON
 	// Check whether the backend exists.
 	originalBackend, found := o.backends[backendUUID]
 	if !found {
-		return nil, utils.FoundError(fmt.Sprintf("backend %v was not found", backendUUID))
+		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendUUID))
 	}
 
 	log.WithFields(log.Fields{
@@ -1237,7 +1238,7 @@ func (o *TridentOrchestrator) AddVolume(volumeConfig *storage.VolumeConfig) (
 	return o.addVolumeInitial(volumeConfig)
 }
 
-// addVolumeInitial continues a volume creation operation that previously failed with a VolumeCreatingError.
+// addVolumeInitial continues the volume creation operation.
 // This method should only be called from AddVolume, as it does not take locks or otherwise do much validation
 // of the volume config.
 func (o *TridentOrchestrator) addVolumeInitial(
@@ -1287,17 +1288,18 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 	errorMessages := make([]string, 0)
 
-	// Choose a pool at random.
+	// Choose a pool at random. The for loop tries all matching pools until either the volume is
+	// successfully created or all matching backends fail to create the volume.
 	for _, num := range rand.Perm(len(pools)) {
 
 		// Add volume to the backend of the selected pool
 		pool = pools[num]
 		backend = pool.Backend
 
-		// Create the backend-specific internal names so they are saved in the transaction
+		// CreatePrepare has a side effect that updates the volumeConfig with the backend-specific internal name
 		backend.Driver.CreatePrepare(volumeConfig)
 
-		// Replace transaction for the next create attempt
+		// Update transaction with updated volumeConfig
 		txn = &storage.VolumeTransaction{
 			Config: volumeConfig,
 			Op:     storage.AddVolume,
@@ -1324,6 +1326,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 				return nil, err
 			}
 
+			// Log failure and continue for loop to find a backend that can create the volume.
 			log.WithFields(logFields).Warn("Failed to create the volume on this backend.")
 			errorMessages = append(errorMessages,
 				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",

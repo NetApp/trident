@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	testutils2 "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -19,13 +20,12 @@ import (
 	"github.com/netapp/trident/core"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	crd_fake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
+	crdFake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	"github.com/netapp/trident/storage"
-	fake_storage "github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
+	fakeStorage "github.com/netapp/trident/storage/fake"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
-	fake_driver "github.com/netapp/trident/storage_drivers/fake"
+	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 )
 
@@ -124,8 +124,8 @@ func GetTestKubernetesClientset() *k8s_fake.Clientset {
 	return client
 }
 
-func GetTestCrdClientset() *crd_fake.Clientset {
-	client := crd_fake.NewSimpleClientset()
+func GetTestCrdClientset() *crdFake.Clientset {
+	client := crdFake.NewSimpleClientset()
 	return client
 }
 
@@ -139,28 +139,12 @@ func assertNotNil(t *testing.T, name string, obj interface{}) {
 	}
 }
 
-func getPools(count int) map[string]*fake_storage.StoragePool {
-	ret := make(map[string]*fake_storage.StoragePool, count)
-	for i := 0; i < count; i++ {
-		ret[fmt.Sprintf("pool-%d", i)] = &fake_storage.StoragePool{
-			Bytes: 100 * 1024 * 1024 * 1024,
-			Attrs: map[string]sa.Offer{
-				sa.IOPS:             sa.NewIntOffer(0, 100),
-				sa.Snapshots:        sa.NewBoolOffer(false),
-				sa.Encryption:       sa.NewBoolOffer(false),
-				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
-			},
-		}
-	}
-	return ret
+func newFakeStorageDriverConfigJSON(name string) (string, error) {
+	volumes := make([]fakeStorage.Volume, 0)
+	return fakeDriver.NewFakeStorageDriverConfigJSON(name, config.File, testutils2.GenerateFakePools(2), volumes)
 }
 
-func newFakeStorageDriverConfigJSON(t *testing.T, name string) (string, error) {
-	volumes := make([]fake_storage.Volume, 0)
-	return fake_driver.NewFakeStorageDriverConfigJSON(name, config.File, getPools(2), volumes)
-}
-
-func addCrdTestReactors(crdFakeClient *crd_fake.Clientset, testingCache *TestingCache) {
+func addCrdTestReactors(crdFakeClient *crdFake.Clientset, testingCache *TestingCache) {
 
 	crdFakeClient.Fake.PrependReactor(
 		"*" /* all operations */, "*", /* all object types */
@@ -277,11 +261,11 @@ func TestCrdController(t *testing.T) {
 			Protocol: config.File,
 		},
 	}
-	fakeDriver := fake.StorageDriver{
+	driver := fake.StorageDriver{
 		Config: fakeConfig.Config,
 	}
 	fakeBackend := &storage.Backend{
-		Driver:      &fakeDriver,
+		Driver:      &driver,
 		Name:        "fake1",
 		BackendUUID: uuid.New().String(),
 	}
@@ -291,7 +275,7 @@ func TestCrdController(t *testing.T) {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}
 
-	configJSON, jsonErr := newFakeStorageDriverConfigJSON(t, fakeBackendFound.Name)
+	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackendFound.Name)
 	if jsonErr != nil {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
@@ -451,7 +435,7 @@ func TestCrdController2(t *testing.T) {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}
 
-	configJSON, jsonErr := newFakeStorageDriverConfigJSON(t, fakeBackendFound.Name)
+	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackendFound.Name)
 	if jsonErr != nil {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
@@ -508,7 +492,7 @@ func TestCrdController2(t *testing.T) {
 
 	// Build a storage.Snapshot
 	testSnapshotConfig := &storage.SnapshotConfig{
-		Version:            string(config.OrchestratorAPIVersion),
+		Version:            config.OrchestratorAPIVersion,
 		Name:               "testsnap1",
 		InternalName:       "internal_testsnap1",
 		VolumeName:         volConfig.Name,

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/netapp/trident/testutils"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -115,7 +115,7 @@ func cleanupStoreVersion(t *testing.T, etcd string) {
 	}
 }
 
-func diffConfig(expected, got interface{}, fieldToSkip string, t *testing.T) []string {
+func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 
 	diffs := make([]string, 0, 0)
 	expectedStruct := reflect.Indirect(reflect.ValueOf(expected))
@@ -175,11 +175,11 @@ func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) 
 	var configDiffs []string
 
 	// Compare the common storage driver config
-	configDiffs = diffConfig(expectedCSDCIntf, gotCSDCIntf, "", t)
+	configDiffs = diffConfig(expectedCSDCIntf, gotCSDCIntf, "")
 	diffs = append(diffs, configDiffs...)
 
 	// Compare the base config, without the common storage driver config
-	configDiffs = diffConfig(expectedConfig, gotConfig, "CommonStorageDriverConfig", t)
+	configDiffs = diffConfig(expectedConfig, gotConfig, "CommonStorageDriverConfig")
 	diffs = append(diffs, configDiffs...)
 
 	t.Logf("expectedConfig %v", expectedConfig)
@@ -324,21 +324,6 @@ func getOrchestrator() *TridentOrchestrator {
 		log.Fatal("Failure occurred during bootstrapping: ", err)
 	}
 	return o
-}
-
-func generateVolumeConfig(
-	name string, gb int, storageClass string, protocol config.Protocol,
-) *storage.VolumeConfig {
-	return &storage.VolumeConfig{
-		Name:            name,
-		InternalName:    name,
-		Size:            fmt.Sprintf("%d", gb*1024*1024*1024),
-		Protocol:        protocol,
-		StorageClass:    storageClass,
-		SnapshotPolicy:  "none",
-		SnapshotDir:     "none",
-		UnixPermissions: "",
-	}
 }
 
 func validateStorageClass(
@@ -683,7 +668,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 	}{
 		{
 			name: "basic",
-			config: generateVolumeConfig("basic", 1, "fast",
+			config: tu.GenerateVolumeConfig("basic", 1, "fast",
 				config.File),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
@@ -697,7 +682,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "large",
-			config: generateVolumeConfig("large", 100, "fast",
+			config: tu.GenerateVolumeConfig("large", 100, "fast",
 				config.File),
 			expectedSuccess: false,
 			expectedMatches: []*tu.PoolMatch{},
@@ -706,7 +691,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "block",
-			config: generateVolumeConfig("block", 1, "pools",
+			config: tu.GenerateVolumeConfig("block", 1, "pools",
 				config.Block),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
@@ -718,7 +703,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "block2",
-			config: generateVolumeConfig("block2", 1, "additionalPools",
+			config: tu.GenerateVolumeConfig("block2", 1, "additionalPools",
 				config.Block),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
@@ -730,7 +715,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "invalid-storage-class",
-			config: generateVolumeConfig("invalid", 1, "nonexistent",
+			config: tu.GenerateVolumeConfig("invalid", 1, "nonexistent",
 				config.File),
 			expectedSuccess: false,
 			expectedMatches: []*tu.PoolMatch{},
@@ -739,7 +724,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "repeated",
-			config: generateVolumeConfig("basic", 20, "fast",
+			config: tu.GenerateVolumeConfig("basic", 20, "fast",
 				config.File),
 			expectedSuccess: false,
 			expectedMatches: []*tu.PoolMatch{},
@@ -748,7 +733,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		},
 		{
 			name: "postSCDelete",
-			config: generateVolumeConfig("postSCDelete", 20, "fast",
+			config: tu.GenerateVolumeConfig("postSCDelete", 20, "fast",
 				config.File),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
@@ -1089,7 +1074,7 @@ func TestCloneVolumes(t *testing.T) {
 	}{
 		{
 			name:            "file",
-			config:          generateVolumeConfig("file", 1, "fast", config.File),
+			config:          tu.GenerateVolumeConfig("file", 1, "fast", config.File),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
 				{Backend: "fast-a", Pool: tu.FastSmall},
@@ -1100,7 +1085,7 @@ func TestCloneVolumes(t *testing.T) {
 		},
 		{
 			name:            "block",
-			config:          generateVolumeConfig("block", 1, "specific", config.Block),
+			config:          tu.GenerateVolumeConfig("block", 1, "specific", config.Block),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
 				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
@@ -1247,7 +1232,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 
-	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50, scName, config.File))
+	_, err := orchestrator.AddVolume(tu.GenerateVolumeConfig(volumeName, 50, scName, config.File))
 	if err != nil {
 		t.Fatal("Unable to create volume: ", err)
 	}
@@ -1426,7 +1411,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if !backend.Driver.Initialized() {
 		t.Errorf("Deleted backend with volumes %s is not initialized.", backendName)
 	}
-	_, err = orchestrator.AddVolume(generateVolumeConfig(offlineVolumeName, 50, scName, config.File))
+	_, err = orchestrator.AddVolume(tu.GenerateVolumeConfig(offlineVolumeName, 50, scName, config.File))
 	if err == nil {
 		t.Error("Created volume volume on offline backend.")
 	}
@@ -1571,7 +1556,7 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
-	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+	_, err := orchestrator.AddVolume(tu.GenerateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
 		t.Fatal("Unable to create volume: ", err)
@@ -1622,7 +1607,7 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
-	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+	_, err := orchestrator.AddVolume(tu.GenerateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
 		t.Fatal("Unable to create volume: ", err)
@@ -1672,7 +1657,7 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 	orchestrator := getOrchestrator()
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
-	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+	_, err := orchestrator.AddVolume(tu.GenerateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
 		t.Fatal("Unable to create volume: ", err)
@@ -1717,7 +1702,7 @@ func TestBackendCleanup(t *testing.T) {
 
 	orchestrator := getOrchestrator()
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
-	_, err := orchestrator.AddVolume(generateVolumeConfig(volumeName, 50,
+	_, err := orchestrator.AddVolume(tu.GenerateVolumeConfig(volumeName, 50,
 		scName, config.File))
 	if err != nil {
 		t.Fatal("Unable to create volume: ", err)
@@ -1910,13 +1895,13 @@ func TestAddVolumeRecovery(t *testing.T) {
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 	// It's easier to add the volume and then reinject the transaction begin
 	// afterwards
-	fullVolumeConfig := generateVolumeConfig(fullVolumeName, 50, scName,
+	fullVolumeConfig := tu.GenerateVolumeConfig(fullVolumeName, 50, scName,
 		config.File)
 	_, err := orchestrator.AddVolume(fullVolumeConfig)
 	if err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
-	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
+	txOnlyVolumeConfig := tu.GenerateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
 	runRecoveryTests(t, orchestrator, backendName, storage.AddVolume,
@@ -1938,7 +1923,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// For the full test, we delete everything but the ending transaction.
-	fullVolumeConfig := generateVolumeConfig(fullVolumeName, 50, scName, config.File)
+	fullVolumeConfig := tu.GenerateVolumeConfig(fullVolumeName, 50, scName, config.File)
 	if _, err := orchestrator.AddVolume(fullVolumeConfig); err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
@@ -1946,7 +1931,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 		t.Fatal("Unable to remove full volume:  ", err)
 	}
 
-	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName, config.File)
+	txOnlyVolumeConfig := tu.GenerateVolumeConfig(txOnlyVolumeName, 50, scName, config.File)
 	if _, err := orchestrator.AddVolume(txOnlyVolumeConfig); err != nil {
 		t.Fatal("Unable to add tx only volume: ", err)
 	}
@@ -2040,7 +2025,7 @@ func TestAddSnapshotRecovery(t *testing.T) {
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// It's easier to add the volume/snapshot and then reinject the transaction again afterwards.
-	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	volumeConfig := tu.GenerateVolumeConfig(volumeName, 50, scName, config.File)
 	if _, err := orchestrator.AddVolume(volumeConfig); err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
@@ -2077,7 +2062,7 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// For the full test, we delete everything and recreate the delete transaction.
-	volumeConfig := generateVolumeConfig(volumeName, 50, scName, config.File)
+	volumeConfig := tu.GenerateVolumeConfig(volumeName, 50, scName, config.File)
 	if _, err := orchestrator.AddVolume(volumeConfig); err != nil {
 		t.Fatal("Unable to add volume: ", err)
 	}
@@ -2152,7 +2137,7 @@ func TestBadBootstrapEtcdV3(t *testing.T) {
 //	}
 //	orchestratorV2.mutex.Unlock()
 //
-//	v2Volume, err := orchestratorV2.AddVolume(generateVolumeConfig(volumeName, 50, scName,
+//	v2Volume, err := orchestratorV2.AddVolume(tu.GenerateVolumeConfig(volumeName, 50, scName,
 //		config.File))
 //	if err != nil {
 //		t.Fatal("Unable to create volume: ", err)
@@ -2253,7 +2238,7 @@ func TestFirstVolumeRecovery(t *testing.T) {
 	)
 	orchestrator := getOrchestrator()
 	prepRecoveryTest(t, orchestrator, backendName, scName)
-	txOnlyVolumeConfig := generateVolumeConfig(txOnlyVolumeName, 50, scName,
+	txOnlyVolumeConfig := tu.GenerateVolumeConfig(txOnlyVolumeName, 50, scName,
 		config.File)
 	// BEGIN actual test
 	runRecoveryTests(t, orchestrator, backendName, storage.AddVolume,
@@ -2428,7 +2413,7 @@ func importVolumeSetup(t *testing.T, backendName string, scName string, volumeNa
 		t.Fatal("BackendUUID not found")
 	}
 
-	volumeConfig := generateVolumeConfig(volumeName, 50, scName, backendProtocol)
+	volumeConfig := tu.GenerateVolumeConfig(volumeName, 50, scName, backendProtocol)
 	volumeConfig.ImportOriginalName = importOriginalName
 	volumeConfig.ImportBackendUUID = backendUUID
 	return orchestrator, volumeConfig
@@ -2938,7 +2923,7 @@ func TestSnapshotVolumes(t *testing.T) {
 	}{
 		{
 			name:            "file",
-			config:          generateVolumeConfig("file", 1, "fast", config.File),
+			config:          tu.GenerateVolumeConfig("file", 1, "fast", config.File),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
 				{Backend: "fast-a", Pool: tu.FastSmall},
@@ -2949,7 +2934,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		},
 		{
 			name:            "block",
-			config:          generateVolumeConfig("block", 1, "slow", config.Block),
+			config:          tu.GenerateVolumeConfig("block", 1, "slow", config.Block),
 			expectedSuccess: true,
 			expectedMatches: []*tu.PoolMatch{
 				{Backend: "slow-block", Pool: tu.SlowSnapshots},
@@ -3074,13 +3059,13 @@ func TestGetProtocol(t *testing.T) {
 
 	for _, tc := range accessModesPositiveTests {
 		protocolLocal, err := orchestrator.getProtocol(tc.volumeMode, tc.accessMode, tc.protocol)
-		testutils.AssertTrue(t, "error should be nil!", err == nil)
-		testutils.AssertTrue(t, "expected both the protocols to be equal!", tc.expected == protocolLocal)
+		assert.True(t, err == nil, "error should be nil!")
+		assert.True(t, tc.expected == protocolLocal, "expected both the protocols to be equal!")
 	}
 
 	for _, tc := range accessModesNegativeTests {
 		protocolLocal, err := orchestrator.getProtocol(tc.volumeMode, tc.accessMode, tc.protocol)
-		testutils.AssertTrue(t, "error should not be nil!", err != nil)
-		testutils.AssertTrue(t, "expected both the protocols to be equal!", tc.expected == protocolLocal)
+		assert.True(t, err != nil, "error should not be nil!")
+		assert.True(t, tc.expected == protocolLocal, "expected both the protocols to be equal!")
 	}
 }

@@ -3,7 +3,6 @@
 package persistentstore
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -11,32 +10,13 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
+	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils"
 )
-
-func getFakePools(count int) map[string]*fake.StoragePool {
-
-	ret := make(map[string]*fake.StoragePool, count)
-
-	for i := 0; i < count; i++ {
-		ret[fmt.Sprintf("pool-%d", i)] = &fake.StoragePool{
-			Bytes: 100 * 1024 * 1024 * 1024,
-			Attrs: map[string]sa.Offer{
-				sa.IOPS:             sa.NewIntOffer(0, 100),
-				sa.Snapshots:        sa.NewBoolOffer(false),
-				sa.Encryption:       sa.NewBoolOffer(false),
-				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
-			},
-		}
-	}
-
-	return ret
-}
 
 func getFakeBackend() *storage.Backend {
 	return getFakeBackendWithName("fake_backend")
@@ -50,7 +30,7 @@ func getFakeBackendWithName(name string) *storage.Backend {
 			StorageDriverName: drivers.FakeStorageDriverName,
 		},
 		Protocol:     config.File,
-		Pools:        getFakePools(2),
+		Pools:        testutils.GenerateFakePools(2),
 		InstanceName: name,
 	}
 

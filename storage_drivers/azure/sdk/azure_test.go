@@ -5,7 +5,7 @@ package sdk
 import (
 	"testing"
 
-	"github.com/netapp/trident/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPoolShortname(t *testing.T) {
@@ -32,8 +32,7 @@ func TestPoolShortname(t *testing.T) {
 	}
 	for testName, test := range tests {
 		t.Logf("Running test case '%s'", testName)
-
-		testutils.AssertTrue(t, "Predicate failed", test.predicate(test.input, test.output))
+		assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
 	}
 }
 
@@ -62,6 +61,6 @@ func TestVolumeShortname(t *testing.T) {
 	for testName, test := range tests {
 		t.Logf("Running test case '%s'", testName)
 
-		testutils.AssertTrue(t, "Predicate failed", test.predicate(test.input, test.output))
+		assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
 	}
 }

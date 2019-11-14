@@ -5,7 +5,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/netapp/trident/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestVolumeState(t *testing.T) {
@@ -47,7 +47,7 @@ func TestVolumeState(t *testing.T) {
 	for testName, test := range tests {
 		t.Logf("Running test case '%s'", testName)
 
-		testutils.AssertEqual(t, "Strings not equal", test.input.String(), test.output)
-		testutils.AssertTrue(t, "Predicate failed", test.predicate(test.input))
+		assert.Equal(t, test.input.String(), test.output, "Strings not equal")
+		assert.True(t, test.predicate(test.input), "Predicate failed")
 	}
 }

@@ -421,7 +421,7 @@ func (d *Client) WaitForVolumeState(
 	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
-	stateBackoff.InitialInterval = 2 * time.Second
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
 	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
