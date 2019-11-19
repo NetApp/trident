@@ -4,6 +4,9 @@
 
 ## Changes since v19.10.0
 
+**Fixes:**
+- **Kubernetes:** Updated CSI sidecars to address CVE-2019-11255.
+
 **Enhancements**
 - Switched from glide to go modules for dependency management.
 
