@@ -5,6 +5,7 @@ package storageclass
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"regexp"
 	"sort"
 	"strings"
@@ -289,6 +290,34 @@ func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.
 		}
 	}
 	return ret
+}
+
+// GetStoragePoolsForProtocolByBackend returns a map of backend to list of pools on that backend, where
+// each pool matches the supplied protocol.  Each pool list is shuffled, so the caller may use the list
+// to select backends and pools at random.  The caller may assume that each value in the map is a list
+// containing at least one pool.
+func (s *StorageClass) GetStoragePoolsForProtocolByBackend(p config.Protocol) map[string][]*storage.Pool {
+
+	// Get all matching pools
+	pools := s.GetStoragePoolsForProtocol(p)
+
+	// Build a map of backends to a list of matching pools on each backend
+	poolMap := make(map[string][]*storage.Pool)
+	for _, pool := range pools {
+		if _, ok := poolMap[pool.Backend.Name]; !ok {
+			poolMap[pool.Backend.Name] = make([]*storage.Pool, 0)
+		}
+		poolMap[pool.Backend.Name] = append(poolMap[pool.Backend.Name], pool)
+	}
+
+	// Shuffle the pools in each backend list
+	for _, backendPools := range poolMap {
+		rand.Shuffle(len(backendPools), func(i, j int) {
+			backendPools[i], backendPools[j] = backendPools[j], backendPools[i]
+		})
+	}
+
+	return poolMap
 }
 
 func (s *StorageClass) Pools() []*storage.Pool {

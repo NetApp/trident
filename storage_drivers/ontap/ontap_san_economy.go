@@ -1332,8 +1332,8 @@ func (d *SANEconomyStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *SANEconomyStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-	return createPrepareCommon(d, volConfig)
+func (d *SANEconomyStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
+	createPrepareCommon(d, volConfig)
 }
 
 func (d *SANEconomyStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

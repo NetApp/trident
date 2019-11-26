@@ -1016,15 +1016,8 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	return nil
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-
-	// 1. Sanitize the volume name
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-
-	// 2. Ensure no volume with the same name exists on that backend (unnecessary since
-	// Step 1 always generates a new UUID-based name)
-
-	return nil
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {

@@ -930,12 +930,8 @@ func (d *StorageDriver) GetInternalVolumeName(name string) string {
 	}
 }
 
-func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
+func (d *StorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-	if volConfig.CloneSourceVolume != "" {
-		volConfig.CloneSourceVolumeInternal = d.GetInternalVolumeName(volConfig.CloneSourceVolume)
-	}
-	return nil
 }
 
 func (d *StorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

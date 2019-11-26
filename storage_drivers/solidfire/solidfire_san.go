@@ -854,11 +854,11 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storageP
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "SANStorageDriver",
-			"name":     name,
-			"source":   sourceName,
-			"snapshot": snapshotName,
+			"Method":      "CreateClone",
+			"Type":        "SANStorageDriver",
+			"name":        name,
+			"source":      sourceName,
+			"snapshot":    snapshotName,
 			"storagePool": storagePool,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
@@ -1505,17 +1505,8 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 	}
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-
-	// 1. Sanitize the volume name
+func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-
-	if volConfig.CloneSourceVolume != "" {
-		volConfig.CloneSourceVolumeInternal =
-			d.GetInternalVolumeName(volConfig.CloneSourceVolumeInternal)
-	}
-
-	return nil
 }
 
 func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

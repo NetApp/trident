@@ -299,11 +299,11 @@ func (d *NASStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storageP
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "NASStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
+			"Method":      "CreateClone",
+			"Type":        "NASStorageDriver",
+			"name":        name,
+			"source":      source,
+			"snapshot":    snapshot,
 			"storagePool": storagePool,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
@@ -466,10 +466,10 @@ func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "Publish",
+			"Method":  "Publish",
 			"DataLIF": d.Config.DataLIF,
-			"Type":   "NASStorageDriver",
-			"name":   name,
+			"Type":    "NASStorageDriver",
+			"name":    name,
 		}
 		log.WithFields(fields).Debug(">>>> Publish")
 		defer log.WithFields(fields).Debug("<<<< Publish")
@@ -611,8 +611,8 @@ func (d *NASStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *NASStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-	return createPrepareCommon(d, volConfig)
+func (d *NASStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
+	createPrepareCommon(d, volConfig)
 }
 
 func (d *NASStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

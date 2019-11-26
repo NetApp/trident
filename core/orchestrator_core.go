@@ -1352,8 +1352,8 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	if !ok {
 		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
 	}
-	pools := sc.GetStoragePoolsForProtocol(protocol)
-	if len(pools) == 0 {
+	poolsByBackend := sc.GetStoragePoolsForProtocolByBackend(protocol)
+	if len(poolsByBackend) == 0 {
 		return nil, fmt.Errorf("no available backends for storage class %s", volumeConfig.StorageClass)
 	}
 
@@ -1374,16 +1374,32 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		err = o.addVolumeRetryCleanup(err, backend, pool, vol, txn, volumeConfig)
 	}()
 
-	log.WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
+	log.WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage backends.", len(poolsByBackend))
 
 	errorMessages := make([]string, 0)
 
-	// Choose a pool at random. The for loop tries all matching pools until either the volume is
-	// successfully created or all matching backends fail to create the volume.
-	for _, num := range rand.Perm(len(pools)) {
+	// Keep trying until we run out of matching backends/pools
+	for len(poolsByBackend) > 0 {
+
+		// Choose a backend at random from the pool map
+		backendNames := make([]string, 0)
+		for backendName := range poolsByBackend {
+			backendNames = append(backendNames, backendName)
+		}
+		backendName := backendNames[rand.Intn(len(backendNames))]
+
+		// The pool lists are already shuffled, so just pick the first one from the chosen backend and
+		// pop it from the list.  If the backend has no more eligible pools, remove it from the map so
+		// the loop terminates when creation on all matching pools has failed.
+		pools := poolsByBackend[backendName]
+		pool = pools[0]
+		if len(pools) == 1 {
+			delete(poolsByBackend, backendName)
+		} else {
+			poolsByBackend[backendName] = pools[1:]
+		}
 
 		// Add volume to the backend of the selected pool
-		pool = pools[num]
 		backend = pool.Backend
 
 		// CreatePrepare has a side effect that updates the volumeConfig with the backend-specific internal name
@@ -1421,6 +1437,11 @@ func (o *TridentOrchestrator) addVolumeInitial(
 			errorMessages = append(errorMessages,
 				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
 					volumeConfig.Name, pool.Name, backend.Name, err.Error()))
+
+			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
+			if drivers.IsBackendIneligibleError(err) {
+				delete(poolsByBackend, backendName)
+			}
 
 		} else {
 			// Volume creation succeeded, so register it and return the result

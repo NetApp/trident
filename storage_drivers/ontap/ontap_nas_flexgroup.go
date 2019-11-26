@@ -28,8 +28,8 @@ type NASFlexGroupStorageDriver struct {
 	API         *api.Client
 	Telemetry   *Telemetry
 
-	physicalPool  *storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPool *storage.Pool
+	virtualPools map[string]*storage.Pool
 }
 
 func (d *NASFlexGroupStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -370,7 +370,7 @@ func (d *NASFlexGroupStorageDriver) validate() error {
 	}
 
 	// Create a list `physicalPools` containing 1 entry
-	var physicalPools = map[string]*storage.Pool {
+	var physicalPools = map[string]*storage.Pool{
 		d.physicalPool.Name: d.physicalPool,
 	}
 	if err := ValidateStoragePools(physicalPools, d.virtualPools, d.Name()); err != nil {
@@ -815,8 +815,8 @@ func (d *NASFlexGroupStorageDriver) GetInternalVolumeName(name string) string {
 	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
 }
 
-func (d *NASFlexGroupStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-	return createPrepareCommon(d, volConfig)
+func (d *NASFlexGroupStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
+	createPrepareCommon(d, volConfig)
 }
 
 func (d *NASFlexGroupStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {

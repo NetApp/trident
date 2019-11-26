@@ -39,12 +39,12 @@ const (
 	Media            = "media"
 	SpaceAllocation  = "spaceAllocation"
 	SnapshotDir      = "snapshotDir"
-	SpaceReserve	 = "spaceReserve"
-	SnapshotPolicy	 = "snapshotPolicy"
+	SpaceReserve     = "spaceReserve"
+	SnapshotPolicy   = "snapshotPolicy"
 	SnapshotReserve  = "snapshotReserve"
-	UnixPermissions	 = "unixPermissions"
-	ExportPolicy	 = "exportPolicy"
-	SecurityStyle	 = "securityStyle"
+	UnixPermissions  = "unixPermissions"
+	ExportPolicy     = "exportPolicy"
+	SecurityStyle    = "securityStyle"
 	BackendType      = "backendType"
 	Snapshots        = "snapshots"
 	Clones           = "clones"
@@ -1773,12 +1773,12 @@ func ValidateStoragePools(physicalPools, virtualPools map[string]*storage.Pool, 
 		}
 
 		// Validate ExportPolicy
-		if pool.InternalAttributes[ExportPolicy] =="" {
+		if pool.InternalAttributes[ExportPolicy] == "" {
 			return fmt.Errorf("export policy cannot by empty in pool %s", poolName)
 		}
 
 		// Validate UnixPermissions
-		if pool.InternalAttributes[UnixPermissions] =="" {
+		if pool.InternalAttributes[UnixPermissions] == "" {
 			return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
 		}
 
@@ -1800,7 +1800,7 @@ func ValidateStoragePools(physicalPools, virtualPools map[string]*storage.Pool, 
 		} else {
 			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
 			if sizeBytes < MinimumVolumeSizeBytes {
-				return fmt.Errorf("invalid value for size in pool %s. Requested volume size (" +
+				return fmt.Errorf("invalid value for size in pool %s. Requested volume size ("+
 					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes, MinimumVolumeSizeBytes)
 			}
 		}
@@ -2006,16 +2006,8 @@ func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig
 	}
 }
 
-func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) error {
-
+func createPrepareCommon(d storage.Driver, volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-
-	if volConfig.CloneSourceVolume != "" {
-		volConfig.CloneSourceVolumeInternal =
-			d.GetInternalVolumeName(volConfig.CloneSourceVolume)
-	}
-
-	return nil
 }
 
 func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {

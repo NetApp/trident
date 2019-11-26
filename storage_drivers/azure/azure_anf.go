@@ -1224,17 +1224,8 @@ func (d *NFSStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	return nil
 }
 
-func (d *NFSStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) error {
-
-	if volConfig.InternalName == "" {
-		volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
-	}
-
-	if volConfig.CloneSourceVolume != "" && volConfig.CloneSourceVolumeInternal == "" {
-		volConfig.CloneSourceVolumeInternal = d.GetInternalVolumeName(volConfig.CloneSourceVolume)
-	}
-
-	return nil
+func (d *NFSStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
+	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 }
 
 func (d *NFSStorageDriver) GetInternalVolumeName(name string) string {

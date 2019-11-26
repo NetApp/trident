@@ -28,7 +28,7 @@ type Driver interface {
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate()
 	Create(volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
-	CreatePrepare(volConfig *VolumeConfig) error
+	CreatePrepare(volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(volConfig *VolumeConfig) error
 	// GetInternalVolumeName will return a name that satisfies any character
@@ -392,12 +392,8 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
 		// The volume is not managed and will not be renamed during import.
 		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
-		// CreatePrepare should perform the following tasks:
-		// 1. Sanitize the volume name
-		// 2. Ensure no volume with the same name exists on that backend
-		if err := b.Driver.CreatePrepare(volConfig); err != nil {
-			return nil, fmt.Errorf("failed to prepare import volume: %v", err)
-		}
+		// Sanitize the volume name
+		b.Driver.CreatePrepare(volConfig)
 	}
 
 	err := b.Driver.Import(volConfig, volConfig.ImportOriginalName)
