@@ -1,10 +1,6 @@
 node {
 
-  // Define a var to store the resolved or provided branch
-  // This can be in one of the following forms
-  // master
-  // stable/v19.10
-  // The */my-branch-name is converted to my-branch-name
+  // Define a var to store the branch name
   def branch = ''
 
   // Define a var to store the git commit hash
@@ -29,7 +25,7 @@ node {
       [
         'name': 'Build-Documentation',
         'context': 'openlab',
-        'coverage': 'documentation,pre-merge,post-commit',
+        'coverage': 'default,documentation,pre-merge',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -42,7 +38,7 @@ node {
       [
         'name': 'Build-Trident',
         'context': 'openlab',
-        'coverage': 'docker-ee,kubeadm,kubeadm-legacy,docker-volume-binary,docker-volume-plugin,openshift,pre-merge,post-commit,upgrade',
+        'coverage': 'aws-cvs,default,docker-ee,docker-ee-legacy,kubeadm,kubeadm-legacy,docker-volume-binary,docker-volume-plugin,nightly,openshift,pre-merge,upgrade',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -55,7 +51,7 @@ node {
       [
         'name': 'Unit-Test',
         'context': 'openlab',
-        'coverage': 'pre-merge,post-commit',
+        'coverage': 'default,pre-merge',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -107,7 +103,7 @@ node {
         ],
         'backend': 'aws-cvs,aws-cvs-virtual-pools',
         'context': 'cloud',
-        'coverage': 'cvs',
+        'coverage': 'aws-cvs,kubeadm',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -319,7 +315,7 @@ node {
         'name': 'KubeAdm-Ubuntu-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
-        'coverage': 'kubeadm,pre-merge',
+        'coverage': 'kubeadm,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -347,6 +343,33 @@ node {
         'backend': 'ontap-nas',
         'context': 'openlab',
         'coverage': 'docker-ee,pre-merge',
+        'docker_ee_image': 'docker/ucp:3.2.3',
+        'docker_ee_user': env.DOCKER_EE_USERNAME,
+        'docker_ee_password': env.DOCKER_EE_PASSWORD,
+        'docker_ee_repo': env.DOCKER_EE_REPO,
+        'docker_ee_url': env.DOCKER_EE_URL,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': 'v1.14.7',
+        'ontap-nas': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_NAS_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ee.playbook',
+        'request': 'ci_centos_7_4cpu_8gbr.yaml',
+        'stage': '_whelk_test',
+        'test': 'docker_ee',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'Docker-EE-3-1-11-CentOS-ONTAP-NAS',
+        'backend': 'ontap-nas',
+        'context': 'openlab',
+        'coverage': 'docker-ee,docker-ee-legacy,nightly',
         'docker_ee_image': 'docker/ucp:3.1.11',
         'docker_ee_user': env.DOCKER_EE_USERNAME,
         'docker_ee_password': env.DOCKER_EE_PASSWORD,
@@ -444,7 +467,7 @@ node {
         'name': 'NDVB-Ubuntu-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -464,7 +487,7 @@ node {
         'name': 'NDVB-CentOS-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -484,7 +507,7 @@ node {
         'name': 'NDVB-Ubuntu-ONTAP-NAS-Economy',
         'backend': 'ontap-nas-economy',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -504,7 +527,7 @@ node {
         'name': 'NDVB-Centos-ONTAP-NAS-Economy',
         'backend': 'ontap-nas-economy',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -524,7 +547,7 @@ node {
         'name': 'NDVB-CentOS-ONTAP-SAN',
         'backend': 'ontap-san',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -541,10 +564,50 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'NDVB-Ubuntu-ONTAP-SAN',
+        'backend': 'ontap-san',
+        'context': 'openlab',
+        'coverage': 'docker-volume-binary,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'ontap-san': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ce.playbook',
+        'request': 'ci_ubuntu_bionic.yaml',
+        'stage': '_whelk_test',
+        'test': 'ndvp_binary',
+        'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'NDVB-CentOS-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
+        'context': 'openlab',
+        'coverage': 'docker-volume-binary,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'ontap-san-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ce.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'ndvp_binary',
+        'vm_provider': 'SCS'
+      ],
+      [
         'name': 'NDVB-Ubuntu-ONTAP-SAN-Economy',
         'backend': 'ontap-san-economy',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -564,7 +627,7 @@ node {
         'name': 'NDVB-Ubuntu-Solidfire-SAN',
         'backend': 'solidfire-san',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -585,7 +648,7 @@ node {
         'name': 'NDVB-CentOS-Solidfire-SAN',
         'backend': 'solidfire-san',
         'context': 'openlab',
-        'coverage': 'docker-volume-binary,pre-merge',
+        'coverage': 'docker-volume-binary,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -632,7 +695,7 @@ node {
         'context': 'openlab',
         'coverage': 'docker-volume-plugin',
         'docker_ce_version': env.DOCKER_CE_VERSION,
-        'enabled': true,,
+        'enabled': true,
         'eseries-iscsi': [
           'array_password': env.ESERIES_ARRAY_PASSWORD,
           'controllera': env.ESERIES_CONTROLLERA,
@@ -654,7 +717,7 @@ node {
         'name': 'NDVP-Ubuntu-Flexgroup',
         'backend': 'ontap-nas-flexgroup',
         'context': 'openlab',
-        'coverage': 'docker-volume-plugin,pre-merge',
+        'coverage': 'docker-volume-plugin,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': false,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -694,7 +757,7 @@ node {
         'name': 'NDVP-Ubuntu-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
-        'coverage': 'docker-volume-plugin,pre-merge',
+        'coverage': 'docker-volume-plugin,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -734,7 +797,7 @@ node {
         'name': 'NDVP-Ubuntu-ONTAP-NAS-Economy',
         'backend': 'ontap-nas-economy',
         'context': 'openlab',
-        'coverage': 'docker-volume-plugin,pre-merge',
+        'coverage': 'docker-volume-plugin,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -754,7 +817,7 @@ node {
         'name': 'NDVP-Ubuntu-ONTAP-SAN',
         'backend': 'ontap-san',
         'context': 'openlab',
-        'coverage': 'docker-volume-plugin,pre-merge',
+        'coverage': 'docker-volume-plugin,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -786,6 +849,26 @@ node {
         ],
         'post_deploy_playbook': 'ci_docker_ce.playbook',
         'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'ndvp_plugin',
+        'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'NDVP-Ubuntu-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
+        'context': 'openlab',
+        'coverage': 'docker-volume-plugin,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'ontap-san-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_docker_ce.playbook',
+        'request': 'ci_ubuntu_bionic.yaml',
         'stage': '_whelk_test',
         'test': 'ndvp_plugin',
         'vm_provider': 'SCS'
@@ -835,7 +918,7 @@ node {
         'name': 'NDVP-Ubuntu-Solidfire-SAN',
         'backend': 'solidfire-san',
         'context': 'openlab',
-        'coverage': 'docker-volume-plugin,pre-merge',
+        'coverage': 'docker-volume-plugin,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -882,7 +965,7 @@ node {
         'name': 'Trident-Upgrade-Ubuntu-ONTAP-NAS',
         'backend': 'ontap-nas',
         'context': 'openlab',
-        'coverage': 'pre-merge,upgrade',
+        'coverage': 'nightly,upgrade',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -908,7 +991,7 @@ node {
         'name': 'KubeAdm-1.14-CentOS-Solidfire-SAN',
         'backend': 'solidfire-san',
         'context': 'openlab',
-        'coverage': 'kubeadm-legacy',
+        'coverage': 'kubeadm-legacy,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -935,7 +1018,7 @@ node {
         'name': 'KubeAdm-1.15-CentOS-Solidfire-SAN',
         'backend': 'solidfire-san',
         'context': 'openlab',
-        'coverage': 'kubeadm-legacy',
+        'coverage': 'kubeadm-legacy,nightly',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,
@@ -1005,51 +1088,29 @@ node {
     ]
   }
 
-  // If the branch is a PR-# branch query Github for the PR info
-  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-    def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
-      "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
-      "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
-    def response = sh(
-      label: "Query Github for $env.BRANCH_NAME",
-      returnStdout: true,
-      script: cmd
-    ).trim()
-
-    def pr = readJSON text: response
-
-    if (pr.containsKey('head') == false) {
-      error "Error getting the PR info from Github for $env.BRANCH_NAME"
-    }
-
-    branch = pr['head']['ref']
-  }
-
-  def slack_result = 'PENDING'
-  def slack_message = (
-    _decode(env.JOB_NAME) + " #${env.BUILD_NUMBER}:\n" +
-    "${env.BUILD_URL}\n"
-  )
-  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-    slack_message = (
-      _decode(env.JOB_NAME) + " $branch #${env.BUILD_NUMBER}:\n" +
-      "${env.BUILD_URL}\n"
-    )
-  }
+  def slack_result = ''
+  def slack_message = ''
 
   try {
 
-    // Notify Slack we are starting
-    _notify_slack(slack_result, slack_message)
-
-    // Checkout the source from Github
-    stage('Checkout-Source') {
-      _clone()
+    // Perform setup related tasks
+    stage('Setup') {
+      _setup()
     }
 
     // Read the plan variable and create the appropriate stages
     stage('Create-Stages') {
-      map = _create_stages(ssh_options, plan, 10)
+      try {
+        map = _create_stages(ssh_options, plan, 10)
+      } catch(Exception e) {
+
+        // Update the message var
+        message = e.getMessage()
+
+        // Fail the run
+        error "Create-Stages: $message"
+
+      }
     }
 
     // Execute the stages defined in the plan
@@ -1069,18 +1130,19 @@ node {
     }
 
     slack_result = 'SUCCESS'
+    slack_message = _create_slack_message(branch)
 
   } catch(Exception e) {
 
     // Fail the run
     slack_result = 'FAILURE'
-    slack_message += e.getMessage()
+    slack_message = _create_slack_message(branch) + e.getMessage()
     error e.getMessage()
 
   } finally {
 
     // No matter what the result of the above stages this stage get executed
-    stage('Post') {
+    stage('Cleanup') {
 
       if (fileExists("$env.WORKSPACE/status")) {
         sh (
@@ -1129,28 +1191,48 @@ node {
         echo "No cleanup scripts detected"
       }
 
-      // Notify Slack we are starting
+      // Notify Slack we are done
       _notify_slack(slack_result, slack_message)
     }
   }
 }
 
+def _create_slack_message(String branch) {
+
+  message = (
+    _decode(env.JOB_NAME) + " #${env.BUILD_NUMBER}:\n" +
+    "${env.BUILD_URL}\n"
+  )
+  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+    message = (
+      _decode(env.JOB_NAME) + " $branch #${env.BUILD_NUMBER}:\n" +
+      "${env.BUILD_URL}\n"
+    )
+  }
+
+  return message
+}
+
 // Create List of stages to execute
 def _create_stages(String ssh_options, List plan, Integer parallelism) {
+
   // The coverage var MUST consist of ONE of the following:
   //
+  // default
   // docker-ee
-  // documentation
-  // kubeadm
+  // docker-ee-legacy
   // docker-volume-binary
   // docker-volume-plugin
+  // documentation
+  // kubeadm
+  // kubeadm-legacy
+  // nightly
   // openshift
   // pre-merge
-  // post-commit
   // upgrade,
   //
-  // The default should be post-commit.  Which only runs the
-  // Build-Documentation, Build-Trident and Unit-Tests stages
+  // The default coverage should be the Build-Documentation, Build-Trident and
+  // Unit-Tests stages
   //
   // If the boolean var BLACK_DUCK_SCAN or DEPLOY_TRIDENT are true then
   // coverage will automatically be set
@@ -1159,118 +1241,119 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
   //
   // If a feature branch or PR has only documentation changes then the
   // coverage should be documentation
-  def coverage = 'post-commit'
+  def coverage = 'default'
 
   // If jenkins is telling us what the branch name/ref is using BRANCH_NAME
   // then override coverage if:
   //   There are only documentation changes, set coverage to documentation
   //   The branch name contains PR-, set coverage to pre-merge
-  if (env.BRANCH_NAME) {
-    if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME.startsWith('stable') != true) {
+  if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME.startsWith('stable') != true) {
 
-      def diff_target_branch_name = 'master'
-      dir('src2/github.com/netapp/trident') {
+    def diff_target_branch_name = 'master'
+    dir('src2/github.com/netapp/trident') {
 
-        // If CHANGE_TARGET is not master then checkout the branch
-        if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
-          diff_target_branch_name = env.CHANGE_TARGET
-          sh(
-            label: "Checkout CHANGE_TARGET($env.CHANGE_TARGET)",
-            script: "git checkout $env.CHANGE_TARGET"
+      // If CHANGE_TARGET is not master then checkout the branch
+      if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
+        diff_target_branch_name = env.CHANGE_TARGET
+        sh(
+          label: "Checkout CHANGE_TARGET($env.CHANGE_TARGET)",
+          script: "git checkout $env.CHANGE_TARGET"
+        )
+      }
+
+      sh (label: "Sleep", script: "sleep 1")
+
+    }
+
+    def src_git_log = []
+    dir('src/github.com/netapp/trident') {
+      src_git_log = sh(
+        label: "Get the git log for src/github.com/netapp/trident",
+        returnStdout: true,
+        script: "git --no-pager log --max-count 250 --pretty=oneline --no-color --decorate=short"
+      ).split('\\n')
+    }
+
+    def src2_git_log = []
+    dir('src2/github.com/netapp/trident') {
+      src2_git_log = sh(
+        label: "Get the git log for src2/github.com/netapp/trident",
+        returnStdout: true,
+        script: "git --no-pager log --max-count 100 --pretty=oneline --no-color --decorate=short"
+      ).split('\\n')
+    }
+
+    def diff_target_commit = ''
+    for(src2_line in src2_git_log) {
+      def src2_fields = src2_line.split(' ')
+      def src2_commit = src2_fields[0]
+
+      for(src_line in src_git_log) {
+        def src_fields = src_line.split(' ')
+        def src_commit = src_fields[0]
+        if (src_commit == src2_commit) {
+            diff_target_commit = src2_commit
+            break
+        }
+      }
+      if (diff_target_commit) { break }
+    }
+
+    if (diff_target_commit) {
+      try {
+
+        dir('src/github.com/netapp/trident') {
+
+          changes = sh(
+            label: "Check if $branch contains only documentation changes",
+            returnStdout: true,
+            script: "git diff --name-only $diff_target_commit $commit | " +
+              "grep -v '^docs/' | grep -v '^.*\\.md'"
           )
         }
 
-        sh (label: "Sleep", script: "sleep 1")
+        echo "Non doumentation changes between $diff_target_branch_name and $branch:\n$changes"
 
-      }
-
-      def src_git_log = []
-      dir('src/github.com/netapp/trident') {
-        src_git_log = sh(
-          label: "Get the git log for src/github.com/netapp/trident",
-          returnStdout: true,
-          script: "git --no-pager log --max-count 100 --pretty=oneline --no-color --decorate=short"
-        ).split('\\n')
-      }
-
-      def src2_git_log = []
-      dir('src2/github.com/netapp/trident') {
-        src2_git_log = sh(
-          label: "Get the git log for src2/github.com/netapp/trident",
-          returnStdout: true,
-          script: "git --no-pager log --max-count 25 --pretty=oneline --no-color --decorate=short"
-        ).split('\\n')
-      }
-
-      def diff_target_commit = ''
-      for(src2_line in src2_git_log) {
-        def src2_fields = src2_line.split(' ')
-        def src2_commit = src2_fields[0]
-
-        for(src_line in src_git_log) {
-          def src_fields = src_line.split(' ')
-          def src_commit = src_fields[0]
-          if (src_commit == src2_commit) {
-              diff_target_commit = src2_commit
-              break
-          }
-        }
-        if (diff_target_commit) { break }
-      }
-
-      if (diff_target_commit) {
-        try {
-
-          dir('src/github.com/netapp/trident') {
-
-            changes = sh(
-              label: "Check if $branch contains only documentation changes",
-              returnStdout: true,
-              script: "git diff --name-only $diff_target_commit $commit | " +
-                "grep -v '^docs/' | grep -v '^.*\\.md'"
-            )
-          }
-
-          echo "Non doumentation changes between $diff_target_branch_name and $branch:\n$changes"
-
-          if (changes) {
-            if (env.BRANCH_NAME.contains('PR-')) {
-              echo "BRANCH_NAME($branch) contains more than " +
-                "documentation changes, changing coverage to pre-merge"
-              coverage = 'pre-merge'
-            } else {
-              echo "$branch contains more than documentation " +
-                "changes, coverage remains $coverage"
-            }
+        if (changes) {
+          if (env.BRANCH_NAME.contains('PR-')) {
+            echo "Branch $env.BRANCH_NAME($branch) contains more than " +
+              "documentation changes, changing coverage to pre-merge"
+            coverage = 'pre-merge'
           } else {
-            echo "$branch contains only documentation " +
-              "changes, changing coverage to documentation"
-            coverage = "documentation"
+            echo "Branch $branch contains more than documentation " +
+              "changes, coverage remains $coverage"
           }
-        } catch(Exception e) {
-          echo "Error diffing $diff_target_commit and $commit, coverage remains $coverage: " + e.getMessage()
+        } else {
+          def msg = "Branch $branch "
+          if (env.BRANCH_NAME.contains('PR-')) {
+            msg += "Branch $env.BRANCH_NAME($branch) "
+          }
+          coverage = "documentation"
+          echo (msg + "contains only documentation changes, changing coverage to $coverage")
         }
+      } catch(Exception e) {
+        echo "Failure diffing $diff_target_commit and $commit, coverage remains $coverage: " + e.getMessage()
+      }
 
-        // If we checked out a branch make sure we checkout master
-        dir('src2/github.com/netapp/trident') {
-          if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
-            sh(
-              label: "Checkout master",
-              script: "git checkout master"
-            )
-          }
+      // If we checked out a branch make sure we checkout master
+      dir('src2/github.com/netapp/trident') {
+        if (env.CHANGE_TARGET && env.CHANGE_TARGET != 'master') {
+          sh(
+            label: "Checkout master",
+            script: "git checkout master"
+          )
         }
-      } else {
-        echo "Unable to check for documentaion only changes " +
-          "because a common commit between $diff_target_branch_name " +
-          "and $branch could not be found, coverage remains $coverage"
       }
     } else {
-      coverage = 'pre-merge'
-      echo (
-        "BRANCH_NAME($branch) is master or stable/*, changing coverage to $coverage"
-      )
+      echo "Unable to check for documentaion only changes " +
+        "because a common commit between $diff_target_branch_name " +
+        "and $branch could not be found, coverage remains $coverage"
     }
+  } else {
+    coverage = 'pre-merge'
+    echo (
+      "Branch is master or stable/*, changing coverage to $coverage"
+    )
   }
 
   // If COVERAGE is defined by a build form, override coverage
@@ -1284,6 +1367,8 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
   if (env.STAGE_NAME_REGEXP) {
     stage_name_regexp = env.STAGE_NAME_REGEXP
   }
+
+  def github_status = _process_github_status_checks("$env.WORKSPACE/Setup/github_status_checks.json")
 
   echo "Creating stages based on $coverage coverage and stage name matching $stage_name_regexp"
 
@@ -1324,11 +1409,15 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           continue
         }
 
-        // Skip the stage if the name does not match regex and it's not a _build_trident stage
+        // Skip the stage if stage is not _build_trident and the name does not match stage_name_regexp
         if (_stage_name_match(stage, stage_name_regexp) != true && stage['stage'] != '_build_trident') {
           continue
         }
 
+        // Skip the stage if its github status for the commit was successful
+        if (github_status.containsKey(stage['name']) && github_status[stage['name']] == 'success' && stage['name'] != 'Build-Trident') {
+          continue
+        }
       }
       active_stages_this_phase++
     }
@@ -1360,12 +1449,17 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
           continue
         }
 
-        // Skip the stage if the name does not match regex and it's not a _build_trident stage
+        // Skip the stage if stage is not _build_trident and the name does not match stage_name_regexp
         if (_stage_name_match(cos, stage_name_regexp) != true && cos['stage'] != '_build_trident') {
           echo 'Skipping ' + cos['name'] + ' because it\'s name does not match ' + stage_name_regexp
           continue
         }
 
+        // Skip the stage if its github status for the commit was successful
+        if (github_status.containsKey(cos['name']) && github_status[cos['name']] == 'success' && cos['name'] != 'Build-Trident') {
+          echo 'Skipping ' + cos['name'] + ' because it\'s previous github status is ' + github_status[cos['name']]
+          continue
+        }
       }
 
       // Create the stage based on the stage attribute
@@ -1374,7 +1468,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         if(map[group_index] == null) { map[group_index] = [:] }
         stage_index++
         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-        echo 'Creating documentation build stage ' + name
+        echo 'Creating ' + name
         map[group_index].put(name, _build_documentation(name, ssh_options, cos))
         parallel_stages++
         allocated_stages_this_phase++
@@ -1385,7 +1479,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         if(map[group_index] == null) { map[group_index] = [:] }
         stage_index++
         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-        echo 'Creating compile stage ' + name
+        echo 'Creating ' + name
         map[group_index].put(name, _build_trident(name, ssh_options, cos))
         parallel_stages++
         allocated_stages_this_phase++
@@ -1396,7 +1490,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         if(map[group_index] == null) { map[group_index] = [:] }
         stage_index++
         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-        echo 'Creating CSI Sanity test stage ' + name
+        echo 'Creating ' + name
         map[group_index].put(name, _csi_sanity(name, ssh_options, cos))
         parallel_stages++
         allocated_stages_this_phase++
@@ -1407,7 +1501,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         if(map[group_index] == null) { map[group_index] = [:] }
         stage_index++
         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-        echo 'Creating unit test stage ' + name
+        echo 'Creating ' + name
         map[group_index].put(name, _unit_test(name, ssh_options, cos))
         parallel_stages++
         allocated_stages_this_phase++
@@ -1418,7 +1512,7 @@ def _create_stages(String ssh_options, List plan, Integer parallelism) {
         if(map[group_index] == null) { map[group_index] = [:] }
         stage_index++
         def name = (group_index + 1) + '-' + stage_index + '-' + cos['name']
-        def msg = 'Creating whelk test stage ' + name + ' using backends ' + cos['backend']
+        def msg = 'Creating ' + name + ' using backends ' + cos['backend']
         if (cos['install_backend']) {
             msg += '/' + cos['install_backend']
         }
@@ -1491,7 +1585,8 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage is running', status)
+        _notify_github(spec['name'], 'Stage is running', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Create SCS VM(s) and create attribe variables we can use later
         def request = spec['request']
@@ -1609,7 +1704,8 @@ def _build_documentation(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage has completed', status)
+        _notify_github(spec['name'], 'Stage has completed', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -1670,7 +1766,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
         } else if (env.BLACK_DUCK_SCAN) {
           echo "BLACK_DUCK_SCAN=true, skipping Github notification"
         } else {
-          _notify_github(spec, commit, name, 'Stage is running', status)
+        _notify_github(spec['name'], 'Stage is running', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
         }
 
         // Create SCS VM(s) and create attribe variables we can use later
@@ -1751,7 +1848,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "export BUILD_TYPE=$env.BUILD_TYPE\n" +
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
               "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
-              "make dist > build.log 2>&1"
+              "make dist"
             )
           } else if (env.DEPLOY_TRIDENT && env.BUILD_TYPE != 'stable') {
             echo "Creating the build script for alpha or beta deployment"
@@ -1765,7 +1862,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "export TRIDENT_VERSION=$env.TRIDENT_VERSION\n" +
               "export BUILD_TYPE_REV=$env.TRIDENT_REVISION\n" +
               "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
-              "make dist > build.log 2>&1"
+              "make dist"
             )
           } else {
             echo "Creating the build script for testing"
@@ -1779,7 +1876,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               "export BUILD_TYPE_REV=" + _replace(env.BUILD_TAG, '/', '-') + "\n" +
               "export REGISTRY_ADDR=$env.PRIVATE_DOCKER_REGISTRY\n" +
               "export DIST_REGISTRY=$env.PRIVATE_DOCKER_REGISTRY\n" +
-              "make dist > build.log 2>&1"
+              "make dist"
             )
           }
 
@@ -1799,7 +1896,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           sh (
             label: "Execute build.sh on $ip_address",
-            script: "ssh $ssh_options root@$ip_address 'cd $vm_path;sh ./build.sh > build.log 2>&1'"
+            script: "ssh $ssh_options root@$ip_address " +
+              "'cd $vm_path;sh ./build.sh > build.log 2>&1'"
           )
 
           sh (label: "Sleep", script: "sleep 1")
@@ -2003,7 +2101,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/go/src/github.com/netapp/trident/build.log",
+            "$vm_path/build.log",
             name,
             false,
             false,
@@ -2013,7 +2111,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
         try {
           // Create the script to create and push the docker plugin image
-          def content = ''
+          def content = "cd $vm_path/go/src/github.com/netapp/trident/contrib/docker/plugin\n"
 
           if (env.DEPLOY_TRIDENT) {
             content += (
@@ -2110,7 +2208,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
           } else {
             def repository = env.PRIVATE_DOCKER_REGISTRY + '/trident-plugin'
 
-            // For test builds we need the git commit hash as the image tag
+            // For test builds we need the BUILD_TAG as the image tag
             content += (
               "sudo docker plugin create $repository:" + _replace(env.BUILD_TAG, '/', '-') + " myplugin\n" +
               "sudo docker plugin push $repository:" + _replace(env.BUILD_TAG, '/', '-') + "\n"
@@ -2125,7 +2223,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             'root',
             ip_address,
             "$name/create_plugin.sh",
-            "$vm_path/go/src/github.com/netapp/trident/contrib/docker/plugin",
+            vm_path,
             true,
             false,
             true
@@ -2134,8 +2232,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
           sh (
             label: "Execute create_plugin.sh on $ip_address",
             script: "ssh $ssh_options root@$ip_address '" +
-              "cd $vm_path/go/src/github.com/netapp/trident/contrib/docker/plugin;" +
-              "sh create_plugin.sh > create_plugin.log 2>&1'"
+              "cd $vm_path;sh ./create_plugin.sh > create_plugin.log 2>&1'"
           )
 
           sh (label: "Sleep", script: "sleep 1")
@@ -2147,7 +2244,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/go/src/github.com/netapp/trident/contrib/docker/plugin/create_plugin.log",
+            "$vm_path/create_plugin.log",
             name,
             false,
             false,
@@ -2252,6 +2349,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             echo "Creating script to tag the release"
 
             def content = (
+              "cd $vm_path/go/src2/github.com/netapp/trident/\n" +
               "tag=`git tag --points-at $commit`\n" +
               "if [ \"$release_name\" != \"\$tag\" ]; then\n" +
               "    echo \"Creating tag $release_name at commit $commit\"\n" +
@@ -2269,7 +2367,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               'root',
               ip_address,
               "$name/tag_release.sh",
-              "$vm_path/go/src2/github.com/netapp/trident",
+              vm_path,
               true,
               false,
               true
@@ -2278,8 +2376,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
             sh (
               label: "Execute tag_release.sh on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
-                "cd $vm_path/go/src2/github.com/netapp/trident/;" +
-                "sh ./tag_release.sh > tag_release.log 2>&1'"
+                "cd $vm_path;sh ./tag_release.sh > tag_release.log 2>&1'"
             )
 
             sh (label: "Sleep", script: "sleep 1")
@@ -2293,7 +2390,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               ssh_options,
               'root',
               ip_address,
-              "$vm_path/go/src2/github.com/netapp/trident/tag_release.log",
+              "$vm_path/tag_release.log",
               name,
               false,
               false,
@@ -2336,15 +2433,15 @@ def _build_trident(String name, String ssh_options, Map spec) {
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
                 "cd $vm_path/go/src2/github.com/netapp/trident;" +
-                "python $vm_path/tools/utils/release_to_github.py " +
+                "python $vm_path/tools/utils/github.py " +
+                "--action create-release " +
                 "--changelog CHANGELOG.md " +
-                "--github-org $env.TRIDENT_PUBLIC_GITHUB_ORG " +
-                "--github-password $env.GITHUB_TOKEN " +
-                "--github-repo $env.TRIDENT_PUBLIC_GITHUB_REPO " +
-                "--github-user $env.GITHUB_USERNAME " +
+                "--organization $env.TRIDENT_PUBLIC_GITHUB_ORG " +
+                "--repository $env.TRIDENT_PUBLIC_GITHUB_REPO " +
+                "--user $env.GITHUB_USERNAME " +
                 "--release-name $release_name " +
                 "--release-hash $commit " +
-                "--tarball $tarball'"
+                "--release-tarball $tarball'"
             )
           } else {
 
@@ -2363,16 +2460,16 @@ def _build_trident(String name, String ssh_options, Map spec) {
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
                 "cd $vm_path/go/src2/github.com/netapp/trident;" +
-                "python $vm_path/tools/utils/release_to_github.py " +
+                "python $vm_path/tools/utils/github.py " +
+                "--action create-release " +
                 "--changelog CHANGELOG.md " +
-                "--github-org $env.TRIDENT_PUBLIC_GITHUB_ORG " +
-                "--github-password $env.GITHUB_TOKEN " +
-                "--github-repo $env.TRIDENT_PUBLIC_GITHUB_REPO " +
-                "--github-user $env.GITHUB_USERNAME " +
+                "--organization $env.TRIDENT_PUBLIC_GITHUB_ORG " +
+                "--repository $env.TRIDENT_PUBLIC_GITHUB_REPO " +
+                "--user $env.GITHUB_USERNAME " +
                 "--prerelease " +
                 "--release-name ${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION} " +
                 "--release-hash $commit " +
-                "--tarball $tarball'"
+                "--release-tarball $tarball'"
             )
           }
         }
@@ -2420,7 +2517,8 @@ def _build_trident(String name, String ssh_options, Map spec) {
         } else if (env.BLACK_DUCK_SCAN) {
           echo "BLACK_DUCK_SCAN=true, skipping Github notification"
         } else {
-          _notify_github(spec, commit, name, 'Stage has completed', status)
+        _notify_github(spec['name'], 'Stage has completed', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
         }
 
         // Archive everything in the stage workdir
@@ -2481,7 +2579,8 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         )
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage is running', status)
+        _notify_github(spec['name'], 'Stage is running', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         if (spec['vm_provider'] == 'SCS') {
 
@@ -2674,7 +2773,8 @@ def _csi_sanity(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage has completed', status)
+        _notify_github(spec['name'], 'Stage has completed', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -2725,7 +2825,8 @@ def _unit_test(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage is running', status)
+        _notify_github(spec['name'], 'Stage is running', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Create SCS VM(s) and create attribe variables we can use later
         def request = spec['request']
@@ -2793,16 +2894,21 @@ def _unit_test(String name, String ssh_options, Map spec) {
         )
 
         echo "Creating syntax checker script lint.sh"
-        writeFile file: "$name/lint.sh", text: '''
-files=`$GOPATH/bin/goimports -l ./*.go | sed 's/\\.\\.\\.//g')`
-if [ -n "${files}" ]; then
-  echo "Format errors detected in the following file(s):"
-  echo "${files}"
-  echo
-  $GOPATH/bin/goimports -d ./*.go | sed 's/\\.\\.\\.//g')
-  exit 1
-fi
-        '''
+
+        def content = (
+          "export GOPATH=$vm_path/go\n" +
+          "cd $vm_path/go/src/github.com/netapp/trident\n" +
+          "files=`\$GOPATH/bin/goimports -l ./*.go | sed 's/\\.\\.\\.//g'`\n" +
+          "if [ -n \"\${files}\" ]; then\n" +
+          "  echo \"Format errors detected in the following file(s):\"\n" +
+          "  echo \"\${files}\"\n" +
+          "  echo\n" +
+          "  \$GOPATH/bin/goimports -d ./*.go | sed 's/\\.\\.\\.//g'\n" +
+          "  exit 1\n" +
+          "fi\n")
+
+        writeFile file: "$name/lint.sh", text: content
+
         sh (label: "Sleep", script: "sleep 1")
 
         _scp(
@@ -2810,7 +2916,7 @@ fi
           'root',
           ip_address,
           "$name/lint.sh",
-          "$vm_path/go/src/github.com/netapp/trident",
+          vm_path,
           true,
           false,
           true
@@ -2821,21 +2927,19 @@ fi
           sh (
             label: "Run lint.sh and direct the output to lint.log",
             script: "ssh $ssh_options root@$ip_address " +
-              "'cd $vm_path/go/src/github.com/netapp/trident;" +
-              "export GOPATH=$vm_path/go;" +
-              "sh lint.sh > lint.log 2>&1'")
+              "'cd $vm_path;" +
+              "sh ./lint.sh > lint.log 2>&1'")
         } catch(Exception e) {
 
           // Fail the run
-          // error e.getMessage()
-          echo "Syntax failure"
+          error "Failure(s) detected by goimports: " + e.getMessage()
 
         } finally {
           _scp(
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/go/src/github.com/netapp/trident/lint.log",
+            "$vm_path/lint.log",
             name,
             false,
             false,
@@ -2845,26 +2949,46 @@ fi
 
         // Run the unit tests on $ip_address and direct the output to unit_tests.log
         try {
+
+          echo "Creating unit test script unit_tests.sh"
+          content = (
+            "cd $vm_path/go/src/github.com/netapp/trident\n" +
+            "export GOPATH=$vm_path/go\n" +
+            "make test"
+          )
+
+          writeFile file: "$name/unit_tests.sh", text: content
+
+          sh (label: "Sleep", script: "sleep 1")
+
+          _scp(
+            ssh_options,
+            'root',
+            ip_address,
+            "$name/unit_tests.sh",
+            vm_path,
+            true,
+            false,
+            true
+          )
+
           sh (
             label: "Execute the unit tests on $ip_address and direct the output to unit_tests.log",
             script: "ssh $ssh_options root@$ip_address " +
-              "'cd $vm_path/go/src/github.com/netapp/trident;" +
-              "export GOPATH=$vm_path/go;" +
-              "set -o pipefail;" +
-              "make test | tee unit_tests.log'"
-          )
+              "'cd $vm_path;" +
+              "sh ./unit_tests.sh > unit_tests.log 2>&1'")
 
         } catch(Exception e) {
 
           // Fail the run
-          error "Unit test failure"
+          error "Failure in unit test(s): " + e.getMessage()
 
         } finally {
           _scp(
             ssh_options,
             'root',
             ip_address,
-            "$vm_path/go/src/github.com/netapp/trident/unit_tests.log",
+            "$vm_path/unit_tests.log",
             name,
             false,
             false,
@@ -2915,7 +3039,8 @@ fi
         }
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage has completed', status)
+        _notify_github(spec['name'], 'Stage has completed', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -2980,7 +3105,8 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         sh (label: "Sleep", script: "sleep 1")
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage is running', status)
+        _notify_github(spec['name'], 'Stage is running', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         if (spec['vm_provider'] == 'SCS') {
 
@@ -3299,7 +3425,8 @@ def _whelk_test(String name, String ssh_options, Map spec) {
         }
 
         // Notify Github of our status
-        _notify_github(spec, commit, name, 'Stage has completed', status)
+        _notify_github(spec['name'], 'Stage has completed', status,
+          "$env.TRIDENT_GITHUB_STATUS_URL/$commit", env.BUILD_URL, name)
 
         // Archive everything in the stage workdir
         _archive_artifacts(name)
@@ -3336,7 +3463,7 @@ def _aws_create(Map spec, String name){
       script: "export AWS_ACCESS_KEY_ID=" + spec['aws_access_key_id'] + ";" +
         "export AWS_SECRET_ACCESS_KEY=" + spec['aws_secret_access_key'] + ";" +
         "export AWS_DEFAULT_REGION=" + spec['aws_default_region'] + ";" +
-        "python3 tools/utils/aws.py " +
+        "python tools/utils/aws.py " +
         "--action create " +
         "--ami " + spec['ami'] + " " +
         "--config-file $name/aws_config.json " +
@@ -3350,7 +3477,7 @@ def _aws_create(Map spec, String name){
     def cmd = ("export AWS_ACCESS_KEY_ID=" + spec['aws_access_key_id'] + ";" +
         "export AWS_SECRET_ACCESS_KEY=" + spec['aws_secret_access_key'] + ";" +
         "export AWS_DEFAULT_REGION=" + spec['aws_default_region'] + ";" +
-        "python3 tools/utils/aws.py " +
+        "python tools/utils/aws.py " +
         "--action get " +
         "--config-file $name/aws_config.json " +
         "--get-attributes PublicDnsName,PublicIpAddress")
@@ -3365,7 +3492,7 @@ def _aws_create(Map spec, String name){
 
   } catch(Exception e) {
     // Fail the run
-    error 'Failed to create AWS instance(s)'
+    error 'Failure creating AWS instance(s)'
   }
 }
 
@@ -3378,14 +3505,14 @@ def _aws_delete(Map spec, String name){
       script: "export AWS_ACCESS_KEY_ID=" + spec['aws_access_key_id'] + ";" +
         "export AWS_SECRET_ACCESS_KEY=" + spec['aws_secret_access_key'] + ";" +
         "export AWS_DEFAULT_REGION=" + spec['aws_default_region'] + ";" +
-        "python3 tools/utils/aws.py " +
+        "python tools/utils/aws.py " +
         "--action delete " +
         "--config-file $name/aws_config.json"
     )
 
   } catch(Exception e) {
     // Fail the run
-    error 'Failed to delete AWS instance(s)'
+    error 'Failure deleting AWS instance(s)'
   }
 }
 
@@ -3433,7 +3560,7 @@ def _cleanup_backends(String ssh_options, String ip_address, String name, String
         "python whelk/ci/cleanup_backend.py'"
     )
   } catch(Exception e) {
-    echo "Error cleaning up backends: " + e.getMessage()
+    echo "Failure cleaning up backends: " + e.getMessage()
   }
 
 }
@@ -3450,22 +3577,7 @@ def _clone_from_github(url, credentials, branch, destination) {
 
 def _clone() {
 
-  // Some pipelines populate BRANCH_TYPE
-  def branch_type = '*'
-  if (env.BRANCH_TYPE) {
-    branch_type = env.BRANCH_TYPE
-  }
-
-  // All pipelines populate BRANCH_NAME
-  def branch_name = env.BRANCH_NAME
-  if (env.BRANCH_NAME.contains('/')) {
-    (branch_type, branch_name) = env.BRANCH_NAME.split('/')
-  }
-
-  branch = "$branch_type/$branch_name"
-  if (branch_type == '*') {
-    branch = branch_name
-  }
+  _get_branch()
 
   def private_org = env.TRIDENT_PRIVATE_GITHUB_ORG
   def private_repo = env.TRIDENT_PRIVATE_GITHUB_REPO
@@ -3481,6 +3593,7 @@ def _clone() {
     label: "Create directory $jenkins_trident_src",
     script: "mkdir -p $jenkins_trident_src"
   )
+
   sh (label: "Sleep", script: "sleep 1")
 
   // Change to the directory we just created and call checkout scm
@@ -3492,25 +3605,18 @@ def _clone() {
 
   def full_trident_src = 'src2/github.com/netapp/trident'
   sh (
-    label: "Full clone master for change processing",
-    script: "git clone https://$user:$token@github.com/$private_org/$private_repo $full_trident_src"
+    label: "Full clone of master for change processing",
+    script: "python tools/utils/github.py " +
+            "--action clone " +
+            "--branch master " +
+            "--clone-path $full_trident_src " +
+            "--organization $env.TRIDENT_PRIVATE_GITHUB_ORG " +
+            "--repository $env.TRIDENT_PRIVATE_GITHUB_REPO " +
+            "--user $env.GITHUB_USERNAME"
   )
 
-  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-    def cmd = "curl -H \"Authorization: token $env.GITHUB_TOKEN\" " +
-      "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
-      "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
-    def response = sh(
-      label: "Query Github for $env.BRANCH_NAME",
-      returnStdout: true,
-      script: cmd
-    ).trim()
-
-    def pr = readJSON text: response
-
-    if (pr.containsKey('head') == false) {
-      error "Error getting the PR info from Github for $env.BRANCH_NAME"
-    }
+  if (env.BRANCH_NAME.contains('PR-')) {
+    def pr = readJSON file: "$env.WORKSPACE/Setup/github_pull_request.json"
 
     branch = pr['head']['ref']
 
@@ -3521,58 +3627,6 @@ def _clone() {
   }
 
   echo "The commit hash for $env.BRANCH_NAME is $commit"
-
-  def fallback_branch = "master"
-  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
-    fallback_branch = env.CHANGE_TARGET
-  }
-
-  // Try to checkout the corresponding tools branch and if that fails fall
-  // back to use the master branch
-  def tools_src = 'tools'
-  echo "Clone tools:$branch"
-  try {
-    _clone_from_github(
-      env.TOOLS_PRIVATE_GITHUB_URL,
-      env.GITHUB_CREDENTIAL_ID,
-      branch,
-      'tools')
-  } catch(Exception e1) {
-    echo "Error cloning tools $branch: " + e1.getMessage()
-    echo "Clone tools:$fallback_branch"
-    try {
-      sh (label: "Remove tools directory", script: "rm -rf $tools_src")
-      sh (label: "Sleep", script: "sleep 1")
-       _clone_from_github(
-         env.TOOLS_PRIVATE_GITHUB_URL,
-         env.GITHUB_CREDENTIAL_ID,
-         fallback_branch,
-         'tools')
-    } catch(Exception e2) {
-      echo "Error cloning $fallback_branch: " + e2.getMessage()
-      if (fallback_branch != 'master') {
-        echo "Clone tools:master"
-        try {
-          sh (label: "Remove tools directory", script: "rm -rf $tools_src")
-          sh (label: "Sleep", script: "sleep 1")
-           _clone_from_github(
-             env.TOOLS_PRIVATE_GITHUB_URL,
-             env.GITHUB_CREDENTIAL_ID,
-             'master',
-             'tools')
-        } catch(Exception e3) {
-          error "Error cloning tools:master: " + e3.getMessage()
-        }
-      } else {
-        error "Error cloning tools: " + e2.getMessage()
-      }
-    }
-  }
-
-  sh (
-    label: "Change permissions on private key",
-    script: "chmod 700 tools/" + env.SSH_PRIVATE_KEY_PATH
-  )
 
   if (env.BLACK_DUCK_SCAN == null && env.DEPLOY_TRIDENT == null) {
 
@@ -3587,7 +3641,7 @@ def _clone() {
         branch,
         whelk_src)
     } catch(Exception e1) {
-      echo "Error cloning whelk:$branch:" + e1.getMessage()
+      echo "Failure cloning whelk:$branch:" + e1.getMessage()
       echo "Clone whelk:$fallback_branch"
       try {
          sh (label: "Remove test directory", script: "rm -rf $whelk_src")
@@ -3598,7 +3652,7 @@ def _clone() {
            fallback_branch,
            'test')
       } catch(Exception e2) {
-        echo "Error cloning whelk:$fallback_branch:" + e2.getMessage()
+        echo "Failure cloning whelk:$fallback_branch:" + e2.getMessage()
         if (fallback_branch != 'master') {
           echo "Clone whelk:master"
           try {
@@ -3610,10 +3664,10 @@ def _clone() {
               'master',
               'test')
           } catch(Exception e3) {
-            error "Error cloning whelk: " + e3.getMessages()
+            error "Failure cloning whelk: " + e3.getMessages()
           }
         } else {
-          error "Error cloning whelk: " + e2.getMessages()
+          error "Failure cloning whelk: " + e2.getMessages()
         }
       }
     }
@@ -3756,11 +3810,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '}')
   }
 
-  if (backend == 'ontap-san-economy') {
+  if (backend == 'ontap-san') {
     content = ('\n' +
     '{\n' +
     '  "version": 1,\n' +
-    '  "storageDriverName": "ontap-san-economy",\n' +
+    '  "storageDriverName": "ontap-san",\n' +
     '  "managementLIF": "' + spec[backend]['management_lif'] + '",\n' +
     '  "svm": "' + id + '",\n' +
     '  "username": "' + spec[backend]['username'] + '",\n' +
@@ -3770,11 +3824,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '}')
   }
 
-  if (backend == 'ontap-san') {
+  if (backend == 'ontap-san-economy') {
     content = ('\n' +
     '{\n' +
     '  "version": 1,\n' +
-    '  "storageDriverName": "ontap-san",\n' +
+    '  "storageDriverName": "ontap-san-economy",\n' +
     '  "managementLIF": "' + spec[backend]['management_lif'] + '",\n' +
     '  "svm": "' + id + '",\n' +
     '  "username": "' + spec[backend]['username'] + '",\n' +
@@ -3889,7 +3943,7 @@ def _create_cleanup_script(Map spec, String name, String purpose, String ip_addr
 
    if (spec['vm_provider'] == 'SCS') {
        content += (
-         "python3 scs.py --action delete-vms --endpoint $env.SCS_ENDPOINT " +
+         "python scs.py --action delete-vms --endpoint $env.SCS_ENDPOINT " +
          "--token $env.SCS_TOKEN --user $env.SCS_USERNAME --purpose $purpose\n"
        )
    } else if (spec['vm_provider'] == 'AWS') {
@@ -3897,7 +3951,7 @@ def _create_cleanup_script(Map spec, String name, String purpose, String ip_addr
        "export AWS_ACCESS_KEY_ID=" + spec['aws_access_key_id'] + ";" +
        "export AWS_SECRET_ACCESS_KEY=" + spec['aws_secret_access_key'] + ";" +
        "export AWS_DEFAULT_REGION=" + spec['aws_default_region'] + ";" +
-       "python3 aws.py " +
+       "python aws.py " +
        "--action delete " +
        "--config-file ${name}_aws_config.json --wait 0\n"
      )
@@ -4117,7 +4171,7 @@ def _gather_triage_information(Map spec, String ssh_options, String ip_address, 
       )
       sh (label: "Sleep", script: "sleep 1")
     } catch(Exception e) {
-      echo "Error executing journalctl -u kube*"
+      echo "Failure executing journalctl -u kube*"
     } finally {
       _scp(
         ssh_options,
@@ -4157,7 +4211,7 @@ def _gather_triage_information(Map spec, String ssh_options, String ip_address, 
 
       sh (label: "Sleep", script: "sleep 1")
     } catch(Exception e) {
-      echo "Error executing tridentctl logs -a"
+      echo "Failure executing tridentctl logs -a"
     } finally {
       _scp(
         ssh_options,
@@ -4223,6 +4277,76 @@ def _gather_triage_information(Map spec, String ssh_options, String ip_address, 
   }
 }
 
+def _get_branch() {
+
+    // Return the branch name
+    // This can be in one of the following forms
+    // master
+    // stable/v19.10
+    // The */my-branch-name is converted to my-branch-name
+
+    // Some pipelines populate BRANCH_TYPE
+    def branch_type = '*'
+    if (env.BRANCH_TYPE) {
+      branch_type = env.BRANCH_TYPE
+    }
+
+    // All pipelines populate BRANCH_NAME
+    def branch_name = env.BRANCH_NAME
+    if (env.BRANCH_NAME.contains('/')) {
+      (branch_type, branch_name) = env.BRANCH_NAME.split('/')
+    }
+
+    branch = "$branch_type/$branch_name"
+    if (branch_type == '*') {
+      branch = branch_name
+    }
+
+    return branch
+}
+
+def _get_github_branch(String path) {
+
+  def cmd = "python tools/utils/github.py --action get-branch " +
+    "--organization $env.TRIDENT_PRIVATE_GITHUB_ORG " +
+    "--repository $env.TRIDENT_PRIVATE_GITHUB_REPO " +
+    "--branch $env.BRANCH_NAME " +
+    "--output-file $path"
+  def response = sh(
+    label: "Query Github for branch $env.BRANCH_NAME",
+    returnStdout: true,
+    script: cmd
+  )
+}
+
+def _get_github_pull_request(String path) {
+
+  def cmd = "python tools/utils/github.py --action get-pull-request " +
+    "--organization $env.TRIDENT_PRIVATE_GITHUB_ORG " +
+    "--repository $env.TRIDENT_PRIVATE_GITHUB_REPO " +
+    "--pull-request $env.CHANGE_ID " +
+    "--output-file $path"
+  def response = sh(
+    label: "Query Github for pull-request $env.CHANGE_ID",
+    returnStdout: true,
+    script: cmd
+  )
+}
+
+def _get_github_status_checks(String branch, String path) {
+
+  def cmd = "python tools/utils/github.py --action get-status-checks " +
+    "--organization $env.TRIDENT_PRIVATE_GITHUB_ORG " +
+    "--repository $env.TRIDENT_PRIVATE_GITHUB_REPO " +
+    "--branch $branch " +
+    "--output-file $path"
+  def response = sh(
+    label: "Query Github for status checks $branch",
+    returnStdout: true,
+    script: cmd
+  )
+}
+
 def _get_image(String ssh_options, String ip_address, String regexp) {
 
   // Get the trident image string
@@ -4230,7 +4354,7 @@ def _get_image(String ssh_options, String ip_address, String regexp) {
   def output = sh(
     label: "List docker images matching $regexp",
     returnStdout: true,
-    script: cmd).trim()
+    script: cmd)
 
   def fields = output.split()
   def image = fields[0] + ':' + fields[1]
@@ -4505,26 +4629,25 @@ def _ndvp_plugin_config(
 }
 
 
-def _notify_github(Map spec, String commit, String dir, String description, String state) {
+def _notify_github(
+  String context,
+  String description,
+  String state,
+  String status_url,
+  String target_url,
+  String path) {
 
-  def name = spec['name']
-  if (fileExists(dir) == false) {
+  try {
     sh (
-      label: "Create $dir",
-      script: "mkdir -p $dir"
+      label: "Set Github status for $context to $state",
+      script: "python tools/utils/github.py --action set-status " +
+      "--context $context --description \"$description\" --state $state " +
+      "--target-url $target_url --status-url $status_url " +
+      "--output-file $path/notify_github_${state}.json"
     )
-
-    sh (label: "Sleep", script: "sleep 1")
+  } catch(Exception e) {
+    error 'Failure setting Github status: ' + e.getMessage()
   }
-
-  sh (
-    label: "Set Github status for $name to $state",
-    script: "curl -s -S -H \"Authorization: token $env.GITHUB_TOKEN\" --request POST --data " +
-    "'{\"state\": \"$state\", \"context\": \"$name\", \"description\": " +
-    "\"$description\", \"target_url\": \"$env.BUILD_URL\"}' " +
-    "$env.TRIDENT_GITHUB_STATUS_URL/$commit > $dir/notify_github_${state}.log 2>&1"
-  )
-
 }
 
 def _notify_slack(String status, String message) {
@@ -4804,10 +4927,43 @@ def _propagate_changes() {
       // Explain why there is no propagation
       echo ("Skipping change propagation due to one or more of the following reasons: \n" +
             "- One or more tests failed \n" +
-            "- The current BRANCH_NAME($branch) is not master \n" +
-            "- The current BRANCH_NAME($branch) does not start with stable")
+            "- The current branch $branch is not master \n" +
+            "- The current branch $branch does not start with stable")
     }
   }
+}
+
+def _process_github_status_checks(String file) {
+
+  echo "Processing recent Github status checks"
+  def status = [:]
+  def data = readJSON file: file
+
+  for (s in data) {
+
+    // Handle empty JSON
+    if (s == null) {
+      continue
+    }
+
+    // Say what status check we are working on
+    echo 'Checking ' + s['context'] + " " + s['state'] + " " + s['updated_at']
+
+    if (status.containsKey(s['context'])) {
+
+      // Skip the status check if a check with the same context has already been stored
+      echo 'Skipping ' + s['context'] + " " + s['state'] + " " + s['updated_at']
+      continue
+
+    } else if (s['state'] == 'success') {
+
+      // Store the first success we encounter. This will be the most recent
+      echo 'Storing ' + s['context'] + " " + s['state'] + " " + s['updated_at']
+      status.put(s['context'], s['state'])
+    }
+  }
+
+  return status
 }
 
 def _random_string(Integer length) {
@@ -4841,36 +4997,39 @@ def _run_csi_sanity_tests(String name, String ssh_options, String ip_address, St
 
   try {
 
-    echo "Running CSI sanity test"
+    echo "Executing CSI sanity test"
 
     def backend = spec['backend']
-    content = ('\n' +
-"cd $vm_path\n" +
-"export TRIDENT_SERVER=127.0.0.1:8000\n" +
-'echo "127.0.0.1 trident-csi" >> /etc/hosts\n' +
-"tar -xvf trident-installer.tar.gz\n" +
-"cp trident-installer/tridentctl /bin/tridentctl\n" +
-"cp trident-installer/extras/bin/trident .\n" +
-"cp trident-installer/tridentctl .\n" +
-"cp $vm_path/go/src/github.com/kubernetes-csi/csi-test/cmd/csi-sanity/csi-sanity .\n" +
-"sleep 1\n" +
-"chmod +x trident tridentctl csi-sanity\n" +
-"./trident --https_rest --csi_endpoint unix://tmp/csi.sock --csi_node_name $ip_address --no_persistence --debug --csi_role allInOne --https_port=34571 2> trident.log & PID=\$!\n" +
-"TIMEOUT=180\n" +
-"while ! tridentctl get node $ip_address; do\n" +
-"    if (( TIMEOUT <= 5 )); then\n" +
-"         echo \"Trident failed to come up in time\"\n" +
-"         kill \$PID\n" +
-"         exit 1\n" +
-"    fi\n" +
-"    sleep 5\n" +
-"    (( TIMEOUT -= 5 ))\n" +
-"done\n" +
-"tridentctl create backend -f $vm_path/backends/${backend}.json\n" +
-"./csi-sanity --csi.endpoint=/tmp/csi.sock -csi.junitfile=csi_sanity.xml\n" +
-"kill \$PID\n")
+
+    def content = ('\n' +
+      "cd $vm_path\n" +
+      "export TRIDENT_SERVER=127.0.0.1:8000\n" +
+      'echo "127.0.0.1 trident-csi" >> /etc/hosts\n' +
+      "tar -xvf trident-installer.tar.gz\n" +
+      "cp trident-installer/tridentctl /bin/tridentctl\n" +
+      "cp trident-installer/extras/bin/trident .\n" +
+      "cp trident-installer/tridentctl .\n" +
+      "cp $vm_path/go/src/github.com/kubernetes-csi/csi-test/cmd/csi-sanity/csi-sanity .\n" +
+      "sleep 1\n" +
+      "chmod +x trident tridentctl csi-sanity\n" +
+      "./trident --https_rest --csi_endpoint unix://tmp/csi.sock --csi_node_name $ip_address " +
+      "--no_persistence --debug --csi_role allInOne --https_port=34571 2> trident.log & PID=\$!\n" +
+      "TIMEOUT=180\n" +
+      "while ! tridentctl get node $ip_address; do\n" +
+      "    if (( TIMEOUT <= 5 )); then\n" +
+      "         echo \"Trident failed to come up in time\"\n" +
+      "         kill \$PID\n" +
+      "         exit 1\n" +
+      "    fi\n" +
+      "    sleep 5\n" +
+      "    (( TIMEOUT -= 5 ))\n" +
+      "done\n" +
+      "tridentctl create backend -f $vm_path/backends/${backend}.json\n" +
+      "./csi-sanity --csi.endpoint=/tmp/csi.sock -csi.junitfile=csi_sanity.xml\n" +
+      "kill \$PID\n")
 
     writeFile file: "$name/csi_sanity.sh", text: content
+
     sh (label: "Sleep", script: "sleep 1")
 
     _scp(
@@ -4888,7 +5047,16 @@ def _run_csi_sanity_tests(String name, String ssh_options, String ip_address, St
 
     sh (
       label: "Execute csi_sanity.sh on $ip_address",
-      script: "ssh $ssh_options root@$ip_address 'cd $vm_path;sh ./csi_sanity.sh > csi_sanity.log 2>&1'"
+      script: "ssh $ssh_options root@$ip_address " +
+        "'cd $vm_path;sh ./csi_sanity.sh > csi_sanity.log 2>&1'"
+    )
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    sh (
+      label: "Get the test result from csi_sanity.log",
+      script: "ssh $ssh_options root@$ip_address " +
+        "'cd $vm_path;tail -1 ./csi_sanity.log | grep PASS'"
     )
 
   } catch(Exception e) {
@@ -4926,7 +5094,7 @@ def _run_csi_sanity_tests(String name, String ssh_options, String ip_address, St
       )
 
     } catch(Exception e) {
-      echo "Failed to copy $name/csi_sanity.xml"
+      echo "Failure copying $name/csi_sanity.xml"
     }
 
   }
@@ -4943,7 +5111,7 @@ def _run_playbook(String name, String playbook, String target, List options=[]){
 
   try {
     // Run the appropriate ansible playbook
-    def cmd =("cd $name/ansible; python3 $env.WORKSPACE/tools/utils/ansible.py " +
+    def cmd =("cd $name/ansible; python $env.WORKSPACE/tools/utils/ansible.py " +
               "--log-path $env.WORKSPACE/$name/${playbook}.log " +
               "--playbook $playbook " +
               "--targets $target ")
@@ -5122,7 +5290,7 @@ def _run_whelk_tests(String name, String ssh_options, String ip_address, String 
       )
 
     } catch(Exception e) {
-      echo "Error removing whelk_color.log"
+      echo "Failure removing whelk_color.log"
     }
 
     _scp(
@@ -5204,18 +5372,18 @@ def _scs_create(String name, String request, String purpose) {
   try {
 
     // Get the template info from the request file
-    cmd = ("python3 tools/utils/parse_scs_request.py --file tools/scs/$request")
+    cmd = ("python tools/utils/parse_scs_request.py --file tools/scs/$request")
     ri = sh(label: "Parse the SCS request file", returnStdout: true, script: cmd).trim().split(',')
 
   } catch(Exception e) {
     // Fail the run
-    error "Failed to parse tools/scs/$request"
+    error "Failure parsing tools/scs/$request"
   }
 
   try {
 
     // Get the template info from SCS
-    cmd = ("python3 tools/utils/scs.py " +
+    cmd = ("python tools/utils/scs.py " +
         "--action get-templates " +
         "--endpoint $env.SCS_ENDPOINT " +
         "--token $env.SCS_TOKEN " +
@@ -5227,7 +5395,7 @@ def _scs_create(String name, String request, String purpose) {
 
   } catch(Exception e) {
     // Fail the run
-    error "Failed to get template info for " + ri[0]
+    error "Failure getting template info for " + ri[0]
   }
 
   def provisioned = false
@@ -5238,7 +5406,7 @@ def _scs_create(String name, String request, String purpose) {
     try {
       sh (
         label: "Create SCS VMs attempt #" + attempt + "/3",
-        script: "python3 tools/utils/scs.py " +
+        script: "python tools/utils/scs.py " +
           "--action create-vms " +
           "--endpoint $env.SCS_ENDPOINT " +
           "--token $env.SCS_TOKEN " +
@@ -5252,7 +5420,7 @@ def _scs_create(String name, String request, String purpose) {
     } catch(Exception e) {
       _scs_delete(purpose)
       if(attempt == 3) {
-        error "Failed to deploy VM(s) after 3 attempts"
+        error "Failed deploy VM(s) after 3 attempts"
         return
       }
     }
@@ -5260,7 +5428,7 @@ def _scs_create(String name, String request, String purpose) {
 
   try {
     // Get the client info from SCS
-    cmd = ("python3 tools/utils/scs.py " +
+    cmd = ("python tools/utils/scs.py " +
         "--action get-vms " +
         "--endpoint $env.SCS_ENDPOINT " +
         "--token $env.SCS_TOKEN " +
@@ -5291,7 +5459,7 @@ def _scs_delete(String purpose) {
     try {
       sh (
         label: "Delete SCS VMs attempt #" + attempt + "/3",
-        script: "python3 tools/utils/scs.py " +
+        script: "python tools/utils/scs.py " +
           "--action delete-vms " +
           "--endpoint $env.SCS_ENDPOINT " +
           "--token $env.SCS_TOKEN " +
@@ -5306,6 +5474,116 @@ def _scs_delete(String purpose) {
       sh (label: "Sleep", script: "sleep 10")
     }
   }
+}
+
+def _setup() {
+
+  def name = 'Setup'
+  try {
+
+    sh (
+      label: "Create directory $env.WORKSPACE/$name",
+      script: "mkdir -p $env.WORKSPACE/$name"
+    )
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    _get_branch()
+
+    def fallback_branch = "master"
+    if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+      fallback_branch = env.CHANGE_TARGET
+    }
+
+    // Try to checkout the corresponding tools branch and if that fails fall
+    // back to use the master branch
+    def tools_src = 'tools'
+    echo "Clone tools:$branch"
+    try {
+      _clone_from_github(
+        env.TOOLS_PRIVATE_GITHUB_URL,
+        env.GITHUB_CREDENTIAL_ID,
+        branch,
+        'tools')
+    } catch(Exception e1) {
+      echo "Failure cloning tools $branch: " + e1.getMessage()
+      echo "Clone tools:$fallback_branch"
+      try {
+        sh (label: "Remove tools directory", script: "rm -rf $tools_src")
+        sh (label: "Sleep", script: "sleep 1")
+         _clone_from_github(
+           env.TOOLS_PRIVATE_GITHUB_URL,
+           env.GITHUB_CREDENTIAL_ID,
+           fallback_branch,
+           'tools')
+      } catch(Exception e2) {
+        echo "Failure cloning $fallback_branch: " + e2.getMessage()
+        if (fallback_branch != 'master') {
+          echo "Clone tools:master"
+          try {
+            sh (label: "Remove tools directory", script: "rm -rf $tools_src")
+            sh (label: "Sleep", script: "sleep 1")
+             _clone_from_github(
+               env.TOOLS_PRIVATE_GITHUB_URL,
+               env.GITHUB_CREDENTIAL_ID,
+               'master',
+               'tools')
+          } catch(Exception e3) {
+            error "Failure cloning tools:master: " + e3.getMessage()
+          }
+        } else {
+          error "Failure cloning tools: " + e2.getMessage()
+        }
+      }
+    }
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    sh (
+      label: "Change permissions on private key",
+      script: "chmod 700 tools/" + env.SSH_PRIVATE_KEY_PATH
+    )
+
+    writeFile file: "$env.HOME/.github.py", text: "$env.GITHUB_TOKEN\n"
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    def branch = env.BRANCH_NAME
+    if (env.BRANCH_NAME.contains('PR-')) {
+      _get_github_pull_request("$env.WORKSPACE/$name/github_pull_request.json")
+
+      def pr = readJSON file: "$env.WORKSPACE/$name/github_pull_request.json"
+
+      if (pr.containsKey('head') == false) {
+        error "Failure getting PR info from Github for $env.BRANCH_NAME"
+      }
+
+      branch = pr['head']['ref']
+    }
+
+    _get_github_status_checks(branch, "$env.WORKSPACE/$name/github_status_checks.json")
+
+    slack_message = _create_slack_message(branch)
+
+    _notify_slack('PENDING', slack_message)
+
+    _clone()
+
+  } catch(Exception e) {
+
+    // Update the message var
+    message = e.getMessage()
+
+    // Fail the run
+    error "$name: $message"
+
+  } finally {
+
+    // Archive everything in the stage workdir
+    _archive_artifacts(name)
+
+  }
+
 }
 
 def _setup_backends(String ssh_options, String ip_address, String name, String vm_path, String dst_path) {
@@ -5547,7 +5825,7 @@ def _get_domain_from_fqdn(String line) {
     hostname = m[0][2]
   } else {
     // Fail the run
-    error 'Failed to match domain in FQDN : ' + line
+    error 'Failure matching domain in FQDN : ' + line
   }
   return hostname
 }
@@ -5561,9 +5839,23 @@ def _get_hostname_from_fqdn(String line) {
     hostname = m[0][1]
   } else {
     // Fail the run
-    error 'Failed to match hostname in FQDN : ' + line
+    error 'Failure matching hostname in FQDN : ' + line
   }
   return hostname
+}
+
+@NonCPS
+def _get_page_index_from_string(String line) {
+
+  def m = line =~ /page=([0-9]+)/
+  def index = ''
+  if (m) {
+    index = m[0][1]
+  } else {
+    // Fail the run
+     println('Failure matching the page index in : ' + line)
+  }
+  return index
 }
 
 @NonCPS
