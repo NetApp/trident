@@ -195,10 +195,19 @@ Customized Installation
 
 Trident's installer allows you to customize attributes. For example, if you have
 copied the Trident image to a private repository, you can specify the image name by using
-``--trident-image``.
+``--trident-image``.  If you have copied the Trident image as well as the needed CSI
+sidecar images to a private repository, it may be preferable to specify the location
+of that repository by using the ``--image-registry`` switch, which takes the form
+``<registry FQDN>[:port]``.
 
-Users can also customize Trident's deployment files. Using the ``--generate-custom-yaml``
-parameter will create the following YAML files in the installer's ``setup`` directory:
+If you are using a distribution of Kubernetes where kubelet keeps its data on a path
+other than the usual ``/var/lib/kubelet``, you can specify the alternate path by using
+``--kubelet-dir``.
+
+As a last resort, if you need to customize Trident's installation beyond what the
+installer's arguments allow, you can also customize Trident's deployment files. Using
+the ``--generate-custom-yaml`` parameter will create the following YAML files in the
+installer's ``setup`` directory:
 
 - trident-clusterrolebinding.yaml
 - trident-deployment.yaml

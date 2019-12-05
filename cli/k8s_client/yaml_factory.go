@@ -287,7 +287,9 @@ spec:
     targetPort: 8001
 `
 
-func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug, useIPv6 bool, version *utils.Version) string {
+func GetCSIDeploymentYAML(
+	tridentImage, imageRegistry, label, logFormat string, debug, useIPv6 bool, version *utils.Version,
+) string {
 
 	var debugLine string
 	var logLevel string
@@ -306,6 +308,11 @@ func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug, useIPv6 
 		ipLocalhost = "127.0.0.1"
 	}
 
+	csiSidecarRegistry := "quay.io"
+	if imageRegistry != "" {
+		csiSidecarRegistry = imageRegistry
+	}
+
 	var deploymentYAML string
 	switch version.MinorVersion() {
 	case 13:
@@ -321,6 +328,7 @@ func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug, useIPv6 
 	}
 
 	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", csiSidecarRegistry, -1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_LEVEL}", logLevel, -1)
@@ -397,7 +405,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.0.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -409,7 +417,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -422,7 +430,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.0.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -434,7 +442,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-cluster-driver-registrar
-        image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-cluster-driver-registrar:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -524,7 +532,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.3.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -536,7 +544,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -549,7 +557,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.2.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -639,7 +647,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.3.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -651,7 +659,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -664,7 +672,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: quay.io/k8scsi/csi-resizer:v0.3.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.3.0
         args:
         - "--v=9"
         - "--csiTimeout=300s"
@@ -676,7 +684,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.2.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -698,7 +706,9 @@ spec:
           secretName: trident-csi
 `
 
-func GetCSIDaemonSetYAML(tridentImage, label, logFormat string, debug bool, version *utils.Version) string {
+func GetCSIDaemonSetYAML(
+	tridentImage, imageRegistry, kubeletDir, label, logFormat string, debug bool, version *utils.Version,
+) string {
 
 	var debugLine string
 	var logLevel string
@@ -711,6 +721,11 @@ func GetCSIDaemonSetYAML(tridentImage, label, logFormat string, debug bool, vers
 		logLevel = "2"
 	}
 
+	csiSidecarRegistry := "quay.io"
+	if imageRegistry != "" {
+		csiSidecarRegistry = imageRegistry
+	}
+
 	var daemonSetYAML string
 	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
 		daemonSetYAML = daemonSet113YAMLTemplate
@@ -718,7 +733,11 @@ func GetCSIDaemonSetYAML(tridentImage, label, logFormat string, debug bool, vers
 		daemonSetYAML = daemonSet114YAMLTemplate
 	}
 
+	kubeletDir = strings.TrimRight(kubeletDir, "/")
+
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", csiSidecarRegistry, -1)
+	daemonSetYAML = strings.Replace(daemonSetYAML, "{KUBELET_DIR}", kubeletDir, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
 	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_LEVEL}", logLevel, -1)
@@ -778,9 +797,9 @@ spec:
         - name: plugin-dir
           mountPath: /plugin
         - name: plugins-mount-dir
-          mountPath: /var/lib/kubelet/plugins
+          mountPath: {KUBELET_DIR}/plugins
         - name: pods-mount-dir
-          mountPath: /var/lib/kubelet/pods
+          mountPath: {KUBELET_DIR}/pods
           mountPropagation: "Bidirectional"
         - name: dev-dir
           mountPath: /dev
@@ -795,7 +814,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -805,7 +824,7 @@ spec:
         - name: ADDRESS
           value: /plugin/csi.sock
         - name: REGISTRATION_PATH
-          value: "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
+          value: "{KUBELET_DIR}/plugins/csi.trident.netapp.io/csi.sock"
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:
@@ -826,19 +845,19 @@ spec:
       volumes:
       - name: plugin-dir
         hostPath:
-          path: /var/lib/kubelet/plugins/csi.trident.netapp.io/
+          path: {KUBELET_DIR}/plugins/csi.trident.netapp.io/
           type: DirectoryOrCreate
       - name: registration-dir
         hostPath:
-          path: /var/lib/kubelet/plugins_registry/
+          path: {KUBELET_DIR}/plugins_registry/
           type: Directory
       - name: plugins-mount-dir
         hostPath:
-          path: /var/lib/kubelet/plugins
+          path: {KUBELET_DIR}/plugins
           type: DirectoryOrCreate
       - name: pods-mount-dir
         hostPath:
-          path: /var/lib/kubelet/pods
+          path: {KUBELET_DIR}/pods
           type: DirectoryOrCreate
       - name: dev-dir
         hostPath:
@@ -913,9 +932,9 @@ spec:
         - name: plugin-dir
           mountPath: /plugin
         - name: plugins-mount-dir
-          mountPath: /var/lib/kubelet/plugins
+          mountPath: {KUBELET_DIR}/plugins
         - name: pods-mount-dir
-          mountPath: /var/lib/kubelet/pods
+          mountPath: {KUBELET_DIR}/pods
           mountPropagation: "Bidirectional"
         - name: dev-dir
           mountPath: /dev
@@ -930,7 +949,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: quay.io/k8scsi/csi-node-driver-registrar:v1.2.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.2.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -939,7 +958,7 @@ spec:
         - name: ADDRESS
           value: /plugin/csi.sock
         - name: REGISTRATION_PATH
-          value: "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
+          value: "{KUBELET_DIR}/plugins/csi.trident.netapp.io/csi.sock"
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:
@@ -960,19 +979,19 @@ spec:
       volumes:
       - name: plugin-dir
         hostPath:
-          path: /var/lib/kubelet/plugins/csi.trident.netapp.io/
+          path: {KUBELET_DIR}/plugins/csi.trident.netapp.io/
           type: DirectoryOrCreate
       - name: registration-dir
         hostPath:
-          path: /var/lib/kubelet/plugins_registry/
+          path: {KUBELET_DIR}/plugins_registry/
           type: Directory
       - name: plugins-mount-dir
         hostPath:
-          path: /var/lib/kubelet/plugins
+          path: {KUBELET_DIR}/plugins
           type: DirectoryOrCreate
       - name: pods-mount-dir
         hostPath:
-          path: /var/lib/kubelet/pods
+          path: {KUBELET_DIR}/pods
           type: DirectoryOrCreate
       - name: dev-dir
         hostPath:

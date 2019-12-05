@@ -12,6 +12,8 @@
 - **Kubernetes:** Added support for Prometheus metrics.
 - Switched from glide to go modules for dependency management.
 - ONTAP drivers now support `Virtual Pools`.
+- **Kubernetes:** Added --image-registry switch to installer. (Issue [#311](https://github.com/NetApp/trident/issues/311))
+- **Kubernetes:** Added --kubelet-dir switch to installer to simplify installation on some Kubernetes distributions. (Issue [#314](https://github.com/NetApp/trident/issues/314))
 
 ## v19.10.0
 

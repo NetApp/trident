@@ -66,6 +66,8 @@ var (
 	pvcName         string
 	tridentImage    string
 	etcdImage       string
+	kubeletDir      string
+	imageRegistry   string
 	logFormat       string
 	k8sTimeout      time.Duration
 	migratorTimeout time.Duration
@@ -119,6 +121,8 @@ func init() {
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
+	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
+	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 300*time.Minute, "The timeout for etcd-to-CRD migration.")
@@ -210,11 +214,22 @@ func discoverInstallationEnvironment() error {
 	// Default deployment image to what Trident was built with
 	if tridentImage == "" {
 		tridentImage = tridentconfig.BuildImage
+
+		// Override registry only if using the default Trident image name and an alternate registry was supplied
+		if imageRegistry != "" {
+			tridentImage = utils.ReplaceImageRegistry(tridentImage, imageRegistry)
+		}
 	}
+	log.Debugf("Trident image: %s", tridentImage)
 
 	// Default deployment image to what etcd was built with
 	if etcdImage == "" {
 		etcdImage = tridentconfig.BuildEtcdImage
+
+		// Override registry only if using the default etcd image name and an alternate registry was supplied
+		if imageRegistry != "" {
+			etcdImage = utils.ReplaceImageRegistry(etcdImage, imageRegistry)
+		}
 	} else if !strings.Contains(etcdImage, tridentconfig.BuildEtcdVersion) {
 		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", tridentconfig.BuildEtcdVersion)
 	}
@@ -456,13 +471,13 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(
-		tridentImage, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion())
+		tridentImage, imageRegistry, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(
-		tridentImage, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion())
+		tridentImage, imageRegistry, kubeletDir, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -741,7 +756,8 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion()))
+				k8sclient.GetCSIDeploymentYAML(
+					tridentImage, imageRegistry, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -762,7 +778,9 @@ func installTrident() (returnError error) {
 		} else {
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAML(
-					tridentImage, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion()))
+					tridentImage, imageRegistry, kubeletDir,
+					TridentNodeLabelValue, logFormat, Debug,
+					client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -1615,6 +1633,14 @@ func installTridentInCluster() (returnError error) {
 	if logFormat != "" {
 		commandArgs = append(commandArgs, "--log-format")
 		commandArgs = append(commandArgs, logFormat)
+	}
+	if kubeletDir != "" {
+		commandArgs = append(commandArgs, "--kubelet-dir")
+		commandArgs = append(commandArgs, kubeletDir)
+	}
+	if imageRegistry != "" {
+		commandArgs = append(commandArgs, "--image-registry")
+		commandArgs = append(commandArgs, imageRegistry)
 	}
 	commandArgs = append(commandArgs, "--in-cluster=false")
 

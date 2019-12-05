@@ -110,17 +110,19 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
-        --csi                    Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
-        --etcd-image string      The etcd image to install.
-        --generate-custom-yaml   Generate YAML files, but don't install anything.
-    -h, --help                   help for install
-        --k8s-timeout duration   The timeout for all Kubernetes operations. (default 3m0s)
-        --log-format string      The Trident logging format (text, json). (default "text")
-        --pv string              The name of the legacy PV used by Trident, will be migrated to CRDs. (default "trident")
-        --pvc string             The name of the legacy PVC used by Trident, will be migrated to CRDs. (default "trident")
-        --silent                 Disable most output during installation.
-        --trident-image string   The Trident image to install.
-        --use-custom-yaml        Use any existing YAML files that exist in setup directory.
+        --csi                     Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
+        --etcd-image string       The etcd image to install.
+        --generate-custom-yaml    Generate YAML files, but don't install anything.
+    -h, --help                    help for install
+        --image-registry string   The address/port of an internal image registry.
+        --k8s-timeout duration    The timeout for all Kubernetes operations. (default 3m0s)
+        --kubelet-dir string      The host location of kubelet's internal state. (default "/var/lib/kubelet")
+        --log-format string       The Trident logging format (text, json). (default "text")
+        --pv string               The name of the legacy PV used by Trident, will be migrated to CRDs. (default "trident")
+        --pvc string              The name of the legacy PVC used by Trident, will be migrated to CRDs. (default "trident")
+        --silent                  Disable most output during installation.
+        --trident-image string    The Trident image to install.
+        --use-custom-yaml         Use any existing YAML files that exist in setup directory.
 
 logs
 ----

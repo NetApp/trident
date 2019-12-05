@@ -150,3 +150,32 @@ func TestRemoveStringFromSlice(t *testing.T) {
 		t.Errorf("Slice should be empty")
 	}
 }
+
+func TestSplitImageDomain(t *testing.T) {
+	log.Debug("Running TestSplitImageDomain...")
+
+	domain, remainder := SplitImageDomain("netapp/trident:19.10.0")
+	assert.Equal(t, "", domain)
+	assert.Equal(t, "netapp/trident:19.10.0", remainder)
+
+	domain, remainder = SplitImageDomain("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2")
+	assert.Equal(t, "quay.io", domain)
+	assert.Equal(t, "k8scsi/csi-node-driver-registrar:v1.0.2", remainder)
+
+	domain, remainder = SplitImageDomain("mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2")
+	assert.Equal(t, "mydomain:5000", domain)
+	assert.Equal(t, "k8scsi/csi-node-driver-registrar:v1.0.2", remainder)
+}
+
+func TestReplaceImageRegistry(t *testing.T) {
+	log.Debug("Running ReplaceImageRegistry...")
+
+	image := ReplaceImageRegistry("netapp/trident:19.10.0", "")
+	assert.Equal(t, "netapp/trident:19.10.0", image)
+
+	image = ReplaceImageRegistry("netapp/trident:19.10.0", "mydomain:5000")
+	assert.Equal(t, "mydomain:5000/netapp/trident:19.10.0", image)
+
+	image = ReplaceImageRegistry("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2", "mydomain:5000")
+	assert.Equal(t, "mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2", image)
+}
