@@ -1089,7 +1089,7 @@ node {
   }
 
   def slack_result = ''
-  def slack_message = ''
+  def error_message = ''
 
   try {
 
@@ -1130,14 +1130,13 @@ node {
     }
 
     slack_result = 'SUCCESS'
-    slack_message = _create_slack_message(branch)
 
   } catch(Exception e) {
 
     // Fail the run
     slack_result = 'FAILURE'
-    slack_message = _create_slack_message(branch) + e.getMessage()
-    error e.getMessage()
+    error_message = e.getMessage()
+    error error_message
 
   } finally {
 
@@ -1192,21 +1191,39 @@ node {
       }
 
       // Notify Slack we are done
+      def slack_message = _create_slack_message()
+      if (error_message) { slack_message += error_message }
       _notify_slack(slack_result, slack_message)
+
     }
   }
 }
 
-def _create_slack_message(String branch) {
+def _create_slack_message() {
 
-  message = (
-    _decode(env.JOB_NAME) + " #${env.BUILD_NUMBER}:\n" +
-    "${env.BUILD_URL}\n"
-  )
-  if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
+  echo "Creating slack message"
+  def message = ''
+
+  def job_name≡ = ''
+  def jn = _decode(env.JOB_NAME)
+  if (jn.contains('/')) {
+    (job_name) = jn.split('/')
+  }
+
+  def branch_name = branch
+  if (branch.contains('/')) {
+    (branch_name) = branch.split('/')
+  }
+
+  if (env.JOB_NAME.contains(branch)) {
     message = (
-      _decode(env.JOB_NAME) + " $branch #${env.BUILD_NUMBER}:\n" +
+      _decode(env.JOB_NAME) + "#${env.BUILD_NUMBER}:\n" +
       "${env.BUILD_URL}\n"
+    )
+  } else  {
+    message = (
+        _decode(env.JOB_NAME) + "/$branch_name#${env.BUILD_NUMBER}:\n" +
+        "${env.BUILD_URL}\n"
     )
   }
 
@@ -3630,6 +3647,11 @@ def _clone() {
 
   if (env.BLACK_DUCK_SCAN == null && env.DEPLOY_TRIDENT == null) {
 
+    def fallback_branch = "master"
+    if (env.BRANCH_NAME.contains('PR-')) {
+      fallback_branch = env.CHANGE_TARGET
+    }
+
     // Try to checkout the corresponding whelk branch and if that failed fall
     // back to use the master branch
     def whelk_src = 'test'
@@ -4279,30 +4301,66 @@ def _gather_triage_information(Map spec, String ssh_options, String ip_address, 
 
 def _get_branch() {
 
-    // Return the branch name
-    // This can be in one of the following forms
-    // master
-    // stable/v19.10
-    // The */my-branch-name is converted to my-branch-name
+  // Return the branch name
+  // This can be in one of the following forms
+  // master
+  // stable/v19.10
+  // The */my-branch-name is converted to my-branch-name
 
-    // Some pipelines populate BRANCH_TYPE
-    def branch_type = '*'
-    if (env.BRANCH_TYPE) {
-      branch_type = env.BRANCH_TYPE
+  // Some pipelines populate BRANCH_TYPE
+  def branch_type = '*'
+  if (env.BRANCH_TYPE) {
+    branch_type = env.BRANCH_TYPE
+  }
+
+  // All pipelines populate BRANCH_NAME
+  def branch_name = env.BRANCH_NAME
+
+  // Process branch_name accordingly
+  if (env.BRANCH_NAME.contains('/')) {
+    (branch_type, branch_name) = env.BRANCH_NAME.split('/')
+  } else if (env.BRANCH_NAME.contains('PR-')) {
+
+    // Define a var to hold the script fіle name
+    def script = 'get_github_pull_request.sh'
+
+    // Check if the script exists
+    if (fileExists(script) == false) {
+
+      // Create script content to get the PR info
+      def content = (
+        "curl -s -H \"Authorization: token $env.GITHUB_TOKEN\" " +
+        "https://api.github.com/repos/$env.TRIDENT_PRIVATE_GITHUB_ORG/" +
+        "$env.TRIDENT_PRIVATE_GITHUB_REPO/pulls/$env.CHANGE_ID"
+      )
+
+      // Write the script to a file
+      writeFile file: script, text: content
+
+      sh (label: "Sleep", script: "sleep 1")
     }
 
-    // All pipelines populate BRANCH_NAME
-    def branch_name = env.BRANCH_NAME
-    if (env.BRANCH_NAME.contains('/')) {
-      (branch_type, branch_name) = env.BRANCH_NAME.split('/')
+    // Execute the script to get the PR info
+    def response = sh(
+      label: "Query Github for $env.BRANCH_NAME",
+      returnStdout: true,
+      script: "sh $script"
+    ).trim()
+
+    // Read the json response
+    def pr = readJSON text: response
+
+    if (pr.containsKey('head') == false) {
+      error "Failure getting Github PR info for $env.BRANCH_NAME"
     }
 
+    // Set branch from the PR info
+    branch = pr['head']['ref']
+  } else if (branch_type == '*') {
+    branch = branch_name
+  } else {
     branch = "$branch_type/$branch_name"
-    if (branch_type == '*') {
-      branch = branch_name
-    }
-
-    return branch
+  }
 }
 
 def _get_github_branch(String path) {
@@ -5490,6 +5548,8 @@ def _setup() {
 
     _get_branch()
 
+    _notify_slack('PENDING', _create_slack_message())
+
     def fallback_branch = "master"
     if (env.BRANCH_NAME && env.BRANCH_NAME.contains('PR-')) {
       fallback_branch = env.CHANGE_TARGET
@@ -5548,24 +5608,12 @@ def _setup() {
 
     sh (label: "Sleep", script: "sleep 1")
 
-    def branch = env.BRANCH_NAME
     if (env.BRANCH_NAME.contains('PR-')) {
       _get_github_pull_request("$env.WORKSPACE/$name/github_pull_request.json")
 
-      def pr = readJSON file: "$env.WORKSPACE/$name/github_pull_request.json"
-
-      if (pr.containsKey('head') == false) {
-        error "Failure getting PR info from Github for $env.BRANCH_NAME"
-      }
-
-      branch = pr['head']['ref']
     }
 
     _get_github_status_checks(branch, "$env.WORKSPACE/$name/github_status_checks.json")
-
-    slack_message = _create_slack_message(branch)
-
-    _notify_slack('PENDING', slack_message)
 
     _clone()
 
