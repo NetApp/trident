@@ -1144,6 +1144,18 @@ node {
     stage('Cleanup') {
 
       if (fileExists("$env.WORKSPACE/status")) {
+        try{
+          // CI Defense System
+          if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME.startsWith('stable') == true) {
+            sh (label: "Parse failures for defense system", script: "python tools/utils/defense.py --error-message '$error_message'")
+            def defects = readJSON file: "status/defects.json"
+            for (defect in defects) {
+              _create_jira_defect(defect)
+            }
+          }
+        } catch(Exception e) {
+          echo "Failure in CI defense system:" + e.getMessage()
+        }
         sh (
           label: "Create status.tgz",
           script: "tar -cvzf status.tgz status"
@@ -1228,6 +1240,34 @@ def _create_slack_message() {
   }
 
   return message
+}
+
+// Create JIRA defects for failed testcases
+def _create_jira_defect(Map defect){
+  def summary = defect.summary
+  def stage = defect.stage
+  def desc = defect.description
+  def found_time = defect.time
+  def searchResults = jiraJqlSearch jql: "project = 'TRID' AND creator = currentuser() AND summary ~ '\"$summary\"' AND status != Done"
+  def issues = searchResults.data.issues
+  def filename = "${stage}-${found_time}.tgz"
+  sh (label: "Create copy of tgz file", script: "cp ${stage}.tgz $filename")
+  if (issues.size() > 0) {
+    def comment = [ body: "$desc"]
+    for (issue in issues) {
+      jiraAddComment idOrKey: issue.key, input: comment
+      jiraUploadAttachment idOrKey: issue.key, file: filename
+    }
+  } else {
+    def new_issue = [fields: [project: [key: "TRID"],
+                              summary: "$summary",
+                              description: "$desc",
+                              issuetype: [name: "Bug"],
+                              priority: [name: "Highest"]
+                              ]]
+    def response = jiraNewIssue issue: new_issue
+    jiraUploadAttachment idOrKey: response.data.key, file: filename
+  }
 }
 
 // Create List of stages to execute
