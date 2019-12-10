@@ -238,10 +238,14 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
-	assert.Equal(t, 2, len(volTxns))
-	assert.Equal(t, cloneName, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
-	assert.Equal(t, volName02, volTxns[1].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 
+	assert.Equal(t, 2, len(volTxns))
+	for _, v := range volTxns {
+		volTxnName := v.VolumeCreatingConfig.InternalName
+		if (cloneName != volTxnName) && (volName02 != volTxnName) {
+			t.Errorf("did not find expected transaction name %s", volTxnName)
+		}
+	}
 	_, err = o.CloneVolume(cloneVolumeConfig)
 	if err != nil {
 		t.Errorf("failed to clone volume: %v", err)
