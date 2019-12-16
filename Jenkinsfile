@@ -2326,6 +2326,13 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "curl $url --output synopsys-detect-${env.BLACK_DUCK_SYNOPSIS_VERSION}.jar'"
             )
 
+            sh (
+              label: "Create vendor directory for black duck to scan",
+              script: "ssh $ssh_options root@$ip_address " +
+                "'cd $vm_path/go/src/github.com/netapp/trident;" +
+                "go mod vendor'"
+            )
+
             sh (label: "Sleep", script: "sleep 1")
 
             sh (
