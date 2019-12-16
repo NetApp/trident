@@ -34,6 +34,10 @@ var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
 var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
 
+func IPv6Check(ip string) bool {
+	return strings.Count(ip, ":") >= 2
+}
+
 func init() {
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -77,7 +81,13 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	var bkportal []string
 	var portalIps []string
 	bkportal = append(bkportal, publishInfo.IscsiTargetPortal)
-	portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, ":")[0])
+
+	if IPv6Check(publishInfo.IscsiTargetPortal) {
+		// this is an IPv6 address
+		portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, "]")[0])
+	} else {
+		portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, ":")[0])
+	}
 	for _, p := range publishInfo.IscsiPortals {
 		bkportal = append(bkportal, p)
 		portalIps = append(portalIps, strings.Split(p, ":")[0])
@@ -904,6 +914,12 @@ func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 
 	   a[0]==10.63.152.249:3260,1
 	   a[1]==iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
+
+	   For IPv6
+	   [fd20:8b1e:b258:2000:f816:3eff:feec:2]:3260,1038 iqn.1992-08.com.netapp:sn.7894d7af053711ea88b100a0b886136a
+
+	   a[0]==[fd20:8b1e:b258:2000:f816:3eff:feec:2]:3260,1038
+	   a[1]==iqn.1992-08.com.netapp:sn.7894d7af053711ea88b100a0b886136a
 	*/
 
 	var discoveryInfo []ISCSIDiscoveryInfo
@@ -913,7 +929,14 @@ func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 		a := strings.Fields(l)
 		if len(a) >= 2 {
 
-			portalIP := strings.Split(a[0], ":")[0]
+			portalIP := ""
+			if  IPv6Check(a[0]) {
+				// This is an IPv6 address
+				portalIP = strings.Split(a[0], "]")[0]
+				portalIP += "]"
+			} else {
+				portalIP = strings.Split(a[0], ":")[0]
+			}
 
 			discoveryInfo = append(discoveryInfo, ISCSIDiscoveryInfo{
 				Portal:     a[0],
@@ -980,7 +1003,15 @@ func getISCSISessionInfo() ([]ISCSISessionInfo, error) {
 			sid := a[1]
 			sid = sid[1 : len(sid)-1]
 
-			portalIP := strings.Split(a[2], ":")[0]
+			portalIP := ""
+			if IPv6Check(a[2]) {
+				// This is an IPv6 address
+				portalIP = strings.Split(a[2], "]")[0]
+				portalIP += "]"
+			} else {
+				portalIP = strings.Split(a[2], ":")[0]
+			}
+
 			sessionInfo = append(sessionInfo, ISCSISessionInfo{
 				SID:        sid,
 				Portal:     a[2],
@@ -1159,7 +1190,7 @@ func iSCSISessionExists(portal string) (bool, error) {
 	}
 
 	for _, e := range sessionInfo {
-		if e.PortalIP == portal {
+		if strings.Contains(e.PortalIP, portal) {
 			return true, nil
 		}
 	}
@@ -2151,7 +2182,7 @@ func EnsureISCSISession(hostDataIP string) error {
 		// Determine which target matches the portal we requested
 		targetIndex := -1
 		for i, target := range targets {
-			if target.PortalIP == hostDataIP {
+			if strings.Contains(target.PortalIP, hostDataIP) {
 				targetIndex = i
 				break
 			}

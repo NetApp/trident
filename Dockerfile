@@ -32,6 +32,7 @@ ENV ETCDV3 $ETCDV3
 ARG K8S=""
 ENV K8S $K8S
 ENV TRIDENT_IP localhost
+ENV TRIDENT_SERVER 127.0.0.1:$PORT
 
 COPY ./scripts/* $BIN $CLI_BIN /usr/local/bin/
 

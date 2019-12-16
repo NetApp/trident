@@ -362,7 +362,15 @@ func InitializeOntapDriver(config *drivers.OntapStorageDriverConfig) (*api.Clien
 	}
 
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
-	mgmtLIF := strings.Split(config.ManagementLIF, ":")[0]
+	mgmtLIF := ""
+	if utils.IPv6Check(config.ManagementLIF) {
+		// This is an IPv6 address
+
+		mgmtLIF = strings.Split(config.ManagementLIF, "[")[1]
+		mgmtLIF = strings.Split(mgmtLIF, "]")[0]
+	} else {
+		mgmtLIF = strings.Split(config.ManagementLIF, ":")[0]
+	}
 
 	addressesFromHostname, err := net.LookupHost(mgmtLIF)
 	if err != nil {
@@ -536,7 +544,11 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 
 	// If they didn't set a LIF to use in the config, we'll set it to the first nfs LIF we happen to find
 	if config.DataLIF == "" {
-		config.DataLIF = dataLIFs[0]
+		if utils.IPv6Check(dataLIFs[0]) {
+			config.DataLIF = "[" + dataLIFs[0] + "]"
+		} else {
+			config.DataLIF = dataLIFs[0]
+		}
 	} else {
 		_, err := ValidateDataLIF(config.DataLIF, dataLIFs)
 		if err != nil {

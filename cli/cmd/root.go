@@ -369,7 +369,7 @@ func TunnelCommand(commandArgs []string) {
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
-	cliCommand := []string{"tridentctl", "-s", Server}
+	cliCommand := []string{"tridentctl"}
 	if Debug {
 		cliCommand = append(cliCommand, "--debug")
 	}
@@ -402,7 +402,7 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
 	// Build CLI command
-	cliCommand := []string{"tridentctl", "-s", Server}
+	cliCommand := []string{"tridentctl"}
 	cliCommand = append(cliCommand, commandArgs...)
 
 	// Combine tunnel and CLI commands

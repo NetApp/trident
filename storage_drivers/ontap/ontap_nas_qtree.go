@@ -1116,12 +1116,15 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 
 	if ruleListResponse.Result.NumRecords() == 0 {
 
-		// No rules, so create one
-		ruleResponse, err := d.API.ExportRuleCreate(
-			d.flexvolExportPolicy, "0.0.0.0/0",
-			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
-		if err = api.GetError(ruleResponse, err); err != nil {
-			return fmt.Errorf("error creating export rule: %v", err)
+		// No rules, so create one for IPv4 and IPv6
+		rules := []string {"0.0.0.0/0", "::/0"}
+		for _, rule := range rules {
+			ruleResponse, err := d.API.ExportRuleCreate(
+				d.flexvolExportPolicy, rule,
+				[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+			if err = api.GetError(ruleResponse, err); err != nil {
+				return fmt.Errorf("error creating export rule: %v", err)
+			}
 		}
 	} else {
 		log.WithField("exportPolicy", d.flexvolExportPolicy).Debug("Export policy has at least one rule.")

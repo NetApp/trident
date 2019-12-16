@@ -282,10 +282,11 @@ spec:
       targetPort: 8443
 `
 
-func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug bool, version *utils.Version) string {
+func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug, useIPv6 bool, version *utils.Version) string {
 
 	var debugLine string
 	var logLevel string
+	var ipLocalhost string
 
 	if debug {
 		debugLine = "- -debug"
@@ -293,6 +294,11 @@ func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug bool, ver
 	} else {
 		debugLine = "#- -debug"
 		logLevel = "2"
+	}
+	if useIPv6 {
+		ipLocalhost = "[::1]"
+	} else {
+		ipLocalhost = "127.0.0.1"
 	}
 
 	var deploymentYAML string
@@ -314,6 +320,7 @@ func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug bool, ver
 	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_LEVEL}", logLevel, -1)
 	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_FORMAT}", logFormat, -1)
+	deploymentYAML = strings.Replace(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost, -1)
 	return deploymentYAML
 }
 
@@ -337,6 +344,7 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
+      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -353,13 +361,14 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
+        - "--address={IP_LOCALHOST}"
         {DEBUG}
         livenessProbe:
           exec:
             command:
             - tridentctl
             - -s
-            - 127.0.0.1:8000
+            - "{IP_LOCALHOST}:8000"
             - version
           failureThreshold: 2
           initialDelaySeconds: 120
@@ -373,6 +382,8 @@ spec:
               fieldPath: spec.nodeName
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "{IP_LOCALHOST}:8000"
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
@@ -459,6 +470,7 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
+      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -475,13 +487,14 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
+        - "--address={IP_LOCALHOST}"
         {DEBUG}
         livenessProbe:
           exec:
             command:
             - tridentctl
             - -s
-            - 127.0.0.1:8000
+            - "{IP_LOCALHOST}:8000"
             - version
           failureThreshold: 2
           initialDelaySeconds: 120
@@ -495,6 +508,8 @@ spec:
               fieldPath: spec.nodeName
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "{IP_LOCALHOST}:8000"
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
@@ -569,6 +584,7 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
+      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -585,13 +601,14 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
+        - "--address={IP_LOCALHOST}"
         {DEBUG}
         livenessProbe:
           exec:
             command:
             - tridentctl
             - -s
-            - 127.0.0.1:8000
+            - "{IP_LOCALHOST}:8000"
             - version
           failureThreshold: 2
           initialDelaySeconds: 120
@@ -605,6 +622,8 @@ spec:
               fieldPath: spec.nodeName
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "{IP_LOCALHOST}:8000"
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin

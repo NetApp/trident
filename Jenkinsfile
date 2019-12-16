@@ -103,7 +103,7 @@ node {
         ],
         'backend': 'aws-cvs,aws-cvs-virtual-pools',
         'context': 'cloud',
-        'coverage': 'cvs,kubeadm,pre-merge',
+        'coverage': 'cvs,kubeadm',
         'docker_ce_version': env.DOCKER_CE_VERSION,
         'enabled': true,
         'go_download_url': env.GO_DOWNLOAD_URL,

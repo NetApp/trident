@@ -61,6 +61,7 @@ var (
 	silent          bool
 	csi             bool
 	inCluster       bool
+	useIPv6         bool
 	pvName          string
 	pvcName         string
 	tridentImage    string
@@ -111,6 +112,7 @@ func init() {
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).")
 	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
+	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
@@ -454,7 +456,7 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(
-		tridentImage, appLabelValue, logFormat, Debug, client.ServerVersion())
+		tridentImage, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -739,7 +741,7 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug, client.ServerVersion()))
+				k8sclient.GetCSIDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -1365,7 +1367,7 @@ func waitForRESTInterface() error {
 
 	checkRESTInterface := func() error {
 
-		cliCommand := []string{"tridentctl", "-s", PodServer, "version", "-o", "json"}
+		cliCommand := []string{"tridentctl", "version", "-o", "json"}
 		versionJSON, err := client.Exec(TridentPodName, tridentconfig.ContainerTrident, cliCommand)
 		if err != nil {
 			if versionJSON != nil && len(versionJSON) > 0 {
@@ -1590,6 +1592,9 @@ func installTridentInCluster() (returnError error) {
 	}
 	if csi {
 		commandArgs = append(commandArgs, "--csi")
+	}
+	if useIPv6 {
+		commandArgs = append(commandArgs, "--use-ipv6")
 	}
 	if pvcName != "" {
 		commandArgs = append(commandArgs, "--pvc")

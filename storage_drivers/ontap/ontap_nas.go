@@ -405,6 +405,7 @@ func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Publish",
+			"DataLIF": d.Config.DataLIF,
 			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
