@@ -1746,6 +1746,54 @@ func (d Client) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIter
 	return response, err
 }
 
+// ExportRuleModify modifies a rule in an export policy
+// equivalent to filer::> vserver export-policy rule modify
+func (d Client) ExportRuleModify(
+	policy, clientMatch string,
+	ruleIndex int,
+	protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
+) (*azgo.ExportRuleModifyResponse, error) {
+
+	protocolTypes := &azgo.ExportRuleModifyRequestProtocol{}
+	var protocolTypesToUse []azgo.AccessProtocolType
+	for _, p := range protocols {
+		protocolTypesToUse = append(protocolTypesToUse, azgo.AccessProtocolType(p))
+	}
+	protocolTypes.AccessProtocolPtr = protocolTypesToUse
+
+	roSecFlavorTypes := &azgo.ExportRuleModifyRequestRoRule{}
+	var roSecFlavorTypesToUse []azgo.SecurityFlavorType
+	for _, f := range roSecFlavors {
+		roSecFlavorTypesToUse = append(roSecFlavorTypesToUse, azgo.SecurityFlavorType(f))
+	}
+	roSecFlavorTypes.SecurityFlavorPtr = roSecFlavorTypesToUse
+
+	rwSecFlavorTypes := &azgo.ExportRuleModifyRequestRwRule{}
+	var rwSecFlavorTypesToUse []azgo.SecurityFlavorType
+	for _, f := range rwSecFlavors {
+		rwSecFlavorTypesToUse = append(rwSecFlavorTypesToUse, azgo.SecurityFlavorType(f))
+	}
+	rwSecFlavorTypes.SecurityFlavorPtr = rwSecFlavorTypesToUse
+
+	suSecFlavorTypes := &azgo.ExportRuleModifyRequestSuperUserSecurity{}
+	var suSecFlavorTypesToUse []azgo.SecurityFlavorType
+	for _, f := range suSecFlavors {
+		suSecFlavorTypesToUse = append(suSecFlavorTypesToUse, azgo.SecurityFlavorType(f))
+	}
+	suSecFlavorTypes.SecurityFlavorPtr = suSecFlavorTypesToUse
+
+	response, err := azgo.NewExportRuleModifyRequest().
+		SetPolicyName(azgo.ExportPolicyNameType(policy)).
+		SetClientMatch(clientMatch).
+		SetRuleIndex(ruleIndex).
+		SetProtocol(*protocolTypes).
+		SetRoRule(*roSecFlavorTypes).
+		SetRwRule(*rwSecFlavorTypes).
+		SetSuperUserSecurity(*suSecFlavorTypes).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
 // EXPORT POLICY operations END
 /////////////////////////////////////////////////////////////////////////////
 
