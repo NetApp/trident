@@ -277,9 +277,14 @@ spec:
   selector:
     app: {LABEL}
   ports:
-    - protocol: TCP
-      port: 34571
-      targetPort: 8443
+  - name: https
+    protocol: TCP
+    port: 34571
+    targetPort: 8443
+  - name: metrics
+    protocol: TCP
+    port: 9220
+    targetPort: 8001
 `
 
 func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug, useIPv6 bool, version *utils.Version) string {
@@ -362,6 +367,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
         - "--address={IP_LOCALHOST}"
+        - "--metrics"
         {DEBUG}
         livenessProbe:
           exec:
@@ -488,6 +494,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
         - "--address={IP_LOCALHOST}"
+        - "--metrics"
         {DEBUG}
         livenessProbe:
           exec:
@@ -602,6 +609,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
         - "--address={IP_LOCALHOST}"
+        - "--metrics"
         {DEBUG}
         livenessProbe:
           exec:

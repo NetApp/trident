@@ -25,6 +25,7 @@ import (
 	plainhelper "github.com/netapp/trident/frontend/csi/helpers/plain"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/kubernetes"
+	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
@@ -87,6 +88,11 @@ var (
 	httpsServerCert = flag.String("https_server_cert", config.ServerCertPath, "HTTPS server certificate")
 	httpsClientKey  = flag.String("https_client_key", config.ClientKeyPath, "HTTPS client private key")
 	httpsClientCert = flag.String("https_client_cert", config.ClientCertPath, "HTTPS client certificate")
+
+	// HTTP metrics interface
+	metricsAddress = flag.String("metrics_address", "127.0.0.1", "Storage orchestrator metrics address")
+	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
+	enableMetrics  = flag.Bool("metrics", false, "Enable metrics interface")
 
 	storeClient      persistentstore.Client
 	enableKubernetes bool
@@ -258,6 +264,17 @@ func main() {
 	processCmdLineArgs()
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
+
+	// Create HTTP metrics frontend
+	if *enableMetrics {
+		if *metricsPort == "" {
+			log.Warning("HTTP metrics interface will not be available (port not specified).")
+		} else {
+			metricsServer := metrics.NewMetricsServer(*metricsAddress, *metricsPort)
+			preBootstrapFrontends = append(preBootstrapFrontends, metricsServer)
+			log.WithFields(log.Fields{"name": metricsServer.GetName()}).Info("Added frontend.")
+		}
+	}
 
 	// Create HTTP REST frontend
 	if *enableREST {

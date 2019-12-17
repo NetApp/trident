@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -35,8 +36,32 @@ type ZapiRunner struct {
 	DebugTraceFlags map[string]bool // Example: {"api":false, "method":true}
 }
 
+// GetZAPIName returns the name of the ZAPI request; it must parse the XML because ZAPIRequest is an interface
+//   See also: https://play.golang.org/p/IqHhgVB3Q7x
+func GetZAPIName(zr ZAPIRequest) (string, error) {
+	zapiXML, err := zr.ToXML()
+	if err != nil {
+		return "", err
+	}
+
+	decoder := xml.NewDecoder(strings.NewReader(zapiXML))
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
+		}
+		switch startElement := token.(type) {
+		case xml.StartElement:
+			return startElement.Name.Local, nil
+		}
+	}
+	return "", fmt.Errorf("could not find start tag for ZAPI: %v", zapiXML)
+}
+
 // SendZapi sends the provided ZAPIRequest to the Ontap system
 func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
+
+	startTime := time.Now()
 
 	if o.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "SendZapi", "Type": "ZapiRunner"}
@@ -47,6 +72,15 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	zapiCommand, err := r.ToXML()
 	if err != nil {
 		return nil, err
+	}
+
+	zapiName, zapiNameErr := GetZAPIName(r)
+	if zapiNameErr == nil {
+		zapiOpsTotal.WithLabelValues(o.SVM, zapiName).Inc()
+		defer func() {
+			endTime := float64(time.Since(startTime).Milliseconds())
+			zapiOpsDurationInMsBySVMSummary.WithLabelValues(o.SVM, zapiName).Observe(endTime)
+		}()
 	}
 
 	var s = ""

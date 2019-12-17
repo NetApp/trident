@@ -8,6 +8,8 @@
 - **Kubernetes:** Updated CSI sidecars to address CVE-2019-11255.
 
 **Enhancements**
+- **Kubernetes:** Added support for IPv6. (Issue [#122](https://github.com/NetApp/trident/issues/122))
+- **Kubernetes:** Added support for Prometheus metrics.
 - Switched from glide to go modules for dependency management.
 
 ## v19.10.0

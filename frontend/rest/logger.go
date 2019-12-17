@@ -10,13 +10,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Logger(inner http.Handler, name string) http.Handler {
+func Logger(inner http.Handler, routeName string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		requestId := xid.New()
-		logRestCallInfo("REST API call received.", r, start, requestId, name)
+		logRestCallInfo("REST API call received.", r, start, requestId, routeName)
+
 		inner.ServeHTTP(w, r)
-		logRestCallInfo("REST API call complete.", r, start, requestId, name)
+
+		restOpsTotal.WithLabelValues(r.Method, routeName).Inc()
+		endTime := float64(time.Since(start).Milliseconds())
+		restOpsSecondsTotal.WithLabelValues(r.Method, routeName).Observe(endTime)
+
+		logRestCallInfo("REST API call complete.", r, start, requestId, routeName)
 	})
 }
 
