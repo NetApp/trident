@@ -2401,7 +2401,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
           )
 
           // Tag the release
-          def release_name = 'v' + env.TRIDENT_VERSION
+          def release_name = 'v' + tag
           try {
             echo "Creating script to tag the release"
 
@@ -2462,6 +2462,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           sh (label: "Sleep", script: "sleep 1")
 
+          // Upload tools repo
           _scp(
             ssh_options,
             'root',
@@ -2472,6 +2473,18 @@ def _build_trident(String name, String ssh_options, Map spec) {
             true,
             true
           )
+
+           // Upload github token
+           _scp(
+             ssh_options,
+             'root',
+             ip_address,
+             "${env.HOME}/.github.py",
+             ".",
+             true,
+             true,
+             true
+           )
 
           if (env.BUILD_TYPE == 'stable') {
 
@@ -2524,7 +2537,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--repository $env.TRIDENT_PUBLIC_GITHUB_REPO " +
                 "--user $env.GITHUB_USERNAME " +
                 "--prerelease " +
-                "--release-name ${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION} " +
+                "--release-name $release_name " +
                 "--release-hash $commit " +
                 "--release-tarball $tarball'"
             )
