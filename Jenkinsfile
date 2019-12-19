@@ -2263,6 +2263,9 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           // Tag the release
           def release_name = 'v' + env.TRIDENT_VERSION
+          if (env.BUILD_TYPE != 'stable') {
+            release_name = "${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION}"
+          }
           try {
             echo "Creating script to tag the release"
 
@@ -2323,12 +2326,25 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           sh (label: "Sleep", script: "sleep 1")
 
+          // Upload tools repo
           _scp(
             ssh_options,
             'root',
             ip_address,
             "tools",
             vm_path,
+            true,
+            true,
+            true
+          )
+
+          // Upload github token
+          _scp(
+            ssh_options,
+            'root',
+            ip_address,
+            "${env.HOME}/.github.py",
+            ".",
             true,
             true,
             true
@@ -2385,7 +2401,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
                 "--repository $env.TRIDENT_PUBLIC_GITHUB_REPO " +
                 "--user $env.GITHUB_USERNAME " +
                 "--prerelease " +
-                "--release-name ${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION} " +
+                "--release-name $release_name " +
                 "--release-hash $commit " +
                 "--release-tarball $tarball'"
             )
@@ -4139,9 +4155,7 @@ def _get_branch() {
   def branch_name = env.BRANCH_NAME
 
   // Process branch_name accordingly
-  if (env.BRANCH_NAME.contains('/')) {
-    (branch_type, branch_name) = env.BRANCH_NAME.split('/')
-  } else if (env.BRANCH_NAME.contains('PR-')) {
+  if (env.BRANCH_NAME.contains('PR-')) {
 
     // Define a var to hold the script fіle name
     def script = 'get_github_pull_request.sh'
