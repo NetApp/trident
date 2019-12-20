@@ -676,7 +676,7 @@ func (d *NFSStorageDriver) Create(
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
-func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal

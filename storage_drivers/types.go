@@ -87,6 +87,14 @@ type OntapStorageDriverConfig struct {
 	EmptyFlexvolDeferredDeletePeriod string `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
 	NfsMountOptions                  string `json:"nfsMountOptions"`
 	LimitAggregateUsage              string `json:"limitAggregateUsage"`
+	OntapStorageDriverPool
+	Storage []OntapStorageDriverPool `json:"storage"`
+}
+
+type OntapStorageDriverPool struct {
+	Labels                           map[string]string `json:"labels"`
+	Region                           string            `json:"region"`
+	Zone                             string            `json:"zone"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }
 

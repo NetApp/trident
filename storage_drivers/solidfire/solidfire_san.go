@@ -846,7 +846,7 @@ func (d *SANStorageDriver) Create(
 }
 
 // Create a volume clone
-func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
 
 	name := volConfig.InternalName
 	sourceName := volConfig.CloneSourceVolumeInternal
@@ -859,6 +859,7 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 			"name":     name,
 			"source":   sourceName,
 			"snapshot": snapshotName,
+			"storagePool": storagePool,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
 		defer log.WithFields(fields).Debug("<<<< CreateClone")

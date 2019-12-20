@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"runtime/debug"
@@ -20,6 +21,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
+	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -29,6 +31,27 @@ import (
 const (
 	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
 	HousekeepingStartupDelaySecs = 10
+
+	// Constants for internal pool attributes
+	Size             = "size"
+	Region           = "region"
+	Zone             = "zone"
+	Media            = "media"
+	SpaceAllocation  = "spaceAllocation"
+	SnapshotDir      = "snapshotDir"
+	SpaceReserve	 = "spaceReserve"
+	SnapshotPolicy	 = "snapshotPolicy"
+	SnapshotReserve  = "snapshotReserve"
+	UnixPermissions	 = "unixPermissions"
+	ExportPolicy	 = "exportPolicy"
+	SecurityStyle	 = "securityStyle"
+	BackendType      = "backendType"
+	Snapshots        = "snapshots"
+	Clones           = "clones"
+	Encryption       = "encryption"
+	FileSystemType   = "fileSystemType"
+	ProvisioningType = "provisioningType"
+	SplitOnClone     = "splitOnClone"
 )
 
 //For legacy reasons, these strings mustn't change
@@ -850,10 +873,10 @@ func checkAggregateLimits(
 	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
 }
 
-func GetVolumeSize(sizeBytes uint64, config drivers.OntapStorageDriverConfig) (uint64, error) {
+func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error) {
 
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(config.Size)
+		defaultSize, _ := utils.ConvertSizeToBytes(poolDefaultSizeBytes)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
@@ -1353,15 +1376,13 @@ var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
 	ontapSSD:    {sa.Media: sa.NewStringOffer(sa.SSD)},
 }
 
-// getStorageBackendSpecsCommon discovers the aggregates assigned to the configured SVM, and it updates the specified Backend
-// object with StoragePools and their associated attributes.
-func getStorageBackendSpecsCommon(
-	d StorageDriver, backend *storage.Backend, poolAttributes map[string]sa.Offer,
-) (err error) {
+// discoverBackendAggrNamesCommon discovers names of the aggregates assigned to the configured SVM
+func discoverBackendAggrNamesCommon(d StorageDriver) ([]string, error) {
 
 	client := d.GetAPI()
 	config := d.GetConfig()
 	driverName := d.Name()
+	var err error
 
 	// Handle panics from the API layer
 	defer func() {
@@ -1373,11 +1394,11 @@ func getStorageBackendSpecsCommon(
 	// Get the aggregates assigned to the SVM.  There must be at least one!
 	vserverAggrs, err := client.VserverGetAggregateNames()
 	if err != nil {
-		return
+		return nil, err
 	}
 	if len(vserverAggrs) == 0 {
 		err = fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
-		return
+		return nil, err
 	}
 
 	log.WithFields(log.Fields{
@@ -1385,67 +1406,52 @@ func getStorageBackendSpecsCommon(
 		"pools": vserverAggrs,
 	}).Debug("Read storage pools assigned to SVM.")
 
-	// Define a storage pool for each of the SVM's aggregates
-	storagePools := make(map[string]*storage.Pool)
+	var aggrNames []string
 	for _, aggrName := range vserverAggrs {
-		storagePools[aggrName] = storage.NewStoragePool(backend, aggrName)
-	}
+		if config.Aggregate != "" {
+			if aggrName != config.Aggregate {
+				continue
+			}
 
-	// Use all assigned aggregates unless 'aggregate' is set in the config
-	if config.Aggregate != "" {
-
-		// Make sure the configured aggregate is available to the SVM
-		if _, ok := storagePools[config.Aggregate]; !ok {
-			err = fmt.Errorf("the assigned aggregates for SVM %s do not include the configured aggregate %s",
-				config.SVM, config.Aggregate)
-			return
+			log.WithFields(log.Fields{
+				"driverName": driverName,
+				"aggregate":  config.Aggregate,
+			}).Debug("Provisioning will be restricted to the aggregate set in the backend config.")
 		}
 
-		log.WithFields(log.Fields{
-			"driverName": driverName,
-			"aggregate":  config.Aggregate,
-		}).Debug("Provisioning will be restricted to the aggregate set in the backend config.")
-
-		storagePools = make(map[string]*storage.Pool)
-		storagePools[config.Aggregate] = storage.NewStoragePool(backend, config.Aggregate)
+		aggrNames = append(aggrNames, aggrName)
 	}
 
-	// Update pools with aggregate info (i.e. MediaType)
-	aggrErr := getVserverAggregateAttributes(d, &storagePools)
-
-	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
-		log.WithFields(log.Fields{
-			"username": config.Username,
-		}).Warn("User has insufficient privileges to obtain aggregate info. " +
-			"Storage classes with physical attributes such as 'media' will not match pools on this backend.")
-	} else if aggrErr != nil {
-		log.Errorf("Could not obtain aggregate info; storage classes with physical attributes such as 'media' will"+
-			" not match pools on this backend: %v.", aggrErr)
+	// Make sure the configured aggregate is available to the SVM
+	if config.Aggregate != "" && (len(aggrNames) == 0) {
+		err = fmt.Errorf("the assigned aggregates for SVM %s do not include the configured aggregate %s",
+			config.SVM, config.Aggregate)
+		return nil, err
 	}
 
-	// Add attributes common to each pool and register pools with backend
-	for _, pool := range storagePools {
-
-		for attrName, offer := range poolAttributes {
-			pool.Attributes[attrName] = offer
-		}
-
-		backend.AddStoragePool(pool)
-	}
-
-	return
+	return aggrNames, nil
 }
 
-// getVserverAggregateAttributes gets pool attributes using vserver-show-aggr-get-iter, which will only succeed on Data ONTAP 9 and later.
+// getVserverAggrAttributes gets pool attributes using vserver-show-aggr-get-iter,
+// which will only succeed on Data ONTAP 9 and later.
 // If the aggregate attributes are read successfully, the pools passed to this function are updated accordingly.
-func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*storage.Pool) error {
+func getVserverAggrAttributes(d StorageDriver, poolsAttributeMap *map[string]map[string]sa.Offer) (err error) {
+
+	// Handle panics from the API layer
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("unable to inspect ONTAP backend: %v\nStack trace:\n%s", r, debug.Stack())
+		}
+	}()
 
 	result, err := d.GetAPI().VserverShowAggrGetIterRequest()
 	if err != nil {
-		return err
+		return
 	}
+
 	if zerr := api.NewZapiError(result.Result); !zerr.IsPassed() {
-		return zerr
+		err = zerr
+		return
 	}
 
 	if result.Result.AttributesListPtr != nil {
@@ -1454,7 +1460,7 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 			aggrType := aggr.AggregateType()
 
 			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
-			pool, ok := (*storagePools)[aggrName]
+			_, ok := (*poolsAttributeMap)[aggrName]
 			if !ok {
 				continue
 			}
@@ -1477,8 +1483,387 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 
 			// Update the pool with the aggregate storage attributes
 			for attrName, attr := range storageAttrs {
-				pool.Attributes[attrName] = attr
+				(*poolsAttributeMap)[aggrName][attrName] = attr
 			}
+		}
+	}
+
+	return
+}
+
+// poolName constructs the name of the pool reported by this driver instance
+func poolName(name, backendName string) string {
+
+	return fmt.Sprintf("%s_%s",
+		backendName,
+		strings.Replace(name, "-", "", -1))
+}
+
+func InitializeStoragePoolsCommon(d StorageDriver, poolAttributes map[string]sa.Offer,
+	backendName string) (map[string]*storage.Pool, map[string]*storage.Pool, error) {
+
+	config := d.GetConfig()
+	physicalPools := make(map[string]*storage.Pool)
+	virtualPools := make(map[string]*storage.Pool)
+
+	// To identify list of media types supported by physcial pools
+	mediaOffers := make([]sa.Offer, 0)
+
+	// Get name of the physical storage pools which in case of ONTAP is list of aggregates
+	physicalStoragePoolNames, err := discoverBackendAggrNamesCommon(d)
+	if err != nil || len(physicalStoragePoolNames) == 0 {
+		return physicalPools, virtualPools, fmt.Errorf("could not get storage pools from array: %v", err)
+	}
+
+	// Create a map of Physical storage pool name to their attributes map
+	physicalStoragePoolAttributes := make(map[string]map[string]sa.Offer)
+	for _, physicalStoragePoolName := range physicalStoragePoolNames {
+		physicalStoragePoolAttributes[physicalStoragePoolName] = make(map[string]sa.Offer)
+	}
+
+	// Update physical pool attributes map with aggregate info (i.e. MediaType)
+	aggrErr := getVserverAggrAttributes(d, &physicalStoragePoolAttributes)
+
+	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
+		log.WithFields(log.Fields{
+			"username": config.Username,
+		}).Warn("User has insufficient privileges to obtain aggregate info. " +
+			"Storage classes with physical attributes such as 'media' will not match pools on this backend.")
+	} else if aggrErr != nil {
+		log.Errorf("Could not obtain aggregate info; storage classes with physical attributes such as 'media' will"+
+			" not match pools on this backend: %v.", aggrErr)
+	}
+
+	// Define physical pools
+	for _, physicalStoragePoolName := range physicalStoragePoolNames {
+
+		pool := storage.NewStoragePool(nil, physicalStoragePoolName)
+
+		// Update pool with attributes set by default for this backend
+		// We do not set internal attributes with these values as this
+		// merely means that pools supports these capabilities like
+		// encryption, cloning, thick/thin provisioning
+		for attrName, offer := range poolAttributes {
+			pool.Attributes[attrName] = offer
+		}
+
+		attrMap := physicalStoragePoolAttributes[physicalStoragePoolName]
+
+		// Update pool with attributes based on aggregate attributes discovered on the backend
+		for attrName, attrValue := range attrMap {
+			pool.Attributes[attrName] = attrValue
+			pool.InternalAttributes[attrName] = attrValue.ToString()
+
+			if attrName == sa.Media {
+				mediaOffers = append(mediaOffers, attrValue)
+			}
+		}
+
+		if config.Region != "" {
+			pool.Attributes[sa.Region] = sa.NewStringOffer(config.Region)
+		}
+		if config.Zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(config.Zone)
+		}
+
+		pool.InternalAttributes[Size] = config.Size
+		pool.InternalAttributes[Region] = config.Region
+		pool.InternalAttributes[Zone] = config.Zone
+		pool.InternalAttributes[SpaceReserve] = config.SpaceReserve
+		pool.InternalAttributes[SnapshotPolicy] = config.SnapshotPolicy
+		pool.InternalAttributes[SnapshotReserve] = config.SnapshotReserve
+		pool.InternalAttributes[SplitOnClone] = config.SplitOnClone
+		pool.InternalAttributes[Encryption] = config.Encryption
+		pool.InternalAttributes[UnixPermissions] = config.UnixPermissions
+		pool.InternalAttributes[SnapshotDir] = config.SnapshotDir
+		pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
+		pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
+
+		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
+			pool.InternalAttributes[SpaceAllocation] = config.SpaceAllocation
+			pool.InternalAttributes[FileSystemType] = config.FileSystemType
+		}
+
+		physicalPools[pool.Name] = pool
+	}
+
+	// Define virtual pools
+	for index, vpool := range config.Storage {
+
+		region := config.Region
+		if vpool.Region != "" {
+			region = vpool.Region
+		}
+
+		zone := config.Zone
+		if vpool.Zone != "" {
+			zone = vpool.Zone
+		}
+
+		size := config.Size
+		if vpool.Size != "" {
+			size = vpool.Size
+		}
+
+		spaceAllocation := config.SpaceAllocation
+		if vpool.SpaceAllocation != "" {
+			spaceAllocation = vpool.SpaceAllocation
+		}
+
+		spaceReserve := config.SpaceReserve
+		if vpool.SpaceReserve != "" {
+			spaceReserve = vpool.SpaceReserve
+		}
+
+		snapshotPolicy := config.SnapshotPolicy
+		if vpool.SnapshotPolicy != "" {
+			snapshotPolicy = vpool.SnapshotPolicy
+		}
+
+		snapshotReserve := config.SnapshotReserve
+		if vpool.SnapshotReserve != "" {
+			snapshotReserve = vpool.SnapshotReserve
+		}
+
+		splitOnClone := config.SplitOnClone
+		if vpool.SplitOnClone != "" {
+			splitOnClone = vpool.SplitOnClone
+		}
+
+		unixPermissions := config.UnixPermissions
+		if vpool.UnixPermissions != "" {
+			unixPermissions = vpool.UnixPermissions
+		}
+
+		snapshotDir := config.SnapshotDir
+		if vpool.SnapshotDir != "" {
+			snapshotDir = vpool.SnapshotDir
+		}
+
+		exportPolicy := config.ExportPolicy
+		if vpool.ExportPolicy != "" {
+			exportPolicy = vpool.ExportPolicy
+		}
+
+		securityStyle := config.SecurityStyle
+		if vpool.SecurityStyle != "" {
+			securityStyle = vpool.SecurityStyle
+		}
+
+		fileSystemType := config.FileSystemType
+		if vpool.FileSystemType != "" {
+			fileSystemType = vpool.FileSystemType
+		}
+
+		encryption := config.Encryption
+		if vpool.Encryption != "" {
+			encryption = vpool.Encryption
+		}
+
+		pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), backendName))
+
+		// Update pool with attributes set by default for this backend
+		// We do not set internal attributes with these values as this
+		// merely means that pools supports these capabilities like
+		// encryption, cloning, thick/thin provisioning
+		for attrName, offer := range poolAttributes {
+			pool.Attributes[attrName] = offer
+		}
+
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+
+		if region != "" {
+			pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+		}
+		if zone != "" {
+			pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+		}
+		if len(mediaOffers) > 0 {
+			pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+			pool.InternalAttributes[Media] = pool.Attributes[sa.Media].ToString()
+		}
+		if encryption != "" {
+			enableEncryption, err := strconv.ParseBool(encryption)
+			if err != nil {
+				return nil, nil, fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err,
+					pool.Name)
+			}
+			pool.Attributes[sa.Encryption] = sa.NewBoolOffer(enableEncryption)
+			pool.InternalAttributes[Encryption] = encryption
+		}
+
+		pool.InternalAttributes[Size] = size
+		pool.InternalAttributes[Region] = region
+		pool.InternalAttributes[Zone] = zone
+		pool.InternalAttributes[SpaceReserve] = spaceReserve
+		pool.InternalAttributes[SnapshotPolicy] = snapshotPolicy
+		pool.InternalAttributes[SnapshotReserve] = snapshotReserve
+		pool.InternalAttributes[SplitOnClone] = splitOnClone
+		pool.InternalAttributes[UnixPermissions] = unixPermissions
+		pool.InternalAttributes[SnapshotDir] = snapshotDir
+		pool.InternalAttributes[ExportPolicy] = exportPolicy
+		pool.InternalAttributes[SecurityStyle] = securityStyle
+
+		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
+			pool.InternalAttributes[SpaceAllocation] = spaceAllocation
+			pool.InternalAttributes[FileSystemType] = fileSystemType
+		}
+
+		virtualPools[pool.Name] = pool
+	}
+
+	return physicalPools, virtualPools, nil
+}
+
+// ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
+// for a field then a default should have been set in for that field in the intialize storage pools
+func ValidateStoragePools(physicalPools, virtualPools map[string]*storage.Pool, driverType string) error {
+	// Validate pool-level attributes
+	allPools := make([]*storage.Pool, 0, len(physicalPools)+len(virtualPools))
+
+	for _, pool := range physicalPools {
+		allPools = append(allPools, pool)
+	}
+	for _, pool := range virtualPools {
+		allPools = append(allPools, pool)
+	}
+
+	for _, pool := range allPools {
+
+		poolName := pool.Name
+
+		// Validate SpaceReserve
+		switch pool.InternalAttributes[SpaceReserve] {
+		case "none", "volume":
+			break
+		default:
+			return fmt.Errorf("invalid spaceReserve %s in pool %s", pool.InternalAttributes[SpaceReserve], poolName)
+		}
+
+		// Validate SnapshotPolicy
+		if pool.InternalAttributes[SnapshotPolicy] == "" {
+			return fmt.Errorf("snapshot policy cannot by empty in pool %s", poolName)
+		}
+
+		// Validate Encryption
+		if pool.InternalAttributes[Encryption] == "" {
+			return fmt.Errorf("encryption cannot by empty in pool %s", poolName)
+		} else {
+			_, err := strconv.ParseBool(pool.InternalAttributes[Encryption])
+			if err != nil {
+				return fmt.Errorf("invalid value for encryption in pool %s: %v", poolName, err)
+			}
+		}
+		// Validate snapshot dir
+		if pool.InternalAttributes[SnapshotDir] == "" {
+			return fmt.Errorf("snapshotDir cannot by empty in pool %s", poolName)
+		} else {
+			_, err := strconv.ParseBool(pool.InternalAttributes[SnapshotDir])
+			if err != nil {
+				return fmt.Errorf("invalid value for snapshotDir in pool %s: %v", poolName, err)
+			}
+		}
+
+		// Validate SecurityStyles
+		switch pool.InternalAttributes[SecurityStyle] {
+		case "unix", "mixed":
+			break
+		default:
+			return fmt.Errorf("invalid securityStyle %s in pool %s", pool.InternalAttributes[SecurityStyle], poolName)
+		}
+
+		// Validate ExportPolicy
+		if pool.InternalAttributes[ExportPolicy] =="" {
+			return fmt.Errorf("export policy cannot by empty in pool %s", poolName)
+		}
+
+		// Validate UnixPermissions
+		if pool.InternalAttributes[UnixPermissions] =="" {
+			return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+		}
+
+		// Validate media type
+		if pool.InternalAttributes[Media] != "" {
+			for _, mediaType := range strings.Split(pool.InternalAttributes[Media], ",") {
+				switch mediaType {
+				case sa.HDD, sa.SSD, sa.Hybrid:
+					break
+				default:
+					log.Errorf("invalid media type in pool %s: %s", pool.Name, mediaType)
+				}
+			}
+		}
+
+		// Validate default size
+		if defaultSize, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
+		} else {
+			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
+			if sizeBytes < MinimumVolumeSizeBytes {
+				return fmt.Errorf("invalid value for size in pool %s. Requested volume size (" +
+					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes, MinimumVolumeSizeBytes)
+			}
+		}
+
+		// Cloning is not supported on ONTAP FlexGroups driver
+		if driverType != drivers.OntapNASFlexGroupStorageDriverName {
+			// Validate splitOnClone
+			if pool.InternalAttributes[SplitOnClone] == "" {
+				return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
+			} else {
+				_, err := strconv.ParseBool(pool.InternalAttributes[SplitOnClone])
+				if err != nil {
+					return fmt.Errorf("invalid value for splitOnClone in pool %s: %v", poolName, err)
+				}
+			}
+		}
+
+		if driverType == drivers.OntapSANStorageDriverName || driverType == drivers.OntapSANEconomyStorageDriverName {
+
+			// Validate SpaceAllocation
+			if pool.InternalAttributes[SpaceAllocation] == "" {
+				return fmt.Errorf("spaceAllocation cannot by empty in pool %s", poolName)
+			} else {
+				_, err := strconv.ParseBool(pool.InternalAttributes[SpaceAllocation])
+				if err != nil {
+					return fmt.Errorf("invalid value for SpaceAllocation in pool %s: %v", poolName, err)
+				}
+			}
+
+			// Validate FileSystemType
+			if pool.InternalAttributes[FileSystemType] == "" {
+				return fmt.Errorf("fileSystemType cannot by empty in pool %s", poolName)
+			} else {
+				_, err := drivers.CheckSupportedFilesystem(pool.InternalAttributes[FileSystemType], "")
+				if err != nil {
+					return fmt.Errorf("invalid value for fileSystemType in pool %s: %v", poolName, err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
+func getStorageBackendSpecsCommon(backend *storage.Backend, physicalPools,
+	virtualPools map[string]*storage.Pool, backendName string) (err error) {
+
+	backend.Name = backendName
+
+	virtual := len(virtualPools) > 0
+
+	for _, pool := range physicalPools {
+		pool.Backend = backend
+		if !virtual {
+			backend.AddStoragePool(pool)
+		}
+	}
+
+	for _, pool := range virtualPools {
+		pool.Backend = backend
+		if virtual {
+			backend.AddStoragePool(pool)
 		}
 	}
 
@@ -1487,13 +1872,9 @@ func getVserverAggregateAttributes(d StorageDriver, storagePools *map[string]*st
 
 func getVolumeOptsCommon(
 	volConfig *storage.VolumeConfig,
-	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) map[string]string {
 	opts := make(map[string]string)
-	if pool != nil {
-		opts["aggregate"] = pool.Name
-	}
 	if provisioningTypeReq, ok := requests[sa.ProvisioningType]; ok {
 		if p, ok := provisioningTypeReq.Value().(string); ok {
 			if p == "thin" {
@@ -1562,6 +1943,52 @@ func getVolumeOptsCommon(
 	}
 
 	return opts
+}
+
+// getPoolsForCreate returns candidate storage pools for creating volumes
+func getPoolsForCreate(
+	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	physicalPools map[string]*storage.Pool, virtualPools map[string]*storage.Pool,
+) ([]*storage.Pool, error) {
+
+	// If a physical pool was requested, just use it
+	if _, ok := physicalPools[storagePool.Name]; ok {
+		return []*storage.Pool{storagePool}, nil
+	}
+
+	// If a virtual pool was requested, find a physical pool to satisfy it
+	if _, ok := virtualPools[storagePool.Name]; !ok {
+		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
+	}
+
+	// Make a storage class from the volume attributes to simplify pool matching
+	attributesCopy := make(map[string]sa.Request)
+	for k, v := range volAttributes {
+		attributesCopy[k] = v
+	}
+	delete(attributesCopy, sa.Selector)
+	storageClass := sc.NewFromAttributes(attributesCopy)
+
+	// Find matching pools
+	candidatePools := make([]*storage.Pool, 0)
+
+	for _, pool := range physicalPools {
+		if storageClass.Matches(pool) {
+			candidatePools = append(candidatePools, pool)
+		}
+	}
+
+	if len(candidatePools) == 0 {
+		err := fmt.Errorf("backend has no physical pools that can satisfy request")
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+	}
+
+	// Shuffle physical pools
+	rand.Shuffle(len(candidatePools), func(i, j int) {
+		candidatePools[i], candidatePools[j] = candidatePools[j], candidatePools[i]
+	})
+
+	return candidatePools, nil
 }
 
 func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {

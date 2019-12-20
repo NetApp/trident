@@ -19,8 +19,8 @@
     "storage":[
       {
         "labels":{"performance":"gold", "cost":"3"},
-          "zone":"us-east-1a",
-          "defaults":{
+        "zone":"us-east-1a",
+        "defaults":{
           "size":"4Gi"
         }
       },
@@ -29,7 +29,7 @@
         "zone":"us-east-1a",
         "defaults":{
           "size":"3Gi"
-          }
+        }
       },
       {
         "labels":{"performance":"bronze", "cost":"1"},

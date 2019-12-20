@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "storageDriverName": "ontap-san-economy",
+    "managementLIF": "10.0.0.1",
+    "svm": "trident_svm_eco",
+    "username": "cluster-admin",
+    "password": "password"
+}

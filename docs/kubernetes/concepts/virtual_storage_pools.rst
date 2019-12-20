@@ -10,9 +10,7 @@ backend-agnostic way without making a StorageClass specify which
 physical backend, backend pool, or backend type to use to meet desired
 criteria.
 
-Today, Virtual Storage Pools can be created for Element and SANtricity
-backends, as well as the Cloud Volumes Service for AWS and Azure NetApp
-Files service.
+Virtual Storage Pools can be defined on any of the Trident backends.
 
 .. _figVirtualStoragePools:
 

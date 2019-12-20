@@ -1,0 +1,42 @@
+{
+    "version": 1,
+    "storageDriverName": "ontap-san",
+    "managementLIF": "10.0.0.1",
+    "dataLIF": "10.0.0.2",
+    "svm": "trident_svm",
+    "username": "cluster-admin",
+    "password": "password",
+
+    "defaults": {
+        "spaceAllocation": "false",
+        "encryption": "false"
+    },
+    "labels":{"store":"san-store"},
+    "region": "us-east-1",
+    "storage": [
+        {
+            "labels":{"protection":"gold", "points":"40000"},
+            "zone":"us-east-1a",
+            "defaults": {
+                "spaceAllocation": "true",
+                "encryption": "true"
+            }
+        },
+        {
+            "labels":{"protection":"silver", "points":"20000"},
+            "zone":"us-east-1b",
+            "defaults": {
+                "spaceAllocation": "false",
+                "encryption": "true"
+            }
+        },
+        {
+            "labels":{"protection":"bronze", "points":"5000"},
+            "zone":"us-east-1c",
+            "defaults": {
+                "spaceAllocation": "true",
+                "encryption": "false"
+            }
+        }
+    ]
+}

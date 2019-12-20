@@ -11,6 +11,7 @@
 - **Kubernetes:** Added support for IPv6. (Issue [#122](https://github.com/NetApp/trident/issues/122))
 - **Kubernetes:** Added support for Prometheus metrics.
 - Switched from glide to go modules for dependency management.
+- ONTAP drivers now support `Virtual Pools`.
 
 ## v19.10.0
 

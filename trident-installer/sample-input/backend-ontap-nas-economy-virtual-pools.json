@@ -1,0 +1,54 @@
+{
+    "version": 1,
+    "storageDriverName": "ontap-nas-economy",
+    "managementLIF": "10.0.0.1",
+    "dataLIF": "10.0.0.2",
+    "svm": "trident_svm",
+    "username": "cluster-admin",
+    "password": "password",
+
+    "defaults": {
+        "spaceReserve": "none",
+        "encryption": "false"
+    },
+    "labels":{"store":"nas-economy-store"},
+    "region": "us-east-1",
+    "storage": [
+        {
+            "labels":{"department":"finance", "points":"6000"},
+            "zone":"us-east-1a",
+            "defaults": {
+                "spaceReserve": "volume",
+                "encryption": "true",
+                "unixPermissions": "0755"
+            }
+        },
+        {
+            "labels":{"department":"legal", "points":"5000"},
+            "zone":"us-east-1b",
+            "defaults": {
+                "spaceReserve": "none",
+                "encryption": "true",
+                "unixPermissions": "0755"
+            }
+        },
+        {
+            "labels":{"department":"engineering", "points":"3000"},
+            "zone":"us-east-1c",
+            "defaults": {
+                "spaceReserve": "none",
+                "encryption": "true",
+                "unixPermissions": "0775"
+            }
+        },
+        {
+            "labels":{"department":"humanresource", "points":"2000"},
+            "zone":"us-east-1d",
+            "defaults": {
+                "spaceReserve": "volume",
+                "encryption": "false",
+                "unixPermissions": "0775"
+            }
+        }
+    ]
+}

@@ -35,7 +35,7 @@ type Driver interface {
 	// constraints present on the backend and that will be unique to Trident.
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
-	CreateClone(volConfig *VolumeConfig) error
+	CreateClone(volConfig *VolumeConfig, storagePool *Pool) error
 	Import(volConfig *VolumeConfig, originalName string) error
 	Destroy(name string) error
 	Rename(name string, newName string) error
@@ -249,7 +249,7 @@ func (b *Backend) AddVolume(
 	return vol, nil
 }
 
-func (b *Backend) CloneVolume(volConfig *VolumeConfig, retry bool) (*Volume, error) {
+func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry bool) (*Volume, error) {
 
 	log.WithFields(log.Fields{
 		"backend":                volConfig.Name,
@@ -282,7 +282,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, retry bool) (*Volume, err
 
 	// Clone volume on the backend
 	volumeExists := false
-	if err := b.Driver.CreateClone(volConfig); err != nil {
+	if err := b.Driver.CreateClone(volConfig, storagePool); err != nil {
 
 		if drivers.IsVolumeExistsError(err) {
 
@@ -341,7 +341,16 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, retry bool) (*Volume, err
 		return nil, err
 	}
 
-	vol := NewVolume(volConfig, b.BackendUUID, drivers.UnsetPool, false)
+	// Traditionally, cloned volumes never got assigned to a storage pool, however, after introduction
+	// of Virtual Pools we try to assign cloned volume to the same storage pool as source volume.
+	// It should be noted that imported volumes do not get assigned to any storage pools, therefore,
+	// clones of imported volumes also gets assigned to unset storage pools.
+	poolName := drivers.UnsetPool
+	if storagePool != nil {
+		poolName = storagePool.Name
+	}
+
+	vol := NewVolume(volConfig, b.BackendUUID, poolName, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
 }

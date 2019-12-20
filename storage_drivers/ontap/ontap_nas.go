@@ -25,6 +25,9 @@ type NASStorageDriver struct {
 	Config      drivers.OntapStorageDriverConfig
 	API         *api.Client
 	Telemetry   *Telemetry
+
+	physicalPools map[string]*storage.Pool
+	virtualPools  map[string]*storage.Pool
 }
 
 func (d *NASStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -43,6 +46,16 @@ func (d *NASStorageDriver) GetTelemetry() *Telemetry {
 // Name is for returning the name of this driver
 func (d *NASStorageDriver) Name() string {
 	return drivers.OntapNASStorageDriverName
+}
+
+// backendName returns the name of the backend managed by this driver instance
+func (d *NASStorageDriver) backendName() string {
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		return "ontapnas_" + d.Config.DataLIF
+	} else {
+		return d.Config.BackendName
+	}
 }
 
 // Initialize from the provided config
@@ -69,6 +82,13 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(d, d.getStoragePoolAttributes(),
+		d.backendName())
+	if err != nil {
+		return fmt.Errorf("could not configure storage pools: %v", err)
+	}
+
+	// Validate the none, true/false values
 	err = d.validate()
 	if err != nil {
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
@@ -113,6 +133,10 @@ func (d *NASStorageDriver) validate() error {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
+	if err := ValidateStoragePools(d.physicalPools, d.virtualPools, d.Name()); err != nil {
+		return fmt.Errorf("storage pool validation failed: %v", err)
+	}
+
 	return nil
 }
 
@@ -143,6 +167,12 @@ func (d *NASStorageDriver) Create(
 		return drivers.NewVolumeExistsError(name)
 	}
 
+	// Get candidate physical pools
+	physicalPools, err := getPoolsForCreate(volConfig, storagePool, volAttributes, d.physicalPools, d.virtualPools)
+	if err != nil {
+		return err
+	}
+
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
@@ -152,13 +182,13 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, d.Config)
+	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
 	if err != nil {
 		return err
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	opts, err := d.GetVolumeOpts(volConfig, volAttributes)
 	if err != nil {
 		return err
 	}
@@ -166,19 +196,14 @@ func (d *NASStorageDriver) Create(
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	size := strconv.FormatUint(sizeBytes, 10)
-	spaceReserve := utils.GetV(opts, "spaceReserve", d.Config.SpaceReserve)
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", d.Config.SnapshotPolicy)
-	snapshotReserve := utils.GetV(opts, "snapshotReserve", d.Config.SnapshotReserve)
-	unixPermissions := utils.GetV(opts, "unixPermissions", d.Config.UnixPermissions)
-	snapshotDir := utils.GetV(opts, "snapshotDir", d.Config.SnapshotDir)
-	exportPolicy := utils.GetV(opts, "exportPolicy", d.Config.ExportPolicy)
-	aggregate := utils.GetV(opts, "aggregate", d.Config.Aggregate)
-	securityStyle := utils.GetV(opts, "securityStyle", d.Config.SecurityStyle)
-	encryption := utils.GetV(opts, "encryption", d.Config.Encryption)
-
-	if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
-		return aggrLimitsErr
-	}
+	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
+	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
+	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
+	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
+	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
+	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
+	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
+	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
@@ -208,46 +233,65 @@ func (d *NASStorageDriver) Create(
 		"unixPermissions": unixPermissions,
 		"snapshotDir":     enableSnapshotDir,
 		"exportPolicy":    exportPolicy,
-		"aggregate":       aggregate,
 		"securityStyle":   securityStyle,
 		"encryption":      enableEncryption,
 	}).Debug("Creating Flexvol.")
 
-	// Create the volume
-	volCreateResponse, err := d.API.VolumeCreate(
-		name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
+	createErrors := make([]error, 0)
 
-	if err = api.GetError(volCreateResponse, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); ok {
-			// Handle case where the Create is passed to every Docker Swarm node
-			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-				log.WithField("volume", name).Warn("Volume create job already exists, skipping volume create on this node.")
-				return nil
+	for _, physicalPool := range physicalPools {
+		aggregate := physicalPool.Name
+
+		if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
+			log.Error(errMessage)
+			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			continue
+		}
+
+		// Create the volume
+		volCreateResponse, err := d.API.VolumeCreate(
+			name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
+			exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
+
+		if err = api.GetError(volCreateResponse, err); err != nil {
+			if zerr, ok := err.(api.ZapiError); ok {
+				// Handle case where the Create is passed to every Docker Swarm node
+				if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
+					log.WithField("volume", name).Warn("Volume create job already exists, skipping volume create on this node.")
+					return nil
+				}
+			}
+
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name, aggregate, name, err)
+			log.Error(errMessage)
+			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			continue
+		}
+
+		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
+		if !enableSnapshotDir {
+			snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(name)
+			if err = api.GetError(snapDirResponse, err); err != nil {
+				return fmt.Errorf("error disabling snapshot directory access: %v", err)
 			}
 		}
-		return fmt.Errorf("error creating volume: %v", err)
-	}
 
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	if !enableSnapshotDir {
-		snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(name)
-		if err = api.GetError(snapDirResponse, err); err != nil {
-			return fmt.Errorf("error disabling snapshot directory access: %v", err)
+		// Mount the volume at the specified junction
+		mountResponse, err := d.API.VolumeMount(name, "/"+name)
+		if err = api.GetError(mountResponse, err); err != nil {
+			return fmt.Errorf("error mounting volume to junction: %v", err)
 		}
+
+		return nil
 	}
 
-	// Mount the volume at the specified junction
-	mountResponse, err := d.API.VolumeMount(name, "/"+name)
-	if err = api.GetError(mountResponse, err); err != nil {
-		return fmt.Errorf("error mounting volume to junction: %v", err)
-	}
-
-	return nil
+	// All physical pools that were eligible ultimately failed, so don't try this backend again
+	return drivers.NewBackendIneligibleError(name, createErrors)
 }
 
 // Create a volume clone
-func (d *NASStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+func (d *NASStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -260,17 +304,35 @@ func (d *NASStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
+			"storagePool": storagePool,
 		}
 		log.WithFields(fields).Debug(">>>> CreateClone")
 		defer log.WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(volConfig, nil, make(map[string]sa.Request))
+	opts, err := d.GetVolumeOpts(volConfig, make(map[string]sa.Request))
 	if err != nil {
 		return err
 	}
 
-	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", d.Config.SplitOnClone))
+	// How "splitOnClone" value gets set:
+	// In the Core we first check clone's VolumeConfig for splitOnClone value
+	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
+	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
+	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
+
+	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
+	var storagePoolSplitOnCloneVal string
+	if storagePool != nil {
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
+	}
+
+	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
+	if storagePoolSplitOnCloneVal == "" {
+		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
+	}
+
+	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
@@ -376,7 +438,7 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 }
 
 // Rename changes the name of a volume
-func (d *NASStorageDriver) Rename(name string, new_name string) error {
+func (d *NASStorageDriver) Rename(name string, nameName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -388,7 +450,7 @@ func (d *NASStorageDriver) Rename(name string, new_name string) error {
 		defer log.WithFields(fields).Debug("<<<< Rename")
 	}
 
-	renameResponse, err := d.API.VolumeRename(name, new_name)
+	renameResponse, err := d.API.VolumeRename(name, nameName)
 	if err = api.GetError(renameResponse, err); err != nil {
 		log.WithField("name", name).Warnf("Could not rename volume: %v", err)
 		return fmt.Errorf("could not rename volume %s: %v", name, err)
@@ -524,14 +586,7 @@ func (d *NASStorageDriver) Get(name string) error {
 
 // Retrieve storage backend capabilities
 func (d *NASStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
-	if d.Config.BackendName == "" {
-		// Use the old naming scheme if no name is specified
-		backend.Name = "ontapnas_" + d.Config.DataLIF
-	} else {
-		backend.Name = d.Config.BackendName
-	}
-	poolAttrs := d.getStoragePoolAttributes()
-	return getStorageBackendSpecsCommon(d, backend, poolAttrs)
+	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.backendName())
 }
 
 func (d *NASStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
@@ -547,10 +602,9 @@ func (d *NASStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 func (d *NASStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig,
-	pool *storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
-	return getVolumeOptsCommon(volConfig, pool, requests), nil
+	return getVolumeOptsCommon(volConfig, requests), nil
 }
 
 func (d *NASStorageDriver) GetInternalVolumeName(name string) string {

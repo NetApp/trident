@@ -101,10 +101,7 @@ values set above.
                 {"Type": "Silver", "Qos": {"minIOPS": 4000, "maxIOPS": 6000, "burstIOPS": 8000}},
                 {"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}],
 
-      "defaults": {
-            "type": "Silver"
-      },
-
+      "type": "Silver",
       "labels":{"store":"solidfire"},
       "region": "us-east-1",
 

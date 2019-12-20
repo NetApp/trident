@@ -574,7 +574,7 @@ func (d *StorageDriver) BootstrapVolume(volume *storage.Volume) {
 	}
 }
 
-func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal

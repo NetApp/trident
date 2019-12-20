@@ -519,7 +519,10 @@ func (d *SANStorageDriver) Create(
 		// Create the volume
 		vol, err := d.API.CreateVolume(name, pool.VolumeGroupRef, sizeBytes, mediaType, fstype)
 		if err != nil {
-			return fmt.Errorf("could not create volume %s: %v", name, err)
+			errMessage := fmt.Sprintf("E-series pool %s could not create volume %s: %v", poolName, name, err)
+			log.Error(errMessage)
+			createErrors = append(createErrors, errors.New(errMessage))
+			continue
 		}
 
 		log.WithFields(log.Fields{
@@ -927,7 +930,7 @@ func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) er
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
