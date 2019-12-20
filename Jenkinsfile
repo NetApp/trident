@@ -2401,7 +2401,10 @@ def _build_trident(String name, String ssh_options, Map spec) {
           )
 
           // Tag the release
-          def release_name = 'v' + tag
+          def release_name = 'v' + env.TRIDENT_VERSION
+          if (env.BUILD_TYPE != 'stable') {
+            release_name = "${release_name}-${env.BUILD_TYPE}.${env.TRIDENT_REVISION}"
+          }
           try {
             echo "Creating script to tag the release"
 
