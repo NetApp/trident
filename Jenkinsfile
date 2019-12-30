@@ -3593,36 +3593,36 @@ def _cleanup_backends(String ssh_options, String ip_address, String name, String
 
   echo "Cleaning up backend storage using backend files in $src_path"
 
-  sh (
-    label: "Create directory $dst_path path on $ip_address",
-    script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/$dst_path'"
-  )
-
-  sh (label: "Sleep", script: "sleep 1")
-
-  _scp(
-    ssh_options,
-    'root',
-    ip_address,
-    "$src_path/*",
-    "$vm_path/$dst_path",
-    true,
-    false,
-    true
-  )
-
-  sh (
-    label: "Show destination path $src_path on $ip_address",
-    script: "ssh $ssh_options root@$ip_address 'ls -l $vm_path/$dst_path'"
-  )
-
-  sh (
-    label: "Change permissions for cleanup_backend.py on $ip_address",
-    script: "ssh $ssh_options root@$ip_address 'chmod +x $vm_path/test/whelk/ci/cleanup_backend.py'"
-  )
-
-  // Run cleanup_backend.py
   try {
+    sh (
+      label: "Create directory $dst_path path on $ip_address",
+      script: "ssh $ssh_options root@$ip_address 'mkdir -p $vm_path/$dst_path'"
+    )
+
+    sh (label: "Sleep", script: "sleep 1")
+
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "$src_path/*",
+      "$vm_path/$dst_path",
+      true,
+      false,
+      true
+    )
+
+    sh (
+      label: "Show destination path $src_path on $ip_address",
+      script: "ssh $ssh_options root@$ip_address 'ls -l $vm_path/$dst_path'"
+    )
+
+    sh (
+      label: "Change permissions for cleanup_backend.py on $ip_address",
+      script: "ssh $ssh_options root@$ip_address 'chmod +x $vm_path/test/whelk/ci/cleanup_backend.py'"
+    )
+
+    // Run cleanup_backend.py
     sh (
       label: "Execute cleanup_backend.py on $ip_address",
       script: "ssh $ssh_options root@$ip_address '" +
@@ -3633,7 +3633,7 @@ def _cleanup_backends(String ssh_options, String ip_address, String name, String
         "python whelk/ci/cleanup_backend.py'"
     )
   } catch(Exception e) {
-    echo "Failure cleaning up backends: " + e.getMessage()
+    error "Failure cleaning up backend(s): " + e.getMessage()
   }
 
 }
@@ -5693,38 +5693,42 @@ def _setup() {
 def _setup_backends(String ssh_options, String ip_address, String name, String vm_path, String dst_path) {
 
   echo "Setting up backends"
+  try {
+    sh (
+      label: "Install required python packages on $ip_address",
+      script: "ssh $ssh_options root@$ip_address 'pip install " +
+        "-r $vm_path/test/requirements.txt > $vm_path/test/requirements.log 2>&1'"
+    )
 
-  sh (
-    label: "Install required python packages on $ip_address",
-    script: "ssh $ssh_options root@$ip_address 'pip install " +
-      "-r $vm_path/test/requirements.txt > $vm_path/test/requirements.log 2>&1'"
-  )
+    _scp(
+      ssh_options,
+      'root',
+      ip_address,
+      "$vm_path/test/requirements.log",
+      name,
+      false,
+      false,
+      false
+    )
 
-  _scp(
-    ssh_options,
-    'root',
-    ip_address,
-    "$vm_path/test/requirements.log",
-    name,
-    false,
-    false,
-    false
-  )
+    sh (
+      label: "Change permissions for setup_backend.py on $ip_address",
+      script: "ssh $ssh_options root@$ip_address 'chmod +x $vm_path/test/whelk/ci/setup_backend.py'"
+    )
 
-  sh (
-    label: "Change permissions for setup_backend.py on $ip_address",
-    script: "ssh $ssh_options root@$ip_address 'chmod +x $vm_path/test/whelk/ci/setup_backend.py'"
-  )
+    sh (
+      label: "Execute setup_backend.py on $ip_address",
+      script: "ssh $ssh_options root@$ip_address '" +
+        "export NDVP_CONFIG=$vm_path/$dst_path;" +
+        "export PYTHONPATH=$vm_path/test;" +
+        "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
+        "cd $vm_path/test; " +
+        "python whelk/ci/setup_backend.py'"
+    )
 
-  sh (
-    label: "Execute setup_backend.py on $ip_address",
-    script: "ssh $ssh_options root@$ip_address '" +
-      "export NDVP_CONFIG=$vm_path/$dst_path;" +
-      "export PYTHONPATH=$vm_path/test;" +
-      "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
-      "cd $vm_path/test; " +
-      "python whelk/ci/setup_backend.py'"
-  )
+  } catch(Exception e) {
+    error 'Failure setting up backend(s): ' + e.getMessage()
+  }
 
   return true
 
