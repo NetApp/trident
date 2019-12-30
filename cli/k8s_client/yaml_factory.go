@@ -674,7 +674,7 @@ spec:
       - name: csi-resizer
         image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.3.0
         args:
-        - "--v=9"
+        - "--v={LOG_LEVEL}"
         - "--csiTimeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:

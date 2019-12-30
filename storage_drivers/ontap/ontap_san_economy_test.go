@@ -101,6 +101,9 @@ func TestHelperGetters(t *testing.T) {
 	lunPath := helper.GetLUNPath("my-Bucket", "my-Lun")
 	assert.Equal(t, "/vol/my_Bucket/storagePrefix_my_Lun", lunPath, "Strings not equal")
 
+	lunName := helper.GetInternalVolumeNameFromPath(lunPath)
+	assert.Equal(t, "storagePrefix_my_Lun", lunName, "Strings not equal")
+
 	lunPathPatternForVolume := helper.GetLUNPathPattern("my-Vol")
 	assert.Equal(t, "/vol/*/storagePrefix_my_Vol", lunPathPatternForVolume, "Strings not equal")
 }
@@ -117,7 +120,7 @@ func TestGetComponents_DockerContext(t *testing.T) {
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
 	assert.Equal(t, "mysnap", snapName, "Strings not equal")
 
-	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
+	volName := helper.GetExternalVolumeNameFromPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
 	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
@@ -132,7 +135,7 @@ func TestGetComponents_KubernetesContext(t *testing.T) {
 	snapName2 := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
 	assert.Equal(t, "mysnap", snapName2, "Strings not equal")
 
-	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
+	volName := helper.GetExternalVolumeNameFromPath("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
 	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun_snapshot_mysnap")
@@ -144,7 +147,7 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun")
 	assert.Equal(t, "", snapName, "Strings not equal")
 
-	volName := helper.GetVolumeName("/vol/myBucket/storagePrefix_myLun")
+	volName := helper.GetExternalVolumeNameFromPath("/vol/myBucket/storagePrefix_myLun")
 	assert.Equal(t, "myLun", volName, "Strings not equal")
 
 	bucketName := helper.GetBucketName("/vol/myBucket/storagePrefix_myLun")
@@ -153,7 +156,7 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 	snapName2 := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun")
 	assert.Equal(t, "", snapName2, "Strings not equal")
 
-	volName2 := helper.GetVolumeName("myBucket/storagePrefix_myLun")
+	volName2 := helper.GetExternalVolumeNameFromPath("myBucket/storagePrefix_myLun")
 	assert.NotEqual(t, "myLun", volName2, "Strings are equal")
 	assert.Equal(t, "", volName2, "Strings are NOT equal")
 }

@@ -438,19 +438,20 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 }
 
 // Rename changes the name of a volume
-func (d *NASStorageDriver) Rename(name string, nameName string) error {
+func (d *NASStorageDriver) Rename(name string, newName string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "Rename",
-			"Type":   "NASStorageDriver",
-			"name":   name,
+			"Method":  "Rename",
+			"Type":    "NASStorageDriver",
+			"name":    name,
+			"newName": newName,
 		}
 		log.WithFields(fields).Debug(">>>> Rename")
 		defer log.WithFields(fields).Debug("<<<< Rename")
 	}
 
-	renameResponse, err := d.API.VolumeRename(name, nameName)
+	renameResponse, err := d.API.VolumeRename(name, newName)
 	if err = api.GetError(renameResponse, err); err != nil {
 		log.WithField("name", name).Warnf("Could not rename volume: %v", err)
 		return fmt.Errorf("could not rename volume %s: %v", name, err)
