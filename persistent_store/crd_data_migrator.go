@@ -16,6 +16,7 @@ import (
 )
 
 const crRegistrationTimeout = 3 * time.Minute
+const failureInjectionBackendName = "failure-aa0c8eda-e992-470a-80be-a052fcb93fd9"
 
 type CRDDataMigrator struct {
 	etcdClient    EtcdClient
@@ -240,6 +241,9 @@ func (m *CRDDataMigrator) migrateBackends(backends []*storage.BackendPersistent)
 	}
 
 	for _, backend := range backends {
+		if backend.Name == failureInjectionBackendName {
+			return fmt.Errorf("failure injection for backend %v", failureInjectionBackendName)
+		}
 		if err := m.crdClient.AddBackendPersistent(backend); err != nil {
 			return fmt.Errorf("could not write backend resource; %v", err)
 		}
