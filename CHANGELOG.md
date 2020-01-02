@@ -6,8 +6,11 @@
 
 **IMPORTANT**: If you are upgrading from Trident 19.07.0, 19.07.1 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v19.07/kubernetes/upgrading.html).
 
+**Fixes:**
+- **Kubernetes:** Improved error detection in CRD migrator
+
 **Deprecations:**
- - **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
+- **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
 
 ## v19.07.1
 

@@ -1,15 +1,17 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/netapp/trident/persistent_store"
+	persistentstore "github.com/netapp/trident/persistent_store"
 )
 
 var (
@@ -48,23 +50,30 @@ var migrateCmd = &cobra.Command{
 	Use:    "migrate",
 	Short:  "Migrate Trident's data from etcd to Kubernetes CRDs",
 	Hidden: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
 		initInstallerLogging()
 
 		if err := validateMigrationArguments(); err != nil {
-			log.Fatalf("Invalid arguments; %v", err)
+			log.Errorf("Invalid arguments; %v", err)
+			return fmt.Errorf("invalid arguments; %v", err)
 		}
 
 		if err := discoverMigrationEnvironment(); err != nil {
-			log.Fatalf("Migration pre-checks failed; %v", err)
+			log.Errorf("Migration pre-checks failed; %v", err)
+			return fmt.Errorf("migration pre-checks failed; %v", err)
 		}
+
+		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		if err := migrator.Run(); err != nil {
-			log.Fatalf("Migration failed; %v.  Resolve the issue and try again.", err)
+			log.Errorf("Migration failed; %v.  Resolve the issue and try again.", err)
+			return fmt.Errorf("migration failed; %v.  Resolve the issue and try again.", err)
 		}
+
+		return nil
 	},
 }
 
@@ -81,17 +90,9 @@ func discoverMigrationEnvironment() error {
 
 	var err error
 
-	// Create CRD client
-	log.Debug("Trident is configured with a CRD client.")
-	if k8sAPIServer != "" || k8sConfigPath != "" {
-		log.Debug("Migrator is configured to use an out-of-cluster Kubernetes client.")
-		crdClient, err = persistentstore.NewCRDClientV1(k8sAPIServer, k8sConfigPath)
-	} else {
-		log.Debug("Migrator is configured to use an in-cluster Kubernetes client.")
-		crdClient, err = persistentstore.NewCRDClientV1InCluster()
-	}
-	if err != nil {
-		return fmt.Errorf("could not create the Kubernetes client; %v", err)
+	// Create CRD client.  This could take a few minutes if the CRDs were just registered.
+	if err = waitForCRDClient(180 * time.Second); err != nil {
+		return err
 	}
 
 	// Create etcd client
@@ -111,6 +112,48 @@ func discoverMigrationEnvironment() error {
 	migrator = persistentstore.NewCRDDataMigrator(etcdClient, crdClient, migrateDryRun, transformer)
 
 	return migrator.RunPrechecks()
+}
+
+func waitForCRDClient(timeout time.Duration) error {
+
+	createCRDClient := func() error {
+
+		var err error
+
+		if k8sAPIServer != "" || k8sConfigPath != "" {
+			log.Debug("Migrator is configured to use an out-of-cluster CRD client.")
+			crdClient, err = persistentstore.NewCRDClientV1(k8sAPIServer, k8sConfigPath)
+		} else {
+			log.Debug("Migrator is configured to use an in-cluster CRD client.")
+			crdClient, err = persistentstore.NewCRDClientV1InCluster()
+		}
+		return err
+	}
+
+	createCRDClientNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration.Truncate(100 * time.Millisecond),
+			"message":   err.Error(),
+		}).Debug("CRD client not yet created, waiting.")
+	}
+
+	createCRDClientBackoff := backoff.NewExponentialBackOff()
+	createCRDClientBackoff.InitialInterval = 1 * time.Second
+	createCRDClientBackoff.RandomizationFactor = 0.1
+	createCRDClientBackoff.Multiplier = 1.414
+	createCRDClientBackoff.MaxInterval = 5 * time.Second
+	createCRDClientBackoff.MaxElapsedTime = timeout
+
+	log.Debug("Creating CRD client.")
+
+	if err := backoff.RetryNotify(createCRDClient, createCRDClientBackoff, createCRDClientNotify); err != nil {
+		log.Errorf("Could not create CRD client; %v", err)
+		return fmt.Errorf("could not create CRD client; %v", err)
+	}
+
+	log.Debug("Created CRD client.")
+
+	return nil
 }
 
 func shouldEnableTLS() bool {
