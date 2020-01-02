@@ -21,12 +21,14 @@ import (
 	v1 "k8s.io/api/core/v1"
 	policy "k8s.io/api/policy/v1beta1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/logging"
+	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 )
 
@@ -656,13 +658,40 @@ func installTrident() (returnError error) {
 		return
 	}
 
-	// Create the CRDs and wait for them to be registered in Kubernetes
+	// Create the CRDs and wait for them to be established in Kubernetes
 	crdsCreated := false
 	if !crdsExist {
 		if returnError = createCustomResourceDefinitions(); returnError != nil {
 			return
 		}
-		if returnError = ensureCRDsRegistered(k8sclient.GetCRDNames()); returnError != nil {
+
+		// Wait for each CRD to be fully established
+		if returnError = ensureCRDsEstablished(k8sclient.GetCRDNames()); returnError != nil {
+			// If CRD registration failed *and* we created the CRDs, clean up by deleting the CRDs
+			log.Errorf("CRDs not established; %v", returnError)
+			if err := deleteCustomResourceDefinitions(); err != nil {
+				log.Errorf("Could not delete CRDs; %v", err)
+			}
+			return
+		}
+
+		// Ensure we can create a CRD client
+		if _, returnError = getCRDClient(); returnError != nil {
+			// If CRD client creation failed *and* we created the CRDs, clean up by deleting the CRDs
+			log.Errorf("Could not create CRD client; %v", returnError)
+			if err := deleteCustomResourceDefinitions(); err != nil {
+				log.Errorf("Could not delete CRDs; %v", err)
+			}
+			return
+		}
+
+		// Ensure no TridentVersion CR is present
+		if returnError = validateTridentVersionCRNotPresent(TridentPodNamespace); returnError != nil {
+			log.Errorf("TridentVersion custom resource present; %v", returnError)
+			// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
+			if err := deleteCustomResourceDefinitions(); err != nil {
+				log.Errorf("Could not delete CRDs; %v", err)
+			}
 			return
 		}
 		crdsCreated = true
@@ -670,10 +699,21 @@ func installTrident() (returnError error) {
 
 	// Do the data migration if necessary
 	if migrateToCRDs {
-		if returnError = runTridentMigrator(); returnError != nil {
+		if returnError = runTridentMigrator(); returnError != nil && crdsCreated {
 			// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
-			if crdsCreated {
-				deleteCustomResourceDefinitions()
+			log.Errorf("Migration failed; %v", returnError)
+			if err := deleteCustomResourceDefinitions(); err != nil {
+				log.Errorf("Could not delete CRDs; %v", err)
+			}
+			return
+		}
+
+		// Ensure the migrator finished completely by writing a version resource
+		if returnError = validateTridentVersionCRPresent(TridentPodNamespace); returnError != nil && crdsCreated {
+			log.Errorf("TridentVersion custom resource not present; %v", returnError)
+			// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
+			if err := deleteCustomResourceDefinitions(); err != nil {
+				log.Errorf("Could not delete CRDs; %v", err)
 			}
 			return
 		}
@@ -987,10 +1027,11 @@ func createCustomResourceDefinitions() (returnError error) {
 	return nil
 }
 
-func ensureCRDsRegistered(crdNames []string) error {
+// ensureCRDsEstablished waits until all CRDs are Established.
+func ensureCRDsEstablished(crdNames []string) error {
 
 	for _, crdName := range crdNames {
-		if err := ensureCRDRegistered(crdName); err != nil {
+		if err := ensureCRDEstablished(crdName); err != nil {
 			return err
 		}
 	}
@@ -998,57 +1039,60 @@ func ensureCRDsRegistered(crdNames []string) error {
 	return nil
 }
 
-// ensureCRDRegistered waits until a CRD is known to Kubernetes.
-func ensureCRDRegistered(crdName string) error {
+// ensureCRDEstablished waits until a CRD is Established.
+func ensureCRDEstablished(crdName string) error {
 
-	checkCRDRegistered := func() error {
-		if exists, err := client.CheckCRDExists(crdName); err != nil {
+	checkCRDEstablished := func() error {
+		crd, err := client.GetCRD(crdName)
+		if err != nil {
 			return err
-		} else if !exists {
-			return errors.New("CRD not registered")
 		}
-		return nil
+		for _, condition := range crd.Status.Conditions {
+			if condition.Type == apiextensionv1beta1.Established {
+				switch condition.Status {
+				case apiextensionv1beta1.ConditionTrue:
+					return nil
+				default:
+					return fmt.Errorf("CRD %s Established condition is %s", crdName, condition.Status)
+				}
+			}
+		}
+		return fmt.Errorf("CRD %s Established condition is not yet available", crdName)
 	}
 
 	checkCRDNotify := func(err error, duration time.Duration) {
 		log.WithFields(log.Fields{
 			"CRD": crdName,
 			"err": err,
-		}).Debug("CRD not registered, waiting.")
+		}).Debug("CRD not yet established, waiting.")
 	}
 
 	checkCRDBackoff := backoff.NewExponentialBackOff()
 	checkCRDBackoff.MaxInterval = 5 * time.Second
 	checkCRDBackoff.MaxElapsedTime = k8sTimeout
 
-	log.WithField("CRD", crdName).Trace("Waiting for CRD to be registered.")
+	log.WithField("CRD", crdName).Trace("Waiting for CRD to be established.")
 
-	if err := backoff.RetryNotify(checkCRDRegistered, checkCRDBackoff, checkCRDNotify); err != nil {
-		return fmt.Errorf("CRD was not registered after %3.2f seconds", k8sTimeout.Seconds())
+	if err := backoff.RetryNotify(checkCRDEstablished, checkCRDBackoff, checkCRDNotify); err != nil {
+		return fmt.Errorf("CRD was not established after %3.2f seconds", k8sTimeout.Seconds())
 	}
 
-	log.WithField("CRD", crdName).Debug("CRD registered.")
+	log.WithField("CRD", crdName).Debug("CRD established.")
 	return nil
 }
 
-func deleteCustomResourceDefinitions() (returnError error) {
+func deleteCustomResourceDefinitions() error {
 
-	var logFields log.Fields
+	var err error
 
-	if useYAML && fileExists(crdsPath) {
-		returnError = client.DeleteObjectByFile(crdsPath, false)
-		logFields = log.Fields{"path": crdsPath}
-	} else {
-		returnError = client.DeleteObjectByYAML(k8sclient.GetCRDsYAML(), false)
-		logFields = log.Fields{"namespace": TridentPodNamespace}
+	resetNamespace = TridentPodNamespace
+	kubeClient = client
+	crdClientset, err = kubeClient.GetCRDClient()
+	if err != nil {
+		return err
 	}
-	if returnError != nil {
-		returnError = fmt.Errorf("could not delete custom resource definitions in %s; %v",
-			TridentPodNamespace, returnError)
-		return
-	}
-	log.WithFields(logFields).Info("Deleted custom resource definitions.")
-	return nil
+
+	return obliviateCRDs()
 }
 
 // protectCustomResourceDefinitions adds finalizers to the CRD definitions to prevent accidental deletion
@@ -1854,7 +1898,7 @@ func createInstallerRBACObjects() error {
 	}
 	log.WithFields(log.Fields{"clusterrolebinding": "trident-installer"}).Info("Created installer cluster role binding.")
 
-	//If OpenShift, add Trident to security context constraint(s)
+	// If OpenShift, add Trident to security context constraint(s)
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		if returnError = client.AddTridentUserToOpenShiftSCC("trident-installer", "privileged"); returnError != nil {
 			returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
@@ -2047,6 +2091,7 @@ func waitForPodToFinish(label, purpose string) (*v1.Pod, error) {
 func waitForContainerToFinish(podLabel, containerName, purpose string, timeout time.Duration) (*v1.Pod, error) {
 
 	var pod *v1.Pod
+	var exitCode int32 = 0
 
 	checkContainerFinished := func() error {
 		var podError error
@@ -2058,12 +2103,17 @@ func waitForContainerToFinish(podLabel, containerName, purpose string, timeout t
 		for _, c := range pod.Status.ContainerStatuses {
 			if c.Name == containerName {
 				if c.State.Terminated != nil {
+
+					// Save exit code so we can check for an error
+					exitCode = c.State.Terminated.ExitCode
+
 					// Stop waiting if container is Terminated
 					log.WithFields(log.Fields{
 						"pod":       pod.Name,
 						"container": c.Name,
 						"exitCode":  c.State.Terminated.ExitCode,
 					}).Debug("Container finished.")
+
 					return nil
 				} else {
 					return errors.New("container not yet finished")
@@ -2111,6 +2161,10 @@ func waitForContainerToFinish(podLabel, containerName, purpose string, timeout t
 		"container": containerName,
 		"namespace": pod.Namespace,
 	}).Infof("Trident %s container finished.", purpose)
+
+	if exitCode != 0 {
+		return nil, fmt.Errorf("Trident %s container returned exit code %d", purpose, exitCode)
+	}
 
 	return pod, nil
 }
@@ -2172,4 +2226,97 @@ func logLogFmtMessage(message string) {
 	default:
 		entry.Info(msg)
 	}
+}
+
+func getCRDClient() (*crdclient.Clientset, error) {
+
+	var crdClient *crdclient.Clientset
+
+	createCRDClient := func() error {
+		var err error
+		crdClient, err = client.GetCRDClient()
+		return err
+	}
+
+	createCRDClientNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"increment": duration.Truncate(100 * time.Millisecond),
+			"message":   err.Error(),
+		}).Debug("CRD client not yet created, waiting.")
+	}
+
+	createCRDClientBackoff := backoff.NewExponentialBackOff()
+	createCRDClientBackoff.InitialInterval = 1 * time.Second
+	createCRDClientBackoff.RandomizationFactor = 0.1
+	createCRDClientBackoff.Multiplier = 1.414
+	createCRDClientBackoff.MaxInterval = 5 * time.Second
+	createCRDClientBackoff.MaxElapsedTime = k8sTimeout
+
+	log.Debug("Creating CRD client.")
+
+	if err := backoff.RetryNotify(createCRDClient, createCRDClientBackoff, createCRDClientNotify); err != nil {
+		return nil, err
+	}
+
+	log.Debug("Created CRD client.")
+
+	return crdClient, nil
+}
+
+func validateTridentVersionCRNotPresent(namespace string) error {
+
+	crdClient, err := getCRDClient()
+	if err != nil {
+		return err
+	}
+
+	timeoutSeconds := int64(k8sTimeout.Seconds())
+	listOptions := metav1.ListOptions{TimeoutSeconds: &timeoutSeconds}
+
+	log.WithField("timeoutSeconds", timeoutSeconds).Debug("Listing TridentVersions custom resources.")
+
+	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(listOptions)
+	if err != nil {
+		return err
+	}
+
+	if versions.Items != nil && len(versions.Items) > 0 {
+		return errors.New("TridentVersions custom resource found")
+	}
+
+	log.Debug("Found no TridentVersion custom resource.")
+
+	return nil
+}
+
+func validateTridentVersionCRPresent(namespace string) error {
+
+	crdClient, err := getCRDClient()
+	if err != nil {
+		return err
+	}
+
+	timeoutSeconds := int64(k8sTimeout.Seconds())
+	listOptions := metav1.ListOptions{TimeoutSeconds: &timeoutSeconds}
+
+	log.WithField("timeoutSeconds", timeoutSeconds).Debug("Listing TridentVersions custom resources.")
+
+	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(listOptions)
+	if err != nil {
+		return err
+	}
+
+	if versions.Items == nil || len(versions.Items) == 0 {
+		return errors.New("no TridentVersions custom resource found")
+	}
+
+	for _, version := range versions.Items {
+		log.WithFields(log.Fields{
+			"apiVersion":   version.APIVersion,
+			"storeVersion": version.PersistentStoreVersion,
+			"version":      version.TridentVersion,
+		}).Debug("Found TridentVersion custom resource.")
+	}
+
+	return nil
 }

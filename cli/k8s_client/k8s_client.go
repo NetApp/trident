@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
+	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 )
 
@@ -117,6 +118,7 @@ type Interface interface {
 	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
 	RemoveFinalizerFromCRD(crdName string) error
+	GetCRDClient() (*crdclient.Clientset, error)
 }
 
 type KubeClient struct {
@@ -1724,7 +1726,7 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	return nil
 }
 
-// RemoveFinalizerFromCRD updates the CRD object to remove our Trident finalizer (definitions are not namespaced)
+// RemoveFinalizerFromCRD updates the CRD object to remove all finalizers (definitions are not namespaced)
 func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	/*
 	   $ kubectl api-resources -o wide | grep -i crd
@@ -1766,27 +1768,22 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 
 	// Check the CRD object
 	removedFinalizer := false
-	newFinalizers := make([]string, 0)
 	if md, ok := unstruct.Object["metadata"]; ok {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if finalizers, ok := metadata["finalizers"]; ok {
 				if finalizersSlice, ok := finalizers.([]interface{}); ok {
 					// Check if the Trident finalizer is already present
 					for _, element := range finalizersSlice {
-						if finalizer, ok := element.(string); ok {
-							if finalizer == TridentFinalizer {
-								removedFinalizer = true
-							} else {
-								newFinalizers = append(newFinalizers, finalizer)
-							}
+						if _, ok := element.(string); ok {
+							removedFinalizer = true
 						}
 					}
 					if !removedFinalizer {
-						log.Debugf("Trident finalizer not present on Kubernetes CRD object %v, nothing to do", crdName)
+						log.Debugf("Finalizer not present on Kubernetes CRD object %v, nothing to do", crdName)
 						return nil
 					}
-					// Checked the list and found it, let's remove it from the list
-					metadata["finalizers"] = newFinalizers
+					// Found one or more finalizers, remove them all
+					metadata["finalizers"] = make([]string, 0)
 				} else {
 					return fmt.Errorf("unexpected finalizer type %T", finalizers)
 				}
@@ -1811,4 +1808,8 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	log.Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
+}
+
+func (k *KubeClient) GetCRDClient() (*crdclient.Clientset, error) {
+	return crdclient.NewForConfig(k.restConfig)
 }

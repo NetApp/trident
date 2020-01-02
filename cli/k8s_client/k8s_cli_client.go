@@ -20,8 +20,10 @@ import (
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/tools/clientcmd"
 
 	tridentconfig "github.com/netapp/trident/config"
+	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 )
 
@@ -1509,7 +1511,7 @@ func (c *KubectlClient) AddFinalizerToCRD(crdName string) error {
 	return nil
 }
 
-// RemoveFinalizerFromCRD patches the CRD object to remove our Trident finalizer (definitions are not namespaced)
+// RemoveFinalizerFromCRD patches the CRD object to remove all finalizers (definitions are not namespaced)
 func (c *KubectlClient) RemoveFinalizerFromCRD(crdName string) error {
 
 	log.Debugf("Removing finalizers from Kubernetes CRD object %v", crdName)
@@ -1532,4 +1534,22 @@ func (c *KubectlClient) RemoveFinalizerFromCRD(crdName string) error {
 	log.Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
+}
+
+func (c *KubectlClient) GetCRDClient() (*crdclient.Clientset, error) {
+
+	// c.cli config view --raw
+	args := []string{"config", "view", "--raw"}
+
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	restConfig, err := clientcmd.RESTConfigFromKubeConfig(out)
+	if err != nil {
+		return nil, err
+	}
+
+	return crdclient.NewForConfig(restConfig)
 }
