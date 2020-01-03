@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -299,9 +299,7 @@ func GetCSIDeploymentYAML(tridentImage, label, logFormat string, debug bool, ver
 	switch version.MinorVersion() {
 	case 13:
 		deploymentYAML = csiDeployment113YAMLTemplate
-	case 14:
-		fallthrough
-	case 15:
+	case 14, 15:
 		deploymentYAML = csiDeployment114YAMLTemplate
 	case 16:
 		fallthrough
@@ -397,18 +395,6 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--timeout=60s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.0.1
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -526,18 +512,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -641,18 +615,6 @@ spec:
         args:
         - "--v=9"
         - "--csiTimeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.2
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS

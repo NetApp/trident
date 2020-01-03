@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v19.07.0
+## Changes since v19.10.0
+
+**IMPORTANT**: If you are upgrading from Trident 19.07.0, 19.07.1, or 19.10.0 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v19.10/kubernetes/upgrading.html).
+
+**Deprecations:**
+- **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
+
+## v19.10.0
 
 **Fixes:**
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes. (Issue [#264](https://github.com/NetApp/trident/issues/264))
