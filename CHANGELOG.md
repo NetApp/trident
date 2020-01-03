@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v19.07.0
+## Changes since v19.07.1
+
+**IMPORTANT**: If you are upgrading from Trident 19.07.0, 19.07.1 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v19.07/kubernetes/upgrading.html).
+
+**Deprecations:**
+ - **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
+
+## v19.07.1
 
 **Fixes:**
 - Resolved an issue when iFace is not specified in the Solidfire backend configuration file.

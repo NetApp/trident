@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -385,18 +385,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.0.1
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--connection-timeout=24h"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-cluster-driver-registrar
         image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
         args:
@@ -502,18 +490,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -601,18 +577,6 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: quay.io/k8scsi/csi-snapshotter:v1.2.1
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
