@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -322,9 +322,11 @@ func GetCSIDeploymentYAML(
 	case 15:
 		deploymentYAML = csiDeployment114YAMLTemplate
 	case 16:
+		deploymentYAML = csiDeployment116YAMLTemplate
+	case 17:
 		fallthrough
 	default:
-		deploymentYAML = csiDeployment116YAMLTemplate
+		deploymentYAML = csiDeployment117YAMLTemplate
 	}
 
 	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
@@ -422,18 +424,6 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
         - "--timeout=60s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.0.2
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--connection-timeout=24h"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -556,18 +546,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.2.2
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -683,8 +661,123 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      volumes:
+      - name: socket-dir
+        emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
+`
+
+const csiDeployment117YAMLTemplate = `---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-csi
+  labels:
+    app: {LABEL}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL}
+  template:
+    metadata:
+      labels:
+        app: {LABEL}
+    spec:
+      serviceAccount: trident-csi
+      hostNetwork: true
+      containers:
+      - name: trident-main
+        image: {TRIDENT_IMAGE}
+        ports:
+        - containerPort: 8443
+        command:
+        - /usr/local/bin/trident_orchestrator
+        args:
+        - "--crd_persistence"
+        - "--k8s_pod"
+        - "--https_rest"
+        - "--https_port=8443"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
+        - "--log_format={LOG_FORMAT}"
+        - "--address={IP_LOCALHOST}"
+        - "--metrics"
+        {DEBUG}
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - "{IP_LOCALHOST}:8000"
+            - version
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "{IP_LOCALHOST}:8000"
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /plugin
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: csi-provisioner
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=600s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-attacher
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=60s"
+        - "--retry-interval-start=10s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-resizer
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.3.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--csiTimeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v1.2.2
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
