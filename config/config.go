@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -114,7 +114,7 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.11.0"
-	KubernetesVersionMax = "v1.16.0"
+	KubernetesVersionMax = "v1.17.0"
 
 	// Minimum Kubernetes version for CSI Trident (non-CSI is the default)
 	KubernetesCSIVersionMinOptional = "v1.13.0"
