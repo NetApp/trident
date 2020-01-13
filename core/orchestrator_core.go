@@ -1391,12 +1391,12 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		// The pool lists are already shuffled, so just pick the first one from the chosen backend and
 		// pop it from the list.  If the backend has no more eligible pools, remove it from the map so
 		// the loop terminates when creation on all matching pools has failed.
-		pools := poolsByBackend[backendName]
+		pools := poolsByBackend[backendName].Pools
 		pool = pools[0]
 		if len(pools) == 1 {
 			delete(poolsByBackend, backendName)
 		} else {
-			poolsByBackend[backendName] = pools[1:]
+			poolsByBackend[backendName].Pools = pools[1:]
 		}
 
 		// Add volume to the backend of the selected pool
@@ -1440,9 +1440,17 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
 			if drivers.IsBackendIneligibleError(err) {
-				delete(poolsByBackend, backendName)
-			}
+				if _, ok := poolsByBackend[backendName]; ok {
+					_, ineligiblePhysicalPoolNames := drivers.GetIneligiblePhysicalPoolNames(err)
+					for _, ineligiblePhysicalPoolName := range ineligiblePhysicalPoolNames {
+						delete(poolsByBackend[backendName].PhysicalPoolNames, ineligiblePhysicalPoolName)
+					}
 
+					if len(poolsByBackend[backendName].PhysicalPoolNames) == 0 {
+						delete(poolsByBackend, backendName)
+					}
+				}
+			}
 		} else {
 			// Volume creation succeeded, so register it and return the result
 			return o.addVolumeFinish(txn, vol, backend)

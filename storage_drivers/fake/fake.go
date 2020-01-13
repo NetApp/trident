@@ -449,10 +449,13 @@ func (d *StorageDriver) Create(
 	}
 
 	createErrors := make([]error, 0)
+	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 
 		fakePoolName := physicalPool.Name
+		physicalPoolNames = append(physicalPoolNames, fakePoolName)
+
 		fakePool, ok := d.fakePools[physicalPool.Name]
 		if !ok {
 			errMessage := fmt.Sprintf("fake pool %s not found.", fakePoolName)
@@ -495,7 +498,7 @@ func (d *StorageDriver) Create(
 	}
 
 	// All physical pools that were eligible ultimately failed, so don't try this backend again
-	return drivers.NewBackendIneligibleError(name, createErrors)
+	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
 func (d *StorageDriver) getPoolsForCreate(
@@ -531,7 +534,7 @@ func (d *StorageDriver) getPoolsForCreate(
 
 	if len(candidatePools) == 0 {
 		err := errors.New("backend has no physical pools that can satisfy request")
-		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}
 
 	// Shuffle physical pools
@@ -914,6 +917,15 @@ func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	}
 
 	return nil
+}
+
+// Retrieve storage backend physical pools
+func (d *StorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	physicalPoolNames := make([]string, 0)
+	for poolName, _ := range d.physicalPools {
+		physicalPoolNames = append(physicalPoolNames, poolName)
+	}
+	return physicalPoolNames
 }
 
 func (d *StorageDriver) GetInternalVolumeName(name string) string {

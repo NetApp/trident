@@ -1476,6 +1476,11 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	return nil
 }
 
+// Retrieve storage backend physical pools
+func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	return []string{}
+}
+
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 
 	if tridentconfig.UsingPassthroughStore {

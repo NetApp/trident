@@ -499,10 +499,12 @@ func (d *SANStorageDriver) Create(
 	}
 
 	createErrors := make([]error, 0)
+	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 
 		poolName := physicalPool.Name
+		physicalPoolNames = append(physicalPoolNames, poolName)
 
 		// expect pool of size 1
 		pools, err := d.API.GetVolumePools(mediaType, sizeBytes, poolName)
@@ -538,7 +540,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// All physical pools that were eligible ultimately failed, so don't try this backend again
-	return drivers.NewBackendIneligibleError(name, createErrors)
+	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
 // getPoolsForCreate returns candidate storage pools for creating volumes
@@ -575,7 +577,7 @@ func (d *SANStorageDriver) getPoolsForCreate(
 
 	if len(candidatePools) == 0 {
 		err := errors.New("backend has no physical pools that can satisfy request")
-		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}
 
 	// Shuffle physical pools
@@ -1018,6 +1020,14 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 
 func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
+}
+// Retrieve storage backend physical pools
+func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	physicalPoolNames := make([]string, 0)
+	for poolName, _ := range d.physicalPools {
+		physicalPoolNames = append(physicalPoolNames, poolName)
+	}
+	return physicalPoolNames
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(name string) string {

@@ -1422,6 +1422,11 @@ func (d *NFSStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 }
 
+// Retrieve storage backend physical pools
+func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	return []string{}
+}
+
 func (d *NFSStorageDriver) GetInternalVolumeName(name string) string {
 
 	if tridentconfig.UsingPassthroughStore {

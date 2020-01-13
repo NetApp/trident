@@ -316,9 +316,11 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	createErrors := make([]error, 0)
+	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
+		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
@@ -372,7 +374,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	// All physical pools that were eligible ultimately failed, so don't try this backend again
-	return drivers.NewBackendIneligibleError(name, createErrors)
+	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
 // Create a volume clone
@@ -1190,6 +1192,11 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule() error {
 // Retrieve storage backend capabilities
 func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.backendName())
+}
+
+// Retrieve storage backend physical pools
+func (d *NASQtreeStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
 func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {

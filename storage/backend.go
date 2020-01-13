@@ -43,6 +43,7 @@ type Driver interface {
 	Get(name string) error
 	GetInternalVolumeName(name string) string
 	GetStorageBackendSpecs(backend *Backend) error
+	GetStorageBackendPhysicalPoolNames() []string
 	GetProtocol() tridentconfig.Protocol
 	Publish(name string, publishInfo *utils.VolumePublishInfo) error
 	GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
@@ -167,6 +168,10 @@ func NewFailedStorageBackend(driver Driver) *Backend {
 
 func (b *Backend) AddStoragePool(pool *Pool) {
 	b.Storage[pool.Name] = pool
+}
+
+func (b *Backend) GetPhysicalPoolNames() []string {
+	return b.Driver.GetStorageBackendPhysicalPoolNames()
 }
 
 func (b *Backend) GetDriverName() string {

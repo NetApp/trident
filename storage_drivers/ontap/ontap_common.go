@@ -1870,6 +1870,14 @@ func getStorageBackendSpecsCommon(backend *storage.Backend, physicalPools,
 	return nil
 }
 
+func getStorageBackendPhysicalPoolNamesCommon(physicalPools map[string]*storage.Pool) []string {
+	physicalPoolNames := make([]string, 0)
+	for poolName, _ := range physicalPools {
+		physicalPoolNames = append(physicalPoolNames, poolName)
+	}
+	return physicalPoolNames
+}
+
 func getVolumeOptsCommon(
 	volConfig *storage.VolumeConfig,
 	requests map[string]sa.Request,
@@ -1980,7 +1988,7 @@ func getPoolsForCreate(
 
 	if len(candidatePools) == 0 {
 		err := fmt.Errorf("backend has no physical pools that can satisfy request")
-		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err})
+		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}
 
 	// Shuffle physical pools

@@ -17,6 +17,11 @@ import (
 	storageattribute "github.com/netapp/trident/storage_attribute"
 )
 
+type BackendPoolInfo struct {
+	Pools []*storage.Pool
+	PhysicalPoolNames map[string]struct{}
+}
+
 func New(c *Config) *StorageClass {
 	if c.Version == "" {
 		c.Version = config.OrchestratorAPIVersion
@@ -296,22 +301,31 @@ func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.
 // each pool matches the supplied protocol.  Each pool list is shuffled, so the caller may use the list
 // to select backends and pools at random.  The caller may assume that each value in the map is a list
 // containing at least one pool.
-func (s *StorageClass) GetStoragePoolsForProtocolByBackend(p config.Protocol) map[string][]*storage.Pool {
+func (s *StorageClass) GetStoragePoolsForProtocolByBackend(p config.Protocol) map[string]*BackendPoolInfo {
 
 	// Get all matching pools
 	pools := s.GetStoragePoolsForProtocol(p)
 
-	// Build a map of backends to a list of matching pools on each backend
-	poolMap := make(map[string][]*storage.Pool)
+	// Build a map of backends to a list of matching pools and physical pool names on each backend
+	poolMap := make(map[string]*BackendPoolInfo)
 	for _, pool := range pools {
 		if _, ok := poolMap[pool.Backend.Name]; !ok {
-			poolMap[pool.Backend.Name] = make([]*storage.Pool, 0)
+			// Get Names of physical Pools associated with this backend
+			physicalPoolNames := pool.Backend.GetPhysicalPoolNames()
+			physicalPoolNamesMap := make(map[string]struct{})
+			for _, physicalPoolName := range physicalPoolNames {
+				physicalPoolNamesMap[physicalPoolName] = struct{}{}
+			}
+
+			poolMap[pool.Backend.Name] = &BackendPoolInfo{Pools: make([]*storage.Pool, 0),
+				PhysicalPoolNames: physicalPoolNamesMap}
 		}
-		poolMap[pool.Backend.Name] = append(poolMap[pool.Backend.Name], pool)
+		poolMap[pool.Backend.Name].Pools = append(poolMap[pool.Backend.Name].Pools, pool)
 	}
 
 	// Shuffle the pools in each backend list
-	for _, backendPools := range poolMap {
+	for _, backendPoolInfo := range poolMap {
+		backendPools := backendPoolInfo.Pools
 		rand.Shuffle(len(backendPools), func(i, j int) {
 			backendPools[i], backendPools[j] = backendPools[j], backendPools[i]
 		})

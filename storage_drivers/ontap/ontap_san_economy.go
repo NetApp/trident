@@ -442,9 +442,11 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 
 	createErrors := make([]error, 0)
+	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
+		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; error: %v", storagePool.Name, aggregate,
@@ -506,7 +508,7 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 
 	// All physical pools that were eligible ultimately failed, so don't try this backend again
-	return drivers.NewBackendIneligibleError(name, createErrors)
+	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
 // Create a volume clone
@@ -1344,6 +1346,11 @@ func (d *SANEconomyStorageDriver) getTotalLUNSize(flexvol string) (uint64, error
 // Retrieve storage backend capabilities
 func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.backendName())
+}
+
+// Retrieve storage backend physical pools
+func (d *SANEconomyStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
 func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {

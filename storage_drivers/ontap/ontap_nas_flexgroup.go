@@ -494,6 +494,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}).Debug("Creating FlexGroup.")
 
 	createErrors := make([]error, 0)
+	physicalPoolNames := make([]string, 0)
+	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
 
 	// Create the FlexGroup
 	_, err = d.API.FlexGroupCreate(
@@ -502,7 +504,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	if err != nil {
 		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v", storagePool.Name, name, err))
-		return drivers.NewBackendIneligibleError(name, createErrors)
+		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
@@ -510,7 +512,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		_, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(name)
 		if err != nil {
 			createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v", storagePool.Name, name, err))
-			return drivers.NewBackendIneligibleError(name, createErrors)
+			return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 		}
 	}
 
@@ -518,7 +520,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	mountResponse, err := d.API.VolumeMount(name, "/"+name)
 	if err = api.GetError(mountResponse, err); err != nil {
 		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v", storagePool.Name, name, err))
-		return drivers.NewBackendIneligibleError(name, createErrors)
+		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
 	return nil
@@ -776,6 +778,13 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(backend *storage.Back
 	}
 
 	return nil
+}
+
+// Retrieve storage backend physical pools
+func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+	physicalPoolNames := make([]string, 0)
+	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
+	return physicalPoolNames
 }
 
 func (d *NASFlexGroupStorageDriver) vserverAggregates(svmName string) ([]string, error) {
