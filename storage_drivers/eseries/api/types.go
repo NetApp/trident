@@ -39,6 +39,16 @@ type MsgConnectResponse struct {
 	AlreadyExists bool   `json:"alreadyExists"`
 }
 
+// AboutResponse includes basic information about the system.
+type AboutResponse struct {
+	RunningAsProxy     bool   `json:"runningAsProxy"`     // "runningAsProxy": false,
+	Version            string `json:"version"`            // "version": "03.20.9000.0004",
+	SystemID           string `json:"systemId"`           // "systemId": "de679125-1c38-4356-b175-810c8b536d6a",
+	ControllerPosition int    `json:"controllerPosition"` // "controllerPosition": 1,
+	StartTimestamp     string `json:"startTimestamp"`     // "startTimestamp": "1573141561",
+	SamlEnabled        bool   `json:"samlEnabled"`        // "samlEnabled": false
+}
+
 type StorageSystem struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
@@ -214,9 +224,15 @@ type HostEx struct {
 }
 
 type HostExInitiator struct {
-	InitiatorRef string             `json:"initiatorRef"`
-	NodeName     HostExScsiNodeName `json:"nodeName"`
-	Label        string             `json:"label"`
+	InitiatorRef      string                  `json:"initiatorRef"`
+	NodeName          HostExScsiNodeName      `json:"nodeName"`
+	Label             string                  `json:"label"`
+	InitiatorNodeName HostExInitiatorNodeName `json:"initiatorNodeName"`
+}
+
+type HostExInitiatorNodeName struct {
+	NodeName      HostExScsiNodeName `json:"nodeName"`
+	InterfaceType string             `json:"interfaceType"`
 }
 
 type HostExScsiNodeName struct {
