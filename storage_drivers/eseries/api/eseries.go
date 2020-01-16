@@ -199,8 +199,103 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 	return response, responseBody, err
 }
 
-// Connect connects to the Web Services Proxy and registers the array with it.
+// AboutInfo retries information about this E-Series system
+func (d Client) AboutInfo() (*AboutResponse, error) {
+
+	// Default to secure connection
+	scheme, port := "https", "8443"
+
+	// Allow insecure override
+	if d.config.WebProxyUseHTTP {
+		scheme, port = "http", "8080"
+	}
+
+	// Allow port override
+	if d.config.WebProxyPort != "" {
+		port = d.config.WebProxyPort
+	}
+
+	// Build URL
+	url := scheme + "://" + d.config.WebProxyHostname + ":" + port + "/devmgr/utils/about"
+
+	var request *http.Request
+	var err error
+	var prettyResponseBuffer bytes.Buffer
+
+	// Create the request
+	request, err = http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("accept", "application/json")
+	request.SetBasicAuth(d.config.Username, d.config.Password)
+
+	// Log the request
+	if d.config.DebugTraceFlags["api"] {
+		utils.LogHTTPRequest(request, []byte("<suppressed>"))
+	}
+
+	// Send the request
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: !d.config.WebProxyVerifyTLS, // Allow certificate validation override
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Warnf("Error communicating with Web Services Proxy. %v", err)
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, Error{
+			Code:    response.StatusCode,
+			Message: "could not get about information",
+		}
+	}
+
+	responseBody := []byte{}
+	if err == nil {
+		responseBody, err = ioutil.ReadAll(response.Body)
+		if d.config.DebugTraceFlags["api"] {
+			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
+			utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+		}
+	}
+
+	aboutInfo := &AboutResponse{}
+	err = json.Unmarshal(responseBody, &aboutInfo)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse response: %s. %v", string(responseBody), err)
+	}
+
+	return aboutInfo, err
+}
+
+// Connect to the E-Series system via the Web Services Proxy or the onboard system, as appropriate
 func (d Client) Connect() (string, error) {
+	aboutInfo, err := d.AboutInfo()
+	if err != nil {
+		return "", fmt.Errorf("could not determine proxy status: %v", err)
+	}
+	if aboutInfo == nil {
+		return "", fmt.Errorf("could not determine proxy status: aboutInfo was empty")
+	}
+	if aboutInfo.RunningAsProxy {
+		return d.connectUsingPOST()
+	}
+	return d.connectUsingGET()
+}
+
+// connectUsingPOST connects to the Web Services Proxy via POST
+func (d Client) connectUsingPOST() (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -219,7 +314,7 @@ func (d Client) Connect() (string, error) {
 		return "", fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	// Send the message
+	// Send the message (using HTTP POST)
 	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "")
 	if err != nil {
 		return "", fmt.Errorf("could not log into the Web Services Proxy: %v", err)
@@ -244,6 +339,64 @@ func (d Client) Connect() (string, error) {
 
 	d.config.ArrayID = responseData.ArrayID
 	AlreadyRegistered := responseData.AlreadyExists
+
+	log.WithFields(log.Fields{
+		"ArrayID":           d.config.ArrayID,
+		"AlreadyRegistered": AlreadyRegistered,
+	}).Debug("Connected to Web Services Proxy.")
+
+	return d.config.ArrayID, nil
+}
+
+// connectUsingGET connects to the onboard Web Services via GET
+func (d Client) connectUsingGET() (string, error) {
+
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "Connect",
+			"Type":   "Client",
+		}
+		log.WithFields(fields).Debug(">>>> Connect")
+		defer log.WithFields(fields).Debug("<<<< Connect")
+	}
+
+	// Send a login/connect request for array to web services proxy
+	request := MsgConnect{[]string{d.config.ControllerA, d.config.ControllerB}, d.config.PasswordArray}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return "", fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	// Send the message (using HTTP GET)
+	response, responseBody, err := d.InvokeAPI(jsonRequest, "GET", "")
+	if err != nil {
+		return "", fmt.Errorf("could not log into the Web Services Proxy: %v", err)
+	}
+
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
+		return "", Error{
+			Code:    response.StatusCode,
+			Message: "could not add storage array to Web Services Proxy",
+		}
+	}
+
+	// Parse JSON data (the result is wrapped in a list, unlike the POST which is a single element)
+	responseData := []MsgConnectResponse{}
+	if err := json.Unmarshal(responseBody, &responseData); err != nil {
+		return "", fmt.Errorf("could not parse connect response: %s; %v", string(responseBody), err)
+	}
+
+	if len(responseData) < 1 {
+		return "", errors.New("invalid response received from Web Services Proxy")
+	}
+
+	if responseData[0].ArrayID == "" {
+		return "", errors.New("invalid ArrayID received from Web Services Proxy")
+	}
+
+	d.config.ArrayID = responseData[0].ArrayID
+	AlreadyRegistered := responseData[0].AlreadyExists
 
 	log.WithFields(log.Fields{
 		"ArrayID":           d.config.ArrayID,
@@ -962,7 +1115,24 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 	// Find initiator with matching IQN
 	for _, host := range hosts {
 		for _, f := range host.Initiators {
+			log.WithFields(log.Fields{
+				"f.NodeName.IoInterfaceType": f.NodeName.IoInterfaceType,
+				"f.NodeName.IscsiNodeName":   f.NodeName.IscsiNodeName,
+				"f.InitiatorNodeName.NodeName.IoInterfaceType	": f.InitiatorNodeName.NodeName.IoInterfaceType,
+				"f.InitiatorNodeName.NodeName.IscsiNodeName": f.InitiatorNodeName.NodeName.IscsiNodeName,
+				"iqn": iqn,
+			}).Debug("Comparing...")
+
 			if f.NodeName.IoInterfaceType == "iscsi" && f.NodeName.IscsiNodeName == iqn {
+
+				log.WithFields(log.Fields{
+					"Name": host.Label,
+					"IQN":  iqn,
+				}).Debug("Found host.")
+
+				return host, nil
+
+			} else if f.InitiatorNodeName.NodeName.IoInterfaceType == "iscsi" && f.InitiatorNodeName.NodeName.IscsiNodeName == iqn {
 
 				log.WithFields(log.Fields{
 					"Name": host.Label,
