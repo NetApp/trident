@@ -1676,7 +1676,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
 
         sh (
           label: "Install sphinx packages on $ip_address",
-          script: "ssh $ssh_options root@$ip_address 'pip install -U Sphinx==1.7 sphinx_rtd_theme sphinx-autobuild'"
+          script: "ssh $ssh_options root@$ip_address 'pip3 install -U Sphinx==1.7 sphinx_rtd_theme sphinx-autobuild'"
         )
 
         sh (
@@ -2460,7 +2460,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
 
           sh (
             label: "Install the required modules for release_to_github.py",
-            script: "ssh $ssh_options root@$ip_address 'pip install requests uritemplate'"
+            script: "ssh $ssh_options root@$ip_address 'pip3 install requests uritemplate'"
           )
 
           sh (label: "Sleep", script: "sleep 1")
@@ -3630,7 +3630,7 @@ def _cleanup_backends(String ssh_options, String ip_address, String name, String
         "export PYTHONPATH=$vm_path/test;" +
         "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
         "cd $vm_path/test; " +
-        "python whelk/ci/cleanup_backend.py'"
+        "python3 whelk/ci/cleanup_backend.py'"
     )
   } catch(Exception e) {
     error "Failure cleaning up backend(s): " + e.getMessage()
@@ -4005,7 +4005,7 @@ def _create_cleanup_script(Map spec, String name, String purpose, String ip_addr
          "\"export NDVP_CONFIG=\$vm_path/backends;" +
          "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
          "export PYTHONPATH=\$vm_path/test;cd \$vm_path/test;" +
-         "python whelk/ci/cleanup_backend.py\"\n"
+         "python3 whelk/ci/cleanup_backend.py\"\n"
        )
 
        if (spec['install_backend']) {
@@ -4014,7 +4014,7 @@ def _create_cleanup_script(Map spec, String name, String purpose, String ip_addr
            "\"export NDVP_CONFIG=\$vm_path/install_backend;" +
            "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
            "export PYTHONPATH=\$vm_path/test;" +
-           "cd \$vm_path/test;python whelk/ci/cleanup_backend.py\"\n"
+           "cd \$vm_path/test;python3 whelk/ci/cleanup_backend.py\"\n"
          )
        }
    }
@@ -5696,10 +5696,12 @@ def _setup_backends(String ssh_options, String ip_address, String name, String v
   try {
     sh (
       label: "Install required python packages on $ip_address",
-      script: "ssh $ssh_options root@$ip_address 'pip install " +
+      script: "ssh $ssh_options root@$ip_address 'pip3 install " +
         "-r $vm_path/test/requirements.txt > $vm_path/test/requirements.log 2>&1'"
     )
-
+   } catch(Exception e) {
+     error 'Failure running installing python packages: ' + e.getMessage()
+   } finally {
     _scp(
       ssh_options,
       'root',
@@ -5710,7 +5712,9 @@ def _setup_backends(String ssh_options, String ip_address, String name, String v
       false,
       false
     )
+  }
 
+  try {
     sh (
       label: "Change permissions for setup_backend.py on $ip_address",
       script: "ssh $ssh_options root@$ip_address 'chmod +x $vm_path/test/whelk/ci/setup_backend.py'"
@@ -5723,7 +5727,7 @@ def _setup_backends(String ssh_options, String ip_address, String name, String v
         "export PYTHONPATH=$vm_path/test;" +
         "export SF_ADMIN_PASSWORD=$env.SOLIDFIRE_ADMIN_PASSWORD;" +
         "cd $vm_path/test; " +
-        "python whelk/ci/setup_backend.py'"
+        "python3 whelk/ci/setup_backend.py'"
     )
 
   } catch(Exception e) {
