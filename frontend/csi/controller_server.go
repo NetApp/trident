@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -69,7 +69,7 @@ func (p *Plugin) CreateVolume(
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-
+		csiVolume.ContentSource = req.VolumeContentSource
 		return &csi.CreateVolumeResponse{Volume: csiVolume}, nil
 	}
 
@@ -209,7 +209,7 @@ func (p *Plugin) CreateVolume(
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
+	csiVolume.ContentSource = req.VolumeContentSource
 	return &csi.CreateVolumeResponse{Volume: csiVolume}, nil
 }
 

@@ -121,7 +121,7 @@ rules:
     resources: ["volumesnapshots", "volumesnapshotclasses"]
     verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshots/status"]
+    resources: ["volumesnapshots/status", "volumesnapshotcontents/status"]
     verbs: ["update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
@@ -317,9 +317,7 @@ func GetCSIDeploymentYAML(
 	switch version.MinorVersion() {
 	case 13:
 		deploymentYAML = csiDeployment113YAMLTemplate
-	case 14:
-		fallthrough
-	case 15:
+	case 14, 15:
 		deploymentYAML = csiDeployment114YAMLTemplate
 	case 16:
 		deploymentYAML = csiDeployment116YAMLTemplate
@@ -522,7 +520,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -534,7 +532,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -625,7 +623,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -637,7 +635,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -650,7 +648,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.3.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csiTimeout=300s"
@@ -740,7 +738,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.3.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -752,7 +750,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -765,7 +763,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.3.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csiTimeout=300s"
@@ -777,7 +775,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.0.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
