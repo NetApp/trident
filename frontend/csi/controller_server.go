@@ -590,8 +590,43 @@ func (p *Plugin) ListSnapshots(
 	ctx context.Context, req *csi.ListSnapshotsRequest,
 ) (*csi.ListSnapshotsResponse, error) {
 
-	// Trident doesn't support snapshots
-	return nil, status.Error(codes.Unimplemented, "")
+	fields := log.Fields{"Method": "ListSnapshots", "Type": "CSI_Controller"}
+	log.WithFields(fields).Debug(">>>> ListSnapshots")
+	defer log.WithFields(fields).Debug("<<<< ListSnapshots")
+
+	entries := make([]*csi.ListSnapshotsResponse_Entry, 0)
+
+	snapshotID := req.GetSnapshotId()
+	if snapshotID == "" {
+		// We only support ListSnapshots with a single snapshot ID
+		return &csi.ListSnapshotsResponse{Entries: entries}, nil
+	}
+
+	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid snapshot ID")
+	}
+
+	// Get the snapshot
+	snapshot, err := p.orchestrator.GetSnapshot(volumeName, snapshotName)
+	if err != nil {
+
+		log.WithFields(log.Fields{
+			"volumeName":   volumeName,
+			"snapshotName": snapshotName,
+			"error":        err,
+		}).Debugf("Could not find snapshot.")
+
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	}
+
+	if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(snapshot); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	} else {
+		entries = append(entries, &csi.ListSnapshotsResponse_Entry{Snapshot: csiSnapshot})
+	}
+
+	return &csi.ListSnapshotsResponse{Entries: entries}, nil
 }
 
 func (p *Plugin) ControllerExpandVolume(
