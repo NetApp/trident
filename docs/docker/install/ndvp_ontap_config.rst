@@ -115,6 +115,9 @@ Also, when using ONTAP, these default option settings are available to avoid hav
 +------------------------------+--------------------------------------------------------------------------+------------+
 | ``fileSystemType``           | SAN option to select the file system type, defaults to "ext4"            | xfs        |
 +------------------------------+--------------------------------------------------------------------------+------------+
+| ``tieringPolicy``            | Tiering policy to use, default is "none"; "snapshot-only" for            | none       |
+|                              | pre-ONTAP 9.5 SVM-DR configuration                                       |            |
++------------------------------+--------------------------------------------------------------------------+------------+
 
 Scaling Options
 ---------------

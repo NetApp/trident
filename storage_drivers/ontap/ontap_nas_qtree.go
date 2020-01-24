@@ -304,6 +304,7 @@ func (d *NASQtreeStorageDriver) Create(
 	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
 	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
+	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
@@ -313,6 +314,10 @@ func (d *NASQtreeStorageDriver) Create(
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
+	}
+
+	if tieringPolicy == "" {
+		tieringPolicy = d.API.TieringPolicyValue()
 	}
 
 	createErrors := make([]error, 0)
@@ -331,7 +336,8 @@ func (d *NASQtreeStorageDriver) Create(
 
 		// Make sure we have a Flexvol for the new qtree
 		flexvol, err := d.ensureFlexvolForQtree(
-			aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, enableEncryption, sizeBytes, opts, d.Config,
+			aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, sizeBytes,
+			d.Config,
 			snapshotReserve)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
@@ -614,8 +620,8 @@ func (d *NASQtreeStorageDriver) Get(name string) error {
 // ensureFlexvolForQtree accepts a set of Flexvol characteristics and either finds one to contain a new
 // qtree or it creates a new Flexvol with the needed attributes.
 func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, enableEncryption bool,
-	sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig, snapshotReserve string,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, enableEncryption bool,
+	sizeBytes uint64, config drivers.OntapStorageDriverConfig, snapshotReserve string,
 ) (string, error) {
 
 	shouldLimitVolumeSize, flexvolQuotaSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -625,7 +631,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.getFlexvolForQtree(aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir,
+	flexvol, err := d.getFlexvolForQtree(aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir,
 		enableEncryption, sizeBytes, shouldLimitVolumeSize, flexvolQuotaSizeLimit)
 	if err != nil {
 		return "", fmt.Errorf("error finding Flexvol for qtree: %v", err)
@@ -638,7 +644,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 
 	// Nothing found, so create a suitable Flexvol
 	flexvol, err = d.createFlexvolForQtree(
-		aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, enableEncryption, snapshotReserve)
+		aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, snapshotReserve)
 	if err != nil {
 		return "", fmt.Errorf("error creating Flexvol for qtree: %v", err)
 	}
@@ -651,7 +657,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 // Once this method returns, the Flexvol exists, is mounted, and has a default tree
 // quota.
 func (d *NASQtreeStorageDriver) createFlexvolForQtree(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, enableEncryption bool,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, enableEncryption bool,
 	snapshotReserve string) (string, error) {
 
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
@@ -682,7 +688,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Create the Flexvol
 	createResponse, err := d.API.VolumeCreate(
 		flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
+		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
 	if err = api.GetError(createResponse, err); err != nil {
 		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}
@@ -719,13 +725,14 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
 func (d *NASQtreeStorageDriver) getFlexvolForQtree(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, enableEncryption bool,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, enableEncryption bool,
 	sizeBytes uint64, shouldLimitFlexvolQuotaSize bool, flexvolQuotaSizeLimit uint64,
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
 	volListResponse, err := d.API.VolumeListByAttrs(
-		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, enableEncryption)
+		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir,
+		enableEncryption)
 
 	if err = api.GetError(volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)

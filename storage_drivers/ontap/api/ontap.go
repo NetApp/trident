@@ -289,6 +289,7 @@ const (
 	NetAppFabricPoolFlexVol   feature = "NETAPP_FABRICPOOL_FLEXVOL"
 	NetAppFabricPoolFlexGroup feature = "NETAPP_FABRICPOOL_FLEXGROUP"
 	LunGeometrySkip           feature = "LUN_GEOMETRY_SKIP"
+	FabricPoolForSVMDR        feature = "FABRICPOOL_FOR_SVMDR"
 )
 
 // Indicate the minimum Ontapi version for each feature here
@@ -298,6 +299,7 @@ var features = map[feature]*utils.Version{
 	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	FabricPoolForSVMDR:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -690,7 +692,7 @@ func (d Client) LunCount(volume string) (int, error) {
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) FlexGroupCreate(
 	name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy string, encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 
 	junctionPath := fmt.Sprintf("/%s", name)
@@ -714,8 +716,24 @@ func (d Client) FlexGroupCreate(
 		request.SetPercentageSnapshotReserve(snapshotReserve)
 	}
 
+	// Allowed ONTAP tiering Policy values
+	//
+	// =================================================================================
+	// SVM-DR - Value applicable to source SVM (and destination cluster during failover)
+	// =================================================================================
+	// ONTAP DRIVER	            ONTAP 9.3                   ONTAP 9.4                   ONTAP 9.5
+	// ONTAP-FlexGroups         NA                          NA                          NA
+	//
+	//
+	// ==========
+	// Non-SVM-DR
+	// ==========
+	// ONTAP DRIVER             ONTAP 9.3                   ONTAP 9.4                   ONTAP 9.5
+	// ONTAP-FlexGroups         all-values/pass             all-values/pass             other-values(backup)/pass(fail)
+	//
+
 	if d.SupportsFeature(NetAppFabricPoolFlexGroup) {
-		request.SetTieringPolicy("none")
+		request.SetTieringPolicy(tieringPolicy)
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
@@ -971,7 +989,7 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy string, encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -988,8 +1006,31 @@ func (d Client) VolumeCreate(
 		request.SetPercentageSnapshotReserve(snapshotReserve)
 	}
 
+	// Allowed ONTAP tiering Policy values
+	//
+	// =================================================================================
+	// SVM-DR - Value applicable to source SVM (and destination cluster during failover)
+	// =================================================================================
+	// ONTAP DRIVER	            ONTAP 9.3                           ONTAP 9.4                           ONTAP 9.5
+	// ONTAP-NAS                snapshot-only/pass                  snapshot-only/pass                  none/pass
+	// ONTAP-NAS-ECO            snapshot-only/pass                  snapshot-only/pass                  none/pass
+	//
+	//
+	// ==========
+	// Non-SVM-DR
+	// ==========
+	// ONTAP DRIVER             ONTAP 9.3                           ONTAP 9.4                           ONTAP 9.5
+	// ONTAP-NAS                other-values(backup)/pass(fail)     other-values(backup)/pass(fail)     other-values(
+	//backup)/pass(fail)
+	// ONTAP-NAS-ECO            other-values(backup)/pass(fail)     other-values(backup)/pass(fail)     other-values(
+	//backup)/pass(fail)
+	//
+	// PLEASE NOTE:
+	// 1. 'backup' tiering policy is for dp-volumes only.
+	//
+
 	if d.SupportsFeature(NetAppFabricPoolFlexVol) {
-		request.SetTieringPolicy("none")
+		request.SetTieringPolicy(tieringPolicy)
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
@@ -1239,7 +1280,7 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (d Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy string, snapshotDir bool, encrypt bool,
+	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt bool,
 ) (*azgo.VolumeGetIterResponse, error) {
 
 	// Limit the Flexvols to those matching the specified attributes
@@ -1255,7 +1296,10 @@ func (d Client) VolumeListByAttrs(
 		SetSnapdirAccessEnabled(snapshotDir)
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().
 		SetState("online")
+	queryVolCompAggrAttrs := azgo.NewVolumeCompAggrAttributesType().
+		SetTieringPolicy(tieringPolicy)
 	volumeAttributes := azgo.NewVolumeAttributesType().
+		SetVolumeCompAggrAttributes(*queryVolCompAggrAttrs).
 		SetVolumeIdAttributes(*queryVolIDAttrs).
 		SetVolumeSpaceAttributes(*queryVolSpaceAttrs).
 		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs).
@@ -2031,6 +2075,106 @@ func (d Client) AggregateCommitment(aggregate string) (*AggregateCommitment, err
 /////////////////////////////////////////////////////////////////////////////
 // SNAPMIRROR operations BEGIN
 
+// SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
+// equivalent to filer::> snapmirror show
+func (d Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.
+SnapmirrorGetIterResponse, error) {
+	// Limit list-destination to relationship-group-type matching passed relGroupType
+	query := &azgo.SnapmirrorGetIterRequestQuery{}
+	relationshipGroupType := azgo.NewSnapmirrorInfoType().
+		SetRelationshipGroupType(relGroupType)
+	query.SetSnapmirrorInfo(*relationshipGroupType)
+
+	response, err := azgo.NewSnapmirrorGetIterRequest().
+		SetQuery(*query).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// SnapmirrorGetDestinationIterRequest returns the snapmirror operations on the source cluster
+// equivalent to filer::> snapmirror list-destinations
+func (d Client) SnapmirrorGetDestinationIterRequest(relGroupType string) (*azgo.
+	SnapmirrorGetDestinationIterResponse, error) {
+
+	// Limit list-destination to relationship-group-type matching passed relGroupType
+	query := &azgo.SnapmirrorGetDestinationIterRequestQuery{}
+	relationshipGroupType := azgo.NewSnapmirrorDestinationInfoType().
+		SetRelationshipGroupType(relGroupType)
+	query.SetSnapmirrorDestinationInfo(*relationshipGroupType)
+
+	response, err := azgo.NewSnapmirrorGetDestinationIterRequest().
+		SetQuery(*query).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
+func (d Client) IsVserverDRDestination() (bool, error) {
+
+	// first, get the snapmirror destination info using relationship-group-type=vserver in a snapmirror relationship
+	relationshipGroupType := "vserver"
+	response, err := d.SnapmirrorGetIterRequest(relationshipGroupType)
+	isSVMDRDestination := false
+
+	if err != nil {
+		return isSVMDRDestination, err
+	}
+	if err = GetError(response, err); err != nil {
+		return isSVMDRDestination, fmt.Errorf("error getting snapmirror info: %v", err)
+	}
+
+	// for each of the aggregate's volumes, compute its potential storage usage
+	if response.Result.AttributesListPtr != nil {
+		for _, volAttrs := range response.Result.AttributesListPtr.SnapmirrorInfoPtr {
+			destinationLocation := volAttrs.DestinationLocation()
+			destinationVserver := volAttrs.DestinationVserver()
+
+			if (destinationVserver + ":") == destinationLocation {
+				isSVMDRDestination = true
+			}
+		}
+	}
+	return isSVMDRDestination, err
+}
+
+// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
+func (d Client) IsVserverDRSource() (bool, error) {
+
+	// first, get the snapmirror destination info using relationship-group-type=vserver in a snapmirror relationship
+	relationshipGroupType := "vserver"
+	response, err := d.SnapmirrorGetDestinationIterRequest(relationshipGroupType)
+	isSVMDRSource := false
+
+	if err != nil {
+		return isSVMDRSource, err
+	}
+	if err = GetError(response, err); err != nil {
+		return isSVMDRSource, fmt.Errorf("error getting snapmirror destination info: %v", err)
+	}
+
+	// for each of the aggregate's volumes, compute its potential storage usage
+	if response.Result.AttributesListPtr != nil {
+		for _, volAttrs := range response.Result.AttributesListPtr.SnapmirrorDestinationInfoPtr {
+			destinationLocation := volAttrs.DestinationLocation()
+			destinationVserver := volAttrs.DestinationVserver()
+
+			if (destinationVserver + ":") == destinationLocation {
+				isSVMDRSource = true
+			}
+		}
+	}
+	return isSVMDRSource, err
+}
+
+// isVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
+func (d Client) isVserverInSVMDR() bool {
+	isSVMDRSource,_ := d.IsVserverDRSource()
+	isSVMDRDestination,_ := d.IsVserverDRDestination()
+
+	return isSVMDRSource || isSVMDRDestination
+}
+
+
 // SNAPMIRROR operations END
 /////////////////////////////////////////////////////////////////////////////
 
@@ -2165,6 +2309,43 @@ func (d Client) EmsAutosupportLog(
 		SetLogLevel(logLevel).
 		ExecuteUsing(d.zr)
 	return response, err
+}
+
+// ONTAP tiering Policy value is set based on below rules
+//
+// =================================================================================
+// SVM-DR - Value applicable to source SVM (and destination cluster during failover)
+// =================================================================================
+// ONTAP DRIVER             ONTAP 9.3                           ONTAP 9.4                   ONTAP 9.5
+// ONTAP-NAS                snapshot-only/pass                  snapshot-only/pass          none/pass
+// ONTAP-NAS-ECO            snapshot-only/pass                  snapshot-only/pass          none/pass
+// ONTAP-Flexgroup          NA                                  NA                          NA
+//
+//
+// ==========
+// Non-SVM-DR
+// ==========
+// ONTAP DRIVER             ONTAP 9.3                           ONTAP 9.4                   ONTAP 9.5
+// ONTAP-NAS                none/pass                           none/pass                   none/pass
+// ONTAP-NAS-ECO            none/pass                           none/pass                   none/pass
+// ONTAP-Flexgroup          ONTAP-default(snapshot-only)/pass   ONTAP-default(none)/pass    none/pass
+//
+// PLEASE NOTE:
+// 1. We try to set 'none' default tieirng policy when possible except when in SVM-DR relationship for ONTAP 9.4 and
+// before only valid tiering policy value is 'snapshot-only'.
+// 2. In SVM-DR relationship FlexGroups are not allowed.
+//
+
+func (d Client) TieringPolicyValue() string {
+	tieringPolicy := "none"
+	// If ONTAP version < 9.5
+	if !d.SupportsFeature(FabricPoolForSVMDR) {
+		if d.isVserverInSVMDR() {
+			tieringPolicy = "snapshot-only"
+		}
+	}
+
+	return tieringPolicy
 }
 
 // MISC operations END

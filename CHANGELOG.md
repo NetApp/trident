@@ -6,6 +6,7 @@
 
 **Fixes:**
 - **Kubernetes:** Updated CSI sidecars to address CVE-2019-11255.
+- Set default SVM-DR tiering to 'snapshot-only' for ONTAP cluster version 9.4 or less. (Issue [#318](https://github.com/NetApp/trident/issues/318))
 
 **Enhancements**
 - **Kubernetes:** Added support for IPv6. (Issue [#122](https://github.com/NetApp/trident/issues/122))
@@ -14,6 +15,7 @@
 - ONTAP drivers now support `Virtual Pools`.
 - **Kubernetes:** Added --image-registry switch to installer. (Issue [#311](https://github.com/NetApp/trident/issues/311))
 - **Kubernetes:** Added --kubelet-dir switch to installer to simplify installation on some Kubernetes distributions. (Issue [#314](https://github.com/NetApp/trident/issues/314))
+- Added support for ONTAP tiering policy in backend config file
 
 ## v19.10.0
 

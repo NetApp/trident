@@ -180,6 +180,8 @@ unixPermissions           ontap-nas* only: mode for new volumes                 
 snapshotDir               ontap-nas* only: access to the .snapshot directory              "false"
 exportPolicy              ontap-nas* only: export policy to use                           "default"
 securityStyle             ontap-nas* only: security style for new volumes                 "unix"
+tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for
+pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
 
 Example configurations
@@ -353,7 +355,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
         "region": "us-east-1",
         "storage": [
             {
-                "labels":{"protection":"gold", "creditPoints":"50000"},
+                "labels":{"protection":"gold", "creditpoints":"50000"},
                 "zone":"us-east-1a",
                 "defaults": {
                     "spaceReserve": "volume",
@@ -362,7 +364,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"protection":"gold", "creditPoints":"30000"},
+                "labels":{"protection":"gold", "creditpoints":"30000"},
                 "zone":"us-east-1b",
                 "defaults": {
                     "spaceReserve": "none",
@@ -371,7 +373,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"protection":"silver", "creditPoints":"20000"},
+                "labels":{"protection":"silver", "creditpoints":"20000"},
                 "zone":"us-east-1c",
                 "defaults": {
                     "spaceReserve": "none",
@@ -380,7 +382,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"protection":"bronze", "creditPoints":"10000"},
+                "labels":{"protection":"bronze", "creditpoints":"10000"},
                 "zone":"us-east-1d",
                 "defaults": {
                     "spaceReserve": "volume",
@@ -414,7 +416,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
         "region": "us-east-1",
         "storage": [
             {
-                "labels":{"department":"finance", "creditPoints":"6000"},
+                "labels":{"department":"finance", "creditpoints":"6000"},
                 "zone":"us-east-1a",
                 "defaults": {
                     "spaceReserve": "volume",
@@ -423,7 +425,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"department":"legal", "creditPoints":"5000"},
+                "labels":{"department":"legal", "creditpoints":"5000"},
                 "zone":"us-east-1b",
                 "defaults": {
                     "spaceReserve": "none",
@@ -432,7 +434,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"department":"engineering", "creditPoints":"3000"},
+                "labels":{"department":"engineering", "creditpoints":"3000"},
                 "zone":"us-east-1c",
                 "defaults": {
                     "spaceReserve": "none",
@@ -441,7 +443,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"department":"humanresource", "creditPoints":"2000"},
+                "labels":{"department":"humanresource", "creditpoints":"2000"},
                 "zone":"us-east-1d",
                 "defaults": {
                     "spaceReserve": "volume",
@@ -474,7 +476,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
         "region": "us-east-1",
         "storage": [
             {
-                "labels":{"protection":"gold", "creditPoints":"40000"},
+                "labels":{"protection":"gold", "creditpoints":"40000"},
                 "zone":"us-east-1a",
                 "defaults": {
                     "spaceAllocation": "true",
@@ -482,7 +484,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"protection":"silver", "creditPoints":"20000"},
+                "labels":{"protection":"silver", "creditpoints":"20000"},
                 "zone":"us-east-1b",
                 "defaults": {
                     "spaceAllocation": "false",
@@ -490,7 +492,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
                 }
             },
             {
-                "labels":{"protection":"bronze", "creditPoints":"5000"},
+                "labels":{"protection":"bronze", "creditpoints":"5000"},
                 "zone":"us-east-1c",
                 "defaults": {
                     "spaceAllocation": "true",
@@ -552,8 +554,8 @@ The following StorageClass definitions refer to the above virtual storage pools.
 * The first StorageClass (``protection-gold``) will map to the first, second virtual storage pool in ``ontap-nas-flexgroup`` backend and the first virtual storage pool in ``ontap-san`` backend . These are the only pool offering gold level protection.
 * The second StorageClass (``protection-not-gold``) will map to the third, fourth virtual storage pool in ``ontap-nas-flexgroup`` backend and the second, third virtual storage pool in ``ontap-san`` backend . These are the only pool offering protection level other than gold.
 * The third StorageClass (``app-mysqldb``) will map to the fourth virtual storage pool in ``ontap-nas`` backend and the third virtual storage pool in ``ontap-san-economy`` backend . These are the only pool offering storage pool configuration for mysqldb type app.
-* The fourth StorageClass (``protection-silver-creditPoints-20k``) will map to the third virtual storage pool in ``ontap-nas-flexgroup`` backend and the second virtual storage pool in ``ontap-san`` backend . These are the only pool offering gold level protection at 20000 creditPoints.
-* The fifth StorageClass (``creditPoints-5k``) will map to the second virtual storage pool in ``ontap-nas-economy`` backend and the third virtual storage pool in ``ontap-san`` backend. These are the only pool offerings at 5000 creditPoints.
+* The fourth StorageClass (``protection-silver-creditpoints-20k``) will map to the third virtual storage pool in ``ontap-nas-flexgroup`` backend and the second virtual storage pool in ``ontap-san`` backend . These are the only pool offering gold level protection at 20000 creditpoints.
+* The fifth StorageClass (``creditpoints-5k``) will map to the second virtual storage pool in ``ontap-nas-economy`` backend and the third virtual storage pool in ``ontap-san`` backend. These are the only pool offerings at 5000 creditpoints.
 
 Trident will decide which virtual storage pool is selected and will ensure the storage requirement is met.
 
@@ -586,18 +588,18 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
     metadata:
-      name: protection-silver-creditPoints-20k
+      name: protection-silver-creditpoints-20k
     provisioner: netapp.io/trident
     parameters:
-      selector: "protection=silver; creditPoints=20000"
+      selector: "protection=silver; creditpoints=20000"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
     metadata:
-      name: creditPoints-5k
+      name: creditpoints-5k
     provisioner: netapp.io/trident
     parameters:
-      selector: "creditPoints=5000"
+      selector: "creditpoints=5000"
 
 User permissions
 ----------------

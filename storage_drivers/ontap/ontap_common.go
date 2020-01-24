@@ -52,6 +52,7 @@ const (
 	FileSystemType   = "fileSystemType"
 	ProvisioningType = "provisioningType"
 	SplitOnClone     = "splitOnClone"
+	TieringPolicy    = "tieringPolicy"
 )
 
 //For legacy reasons, these strings mustn't change
@@ -634,6 +635,7 @@ const DefaultSplitOnClone = "false"
 const DefaultEncryption = "false"
 const DefaultLimitAggregateUsage = ""
 const DefaultLimitVolumeSize = ""
+const DefaultTieringPolicy = ""
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) error {
@@ -725,6 +727,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		config.LimitVolumeSize = DefaultLimitVolumeSize
 	}
 
+	if config.TieringPolicy == "" {
+		config.TieringPolicy = DefaultTieringPolicy
+	}
+
 	log.WithFields(log.Fields{
 		"StoragePrefix":       *config.StoragePrefix,
 		"SpaceAllocation":     config.SpaceAllocation,
@@ -742,6 +748,7 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		"LimitAggregateUsage": config.LimitAggregateUsage,
 		"LimitVolumeSize":     config.LimitVolumeSize,
 		"Size":                config.Size,
+		"TieringPolicy":       config.TieringPolicy,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -1578,6 +1585,7 @@ func InitializeStoragePoolsCommon(d StorageDriver, poolAttributes map[string]sa.
 		pool.InternalAttributes[SnapshotDir] = config.SnapshotDir
 		pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
 		pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
+		pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
 
 		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes[SpaceAllocation] = config.SpaceAllocation
@@ -1660,6 +1668,11 @@ func InitializeStoragePoolsCommon(d StorageDriver, poolAttributes map[string]sa.
 			encryption = vpool.Encryption
 		}
 
+		tieringPolicy := config.TieringPolicy
+		if vpool.TieringPolicy != "" {
+			tieringPolicy = vpool.TieringPolicy
+		}
+
 		pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), backendName))
 
 		// Update pool with attributes set by default for this backend
@@ -1703,6 +1716,7 @@ func InitializeStoragePoolsCommon(d StorageDriver, poolAttributes map[string]sa.
 		pool.InternalAttributes[SnapshotDir] = snapshotDir
 		pool.InternalAttributes[ExportPolicy] = exportPolicy
 		pool.InternalAttributes[SecurityStyle] = securityStyle
+		pool.InternalAttributes[TieringPolicy] = tieringPolicy
 
 		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes[SpaceAllocation] = spaceAllocation
@@ -1780,6 +1794,15 @@ func ValidateStoragePools(physicalPools, virtualPools map[string]*storage.Pool, 
 		// Validate UnixPermissions
 		if pool.InternalAttributes[UnixPermissions] == "" {
 			return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+		}
+
+		// Validate TieringPolicy
+		switch pool.InternalAttributes[TieringPolicy] {
+			case "snapshot-only","auto","none","backup","all","":
+				break
+			default:
+				return fmt.Errorf("invalid tieringPolicy %s in pool %s", pool.InternalAttributes[TieringPolicy],
+					poolName)
 		}
 
 		// Validate media type

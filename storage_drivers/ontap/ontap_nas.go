@@ -204,6 +204,7 @@ func (d *NASStorageDriver) Create(
 	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
+	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
@@ -224,6 +225,10 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
+	if tieringPolicy == "" {
+		tieringPolicy = d.API.TieringPolicyValue()
+	}
+
 	log.WithFields(log.Fields{
 		"name":            name,
 		"size":            size,
@@ -235,6 +240,7 @@ func (d *NASStorageDriver) Create(
 		"exportPolicy":    exportPolicy,
 		"securityStyle":   securityStyle,
 		"encryption":      enableEncryption,
+		"tieringPolicy":   tieringPolicy,
 	}).Debug("Creating Flexvol.")
 
 	createErrors := make([]error, 0)
@@ -254,7 +260,7 @@ func (d *NASStorageDriver) Create(
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {

@@ -11,6 +11,7 @@ Volume create options for both NFS and iSCSI:
 * ``snapshotReserve`` - this will set the snapshot reserve to the desired percentage. The default is no value, meaning ONTAP will select the snapshotReserve (usually 5%) if you have selected a snapshotPolicy, or 0% if the snapshotPolicy is ``none``. The default snapshotReserve value may be set in the config file for all ONTAP backends, and it may be used as a volume creation option for all ONTAP backends except ontap-nas-economy.
 * ``splitOnClone`` - when cloning a volume, this will cause ONTAP to immediately split the clone from its parent. The default is ``false``. Some use cases for cloning volumes are best served by splitting the clone from its parent immediately upon creation, since there is unlikely to be any opportunity for storage efficiencies. For example, cloning an empty database can offer large time savings but little storage savings, so it's best to split the clone immediately.
 * ``encryption`` - this will enable NetApp Volume Encryption (NVE) on the new volume, defaults to ``false``.  NVE must be licensed and enabled on the cluster to use this option.
+* ``tieringPolicy`` - sets the tiering policy to be used for the volume.  This decides whether data is moved to the cloud tier when it becomes inactive (cold).
 
 NFS has additional options that aren't relevant when using iSCSI:
 

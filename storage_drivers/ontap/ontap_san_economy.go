@@ -428,6 +428,7 @@ func (d *SANEconomyStorageDriver) Create(
 	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
+	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
@@ -439,6 +440,10 @@ func (d *SANEconomyStorageDriver) Create(
 		storagePool.InternalAttributes[FileSystemType]), name)
 	if err != nil {
 		return err
+	}
+
+	if tieringPolicy == "" {
+		tieringPolicy = d.API.TieringPolicyValue()
 	}
 
 	createErrors := make([]error, 0)
@@ -457,7 +462,7 @@ func (d *SANEconomyStorageDriver) Create(
 		}
 
 		// Make sure we have a Flexvol for the new LUN
-		bucketVol, err := d.ensureFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, false,
+		bucketVol, err := d.ensureFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, tieringPolicy, false,
 			enableEncryption, sizeBytes, opts, d.Config, storagePool)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; BucketVol location/creation failed %s: %v",
@@ -1119,7 +1124,7 @@ func (d *SANEconomyStorageDriver) Get(name string) error {
 // ensureFlexvolForLUN accepts a set of Flexvol characteristics and either finds one to contain a new
 // LUN or it creates a new Flexvol with the needed attributes.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt bool,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, encrypt bool,
 	sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig, storagePool *storage.Pool,
 ) (string, error) {
 
@@ -1130,7 +1135,8 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.getFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt, sizeBytes,
+	flexvol, err := d.getFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir,
+		encrypt, sizeBytes,
 		shouldLimitVolumeSize, flexvolSizeLimit)
 
 	if err != nil {
@@ -1143,7 +1149,8 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	}
 
 	// Nothing found, so create a suitable Flexvol
-	flexvol, err = d.createFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt, opts,
+	flexvol, err = d.createFlexvolForLUN(aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir,
+		encrypt, opts,
 		storagePool)
 	if err != nil {
 		return "", fmt.Errorf("error creating Flexvol for LUN: %v", err)
@@ -1156,7 +1163,8 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 // the purpose of containing LUN supplied as container volumes by this driver.
 // Once this method returns, the Flexvol exists, is mounted
 func (d *SANEconomyStorageDriver) createFlexvolForLUN(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt bool, opts map[string]string,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, encrypt bool,
+	opts map[string]string,
 	storagePool *storage.Pool) (string, error) {
 
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
@@ -1189,7 +1197,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	// Create the flexvol
 	volCreateResponse, err := d.API.VolumeCreate(
 		flexvol, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, encrypt, snapshotReserveInt)
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, encrypt, snapshotReserveInt)
 
 	if err = api.GetError(volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)
@@ -1212,13 +1220,13 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
 func (d *SANEconomyStorageDriver) getFlexvolForLUN(
-	aggregate, spaceReserve, snapshotPolicy string, enableSnapshotDir bool, encrypt bool,
+	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, encrypt bool,
 	sizeBytes uint64, shouldLimitFlexvolSize bool, flexvolSizeLimit uint64,
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
 	volListResponse, err := d.API.VolumeListByAttrs(
-		d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy, enableSnapshotDir, encrypt)
+		d.FlexvolNamePrefix(), aggregate, spaceReserve, tieringPolicy, snapshotPolicy, enableSnapshotDir, encrypt)
 
 	if err = api.GetError(volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)

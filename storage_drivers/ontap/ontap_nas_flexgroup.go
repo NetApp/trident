@@ -174,6 +174,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools() error {
 	pool.InternalAttributes[SnapshotDir] = config.SnapshotDir
 	pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
 	pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
+	pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
 
 	d.physicalPool = pool
 
@@ -238,6 +239,11 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools() error {
 				encryption = vpool.Encryption
 			}
 
+			tieringPolicy := config.TieringPolicy
+			if vpool.TieringPolicy != "" {
+				tieringPolicy = vpool.TieringPolicy
+			}
+
 			pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), d.backendName()))
 
 			// Update pool with attributes set by default for this backend
@@ -280,6 +286,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools() error {
 			pool.InternalAttributes[SnapshotDir] = snapshotDir
 			pool.InternalAttributes[ExportPolicy] = exportPolicy
 			pool.InternalAttributes[SecurityStyle] = securityStyle
+			pool.InternalAttributes[TieringPolicy] = tieringPolicy
 
 			d.virtualPools[pool.Name] = pool
 		}
@@ -461,6 +468,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
+	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 
 	// limits checks are not currently applicable to the Flexgroups driver, ommited here on purpose
 
@@ -477,6 +485,10 @@ func (d *NASFlexGroupStorageDriver) Create(
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
+	}
+
+	if tieringPolicy == "" {
+		tieringPolicy = "none"
 	}
 
 	log.WithFields(log.Fields{
@@ -500,7 +512,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	// Create the FlexGroup
 	_, err = d.API.FlexGroupCreate(
 		name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, enableEncryption, snapshotReserveInt)
+		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
 
 	if err != nil {
 		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v", storagePool.Name, name, err))
