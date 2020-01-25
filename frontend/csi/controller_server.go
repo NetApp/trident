@@ -597,14 +597,33 @@ func (p *Plugin) ListSnapshots(
 	entries := make([]*csi.ListSnapshotsResponse_Entry, 0)
 
 	snapshotID := req.GetSnapshotId()
+	// If snapshotID is not set then a list of snapshots is expected.
 	if snapshotID == "" {
-		// We only support ListSnapshots with a single snapshot ID
-		return &csi.ListSnapshotsResponse{Entries: entries}, nil
+		var snapshots []*storage.SnapshotExternal
+		var err error
+
+		sourceVolume := req.GetSourceVolumeId()
+		if sourceVolume != "" {
+			snapshots, err = p.orchestrator.ListSnapshotsForVolume(sourceVolume)
+			// CSI spec expects empty return if source volume is not found
+			if err != nil && utils.IsNotFoundError(err) {
+				err = nil
+				snapshots = make([]*storage.SnapshotExternal, 0)
+			}
+		} else {
+			snapshots, err = p.orchestrator.ListSnapshots()
+		}
+		if err != nil {
+			return nil, p.getCSIErrorForOrchestratorError(err)
+		}
+		return p.getListSnapshots(req, snapshots)
 	}
 
 	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid snapshot ID")
+		log.WithFields(fields).Warnf("Snapshot %s not found.", snapshotID)
+		// CSI spec calls for empty return if snapshot is not found
+		return &csi.ListSnapshotsResponse{}, nil
 	}
 
 	// Get the snapshot
@@ -617,7 +636,8 @@ func (p *Plugin) ListSnapshots(
 			"error":        err,
 		}).Debugf("Could not find snapshot.")
 
-		return nil, p.getCSIErrorForOrchestratorError(err)
+		// CSI spec calls for empty return if snapshot is not found
+		return &csi.ListSnapshotsResponse{}, nil
 	}
 
 	if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(snapshot); err != nil {
@@ -627,6 +647,44 @@ func (p *Plugin) ListSnapshots(
 	}
 
 	return &csi.ListSnapshotsResponse{Entries: entries}, nil
+}
+
+func (p *Plugin) getListSnapshots(
+	req *csi.ListSnapshotsRequest, snapshots []*storage.SnapshotExternal) (*csi.ListSnapshotsResponse, error) {
+
+	entries := make([]*csi.ListSnapshotsResponse_Entry, 0)
+	maxPageEntries := int(req.MaxEntries)
+	encounteredStartingToken := req.StartingToken == ""
+	nextToken := ""
+
+	if maxPageEntries < 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "max_entries value '%d' is not valid", maxPageEntries)
+	} else if maxPageEntries == 0 {
+		maxPageEntries = math.MaxInt16
+	}
+
+	// NextToken might get set only when requested number of entries < number of snapshots returned by the core,
+	// it also depends on the condition whether the starting token (if any) has been found or not.
+	for _, snapshot := range snapshots {
+		snapshotID := storage.MakeSnapshotID(snapshot.Config.VolumeName, snapshot.Config.Name)
+		if !encounteredStartingToken {
+			if snapshotID == req.StartingToken {
+				encounteredStartingToken = true
+			} else {
+				continue
+			}
+		}
+
+		if len(entries) < maxPageEntries {
+			if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(snapshot); err == nil {
+				entries = append(entries, &csi.ListSnapshotsResponse_Entry{Snapshot: csiSnapshot})
+			}
+		} else {
+			nextToken = snapshotID
+			break
+		}
+	}
+	return &csi.ListSnapshotsResponse{Entries: entries, NextToken: nextToken}, nil
 }
 
 func (p *Plugin) ControllerExpandVolume(

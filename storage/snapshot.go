@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -139,3 +139,11 @@ func ParseSnapshotID(snapshotID string) (string, string, error) {
 
 	return volumeName, snapshotName, nil
 }
+
+type BySnapshotExternalID []*SnapshotExternal
+
+func (a BySnapshotExternalID) Len() int { return len(a) }
+func (a BySnapshotExternalID) Less(i, j int) bool {
+	return MakeSnapshotID(a[i].Config.VolumeName, a[i].Config.Name) < MakeSnapshotID(a[j].Config.VolumeName, a[j].Config.Name)
+}
+func (a BySnapshotExternalID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

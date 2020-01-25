@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -3080,6 +3080,7 @@ func (o *TridentOrchestrator) ListSnapshots() ([]*storage.SnapshotExternal, erro
 	for _, s := range o.snapshots {
 		snapshots = append(snapshots, s.ConstructExternal())
 	}
+	sort.Sort(storage.BySnapshotExternalID(snapshots))
 	return snapshots, nil
 }
 
@@ -3099,6 +3100,7 @@ func (o *TridentOrchestrator) ListSnapshotsByName(snapshotName string) ([]*stora
 			snapshots = append(snapshots, s.ConstructExternal())
 		}
 	}
+	sort.Sort(storage.BySnapshotExternalID(snapshots))
 	return snapshots, nil
 }
 
@@ -3122,6 +3124,7 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(volumeName string) ([]*stor
 			snapshots = append(snapshots, s.ConstructExternal())
 		}
 	}
+	sort.Sort(storage.BySnapshotExternalID(snapshots))
 	return snapshots, nil
 }
 
@@ -3146,6 +3149,7 @@ func (o *TridentOrchestrator) ReadSnapshotsForVolume(volumeName string) ([]*stor
 	for _, snapshot := range snapshots {
 		externalSnapshots = append(externalSnapshots, snapshot.ConstructExternal())
 	}
+	sort.Sort(storage.BySnapshotExternalID(externalSnapshots))
 	return externalSnapshots, nil
 }
 
