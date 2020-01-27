@@ -178,6 +178,33 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'KubeAdm-CentOS-IPv6-ONTAP-SAN',
+        'backend': 'ontap-san',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-san': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
+      ],
+      [
         'name': 'KubeAdm-CentOS-ONTAP-SAN-Economy',
         'backend': 'ontap-san-economy',
         'context': 'openlab',
@@ -202,6 +229,33 @@ node {
         'trident_image_distribution': 'pull',
         'trident_install_playbook': 'ci_trident.playbook',
         'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'KubeAdm-CentOS-IPv6-ONTAP-SAN-Economy',
+        'backend': 'ontap-san-economy',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-san-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_SAN_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
       ],
       [
         'name': 'KubeAdm-CentOS-ONTAP-NAS',
@@ -230,6 +284,33 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'KubeAdm-CentOS-IPv6-ONTAP-NAS',
+        'backend': 'ontap-nas',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-nas': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_NAS_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
+      ],
+      [
         'name': 'KubeAdm-CentOS-ONTAP-NAS-Economy',
         'backend': 'ontap-nas-economy',
         'context': 'openlab',
@@ -256,6 +337,33 @@ node {
         'vm_provider': 'SCS'
       ],
       [
+        'name': 'KubeAdm-CentOS-IPv6-ONTAP-NAS-Economy',
+        'backend': 'ontap-nas-economy',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-nas-economy': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_NAS_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
+      ],
+      [
         'name': 'KubeAdm-CentOS-Flexgroup',
         'backend': 'ontap-nas-flexgroup',
         'context': 'openlab',
@@ -280,6 +388,33 @@ node {
         'trident_image_distribution': 'pull',
         'trident_install_playbook': 'ci_trident.playbook',
         'vm_provider': 'SCS'
+      ],
+      [
+        'name': 'KubeAdm-CentOS-IPv6-Flexgroup',
+        'backend': 'ontap-nas-flexgroup',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-nas-flexgroup': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_NAS_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_centos_7.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
       ],
       [
         'name': 'KubeAdm-CentOS-ESeries-ISCSI',
@@ -336,7 +471,33 @@ node {
         'trident_image_distribution': 'pull',
         'trident_install_playbook': 'ci_trident.playbook',
         'vm_provider': 'SCS'
-
+      ],
+      [
+        'name': 'KubeAdm-Ubuntu-IPv6-ONTAP-NAS',
+        'backend': 'ontap-nas',
+        'context': 'openlab',
+        'coverage': 'kubeadm,nightly',
+        'docker_ce_version': env.DOCKER_CE_VERSION,
+        'enabled': true,
+        'go_download_url': env.GO_DOWNLOAD_URL,
+        'hold_jig': hold_jig,
+        'k8s_version': env.K8S_VERSION,
+        'k8s_api_version': env.K8S_API_VERSION,
+        'k8s_cni_version': env.K8S_CNI_VERSION,
+        'kubeadm_version': env.KUBEADM_VERSION,
+        'ontap-nas': [
+          'username': env.ONTAP_ADMIN_USERNAME,
+          'password': env.ONTAP_ADMIN_PASSWORD,
+          'management_lif': env.ONTAP_NAS_MLIF,
+        ],
+        'post_deploy_playbook': 'ci_kubeadm.playbook',
+        'request': 'ci_ubuntu_bionic.yaml',
+        'stage': '_whelk_test',
+        'test': 'kubeadm',
+        'trident_image_distribution': 'pull',
+        'trident_install_playbook': 'ci_trident.playbook',
+        'vm_provider': 'SCS',
+        'use_ipv6': true
       ],
       [
         'name': 'Docker-EE-CentOS-ONTAP-NAS',
@@ -1676,7 +1837,7 @@ def _build_documentation(String name, String ssh_options, Map spec) {
 
         sh (
           label: "Install sphinx packages on $ip_address",
-          script: "ssh $ssh_options root@$ip_address 'pip3 install -U Sphinx==1.7 sphinx_rtd_theme sphinx-autobuild'"
+          script: "ssh $ssh_options root@$ip_address 'LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 pip3 install -U Sphinx==1.7 sphinx_rtd_theme sphinx-autobuild'"
         )
 
         sh (
@@ -3905,8 +4066,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '  "username": "' + spec[backend]['username'] + '",\n' +
     '  "password": "' + spec[backend]['password'] + '",\n' +
     '  "storagePrefix": "' + id + '_",\n' +
-    '  "debugTraceFlags": {"method": true, "api": true}\n' +
-    '}')
+    '  "debugTraceFlags": {"method": true, "api": true}')
+    if (spec['use_ipv6'] == true) {
+        content += (',\n  "whelk-subnet-name": "barnacle-ci-ipv6"')
+    }
+    content += ('\n}')
   }
 
   if (backend == 'ontap-san-economy') {
@@ -3919,8 +4083,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '  "username": "' + spec[backend]['username'] + '",\n' +
     '  "password": "' + spec[backend]['password'] + '",\n' +
     '  "storagePrefix": "' + id + '_",\n' +
-    '  "debugTraceFlags": {"method": true, "api": true}\n' +
-    '}')
+    '  "debugTraceFlags": {"method": true, "api": true}')
+    if (spec['use_ipv6'] == true) {
+        content += (',\n  "whelk-subnet-name": "barnacle-ci-ipv6"')
+    }
+    content += ('\n}')
   }
 
   if (backend == 'ontap-nas') {
@@ -3933,8 +4100,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '  "username": "' + spec[backend]['username'] + '",\n' +
     '  "password": "' + spec[backend]['password'] + '",\n' +
     '  "storagePrefix": "' + id + '_",\n' +
-    '  "debugTraceFlags": {"method": true, "api": true}\n' +
-    '}')
+    '  "debugTraceFlags": {"method": true, "api": true}')
+    if (spec['use_ipv6'] == true) {
+        content += (',\n  "whelk-subnet-name": "barnacle-ci-ipv6"')
+    }
+    content += ('\n}')
   }
 
   if (backend == 'ontap-nas-economy') {
@@ -3951,8 +4121,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '  "defaults": {\n' +
     '        "snapshotDir": "true"\n' +
     '      },\n' +
-    '  "debugTraceFlags": {"method": true, "api": true}\n' +
-    '}')
+    '  "debugTraceFlags": {"method": true, "api": true}')
+    if (spec['use_ipv6'] == true) {
+        content += (',\n  "whelk-subnet-name": "barnacle-ci-ipv6"')
+    }
+    content += ('\n}')
   }
 
   if (backend == 'ontap-nas-flexgroup') {
@@ -3965,8 +4138,11 @@ def _create_backend_file(String path, String id, String backend, Map spec) {
     '  "username": "' + spec[backend]['username'] + '",\n' +
     '  "password": "' + spec[backend]['password'] + '",\n' +
     '  "storagePrefix": "' + id + '_",\n' +
-    '  "debugTraceFlags": {"method": true, "api": true}\n' +
-    '}\n')
+    '  "debugTraceFlags": {"method": true, "api": true}')
+    if (spec['use_ipv6'] == true) {
+        content += (',\n  "whelk-subnet-name": "barnacle-ci-ipv6"')
+    }
+    content += ('\n}')
   }
   if (backend == 'eseries-iscsi') {
     content = ('\n' +

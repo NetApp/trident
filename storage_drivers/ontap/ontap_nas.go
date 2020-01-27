@@ -52,7 +52,7 @@ func (d *NASStorageDriver) Name() string {
 func (d *NASStorageDriver) backendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return "ontapnas_" + d.Config.DataLIF
+		return CleanBackendName("ontapnas_" + d.Config.DataLIF)
 	} else {
 		return d.Config.BackendName
 	}

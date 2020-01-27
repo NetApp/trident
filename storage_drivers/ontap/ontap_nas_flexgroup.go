@@ -54,7 +54,7 @@ func (d *NASFlexGroupStorageDriver) Name() string {
 func (d *NASFlexGroupStorageDriver) backendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return "ontapnasfg_" + d.Config.DataLIF
+		return CleanBackendName("ontapnasfg_" + d.Config.DataLIF)
 	} else {
 		return d.Config.BackendName
 	}

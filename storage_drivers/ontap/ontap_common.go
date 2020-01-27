@@ -80,6 +80,13 @@ type StorageDriver interface {
 	Name() string
 }
 
+// CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
+func CleanBackendName(backendName string) (string) {
+	backendName = strings.ReplaceAll(backendName, "[", "")
+	backendName = strings.ReplaceAll(backendName, "]", "")
+	return strings.ReplaceAll(backendName, ":", ".")
+}
+
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
 func InitializeOntapConfig(
 	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,

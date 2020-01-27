@@ -76,7 +76,7 @@ func (d *NASQtreeStorageDriver) Name() string {
 func (d *NASQtreeStorageDriver) backendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return "ontapnaseco_" + d.Config.DataLIF
+		return CleanBackendName("ontapnaseco_" + d.Config.DataLIF)
 	} else {
 		return d.Config.BackendName
 	}

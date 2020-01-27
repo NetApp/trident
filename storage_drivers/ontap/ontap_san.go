@@ -58,7 +58,7 @@ func (d SANStorageDriver) Name() string {
 func (d *SANStorageDriver) backendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return "ontapsan_" + d.ips[0]
+		return CleanBackendName("ontapsan_" + d.ips[0])
 	} else {
 		return d.Config.BackendName
 	}
