@@ -202,7 +202,8 @@ Please refer to :ref:`Trident StorageClass Objects <Trident StorageClass objects
 
 Storage Class Design for Virtual Storage Pools
 ----------------------------------------------
-Virtual Storage Pools are available for Cloud Volumes Service for AWS, ANF, Element and E-Series backends.
+Virtual Storage Pools are available for all Trident backends. You can define Virtual Storage Pools
+for any backend, using any driver that Trident provides.
 
 Virtual Storage Pools allow an administrator to create a level of abstraction over backends which can be referenced through Storage Classes, for greater flexibility and efficient placement of volumes on backends. Different backends can be defined with the same class of service. Moreover, multiple Storage Pools can be created on the same backend but with different characteristics. When a Storage Class is configured with a selector with the specific labels , Trident chooses a backend which matches all the selector labels to place the volume. If the Storage Class selector labels matches multiple Storage Pools, Trident will choose one of them to provision the volume from.
 
@@ -211,7 +212,17 @@ Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more in
 Virtual Storage Pool Design
 ===========================
 
-While creating a backend , you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way. Currently Virtual Storage Pool is supported for Cloud Volumes Service for AWS , E-Series and SolidFire.
+While creating a backend , you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way.
+Virtual Storage Pools can be defined for all supported NetApp backends with Trident. That list
+includes E-Series, SolidFire/HCI, ONTAP, Cloud Volumes Service on AWS and GCP, as well as Azure
+NetApp Files.
+
+.. note::
+
+   When defining Virtual Storage Pools, it is recommended to not attempt to rearrange
+   the order of existing virtual pools in a backend definition. It is also advisable
+   to not edit/modify attributes for an existing virtual pool and define a new virtual
+   pool instead.
 
 Design Virtual Storage Pools for emulating different Service Levels/QoS
 -----------------------------------------------------------------------
@@ -303,12 +314,13 @@ Trident supports resizing NFS and iSCSI PVs, beginning with the ``18.10`` and ``
 releases respectively. This enables users to resize their volumes directly through
 the Kubernetes layer. Volume expansion is possible for all major NetApp storage platforms,
 including ONTAP, Element/HCI and Cloud Volumes Service backends.
-Take a look at the :ref:`Resizing an NFS volume` and
-:ref:`Resizing an iSCSI volume` for examples and conditions that must be met.
+Take a look at the :ref:`Expanding an NFS volume` and
+:ref:`Expanding an iSCSI volume` for examples and conditions that must be met.
 To allow possible expansion later, set `allowVolumeExpansion` to `true` in your StorageClass associated with the volume. Whenever the Persistent Volume needs to be resized, edit the ``spec.resources.requests.storage`` annotation in the Persistent Volume Claim to the required volume size. Trident will automatically take care of resizing the volume on the storage cluster.
-.. note::
-   1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
 
+.. note::
+   
+   1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
    2. Kubernetes, prior to version 1.12, does not support PV resize as the admission controller may reject PVC size updates. The Trident team has changed Kubernetes to allow such changes starting with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still possible to resize NFS PVs for earlier versions of Kubernetes that support resize. This is done by disabling the PersistentVolumeClaimResize admission plugin when the Kubernetes API server is started.
 
 

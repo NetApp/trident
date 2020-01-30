@@ -8,7 +8,7 @@ Supported frontends (orchestrators)
 Trident supports multiple container engines and orchestrators, including:
 
 * `NetApp Kubernetes Service <https://cloud.netapp.com/kubernetes-service>`_
-* Kubernetes 1.11 or later (latest: 1.16)
+* Kubernetes 1.11 or later (latest: 1.17)
 * OpenShift 3.11 or 4.2
 * Docker Enterprise 2.1 or 3.0
 
@@ -26,6 +26,7 @@ To use Trident, you need one or more of the following supported backends:
 * Azure NetApp Files
 * Cloud Volumes ONTAP
 * Cloud Volumes Service for AWS
+* Cloud Volumes Service for GCP
 
 Feature Gates
 =============
@@ -34,21 +35,19 @@ Trident requires some feature gates to be enabled for certain features
 to work. Refer to the table shown below to determine if you need to
 enable feature gates, based on your version of Trident and Kubernetes.
 
-============================ =============== ==========================
-         Feature             Trident version    Kubernetes version
-============================ =============== ==========================
-CSI Trident                  19.07 and above   1.13\ :sup:`1` and above
-Volume Snapshots             19.07 and above       1.13 and above
-PVC from Volume Snapshots    19.07 and above   1.13 and above\ :sup:`2`
-iSCSI PV resize              19.10 and above       1.16 and above
-============================ =============== ==========================
+================================ =============== ==========================
+         Feature                 Trident version    Kubernetes version
+================================ =============== ==========================
+CSI Trident                      19.07 and above   1.13\ :sup:`1` and above
+Volume Snapshots (beta)          20.01 and above       1.17 and above
+PVC from Volume Snapshots (beta) 20.01 and above       1.17 and above
+iSCSI PV resize                  19.10 and above       1.16 and above
+================================ =============== ==========================
 
 | Footnote:
 | `1`: Requires enabling ``CSIDriverRegistry`` and ``CSINodeInfo``
        for Kubernetes 1.13. Install CSI Trident on Kubernetes 1.13 using
        the ``--csi`` switch when invoking ``tridentctl install``.
-| `2`: Requires enabling ``VolumeSnapshotDataSource``
-       for Kubernetes 1.13 and above.
 
 .. note::
    All features mentioned in the table above require CSI Trident.

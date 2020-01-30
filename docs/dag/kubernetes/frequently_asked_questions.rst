@@ -103,7 +103,8 @@ Refer to :ref:`Supported backends <Supported backends (storage)>` for more infor
 Does Trident work with Cloud Volumes Services?
 ----------------------------------------------
 
-Yes, Trident supports the Azure NetApp Files service in Azure as well as the Cloud Volumes Service in AWS.
+Yes, Trident supports the Azure NetApp Files service in Azure as well as the Cloud Volumes Service in AWS
+and GCP.
 
 Refer to :ref:`Supported backends <Supported backends (storage)>` for more information.
 
@@ -169,6 +170,14 @@ Configure it in the backend.json file as
 `"managementLIF": <ip address>:<port>"` For example, if the IP address of your management LIF is 192.0.2.1, and the
 port is 1000, configure ``"managementLIF": "192.0.2.1:1000"``,
 
+Can IPv6 addresses be used for the Management and Data LIFs?
+------------------------------------------------------------
+
+Yes. Trident 20.01 supports defining IPv6 addresses for the ``managementLIF`` and
+``dataLIF`` parameters for ONTAP backends. You must make sure that the address
+follows IPv6 semantics and the ``managementLIF`` is defined within square brackets,
+(e.g. ``[ec0d:6504:a9c1:ae67:53d1:4bdf:ab32:e233]``). You must also ensure that
+Trident is installed using the ``--use-ipv6`` flag for it to function over IPv6.
 
 Is it possible to update the Management LIF on the backend ?
 ------------------------------------------------------------
@@ -308,13 +317,14 @@ PVC protection is automatically enabled on Kubernetes starting from version 1.10
 Refer to `Storage Object in Use Protection <https://v1-14.docs.kubernetes.io/docs/tasks/administer-cluster/storage-object-in-use-protection/>`_ for additional information.
 
 
-Can we use PVC resize functionality with NFS, Trident, and ONTAP?
------------------------------------------------------------------
+Can I grow NFS PVCs that were created by Trident?
+-------------------------------------------------
 
-PVC resize is supported with Trident. Note that `volume autogrow` is an ONTAP feature that is not applicable to
+Yes. You can expand a PVC that has been created by Trident.
+Note that `volume autogrow` is an ONTAP feature that is not applicable to
 Trident.
 
-Refer to :ref:`Resizing Volumes <Resizing an NFS volume>` for more information.
+Refer to :ref:`Expanding NFS Volumes <Expanding an NFS volume>` for more information.
 
 
 If I have a volume that was created outside Trident can I import it into Trident?
@@ -339,11 +349,12 @@ Make sure to remove the DP mode or put the volume online before importing the vo
 Refer to: :ref:`Behavior of Drivers for Volume Import <Behavior of Drivers for Volume Import>` for additional information.
 
 
-Can we use PVC resize functionality with iSCSI, Trident, and ONTAP?
--------------------------------------------------------------------
+Can I expand iSCSI PVCs that were created by Trident?
+-----------------------------------------------------
 
-PVC resize functionality with iSCSI is not supported with Trident.
-
+Trident 19.10 support expanding iSCSI PVs using the CSI Provisioner. Refer to
+:ref:`Expanding an iSCSI volume <Expanding an iSCSI volume>` for details on how
+it works.
 
 How is resource quota translated to a NetApp cluster?
 -----------------------------------------------------
@@ -355,7 +366,7 @@ Can you create Volume Snapshots using Trident?
 ----------------------------------------------
 
 Yes. On-demand volume snapshotting and creating Persistent Volumes from Snapshots is supported
-by Trident beginning with 19.07. To create PVs from snapshots, ensure that the ``VolumeSnapshotDataSource``
+by Trident. To create PVs from snapshots, ensure that the ``VolumeSnapshotDataSource``
 feature-gate has been enabled.
 
 Refer to :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>`
@@ -364,12 +375,16 @@ for more information.
 What are the drivers which support Trident Volume Snapshots?
 ------------------------------------------------------------
 
-As of today, on-demand snapshot support is available for our ``ontap-nas``, ``ontap-san``, ``solidfire-san``,
+As of today, on-demand snapshot support is available for our ``ontap-nas``,
+``ontap-san``, ``ontap-san-economy``, ``solidfire-san``,
 ``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files`` backend drivers.
 
 How do we take a snapshot backup of a volume provisioned by Trident with ONTAP?
 -------------------------------------------------------------------------------
 This is available on ``ontap-nas``, ``ontap-san``, and ``ontap-nas-flexgroup`` drivers.
+
+You can also specify a `snapshotPolicy` for the ``ontap-san-economy`` driver at the FlexVol
+level.
 
 This is also available on the ``ontap-nas-economy`` drivers but on the FlexVol level granularity and not on the qtree level granularity.
 
@@ -431,13 +446,14 @@ storage class per namespace by using
 `Storage Resource Quotas <https://kubernetes.io/docs/concepts/policy/resource-quotas/#storage-resource-quota>`_  which
 are per namespace. To deny a specific namespace access to specific storage, set the resource quota to 0 for that storage class.
 
-
-Does Trident provide insight into the capacity of the storage?
+Can I obtain metrics on how storage is provisioned by Trident?
 --------------------------------------------------------------
 
-This is out of scope for Trident. NetApp offers `Cloud Insights <https://cloud.netapp.com/cloud-insights>`_ for
-monitoring and analysis.
-
+Yes. Trident 20.01 introduces Prometheus endpoints that can be used to
+gather information on Trident's operation, such as the number of backends
+managed, the number of volumes provisoned, bytes consumed and so on.
+You can also use `Cloud Insights <https://cloud.netapp.com/cloud-insights>`_ for
+monitoring and analysis. Refer to :ref:`Monitoring Trident <Monitoring Trident>`.
 
 Does the user experience change when using Trident as a CSI Provisioner?
 ------------------------------------------------------------------------
@@ -447,8 +463,8 @@ and functionalities are concerned. The provisioner name used will be ``csi.tride
 This method of installing Trident is recommended to use all new features provided by current
 and future releases.
 
-How do I design a Disaster Workflow for Trident v19.10?
--------------------------------------------------------
+How do I design a Disaster Workflow for Trident?
+------------------------------------------------
 
 The :ref:`Data replication using ONTAP <Data replication using ONTAP>` section
 talks about backup and DR workflows using ONTAP.
@@ -526,8 +542,9 @@ you must have a NetApp backend storage device.
 Can I upgrade from a older version of Trident directly to a newer version (skipping a few versions)?
 ----------------------------------------------------------------------------------------------------
 
-We support upgrading directly from a version up to one year back. For example, if you are currently on v18.04, v18.07,
-or v19.01, we will support directly upgrading to v19.04. We suggest testing upgrading in a lab prior to production deployment.
+NetApp supports upgrading Trident from one major release to the next immediate major
+release. You can upgrade Trident from version 18.xx to 19.xx, 19.xx to 20.xx and
+so on. We suggest testing upgrading in a lab prior to production deployment.
 Information on upgrading Trident can be obtained :ref:`here <Upgrading Trident>`.
 
 
@@ -541,7 +558,9 @@ Upgrading Trident to the latest release.
 Is it possible to downgrade Trident to a previous release?
 ----------------------------------------------------------
 
-**Downgrading Trident is not recommended** for the :ref:`following reasons <Downgrading Trident>`.
+There are a number of factors to be evaluated if you would like to downgrade.
+Take a look at this section on :ref:`downgrading Trident <Downgrading Trident>`.
+
 
 If the Trident pod is destroyed, will we lose the data?
 -------------------------------------------------------

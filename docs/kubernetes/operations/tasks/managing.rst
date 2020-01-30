@@ -13,6 +13,18 @@ Upgrading Trident
 The :ref:`Upgrade Guide <Upgrading Trident>` details the procedure for upgrading
 to the latest version of Trident.
 
+Monitoring Trident
+------------------
+
+Trident 20.01 provides a set of Prometheus metrics that can be used to obtain
+insight on how Trident operates. You can now define a Prometheus target to gather
+the metrics exposed by Trident and obtain information on the backends it manages,
+the volumes it creates and so on. Trident's metrics are exposed on the target port
+``8001``. These metrics are enabled by default when Trident is installed; to disable
+them from being reported, you will have to generate custom YAMLs (using the
+``--generate-custom-yaml`` flag) and edit them to remove the ``--metrics`` flag
+from being invoked for the ``trident-main`` container.
+
 Uninstalling Trident
 --------------------
 
@@ -31,6 +43,8 @@ for the CRDs created by Trident and delete the CRDs. Refer the
 Downgrading Trident
 -------------------
 
-Downgrading to a previous release of Trident is **not recommended**.
-Refer the :ref:`Troubleshooting Guide<Troubleshooting>` for downgrading Trident to
-a previous release.
+Downgrading to a previous release of Trident is **not recommended** and should
+not be performed unless absolutely neccessary. Downgrades to versions ``19.04``
+and earlier are **not supported**.
+Refer the :ref:`downgrade section <Downgrading Trident>` for considerations and
+factors that can influence your decision to downgrade.

@@ -35,7 +35,13 @@ Normal installation involves running the ``tridentctl install -n trident`` comma
 **Offline install mode**
 
 In many organizations, production and development environments do not have access to public repositories for pulling and posting images as these environments are completely secured and restricted. Such environments only allow pulling images from trusted private repositories.
-In such scenarios, make sure that a private registry instance is available. The trident image should be downloaded from a bastion host with internet access and pushed on to the private registry. To install Trident in offline mode, just issue the ``tridentctl install -n trident`` command with the ``--trident-image`` parameter set to the appropriate image name and location.
+
+To perform an air-gapped installation of Trident, you can use the ``--image-registry`` flag
+when invoking ``tridentctl install`` to point to a private image registry. This registry must
+contain the Trident image (obtained `here <https://hub.docker.com/r/netapp/trident/>`_) and the
+CSI sidecar images as required by your Kubernetes version. The
+:ref:`Customized Installation <Customized Installation>` section talks about the options available
+for performing a custom Trident install.
 
 **Remote install mode**
 
@@ -140,8 +146,8 @@ Deploying Trident to OpenShift
 
 OpenShift uses Kubernetes for the underlying container orchestrator. Consequently, the same recommendations will apply when using Trident with Kubernetes or OpenShift. However, there are some minor additions when using OpenShift which should be taken into consideration.
 
-Deploy Trident to infrastructure nodes
---------------------------------------
+Deploy Trident to infrastructure nodes (OpenShift 3.11)
+-------------------------------------------------------
 
 Trident is a core service to the OpenShift cluster, provisioning and managing the volumes used across all projects. Consideration should be given to deploying Trident to the infrastructure nodes in order to provide the same level of care and concern.
 

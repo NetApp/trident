@@ -83,12 +83,12 @@ Identify your Kubernetes server version. You will be using it when you
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 19.10.0:
+For example, if the latest version is 20.01.0:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v19.10.0/trident-installer-19.10.0.tar.gz
-   tar -xf trident-installer-19.10.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.01.0/trident-installer-20.01.0.tar.gz
+   tar -xf trident-installer-20.01.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -97,7 +97,7 @@ For example, if the latest version is 19.10.0:
 ==================
 
 Install Trident in the desired namespace by executing the
-``tridentctl install`` command. The installation procedure
+:ref:`tridentctl install <install>` command. The installation procedure
 slightly differs depending on the version of Kubernetes being used.
 
 Installing Trident on Kubernetes 1.13
@@ -139,7 +139,7 @@ Install Trident in the desired namespace by executing the
    INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-679648bd45-cv2mx
    INFO Waiting for Trident REST interface.
-   INFO Trident REST interface is up.                 version=19.10.0
+   INFO Trident REST interface is up.                 version=20.01.0
    INFO Trident installation succeeded.
    ....
 
@@ -157,7 +157,7 @@ the number of nodes in your Kubernetes cluster, you may observe more pods:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 19.10.0        | 19.10.0        |
+   | 20.01.0        | 20.01.0        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not

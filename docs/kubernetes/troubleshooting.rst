@@ -19,6 +19,15 @@ Troubleshooting
   installed and running. Use the required package manager for the host OS and check if
   ``rpcbind`` is running. You can check the status of the ``rpcbind`` service by running
   a ``systemctl status rpcbind`` or its equivalent.
+* If a Trident backend reports that it is in the ``failed`` state despite having worked
+  before, it is likely caused by changing the SVM/admin credentials associated with the
+  backend. Updating the backend information using ``tridentctl update backend`` or bouncing
+  the Trident pod will fix this issue.
+* If you are upgrading your Kubernetes cluster and/or Trident to use beta Volume Snapshots,
+  you will need to make sure all existing alpha snapshot CRs are completely removed. You can
+  then use the ``tridentctl obliviate alpha-snapshot-crd`` command to delete alpha snapshot
+  CRDs. Refer to :ref:`this blog <Things to Know Before Upgrading Trident>` to understand the
+  steps involved in migrating alpha snapshots.
 * If you encounter permission issues when installing Trident with Docker as the container
   runtime, attempt the installation of Trident with the ``--in-cluster=false`` flag. This
   will not use an installer pod and avoid permission troubles seen due to the ``trident-installer``

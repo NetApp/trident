@@ -123,6 +123,7 @@ Install Trident
         --silent                  Disable most output during installation.
         --trident-image string    The Trident image to install.
         --use-custom-yaml         Use any existing YAML files that exist in setup directory.
+        --use-ipv6                Use IPv6 for Trident's communication.
 
 logs
 ----

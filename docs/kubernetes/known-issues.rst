@@ -32,3 +32,6 @@ This page contains a list of known issues that may be observed when using Triden
   created on the same backend.
 * ONTAP cannot concurrently provision more than one FlexGroup at a time unless the set of aggregates are
   unique to each provisioning request.
+* The ``ontap-nas-flexgroup`` driver doesn't currently work with ONTAP 9.7.
+* When using Trident over IPv6, the ``managementLIF`` option in the backend definition
+  must be specified within square brackets, like ``[fd20:8b1e:b258:2000:f816:3eff:feec:0]``.

@@ -26,6 +26,13 @@ outside the virtual pools list is global to the backend and will apply
 to all the virtual pools, while each virtual pool may specify one or more
 aspects individually (overriding any backend-global aspects).
 
+.. note::
+
+   When defining Virtual Storage Pools, it is recommended to not attempt to rearrange
+   the order of existing virtual pools in a backend definition. It is also advisable
+   to not edit/modify attributes for an existing virtual pool and define a new virtual
+   pool instead.
+
 Most aspects are specified in backend-specific terms. Crucially, the
 aspect values are not exposed outside the backend's driver and
 are not available for matching in StorageClasses. Instead, the

@@ -5,16 +5,19 @@ Managing volumes
 On-Demand Volume Snapshots
 ==========================
 
-The 19.07 release of Trident introduces support for the creation of snapshots
-of PVs. Snapshots provide an easy method to maintain a copy of the
-volume and use them for creating additional volumes (clones).
+Beginning with the 20.01 release of Trident, it is now possible to use the
+`beta Volume Snapshot feature`_ to create snapshots of PVs at the Kubernetes
+layer. These snapshots can be used to maintain point-in-time copies of
+volumes that have been created by Trident and can also be used to schedule
+the creation of additional volumes (clones). This feature is available for
+Kubernetes ``1.17`` and above.
 
 .. note::
 
    Volume snapshot is supported by the ``ontap-nas``, ``ontap-san``,
    ``ontap-san-economy``, ``solidfire-san``, ``aws-cvs``, ``gcp-cvs``
-   and ``azure-netapp-files`` drivers. This feature requires the CSI
-   Provisioner and :ref:`feature gates <Feature Gates>` enabled for it to work.
+   and ``azure-netapp-files`` drivers. This feature requires Kubernetes
+   ``1.17`` and above.
 
 Trident handles the creation of VolumeSnapshots for its drivers as explained
 below:
@@ -54,11 +57,16 @@ set up.
 .. code-block:: bash
 
    $ cat snap-sc.yaml
-   apiVersion: snapshot.storage.k8s.io/v1alpha1
+   apiVersion: snapshot.storage.k8s.io/v1beta1
    kind: VolumeSnapshotClass
    metadata:
      name: csi-snapclass
-   snapshotter: csi.trident.netapp.io
+   driver: csi.trident.netapp.io
+   deletionPolicy: Delete
+
+The ``driver`` points to Trident's CSI driver. The ``deletionPolicy`` can be set
+to ``Delete`` or ``Retain``. When set to ``Retain``, the underlying physical snapshot
+on the storage cluster is retained even when the ``VolumeSnapshot`` object is deleted.
 
 Create a VolumeSnapshot
 -----------------------
@@ -68,15 +76,14 @@ We can now create a snapshot of an existing PVC.
 .. code-block:: bash
 
    $ cat snap.yaml
-   apiVersion: snapshot.storage.k8s.io/v1alpha1
+   apiVersion: snapshot.storage.k8s.io/v1beta1
    kind: VolumeSnapshot
    metadata:
      name: pvc1-snap
    spec:
-     snapshotClassName: csi-snapclass
+     volumeSnapshotClassName: csi-snapclass
      source:
-       name: pvc1
-       kind: PersistentVolumeClaim
+       persistentVolumeClaimName: pvc1
 
 The snapshot is being created for a PVC named ``pvc1``, and the
 name of the snapshot is set to ``pvc1-snap``.
@@ -158,10 +165,10 @@ to a pod and used just like any other PVC.
       corresponding Trident volume is updated to a "Deleting state". For the
       Trident volume to be deleted, the snapshots of the volume must be removed.
 
-Resizing an iSCSI volume
-========================
+Expanding an iSCSI volume
+=========================
 
-Trident ``19.10`` introduces support for resizing an iSCSI PV using the
+Trident ``19.10`` introduces support for expanding an iSCSI PV using the
 CSI provisioner. Provided Trident is configured to function as a CSI
 provisioner, you can expand iSCSI PVs that have been created by Trident.
 This feature is supported with Kubernetes versions ``1.16`` and above.
@@ -172,7 +179,7 @@ This feature is supported with Kubernetes versions ``1.16`` and above.
    ``ontap-san-economy``, ``solidfire-san`` and ``eseries-iscsi`` drivers and
    requires Kubernetes ``1.16`` and above.
 
-For resizing an iSCSI PV, you must ensure the following items are taken care of:
+For growing an iSCSI PV, you must ensure the following items are taken care of:
 
 * The StorageClass must support volume expansion. This can be done by editing
   the StorageClass definition to set the ``allowVolumeExpansion`` field to
@@ -315,10 +322,10 @@ PVC, PV, and the Trident volume:
    | pvc-8a814d62-bd58-4253-b0d1-82f2885db671 | 2.0 GiB | ontap-san     | block    | a9b7bfff-0505-4e31-b6c5-59f492e02d33 | online | true    |
    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
-Resizing an NFS volume
-======================
+Expanding an NFS volume
+=======================
 
-Starting with ``v18.10``, Trident supports volume resize for NFS PVs. More
+Starting with ``v18.10``, Trident supports volume expansion for NFS PVs. More
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,
 ``ontap-nas-flexgroup``, ``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files``
 backends can be expanded.
@@ -432,9 +439,31 @@ PV, and the Trident volume:
 Importing a volume
 ==================
 
-Trident version 19.04 and above allows importing an existing storage volume
-into Kubernetes with the ``ontap-nas``, ``ontap-nas-flexgroup``, ``solidfire-san``,
-``azure-netapp-files``, ``aws-cvs``, and ``gcp-cvs`` drivers.
+Beginning with the 19.04 release of Trident, you can import existing storage
+volumes as a Kubernetes PV using ``tridentctl import``, as described in the
+examples below.
+
+This table depicts the drivers that support importing volumes and the release
+they were introduced in.
+
+.. table:: Trident drivers that support volume import
+   :align: center
+
+   +---------------------------+--------------+
+   | Driver                    | Release      |
+   +===========================+==============+
+   | ``ontap-nas``             | 19.04        |
+   +---------------------------+--------------+
+   | ``ontap-nas-flexgroup``   | 19.04        |
+   +---------------------------+--------------+
+   | ``solidfire-san``         | 19.04        |
+   +---------------------------+--------------+
+   | ``aws-cvs``               | 19.04        |
+   +---------------------------+--------------+
+   | ``azure-netapp-files``    | 19.07        |
+   +---------------------------+--------------+
+   | ``gcp-cvs``               | 19.10        |
+   +---------------------------+--------------+
 
 There are several use cases for importing a volume into Trident:
 
@@ -585,3 +614,5 @@ Behavior of Drivers for Volume Import
   * An ONTAP volume must be of type `rw` to be imported by Trident. If a
     volume is of type `dp` it is a SnapMirror destination volume; you must
     break the mirror relationship before importing the volume into Trident.
+
+.. _beta Volume Snapshot feature: https://kubernetes.io/docs/concepts/storage/volume-snapshots/

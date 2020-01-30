@@ -1,6 +1,9 @@
-#################
+#############################
+Upgrading/Downgrading Trident
+#############################
+
 Upgrading Trident
-#################
+^^^^^^^^^^^^^^^^^
 
 This section walks you through the upgrade process to move to the
 latest release of Trident.
@@ -13,6 +16,14 @@ Initiate the upgrade
    Before upgrading Trident, ensure that the required :ref:`feature gates <Feature Gates>`
    are enabled.
 
+.. warning::
+
+   Trident 20.01 only supports the beta feature release of Volume Snapshots. When upgrading
+   to Trident 20.01, all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
+   Volume Snapshots and Volume Snapshot Contents) must be removed before the upgrade is performed.
+   Refer to `this blog <https://netapp.io/2020/01/30/alpha-to-beta-snapshots/>`_ to understand the
+   steps involved in migrating alpha snapshots to the beta spec.
+   
 The best way to upgrade to the latest version of Trident is to download the
 latest `installer bundle`_ and run:
 
@@ -20,6 +31,19 @@ latest `installer bundle`_ and run:
 
   ./tridentctl uninstall -n <namespace>
   ./tridentctl install   -n <namespace>
+
+When upgrading to the latest release of Trident, there are a few items to consider:
+
+1. Previous releases of Trident may have supported alpha Volume Snapshots. The 20.01
+   release moves forward to only support `beta Volume Snapshots`_. Kubernetes admins
+   must take care to safely backup or convert the alpha snapshot objects to the beta
+   feature set if they would like to retain the legacy alpha snapshots.
+2. The beta feature release of Volume Snapshots introduces a modified set of CRDs and
+   a snapshot controller, both of which should be set up before installing Trident.
+
+`This blog`_ discusses the steps involved in migrating alpha Volume Snapshots to the beta
+format. It is purely meant to be a guiding document for users to understand the steps
+involved should they choose to retain alpha Volume Snapshots.
 
 Upgrading Trident on Kubernetes 1.13
 ------------------------------------
@@ -51,7 +75,7 @@ not deleting the PVC and PV used by the Trident deployment, allowing an
 uninstall followed by an install to act as an upgrade.
 
 The 19.07 release of Trident will move away from etcd and use CRDs to maintain
-state. Upgrading Trident by running a ``tridentctl install`` will:
+state. Upgrading Trident from any release prior to 19.07 by running a ``tridentctl install`` will:
 
 -  initiate a one-time process that copies the metadata stored in the Trident PV into CRD
    objects.
@@ -238,3 +262,107 @@ that the volume is a CSI volume.
 
 In this manner, volumes of the NFS/iSCSI type that were created by Trident
 can be upgraded to the CSI type, on a per-volume basis.
+
+Downgrading Trident
+^^^^^^^^^^^^^^^^^^^
+
+This section examines the various factors involved when attempting to move
+back to an earlier release of Trident and its implications. There could be
+certain reasons that require considering a downgrade path:
+
+1. Contingency planning
+2. Immediate fix for bugs observed as a result of an upgrade
+3. Dependency issues, unsuccessful and incomplete upgrades
+
+With the ``19.07`` release, Trident introduced
+:ref:`Custom Resource Definitions(CRDs) <Kubernetes CustomResourceDefinition objects>`
+to store Trident's metadata. This marked a move from previous versions,
+which used a dedicated etcd instance to write the metadata to a PV created
+and managed by Trident for this purpose (the ``trident`` PV). A
+greenfield installation of Trident versions ``19.07`` and above will create these CRDs
+and use the CRDs to maintain its state. Upgrading from any version of Trident that
+used the legacy etcd [versions ``19.04`` and below] to versions ``19.07`` and above
+will involve
+:ref:`migrating the etcd contents to create CRD objects <What happens when you upgrade>`.
+The ``trident`` volume still lives on the storage cluster. 
+
+When to downgrade
+=================
+
+Only consider a downgrade when moving to a Trident release that uses CRDs.
+Since Trident now uses CRDs for maintaining state, all
+storage entities created (backends, storage classes, PVs and Volume Snapshots) have
+associated CRD objects instead of data written into the ``trident`` PV [used by the
+earlier installed version of Trident]. Newly created PVs, backends and Storage
+Classes are all maintained as CRD objects. If you need to downgrade, this should
+only be attempted for a version of Trident that runs using CRDs (``19.07`` and above).
+This way, all operations performed on the current Trident release are visible once
+the downgrade occurs.
+
+When not to downgrade
+=====================
+
+You **must not downgrade to a release of Trident that uses etcd to maintain state
+(19.04 and below)**. All operations performed with the current Trident release
+will **not be reflected after the downgrade**. **Newly created PVs will not be
+usable when moving back to an earlier version. Changes made to objects such as
+backends, PVs, storage classes and Volume Snapshots (created/updated/deleted) will
+not be visible to Trident when downgraded moving back to an earlier version**. Going
+back to an earlier version will not disrupt access for PVs that were already created
+using the older release, unless they have been upgraded.
+
+How to downgrade
+================
+
+After understanding :ref:`when to downgrade/not downgrade <When to downgrade>`, these
+are the steps involved in moving down to an earlier release. This sequence walks you
+through the downgrade process to move from Trident ``19.10`` to ``19.07``
+
+1. Before beginning the downgrade, it is recommended to take a snapshot of your
+Kubernetes cluster's etcd. This allows you to backup the current state of Trident's
+CRDs.
+2. Uninstall Trident with the existing ``tridentctl`` binary. In this case, you will
+uninstall with the ``19.10`` binary.
+
+.. code-block:: console
+
+   $ tridentctl version -n trident
+   +----------------+----------------+
+   | SERVER VERSION | CLIENT VERSION |
+   +----------------+----------------+
+   | 19.10.0        | 19.10.0        |
+   +----------------+----------------+
+
+   $ tridentctl uninstall -n trident
+   INFO Deleted Trident deployment.                  
+   INFO Deleted Trident daemonset.                   
+   INFO Deleted Trident service.                     
+   INFO Deleted Trident secret.                      
+   INFO Deleted cluster role binding.                
+   INFO Deleted cluster role.                        
+   INFO Deleted service account.                     
+   INFO Deleted pod security policy.                  podSecurityPolicy=tridentpods
+   INFO The uninstaller did not delete Trident's namespace in case it is going to be reused. 
+   INFO Trident uninstallation succeeded.            
+
+3. Obtain the Trident binary for the desired version [``19.07``]
+and use it to install Trident.
+Generate custom yamls for a :ref:`customized installation <Customized Installation>`
+if needed.
+
+.. code-block:: console
+
+   $ cd 19.07/trident-installer/
+   $ ./tridentctl install -n trident-ns
+   INFO Created installer service account.            serviceaccount=trident-installer
+   INFO Created installer cluster role.               clusterrole=trident-installer
+   INFO Created installer cluster role binding.       clusterrolebinding=trident-installer
+   INFO Created installer configmap.                  configmap=trident-installer
+   ...
+   ...
+   INFO Deleted installer cluster role binding.      
+   INFO Deleted installer cluster role.              
+   INFO Deleted installer service account.           
+
+.. _beta Volume Snapshots: https://kubernetes.io/docs/concepts/storage/volume-snapshots/
+.. _This blog: https://netapp.io/2020/01/30/alpha-to-beta-snapshots/

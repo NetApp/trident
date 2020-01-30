@@ -51,6 +51,10 @@ file repositories, etc. Trident uses all aggregates assigned to an SVM when
 provisioning a FlexGroup Volume. FlexGroup support in Trident also has the following
 considerations:
 
+.. note::
+
+   The ``ontap-nas-flexgroup`` driver currently does not work with ONTAP 9.7
+
 * Requires ONTAP version 9.2 or greater.
 * As of this writing, FlexGroups only support NFSv3 (required to set
   ``mountOptions: ["nfsvers=3"]`` in the Kubernetes storage class).
@@ -114,10 +118,16 @@ igroup name is specified in the configuration.
 
 While Trident associates new LUNs with the configured igroup, it does not
 create or otherwise manage igroups themselves. The igroup must exist before the
-storage backend is added to Trident, and it needs to contain the iSCSI IQNs
-from every worker node in the Kubernetes cluster.
+storage backend is added to Trident.
 
-The igroup needs to be updated when new nodes are added to the cluster, and
+If Trident is configured to function as a
+CSI Provisioner, Trident manages the addition of IQNs from worker nodes when
+mounting PVCs. As and when PVCs are attached to pods running on a given node,
+Trident adds the node's IQN to the igroup configured in your backend definition.
+
+If Trident does not run as a CSI Provisioner, the igroup must be manually updated
+to contain the iSCSI IQNs from every worker node in the Kubernetes cluster. The
+igroup needs to be updated when new nodes are added to the cluster, and
 they should be removed when nodes are removed as well.
 
 Backend configuration options
@@ -129,7 +139,7 @@ Parameter                 Description                                           
 version                   Always 1
 storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy"
 backendName               Custom name for the storage backend                                                       Driver name + "_" + dataLIF
-managementLIF             IP address of a cluster or SVM management LIF                                             "10.0.0.1"
+managementLIF             IP address of a cluster or SVM management LIF                                             "10.0.0.1", "[2001:1234:abcd::fefe]"
 dataLIF                   IP address of protocol LIF                                                                Derived by the SVM unless specified
 svm                       Storage virtual machine to use                                                            Derived if an SVM managementLIF is specified
 igroupName                Name of the igroup for SAN volumes to use                                                 "trident"
@@ -145,6 +155,11 @@ A fully-qualified domain name (FQDN) can be specified for the ``managementLIF``
 option. For the ``ontap-nas*`` drivers only, a FQDN may also be specified for
 the ``dataLIF`` option, in which case the FQDN will be used for the NFS mount
 operations.
+
+The ``managementLIF`` and ``dataLIF`` options for all ONTAP drivers can
+also be set to IPv6 addresses. Make sure to install Trident with the
+``--use-ipv6`` flag. Care must be taken to define the ``managementLIF``
+IPv6 address **within square brackets** as shown in the example above.
 
 For the ``ontap-san*`` drivers, the default is to use all data LIF IPs from
 the SVM and to use iSCSI multipath. Specifying an IP address for the ``dataLIF``
@@ -180,8 +195,7 @@ unixPermissions           ontap-nas* only: mode for new volumes                 
 snapshotDir               ontap-nas* only: access to the .snapshot directory              "false"
 exportPolicy              ontap-nas* only: export policy to use                           "default"
 securityStyle             ontap-nas* only: security style for new volumes                 "unix"
-tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for
-pre-ONTAP 9.5 SVM-DR configuration
+tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
 
 Example configurations

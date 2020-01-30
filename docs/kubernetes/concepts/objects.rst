@@ -90,11 +90,6 @@ trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-econo
 trident.netapp.io/blockSize         blockSize         solidfire-san
 =================================== ================= ======================================================
 
-.. note::
-
-   The trident.netapp.io/cloneFromPVC and trident.netapp.io/splitOnClone annotations
-   are deprecated. Users must create Volume Snapshots and use them to clone PVCs
-
 If the created PV has the ``Delete`` reclaim policy, Trident will delete both
 the PV and the backing volume when the PV becomes released (i.e., when the user
 deletes the PVC).  Should the delete action fail, Trident will mark the PV
@@ -113,6 +108,38 @@ form of snapshots. The snapshots can then be used to create new PVs.
 Take a look at :ref:`On-Demand Volume Snapshots`
 to see how this would work.
 
+Trident also provides the ``cloneFromPVC`` and ``splitOnClone`` annotations for
+creating clones. These annotations can be used to clone a PVC without having to use
+the CSI implementation (on Kubernetes ``1.13`` and below) or if your Kubernetes
+release does not support beta Volume Snapshots (Kubernetes ``1.16`` and below). Keep
+in mind that Trident 19.10 supports the CSI workflow for cloning from a PVC.
+
+.. note::
+
+   The ``cloneFromPVC`` and ``splitOnClone`` annotations can be used with CSI Trident
+   as well as the traditional non-CSI frontend.
+
+Here's an example: if a user already has a PVC called ``mysql``, she can create a new
+PVC called ``mysqlclone`` by using the annotation like this:
+``trident.netapp.io/cloneFromPVC: mysql``. With this annotation set, Trident clones the
+volume corresponding to the mysql PVC, instead of provisioning a volume from scratch.
+A few points worth considering are the following:
+
+1. We recommend cloning an idle volume
+2. A PVC and its clone must be in the same Kubernetes namespace and have the same storage
+   class
+3. With ``ontap-\*`` drivers, it might be desirable to set the PVC annotation
+   ``trident.netapp.io/splitOnClone`` in conjunction with ``trident.netapp.io/cloneFromPVC``.
+   With ``trident.netapp.io/splitOnClone`` set to ``true``, Trident splits the cloned volume
+   from the parent volume and thus, completely decoupling the life cycle of the cloned volume
+   from its parent at the expense of losing some storage efficiency. Not setting
+   ``trident.netapp.io/splitOnClone`` or setting it to false results in reduced space consumption
+   on the backend at the expense of creating dependencies between the parent and clone volumes
+   such that the parent volume cannot be deleted unless the clone is deleted first. A scenario
+   where splitting the clone makes sense is cloning an empty database volume where it's expected
+   for the volume and its clone to greatly diverge and not benefit from storage efficiencies offered by ONTAP.
+
+The ``sample-input`` directory contains examples of PVC definitions for use with Trident.
 See :ref:`Trident Volume objects` for a full description of the
 parameters and settings associated with Trident volumes.
 
