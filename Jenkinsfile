@@ -2674,7 +2674,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
                 "cd $vm_path/go/src2/github.com/netapp/trident;" +
-                "python $vm_path/tools/utils/github.py " +
+                "python3 $vm_path/tools/utils/github.py " +
                 "--action create-release " +
                 "--changelog CHANGELOG.md " +
                 "--organization $env.TRIDENT_PUBLIC_GITHUB_ORG " +
@@ -2701,7 +2701,7 @@ def _build_trident(String name, String ssh_options, Map spec) {
               label: "Execute release_to_github.py on $ip_address",
               script: "ssh $ssh_options root@$ip_address '" +
                 "cd $vm_path/go/src2/github.com/netapp/trident;" +
-                "python $vm_path/tools/utils/github.py " +
+                "python3 $vm_path/tools/utils/github.py " +
                 "--action create-release " +
                 "--changelog CHANGELOG.md " +
                 "--organization $env.TRIDENT_PUBLIC_GITHUB_ORG " +
