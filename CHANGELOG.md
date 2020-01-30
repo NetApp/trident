@@ -4,18 +4,28 @@
 
 ## Changes since v19.10.0
 
+**IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
+
 **Fixes:**
 - **Kubernetes:** Updated CSI sidecars to address CVE-2019-11255.
-- Set default SVM-DR tiering to 'snapshot-only' for ONTAP cluster version 9.4 or less. (Issue [#318](https://github.com/NetApp/trident/issues/318))
+- Set default SVM-DR tiering to `snapshot-only` for ONTAP cluster version 9.4 or less. (Issue [#318](https://github.com/NetApp/trident/issues/318))
 
-**Enhancements**
+**Enhancements:**
+- **Kubernetes:** Added support for Kubernetes 1.17. (Issue [#327](https://github.com/NetApp/trident/issues/327))
 - **Kubernetes:** Added support for IPv6. (Issue [#122](https://github.com/NetApp/trident/issues/122))
-- **Kubernetes:** Added support for Prometheus metrics.
+- **Kubernetes:** Added support for Prometheus metrics. (Issue [#121](https://github.com/NetApp/trident/issues/121))
 - Switched from glide to go modules for dependency management.
-- ONTAP drivers now support `Virtual Pools`.
-- **Kubernetes:** Added --image-registry switch to installer. (Issue [#311](https://github.com/NetApp/trident/issues/311))
-- **Kubernetes:** Added --kubelet-dir switch to installer to simplify installation on some Kubernetes distributions. (Issue [#314](https://github.com/NetApp/trident/issues/314))
-- Added support for ONTAP tiering policy in backend config file
+- ONTAP drivers now support virtual pools.
+- **Kubernetes:** Added `--image-registry` switch to installer. (Issue [#311](https://github.com/NetApp/trident/issues/311))
+- **Kubernetes:** Added `--kubelet-dir` switch to installer to simplify installation on some Kubernetes distributions. (Issue [#314](https://github.com/NetApp/trident/issues/314))
+- Added support for ONTAP tiering policy in backend config file (Issue [#199](https://github.com/NetApp/trident/issues/199))
+- **Kubernetes:** Added support for `v1beta1` Kubernetes snapshots in Kubernetes 1.17.
+
+**Deprecations:**
+- **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
+
+**Known Issues:**
+- Flexgroup driver does not work properly with ONTAP 9.7
 
 ## v19.10.0
 
