@@ -26,7 +26,7 @@ Troubleshooting
 * If you are upgrading your Kubernetes cluster and/or Trident to use beta Volume Snapshots,
   you will need to make sure all existing alpha snapshot CRs are completely removed. You can
   then use the ``tridentctl obliviate alpha-snapshot-crd`` command to delete alpha snapshot
-  CRDs. Refer to :ref:`this blog <Things to Know Before Upgrading Trident>` to understand the
+  CRDs. Refer to `this blog <https://netapp.io/2020/01/30/alpha-to-beta-snapshots/>`_ to understand the
   steps involved in migrating alpha snapshots.
 * If you encounter permission issues when installing Trident with Docker as the container
   runtime, attempt the installation of Trident with the ``--in-cluster=false`` flag. This

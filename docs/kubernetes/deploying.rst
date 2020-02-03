@@ -69,7 +69,7 @@ you have the necessary privileges to.
     ping <management IP>
 
 Identify your Kubernetes server version. You will be using it when you
-:ref:`Install Trident <Install Trident>`.
+:ref:`Install Trident <3: Install Trident>`.
 
 2: Download & extract the installer
 ===================================
