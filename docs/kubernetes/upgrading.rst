@@ -111,7 +111,7 @@ provisioner and supports upgrading legacy volumes.
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 19.07.1        | 19.07.1        |
+   | 19.07.2        | 19.07.2        |
    +----------------+----------------+
 
    $ kubectl get pods -n <trident-namespace>

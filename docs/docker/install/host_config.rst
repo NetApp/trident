@@ -127,8 +127,8 @@ Traditional Install Method (Docker <= 1.12)
    .. code-block:: bash
 
       # download and unpack the application
-      wget https://github.com/NetApp/trident/releases/download/v19.07.1/trident-installer-19.07.1.tar.gz
-      tar zxf trident-installer-19.07.1.tar.gz
+      wget https://github.com/NetApp/trident/releases/download/v19.07.2/trident-installer-19.07.2.tar.gz
+      tar zxf trident-installer-19.07.2.tar.gz
 
       # move to a location in the bin path
       sudo mv trident-installer/extras/bin/trident /usr/local/bin
