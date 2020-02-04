@@ -100,15 +100,18 @@ func NewNodePlugin(
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
 	})
-	port := "34571"
-	for _, envVar := range os.Environ() {
-		values := strings.Split(envVar, "=")
-		if values[0] == "TRIDENT_CSI_SERVICE_PORT" {
-			port = values[1]
-			break
-		}
+
+	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
+	if port == "" {
+		port = "34571"
 	}
-	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
+
+	hostname := os.Getenv("TRIDENT_CSI_SERVICE_HOST")
+	if hostname == "" {
+		hostname = tridentconfig.ServerCertName
+	}
+
+	restURL := "https://" + hostname + ":" + port
 	var err error
 	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
