@@ -30,7 +30,7 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
 		tlsConfig.RootCAs = caCertPool
-		tlsConfig.ServerName = "trident-csi"
+		tlsConfig.ServerName = config.ServerCertName
 	} else {
 		tlsConfig.InsecureSkipVerify = true
 	}
