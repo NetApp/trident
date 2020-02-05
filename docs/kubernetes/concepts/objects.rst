@@ -45,17 +45,6 @@ they interact, is to follow a single request for storage from a Kubernetes user:
    :ref:`PersistentVolumeClaim <Kubernetes PersistentVolumeClaim objects>` will
    mount that :ref:`PersistentVolume <Kubernetes PersistentVolume objects>` on
    any host that it runs on.
-#. A user creates a :ref:`VolumeSnapshot <Kubernetes VolumeSnapshot objects>` of
-   an existing PVC, using a :ref:`VolumeSnapshotClass <Kubernetes VolumeSnapshotClass objects>`
-   that points to Trident.
-#. Trident identifies the volume that is associated with the PVC and creates a
-   :ref:`Snapshot <Trident Snapshot objects>` of the volume on its backend. It also
-   creates a :ref:`VolumeSnapshotContent <Kubernetes VolumeSnapshotContent  objects>` that
-   instructs Kubernetes how to identify the snapshot.
-#. A user can create a :ref:`PersistentVolumeClaim <Kubernetes PersistentVolumeClaim objects>`
-   using the :ref:`VolumeSnapshot <Kubernetes VolumeSnapshot objects>` as the source.
-#. Trident identifies the required :ref:`Snapshot <Trident Snapshot objects>` and performs the
-   same set of steps involved in creating a :ref:`PersistentVolume <Kubernetes PersistentVolume objects>`
    and a :ref:`Volume <Trident Volume objects>`.
 
 Throughout the rest of this guide, we will describe the different Trident
@@ -254,77 +243,6 @@ for use with Trident in ``sample-input/storage-class-*.yaml``. Deleting a
 Kubernetes storage class will cause the corresponding Trident storage class
 to be deleted as well.
 
-Kubernetes VolumeSnapshotClass Objects
---------------------------------------
-
-`Kubernetes VolumeSnapshotClass`_ objects are analogous to StorageClasses.
-They help define multiple classes of storage and are referenced by
-Volume Snapshots to associate the snapshot with the required Snapshot Class.
-Each Volume Snapshot is associated with a single Volume Snapshot Class.
-
-Just like a StorageClass, a VolumeSnapshotClass must be defined by an
-administrator in order to create snapshots. A Volume Snapshot
-Class is created with this definition:
-
-.. code-block:: yaml
-
-   apiVersion: snapshot.storage.k8s.io/v1alpha1
-   kind: VolumeSnapshotClass
-   metadata:
-     name: csi-vsc
-   snapshotter: csi.trident.netapp.io
-
-The ``snapshotter`` instructs Kubernetes that requests for Volume Snapshots
-of the ``csi-vsc`` class will be handled by Trident.
-
-Kubernetes VolumeSnapshot Objects
----------------------------------
-
-A `Kubernetes VolumeSnapshot`_ object is a request to create a snapshot of
-a volume. Just as a PVC represents a
-request made by a user for a volume, a Volume Snapshot is a request made by
-a user to create a snapshot of an existing PVC.  
-
-When a Volume Snapshot is requested, Trident automatically manages the
-creation of the snapshot for the volume on the backend and exposes the
-snapshot by creating a unique
-:ref:`VolumeSnapshotContent <Kubernetes VolumeSnapshotContent Objects>`
-object.
-
-You can create snapshots from existing PVCs and use the snapshots as a
-DataSource when creating new PVCs.
-
-.. note::
-
-   The lifecyle of a VolumeSnapshot is independent of the source PVC: a snapshot
-   persists even after the source PVC is deleted. When deleting a PVC
-   which has associated snapshots, Trident marks the backing volume for this PVC 
-   in a "Deleting" state, but does not remove it completely. The volume is 
-   removed when all associated snapshots are deleted.
-
-Kubernetes VolumeSnapshotContent Objects
-----------------------------------------
-
-A `Kubernetes VolumeSnapshotContent`_ object represents a snapshot taken from an
-already provisioned volume. It is analogous to a PersistentVolume and signifies
-a provisioned snapshot on the storage cluster. Just like PersistentVolumeClaim and
-PersistentVolume objects, when a snapshot is created, the VolumeSnapshotContent
-object maintains a one to one mapping to the VolumeSnapshot object which had
-requested the snapshot creation.
-
-.. note::
-     Trident creates VolumeSnapshotContent objects and registers them with the
-     Kubernetes cluster automatically based on the volumes that it provisions.
-     You are not expected to manage them yourself.
-
-The VolumeSnapshotContent object contains details that uniquely identify the
-snapshot, such as the snapshotHandle. This snapshotHandle is a unique combination
-of the name of the PV and the name of the VolumeSnapshotContent object.
-
-When a snapshot request comes in, Trident takes care of the actual creation of
-the snapshot on the backend. After the snapshot is created, Trident configures a
-VolumeSnapshotContent object and thus exposes the snapshot to the Kubernetes API.
- 
 Kubernetes CustomResourceDefinition objects
 -------------------------------------------
 
@@ -455,43 +373,7 @@ One can use volume configurations to directly provision volumes via the
 standard `Kubernetes PersistentVolumeClaim`_ method. Trident will create this
 volume object automatically as part of the provisioning process in that case.
 
-Trident Snapshot Objects
-------------------------
-
-.. note::
-     With Kubernetes, these objects are managed automatically and should not be
-     manipulated by hand. You can view them to see what Trident provisioned,
-     however.
-
-Snapshots are a point-in-time copy of volumes which can be used to provision new
-volumes or restore state. In Kubernetes, these correspond directly to
-VolumeSnapshotContent objects. Each snapshot is associated with a volume, which is
-the source of the data for the snapshot.
-
-Each Snapshot object possesses the properties listed below:
-
-================== ====== ======== ==============================================================
-Attribute          Type   Required Description
-================== ====== ======== ==============================================================
-version            String   Yes    Version of the Trident API ("1")
-name               String   Yes    Name of the Trident snapshot object
-internalName       String   Yes    Name of the Trident snapshot object on the storage system
-volumeName         String   Yes    Name of the Persistent Volume for which the snapshot is created
-volumeInternalName String   Yes    Name of the associated Trident volume object on the storage system
-================== ====== ======== ==============================================================
-
-When a :ref:`Kubernetes VolumeSnapshot <Kubernetes VolumeSnapshot Objects>` request
-is created, Trident works by creating a Snapshot object on the backing storage
-system. The ``internalName`` of this snapshot object is generated by combining the
-prefix ``snapshot-`` with the ``UID`` of the VolumeSnapshot Object
-[Ex: ``snapshot-e8d8a0ca-9826-11e9-9807-525400f3f660``]. The ``volumeName``
-and ``volumeInternalName`` are populated by getting the details of the backing
-volume.
-
-.. _Kubernetes VolumeSnapshotContent: https://kubernetes.io/docs/concepts/storage/volume-snapshots/#introduction
-.. _Kubernetes VolumeSnapshot: https://kubernetes.io/docs/concepts/storage/volume-snapshots/
 .. _Kubernetes Custom Resources: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
-.. _Kubernetes VolumeSnapshotClass: https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 .. _Kubernetes StorageClass: https://kubernetes.io/docs/concepts/storage/storage-classes
 .. _Kubernetes PersistentVolume: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes

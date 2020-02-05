@@ -314,7 +314,7 @@ Can we use PVC resize functionality with NFS, Trident, and ONTAP?
 PVC resize is supported with Trident. Note that `volume autogrow` is an ONTAP feature that is not applicable to
 Trident.
 
-Refer to :ref:`Resizing Volumes <Resizing an NFS volume>` for more information.
+Refer to :ref:`Expanding Volumes <Expanding an NFS volume>` for more information.
 
 
 If I have a volume that was created outside Trident can I import it into Trident?
@@ -354,18 +354,11 @@ honor the Kubernetes quota settings due to lack of capacity, Trident will try to
 Can you create Volume Snapshots using Trident?
 ---------------------------------------------- 
 
-Yes. On-demand volume snapshotting and creating Persistent Volumes from Snapshots is supported
-by Trident beginning with 19.07. To create PVs from snapshots, ensure that the ``VolumeSnapshotDataSource``
-feature-gate has been enabled.
+The creation of Kubernetes Volume Snapshots is possible with the ``20.01``
+release and above. This requires Kubernetes ``1.17`` and above.
 
-Refer to :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>`
+Refer to the 20.01 Trident documentation: `On-Demand Volume Snapshots <https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/operations/tasks/volumes.html#on-demand-volume-snapshots>`_
 for more information.
-
-What are the drivers which support Trident Volume Snapshots?
-------------------------------------------------------------
-
-As of today, on-demand snapshot support is available for our ``ontap-nas``, ``ontap-san``, ``solidfire-san``,
-``aws-cvs`` and ``azure-netapp-files`` backend drivers.
 
 How do we take a snapshot backup of a volume provisioned by Trident with ONTAP?
 -------------------------------------------------------------------------------

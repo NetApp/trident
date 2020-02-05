@@ -69,7 +69,7 @@ you have the necessary privileges to.
     ping <management IP>
 
 Identify your Kubernetes server version. You will be using it when you
-:ref:`Install Trident <Install Trident>`.
+:ref:`Install Trident <3: Install Trident>`.
 
 2: Download & extract the installer
 ===================================
@@ -113,9 +113,7 @@ On Kubernetes ``1.13``, there are a couple of options when installing Trident:
 - If for some reason the :ref:`feature gates <Feature Gates>` required by Trident
   cannot be enabled, you can install Trident without the ``--csi`` flag. This will
   configure Trident to work in its traditional format without using the CSI
-  specification. Keep in mind that new features introduced by Trident, such as
-  :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>` will not be available
-  in this installation mode.
+  specification.
 
 Installing Trident on Kubernetes 1.14 and above
 -----------------------------------------------

@@ -5,133 +5,14 @@ Managing volumes
 On-Demand Volume Snapshots
 ==========================
 
-The 19.07 release of Trident introduces support for the creation of snapshots
-of PVs. Snapshots provide an easy method to maintain a copy of the
-volume and use them for creating additional volumes (clones). 
+Creating Kubernetes Volume Snapshots (using the beta specification)
+is available beginning with Trident ``20.01``. You can take a look at the
+documentation `here <https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/operations/tasks/volumes.html#on-demand-volume-snapshots>`_.
+You will need to make sure your Kubernetes release is ``1.17`` or above and
+this feature requires Trident ``20.01`` or later. 
 
-.. note::
-
-   Volume snapshot is supported by the ``ontap-nas``,
-   ``ontap-san``, ``solidfire-san``, ``aws-cvs`` and ``azure-netapp-files`` drivers.
-   This feature requires the CSI Provisioner and :ref:`feature gates <Feature Gates>`
-   enabled for it to work.
-
-The example detailed
-below explains the constructs required for working with snapshots and
-shows how snapshots can be created and used.
-
-Before creating a Volume Snapshot, a :ref:`VolumeSnapshotClass <Kubernetes VolumeSnapshotClass Objects>`
-must be set up. 
-
-.. code-block:: bash
-    
-   $ cat snap-sc.yaml
-   apiVersion: snapshot.storage.k8s.io/v1alpha1
-   kind: VolumeSnapshotClass
-   metadata:
-     name: csi-snapclass
-   snapshotter: csi.trident.netapp.io
-
-Create a VolumeSnapshot
------------------------
-
-We can now create a snapshot of an existing PVC.
-
-.. code-block:: bash
-
-   $ cat snap.yaml  
-   apiVersion: snapshot.storage.k8s.io/v1alpha1 
-   kind: VolumeSnapshot
-   metadata:
-     name: pvc1-snap
-   spec:
-     snapshotClassName: csi-snapclass
-     source:
-       name: pvc1
-       kind: PersistentVolumeClaim
-
-The snapshot is being created for a PVC named ``pvc1``, and the
-name of the snapshot is set to ``pvc1-snap``.
-
-.. code-block:: bash
-
-   $ kubectl create -f snap.yaml
-   volumesnapshot.snapshot.storage.k8s.io/pvc1-snap created
-
-   $ kubectl get volumesnapshots
-   NAME                   AGE
-   pvc1-snap              50s
-
-This created a :ref:`VolumeSnapshot <Kubernetes VolumeSnapshot Objects>`
-object. A VolumeSnapshot is analogous to a PVC and is associated with a
-:ref:`VolumeSnapshotContent <Kubernetes VolumeSnapshotContent Objects>`
-object that represents the actual snapshot.
-
-It is possible to identify the VolumeSnapshotContent object for the 
-``pvc1-snap`` VolumeSnapshot by describing it.
-
-.. code-block:: bash
-
-   $ kubectl describe volumesnapshots pvc1-snap
-   Name:         pvc1-snap
-   Namespace:    default 
-   .
-   .
-   .
-   Spec:
-     Snapshot Class Name:    pvc1-snap
-     Snapshot Content Name:  snapcontent-e8d8a0ca-9826-11e9-9807-525400f3f660
-     Source:
-       API Group:
-       Kind:       PersistentVolumeClaim
-       Name:       pvc1
-   Status:
-     Creation Time:  2019-06-26T15:27:29Z
-     Ready To Use:   true
-     Restore Size:   3Gi
-   .
-   .
-
-The ``Snapshot Content Name`` identifies the VolumeSnapshotContent
-object which serves this snapshot. The ``Ready To Use`` parameter indicates that the
-Snapshot can be used to create a new PVC.
-
-Create PVCs from VolumeSnapshots
---------------------------------
-
-A PVC can be created using the snapshot as shown in the example below:
-
-.. code-block:: bash
-
-   $ cat pvc-from-snap.yaml
-   apiVersion: v1
-   kind: PersistentVolumeClaim
-   metadata:
-     name: pvc-from-snap
-   spec:
-     accessModes:
-       - ReadWriteOnce
-     storageClassName: golden
-     resources:
-       requests:
-         storage: 3Gi
-     dataSource:
-       name: pvc1-snap
-       kind: VolumeSnapshot
-       apiGroup: snapshot.storage.k8s.io
-
-The ``dataSource`` shows that the PVC must be created using a VolumeSnapshot
-named ``pvc1-snap`` as the source of the data. This instructs Trident
-to create a PVC from the snapshot. Once the PVC is created, it can be attached to
-a pod and used just like any other PVC.
-
-.. note::
-      When deleting a Persistent Volume with associated snapshots, the corresponding
-      Trident volume is updated to a "Deleting state". For the Trident volume to be
-      deleted, the snapshots of the volume must be removed.
-
-Resizing an NFS volume
-======================
+Expanding an NFS volume
+=======================
 
 Starting with ``v18.10``, Trident supports volume resize for NFS PVs. More 
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,

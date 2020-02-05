@@ -39,18 +39,15 @@ CSIDriverRegistry        False   Alpha 1.12  1.13
 CSIDriverRegistry        True    Beta  1.14    -
 CSINodeInfo              False   Alpha 1.12  1.13
 CSINodeInfo              True    Beta  1.14    -
-VolumeSnapshotDataSource False   Alpha 1.12    -
 ======================== ======= ===== ===== =====
 
 If using Kubernetes ``1.13``:
 
-- Enable the ``CSIDriverRegistry``, ``CSINodeInfo`` and
-  ``VolumeSnapshotDataSource`` flags.
+- Enable the ``CSIDriverRegistry`` and ``CSINodeInfo`` flags.
 
 If using Kubernetes ``1.14`` and above:
 
-- Enable the ``VolumeSnapshotDataSource`` flag. The other
-  flags are enabled by default.
+- The feature gates are enabled by default.
 
 Supported host operating systems
 ================================

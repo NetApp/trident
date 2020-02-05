@@ -32,13 +32,13 @@ Troubleshooting
   and install using the ``tridentctl install`` command. Only consider a downgrade if there
   are no new PVs created and if no changes have been made to already existing PVs/backends/
   storage classes. Since Trident now uses CRDs for maintaining state, all storage entities
-  created (backends, storage classes, PVs and Volume Snapshots) have
+  created (backends, storage classes, PVs) have
   :ref:`associated CRD objects <Kubernetes CustomResourceDefinition Objects>`
   instead of data written into the PV that was
   used by the earlier installed version of Trident. **Newly created PVs will
   not be usable when moving back to an earlier version.**
   **Changes made to objects
-  such as backends, PVs, storage classes and Volume Snapshots 
+  such as backends, PVs and storage classes 
   (created/updated/deleted) will not be visible to Trident when
   downgraded**. The PV that was used by the earlier version of Trident installed will still be
   visible to Trident. Going back to an earlier version will not disrupt access for
