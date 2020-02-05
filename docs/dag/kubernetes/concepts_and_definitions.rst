@@ -38,8 +38,7 @@ At a minimum, the PV must contain these parameters:
 
   * Read Write Once (RWO) - Supported by all PVs
   * Read Only Many (ROX) - Supported primarily by file and file-like protocols, e.g. NFS and CephFS. However, some block protocols are supported, such as iSCSI
-  * Read Write Many (RWX) - Supported by file and file-like protocols such as NFS and also supported by iSCSI raw block
-  devices
+  * Read Write Many (RWX) - Supported by file and file-like protocols such as NFS and also supported by iSCSI raw block devices
 
 * Protocol - Type of protocol (e.g. "iSCSI" or "NFS") to use and additional information needed to access the storage. For example, an NFS PV will need the NFS server and a mount path.
 * Reclaim policy - It describes the Kubernetes action when the PV is released. Three reclaim policy options are available:

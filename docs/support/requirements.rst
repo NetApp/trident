@@ -26,6 +26,7 @@ To use Trident, you need one or more of the following supported backends:
 * Azure NetApp Files
 * Cloud Volumes ONTAP
 * Cloud Volumes Service for AWS
+* Cloud Volumes Service for GCP
 
 Feature Gates
 =============
@@ -38,8 +39,8 @@ enable feature gates, based on your version of Trident and Kubernetes.
          Feature             Trident version    Kubernetes version
 ============================ =============== ==========================
 CSI Trident                  19.07 and above   1.13\ :sup:`1` and above
-Volume Snapshots             19.07 and above       1.13 and above
-PVC from Volume Snapshots    19.07 and above   1.13 and above\ :sup:`2`
+Volume Snapshots             20.01 and above       1.17 and above
+PVC from Volume Snapshots    20.01 and above       1.17 and above
 iSCSI PV resize              19.10 and above       1.16 and above
 ============================ =============== ==========================
 
@@ -47,8 +48,6 @@ iSCSI PV resize              19.10 and above       1.16 and above
 | `1`: Requires enabling ``CSIDriverRegistry`` and ``CSINodeInfo``
        for Kubernetes 1.13. Install CSI Trident on Kubernetes 1.13 using
        the ``--csi`` switch when invoking ``tridentctl install``.
-| `2`: Requires enabling ``VolumeSnapshotDataSource``
-       for Kubernetes 1.13 and above.
 
 .. note::
    All features mentioned in the table above require CSI Trident.
@@ -73,6 +72,7 @@ These are the Linux distributions that are known to work:
 * CentOS 7.0 or later
 * RHEL 7.0 or later
 * CoreOS 1353.8.0 or later
+* RedHat CoreOS 4.2
 
 The ``tridentctl`` utility also runs on any of these distributions of Linux.
 

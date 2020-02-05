@@ -34,7 +34,7 @@ Note that, in the tables below, not all of the capabilities are exposed through 
    +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
    | ONTAP NFS Drivers           | Snapshots     |      Clones     | Multi-attach | QoS           | Resize |  Replication  |
    +=============================+===============+=================+==============+===============+========+===============+
-   | ``ontap-nas``               | Yes           |        Yes      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
+   | ``ontap-nas``               | Yes\ :sup:`1` |        Yes      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
    +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
    | ``ontap-nas-economy``       | Yes\ :sup:`12`|  Yes\ :sup:`12` | Yes          | Yes\ :sup:`12`| Yes    | Yes\ :sup:`12`|
    +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
@@ -48,13 +48,13 @@ Trident offers 2 SAN drivers for ONTAP, whose capabilities are shown below.
    :align: left
 
 
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
-   | ONTAP SAN Driver            | Snapshots | Clones | Multi-attach | QoS           | Resize        | Replication   |
-   +=============================+===========+========+==============+===============+===============+===============+
-   | ``ontap-san``               | Yes       | Yes    | Yes\ :sup:`3`| Yes\ :sup:`1` |      Yes      | Yes\ :sup:`1` |
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
-   | ``ontap-san-economy``       | Yes       | Yes    | Yes\ :sup:`3`| Yes\ :sup:`12`| Yes\ :sup:`1` | Yes\ :sup:`12`|
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
+   +-----------------------------+---------------+--------+--------------+---------------+---------------+---------------+
+   | ONTAP SAN Driver            | Snapshots     | Clones | Multi-attach | QoS           | Resize        | Replication   |
+   +=============================+===============+========+==============+===============+===============+===============+
+   | ``ontap-san``               | Yes\ :sup:`1` | Yes    | Yes\ :sup:`3`| Yes\ :sup:`1` |      Yes      | Yes\ :sup:`1` |
+   +-----------------------------+---------------+--------+--------------+---------------+---------------+---------------+
+   | ``ontap-san-economy``       | Yes\ :sup:`1` | Yes    | Yes\ :sup:`3`| Yes\ :sup:`12`| Yes\ :sup:`1` | Yes\ :sup:`12`|
+   +-----------------------------+---------------+--------+--------------+---------------+---------------+---------------+
 
 | Footnote for the above tables:
 | Yes\ :sup:`1` :  Not Trident managed
@@ -84,7 +84,7 @@ The ``solidfire-san`` driver used with the HCI/SolidFire platforms, helps the ad
    +-------------------+----------------+--------+--------------+------+--------+---------------+
    | SolidFire Driver  | Snapshots      | Clones | Multi-attach | QoS  | Resize | Replication   |
    +===================+================+========+==============+======+========+===============+
-   | ``solidfire-san`` | Yes            | Yes    | Yes\ :sup:`2`| Yes  |   Yes  | Yes\ :sup:`1` |
+   | ``solidfire-san`` | Yes\ :sup:`1`  | Yes    | Yes\ :sup:`2`| Yes  |   Yes  | Yes\ :sup:`1` |
    +-------------------+----------------+--------+--------------+------+--------+---------------+
 
 | Footnote:
@@ -124,7 +124,7 @@ More information about this driver and how to configure it can be found in Tride
    +---------------------------+--------------+--------+--------------+------+-------------------+---------------+
    | Azure NetApp Files Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
    +===========================+==============+========+==============+======+===================+===============+
-   | ``azure-netapp-files``    | Yes          | Yes    | Yes          | Yes  | Yes               | Yes\ :sup:`1` |
+   | ``azure-netapp-files``    | Yes\ :sup:`1`| Yes    | Yes          | Yes  | Yes               | Yes\ :sup:`1` |
    +---------------------------+--------------+--------+--------------+------+-------------------+---------------+
 
 | Footnote:
@@ -141,7 +141,7 @@ Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on th
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
    | CVS for AWS Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
    +====================+==============+========+==============+======+===================+===============+
-   | ``aws-cvs``        | Yes          | Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
+   | ``aws-cvs``        | Yes\ :sup:`1`| Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
 
 | Footnote:
@@ -160,7 +160,7 @@ Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on th
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
    | CVS for GCP Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
    +====================+==============+========+==============+======+===================+===============+
-   | ``gcp-cvs``        | Yes          | Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
+   | ``gcp-cvs``        | Yes\ :sup:`1`| Yes    |  Yes         | Yes  | Yes               | Yes\ :sup:`1` |
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
 
 | Footnote:
@@ -261,32 +261,6 @@ Persistent volumes are, with two exceptions, immutable objects in Kubernetes. On
 
 The connection details of the PV cannot be modified after creation.
 
-On-Demand Volume Snapshots with Trident's Enhanced CSI Provisioner
-------------------------------------------------------------------
-
-Trident supports on-demand volume snapshot creation and
-the creation of PVCs from snapshots using the CSI framework. Snapshots
-provide a convenient method of maintaining point-in-time copies of the data and have
-a lifecycle independent of the source PV in Kubernetes. These snapshots can be used
-to clone PVCs.
-
-The :ref:`Volume Snapshots <On-Demand Volume Snapshots>` section provides
-an example that explains how volume snapshots work.
-
-Creating Volumes from Snapshots with Trident's Enhanced CSI Provisioner
------------------------------------------------------------------------
-
-Trident also supports the creation of PersistentVolumes from volume snapshots.
-To accomplish this, just create a PersistentVolumeClaim and mention the ``datasource``
-as the required snapshot from which the volume needs to be created. Trident will handle this
-PVC by creating a volume with the data present on the snapshot. With this feature, it is possible
-to duplicate data across regions, create test environments, replace a damaged or corrupted production
-volume in its entirety, or retrieve specific files and directories and transfer them to another attached volume.
-
-Take a look at :ref:`Creating PVCs from Snapshots <Create PVCs from VolumeSnapshots>`
-for more information.
-
-
 Volume Move Operations
 ----------------------
 
@@ -303,12 +277,13 @@ Trident supports resizing NFS and iSCSI PVs, beginning with the ``18.10`` and ``
 releases respectively. This enables users to resize their volumes directly through
 the Kubernetes layer. Volume expansion is possible for all major NetApp storage platforms,
 including ONTAP, Element/HCI and Cloud Volumes Service backends.
-Take a look at the :ref:`Resizing an NFS volume` and
-:ref:`Resizing an iSCSI volume` for examples and conditions that must be met.
+Take a look at the :ref:`Expanding an NFS volume` and
+:ref:`Expanding an iSCSI volume` for examples and conditions that must be met.
 To allow possible expansion later, set `allowVolumeExpansion` to `true` in your StorageClass associated with the volume. Whenever the Persistent Volume needs to be resized, edit the ``spec.resources.requests.storage`` annotation in the Persistent Volume Claim to the required volume size. Trident will automatically take care of resizing the volume on the storage cluster.
-.. note::
-   1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
 
+.. note::
+   
+   1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
    2. Kubernetes, prior to version 1.12, does not support PV resize as the admission controller may reject PVC size updates. The Trident team has changed Kubernetes to allow such changes starting with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still possible to resize NFS PVs for earlier versions of Kubernetes that support resize. This is done by disabling the PersistentVolumeClaimResize admission plugin when the Kubernetes API server is started.
 
 

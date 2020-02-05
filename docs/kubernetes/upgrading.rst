@@ -13,6 +13,18 @@ Initiate the upgrade
    Before upgrading Trident, ensure that the required :ref:`feature gates <Feature Gates>`
    are enabled.
 
+.. warning::
+
+   The ``19.10.1`` release of Trident removes support for
+   `alpha Volume Snapshots <https://v1-16.docs.kubernetes.io/docs/concepts/storage/volume-snapshots/>`_.
+   Beginning with the ``20.01`` release, Trident only enables the creation of
+   `beta Volume Snapshots <https://v1-17.docs.kubernetes.io/docs/concepts/storage/volume-snapshots/>`_.
+   When upgrading to ``19.10.1`` or above,
+   all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
+   Volume Snapshots and Volume Snapshot Contents) must be removed before the upgrade is performed.
+   Refer to `this blog <https://netapp.io/2020/01/30/alpha-to-beta-snapshots/>`_ to understand the
+   steps involved in migrating alpha snapshots to the beta spec.
+
 The best way to upgrade to the latest version of Trident is to download the
 latest `installer bundle`_ and run:
 
@@ -33,9 +45,7 @@ On Kubernetes ``1.13``, there are a couple of options when upgrading Trident:
 - If for some reason the :ref:`feature gates <Feature Gates>` required by Trident
   cannot be enabled, you can install Trident without the ``--csi`` flag. This will
   configure Trident to work in its traditional format without using the CSI
-  specification. Keep in mind that new features introduced by Trident, such as
-  :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>` will not be available
-  in this installation mode.
+  specification.
 
 Upgrading Trident on Kubernetes 1.14 and above
 ----------------------------------------------
@@ -76,8 +86,7 @@ When upgrading on Kubernetes versions ``1.14`` and above, the
 CSI provisioner will be used by default. For legacy PVs, all features made available
 by the previous Trident version will be supported.
 To make use of the rich set of features that will be provided in newer
-Trident releases (such as :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>`),
-volumes can be upgraded using the ``tridentctl upgrade``
+Trident releases, volumes can be upgraded using the ``tridentctl upgrade``
 command.
 
 The :ref:`Upgrading legacy volumes to CSI volumes <Upgrading legacy volumes to CSI volumes>`
@@ -93,7 +102,7 @@ When upgrading Trident, there is a possibility of having legacy volumes that nee
 to be ported to the CSI specification to make use of the complete set of
 features made available by Trident. A legacy PV that has been provisioned
 by Trident will still support the traditional set of features. For all additional features
-that Trident will provide (such as :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>`),
+that Trident will provide,
 the Trident volume must be upgraded from a NFS/iSCSI
 type to the CSI type.
 

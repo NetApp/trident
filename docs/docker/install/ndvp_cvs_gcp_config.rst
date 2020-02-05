@@ -1,10 +1,11 @@
 Cloud Volumes Service (CVS) on GCP Configuration
 ================================================
 
-.. info::
-  The NetApp Cloud Volumes Service for GCP does not support volumes less than 1 TiB in size. To
-  make it easier to deploy applications, Trident automatically creates 1 TiB volumes if a
-  smaller volume is requested. Future releases of the Cloud Volumes Service may remove this restriction.
+.. note::
+
+   The NetApp Cloud Volumes Service for GCP does not support volumes less than 1 TiB in size. To
+   make it easier to deploy applications, Trident automatically creates 1 TiB volumes if a
+   smaller volume is requested. Future releases of the Cloud Volumes Service may remove this restriction.
 
 In addition to the global configuration values above, when using CVS on GCP, these options are available.
 
