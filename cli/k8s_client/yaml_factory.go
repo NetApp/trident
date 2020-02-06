@@ -1824,6 +1824,9 @@ spec:
   - "SYS_ADMIN"
   hostIPC: true
   hostNetwork: true
+  hostPorts:
+  - min: 8443
+    max: 8443
   seLinux:
     rule: RunAsAny
   supplementalGroups:

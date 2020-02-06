@@ -755,9 +755,19 @@ func installTrident() (returnError error) {
 				returnError = fmt.Errorf("please correct the pod security policy YAML file; %v", returnError)
 				return
 			}
+			// Delete the object in case it already exists and we need to update it
+			if err := client.DeleteObjectByFile(podSecurityPolicyPath, true); err != nil {
+				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+				return
+			}
 			returnError = client.CreateObjectByFile(podSecurityPolicyPath)
 			logFields = log.Fields{"path": podSecurityPolicyPath}
 		} else {
+			// Delete the object in case it already exists and we need to update it
+			if err := client.DeleteObjectByYAML(k8sclient.GetPodSecurityPolicyYAML(), true); err != nil {
+				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+				return
+			}
 			returnError = client.CreateObjectByYAML(k8sclient.GetPodSecurityPolicyYAML())
 			logFields = log.Fields{}
 		}
