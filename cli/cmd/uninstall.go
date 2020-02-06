@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package cmd
 
 import (
@@ -362,9 +362,9 @@ func uninstallTrident() error {
 		} else {
 			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
 		}
-
-		log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
 	}
+
+	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
 
 	if !anyErrors {
 		log.Info("Trident uninstallation succeeded.")
