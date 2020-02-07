@@ -8,6 +8,7 @@
 
 **Fixes:**
 - **Kubernetes** Change Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
+- Fixes FlexGroup volume deletion against ONTAP version 9.7 (Issue [#326](https://github.com/NetApp/trident/issues/326))
 
 ## v20.01.0
 

@@ -753,7 +753,6 @@ func (d Client) FlexGroupCreate(
 func (d Client) FlexGroupDestroy(name string, force bool) (*azgo.VolumeDestroyAsyncResponse, error) {
 	response, err := azgo.NewVolumeDestroyAsyncRequest().
 		SetVolumeName(name).
-		SetUnmountAndOffline(force).
 		ExecuteUsing(d.zr)
 
 	if zerr := NewZapiError(*response); !zerr.IsPassed() {

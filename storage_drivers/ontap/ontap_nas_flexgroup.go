@@ -624,8 +624,16 @@ func (d *NASFlexGroupStorageDriver) Destroy(name string) error {
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
 
-	_, err := d.API.FlexGroupDestroy(name, true)
-	if err != nil {
+	if volExists, err := UnmountAndOfflineVolume(d.GetAPI(), name); err != nil {
+		return err
+	} else if !volExists {
+		return nil
+	}
+
+	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
+	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
+	// diagnose, so we defer to the ONTAP cluster admin
+	if _, err := d.API.FlexGroupDestroy(name, true); err != nil {
 		return fmt.Errorf("error destroying FlexGroup %v: %v", name, err)
 	}
 
