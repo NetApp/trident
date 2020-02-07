@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/ghodss/yaml"
 	"github.com/go-logfmt/logfmt"
 	log "github.com/sirupsen/logrus"

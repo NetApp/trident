@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"

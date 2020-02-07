@@ -16,7 +16,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -930,7 +930,7 @@ func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 		if len(a) >= 2 {
 
 			portalIP := ""
-			if  IPv6Check(a[0]) {
+			if IPv6Check(a[0]) {
 				// This is an IPv6 address
 				portalIP = strings.Split(a[0], "]")[0]
 				portalIP += "]"

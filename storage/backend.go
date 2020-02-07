@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 

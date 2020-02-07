@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"

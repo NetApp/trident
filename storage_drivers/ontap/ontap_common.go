@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -81,7 +81,7 @@ type StorageDriver interface {
 }
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
-func CleanBackendName(backendName string) (string) {
+func CleanBackendName(backendName string) string {
 	backendName = strings.ReplaceAll(backendName, "[", "")
 	backendName = strings.ReplaceAll(backendName, "]", "")
 	return strings.ReplaceAll(backendName, ":", ".")
@@ -1805,11 +1805,11 @@ func ValidateStoragePools(physicalPools, virtualPools map[string]*storage.Pool, 
 
 		// Validate TieringPolicy
 		switch pool.InternalAttributes[TieringPolicy] {
-			case "snapshot-only","auto","none","backup","all","":
-				break
-			default:
-				return fmt.Errorf("invalid tieringPolicy %s in pool %s", pool.InternalAttributes[TieringPolicy],
-					poolName)
+		case "snapshot-only", "auto", "none", "backup", "all", "":
+			break
+		default:
+			return fmt.Errorf("invalid tieringPolicy %s in pool %s", pool.InternalAttributes[TieringPolicy],
+				poolName)
 		}
 
 		// Validate media type

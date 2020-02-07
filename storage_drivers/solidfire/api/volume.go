@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/utils"
@@ -112,7 +112,7 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
 	var response []byte
 	var result CloneVolumeResult
 
-	cloneExists := func()  error {
+	cloneExists := func() error {
 		response, cloneError = c.Request("CloneVolume", req, NewReqID())
 		if cloneError != nil {
 			errorMessage := cloneError.Error()
@@ -127,7 +127,7 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
 				backoff.Permanent(cloneError)
 			}
 		}
-		return  nil
+		return nil
 	}
 	cloneExistsNotify := func(err error, duration time.Duration) {
 		log.WithField("increment", duration).Debugf("Clone not yet present, waiting; err: %+v", err)

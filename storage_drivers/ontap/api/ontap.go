@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -2077,7 +2077,7 @@ func (d Client) AggregateCommitment(aggregate string) (*AggregateCommitment, err
 // SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
 // equivalent to filer::> snapmirror show
 func (d Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.
-SnapmirrorGetIterResponse, error) {
+	SnapmirrorGetIterResponse, error) {
 	// Limit list-destination to relationship-group-type matching passed relGroupType
 	query := &azgo.SnapmirrorGetIterRequestQuery{}
 	relationshipGroupType := azgo.NewSnapmirrorInfoType().
@@ -2167,12 +2167,11 @@ func (d Client) IsVserverDRSource() (bool, error) {
 
 // isVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
 func (d Client) isVserverInSVMDR() bool {
-	isSVMDRSource,_ := d.IsVserverDRSource()
-	isSVMDRDestination,_ := d.IsVserverDRDestination()
+	isSVMDRSource, _ := d.IsVserverDRSource()
+	isSVMDRDestination, _ := d.IsVserverDRDestination()
 
 	return isSVMDRSource || isSVMDRDestination
 }
-
 
 // SNAPMIRROR operations END
 /////////////////////////////////////////////////////////////////////////////
