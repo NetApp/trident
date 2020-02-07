@@ -361,7 +361,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.0.1
+        image: quay.io/k8scsi/csi-provisioner:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -373,7 +373,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: quay.io/k8scsi/csi-attacher:v1.0.1
+        image: quay.io/k8scsi/csi-attacher:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -467,7 +467,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: quay.io/k8scsi/csi-provisioner:v1.2.1
+        image: quay.io/k8scsi/csi-provisioner:v1.2.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
