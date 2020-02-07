@@ -2089,3 +2089,40 @@ func resizeValidation(name string, sizeBytes uint64,
 
 	return volSizeBytes, nil
 }
+
+// Unmount a volume and then take it offline. This may need to be done before deleting certain types of volumes.
+func UnmountAndOfflineVolume(API *api.Client, name string) (bool, error) {
+	// This call is sync and idempotent
+	umountResp, err := API.VolumeUnmount(name, true)
+	if err != nil {
+		return true, fmt.Errorf("error unmounting Volume %v: %v", name, err)
+	}
+
+	if zerr := api.NewZapiError(umountResp); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			log.WithField("volume", name).Warn("Volume does not exist.")
+			return false, nil
+		} else {
+			return true, fmt.Errorf("error unmounting Volume %v: %v", name, zerr)
+		}
+	}
+
+	// This call is sync, but not idempotent, so we check if it is already offline
+	offlineResp, offErr := API.VolumeOffline(name)
+	if offErr != nil {
+		return true, fmt.Errorf("error taking Volume %v offline: %v", name, offErr)
+	}
+
+	if zerr := api.NewZapiError(offlineResp); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EVOLUMEOFFLINE {
+			log.WithField("volume", name).Warn("Volume already offline.")
+		} else if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
+			log.WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
+			return false,  nil
+		} else {
+			return true, fmt.Errorf("error taking Volume %v offline: %v", name, zerr)
+		}
+	}
+
+	return true, nil
+}
