@@ -42,6 +42,7 @@ Refer to the documentation below for your configured storage system to determine
    backends/eseries_options
    backends/cvs_aws_options
    backends/cvs_gcp_options
+   backends/anf_options
 
 Destroy a Volume
 ----------------

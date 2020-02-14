@@ -77,7 +77,7 @@ To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <depl
 that the required :ref:`Feature Gates <Feature Gates>` are enabled.
 After deploying, you should consider :ref:`Upgrading existing PVs to CSI volumes <Upgrading legacy volumes to CSI volumes>`
 if you would like to
-use new features such as :ref:`On-demand snapshots <Creating Snapshots of Persistent Volumes>`.
+use new features such as :ref:`On-demand snapshots <On-Demand Volume Snapshots>`.
 
 .. _installer bundle: https://github.com/NetApp/trident/releases/latest
 

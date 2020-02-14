@@ -15,6 +15,9 @@ Troubleshooting
 * If there's not enough information in the Trident logs, you can try enabling
   the debug mode for Trident by passing the ``-d`` flag to the install
   parameter: ``./tridentctl install -d -n trident``.
+* When using RedHat CoreOS, it is important to make sure that ``iscsid`` is enabled on
+  the worker nodes and started by default. This can be done using OpenShift
+  MachineConfigs or by modifying the ignition templates.
 * If there are problems with mounting a PV to a container, ensure that ``rpcbind`` is
   installed and running. Use the required package manager for the host OS and check if
   ``rpcbind`` is running. You can check the status of the ``rpcbind`` service by running

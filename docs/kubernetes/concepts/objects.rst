@@ -299,14 +299,21 @@ Class is created with this definition:
 
 .. code-block:: yaml
 
-   apiVersion: snapshot.storage.k8s.io/v1alpha1
+   apiVersion: snapshot.storage.k8s.io/v1beta1
    kind: VolumeSnapshotClass
    metadata:
-     name: csi-vsc
-   snapshotter: csi.trident.netapp.io
+     name: csi-snapclass
+   driver: csi.trident.netapp.io
+   deletionPolicy: Delete
 
-The ``snapshotter`` instructs Kubernetes that requests for Volume Snapshots
-of the ``csi-vsc`` class will be handled by Trident.
+The ``driver`` instructs Kubernetes that requests for Volume Snapshots
+of the ``csi-snapclass`` class will be handled by Trident. The
+``deletionPolicy`` specifies the action to be taken when a snapshot must
+be deleted. When the ``deletionPolicy`` is set to ``Delete``, the
+Volume Snapshot objects as well as the underlying snapshot on the storage
+cluster are removed when a snapshot is deleted. Alternatively, setting it
+to ``Retain`` will mean that the VolumeSnapshotContent and the physical
+snapshot will be kept.
 
 Kubernetes VolumeSnapshot Objects
 ---------------------------------

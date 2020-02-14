@@ -1,10 +1,11 @@
 Cloud Volumes Service (CVS) on AWS Configuration
 ================================================
 
-.. info::
-  The NetApp Cloud Volumes Service for AWS does not support volumes less than 100 GB in size. To
-  make it easier to deploy applications, Trident automatically creates 100 GB volumes if a
-  smaller volume is requested. Future releases of the Cloud Volumes Service may remove this restriction.
+.. note::
+
+   The NetApp Cloud Volumes Service for AWS does not support volumes less than 100 GB in size. To
+   make it easier to deploy applications, Trident automatically creates 100 GB volumes if a
+   smaller volume is requested. Future releases of the Cloud Volumes Service may remove this restriction.
 
 In addition to the global configuration values above, when using CVS on AWS, these options are available.  The
 required values are all available in the CVS web user interface.

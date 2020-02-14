@@ -12,7 +12,7 @@ management applications from accessing Trident object definitions or the
 pods to ensure reliable storage and block potential malicious activity.
 To separate out the other applications and users from Trident, always
 install Trident in its own Kubernetes namespace. In our
-:ref:`Installing Trident docs <Install Trident>` we call this namespace
+:ref:`Installing Trident docs <3: Install Trident>` we call this namespace
 `trident`. Putting Trident in its own namespace assures that only the
 Kubernetes administrative personnel have access to the Trident pod and
 the artifacts (such as backend and CHAP secrets if applicable) stored
