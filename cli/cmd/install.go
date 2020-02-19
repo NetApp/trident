@@ -434,6 +434,11 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
+	podSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
+		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
+	}
+
 	return nil
 }
 
@@ -485,7 +490,7 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
 
-	podSecurityPolicyYAML := k8sclient.GetPodSecurityPolicyYAML()
+	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
 	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
 		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
 	}
@@ -697,6 +702,39 @@ func installTrident() (returnError error) {
 		crdsCreated = true
 	}
 
+	// Create pod security policy
+	if useYAML && fileExists(podSecurityPolicyPath) {
+		returnError = validateTridentPodSecurityPolicy()
+		if returnError != nil {
+			returnError = fmt.Errorf("please correct the pod security policy YAML file; %v", returnError)
+			return
+		}
+		// Delete the object in case it already exists and we need to update it
+		if err := client.DeleteObjectByFile(podSecurityPolicyPath, true); err != nil {
+			returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+			return
+		}
+		returnError = client.CreateObjectByFile(podSecurityPolicyPath)
+		logFields = log.Fields{"path": podSecurityPolicyPath}
+	} else {
+		// Delete the object in case it already exists and we need to update it
+		pspYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
+		if !csi {
+			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+		}
+		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
+			returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+			return
+		}
+		returnError = client.CreateObjectByYAML(pspYAML)
+		logFields = log.Fields{}
+	}
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create Trident pod security policy; %v", returnError)
+		return
+	}
+	log.WithFields(logFields).Info("Created Trident pod security policy.")
+
 	// Do the data migration if necessary
 	if migrateToCRDs {
 		if returnError = runTridentMigrator(); returnError != nil && crdsCreated {
@@ -747,35 +785,6 @@ func installTrident() (returnError error) {
 		log.WithFields(logFields).Info("Created Trident deployment.")
 
 	} else {
-
-		// Create pod security policy
-		if useYAML && fileExists(podSecurityPolicyPath) {
-			returnError = validateTridentPodSecurityPolicy()
-			if returnError != nil {
-				returnError = fmt.Errorf("please correct the pod security policy YAML file; %v", returnError)
-				return
-			}
-			// Delete the object in case it already exists and we need to update it
-			if err := client.DeleteObjectByFile(podSecurityPolicyPath, true); err != nil {
-				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
-				return
-			}
-			returnError = client.CreateObjectByFile(podSecurityPolicyPath)
-			logFields = log.Fields{"path": podSecurityPolicyPath}
-		} else {
-			// Delete the object in case it already exists and we need to update it
-			if err := client.DeleteObjectByYAML(k8sclient.GetPodSecurityPolicyYAML(), true); err != nil {
-				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
-				return
-			}
-			returnError = client.CreateObjectByYAML(k8sclient.GetPodSecurityPolicyYAML())
-			logFields = log.Fields{}
-		}
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create Trident pod security policy; %v", returnError)
-			return
-		}
-		log.WithFields(logFields).Info("Created Trident pod security policy.")
 
 		// Create the CSI CRDs if necessary (1.13 only)
 		returnError = createK8S113CSICustomResourceDefinitions()
@@ -1343,29 +1352,33 @@ func validateTridentPodSecurityPolicy() error {
 		return fmt.Errorf("could not load pod security policy YAML file; %v", err)
 	}
 
-	// Check the security settings
-	spec := securityPolicy.Spec
-	if !spec.Privileged {
-		return fmt.Errorf("trident's pod security policy must allow privileged pods")
-	}
-	if spec.AllowPrivilegeEscalation != nil && !*spec.AllowPrivilegeEscalation {
-		return fmt.Errorf("trident's pod security policy must allow privilege escalation")
-	}
-	if !spec.HostIPC {
-		return fmt.Errorf("trident's pod security policy must allow hostIPC")
-	}
-	if !spec.HostNetwork {
-		return fmt.Errorf("trident's pod security policy must allow hostNetwork")
-	}
-	found := false
-	for _, allowedCap := range spec.AllowedCapabilities {
-		if allowedCap == "SYS_ADMIN" {
-			found = true
+	if csi {
+		// Check the security settings, CSI mode requires enhanced privs for performing mounts
+		spec := securityPolicy.Spec
+		if !spec.Privileged {
+			return fmt.Errorf("trident's pod security policy must allow privileged pods")
+		}
+		if spec.AllowPrivilegeEscalation != nil && !*spec.AllowPrivilegeEscalation {
+			return fmt.Errorf("trident's pod security policy must allow privilege escalation")
+		}
+		if !spec.HostIPC {
+			return fmt.Errorf("trident's pod security policy must allow hostIPC")
+		}
+		if !spec.HostNetwork {
+			return fmt.Errorf("trident's pod security policy must allow hostNetwork")
+		}
+		found := false
+		for _, allowedCap := range spec.AllowedCapabilities {
+			if allowedCap == "SYS_ADMIN" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("trident's pod security policy must allow SYS_ADMIN capability")
 		}
 	}
-	if !found {
-		return fmt.Errorf("trident's pod security policy must allow SYS_ADMIN capability")
-	}
+
 	return nil
 }
 
@@ -1627,37 +1640,35 @@ func installTridentInCluster() (returnError error) {
 		return
 	}
 
-	if csi {
-		// Delete any previous installer pod security policy
+	// Delete any previous installer pod security policy
+	podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
+	if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+		log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
+			"please delete it manually.")
+	} else {
+		log.WithField("podSecurityPolicy", "tridentinstaller").Info(
+			"Deleted previous installer pod security policy.")
+	}
+
+	// Create installer pod security policy
+	errMessage := "could not create installer pod security policy"
+	returnError = createObjectsByYAML("installerPodSecurityPolicy",
+		k8sclient.GetInstallerSecurityPolicyYAML(), errMessage)
+	if returnError != nil {
+		return returnError
+	}
+	log.WithFields(log.Fields{"podsecuritypolicy": "tridentinstaller"}).Info("Created installer pod security policy.")
+
+	defer func() {
+		// Delete pod security policy
 		podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
 		if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
 			log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
 				"please delete it manually.")
 		} else {
-			log.WithField("podSecurityPolicy", "tridentinstaller").Info(
-				"Deleted previous installer pod security policy.")
+			log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted installer pod security policy.")
 		}
-
-		// Create installer pod security policy
-		errMessage := "could not create installer pod security policy"
-		returnError = createObjectsByYAML("installerPodSecurityPolicy",
-			k8sclient.GetInstallerSecurityPolicyYAML(), errMessage)
-		if returnError != nil {
-			return returnError
-		}
-		log.WithFields(log.Fields{"podsecuritypolicy": "tridentinstaller"}).Info("Created installer pod security policy.")
-
-		defer func() {
-			// Delete pod security policy
-			podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
-			if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-				log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
-					"please delete it manually.")
-			} else {
-				log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted installer pod security policy.")
-			}
-		}()
-	}
+	}()
 
 	// Create the RBAC objects
 	if returnError = createInstallerRBACObjects(); returnError != nil {
@@ -1739,7 +1750,7 @@ func installTridentInCluster() (returnError error) {
 	commandArgs = append(commandArgs, "--in-cluster=false")
 
 	// Create the install pod
-	errMessage := "could not create installer pod"
+	errMessage = "could not create installer pod"
 	returnError = createObjectsByYAML("installerPod",
 		k8sclient.GetInstallerPodYAML(TridentInstallerLabelValue, tridentImage, commandArgs), errMessage)
 	if returnError != nil {

@@ -85,6 +85,11 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames:
+      - tridentpods
 `
 
 const clusterRoleCSIYAMLTemplate = `---
@@ -1161,6 +1166,9 @@ rules:
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
     verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["*"]
 `
 
 const installerClusterRoleKubernetesYAMLTemplate = `---
@@ -1808,11 +1816,11 @@ spec:
   attachRequired: true
 `
 
-func GetPodSecurityPolicyYAML() string {
-	return PodSecurityPolicyYAML
+func GetPrivilegedPodSecurityPolicyYAML() string {
+	return PrivilegedPodSecurityPolicyYAML
 }
 
-const PodSecurityPolicyYAML = `
+const PrivilegedPodSecurityPolicyYAML = `
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -1837,6 +1845,29 @@ spec:
     rule: RunAsAny
   volumes:
   - '*'
+`
+
+func GetUnprivilegedPodSecurityPolicyYAML() string {
+	return UnprivilegedPodSecurityPolicyYAML
+}
+
+const UnprivilegedPodSecurityPolicyYAML = `
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: tridentpods
+spec:
+  privileged: false
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+    - '*'
 `
 
 func GetInstallerSecurityPolicyYAML() string {
