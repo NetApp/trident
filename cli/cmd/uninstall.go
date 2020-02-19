@@ -353,15 +353,16 @@ func uninstallTrident() error {
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
-	if csi {
-		// Delete pod security policy
-		podSecurityPolicyYAML := k8sclient.GetPodSecurityPolicyYAML()
-		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete pod security policy.")
-			anyErrors = true
-		} else {
-			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
-		}
+	// Delete pod security policy
+	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
+	if !csi {
+		podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+	}
+	if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+		log.WithField("error", err).Warning("Could not delete pod security policy.")
+		anyErrors = true
+	} else {
+		log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
 	}
 
 	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
