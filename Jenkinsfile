@@ -4,13 +4,6 @@ node {
 
   def error_message = ''
   def slack_result = ''
-  def ssh_options=(
-    '-o StrictHostKeyChecking=no ' +
-    '-o UserKnownHostsFile=/dev/null ' +
-    '-o ServerAliveInterval=60 -i tools/' +
-    env.SSH_PRIVATE_KEY_PATH +
-    ' -q'
-  )
 
   try {
 
@@ -25,11 +18,17 @@ node {
       try {
 
         echo "Calling create stages"
+
+        def max_parallel_stages = 10
+        if (env.MAX_PARALLEL_STAGES) {
+            max_parallel_stages = env.MAX_PARALLEL_STAGES
+        }
+
         stages = create_stages(
-          parallelism: env.MAX_PARALLEL_STAGES,
-          repository: 'trident',
-          ssh_options: ssh_options
+          parallelism: max_parallel_stages,
+          repository: 'trident'
         )
+
       } catch(Exception e) {
 
         error 'Create-Stages: ' + e.getMessage()
