@@ -212,10 +212,10 @@ func GetISCSITargetInfo(
 }
 
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
+// This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMapping(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
-	ips []string, volConfig *storage.VolumeConfig, lunID int,
-) error {
+	ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string) error {
 
 	var (
 		targetIQN string
@@ -238,8 +238,18 @@ func PopulateOntapLunMapping(
 		}
 	}
 
-	volConfig.AccessInfo.IscsiTargetPortal = ips[0]
-	volConfig.AccessInfo.IscsiPortals = ips[1:]
+	filteredIPs, err := getISCSIDataLIFsForReportingNodes(clientAPI, ips, lunPath, igroupName)
+	if err != nil {
+		return err
+	}
+
+	if len(filteredIPs) == 0 {
+		log.Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
+		filteredIPs = ips
+	}
+
+	volConfig.AccessInfo.IscsiTargetPortal = filteredIPs[0]
+	volConfig.AccessInfo.IscsiPortals = filteredIPs[1:]
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
 	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
 	volConfig.AccessInfo.IscsiIgroup = config.IgroupName
@@ -258,6 +268,8 @@ func PopulateOntapLunMapping(
 // ontap-san-economy. This method may or may not be running on the host where the volume will be
 // mounted, so it should limit itself to updating access rules, initiator groups, etc. that require
 // some host identity (but not locality) as well as storage controller API access.
+// This function assumes that the list of data LIF IP addresses does not change between driver initialization
+// and publish
 func PublishLUN(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
 	publishInfo *utils.VolumePublishInfo, lunPath, igroupName string, iSCSINodeName string,
@@ -328,10 +340,20 @@ func PublishLUN(
 		return err
 	}
 
+	filteredIPs, err := getISCSIDataLIFsForReportingNodes(clientAPI, ips, lunPath, igroupName)
+	if err != nil {
+		return err
+	}
+
+	if len(filteredIPs) == 0 {
+		log.Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
+		filteredIPs = ips
+	}
+
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
-	publishInfo.IscsiTargetPortal = ips[0]
-	publishInfo.IscsiPortals = ips[1:]
+	publishInfo.IscsiTargetPortal = filteredIPs[0]
+	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
 	publishInfo.IscsiIgroup = igroupName
 	publishInfo.FilesystemType = fstype
@@ -339,6 +361,40 @@ func PublishLUN(
 	publishInfo.SharedTarget = true
 
 	return nil
+}
+
+// getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
+func getISCSIDataLIFsForReportingNodes(clientAPI *api.Client, ips []string, lunPath string, igroupName string,
+) ([]string, error) {
+
+	lunMapGetResponse, err := clientAPI.LunMapGet(igroupName, lunPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
+	}
+
+	reportingNodeNames := make(map[string]struct{})
+	if lunMapGetResponse.Result.AttributesListPtr != nil {
+		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr {
+			for _, reportingNode := range lunMapInfo.ReportingNodes() {
+				log.WithField("reportingNode", reportingNode).Debug("Reporting node found.")
+				reportingNodeNames[reportingNode] = struct{}{}
+			}
+		}
+	}
+
+	var reportedDataLIFs []string
+	for _, ip := range ips {
+		currentNodeName, err := clientAPI.NetInterfaceGetDataLIFsNode(ip)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := reportingNodeNames[currentNodeName]; ok {
+			reportedDataLIFs = append(reportedDataLIFs, ip)
+		}
+	}
+
+	log.WithField("reportedDataLIFs", reportedDataLIFs).Debug("Data LIFs with reporting nodes")
+	return reportedDataLIFs, nil
 }
 
 // InitializeSANDriver performs common ONTAP SAN driver initialization.

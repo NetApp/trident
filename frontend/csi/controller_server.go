@@ -241,12 +241,12 @@ func (p *Plugin) DeleteVolume(
 	return &csi.DeleteVolumeResponse{}, nil
 }
 
-func stashIscsiTargetPortals(publishInfo map[string]string, accessInfo utils.VolumeAccessInfo) {
+func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *utils.VolumePublishInfo) {
 
-	count := 1 + len(accessInfo.IscsiPortals)
+	count := 1 + len(volumePublishInfo.IscsiPortals)
 	publishInfo["iscsiTargetPortalCount"] = strconv.Itoa(count)
-	publishInfo["p1"] = accessInfo.IscsiTargetPortal
-	for i, p := range accessInfo.IscsiPortals {
+	publishInfo["p1"] = volumePublishInfo.IscsiTargetPortal
+	for i, p := range volumePublishInfo.IscsiPortals {
 		key := fmt.Sprintf("p%d", i+2)
 		publishInfo[key] = p
 	}
@@ -316,7 +316,7 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
 		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
 	} else if volume.Config.Protocol == tridentconfig.Block {
-		stashIscsiTargetPortals(publishInfo, volume.Config.AccessInfo)
+		stashIscsiTargetPortals(publishInfo, volumePublishInfo)
 		publishInfo["iscsiTargetIqn"] = volume.Config.AccessInfo.IscsiTargetIQN
 		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volume.Config.AccessInfo.IscsiLunNumber))
 		publishInfo["iscsiInterface"] = volume.Config.AccessInfo.IscsiInterface
