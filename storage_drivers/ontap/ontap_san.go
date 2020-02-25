@@ -663,7 +663,7 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 		return err
 	}
 
-	err = PopulateOntapLunMapping(d.API, &d.Config, d.ips, volConfig, lunID)
+	err = PopulateOntapLunMapping(d.API, &d.Config, d.ips, volConfig, lunID, lunPath, d.Config.IgroupName)
 	if err != nil {
 		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
 	}

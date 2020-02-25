@@ -412,6 +412,20 @@ func (d Client) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResp
 	return response, err
 }
 
+// LunMapGet returns a list of LUN map details
+// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+func (d Client) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error) {
+
+	lunMapInfo := *azgo.NewLunMapInfoType().
+		SetInitiatorGroup(initiatorGroupName).
+		SetPath(lunPath)
+
+	response, err := azgo.NewLunMapGetIterRequest().
+		SetQuery(lunMapInfo).
+		ExecuteUsing(d.zr)
+	return &response, err
+}
+
 // LunMap maps a lun to an id in an initiator group
 // equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
 func (d Client) LunMap(initiatorGroupName, lunPath string, lunID int) (*azgo.LunMapResponse, error) {
@@ -2187,6 +2201,24 @@ func (d Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 		SetMaxRecords(defaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
+}
+
+func (d Client) NetInterfaceGetDataLIFsNode(ip string) (string, error) {
+	lifResponse, err := d.NetInterfaceGet()
+	if err = GetError(lifResponse, err); err != nil {
+		return "", fmt.Errorf("error checking network interfaces: %v", err)
+	}
+	var nodeName string
+	if lifResponse.Result.AttributesListPtr != nil {
+		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
+			if ip == attrs.Address() {
+				nodeName = attrs.CurrentNode()
+				break
+			}
+		}
+	}
+
+	return nodeName, nil
 }
 
 func (d Client) NetInterfaceGetDataLIFs(protocol string) ([]string, error) {
