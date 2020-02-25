@@ -90,7 +90,7 @@ var (
 	httpsClientCert = flag.String("https_client_cert", config.ClientCertPath, "HTTPS client certificate")
 
 	// HTTP metrics interface
-	metricsAddress = flag.String("metrics_address", "127.0.0.1", "Storage orchestrator metrics address")
+	metricsAddress = flag.String("metrics_address", "", "Storage orchestrator metrics address")
 	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
 	enableMetrics  = flag.Bool("metrics", false, "Enable metrics interface")
 

@@ -362,12 +362,12 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
-      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         ports:
         - containerPort: 8443
+        - containerPort: 8001
         command:
         - /usr/local/bin/trident_orchestrator
         args:
@@ -477,12 +477,12 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
-      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         ports:
         - containerPort: 8443
+        - containerPort: 8001
         command:
         - /usr/local/bin/trident_orchestrator
         args:
@@ -580,12 +580,12 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
-      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         ports:
         - containerPort: 8443
+        - containerPort: 8001
         command:
         - /usr/local/bin/trident_orchestrator
         args:
@@ -695,12 +695,12 @@ spec:
         app: {LABEL}
     spec:
       serviceAccount: trident-csi
-      hostNetwork: true
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         ports:
         - containerPort: 8443
+        - containerPort: 8001
         command:
         - /usr/local/bin/trident_orchestrator
         args:
@@ -1832,9 +1832,6 @@ spec:
   - "SYS_ADMIN"
   hostIPC: true
   hostNetwork: true
-  hostPorts:
-  - min: 8443
-    max: 8443
   seLinux:
     rule: RunAsAny
   supplementalGroups:
