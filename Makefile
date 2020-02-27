@@ -3,7 +3,7 @@
 
 GOARCH ?= amd64
 GOGC ?= ""
-GO_IMAGE = golang:1.13
+GO_IMAGE = golang:1.14
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
@@ -57,7 +57,7 @@ GO_MACOS = ${DR_MACOS} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 20.01.0
+TRIDENT_VERSION ?= 20.04.0
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
