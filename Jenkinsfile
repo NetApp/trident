@@ -40,15 +40,13 @@ node {
        stages: stages
     )
 
-    // If we get this far propagate changes to the public trident repo
-    stage('Propagate-Changes') {
-      if (env.DEPLOY_TRIDENT) {
-        echo "Skipping change propagation because DEPLOY_TRIDENT=true"
-      } else if (env.BLACK_DUCK_SCAN) {
-        echo "Skipping change propagation because BLACK_DUCK_SCAN=true"
-      } else {
-         propagate_changes()
-      }
+    stage('Propagate') {
+      propagate_changes(
+        stage: 'Propagate'
+      )
+      archive_to_seclab(
+        stage: 'Propagate'
+      )
     }
 
     slack_result = 'SUCCESS'
