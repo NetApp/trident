@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -267,10 +269,11 @@ func GetInitiatorIqns() ([]string, error) {
 	log.Debug(">>>> osutils.GetInitiatorIqns")
 	defer log.Debug("<<<< osutils.GetInitiatorIqns")
 
-	var iqns []string
+	iqns := make([]string, 0)
+
 	out, err := execCommand("cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
-		log.Error("Error gathering initiator names.")
+		log.WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
 		return nil, err
 	}
 	lines := strings.Split(string(out), "\n")
@@ -280,6 +283,31 @@ func GetInitiatorIqns() ([]string, error) {
 		}
 	}
 	return iqns, nil
+}
+
+// GetIPAddresses returns the sorted list of Global Unicast IP addresses available to Trident
+func GetIPAddresses() ([]string, error) {
+	ipAddrs := make([]string, 0)
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		err = fmt.Errorf("could not gather system IP addresses; %v", err)
+		log.Error(err)
+		return nil, err
+	}
+
+	// Remove obviously bad addresses such as loopback/linklocal
+	for _, addr := range addrs {
+		// net.Addr are of form 1.2.3.4/32, but IP needs 1.2.3.4, so we must strip the netmask (also works for IPv6)
+		parsedAddr := net.ParseIP(strings.Split(addr.String(), "/")[0])
+		if parsedAddr.IsGlobalUnicast() {
+			log.WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
+			ipAddrs = append(ipAddrs, parsedAddr.String())
+		} else {
+			log.WithField("IPAddress", parsedAddr.String()).Debug("Ignoring unusable IP address.")
+		}
+	}
+	sort.Strings(ipAddrs)
+	return ipAddrs, nil
 }
 
 // PathExists returns true if the file/directory at the specified path exists,

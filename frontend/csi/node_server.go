@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -338,18 +338,26 @@ func (p *Plugin) nodeGetInfo() *utils.Node {
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns()
 	if err != nil {
-		log.WithField("error", err).Error("Could not get iSCSI initiator name.")
+		log.WithField("error", err).Warn("Problem getting iSCSI initiator name.")
 	} else if iscsiWWNs == nil || len(iscsiWWNs) == 0 {
-		log.Warn("Could not get iSCSI initiator name.")
+		log.Warn("Could not find iSCSI initiator name.")
 	} else {
 		iscsiWWN = iscsiWWNs[0]
 	}
 
-	// TODO (akerr): add IP discovery here as well
+	ips, err := utils.GetIPAddresses()
+	if err != nil {
+		log.WithField("error", err).Error("Could not get IP addresses.")
+	} else if ips == nil || len(ips) == 0 {
+		log.Warn("Could not find any usable IP addresses.")
+	} else {
+		log.WithField("IP Addresses", ips).Info("Discovered IP addresses.")
+	}
 
 	node := &utils.Node{
 		Name: p.nodeName,
 		IQN:  iscsiWWN,
+		IPs:  ips,
 	}
 	return node
 }
