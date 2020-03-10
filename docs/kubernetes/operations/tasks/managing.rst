@@ -25,7 +25,7 @@ them from being reported, you will have to generate custom YAMLs (using the
 ``--generate-custom-yaml`` flag) and edit them to remove the ``--metrics`` flag
 from being invoked for the ``trident-main`` container.
 
-This `blog <https://netapp.io/2020/02/20/prometheus-and-trident/>`_ is a great
+This `blog <https://netapp.io/2020/02/20/a-primer-on-prometheus-trident/>`_ is a great
 place to start. It explains how Prometheus and Grafana can
 be used with Trident 20.01 and above to retrieve metrics. The blog explains how you
 can run Prometheus as an operator in your Kubernetes cluster and the creation of a
