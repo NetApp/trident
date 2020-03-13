@@ -31,7 +31,8 @@ import (
 
 const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
-const createTimeoutSeconds = 300
+const VolumeCreateTimeout = 10 * time.Second
+const DefaultTimeout = 120 * time.Second
 const apiServer = "https://cloudvolumesgcp-api.netapp.com"
 const apiAudience = apiServer
 
@@ -187,7 +188,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*h
 	// Send the request
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(httpTimeoutSeconds * time.Second),
+		Timeout:   httpTimeoutSeconds * time.Second,
 	}
 	response, err = d.invokeAPIWithRetry(client, request)
 
@@ -195,7 +196,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*h
 		log.Warnf("Error communicating with GCP REST interface. %v", err)
 		return nil, nil, err
 	} else if response != nil {
-		defer response.Body.Close()
+		defer func() { _ = response.Body.Close() }()
 	}
 
 	var responseBody []byte
@@ -453,29 +454,35 @@ func (d *Client) GetVolumeByID(volumeId string) (*Volume, error) {
 	return &volume, nil
 }
 
-func (d *Client) WaitForVolumeState(volume *Volume, desiredState string, abortStates []string) error {
+func (d *Client) WaitForVolumeState(
+	volume *Volume, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) (string, error) {
+
+	volumeState := ""
 
 	checkVolumeState := func() error {
 
 		f, err := d.GetVolumeByID(volume.VolumeID)
 		if err != nil {
+			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
 		}
 
-		if f.LifeCycleState == desiredState {
+		volumeState = f.LifeCycleState
+
+		if volumeState == desiredState {
 			return nil
 		}
 
 		if f.LifeCycleStateDetails != "" {
-			err = fmt.Errorf("volume state is %s, not %s: %s",
-				f.LifeCycleState, desiredState, f.LifeCycleStateDetails)
+			err = fmt.Errorf("volume state is %s, not %s: %s", volumeState, desiredState, f.LifeCycleStateDetails)
 		} else {
-			err = fmt.Errorf("volume state is %s, not %s", f.LifeCycleState, desiredState)
+			err = fmt.Errorf("volume state is %s, not %s", volumeState, desiredState)
 		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
 		for _, abortState := range abortStates {
-			if f.LifeCycleState == abortState {
+			if volumeState == abortState {
 				return backoff.Permanent(TerminalState(err))
 			}
 		}
@@ -489,10 +496,10 @@ func (d *Client) WaitForVolumeState(volume *Volume, desiredState string, abortSt
 		}).Debugf("Waiting for volume state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = createTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
-	stateBackoff.InitialInterval = 2 * time.Second
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
 	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
@@ -504,12 +511,12 @@ func (d *Client) WaitForVolumeState(volume *Volume, desiredState string, abortSt
 			log.Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
-		return err
+		return volumeState, err
 	}
 
 	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
-	return nil
+	return volumeState, nil
 }
 
 func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
@@ -807,7 +814,9 @@ func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
 	return &snapshot, nil
 }
 
-func (d *Client) WaitForSnapshotState(snapshot *Snapshot, desiredState string, abortStates []string) error {
+func (d *Client) WaitForSnapshotState(
+	snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) error {
 
 	checkSnapshotState := func() error {
 
@@ -843,7 +852,7 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, desiredState string, a
 		}).Debugf("Waiting for snapshot state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = createTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
 	stateBackoff.InitialInterval = 2 * time.Second
@@ -999,6 +1008,15 @@ func GCPAPIServiceLevelFromUserServiceLevel(userServiceLevel string) string {
 		return APIServiceLevel2
 	case UserServiceLevel3:
 		return APIServiceLevel3
+	}
+}
+
+func IsTransitionalState(volumeState string) bool {
+	switch volumeState {
+	case StateCreating, StateUpdating, StateDeleting:
+		return true
+	default:
+		return false
 	}
 }
 

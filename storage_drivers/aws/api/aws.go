@@ -114,7 +114,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 	// Send the request
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(httpTimeoutSeconds * time.Second),
+		Timeout:   httpTimeoutSeconds * time.Second,
 	}
 	response, err = d.invokeAPINoRetry(client, request)
 
@@ -122,7 +122,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 		log.Warnf("Error communicating with AWS REST interface. %v", err)
 		return nil, nil, err
 	} else if response != nil {
-		defer response.Body.Close()
+		defer func() { _ = response.Body.Close() }()
 	}
 
 	var responseBody []byte

@@ -209,11 +209,12 @@ type AzureNFSStorageDriverConfigDefaults struct {
 
 type GCPNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	ProjectNumber   string        `json:"projectNumber"`
-	APIKey          GCPPrivateKey `json:"apiKey"`
-	APIRegion       string        `json:"apiRegion"`
-	ProxyURL        string        `json:"proxyURL"`
-	NfsMountOptions string        `json:"nfsMountOptions"`
+	ProjectNumber       string        `json:"projectNumber"`
+	APIKey              GCPPrivateKey `json:"apiKey"`
+	APIRegion           string        `json:"apiRegion"`
+	ProxyURL            string        `json:"proxyURL"`
+	NfsMountOptions     string        `json:"nfsMountOptions"`
+	VolumeCreateTimeout string        `json:"volumeCreateTimeout"`
 	GCPNFSStorageDriverPool
 	Storage []GCPNFSStorageDriverPool `json:"storage"`
 }

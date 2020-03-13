@@ -128,7 +128,7 @@ func (d *NFSStorageDriver) defaultCreateTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
 	default:
-		return d.volumeCreateTimeout
+		return api.VolumeCreateTimeout
 	}
 }
 
@@ -250,7 +250,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(config *drivers.AWSNFSS
 		i, err := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64)
 		if err != nil {
 			log.WithField("interval", d.Config.VolumeCreateTimeout).Errorf(
-				"Invalid Flexvol create timeout period. %v", err)
+				"Invalid volume create timeout period. %v", err)
 			return err
 		}
 		volumeCreateTimeout = time.Duration(i) * time.Second
@@ -445,10 +445,10 @@ func (d *NFSStorageDriver) validate() error {
 	}
 
 	if d.apiVersion.LessThan(utils.MustParseSemantic(MinimumAPIVersion)) {
-		return fmt.Errorf("API version is %s, at least %s is required.", d.apiVersion.String(), MinimumAPIVersion)
+		return fmt.Errorf("API version is %s, at least %s is required", d.apiVersion.String(), MinimumAPIVersion)
 	}
 	if d.sdeVersion.LessThan(utils.MustParseSemantic(MinimumSDEVersion)) {
-		return fmt.Errorf("SDE version is %s, at least %s is required.", d.sdeVersion.String(), MinimumSDEVersion)
+		return fmt.Errorf("SDE version is %s, at least %s is required", d.sdeVersion.String(), MinimumSDEVersion)
 	}
 
 	// Get available regions
@@ -712,7 +712,7 @@ func (d *NFSStorageDriver) Create(
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
-func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
+func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -860,7 +860,7 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 	}
 
 	// Get the volume size
-	volConfig.Size = strconv.FormatInt(int64(volume.QuotaInBytes), 10)
+	volConfig.Size = strconv.FormatInt(volume.QuotaInBytes, 10)
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
@@ -1333,7 +1333,7 @@ func (d *NFSStorageDriver) List() ([]string, error) {
 			continue
 		}
 
-		volumeName := string(volume.CreationToken)[len(prefix):]
+		volumeName := volume.CreationToken[len(prefix):]
 		volumeNames = append(volumeNames, volumeName)
 	}
 	return volumeNames, nil
