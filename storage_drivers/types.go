@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package storagedrivers
 
 import (
@@ -73,20 +73,22 @@ type EseriesStorageDriverConfigDefaults struct {
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
-	*CommonStorageDriverConfig              // embedded types replicate all fields
-	ManagementLIF                    string `json:"managementLIF"`
-	DataLIF                          string `json:"dataLIF"`
-	IgroupName                       string `json:"igroupName"`
-	SVM                              string `json:"svm"`
-	Username                         string `json:"username"`
-	Password                         string `json:"password"`
-	Aggregate                        string `json:"aggregate"`
-	UsageHeartbeat                   string `json:"usageHeartbeat"`                   // in hours, default to 24.0
-	QtreePruneFlexvolsPeriod         string `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
-	QtreeQuotaResizePeriod           string `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
-	EmptyFlexvolDeferredDeletePeriod string `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
-	NfsMountOptions                  string `json:"nfsMountOptions"`
-	LimitAggregateUsage              string `json:"limitAggregateUsage"`
+	*CommonStorageDriverConfig                // embedded types replicate all fields
+	ManagementLIF                    string   `json:"managementLIF"`
+	DataLIF                          string   `json:"dataLIF"`
+	IgroupName                       string   `json:"igroupName"`
+	SVM                              string   `json:"svm"`
+	Username                         string   `json:"username"`
+	Password                         string   `json:"password"`
+	Aggregate                        string   `json:"aggregate"`
+	UsageHeartbeat                   string   `json:"usageHeartbeat"`                   // in hours, default to 24.0
+	QtreePruneFlexvolsPeriod         string   `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
+	QtreeQuotaResizePeriod           string   `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
+	EmptyFlexvolDeferredDeletePeriod string   `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
+	NfsMountOptions                  string   `json:"nfsMountOptions"`
+	LimitAggregateUsage              string   `json:"limitAggregateUsage"`
+	AutoExportPolicy                 bool     `json:"autoExportPolicy"`
+	AutoExportCIDRs                  []string `json:"autoExportCIDRs"`
 	OntapStorageDriverPool
 	Storage []OntapStorageDriverPool `json:"storage"`
 }
@@ -110,7 +112,7 @@ type OntapStorageDriverConfigDefaults struct {
 	SplitOnClone    string `json:"splitOnClone"`
 	FileSystemType  string `json:"fileSystemType"`
 	Encryption      string `json:"encryption"`
-	TieringPolicy	string `json:"tieringPolicy"`
+	TieringPolicy   string `json:"tieringPolicy"`
 	CommonStorageDriverConfigDefaults
 }
 
@@ -264,12 +266,14 @@ type FakeStorageDriverConfigDefaults struct {
 }
 
 type BackendIneligibleError struct {
-	message string
+	message                 string
 	ineligiblePhysicalPools []string
 }
 
 func (e *BackendIneligibleError) Error() string { return e.message }
-func (e *BackendIneligibleError) getIneligiblePhysicalPools() []string { return e.ineligiblePhysicalPools }
+func (e *BackendIneligibleError) getIneligiblePhysicalPools() []string {
+	return e.ineligiblePhysicalPools
+}
 
 func NewBackendIneligibleError(volumeName string, errors []error, ineligiblePhysicalPoolNames []string) error {
 	messages := make([]string, 0)

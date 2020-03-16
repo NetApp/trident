@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -794,6 +794,10 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		config.TieringPolicy = DefaultTieringPolicy
 	}
 
+	if len(config.AutoExportCIDRs) == 0 {
+		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
+	}
+
 	log.WithFields(log.Fields{
 		"StoragePrefix":       *config.StoragePrefix,
 		"SpaceAllocation":     config.SpaceAllocation,
@@ -812,6 +816,8 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		"LimitVolumeSize":     config.LimitVolumeSize,
 		"Size":                config.Size,
 		"TieringPolicy":       config.TieringPolicy,
+		"AutoExportPolicy":    config.AutoExportPolicy,
+		"AutoExportCIDRs":     config.AutoExportCIDRs,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -1958,7 +1964,7 @@ func getStorageBackendSpecsCommon(backend *storage.Backend, physicalPools,
 
 func getStorageBackendPhysicalPoolNamesCommon(physicalPools map[string]*storage.Pool) []string {
 	physicalPoolNames := make([]string, 0)
-	for poolName, _ := range physicalPools {
+	for poolName := range physicalPools {
 		physicalPoolNames = append(physicalPoolNames, poolName)
 	}
 	return physicalPoolNames
@@ -2174,7 +2180,7 @@ func UnmountAndOfflineVolume(API *api.Client, name string) (bool, error) {
 			log.WithField("volume", name).Warn("Volume already offline.")
 		} else if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			log.WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
-			return false,  nil
+			return false, nil
 		} else {
 			return true, fmt.Errorf("error taking Volume %v offline: %v", name, zerr)
 		}
