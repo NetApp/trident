@@ -186,7 +186,8 @@ type AzureNFSStorageDriverConfig struct {
 	ClientSecret    string `json:"clientSecret"`
 	NfsMountOptions string `json:"nfsMountOptions"`
 	AzureNFSStorageDriverPool
-	Storage []AzureNFSStorageDriverPool `json:"storage"`
+	Storage             []AzureNFSStorageDriverPool `json:"storage"`
+	VolumeCreateTimeout string                      `json:"volumeCreateTimeout"`
 }
 
 // Note that 'Region' and 'Zone' are internal specifiers, not related to Azure's

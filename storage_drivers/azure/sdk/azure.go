@@ -24,13 +24,13 @@ import (
 )
 
 const (
-	subnetTemplate = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s"
-	// AWS timeout is 170, but Azure can be really slow.  Let's go with 8 minutes for now.
-	volumeTimeoutSeconds = 480
+	subnetTemplate      = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s"
+	VolumeCreateTimeout = 10 * time.Second
 	// The CSI Snapshot sidecar has a timeout of 5 minutes.  We need to come in under that in order
 	// to avoid bigger problems.
-	snapshotTimeoutSeconds = 240
-	tridentLabelTag        = "trident"
+	SnapshotTimeout = 240 * time.Second
+	DefaultTimeout  = 120 * time.Second
+	tridentLabelTag = "trident"
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -419,7 +419,10 @@ func (d *Client) GetVolumeByID(fileSystemID string) (*FileSystem, error) {
 }
 
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved
-func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string, abortStates []string) error {
+func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) (string, error) {
+	volumeState := ""
+
 	checkVolumeState := func() error {
 		var f *FileSystem
 		var err error
@@ -431,6 +434,7 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 			f, err = d.GetVolumeByID(filesystem.FileSystemID)
 		}
 		if err != nil {
+			volumeState = ""
 			// This is a bit of a hack, but there is no 'Deleted' state in Azure -- the
 			// volume just vanishes.  If we failed to query the volume info and we're trying
 			// to transition to StateDeleted, try a raw fetch of the volume and if we
@@ -454,16 +458,17 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 
 			return fmt.Errorf("could not get volume status; %v", err)
 		}
+		volumeState = f.ProvisioningState
 
-		if f.ProvisioningState == desiredState {
+		if volumeState == desiredState {
 			return nil
 		}
 
-		err = fmt.Errorf("volume state is %s, not %s", f.ProvisioningState, desiredState)
+		err = fmt.Errorf("volume state is %s, not %s", volumeState, desiredState)
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
 		for _, abortState := range abortStates {
-			if f.ProvisioningState == abortState {
+			if volumeState == abortState {
 				return backoff.Permanent(TerminalState(err))
 			}
 		}
@@ -477,10 +482,10 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 		}).Debugf("Waiting for volume state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = volumeTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
-	stateBackoff.InitialInterval = 2 * time.Second
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
 	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
@@ -492,12 +497,12 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 			log.Errorf("volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
-		return err
+		return volumeState, err
 	}
 
 	log.WithField("desiredState", desiredState).Debug("desired volume state reached.")
 
-	return nil
+	return volumeState, nil
 }
 
 // CreateVolume creates a new volume
@@ -906,8 +911,8 @@ func (d *Client) GetSnapshotByID(snapshotID string, filesystem *FileSystem) (*Sn
 }
 
 // WaitForSnapshotState waits for a desired snapshot state and returns once that state is achieved
-func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string) error {
-
+func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+) error {
 	checkSnapshotState := func() error {
 		s, err := d.GetSnapshotForVolume(filesystem, snapshot.Name)
 
@@ -956,7 +961,7 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem
 		}).Debugf("Waiting for snapshot state.")
 	}
 	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = snapshotTimeoutSeconds * time.Second
+	stateBackoff.MaxElapsedTime = maxElapsedTime
 	stateBackoff.MaxInterval = 5 * time.Second
 	stateBackoff.RandomizationFactor = 0.1
 	stateBackoff.InitialInterval = 2 * time.Second
@@ -1031,6 +1036,15 @@ func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) erro
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name, snapshot.Name)
 
 	return err
+}
+
+func IsTransitionalState(volumeState string) bool {
+	switch volumeState {
+	case StateCreating, StateDeleting:
+		return true
+	default:
+		return false
+	}
 }
 
 // TerminalStateError signals that the object is in a terminal state.  This is used to stop waiting on
