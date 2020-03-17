@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+# This script executes any symlinked binary under a "/host" chroot
 
-ME=`basename "$0"`
-#echo "I am ${ME}"
+set +x
+
+ME=$(basename "$0")
 
 DIR="/host"
 if [ ! -d "${DIR}" ]; then
@@ -9,5 +11,4 @@ if [ ! -d "${DIR}" ]; then
     exit 1
 fi
 
-#echo chroot /host /usr/bin/env -i PATH="/sbin:/bin:/usr/bin" ${ME} "${@:1}"
-exec chroot /host /usr/bin/env -i PATH="/sbin:/bin:/usr/bin" ${ME} "${@:1}"
+exec chroot /host /usr/bin/env -i PATH="/sbin:/bin:/usr/bin" "${ME}" "${@:1}"
