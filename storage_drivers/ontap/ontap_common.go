@@ -3,6 +3,8 @@
 package ontap
 
 import (
+	cryptorand "crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -357,7 +359,15 @@ func PublishLUN(
 	publishInfo.IscsiTargetIQN = iSCSINodeName
 	publishInfo.IscsiIgroup = igroupName
 	publishInfo.FilesystemType = fstype
-	publishInfo.UseCHAP = false
+	publishInfo.UseCHAP = config.UseCHAP
+
+	if publishInfo.UseCHAP {
+		publishInfo.IscsiUsername = config.ChapUsername
+		publishInfo.IscsiInitiatorSecret = config.ChapInitiatorSecret
+		publishInfo.IscsiTargetUsername = config.ChapTargetUsername
+		publishInfo.IscsiTargetSecret = config.ChapTargetInitiatorSecret
+		publishInfo.IscsiInterface = "default"
+	}
 	publishInfo.SharedTarget = true
 
 	return nil
@@ -397,6 +407,99 @@ func getISCSIDataLIFsForReportingNodes(clientAPI *api.Client, ips []string, lunP
 	return reportedDataLIFs, nil
 }
 
+// randomString returns a string of the specified length.
+func randomChapString(strSize int) (string, error) {
+	b := make([]byte, strSize)
+	_, err := cryptorand.Read(b)
+	if err != nil {
+		fmt.Println("error:", err)
+		return "", err
+	}
+	encoded := base64.StdEncoding.EncodeToString(b)
+	return encoded, nil
+}
+
+// randomString returns a string of length 16 (128 bits)
+func randomChapString16() (string, error) {
+	s, err := randomChapString(256)
+	if err != nil {
+		return "", err
+	}
+	if s == "" || len(s) < 256 {
+		return "", fmt.Errorf("invalid random string created '%s'", s)
+	}
+
+	result := ""
+	for i := 0; len(result) < 16; i++ {
+		if s[i] == '+' || s[i] == '/' || s[i] == '=' {
+			continue
+		} else {
+			result += string(s[i])
+		}
+	}
+
+	return result[0:16], nil
+}
+
+// ChapCredentials holds the bidrectional chap settings
+type ChapCredentials struct {
+	ChapUsername              string
+	ChapInitiatorSecret       string
+	ChapTargetUsername        string
+	ChapTargetInitiatorSecret string
+}
+
+// EnsureBidrectionalChapCredentials uses provided credential values or generates random new ones if missing
+func EnsureBidrectionalChapCredentials(config *drivers.OntapStorageDriverConfig) (*ChapCredentials, error) {
+	result := &ChapCredentials{
+		ChapUsername:              config.ChapUsername,
+		ChapInitiatorSecret:       config.ChapInitiatorSecret,
+		ChapTargetUsername:        config.ChapTargetUsername,
+		ChapTargetInitiatorSecret: config.ChapTargetInitiatorSecret,
+	}
+
+	var err error
+	if result.ChapUsername == "" {
+		result.ChapUsername, err = randomChapString16()
+		if err != nil {
+			return nil, err
+		}
+	}
+	if result.ChapInitiatorSecret == "" {
+		result.ChapInitiatorSecret, err = randomChapString16()
+		if err != nil {
+			return nil, err
+		}
+	}
+	if result.ChapTargetUsername == "" {
+		result.ChapTargetUsername, err = randomChapString16()
+		if err != nil {
+			return nil, err
+		}
+	}
+	if result.ChapTargetInitiatorSecret == "" {
+		result.ChapTargetInitiatorSecret, err = randomChapString16()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
+// IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
+func IsDefaultAuthTypeNone(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
+	if response == nil {
+		return false, fmt.Errorf("response is nil")
+	}
+
+	if response.Result.AuthTypePtr == nil {
+		return false, fmt.Errorf("response's auth-type is nil")
+	}
+
+	return response.Result.AuthType() == "none", nil
+}
+
 // InitializeSANDriver performs common ONTAP SAN driver initialization.
 func InitializeSANDriver(context tridentconfig.DriverContext, clientAPI *api.Client,
 	config *drivers.OntapStorageDriverConfig, validate func() error) error {
@@ -433,6 +536,54 @@ func InitializeSANDriver(context tridentconfig.DriverContext, clientAPI *api.Cli
 			"SVM":    config.SVM,
 			"igroup": config.IgroupName,
 		}).Warn("Please ensure all relevant hosts are added to the initiator group.")
+	}
+
+	if config.UseCHAP {
+
+		authType := "CHAP"
+		chapCredentials, err := EnsureBidrectionalChapCredentials(config)
+		if err != nil {
+			return fmt.Errorf("error setting CHAP credentials: %v", err)
+		}
+		log.WithFields(log.Fields{
+			"authType":        authType,
+			"chapCredentials": chapCredentials,
+		}).Debug("Using CHAP credentials")
+
+		setDefaultAuthResponse, err := clientAPI.IscsiInitiatorSetDefaultAuth(
+			authType,
+			chapCredentials.ChapUsername, chapCredentials.ChapInitiatorSecret,
+			chapCredentials.ChapTargetUsername, chapCredentials.ChapTargetInitiatorSecret)
+		if err != nil {
+			return fmt.Errorf("error setting CHAP credentials: %v", err)
+		}
+		if zerr := api.NewZapiError(setDefaultAuthResponse); !zerr.IsPassed() {
+			return fmt.Errorf("error setting CHAP credentials: %v", zerr)
+		}
+		config.ChapUsername = chapCredentials.ChapUsername
+		config.ChapInitiatorSecret = chapCredentials.ChapInitiatorSecret
+		config.ChapTargetUsername = chapCredentials.ChapTargetUsername
+		config.ChapTargetInitiatorSecret = chapCredentials.ChapTargetInitiatorSecret
+
+	} else {
+
+		getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth()
+		log.WithFields(log.Fields{
+			"getDefaultAuthResponse": getDefaultAuthResponse,
+			"err":                    err,
+		}).Debug("IscsiInitiatorGetDefaultAuth result")
+
+		if zerr := api.NewZapiError(getDefaultAuthResponse); !zerr.IsPassed() {
+			return fmt.Errorf("error checking default initiator's auth type: %v", zerr)
+		}
+
+		isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
+		if err != nil {
+			return fmt.Errorf("error checking default initiator's auth type: %v", err)
+		}
+		if !isDefaultAuthTypeNone {
+			return fmt.Errorf("default initiator's auth type is '%v', not 'none'", getDefaultAuthResponse.Result.AuthType())
+		}
 	}
 
 	return nil

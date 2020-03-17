@@ -68,7 +68,7 @@ func AttachNFSVolume(name, mountpoint string, publishInfo *VolumePublishInfo) er
 	return mountNFSPath(exportPath, mountpoint, options)
 }
 
-// Attach the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
+// AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
 // parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
 // so that it may be mounted later instead.
@@ -96,19 +96,26 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	}
 
 	var targetIQN = publishInfo.IscsiTargetIQN
-	var username = publishInfo.IscsiUsername
-	var initiatorSecret = publishInfo.IscsiInitiatorSecret
+	var username = publishInfo.IscsiUsername                  // unidirectional CHAP field
+	var initiatorSecret = publishInfo.IscsiInitiatorSecret    // unidirectional CHAP field
+	var targetUsername = publishInfo.IscsiTargetUsername      // bidirectional CHAP field
+	var targetInitiatorSecret = publishInfo.IscsiTargetSecret // bidirectional CHAP field
 	var iscsiInterface = publishInfo.IscsiInterface
 	var fstype = publishInfo.FilesystemType
 	var options = publishInfo.MountOptions
 
+	if iscsiInterface == "" {
+		iscsiInterface = "default"
+	}
+
 	log.WithFields(log.Fields{
-		"volume":        name,
-		"mountpoint":    mountpoint,
-		"lunID":         lunID,
-		"targetPortals": bkportal,
-		"targetIQN":     targetIQN,
-		"fstype":        fstype,
+		"volume":         name,
+		"mountpoint":     mountpoint,
+		"lunID":          lunID,
+		"targetPortals":  bkportal,
+		"targetIQN":      targetIQN,
+		"iscsiInterface": iscsiInterface,
+		"fstype":         fstype,
 	}).Debug("Attaching iSCSI volume.")
 
 	if ISCSISupported() == false {
@@ -125,7 +132,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	if !sessionExists {
 		if publishInfo.UseCHAP {
 			for _, portal := range bkportal {
-				err = loginWithChap(targetIQN, portal, username, initiatorSecret, iscsiInterface, false)
+				err = loginWithChap(targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret, iscsiInterface, false)
 				if err != nil {
 					log.Errorf("Failed to login with CHAP credentials: %+v ", err)
 					return fmt.Errorf("iSCSI login error: %v", err)
@@ -2118,17 +2125,20 @@ func loginISCSITarget(iqn, portal string) error {
 }
 
 // loginWithChap will login to the iSCSI target with the supplied credentials.
-func loginWithChap(tiqn, portal, username, password, iface string, logSensitiveInfo bool) error {
+func loginWithChap(tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string, logSensitiveInfo bool) error {
 
 	logFields := log.Fields{
-		"IQN":      tiqn,
-		"portal":   portal,
-		"username": username,
-		"password": "****",
-		"iface":    iface,
+		"IQN":                   tiqn,
+		"portal":                portal,
+		"username":              username,
+		"password":              "****",
+		"targetUsername":        targetUsername,
+		"targetInitiatorSecret": "****",
+		"iface":                 iface,
 	}
 	if logSensitiveInfo {
 		logFields["password"] = password
+		logFields["targetInitiatorSecret"] = targetInitiatorSecret
 	}
 	log.WithFields(logFields).Debug(">>>> osutils.loginWithChap")
 	defer log.Debug("<<<< osutils.loginWithChap")
@@ -2157,6 +2167,20 @@ func loginWithChap(tiqn, portal, username, password, iface string, logSensitiveI
 	if _, err := execIscsiadmCommand(authPasswordArgs...); err != nil {
 		log.Error("Error running iscsiadm set authpassword.")
 		return err
+	}
+
+	if targetUsername != "" && targetInitiatorSecret != "" {
+		targetAuthUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
+		if _, err := execIscsiadmCommand(targetAuthUserArgs...); err != nil {
+			log.Error("Error running iscsiadm set authuser_in.")
+			return err
+		}
+
+		targetAuthPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
+		if _, err := execIscsiadmCommand(targetAuthPasswordArgs...); err != nil {
+			log.Error("Error running iscsiadm set authpassword_in.")
+			return err
+		}
 	}
 
 	loginArgs := append(args, []string{"--login"}...)

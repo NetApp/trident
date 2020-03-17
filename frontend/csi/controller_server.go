@@ -321,9 +321,10 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volume.Config.AccessInfo.IscsiLunNumber))
 		publishInfo["iscsiInterface"] = volume.Config.AccessInfo.IscsiInterface
 		publishInfo["iscsiIgroup"] = volume.Config.AccessInfo.IscsiIgroup
-		publishInfo["iscsiUsername"] = volume.Config.AccessInfo.IscsiUsername
-		publishInfo["iscsiInitiatorSecret"] = volume.Config.AccessInfo.IscsiInitiatorSecret
-		publishInfo["iscsiTargetSecret"] = volume.Config.AccessInfo.IscsiTargetSecret
+		publishInfo["iscsiUsername"] = volumePublishInfo.IscsiUsername               //volume.Config.AccessInfo.IscsiUsername
+		publishInfo["iscsiInitiatorSecret"] = volumePublishInfo.IscsiInitiatorSecret //volume.Config.AccessInfo.IscsiInitiatorSecret
+		publishInfo["iscsiTargetUsername"] = volumePublishInfo.IscsiTargetUsername   //volume.Config.AccessInfo.IscsiTargetUsername
+		publishInfo["iscsiTargetSecret"] = volumePublishInfo.IscsiTargetSecret       //volume.Config.AccessInfo.IscsiTargetSecret
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)

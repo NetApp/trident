@@ -844,6 +844,17 @@ func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPe
 		secretMap["Password"] = backend.Config.OntapConfig.Password
 		backend.Config.OntapConfig.Username = secretName
 		backend.Config.OntapConfig.Password = secretName
+		// CHAP settings
+		if p.Config.OntapConfig.UseCHAP {
+			secretMap["ChapUsername"] = backend.Config.OntapConfig.ChapUsername
+			secretMap["ChapInitiatorSecret"] = backend.Config.OntapConfig.ChapInitiatorSecret
+			secretMap["ChapTargetUsername"] = backend.Config.OntapConfig.ChapTargetUsername
+			secretMap["ChapTargetInitiatorSecret"] = backend.Config.OntapConfig.ChapTargetInitiatorSecret
+			backend.Config.OntapConfig.ChapUsername = secretName
+			backend.Config.OntapConfig.ChapInitiatorSecret = secretName
+			backend.Config.OntapConfig.ChapTargetUsername = secretName
+			backend.Config.OntapConfig.ChapTargetInitiatorSecret = secretName
+		}
 	case p.Config.SolidfireConfig != nil:
 		secretMap["EndPoint"] = backend.Config.SolidfireConfig.EndPoint
 		backend.Config.SolidfireConfig.EndPoint = secretName
@@ -893,6 +904,21 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 		}
 		if p.Config.OntapConfig.Password, ok = secretMap["Password"]; !ok {
 			return makeError("Password")
+		}
+		// CHAP settings
+		if p.Config.OntapConfig.UseCHAP {
+			if p.Config.OntapConfig.ChapUsername, ok = secretMap["ChapUsername"]; !ok {
+				return makeError("ChapUsername")
+			}
+			if p.Config.OntapConfig.ChapInitiatorSecret, ok = secretMap["ChapInitiatorSecret"]; !ok {
+				return makeError("ChapInitiatorSecret")
+			}
+			if p.Config.OntapConfig.ChapTargetUsername, ok = secretMap["ChapTargetUsername"]; !ok {
+				return makeError("ChapTargetUsername")
+			}
+			if p.Config.OntapConfig.ChapTargetInitiatorSecret, ok = secretMap["ChapTargetInitiatorSecret"]; !ok {
+				return makeError("ChapTargetInitiatorSecret")
+			}
 		}
 	case p.Config.SolidfireConfig != nil:
 		if p.Config.SolidfireConfig.EndPoint, ok = secretMap["EndPoint"]; !ok {

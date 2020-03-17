@@ -90,7 +90,12 @@ type OntapStorageDriverConfig struct {
 	AutoExportPolicy                 bool     `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string `json:"autoExportCIDRs"`
 	OntapStorageDriverPool
-	Storage []OntapStorageDriverPool `json:"storage"`
+	Storage                   []OntapStorageDriverPool `json:"storage"`
+	UseCHAP                   bool                     `json:"useCHAP"`
+	ChapUsername              string                   `json:"chapUsername"`
+	ChapInitiatorSecret       string                   `json:"chapInitiatorSecret"`
+	ChapTargetUsername        string                   `json:"chapTargetUsername"`
+	ChapTargetInitiatorSecret string                   `json:"chapTargetInitiatorSecret"`
 }
 
 type OntapStorageDriverPool struct {

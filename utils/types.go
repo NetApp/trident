@@ -18,6 +18,7 @@ type IscsiAccessInfo struct {
 	IscsiVAGs            []int64  `json:"iscsiVags,omitempty"`
 	IscsiUsername        string   `json:"iscsiUsername,omitempty"`
 	IscsiInitiatorSecret string   `json:"iscsiInitiatorSecret,omitempty"`
+	IscsiTargetUsername  string   `json:"iscsiTargetUsername,omitempty"`
 	IscsiTargetSecret    string   `json:"iscsiTargetSecret,omitempty"`
 }
 

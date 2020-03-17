@@ -2380,3 +2380,121 @@ func (d Client) TieringPolicyValue() string {
 
 // MISC operations END
 /////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+// iSCSI initiator operations BEGIN
+
+// IscsiInitiatorAddAuth creates and sets the authorization details for a single initiator
+// equivalent to filer::> vserver iscsi security create -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
+//                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+func (d Client) IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorAddAuthResponse, error) {
+	request := azgo.NewIscsiInitiatorAddAuthRequest().
+		SetInitiator(initiator).
+		SetAuthType(authType).
+		SetUserName(userName).
+		SetPassphrase(passphrase)
+	if outboundUserName != "" && outboundPassphrase != "" {
+		request.SetOutboundUserName(outboundUserName)
+		request.SetOutboundPassphrase(outboundPassphrase)
+	}
+	response, err := request.ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IscsiInitiatorAuthGetIter returns the authorization details for all non-default initiators for the Client's SVM
+// equivalent to filer::> vserver iscsi security show -vserver SVM
+func (d Client) IscsiInitiatorAuthGetIter() ([]azgo.IscsiSecurityEntryInfoType, error) {
+	response, err := azgo.NewIscsiInitiatorAuthGetIterRequest().
+		ExecuteUsing(d.zr)
+
+	if err != nil {
+		return []azgo.IscsiSecurityEntryInfoType{}, err
+	} else if response.Result.NumRecords() == 0 {
+		return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+	} else if response.Result.AttributesListPtr == nil {
+		return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+	} else if response.Result.AttributesListPtr.IscsiSecurityEntryInfoPtr != nil {
+		return response.Result.AttributesListPtr.IscsiSecurityEntryInfoPtr, nil
+	}
+	return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+}
+
+// IscsiInitiatorDeleteAuth deletes the authorization details for a single initiator
+// equivalent to filer::> vserver iscsi security delete -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd
+func (d Client) IscsiInitiatorDeleteAuth(initiator string) (*azgo.IscsiInitiatorDeleteAuthResponse, error) {
+	response, err := azgo.NewIscsiInitiatorDeleteAuthRequest().
+		SetInitiator(initiator).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IscsiInitiatorGetAuth returns the authorization details for a single initiator
+// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd
+//            or filer::> vserver iscsi security show -vserver SVM -initiator-name default
+func (d Client) IscsiInitiatorGetAuth(initiator string) (*azgo.IscsiInitiatorGetAuthResponse, error) {
+	response, err := azgo.NewIscsiInitiatorGetAuthRequest().
+		SetInitiator(initiator).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
+// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
+func (d Client) IscsiInitiatorGetDefaultAuth() (*azgo.IscsiInitiatorGetDefaultAuthResponse, error) {
+	response, err := azgo.NewIscsiInitiatorGetDefaultAuthRequest().
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IscsiInitiatorGetIter returns the initiator details for all non-default initiators for the Client's SVM
+// equivalent to filer::> vserver iscsi initiator show -vserver SVM
+func (d Client) IscsiInitiatorGetIter() ([]azgo.IscsiInitiatorListEntryInfoType, error) {
+	response, err := azgo.NewIscsiInitiatorGetIterRequest().
+		ExecuteUsing(d.zr)
+
+	if err != nil {
+		return []azgo.IscsiInitiatorListEntryInfoType{}, err
+	} else if response.Result.NumRecords() == 0 {
+		return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+	} else if response.Result.AttributesListPtr == nil {
+		return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+	} else if response.Result.AttributesListPtr.IscsiInitiatorListEntryInfoPtr != nil {
+		return response.Result.AttributesListPtr.IscsiInitiatorListEntryInfoPtr, nil
+	}
+	return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+}
+
+// IscsiInitiatorModifyCHAPParams modifies the authorization details for a single initiator
+// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
+//                          -user-name outboundUserName -outbound-user-name outboundPassphrase
+func (d Client) IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
+	request := azgo.NewIscsiInitiatorModifyChapParamsRequest().
+		SetInitiator(initiator).
+		SetUserName(userName).
+		SetPassphrase(passphrase)
+	if outboundUserName != "" && outboundPassphrase != "" {
+		request.SetOutboundUserName(outboundUserName)
+		request.SetOutboundPassphrase(outboundPassphrase)
+	}
+	response, err := request.ExecuteUsing(d.zr)
+	return response, err
+}
+
+// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
+// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
+//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+func (d Client) IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {
+	request := azgo.NewIscsiInitiatorSetDefaultAuthRequest().
+		SetAuthType(authType).
+		SetUserName(userName).
+		SetPassphrase(passphrase)
+	if outboundUserName != "" && outboundPassphrase != "" {
+		request.SetOutboundUserName(outboundUserName)
+		request.SetOutboundPassphrase(outboundPassphrase)
+	}
+	response, err := request.ExecuteUsing(d.zr)
+	return response, err
+}
+
+// iSCSI initiator operations END
+/////////////////////////////////////////////////////////////////////////////
