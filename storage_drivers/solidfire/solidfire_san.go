@@ -1817,6 +1817,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 		return fmt.Errorf("volume %s does not exist", name)
 	}
 
+	volConfig.Size = strconv.FormatUint(uint64(volume.TotalSize), 10)
 	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err

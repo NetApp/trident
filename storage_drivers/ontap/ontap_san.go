@@ -866,6 +866,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 			"name":              name,
 			"delta":             tridentconfig.SANResizeDelta,
 		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		volConfig.Size = strconv.FormatUint(uint64(volSize), 10)
 		return nil
 	}
 

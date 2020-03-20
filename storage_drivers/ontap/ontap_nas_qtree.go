@@ -1651,6 +1651,7 @@ func (d *NASQtreeStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeByte
 		return resizeError
 	}
 
+	volConfig.Size = strconv.FormatUint(quotaSize, 10)
 	if sizeBytes == quotaSize {
 		log.Infof("Requested size and existing volume size are the same for volume %s.", name)
 		return nil

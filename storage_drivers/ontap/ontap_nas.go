@@ -805,6 +805,7 @@ func (d *NASStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 		return err
 	}
 
+	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
 	if flexvolSize == sizeBytes {
 		return nil
 	}

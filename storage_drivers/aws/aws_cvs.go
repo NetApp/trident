@@ -1380,6 +1380,8 @@ func (d *NFSStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 		return fmt.Errorf("volume %s state is %s, not available", creationToken, volume.LifeCycleState)
 	}
 
+	volConfig.Size = strconv.FormatUint(uint64(volume.QuotaInBytes), 10)
+
 	// If the volume is already the requested size, there's nothing to do
 	if int64(sizeBytes) == volume.QuotaInBytes {
 		return nil

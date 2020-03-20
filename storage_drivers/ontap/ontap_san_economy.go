@@ -1655,6 +1655,8 @@ func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBy
 		return resizeError
 	}
 
+	volConfig.Size = strconv.FormatUint(totalLunSize, 10)
+
 	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(totalLunSize), tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err

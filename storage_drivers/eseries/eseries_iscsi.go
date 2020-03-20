@@ -1370,6 +1370,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 		return fmt.Errorf("error occurred when checking volume size")
 	}
 
+	volConfig.Size = strconv.FormatUint(volSizeBytes, 10)
 	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSizeBytes), tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err
