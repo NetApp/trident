@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -31,6 +31,7 @@ type VolumePublishInfo struct {
 	Localhost      bool     `json:"localhost,omitempty"`
 	HostIQN        []string `json:"hostIQN,omitempty"`
 	HostIP         []string `json:"hostIP,omitempty"`
+	MountedHosts   []string `json:"mountedHosts,omitempty"`
 	HostName       string   `json:"hostName,omitempty"`
 	FilesystemType string   `json:"fstype,omitempty"`
 	UseCHAP        bool     `json:"useCHAP,omitempty"`
@@ -40,7 +41,7 @@ type VolumePublishInfo struct {
 }
 
 type VolumeTrackingPublishInfo struct {
-	StagingTargetPath string `json:"stagingTargetPath`
+	StagingTargetPath string `json:"stagingTargetPath"`
 }
 
 type Node struct {

@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -489,8 +489,7 @@ func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = d.Config.NfsMountOptions
-
-	return nil
+	return PublishNFSShare(d.API, &d.Config, publishInfo, name)
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot

@@ -1,9 +1,11 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package utils
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -178,4 +180,68 @@ func TestReplaceImageRegistry(t *testing.T) {
 
 	image = ReplaceImageRegistry("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2", "mydomain:5000")
 	assert.Equal(t, "mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2", image)
+}
+
+func TestFilterIPs(t *testing.T) {
+	log.Debug("Running TestFilterIPs...")
+
+	inputIPs := []string{"10.100.0.2", "192.168.0.1", "192.168.0.2", "10.100.0.1",
+		"eb9b::2", "eb9b::1", "bd15::1", "bd15::2"}
+
+	// Randomize the input list of IPs
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(inputIPs), func(i, j int) { inputIPs[i], inputIPs[j] = inputIPs[j], inputIPs[i] })
+
+	type filterIPsIO struct {
+		inputCIDRs []string
+		outputIPs  []string
+	}
+
+	testIOs := make([]filterIPsIO, 0)
+	// Return sorted list of all IPs
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"0.0.0.0/0", "::/0"},
+		outputIPs: []string{"10.100.0.1", "10.100.0.2", "192.168.0.1", "192.168.0.2",
+			"bd15::1", "bd15::2", "eb9b::1", "eb9b::2"},
+	})
+	// Return sorted list of IPv4 only
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"0.0.0.0/0"},
+		outputIPs:  []string{"10.100.0.1", "10.100.0.2", "192.168.0.1", "192.168.0.2"},
+	})
+	// Return sorted list of IPv6 only
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"::/0"},
+		outputIPs:  []string{"bd15::1", "bd15::2", "eb9b::1", "eb9b::2"},
+	})
+	// Return only one sorted subnet of each IP type
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"bd15::/16", "10.0.0.0/8"},
+		outputIPs:  []string{"10.100.0.1", "10.100.0.2", "bd15::1", "bd15::2"},
+	})
+	// Return a single IPv4 address
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"192.168.0.1/32"},
+		outputIPs:  []string{"192.168.0.1"},
+	})
+	// Return a single IPv6 address
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"eb9b::1/128"},
+		outputIPs:  []string{"eb9b::1"},
+	})
+	// Return no IPs
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"1.1.1.1/32"},
+		outputIPs:  []string{},
+	})
+	// Give bad CIDR
+	testIOs = append(testIOs, filterIPsIO{
+		inputCIDRs: []string{"foo"},
+		outputIPs:  nil,
+	})
+
+	for _, testIO := range testIOs {
+		outputIPs, _ := FilterIPs(inputIPs, testIO.inputCIDRs)
+		assert.Equal(t, testIO.outputIPs, outputIPs)
+	}
 }

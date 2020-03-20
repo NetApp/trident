@@ -280,6 +280,8 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
+	// TODO (akerr): Discover all hosts currently mounting this volume
+
 	// Get node attributes from the node ID
 	nodeInfo, err := p.orchestrator.GetNode(nodeID)
 	if err != nil {
@@ -291,7 +293,7 @@ func (p *Plugin) ControllerPublishVolume(
 	volumePublishInfo := &utils.VolumePublishInfo{
 		Localhost: false,
 		HostIQN:   []string{nodeInfo.IQN},
-		HostIP:    []string{},
+		HostIP:    nodeInfo.IPs,
 		HostName:  nodeInfo.Name,
 	}
 

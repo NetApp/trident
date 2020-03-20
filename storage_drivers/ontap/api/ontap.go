@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -1047,6 +1047,24 @@ func (d Client) VolumeCreate(
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
+	return response, err
+}
+
+func (d Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error) {
+	volAttr := &azgo.VolumeModifyIterRequestAttributes{}
+	exportAttributes := azgo.NewVolumeExportAttributesType().SetPolicy(exportPolicyName)
+	volExportAttrs := azgo.NewVolumeAttributesType().SetVolumeExportAttributes(*exportAttributes)
+	volAttr.SetVolumeAttributes(*volExportAttrs)
+
+	queryAttr := &azgo.VolumeModifyIterRequestQuery{}
+	volIDAttr := azgo.NewVolumeIdAttributesType().SetName(volumeName)
+	volIDAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volIDAttr)
+	queryAttr.SetVolumeAttributes(*volIDAttrs)
+
+	response, err := azgo.NewVolumeModifyIterRequest().
+		SetQuery(*queryAttr).
+		SetAttributes(*volAttr).
+		ExecuteUsing(d.zr)
 	return response, err
 }
 

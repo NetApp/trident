@@ -4,6 +4,7 @@ package ontap
 
 import (
 	cryptorand "crypto/rand"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -175,6 +176,107 @@ func (t *Telemetry) Stop() {
 		close(t.done)
 		t.stopped = true
 	}
+}
+
+// PublishNFSShare publishes the volume to the host specified in publishInfo from ontap-nas,
+// ontap-nas-economy, or ontap-nas-flexgroup. This method may or may not be running on the host where the volume will be
+// mounted, so it should limit itself to updating access rules.
+func PublishNFSShare(
+	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, publishInfo *utils.VolumePublishInfo,
+	volumeName string,
+) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "PublishNFSShare",
+			"Type":   "ontap_common",
+			"Share":  volumeName,
+		}
+		log.WithFields(fields).Debug(">>>> PublishNFSShare")
+		defer log.WithFields(fields).Debug("<<<< PublishNFSShare")
+	}
+
+	if !config.AutoExportPolicy {
+		// Nothing to do if we're not configuring export policies automatically
+		return nil
+	}
+
+	// Filter the IPs based on the CIDRs provided by user
+	filteredIPs, err := utils.FilterIPs(publishInfo.HostIP, config.AutoExportCIDRs)
+	if err != nil {
+		return err
+	}
+
+	if len(filteredIPs) == 0 {
+		err = fmt.Errorf("no IPs found to apply to export policy; please check AutoExportCIDRs and node IPs")
+		log.Error(err)
+		return err
+	}
+
+	// Create/update export policy with filtered IPs
+	policyName := generateHashedExportPolicyName(publishInfo, config)
+
+	policyCreateResponse, err := clientAPI.ExportPolicyCreate(policyName)
+	if err != nil {
+		return fmt.Errorf("error creating export policy %s: %v", policyName, err)
+	}
+	if zerr := api.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EDUPLICATEENTRY {
+			log.WithField("exportPolicy", policyName).Debug("Export policy already exists.")
+			// TODO (akerr): If policy exists, we need to reconcile the rule with potentially updated info.
+		} else {
+			return fmt.Errorf("error creating export policy %s: %v", policyName, zerr)
+		}
+	} else {
+		// If export policy is new, we need to create the policy rule.
+		exportRuleResponse, err := clientAPI.ExportRuleCreate(policyName, strings.Join(filteredIPs, ","),
+			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+		if err != nil {
+			return fmt.Errorf("error creating export policy rule: %v", err)
+		}
+		if zerr = api.NewZapiError(exportRuleResponse); !zerr.IsPassed() {
+			return fmt.Errorf("error creating export policy rule: %v", zerr)
+		}
+	}
+
+	// Update volume to use the new export policy
+	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, policyName)
+	if err != nil {
+		return fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
+	}
+	if zerr := api.NewZapiError(volumeModifyResponse); !zerr.IsPassed() {
+		return fmt.Errorf("error updating export policy on volume %s: %v", volumeName, zerr)
+	}
+
+	return nil
+}
+
+// generateHashedExportPolicyName will create a normalized name of backendName-host1-host2-...-hostN and
+// then return the sha1 sum of that name. This allows us have a consistent length name for policies that could have
+// very large numbers of hosts, while still being able to detect duplicates to facilitate reuse of policies.
+func generateHashedExportPolicyName(
+	publishInfo *utils.VolumePublishInfo, config *drivers.OntapStorageDriverConfig,
+) string {
+	hosts := publishInfo.MountedHosts
+	found := false
+	for _, host := range hosts {
+		if host == publishInfo.HostName {
+			// Host is already in the list, no need to add it.
+			found = true
+			break
+		}
+	}
+	if !found {
+		hosts = append(hosts, publishInfo.HostName)
+	}
+
+	sort.Strings(hosts)
+
+	policyName := fmt.Sprintf("%s-%s", config.BackendName, strings.Join(hosts, "-"))
+
+	hashedPolicyName := fmt.Sprintf("%x", sha1.Sum([]byte(policyName)))
+
+	return hashedPolicyName
 }
 
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.

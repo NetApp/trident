@@ -1,10 +1,11 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package utils
 
 import (
 	"fmt"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"sort"
@@ -394,4 +395,42 @@ func ReplaceImageRegistry(image, registry string) string {
 		return remainder
 	}
 	return registry + "/" + remainder
+}
+
+// FilterIPs takes a list of IPs and CIDRs and returns the sorted list of IPs that are contained by one or more of the
+// CIDRs
+func FilterIPs(ips, cidrs []string) ([]string, error) {
+	networks := make([]*net.IPNet, len(cidrs))
+	filteredIPs := make([]string, 0)
+
+	for i, cidr := range cidrs {
+		_, ipNet, err := net.ParseCIDR(cidr)
+		if err != nil {
+			err = fmt.Errorf("error parsing CIDR; %v", err)
+			log.WithField("CIDR", cidr).Error(err)
+			return nil, err
+		}
+		networks[i] = ipNet
+	}
+
+	for _, ip := range ips {
+		parsedIP := net.ParseIP(ip)
+		for _, network := range networks {
+			fields := log.Fields{
+				"IP":      ip,
+				"Network": network.String(),
+			}
+			if network.Contains(parsedIP) {
+				log.WithFields(fields).Debug("IP found in network.")
+				filteredIPs = append(filteredIPs, ip)
+				break
+			} else {
+				log.WithFields(fields).Debug("IP not found in network.")
+			}
+		}
+	}
+
+	sort.Strings(filteredIPs)
+
+	return filteredIPs, nil
 }
