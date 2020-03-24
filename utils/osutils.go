@@ -473,7 +473,7 @@ func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool)
 	log.WithFields(fields).Debug(">>>> osutils.waitForDeviceScanIfNeeded")
 	defer log.WithFields(fields).Debug("<<<< osutils.waitForDeviceScanIfNeeded")
 
-	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -593,7 +593,7 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, erro
 	log.WithFields(fields).Debug(">>>> osutils.getDeviceInfoForLUN")
 	defer log.WithFields(fields).Debug("<<<< osutils.getDeviceInfoForLUN")
 
-	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -693,7 +693,7 @@ func waitForMultipathDeviceForLUN(lunID int, iSCSINodeName string) error {
 	log.WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForLUN")
 	defer log.WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForLUN")
 
-	hostSessionMap := getISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -1425,7 +1425,7 @@ func iSCSIScanTargetLUN(lunID int, hosts []int) error {
 // IsAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
 func IsAlreadyAttached(lunID int, targetIqn string) bool {
 
-	hostSessionMap := getISCSIHostSessionMapForTarget(targetIqn)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(targetIqn)
 	if len(hostSessionMap) == 0 {
 		return false
 	}
@@ -1440,13 +1440,13 @@ func IsAlreadyAttached(lunID int, targetIqn string) bool {
 	return 0 < len(devices)
 }
 
-// getISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
+// GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
 // for a given iSCSI target.
-func getISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
+func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 
 	fields := log.Fields{"iSCSINodeName": iSCSINodeName}
-	log.WithFields(fields).Debug(">>>> osutils.getISCSIHostSessionMapForTarget")
-	defer log.WithFields(fields).Debug("<<<< osutils.getISCSIHostSessionMapForTarget")
+	log.WithFields(fields).Debug(">>>> osutils.GetISCSIHostSessionMapForTarget")
+	defer log.WithFields(fields).Debug("<<<< osutils.GetISCSIHostSessionMapForTarget")
 
 	var (
 		hostNumber    int
@@ -1652,7 +1652,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 				// Get the host/session map, using a cached value if available
 				hostSessionMap, ok := hostSessionMapCache[targetIQN]
 				if !ok {
-					hostSessionMap = getISCSIHostSessionMapForTarget(targetIQN)
+					hostSessionMap = GetISCSIHostSessionMapForTarget(targetIQN)
 					hostSessionMapCache[targetIQN] = hostSessionMap
 				}
 
@@ -2355,4 +2355,39 @@ func sanitizeString(s string) string {
 	// Strip trailing newline
 	s = strings.TrimSuffix(s, "\n")
 	return s
+}
+
+// SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
+// true if there are none, indicating that logging out would be safe.
+func SafeToLogOut(hostNumber, sessionNumber int) bool {
+
+	log.Debug(">>>> osutils.SafeToLogOut")
+	defer log.Debug("<<<< osutils.SafeToLogOut")
+
+	devicePath := fmt.Sprintf("/sys/class/iscsi_host/host%d/device", hostNumber)
+
+	// The list of block devices on the scsi bus will be in a
+	// directory called "target%d:%d:%d".
+	// See drivers/scsi/scsi_scan.c in Linux
+	// We assume the channel/bus and device/controller are always zero for iSCSI
+	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
+	dirs, err := ioutil.ReadDir(targetPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true
+		}
+		log.WithFields(log.Fields{
+			"path":  targetPath,
+			"error": err,
+		}).Warn("Failed to read dir")
+		return true
+	}
+
+	// The existence of any directories here indicate devices that
+	// still exist, so report unsafe
+	if 0 < len(dirs) {
+		return false
+	}
+
+	return true
 }

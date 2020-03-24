@@ -34,7 +34,7 @@ func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 
-	lockContext := "NodeStageVolume"
+	lockContext := "NodeStageVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
@@ -56,7 +56,7 @@ func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
-	lockContext := "NodeUnstageVolume"
+	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
@@ -93,7 +93,7 @@ func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 
-	lockContext := "NodePublishVolume"
+	lockContext := "NodePublishVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
@@ -115,7 +115,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 
-	lockContext := "NodeUnpublishVolume"
+	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
@@ -596,20 +596,30 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// Delete the device from the host
 	utils.PrepareDeviceForRemoval(int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
 
-	// Logout of the iSCSI session if appropriate
-	logout := false
-	if !publishInfo.SharedTarget {
-		// Always log out of a non-shared target
-		logout = true
-	} else {
-		// Log out of a shared target if no mounts to that target remain
-		anyMounts, err := utils.ISCSITargetHasMountedDevice(publishInfo.IscsiTargetIQN)
-		logout = (err == nil) && !anyMounts
+	// Get map of hosts and sessions for given Target IQN
+	hostSessionMap := utils.GetISCSIHostSessionMapForTarget(publishInfo.IscsiTargetIQN)
+	if len(hostSessionMap) == 0 {
+		log.Warnf("no iSCSI hosts found for target %s", publishInfo.IscsiTargetIQN)
 	}
-	if logout {
-		utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
-		for _, portal := range publishInfo.IscsiPortals {
-			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
+
+	// Logout of the iSCSI session if appropriate for each applicable host
+	for hostNumber, sessionNumber := range hostSessionMap {
+		logout := false
+		if !publishInfo.SharedTarget {
+			// Always log out of a non-shared target
+			logout = true
+		} else {
+			// Log out of a shared target if no mounts to that target remain
+			anyMounts, err := utils.ISCSITargetHasMountedDevice(publishInfo.IscsiTargetIQN)
+			logout = (err == nil) && !anyMounts && utils.SafeToLogOut(hostNumber, sessionNumber)
+		}
+
+		if logout {
+			log.Debug("Safe to log out")
+			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
+			for _, portal := range publishInfo.IscsiPortals {
+				utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
+			}
 		}
 	}
 
