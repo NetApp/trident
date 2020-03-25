@@ -29,6 +29,8 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
@@ -98,6 +100,16 @@ var (
 	enableKubernetes bool
 	enableDocker     bool
 	enableCSI        bool
+
+	// Metrics
+	infoGauge = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Name:      "info",
+			Help:      "Information about the Trident",
+		},
+		[]string{"version"},
+	)
 )
 
 func shouldEnableTLS() bool {
@@ -255,11 +267,16 @@ func main() {
 		log.WithField(v[0], v[1]).Debug("Environment")
 	}
 
+	orchestratorVersion := config.OrchestratorVersion.String()
+
 	log.WithFields(log.Fields{
-		"version":    config.OrchestratorVersion.String(),
+		"version":    orchestratorVersion,
 		"build_time": config.BuildTime,
 		"binary":     os.Args[0],
 	}).Info("Running Trident storage orchestrator.")
+
+	// Set the information metric
+	infoGauge.WithLabelValues(orchestratorVersion).Set(float64(1))
 
 	processCmdLineArgs()
 
