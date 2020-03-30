@@ -10,7 +10,7 @@ TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 
 ## build flags variables
-GITHASH ?= `git rev-parse HEAD || echo unknown`
+GITHASH ?= `git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty || echo unknown`
 BUILD_TYPE ?= custom
 BUILD_TYPE_REV ?= 0
 BUILD_TIME = `date`
