@@ -603,24 +603,26 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Logout of the iSCSI session if appropriate for each applicable host
+	logout := false
 	for hostNumber, sessionNumber := range hostSessionMap {
-		logout := false
 		if !publishInfo.SharedTarget {
 			// Always log out of a non-shared target
 			logout = true
+			break
 		} else {
 			// Log out of a shared target if no mounts to that target remain
 			anyMounts, err := utils.ISCSITargetHasMountedDevice(publishInfo.IscsiTargetIQN)
-			logout = (err == nil) && !anyMounts && utils.SafeToLogOut(hostNumber, sessionNumber)
-		}
-
-		if logout {
-			log.Debug("Safe to log out")
-			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
-			for _, portal := range publishInfo.IscsiPortals {
-				utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
+			if logout = (err == nil) && !anyMounts && utils.SafeToLogOut(hostNumber, sessionNumber); logout {
+				break
 			}
-			break
+		}
+	}
+
+	if logout {
+		log.Debug("Safe to log out")
+		utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
+		for _, portal := range publishInfo.IscsiPortals {
+			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
 		}
 	}
 
