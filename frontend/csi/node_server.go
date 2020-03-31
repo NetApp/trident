@@ -620,6 +620,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			for _, portal := range publishInfo.IscsiPortals {
 				utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
 			}
+			break
 		}
 	}
 
