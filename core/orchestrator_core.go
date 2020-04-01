@@ -269,10 +269,23 @@ func (o *TridentOrchestrator) bootstrapStorageClasses() error {
 	return nil
 }
 
+// Updates the o.volumes cache with the latest backend data. This function should only edit o.volumes in place to avoid
+// briefly losing track of volumes that do exist.
 func (o *TridentOrchestrator) bootstrapVolumes() error {
 	volumes, err := o.storeClient.GetVolumes()
 	if err != nil {
 		return err
+	}
+
+	// Remove extra volumes in list
+	volNames := make([]string, 0)
+	for _, v := range volumes {
+		volNames = append(volNames, v.Config.Name)
+	}
+	for k, _ := range o.volumes {
+		if ! utils.SliceContainsString(volNames, k) {
+			delete(o.volumes, k)
+		}
 	}
 	volCount := 0
 	for _, v := range volumes {
@@ -3182,7 +3195,6 @@ func (o *TridentOrchestrator) ReloadVolumes() error {
 	}
 
 	// Re-run the volume bootstrapping code
-	o.volumes = make(map[string]*storage.Volume)
 	err := o.bootstrapVolumes()
 
 	// If anything went wrong, reinstate the original volumes
