@@ -33,18 +33,6 @@ func (o VolumeQosAttributesType) String() string {
 	return ToString(reflect.ValueOf(o))
 }
 
-// AdaptivePolicyGroupName is a 'getter' method
-func (o *VolumeQosAttributesType) AdaptivePolicyGroupName() string {
-	r := *o.AdaptivePolicyGroupNamePtr
-	return r
-}
-
-// SetAdaptivePolicyGroupName is a fluent style 'setter' method that can be chained
-func (o *VolumeQosAttributesType) SetAdaptivePolicyGroupName(newValue string) *VolumeQosAttributesType {
-	o.AdaptivePolicyGroupNamePtr = &newValue
-	return o
-}
-
 // PolicyGroupName is a 'getter' method
 func (o *VolumeQosAttributesType) PolicyGroupName() string {
 	r := *o.PolicyGroupNamePtr
@@ -54,5 +42,17 @@ func (o *VolumeQosAttributesType) PolicyGroupName() string {
 // SetPolicyGroupName is a fluent style 'setter' method that can be chained
 func (o *VolumeQosAttributesType) SetPolicyGroupName(newValue string) *VolumeQosAttributesType {
 	o.PolicyGroupNamePtr = &newValue
+	return o
+}
+
+// AdaptivePolicyGroupName is a 'getter' method
+func (o *VolumeQosAttributesType) AdaptivePolicyGroupName() string {
+	r := *o.AdaptivePolicyGroupNamePtr
+	return r
+}
+
+// SetAdaptivePolicyGroupName is a fluent style 'setter' method that can be chained
+func (o *VolumeQosAttributesType) SetAdaptivePolicyGroupName(newValue string) *VolumeQosAttributesType {
+	o.AdaptivePolicyGroupNamePtr = &newValue
 	return o
 }

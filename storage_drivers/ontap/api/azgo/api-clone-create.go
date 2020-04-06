@@ -26,6 +26,7 @@ type CloneCreateRequest struct {
 	LunSerialNumberPtr    *string                        `xml:"lun-serial-number"`
 	NosplitEntryPtr       *bool                          `xml:"nosplit-entry"`
 	QosPolicyGroupNamePtr *string                        `xml:"qos-policy-group-name"`
+	QosAdaptivePolicyGroupNamePtr *string                `xml:"qos-adaptive-policy-group-name"`
 	SnapshotNamePtr       *string                        `xml:"snapshot-name"`
 	SourcePathPtr         *string                        `xml:"source-path"`
 	SpaceReservePtr       *bool                          `xml:"space-reserve"`
@@ -336,6 +337,18 @@ func (o *CloneCreateRequest) QosPolicyGroupName() string {
 // SetQosPolicyGroupName is a fluent style 'setter' method that can be chained
 func (o *CloneCreateRequest) SetQosPolicyGroupName(newValue string) *CloneCreateRequest {
 	o.QosPolicyGroupNamePtr = &newValue
+	return o
+}
+
+// QosAdaptivePolicyGroupName is a 'getter' method
+func (o *CloneCreateRequest) QosAdaptivePolicyGroupName() string {
+	r := *o.QosAdaptivePolicyGroupNamePtr
+	return r
+}
+
+// SetQosAdaptivePolicyGroupName is a fluent style 'setter' method that can be chained
+func (o *CloneCreateRequest) SetQosAdaptivePolicyGroupName(newValue string) *CloneCreateRequest {
+	o.QosAdaptivePolicyGroupNamePtr = &newValue
 	return o
 }
 

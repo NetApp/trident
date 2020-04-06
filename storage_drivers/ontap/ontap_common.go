@@ -1391,6 +1391,7 @@ const DefaultEncryption = "false"
 const DefaultLimitAggregateUsage = ""
 const DefaultLimitVolumeSize = ""
 const DefaultTieringPolicy = ""
+const DefaultAdaptivePolicyGroupName = ""
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
@@ -1496,26 +1497,31 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"StoragePrefix":       *config.StoragePrefix,
-		"SpaceAllocation":     config.SpaceAllocation,
-		"SpaceReserve":        config.SpaceReserve,
-		"SnapshotPolicy":      config.SnapshotPolicy,
-		"SnapshotReserve":     config.SnapshotReserve,
-		"UnixPermissions":     config.UnixPermissions,
-		"SnapshotDir":         config.SnapshotDir,
-		"ExportPolicy":        config.ExportPolicy,
-		"SecurityStyle":       config.SecurityStyle,
-		"NfsMountOptions":     config.NfsMountOptions,
-		"SplitOnClone":        config.SplitOnClone,
-		"FileSystemType":      config.FileSystemType,
-		"Encryption":          config.Encryption,
-		"LimitAggregateUsage": config.LimitAggregateUsage,
-		"LimitVolumeSize":     config.LimitVolumeSize,
-		"Size":                config.Size,
-		"TieringPolicy":       config.TieringPolicy,
-		"AutoExportPolicy":    config.AutoExportPolicy,
-		"AutoExportCIDRs":     config.AutoExportCIDRs,
+	if config.AdaptivePolicyGroupName == "" {
+		config.AdaptivePolicyGroupName = DefaultAdaptivePolicyGroupName
+	}
+
+	log.WithFields(log.Fields{
+		"StoragePrefix":           *config.StoragePrefix,
+		"SpaceAllocation":         config.SpaceAllocation,
+		"SpaceReserve":            config.SpaceReserve,
+		"SnapshotPolicy":          config.SnapshotPolicy,
+		"SnapshotReserve":         config.SnapshotReserve,
+		"UnixPermissions":         config.UnixPermissions,
+		"SnapshotDir":             config.SnapshotDir,
+		"ExportPolicy":            config.ExportPolicy,
+		"SecurityStyle":           config.SecurityStyle,
+		"NfsMountOptions":         config.NfsMountOptions,
+		"SplitOnClone":            config.SplitOnClone,
+		"FileSystemType":          config.FileSystemType,
+		"Encryption":              config.Encryption,
+		"LimitAggregateUsage":     config.LimitAggregateUsage,
+		"LimitVolumeSize":         config.LimitVolumeSize,
+		"Size":                    config.Size,
+		"TieringPolicy":           config.TieringPolicy,
+		"AutoExportPolicy":        config.AutoExportPolicy,
+		"AutoExportCIDRs":         config.AutoExportCIDRs,
+		"AdaptivePolicyGroupName": config.AdaptivePolicyGroupName,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -1808,6 +1814,15 @@ func CreateOntapClone(
 		mountResponse, err := client.VolumeMount(name, "/"+name)
 		if err = api.GetError(ctx, mountResponse, err); err != nil {
 			return fmt.Errorf("error mounting volume to junction: %v", err)
+		}
+	}
+
+	// Set the Adaptive QoS Policy if necessary
+	adaptivePolicyGroupName := config.AdaptivePolicyGroupName
+	if adaptivePolicyGroupName != "" {
+		adaptiveQosResponse, err := client.VolumeSetQosAdaptivePolicyGroupName(name, adaptivePolicyGroupName)
+		if err = api.GetError(ctx, adaptiveQosResponse, err); err != nil {
+			return fmt.Errorf("error setting QoS Adaptive Policy Group: %v", err)
 		}
 	}
 

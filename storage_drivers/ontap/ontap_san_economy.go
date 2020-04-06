@@ -475,6 +475,9 @@ func (d *SANEconomyStorageDriver) Create(
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
 
+	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
+
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
 		physicalPoolNames = append(physicalPoolNames, aggregate)
@@ -528,9 +531,9 @@ func (d *SANEconomyStorageDriver) Create(
 		osType := "linux"
 
 		// Create the LUN
-		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation)
+		// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation, adaptivePolicyGroupName)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v", storagePool.Name,
 				aggregate, bucketVol, name, err)
 			Logc(ctx).Error(errMessage)
@@ -688,7 +691,9 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	}
 
 	// Create the clone based on given LUN
-	cloneResponse, err := client.LunCloneCreate(flexvol, source, lunName)
+	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
+	cloneResponse, err := client.LunCloneCreate(flexvol, source, lunName, adaptivePolicyGroupName)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
 	}
@@ -1321,10 +1326,13 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		"encryption":      encryption,
 	}).Debug("Creating Flexvol for LUNs.")
 
+	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+	adaptivePolicyGroupName := ""
+
 	// Create the flexvol
 	volCreateResponse, err := d.API.VolumeCreate(
-		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, "", encrypt, snapshotReserveInt)
+		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, "", encrypt, snapshotReserveInt, adaptivePolicyGroupName)
 
 	if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)

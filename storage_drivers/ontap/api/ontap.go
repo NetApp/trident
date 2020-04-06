@@ -424,31 +424,36 @@ func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoTy
 
 // LunCreate creates a lun with the specified attributes
 // equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
-func (d Client) LunCreate(
-	lunPath string, sizeInBytes int, osType string, spaceReserved bool, spaceAllocated bool,
+func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool,
+	spaceAllocated bool, adaptivePolicyGroupName string,
 ) (*azgo.LunCreateBySizeResponse, error) {
-
-	if strings.Contains(lunPath, failureLUNCreate) {
-		return nil, errors.New("injected error")
-	}
-
-	response, err := azgo.NewLunCreateBySizeRequest().
+	request := azgo.NewLunCreateBySizeRequest().
 		SetPath(lunPath).
 		SetSize(sizeInBytes).
 		SetOstype(osType).
 		SetSpaceReservationEnabled(spaceReserved).
-		SetSpaceAllocationEnabled(spaceAllocated).
-		ExecuteUsing(d.zr)
+		SetSpaceAllocationEnabled(spaceAllocated)
+
+	if adaptivePolicyGroupName != "" {
+		request.SetQosAdaptivePolicyGroup(adaptivePolicyGroupName)
+	}
+
+	response, err := request.ExecuteUsing(d.zr)
 	return response, err
 }
 
 // LunCloneCreate clones a LUN from a snapshot
-func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string) (*azgo.CloneCreateResponse, error) {
-	response, err := azgo.NewCloneCreateRequest().
+func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string, adaptivePolicyGroupName string) (*azgo.CloneCreateResponse, error) {
+	request := azgo.NewCloneCreateRequest().
 		SetVolume(volumeName).
 		SetSourcePath(sourceLun).
-		SetDestinationPath(destinationLun).
-		ExecuteUsing(d.zr)
+		SetDestinationPath(destinationLun)
+
+	if adaptivePolicyGroupName != "" {
+		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	}
+
+	response, err := request.ExecuteUsing(d.zr)
 	return response, err
 }
 
@@ -803,6 +808,7 @@ func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResp
 func (d Client) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy,
 	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, encrypt bool, snapshotReserve int,
+	adaptivePolicyGroupName string,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 
 	junctionPath := fmt.Sprintf("/%s", name)
@@ -822,6 +828,10 @@ func (d Client) FlexGroupCreate(
 		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
+
+	if adaptivePolicyGroupName != "" {
+		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	}
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1166,7 +1176,8 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, encrypt bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy string, comment string, encrypt bool, snapshotReserve int,
+	adaptivePolicyGroupName string,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -1179,6 +1190,10 @@ func (d Client) VolumeCreate(
 		SetVolumeSecurityStyle(securityStyle).
 		SetEncrypt(encrypt).
 		SetVolumeComment(comment)
+
+	if adaptivePolicyGroupName != "" {
+		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	}
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1287,6 +1302,26 @@ func (d Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeM
 	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
+
+	queryattr := &azgo.VolumeModifyIterRequestQuery{}
+	volidattr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
+	volIdAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volidattr)
+	queryattr.SetVolumeAttributes(*volIdAttrs)
+
+	response, err := azgo.NewVolumeModifyIterRequest().
+		SetQuery(*queryattr).
+		SetAttributes(*volattr).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// Use this to set the QoS Adaptive Policy Group for volume clones since
+// we can't set it directly during volume clone creation.
+func (d Client) VolumeSetQosAdaptivePolicyGroupName(name string, adaptivePolicyGroupName string) (*azgo.VolumeModifyIterResponse, error) {
+	volattr := &azgo.VolumeModifyIterRequestAttributes{}
+	ssattr := azgo.NewVolumeQosAttributesType().SetAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	volQosAttrs := azgo.NewVolumeAttributesType().SetVolumeQosAttributes(*ssattr)
+	volattr.SetVolumeAttributes(*volQosAttrs)
 
 	queryattr := &azgo.VolumeModifyIterRequestQuery{}
 	volidattr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))

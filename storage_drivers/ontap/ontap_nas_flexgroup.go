@@ -532,12 +532,14 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
 
 	// Create the FlexGroup
 	checkVolumeCreated := func() error {
 		_, err = d.API.FlexGroupCreate(
 			ctx, name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt,
+			adaptivePolicyGroupName)
 
 		return err
 	}

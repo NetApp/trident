@@ -19,6 +19,7 @@ type LunCreateBySizeRequest struct {
 	PathPtr                    *string        `xml:"path"`
 	PrefixSizePtr              *int           `xml:"prefix-size"`
 	QosPolicyGroupPtr          *string        `xml:"qos-policy-group"`
+	QosAdaptivePolicyGroupPtr  *string        `xml:"qos-adaptive-policy-group"`
 	SizePtr                    *int           `xml:"size"`
 	SpaceAllocationEnabledPtr  *bool          `xml:"space-allocation-enabled"`
 	SpaceReservationEnabledPtr *bool          `xml:"space-reservation-enabled"`
@@ -221,6 +222,18 @@ func (o *LunCreateBySizeRequest) QosPolicyGroup() string {
 // SetQosPolicyGroup is a fluent style 'setter' method that can be chained
 func (o *LunCreateBySizeRequest) SetQosPolicyGroup(newValue string) *LunCreateBySizeRequest {
 	o.QosPolicyGroupPtr = &newValue
+	return o
+}
+
+// QosAdaptivePolicyGroup is a 'getter' method
+func (o *LunCreateBySizeRequest) QosAdaptivePolicyGroup() string {
+	r := *o.QosAdaptivePolicyGroupPtr
+	return r
+}
+
+// SetQosAdaptivePolicyGroup is a fluent style 'setter' method that can be chained
+func (o *LunCreateBySizeRequest) SetQosAdaptivePolicyGroup(newValue string) *LunCreateBySizeRequest {
+	o.QosAdaptivePolicyGroupPtr = &newValue
 	return o
 }
 

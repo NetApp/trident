@@ -274,6 +274,8 @@ func (d *SANStorageDriver) Create(
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
 
+	adaptivePolicyGroupName := ""
+
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
 		physicalPoolNames = append(physicalPoolNames, aggregate)
@@ -294,9 +296,12 @@ func (d *SANStorageDriver) Create(
 		}
 
 		// Create the volume
+		// For the the ONTAP SAN volume driver, we set the QoS policy at the volume layer instead of LUN layer.
+		adaptivePolicyGroupName = d.Config.AdaptivePolicyGroupName
 		volCreateResponse, err := d.API.VolumeCreate(
 			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt,
+			adaptivePolicyGroupName)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -320,13 +325,14 @@ func (d *SANStorageDriver) Create(
 		lunPath := lunPath(name)
 		osType := "linux"
 
-		// Create the LUN.  If this fails, clean up and move on to the next pool.
-		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation)
+		// Create the LUN
+		// For the the ONTAP SAN volume driver, we set the QoS policy at the volume layer instead of LUN layer.
+		adaptivePolicyGroupName = ""
+		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation, adaptivePolicyGroupName)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-
-			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v",
-				storagePool.Name, aggregate, name, err)
-			Logc(ctx).Error(errMessage)
+			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name,
+				aggregate, name, err)
+			log.Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 
 			// Don't leave the new Flexvol around

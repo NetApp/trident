@@ -113,6 +113,7 @@ type OntapStorageDriverConfig struct {
 	LimitAggregateUsage              string   `json:"limitAggregateUsage"`
 	AutoExportPolicy                 bool     `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string `json:"autoExportCIDRs"`
+        AdaptivePolicyGroupName          string   `json:"adaptivePolicyGroupName"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
