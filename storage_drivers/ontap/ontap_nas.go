@@ -246,6 +246,8 @@ func (d *NASStorageDriver) Create(
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
 
+        adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
+
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
 		physicalPoolNames = append(physicalPoolNames, aggregate)
@@ -260,7 +262,7 @@ func (d *NASStorageDriver) Create(
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt, adaptivePolicyGroupName)
 
 		if err = api.GetError(volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {

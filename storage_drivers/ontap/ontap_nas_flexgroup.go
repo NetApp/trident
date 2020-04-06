@@ -509,10 +509,12 @@ func (d *NASFlexGroupStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
 
+        adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
+
 	// Create the FlexGroup
 	_, err = d.API.FlexGroupCreate(
 		name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt, adaptivePolicyGroupName)
 
 	if err != nil {
 		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v", storagePool.Name, name, err))
