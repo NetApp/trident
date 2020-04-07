@@ -12,12 +12,12 @@
         "spaceReserve": "none",
         "encryption": "false"
     },
-    "labels":{"store":"flexgroup-store"},
-    "region": "us-east-1",
+    "labels":{"store":"flexgroup_store"},
+    "region": "us_east_1",
     "storage": [
         {
             "labels":{"protection":"gold", "points":"50000"},
-            "zone":"us-east-1a",
+            "zone":"us_east_1a",
             "defaults": {
                 "spaceReserve": "volume",
                 "encryption": "true",
@@ -26,7 +26,7 @@
         },
         {
             "labels":{"protection":"gold", "points":"30000"},
-            "zone":"us-east-1b",
+            "zone":"us_east_1b",
             "defaults": {
                 "spaceReserve": "none",
                 "encryption": "true",
@@ -35,7 +35,7 @@
         },
         {
             "labels":{"protection":"silver", "points":"20000"},
-            "zone":"us-east-1c",
+            "zone":"us_east_1c",
             "defaults": {
                 "spaceReserve": "none",
                 "encryption": "true",
@@ -44,7 +44,7 @@
         },
         {
             "labels":{"protection":"bronze", "points":"10000"},
-            "zone":"us-east-1d",
+            "zone":"us_east_1d",
             "defaults": {
                 "spaceReserve": "volume",
                 "encryption": "false",

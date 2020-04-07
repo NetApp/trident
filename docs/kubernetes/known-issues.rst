@@ -3,16 +3,19 @@ Known issues
 
 This page contains a list of known issues that may be observed when using Trident.
 
+* To perform online space reclamation for iSCSI PVs, the underlying OS on the
+  worker node may require mount options to be passed to the volume. This is
+  true for RHEL/RedHat CoreOS instances, which require the ``discard``
+  `mount option <https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems>`_;
+  ensure the ``discard`` mountOption is included in your
+  `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/#mount-options>`_
+  to support online block discard.
 * Although we provide a deployment for Trident, it should never be scaled
   beyond a single replica.  Similarly, only one instance of Trident should be
   run per Kubernetes cluster. Trident cannot communicate with other instances
   and cannot discover other volumes that they have created, which will lead to
   unexpected and incorrect behavior if more than one instance runs within a
   cluster.
-* Volumes and storage classes created in the REST API will not have
-  corresponding objects (PVCs or ``StorageClasses``) created in Kubernetes;
-  however, storage classes created via ``tridentctl`` or the REST API will be
-  usable by PVCs created in Kubernetes.
 * If Trident-based ``StorageClass`` objects are deleted from Kubernetes while
   Trident is offline, Trident will not remove the corresponding storage classes
   from its database when it comes back online. Any such storage classes must

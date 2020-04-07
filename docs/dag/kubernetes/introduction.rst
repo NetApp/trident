@@ -14,7 +14,15 @@ Fortunately there are robust platforms for hosting containerized applications.  
 
 Deploying an application using containers doesn't change its fundamental resource requirements.  Reading, writing, accessing, and storing data doesn't change just because a container technology is now a part of the stack in addition to virtual and/or physical machines.
 
-To facilitate the consumption of storage resources by containerized applications, `NetApp <https://www.netapp.com/>`_ created and released an open source project known as `Trident <https://github.com/netapp/trident>`_.  Trident is a storage orchestrator which integrates with Docker and Kubernetes, as well as platforms built on those technologies, such as `NetApp Kubernetes Service <https://cloud.netapp.com/kubernetes-service>`_, `Red Hat OpenShift <https://www.openshift.com/>`_, `Rancher <https://rancher.com/>`_, and `IBM Cloud Private <https://www.ibm.com/cloud/private>`_.  The goal of Trident is to make the provisioning, connection, and consumption of storage as transparent and frictionless for applications as possible; while operating within the constraints put forth by the storage administrator.
+To facilitate the consumption of storage resources by containerized applications,
+`NetApp <https://www.netapp.com/>`_ created and released an open source project
+known as `Trident <https://github.com/netapp/trident>`_.  Trident is a storage
+orchestrator which integrates with Docker and Kubernetes, as well as platforms
+built on those technologies, such as `Red Hat OpenShift <https://www.openshift.com/>`_,
+`Rancher <https://rancher.com/>`_, and `IBM Cloud Private <https://www.ibm.com/cloud/private>`_.
+The goal of Trident is to make the provisioning, connection, and consumption of storage
+as transparent and frictionless for applications as possible; while operating within the
+constraints put forth by the storage administrator.
 
 To achieve this goal, Trident automates the storage management tasks needed to consume storage for the storage administrator, the Kubernetes and Docker administrators, and the application consumers.  Trident fills a critical role for storage administrators, who may be feeling pressure from application teams to provide storage resources in ways which have not previously been expected.  Modern applications, and just as importantly modern development practices, have changed the storage consumption model, where resources are created, consumed, and destroyed quickly.  According to `DataDog <https://www.datadoghq.com/docker-adoption/#8>`_, containers have a median lifespan of just six days. This is dramatically different than storage resources for traditional applications, which commonly exist for years.  Those which are deployed using container orchestrators have an even shorter lifespan of just a half day.  Trident is the tool which storage administrators can rely on to safely, within the bounds given to it, provision the storage resources applications need, when they need them, and where they need them. 
 

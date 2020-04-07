@@ -12,6 +12,13 @@ require the :ref:`iSCSI` tools.
 .. note::
   Recent versions of CoreOS have both installed by default.
 
+.. note::
+   When using worker nodes that run RHEL/RedHat CoreOS with iSCSI
+   PVs, make sure to specify the ``discard`` mountOption in the
+   `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/#mount-options>`_
+   to perform inline space reclamation. Take a look at
+   RedHat's documentation `here <https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems>`_.
+
 .. warning::
   You should always reboot your worker nodes after installing the NFS or iSCSI
   tools, or attaching volumes to containers may fail.
@@ -35,6 +42,7 @@ Install the following system packages:
 
 iSCSI
 =====
+
 
 **RHEL / CentOS**
 

@@ -23,9 +23,14 @@ ontap-san           iSCSI
 ontap-san-economy   iSCSI
 =================== ========
 
+.. note::
+   Please refer to the `NetApp Hardware Universe <http://hwu.netapp.com>`_
+   for up-to-date information on volume limits for your storage cluster.
+   Based on the number of nodes, the platform and the version of ONTAP
+   being used, these limits will vary.
+
 The ``ontap-nas`` and ``ontap-san`` drivers create an ONTAP FlexVol for each
-PV. ONTAP supports up to 1000 FlexVols per cluster node with a cluster
-maximum of 12,000 FlexVols. If your persistent volume requirements fit within
+PV. If your persistent volume requirements fit within
 that limitation, those drivers are the preferred solution due to the granular
 data management capabilities they afford.
 
@@ -34,13 +39,12 @@ limits, choose the ``ontap-nas-economy`` or the ``ontap-san-economy`` driver.
 
 The ``ontap-nas-economy`` driver creates PVs as ONTAP
 Qtrees within a pool of automatically managed FlexVols. Qtrees offer far
-greater scaling, up to 100,000 per cluster node and 2,400,000 per cluster, at
+greater scaling at
 the expense of granular data management features.
 
 The ``ontap-san-economy`` driver creates PVs as ONTAP LUNs within a pool of
 automatically managed FlexVols. Each PV maps to an ONTAP LUN and this driver offers
-higher scalability for SAN workloads. Depending on the storage array, ONTAP supports
-up to 8192 LUNs per cluster node and 16384 LUNs for an HA pair. Since PVs map to LUNs
+higher scalability for SAN workloads. Since PVs map to LUNs
 within shared FlexVols, Kubernetes VolumeSnapshots are created using ONTAP's FlexClone
 technology. FlexClone LUNs and their parent LUNs share blocks, minimizing disk usage. 
 
@@ -306,12 +310,12 @@ pools are defined in the ``storage`` section. In this example, some of the stora
               "spaceReserve": "none",
               "encryption": "false"
         },
-        "labels":{"store":"nas-store"},
-        "region": "us-east-1",
+        "labels":{"store":"nas_store"},
+        "region": "us_east_1",
         "storage": [
             {
                 "labels":{"app":"msoffice", "cost":"100"},
-                "zone":"us-east-1a",
+                "zone":"us_east_1a",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "true",
@@ -320,7 +324,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"app":"slack", "cost":"75"},
-                "zone":"us-east-1b",
+                "zone":"us_east_1b",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -329,7 +333,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"app":"wordpress", "cost":"50"},
-                "zone":"us-east-1c",
+                "zone":"us_east_1c",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -338,7 +342,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"app":"mysqldb", "cost":"25"},
-                "zone":"us-east-1d",
+                "zone":"us_east_1d",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "false",
@@ -365,12 +369,12 @@ pools are defined in the ``storage`` section. In this example, some of the stora
               "spaceReserve": "none",
               "encryption": "false"
         },
-        "labels":{"store":"flexgroup-store"},
-        "region": "us-east-1",
+        "labels":{"store":"flexgroup_store"},
+        "region": "us_east_1",
         "storage": [
             {
                 "labels":{"protection":"gold", "creditpoints":"50000"},
-                "zone":"us-east-1a",
+                "zone":"us_east_1a",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "true",
@@ -379,7 +383,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"protection":"gold", "creditpoints":"30000"},
-                "zone":"us-east-1b",
+                "zone":"us_east_1b",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -388,7 +392,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"protection":"silver", "creditpoints":"20000"},
-                "zone":"us-east-1c",
+                "zone":"us_east_1c",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -397,7 +401,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"protection":"bronze", "creditpoints":"10000"},
-                "zone":"us-east-1d",
+                "zone":"us_east_1d",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "false",
@@ -426,12 +430,12 @@ pools are defined in the ``storage`` section. In this example, some of the stora
               "spaceReserve": "none",
               "encryption": "false"
         },
-        "labels":{"store":"nas-economy-store"},
-        "region": "us-east-1",
+        "labels":{"store":"nas_economy_store"},
+        "region": "us_east_1",
         "storage": [
             {
                 "labels":{"department":"finance", "creditpoints":"6000"},
-                "zone":"us-east-1a",
+                "zone":"us_east_1a",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "true",
@@ -440,7 +444,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"department":"legal", "creditpoints":"5000"},
-                "zone":"us-east-1b",
+                "zone":"us_east_1b",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -449,7 +453,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"department":"engineering", "creditpoints":"3000"},
-                "zone":"us-east-1c",
+                "zone":"us_east_1c",
                 "defaults": {
                     "spaceReserve": "none",
                     "encryption": "true",
@@ -458,7 +462,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"department":"humanresource", "creditpoints":"2000"},
-                "zone":"us-east-1d",
+                "zone":"us_east_1d",
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "false",
@@ -486,12 +490,12 @@ pools are defined in the ``storage`` section. In this example, some of the stora
               "spaceAllocation": "false",
               "encryption": "false"
         },
-        "labels":{"store":"san-store"},
-        "region": "us-east-1",
+        "labels":{"store":"san_store"},
+        "region": "us_east_1",
         "storage": [
             {
                 "labels":{"protection":"gold", "creditpoints":"40000"},
-                "zone":"us-east-1a",
+                "zone":"us_east_1a",
                 "defaults": {
                     "spaceAllocation": "true",
                     "encryption": "true"
@@ -499,7 +503,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"protection":"silver", "creditpoints":"20000"},
-                "zone":"us-east-1b",
+                "zone":"us_east_1b",
                 "defaults": {
                     "spaceAllocation": "false",
                     "encryption": "true"
@@ -507,7 +511,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"protection":"bronze", "creditpoints":"5000"},
-                "zone":"us-east-1c",
+                "zone":"us_east_1c",
                 "defaults": {
                     "spaceAllocation": "true",
                     "encryption": "false"
@@ -533,12 +537,12 @@ pools are defined in the ``storage`` section. In this example, some of the stora
               "spaceAllocation": "false",
               "encryption": "false"
         },
-        "labels":{"store":"san-economy-store"},
-        "region": "us-east-1",
+        "labels":{"store":"san_economy_store"},
+        "region": "us_east_1",
         "storage": [
             {
                 "labels":{"app":"oracledb", "cost":"30"},
-                "zone":"us-east-1a",
+                "zone":"us_east_1a",
                 "defaults": {
                     "spaceAllocation": "true",
                     "encryption": "true"
@@ -546,7 +550,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"app":"postgresdb", "cost":"20"},
-                "zone":"us-east-1b",
+                "zone":"us_east_1b",
                 "defaults": {
                     "spaceAllocation": "false",
                     "encryption": "true"
@@ -554,7 +558,7 @@ pools are defined in the ``storage`` section. In this example, some of the stora
             },
             {
                 "labels":{"app":"mysqldb", "cost":"10"},
-                "zone":"us-east-1c",
+                "zone":"us_east_1c",
                 "defaults": {
                     "spaceAllocation": "true",
                     "encryption": "false"

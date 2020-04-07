@@ -10,12 +10,12 @@
         "spaceAllocation": "false",
         "encryption": "false"
     },
-    "labels":{"store":"san-economy-store"},
-    "region": "us-east-1",
+    "labels":{"store":"san_economy_store"},
+    "region": "us_east_1",
     "storage": [
         {
             "labels":{"app":"oracledb", "cost":"30"},
-            "zone":"us-east-1a",
+            "zone":"us_east_1a",
             "defaults": {
                 "spaceAllocation": "true",
                 "encryption": "true"
@@ -23,7 +23,7 @@
         },
         {
             "labels":{"app":"postgresdb", "cost":"20"},
-            "zone":"us-east-1b",
+            "zone":"us_east_1b",
             "defaults": {
                 "spaceAllocation": "false",
                 "encryption": "true"
@@ -31,7 +31,7 @@
         },
         {
             "labels":{"app":"mysqldb", "cost":"10"},
-            "zone":"us-east-1c",
+            "zone":"us_east_1c",
             "defaults": {
                 "spaceAllocation": "true",
                 "encryption": "false"

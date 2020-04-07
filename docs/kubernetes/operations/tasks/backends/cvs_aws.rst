@@ -37,6 +37,11 @@ serviceLevel              The CVS service level for new volumes                 
 
 The required values ``apiRegion``, ``apiURL``, ``apiKey``, and ``secretKey``
 may be found in the CVS web portal in Account settings / API access.
+The ``apiURL`` is unique for each ``apiRegion``. For example, the ``us-west-2``
+apiRegion has the ``https://cv.us-west-2.netapp.com:8080/v1/`` apiURL. Similarly,
+the ``us-east-1`` apiRegion has the ``https://cds-aws-bundles.netapp.com:8080/v1/``
+apiURL. Make sure to check the CVS Dashboard to use the correct ``apiRegion`` and
+``apiURL`` parameters for your backend configuration.
 
 The proxyURL config option must be used if a proxy server is needed to communicate with AWS. The proxy server may either
 be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
@@ -203,7 +208,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
       name: cvs-extreme-standard-protection
     provisioner: netapp.io/trident
     parameters:
-      selector: "performance=premium; protection=standard"
+      selector: "performance=extreme; protection=standard"
     allowVolumeExpansion: true
     ---
     apiVersion: storage.k8s.io/v1

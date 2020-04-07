@@ -5,10 +5,12 @@ Simple Kubernetes install
 Those that are interested in Trident and just getting started with Kubernetes
 frequently ask us for a simple way to install Kubernetes to try it out.
 
-We can't help but recommend the `NetApp Kubernetes Service`_, which makes it really
-easy to deploy and manage a production Kubernetes cluster in Azure, GCP, AWS, or even
-on-premises with `NetApp HCI`_ or `VMware`_.
-
+NetApp provides a ready-to-use lab image that you can request through
+`NetApp Test Drive <https://www.netapp.com/us/try-and-buy/test-drive/index.aspx>`_.
+The Trident Test Drive provides you with a sandbox environment that comes with a
+3-node Kubernetes cluster and Trident installed and configured. It is a great way
+to familiarize yourself with Trident and explore its features.
+ 
 Another option is to follow the `kubeadm install guide`_ provided by Kubernetes.
 The Kubernetes cluster these instructions build should never be used in production.
 Follow production deployment guides provided by your distribution for that.

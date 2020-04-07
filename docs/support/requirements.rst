@@ -7,9 +7,8 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* `NetApp Kubernetes Service <https://cloud.netapp.com/kubernetes-service>`_
 * Kubernetes 1.11 or later (latest: 1.17)
-* OpenShift 3.11 or 4.2
+* OpenShift 3.11, 4.2 and 4.3
 * Docker Enterprise 2.1 or 3.0
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
@@ -72,6 +71,7 @@ These are the Linux distributions that are known to work:
 * CentOS 7.0 or later
 * RHEL 7.0 or later
 * CoreOS 1353.8.0 or later
+* RedHat CoreOS 4.2 and 4.3
 
 The ``tridentctl`` utility also runs on any of these distributions of Linux.
 

@@ -11,12 +11,12 @@
         "spaceReserve": "none",
         "encryption": "false"
     },
-    "labels":{"store":"nas-economy-store"},
-    "region": "us-east-1",
+    "labels":{"store":"nas_economy_store"},
+    "region": "us_east_1",
     "storage": [
         {
             "labels":{"department":"finance", "points":"6000"},
-            "zone":"us-east-1a",
+            "zone":"us_east_1a",
             "defaults": {
                 "spaceReserve": "volume",
                 "encryption": "true",
@@ -25,7 +25,7 @@
         },
         {
             "labels":{"department":"legal", "points":"5000"},
-            "zone":"us-east-1b",
+            "zone":"us_east_1b",
             "defaults": {
                 "spaceReserve": "none",
                 "encryption": "true",
@@ -34,7 +34,7 @@
         },
         {
             "labels":{"department":"engineering", "points":"3000"},
-            "zone":"us-east-1c",
+            "zone":"us_east_1c",
             "defaults": {
                 "spaceReserve": "none",
                 "encryption": "true",
@@ -43,7 +43,7 @@
         },
         {
             "labels":{"department":"humanresource", "points":"2000"},
-            "zone":"us-east-1d",
+            "zone":"us_east_1d",
             "defaults": {
                 "spaceReserve": "volume",
                 "encryption": "false",

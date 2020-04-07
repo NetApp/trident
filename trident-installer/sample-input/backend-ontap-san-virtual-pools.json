@@ -11,12 +11,12 @@
         "spaceAllocation": "false",
         "encryption": "false"
     },
-    "labels":{"store":"san-store"},
-    "region": "us-east-1",
+    "labels":{"store":"san_store"},
+    "region": "us_east_1",
     "storage": [
         {
             "labels":{"protection":"gold", "points":"40000"},
-            "zone":"us-east-1a",
+            "zone":"us_east_1a",
             "defaults": {
                 "spaceAllocation": "true",
                 "encryption": "true"
@@ -24,7 +24,7 @@
         },
         {
             "labels":{"protection":"silver", "points":"20000"},
-            "zone":"us-east-1b",
+            "zone":"us_east_1b",
             "defaults": {
                 "spaceAllocation": "false",
                 "encryption": "true"
@@ -32,7 +32,7 @@
         },
         {
             "labels":{"protection":"bronze", "points":"5000"},
-            "zone":"us-east-1c",
+            "zone":"us_east_1c",
             "defaults": {
                 "spaceAllocation": "true",
                 "encryption": "false"

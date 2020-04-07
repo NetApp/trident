@@ -56,17 +56,6 @@ Installing Trident for Kubernetes on UCP managed nodes is similar to installing 
 
 Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes.
 
-
-Using Trident with the NetApp Kubernetes Service
-=================================================
-
-The `NetApp Kubernetes Service`_ (NKS) is a universal control plane through which production grade Kubernetes clusters
-can be provisioned and run on the cloud provider of choice.
-
-.. _NetApp Kubernetes Service: https://cloud.netapp.com/kubernetes-service
-
-Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for NKS.
-
 Deploying Trident as an enhanced CSI Provisioner
 ================================================
 
