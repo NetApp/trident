@@ -11,6 +11,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -189,8 +190,32 @@ func (p *Plugin) NodeGetVolumeStats(
 	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
 ) (*csi.NodeGetVolumeStatsResponse, error) {
 
-	// Trident doesn't support GET_VOLUME_STATS capability
-	return nil, status.Error(codes.Unimplemented, "")
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(req.GetVolumePath(), &stat); err != nil {
+		return nil, status.Errorf(codes.Internal, "statfs syscall for volume %q failed, err: %s", req.GetVolumeId(), err)
+	}
+
+	availableBytes := int64(stat.Bavail * uint64(stat.Bsize))
+	totalBytes := int64(stat.Blocks * uint64(stat.Bsize))
+
+	resp := csi.NodeGetVolumeStatsResponse{
+		Usage: []*csi.VolumeUsage{
+			{
+				Available: availableBytes,
+				Total:     totalBytes,
+				Used:      totalBytes - availableBytes,
+				Unit:      csi.VolumeUsage_BYTES,
+			},
+			{
+				Available: int64(stat.Ffree),
+				Total:     int64(stat.Files),
+				Used:      int64(stat.Files - stat.Ffree),
+				Unit:      csi.VolumeUsage_INODES,
+			},
+		},
+	}
+
+	return &resp, nil
 }
 
 // The CO only calls NodeExpandVolume for the Block protocol as the filesystem has to be mounted to perform

@@ -99,6 +99,7 @@ func NewNodePlugin(
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
 	})
 
 	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
@@ -163,6 +164,7 @@ func NewAllInOnePlugin(
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
 	})
 	port := "34571"
 	for _, envVar := range os.Environ() {
