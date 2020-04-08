@@ -212,7 +212,7 @@ Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more in
 Virtual Storage Pool Design
 ===========================
 
-While creating a backend , you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way.
+While creating a backend, you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way.
 Virtual Storage Pools can be defined for all supported NetApp backends with Trident. That list
 includes E-Series, SolidFire/HCI, ONTAP, Cloud Volumes Service on AWS and GCP, as well as Azure
 NetApp Files.
