@@ -230,7 +230,7 @@ Design Virtual Storage Pools for emulating different Service Levels/QoS
 
 It is possible to design Virtual Storage Pools for emulating service classes. Using the virtual pool implementation for Cloud Volume Service for AWS, let us examine how we can setup up different service classes. Configure the AWS-CVS backend with multiple labels, representing different performance levels. Set "servicelevel" aspect to the appropriate performance level and add other required aspects under each labels. Now create different Kubernetes Storage Classes that would map to different virtual Storage Pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume.
 
-Design Virtual Pools for Assigning Specifc Set of Aspects
+Design Virtual Pools for Assigning Specific Set of Aspects
 ---------------------------------------------------------
 
 Multiple Virtual Storage pools with a specific set of aspects can be designed from a single storage backend. For doing so, configure the backend with multiple labels and set the required aspects under each label. Now create different Kubernetes Storage Classes using the ``parameters.selector`` field that would map to different Virtual Storage Pools.The volumes that get provisioned on the backend will have the aspects defined in the chosen Virtual Storage Pool.
