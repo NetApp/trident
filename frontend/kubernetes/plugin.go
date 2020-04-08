@@ -926,6 +926,10 @@ func (p *Plugin) createPV(
 		UID:       claim.UID,
 	}
 
+	size, err := strconv.ParseInt(volume.Config.Size, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 	pv = &v1.PersistentVolume{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
@@ -940,7 +944,7 @@ func (p *Plugin) createPV(
 		},
 		Spec: v1.PersistentVolumeSpec{
 			AccessModes: claim.Spec.AccessModes,
-			Capacity:    v1.ResourceList{v1.ResourceStorage: resource.MustParse(volume.Config.Size)},
+			Capacity:    v1.ResourceList{v1.ResourceStorage: *resource.NewQuantity(size, resource.BinarySI)},
 			ClaimRef:    &claimRef,
 			// Default policy is "Delete".
 			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
