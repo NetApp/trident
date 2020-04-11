@@ -5,9 +5,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -134,7 +137,7 @@ func deleteVersions() error {
 
 	for _, version := range versions.Items {
 		if version.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentVersions(resetNamespace).Delete(version.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentVersions(resetNamespace).Delete(version.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -148,12 +151,19 @@ func deleteVersions() error {
 			crCopy := version.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentVersions(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentVersions(resetNamespace).Delete(version.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentVersions(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, version.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -184,7 +194,7 @@ func deleteBackends() error {
 
 	for _, backend := range backends.Items {
 		if backend.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentBackends(resetNamespace).Delete(backend.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentBackends(resetNamespace).Delete(backend.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -198,12 +208,19 @@ func deleteBackends() error {
 			crCopy := backend.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentBackends(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentBackends(resetNamespace).Delete(backend.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentBackends(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, backend.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -234,7 +251,7 @@ func deleteStorageClasses() error {
 
 	for _, sc := range storageclasses.Items {
 		if sc.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete(sc.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete(sc.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -248,12 +265,19 @@ func deleteStorageClasses() error {
 			crCopy := sc.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete(sc.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, sc.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -284,7 +308,7 @@ func deleteVolumes() error {
 
 	for _, volume := range volumes.Items {
 		if volume.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete(volume.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete(volume.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -298,12 +322,19 @@ func deleteVolumes() error {
 			crCopy := volume.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentVolumes(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete(volume.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, volume.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -334,7 +365,7 @@ func deleteNodes() error {
 
 	for _, node := range nodes.Items {
 		if node.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentNodes(resetNamespace).Delete(node.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentNodes(resetNamespace).Delete(node.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -348,12 +379,19 @@ func deleteNodes() error {
 			crCopy := node.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentNodes(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentNodes(resetNamespace).Delete(node.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentNodes(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, node.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -384,7 +422,7 @@ func deleteTransactions() error {
 
 	for _, txn := range transactions.Items {
 		if txn.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete(txn.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete(txn.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -398,12 +436,19 @@ func deleteTransactions() error {
 			crCopy := txn.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentTransactions(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete(txn.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, txn.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -434,7 +479,7 @@ func deleteSnapshots() error {
 
 	for _, snapshot := range snapshots.Items {
 		if snapshot.DeletionTimestamp.IsZero() {
-			crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete(snapshot.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete(snapshot.Name, &metav1.DeleteOptions{})
 		}
 	}
 
@@ -448,12 +493,19 @@ func deleteSnapshots() error {
 			crCopy := snapshot.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
 			_, err := crdClientset.TridentV1().TridentSnapshots(resetNamespace).Update(crCopy)
-			if err != nil {
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
 				log.Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
-		crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete(snapshot.Name, &metav1.DeleteOptions{})
+
+		deleteFunc := crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, snapshot.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
 	log.WithFields(logFields).Info("Resources deleted.")
@@ -486,42 +538,155 @@ func deleteCRDs() error {
 			continue
 		}
 
-		log.WithFields(logFields).Debug("Deleting CRD.")
+		// Get the CRD and check for finalizers
+		crd, err := kubeClient.GetCRD(crdName)
+		if isNotFoundError(err) {
+			log.WithFields(logFields).Info("CRD not found.")
+			continue
+		}
+
+		// Remove finalizers if present
+		if len(crd.Finalizers) > 0 {
+			if err := kubeClient.RemoveFinalizerFromCRD(crdName); err != nil {
+				log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
+				return err
+			} else {
+				log.WithFields(logFields).Debug("Removed finalizers from CRD.")
+			}
+		} else {
+			log.WithFields(logFields).Debug("No finalizers found on CRD.")
+		}
 
 		// Try deleting CRD
-		if err := kubeClient.DeleteCRD(crdName); err != nil {
-			log.WithFields(logFields).Errorf("Could not delete CRD; %v", err)
-			return err
-		}
+		if crd.DeletionTimestamp.IsZero() {
+			log.WithFields(logFields).Debug("Deleting CRD.")
 
-		// Check if CRD still exists (mostly likely pinned by finalizer)
-		if exists, err := kubeClient.CheckCRDExists(crdName); err != nil {
-			return err
-		} else if !exists {
-			log.WithFields(logFields).Info("CRD deleted.")
-			continue
-		}
-
-		log.WithFields(logFields).Debug("CRD still present, must remove finalizers.")
-
-		// Remove finalizer
-		if err := kubeClient.RemoveFinalizerFromCRD(crdName); err != nil {
-			log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
-			return err
+			err := kubeClient.DeleteCRD(crdName)
+			if isNotFoundError(err) {
+				log.WithFields(logFields).Info("CRD not found during deletion.")
+				continue
+			} else if err != nil {
+				log.WithFields(logFields).Errorf("Could not delete CRD; %v", err)
+				return err
+			}
 		} else {
-			log.WithFields(logFields).Debug("Removed finalizer from CRD.")
+			log.WithFields(logFields).Debug("CRD already has deletion timestamp.")
 		}
 
-		// Check if removing the finalizer allowed the CRD to be deleted
-		if exists, err = kubeClient.CheckCRDExists(crdName); err != nil {
+		// Give the CRD some time to disappear.  We removed any finalizers, so this should always work.
+		if err := waitForCRDDeletion(crdName, k8sTimeout); err != nil {
+			log.WithFields(logFields).Error(err)
 			return err
-		} else if !exists {
-			log.WithFields(logFields).Info("CRD deleted after removing finalizers.")
-			continue
-		} else {
-			log.WithFields(logFields).Error("CRD still not deleted after removing finalizers.")
 		}
+
+		log.WithFields(logFields).Info("CRD deleted.")
+		continue
 	}
+
+	return nil
+}
+
+func isNotFoundError(err error) bool {
+	if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+		return true
+	}
+	return false
+}
+
+// crDeleter deletes a custom resource
+type crDeleter func(string, *metav1.DeleteOptions) error
+
+func deleteWithRetry(deleteFunc crDeleter, name string, deleteOptions *metav1.DeleteOptions) error {
+
+	if deleteOptions == nil {
+		deleteOptions = &metav1.DeleteOptions{}
+	}
+
+	timeout := 10 * time.Second
+	retries := 0
+
+	doDelete := func() error {
+
+		err := deleteFunc(name, deleteOptions)
+		if err == nil || isNotFoundError(err) {
+			return nil
+		}
+
+		return fmt.Errorf("object %s not yet deleted", name)
+	}
+
+	doDeleteNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name": name,
+			"err":  err,
+		}).Debug("Object not yet deleted, waiting.")
+
+		retries++
+	}
+
+	deleteBackoff := backoff.NewExponentialBackOff()
+	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.RandomizationFactor = 0.1
+	deleteBackoff.Multiplier = 1.414
+	deleteBackoff.MaxInterval = 5 * time.Second
+	deleteBackoff.MaxElapsedTime = timeout
+
+	log.WithField("name", name).Trace("Waiting for object to be deleted.")
+
+	if err := backoff.RetryNotify(doDelete, deleteBackoff, doDeleteNotify); err != nil {
+		return fmt.Errorf("object %s was not deleted after %3.2f seconds", name, timeout.Seconds())
+	}
+
+	log.WithFields(log.Fields{
+		"name":        name,
+		"retries":     retries,
+		"waitSeconds": fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),
+	}).Debugf("Object deleted.")
+
+	return nil
+}
+
+func waitForCRDDeletion(name string, timeout time.Duration) error {
+
+	retries := 0
+
+	checkDeleted := func() error {
+
+		exists, err := kubeClient.CheckCRDExists(name)
+		if !exists || isNotFoundError(err) {
+			return nil
+		}
+
+		return fmt.Errorf("CRD %s not yet deleted", name)
+	}
+
+	checkDeletedNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"CRD": name,
+			"err": err,
+		}).Debug("CRD not yet deleted, waiting.")
+
+		retries++
+	}
+
+	deleteBackoff := backoff.NewExponentialBackOff()
+	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.RandomizationFactor = 0.1
+	deleteBackoff.Multiplier = 1.414
+	deleteBackoff.MaxInterval = 5 * time.Second
+	deleteBackoff.MaxElapsedTime = timeout
+
+	log.WithField("CRD", name).Trace("Waiting for CRD to be deleted.")
+
+	if err := backoff.RetryNotify(checkDeleted, deleteBackoff, checkDeletedNotify); err != nil {
+		return fmt.Errorf("CRD %s was not deleted after %3.2f seconds", name, timeout.Seconds())
+	}
+
+	log.WithFields(log.Fields{
+		"CRD":         name,
+		"retries":     retries,
+		"waitSeconds": fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),
+	}).Debugf("CRD deleted.")
 
 	return nil
 }

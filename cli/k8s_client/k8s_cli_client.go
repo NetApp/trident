@@ -1028,7 +1028,7 @@ func (c *KubectlClient) DeleteCRD(crdName string) error {
 		return fmt.Errorf("%s; %v", string(out), err)
 	}
 
-	log.WithField("crd", crdName).Debug("Deleted CRD.")
+	log.WithField("CRD", crdName).Debug("Deleted CRD.")
 
 	return nil
 }
