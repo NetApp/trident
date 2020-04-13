@@ -108,6 +108,8 @@ var (
 		VolumeCRDName,
 		SnapshotCRDName,
 	}
+
+	useCRDv1 bool
 )
 
 func init() {
@@ -332,6 +334,11 @@ func processInstallationArguments(cmd *cobra.Command) {
 		appLabelKey = TridentLegacyLabelKey
 		appLabelValue = TridentLegacyLabelValue
 	}
+
+	minForcedCRDVersion := utils.MustParseSemantic(tridentconfig.KubernetesCRDVersionMinForced)
+	if client.ServerVersion().AtLeast(minForcedCRDVersion) {
+		useCRDv1 = true
+	}
 }
 
 func validateInstallationArguments() error {
@@ -424,7 +431,7 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
 
-	crdsYAML := k8sclient.GetCRDsYAML()
+	crdsYAML := k8sclient.GetCRDsYAML(useCRDv1)
 	if err = writeFile(crdsPath, crdsYAML); err != nil {
 		return fmt.Errorf("could not write custom resource definition YAML file; %v", err)
 	}
@@ -468,7 +475,7 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
 
-	crdsYAML := k8sclient.GetCRDsYAML()
+	crdsYAML := k8sclient.GetCRDsYAML(useCRDv1)
 	if err = writeFile(crdsPath, crdsYAML); err != nil {
 		return fmt.Errorf("could not write custom resource definition YAML file; %v", err)
 	}
@@ -1034,7 +1041,7 @@ func createCustomResourceDefinitions() (returnError error) {
 		returnError = client.CreateObjectByFile(crdsPath)
 		logFields = log.Fields{"path": crdsPath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8sclient.GetCRDsYAML())
+		returnError = client.CreateObjectByYAML(k8sclient.GetCRDsYAML(useCRDv1))
 		logFields = log.Fields{"namespace": TridentPodNamespace}
 	}
 	if returnError != nil {

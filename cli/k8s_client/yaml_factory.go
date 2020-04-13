@@ -1458,8 +1458,12 @@ func GetCRDNames() []string {
 	}
 }
 
-func GetCRDsYAML() string {
-	return customResourceDefinitionYAML
+func GetCRDsYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return customResourceDefinitionYAML_v1
+	} else {
+		return customResourceDefinitionYAML_v1beta1
+	}
 }
 
 /*
@@ -1488,7 +1492,7 @@ kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
 */
 
-const customResourceDefinitionYAML = `
+const customResourceDefinitionYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1706,6 +1710,247 @@ spec:
       description: The snapshot's state
       priority: 1
       JSONPath: .state`
+
+const customResourceDefinitionYAML_v1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentversions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: Version
+        type: string
+        description: The Trident version
+        priority: 0
+        jsonPath: .trident_version
+  scope: Namespaced
+  names:
+    plural: tridentversions
+    singular: tridentversion
+    kind: TridentVersion
+    shortNames:
+    - tver
+    - tversion
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackends.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: Backend
+        type: string
+        description: The backend name
+        priority: 0
+        jsonPath: .backendName
+      - name: Backend UUID
+        type: string
+        description: The backend UUID
+        priority: 0
+        jsonPath: .backendUUID
+  scope: Namespaced
+  names:
+    plural: tridentbackends
+    singular: tridentbackend
+    kind: TridentBackend
+    shortNames:
+    - tbe
+    - tbackend
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentstorageclasses.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentstorageclasses
+    singular: tridentstorageclass
+    kind: TridentStorageClass
+    shortNames:
+    - tsc
+    - tstorageclass
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: Age
+        type: date
+        priority: 0
+        jsonPath: .metadata.creationTimestamp
+      - name: Size
+        type: string
+        description: The volume's size
+        priority: 1
+        jsonPath: .config.size
+      - name: Storage Class
+        type: string
+        description: The volume's storage class
+        priority: 1
+        jsonPath: .config.storageClass
+      - name: State
+        type: string
+        description: The volume's state
+        priority: 1
+        jsonPath: .state
+      - name: Protocol
+        type: string
+        description: The volume's protocol
+        priority: 1
+        jsonPath: .config.protocol
+      - name: Backend UUID
+        type: string
+        description: The volume's backend UUID
+        priority: 1
+        jsonPath: .backendUUID
+      - name: Pool
+        type: string
+        description: The volume's pool
+        priority: 1
+        jsonPath: .pool
+  scope: Namespaced
+  names:
+    plural: tridentvolumes
+    singular: tridentvolume
+    kind: TridentVolume
+    shortNames:
+    - tvol
+    - tvolume
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnodes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentnodes
+    singular: tridentnode
+    kind: TridentNode
+    shortNames:
+    - tnode
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridenttransactions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridenttransactions
+    singular: tridenttransaction
+    kind: TridentTransaction
+    shortNames:
+    - ttx
+    - ttransaction
+    categories:
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentsnapshots.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: State
+        type: string
+        description: The snapshot's state
+        priority: 1
+        jsonPath: .state
+  scope: Namespaced
+  names:
+    plural: tridentsnapshots
+    singular: tridentsnapshot
+    kind: TridentSnapshot
+    shortNames:
+    - tss
+    - tsnap
+    - tsnapshot
+    categories:
+    - trident
+    - trident-internal
+`
 
 func GetCSIDriverCRDYAML() string {
 	return CSIDriverCRDYAML

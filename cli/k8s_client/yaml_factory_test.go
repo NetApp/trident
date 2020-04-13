@@ -33,7 +33,8 @@ func TestYAML(t *testing.T) {
 		uninstallerPodTemplate,
 		openShiftSCCQueryYAMLTemplate,
 		secretYAMLTemplate,
-		customResourceDefinitionYAML,
+		customResourceDefinitionYAML_v1beta1,
+		customResourceDefinitionYAML_v1,
 		CSIDriverCRDYAML,
 		CSINodeInfoCRDYAML,
 	}
