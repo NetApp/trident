@@ -298,7 +298,7 @@ func (d *Client) getVolumesFromPool(cookie *AzureCapacityPoolCookie, poolName st
 	volumelist, err := d.SDKClient.VolumesClient.List(d.SDKClient.Ctx,
 		*cookie.ResourceGroup, *cookie.NetAppAccount, poolName)
 	if err != nil {
-		log.Errorf("error fetching volumes from pool %s: %s\n", poolName, err)
+		log.Errorf("Error fetching volumes from pool %s: %s", poolName, err)
 		return nil, err
 	}
 
@@ -309,7 +309,7 @@ func (d *Client) getVolumesFromPool(cookie *AzureCapacityPoolCookie, poolName st
 	for _, v := range volumes {
 		fs, err := d.newFileSystemFromVolume(&v, cookie)
 		if err != nil {
-			log.Errorf("internal error creating filesystem")
+			log.Errorf("Internal error creating filesystem")
 			return nil, err
 		}
 		fses = append(fses, *fs)
@@ -333,7 +333,7 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 
 		fs, err := d.getVolumesFromPool(cookie, poolShortname(p.Name))
 		if err != nil {
-			log.Errorf("error fetching volumes from pool %s: %s\n", p.Name, err)
+			log.Errorf("Error fetching volumes from pool %s: %s", p.Name, err)
 			return nil, err
 		}
 		for _, f := range *fs {
@@ -419,7 +419,8 @@ func (d *Client) GetVolumeByID(fileSystemID string) (*FileSystem, error) {
 }
 
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved
-func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+func (d *Client) WaitForVolumeState(
+	filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
 	volumeState := ""
 
@@ -449,7 +450,7 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 					*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name)
 				if err != nil && vol.StatusCode == 404 {
 					// Deleted!
-					log.Debugf("implied deletion for volume %s\n", filesystem.Name)
+					log.Debugf("Implied deletion for volume %s", filesystem.Name)
 					return nil
 				} else {
 					return fmt.Errorf("waitForVolumeState internal error re-checking volume: %v", err)
@@ -492,15 +493,15 @@ func (d *Client) WaitForVolumeState(filesystem *FileSystem, desiredState string,
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("volume reached terminal state: %v", terminalStateErr)
+			log.Errorf("Volume reached terminal state: %v.", terminalStateErr)
 		} else {
-			log.Errorf("volume state was not %s after %3.2f seconds.",
+			log.Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("desired volume state reached.")
+	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
 	return volumeState, nil
 }
@@ -531,7 +532,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	// We should only be seeing the trident telemetry label here.  Use a tag to store it.
 	tags := make(map[string]string)
 	if len(request.Labels) > 1 {
-		log.Errorf("too many labels (%d) in volume create request", len(request.Labels))
+		log.Errorf("Too many labels (%d) in volume create request.", len(request.Labels))
 	}
 	for _, val := range request.Labels {
 		tags[tridentLabelTag] = val
@@ -598,9 +599,9 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		if subnet == "" {
 			logstr := "No subnet specified in volume creation request, selecting "
 			if vNet != "" {
-				log.Debugf(logstr+"from vnet %s", vNet)
+				log.Debugf(logstr+"from vnet %s.", vNet)
 			} else {
-				log.Debugf(logstr+"at random in %s", *cpool.Location)
+				log.Debugf(logstr+"at random in %s.", *cpool.Location)
 			}
 			randomSubnet := d.randomSubnetForLocation(vNet, *cpool.Location)
 			if randomSubnet == nil {
@@ -644,7 +645,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 			"virtualNetwork": vNet,
 			"subnet":         subnet,
 			"snapshotID":     request.SnapshotID,
-		}).Debug("Issuing create request")
+		}).Debug("Issuing create request.")
 	}
 
 	// This API returns a netapp.VolumesCreateOrUpdateFuture, which is some kind of
@@ -681,7 +682,7 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 
 	// Only updating trident labels
 	if len(labels) > 1 {
-		log.Errorf("too many labels (%d) passed to RelabelVolume", len(labels))
+		log.Errorf("Too many labels (%d) passed to RelabelVolume.", len(labels))
 	}
 
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
@@ -911,7 +912,8 @@ func (d *Client) GetSnapshotByID(snapshotID string, filesystem *FileSystem) (*Sn
 }
 
 // WaitForSnapshotState waits for a desired snapshot state and returns once that state is achieved
-func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+func (d *Client) WaitForSnapshotState(
+	snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) error {
 	checkSnapshotState := func() error {
 		s, err := d.GetSnapshotForVolume(filesystem, snapshot.Name)
@@ -928,7 +930,7 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem
 					*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name, snapshot.Name)
 				if err != nil && snap.StatusCode == 404 {
 					// Deleted!
-					log.Debugf("implied deletion for snapshot %s\n", snapshot.Name)
+					log.Debugf("Implied deletion for snapshot %s.", snapshot.Name)
 					return nil
 				} else {
 					return fmt.Errorf("waitForSnapshotState internal error re-checking snapshot: %v", err)
@@ -971,9 +973,9 @@ func (d *Client) WaitForSnapshotState(snapshot *Snapshot, filesystem *FileSystem
 
 	if err := backoff.RetryNotify(checkSnapshotState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("snapshot reached terminal state: %v", terminalStateErr)
+			log.Errorf("Snapshot reached terminal state: %v.", terminalStateErr)
 		} else {
-			log.Errorf("snapshot state was not %s after %3.2f seconds.",
+			log.Errorf("Snapshot state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return err
@@ -1019,7 +1021,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 
 // RestoreSnapshot does not seem to have an API on Azure, unless it's the mysterious 'Do'
 func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
-	log.Errorf("restore snapshot not implemented in Azure")
+	log.Errorf("Restore snapshot not implemented in ANF.")
 	return nil
 }
 
@@ -1041,6 +1043,9 @@ func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) erro
 func IsTransitionalState(volumeState string) bool {
 	switch volumeState {
 	case StateCreating, StateDeleting:
+		return true
+	case StateInProgress:
+		log.Error("***** FOUND InProgress VOLUME STATE! *****")
 		return true
 	default:
 		return false

@@ -836,7 +836,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(volume *sdk.FileSystem, volumeNam
 	state, err := d.SDK.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
 	if err != nil {
 
-		// Don't leave a CVS volume laying around in error state
+		// Don't leave an ANF volume laying around in error state
 		if state == api.StateCreating {
 			log.WithFields(log.Fields{
 				"volume": volumeName,
@@ -844,7 +844,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(volume *sdk.FileSystem, volumeNam
 			return utils.VolumeCreatingError(err.Error())
 		}
 
-		// Don't leave a CVS volume in a non-transitional state laying around in error state
+		// Don't leave an ANF volume in a non-transitional state laying around in error state
 		if !api.IsTransitionalState(state) {
 			errDelete := d.SDK.DeleteVolume(volume)
 			if errDelete != nil {
@@ -1096,7 +1096,9 @@ func (d *NFSStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*
 	}
 
 	// Wait for snapshot creation to complete
-	if err = d.SDK.WaitForSnapshotState(snapshot, sourceVolume, sdk.StateAvailable, []string{sdk.StateError}, sdk.SnapshotTimeout); err != nil {
+	err = d.SDK.WaitForSnapshotState(
+		snapshot, sourceVolume, sdk.StateAvailable, []string{sdk.StateError}, sdk.SnapshotTimeout)
+	if err != nil {
 		return nil, err
 	}
 

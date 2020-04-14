@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	StateCreating  = "InProgress"
-	StateAvailable = "Succeeded"
-	StateDeleting  = "Deleting"
-	StateDeleted   = "NoSuchState"
-	StateError     = "Failed"
+	StateInProgress = "InProgress" // confirm this is still a real state
+	StateCreating   = "Creating"
+	StateAvailable  = "Succeeded"
+	StateDeleting   = "Deleting"
+	StateDeleted    = "NoSuchState"
+	StateError      = "Failed"
 
 	ProtocolTypeNFSv3 = "NFSv3"
 	ProtocolTypeNFSv4 = "NFSv4"
