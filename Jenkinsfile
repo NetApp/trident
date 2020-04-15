@@ -4,13 +4,6 @@ node {
 
   def error_message = ''
   def slack_result = ''
-  def ssh_options=(
-    '-o StrictHostKeyChecking=no ' +
-    '-o UserKnownHostsFile=/dev/null ' +
-    '-o ServerAliveInterval=60 -i tools/' +
-    env.SSH_PRIVATE_KEY_PATH +
-    ' -q'
-  )
 
   try {
 
@@ -24,11 +17,15 @@ node {
     stage('Create-Stages') {
       try {
 
+        def max_parallel_stages = 10
+        if (env.MAX_PARALLEL_STAGES) {
+            max_parallel_stages = env.MAX_PARALLEL_STAGES
+        }
+
         echo "Calling create stages"
         stages = create_stages(
-          parallelism: env.MAX_PARALLEL_STAGES,
+          parallelism: max_parallel_stages,
           repository: 'trident',
-          ssh_options: ssh_options
         )
       } catch(Exception e) {
 
@@ -41,15 +38,13 @@ node {
        stages: stages
     )
 
-    // If we get this far propagate changes to the public trident repo
-    stage('Propagate-Changes') {
-      if (env.DEPLOY_TRIDENT) {
-        echo "Skipping change propagation because DEPLOY_TRIDENT=true"
-      } else if (env.BLACK_DUCK_SCAN) {
-        echo "Skipping change propagation because BLACK_DUCK_SCAN=true"
-      } else {
-         propagate_changes()
-      }
+    stage('Propagate') {
+      propagate_changes(
+        stage: 'Propagate'
+      )
+      archive_to_seclab(
+        stage: 'Propagate'
+      )
     }
 
     slack_result = 'SUCCESS'
