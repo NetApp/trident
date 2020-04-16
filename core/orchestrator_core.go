@@ -283,7 +283,7 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 		volNames = append(volNames, v.Config.Name)
 	}
 	for k, _ := range o.volumes {
-		if ! utils.SliceContainsString(volNames, k) {
+		if !utils.SliceContainsString(volNames, k) {
 			delete(o.volumes, k)
 		}
 	}
@@ -1765,10 +1765,17 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 			txn.VolumeCreatingConfig.BackendUUID, cloneConfig.Name))
 	}
 
-	pool, found = backend.Storage[txn.VolumeCreatingConfig.Pool]
-	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("pool %s for backend %s not found",
-			txn.VolumeCreatingConfig.Pool, txn.VolumeCreatingConfig.BackendUUID))
+	// Try to place the cloned volume in the same pool as the source.  This doesn't always work,
+	// as may be the case with imported volumes or virtual pools, so drivers must tolerate a nil
+	// or non-existent pool.
+	sourceVolumePoolName := txn.VolumeCreatingConfig.Pool
+	if sourceVolumePoolName != drivers.UnsetPool {
+		if sourceVolumeStoragePool, ok := backend.Storage[sourceVolumePoolName]; ok {
+			pool = sourceVolumeStoragePool
+		}
+	}
+	if pool == nil {
+		pool = storage.NewStoragePool(backend, "")
 	}
 
 	// Recovery functions in case of error
