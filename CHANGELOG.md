@@ -7,12 +7,14 @@
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
 
 **Fixes:**
-- **Kubernetes** Change Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
+- **Kubernetes:** Change Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
 - Fixes FlexGroup volume deletion against ONTAP version 9.7 (Issue [#326](https://github.com/NetApp/trident/issues/326))
 - Refer to backend storage for current volume size during resize
 
 **Enhancements**
 - Updated to GoLang 1.14.
+- **Kubernetes:** Added ability to remove CSI nodes from Trident's database via `tridentctl`.
+- **Kubernetes:** Added ability for Trident to automatically create and update export policies for NAS-based drivers to provide access to all nodes in your Kubernetes cluster.
 
 ## v20.01.0
 

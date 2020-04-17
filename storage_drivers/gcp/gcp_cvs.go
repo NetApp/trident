@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -192,7 +192,7 @@ func (d *NFSStorageDriver) Initialized() bool {
 }
 
 // Terminate stops the driver prior to its being unloaded
-func (d *NFSStorageDriver) Terminate() {
+func (d *NFSStorageDriver) Terminate(string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "NFSStorageDriver"}
@@ -1630,4 +1630,23 @@ func (d *NFSStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 	}
 
 	return bitmap
+}
+
+func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "NFSStorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
+	return nil
 }

@@ -295,6 +295,7 @@ func (p *Plugin) ControllerPublishVolume(
 		HostIQN:   []string{nodeInfo.IQN},
 		HostIP:    nodeInfo.IPs,
 		HostName:  nodeInfo.Name,
+		Unmanaged: volume.Config.ImportNotManaged,
 	}
 
 	// Update NFS export rules (?), add node IQN to igroup, etc.

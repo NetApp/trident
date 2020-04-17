@@ -1593,6 +1593,15 @@ func (d Client) QtreeGetAll(volumePrefix string) (*azgo.QtreeListIterResponse, e
 	return response, err
 }
 
+func (d Client) QtreeModifyExportPolicy(name, volumeName, exportPolicy string) (*azgo.QtreeModifyResponse, error) {
+
+	return azgo.NewQtreeModifyRequest().
+		SetQtree(name).
+		SetVolume(volumeName).
+		SetExportPolicy(exportPolicy).
+		ExecuteUsing(d.zr)
+}
+
 // QuotaOn enables quotas on a Flexvol
 // equivalent to filer::> volume quota on
 func (d Client) QuotaOn(volume string) (*azgo.QuotaOnResponse, error) {
@@ -1711,9 +1720,21 @@ func (d Client) QuotaEntryList(volume string) (*azgo.QuotaListEntriesIterRespons
 // equivalent to filer::> vserver export-policy create
 func (d Client) ExportPolicyCreate(policy string) (*azgo.ExportPolicyCreateResponse, error) {
 	response, err := azgo.NewExportPolicyCreateRequest().
-		SetPolicyName(azgo.ExportPolicyNameType(policy)).
+		SetPolicyName(policy).
 		ExecuteUsing(d.zr)
 	return response, err
+}
+
+func (d Client) ExportPolicyGet(policy string) (*azgo.ExportPolicyGetResponse, error) {
+	return azgo.NewExportPolicyGetRequest().
+		SetPolicyName(policy).
+		ExecuteUsing(d.zr)
+}
+
+func (d Client) ExportPolicyDestroy(policy string) (*azgo.ExportPolicyDestroyResponse, error) {
+	return azgo.NewExportPolicyDestroyRequest().
+		SetPolicyName(policy).
+		ExecuteUsing(d.zr)
 }
 
 // ExportRuleCreate creates a rule in an export policy
@@ -1774,6 +1795,15 @@ func (d Client) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIter
 	response, err := azgo.NewExportRuleGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
 		SetQuery(*query).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// ExportRuleDestroy deletes the rule at the given index in the given policy
+func (d Client) ExportRuleDestroy(policy string, ruleIndex int) (*azgo.ExportRuleDestroyResponse, error) {
+	response, err := azgo.NewExportRuleDestroyRequest().
+		SetPolicyName(policy).
+		SetRuleIndex(ruleIndex).
 		ExecuteUsing(d.zr)
 	return response, err
 }

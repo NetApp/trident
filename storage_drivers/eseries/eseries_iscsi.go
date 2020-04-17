@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -209,7 +209,7 @@ func (d *SANStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *SANStorageDriver) Terminate() {
+func (d *SANStorageDriver) Terminate(string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "SANStorageDriver"}
@@ -1021,10 +1021,11 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
 }
+
 // Retrieve storage backend physical pools
 func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
 	physicalPoolNames := make([]string, 0)
-	for poolName, _ := range d.physicalPools {
+	for poolName := range d.physicalPools {
 		physicalPoolNames = append(physicalPoolNames, poolName)
 	}
 	return physicalPoolNames
@@ -1413,5 +1414,24 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	}
 
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	return nil
+}
+
+func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "SANStorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
 	return nil
 }

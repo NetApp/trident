@@ -106,12 +106,17 @@ func (d *NASStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *NASStorageDriver) Terminate() {
+func (d *NASStorageDriver) Terminate(backendUUID string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "NASStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
+	}
+	if d.Config.AutoExportPolicy {
+		if err := deleteExportPolicy(backendUUID, d.API); err != nil {
+			log.Warn(err)
+		}
 	}
 	if d.Telemetry != nil {
 		d.Telemetry.Stop()
@@ -227,6 +232,10 @@ func (d *NASStorageDriver) Create(
 
 	if tieringPolicy == "" {
 		tieringPolicy = d.API.TieringPolicyValue()
+	}
+
+	if d.Config.AutoExportPolicy {
+		exportPolicy = storagePool.Backend.BackendUUID
 	}
 
 	log.WithFields(log.Fields{
@@ -489,7 +498,7 @@ func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = d.Config.NfsMountOptions
-	return PublishNFSShare(d.API, &d.Config, publishInfo, name)
+	return publishFlexVolShare(d.API, &d.Config, publishInfo, name)
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -826,4 +835,23 @@ func (d *NASStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
+}
+
+func (d *NASStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "NASStorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
+	return reconcileNASNodeAccess(nodes, &d.Config, d.API, backendUUID)
 }

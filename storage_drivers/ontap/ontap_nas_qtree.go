@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -172,7 +172,7 @@ func (d *NASQtreeStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *NASQtreeStorageDriver) Terminate() {
+func (d *NASQtreeStorageDriver) Terminate(backendUUID string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "NASQtreeStorageDriver"}
@@ -183,6 +183,12 @@ func (d *NASQtreeStorageDriver) Terminate() {
 	if d.housekeepingWaitGroup != nil {
 		for _, task := range d.housekeepingTasks {
 			task.Stop()
+		}
+	}
+
+	if d.Config.AutoExportPolicy {
+		if err := deleteExportPolicy(backendUUID, d.API); err != nil {
+			log.Warn(err)
 		}
 	}
 
@@ -216,10 +222,12 @@ func (d *NASQtreeStorageDriver) validate() error {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
-	// Make sure we have an export policy for all the Flexvols we create
-	err = d.ensureDefaultExportPolicy()
-	if err != nil {
-		return fmt.Errorf("error configuring export policy: %v", err)
+	if !d.Config.AutoExportPolicy {
+		// Make sure we have an export policy for all the Flexvols we create
+		err = d.ensureDefaultExportPolicy()
+		if err != nil {
+			return fmt.Errorf("error configuring export policy: %v", err)
+		}
 	}
 
 	return nil
@@ -320,6 +328,10 @@ func (d *NASQtreeStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue()
 	}
 
+	if d.Config.AutoExportPolicy {
+		exportPolicy = storagePool.Backend.BackendUUID
+	}
+
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
 
@@ -337,8 +349,7 @@ func (d *NASQtreeStorageDriver) Create(
 		// Make sure we have a Flexvol for the new qtree
 		flexvol, err := d.ensureFlexvolForQtree(
 			aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, sizeBytes,
-			d.Config,
-			snapshotReserve)
+			d.Config, snapshotReserve, exportPolicy)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
 				storagePool.Name, aggregate, name, err)
@@ -502,7 +513,43 @@ func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePu
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = d.Config.NfsMountOptions
 
-	return nil
+	return d.publishQtreeShare(name, flexvol, publishInfo)
+}
+
+func (d *NASQtreeStorageDriver) publishQtreeShare(qtree, flexvol string, publishInfo *utils.VolumePublishInfo) error {
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "publishQtreeShare",
+			"Type":   "ontap_nas_qtree",
+			"Share":  qtree,
+		}
+		log.WithFields(fields).Debug(">>>> publishQtreeShare")
+		defer log.WithFields(fields).Debug("<<<< publishQtreeShare")
+	}
+
+	if !d.Config.AutoExportPolicy || publishInfo.Unmanaged {
+		return nil
+	}
+
+	if err := ensureNodeAccess(publishInfo, d.API, &d.Config); err != nil {
+		return err
+	}
+
+	// Ensure the qtree has the correct export policy applied
+	modifyResponse, err := d.API.QtreeModifyExportPolicy(qtree, flexvol, publishInfo.BackendUUID)
+	if err = api.GetError(modifyResponse, err); err != nil {
+		err = fmt.Errorf("error modifying qtree export policy; %v", err)
+		log.WithFields(log.Fields{
+			"Qtree":        qtree,
+			"FlexVol":      flexvol,
+			"ExportPolicy": publishInfo.BackendUUID,
+		}).Error(err)
+		return err
+	}
+
+	// Ensure the qtree's volume has the correct export policy applied
+	return publishFlexVolShare(d.API, &d.Config, publishInfo, flexvol)
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
@@ -522,7 +569,7 @@ func (d *NASQtreeStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) 
 	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
-// Return the list of snapshots associated with the specified volume
+// GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *NASQtreeStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -621,7 +668,7 @@ func (d *NASQtreeStorageDriver) Get(name string) error {
 // qtree or it creates a new Flexvol with the needed attributes.
 func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, enableEncryption bool,
-	sizeBytes uint64, config drivers.OntapStorageDriverConfig, snapshotReserve string,
+	sizeBytes uint64, config drivers.OntapStorageDriverConfig, snapshotReserve, exportPolicy string,
 ) (string, error) {
 
 	shouldLimitVolumeSize, flexvolQuotaSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -644,7 +691,8 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 
 	// Nothing found, so create a suitable Flexvol
 	flexvol, err = d.createFlexvolForQtree(
-		aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, snapshotReserve)
+		aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, snapshotReserve,
+		exportPolicy)
 	if err != nil {
 		return "", fmt.Errorf("error creating Flexvol for qtree: %v", err)
 	}
@@ -658,12 +706,14 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 // quota.
 func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, enableEncryption bool,
-	snapshotReserve string) (string, error) {
+	snapshotReserve, exportPolicy string) (string, error) {
 
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
 	size := "1g"
 	unixPermissions := "0711"
-	exportPolicy := d.flexvolExportPolicy
+	if !d.Config.AutoExportPolicy {
+		exportPolicy = d.flexvolExportPolicy
+	}
 	securityStyle := "unix"
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
@@ -1708,4 +1758,23 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64) 
 		}
 	}
 	return nil
+}
+
+func (d *NASQtreeStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "NASQtreeStorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
+	return reconcileNASNodeAccess(nodes, &d.Config, d.API, backendUUID)
 }

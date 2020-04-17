@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -238,7 +238,7 @@ func (d *StorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *StorageDriver) Terminate() {
+func (d *StorageDriver) Terminate(string) {
 	d.initialized = false
 }
 
@@ -922,7 +922,7 @@ func (d *StorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
 // Retrieve storage backend physical pools
 func (d *StorageDriver) GetStorageBackendPhysicalPoolNames() []string {
 	physicalPoolNames := make([]string, 0)
-	for poolName, _ := range d.physicalPools {
+	for poolName := range d.physicalPools {
 		physicalPoolNames = append(physicalPoolNames, poolName)
 	}
 	return physicalPoolNames
@@ -1119,4 +1119,22 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 	creatingVolumes[transaction03.Name] = transaction03
 
 	return creatingVolumes
+}
+func (d *StorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "StorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
+	return nil
 }

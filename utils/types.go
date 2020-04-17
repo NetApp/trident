@@ -31,12 +31,14 @@ type VolumePublishInfo struct {
 	Localhost      bool     `json:"localhost,omitempty"`
 	HostIQN        []string `json:"hostIQN,omitempty"`
 	HostIP         []string `json:"hostIP,omitempty"`
-	MountedHosts   []string `json:"mountedHosts,omitempty"`
+	BackendUUID    string   `json:"backendUUID,omitempty"`
+	Nodes          []*Node  `json:"nodes,omitempty"`
 	HostName       string   `json:"hostName,omitempty"`
 	FilesystemType string   `json:"fstype,omitempty"`
 	UseCHAP        bool     `json:"useCHAP,omitempty"`
 	SharedTarget   bool     `json:"sharedTarget,omitempty"`
 	DevicePath     string   `json:"devicePath,omitempty"`
+	Unmanaged      bool     `json:"unmanaged,omitempty"`
 	VolumeAccessInfo
 }
 

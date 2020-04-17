@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -26,7 +26,7 @@ type Driver interface {
 	Initialize(tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
-	Terminate()
+	Terminate(backendUUID string)
 	Create(volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
 	CreatePrepare(volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
@@ -63,6 +63,7 @@ type Driver interface {
 	// available if using the passthrough store (i.e. Docker).
 	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
 	GetUpdateType(driver Driver) *roaring.Bitmap
+	ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error
 }
 
 type Backend struct {
@@ -694,8 +695,18 @@ func (b *Backend) Terminate() {
 		log.WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
 	} else {
 		log.WithFields(logFields).Debug("Terminating backend.")
-		b.Driver.Terminate()
+		b.Driver.Terminate(b.BackendUUID)
 	}
+}
+
+// ReconcileNodeAccess will ensure that the driver only has allowed access
+// to its volumes from active nodes in the k8s cluster. This is usually
+// handled via export policies or initiators
+func (b *Backend) ReconcileNodeAccess(nodes []*utils.Node) error {
+	if b.State == Online || b.State == Deleting {
+		return b.Driver.ReconcileNodeAccess(nodes, b.BackendUUID)
+	}
+	return nil
 }
 
 func (b *Backend) ensureOnline() error {

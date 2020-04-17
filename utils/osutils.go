@@ -295,6 +295,7 @@ func GetInitiatorIqns() ([]string, error) {
 // GetIPAddresses returns the sorted list of Global Unicast IP addresses available to Trident
 func GetIPAddresses() ([]string, error) {
 	ipAddrs := make([]string, 0)
+	addrsMap := make(map[string]bool)
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		err = fmt.Errorf("could not gather system IP addresses; %v", err)
@@ -308,10 +309,15 @@ func GetIPAddresses() ([]string, error) {
 		parsedAddr := net.ParseIP(strings.Split(addr.String(), "/")[0])
 		if parsedAddr.IsGlobalUnicast() {
 			log.WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
-			ipAddrs = append(ipAddrs, parsedAddr.String())
+			// Use a map to ensure addresses are deduplicated
+			addrsMap[parsedAddr.String()] = true
 		} else {
 			log.WithField("IPAddress", parsedAddr.String()).Debug("Ignoring unusable IP address.")
 		}
+	}
+
+	for addr := range addrsMap {
+		ipAddrs = append(ipAddrs, addr)
 	}
 	sort.Strings(ipAddrs)
 	return ipAddrs, nil

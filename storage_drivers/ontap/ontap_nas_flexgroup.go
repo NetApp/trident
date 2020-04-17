@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package ontap
 
 import (
@@ -106,12 +106,17 @@ func (d *NASFlexGroupStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *NASFlexGroupStorageDriver) Terminate() {
+func (d *NASFlexGroupStorageDriver) Terminate(backendUUID string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "NASFlexGroupStorageDriver"}
 		log.WithFields(fields).Debug(">>>> Terminate")
 		defer log.WithFields(fields).Debug("<<<< Terminate")
+	}
+	if d.Config.AutoExportPolicy {
+		if err := deleteExportPolicy(backendUUID, d.API); err != nil {
+			log.Warn(err)
+		}
 	}
 	if d.Telemetry != nil {
 		d.Telemetry.Stop()
@@ -491,6 +496,10 @@ func (d *NASFlexGroupStorageDriver) Create(
 		tieringPolicy = "none"
 	}
 
+	if d.Config.AutoExportPolicy {
+		exportPolicy = storagePool.Backend.BackendUUID
+	}
+
 	log.WithFields(log.Fields{
 		"name":            name,
 		"size":            size,
@@ -660,8 +669,7 @@ func (d *NASFlexGroupStorageDriver) Publish(name string, publishInfo *utils.Volu
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = d.Config.NfsMountOptions
-
-	return nil
+	return publishFlexVolShare(d.API, &d.Config, publishInfo, name)
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -1031,4 +1039,23 @@ func (d *NASFlexGroupStorageDriver) Resize(volConfig *storage.VolumeConfig, size
 
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
+}
+
+func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+
+	nodeNames := make([]string, 0)
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "ReconcileNodeAccess",
+			"Type":   "NASFlexGroupStorageDriver",
+			"Nodes":  nodeNames,
+		}
+		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+	}
+
+	return reconcileNASNodeAccess(nodes, &d.Config, d.API, backendUUID)
 }

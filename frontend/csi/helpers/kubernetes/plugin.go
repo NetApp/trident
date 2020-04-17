@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -39,7 +39,8 @@ import (
 )
 
 const (
-	uidIndex = "uid"
+	uidIndex  = "uid"
+	nameIndex = "name"
 
 	eventAdd    = "add"
 	eventUpdate = "update"
@@ -79,6 +80,11 @@ type Plugin struct {
 	scController         cache.SharedIndexInformer
 	scControllerStopChan chan struct{}
 	scSource             cache.ListerWatcher
+
+	nodeIndexer            cache.Indexer
+	nodeController         cache.SharedIndexInformer
+	nodeControllerStopChan chan struct{}
+	nodeSource             cache.ListerWatcher
 }
 
 // NewPlugin instantiates this plugin when running outside a pod.
@@ -139,14 +145,15 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	}
 
 	p := &Plugin{
-		orchestrator:          orchestrator,
-		kubeConfig:            *kubeConfig,
-		kubeClient:            kubeClient,
-		kubeVersion:           kubeVersion,
-		pvcControllerStopChan: make(chan struct{}),
-		pvControllerStopChan:  make(chan struct{}),
-		scControllerStopChan:  make(chan struct{}),
-		namespace:             namespace,
+		orchestrator:           orchestrator,
+		kubeConfig:             *kubeConfig,
+		kubeClient:             kubeClient,
+		kubeVersion:            kubeVersion,
+		pvcControllerStopChan:  make(chan struct{}),
+		pvControllerStopChan:   make(chan struct{}),
+		scControllerStopChan:   make(chan struct{}),
+		nodeControllerStopChan: make(chan struct{}),
+		namespace:              namespace,
 	}
 
 	log.WithFields(log.Fields{
@@ -263,6 +270,34 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 		},
 	)
 
+	// Set up a watch for k8s nodes
+	p.nodeSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.CoreV1().Nodes().List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.CoreV1().Nodes().Watch(options)
+		},
+	}
+
+	// Set up the k8s node indexing controller
+	p.nodeController = cache.NewSharedIndexInformer(
+		p.nodeSource,
+		&v1.Node{},
+		CacheSyncPeriod,
+		cache.Indexers{nameIndex: MetaNameKeyFunc},
+	)
+	p.nodeIndexer = p.nodeController.GetIndexer()
+
+	// Add handler for registering k8s nodes with Trident
+	p.nodeController.AddEventHandler(
+		cache.ResourceEventHandlerFuncs{
+			AddFunc:    p.addNode,
+			UpdateFunc: p.updateNode,
+			DeleteFunc: p.deleteNode,
+		},
+	)
+
 	return p, nil
 }
 
@@ -282,12 +317,29 @@ func MetaUIDKeyFunc(obj interface{}) ([]string, error) {
 	return []string{string(objectMeta.GetUID())}, nil
 }
 
+// MetaNameKeyFunc is a KeyFunc which knows how to make keys for API objects
+// which implement meta.Interface.  The key is the object's name.
+func MetaNameKeyFunc(obj interface{}) ([]string, error) {
+	if key, ok := obj.(string); ok {
+		return []string{key}, nil
+	}
+	objectMeta, err := meta.Accessor(obj)
+	if err != nil {
+		return []string{""}, fmt.Errorf("object has no meta: %v", err)
+	}
+	if len(objectMeta.GetName()) == 0 {
+		return []string{""}, fmt.Errorf("object has no name: %v", err)
+	}
+	return []string{objectMeta.GetName()}, nil
+}
+
 // Activate starts this Trident frontend.
 func (p *Plugin) Activate() error {
 	log.Info("Activating K8S helper frontend.")
 	go p.pvcController.Run(p.pvcControllerStopChan)
 	go p.pvController.Run(p.pvControllerStopChan)
 	go p.scController.Run(p.scControllerStopChan)
+	go p.nodeController.Run(p.nodeControllerStopChan)
 
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
@@ -306,6 +358,7 @@ func (p *Plugin) Deactivate() error {
 	close(p.pvcControllerStopChan)
 	close(p.pvControllerStopChan)
 	close(p.scControllerStopChan)
+	close(p.nodeControllerStopChan)
 	return nil
 }
 
@@ -784,6 +837,59 @@ func (p *Plugin) waitForCachedStorageClassByName(
 	}
 
 	return sc, nil
+}
+
+// addNode is the add handler for the node watcher.
+func (p *Plugin) addNode(obj interface{}) {
+	switch node := obj.(type) {
+	case *v1.Node:
+		p.processNode(node, eventAdd)
+	default:
+		log.Errorf("K8S helper expected Node; got %v", obj)
+	}
+}
+
+// updateNode is the update handler for the node watcher.
+func (p *Plugin) updateNode(oldObj, newObj interface{}) {
+	switch node := newObj.(type) {
+	case *v1.Node:
+		p.processNode(node, eventUpdate)
+	default:
+		log.Errorf("K8S helper expected Node; got %v", newObj)
+	}
+}
+
+// deleteNode is the delete handler for the node watcher.
+func (p *Plugin) deleteNode(obj interface{}) {
+	switch node := obj.(type) {
+	case *v1.Node:
+		p.processNode(node, eventDelete)
+	default:
+		log.Errorf("K8S helper expected Node; got %v", obj)
+	}
+}
+
+// processNode logs and handles the add/update/delete node events.
+func (p *Plugin) processNode(node *v1.Node, eventType string) {
+
+	logFields := log.Fields{
+		"name": node.Name,
+	}
+
+	switch eventType {
+	case eventAdd:
+		log.WithFields(logFields).Debug("Node added to cache.")
+	case eventUpdate:
+		log.WithFields(logFields).Debug("Node updated in cache.")
+	case eventDelete:
+		err := p.orchestrator.DeleteNode(node.Name)
+		if err != nil {
+			if !tridentutils.IsNotFoundError(err) {
+				log.WithFields(logFields).Errorf("error deleting node from Trident's database; %v", err)
+			}
+		}
+		log.WithFields(logFields).Debug("Node deleted from cache.")
+	}
 }
 
 // SupportsFeature accepts a CSI feature and returns true if the

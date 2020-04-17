@@ -4,7 +4,6 @@ package ontap
 
 import (
 	cryptorand "crypto/rand"
-	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -178,105 +177,198 @@ func (t *Telemetry) Stop() {
 	}
 }
 
-// PublishNFSShare publishes the volume to the host specified in publishInfo from ontap-nas,
-// ontap-nas-economy, or ontap-nas-flexgroup. This method may or may not be running on the host where the volume will be
-// mounted, so it should limit itself to updating access rules.
-func PublishNFSShare(
+func deleteExportPolicy(policy string, clientAPI *api.Client) error {
+	response, err := clientAPI.ExportPolicyDestroy(policy)
+	if err = api.GetError(response, err); err != nil {
+		err = fmt.Errorf("error deleteing export policy: %v", err)
+	}
+	return err
+}
+
+func createExportRule(desiredPolicyRule, policyName string, clientAPI *api.Client) error {
+	ruleResponse, err := clientAPI.ExportRuleCreate(policyName, desiredPolicyRule,
+		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+	if err = api.GetError(ruleResponse, err); err != nil {
+		err = fmt.Errorf("error creating export rule: %v", err)
+		log.WithFields(log.Fields{
+			"ExportPolicy": policyName,
+			"ClientMatch":  desiredPolicyRule,
+		}).Error(err)
+	}
+	return err
+}
+
+func deleteExportRule(ruleIndex int, policyName string, clientAPI *api.Client) error {
+	ruleDestroyResponse, err := clientAPI.ExportRuleDestroy(policyName, ruleIndex)
+	if err = api.GetError(ruleDestroyResponse, err); err != nil {
+		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v",
+			policyName, ruleIndex, err)
+		log.WithFields(log.Fields{
+			"ExportPolicy": policyName,
+			"RuleIndex":    ruleIndex,
+		}).Error(err)
+	}
+	return err
+}
+
+func isExportPolicyExists(policyName string, clientAPI *api.Client) (bool, error) {
+	policyGetResponse, err := clientAPI.ExportPolicyGet(policyName)
+	if err != nil {
+		err = fmt.Errorf("error getting export policy; %v", err)
+		log.WithField("exportPolicy", policyName).Error(err)
+		return false, err
+	}
+	if zerr := api.NewZapiError(policyGetResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			log.WithField("exportPolicy", policyName).Debug("Export policy not found.")
+			return false, nil
+		} else {
+			err = fmt.Errorf("error getting export policy; %v", zerr)
+			log.WithField("exportPolicy", policyName).Error(err)
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func ensureExportPolicyExists(policyName string, clientAPI *api.Client) error {
+	policyCreateResponse, err := clientAPI.ExportPolicyCreate(policyName)
+	if err != nil {
+		err = fmt.Errorf("error creating export policy %s: %v", policyName, err)
+	}
+	if zerr := api.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EDUPLICATEENTRY {
+			log.WithField("exportPolicy", policyName).Debug("Export policy already exists.")
+		} else {
+			err = fmt.Errorf("error creating export policy %s: %v", policyName, zerr)
+		}
+	}
+	return err
+}
+
+// publishFlexVolShare ensures that the volume has the correct export policy applied.
+func publishFlexVolShare(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, publishInfo *utils.VolumePublishInfo,
 	volumeName string,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method": "PublishNFSShare",
+			"Method": "publishFlexVolShare",
 			"Type":   "ontap_common",
 			"Share":  volumeName,
 		}
-		log.WithFields(fields).Debug(">>>> PublishNFSShare")
-		defer log.WithFields(fields).Debug("<<<< PublishNFSShare")
+		log.WithFields(fields).Debug(">>>> publishFlexVolShare")
+		defer log.WithFields(fields).Debug("<<<< publishFlexVolShare")
 	}
 
-	if !config.AutoExportPolicy {
-		// Nothing to do if we're not configuring export policies automatically
+	if !config.AutoExportPolicy || publishInfo.Unmanaged {
+		// Nothing to do if we're not configuring export policies automatically or volume is not managed
 		return nil
 	}
 
-	// Filter the IPs based on the CIDRs provided by user
-	filteredIPs, err := utils.FilterIPs(publishInfo.HostIP, config.AutoExportCIDRs)
-	if err != nil {
+	if err := ensureNodeAccess(publishInfo, clientAPI, config); err != nil {
 		return err
 	}
 
-	if len(filteredIPs) == 0 {
-		err = fmt.Errorf("no IPs found to apply to export policy; please check AutoExportCIDRs and node IPs")
+	// Update volume to use the correct export policy
+	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, publishInfo.BackendUUID)
+	if err = api.GetError(volumeModifyResponse, err); err != nil {
+		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		log.Error(err)
 		return err
 	}
-
-	// Create/update export policy with filtered IPs
-	policyName := generateHashedExportPolicyName(publishInfo, config)
-
-	policyCreateResponse, err := clientAPI.ExportPolicyCreate(policyName)
-	if err != nil {
-		return fmt.Errorf("error creating export policy %s: %v", policyName, err)
-	}
-	if zerr := api.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
-		if zerr.Code() == azgo.EDUPLICATEENTRY {
-			log.WithField("exportPolicy", policyName).Debug("Export policy already exists.")
-			// TODO (akerr): If policy exists, we need to reconcile the rule with potentially updated info.
-		} else {
-			return fmt.Errorf("error creating export policy %s: %v", policyName, zerr)
-		}
-	} else {
-		// If export policy is new, we need to create the policy rule.
-		exportRuleResponse, err := clientAPI.ExportRuleCreate(policyName, strings.Join(filteredIPs, ","),
-			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
-		if err != nil {
-			return fmt.Errorf("error creating export policy rule: %v", err)
-		}
-		if zerr = api.NewZapiError(exportRuleResponse); !zerr.IsPassed() {
-			return fmt.Errorf("error creating export policy rule: %v", zerr)
-		}
-	}
-
-	// Update volume to use the new export policy
-	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, policyName)
-	if err != nil {
-		return fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
-	}
-	if zerr := api.NewZapiError(volumeModifyResponse); !zerr.IsPassed() {
-		return fmt.Errorf("error updating export policy on volume %s: %v", volumeName, zerr)
-	}
-
 	return nil
 }
 
-// generateHashedExportPolicyName will create a normalized name of backendName-host1-host2-...-hostN and
-// then return the sha1 sum of that name. This allows us have a consistent length name for policies that could have
-// very large numbers of hosts, while still being able to detect duplicates to facilitate reuse of policies.
-func generateHashedExportPolicyName(
-	publishInfo *utils.VolumePublishInfo, config *drivers.OntapStorageDriverConfig,
-) string {
-	hosts := publishInfo.MountedHosts
-	found := false
-	for _, host := range hosts {
-		if host == publishInfo.HostName {
-			// Host is already in the list, no need to add it.
-			found = true
-			break
+// ensureNodeAccess check to see if the export policy exists and if not it will create it and force a reconcile.
+// This should be used during publish to make sure access is available if the policy has somehow been deleted.
+// Otherwise we should not need to reconcile, which could be expensive.
+func ensureNodeAccess(publishInfo *utils.VolumePublishInfo, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig) error {
+	if exists, err := isExportPolicyExists(publishInfo.BackendUUID, clientAPI); err != nil {
+		return err
+	} else if !exists {
+		log.WithField("exportPolicy", publishInfo.BackendUUID).Debug("Export policy missing, will create it.")
+		return reconcileNASNodeAccess(publishInfo.Nodes, config, clientAPI, publishInfo.BackendUUID)
+	}
+	log.WithField("exportPolicy", publishInfo.BackendUUID).Debug("Export policy exists.")
+	return nil
+}
+
+func reconcileNASNodeAccess(
+	nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI *api.Client, backendUUID string,
+) error {
+	if !config.AutoExportPolicy {
+		return nil
+	}
+	err := ensureExportPolicyExists(backendUUID, clientAPI)
+	if err != nil {
+		return err
+	}
+	desiredRules, err := getDesiredExportPolicyRules(nodes, config)
+	if err != nil {
+		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
+		log.Error(err)
+		return err
+	}
+	err = reconcileExportPolicyRules(backendUUID, desiredRules, clientAPI)
+	if err != nil {
+		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
+		log.WithField("ExportPolicy", backendUUID).Error(err)
+		return err
+	}
+	return nil
+}
+
+func getDesiredExportPolicyRules(nodes []*utils.Node, config *drivers.OntapStorageDriverConfig) ([]string, error) {
+	rules := make([]string, 0)
+	for _, node := range nodes {
+		// Filter the IPs based on the CIDRs provided by user
+		filteredIPs, err := utils.FilterIPs(node.IPs, config.AutoExportCIDRs)
+		if err != nil {
+			return nil, err
+		}
+		if len(filteredIPs) > 0 {
+			rules = append(rules, strings.Join(filteredIPs, ","))
 		}
 	}
-	if !found {
-		hosts = append(hosts, publishInfo.HostName)
+	return rules, nil
+}
+
+func reconcileExportPolicyRules(policyName string, desiredPolicyRules []string, clientAPI *api.Client) error {
+
+	ruleListResponse, err := clientAPI.ExportRuleGetIterRequest(policyName)
+	if err = api.GetError(ruleListResponse, err); err != nil {
+		return fmt.Errorf("error listing export policy rules: %v", err)
 	}
-
-	sort.Strings(hosts)
-
-	policyName := fmt.Sprintf("%s-%s", config.BackendName, strings.Join(hosts, "-"))
-
-	hashedPolicyName := fmt.Sprintf("%x", sha1.Sum([]byte(policyName)))
-
-	return hashedPolicyName
+	rulesToRemove := make(map[string]int, 0)
+	if ruleListResponse.Result.NumRecords() > 0 {
+		rulesAttrList := ruleListResponse.Result.AttributesList()
+		rules := rulesAttrList.ExportRuleInfo()
+		for _, rule := range rules {
+			rulesToRemove[rule.ClientMatch()] = rule.RuleIndex()
+		}
+	}
+	for _, rule := range desiredPolicyRules {
+		if _, ok := rulesToRemove[rule]; ok {
+			// Rule already exists and we want it, so don't create it or delete it
+			delete(rulesToRemove, rule)
+		} else {
+			// Rule does not exist, so create it
+			err = createExportRule(rule, policyName, clientAPI)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// Now that the desired rules exists, delete the undesired rules
+	for _, ruleIndex := range rulesToRemove {
+		err = deleteExportRule(ruleIndex, policyName, clientAPI)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
@@ -1001,7 +1093,13 @@ func PopulateConfigurationDefaults(config *drivers.OntapStorageDriverConfig) err
 		config.SnapshotDir = DefaultSnapshotDir
 	}
 
-	if config.ExportPolicy == "" {
+	if config.DriverContext != tridentconfig.ContextCSI {
+		config.AutoExportPolicy = false
+	}
+
+	if config.AutoExportPolicy {
+		config.ExportPolicy = "<automatic>"
+	} else if config.ExportPolicy == "" {
 		config.ExportPolicy = DefaultExportPolicy
 	}
 

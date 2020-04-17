@@ -282,7 +282,7 @@ func (o *TridentOrchestrator) bootstrapVolumes() error {
 	for _, v := range volumes {
 		volNames = append(volNames, v.Config.Name)
 	}
-	for k, _ := range o.volumes {
+	for k := range o.volumes {
 		if !utils.SliceContainsString(volNames, k) {
 			delete(o.volumes, k)
 		}
@@ -385,6 +385,10 @@ func (o *TridentOrchestrator) bootstrapNodes() error {
 			"handler": "Bootstrap",
 		}).Info("Added an existing node.")
 		o.nodes[n.Name] = n
+	}
+	err = o.reconcileNodeAccessOnAllBackends()
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -774,7 +778,21 @@ func (o *TridentOrchestrator) AddBackend(configJSON string) (*storage.BackendExt
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	return o.addBackend(configJSON, uuid.New().String())
+	backend, err := o.addBackend(configJSON, uuid.New().String())
+	if err != nil {
+		return backend, err
+	}
+
+	b, err := o.getBackendByBackendUUID(backend.BackendUUID)
+	if err != nil {
+		return backend, err
+	}
+	err = o.reconcileNodeAccessOnBackend(b)
+	if err != nil {
+		return backend, err
+	}
+
+	return backend, nil
 }
 
 // addBackend creates a new storage backend. It assumes the mutex lock is
@@ -870,7 +888,21 @@ func (o *TridentOrchestrator) UpdateBackend(backendName, configJSON string) (
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	return o.updateBackend(backendName, configJSON)
+	backend, err := o.updateBackend(backendName, configJSON)
+	if err != nil {
+		return backend, err
+	}
+
+	b, err := o.getBackendByBackendUUID(backend.BackendUUID)
+	if err != nil {
+		return backend, err
+	}
+	err = o.reconcileNodeAccessOnBackend(b)
+	if err != nil {
+		return backend, err
+	}
+
+	return backend, nil
 }
 
 // updateBackend updates an existing backend. It assumes the mutex lock is already held.
@@ -897,7 +929,21 @@ func (o *TridentOrchestrator) UpdateBackendByBackendUUID(backendName, configJSON
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	return o.updateBackendByBackendUUID(backendName, configJSON, backendUUID)
+	backend, err := o.updateBackendByBackendUUID(backendName, configJSON, backendUUID)
+	if err != nil {
+		return backend, err
+	}
+
+	b, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return backend, err
+	}
+	err = o.reconcileNodeAccessOnBackend(b)
+	if err != nil {
+		return backend, err
+	}
+
+	return backend, nil
 }
 
 // TODO combine this one and the one above
@@ -2638,6 +2684,12 @@ func (o *TridentOrchestrator) PublishVolume(
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
+	nodes := make([]*utils.Node, 0)
+	for _, node := range o.nodes {
+		nodes = append(nodes, node)
+	}
+	publishInfo.Nodes = nodes
+	publishInfo.BackendUUID = volume.BackendUUID
 	return o.backends[volume.BackendUUID].Driver.Publish(volume.Config.InternalName, publishInfo)
 }
 
@@ -3521,6 +3573,35 @@ func (o *TridentOrchestrator) DeleteStorageClass(scName string) error {
 	return nil
 }
 
+func (o *TridentOrchestrator) reconcileNodeAccessOnAllBackends() error {
+
+	log.Debug("Reconciling node access on current backends.")
+	for _, b := range o.backends {
+		err := o.reconcileNodeAccessOnBackend(b)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(b *storage.Backend) error {
+	nodes := make([]*utils.Node, 0)
+
+	for _, n := range o.nodes {
+		nodes = append(nodes, n)
+	}
+
+	err := b.ReconcileNodeAccess(nodes)
+	if err != nil {
+		err = fmt.Errorf("unable to reconcile node access on backend; %v", err)
+		log.WithField("Backend", b.Name).Error(err)
+		return err
+	}
+
+	return nil
+}
+
 func (o *TridentOrchestrator) AddNode(node *utils.Node) error {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3536,7 +3617,8 @@ func (o *TridentOrchestrator) AddNode(node *utils.Node) error {
 		return err
 	}
 	o.nodes[node.Name] = node
-	return nil
+
+	return o.reconcileNodeAccessOnAllBackends()
 }
 
 func (o *TridentOrchestrator) GetNode(nName string) (*utils.Node, error) {
@@ -3592,7 +3674,7 @@ func (o *TridentOrchestrator) DeleteNode(nName string) error {
 		return err
 	}
 	delete(o.nodes, nName)
-	return nil
+	return o.reconcileNodeAccessOnAllBackends()
 }
 
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(
