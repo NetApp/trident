@@ -12,10 +12,9 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/netapp/trident/storage_drivers/azure/sdk"
-
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
+	api "github.com/netapp/trident/storage_drivers/azure/sdk"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -662,6 +661,11 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *stora
 				sourceSnapshot.ProvisioningState, sdk.StateAvailable)
 		}
 
+		log.WithFields(log.Fields{
+			"snapshot": snapshot,
+			"source":   sourceVolume.Name,
+		}).Debug("Found source snapshot.")
+
 	} else {
 
 		// No source snapshot specified, so create one
@@ -673,14 +677,20 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *stora
 			Location:     sourceVolume.Location,
 		}
 
+		log.WithFields(log.Fields{
+			"snapshot": snapName,
+			"source":   sourceVolume.Name,
+		}).Debug("Creating source snapshot.")
+
 		sourceSnapshot, err = d.SDK.CreateSnapshot(snapshotCreateRequest)
 		if err != nil {
 			return fmt.Errorf("could not create source snapshot: %v", err)
 		}
 
 		// Wait for snapshot creation to complete
-		if err = d.SDK.WaitForSnapshotState(sourceSnapshot, sourceVolume, sdk.StateAvailable, []string{sdk.StateError},
-			sdk.SnapshotTimeout); err != nil {
+		err = d.SDK.WaitForSnapshotState(
+			sourceSnapshot, sourceVolume, sdk.StateAvailable, []string{sdk.StateError}, sdk.SnapshotTimeout)
+		if err != nil {
 			return err
 		}
 
@@ -689,6 +699,11 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *stora
 		if err != nil {
 			return fmt.Errorf("could not retrieve newly-created snapshot")
 		}
+
+		log.WithFields(log.Fields{
+			"snapshot": sourceSnapshot.Name,
+			"source":   sourceVolume.Name,
+		}).Debug("Created source snapshot.")
 	}
 
 	log.WithFields(log.Fields{
@@ -750,6 +765,14 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 
 	// Get the volume size
 	volConfig.Size = strconv.FormatInt(volume.QuotaInBytes, 10)
+
+	log.WithFields(log.Fields{
+		"creationToken": volume.CreationToken,
+		"managed":       !volConfig.ImportNotManaged,
+		"state":         volume.ProvisioningState,
+		"capacityPool":  volume.CapacityPoolName,
+		"sizeBytes":     volume.QuotaInBytes,
+	}).Debug("Found volume to import.")
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {

@@ -724,6 +724,21 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 	// here before "updating" the volume.
 	nv.BaremetalTenantID = nil
 
+	// ProvisioningState is a ReadOnly field, so don't send a value.
+	nv.ProvisioningState = nil
+
+	// Clear out other fields that we don't want to change when merely relabeling.
+	nv.ServiceLevel = ""
+	nv.ExportPolicy = nil
+	nv.ProtocolTypes = nil
+	nv.MountTargets = nil
+
+	log.WithFields(log.Fields{
+		"name":          nv.Name,
+		"creationToken": nv.CreationToken,
+		"tags":          nv.Tags,
+	}).Info("Relabeling filesystem.")
+
 	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(d.SDKClient.Ctx, nv, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name); err != nil {
 		return nil, err
