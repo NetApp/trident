@@ -671,6 +671,19 @@ func (d Client) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse,
 	return d.lunGetAllCommon(query)
 }
 
+// LunGetAllForVserver returns all relevant details for all LUNs in the supplied SVM
+// equivalent to filer::> lun show -vserver trident_CEwDWXQRPz
+func (d Client) LunGetAllForVserver(vserverName string) (*azgo.LunGetIterResponse, error) {
+
+	// Limit LUNs to those owned by the SVM with the supplied vserverName
+	query := &azgo.LunGetIterRequestQuery{}
+	lunInfo := azgo.NewLunInfoType().
+		SetVserver(vserverName)
+	query.SetLunInfo(*lunInfo)
+
+	return d.lunGetAllCommon(query)
+}
+
 // LunCount returns the number of LUNs that exist in a given volume
 func (d Client) LunCount(volume string) (int, error) {
 

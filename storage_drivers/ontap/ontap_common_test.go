@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,63 +33,127 @@ func newTestOntapSANConfig() *drivers.OntapStorageDriverConfig {
 	return config
 }
 
-// TestCHAP
-func TestCHAP(t *testing.T) {
+func newIscsiInitiatorGetDefaultAuthResponse(authType string) *azgo.IscsiInitiatorGetDefaultAuthResponse {
+	result := azgo.NewIscsiInitiatorGetDefaultAuthResponse()
+	result.Result.SetAuthType(authType)
+	return result
+}
+
+func newIscsiInitiatorGetDefaultAuthResponseCHAP(authType, userName, outboundUsername string) *azgo.IscsiInitiatorGetDefaultAuthResponse {
+	result := azgo.NewIscsiInitiatorGetDefaultAuthResponse()
+	result.Result.SetAuthType(authType)
+	result.Result.SetUserName(userName)
+	result.Result.SetOutboundUserName(outboundUsername)
+	return result
+}
+
+// TestCHAP1 tests that all 4 CHAP credential fields are required
+func TestCHAP1(t *testing.T) {
 	config := newTestOntapSANConfig()
 	config.UseCHAP = true
 
 	var credentials *ChapCredentials
 	var err error
 
-	// start off with all 4 having random values
-	credentials, err = EnsureBidrectionalChapCredentials(config)
-	assert.Equal(t, nil, err)
-	assert.NotEqual(t, "unchanged ChapUsername", credentials.ChapUsername)
-	assert.NotEqual(t, "unchanged ChapInitiatorSecret", credentials.ChapInitiatorSecret)
-	assert.NotEqual(t, "unchanged ChapTargetUsername", credentials.ChapTargetUsername)
-	assert.NotEqual(t, "unchanged ChapTargetInitiatorSecret", credentials.ChapTargetInitiatorSecret)
+	defaultAuthNone := newIscsiInitiatorGetDefaultAuthResponse("none")
+
+	// start off missing all 4 values and validate that it generates an error
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
+	assert.EqualError(t, err, "missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapUsername
 	config.ChapUsername = "unchanged ChapUsername"
-	credentials, err = EnsureBidrectionalChapCredentials(config)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "unchanged ChapUsername", credentials.ChapUsername)
-	assert.NotEqual(t, "unchanged ChapInitiatorSecret", credentials.ChapInitiatorSecret)
-	assert.NotEqual(t, "unchanged ChapTargetUsername", credentials.ChapTargetUsername)
-	assert.NotEqual(t, "unchanged ChapTargetInitiatorSecret", credentials.ChapTargetInitiatorSecret)
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
+	assert.EqualError(t, err, "missing value for required field(s) [ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapInitiatorSecret
 	config.ChapUsername = "unchanged ChapUsername"
 	config.ChapInitiatorSecret = "unchanged ChapInitiatorSecret"
-	credentials, err = EnsureBidrectionalChapCredentials(config)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "unchanged ChapUsername", credentials.ChapUsername)
-	assert.Equal(t, "unchanged ChapInitiatorSecret", credentials.ChapInitiatorSecret)
-	assert.NotEqual(t, "unchanged ChapTargetUsername", credentials.ChapTargetUsername)
-	assert.NotEqual(t, "unchanged ChapTargetInitiatorSecret", credentials.ChapTargetInitiatorSecret)
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
+	assert.EqualError(t, err, "missing value for required field(s) [ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapTargetUsername
 	config.ChapUsername = "unchanged ChapUsername"
 	config.ChapInitiatorSecret = "unchanged ChapInitiatorSecret"
 	config.ChapTargetUsername = "unchanged ChapTargetUsername"
-	credentials, err = EnsureBidrectionalChapCredentials(config)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "unchanged ChapUsername", credentials.ChapUsername)
-	assert.Equal(t, "unchanged ChapInitiatorSecret", credentials.ChapInitiatorSecret)
-	assert.Equal(t, "unchanged ChapTargetUsername", credentials.ChapTargetUsername)
-	assert.NotEqual(t, "unchanged ChapTargetInitiatorSecret", credentials.ChapTargetInitiatorSecret)
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
+	assert.EqualError(t, err, "missing value for required field(s) [ChapTargetInitiatorSecret]")
 
 	// add a specific ChapTargetInitiatorSecret
 	config.ChapUsername = "unchanged ChapUsername"
 	config.ChapInitiatorSecret = "unchanged ChapInitiatorSecret"
 	config.ChapTargetUsername = "unchanged ChapTargetUsername"
 	config.ChapTargetInitiatorSecret = "unchanged ChapTargetInitiatorSecret"
-	credentials, err = EnsureBidrectionalChapCredentials(config)
+	credentials, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "unchanged ChapUsername", credentials.ChapUsername)
 	assert.Equal(t, "unchanged ChapInitiatorSecret", credentials.ChapInitiatorSecret)
 	assert.Equal(t, "unchanged ChapTargetUsername", credentials.ChapTargetUsername)
 	assert.Equal(t, "unchanged ChapTargetInitiatorSecret", credentials.ChapTargetInitiatorSecret)
+}
+
+// TestCHAP2 tests that we honor the auth type deny
+func TestCHAP2(t *testing.T) {
+	config := newTestOntapSANConfig()
+	config.UseCHAP = true
+
+	var err error
+
+	defaultAuthDeny := newIscsiInitiatorGetDefaultAuthResponse("deny")
+
+	// error if auth type is deny
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthDeny, config)
+	assert.EqualError(t, err, "default initiator's auth type is deny")
+}
+
+// TestCHAP3 tests that we error on unexpected values
+func TestCHAP3(t *testing.T) {
+	config := newTestOntapSANConfig()
+	config.UseCHAP = true
+
+	var err error
+
+	// error if auth type is an unexpected value
+	_, err = ValidateBidrectionalChapCredentials(nil, config)
+	assert.EqualError(t, err, "error checking default initiator's auth type: response is nil")
+
+	// error if auth type is an unexpected value
+	defaultAuthUnsupported := newIscsiInitiatorGetDefaultAuthResponse("unsupported")
+
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthUnsupported, config)
+	assert.EqualError(t, err, "default initiator's auth type is unsupported")
+
+	// error if auth type is an unexpected value
+	defaultAuthUnsupported = newIscsiInitiatorGetDefaultAuthResponse("")
+
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthUnsupported, config)
+	assert.EqualError(t, err, "default initiator's auth type is unsupported")
+}
+
+// TestCHAP4 tests that CHAP credentials match existing SVM CHAP usernames
+func TestCHAP4(t *testing.T) {
+	config := newTestOntapSANConfig()
+	config.UseCHAP = true
+
+	var err error
+
+	defaultAuthCHAP := newIscsiInitiatorGetDefaultAuthResponseCHAP("CHAP", "", "")
+
+	// start off missing all 4 values and validate that it generates an error
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthCHAP, config)
+	assert.EqualError(t, err, "missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
+
+	// add a specific ChapTargetInitiatorSecret
+	config.ChapUsername = "aChapUsername"
+	config.ChapInitiatorSecret = "aChapInitiatorSecret"
+	config.ChapTargetUsername = "aChapTargetUsername"
+	config.ChapTargetInitiatorSecret = "aChapTargetInitiatorSecret"
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthCHAP, config)
+	assert.EqualError(t, err, "provided CHAP usernames do not match default initiator's usernames")
+
+	defaultAuthCHAP = newIscsiInitiatorGetDefaultAuthResponseCHAP("CHAP", "aChapUsername", "aChapTargetUsername")
+	_, err = ValidateBidrectionalChapCredentials(defaultAuthCHAP, config)
+	assert.Equal(t, nil, err)
 }
 
 func Test_randomChapString16(t *testing.T) {
