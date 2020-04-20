@@ -1645,9 +1645,12 @@ func (d *SANStorageDriver) GetExternalConfig() interface{} {
 	drivers.Clone(d.Config, &cloneConfig)
 
 	// remove the user/password from the EndPoint URL
-	endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
-	cloneConfig.EndPoint = fmt.Sprintf("https://%s", endpointHalves[1])
-
+	if strings.Contains(cloneConfig.EndPoint, "@") {
+		endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
+		if len(endpointHalves) > 0 {
+			cloneConfig.EndPoint = fmt.Sprintf("https://%s", endpointHalves[1])
+		}
+	}
 	return cloneConfig
 }
 

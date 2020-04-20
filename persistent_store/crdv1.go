@@ -266,22 +266,7 @@ func (k *CRDClientV1) addBackendPersistent(backendPersistent *storage.BackendPer
 	}).Debug("Created backend resource.")
 
 	// Create a secret containing the sensitive info
-	secret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      secretName,
-			Namespace: k.namespace,
-			Labels: map[string]string{
-				"source": BackendSecretSource,
-				"tbe":    crd.Name,
-			},
-		},
-		StringData: secretMap,
-		Type:       corev1.SecretTypeOpaque,
-	}
+	secret := k.makeBackendSecret(secretName, crd, secretMap)
 
 	if _, err = k.k8sClient.CreateSecret(secret); err != nil {
 		log.WithField("secret", secretName).Error("Could not create backend secret, will delete backend resource.")
@@ -304,6 +289,28 @@ func (k *CRDClientV1) addBackendPersistent(backendPersistent *storage.BackendPer
 // backendSecretName is the only method that creates the name of a backend's corresponding secret.
 func (k *CRDClientV1) backendSecretName(backendUUID string) string {
 	return fmt.Sprintf("tbe-%s", backendUUID)
+}
+
+func (k *CRDClientV1) makeBackendSecret(
+	name string, crd *v1.TridentBackend, secretMap map[string]string,
+) *corev1.Secret {
+
+	return &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: k.namespace,
+			Labels: map[string]string{
+				"source": BackendSecretSource,
+				"tbe":    crd.Name,
+			},
+		},
+		StringData: secretMap,
+		Type:       corev1.SecretTypeOpaque,
+	}
 }
 
 // addBackendCRD accepts a backend resource structure and creates it in Kubernetes.
@@ -404,9 +411,31 @@ func (k *CRDClientV1) addSecretToBackend(
 	backendPersistent *storage.BackendPersistent,
 ) (*storage.BackendPersistent, error) {
 
+	logFields := log.Fields{
+		"persistentBackend.Name":        backendPersistent.Name,
+		"persistentBackend.BackendUUID": backendPersistent.BackendUUID,
+		"persistentBackend.online":      backendPersistent.Online,
+		"persistentBackend.state":       backendPersistent.State,
+		"handler":                       "Bootstrap",
+	}
+
+	secretName := k.backendSecretName(backendPersistent.BackendUUID)
+
+	// Before retrieving the secret, ensure it exists.  If we find the secret does not exist, we
+	// log a warning but return the backend object unmodified so that Trident can bootstrap itself
+	// normally (albeit with the backend in a failed state due to missing credentials).
+	if exists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
+		log.WithFields(logFields).Errorf("Could not check for backend secret; %v", err)
+		return nil, err
+	} else if !exists {
+		log.WithFields(logFields).Warnf("Backend must be updated because its secret does not exist.")
+		return backendPersistent, nil
+	}
+
 	// Get the secret containing the backend's sensitive info
-	secret, err := k.k8sClient.GetSecret(k.backendSecretName(backendPersistent.BackendUUID))
+	secret, err := k.k8sClient.GetSecret(secretName)
 	if err != nil {
+		log.WithFields(logFields).Errorf("Could not get backend secret; %v", err)
 		return nil, err
 	}
 
@@ -421,6 +450,7 @@ func (k *CRDClientV1) addSecretToBackend(
 	}
 	// Set all sensitive fields on the backend
 	if err := backendPersistent.InjectBackendSecrets(secretMap); err != nil {
+		log.WithFields(logFields).Errorf("Could not inject backend secrets; %v", err)
 		return nil, err
 	}
 
@@ -467,18 +497,11 @@ func (k *CRDClientV1) updateBackendPersistent(backendPersistent *storage.Backend
 	// Make a copy in case we have to roll back
 	origCRDCopy := crd.DeepCopy()
 
-	// Get the secret that we will update
-	secret, err := k.k8sClient.GetSecret(secretName)
-	if err != nil {
-		return err
-	}
-
-	// Extract sensitive info to a map and write it to the secret
+	// Extract sensitive info to a map for storage in a secret
 	redactedBackendPersistent, secretMap, err := backendPersistent.ExtractBackendSecrets(secretName)
 	if err != nil {
 		return err
 	}
-	secret.StringData = secretMap
 
 	// Update the backend resource struct
 	if err = crd.Apply(redactedBackendPersistent); err != nil {
@@ -496,9 +519,58 @@ func (k *CRDClientV1) updateBackendPersistent(backendPersistent *storage.Backend
 		"backend":     crd.Name,
 	}).Debug("Updated backend resource.")
 
-	// Update the secret
-	if _, err := k.k8sClient.UpdateSecret(secret); err != nil {
-		log.WithField("secret", secretName).Error("Could not update backend secret, will unroll backend update.")
+	// Check if the secret exists, so we can update or create it as needed
+	secretExists, err := k.k8sClient.CheckSecretExists(secretName)
+	if err != nil {
+		return err
+	}
+
+	var secretError error
+	var secret *corev1.Secret
+
+	if !secretExists {
+
+		// Create a secret containing the backend's sensitive info
+		secret = k.makeBackendSecret(secretName, crd, secretMap)
+
+		if _, secretError = k.k8sClient.CreateSecret(secret); secretError != nil {
+			log.WithFields(log.Fields{
+				"secret": secretName,
+				"error":  secretError,
+			}).Error("Could not create backend secret, will unroll backend update.")
+		}
+
+	} else {
+
+		// Get the secret that we will update
+		secret, secretError = k.k8sClient.GetSecret(secretName)
+
+		if secretError != nil {
+
+			// No need update if the get failed, so skip to the backend rollback
+			log.WithFields(log.Fields{
+				"secret": secretName,
+				"error":  secretError,
+			}).Error("Could not get backend secret, will unroll backend update.")
+
+		} else {
+
+			// Copy the backend's sensitive info into the secret
+			secret.StringData = secretMap
+
+			// Update the secret
+			if _, secretError = k.k8sClient.UpdateSecret(secret); secretError != nil {
+
+				log.WithFields(log.Fields{
+					"secret": secretName,
+					"error":  secretError,
+				}).Error("Could not update backend secret, will unroll backend update.")
+			}
+		}
+	}
+
+	// If anything went wrong with the secret, unroll the backend update.
+	if secretError != nil {
 
 		// If the secret update failed, unroll the backend update
 		if _, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(origCRDCopy); updateErr != nil {
@@ -509,6 +581,7 @@ func (k *CRDClientV1) updateBackendPersistent(backendPersistent *storage.Backend
 
 		return err
 	}
+
 	log.WithField("secret", secretName).Debug("Updated backend secret.")
 
 	return nil
