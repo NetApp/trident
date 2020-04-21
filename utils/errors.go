@@ -161,3 +161,25 @@ func IsVolumeDeletingError(err error) bool {
 	_, ok := err.(*volumeDeletingError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// timeoutError
+/////////////////////////////////////////////////////////////////////////////
+
+type timeoutError struct {
+	message string
+}
+
+func (e *timeoutError) Error() string { return e.message }
+
+func TimeoutError(message string) error {
+	return &timeoutError{message}
+}
+
+func IsTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*timeoutError)
+	return ok
+}

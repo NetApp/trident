@@ -623,9 +623,13 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, erro
 
 	fsType := ""
 	if multipathDevice != "" {
-		fsType = getFSType("/dev/" + multipathDevice)
+		fsType, err = getFSType("/dev/" + multipathDevice)
 	} else {
-		fsType = getFSType("/dev/" + devices[0])
+		fsType, err = getFSType("/dev/" + devices[0])
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	log.WithFields(log.Fields{
@@ -854,7 +858,7 @@ func findDevicesForMultipathDevice(device string) []string {
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) {
+func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) error {
 
 	fields := log.Fields{
 		"lunID":            lunID,
@@ -870,10 +874,11 @@ func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) {
 			"error": err,
 			"lunID": lunID,
 		}).Info("Could not get device info for removal, skipping host removal steps.")
-		return
+		return err
 	}
 
 	removeSCSIDevice(deviceInfo)
+	return nil
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
@@ -1954,16 +1959,28 @@ func multipathdIsRunning() bool {
 }
 
 // getFSType returns the filesystem for the supplied device.
-func getFSType(device string) string {
+func getFSType(device string) (string, error) {
 
 	log.WithField("device", device).Debug(">>>> osutils.getFSType")
 	defer log.Debug("<<<< osutils.getFSType")
 
 	fsType := ""
-	out, err := execCommand("blkid", device)
+	out, err := execCommandWithTimeout("blkid", 5, device)
 	if err != nil {
-		log.WithField("device", device).Debug("Could not get FSType for device.")
-		return fsType
+		if IsTimeoutError(err) {
+			dmLog, sdLog, sysLog := gatherDeviceLogs()
+			log.WithFields(log.Fields{
+				"device": device,
+				"/dev/dm-*": dmLog,
+				"/dev/sd*": sdLog,
+				"/sys/block/*": sysLog,
+			}).Debug("Timeout error occurred.")
+			return fsType, err
+		} else {
+			// Do not fail when running fsType on a raw block device
+			log.WithField("device", device).Debug("Could not get FSType for device.")
+			return fsType, nil
+		}
 	}
 
 	if strings.Contains(string(out), "TYPE=") {
@@ -1975,7 +1992,7 @@ func getFSType(device string) string {
 			}
 		}
 	}
-	return fsType
+	return fsType, nil
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
@@ -2340,7 +2357,7 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, args ...s
 			log.WithFields(log.Fields{
 				"process": name,
 			}).Error("process killed after timeout")
-			result = execCommandResult{Output: nil, Error: errors.New("process killed after timeout")}
+			result = execCommandResult{Output: nil, Error: TimeoutError("process killed after timeout")}
 		}
 	case result = <-done:
 		break
@@ -2396,4 +2413,27 @@ func SafeToLogOut(hostNumber, sessionNumber int) bool {
 	}
 
 	return true
+}
+
+func gatherDeviceLogs() ([]string, []string, []string) {
+	// Log information about all the devices
+	dmLog := make([]string, 0)
+	sdLog := make([]string, 0)
+	sysLog := make([]string, 0)
+	entries, _ := ioutil.ReadDir("/dev/")
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), "dm-") {
+			dmLog = append(dmLog, entry.Name())
+		}
+		if strings.HasPrefix(entry.Name(), "sd") {
+			sdLog = append(sdLog, entry.Name())
+		}
+	}
+
+	entries, _ = ioutil.ReadDir("/sys/block/")
+	for _, entry := range entries {
+		sysLog = append(sysLog, entry.Name())
+	}
+
+	return dmLog, sdLog, sysLog
 }
