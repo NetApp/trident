@@ -1401,6 +1401,102 @@ metadata:
   namespace: {NAMESPACE}
 `
 
+func GetOpenShiftSCCYAML(sccName, user, appLabelValue, k8s_namespace string) string {
+	sccYAML := openShiftPrivilegedSCCYAML
+	if !strings.Contains(appLabelValue, "csi") && user != "trident-installer" {
+		sccYAML = openShiftUnprivilegedSCCYAML
+	}
+	sccYAML = strings.ReplaceAll(sccYAML, "{APP_LABEL_VALUE}", appLabelValue)
+	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
+	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", k8s_namespace)
+	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
+	return sccYAML
+}
+
+const openShiftPrivilegedSCCYAML = `
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  annotations:
+    kubernetes.io/description: '{SCC} is a clone of the privileged built-in, and is meant just for use with trident.'
+  name: {SCC}
+  labels:
+    app: "{APP_LABEL_VALUE}"
+allowHostDirVolumePlugin: true
+allowHostIPC: true
+allowHostNetwork: true
+allowHostPID: true
+allowHostPorts: true
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities:
+- '*'
+allowedUnsafeSysctls:
+- '*'
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+groups: []
+priority: null
+readOnlyRootFilesystem: false
+requiredDropCapabilities: null
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+seccompProfiles:
+- '*'
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:{NAMESPACE}:{USER}
+volumes:
+- '*'
+`
+
+const openShiftUnprivilegedSCCYAML = `
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  annotations:
+    kubernetes.io/description: '{SCC} is a clone of the anyuid built-in, and is meant just for use with trident.'
+  name: {SCC}
+  labels:
+    app: "{APP_LABEL_VALUE}"
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: false
+allowedCapabilities: null
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+groups: []
+priority: 10
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- MKNOD
+runAsUser:	
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:{NAMESPACE}:{USER}
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret
+`
+
 func GetOpenShiftSCCQueryYAML(scc string) string {
 	return strings.Replace(openShiftSCCQueryYAMLTemplate, "{SCC}", scc, 1)
 }

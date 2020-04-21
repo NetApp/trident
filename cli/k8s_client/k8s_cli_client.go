@@ -1227,7 +1227,6 @@ func (c *KubectlClient) CreateObjectByFile(filePath string) error {
 // CreateObjectByYAML creates one or more objects on the server from a YAML/JSON document.
 func (c *KubectlClient) CreateObjectByYAML(yamlData string) error {
 	for _, yamlDocument := range regexp.MustCompile(YAMLSeparator).Split(yamlData, -1) {
-
 		checkCreateObjectByYAML := func() error {
 			if returnError := c.createObjectByYAML(yamlDocument); returnError != nil {
 				log.WithFields(log.Fields{
@@ -1361,32 +1360,7 @@ func (c *KubectlClient) updateObjectByYAML(yaml string) error {
 	return nil
 }
 
-// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
-// security context constraint. This only works for OpenShift.
-func (c *KubectlClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
-
-	if c.flavor != FlavorOpenShift {
-		return errors.New("the current client context is not OpenShift")
-	}
-
-	// This command appears to be idempotent, so no need to call isTridentUserInOpenShiftSCC() first.
-	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		"adm",
-		"policy",
-		"add-scc-to-user",
-		scc,
-		"-z",
-		user,
-	}
-	out, err := exec.Command(c.cli, args...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-	return nil
-}
-
-// RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
+// RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the
 // security context constraint. This only works for OpenShift.
 func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
 

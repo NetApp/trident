@@ -113,7 +113,6 @@ type Interface interface {
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
 	DeleteObjectByYAML(yaml string, ignoreNotFound bool) error
-	AddTridentUserToOpenShiftSCC(user, scc string) error
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
 	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
@@ -1453,59 +1452,6 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 	}).Error("API resource not found.")
 
 	return nil, false, errors.New("API resource not found")
-}
-
-// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
-// security context constraint. This only works for OpenShift.
-func (k *KubeClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
-
-	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", k.namespace, user)
-
-	// Read the SCC object from the server
-	openShiftSCCQueryYAML := GetOpenShiftSCCQueryYAML(scc)
-	unstruct, err := k.getUnstructuredObjectByYAML(openShiftSCCQueryYAML)
-	if err != nil {
-		return err
-	}
-
-	// Ensure the user isn't already present
-	found := false
-	if users, ok := unstruct.Object["users"]; ok {
-		if usersSlice, ok := users.([]interface{}); ok {
-			for _, userIntf := range usersSlice {
-				if user, ok := userIntf.(string); ok && user == sccUser {
-					found = true
-					break
-				}
-			}
-		} else {
-			return fmt.Errorf("users type is %T", users)
-		}
-	}
-
-	// Maintain idempotency by returning success if user already present
-	if found {
-		log.WithField("user", sccUser).Debug("SCC user already present, ignoring.")
-		return nil
-	}
-
-	// Add the user
-	if users, ok := unstruct.Object["users"]; ok {
-		if usersSlice, ok := users.([]interface{}); ok {
-			unstruct.Object["users"] = append(usersSlice, sccUser)
-		} else {
-			return fmt.Errorf("users type is %T", users)
-		}
-	}
-
-	// Convert to JSON
-	jsonData, err := unstruct.MarshalJSON()
-	if err != nil {
-		return err
-	}
-
-	// Update the object on the server
-	return k.updateObjectByYAML(string(jsonData))
 }
 
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
