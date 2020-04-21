@@ -272,7 +272,8 @@ func publishFlexVolShare(
 	}
 
 	// Update volume to use the correct export policy
-	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, publishInfo.BackendUUID)
+	policyName := getExportPolicyName(publishInfo.BackendUUID)
+	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, policyName)
 	if err = api.GetError(volumeModifyResponse, err); err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		log.Error(err)
@@ -281,27 +282,32 @@ func publishFlexVolShare(
 	return nil
 }
 
+func getExportPolicyName(backendUUID string) string {
+	return fmt.Sprintf("trident-%s", backendUUID)
+}
+
 // ensureNodeAccess check to see if the export policy exists and if not it will create it and force a reconcile.
 // This should be used during publish to make sure access is available if the policy has somehow been deleted.
 // Otherwise we should not need to reconcile, which could be expensive.
 func ensureNodeAccess(publishInfo *utils.VolumePublishInfo, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig) error {
-	if exists, err := isExportPolicyExists(publishInfo.BackendUUID, clientAPI); err != nil {
+	policyName := getExportPolicyName(publishInfo.BackendUUID)
+	if exists, err := isExportPolicyExists(policyName, clientAPI); err != nil {
 		return err
 	} else if !exists {
-		log.WithField("exportPolicy", publishInfo.BackendUUID).Debug("Export policy missing, will create it.")
-		return reconcileNASNodeAccess(publishInfo.Nodes, config, clientAPI, publishInfo.BackendUUID)
+		log.WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
+		return reconcileNASNodeAccess(publishInfo.Nodes, config, clientAPI, policyName)
 	}
-	log.WithField("exportPolicy", publishInfo.BackendUUID).Debug("Export policy exists.")
+	log.WithField("exportPolicy", policyName).Debug("Export policy exists.")
 	return nil
 }
 
 func reconcileNASNodeAccess(
-	nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI *api.Client, backendUUID string,
+	nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI *api.Client, policyName string,
 ) error {
 	if !config.AutoExportPolicy {
 		return nil
 	}
-	err := ensureExportPolicyExists(backendUUID, clientAPI)
+	err := ensureExportPolicyExists(policyName, clientAPI)
 	if err != nil {
 		return err
 	}
@@ -311,10 +317,10 @@ func reconcileNASNodeAccess(
 		log.Error(err)
 		return err
 	}
-	err = reconcileExportPolicyRules(backendUUID, desiredRules, clientAPI)
+	err = reconcileExportPolicyRules(policyName, desiredRules, clientAPI)
 	if err != nil {
 		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
-		log.WithField("ExportPolicy", backendUUID).Error(err)
+		log.WithField("ExportPolicy", policyName).Error(err)
 		return err
 	}
 	return nil

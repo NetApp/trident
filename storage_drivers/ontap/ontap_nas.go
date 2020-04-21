@@ -114,7 +114,8 @@ func (d *NASStorageDriver) Terminate(backendUUID string) {
 		defer log.WithFields(fields).Debug("<<<< Terminate")
 	}
 	if d.Config.AutoExportPolicy {
-		if err := deleteExportPolicy(backendUUID, d.API); err != nil {
+		policyName := getExportPolicyName(backendUUID)
+		if err := deleteExportPolicy(policyName, d.API); err != nil {
 			log.Warn(err)
 		}
 	}
@@ -235,7 +236,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = storagePool.Backend.BackendUUID
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
 	}
 
 	log.WithFields(log.Fields{
@@ -853,5 +854,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID 
 		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
-	return reconcileNASNodeAccess(nodes, &d.Config, d.API, backendUUID)
+	policyName := getExportPolicyName(backendUUID)
+
+	return reconcileNASNodeAccess(nodes, &d.Config, d.API, policyName)
 }

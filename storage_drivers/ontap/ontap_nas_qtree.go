@@ -125,7 +125,11 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.quotaResizeMap = make(map[string]bool)
 	d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
-	d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
+	if d.Config.AutoExportPolicy {
+		d.flexvolExportPolicy = "<automatic>"
+	} else {
+		d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
+	}
 	d.sharedLockID = d.API.SVMUUID + "-" + *d.Config.StoragePrefix
 	d.emptyFlexvolMap = make(map[string]time.Time)
 
@@ -187,7 +191,8 @@ func (d *NASQtreeStorageDriver) Terminate(backendUUID string) {
 	}
 
 	if d.Config.AutoExportPolicy {
-		if err := deleteExportPolicy(backendUUID, d.API); err != nil {
+		policyName := getExportPolicyName(backendUUID)
+		if err := deleteExportPolicy(policyName, d.API); err != nil {
 			log.Warn(err)
 		}
 	}
@@ -329,7 +334,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = storagePool.Backend.BackendUUID
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
 	}
 
 	createErrors := make([]error, 0)
@@ -537,13 +542,14 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(qtree, flexvol string, publish
 	}
 
 	// Ensure the qtree has the correct export policy applied
-	modifyResponse, err := d.API.QtreeModifyExportPolicy(qtree, flexvol, publishInfo.BackendUUID)
+	policyName := getExportPolicyName(publishInfo.BackendUUID)
+	modifyResponse, err := d.API.QtreeModifyExportPolicy(qtree, flexvol, policyName)
 	if err = api.GetError(modifyResponse, err); err != nil {
 		err = fmt.Errorf("error modifying qtree export policy; %v", err)
 		log.WithFields(log.Fields{
 			"Qtree":        qtree,
 			"FlexVol":      flexvol,
-			"ExportPolicy": publishInfo.BackendUUID,
+			"ExportPolicy": policyName,
 		}).Error(err)
 		return err
 	}
@@ -1776,5 +1782,7 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backend
 		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
-	return reconcileNASNodeAccess(nodes, &d.Config, d.API, backendUUID)
+	policyName := getExportPolicyName(backendUUID)
+
+	return reconcileNASNodeAccess(nodes, &d.Config, d.API, policyName)
 }
