@@ -562,7 +562,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -574,7 +574,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -666,7 +666,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -678,7 +678,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -691,7 +691,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.4.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.5.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csiTimeout=300s"
@@ -782,7 +782,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.5.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -794,7 +794,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -807,7 +807,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.4.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.5.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csiTimeout=300s"
@@ -819,7 +819,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -1082,7 +1082,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.2.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.3.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
