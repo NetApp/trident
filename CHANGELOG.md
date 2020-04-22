@@ -7,15 +7,23 @@
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
 
 **Fixes:**
-- **Kubernetes:** Change Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
-- Fixes FlexGroup volume deletion against ONTAP version 9.7 (Issue [#326](https://github.com/NetApp/trident/issues/326))
-- Refer to backend storage for current volume size during resize
+- **Kubernetes:** Changed Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
+- Fixed FlexGroup volume deletion with ONTAP version 9.7. (Issue [#326](https://github.com/NetApp/trident/issues/326))
+- Refer to backend storage for current volume size during resize. (Issue [#345](https://github.com/NetApp/trident/issues/345))
+- Fixed a potential hang during iSCSI detach.
+- **Kubernetes:** Fixed volume import for ANF backends.
+- **Kubernetes:** Fixed cloning imported volumes for CVS & ANF backends.
+- **Kubernetes:** Fixed displaying volume sizes in Gi. (Issue [#305](https://github.com/NetApp/trident/issues/305))
 
 **Enhancements**
 - Updated to GoLang 1.14.
 - **Kubernetes:** Added ability to remove CSI nodes from Trident's database via `tridentctl`.
-- **Kubernetes:** Added ability for Trident to automatically create and update export policies for NAS-based drivers to provide access to all nodes in your Kubernetes cluster.
-- **Kubernetes:** Introducing Trident Operator to manage new Trident installations.
+- **Kubernetes:** Introduced Trident Operator to manage new Trident installations.
+- **Kubernetes:** Added ability for Trident to automatically create and update export policies for NAS-based drivers to provide access to all nodes in your Kubernetes cluster. (Issue [#252](https://github.com/NetApp/trident/issues/252))
+- **Kubernetes:** Trident now uses its own security context constraint in OpenShift. (Issue [#374](https://github.com/NetApp/trident/issues/374))
+- **Kubernetes:** Added support for CRD API v1. (Issue [#346](https://github.com/NetApp/trident/issues/346))
+- **Kubernetes:** Added support for additional auth providers. (Issue [#348](https://github.com/NetApp/trident/issues/348))
+- Added support for bi-directional CHAP for ONTAP SAN drivers. (Issues [#212](https://github.com/NetApp/trident/issues/212) and [#7](https://github.com/NetApp/trident/issues/7))
 
 ## v20.01.0
 
