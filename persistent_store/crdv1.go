@@ -237,7 +237,7 @@ func (k *CRDClientV1) addBackendPersistent(backendPersistent *storage.BackendPer
 	if secretExists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
 		return err
 	} else if secretExists {
-		if err = k.k8sClient.DeleteSecret(secretName); err != nil {
+		if err = k.k8sClient.DeleteSecretDefault(secretName); err != nil {
 			return err
 		}
 	}
@@ -540,7 +540,7 @@ func (k *CRDClientV1) DeleteBackend(b *storage.Backend) error {
 
 	// Delete the secret
 	secretName := k.backendSecretName(b.BackendUUID)
-	if err := k.k8sClient.DeleteSecret(secretName); err != nil {
+	if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
 		return err
 	}
 	log.WithField("secret", secretName).Debug("Deleted backend secret.")
@@ -607,7 +607,7 @@ func (k *CRDClientV1) DeleteBackends() error {
 
 		// Delete the secret
 		secretName := k.backendSecretName(backend.BackendUUID)
-		err = k.k8sClient.DeleteSecret(secretName)
+		err = k.k8sClient.DeleteSecretDefault(secretName)
 		if err != nil {
 			log.WithField("error", err).Error("Could not delete secret.")
 			return err

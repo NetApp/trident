@@ -9,8 +9,12 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+const (
+	TridentAppLabelKey = "app"
+)
+
 func GetNamespaceYAML(namespace string) string {
-	return strings.Replace(namespaceYAMLTemplate, "{NAMESPACE}", namespace, 1)
+	return strings.ReplaceAll(namespaceYAMLTemplate, "{NAMESPACE}", namespace)
 }
 
 const namespaceYAMLTemplate = `---
@@ -20,13 +24,21 @@ metadata:
   name: {NAMESPACE}
 `
 
-func GetServiceAccountYAML(csi bool) string {
+func GetServiceAccountYAML(serviceAccountName, secret string, labels, controllingCRDetails map[string]string) string {
 
-	if csi {
-		return strings.Replace(serviceAccountYAML, "{NAME}", "trident-csi", 1)
+	var saYAML string
+
+	if secret != "" {
+		saYAML = serviceAccountWithSecretYAML
+		saYAML = strings.ReplaceAll(saYAML, "{SECRET_NAME}", secret)
 	} else {
-		return strings.Replace(serviceAccountYAML, "{NAME}", "trident", 1)
+		saYAML = serviceAccountYAML
 	}
+
+	saYAML = strings.ReplaceAll(saYAML, "{NAME}", serviceAccountName)
+	saYAML = replaceMultiline(saYAML, labels, controllingCRDetails, nil)
+
+	return saYAML
 }
 
 const serviceAccountYAML = `---
@@ -34,9 +46,23 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {NAME}
+  {LABELS}
+  {OWNER_REF}
 `
 
-func GetClusterRoleYAML(flavor OrchestratorFlavor, csi bool) string {
+const serviceAccountWithSecretYAML = `---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {NAME}
+  {LABELS}
+  {OWNER_REF}
+secrets:
+- name: {SECRET_NAME}
+`
+
+func GetClusterRoleYAML(flavor OrchestratorFlavor, clusterRoleName string, labels,
+	controllingCRDetails map[string]string, csi bool) string {
 
 	var clusterRoleYAML string
 
@@ -48,12 +74,15 @@ func GetClusterRoleYAML(flavor OrchestratorFlavor, csi bool) string {
 
 	switch flavor {
 	case FlavorOpenShift:
-		clusterRoleYAML = strings.Replace(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1", 1)
+		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1")
 	default:
 		fallthrough
 	case FlavorKubernetes:
-		clusterRoleYAML = strings.Replace(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1", 1)
+		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1")
 	}
+
+	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
+	clusterRoleYAML = replaceMultiline(clusterRoleYAML, labels, controllingCRDetails, nil)
 
 	return clusterRoleYAML
 }
@@ -62,7 +91,9 @@ const clusterRoleYAMLTemplate = `---
 kind: ClusterRole
 apiVersion: {API_VERSION}
 metadata:
-  name: trident
+  name: {CLUSTER_ROLE_NAME}
+  {LABELS}
+  {OWNER_REF}
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes", "persistentvolumeclaims"]
@@ -96,7 +127,9 @@ const clusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
 apiVersion: {API_VERSION}
 metadata:
-  name: trident-csi
+  name: {CLUSTER_ROLE_NAME}
+  {LABELS}
+  {OWNER_REF}
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes", "persistentvolumeclaims"]
@@ -150,16 +183,9 @@ rules:
       - tridentpods
 `
 
-func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, csi bool) string {
+func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string) string {
 
-	var name string
 	var crbYAML string
-
-	if csi {
-		name = "trident-csi"
-	} else {
-		name = "trident"
-	}
 
 	switch flavor {
 	case FlavorOpenShift:
@@ -170,8 +196,9 @@ func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, csi 
 		crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
 	}
 
-	crbYAML = strings.Replace(crbYAML, "{NAMESPACE}", namespace, 1)
-	crbYAML = strings.Replace(crbYAML, "{NAME}", name, -1)
+	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
+	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
+	crbYAML = replaceMultiline(crbYAML, labels, controllingCRDetails, nil)
 	return crbYAML
 }
 
@@ -180,6 +207,8 @@ kind: ClusterRoleBinding
 apiVersion: authorization.openshift.io/v1
 metadata:
   name: {NAME}
+  {LABELS}
+  {OWNER_REF}
 subjects:
   - kind: ServiceAccount
     name: {NAME}
@@ -193,6 +222,8 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {NAME}
+  {LABELS}
+  {OWNER_REF}
 subjects:
   - kind: ServiceAccount
     name: {NAME}
@@ -203,19 +234,24 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-func GetDeploymentYAML(tridentImage, label, logFormat string, debug bool) string {
+func GetDeploymentYAML(deploymentName, tridentImage, logFormat string, imagePullSecrets []string, labels,
+	controllingCRDetails map[string]string, debug bool) string {
 
 	var debugLine string
+
 	if debug {
 		debugLine = "- -debug"
 	} else {
 		debugLine = "#- -debug"
 	}
 
-	deploymentYAML := strings.Replace(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_FORMAT}", logFormat, -1)
+	deploymentYAML := strings.ReplaceAll(deploymentYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", logFormat)
+	deploymentYAML = replaceMultiline(deploymentYAML, labels, controllingCRDetails, imagePullSecrets)
+
 	return deploymentYAML
 }
 
@@ -223,20 +259,20 @@ const deploymentYAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident
-  labels:
-    app: {LABEL}
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident
       containers:
@@ -260,14 +296,17 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         beta.kubernetes.io/os: linux
         beta.kubernetes.io/arch: amd64
 `
 
-func GetCSIServiceYAML(label string) string {
+func GetCSIServiceYAML(serviceName string, labels, controllingCRDetails map[string]string) string {
 
-	serviceYAML := strings.Replace(serviceYAMLTemplate, "{LABEL}", label, -1)
+	serviceYAML := strings.ReplaceAll(serviceYAMLTemplate, "{LABEL_APP}", labels[TridentAppLabelKey])
+	serviceYAML = strings.ReplaceAll(serviceYAML, "{SERVICE_NAME}", serviceName)
+	serviceYAML = replaceMultiline(serviceYAML, labels, controllingCRDetails, nil)
 	return serviceYAML
 }
 
@@ -275,12 +314,12 @@ const serviceYAMLTemplate = `---
 apiVersion: v1
 kind: Service
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {SERVICE_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   selector:
-    app: {LABEL}
+    app: {LABEL_APP}
   ports:
   - name: https
     protocol: TCP
@@ -292,13 +331,12 @@ spec:
     targetPort: 8001
 `
 
-func GetCSIDeploymentYAML(
-	tridentImage, imageRegistry, label, logFormat string, debug, useIPv6 bool, version *utils.Version,
-) string {
+func GetCSIDeploymentYAML(deploymentName, tridentImage, imageRegistry, logFormat string,
+	imagePullSecrets []string, labels,
+	controllingCRDetails map[string]string,
+	debug, useIPv6 bool, version *utils.Version) string {
 
-	var debugLine string
-	var logLevel string
-	var ipLocalhost string
+	var debugLine, logLevel, ipLocalhost string
 
 	if debug {
 		debugLine = "- -debug"
@@ -311,11 +349,6 @@ func GetCSIDeploymentYAML(
 		ipLocalhost = "[::1]"
 	} else {
 		ipLocalhost = "127.0.0.1"
-	}
-
-	csiSidecarRegistry := "quay.io"
-	if imageRegistry != "" {
-		csiSidecarRegistry = imageRegistry
 	}
 
 	var deploymentYAML string
@@ -332,13 +365,16 @@ func GetCSIDeploymentYAML(
 		deploymentYAML = csiDeployment117YAMLTemplate
 	}
 
-	deploymentYAML = strings.Replace(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", csiSidecarRegistry, -1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{DEBUG}", debugLine, 1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{LABEL}", label, -1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_LEVEL}", logLevel, -1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{LOG_FORMAT}", logFormat, -1)
-	deploymentYAML = strings.Replace(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost, -1)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", logFormat)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
+	deploymentYAML = replaceMultiline(deploymentYAML, labels, controllingCRDetails, imagePullSecrets)
+
 	return deploymentYAML
 }
 
@@ -346,20 +382,20 @@ const csiDeployment113YAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       containers:
@@ -446,6 +482,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         beta.kubernetes.io/os: linux
         beta.kubernetes.io/arch: amd64
@@ -461,20 +498,20 @@ const csiDeployment114YAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       containers:
@@ -549,6 +586,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -564,20 +602,20 @@ const csiDeployment116YAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       containers:
@@ -664,6 +702,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -679,20 +718,20 @@ const csiDeployment117YAMLTemplate = `---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       containers:
@@ -791,6 +830,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -802,12 +842,11 @@ spec:
           secretName: trident-csi
 `
 
-func GetCSIDaemonSetYAML(
-	tridentImage, imageRegistry, kubeletDir, label, logFormat string, debug bool, version *utils.Version,
-) string {
+func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat string,
+	imagePullSecrets []string, labels, controllingCRDetails map[string]string, debug bool,
+	version *utils.Version) string {
 
-	var debugLine string
-	var logLevel string
+	var debugLine, logLevel string
 
 	if debug {
 		debugLine = "- -debug"
@@ -815,11 +854,6 @@ func GetCSIDaemonSetYAML(
 	} else {
 		debugLine = "#- -debug"
 		logLevel = "2"
-	}
-
-	csiSidecarRegistry := "quay.io"
-	if imageRegistry != "" {
-		csiSidecarRegistry = imageRegistry
 	}
 
 	var daemonSetYAML string
@@ -830,14 +864,16 @@ func GetCSIDaemonSetYAML(
 	}
 
 	kubeletDir = strings.TrimRight(kubeletDir, "/")
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", daemonsetName)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", logFormat)
+	daemonSetYAML = replaceMultiline(daemonSetYAML, labels, controllingCRDetails, imagePullSecrets)
 
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", csiSidecarRegistry, -1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{KUBELET_DIR}", kubeletDir, -1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{LABEL}", label, -1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{DEBUG}", debugLine, 1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_LEVEL}", logLevel, -1)
-	daemonSetYAML = strings.Replace(daemonSetYAML, "{LOG_FORMAT}", logFormat, -1)
 	return daemonSetYAML
 }
 
@@ -845,17 +881,17 @@ const daemonSet113YAMLTemplate = `---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DAEMONSET_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       hostNetwork: true
@@ -930,6 +966,7 @@ spec:
           mountPath: /plugin
         - name: registration-dir
           mountPath: /registration
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         beta.kubernetes.io/os: linux
         beta.kubernetes.io/arch: amd64
@@ -980,17 +1017,17 @@ const daemonSet114YAMLTemplate = `---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: trident-csi
-  labels:
-    app: {LABEL}
+  name: {DAEMONSET_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   selector:
     matchLabels:
-      app: {LABEL}
+      app: {LABEL_APP}
   template:
     metadata:
       labels:
-        app: {LABEL}
+        app: {LABEL_APP}
     spec:
       serviceAccount: trident-csi
       hostNetwork: true
@@ -1064,6 +1101,7 @@ spec:
           mountPath: /plugin
         - name: registration-dir
           mountPath: /registration
+      {IMAGE_PULL_SECRETS}
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
@@ -1225,7 +1263,7 @@ func GetInstallerClusterRoleBindingYAML(namespace string, flavor OrchestratorFla
 		crbYAML = installerClusterRoleBindingKubernetesV1YAMLTemplate
 	}
 
-	crbYAML = strings.Replace(crbYAML, "{NAMESPACE}", namespace, 1)
+	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
 	return crbYAML
 }
 
@@ -1261,16 +1299,16 @@ func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, csi bool
 
 	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
 
-	podYAML := strings.Replace(migratorPodYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage, 1)
-	podYAML = strings.Replace(podYAML, "{ETCD_IMAGE}", etcdImage, 1)
-	podYAML = strings.Replace(podYAML, "{PVC_NAME}", pvcName, 1)
-	podYAML = strings.Replace(podYAML, "{LABEL}", label, 1)
-	podYAML = strings.Replace(podYAML, "{COMMAND}", command, 1)
+	podYAML := strings.ReplaceAll(migratorPodYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage)
+	podYAML = strings.ReplaceAll(podYAML, "{ETCD_IMAGE}", etcdImage)
+	podYAML = strings.ReplaceAll(podYAML, "{PVC_NAME}", pvcName)
+	podYAML = strings.ReplaceAll(podYAML, "{LABEL_APP}", label)
+	podYAML = strings.ReplaceAll(podYAML, "{COMMAND}", command)
 
 	if csi {
-		podYAML = strings.Replace(podYAML, "{SERVICE_ACCOUNT}", "trident-csi", 1)
+		podYAML = strings.ReplaceAll(podYAML, "{SERVICE_ACCOUNT}", "trident-csi")
 	} else {
-		podYAML = strings.Replace(podYAML, "{SERVICE_ACCOUNT}", "trident", 1)
+		podYAML = strings.ReplaceAll(podYAML, "{SERVICE_ACCOUNT}", "trident")
 	}
 
 	return podYAML
@@ -1282,7 +1320,7 @@ kind: Pod
 metadata:
   name: trident-migrator
   labels:
-    app: {LABEL}
+    app: {LABEL_APP}
 spec:
   serviceAccount: {SERVICE_ACCOUNT}
   restartPolicy: Never
@@ -1318,9 +1356,9 @@ func GetInstallerPodYAML(label, tridentImage string, commandArgs []string) strin
 
 	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
 
-	jobYAML := strings.Replace(installerPodTemplate, "{LABEL}", label, 1)
-	jobYAML = strings.Replace(jobYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
-	jobYAML = strings.Replace(jobYAML, "{COMMAND}", command, 1)
+	jobYAML := strings.ReplaceAll(installerPodTemplate, "{LABEL_APP}", label)
+	jobYAML = strings.ReplaceAll(jobYAML, "{TRIDENT_IMAGE}", tridentImage)
+	jobYAML = strings.ReplaceAll(jobYAML, "{COMMAND}", command)
 	return jobYAML
 }
 
@@ -1330,7 +1368,7 @@ kind: Pod
 metadata:
   name: trident-installer
   labels:
-    app: {LABEL}
+    app: {LABEL_APP}
 spec:
   serviceAccount: trident-installer
   containers:
@@ -1355,9 +1393,9 @@ func GetUninstallerPodYAML(label, tridentImage string, commandArgs []string) str
 
 	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
 
-	jobYAML := strings.Replace(uninstallerPodTemplate, "{LABEL}", label, 1)
-	jobYAML = strings.Replace(jobYAML, "{TRIDENT_IMAGE}", tridentImage, 1)
-	jobYAML = strings.Replace(jobYAML, "{COMMAND}", command, 1)
+	jobYAML := strings.ReplaceAll(uninstallerPodTemplate, "{LABEL_APP}", label)
+	jobYAML = strings.ReplaceAll(jobYAML, "{TRIDENT_IMAGE}", tridentImage)
+	jobYAML = strings.ReplaceAll(jobYAML, "{COMMAND}", command)
 	return jobYAML
 }
 
@@ -1367,7 +1405,7 @@ kind: Pod
 metadata:
   name: trident-installer
   labels:
-    app: {LABEL}
+    app: {LABEL_APP}
 spec:
   serviceAccount: trident-installer
   containers:
@@ -1381,13 +1419,46 @@ spec:
   restartPolicy: Never
 `
 
+func GetTridentVersionPodYAML(name, tridentImage, serviceAccountName string, imagePullSecrets []string, labels,
+	controllingCRDetails map[string]string) string {
+
+	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
+	versionPodYAML = replaceMultiline(versionPodYAML, labels, controllingCRDetails, imagePullSecrets)
+
+	return versionPodYAML
+}
+
+const tridentVersionPodYAML = `---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {NAME}
+  {LABELS}
+  {OWNER_REF}
+spec:
+  serviceAccount: {SERVICE_ACCOUNT}
+  restartPolicy: Never
+  containers:
+  - name: trident-main
+    imagePullPolicy: IfNotPresent
+    image: {TRIDENT_IMAGE}
+    command: ["sleep"]
+    args: ["60"]
+  {IMAGE_PULL_SECRETS}
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    beta.kubernetes.io/arch: amd64
+`
+
 func GetEmptyConfigMapYAML(label, name, namespace string) string {
 
 	configMapYAML := emptyConfigMapTemplate
 
-	configMapYAML = strings.Replace(configMapYAML, "{LABEL}", label, 1)
-	configMapYAML = strings.Replace(configMapYAML, "{NAMESPACE}", namespace, 1)
-	configMapYAML = strings.Replace(configMapYAML, "{NAME}", name, 1)
+	configMapYAML = strings.ReplaceAll(configMapYAML, "{LABEL_APP}", label)
+	configMapYAML = strings.ReplaceAll(configMapYAML, "{NAMESPACE}", namespace)
+	configMapYAML = strings.ReplaceAll(configMapYAML, "{NAME}", name)
 	return configMapYAML
 }
 
@@ -1396,7 +1467,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {LABEL}
+    app: {LABEL_APP}
   name: {NAME}
   namespace: {NAMESPACE}
 `
@@ -1480,7 +1551,7 @@ priority: 10
 readOnlyRootFilesystem: false
 requiredDropCapabilities:
 - MKNOD
-runAsUser:	
+runAsUser:
   type: RunAsAny
 seLinuxContext:
   type: MustRunAs
@@ -1498,7 +1569,7 @@ volumes:
 `
 
 func GetOpenShiftSCCQueryYAML(scc string) string {
-	return strings.Replace(openShiftSCCQueryYAMLTemplate, "{SCC}", scc, 1)
+	return strings.ReplaceAll(openShiftSCCQueryYAMLTemplate, "{SCC}", scc)
 }
 
 const openShiftSCCQueryYAMLTemplate = `
@@ -1509,11 +1580,11 @@ metadata:
   name: {SCC}
 `
 
-func GetSecretYAML(secretName, namespace, label string, data map[string]string, stringData map[string]string) string {
+func GetSecretYAML(secretName, namespace string, labels, controllingCRDetails, data, stringData map[string]string) string {
 
-	secretYAML := strings.Replace(secretYAMLTemplate, "{SECRET_NAME}", secretName, 1)
-	secretYAML = strings.Replace(secretYAML, "{NAMESPACE}", namespace, 1)
-	secretYAML = strings.Replace(secretYAML, "{LABEL}", label, 1)
+	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
+	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
+	secretYAML = replaceMultiline(secretYAML, labels, controllingCRDetails, nil)
 
 	if data != nil {
 		secretYAML += "data:\n"
@@ -1538,8 +1609,8 @@ kind: Secret
 metadata:
   name: {SECRET_NAME}
   namespace: {NAMESPACE}
-  labels:
-    app: {LABEL}
+  {LABELS}
+  {OWNER_REF}
 `
 
 func GetCRDNames() []string {
@@ -1559,6 +1630,62 @@ func GetCRDsYAML(useCRDv1 bool) string {
 		return customResourceDefinitionYAML_v1
 	} else {
 		return customResourceDefinitionYAML_v1beta1
+	}
+}
+
+func GetVersionCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentVersionCRDYAML_v1
+	} else {
+		return tridentVersionCRDYAML_v1beta1
+	}
+}
+
+func GetBackendCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentBackendCRDYAML_v1
+	} else {
+		return tridentBackendCRDYAML_v1beta1
+	}
+}
+
+func GetStorageClassCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentStorageClassCRDYAML_v1
+	} else {
+		return tridentStorageClassCRDYAML_v1beta1
+	}
+}
+
+func GetVolumeCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentVolumeCRDYAML_v1
+	} else {
+		return tridentVolumeCRDYAML_v1beta1
+	}
+}
+
+func GetNodeCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentNodeCRDYAML_v1
+	} else {
+		return tridentNodeCRDYAML_v1beta1
+	}
+}
+
+func GetTransactionCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentTransactionCRDYAML_v1
+	} else {
+		return tridentTransactionCRDYAML_v1beta1
+	}
+}
+
+func GetSnapshotCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentSnapshotCRDYAML_v1
+	} else {
+		return tridentSnapshotCRDYAML_v1beta1
 	}
 }
 
@@ -1588,7 +1715,7 @@ kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
 */
 
-const customResourceDefinitionYAML_v1beta1 = `
+const tridentVersionCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1616,8 +1743,9 @@ spec:
       type: string
       description: The Trident version
       priority: 0
-      JSONPath: .trident_version
----
+      JSONPath: .trident_version`
+
+const tridentBackendCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1650,8 +1778,9 @@ spec:
       type: string
       description: The backend UUID
       priority: 0
-      JSONPath: .backendUUID
----
+      JSONPath: .backendUUID`
+
+const tridentStorageClassCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1673,8 +1802,9 @@ spec:
     - tstorageclass
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentVolumeCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1731,8 +1861,9 @@ spec:
       type: string
       description: The volume's pool
       priority: 1
-      JSONPath: .pool
----
+      JSONPath: .pool`
+
+const tridentNodeCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1753,8 +1884,9 @@ spec:
     - tnode
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentTransactionCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1775,8 +1907,9 @@ spec:
     - ttx
     - ttransaction
     categories:
-    - trident-internal
----
+    - trident-internal`
+
+const tridentSnapshotCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -1807,7 +1940,11 @@ spec:
       priority: 1
       JSONPath: .state`
 
-const customResourceDefinitionYAML_v1 = `
+const customResourceDefinitionYAML_v1beta1 = tridentVersionCRDYAML_v1beta1 + "\n---" + tridentBackendCRDYAML_v1beta1 +
+	"\n---" + tridentStorageClassCRDYAML_v1beta1 + "\n---" + tridentVolumeCRDYAML_v1beta1 + "\n---" +
+	tridentNodeCRDYAML_v1beta1 + "\n---" + tridentTransactionCRDYAML_v1beta1 + "\n---" + tridentSnapshotCRDYAML_v1beta1
+
+const tridentVersionCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1838,8 +1975,9 @@ spec:
     - tversion
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentBackendCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1875,8 +2013,9 @@ spec:
     - tbackend
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentStorageClassCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1901,8 +2040,9 @@ spec:
     - tstorageclass
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentVolumeCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1962,8 +2102,9 @@ spec:
     - tvolume
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentNodeCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1987,8 +2128,9 @@ spec:
     - tnode
     categories:
     - trident
-    - trident-internal
----
+    - trident-internal`
+
+const tridentTransactionCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -2012,8 +2154,9 @@ spec:
     - ttx
     - ttransaction
     categories:
-    - trident-internal
----
+    - trident-internal`
+
+const tridentSnapshotCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -2045,8 +2188,11 @@ spec:
     - tsnapshot
     categories:
     - trident
-    - trident-internal
-`
+    - trident-internal`
+
+const customResourceDefinitionYAML_v1 = tridentVersionCRDYAML_v1 + "\n---" + tridentBackendCRDYAML_v1 +
+	"\n---" + tridentStorageClassCRDYAML_v1 + "\n---" + tridentVolumeCRDYAML_v1 + "\n---" +
+	tridentNodeCRDYAML_v1 + "\n---" + tridentTransactionCRDYAML_v1 + "\n---" + tridentSnapshotCRDYAML_v1 + "\n"
 
 func GetCSIDriverCRDYAML() string {
 	return CSIDriverCRDYAML
@@ -2144,28 +2290,38 @@ spec:
   version: v1alpha1
 `
 
-func GetCSIDriverCRYAML() string {
-	return CSIDriverCRYAML
+func GetCSIDriverCRYAML(name string, labels, controllingCRDetails map[string]string) string {
+
+	CSIDriverCR := strings.ReplaceAll(CSIDriverCRYAML, "{NAME}", name)
+	CSIDriverCR = replaceMultiline(CSIDriverCR, labels, controllingCRDetails, nil)
+	return CSIDriverCR
 }
 
 const CSIDriverCRYAML = `
 apiVersion: storage.k8s.io/v1beta1
 kind: CSIDriver
 metadata:
-  name: csi.trident.netapp.io
+  name: {NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   attachRequired: true
 `
 
-func GetPrivilegedPodSecurityPolicyYAML() string {
-	return PrivilegedPodSecurityPolicyYAML
+func GetPrivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
+
+	pspYAML := strings.ReplaceAll(PrivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
+	pspYAML = replaceMultiline(pspYAML, labels, controllingCRDetails, nil)
+	return pspYAML
 }
 
 const PrivilegedPodSecurityPolicyYAML = `
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: tridentpods
+  name: {PSP_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   privileged: true
   allowPrivilegeEscalation: true
@@ -2185,15 +2341,20 @@ spec:
   - '*'
 `
 
-func GetUnprivilegedPodSecurityPolicyYAML() string {
-	return UnprivilegedPodSecurityPolicyYAML
+func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
+
+	pspYAML := strings.ReplaceAll(UnprivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
+	pspYAML = replaceMultiline(pspYAML, labels, controllingCRDetails, nil)
+	return pspYAML
 }
 
 const UnprivilegedPodSecurityPolicyYAML = `
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: tridentpods
+  name: {PSP_NAME}
+  {LABELS}
+  {OWNER_REF}
 spec:
   privileged: false
   seLinux:
@@ -2230,3 +2391,81 @@ spec:
   volumes:
     - '*'
 `
+
+// replaceMultiline replaces tags with multiline indented YAML, to make sure it works properly:
+// 1. It should be called last after all single line replacements have been made.
+// 2. Use only spaces before the tag
+// 3. No space(s) or any other special character (other than newline) should be there after the tag
+func replaceMultiline(originalYAML string, labels, ownerRef map[string]string, imagePullSecrets []string) string {
+	for {
+		tagWithSpaces, tag, spaceCount := utils.GetYAMLTagWithSpaceCount(originalYAML)
+
+		if tagWithSpaces == "" {
+			break
+		}
+
+		switch tag {
+		case "LABELS":
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces, contructLabels(labels, createSpaces(spaceCount)), 1)
+		case "OWNER_REF":
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces, constructOwnerRef(ownerRef, createSpaces(spaceCount)), 1)
+		case "IMAGE_PULL_SECRETS":
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces, constructImagePullSecrets(imagePullSecrets, createSpaces(spaceCount)), 1)
+		default:
+			fmt.Errorf("found an unsupported tag %s in the YAML", tag)
+			return ""
+		}
+	}
+
+	return originalYAML
+}
+
+func createSpaces(spaceCount int) string {
+	return strings.Repeat(" ", spaceCount)
+}
+
+func contructLabels(labels map[string]string, spaces string) string {
+
+	var labelData string
+
+	if labels != nil {
+		labelData += spaces + "labels:\n"
+		for key, value := range labels {
+			labelData += fmt.Sprintf(spaces+"  %s: %s\n", key, value)
+		}
+	}
+
+	return labelData
+}
+
+func constructOwnerRef(ownerRef map[string]string, spaces string) string {
+
+	var ownerRefData string
+	if ownerRef != nil {
+		isFirst := true
+		ownerRefData += spaces + "ownerReferences:\n"
+		for key, value := range ownerRef {
+			if isFirst {
+				ownerRefData += fmt.Sprintf(spaces+"- %s: %s\n", key, value)
+				isFirst = false
+			} else {
+				ownerRefData += fmt.Sprintf(spaces+"  %s: %s\n", key, value)
+			}
+		}
+	}
+
+	return ownerRefData
+}
+
+func constructImagePullSecrets(imagePullSecrets []string, spaces string) string {
+
+	var imagePullSecretsData string
+	if len(imagePullSecrets) > 0 {
+		imagePullSecretsData += spaces + "imagePullSecrets:\n"
+		for _, value := range imagePullSecrets {
+			imagePullSecretsData += fmt.Sprintf(spaces+"- name: %s\n", value)
+		}
+	}
+
+	return imagePullSecretsData
+}

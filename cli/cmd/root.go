@@ -61,6 +61,10 @@ const (
 	TridentMigratorLabelKey   = "app"
 	TridentMigratorLabelValue = "trident-migrator.netapp.io"
 	TridentMigratorLabel      = TridentMigratorLabelKey + "=" + TridentMigratorLabelValue
+
+	TridentOperatorLabelKey   = "app"
+	TridentOperatorLabelValue = "operator.trident.netapp.io"
+	TridentOperatorLabel      = TridentOperatorLabelKey + "=" + TridentOperatorLabelValue
 )
 
 var (
@@ -141,6 +145,50 @@ func discoverOperatingMode(_ *cobra.Command) error {
 		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLegacyLabel); err != nil {
 			return err
 		}
+	}
+
+	OperatingMode = ModeTunnel
+	Server = PodServer
+	return nil
+}
+
+func discoverJustOperatingMode(_ *cobra.Command) error {
+
+	defer func() {
+		if !Debug {
+			return
+		}
+
+		switch OperatingMode {
+		case ModeDirect:
+			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
+		case ModeTunnel:
+			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",
+				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
+		}
+	}()
+
+	var err error
+
+	envServer := os.Getenv("TRIDENT_SERVER")
+
+	if Server != "" {
+
+		// Server specified on command line takes precedence
+		OperatingMode = ModeDirect
+		return nil
+	} else if envServer != "" {
+
+		// Consider environment variable next
+		Server = envServer
+		OperatingMode = ModeDirect
+		return nil
+	}
+
+	// To work with pods, we need to discover which CLI to invoke
+	err = discoverKubernetesCLI()
+	if err != nil {
+		return err
 	}
 
 	OperatingMode = ModeTunnel
@@ -238,6 +286,45 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 	name := tridentPod.Items[0].ObjectMeta.Name
 
 	return name, nil
+}
+
+// getTridentOperatorPod returns the name and namespace of the Trident pod
+func getTridentOperatorPod(appLabel string) (string, string, error) {
+
+	// Get 'trident-operator' pod info
+	cmd := exec.Command(
+		KubernetesCLI,
+		"get", "pod",
+		"--all-namespaces",
+		"-l", appLabel,
+		"-o=json",
+		"--field-selector=status.phase=Running",
+	)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", "", err
+	}
+	if err = cmd.Start(); err != nil {
+		return "", "", err
+	}
+
+	var tridentOperatorPod k8s.PodList
+	if err = json.NewDecoder(stdout).Decode(&tridentOperatorPod); err != nil {
+		return "", "", err
+	}
+	if err = cmd.Wait(); err != nil {
+		return "", "", err
+	}
+
+	if len(tridentOperatorPod.Items) != 1 {
+		return "", "", fmt.Errorf("could not find a Trident operator pod in the all the namespaces")
+	}
+
+	// Get Trident pod name & namespace
+	name := tridentOperatorPod.Items[0].ObjectMeta.Name
+	namespace := tridentOperatorPod.Items[0].ObjectMeta.Namespace
+
+	return name, namespace, nil
 }
 
 // listTridentSidecars returns a list of sidecar container names inside the trident controller pod

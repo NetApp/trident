@@ -354,15 +354,26 @@ func uninstallTrident() error {
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
 	// Delete pod security policy
-	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
+	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 	if !csi {
-		podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+		podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 	}
 	if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete pod security policy.")
 		anyErrors = true
 	} else {
 		log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+	}
+
+	if csi {
+		CSIDriverYAML := k8sclient.GetCSIDriverCRYAML(getCSIDriverName(), nil, nil)
+
+		if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete csidriver custom resource.")
+			anyErrors = true
+		} else {
+			log.WithField("CSIDriver", getCSIDriverName()).Info("Deleted csidriver custom resource.")
+		}
 	}
 
 	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")

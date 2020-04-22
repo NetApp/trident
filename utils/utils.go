@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -433,4 +434,26 @@ func FilterIPs(ips, cidrs []string) ([]string, error) {
 	sort.Strings(filteredIPs)
 
 	return filteredIPs, nil
+}
+
+// GetYAMLTagWithSpaceCount returns the line that matches the pattern, tag name, and the spaces before the tag
+func GetYAMLTagWithSpaceCount(text string) (string, string, int) {
+
+	// This matches pattern in a multiline string of type "    {something}\n"
+	tagsWithIndentationRegex := regexp.MustCompile(`(?m)^[\t ]*{(?P<tagName>[\w-]+)}$\n`)
+	tag := tagsWithIndentationRegex.FindStringSubmatch(text)
+
+	// Since we have two of `()` in the pattern, we want to use the tag identified by the second `()`.
+	if len(tag) > 1 {
+		tagWithSpaces := tagsWithIndentationRegex.FindString(text)
+		indentation := CountSpacesBeforeText(tagWithSpaces)
+
+		return tagWithSpaces, tag[1], indentation
+	}
+
+	return "", "", 0
+}
+
+func CountSpacesBeforeText(text string) int {
+	return len(text) - len(strings.TrimLeft(text, " \t"))
 }

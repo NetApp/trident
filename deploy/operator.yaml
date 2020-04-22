@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-operator
+  namespace: trident
+  labels:
+    app: operator.trident.netapp.io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: trident-operator
+      app: operator.trident.netapp.io
+  template:
+    metadata:
+      labels:
+        name: trident-operator
+        app: operator.trident.netapp.io
+    spec:
+      serviceAccountName: trident-operator
+      containers:
+        - name: trident-operator
+          image: netapp/trident-operator:20.04.0
+          command:
+          - "/usr/local/bin/trident-operator"
+          - "--debug"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "trident-operator"

@@ -5,8 +5,11 @@
 bin/trident*
 coverage/**
 vendor/
+operator/trident-operator
+operator/operator
 trident-installer.tar.gz
 trident
+trident-operator
 !trident/
 *.pem
 *.csr

@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"k8s.io/api/policy/v1beta1"
+	v13 "k8s.io/api/rbac/v1"
+	v1beta12 "k8s.io/api/storage/v1beta1"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -305,7 +308,7 @@ func (c *KubectlClient) GetDeploymentByLabel(label string, allNamespaces bool) (
 	} else if len(deployments) > 1 {
 		return nil, fmt.Errorf("multiple deployments have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no deployments have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
 	}
 }
 
@@ -376,6 +379,41 @@ func (c *KubectlClient) DeleteDeploymentByLabel(label string) error {
 	return nil
 }
 
+// DeleteDeployment deletes a deployment object matching the specified name and namespace
+func (c *KubectlClient) DeleteDeployment(name, namespace string) error {
+
+	cmdArgs := []string{"delete", "deployment", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes deployment.")
+
+	return nil
+}
+
+// PatchDeploymentByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchDeploymentByLabel(label string, patchBytes []byte) error {
+
+	cmdArgs := []string{"patch", "deployment", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes), "--type", "strategic"}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Patched Kubernetes deployment.")
+
+	return nil
+}
+
 // GetServiceByLabel returns a service object matching the specified label if it is unique
 func (c *KubectlClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error) {
 
@@ -389,7 +427,7 @@ func (c *KubectlClient) GetServiceByLabel(label string, allNamespaces bool) (*v1
 	} else if len(services) > 1 {
 		return nil, fmt.Errorf("multiple services have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no services have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no services have the label %s", label))
 	}
 }
 
@@ -460,6 +498,42 @@ func (c *KubectlClient) DeleteServiceByLabel(label string) error {
 	return nil
 }
 
+// DeleteService deletes a Service object matching the specified name and namespace
+func (c *KubectlClient) DeleteService(name, namespace string) error {
+
+	cmdArgs := []string{"delete", "service", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes service.")
+
+	return nil
+}
+
+// PatchServiceByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchServiceByLabel(label string, patchBytes []byte) error {
+
+	cmdArgs := []string{"patch", "service", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes),
+		"--type", "strategic"}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Patched Kubernetes service.")
+
+	return nil
+}
+
 // GetStatefulSetByLabel returns a statefulset object matching the specified label if it is unique
 func (c *KubectlClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error) {
 
@@ -473,7 +547,7 @@ func (c *KubectlClient) GetStatefulSetByLabel(label string, allNamespaces bool) 
 	} else if len(statefulsets) > 1 {
 		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no statefulsets have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
 	}
 }
 
@@ -544,6 +618,23 @@ func (c *KubectlClient) DeleteStatefulSetByLabel(label string) error {
 	return nil
 }
 
+// DeleteStatefulSet deletes a statefulset object matching the specified name and namespace.
+func (c *KubectlClient) DeleteStatefulSet(name, namespace string) error {
+
+	cmdArgs := []string{"delete", "statefulset", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes statefulset.")
+
+	return nil
+}
+
 // GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
 func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error) {
 
@@ -557,7 +648,7 @@ func (c *KubectlClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*
 	} else if len(daemonsets) > 1 {
 		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no daemonsets have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
 	}
 }
 
@@ -628,6 +719,41 @@ func (c *KubectlClient) DeleteDaemonSetByLabel(label string) error {
 	return nil
 }
 
+// DeleteDaemonSet deletes a DaemonSet object matching the specified name and namespace
+func (c *KubectlClient) DeleteDaemonSet(name, namespace string) error {
+
+	cmdArgs := []string{"delete", "daemonset", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes daemonset.")
+
+	return nil
+}
+
+// PatchDaemonSetByLabel patches a DaemonSet object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchDaemonSetByLabel(label string, patchBytes []byte) error {
+
+	cmdArgs := []string{"patch", "daemonset", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes), "--type", "strategic"}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": c.namespace,
+	}).Debug("Patched Kubernetes daemonset.")
+
+	return nil
+}
+
 // GetConfigMapByLabel returns a configmap object matching the specified label if it is unique
 func (c *KubectlClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error) {
 
@@ -641,7 +767,7 @@ func (c *KubectlClient) GetConfigMapByLabel(label string, allNamespaces bool) (*
 	} else if len(configmaps) > 1 {
 		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no configmaps have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
 	}
 }
 
@@ -751,7 +877,7 @@ func (c *KubectlClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod
 	} else if len(pods) > 1 {
 		return nil, fmt.Errorf("multiple pods have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no pods have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
 	}
 }
 
@@ -819,6 +945,11 @@ func (c *KubectlClient) DeletePodByLabel(label string) error {
 	}).Debug("Deleted Kubernetes pod.")
 
 	return nil
+}
+
+// DeletePod deletes a pod object matching the specified name and namespace
+func (c *KubectlClient) DeletePod(name, namespace string) error {
+	return c.DeleteObject(name, namespace, "pod", "Pod")
 }
 
 func (c *KubectlClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
@@ -1033,6 +1164,437 @@ func (c *KubectlClient) DeleteCRD(crdName string) error {
 	return nil
 }
 
+// GetPodSecurityPolicyByLabel returns a pod security policy object matching the specified label if it is unique
+func (c *KubectlClient) GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error) {
+
+	pspList, err := c.GetPodSecurityPoliciesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pspList) == 1 {
+		return &pspList[0], nil
+	} else if len(pspList) > 1 {
+		return nil, fmt.Errorf("multiple pod security policies have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
+	}
+}
+
+// GetPodSecurityPoliciesByLabel returns all pod security policy objects matching the specified label
+func (c *KubectlClient) GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodSecurityPolicy,
+	error) {
+
+	// Get pod security policy info
+	cmdArgs := []string{"get", "psp", "-l", label, "-o=json"}
+
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var pspList v1beta1.PodSecurityPolicyList
+	if err := json.NewDecoder(stdout).Decode(&pspList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return pspList.Items, nil
+}
+
+// CheckPodSecurityPolicyExistsByLabel returns true if one or more pod security policy objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckPodSecurityPolicyExistsByLabel(label string) (bool, string, error) {
+
+	pspList, err := c.GetPodSecurityPoliciesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(pspList) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, pspList[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeletePodSecurityPolicyByLabel deletes a pod security policy object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeletePodSecurityPolicyByLabel(label string) error {
+	return c.DeleteObjectByLabel(label, "", "psp", "Pod Security Policy")
+}
+
+// DeletePodSecurityPolicy deletes a pod security policy object matching the specified PSP name.
+func (c *KubectlClient) DeletePodSecurityPolicy(pspName string) error {
+	return c.DeleteObject(pspName, "", "psp", "Pod Security Policy")
+}
+
+// PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, "", "psp", "Pod Security Policy", patchBytes)
+}
+
+// GetServiceAccountByLabel returns a service account object matching the specified label if it is unique
+func (c *KubectlClient) GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error) {
+
+	serviceAccounts, err := c.GetServiceAccountsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(serviceAccounts) == 1 {
+		return &serviceAccounts[0], nil
+	} else if len(serviceAccounts) > 1 {
+		return nil, fmt.Errorf("multiple service accounts have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
+	}
+}
+
+// GetServiceAccountsByLabel returns all service account objects matching the specified label
+func (c *KubectlClient) GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error) {
+
+	// Get service account info
+	cmdArgs := []string{"get", "serviceaccount", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var ServiceAccountList v1.ServiceAccountList
+	if err := json.NewDecoder(stdout).Decode(&ServiceAccountList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return ServiceAccountList.Items, nil
+}
+
+// CheckServiceAccountExistsByLabel returns true if one or more service account objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	serviceAccounts, err := c.GetServiceAccountsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(serviceAccounts) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, serviceAccounts[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteServiceAccountByLabel deletes a service account object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteServiceAccountByLabel(label string) error {
+	return c.DeleteObjectByLabel(label, c.namespace, "serviceaccount", "Service Account")
+}
+
+// DeleteServiceAccount deletes a service account object matching the specified
+// name and namespace.
+func (c *KubectlClient) DeleteServiceAccount(name, namespace string) error {
+	return c.DeleteObject(name, namespace, "serviceaccount", "Service Account")
+}
+
+// PatchServiceAccountByLabel patches a Service Account object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchServiceAccountByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, c.namespace, "serviceaccount", "Service Account", patchBytes)
+}
+
+// GetClusterRoleByLabel returns a cluster role object matching the specified label if it is unique
+func (c *KubectlClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, error) {
+
+	clusterRoles, err := c.GetClusterRolesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clusterRoles) == 1 {
+		return &clusterRoles[0], nil
+	} else if len(clusterRoles) > 1 {
+		return nil, fmt.Errorf("multiple cluster roles have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
+	}
+}
+
+// GetClusterRoleByLabel returns all cluster role objects matching the specified label
+func (c *KubectlClient) GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error) {
+
+	// Get clusterrole info
+	cmdArgs := []string{"get", "clusterrole", "-l", label, "-o=json"}
+
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var clusterRoleList v13.ClusterRoleList
+	if err := json.NewDecoder(stdout).Decode(&clusterRoleList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return clusterRoleList.Items, nil
+}
+
+// CheckClusterRoleExistsByLabel returns true if one or more cluster role objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckClusterRoleExistsByLabel(label string) (bool, string, error) {
+
+	clusterRoles, err := c.GetClusterRolesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(clusterRoles) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, clusterRoles[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteClusterRoleByLabel deletes a cluster role object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteClusterRoleByLabel(label string) error {
+	return c.DeleteObjectByLabel(label, "", "clusterrole", "Cluster Role")
+}
+
+// DeleteClusterRole deletes a cluster role object matching the specified name
+func (c *KubectlClient) DeleteClusterRole(name string) error {
+	return c.DeleteObject(name, "", "clusterrole", "Cluster Role")
+}
+
+// PatchClusterRoleByLabel patches a Cluster Role object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchClusterRoleByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, "", "clusterrole", "Cluster Role", patchBytes)
+}
+
+// GetClusterRoleBindingByLabel returns a cluster role binding object matching the specified label if it is unique
+func (c *KubectlClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error) {
+
+	clusterRoleBindings, err := c.GetClusterRoleBindingsByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clusterRoleBindings) == 1 {
+		return &clusterRoleBindings[0], nil
+	} else if len(clusterRoleBindings) > 1 {
+		return nil, fmt.Errorf("multiple cluster role bindings have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
+	}
+}
+
+// GetClusterRoleBindingsByLabel returns all cluster role binding objects matching the specified label
+func (c *KubectlClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterRoleBinding, error) {
+
+	// Get clusterrolebinding info
+	cmdArgs := []string{"get", "clusterrolebinding", "-l", label, "-o=json"}
+
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var clusterRoleBindingList v13.ClusterRoleBindingList
+	if err := json.NewDecoder(stdout).Decode(&clusterRoleBindingList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return clusterRoleBindingList.Items, nil
+}
+
+// CheckClusterRoleBindingExistsByLabel returns true if one or more cluster role binding objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error) {
+
+	clusterRoleBindings, err := c.GetClusterRolesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(clusterRoleBindings) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, clusterRoleBindings[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteClusterRoleBindingByLabel deletes a cluster role binding object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteClusterRoleBindingByLabel(label string) error {
+	return c.DeleteObjectByLabel(label, "", "clusterrolebinding", "Cluster Role Binding")
+}
+
+// DeleteClusterRoleBinding deletes a cluster role binding object matching the specified name
+func (c *KubectlClient) DeleteClusterRoleBinding(name string) error {
+	return c.DeleteObject(name, "", "clusterrolebinding", "Cluster Role Binding")
+}
+
+// PatchClusterRoleBindingByLabel patches a Cluster Role binding object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, "", "clusterrolebinding", "Cluster Role Binding", patchBytes)
+}
+
+// GetCSIDriverByLabel returns a CSI driver object matching the specified label if it is unique
+func (c *KubectlClient) GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error) {
+
+	CSIDrivers, err := c.GetCSIDriversByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(CSIDrivers) == 1 {
+		return &CSIDrivers[0], nil
+	} else if len(CSIDrivers) > 1 {
+		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+	}
+}
+
+// GetCSIDriversByLabel returns all CSI driver objects matching the specified label
+func (c *KubectlClient) GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error) {
+
+	// Get CSI Driver info
+	cmdArgs := []string{"get", "CSIDriver", "-l", label, "-o=json"}
+
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var CSIDriverList v1beta12.CSIDriverList
+	if err := json.NewDecoder(stdout).Decode(&CSIDriverList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return CSIDriverList.Items, nil
+}
+
+// GetCSIDriversByLabel returns true if one or more CSI Driver objects
+// matching the specified label exist.
+func (c *KubectlClient) CheckCSIDriverExistsByLabel(label string) (bool, string, error) {
+
+	CSIDrivers, err := c.GetCSIDriversByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(CSIDrivers) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, CSIDrivers[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) DeleteCSIDriverByLabel(label string) error {
+	return c.DeleteObjectByLabel(label, "", "CSIDriver", "CSI Driver")
+}
+
+// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified name
+func (c *KubectlClient) DeleteCSIDriver(name string) error {
+	return c.DeleteObject(name, "", "CSIDriver", "CSI Driver")
+}
+
+// PatchCSIDriverByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchCSIDriverByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, "", "CSIDriver", "CSI Driver", patchBytes)
+}
+
+// GetSecretsByLabel returns all secret object matching specified label
+func (c *KubectlClient) GetSecretsByLabel(label string, allNamespaces bool) ([]v1.Secret, error) {
+
+	// Get secret info
+	cmdArgs := []string{"get", "secret", "-l", label, "-o=json"}
+	if allNamespaces {
+		cmdArgs = append(cmdArgs, "--all-namespaces")
+	} else {
+		cmdArgs = append(cmdArgs, "--namespace", c.namespace)
+	}
+	cmd := exec.Command(c.cli, cmdArgs...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	var secretList v1.SecretList
+	if err := json.NewDecoder(stdout).Decode(&secretList); err != nil {
+		return nil, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	return secretList.Items, nil
+}
+
 // CheckSecretExists returns true if the specified secret exists, false otherwise.
 // It only returns an error if the check failed, not if the secret doesn't exist.
 func (c *KubectlClient) CheckSecretExists(secretName string) (bool, error) {
@@ -1166,14 +1728,8 @@ func (c *KubectlClient) GetSecretByLabel(label string, allNamespaces bool) (*v1.
 }
 
 // DeleteSecret deletes the specified Secret
-func (c *KubectlClient) DeleteSecret(secretName string) error {
-
-	cmdArgs := []string{"delete", "secret", secretName, "--namespace", c.namespace}
-	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-	return nil
+func (c *KubectlClient) DeleteSecretDefault(secretName string) error {
+	return c.DeleteSecret(secretName, c.namespace)
 }
 
 // DeleteSecretByLabel deletes a secret object matching the specified label
@@ -1192,6 +1748,17 @@ func (c *KubectlClient) DeleteSecretByLabel(label string) error {
 	}).Debug("Deleted secret by label.")
 
 	return nil
+}
+
+// DeleteSecret deletes the specified Secret by name and namespace
+func (c *KubectlClient) DeleteSecret(name, namespace string) error {
+	return c.DeleteObject(name, namespace, "secret", "Secret")
+}
+
+// PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchSecretByLabel(label string, patchBytes []byte) error {
+	return c.PatchObjectByLabel(label, c.namespace, "secret", "Secret", patchBytes)
 }
 
 // CheckNamespaceExists returns true if the specified namespace exists, false otherwise.
@@ -1360,6 +1927,32 @@ func (c *KubectlClient) updateObjectByYAML(yaml string) error {
 	return nil
 }
 
+// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
+// RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the
+// security context constraint. This only works for OpenShift.
+func (c *KubectlClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
+
+	if c.flavor != FlavorOpenShift {
+		return errors.New("the current client context is not OpenShift")
+	}
+
+	// This command appears to be idempotent, so no need to call isTridentUserInOpenShiftSCC() first.
+	args := []string{
+		fmt.Sprintf("--namespace=%s", c.namespace),
+		"adm",
+		"policy",
+		"add-scc-to-user",
+		scc,
+		"-z",
+		user,
+	}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+	return nil
+}
+
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the
 // security context constraint. This only works for OpenShift.
 func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
@@ -1460,6 +2053,19 @@ RetryLoop:
 	_ = cmd.Wait()
 }
 
+// AddFinalizerToCRDs updates the CRD objects to include our Trident finalizer (definitions are not namespaced)
+func (c *KubectlClient) AddFinalizerToCRDs(CRDnames []string) error {
+	for _, crdName := range CRDnames {
+		err := c.AddFinalizerToCRD(crdName)
+		if err != nil {
+			log.Errorf("error in adding finalizers to Kubernetes CRD object %v", crdName)
+			return err
+		}
+	}
+
+	return nil
+}
+
 // AddFinalizerToCRD patches the CRD object to include our Trident finalizer (definitions are not namespaced)
 func (c *KubectlClient) AddFinalizerToCRD(crdName string) error {
 
@@ -1526,4 +2132,65 @@ func (c *KubectlClient) GetCRDClient() (*crdclient.Clientset, error) {
 	}
 
 	return crdclient.NewForConfig(restConfig)
+}
+
+// DeleteObjectByLabelNamespaced deletes an object matching the specified label in the namespace of the client.
+func (c *KubectlClient) DeleteObjectByLabel(label, namespace, kind, kindName string) error {
+
+	cmdArgs := []string{"delete", kind, "-l", label}
+	if namespace != "" {
+		cmdArgs = append(cmdArgs, "--namespace", namespace)
+	}
+
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label": label,
+	}).Debugf("Deleted Kubernetes %s.", kindName)
+
+	return nil
+}
+
+// PatchObjectByLabel deletes an object matching the specified name and namespace
+func (c *KubectlClient) DeleteObject(name, namespace, kind, kindName string) error {
+
+	cmdArgs := []string{"delete", kind, name}
+	if namespace != "" {
+		cmdArgs = append(cmdArgs, "--namespace", namespace)
+	}
+
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name": name,
+	}).Debugf("Deleted Kubernetes %s.", kindName)
+
+	return nil
+}
+
+// PatchObjectByLabelAndNamespace patches an object matching the specified label
+// in the namespace of the client.
+func (c *KubectlClient) PatchObjectByLabel(label, namespace, kind, kindName string, patchBytes []byte) error {
+
+	cmdArgs := []string{"patch", kind, "-l", label, "-p", string(patchBytes), "--type", "strategic"}
+	if namespace != "" {
+		cmdArgs = append(cmdArgs, "--namespace", namespace)
+	}
+
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"label": label,
+	}).Debugf("Patched Kubernetes %s.", kindName)
+
+	return nil
 }

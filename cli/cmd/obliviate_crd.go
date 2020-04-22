@@ -63,6 +63,16 @@ var obliviateCRDCmd = &cobra.Command{
 	},
 }
 
+func ObliviateCRDs(kubeClientVal k8sclient.Interface, crdClientsetVal crdclient.Interface, namespace string,
+	timeout time.Duration) error {
+	kubeClient = kubeClientVal
+	crdClientset = crdClientsetVal
+	resetNamespace = namespace
+	k8sTimeout = timeout
+
+	return obliviateCRDs()
+}
+
 func obliviateCRDs() error {
 
 	// Delete all instances of custom resources

@@ -1,0 +1,8 @@
+apiVersion: trident.netapp.io/v1
+kind: TridentProvisioner
+metadata:
+  name: trident
+  namespace: trident
+spec:
+  debug: true
+  tridentImage: localhost:5000/netapp/trident:20.04.0

@@ -16,14 +16,17 @@ import (
 )
 
 const (
-	logNameTrident         = "trident-controller"
-	logNameTridentPrevious = "trident-controller-previous"
-	logNameNode            = "trident-node"
-	logNameNodePrevious    = "trident-node-previous"
+	logNameTrident                 = "trident-controller"
+	logNameTridentPrevious         = "trident-controller-previous"
+	logNameNode                    = "trident-node"
+	logNameNodePrevious            = "trident-node-previous"
+	logNameTridentOperator         = "trident-operator"
+	logNameTridentOperatorPrevious = "trident-operator-previous"
 
-	logTypeAuto    = "auto"
-	logTypeTrident = "trident"
-	logTypeAll     = "all"
+	logTypeAuto            = "auto"
+	logTypeTrident         = "trident"
+	logTypeTridentOperator = "trident-operator"
+	logTypeAll             = "all"
 
 	archiveFilenameFormat = "support-2006-01-02T15-04-05-MST.zip"
 )
@@ -37,11 +40,15 @@ var (
 	zipFileName string
 	zipWriter   *zip.Writer
 	logErrors   []byte
+
+	tridentOperatorPodName      string
+	tridentOperatorPodNamespace string
 )
 
 func init() {
 	RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto, "Trident log to display. One of trident|auto|all")
+	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto,
+		"Trident log to display. One of trident|auto|operator|all")
 	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
 	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false, "Get the logs for the previous container instance if it exists.")
 	logsCmd.Flags().StringVar(&node, "node", "", "The kubernetes node name to gather node pod logs from.")
@@ -53,8 +60,38 @@ var logsCmd = &cobra.Command{
 	Short: "Print the logs from Trident",
 	Long:  "Print the logs from the Trident storage orchestrator for Kubernetes",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+
+		tridentOperatorPodName = ""
+		tridentOperatorPodNamespace = ""
+		var operatorErr error
+
 		err := discoverOperatingMode(cmd)
-		return err
+
+		switch logType {
+		case logTypeAll:
+			// We know the operating mode, just get Operator details but don't throw error as it may not exist
+			if err == nil {
+				tridentOperatorPodName, tridentOperatorPodNamespace, operatorErr = getTridentOperatorPod(TridentOperatorLabel)
+			}
+			return err
+		case logTypeTridentOperator:
+			if err != nil {
+				// Need to discover Operating mode first
+				operatorErr := discoverJustOperatingMode(cmd)
+				if operatorErr != nil {
+					return fmt.Errorf("unable to discover operating mode for the operator; err: %s", operatorErr)
+				}
+			}
+
+			// Now, we know the operating mode, just get Operator details but need to throw error as it may not exist
+			if tridentOperatorPodName, tridentOperatorPodNamespace,
+				operatorErr = getTridentOperatorPod(TridentOperatorLabel); operatorErr != nil {
+				return operatorErr
+			}
+			return nil
+		default:
+			return err
+		}
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -166,6 +203,8 @@ func getLogs() error {
 		} else {
 			getNodeLogs(logNameNode, node)
 		}
+	case logTypeTridentOperator:
+		getTridentOperatorLogs(logNameTridentOperator)
 	}
 
 	if previous {
@@ -183,6 +222,8 @@ func getLogs() error {
 			} else {
 				getNodeLogs(logNameNodePrevious, node)
 			}
+		case logTypeTridentOperator:
+			getTridentOperatorLogs(logNameTridentOperatorPrevious)
 		}
 	}
 
@@ -191,7 +232,7 @@ func getLogs() error {
 
 func checkValidLog() error {
 	switch logType {
-	case logTypeTrident, logTypeAuto, logTypeAll:
+	case logTypeTrident, logTypeAuto, logTypeAll, logTypeTridentOperator:
 		return nil
 	default:
 		return fmt.Errorf("%s is not a valid Trident log", logType)
@@ -401,6 +442,42 @@ func getAllNodeLogs(logName string) error {
 		}
 	}
 	return nil
+}
+
+func getTridentOperatorLogs(logName string) error {
+
+	var container string
+	var prev bool
+
+	switch logName {
+	case logNameTridentOperator:
+		container, prev = config.OperatorContainerName, false
+	case logNameTridentOperatorPrevious:
+		container, prev = config.OperatorContainerName, true
+	default:
+		return fmt.Errorf("%s is not a valid Trident Operator log", logName)
+	}
+
+	// Build command to get K8S logs
+	prevArg := fmt.Sprintf("--previous=%v", prev)
+	logsCommand := []string{"logs", tridentOperatorPodName, "-n", tridentOperatorPodNamespace, "-c", container, prevArg}
+
+	if Debug {
+		fmt.Printf("Invoking command: %s %v\n", KubernetesCLI, strings.Join(logsCommand, " "))
+	}
+
+	// Get logs
+	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+	if err != nil {
+		logErrors = appendError(logErrors, logBytes)
+	} else {
+		if err = writeLogs(logName, logBytes); err != nil {
+			writeError := fmt.Sprintf("could not write log %s; %v", logName, err)
+			logErrors = appendError(logErrors, []byte(writeError))
+		}
+	}
+
+	return err
 }
 
 func appendError(oldErrors, newError []byte) []byte {

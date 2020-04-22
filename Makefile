@@ -8,6 +8,7 @@ TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
+K8S_CODE_GENERATOR = code-generator-kubernetes-1.16.0
 
 ## build flags variables
 GITHASH ?= `git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty || echo unknown`
@@ -94,6 +95,9 @@ trident_retag:
 	-docker tag ${TRIDENT_TAG} ${TRIDENT_TAG_OLD}
 	-docker rmi ${TRIDENT_TAG}
 
+operator_retag:
+	cd operator && $(MAKE) retag
+
 trident_build: trident_retag
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
@@ -122,6 +126,9 @@ tridentctl_macos_build:
 	@chmod 777 ${MACOS_BIN_DIR}
 	@${GO_MACOS} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/macos/${CLI_BIN} ${CLI_PKG}
 
+operator_build:
+	cd operator && $(MAKE) build
+
 trident_build_all: *.go trident_build tridentctl_macos_build
 
 dist_tag:
@@ -129,6 +136,9 @@ ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
 	-docker rmi ${TRIDENT_DIST_TAG}
 	@docker tag ${TRIDENT_TAG} ${TRIDENT_DIST_TAG}
 endif
+
+operator_dist_tag:
+	cd operator && $(MAKE) dist_tag
 
 dist_tar: build
 	-rm -rf /tmp/trident-installer
@@ -190,6 +200,7 @@ clean:
 	-docker rmi netapp/container-tools || true
 	-rm -f ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} trident-installer-${TRIDENT_VERSION}.tar.gz
 	-rm -rf ${COVERAGE_DIR}
+	cd operator && $(MAKE) clean
 
 fmt:
 	@$(GO_LINUX) fmt
@@ -201,4 +212,11 @@ vet:
 	@go vet $(shell go list ./... | grep -v /vendor/)
 
 k8s_codegen:
-	./vendor/k8s.io/code-generator/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt
+	tar zxvf ${K8S_CODE_GENERATOR}.tar.gz --no-same-owner
+	chmod +x ${K8S_CODE_GENERATOR}/generate-groups.sh
+	${K8S_CODE_GENERATOR}/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client \
+    ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt
+	rm -rf ${K8S_CODE_GENERATOR}
+
+k8s_codegen_operator:
+	cd operator && $(MAKE) k8s_codegen

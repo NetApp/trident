@@ -55,6 +55,12 @@ const (
 	DaemonSetFilename          = "trident-daemonset.yaml"
 	CRDsFilename               = "trident-crds.yaml"
 	PodSecurityPolicyFilename  = "trident-podsecuritypolicy.yaml"
+
+	TridentCSI    = "trident-csi"
+	TridentLegacy = "trident"
+
+	CSIDriver = "csi.trident.netapp.io"
+	TridentPSP = "tridentpods"
 )
 
 var (
@@ -411,22 +417,26 @@ func prepareYAMLFiles() error {
 
 	cleanYAMLFiles()
 
+	labels := make(map[string]string)
+	labels[appLabelKey] = appLabelValue
+
 	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(false)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(false), "", nil, nil)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
 
-	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), false)
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), getClusterRoleName(false), nil, nil, false)
 	if err = writeFile(clusterRolePath, clusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write cluster role YAML file; %v", err)
 	}
 
-	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(), false)
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
+		getClusterRoleBindingName(false), nil, nil)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
@@ -436,12 +446,13 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write custom resource definition YAML file; %v", err)
 	}
 
-	deploymentYAML := k8sclient.GetDeploymentYAML(tridentImage, appLabelValue, logFormat, Debug)
+	deploymentYAML := k8sclient.GetDeploymentYAML(getDeploymentName(false), tridentImage, logFormat, []string{},
+		labels, nil, Debug)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
-	podSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+	podSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
 		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
 	}
@@ -455,22 +466,34 @@ func prepareCSIYAMLFiles() error {
 
 	cleanYAMLFiles()
 
+	labels := make(map[string]string)
+	labels[appLabelKey] = appLabelValue
+
+	daemonSetlabels := make(map[string]string)
+	daemonSetlabels[appLabelKey] = TridentNodeLabelValue
+
+	csiSidecarRegistry := imageRegistry
+	if csiSidecarRegistry == "" {
+		csiSidecarRegistry = "quay.io"
+	}
+
 	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(true)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(true), "", nil, nil)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
 
-	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), true)
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), getClusterRoleName(true), nil, nil, true)
 	if err = writeFile(clusterRolePath, clusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write cluster role YAML file; %v", err)
 	}
 
-	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(), true)
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
+		getClusterRoleBindingName(true), nil, nil)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
@@ -480,24 +503,24 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write custom resource definition YAML file; %v", err)
 	}
 
-	serviceYAML := k8sclient.GetCSIServiceYAML(appLabelValue)
+	serviceYAML := k8sclient.GetCSIServiceYAML(getServiceName(), labels, nil)
 	if err = writeFile(csiServicePath, serviceYAML); err != nil {
 		return fmt.Errorf("could not write service YAML file; %v", err)
 	}
 
-	deploymentYAML := k8sclient.GetCSIDeploymentYAML(
-		tridentImage, imageRegistry, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion())
+	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
+		tridentImage, csiSidecarRegistry, logFormat, []string{}, labels, nil, Debug, useIPv6, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(
-		tridentImage, imageRegistry, kubeletDir, TridentNodeLabelValue, logFormat, Debug, client.ServerVersion())
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
+		tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
 
-	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
+	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
 		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
 	}
@@ -725,9 +748,9 @@ func installTrident() (returnError error) {
 		logFields = log.Fields{"path": podSecurityPolicyPath}
 	} else {
 		// Delete the object in case it already exists and we need to update it
-		pspYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML()
+		pspYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 		if !csi {
-			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML()
+			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 		}
 		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
 			returnError = fmt.Errorf("could not delete pod security policy; %v", err)
@@ -769,6 +792,9 @@ func installTrident() (returnError error) {
 		return
 	}
 
+	labels := make(map[string]string)
+	labels[appLabelKey] = appLabelValue
+
 	if !csi {
 
 		// Create the deployment
@@ -781,8 +807,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(deploymentPath)
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8sclient.GetDeploymentYAML(
-				tridentImage, appLabelValue, logFormat, Debug))
+			returnError = client.CreateObjectByYAML(k8sclient.GetDeploymentYAML(getDeploymentName(false), tridentImage, logFormat, []string{}, labels, nil, Debug))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -792,6 +817,11 @@ func installTrident() (returnError error) {
 		log.WithFields(logFields).Info("Created Trident deployment.")
 
 	} else {
+
+		csiSidecarRegistry := imageRegistry
+		if csiSidecarRegistry == "" {
+			csiSidecarRegistry = "quay.io"
+		}
 
 		// Create the CSI CRDs if necessary (1.13 only)
 		returnError = createK8S113CSICustomResourceDefinitions()
@@ -817,7 +847,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(csiServicePath)
 			logFields = log.Fields{"path": csiServicePath}
 		} else {
-			returnError = client.CreateObjectByYAML(k8sclient.GetCSIServiceYAML(appLabelValue))
+			returnError = client.CreateObjectByYAML(k8sclient.GetCSIServiceYAML(getServiceName(), labels, nil))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -844,7 +874,7 @@ func installTrident() (returnError error) {
 			tridentconfig.ClientCertFile: certInfo.ClientCert,
 		}
 		err = client.CreateObjectByYAML(
-			k8sclient.GetSecretYAML("trident-csi", TridentPodNamespace, appLabelValue, secretMap, nil))
+			k8sclient.GetSecretYAML(getSecretName(), TridentPodNamespace, labels, nil, secretMap, nil))
 		if err != nil {
 			returnError = fmt.Errorf("could not create Trident secret; %v", err)
 			return
@@ -862,8 +892,8 @@ func installTrident() (returnError error) {
 			logFields = log.Fields{"path": deploymentPath}
 		} else {
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDeploymentYAML(
-					tridentImage, imageRegistry, appLabelValue, logFormat, Debug, useIPv6, client.ServerVersion()))
+				k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
+					tridentImage, csiSidecarRegistry, logFormat, []string{}, labels, nil, Debug, useIPv6, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
@@ -882,10 +912,12 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByFile(csiDaemonSetPath)
 			logFields = log.Fields{"path": csiDaemonSetPath}
 		} else {
+			daemonSetlabels := make(map[string]string)
+			daemonSetlabels[appLabelKey] = TridentNodeLabelValue
+
 			returnError = client.CreateObjectByYAML(
-				k8sclient.GetCSIDaemonSetYAML(
-					tridentImage, imageRegistry, kubeletDir,
-					TridentNodeLabelValue, logFormat, Debug,
+				k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
+					tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
 					client.ServerVersion()))
 			logFields = log.Fields{}
 		}
@@ -1169,11 +1201,11 @@ func createK8SCSIDriver() error {
 	}
 
 	// Delete the object in case it already exists and we need to update it
-	if err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverCRYAML(), true); err != nil {
+	if err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverCRYAML(getCSIDriverName(), nil, nil), true); err != nil {
 		return fmt.Errorf("could not delete csidriver custom resource; %v", err)
 	}
 
-	if err := client.CreateObjectByYAML(k8sclient.GetCSIDriverCRYAML()); err != nil {
+	if err := client.CreateObjectByYAML(k8sclient.GetCSIDriverCRYAML(getCSIDriverName(), nil, nil)); err != nil {
 		return fmt.Errorf("could not create csidriver custom resource; %v", err)
 	}
 
@@ -1189,7 +1221,8 @@ func createRBACObjects() (returnError error) {
 		returnError = client.CreateObjectByFile(serviceAccountPath)
 		logFields = log.Fields{"path": serviceAccountPath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8sclient.GetServiceAccountYAML(csi))
+		returnError = client.CreateObjectByYAML(k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), "", nil,
+			nil))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -1203,7 +1236,8 @@ func createRBACObjects() (returnError error) {
 		returnError = client.CreateObjectByFile(clusterRolePath)
 		logFields = log.Fields{"path": clusterRolePath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleYAML(client.Flavor(), csi))
+		returnError = client.CreateObjectByYAML(k8sclient.GetClusterRoleYAML(client.Flavor(), getClusterRoleName(csi),
+			nil, nil, csi))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -1218,7 +1252,8 @@ func createRBACObjects() (returnError error) {
 		logFields = log.Fields{"path": clusterRoleBindingPath}
 	} else {
 		returnError = client.CreateObjectByYAML(
-			k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(), csi))
+			k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
+				getClusterRoleBindingName(csi), nil, nil))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -1259,7 +1294,8 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	}
 
 	// Delete cluster role binding
-	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(), csi)
+	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
+		getClusterRoleBindingName(csi), nil, nil)
 	if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete cluster role binding.")
 		anyErrors = true
@@ -1268,7 +1304,8 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	}
 
 	// Delete cluster role
-	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), csi)
+	clusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), getClusterRoleName(csi),
+		nil, nil, csi)
 	if err := client.DeleteObjectByYAML(clusterRoleYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete cluster role.")
 		anyErrors = true
@@ -1277,7 +1314,8 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	}
 
 	// Delete service account
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(csi)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), "", nil,
+		nil)
 	if err := client.DeleteObjectByYAML(serviceAccountYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete service account.")
 		anyErrors = true
@@ -2366,4 +2404,56 @@ func validateTridentVersionCRPresent(namespace string) error {
 	}
 
 	return nil
+}
+
+func getServiceAccountName(csi bool) string {
+	if csi {
+		return TridentCSI
+	} else {
+		return TridentLegacy
+	}
+}
+
+func getClusterRoleName(csi bool) string {
+	if csi {
+		return TridentCSI
+	} else {
+		return TridentLegacy
+	}
+}
+
+func getClusterRoleBindingName(csi bool) string {
+	if csi {
+		return TridentCSI
+	} else {
+		return TridentLegacy
+	}
+}
+
+func getPSPName() string {
+	return TridentPSP
+}
+
+func getServiceName() string {
+	return TridentCSI
+}
+
+func getSecretName() string {
+	return TridentCSI
+}
+
+func getDeploymentName(csi bool) string {
+	if csi {
+		return TridentCSI
+	} else {
+		return TridentLegacy
+	}
+}
+
+func getDaemonSetName() string {
+	return TridentCSI
+}
+
+func getCSIDriverName() string {
+	return CSIDriver
 }

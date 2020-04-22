@@ -183,3 +183,99 @@ func IsTimeoutError(err error) bool {
 	_, ok := err.(*timeoutError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// unsupportedKubernetesVersionError
+/////////////////////////////////////////////////////////////////////////////
+
+type unsupportedKubernetesVersionError struct {
+	message string
+}
+
+func (e *unsupportedKubernetesVersionError) Error() string { return e.message }
+
+func UnsupportedKubernetesVersionError(err error) error {
+	return &unsupportedKubernetesVersionError{
+		message: fmt.Sprintf("unsupported Kubernetes version; %s", err.Error()),
+	}
+}
+
+func IsUnsupportedKubernetesVersionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*unsupportedKubernetesVersionError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// reconcileIncompleteError
+/////////////////////////////////////////////////////////////////////////////
+
+type reconcileIncompleteError struct {
+	message string
+}
+
+func (e *reconcileIncompleteError) Error() string { return e.message }
+
+func ReconcileIncompleteError() error {
+	return &reconcileIncompleteError{
+		message: "reconcile incomplete",
+	}
+}
+
+func IsReconcileIncompleteError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*reconcileIncompleteError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// reconcileFailedError
+/////////////////////////////////////////////////////////////////////////////
+
+type reconcileFailedError struct {
+	message string
+}
+
+func (e *reconcileFailedError) Error() string { return e.message }
+
+func ReconcileFailedError(err error) error {
+	return &reconcileFailedError{
+		message: fmt.Sprintf("reconcile failed; %s", err.Error()),
+	}
+}
+
+func IsReconcileFailedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*reconcileFailedError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// unsupportedConfigError
+/////////////////////////////////////////////////////////////////////////////
+
+type unsupportedConfigError struct {
+	message string
+}
+
+func (e *unsupportedConfigError) Error() string { return e.message }
+
+func UnsupportedConfigError(err error) error {
+	return &unsupportedConfigError{
+		message: fmt.Sprintf("unsupported configuration; %s", err.Error()),
+	}
+}
+
+func IsUnsupportedConfigError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*unsupportedConfigError)
+	return ok
+}

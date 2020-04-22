@@ -18,6 +18,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/policy/v1beta1"
+	v13 "k8s.io/api/rbac/v1"
+	v1beta12 "k8s.io/api/storage/v1beta1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -25,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	commontypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -67,18 +71,25 @@ type Interface interface {
 	GetDeploymentsByLabel(label string, allNamespaces bool) ([]appsv1.Deployment, error)
 	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDeploymentByLabel(label string) error
+	DeleteDeployment(name, namespace string) error
+	PatchDeploymentByLabel(label string, patchBytes []byte) error
 	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
 	GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error)
 	CheckServiceExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteServiceByLabel(label string) error
+	DeleteService(name, namespace string) error
+	PatchServiceByLabel(label string, patchBytes []byte) error
 	GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error)
 	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
 	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteStatefulSetByLabel(label string) error
+	DeleteStatefulSet(name, namespace string) error
 	GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error)
 	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error)
 	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDaemonSetByLabel(label string) error
+	DeleteDaemonSet(name, namespace string) error
+	PatchDaemonSetByLabel(label string, patchBytes []byte) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
 	GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error)
 	CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error)
@@ -88,6 +99,7 @@ type Interface interface {
 	GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod, error)
 	CheckPodExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeletePodByLabel(label string) error
+	DeletePod(name, namespace string) error
 	GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error)
 	GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error)
 	CheckPVCExists(pvcName string) (bool, error)
@@ -100,22 +112,57 @@ type Interface interface {
 	GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error)
 	CheckCRDExists(crdName string) (bool, error)
 	DeleteCRD(crdName string) error
+	GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error)
+	GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodSecurityPolicy, error)
+	CheckPodSecurityPolicyExistsByLabel(label string) (bool, string, error)
+	DeletePodSecurityPolicyByLabel(label string) error
+	DeletePodSecurityPolicy(pspName string) error
+	PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error
+	GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error)
+	GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error)
+	CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error)
+	DeleteServiceAccountByLabel(label string) error
+	DeleteServiceAccount(name, namespace string) error
+	PatchServiceAccountByLabel(label string, patchBytes []byte) error
+	GetClusterRoleByLabel(label string) (*v13.ClusterRole, error)
+	GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error)
+	CheckClusterRoleExistsByLabel(label string) (bool, string, error)
+	DeleteClusterRoleByLabel(label string) error
+	DeleteClusterRole(name string) error
+	PatchClusterRoleByLabel(label string, patchBytes []byte) error
+	GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error)
+	GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterRoleBinding, error)
+	CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error)
+	DeleteClusterRoleBindingByLabel(label string) error
+	DeleteClusterRoleBinding(name string) error
+	PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error
+	GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error)
+	GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error)
+	CheckCSIDriverExistsByLabel(label string) (bool, string, error)
+	DeleteCSIDriverByLabel(label string) error
+	DeleteCSIDriver(name string) error
+	PatchCSIDriverByLabel(label string, patchBytes []byte) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	UpdateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
 	GetSecret(secretName string) (*v1.Secret, error)
 	GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error)
+	GetSecretsByLabel(label string, allNamespaces bool) ([]v1.Secret, error)
 	CheckSecretExists(secretName string) (bool, error)
-	DeleteSecret(secretName string) error
+	DeleteSecretDefault(secretName string) error
 	DeleteSecretByLabel(label string) error
+	DeleteSecret(name, namespace string) error
+	PatchSecretByLabel(label string, patchBytes []byte) error
 	CreateObjectByFile(filePath string) error
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
 	DeleteObjectByYAML(yaml string, ignoreNotFound bool) error
+	AddTridentUserToOpenShiftSCC(user, scc string) error
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
 	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
+	AddFinalizerToCRDs(CRDnames []string) error
 	RemoveFinalizerFromCRD(crdName string) error
 	GetCRDClient() (*crdclient.Clientset, error)
 }
@@ -123,6 +170,7 @@ type Interface interface {
 type KubeClient struct {
 	clientset    kubernetes.Interface
 	extClientset *apiextension.Clientset
+	apiResources []*metav1.APIResourceList
 	restConfig   *rest.Config
 	namespace    string
 	versionInfo  *version.Info
@@ -156,6 +204,7 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 	kubeClient := &KubeClient{
 		clientset:    clientset,
 		extClientset: extClientset,
+		apiResources: make([]*metav1.APIResourceList, 0),
 		restConfig:   config,
 		namespace:    namespace,
 		versionInfo:  versionInfo,
@@ -187,7 +236,8 @@ func NewFakeKubeClient() (Interface, error) {
 	// Create core client
 	clientset := fake.NewSimpleClientset()
 	kubeClient := &KubeClient{
-		clientset: clientset,
+		clientset:    clientset,
+		apiResources: make([]*metav1.APIResourceList, 0),
 	}
 
 	return kubeClient, nil
@@ -198,13 +248,16 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 	// Read the API groups/resources available from the server
 	discoveryClient := k.clientset.Discovery()
 
-	_, resourcesList, err := discoveryClient.ServerGroupsAndResources()
+	_, apiResources, err := discoveryClient.ServerGroupsAndResources()
 	if err != nil {
 		log.WithField("error", err).Warning("Could not get server resources, defaulting to Kubernetes flavor.")
 		return FlavorKubernetes
 	}
 
-	resources, err := discovery.GroupVersionResources(resourcesList)
+	// Populate the cache so the dynamic client is fast
+	k.apiResources = apiResources
+
+	resources, err := discovery.GroupVersionResources(k.apiResources)
 	if err != nil {
 		log.WithField("error", err).Warning("Could not parse server resources, defaulting to Kubernetes flavor.")
 		return FlavorKubernetes
@@ -335,7 +388,7 @@ func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*ap
 	} else if len(deployments) > 1 {
 		return nil, fmt.Errorf("multiple deployments have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no deployments have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
 	}
 }
 
@@ -401,6 +454,45 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 	return nil
 }
 
+// DeleteDeployment deletes a deployment object matching the specified name and namespace
+func (k *KubeClient) DeleteDeployment(name, namespace string) error {
+
+	if err := k.clientset.AppsV1().Deployments(namespace).Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"deployment": name,
+		"namespace":  namespace,
+	}).Debug("Deleted Kubernetes deployment.")
+
+	return nil
+}
+
+// PatchDeploymentByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte) error {
+
+	deployment, err := k.GetDeploymentByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(deployment.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": deployment.Name,
+		"namespace":  k.namespace,
+	}).Debug("Patched Kubernetes deployment.")
+
+	return nil
+}
+
 // GetServiceByLabel returns a service object matching the specified label if it is unique
 func (k *KubeClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error) {
 
@@ -414,7 +506,7 @@ func (k *KubeClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Se
 	} else if len(services) > 1 {
 		return nil, fmt.Errorf("multiple services have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no services have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no services have the label %s", label))
 	}
 }
 
@@ -480,6 +572,45 @@ func (k *KubeClient) DeleteServiceByLabel(label string) error {
 	return nil
 }
 
+// DeleteService deletes a Service object matching the specified name and namespace
+func (k *KubeClient) DeleteService(name, namespace string) error {
+
+	if err := k.clientset.CoreV1().Services(namespace).Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"Service":   name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes Service.")
+
+	return nil
+}
+
+// PatchServiceByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte) error {
+
+	service, err := k.GetServiceByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(service.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": service.Name,
+		"namespace":  k.namespace,
+	}).Debug("Patched Kubernetes service.")
+
+	return nil
+}
+
 // GetStatefulSetByLabel returns a statefulset object matching the specified label if it is unique
 func (k *KubeClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error) {
 
@@ -493,7 +624,7 @@ func (k *KubeClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*a
 	} else if len(statefulsets) > 1 {
 		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no statefulsets have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
 	}
 }
 
@@ -559,6 +690,21 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 	return nil
 }
 
+// DeleteStatefulSet deletes a statefulset object matching the specified name and namespace.
+func (k *KubeClient) DeleteStatefulSet(name, namespace string) error {
+
+	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"statefulset": name,
+		"namespace":   k.namespace,
+	}).Debug("Deleted Kubernetes statefulset.")
+
+	return nil
+}
+
 // GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
 func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error) {
 
@@ -572,7 +718,7 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*app
 	} else if len(daemonsets) > 1 {
 		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no daemonsets have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
 	}
 }
 
@@ -638,6 +784,45 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 	return nil
 }
 
+// DeleteDaemonSet deletes a DaemonSet object matching the specified name and namespace
+func (k *KubeClient) DeleteDaemonSet(name, namespace string) error {
+
+	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"DaemonSet": name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes DaemonSet.")
+
+	return nil
+}
+
+// PatchDaemonSetByLabel patches a DaemonSet object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte) error {
+
+	daemonSet, err := k.GetDaemonSetByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(daemonSet.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"DaemonSet": daemonSet.Name,
+		"namespace": k.namespace,
+	}).Debug("Patched Kubernetes DaemonSet.")
+
+	return nil
+}
+
 // GetConfigMapByLabel returns a configmap object matching the specified label if it is unique
 func (k *KubeClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error) {
 
@@ -651,7 +836,7 @@ func (k *KubeClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.
 	} else if len(configMaps) > 1 {
 		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no configmaps have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
 	}
 }
 
@@ -733,7 +918,7 @@ func (k *KubeClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, e
 	} else if len(pods) > 1 {
 		return nil, fmt.Errorf("multiple pods have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no pods have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
 	}
 }
 
@@ -798,6 +983,26 @@ func (k *KubeClient) DeletePodByLabel(label string) error {
 	return nil
 }
 
+// DeletePod deletes a pod object matching the specified name and namespace
+func (k *KubeClient) DeletePod(name, namespace string) error {
+
+	var gracePeriod int64
+	deleteOptions := &metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod,
+	}
+
+	if err := k.clientset.CoreV1().Pods(namespace).Delete(name, deleteOptions); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"pod":       name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes pod.")
+
+	return nil
+}
+
 func (k *KubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
 	var options metav1.GetOptions
 	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(pvcName, options)
@@ -825,7 +1030,7 @@ func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.Persis
 	} else if len(pvcList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVCs have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no PVCs have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no PVCs have the label %s", label))
 	}
 }
 
@@ -890,7 +1095,7 @@ func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
 	} else if len(pvList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVs have the label %s", label)
 	} else {
-		return nil, fmt.Errorf("no PVs have the label %s", label)
+		return nil, utils.NotFoundError(fmt.Sprintf("no PVs have the label %s", label))
 	}
 }
 
@@ -937,6 +1142,567 @@ func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
 
 func (k *KubeClient) DeleteCRD(crdName string) error {
 	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, k.deleteOptions())
+}
+
+// GetPodSecurityPolicyByLabel returns a pod security policy object matching the specified label if it is unique
+func (k *KubeClient) GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error) {
+
+	pspList, err := k.GetPodSecurityPoliciesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pspList) == 1 {
+		return &pspList[0], nil
+	} else if len(pspList) > 1 {
+		return nil, fmt.Errorf("multiple pod security policies have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
+	}
+}
+
+// GetPodSecurityPoliciesByLabel returns all pod security policy objects matching the specified label
+func (k *KubeClient) GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodSecurityPolicy,
+	error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	pspList, err := k.clientset.PolicyV1beta1().PodSecurityPolicies().List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return pspList.Items, nil
+}
+
+// CheckPodSecurityPolicyExistsByLabel returns true if one or more pod security policy objects
+// matching the specified label exist.
+func (k *KubeClient) CheckPodSecurityPolicyExistsByLabel(label string) (bool, string, error) {
+
+	pspList, err := k.GetPodSecurityPoliciesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(pspList) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, pspList[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeletePodSecurityPolicyByLabel deletes a pod security policy object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
+
+	psp, err := k.GetPodSecurityPolicyByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(psp.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":             label,
+		"podSecurityPolicy": psp.Name,
+	}).Debug("Deleted Kubernetes pod security policy.")
+
+	return nil
+}
+
+// DeletePodSecurityPolicy deletes a pod security policy object matching the specified PSP name.
+func (k *KubeClient) DeletePodSecurityPolicy(pspName string) error {
+
+	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(pspName, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"service": pspName,
+	}).Debug("Deleted Kubernetes pod security policy.")
+
+	return nil
+}
+
+// PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error {
+
+	psp, err := k.GetPodSecurityPolicyByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(psp.Name, commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": psp.Name,
+	}).Debug("Patched Kubernetes pod security policy.")
+
+	return nil
+}
+
+// GetServiceAccountByLabel returns a service account object matching the specified label if it is unique
+func (k *KubeClient) GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error) {
+
+	serviceAccounts, err := k.GetServiceAccountsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(serviceAccounts) == 1 {
+		return &serviceAccounts[0], nil
+	} else if len(serviceAccounts) > 1 {
+		return nil, fmt.Errorf("multiple service accounts have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
+	}
+}
+
+// GetServiceAccountsByLabel returns all service account objects matching the specified label
+func (k *KubeClient) GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := k.namespace
+	if allNamespaces {
+		namespace = ""
+	}
+
+	serviceAccountList, err := k.clientset.CoreV1().ServiceAccounts(namespace).List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return serviceAccountList.Items, nil
+}
+
+// CheckServiceAccountExistsByLabel returns true if one or more service account objects
+// matching the specified label exist.
+func (k *KubeClient) CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
+
+	serviceAccounts, err := k.GetServiceAccountsByLabel(label, allNamespaces)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(serviceAccounts) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, serviceAccounts[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteServiceAccountByLabel deletes a service account object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeleteServiceAccountByLabel(label string) error {
+
+	serviceAccount, err := k.GetServiceAccountByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Delete(serviceAccount.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":          label,
+		"serviceAccount": serviceAccount.Name,
+		"namespace":      k.namespace,
+	}).Debug("Deleted Kubernetes service account.")
+
+	return nil
+}
+
+// DeleteServiceAccount deletes a service account object matching the specified
+// name and namespace.
+func (k *KubeClient) DeleteServiceAccount(name, namespace string) error {
+
+	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(name,
+		k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"serviceAccount": name,
+		"namespace":      namespace,
+	}).Debug("Deleted Kubernetes service account.")
+
+	return nil
+}
+
+// PatchServiceAccountByLabel patches a Service Account object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte) error {
+
+	serviceAccount, err := k.GetServiceAccountByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(serviceAccount.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":          label,
+		"serviceAccount": serviceAccount.Name,
+		"namespace":      k.namespace,
+	}).Debug("Patched Kubernetes Service Account.")
+
+	return nil
+}
+
+// GetClusterRoleByLabel returns a cluster role object matching the specified label if it is unique
+func (k *KubeClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, error) {
+
+	clusterRoles, err := k.GetClusterRolesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clusterRoles) == 1 {
+		return &clusterRoles[0], nil
+	} else if len(clusterRoles) > 1 {
+		return nil, fmt.Errorf("multiple cluster roles have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
+	}
+}
+
+// GetClusterRoleByLabel returns all cluster role objects matching the specified label
+func (k *KubeClient) GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	clusterRoleList, err := k.clientset.RbacV1().ClusterRoles().List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return clusterRoleList.Items, nil
+}
+
+// CheckClusterRoleExistsByLabel returns true if one or more cluster role objects
+// matching the specified label exist.
+func (k *KubeClient) CheckClusterRoleExistsByLabel(label string) (bool, string, error) {
+
+	clusterRoles, err := k.GetClusterRolesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(clusterRoles) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, clusterRoles[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteClusterRoleByLabel deletes a cluster role object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeleteClusterRoleByLabel(label string) error {
+
+	clusterRole, err := k.GetClusterRoleByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.RbacV1().ClusterRoles().Delete(clusterRole.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"clusterRole": clusterRole.Name,
+	}).Debug("Deleted Kubernetes cluster role.")
+
+	return nil
+}
+
+// DeleteClusterRole deletes a cluster role object matching the specified name
+func (k *KubeClient) DeleteClusterRole(name string) error {
+
+	if err := k.clientset.RbacV1().ClusterRoles().Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"clusterRole": name,
+	}).Debug("Deleted Kubernetes cluster role.")
+
+	return nil
+}
+
+// PatchClusterRoleByLabel patches a Cluster Role object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte) error {
+
+	clusterRole, err := k.GetClusterRoleByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(clusterRole.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"clusterRole": clusterRole.Name,
+	}).Debug("Patched Kubernetes cluster role.")
+
+	return nil
+}
+
+// GetClusterRoleBindingByLabel returns a cluster role binding object matching the specified label if it is unique
+func (k *KubeClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error) {
+
+	clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clusterRoleBindings) == 1 {
+		return &clusterRoleBindings[0], nil
+	} else if len(clusterRoleBindings) > 1 {
+		return nil, fmt.Errorf("multiple cluster role bindings have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
+	}
+}
+
+// GetClusterRoleBindingsByLabel returns all cluster role binding objects matching the specified label
+func (k *KubeClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterRoleBinding, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	clusterRoleBindingList, err := k.clientset.RbacV1().ClusterRoleBindings().List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return clusterRoleBindingList.Items, nil
+}
+
+// CheckClusterRoleBindingExistsByLabel returns true if one or more cluster role binding objects
+// matching the specified label exist.
+func (k *KubeClient) CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error) {
+
+	clusterRoleBindings, err := k.GetClusterRolesByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(clusterRoleBindings) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, clusterRoleBindings[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteClusterRoleBindingByLabel deletes a cluster role binding object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeleteClusterRoleBindingByLabel(label string) error {
+
+	clusterRoleBinding, err := k.GetClusterRoleBindingByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.RbacV1().ClusterRoleBindings().Delete(clusterRoleBinding.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":              label,
+		"clusterRoleBinding": clusterRoleBinding.Name,
+	}).Debug("Deleted Kubernetes cluster role binding.")
+
+	return nil
+}
+
+// DeleteClusterRoleBinding deletes a cluster role binding object matching the specified name
+func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
+
+	if err := k.clientset.RbacV1().ClusterRoleBindings().Delete(name,
+		k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"clusterRoleBinding": name,
+	}).Debug("Deleted Kubernetes cluster role binding.")
+
+	return nil
+}
+
+// PatchClusterRoleBindingByLabel patches a Cluster Role binding object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error {
+
+	clusterRoleBinding, err := k.GetClusterRoleBindingByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(clusterRoleBinding.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":              label,
+		"clusterRoleBinding": clusterRoleBinding.Name,
+	}).Debug("Patched Kubernetes cluster role binding.")
+
+	return nil
+}
+
+// GetCSIDriverByLabel returns a CSI driver object matching the specified label if it is unique
+func (k *KubeClient) GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error) {
+
+	CSIDrivers, err := k.GetCSIDriversByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(CSIDrivers) == 1 {
+		return &CSIDrivers[0], nil
+	} else if len(CSIDrivers) > 1 {
+		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+	}
+}
+
+// GetCSIDriversByLabel returns all CSI driver objects matching the specified label
+func (k *KubeClient) GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	CSIDriverList, err := k.clientset.StorageV1beta1().CSIDrivers().List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return CSIDriverList.Items, nil
+}
+
+// GetCSIDriversByLabel returns true if one or more CSI Driver objects
+// matching the specified label exist.
+func (k *KubeClient) CheckCSIDriverExistsByLabel(label string) (bool, string, error) {
+
+	CSIDrivers, err := k.GetCSIDriversByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(CSIDrivers) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, CSIDrivers[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
+
+	CSIDriver, err := k.GetCSIDriverByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.StorageV1beta1().CSIDrivers().Delete(CSIDriver.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"CSIDriverCR": CSIDriver.Name,
+	}).Debug("Deleted CSI driver.")
+
+	return nil
+}
+
+// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified name
+func (k *KubeClient) DeleteCSIDriver(name string) error {
+
+	if err := k.clientset.StorageV1beta1().CSIDrivers().Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"CSIDriverCR": name,
+	}).Debug("Deleted CSI driver.")
+
+	return nil
+}
+
+// PatchCSIDriverByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte) error {
+
+	csiDriver, err := k.GetCSIDriverByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(csiDriver.Name,
+		commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": csiDriver.Name,
+	}).Debug("Patched Kubernetes CSI driver.")
+
+	return nil
 }
 
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
@@ -993,6 +1759,23 @@ func (k *KubeClient) GetSecret(secretName string) (*v1.Secret, error) {
 // GetSecretByLabel looks up a Secret by label
 func (k *KubeClient) GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error) {
 
+	secrets, err := k.GetSecretsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(secrets) == 1 {
+		return &secrets[0], nil
+	} else if len(secrets) > 1 {
+		return nil, fmt.Errorf("multiple secrets have the label %s", label)
+	} else {
+		return nil, fmt.Errorf("no secrets have the label %s", label)
+	}
+}
+
+// GetSecretsByLabel returns all secret object matching specified label
+func (k *KubeClient) GetSecretsByLabel(label string, allNamespaces bool) ([]v1.Secret, error) {
+
 	listOptions, err := k.listOptionsFromLabel(label)
 	if err != nil {
 		return nil, err
@@ -1008,13 +1791,7 @@ func (k *KubeClient) GetSecretByLabel(label string, allNamespaces bool) (*v1.Sec
 		return nil, err
 	}
 
-	if len(secretList.Items) == 1 {
-		return &secretList.Items[0], nil
-	} else if len(secretList.Items) > 1 {
-		return nil, fmt.Errorf("multiple secrets have the label %s", label)
-	} else {
-		return nil, fmt.Errorf("no secrets have the label %s", label)
-	}
+	return secretList.Items, nil
 }
 
 // CheckSecretExists returns true if the Secret exists
@@ -1030,8 +1807,8 @@ func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
 }
 
 // DeleteSecret deletes the specified Secret
-func (k *KubeClient) DeleteSecret(secretName string) error {
-	return k.clientset.CoreV1().Secrets(k.namespace).Delete(secretName, k.deleteOptions())
+func (k *KubeClient) DeleteSecretDefault(secretName string) error {
+	return k.DeleteSecret(secretName, k.namespace)
 }
 
 // DeleteSecretByLabel deletes a secret object matching the specified label
@@ -1050,6 +1827,43 @@ func (k *KubeClient) DeleteSecretByLabel(label string) error {
 		"label":     label,
 		"namespace": k.namespace,
 	}).Debug("Deleted secret by label.")
+
+	return nil
+}
+
+// DeleteSecret deletes the specified Secret by name and namespace
+func (k *KubeClient) DeleteSecret(name, namespace string) error {
+	if err := k.clientset.CoreV1().Secrets(namespace).Delete(name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted secret by label.")
+
+	return nil
+}
+
+// PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte) error {
+
+	secret, err := k.GetSecretByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(secret.Name, commontypes.StrategicMergePatchType,
+		patchBytes); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": secret.Name,
+		"namespace":  k.namespace,
+	}).Debug("Patched Kubernetes secret.")
 
 	return nil
 }
@@ -1377,7 +2191,7 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 	// Read the JSON data into an unstructured map
 	var unstruct unstructured.Unstructured
 	unstruct.Object = make(map[string]interface{})
-	if err := unstruct.UnmarshalJSON([]byte(jsonData)); err != nil {
+	if err := unstruct.UnmarshalJSON(jsonData); err != nil {
 		return nil, nil, err
 	}
 
@@ -1390,25 +2204,47 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 	return &unstruct, gvk, nil
 }
 
-// getDynamicResource accepts a GVK value and returns a matching Resource from the dynamic client-go API.
-//func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*metav1.APIResource, error) {
+// getDynamicResource accepts a GVK value and returns a matching Resource from the dynamic client-go API.  This
+// method will first consult this client's internal cache and will update the cache only if the resource being
+// sought is not present.
 func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.GroupVersionResource, bool, error) {
 
-	// Read the API groups/resources available from the server
-	discoveryClient := k.clientset.Discovery()
+	if gvr, namespaced, err := k.getDynamicResourceNoRefresh(gvk); utils.IsNotFoundError(err) {
 
-	_, resourcesList, err := discoveryClient.ServerGroupsAndResources()
-	if err != nil {
-		log.WithFields(log.Fields{
-			"group":   gvk.Group,
-			"version": gvk.Version,
-			"kind":    gvk.Kind,
-			"error":   err,
-		}).Error("Could not get dynamic resource, failed to list server resources.")
-		return nil, false, err
+		discoveryClient := k.clientset.Discovery()
+
+		// Read the API groups/resources available from the server
+		_, apiResources, err := discoveryClient.ServerGroupsAndResources()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"group":   gvk.Group,
+				"version": gvk.Version,
+				"kind":    gvk.Kind,
+				"error":   err,
+			}).Error("Could not get dynamic resource, failed to list server resources.")
+			return nil, false, err
+		}
+
+		k.apiResources = apiResources
+
+		// Try again once after updating the API resources list
+		return k.getDynamicResourceNoRefresh(gvk)
+
+	} else {
+
+		// Success the first time, or some other error
+		return gvr, namespaced, err
 	}
+}
 
-	for _, resources := range resourcesList {
+// getDynamicResourceNoRefresh accepts a GVK value and returns a matching Resource from the list of API resources
+// cached here in the client.  Most callers should use getDynamicResource() instead, which will update the cached
+// API list if it doesn't already contain the resource being sought.
+func (k *KubeClient) getDynamicResourceNoRefresh(
+	gvk *schema.GroupVersionKind,
+) (*schema.GroupVersionResource, bool, error) {
+
+	for _, resources := range k.apiResources {
 
 		groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
 		if err != nil {
@@ -1451,7 +2287,60 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 		"kind":    gvk.Kind,
 	}).Error("API resource not found.")
 
-	return nil, false, errors.New("API resource not found")
+	return nil, false, utils.NotFoundError("API resource not found")
+}
+
+// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
+// security context constraint. This only works for OpenShift.
+func (k *KubeClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
+
+	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", k.namespace, user)
+
+	// Read the SCC object from the server
+	openShiftSCCQueryYAML := GetOpenShiftSCCQueryYAML(scc)
+	unstruct, err := k.getUnstructuredObjectByYAML(openShiftSCCQueryYAML)
+	if err != nil {
+		return err
+	}
+
+	// Ensure the user isn't already present
+	found := false
+	if users, ok := unstruct.Object["users"]; ok {
+		if usersSlice, ok := users.([]interface{}); ok {
+			for _, userIntf := range usersSlice {
+				if user, ok := userIntf.(string); ok && user == sccUser {
+					found = true
+					break
+				}
+			}
+		} else {
+			return fmt.Errorf("users type is %T", users)
+		}
+	}
+
+	// Maintain idempotency by returning success if user already present
+	if found {
+		log.WithField("user", sccUser).Debug("SCC user already present, ignoring.")
+		return nil
+	}
+
+	// Add the user
+	if users, ok := unstruct.Object["users"]; ok {
+		if usersSlice, ok := users.([]interface{}); ok {
+			unstruct.Object["users"] = append(usersSlice, sccUser)
+		} else {
+			return fmt.Errorf("users type is %T", users)
+		}
+	}
+
+	// Convert to JSON
+	jsonData, err := unstruct.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	// Update the object on the server
+	return k.updateObjectByYAML(string(jsonData))
 }
 
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
@@ -1588,6 +2477,99 @@ func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCall
 		"pod":       pod,
 		"container": container,
 	}).Debug("Received EOF from pod logs.")
+}
+
+// addFinalizerToCRDObject is a helper function that updates the CRD object to include our Trident finalizer (
+//definitions are not namespaced)
+func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVersionKind,
+	gvr *schema.GroupVersionResource, client dynamic.Interface) error {
+
+	var err error
+
+	log.WithFields(log.Fields{
+		"name": crdName,
+		"kind": gvk.Kind,
+	}).Debugf("Adding finalizers to CRD object %v.", crdName)
+
+	// Get the CRD object
+	getOptions := metav1.GetOptions{}
+
+	var unstruct *unstructured.Unstructured
+	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+		return err
+	}
+
+	// Check the CRD object
+	addedFinalizer := false
+	if md, ok := unstruct.Object["metadata"]; ok {
+		if metadata, ok := md.(map[string]interface{}); ok {
+			if finalizers, ok := metadata["finalizers"]; ok {
+				if finalizersSlice, ok := finalizers.([]interface{}); ok {
+					// check if the Trident finalizer is already present
+					for _, element := range finalizersSlice {
+						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
+							log.Debugf("Trident finalizer already present on Kubernetes CRD object %v, nothing to do", crdName)
+							return nil
+						}
+					}
+					// checked the list and didn't find it, let's add it to the list
+					metadata["finalizers"] = append(finalizersSlice, TridentFinalizer)
+					addedFinalizer = true
+				} else {
+					return fmt.Errorf("unexpected finalizer type %T", finalizers)
+				}
+			} else {
+				// no finalizers present, this will be the first one for this CRD
+				metadata["finalizers"] = []string{TridentFinalizer}
+				addedFinalizer = true
+			}
+		}
+	}
+	if !addedFinalizer {
+		return fmt.Errorf("could not determine finalizer metadata for CRD %v", crdName)
+	}
+
+	// Update the object with the newly added finalizer
+	updateOptions := metav1.UpdateOptions{}
+
+	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+		return err
+	}
+
+	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+
+	return nil
+}
+
+// AddFinalizerToCRDs updates the CRD objects to include our Trident finalizer (definitions are not namespaced)
+func (k *KubeClient) AddFinalizerToCRDs(CRDnames []string) error {
+	gvk := &schema.GroupVersionKind{
+		Group:   "apiextensions.k8s.io",
+		Version: "v1beta1",
+		Kind:    "CustomResourceDefinition",
+	}
+
+	// Get a matching API resource
+	gvr, _, err := k.getDynamicResource(gvk)
+	if err != nil {
+		return err
+	}
+
+	// Get a dynamic REST client
+	client, err := dynamic.NewForConfig(k.restConfig)
+	if err != nil {
+		return err
+	}
+
+	for _, crdName := range CRDnames {
+		err := k.addFinalizerToCRDObject(crdName, gvk, gvr, client)
+		if err != nil {
+			log.Errorf("error in adding finalizers to Kubernetes CRD object %v", crdName)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // AddFinalizerToCRD updates the CRD object to include our Trident finalizer (definitions are not namespaced)

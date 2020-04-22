@@ -1,0 +1,193 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+  namespace: trident
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/exec
+  - services
+  - services/finalizers
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  - serviceaccounts
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - apps
+  resourceNames:
+  - trident-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - '*'
+- apiGroups:
+  - trident.netapp.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+  - update
+  - patch
+- apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - list
+  - create
+  - delete
+- apiGroups:
+  - authorization.openshift.io
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  - clusterrolebindings
+  verbs:
+  - '*'
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csidrivers
+  - csinodeinfos
+  verbs:
+  - list
+  - create
+  - delete
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - '*'
+- apiGroups:
+  - policy
+  resourceNames:
+  - tridentoperatorpods
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trident-operator
+subjects:
+- kind: ServiceAccount
+  name: trident-operator
+  namespace: trident
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+  namespace: trident
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: operator.trident.netapp.io
+      name: trident-operator
+  template:
+    metadata:
+      labels:
+        app: operator.trident.netapp.io
+        name: trident-operator
+    spec:
+      containers:
+      - command:
+        - /usr/local/bin/trident-operator
+        - --debug
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: trident-operator
+        image: netapp/trident-operator:20.04.0
+        imagePullPolicy: IfNotPresent
+        name: trident-operator
+      serviceAccountName: trident-operator
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  labels:
+    app: operator.trident.netapp.io
+  name: tridentoperatorpods
+spec:
+  fsGroup:
+    rule: RunAsAny
+  privileged: false
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - '*'

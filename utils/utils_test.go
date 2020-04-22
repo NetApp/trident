@@ -4,6 +4,7 @@ package utils
 
 import (
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -243,5 +244,70 @@ func TestFilterIPs(t *testing.T) {
 	for _, testIO := range testIOs {
 		outputIPs, _ := FilterIPs(inputIPs, testIO.inputCIDRs)
 		assert.Equal(t, testIO.outputIPs, outputIPs)
+	}
+}
+
+func TestGetYAMLTagWithSpaceCount(t *testing.T) {
+	log.Debug("Running TestGetYAMLTagWithSpaceCount...")
+
+	tagWithSpaces, tag, spaces := GetYAMLTagWithSpaceCount(inputString)
+	assert.Equal(t, tagWithSpaces, "{REPLACE-1}\n")
+	assert.Equal(t, tag, "REPLACE-1")
+	assert.Equal(t, spaces, 0)
+
+	inputStringCopy := strings.ReplaceAll(inputString, tagWithSpaces, "#" + tagWithSpaces)
+
+	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	assert.Equal(t, tagWithSpaces, "  {REPLACE-2}\n")
+	assert.Equal(t, tag, "REPLACE-2")
+	assert.Equal(t, spaces, 2)
+
+	inputStringCopy = strings.ReplaceAll(inputStringCopy, tagWithSpaces, "#" + tagWithSpaces)
+
+	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	assert.Equal(t, tagWithSpaces, "    {REPLACE-3}\n")
+	assert.Equal(t, tag, "REPLACE-3")
+	assert.Equal(t, spaces, 4)
+
+	inputStringCopy = strings.ReplaceAll(inputStringCopy, tagWithSpaces, "#" + tagWithSpaces)
+
+	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	assert.Equal(t, tagWithSpaces, "    {REPLACE-4}\n")
+	assert.Equal(t, tag, "REPLACE-4")
+	assert.Equal(t, spaces, 4)
+}
+
+const inputString = `
+text
+{REPLACE-1}
+  something: else
+  {REPLACE-2}
+  {NO-REPLACE-1}x
+  c{NO-REPLACE-2}
+    something: else
+    {NO_REPLACE_3}y
+    {REPLACE-3}
+    {REPLACE-4}
+`
+
+func TestCountSpacesBeforeText(t *testing.T) {
+	log.Debug("Running TestCountSpacesBeforeText...")
+
+	type TextWithSpaces struct {
+		Text string
+		Spaces  int
+	}
+
+	multipleTextsWithSpaces := []TextWithSpaces {
+		{"text", 0},
+		{"  text", 2},
+		{"  text  ", 2},
+		{"      text", 6},
+		{"      text      ", 6},
+	}
+
+	for _, textWithSpaces := range multipleTextsWithSpaces {
+		spaceCount := CountSpacesBeforeText(textWithSpaces.Text)
+		assert.Equal(t, spaceCount, textWithSpaces.Spaces)
 	}
 }

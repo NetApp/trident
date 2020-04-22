@@ -126,6 +126,9 @@ const (
 	KubernetesCRDVersionMinForced = "v1.16.0"
 
 	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+
+	/* Kubernetes operator constants */
+	OperatorContainerName = "trident-operator"
 )
 
 var (

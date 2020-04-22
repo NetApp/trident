@@ -15,6 +15,7 @@
 - Updated to GoLang 1.14.
 - **Kubernetes:** Added ability to remove CSI nodes from Trident's database via `tridentctl`.
 - **Kubernetes:** Added ability for Trident to automatically create and update export policies for NAS-based drivers to provide access to all nodes in your Kubernetes cluster.
+- **Kubernetes:** Introducing Trident Operator to manage new Trident installations.
 
 ## v20.01.0
 
