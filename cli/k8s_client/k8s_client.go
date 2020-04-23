@@ -158,8 +158,9 @@ type Interface interface {
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
 	DeleteObjectByYAML(yaml string, ignoreNotFound bool) error
-	AddTridentUserToOpenShiftSCC(user, scc string) error
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
+	GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte, error)
+	PatchOpenShiftSCC(newJSONData []byte) error
 	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
 	AddFinalizerToCRDs(CRDnames []string) error
@@ -2290,59 +2291,6 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 	return nil, false, utils.NotFoundError("API resource not found")
 }
 
-// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
-// security context constraint. This only works for OpenShift.
-func (k *KubeClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
-
-	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", k.namespace, user)
-
-	// Read the SCC object from the server
-	openShiftSCCQueryYAML := GetOpenShiftSCCQueryYAML(scc)
-	unstruct, err := k.getUnstructuredObjectByYAML(openShiftSCCQueryYAML)
-	if err != nil {
-		return err
-	}
-
-	// Ensure the user isn't already present
-	found := false
-	if users, ok := unstruct.Object["users"]; ok {
-		if usersSlice, ok := users.([]interface{}); ok {
-			for _, userIntf := range usersSlice {
-				if user, ok := userIntf.(string); ok && user == sccUser {
-					found = true
-					break
-				}
-			}
-		} else {
-			return fmt.Errorf("users type is %T", users)
-		}
-	}
-
-	// Maintain idempotency by returning success if user already present
-	if found {
-		log.WithField("user", sccUser).Debug("SCC user already present, ignoring.")
-		return nil
-	}
-
-	// Add the user
-	if users, ok := unstruct.Object["users"]; ok {
-		if usersSlice, ok := users.([]interface{}); ok {
-			unstruct.Object["users"] = append(usersSlice, sccUser)
-		} else {
-			return fmt.Errorf("users type is %T", users)
-		}
-	}
-
-	// Convert to JSON
-	jsonData, err := unstruct.MarshalJSON()
-	if err != nil {
-		return err
-	}
-
-	// Update the object on the server
-	return k.updateObjectByYAML(string(jsonData))
-}
-
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
 // security context constraint. This only works for OpenShift, and it must be idempotent.
 func (k *KubeClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
@@ -2386,6 +2334,60 @@ func (k *KubeClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
 
 	// Update the object on the server
 	return k.updateObjectByYAML(string(jsonData))
+}
+
+// GetOpenShiftSCCByName gets the specified user (typically a service account) from the specified
+// security context constraint. This only works for OpenShift, and it must be idempotent.
+func (k *KubeClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte, error) {
+
+	var SCCExist, SCCUserExist bool
+	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", k.namespace, user)
+
+	// Get the YAML into a form we can read/modify
+	openShiftSCCQueryYAML := GetOpenShiftSCCQueryYAML(scc)
+	unstruct, err := k.getUnstructuredObjectByYAML(openShiftSCCQueryYAML)
+	if err != nil {
+		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return SCCExist, SCCUserExist, nil, nil
+		}
+		return SCCExist, SCCUserExist, nil, err
+	}
+
+	log.WithField("scc", scc).Debug("SCC found.")
+	SCCExist = true
+
+	// Convert to JSON
+	jsonData, err := unstruct.MarshalJSON()
+	if err != nil {
+		log.WithField("scc", scc).Errorf("failed to marshal unstructured data in JSON: %v", unstruct)
+		return SCCExist, SCCUserExist, jsonData, err
+	}
+
+	// Find the user
+	if users, ok := unstruct.Object["users"]; ok {
+		if usersSlice, ok := users.([]interface{}); ok {
+			for _, userIntf := range usersSlice {
+				if user, ok := userIntf.(string); ok && user == sccUser {
+					log.WithField("sccUser", sccUser).Debug("SCC User found.")
+
+					SCCUserExist = true
+					break
+				}
+			}
+		} else {
+			return SCCExist, SCCUserExist, jsonData, fmt.Errorf("users type is %T", users)
+		}
+	}
+
+	return SCCExist, SCCUserExist, jsonData, nil
+}
+
+// PatchOpenShiftSCC patches the specified user (typically a service account) from the specified
+// security context constraint. This only works for OpenShift, and it must be idempotent.
+func (k *KubeClient) PatchOpenShiftSCC(newJSONData []byte) error {
+
+	// Update the object on the server
+	return k.updateObjectByYAML(string(newJSONData))
 }
 
 // listOptionsFromLabel accepts a label in the form "key=value" and returns a ListOptions value

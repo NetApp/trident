@@ -1472,15 +1472,15 @@ metadata:
   namespace: {NAMESPACE}
 `
 
-func GetOpenShiftSCCYAML(sccName, user, appLabelValue, k8s_namespace string) string {
+func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRDetails map[string]string) string {
 	sccYAML := openShiftPrivilegedSCCYAML
-	if !strings.Contains(appLabelValue, "csi") && user != "trident-installer" {
+	if !strings.Contains(labels[TridentAppLabelKey], "csi") && user != "trident-installer" {
 		sccYAML = openShiftUnprivilegedSCCYAML
 	}
-	sccYAML = strings.ReplaceAll(sccYAML, "{APP_LABEL_VALUE}", appLabelValue)
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
-	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", k8s_namespace)
+	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
+	sccYAML = replaceMultiline(sccYAML, labels, controllingCRDetails, nil)
 	return sccYAML
 }
 
@@ -1491,8 +1491,8 @@ metadata:
   annotations:
     kubernetes.io/description: '{SCC} is a clone of the privileged built-in, and is meant just for use with trident.'
   name: {SCC}
-  labels:
-    app: "{APP_LABEL_VALUE}"
+  {LABELS}
+  {OWNER_REF}
 allowHostDirVolumePlugin: true
 allowHostIPC: true
 allowHostNetwork: true
@@ -1532,8 +1532,8 @@ metadata:
   annotations:
     kubernetes.io/description: '{SCC} is a clone of the anyuid built-in, and is meant just for use with trident.'
   name: {SCC}
-  labels:
-    app: "{APP_LABEL_VALUE}"
+  {LABELS}
+  {OWNER_REF}
 allowHostDirVolumePlugin: false
 allowHostIPC: false
 allowHostNetwork: false
@@ -1573,7 +1573,6 @@ func GetOpenShiftSCCQueryYAML(scc string) string {
 }
 
 const openShiftSCCQueryYAMLTemplate = `
----
 kind: SecurityContextConstraints
 apiVersion: security.openshift.io/v1
 metadata:

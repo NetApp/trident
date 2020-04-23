@@ -1927,32 +1927,6 @@ func (c *KubectlClient) updateObjectByYAML(yaml string) error {
 	return nil
 }
 
-// AddTridentUserToOpenShiftSCC adds the specified user (typically a service account) to the 'anyuid'
-// RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the
-// security context constraint. This only works for OpenShift.
-func (c *KubectlClient) AddTridentUserToOpenShiftSCC(user, scc string) error {
-
-	if c.flavor != FlavorOpenShift {
-		return errors.New("the current client context is not OpenShift")
-	}
-
-	// This command appears to be idempotent, so no need to call isTridentUserInOpenShiftSCC() first.
-	args := []string{
-		fmt.Sprintf("--namespace=%s", c.namespace),
-		"adm",
-		"policy",
-		"add-scc-to-user",
-		scc,
-		"-z",
-		user,
-	}
-	out, err := exec.Command(c.cli, args...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-	return nil
-}
-
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the
 // security context constraint. This only works for OpenShift.
 func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
@@ -1976,6 +1950,46 @@ func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) erro
 		return fmt.Errorf("%s; %v", string(out), err)
 	}
 	return nil
+}
+
+// GetOpenShiftSCCByName gets the specified user (typically a service account) from the specified
+// security context constraint. This only works for OpenShift, and it must be idempotent.
+func (c *KubectlClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte, error) {
+	var SCCExist, SCCUserExist bool
+	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", c.namespace, user)
+	sccName := fmt.Sprintf("\"name\": \"trident\"")
+
+	if c.flavor != FlavorOpenShift {
+		return SCCExist, SCCUserExist, nil, errors.New("the current client context is not OpenShift")
+	}
+
+	args := []string{
+		"get",
+		"scc",
+		sccName,
+		"-o=json",
+	}
+
+	out, err := exec.Command(c.cli, args...).Output()
+	if err != nil {
+		return SCCExist, SCCUserExist, nil, fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	SCCExist = true
+
+	if strings.Contains(string(out), sccUser) {
+		SCCUserExist = true
+	}
+
+	return SCCExist, SCCUserExist, out, nil
+}
+
+// PatchOpenShiftSCC patches the specified user (typically a service account) from the specified
+// security context constraint. This only works for OpenShift, and it must be idempotent.
+func (c *KubectlClient) PatchOpenShiftSCC(newJSONData []byte) error {
+
+	// Update the object on the server
+	return c.updateObjectByYAML(string(newJSONData))
 }
 
 func (c *KubectlClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {
@@ -2178,7 +2192,7 @@ func (c *KubectlClient) DeleteObject(name, namespace, kind, kindName string) err
 // in the namespace of the client.
 func (c *KubectlClient) PatchObjectByLabel(label, namespace, kind, kindName string, patchBytes []byte) error {
 
-	cmdArgs := []string{"patch", kind, "-l", label, "-p", string(patchBytes), "--type", "strategic"}
+	cmdArgs := []string{"patch", kind, "-l", label, "-p", string(patchBytes), "--type", "merge"}
 	if namespace != "" {
 		cmdArgs = append(cmdArgs, "--namespace", namespace)
 	}

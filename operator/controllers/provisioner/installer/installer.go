@@ -761,26 +761,13 @@ func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]st
 		return
 	}
 
-	// If OpenShift, add Trident to security context constraint(s)
+	// If OpenShift, create a new security context constraint for Trident
 	if i.client.Flavor() == k8sclient.FlavorOpenShift {
-		if csi {
-			if returnError = i.client.AddTridentUserToOpenShiftSCC("trident-csi", "privileged"); returnError != nil {
-				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-				return
-			}
-			log.WithFields(log.Fields{
-				"scc":  "privileged",
-				"user": "trident-csi",
-			}).Info("Added security context constraint user.")
-		} else {
-			if returnError = i.client.AddTridentUserToOpenShiftSCC("trident", "anyuid"); returnError != nil {
-				returnError = fmt.Errorf("could not modify security context constraint; %v", returnError)
-				return
-			}
-			log.WithFields(log.Fields{
-				"scc":  "anyuid",
-				"user": "trident",
-			}).Info("Added security context constraint user.")
+		// Create OpenShift SCC
+		returnError = i.createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels, shouldUpdate)
+		if returnError != nil {
+			returnError = fmt.Errorf("could not create the Trident OpenShift SCC; %v", returnError)
+			return
 		}
 	}
 
@@ -994,6 +981,82 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 		}).Debug("Patching Trident Cluster role binding.")
 
 		err = i.patchTridentClusterRoleBinding(currentClusterRoleBinding, []byte(newClusterRoleBindingYAML))
+	}
+
+	return nil
+}
+
+func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels map[string]string,
+	shouldUpdate bool) error {
+	createOpenShiftSCC := true
+	var openShiftSCCUserName string
+	var openShiftSCCName string
+	var openShiftSCCOldUserName string
+	var openShiftSCCOldName string
+	var currentOpenShiftSCCJSON []byte
+	var removeExistingSCC bool
+	var logFields log.Fields
+	var err error
+
+	if csi {
+		openShiftSCCUserName = "trident-csi"
+		openShiftSCCOldUserName = "trident-csi"
+		openShiftSCCOldName = "privileged"
+	} else {
+		openShiftSCCUserName = "trident"
+		openShiftSCCOldUserName = "trident"
+		openShiftSCCOldName = "anyuid"
+	}
+
+	openShiftSCCName = "trident"
+
+	logFields = log.Fields{
+		"sccUserName": openShiftSCCUserName,
+		"sccName": openShiftSCCName,
+		"label": appLabelValue,
+	}
+
+	if SCCExist, SCCUserExist, jsonData, err := i.client.GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName); err != nil {
+		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+		return fmt.Errorf("unable to get OpenShift SCC for Trident")
+	} else if !SCCExist {
+		log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
+	} else if !SCCUserExist {
+		log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
+		removeExistingSCC = true
+	} else if shouldUpdate {
+		removeExistingSCC = true
+	} else {
+		currentOpenShiftSCCJSON = jsonData
+		createOpenShiftSCC = false
+	}
+
+	if removeExistingSCC {
+		if err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName), true); err != nil {
+			log.WithFields(logFields).Errorf("unable to delete OpenShift SCC; err: %v", err)
+			return err
+		}
+	}
+
+	newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCName, openShiftSCCUserName, i.namespace,
+		labels, controllingCRDetails)
+
+	if createOpenShiftSCC {
+
+		// Remove trident user from built-in SCC from previous installation
+		i.client.RemoveTridentUserFromOpenShiftSCC(openShiftSCCOldUserName, openShiftSCCOldName)
+
+		err = i.client.CreateObjectByYAML(newOpenShiftSCCYAML)
+		logFields = log.Fields{}
+
+		if err != nil {
+			return fmt.Errorf("could not create OpenShift SCC; %v", err)
+		}
+		log.WithFields(logFields).Info("Created OpenShift SCC.")
+	} else {
+		log.WithFields(logFields).Debug("Patching Trident OpenShift SCC.")
+
+		err = i.patchTridentOpenShiftSCC(currentOpenShiftSCCJSON, []byte(newOpenShiftSCCYAML))
 	}
 
 	return nil

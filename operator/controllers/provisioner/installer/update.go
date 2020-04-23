@@ -95,6 +95,28 @@ func (i *Installer) patchTridentClusterRoleBinding(currentClusterRoleBinding *v1
 	return nil
 }
 
+func (i *Installer) patchTridentOpenShiftSCC(currentOpenShiftSCC []byte,
+	newOpenShiftSCCYAML []byte) error {
+
+	// Convert new object from YAML to JSON format
+	modifiedJSON, err := yaml.YAMLToJSON(newOpenShiftSCCYAML)
+	if err != nil {
+		return fmt.Errorf("could not convert new object from YAML to JSON; %v", err)
+	}
+
+	// Identify the deltas
+	patchBytes, err := jsonpatch.MergePatch(currentOpenShiftSCC, modifiedJSON)
+
+	// Apply the patch to the current OpenShift SCC
+	err = i.client.PatchOpenShiftSCC(patchBytes)
+	if err != nil {
+		return fmt.Errorf("could not patch Trident OpenShift SCC; %v", err)
+	}
+	log.Debug("Patched Trident OpenShift SCC.")
+
+	return nil
+}
+
 func (i *Installer) patchTridentPodSecurityPolicy(currentPSP *v1beta1.PodSecurityPolicy, newPSPYAML []byte) error {
 
 	// Identify the deltas

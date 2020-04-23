@@ -143,6 +143,7 @@ operator_dist_tag:
 dist_tar: build
 	-rm -rf /tmp/trident-installer
 	@cp -a trident-installer /tmp/
+	@cp -a deploy /tmp/trident-installer/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}

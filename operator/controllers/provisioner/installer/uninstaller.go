@@ -155,14 +155,6 @@ func (i *Installer) UninstallLegacyTrident() error {
 
 func (i *Installer) removeRBACObjects(logLevel log.Level) error {
 
-	logFunc := func(fields log.Fields) func(args ...interface{}) {
-		if logLevel == log.DebugLevel {
-			return log.WithFields(fields).Debug
-		} else {
-			return log.WithFields(fields).Info
-		}
-	}
-
 	// Delete cluster role binding
 	if err := i.deleteTridentClusterRoleBinding(); err != nil {
 		return err
@@ -178,28 +170,10 @@ func (i *Installer) removeRBACObjects(logLevel log.Level) error {
 		return err
 	}
 
-	// If OpenShift, remove Trident from security context constraint(s)
+	// If OpenShift, delete Trident Security Context Constraint(s)
 	if i.client.Flavor() == k8sclient.FlavorOpenShift {
-		if csi {
-			if err := i.client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged"); err != nil {
-				log.WithField("error", err).Warning("Could not modify security context constraint.")
-				return fmt.Errorf("could not modify security context constraint for trident-csi; err: %v", err)
-			} else {
-				logFunc(log.Fields{
-					"scc":  "privileged",
-					"user": "trident-csi",
-				})("Removed security context constraint user.")
-			}
-		} else {
-			if err := i.client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid"); err != nil {
-				log.WithField("error", err).Warning("Could not modify security context constraint.")
-				return fmt.Errorf("could not modify security context constraint for trident; err: %v", err)
-			} else {
-				logFunc(log.Fields{
-					"scc":  "anyuid",
-					"user": "trident",
-				})("Removed security context constraint user.")
-			}
+		if err := i.deleteTridentTridentOpenShiftSCC(); err != nil {
+			return err
 		}
 	}
 
@@ -810,6 +784,55 @@ func (i *Installer) RemoveMultipleServiceAccounts(unwantedServiceAccounts []v1.S
 	if anyError {
 		return fmt.Errorf("unable to delete Trident service account(s): %v", undeletedServiceAccounts)
 	}
+
+	return nil
+}
+
+func (i *Installer) deleteTridentTridentOpenShiftSCC() error {
+	var openShiftSCCUserName string
+	var openShiftSCCName string
+	var removeExistingSCC bool
+	var logFields log.Fields
+	var err error
+
+	if csi {
+		openShiftSCCUserName = "trident-csi"
+	} else {
+		openShiftSCCUserName = "trident"
+	}
+
+	openShiftSCCName = "trident"
+
+	logFields = log.Fields{
+		"sccUserName": openShiftSCCUserName,
+		"sccName": openShiftSCCName,
+		"label": appLabelValue,
+	}
+
+	// Delete OpenShift SCC
+	if SCCExist, SCCUserExist, _, err := i.client.GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName); err != nil {
+		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+		return fmt.Errorf("unable to get OpenShift SCC for Trident")
+	} else if !SCCExist {
+		log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
+	} else if !SCCUserExist {
+		log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
+		removeExistingSCC = true
+	} else {
+		log.WithFields(logFields).Info("Trident OpenShift SCC and the SCC user found by label.")
+		removeExistingSCC = true
+	}
+
+	if removeExistingSCC {
+		if err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName), true); err != nil {
+			return err
+		}
+	}
+
+	// Remove old objects that may have been created pre-20.04
+	i.client.RemoveTridentUserFromOpenShiftSCC("trident-installer", "privileged")
+	i.client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged")
+	i.client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid")
 
 	return nil
 }

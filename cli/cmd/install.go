@@ -1933,7 +1933,11 @@ func CreateOpenShiftTridentSCC(user, appLabelVal string) error {
 	} else {
 		_ = client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid")
 	}
-	err := client.CreateObjectByYAML(k8sclient.GetOpenShiftSCCYAML("trident", user, appLabelVal, TridentPodNamespace))
+
+	labels := make(map[string]string)
+	labels["app"] = appLabelVal
+
+	err := client.CreateObjectByYAML(k8sclient.GetOpenShiftSCCYAML("trident", user, TridentPodNamespace, labels, nil))
 	if err != nil {
 		return fmt.Errorf("cannot create trident's scc; %v", err)
 	}
@@ -1946,8 +1950,11 @@ func DeleteOpenShiftTridentSCC(user string) error {
 	if csi {
 		labelVal = TridentCSILabelValue
 	}
-	err := client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCYAML("trident", user, labelVal, TridentPodNamespace),
-		true)
+
+	labels := make(map[string]string)
+	labels["app"] = labelVal
+
+	err := client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCYAML("trident", user, TridentPodNamespace, labels, nil), true)
 
 	if err != nil {
 		return fmt.Errorf("%s; %v", "could not delete trident's scc", err)
