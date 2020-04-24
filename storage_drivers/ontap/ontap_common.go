@@ -1053,7 +1053,9 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 			config.DataLIF = dataLIFs[0]
 		}
 	} else {
-		_, err := ValidateDataLIF(config.DataLIF, dataLIFs)
+		cleanDataLIF := strings.Replace(config.DataLIF, "[", "", 1)
+		cleanDataLIF = strings.Replace(cleanDataLIF, "]", "", 1)
+		_, err := ValidateDataLIF(cleanDataLIF, dataLIFs)
 		if err != nil {
 			return fmt.Errorf("data LIF validation failed: %v", err)
 		}

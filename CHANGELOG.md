@@ -14,6 +14,7 @@
 - **Kubernetes:** Fixed volume import for ANF backends.
 - **Kubernetes:** Fixed cloning imported volumes for CVS & ANF backends.
 - **Kubernetes:** Fixed displaying volume sizes in Gi. (Issue [#305](https://github.com/NetApp/trident/issues/305))
+- Fixed dataLIF specification in backend config for IPv6.
 
 **Enhancements**
 - Updated to GoLang 1.14.
