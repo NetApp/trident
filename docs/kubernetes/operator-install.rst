@@ -1,0 +1,561 @@
+.. _deploying-with-operator:
+
+Deploying with the Trident Operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are looking to deploy Trident using the Trident Operator, you are
+in the right place. This page contains all the steps required for getting
+started with the Trident Operator to install and manage Trident.
+
+.. important::
+
+   The 20.04 release limits the Trident Operator to
+   **greenfield installations only**.
+
+Prerequisites
+=============
+
+If you have not already familiarized yourself with the
+:ref:`basic concepts <What is Trident?>`, now is a great time to do that. Go
+ahead, we'll be here when you get back.
+
+To deploy Trident using the operator you need:
+
+.. sidebar:: Need Kubernetes?
+
+  If you do not already have a Kubernetes cluster, you can easily create one for
+  demonstration purposes using our
+  :ref:`simple Kubernetes install guide <Simple Kubernetes install>`.
+
+* Full privileges to a
+  :ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>`
+  running Kubernetes ``1.14`` and above.
+* Access to a
+  :ref:`supported NetApp storage system <Supported backends (storage)>`
+* :ref:`Volume mount capability <Worker preparation>` from all of the
+  Kubernetes worker nodes
+* A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
+  and configured to manage the Kubernetes cluster you want to use
+* Set the ``KUBECONFIG`` environment variable to point to your Kubernetes
+  cluster configuration.
+* Enable the :ref:`Feature Gates <Feature Requirements>` required by Trident
+* If you are using Kubernetes with Docker Enterprise, `follow their steps
+  to enable CLI access <https://docs.docker.com/ee/ucp/user-access/cli/>`_.
+
+Got all that? Great! Let's get started.
+
+1: Qualify your Kubernetes cluster
+==================================
+
+You made sure that you have everything in hand from the
+:ref:`previous section <Before you begin>`, right? Right.
+
+The first thing you need to do is log into the Linux host and verify that it is
+managing a *working*,
+:ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>` that
+you have the necessary privileges to.
+
+.. note::
+  With OpenShift, you will use ``oc`` instead of ``kubectl`` in all of the
+  examples that follow, and you need to login as **system:admin** first by
+  running ``oc login -u system:admin`` or ``oc login -u kube-admin``.
+
+.. code-block:: bash
+
+  # Is your Kubernetes version greater than 1.14?
+  kubectl version
+
+  # Are you a Kubernetes cluster administrator?
+  kubectl auth can-i '*' '*' --all-namespaces
+
+  # Can you launch a pod that uses an image from Docker Hub and can reach your
+  # storage system over the pod network?
+  kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
+    ping <management IP>
+
+2: Download & setup the operator
+================================
+
+.. note::
+
+   Using the Trident Operator to install Trident requires creating the
+   ``TridentProvisioner`` Custom Resource Definition and defining other
+   resources. You will need to perform these steps to setup the operator
+   before you can install Trident.
+
+Download the latest version of the `Trident installer bundle`_ from the
+*Downloads* section and extract it.
+
+For example, if the latest version is 20.04.0:
+
+.. code-block:: console
+
+   wget https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
+   tar -xf trident-installer-20.04.0.tar.gz
+   cd trident-installer
+
+.. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
+
+Use the appropriate CRD manifest to create the ``TridentProvisioner`` Custom
+Resource Definition. You will then create a ``TridentProvisioner`` Custom Resource
+later on to instantiate a Trident install by the operator.
+
+.. code-block:: bash
+
+  # Is your Kubernetes version < 1.16?
+  kubectl create -f deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
+
+  # If not, your Kubernetes version must be 1.16 and above
+  kubectl create -f deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
+  
+Once the ``TridentProvisioner`` CRD is created, you will then have to create
+the resources required for the operator deployment, such as:
+
+* a ServiceAccount for the operator.
+* a ClusterRole and ClusterRoleBinding to the ServiceAccount.
+* a dedicated PodSecurityPolicy.
+* the Operator itself.
+
+The Trident Installer contains manifests for defining these resources.
+If you would like to deploy the operator in a namespace other than
+the default ``trident`` namespace, you will need to update the
+``serviceaccount.yaml``, ``clusterrolebinding.yaml`` and ``operator.yaml``
+manifests and generate your ``bundle.yaml``. 
+
+.. code-block:: bash
+
+  # Have you updated the yaml manifests? Generate your bundle.yaml
+  # using the kustomization.yaml
+  kubectl kustomize deploy/ > deploy/bundle.yaml
+
+  # Create the resources and deploy the operator
+  kubectl create -f deploy/bundle.yaml
+
+You can check the status of the operator once you have deployed.
+
+.. code-block:: console
+
+   $ kubectl get deployment -n <operator-namespace>
+   NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+   trident-operator   1/1     1            1           3m
+
+   $ kubectl get pods -n <operator-namespace>
+   NAME                              READY   STATUS             RESTARTS   AGE
+   trident-operator-54cb664d-lnjxh   1/1     Running            0          3m
+
+The operator deployment successfully creates a pod running on one of the
+worker nodes in your cluster.
+
+.. important::
+
+   There must only be **one instance of the operator in a Kubernetes cluster**.
+   **Do not create multiple deployments of the Trident operator**.
+
+3: Creating a TridentProvisioner CR and installing Trident
+==========================================================
+
+You are now ready to install Trident using the operator! This will require
+creating a TridentProvisioner CR. The Trident installer comes with example
+defintions for creating a TridentProvisioner CR.
+
+.. code-block:: console
+
+   $ kubectl create -f deploy/crds/tridentprovisioner_cr.yaml
+   tridentprovisioner.trident.netapp.io/trident created
+
+   $  kubectl get tprov -n trident
+   NAME      AGE
+   trident   5s
+   $ kubectl describe tprov trident -n trident
+   Name:         trident
+   Namespace:    trident
+   Labels:       <none>
+   Annotations:  <none>
+   API Version:  trident.netapp.io/v1
+   Kind:         TridentProvisioner
+   ...
+   Spec:
+     Debug:  true
+   Status:
+     Message:  Successfully installed Trident
+     Status:   Installed
+     Version:  v20.04
+   Events:
+     Type    Reason      Age               From                        Message
+     ----    ------      ----              ----                        -------
+     Normal  Installing  25s               trident-operator.netapp.io  Installing Trident
+     Normal  Installed   1s (x4 over 59s)  trident-operator.netapp.io  Successfully installed Trident
+
+Observing the status of the operator
+""""""""""""""""""""""""""""""""""""
+
+The Status of the TridentProvisioner will indicate if the installation
+was successful and will display the version of Trident installed.
+
++-----------------+--------------------------------------------------------------------------+
+| Status          |              Description                                                 |
++=================+==========================================================================+
+| Installing      | The operator is installing Trident using this  ``TridentProvisioner`` CR.|
++-----------------+--------------------------------------------------------------------------+
+| Installed       | Trident has successfully installed.                                      |
++-----------------+--------------------------------------------------------------------------+
+| Uninstalling    | The operator is uninstalling Trident, since ``spec.uninstall=true``.     |
++-----------------+--------------------------------------------------------------------------+
+| Uninstalled     | Trident is uninstalled.                                                  |
++-----------------+--------------------------------------------------------------------------+
+| Failed          | The operator could not install, patch, update or uninstall Trident; the  |
++-----------------+--------------------------------------------------------------------------+
+|                 | operator will automatically try to recover from this state. If this      |
++-----------------+--------------------------------------------------------------------------+
+|                 | state persists you will require troubleshooting.                         |
++-----------------+--------------------------------------------------------------------------+
+| Updating        | The operator is updating an existing Trident installation.               |
++-----------------+--------------------------------------------------------------------------+
+| Error           | The ``TridentProvisioner`` is not used. Another one already exists.      |
++-----------------+--------------------------------------------------------------------------+
+
+During the installation, the status of the ``TridentProvisioner``
+will change from ``Installing`` to ``Installed``. If you observe
+the ``Failed`` status and the operator is unable to recover by
+itself, there's probably something wrong and you
+will need to check the logs of the operator by running
+``tridentctl logs -l trident-operator``.
+
+You can also confirm if the Trident install completed
+by taking a look at the pods that have been created:
+
+.. code-block:: console
+
+   $ kubectl get pod -n trident
+   NAME                                READY   STATUS    RESTARTS   AGE
+   trident-csi-7d466bf5c7-v4cpw        5/5     Running   0           1m
+   trident-csi-mr6zc                   2/2     Running   0           1m
+   trident-csi-xrp7w                   2/2     Running   0           1m
+   trident-csi-zh2jt                   2/2     Running   0           1m
+   trident-operator-766f7b8658-ldzsv   1/1     Running   0           3m
+
+
+You can also use ``tridentctl`` to check the version of Trident installed.
+
+.. code-block:: console
+
+   $ ./tridentctl -n trident version
+   +----------------+----------------+
+   | SERVER VERSION | CLIENT VERSION |
+   +----------------+----------------+
+   | 20.04.0        | 20.04.0        |
+   +----------------+----------------+
+
+If that's what you see, you're done with this step, but **Trident is not
+yet fully configured.** Go ahead and continue to the
+:ref:`next step <4: Creating a Trident backend>` to create
+a Trident backend using ``tridentctl``.
+
+However, if the installer does not complete successfully or you don't see
+a **Running** ``trident-csi-<generated id>``, then Trident had a problem and the platform was *not*
+installed.
+
+To understand why the installation of Trident was unsuccessful, you should
+first take a look at the ``TridentProvisioner`` status.
+
+.. code-block:: console
+
+  $ kubectl describe tprov trident-2 -n trident
+  Name:         trident-2
+  Namespace:    trident
+  Labels:       <none>
+  Annotations:  <none>
+  API Version:  trident.netapp.io/v1
+  Kind:         TridentProvisioner
+  Status:
+    Message:  Trident is bound to another CR 'trident' in the same namespace
+    Status:   Error
+    Version:  
+  Events:     <none>
+
+This error indicates that there already exists a TridentProvisioner that was
+used to install Trident. Since each Kubernetes cluster can only have one instance
+of Trident, the operator ensures that at any given time there only exists one
+active TridentProvisioner that it can create.
+
+Another thing to do is to check the operator logs. Trailing the logs of the
+``trident-operator`` container can point to where the problem lies.
+
+.. code-block:: console
+
+   $ tridentctl logs -l trident-operator
+
+For example, one such issue could be the inability to pull the required container
+images from upstream registries in an airgapped environment. The logs from the
+operator can help identify this problem and fix it.
+
+In addition, observing the status of the Trident pods can often indicate if
+something is not right.
+
+.. code-block:: console
+
+   $ kubectl get pods -n trident
+
+   NAME                                READY   STATUS             RESTARTS   AGE
+   trident-csi-4p5kq                   1/2     ImagePullBackOff   0          5m18s
+   trident-csi-6f45bfd8b6-vfrkw        4/5     ImagePullBackOff   0          5m19s
+   trident-csi-9q5xc                   1/2     ImagePullBackOff   0          5m18s
+   trident-csi-9v95z                   1/2     ImagePullBackOff   0          5m18s
+   trident-operator-766f7b8658-ldzsv   1/1     Running            0          8m17s
+
+You can clearly see that the pods are not able to intialize completely as one
+or more container images were not fetched.
+
+To address the problem, you must edit the TridentProvisioner CR. Alternatively,
+you can delete the TridentProvisioner and create a new one with the modified,
+accurate definition.
+
+If you continue to have trouble, visit the
+:ref:`troubleshooting guide <Troubleshooting>` for more advice.
+
+Customizing your deployment
+"""""""""""""""""""""""""""
+
+The Trident operator provides users the ability to customize the manner in which
+Trident is installed, using the following attributes in the TridentProvisioner ``spec``:
+
+========================= ====================================================================== ================================================
+Parameter                 Description                                                            Default
+========================= ====================================================================== ================================================
+debug                     Enable debugging for Trident                                           'false'
+useIPv6                   Install Trident over IPv6                                              'false'
+logFormat                 Trident logging format to be used [text,json]                          "text"
+kubeletDir                Path to the kubelet directory on the host                              "/var/lib/kubelet"
+imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port]`` "quay.io"
+tridentImage              Trident image to install                                               "netapp/trident:20.04"
+imagePullSecrets          Secrets to pull images from an internal registry                       
+uninstall                 A flag used to uninstall Trident                                       'false'
+wipeout                   A list of resources to delete to perform a complete removal of Trident 
+========================= ====================================================================== ================================================
+
+You can use the attributes mentioned above when defining a TridentProvisioner to
+customize your Trident installation. Here's an example:
+
+.. code-block:: console
+
+   $ cat deploy/crds/tridentprovisioner_cr_imagepullsecrets.yaml 
+   apiVersion: trident.netapp.io/v1
+   kind: TridentProvisioner
+   metadata:
+     name: trident
+     namespace: trident
+   spec:
+     debug: true
+     tridentImage: netapp/trident:20.04.0
+     imagePullSecrets:
+     - thisisasecret
+
+
+If you are looking to customize Trident's installation beyond what the TridentProvisioner's
+arguments allow, you should consider using ``tridentctl`` to generate custom
+yaml manifests that you can modify as desired. Head on over to the
+:ref:`deployment guide for tridentctl <deploying-with-tridentctl>` to learn
+how this works.
+
+4: Creating a Trident backend
+=============================
+
+You can now go ahead and create a backend that will be used by Trident
+to provision volumes. To do this, create a ``backend.json`` file that
+contains the necessary parameters. Sample configuration files for
+different backend types can be found in the ``sample-input`` directory.
+
+Visit the :ref:`backend configuration guide <Backend configuration>`
+for more details about how to craft the configuration file for
+your backend type.
+
+.. code-block:: bash
+
+  cp sample-input/<backend template>.json backend.json
+  # Fill out the template for your backend
+  vi backend.json
+
+.. code-block:: console
+
+    ./tridentctl -n trident create backend -f backend.json
+    +-------------+----------------+--------------------------------------+--------+---------+
+    |    NAME     | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
+    +-------------+----------------+--------------------------------------+--------+---------+
+    | nas-backend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       0 |
+    +-------------+----------------+--------------------------------------+--------+---------+
+
+If the creation fails, something was wrong with the backend configuration. You
+can view the logs to determine the cause by running:
+
+.. code-block:: console
+
+   ./tridentctl -n trident logs
+
+After addressing the problem, simply go back to the beginning of this step
+and try again. If you continue to have trouble, visit the
+:ref:`troubleshooting guide <Troubleshooting>` for more advice on how to
+determine what went wrong.
+
+5: Creating a Storage Class
+===========================
+
+Kubernetes users provision volumes using persistent volume claims (PVCs) that
+specify a `storage class`_ by name. The details are hidden from users, but a
+storage class identifies the provisioner that will be used for that class (in
+this case, Trident) and what that class means to the provisioner.
+
+.. sidebar:: Basic too basic?
+
+    This is just a basic storage class to get you started. There's an art to
+    :ref:`crafting differentiated storage classes <Designing a storage class>`
+    that you should explore further when you're looking at building them for
+    production.
+
+Create a storage class Kubernetes users will specify when they want a volume.
+The configuration of the class needs to model the backend that you created
+in the previous step so that Trident will use it to provision new volumes.
+
+The simplest storage class to start with is one based on the
+``sample-input/storage-class-csi.yaml.templ`` file that comes with the
+installer, replacing ``__BACKEND_TYPE__`` with the storage driver name.
+
+.. code-block:: bash
+
+    ./tridentctl -n trident get backend
+    +-------------+----------------+--------------------------------------+--------+---------+
+    |    NAME     | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
+    +-------------+----------------+--------------------------------------+--------+---------+
+    | nas-backend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       0 |
+    +-------------+----------------+--------------------------------------+--------+---------+
+
+    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic.yaml
+
+    # Modify __BACKEND_TYPE__ with the storage driver field above (e.g., ontap-nas)
+    vi sample-input/storage-class-basic.yaml
+
+This is a Kubernetes object, so you will use ``kubectl`` to create it in
+Kubernetes.
+
+.. code-block:: console
+
+    kubectl create -f sample-input/storage-class-basic.yaml
+
+You should now see a **basic** storage class in both Kubernetes and Trident,
+and Trident should have discovered the pools on the backend.
+
+.. code-block:: console
+
+    kubectl get sc basic
+    NAME     PROVISIONER             AGE
+    basic    csi.trident.netapp.io   15h
+
+    ./tridentctl -n trident get storageclass basic -o json
+    {
+      "items": [
+        {
+          "Config": {
+            "version": "1",
+            "name": "basic",
+            "attributes": {
+              "backendType": "ontap-nas"
+            },
+            "storagePools": null,
+            "additionalStoragePools": null
+          },
+          "storage": {
+            "ontapnas_10.0.0.1": [
+              "aggr1",
+              "aggr2",
+              "aggr3",
+              "aggr4"
+            ]
+          }
+        }
+      ]
+    }
+
+.. _storage class: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses
+
+6: Provision your first volume
+==============================
+
+Now you're ready to dynamically provision your first volume. How exciting! This
+is done by creating a Kubernetes `persistent volume claim`_ (PVC) object, and
+this is exactly how your users will do it too.
+
+.. _persistent volume claim: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+
+Create a persistent volume claim (PVC) for a volume that uses the storage
+class that you just created.
+
+See ``sample-input/pvc-basic.yaml`` for an example. Make sure the storage
+class name matches the one that you created in 6.
+
+.. code-block:: bash
+
+    kubectl create -f sample-input/pvc-basic.yaml
+
+    kubectl get pvc --watch
+    NAME      STATUS    VOLUME                                     CAPACITY   ACCESS MODES  STORAGECLASS   AGE
+    basic     Pending                                                                       basic          1s
+    basic     Pending   pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   0                        basic          5s
+    basic     Bound     pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   1Gi        RWO           basic          7s
+
+7: Mount the volume in a pod
+============================
+
+Now that you have a volume, let's mount it. We'll launch an nginx pod that
+mounts the PV under ``/usr/share/nginx/html``.
+
+.. code-block:: bash
+
+  cat << EOF > task-pv-pod.yaml
+  kind: Pod
+  apiVersion: v1
+  metadata:
+    name: task-pv-pod
+  spec:
+    volumes:
+      - name: task-pv-storage
+        persistentVolumeClaim:
+         claimName: basic
+    containers:
+      - name: task-pv-container
+        image: nginx
+        ports:
+          - containerPort: 80
+            name: "http-server"
+        volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: task-pv-storage
+  EOF
+  kubectl create -f task-pv-pod.yaml
+
+.. code-block:: bash
+
+  # Wait for the pod to start
+  kubectl get pod --watch
+
+  # Verify that the volume is mounted on /usr/share/nginx/html
+  kubectl exec -it task-pv-pod -- df -h /usr/share/nginx/html
+  Filesystem                                                          Size  Used Avail Use% Mounted on
+  10.xx.xx.xx:/trident_pvc_3acb0d1c_b1ae_11e9_8d9f_5254004dfdb7       1.0G  256K  1.0G   1% /usr/share/nginx/html
+
+
+  # Delete the pod
+  kubectl delete pod task-pv-pod
+
+At this point the pod (application) no longer exists but the volume is still
+there. You could use it from another pod if you wanted to.
+
+To delete the volume, simply delete the claim:
+
+.. code-block:: console
+
+  kubectl delete pvc basic
+
+Where do you go from here? you can do things like:
+
+  * :ref:`Configure additional backends <Backend configuration>`.
+  * :ref:`Model additional storage classes <Managing storage classes>`.
+  * Review considerations for moving this into production.

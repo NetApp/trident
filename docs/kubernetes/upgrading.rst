@@ -13,13 +13,13 @@ Initiate the upgrade
 
 .. note::
 
-   Before upgrading Trident, ensure that the required :ref:`feature gates <Feature Gates>`
+   Before upgrading Trident, ensure that the required :ref:`feature gates <Feature Requirements>`
    are enabled.
 
 .. warning::
 
-   Trident 20.01 only supports the beta feature release of Volume Snapshots. When upgrading
-   to Trident 20.01, all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
+   Trident only supports the beta feature release of Volume Snapshots. When upgrading
+   Trident, all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
    Volume Snapshots and Volume Snapshot Contents) must be removed before the upgrade is performed.
    Refer to `this blog <https://netapp.io/2020/01/30/alpha-to-beta-snapshots/>`_ to understand the
    steps involved in migrating alpha snapshots to the beta spec.
@@ -51,15 +51,13 @@ On Kubernetes ``1.13``, there are a couple of options when upgrading Trident:
 
 - Install Trident in the desired namespace by executing the
   ``tridentctl install`` command with the ``--csi`` flag. This configures Trident
-  to function as an enhanced CSI provisioner and is the preferred way to upgrade if using
-  ``1.13``.
+  to function as an enhanced CSI provisioner. This will require enabling
+  some :ref:`feature gates <Feature Requirements>`.
 
-- If for some reason the :ref:`feature gates <Feature Gates>` required by Trident
+- If for some reason the :ref:`feature gates <Feature Requirements>` required by Trident
   cannot be enabled, you can install Trident without the ``--csi`` flag. This will
   configure Trident to work in its traditional format without using the CSI
-  specification. Keep in mind that new features introduced by Trident, such as
-  :ref:`On-Demand Volume Snapshots <On-Demand Volume Snapshots>` will not be available
-  in this installation mode.
+  specification.
 
 Upgrading Trident on Kubernetes 1.14 and above
 ----------------------------------------------

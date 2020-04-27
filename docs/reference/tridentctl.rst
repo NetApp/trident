@@ -62,6 +62,7 @@ Remove one or more resources from Trident
 
   Available Commands:
     backend      Delete one or more storage backends from Trident
+    node         Delete one or more csi nodes from Trident
     snapshot     Delete one or more volume snapshots from Trident    
     storageclass Delete one or more storage classes from Trident
     volume       Delete one or more storage volumes from Trident
@@ -138,7 +139,7 @@ Print the logs from Trident
   Flags:
     -a, --archive       Create a support archive with all logs unless otherwise specified.
     -h, --help          help for logs
-    -l, --log string    Trident log to display. One of trident|auto|all (default "auto")
+    -l, --log string    Trident log to display. One of trident|operator|auto|all (default "auto")
         --node string   The kubernetes node name to gather node pod logs from.
     -p, --previous      Get the logs for the previous container instance if it exists.
         --sidecars      Get the logs for the sidecar containers as well.
@@ -190,5 +191,9 @@ Print the version of tridentctl and the running Trident service
 
 .. code-block:: console
 
-  Usage:
-    tridentctl version
+   Usage:
+     tridentctl version [flags]
+
+   Flags:
+         --client   Client version only (no server required).
+     -h, --help     help for version

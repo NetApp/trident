@@ -20,7 +20,7 @@ This section covers Trident Installation on a Kubernetes cluster.
 What are the supported versions of etcd?
 ----------------------------------------
 
-Trident v19.10 does not require an etcd. It uses CRDs to maintain
+From the 19.07 release, Trident no longer needs an etcd. It uses CRDs to maintain
 state.
 
 
@@ -112,7 +112,7 @@ What versions of Kubernetes support Trident as an enhanced CSI Provisioner?
 ---------------------------------------------------------------------------
 
 Kubernetes versions ``1.13`` and above support running Trident as a CSI Provisioner. Before installing
-Trident, ensure the required :ref:`feature gates <Feature Gates>` are enabled.
+Trident, ensure the required :ref:`feature gates <Feature Requirements>` are enabled.
 
 Refer to :ref:`Requirements <Supported frontends (orchestrators)>` for a list
 of supported orchestrators.
@@ -130,7 +130,7 @@ How do I install Trident to work as a CSI Provisioner?
 ------------------------------------------------------
 
 The installation procedure is detailed under the :ref:`Deployment <deploying-in-kubernetes>` section.
-Ensure that the :ref:`feature gates <Feature Gates>` are enabled.
+Ensure that the :ref:`feature gates <Feature Requirements>` are enabled.
 
 How does Trident maintain state if it doesn't use etcd?
 -------------------------------------------------------
@@ -160,6 +160,25 @@ absolutely mandatory.
 
 Refer to :ref:`ONTAP (AFF/FAS/Select/Cloud)` for more information on backend definition files.
 
+Can Trident configure CHAP for ONTAP backends?
+----------------------------------------------
+
+Yes. Beginning with Trident 20.04, Trident supports bidirectional CHAP for ONTAP backends. This
+requires setting ``useCHAP=true`` in your backend configuration. Refer to the
+:ref:`Using CHAP with ONTAP SAN drivers <Using CHAP with ONTAP SAN drivers>` section
+to understand how it works.
+
+How do I manage export policies with Trident?
+---------------------------------------------
+
+Trident can dynamically create and manage export policies from 20.04 onwards.
+This enables the storage admin to provide one or more CIDR blocks in their
+backend config and have Trident add node IPs that fall within these ranges
+to an export policy it creates. In this manner, Trident automatically
+manages the addition and deletion of rules for nodes with IPs within the
+given CIDRs. This feature requires CSI Trident. Refer to
+:ref:`Dynamic Export Policies with ONTAP NAS <Dynamic Export Policies with ONTAP NAS>` for more
+information.
 
 Can we specify a port in the DataLIF?
 -------------------------------------

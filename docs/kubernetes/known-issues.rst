@@ -3,6 +3,12 @@ Known issues
 
 This page contains a list of known issues that may be observed when using Trident.
 
+* When installing Trident (using ``tridentctl`` or the Trident Operator) and
+  using ``tridentctl`` to manage Trident, you must ensure the
+  ``KUBECONFIG`` environment variable is set. This is necessary to indicate
+  the Kubernetes cluster that ``tridentctl`` must work against. When working
+  with multiple Kubernetes environments, care must be taken to ensure the
+  KUBECONFIG file is sourced accurately.
 * To perform online space reclamation for iSCSI PVs, the underlying OS on the
   worker node may require mount options to be passed to the volume. This is
   true for RHEL/RedHat CoreOS instances, which require the ``discard``
@@ -33,8 +39,9 @@ This page contains a list of known issues that may be observed when using Triden
   idempotent operation. Thus, if the ``storagePrefix`` or ``TenantName`` does
   not differ, there is a very slim chance to have name collisions for volumes
   created on the same backend.
-* ONTAP cannot concurrently provision more than one FlexGroup at a time unless the set of aggregates are
-  unique to each provisioning request.
-* The ``ontap-nas-flexgroup`` driver doesn't currently work with ONTAP 9.7.
-* When using Trident over IPv6, the ``managementLIF`` option in the backend definition
+* ONTAP cannot concurrently provision more than one FlexGroup at a time
+  unless the set of aggregates are unique to each provisioning request.
+* When using Trident over IPv6, the ``managementLIF`` and ``dataLIF`` in the backend definition
   must be specified within square brackets, like ``[fd20:8b1e:b258:2000:f816:3eff:feec:0]``.
+* If using CoreOS or Ubuntu on Kubernetes nodes, you must ensure ``rpc-statd`` is started
+  at boot time.

@@ -101,6 +101,8 @@ and is a great way to get started on the Trident journey.
     
     upgrading
     deploying
+    tridentctl-install
+    operator-install
     operations/tasks/index
     concepts/index
     known-issues

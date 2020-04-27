@@ -30,22 +30,52 @@ Three ways to install Trident are discussed in this chapter.
 
 **Normal install mode**
 
-Normal installation involves running the ``tridentctl install -n trident`` command which deploys the Trident pod on the Kubernetes cluster. Trident installation is quite a straightforward process. For more information on installation and provisioning of volumes, refer to the :ref:`Deploying documentation <Deploying>`.
+Installing Trident on a Kubernetes cluster will result in the Trident
+installer:
+
+1. Fetching the container images over the Internet.
+
+2. Creating a deployment and/or node daemonset which spin up Trident pods
+   on all eligible nodes in the Kubernetes cluster.
+
+A standard installation such as this can be performed in two different
+ways:
+
+1. Using ``tridentctl install`` to install Trident.
+
+2. Using the Trident Operator.
+
+This mode of installing is the easiest way to install Trident and
+works for most environments that do not impose network restrictions. The
+:ref:`Deploying <Deploying>` guide will help you get started.
 
 **Offline install mode**
 
 In many organizations, production and development environments do not have access to public repositories for pulling and posting images as these environments are completely secured and restricted. Such environments only allow pulling images from trusted private repositories.
 
 To perform an air-gapped installation of Trident, you can use the ``--image-registry`` flag
-when invoking ``tridentctl install`` to point to a private image registry. This registry must
-contain the Trident image (obtained `here <https://hub.docker.com/r/netapp/trident/>`_) and the
-CSI sidecar images as required by your Kubernetes version. The
-:ref:`Customized Installation <Customized Installation>` section talks about the options available
+when invoking ``tridentctl install`` to point to a private image registry. If installing with
+the Trident Operator, you can alternatively specify ``spec.imageRegistry`` in your
+TridentProvisioner. This registry must contain the Trident image
+(obtained `here <https://hub.docker.com/r/netapp/trident/>`_)
+and the CSI sidecar images as required by your Kubernetes version.
+
+To customize your installation further, you can use ``tridentctl`` to generate the manifests
+for Trident's resources. This includes the deployment, daemonset, service account and the cluster
+role that Trident creates as part of its installation. 
+The :ref:`Customized Installation <Customized Installation>` section talks about the options available
 for performing a custom Trident install.
 
 **Remote install mode**
 
-Trident can be installed on a Kubernetes cluster from a remote machine. To do a remote install, install the appropriate version of ``kubectl`` on the remote machine from where you would be running the ``tridentctl install`` command. Copy the configuration files from the Kubernetes cluster and set the KUBECONFIG environment variable on the remote machine. Initiate a ``kubectl get nodes`` command to verify you can connect to the required Kubernetes cluster. Complete the Trident deployment from the remote machine using the normal installation steps.
+Trident can be installed on a Kubernetes cluster from a remote machine.
+To do a remote install, install the appropriate version of ``kubectl``
+on the remote machine from where you would be installing Trident. Copy
+the configuration files from the Kubernetes cluster and set the KUBECONFIG
+environment variable on the remote machine. Initiate a ``kubectl get nodes``
+command to verify you can connect to the required Kubernetes cluster.
+Complete the Trident deployment from the remote machine using the normal
+installation steps.
 
 Trident Installation on Docker UCP 3.1
 ======================================
@@ -63,7 +93,7 @@ The Trident 19.10 release is built on a production-ready CSI 1.1 provisioner imp
 Trident to absorb standardized features like snapshots, while still retaining its ability to innovate on the storage model.
 
 To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <deploying-in-kubernetes>`. Ensure
-that the required :ref:`Feature Gates <Feature Gates>` are enabled.
+that the required :ref:`Feature Gates <Feature Requirements>` are enabled.
 After deploying, you should consider :ref:`Upgrading existing PVs to CSI volumes <Upgrading legacy volumes to CSI volumes>`
 if you would like to
 use new features such as :ref:`On-demand snapshots <On-Demand Volume Snapshots>`.

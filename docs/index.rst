@@ -11,15 +11,21 @@ Storage Orchestrator for Containers
    :target: https://goreportcard.com/report/github.com/netapp/trident
 
 .. toctree::
-    :caption: Introduction
+   :caption: Introduction
 
-    introduction
+   introduction
 
 .. toctree::
    :caption: Kubernetes
 
    kubernetes/index
    dag/kubernetes/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Frequently Asked Questions
+   
+   frequently_asked_questions
 
 .. toctree::
    :caption: Docker

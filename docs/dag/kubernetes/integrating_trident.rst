@@ -31,15 +31,15 @@ Note that, in the tables below, not all of the capabilities are exposed through 
 .. table:: ONTAP NAS driver capabilities
    :align: left
 
-   +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
-   | ONTAP NFS Drivers           | Snapshots     |      Clones     | Multi-attach | QoS           | Resize |  Replication  |
-   +=============================+===============+=================+==============+===============+========+===============+
-   | ``ontap-nas``               | Yes           |        Yes      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
-   +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
-   | ``ontap-nas-economy``       | Yes\ :sup:`12`|  Yes\ :sup:`12` | Yes          | Yes\ :sup:`12`| Yes    | Yes\ :sup:`12`|
-   +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
-   | ``ontap-nas-flexgroup``     | Yes\ :sup:`1` |         No      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
-   +-----------------------------+---------------+-----------------+--------------+---------------+--------+---------------+
+   +-----------------------------+---------------+-----------------+-------------------------+--------------+---------------+--------+---------------+
+   | ONTAP NFS Drivers           | Snapshots     |      Clones     | Dynamic Export Policies | Multi-attach | QoS           | Resize |  Replication  |
+   +=============================+===============+=================+=========================+==============+===============+========+===============+
+   | ``ontap-nas``               | Yes           |        Yes      |      Yes\ :sup:`4`      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
+   +-----------------------------+---------------+-----------------+-------------------------+--------------+---------------+--------+---------------+
+   | ``ontap-nas-economy``       | Yes\ :sup:`12`|  Yes\ :sup:`12` |      Yes\ :sup:`4`      | Yes          | Yes\ :sup:`12`| Yes    | Yes\ :sup:`12`|
+   +-----------------------------+---------------+-----------------+-------------------------+--------------+---------------+--------+---------------+
+   | ``ontap-nas-flexgroup``     | Yes\ :sup:`1` |         No      |      Yes\ :sup:`4`      | Yes          | Yes\ :sup:`1` | Yes    | Yes\ :sup:`1` |
+   +-----------------------------+---------------+-----------------+-------------------------+--------------+---------------+--------+---------------+
 
 
 Trident offers 2 SAN drivers for ONTAP, whose capabilities are shown below.
@@ -48,19 +48,20 @@ Trident offers 2 SAN drivers for ONTAP, whose capabilities are shown below.
    :align: left
 
 
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
-   | ONTAP SAN Driver            | Snapshots | Clones | Multi-attach | QoS           | Resize        | Replication   |
-   +=============================+===========+========+==============+===============+===============+===============+
-   | ``ontap-san``               | Yes       | Yes    | Yes\ :sup:`3`| Yes\ :sup:`1` |      Yes      | Yes\ :sup:`1` |
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
-   | ``ontap-san-economy``       | Yes       | Yes    | Yes\ :sup:`3`| Yes\ :sup:`12`| Yes\ :sup:`1` | Yes\ :sup:`12`|
-   +-----------------------------+-----------+--------+--------------+---------------+---------------+---------------+
+   +-----------------------------+-----------+--------+--------------+--------------------+---------------+---------------+---------------+
+   | ONTAP SAN Driver            | Snapshots | Clones | Multi-attach | Bidirectional CHAP | QoS           | Resize        | Replication   |
+   +=============================+===========+========+==============+====================+===============+===============+===============+
+   | ``ontap-san``               | Yes       | Yes    | Yes\ :sup:`3`|        Yes         | Yes\ :sup:`1` |      Yes      | Yes\ :sup:`1` |
+   +-----------------------------+-----------+--------+--------------+--------------------+---------------+---------------+---------------+
+   | ``ontap-san-economy``       | Yes       | Yes    | Yes\ :sup:`3`|        Yes         | Yes\ :sup:`12`| Yes\ :sup:`1` | Yes\ :sup:`12`|
+   +-----------------------------+-----------+--------+--------------+--------------------+---------------+---------------+---------------+
 
 | Footnote for the above tables:
 | Yes\ :sup:`1` :  Not Trident managed
 | Yes\ :sup:`2` :  Trident managed, but not PV granular
 | Yes\ :sup:`12`:  Not Trident managed and not PV granular
 | Yes\ :sup:`3` :  Supported for raw-block volumes
+| Yes\ :sup:`4` :  Supported by CSI Trident
 
 
 The features that are not PV granular are applied to the entire FlexVolume and all of the PVs (i.e. qtrees or LUNs in shared FlexVols) will share a common schedule.
@@ -81,11 +82,11 @@ The ``solidfire-san`` driver used with the HCI/SolidFire platforms, helps the ad
 .. table:: SolidFire SAN driver capabilities
    :align: left
 
-   +-------------------+----------------+--------+--------------+------+--------+---------------+
-   | SolidFire Driver  | Snapshots      | Clones | Multi-attach | QoS  | Resize | Replication   |
-   +===================+================+========+==============+======+========+===============+
-   | ``solidfire-san`` | Yes            | Yes    | Yes\ :sup:`2`| Yes  |   Yes  | Yes\ :sup:`1` |
-   +-------------------+----------------+--------+--------------+------+--------+---------------+
+   +-------------------+----------------+--------+--------------+------+------+--------+---------------+
+   | SolidFire Driver  | Snapshots      | Clones | Multi-attach | CHAP | QoS  | Resize | Replication   |
+   +===================+================+========+==============+======+======+========+===============+
+   | ``solidfire-san`` | Yes            | Yes    | Yes\ :sup:`2`| Yes  | Yes  |   Yes  | Yes\ :sup:`1` |
+   +-------------------+----------------+--------+--------------+------+------+--------+---------------+
 
 | Footnote:
 | Yes\ :sup:`1`:  Not Trident managed

@@ -10,7 +10,8 @@ your backends, your workers will need the :ref:`NFS` tools. Otherwise they
 require the :ref:`iSCSI` tools.
 
 .. note::
-  Recent versions of CoreOS have both installed by default.
+  Recent versions of RedHat CoreOS have both installed by default. You must ensure
+  that the NFS and iSCSI services are started up during boot time.
 
 .. note::
    When using worker nodes that run RHEL/RedHat CoreOS with iSCSI

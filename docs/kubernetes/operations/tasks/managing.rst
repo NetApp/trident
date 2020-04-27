@@ -34,6 +34,61 @@ ServiceMonitor to obtain Trident's metrics.
 Uninstalling Trident
 --------------------
 
+Depending on how Trident is installed, there are multiple options to uninstall
+Trident.
+
+Uninstalling with the Trident Operator
+**************************************
+
+If you have installed Trident using the :ref:`operator <deploying-with-operator>`,
+you can uninstall Trident by either:
+
+1. **Editing the TridentProvisioner to set the uninstall flag:** You can
+   edit the TridentProvisioner and set ``spec.uninstall=true`` to 
+   uninstall Trident.
+
+2. **Deleting the TridentProvisioner:** By removing the ``TridentProvisioner``
+   CR that was used to deploy Trident, you instruct the operator to
+   uninstall Trident. The operator processes the removal of the
+   TridentProvisioner and proceeds to remove the Trident deployment and
+   daemonset, deleting the Trident pods it had created on
+   installation.
+
+To uninstall Trident, edit the ``TridentProvisioner`` and set the
+``uninstall`` flag as shown below:
+
+.. code-block:: bash
+
+  $  kubectl patch tprov <trident-provisioner-name> -n trident --type=merge -p '{"spec":{"uninstall":true}}'
+
+When the ``uninstall`` flag is set to ``true``, the Trident Operator
+uninstalls Trident but doesn't remove the TridentProvisioner itself. You
+must clean up the TridentProvisioner and create a new one if you want to
+install Trident again.
+
+To completely remove Trident (including the CRDs it creates) and effectively
+wipe the slate clean, you can edit the ``TridentProvisioner`` to pass the
+``wipeout`` option.
+
+.. warning::
+      
+   You must only consider wiping out the CRDs when performing a complete
+   uninstallation. This will completely uninstall Trident and cannot be
+   undone. **Do not wipeout the CRDs unless you are looking to start over
+   and create a fresh Trident install**.
+
+.. code-block:: bash
+
+   $ kubectl patch tprov <trident-provisioner-name> -n trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true}}'
+
+
+This will **completely uninstall Trident and clear all metadata related
+to backends and volumes it manages**. Subsequent installations will
+be treated as a fresh install.
+ 
+Uninstalling with tridentctl
+****************************
+
 The uninstall command in tridentctl will remove all of the
 resources associated with Trident except for the CRDs and related objects,
 making it easy to run the installer again to update to a more recent version.

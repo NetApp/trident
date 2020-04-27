@@ -5,7 +5,7 @@ Security Recommendations
 *************************
 
 Run Trident in its own namespace
----------------------------------
+================================
 
 It is important to prevent applications, application admins, users, and
 management applications from accessing Trident object definitions or the
@@ -20,11 +20,33 @@ in the namespaced CRD objects. Allow only administrators access to the
 Trident namespace and thus access to `tridentctl` application.
 
 CHAP authentication
--------------------
+===================
+
+Trident supports CHAP-based authentication for HCI/SolidFire backends and
+ONTAP SAN workloads (using the ``ontap-san`` and ``ontap-san-economy``
+drivers). NetApp recommends using bidirectional CHAP with Trident for
+authentication between a host and the storage backend.
+
+CHAP with ONTAP SAN backends
+----------------------------
+
+For ONTAP backends that use the SAN storage drivers, Trident can set up
+bidirectional CHAP and manage CHAP usernames and secrets through ``tridentctl``.
+Refer to :ref:`Using CHAP with ONTAP SAN drivers <Using CHAP with ONTAP SAN drivers>`
+to understand how Trident configures CHAP on ONTAP backends.
 
 .. note::
 
-   Trident will only use CHAP when installed as a CSI Provisioner. 
+   CHAP support for ONTAP backends is available with Trident 20.04 and above.
+
+CHAP with HCI/SolidFire backends
+--------------------------------
+
+.. note::
+
+   For HCI/SolidFire backends, CSI Trident will use CHAP to authenticate
+   connections. The volumes that are created by CSI Trident will not be
+   associated with any Volume Access Group. 
 
 NetApp recommends deploying bi-directional CHAP to ensure authentication
 between a host and the HCI/SolidFire backend. Trident uses a secret

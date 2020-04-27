@@ -88,6 +88,17 @@ To configure the maximum size for volumes that can be created by Trident, use th
 
 In addition to controlling the volume size at the storage array, Kubernetes capabilities should also be leveraged as explained in the next chapter.
 
+Configure Trident to use bidirectional CHAP
+-------------------------------------------
+
+You can specify the CHAP initiator and target usernames and passwords in
+your backend definition and have Trident enable CHAP on the SVM.
+Using the ``useCHAP`` parameter in your backend configuration, Trident
+will authenticate iSCSI connections for ONTAP backends with CHAP.
+Bidirectional CHAP support is available with Trident 20.04 and above. Refer to the
+:ref:`Using CHAP with ONTAP SAN drivers <Using CHAP with ONTAP SAN drivers>` section
+to get started.
+
 Create and use an SVM QoS policy
 --------------------------------
 
@@ -128,12 +139,24 @@ For volumes where access is desired from both Kubernetes and external hosts, the
 
 For deployments which have dedicated infrastructure nodes (e.g. OpenShift), or other nodes which are not schedulable for user applications, separate export policies should be used to further limit access to storage resources.  This includes creating an export policy for services which are deployed to those infrastructure nodes, such as, the OpenShift Metrics and Logging services, and standard applications which are deployed to non-infrastructure nodes.
 
-Create an export policy 
------------------------
+Use a dedicated export policy 
+-----------------------------
 
-Create appropriate export policies for Storage Virtual Machines. Allow only Kubernetes nodes access to the NFS volumes.
+It is important to ensure that an export policy exists for each backend
+that only allows access to the nodes present in the Kubernetes cluster.
+Trident can automatically create and manage export policies from the
+``20.04`` release. This is covered in detail in the
+:ref:`Dynamic Export Policies <Dynamic Export Policies with ONTAP NAS>`
+section of the documentation. This way, Trident limits access to the
+volumes it provisions to the nodes in the Kubernetes cluster and simplifies
+the addition/deletion of nodes.
 
-Export policies contain one or more export rules that process each node access request. Use the ``vserver export-policy create`` ONTAP CLI to create the export policy. Add rules to the export policy using the ``vserver export-policy rule create`` ONTAP CLI command. Performing the above commands enables you to restrict which Kubernetes nodes have access to data.
+Alternatively, you can also create an export policy manually and populate it
+with one or more export rules that process each node access request.
+Use the ``vserver export-policy create`` ONTAP CLI to create the export policy.
+Add rules to the export policy using the ``vserver export-policy rule create``
+ONTAP CLI command. Performing the above commands enables you to restrict which
+Kubernetes nodes have access to data.
 
 Disable ``showmount`` for the application SVM
 ---------------------------------------------
