@@ -8,8 +8,10 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -520,11 +522,29 @@ func (d *NASFlexGroupStorageDriver) Create(
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
 
 	// Create the FlexGroup
-	_, err = d.API.FlexGroupCreate(
-		name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+	checkVolumeCreated := func() error {
+		_, err = d.API.FlexGroupCreate(
+			name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
+			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
 
-	if err != nil {
+		return err
+	}
+
+	volumeCreateNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name":      name,
+			"increment": duration}).Debug("FlexGroup not yet created, waiting.")
+	}
+
+	volumeBackoff := backoff.NewExponentialBackOff()
+	volumeBackoff.InitialInterval = 3 * time.Second
+	volumeBackoff.Multiplier = 1.414
+	volumeBackoff.RandomizationFactor = 0.1
+	volumeBackoff.MaxElapsedTime = 60 * time.Second
+	volumeBackoff.MaxInterval = 10 * time.Second
+
+	// Run the volume check using an exponential backoff
+	if err := backoff.RetryNotify(checkVolumeCreated, volumeBackoff, volumeCreateNotify); err != nil {
 		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v", storagePool.Name, name, err))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
