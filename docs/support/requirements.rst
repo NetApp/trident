@@ -10,6 +10,7 @@ Trident supports multiple container engines and orchestrators, including:
 * Kubernetes 1.11 or later (latest: 1.18)
 * OpenShift 3.11, 4.2, 4.3 and 4.4
 * Docker Enterprise 2.1 or 3.0
+* Google Anthos 1.1 and 1.2
 
 The Trident Operator is supported with these releases:
 
