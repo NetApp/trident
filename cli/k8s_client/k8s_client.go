@@ -2422,16 +2422,9 @@ func (k *KubeClient) getSelectorFromLabel(label string) (string, error) {
 // deleteOptions returns a DeleteOptions struct suitable for most DELETE calls to the K8S REST API.
 func (k *KubeClient) deleteOptions() *metav1.DeleteOptions {
 
-	// TODO: We're still using the OrphanDependents field, which was deprecated
-	// in K8S 1.7 but is still in use by kubectl as of K8S 1.10.  At some point,
-	// we'll need to switch to using PropagationPolicy (which seems to work in
-	// 1.10, at least) when OrphanDependents stops working.
-
-	//propagationPolicy := metav1.DeletePropagationBackground
-	orphanDependents := false
+	propagationPolicy := metav1.DeletePropagationBackground
 	deleteOptions := &metav1.DeleteOptions{
-		OrphanDependents: &orphanDependents,
-		//PropagationPolicy: &propagationPolicy,
+		PropagationPolicy: &propagationPolicy,
 	}
 
 	return deleteOptions

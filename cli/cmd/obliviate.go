@@ -102,7 +102,10 @@ func initClients() error {
 		if kubeClient, err = k8sclient.NewKubectlClient("", k8sTimeout); err != nil {
 			return err
 		}
-		resetNamespace = kubeClient.Namespace()
+		resetNamespace = TridentPodNamespace
+		if resetNamespace == "" {
+			resetNamespace = kubeClient.Namespace()
+		}
 
 		if restConfig, err := clientcmd.BuildConfigFromFlags("", configPath); err != nil {
 			return err
