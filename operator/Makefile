@@ -2,6 +2,7 @@
 
 GOARCH ?= amd64
 GOGC ?= ""
+GOPROXY ?= https://proxy.golang.org
 GO_IMAGE = golang:1.14
 OPERATOR_VOLUME = operator_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
@@ -30,6 +31,7 @@ DR_LINUX = docker run --rm \
 	-e GOOS=linux \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
+	-e GOPROXY=$(GOPROXY) \
 	-v $(OPERATOR_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(OPERATOR_VOLUME_PATH) \
@@ -110,7 +112,7 @@ dist_tar:
 dist: build dist_tar dist_tag
 
 ## Test targets
-#test: 
+#test:
 
 ## Misc. targets
 
