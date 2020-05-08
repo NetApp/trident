@@ -4,8 +4,8 @@ package installer
 
 const (
 	MinSupportedTridentVersion = "20.04.0" // ParseDate needs this format but should be used with ToMajorMinorVersion
-	MaxSupportedTridentVersion = "20.04.0" // ParseDate needs this format but should be used with ToMajorMinorVersion
-	DefaultTridentVersion      = "20.04"   // This will ensure we get the latest dot release
+	MaxSupportedTridentVersion = "20.07.0" // ParseDate needs this format but should be used with ToMajorMinorVersion
+	DefaultTridentVersion      = "20.07"   // This will ensure we get the latest dot release
 
 	TridentAppLabelKey = "app"
 

@@ -40,7 +40,7 @@ GO_LINUX = ${DR_LINUX} go
 .PHONY = default build retag dist dist_tar dist_tag clean vet
 
 ## version variables
-OPERATOR_VERSION ?= 20.04.0
+OPERATOR_VERSION ?= 20.07.0
 OPERATOR_IMAGE ?= trident-operator
 ifeq ($(BUILD_TYPE),custom)
 OPERATOR_VERSION := ${OPERATOR_VERSION}-custom

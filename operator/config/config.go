@@ -5,8 +5,9 @@ package config
 import (
 	"fmt"
 
-	tridentutils "github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
+
+	tridentutils "github.com/netapp/trident/utils"
 )
 
 type Platform string
@@ -20,7 +21,7 @@ type Telemetry struct {
 const (
 	/* Misc. orchestrator constants */
 	OperatorName    = "trident-operator"
-	operatorVersion = "20.04.0"
+	operatorVersion = "20.07.0"
 )
 
 var (

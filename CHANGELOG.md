@@ -2,7 +2,9 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v20.01.0
+## Changes since v20.04.0
+
+## v20.04.0
 
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
 

@@ -58,7 +58,7 @@ GO_MACOS = ${DR_MACOS} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 20.04.0
+TRIDENT_VERSION ?= 20.07.0
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
