@@ -161,7 +161,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	}
 
 	// Lookup all the SCSI device information
-	deviceInfo, err := getDeviceInfoForLUN(lunID, targetIQN)
+	deviceInfo, err := getDeviceInfoForLUN(lunID, targetIQN, true)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -590,11 +590,12 @@ type ScsiDeviceInfo struct {
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScanIfNeeded so that the device paths are known to exist.
-func getDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, error) {
+func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
+		"needFSType":    needFSType,
 	}
 	log.WithFields(fields).Debug(">>>> osutils.getDeviceInfoForLUN")
 	defer log.WithFields(fields).Debug("<<<< osutils.getDeviceInfoForLUN")
@@ -622,14 +623,15 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string) (*ScsiDeviceInfo, erro
 	}
 
 	fsType := ""
-	if multipathDevice != "" {
-		fsType, err = getFSType("/dev/" + multipathDevice)
-	} else {
-		fsType, err = getFSType("/dev/" + devices[0])
-	}
-
-	if err != nil {
-		return nil, err
+	if needFSType {
+		if multipathDevice != "" {
+			fsType, err = getFSType("/dev/" + multipathDevice)
+		} else {
+			fsType, err = getFSType("/dev/" + devices[0])
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	log.WithFields(log.Fields{
@@ -858,7 +860,7 @@ func findDevicesForMultipathDevice(device string) []string {
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) error {
+func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) {
 
 	fields := log.Fields{
 		"lunID":            lunID,
@@ -868,17 +870,16 @@ func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) error {
 	log.WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
 	defer log.WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
 
-	deviceInfo, err := getDeviceInfoForLUN(lunID, iSCSINodeName)
+	deviceInfo, err := getDeviceInfoForLUN(lunID, iSCSINodeName, false)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 			"lunID": lunID,
-		}).Info("Could not get device info for removal, skipping host removal steps.")
-		return err
+		}).Warn("Could not get device info for removal, skipping host removal steps.")
+		return
 	}
 
 	removeSCSIDevice(deviceInfo)
-	return nil
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
@@ -907,17 +908,16 @@ func PrepareDeviceAtMountPathForRemoval(mountpoint string, unmount bool) error {
 // the devices and multipathDevice fields set.
 func removeSCSIDevice(deviceInfo *ScsiDeviceInfo) {
 
+	listAllISCSIDevices()
 	// Flush multipath device
 	multipathFlushDevice(deviceInfo)
-
-	// Flush devices
-	flushDevice(deviceInfo)
 
 	// Remove device
 	removeDevice(deviceInfo)
 
 	// Give the host a chance to fully process the removal
 	time.Sleep(time.Second)
+	listAllISCSIDevices()
 }
 
 // ISCSISupported returns true if iscsiadm is installed and in the PATH.
@@ -1087,12 +1087,14 @@ func ISCSIDisableDelete(targetIQN, targetPortal string) error {
 	log.WithFields(logFields).Debug(">>>> osutils.ISCSIDisableDelete")
 	defer log.WithFields(logFields).Debug("<<<< osutils.ISCSIDisableDelete")
 
+	listAllISCSIDevices()
 	_, err := execIscsiadmCommand("-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u")
 	if err != nil {
 		log.WithField("error", err).Debug("Error during iSCSI logout.")
 	}
 
 	_, err = execIscsiadmCommand("-m", "node", "-o", "delete", "-T", targetIQN)
+	listAllISCSIDevices()
 	return err
 }
 
@@ -1270,7 +1272,7 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 	log.WithFields(fields).Debug(">>>> osutils.ISCSIRescanDevices")
 	defer log.WithFields(fields).Debug("<<<< osutils.ISCSIRescanDevices")
 
-	deviceInfo, err := getDeviceInfoForLUN(int(lunID), targetIQN)
+	deviceInfo, err := getDeviceInfoForLUN(int(lunID), targetIQN, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
 	} else if deviceInfo == nil {
@@ -1366,6 +1368,7 @@ func iSCSIRescanDisk(deviceName string) error {
 	log.WithFields(fields).Debug(">>>> osutils.iSCSIRescanDisk")
 	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIRescanDisk")
 
+	listAllISCSIDevices()
 	filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
 	log.WithField("filename", filename).Debug("Opening file for writing.")
 
@@ -1388,6 +1391,7 @@ func iSCSIRescanDisk(deviceName string) error {
 		return fmt.Errorf("no data written to %s", filename)
 	}
 
+	listAllISCSIDevices()
 	return nil
 }
 
@@ -1403,6 +1407,7 @@ func iSCSIScanTargetLUN(lunID int, hosts []int) error {
 		err error
 	)
 
+	listAllISCSIDevices()
 	for _, hostNumber := range hosts {
 
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
@@ -1424,6 +1429,7 @@ func iSCSIScanTargetLUN(lunID int, hosts []int) error {
 
 		f.Close()
 
+		listAllISCSIDevices()
 		log.WithFields(log.Fields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
@@ -1904,6 +1910,7 @@ func removeDevice(deviceInfo *ScsiDeviceInfo) {
 		err error
 	)
 
+	listAllISCSIDevices()
 	for _, deviceName := range deviceInfo.Devices {
 
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
@@ -1924,6 +1931,7 @@ func removeDevice(deviceInfo *ScsiDeviceInfo) {
 
 		f.Close()
 
+		listAllISCSIDevices()
 		log.WithField("scanFile", filename).Debug("Invoked device delete.")
 	}
 }
@@ -1968,13 +1976,7 @@ func getFSType(device string) (string, error) {
 	out, err := execCommandWithTimeout("blkid", 5, device)
 	if err != nil {
 		if IsTimeoutError(err) {
-			dmLog, sdLog, sysLog := gatherDeviceLogs()
-			log.WithFields(log.Fields{
-				"device": device,
-				"/dev/dm-*": dmLog,
-				"/dev/sd*": sdLog,
-				"/sys/block/*": sysLog,
-			}).Debug("Timeout error occurred.")
+			listAllISCSIDevices()
 			return fsType, err
 		} else {
 			// Do not fail when running fsType on a raw block device
@@ -2123,8 +2125,15 @@ func Umount(mountpoint string) (err error) {
 	log.WithField("mountpoint", mountpoint).Debug(">>>> osutils.Umount")
 	defer log.Debug("<<<< osutils.Umount")
 
-	if _, err = execCommand("umount", mountpoint); err != nil {
+	if _, err = execCommandWithTimeout("umount", 10, mountpoint); err != nil {
 		log.WithField("error", err).Error("Umount failed.")
+		if IsTimeoutError(err) {
+			var out []byte
+			out, err = execCommandWithTimeout("umount", 10, mountpoint, "-f")
+			if strings.Contains(string(out), "not mounted") {
+				err = nil
+			}
+		}
 	}
 	return
 }
@@ -2139,11 +2148,12 @@ func loginISCSITarget(iqn, portal string) error {
 	defer log.Debug("<<<< osutils.loginISCSITarget")
 
 	args := []string{"-m", "node", "-T", iqn, "-l", "-p", portal + ":3260"}
-
+	listAllISCSIDevices()
 	if _, err := execIscsiadmCommand(args...); err != nil {
 		log.WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
+	listAllISCSIDevices()
 	return nil
 }
 
@@ -2169,6 +2179,7 @@ func loginWithChap(tiqn, portal, username, password, targetUsername, targetIniti
 	args := []string{"-m", "node", "-T", tiqn, "-p", portal + ":3260"}
 
 	createArgs := append(args, []string{"--interface", iface, "--op", "new"}...)
+	listAllISCSIDevices()
 	if _, err := execIscsiadmCommand(createArgs...); err != nil {
 		log.Error("Error running iscsiadm node create.")
 		return err
@@ -2211,7 +2222,7 @@ func loginWithChap(tiqn, portal, username, password, targetUsername, targetIniti
 		log.Error("Error running iscsiadm login.")
 		return err
 	}
-
+	listAllISCSIDevices()
 	return nil
 }
 
@@ -2415,7 +2426,10 @@ func SafeToLogOut(hostNumber, sessionNumber int) bool {
 	return true
 }
 
-func gatherDeviceLogs() ([]string, []string, []string) {
+// In the case of a iscsi trace debug, log info about session and what devices are present
+func listAllISCSIDevices() {
+	log.Debug(">>>> osutils.listAllISCSIDevices")
+	defer log.Debug("<<<< osutils.listAllISCSIDevices")
 	// Log information about all the devices
 	dmLog := make([]string, 0)
 	sdLog := make([]string, 0)
@@ -2434,6 +2448,13 @@ func gatherDeviceLogs() ([]string, []string, []string) {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-
-	return dmLog, sdLog, sysLog
+	out1, _ := execCommandWithTimeout("multipath", 5, "-ll")
+	out2, _ := execIscsiadmCommand("-m", "session")
+	log.WithFields(log.Fields{
+		"/dev/dm-*": dmLog,
+		"/dev/sd*": sdLog,
+		"/sys/block/*": sysLog,
+		"multipath -ll output": out1,
+		"iscsiadm -m session output": out2,
+	}).Debug("Listing all iSCSI Devices.")
 }

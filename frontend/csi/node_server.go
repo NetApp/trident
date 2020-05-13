@@ -594,10 +594,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
 	// Delete the device from the host
-	err := utils.PrepareDeviceForRemoval(int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
-	if err != nil {
-		return nil, err
-	}
+	utils.PrepareDeviceForRemoval(int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
 
 	// Get map of hosts and sessions for given Target IQN
 	hostSessionMap := utils.GetISCSIHostSessionMapForTarget(publishInfo.IscsiTargetIQN)
