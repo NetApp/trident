@@ -896,6 +896,7 @@ spec:
       serviceAccount: trident-csi
       hostNetwork: true
       hostIPC: true
+      hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: trident-main
@@ -1032,6 +1033,7 @@ spec:
       serviceAccount: trident-csi
       hostNetwork: true
       hostIPC: true
+      hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: trident-main
@@ -2327,6 +2329,7 @@ spec:
   allowedCapabilities:
   - "SYS_ADMIN"
   hostIPC: true
+  hostPID: true
   hostNetwork: true
   seLinux:
     rule: RunAsAny

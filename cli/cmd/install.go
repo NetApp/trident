@@ -1574,6 +1574,9 @@ func validateTridentPodSecurityPolicy() error {
 		if !spec.HostIPC {
 			return fmt.Errorf("trident's pod security policy must allow hostIPC")
 		}
+		if !spec.HostPID {
+			return fmt.Errorf("trident's pod security policy must allow hostPID")
+		}
 		if !spec.HostNetwork {
 			return fmt.Errorf("trident's pod security policy must allow hostNetwork")
 		}
