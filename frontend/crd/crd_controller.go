@@ -3,6 +3,7 @@
 package crd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -51,6 +53,15 @@ const (
 
 	// MessageResourceSynced is the message used for an Event fired when a CRD is synced successfully
 	MessageResourceSynced = "CRD synced successfully"
+)
+
+var (
+	listOpts   = metav1.ListOptions{}
+	getOpts    = metav1.GetOptions{}
+	createOpts = metav1.CreateOptions{}
+	updateOpts = metav1.UpdateOptions{}
+
+	ctx = context.TODO
 )
 
 // TridentCrdController is the controller implementation for Trident's CRD resources
@@ -539,7 +550,7 @@ func (c *TridentCrdController) updateBackend(backend *tridentv1.TridentBackend) 
 	}
 
 	backendCopy := backend.DeepCopy()
-	_, err := c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(backendCopy)
+	_, err := c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(ctx(), backendCopy, updateOpts)
 
 	rawJSONData := backend.Config.Raw
 	log.WithFields(log.Fields{
@@ -694,7 +705,7 @@ func (c *TridentCrdController) removeBackendFinalizers(backend *tridentv1.Triden
 		log.Debug("Has finalizers, removing them.")
 		backendCopy := backend.DeepCopy()
 		backendCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(backendCopy)
+		_, err := c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(ctx(), backendCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -715,7 +726,7 @@ func (c *TridentCrdController) removeNodeFinalizers(node *tridentv1.TridentNode)
 		log.Debug("Has finalizers, removing them.")
 		nodeCopy := node.DeepCopy()
 		nodeCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentNodes(node.Namespace).Update(nodeCopy)
+		_, err := c.crdClientset.TridentV1().TridentNodes(node.Namespace).Update(ctx(), nodeCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -736,7 +747,7 @@ func (c *TridentCrdController) removeStorageClassFinalizers(sc *tridentv1.Triden
 		log.Debug("Has finalizers, removing them.")
 		scCopy := sc.DeepCopy()
 		scCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentStorageClasses(sc.Namespace).Update(scCopy)
+		_, err := c.crdClientset.TridentV1().TridentStorageClasses(sc.Namespace).Update(ctx(), scCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -757,7 +768,7 @@ func (c *TridentCrdController) removeTransactionFinalizers(tx *tridentv1.Trident
 		log.Debug("Has finalizers, removing them.")
 		txCopy := tx.DeepCopy()
 		txCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentTransactions(tx.Namespace).Update(txCopy)
+		_, err := c.crdClientset.TridentV1().TridentTransactions(tx.Namespace).Update(ctx(), txCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -778,7 +789,7 @@ func (c *TridentCrdController) removeVersionFinalizers(v *tridentv1.TridentVersi
 		log.Debug("Has finalizers, removing them.")
 		vCopy := v.DeepCopy()
 		vCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentVersions(v.Namespace).Update(vCopy)
+		_, err := c.crdClientset.TridentV1().TridentVersions(v.Namespace).Update(ctx(), vCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -799,7 +810,7 @@ func (c *TridentCrdController) removeVolumeFinalizers(vol *tridentv1.TridentVolu
 		log.Debug("Has finalizers, removing them.")
 		volCopy := vol.DeepCopy()
 		volCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentVolumes(vol.Namespace).Update(volCopy)
+		_, err := c.crdClientset.TridentV1().TridentVolumes(vol.Namespace).Update(ctx(), volCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return
@@ -820,7 +831,7 @@ func (c *TridentCrdController) removeSnapshotFinalizers(snap *tridentv1.TridentS
 		log.Debug("Has finalizers, removing them.")
 		snapCopy := snap.DeepCopy()
 		snapCopy.RemoveTridentFinalizers()
-		_, err := c.crdClientset.TridentV1().TridentSnapshots(snap.Namespace).Update(snapCopy)
+		_, err := c.crdClientset.TridentV1().TridentSnapshots(snap.Namespace).Update(ctx(), snapCopy, updateOpts)
 		if err != nil {
 			log.Errorf("Problem removing finalizers: %v", err)
 			return

@@ -174,7 +174,7 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume, newSize resource.Qua
 	} else if pvSize.Cmp(newSize) == 0 {
 		return nil
 	} else {
-		return fmt.Errorf("cannot shrink PV %q.", pv.Name)
+		return fmt.Errorf("cannot shrink PV %q", pv.Name)
 	}
 
 	// Update the PV

@@ -107,8 +107,8 @@ func PatchPV(kubeClient kubernetes.Interface,
 		return nil, fmt.Errorf("error in creating the two-way merge patch for PV %q: %v", pvUpdated.Name, err)
 	}
 
-	return kubeClient.CoreV1().PersistentVolumes().Patch(pvUpdated.Name,
-		commontypes.StrategicMergePatchType, patchBytes)
+	return kubeClient.CoreV1().PersistentVolumes().Patch(
+		ctx(), pvUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // PatchPVC patches a PVC spec after an update
@@ -132,8 +132,8 @@ func PatchPVC(kubeClient kubernetes.Interface,
 				pvcUpdated.Name, err)
 	}
 
-	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(pvcUpdated.Name,
-		commontypes.StrategicMergePatchType, patchBytes)
+	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(
+		ctx(), pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // PatchPVCStatus patches a PVC status after an update
@@ -157,6 +157,6 @@ func PatchPVCStatus(kubeClient kubernetes.Interface,
 				pvcUpdated.Name, err)
 	}
 
-	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(pvcUpdated.Name,
-		commontypes.StrategicMergePatchType, patchBytes, "status")
+	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(
+		ctx(), pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
 }

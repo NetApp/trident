@@ -3,6 +3,7 @@
 package provisioner
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -57,6 +58,13 @@ const (
 	UninstallationNote = ". NOTE: This CR has uninstalled status; delete this CR to allow new Trident installation."
 )
 
+var (
+	listOpts   = metav1.ListOptions{}
+	updateOpts = metav1.UpdateOptions{}
+
+	ctx = context.TODO
+)
+
 type KeyItem struct {
 	keyDetails   string
 	resourceType ResourceType
@@ -106,10 +114,10 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	// Set up a watch for TridentProvisioner CRs
 	c.watcherCR = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(options)
+			return c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).Watch(options)
+			return c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 
@@ -117,11 +125,11 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	c.deploymentWatcher = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.LabelSelector = installer.LabelSelector
-			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).List(options)
+			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			options.LabelSelector = installer.LabelSelector
-			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).Watch(options)
+			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 
@@ -129,11 +137,11 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	c.daemonsetWatcher = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.LabelSelector = installer.TridentNodeLabel
-			return c.KubeClient.AppsV1().DaemonSets(corev1.NamespaceAll).List(options)
+			return c.KubeClient.AppsV1().DaemonSets(corev1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			options.LabelSelector = installer.TridentNodeLabel
-			return c.KubeClient.AppsV1().DaemonSets(corev1.NamespaceAll).Watch(options)
+			return c.KubeClient.AppsV1().DaemonSets(corev1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 
@@ -1006,13 +1014,13 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		var crdNote string
 		if deletedCRDs, err := c.wipeout(*controllingCR); err != nil {
 			return err
-		} else if deletedCRDs{
+		} else if deletedCRDs {
 			log.Info("Trident CRDs removed.")
 			crdNote = " and removed CRDs"
 		}
 
 		logMessage := "Updating TridentProvisioner CR after uninstallation."
-		statusMessage := "Uninstalled Trident" + crdNote  + UninstallationNote
+		statusMessage := "Uninstalled Trident" + crdNote + UninstallationNote
 
 		c.eventRecorder.Event(controllingCR, corev1.EventTypeWarning, controllingCR.Status.Status, statusMessage)
 		c.updateCRStatus(controllingCR, logMessage, statusMessage, string(AppStatusUninstalled), "")
@@ -1326,14 +1334,14 @@ func (c *Controller) uninstallTridentAndUpdateStatus(tridentCR netappv1.TridentP
 	var crdNote string
 	if deletedCRDs, err := c.wipeout(tridentCR); err != nil {
 		return &tridentCR, err
-	} else if deletedCRDs{
+	} else if deletedCRDs {
 		log.Info("Trident CRDs removed.")
 		crdNote = " and removed CRDs"
 	}
 
 	// Update status of the tridentCR  to `Uninstalled`
 	logMessage = "Updating TridentProvisioner CR after uninstallation."
-	statusMessage = "Uninstalled Trident" + crdNote  + UninstallationNote
+	statusMessage = "Uninstalled Trident" + crdNote + UninstallationNote
 
 	// Log successful uninstall in the event recorder and return success message
 	c.eventRecorder.Event(newTridentCR, corev1.EventTypeNormal, string(AppStatusUninstalled), statusMessage)
@@ -1438,7 +1446,7 @@ func (c *Controller) obliviateCRDs(tridentCR netappv1.TridentProvisioner) error 
 
 // getTridentCRsAll gets all the TridentProvisioner CRs across all namespaces
 func (c *Controller) getTridentCRsAll() ([]netappv1.TridentProvisioner, error) {
-	list, err := c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(metav1.ListOptions{})
+	list, err := c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(ctx(), listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1447,7 +1455,7 @@ func (c *Controller) getTridentCRsAll() ([]netappv1.TridentProvisioner, error) {
 
 // getTridentCRsInNamespace gets all the TridentProvisioner CRs in the specified namespace
 func (c *Controller) getTridentCRsInNamespace(namespace string) ([]netappv1.TridentProvisioner, error) {
-	list, err := c.CRDClient.TridentV1().TridentProvisioners(namespace).List(metav1.ListOptions{})
+	list, err := c.CRDClient.TridentV1().TridentProvisioners(namespace).List(ctx(), listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1456,7 +1464,7 @@ func (c *Controller) getTridentCRsInNamespace(namespace string) ([]netappv1.Trid
 
 // getTridentCRsNotInNamespace gets all the TridentProvisioner CRs in the namespace other than the one specified
 func (c *Controller) getTridentCRsNotInNamespace(namespace string) ([]netappv1.TridentProvisioner, error) {
-	list, err := c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(metav1.ListOptions{})
+	list, err := c.CRDClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(ctx(), listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1642,7 +1650,8 @@ func (c *Controller) updateCRStatus(
 	prClone := tridentCR.DeepCopy()
 	prClone.Status = newStatusDetails
 
-	newTridentCR, err := c.CRDClient.TridentV1().TridentProvisioners(prClone.Namespace).UpdateStatus(prClone)
+	newTridentCR, err := c.CRDClient.TridentV1().TridentProvisioners(prClone.Namespace).UpdateStatus(
+		ctx(), prClone, updateOpts)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"name":      tridentCR.Name,

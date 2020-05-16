@@ -30,10 +30,8 @@ import (
 )
 
 var (
-	listOpts          = metav1.ListOptions{}
-	getOpts           = metav1.GetOptions{}
 	propagationPolicy = metav1.DeletePropagationBackground
-	deleteOptions     = &metav1.DeleteOptions{
+	deleteOptions     = metav1.DeleteOptions{
 		PropagationPolicy: &propagationPolicy,
 	}
 )
@@ -297,7 +295,7 @@ func TestCrdController(t *testing.T) {
 	}
 
 	// create a new CRD object through the client-go api
-	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(backendCRD)
+	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(ctx(), backendCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating backend: %v", err.Error())
 	}
@@ -309,7 +307,7 @@ func TestCrdController(t *testing.T) {
 	}
 	delaySeconds(2)
 
-	backendList, listErr := crdClient.TridentV1().TridentBackends(tridentNamespace).List(listOpts)
+	backendList, listErr := crdClient.TridentV1().TridentBackends(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
 		t.Fatalf("error listing CRD backends: %v", listErr)
 	}
@@ -333,7 +331,7 @@ func TestCrdController(t *testing.T) {
 		t.Fatalf("error finding CRD with backend.BackendName == '%v' via list", fakeBackend.Name)
 	}
 
-	crdByName, getErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Get(crdName, getOpts)
+	crdByName, getErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	if getErr != nil {
 		t.Fatalf("error getting CRD backend '%v' error: %v", crdName, err)
 	}
@@ -348,7 +346,7 @@ func TestCrdController(t *testing.T) {
 	}
 	crdController.removeFinalizers(crdByName, true)
 	// to validate the finalizer removal, we must retrieve it again, after the update
-	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(crdName, getOpts)
+	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	if getErr != nil {
 		t.Fatalf("error getting CRD backend '%v' error: %v", crdName, err)
 	}
@@ -358,13 +356,13 @@ func TestCrdController(t *testing.T) {
 	fmt.Printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
 
 	// delete backend, make sure it gets removed
-	deleteErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(crdName, deleteOptions)
+	deleteErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(ctx(), crdName, deleteOptions)
 	if deleteErr != nil {
 		t.Fatalf("error deleting CRD backend '%v': %v", crdName, deleteErr)
 	}
 
 	// validate it's gone
-	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(crdName, getOpts)
+	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	log.WithFields(log.Fields{
 		"crdByName": crdByName,
 		"getErr":    getErr,
@@ -457,7 +455,7 @@ func TestCrdController2(t *testing.T) {
 	}
 
 	// create a new Backend CRD object through the client-go api
-	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(backendCRD)
+	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(ctx(), backendCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating backend: %v", err.Error())
 	}
@@ -485,7 +483,7 @@ func TestCrdController2(t *testing.T) {
 	}
 
 	// create a new Volume CRD object through the client-go api
-	_, err = crdClient.TridentV1().TridentVolumes(tridentNamespace).Create(volumeCRD)
+	_, err = crdClient.TridentV1().TridentVolumes(tridentNamespace).Create(ctx(), volumeCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating volume: %v", err.Error())
 	}
@@ -507,7 +505,7 @@ func TestCrdController2(t *testing.T) {
 	}
 
 	// create a new Snapshot CRD object through the client-go api
-	_, err = crdClient.TridentV1().TridentSnapshots(tridentNamespace).Create(snapshotCRD)
+	_, err = crdClient.TridentV1().TridentSnapshots(tridentNamespace).Create(ctx(), snapshotCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating volume: %v", err.Error())
 	}
@@ -520,7 +518,7 @@ func TestCrdController2(t *testing.T) {
 	delaySeconds(2)
 
 	// validate our Volume is present
-	volumeList, listErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).List(listOpts)
+	volumeList, listErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
 		t.Fatalf("error listing CRD volumes: %v", err.Error())
 	}
@@ -529,7 +527,7 @@ func TestCrdController2(t *testing.T) {
 	}
 
 	// validate our Snapshot is present
-	snapshotList, listErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).List(listOpts)
+	snapshotList, listErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
 		t.Fatalf("error listing CRD snapshots: %v", err.Error())
 	}

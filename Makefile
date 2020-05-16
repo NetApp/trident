@@ -9,7 +9,7 @@ TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
-K8S_CODE_GENERATOR = code-generator-kubernetes-1.16.0
+K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
 
 ## build flags variables
 GITHASH ?= `git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty || echo unknown`

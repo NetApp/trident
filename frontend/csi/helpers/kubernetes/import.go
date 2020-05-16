@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/storage"
@@ -116,7 +117,8 @@ func (p *Plugin) createImportPVC(claim *v1.PersistentVolumeClaim) (*v1.Persisten
 		"namespace": claim.Namespace,
 	}).Debug("CreateImportPVC: ready to create PVC")
 
-	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim)
+	createOpts := metav1.CreateOptions{}
+	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(ctx(), claim, createOpts)
 	if err != nil {
 		return nil, fmt.Errorf("error occurred during PVC creation: %v", err)
 	}

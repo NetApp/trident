@@ -3,6 +3,7 @@
 package k8sclient
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -16,6 +17,12 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+)
+
+var (
+	createOpts = metav1.CreateOptions{}
+
+	ctx = context.TODO
 )
 
 type Interface interface {
@@ -84,7 +91,7 @@ func (k *KubeClient) Version() *version.Info {
 func (k *KubeClient) GetDeployment(
 	deploymentName string,
 	options metav1.GetOptions) (*appsv1.Deployment, error) {
-	return k.clientset.AppsV1().Deployments(k.namespace).Get(deploymentName, options)
+	return k.clientset.AppsV1().Deployments(k.namespace).Get(ctx(), deploymentName, options)
 }
 
 func (k *KubeClient) CheckDeploymentExists(deploymentName string) (bool, error) {
@@ -99,11 +106,11 @@ func (k *KubeClient) CheckDeploymentExists(deploymentName string) (bool, error) 
 }
 
 func (k *KubeClient) CreateDeployment(deployment *appsv1.Deployment) (*appsv1.Deployment, error) {
-	return k.clientset.AppsV1().Deployments(k.namespace).Create(deployment)
+	return k.clientset.AppsV1().Deployments(k.namespace).Create(ctx(), deployment, createOpts)
 }
 
 func (k *KubeClient) GetPod(podName string, options metav1.GetOptions) (*v1.Pod, error) {
-	return k.clientset.CoreV1().Pods(k.namespace).Get(podName, options)
+	return k.clientset.CoreV1().Pods(k.namespace).Get(ctx(), podName, options)
 }
 
 func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, error) {
@@ -144,8 +151,9 @@ func (k *KubeClient) GetPodByLabels(listOptions *metav1.ListOptions) (*v1.Pod, e
 			return nil, fmt.Errorf("received unknown event type %s while watching pod", event.Type)
 		}
 	}
-	log.Debugf("KubeClient took %v to retrieve pod %v.",
-		time.Since(startTime), watchedPod.Name)
+	if watchedPod != nil {
+		log.Debugf("KubeClient took %v to retrieve pod %v.", time.Since(startTime), watchedPod.Name)
+	}
 	return watchedPod, nil
 }
 
@@ -170,19 +178,19 @@ func (k *KubeClient) CheckPodExists(pod string) (bool, error) {
 }
 
 func (k *KubeClient) CreatePod(pod *v1.Pod) (*v1.Pod, error) {
-	return k.clientset.CoreV1().Pods(k.namespace).Create(pod)
+	return k.clientset.CoreV1().Pods(k.namespace).Create(ctx(), pod, createOpts)
 }
 
 func (k *KubeClient) DeletePod(podName string, options *metav1.DeleteOptions) error {
-	return k.clientset.CoreV1().Pods(k.namespace).Delete(podName, options)
+	return k.clientset.CoreV1().Pods(k.namespace).Delete(ctx(), podName, *options)
 }
 
 func (k *KubeClient) WatchPod(listOptions *metav1.ListOptions) (watch.Interface, error) {
-	return k.clientset.CoreV1().Pods(k.namespace).Watch(*listOptions)
+	return k.clientset.CoreV1().Pods(k.namespace).Watch(ctx(), *listOptions)
 }
 
 func (k *KubeClient) ListPod(listOptions *metav1.ListOptions) (*v1.PodList, error) {
-	return k.clientset.CoreV1().Pods(k.namespace).List(*listOptions)
+	return k.clientset.CoreV1().Pods(k.namespace).List(ctx(), *listOptions)
 }
 
 func (k *KubeClient) GetRunningPod(pod *v1.Pod, timeout *int64, labels map[string]string) (*v1.Pod, error) {
@@ -228,8 +236,7 @@ func (k *KubeClient) GetRunningPod(pod *v1.Pod, timeout *int64, labels map[strin
 
 func (k *KubeClient) GetPVC(pvcName string,
 	options metav1.GetOptions) (*v1.PersistentVolumeClaim, error) {
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(
-		pvcName, options)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(ctx(), pvcName, options)
 }
 
 func (k *KubeClient) GetPVCPhase(pvcName string,
@@ -254,15 +261,15 @@ func (k *KubeClient) CheckPVCExists(pvc string) (bool, error) {
 }
 
 func (k *KubeClient) CreatePVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Create(pvc)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Create(ctx(), pvc, createOpts)
 }
 
 func (k *KubeClient) DeletePVC(pvcName string, options *metav1.DeleteOptions) error {
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(pvcName, options)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(ctx(), pvcName, *options)
 }
 
 func (k *KubeClient) WatchPVC(listOptions *metav1.ListOptions) (watch.Interface, error) {
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Watch(*listOptions)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Watch(ctx(), *listOptions)
 }
 
 func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, timeout *int64,
@@ -308,11 +315,11 @@ func (k *KubeClient) GetBoundPVC(pvc *v1.PersistentVolumeClaim, pv *v1.Persisten
 }
 
 func (k *KubeClient) CreatePV(pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
-	return k.clientset.CoreV1().PersistentVolumes().Create(pv)
+	return k.clientset.CoreV1().PersistentVolumes().Create(ctx(), pv, createOpts)
 }
 
 func (k *KubeClient) DeletePV(pvName string, options *metav1.DeleteOptions) error {
-	return k.clientset.CoreV1().PersistentVolumes().Delete(pvName, options)
+	return k.clientset.CoreV1().PersistentVolumes().Delete(ctx(), pvName, *options)
 }
 
 func CreateLabelSelectorString(labels map[string]string) string {
@@ -341,7 +348,7 @@ func CreateListOptions(timeout *int64, labels map[string]string, resourceVersion
 
 // CreateSecret creates a new Secret
 func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Create(secret)
+	return k.clientset.CoreV1().Secrets(k.namespace).Create(ctx(), secret, createOpts)
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
@@ -368,7 +375,7 @@ func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, 
 
 // GetSecret looks up a Secret by name
 func (k *KubeClient) GetSecret(secretName string, options metav1.GetOptions) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Get(secretName, options)
+	return k.clientset.CoreV1().Secrets(k.namespace).Get(ctx(), secretName, options)
 }
 
 // CheckSecretExists returns true if the Secret exists
@@ -385,7 +392,7 @@ func (k *KubeClient) CheckSecretExists(secretName string) (bool, error) {
 
 // DeleteSecret deletes the specified Secret
 func (k *KubeClient) DeleteSecret(secretName string, options *metav1.DeleteOptions) error {
-	return k.clientset.CoreV1().Secrets(k.namespace).Delete(secretName, options)
+	return k.clientset.CoreV1().Secrets(k.namespace).Delete(ctx(), secretName, *options)
 }
 
 func (k *KubeClient) Namespace() string {

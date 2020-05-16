@@ -36,8 +36,8 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // github.com/golang/oauth2
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // github.com/golang/sys
 	google.golang.org/grpc v1.26.0 // github.com/grpc/grpc-go
-	k8s.io/api v0.17.0 // github.com/kubernetes/api
-	k8s.io/apiextensions-apiserver v0.17.0 // github.com/kubernetes/apiextensions-apiserver
-	k8s.io/apimachinery v0.17.0 // github.com/kubernetes/apimachinery
-	k8s.io/client-go v0.17.0 // github.com/kubernetes/client-go
+	k8s.io/api v0.18.0 // github.com/kubernetes/api
+	k8s.io/apiextensions-apiserver v0.18.0 // github.com/kubernetes/apiextensions-apiserver
+	k8s.io/apimachinery v0.18.0 // github.com/kubernetes/apimachinery
+	k8s.io/client-go v0.18.0 // github.com/kubernetes/client-go
 )

@@ -3,6 +3,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -137,7 +138,7 @@ func deleteVersions() error {
 		return nil
 	}
 
-	versions, err := crdClientset.TridentV1().TridentVersions(resetNamespace).List(metav1.ListOptions{})
+	versions, err := crdClientset.TridentV1().TridentVersions(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(versions.Items) == 0 {
@@ -147,11 +148,11 @@ func deleteVersions() error {
 
 	for _, version := range versions.Items {
 		if version.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentVersions(resetNamespace).Delete(version.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentVersions(resetNamespace).Delete(ctx(), version.Name, deleteOpts)
 		}
 	}
 
-	versions, err = crdClientset.TridentV1().TridentVersions(resetNamespace).List(metav1.ListOptions{})
+	versions, err = crdClientset.TridentV1().TridentVersions(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -160,7 +161,7 @@ func deleteVersions() error {
 		if version.HasTridentFinalizers() {
 			crCopy := version.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentVersions(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentVersions(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -170,7 +171,7 @@ func deleteVersions() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVersions(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, version.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), version.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -194,7 +195,7 @@ func deleteBackends() error {
 		return nil
 	}
 
-	backends, err := crdClientset.TridentV1().TridentBackends(resetNamespace).List(metav1.ListOptions{})
+	backends, err := crdClientset.TridentV1().TridentBackends(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(backends.Items) == 0 {
@@ -204,11 +205,11 @@ func deleteBackends() error {
 
 	for _, backend := range backends.Items {
 		if backend.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentBackends(resetNamespace).Delete(backend.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentBackends(resetNamespace).Delete(ctx(), backend.Name, deleteOpts)
 		}
 	}
 
-	backends, err = crdClientset.TridentV1().TridentBackends(resetNamespace).List(metav1.ListOptions{})
+	backends, err = crdClientset.TridentV1().TridentBackends(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -217,7 +218,7 @@ func deleteBackends() error {
 		if backend.HasTridentFinalizers() {
 			crCopy := backend.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentBackends(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentBackends(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -227,7 +228,7 @@ func deleteBackends() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentBackends(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, backend.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), backend.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -251,7 +252,7 @@ func deleteStorageClasses() error {
 		return nil
 	}
 
-	storageclasses, err := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).List(metav1.ListOptions{})
+	storageclasses, err := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(storageclasses.Items) == 0 {
@@ -261,11 +262,11 @@ func deleteStorageClasses() error {
 
 	for _, sc := range storageclasses.Items {
 		if sc.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete(sc.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete(ctx(), sc.Name, deleteOpts)
 		}
 	}
 
-	storageclasses, err = crdClientset.TridentV1().TridentStorageClasses(resetNamespace).List(metav1.ListOptions{})
+	storageclasses, err = crdClientset.TridentV1().TridentStorageClasses(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -274,7 +275,7 @@ func deleteStorageClasses() error {
 		if sc.HasTridentFinalizers() {
 			crCopy := sc.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -284,7 +285,7 @@ func deleteStorageClasses() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentStorageClasses(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, sc.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), sc.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -308,7 +309,7 @@ func deleteVolumes() error {
 		return nil
 	}
 
-	volumes, err := crdClientset.TridentV1().TridentVolumes(resetNamespace).List(metav1.ListOptions{})
+	volumes, err := crdClientset.TridentV1().TridentVolumes(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(volumes.Items) == 0 {
@@ -318,11 +319,11 @@ func deleteVolumes() error {
 
 	for _, volume := range volumes.Items {
 		if volume.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete(volume.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete(ctx(), volume.Name, deleteOpts)
 		}
 	}
 
-	volumes, err = crdClientset.TridentV1().TridentVolumes(resetNamespace).List(metav1.ListOptions{})
+	volumes, err = crdClientset.TridentV1().TridentVolumes(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -331,7 +332,7 @@ func deleteVolumes() error {
 		if volume.HasTridentFinalizers() {
 			crCopy := volume.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentVolumes(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentVolumes(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -341,7 +342,7 @@ func deleteVolumes() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVolumes(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, volume.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), volume.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -365,7 +366,7 @@ func deleteNodes() error {
 		return nil
 	}
 
-	nodes, err := crdClientset.TridentV1().TridentNodes(resetNamespace).List(metav1.ListOptions{})
+	nodes, err := crdClientset.TridentV1().TridentNodes(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(nodes.Items) == 0 {
@@ -375,11 +376,11 @@ func deleteNodes() error {
 
 	for _, node := range nodes.Items {
 		if node.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentNodes(resetNamespace).Delete(node.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentNodes(resetNamespace).Delete(ctx(), node.Name, deleteOpts)
 		}
 	}
 
-	nodes, err = crdClientset.TridentV1().TridentNodes(resetNamespace).List(metav1.ListOptions{})
+	nodes, err = crdClientset.TridentV1().TridentNodes(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -388,7 +389,7 @@ func deleteNodes() error {
 		if node.HasTridentFinalizers() {
 			crCopy := node.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentNodes(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentNodes(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -398,7 +399,7 @@ func deleteNodes() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentNodes(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, node.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), node.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -422,7 +423,7 @@ func deleteTransactions() error {
 		return nil
 	}
 
-	transactions, err := crdClientset.TridentV1().TridentTransactions(resetNamespace).List(metav1.ListOptions{})
+	transactions, err := crdClientset.TridentV1().TridentTransactions(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(transactions.Items) == 0 {
@@ -432,11 +433,11 @@ func deleteTransactions() error {
 
 	for _, txn := range transactions.Items {
 		if txn.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete(txn.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete(ctx(), txn.Name, deleteOpts)
 		}
 	}
 
-	transactions, err = crdClientset.TridentV1().TridentTransactions(resetNamespace).List(metav1.ListOptions{})
+	transactions, err = crdClientset.TridentV1().TridentTransactions(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -445,7 +446,7 @@ func deleteTransactions() error {
 		if txn.HasTridentFinalizers() {
 			crCopy := txn.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentTransactions(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentTransactions(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -455,7 +456,7 @@ func deleteTransactions() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentTransactions(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, txn.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), txn.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -479,7 +480,7 @@ func deleteSnapshots() error {
 		return nil
 	}
 
-	snapshots, err := crdClientset.TridentV1().TridentSnapshots(resetNamespace).List(metav1.ListOptions{})
+	snapshots, err := crdClientset.TridentV1().TridentSnapshots(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	} else if len(snapshots.Items) == 0 {
@@ -489,11 +490,11 @@ func deleteSnapshots() error {
 
 	for _, snapshot := range snapshots.Items {
 		if snapshot.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete(snapshot.Name, &metav1.DeleteOptions{})
+			_ = crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete(ctx(), snapshot.Name, deleteOpts)
 		}
 	}
 
-	snapshots, err = crdClientset.TridentV1().TridentSnapshots(resetNamespace).List(metav1.ListOptions{})
+	snapshots, err = crdClientset.TridentV1().TridentSnapshots(resetNamespace).List(ctx(), listOpts)
 	if err != nil {
 		return err
 	}
@@ -502,7 +503,7 @@ func deleteSnapshots() error {
 		if snapshot.HasTridentFinalizers() {
 			crCopy := snapshot.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentSnapshots(resetNamespace).Update(crCopy)
+			_, err := crdClientset.TridentV1().TridentSnapshots(resetNamespace).Update(ctx(), crCopy, updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -512,7 +513,7 @@ func deleteSnapshots() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentSnapshots(resetNamespace).Delete
-		if err := deleteWithRetry(deleteFunc, snapshot.Name, nil); err != nil {
+		if err := deleteWithRetry(deleteFunc, ctx(), snapshot.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -604,12 +605,12 @@ func isNotFoundError(err error) bool {
 }
 
 // crDeleter deletes a custom resource
-type crDeleter func(string, *metav1.DeleteOptions) error
+type crDeleter func(context.Context, string, metav1.DeleteOptions) error
 
-func deleteWithRetry(deleteFunc crDeleter, name string, deleteOptions *metav1.DeleteOptions) error {
+func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, deleteOptions *metav1.DeleteOptions) error {
 
 	if deleteOptions == nil {
-		deleteOptions = &metav1.DeleteOptions{}
+		deleteOptions = &deleteOpts
 	}
 
 	timeout := 10 * time.Second
@@ -617,7 +618,7 @@ func deleteWithRetry(deleteFunc crDeleter, name string, deleteOptions *metav1.De
 
 	doDelete := func() error {
 
-		err := deleteFunc(name, deleteOptions)
+		err := deleteFunc(c, name, *deleteOptions)
 		if err == nil || isNotFoundError(err) {
 			return nil
 		}

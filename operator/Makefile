@@ -9,7 +9,7 @@ TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 TRIDENT_PROVISIONER_PKG = github.com/netapp/trident/operator/controllers/provisioner
-K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.16.0
+K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.18.2
 
 ## build flags variables
 GITHASH ?= `git rev-parse HEAD || echo unknown`

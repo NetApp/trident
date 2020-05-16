@@ -173,10 +173,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Set up a watch for PVCs
 	p.pvcSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 
@@ -210,10 +210,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Set up a watch for PVs
 	p.pvSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().PersistentVolumes().List(options)
+			return kubeClient.CoreV1().PersistentVolumes().List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().PersistentVolumes().Watch(options)
+			return kubeClient.CoreV1().PersistentVolumes().Watch(ctx(), options)
 		},
 	}
 
@@ -236,10 +236,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Set up a watch for storage classes
 	p.scSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.StorageV1().StorageClasses().List(options)
+			return kubeClient.StorageV1().StorageClasses().List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.StorageV1().StorageClasses().Watch(options)
+			return kubeClient.StorageV1().StorageClasses().Watch(ctx(), options)
 		},
 	}
 
@@ -273,10 +273,10 @@ func newKubernetesPlugin(orchestrator core.Orchestrator, kubeConfig *rest.Config
 	// Set up a watch for k8s nodes
 	p.nodeSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().Nodes().List(options)
+			return kubeClient.CoreV1().Nodes().List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().Nodes().Watch(options)
+			return kubeClient.CoreV1().Nodes().Watch(ctx(), options)
 		},
 	}
 
@@ -383,7 +383,7 @@ func (p *Plugin) addPVC(obj interface{}) {
 }
 
 // updatePVC is the update handler for the PVC watcher.
-func (p *Plugin) updatePVC(oldObj, newObj interface{}) {
+func (p *Plugin) updatePVC(_, newObj interface{}) {
 	switch pvc := newObj.(type) {
 	case *v1.PersistentVolumeClaim:
 		p.processPVC(pvc, eventUpdate)
@@ -629,7 +629,7 @@ func (p *Plugin) addStorageClass(obj interface{}) {
 }
 
 // updateStorageClass is the update handler for the storage class watcher.
-func (p *Plugin) updateStorageClass(oldObj, newObj interface{}) {
+func (p *Plugin) updateStorageClass(_, newObj interface{}) {
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
 		p.processStorageClass(convertStorageClassV1BetaToV1(sc), eventUpdate)
@@ -850,7 +850,7 @@ func (p *Plugin) addNode(obj interface{}) {
 }
 
 // updateNode is the update handler for the node watcher.
-func (p *Plugin) updateNode(oldObj, newObj interface{}) {
+func (p *Plugin) updateNode(_, newObj interface{}) {
 	switch node := newObj.(type) {
 	case *v1.Node:
 		p.processNode(node, eventUpdate)

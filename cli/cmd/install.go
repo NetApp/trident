@@ -59,7 +59,7 @@ const (
 	TridentCSI    = "trident-csi"
 	TridentLegacy = "trident"
 
-	CSIDriver = "csi.trident.netapp.io"
+	CSIDriver  = "csi.trident.netapp.io"
 	TridentPSP = "tridentpods"
 )
 
@@ -2367,7 +2367,7 @@ func validateTridentVersionCRNotPresent(namespace string) error {
 
 	log.WithField("timeoutSeconds", timeoutSeconds).Debug("Listing TridentVersions custom resources.")
 
-	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(listOptions)
+	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return err
 	}
@@ -2393,7 +2393,7 @@ func validateTridentVersionCRPresent(namespace string) error {
 
 	log.WithField("timeoutSeconds", timeoutSeconds).Debug("Listing TridentVersions custom resources.")
 
-	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(listOptions)
+	versions, err := crdClient.TridentV1().TridentVersions(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return err
 	}

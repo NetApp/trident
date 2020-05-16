@@ -6,7 +6,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/utils"
@@ -61,7 +60,8 @@ func (p *Plugin) updateLegacyPV(oldObj, newObj interface{}) {
 	}
 
 	// Delete the PV
-	if err := p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.Name, &metav1.DeleteOptions{}); err != nil {
+	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, deleteOpts)
+	if err != nil {
 		if !strings.HasSuffix(err.Error(), "not found") {
 			// PVs provisioned by external provisioners seem to end up in
 			// the failed state as Kubernetes doesn't recognize them.

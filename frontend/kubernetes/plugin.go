@@ -188,10 +188,10 @@ func newKubernetesPlugin(
 	// Setting up a watch for PVCs
 	ret.claimSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 	_, ret.claimController = cache.NewInformer(
@@ -208,10 +208,10 @@ func newKubernetesPlugin(
 	// Setting up a watch for PVs
 	ret.volumeSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().PersistentVolumes().List(options)
+			return kubeClient.CoreV1().PersistentVolumes().List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().PersistentVolumes().Watch(options)
+			return kubeClient.CoreV1().PersistentVolumes().Watch(ctx(), options)
 		},
 	}
 	_, ret.volumeController = cache.NewInformer(
@@ -228,10 +228,10 @@ func newKubernetesPlugin(
 	// Setting up a watch for storage classes
 	ret.classSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.StorageV1().StorageClasses().List(options)
+			return kubeClient.StorageV1().StorageClasses().List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.StorageV1().StorageClasses().Watch(options)
+			return kubeClient.StorageV1().StorageClasses().Watch(ctx(), options)
 		},
 	}
 	_, ret.classController = cache.NewInformer(
@@ -248,10 +248,10 @@ func newKubernetesPlugin(
 	// Setting up a watch for PVCs to detect resize
 	ret.resizeSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(options)
+			return kubeClient.CoreV1().PersistentVolumeClaims(v1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
 	_, ret.resizeController = cache.NewInformer(
@@ -753,7 +753,7 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 			return fmt.Errorf("the PV specs do not fit requested PVC")
 		}
 
-		pvCheck, err := p.kubeClient.CoreV1().PersistentVolumes().Get(pv.Name, metav1.GetOptions{})
+		pvCheck, err := p.kubeClient.CoreV1().PersistentVolumes().Get(ctx(), pv.Name, getOpts)
 		if err != nil {
 			return fmt.Errorf("error occurred checking PV %s status: %v", pv.Name, err)
 		}
@@ -762,7 +762,7 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 			"pv.Status.Phase": pvCheck.Status.Phase,
 		}).Debug("ImportVolume: PV created.")
 
-		pvcCheck, err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(pvc.Name, metav1.GetOptions{})
+		pvcCheck, err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(ctx(), pvc.Name, getOpts)
 		if err != nil {
 			return fmt.Errorf("error occurred checking PVC %s status: %v", pvc.Name, err)
 		}
@@ -791,15 +791,15 @@ func (p *Plugin) ImportVolume(request *storage.ImportVolumeRequest) (*storage.Vo
 
 func (p *Plugin) deletePV(pvName string) {
 	gracePeriod := int64(0)
-	do := &metav1.DeleteOptions{GracePeriodSeconds: &gracePeriod}
-	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(pvName, do)
+	do := metav1.DeleteOptions{GracePeriodSeconds: &gracePeriod}
+	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pvName, do)
 	if err != nil {
 		log.Errorf("error occurred while trying to delete PV %s: %v", pvName, err)
 	}
 }
 
 func (p *Plugin) deletePVC(pvc *v1.PersistentVolumeClaim) {
-	err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &metav1.DeleteOptions{})
+	err := p.kubeClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(ctx(), pvc.Name, deleteOpts)
 	if err != nil {
 		log.Errorf("error occurred while trying to delete PVC %s: %v", pvc.Name, err)
 	}
@@ -812,7 +812,7 @@ func (p *Plugin) createImportPVC(claim *v1.PersistentVolumeClaim) (*v1.Persisten
 		"namespace": claim.Namespace,
 	}).Debug("CreateImportPVC: ready to create PVC")
 
-	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim)
+	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(ctx(), claim, createOpts)
 	if err != nil {
 		return nil, fmt.Errorf("error occurred during PVC creation: %v", err)
 	}
@@ -1032,7 +1032,7 @@ func (p *Plugin) createPV(
 		return
 	}
 
-	pv, err = p.kubeClient.CoreV1().PersistentVolumes().Create(pv)
+	pv, err = p.kubeClient.CoreV1().PersistentVolumes().Create(ctx(), pv, createOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1148,7 +1148,7 @@ func (p *Plugin) deleteVolumeAndPV(pv *v1.PersistentVolume) error {
 		p.updateVolumePhaseWithEvent(pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
 		return fmt.Errorf("Kubernetes frontend %s", message)
 	}
-	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.GetName(), &metav1.DeleteOptions{})
+	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pv.GetName(), deleteOpts)
 	if err != nil {
 		return fmt.Errorf("Kubernetes frontend failed to contact the API server and delete the PV: %s", err.Error())
 	}
@@ -1294,7 +1294,7 @@ func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
 				p.mutex.Unlock()
 				if classReclaimPolicy != v1.PersistentVolumeReclaimRetain {
 					pv.Spec.PersistentVolumeReclaimPolicy = classReclaimPolicy
-					_, err := p.kubeClient.CoreV1().PersistentVolumes().Update(pv)
+					_, err := p.kubeClient.CoreV1().PersistentVolumes().Update(ctx(), pv, updateOpts)
 					if err != nil {
 						message := fmt.Sprintf("failed to update PersistentVolumeReclaimPolicy for PV %s:%s "+
 							"Will eventually retry.", pv.Name, err.Error())
@@ -1327,7 +1327,7 @@ func (p *Plugin) processUpdatedVolume(pv *v1.PersistentVolume) {
 			// PV needs to be manually deleted by the admin after removing the volume.
 			return
 		}
-		err = p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.Name, &metav1.DeleteOptions{})
+		err = p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, deleteOpts)
 		if err != nil {
 			if !strings.HasSuffix(err.Error(), "not found") {
 				// PVs provisioned by external provisioners seem to end up in
@@ -1386,7 +1386,7 @@ func (p *Plugin) updateVolumePhase(
 	volumeClone.Status.Phase = phase
 	volumeClone.Status.Message = message
 
-	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(volumeClone)
+	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx(), volumeClone, updateOpts)
 }
 
 // updatePVCWithEvent emits given event on the PVC.
@@ -1836,7 +1836,7 @@ func (p *Plugin) GetPVForPVC(claim *v1.PersistentVolumeClaim) (*v1.PersistentVol
 		return nil, nil
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumes().Get(claim.Spec.VolumeName, metav1.GetOptions{})
+	return p.kubeClient.CoreV1().PersistentVolumes().Get(ctx(), claim.Spec.VolumeName, getOpts)
 }
 
 // GetPVCForPV returns the PVC for a PV.
@@ -1846,7 +1846,7 @@ func (p *Plugin) GetPVCForPV(pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(
-		pv.Spec.ClaimRef.Namespace).Get(pv.Spec.ClaimRef.Name, metav1.GetOptions{})
+		pv.Spec.ClaimRef.Namespace).Get(ctx(), pv.Spec.ClaimRef.Name, getOpts)
 }
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the PV size.

@@ -283,7 +283,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	for _, podName := range ownedPodsForPVC {
 
 		// Delete pod
-		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(podName, &metav1.DeleteOptions{}); err != nil {
+		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx(), podName, deleteOpts); err != nil {
 			message := "PV upgrade: could not delete a pod using the PV"
 			log.WithFields(log.Fields{
 				"PV":    pv.Name,
@@ -506,7 +506,7 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
 
 		// Delete pod
-		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(podName, &metav1.DeleteOptions{}); err != nil {
+		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx(), podName, deleteOpts); err != nil {
 			message := "PV rollback: could not delete a pod using the PV"
 			log.WithFields(log.Fields{
 				"PV":    pv.Name,
@@ -561,7 +561,7 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	// Create old PV
 	pv.ResourceVersion = ""
 	pv.UID = ""
-	oldPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(pv)
+	oldPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx(), pv, createOpts)
 	if err != nil {
 		message := "PV rollback: could not create the original version of PV being upgraded"
 		log.WithFields(log.Fields{
@@ -614,7 +614,7 @@ func (p *Plugin) deletePVForUpgrade(pv *v1.PersistentVolume) error {
 	if pv.DeletionTimestamp == nil {
 
 		// PV hasn't been deleted yet, so send the delete
-		if err := p.kubeClient.CoreV1().PersistentVolumes().Delete(pv.Name, &metav1.DeleteOptions{}); err != nil {
+		if err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, deleteOpts); err != nil {
 			return err
 		}
 
@@ -848,7 +848,7 @@ func (p *Plugin) createCSIPVFromPV(
 	}
 	csiPV.Annotations[AnnDynamicallyProvisioned] = csi.Provisioner
 
-	if csiPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(csiPV); err != nil {
+	if csiPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx(), csiPV, createOpts); err != nil {
 		return nil, err
 	} else {
 		return csiPV, nil
@@ -860,7 +860,7 @@ func (p *Plugin) getPodsForPVC(pvc *v1.PersistentVolumeClaim) ([]string, []strin
 	nakedPodsForPVC := make([]string, 0)
 	ownedPodsForPVC := make([]string, 0)
 
-	podList, err := p.kubeClient.CoreV1().Pods(pvc.Namespace).List(metav1.ListOptions{})
+	podList, err := p.kubeClient.CoreV1().Pods(pvc.Namespace).List(ctx(), listOpts)
 	if err != nil {
 		return nil, nil, err
 	} else if podList.Items == nil {
@@ -889,7 +889,7 @@ func (p *Plugin) waitForDeletedOrNonRunningPod(name, namespace string, maxElapse
 	var err error
 
 	checkForDeletedPod := func() error {
-		if pod, err = p.kubeClient.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{}); err != nil {
+		if pod, err = p.kubeClient.CoreV1().Pods(namespace).Get(ctx(), name, getOpts); err != nil {
 
 			// NotFound is a terminal success condition
 			if statusErr, ok := err.(*apierrors.StatusError); ok {
@@ -904,7 +904,7 @@ func (p *Plugin) waitForDeletedOrNonRunningPod(name, namespace string, maxElapse
 
 		} else if pod == nil {
 			// Shouldn't happen
-			return fmt.Errorf("Kubernetes API returned nil for pod %s/%s", namespace, name)
+			return fmt.Errorf("kubernetes API returned nil for pod %s/%s", namespace, name)
 		} else if pod.Status.Phase == v1.PodRunning {
 			return fmt.Errorf("pod %s/%s phase is %s", namespace, name, pod.Status.Phase)
 		} else {

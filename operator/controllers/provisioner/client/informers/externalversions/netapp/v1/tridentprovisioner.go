@@ -5,6 +5,7 @@
 package v1
 
 import (
+	"context"
 	time "time"
 
 	netappv1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
@@ -47,13 +48,13 @@ func NewFilteredTridentProvisionerInformer(client versioned.Interface, namespace
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.TridentV1().TridentProvisioners(namespace).List(options)
+				return client.TridentV1().TridentProvisioners(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.TridentV1().TridentProvisioners(namespace).Watch(options)
+				return client.TridentV1().TridentProvisioners(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&netappv1.TridentProvisioner{},

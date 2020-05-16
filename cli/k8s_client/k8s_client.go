@@ -5,6 +5,7 @@ package k8sclient
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -58,6 +59,16 @@ const (
 )
 
 type LogLineCallback func(string)
+
+var (
+	listOpts   = metav1.ListOptions{}
+	getOpts    = metav1.GetOptions{}
+	createOpts = metav1.CreateOptions{}
+	updateOpts = metav1.UpdateOptions{}
+	patchOpts  = metav1.PatchOptions{}
+
+	ctx = context.TODO
+)
 
 type Interface interface {
 	Version() *version.Info
@@ -307,7 +318,7 @@ func (k *KubeClient) SetNamespace(namespace string) {
 func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) ([]byte, error) {
 
 	// Get the pod and ensure it is in a good state
-	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(podName, metav1.GetOptions{})
+	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(ctx(), podName, getOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +417,7 @@ func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]
 		namespace = ""
 	}
 
-	deploymentList, err := k.clientset.AppsV1().Deployments(namespace).List(listOptions)
+	deploymentList, err := k.clientset.AppsV1().Deployments(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -442,7 +453,8 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.AppsV1().Deployments(k.namespace).Delete(deployment.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.AppsV1().Deployments(k.namespace).Delete(ctx(), deployment.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -458,7 +470,7 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 // DeleteDeployment deletes a deployment object matching the specified name and namespace
 func (k *KubeClient) DeleteDeployment(name, namespace string) error {
 
-	if err := k.clientset.AppsV1().Deployments(namespace).Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().Deployments(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -479,9 +491,8 @@ func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte) err
 		return err
 	}
 
-	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(deployment.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(ctx(), deployment.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -524,7 +535,7 @@ func (k *KubeClient) GetServicesByLabel(label string, allNamespaces bool) ([]v1.
 		namespace = ""
 	}
 
-	serviceList, err := k.clientset.CoreV1().Services(namespace).List(listOptions)
+	serviceList, err := k.clientset.CoreV1().Services(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +571,7 @@ func (k *KubeClient) DeleteServiceByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Services(k.namespace).Delete(service.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Services(k.namespace).Delete(ctx(), service.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -576,7 +587,7 @@ func (k *KubeClient) DeleteServiceByLabel(label string) error {
 // DeleteService deletes a Service object matching the specified name and namespace
 func (k *KubeClient) DeleteService(name, namespace string) error {
 
-	if err := k.clientset.CoreV1().Services(namespace).Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().Services(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -597,9 +608,8 @@ func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte) error 
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(service.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(ctx(), service.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -642,7 +652,7 @@ func (k *KubeClient) GetStatefulSetsByLabel(label string, allNamespaces bool) ([
 		namespace = ""
 	}
 
-	statefulSetList, err := k.clientset.AppsV1().StatefulSets(namespace).List(listOptions)
+	statefulSetList, err := k.clientset.AppsV1().StatefulSets(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -678,7 +688,8 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.AppsV1().StatefulSets(k.namespace).Delete(statefulset.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.AppsV1().StatefulSets(k.namespace).Delete(ctx(), statefulset.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -694,7 +705,7 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 // DeleteStatefulSet deletes a statefulset object matching the specified name and namespace.
 func (k *KubeClient) DeleteStatefulSet(name, namespace string) error {
 
-	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -736,7 +747,7 @@ func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]a
 		namespace = ""
 	}
 
-	daemonSetList, err := k.clientset.AppsV1().DaemonSets(namespace).List(listOptions)
+	daemonSetList, err := k.clientset.AppsV1().DaemonSets(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -772,7 +783,8 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(daemonset.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(ctx(), daemonset.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -788,7 +800,7 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 // DeleteDaemonSet deletes a DaemonSet object matching the specified name and namespace
 func (k *KubeClient) DeleteDaemonSet(name, namespace string) error {
 
-	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -809,9 +821,8 @@ func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte) erro
 		return err
 	}
 
-	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(daemonSet.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(ctx(), daemonSet.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -854,7 +865,7 @@ func (k *KubeClient) GetConfigMapsByLabel(label string, allNamespaces bool) ([]v
 		namespace = ""
 	}
 
-	configMapList, err := k.clientset.CoreV1().ConfigMaps(namespace).List(listOptions)
+	configMapList, err := k.clientset.CoreV1().ConfigMaps(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -889,7 +900,8 @@ func (k *KubeClient) DeleteConfigMapByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().ConfigMaps(k.namespace).Delete(configmap.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.CoreV1().ConfigMaps(k.namespace).Delete(ctx(), configmap.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -902,7 +914,7 @@ func (k *KubeClient) DeleteConfigMapByLabel(label string) error {
 	return nil
 }
 
-func (k *KubeClient) CreateConfigMapFromDirectory(path, name, label string) error {
+func (k *KubeClient) CreateConfigMapFromDirectory(_, _, _ string) error {
 	return errors.New("not implemented")
 }
 
@@ -936,7 +948,7 @@ func (k *KubeClient) GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod,
 		namespace = ""
 	}
 
-	podList, err := k.clientset.CoreV1().Pods(namespace).List(listOptions)
+	podList, err := k.clientset.CoreV1().Pods(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -971,7 +983,7 @@ func (k *KubeClient) DeletePodByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Pods(k.namespace).Delete(pod.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Pods(k.namespace).Delete(ctx(), pod.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -992,7 +1004,7 @@ func (k *KubeClient) DeletePod(name, namespace string) error {
 		GracePeriodSeconds: &gracePeriod,
 	}
 
-	if err := k.clientset.CoreV1().Pods(namespace).Delete(name, deleteOptions); err != nil {
+	if err := k.clientset.CoreV1().Pods(namespace).Delete(ctx(), name, *deleteOptions); err != nil {
 		return err
 	}
 
@@ -1006,7 +1018,7 @@ func (k *KubeClient) DeletePod(name, namespace string) error {
 
 func (k *KubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(pvcName, options)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(ctx(), pvcName, options)
 }
 
 func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error) {
@@ -1021,7 +1033,7 @@ func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.Persis
 		namespace = ""
 	}
 
-	pvcList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
+	pvcList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1062,7 +1074,8 @@ func (k *KubeClient) DeletePVCByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(pvc.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(ctx(), pvc.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -1076,7 +1089,7 @@ func (k *KubeClient) DeletePVCByLabel(label string) error {
 
 func (k *KubeClient) GetPV(pvName string) (*v1.PersistentVolume, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumes().Get(pvName, options)
+	return k.clientset.CoreV1().PersistentVolumes().Get(ctx(), pvName, options)
 }
 
 func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
@@ -1086,7 +1099,7 @@ func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
 		return nil, err
 	}
 
-	pvList, err := k.clientset.CoreV1().PersistentVolumes().List(listOptions)
+	pvList, err := k.clientset.CoreV1().PersistentVolumes().List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1117,7 +1130,7 @@ func (k *KubeClient) DeletePVByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().PersistentVolumes().Delete(pv.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1128,7 +1141,7 @@ func (k *KubeClient) DeletePVByLabel(label string) error {
 
 func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error) {
 	var options metav1.GetOptions
-	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, options)
+	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(ctx(), crdName, options)
 }
 
 func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
@@ -1142,7 +1155,7 @@ func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
 }
 
 func (k *KubeClient) DeleteCRD(crdName string) error {
-	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crdName, k.deleteOptions())
+	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(ctx(), crdName, k.deleteOptions())
 }
 
 // GetPodSecurityPolicyByLabel returns a pod security policy object matching the specified label if it is unique
@@ -1171,7 +1184,7 @@ func (k *KubeClient) GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodS
 		return nil, err
 	}
 
-	pspList, err := k.clientset.PolicyV1beta1().PodSecurityPolicies().List(listOptions)
+	pspList, err := k.clientset.PolicyV1beta1().PodSecurityPolicies().List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1207,7 +1220,7 @@ func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(psp.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(ctx(), psp.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1222,7 +1235,7 @@ func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
 // DeletePodSecurityPolicy deletes a pod security policy object matching the specified PSP name.
 func (k *KubeClient) DeletePodSecurityPolicy(pspName string) error {
 
-	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(pspName, k.deleteOptions()); err != nil {
+	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(ctx(), pspName, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1242,8 +1255,8 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 		return err
 	}
 
-	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(psp.Name, commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx(), psp.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1285,7 +1298,7 @@ func (k *KubeClient) GetServiceAccountsByLabel(label string, allNamespaces bool)
 		namespace = ""
 	}
 
-	serviceAccountList, err := k.clientset.CoreV1().ServiceAccounts(namespace).List(listOptions)
+	serviceAccountList, err := k.clientset.CoreV1().ServiceAccounts(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1321,7 +1334,8 @@ func (k *KubeClient) DeleteServiceAccountByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Delete(serviceAccount.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Delete(ctx(), serviceAccount.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -1338,8 +1352,7 @@ func (k *KubeClient) DeleteServiceAccountByLabel(label string) error {
 // name and namespace.
 func (k *KubeClient) DeleteServiceAccount(name, namespace string) error {
 
-	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(name,
-		k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1360,9 +1373,8 @@ func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte)
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(serviceAccount.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(ctx(), serviceAccount.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1400,7 +1412,7 @@ func (k *KubeClient) GetClusterRolesByLabel(label string) ([]v13.ClusterRole, er
 		return nil, err
 	}
 
-	clusterRoleList, err := k.clientset.RbacV1().ClusterRoles().List(listOptions)
+	clusterRoleList, err := k.clientset.RbacV1().ClusterRoles().List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1436,7 +1448,7 @@ func (k *KubeClient) DeleteClusterRoleByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.RbacV1().ClusterRoles().Delete(clusterRole.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.RbacV1().ClusterRoles().Delete(ctx(), clusterRole.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1451,7 +1463,7 @@ func (k *KubeClient) DeleteClusterRoleByLabel(label string) error {
 // DeleteClusterRole deletes a cluster role object matching the specified name
 func (k *KubeClient) DeleteClusterRole(name string) error {
 
-	if err := k.clientset.RbacV1().ClusterRoles().Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().ClusterRoles().Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1471,9 +1483,8 @@ func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte) er
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(clusterRole.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(ctx(), clusterRole.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1510,7 +1521,7 @@ func (k *KubeClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterR
 		return nil, err
 	}
 
-	clusterRoleBindingList, err := k.clientset.RbacV1().ClusterRoleBindings().List(listOptions)
+	clusterRoleBindingList, err := k.clientset.RbacV1().ClusterRoleBindings().List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1546,7 +1557,8 @@ func (k *KubeClient) DeleteClusterRoleBindingByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.RbacV1().ClusterRoleBindings().Delete(clusterRoleBinding.Name, k.deleteOptions()); err != nil {
+	err = k.clientset.RbacV1().ClusterRoleBindings().Delete(ctx(), clusterRoleBinding.Name, k.deleteOptions())
+	if err != nil {
 		return err
 	}
 
@@ -1561,8 +1573,7 @@ func (k *KubeClient) DeleteClusterRoleBindingByLabel(label string) error {
 // DeleteClusterRoleBinding deletes a cluster role binding object matching the specified name
 func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
 
-	if err := k.clientset.RbacV1().ClusterRoleBindings().Delete(name,
-		k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().ClusterRoleBindings().Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1582,9 +1593,8 @@ func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []b
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(clusterRoleBinding.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(ctx(), clusterRoleBinding.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1621,7 +1631,7 @@ func (k *KubeClient) GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, e
 		return nil, err
 	}
 
-	CSIDriverList, err := k.clientset.StorageV1beta1().CSIDrivers().List(listOptions)
+	CSIDriverList, err := k.clientset.StorageV1beta1().CSIDrivers().List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1657,7 +1667,7 @@ func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.StorageV1beta1().CSIDrivers().Delete(CSIDriver.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.StorageV1beta1().CSIDrivers().Delete(ctx(), CSIDriver.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1672,7 +1682,7 @@ func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
 // DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified name
 func (k *KubeClient) DeleteCSIDriver(name string) error {
 
-	if err := k.clientset.StorageV1beta1().CSIDrivers().Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.StorageV1beta1().CSIDrivers().Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1692,9 +1702,8 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte) erro
 		return err
 	}
 
-	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(csiDriver.Name,
-		commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(ctx(), csiDriver.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1708,8 +1717,7 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte) erro
 
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 
-	getOptions := metav1.GetOptions{}
-	if _, err := k.clientset.CoreV1().Namespaces().Get(namespace, getOptions); err != nil {
+	if _, err := k.clientset.CoreV1().Namespaces().Get(ctx(), namespace, getOpts); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
@@ -1720,12 +1728,12 @@ func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 
 // CreateSecret creates a new Secret
 func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Create(secret)
+	return k.clientset.CoreV1().Secrets(k.namespace).Create(ctx(), secret, createOpts)
 }
 
 // UpdateSecret updates an existing Secret
 func (k *KubeClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Update(secret)
+	return k.clientset.CoreV1().Secrets(k.namespace).Update(ctx(), secret, updateOpts)
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
@@ -1754,7 +1762,7 @@ func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, 
 // GetSecret looks up a Secret by name
 func (k *KubeClient) GetSecret(secretName string) (*v1.Secret, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().Secrets(k.namespace).Get(secretName, options)
+	return k.clientset.CoreV1().Secrets(k.namespace).Get(ctx(), secretName, options)
 }
 
 // GetSecretByLabel looks up a Secret by label
@@ -1787,7 +1795,7 @@ func (k *KubeClient) GetSecretsByLabel(label string, allNamespaces bool) ([]v1.S
 		namespace = ""
 	}
 
-	secretList, err := k.clientset.CoreV1().Secrets(namespace).List(listOptions)
+	secretList, err := k.clientset.CoreV1().Secrets(namespace).List(ctx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1820,7 +1828,7 @@ func (k *KubeClient) DeleteSecretByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Secrets(k.namespace).Delete(secret.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Secrets(k.namespace).Delete(ctx(), secret.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1834,7 +1842,7 @@ func (k *KubeClient) DeleteSecretByLabel(label string) error {
 
 // DeleteSecret deletes the specified Secret by name and namespace
 func (k *KubeClient) DeleteSecret(name, namespace string) error {
-	if err := k.clientset.CoreV1().Secrets(namespace).Delete(name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().Secrets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1855,8 +1863,8 @@ func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte) error {
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(secret.Name, commontypes.StrategicMergePatchType,
-		patchBytes); err != nil {
+	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(ctx(), secret.Name,
+		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1958,14 +1966,12 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 	}).Debugf("Creating object.")
 
 	// Create the object
-	createOptions := metav1.CreateOptions{}
-
 	if namespaced {
-		if _, err = client.Resource(*gvr).Namespace(objNamespace).Create(unstruct, createOptions); err != nil {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Create(ctx(), unstruct, createOpts); err != nil {
 			return err
 		}
 	} else {
-		if _, err = client.Resource(*gvr).Create(unstruct, createOptions); err != nil {
+		if _, err = client.Resource(*gvr).Create(ctx(), unstruct, createOpts); err != nil {
 			return err
 		}
 	}
@@ -2044,9 +2050,9 @@ func (k *KubeClient) deleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 
 	// Delete the object
 	if namespaced {
-		err = client.Resource(*gvr).Namespace(objNamespace).Delete(objName, k.deleteOptions())
+		err = client.Resource(*gvr).Namespace(objNamespace).Delete(ctx(), objName, k.deleteOptions())
 	} else {
-		err = client.Resource(*gvr).Delete(objName, k.deleteOptions())
+		err = client.Resource(*gvr).Delete(ctx(), objName, k.deleteOptions())
 	}
 
 	if err != nil {
@@ -2105,11 +2111,10 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 	}).Debug("Getting object.")
 
 	// Get the object
-	getOptions := metav1.GetOptions{}
 	if namespaced {
-		return client.Resource(*gvr).Namespace(objNamespace).Get(objName, getOptions)
+		return client.Resource(*gvr).Namespace(objNamespace).Get(ctx(), objName, getOpts)
 	} else {
-		return client.Resource(*gvr).Get(objName, getOptions)
+		return client.Resource(*gvr).Get(ctx(), objName, getOpts)
 	}
 }
 
@@ -2155,14 +2160,14 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 	}).Debug("Updating object.")
 
 	// Update the object
-	updateOptions := metav1.UpdateOptions{}
+	updateOptions := updateOpts
 
 	if namespaced {
-		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(unstruct, updateOptions); err != nil {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(ctx(), unstruct, updateOptions); err != nil {
 			return err
 		}
 	} else {
-		if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+		if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOptions); err != nil {
 			return err
 		}
 	}
@@ -2396,7 +2401,7 @@ func (k *KubeClient) listOptionsFromLabel(label string) (metav1.ListOptions, err
 
 	selector, err := k.getSelectorFromLabel(label)
 	if err != nil {
-		return metav1.ListOptions{}, err
+		return listOpts, err
 	}
 
 	return metav1.ListOptions{LabelSelector: selector}, nil
@@ -2420,14 +2425,12 @@ func (k *KubeClient) getSelectorFromLabel(label string) (string, error) {
 }
 
 // deleteOptions returns a DeleteOptions struct suitable for most DELETE calls to the K8S REST API.
-func (k *KubeClient) deleteOptions() *metav1.DeleteOptions {
+func (k *KubeClient) deleteOptions() metav1.DeleteOptions {
 
 	propagationPolicy := metav1.DeletePropagationBackground
-	deleteOptions := &metav1.DeleteOptions{
+	return metav1.DeleteOptions{
 		PropagationPolicy: &propagationPolicy,
 	}
-
-	return deleteOptions
 }
 
 func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {
@@ -2450,7 +2453,7 @@ func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCall
 		Param("previous", strconv.FormatBool(logOptions.Previous)).
 		Param("timestamps", strconv.FormatBool(logOptions.Timestamps))
 
-	readCloser, err := req.Stream()
+	readCloser, err := req.Stream(ctx())
 	if err != nil {
 		log.Errorf("Could not follow pod logs; %v", err)
 		return
@@ -2487,10 +2490,8 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 	}).Debugf("Adding finalizers to CRD object %v.", crdName)
 
 	// Get the CRD object
-	getOptions := metav1.GetOptions{}
-
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -2525,9 +2526,9 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 	}
 
 	// Update the object with the newly added finalizer
-	updateOptions := metav1.UpdateOptions{}
+	updateOptions := updateOpts
 
-	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOptions); err != nil {
 		return err
 	}
 
@@ -2600,10 +2601,8 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}).Debugf("Adding finalizers to CRD object.")
 
 	// Get the CRD object
-	getOptions := metav1.GetOptions{}
-
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -2638,9 +2637,7 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	// Update the object with the newly added finalizer
-	updateOptions := metav1.UpdateOptions{}
-
-	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOpts); err != nil {
 		return err
 	}
 
@@ -2682,10 +2679,8 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	}).Debugf("Removing finalizers from CRD object.")
 
 	// Get the CRD object
-	getOptions := metav1.GetOptions{}
-
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(crdName, getOptions); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -2722,9 +2717,7 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	}
 
 	// Update the object with the updated finalizers
-	updateOptions := metav1.UpdateOptions{}
-
-	if _, err = client.Resource(*gvr).Update(unstruct, updateOptions); err != nil {
+	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOpts); err != nil {
 		return err
 	}
 

@@ -3,7 +3,10 @@
 package kubernetes
 
 import (
+	"context"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
 )
@@ -40,4 +43,14 @@ const (
 	AnnCloneFromPVC    = AnnPrefix + "/cloneFromPVC"
 	AnnSplitOnClone    = AnnPrefix + "/splitOnClone"
 	AnnNotManaged      = AnnPrefix + "/notManaged"
+)
+
+var (
+	getOpts    = metav1.GetOptions{}
+	createOpts = metav1.CreateOptions{}
+	updateOpts = metav1.UpdateOptions{}
+	patchOpts  = metav1.PatchOptions{}
+	deleteOpts = metav1.DeleteOptions{}
+
+	ctx = context.TODO
 )

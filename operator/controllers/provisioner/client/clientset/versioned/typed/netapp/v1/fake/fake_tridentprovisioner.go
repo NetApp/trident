@@ -5,6 +5,8 @@
 package fake
 
 import (
+	"context"
+
 	netappv1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -25,7 +27,7 @@ var tridentprovisionersResource = schema.GroupVersionResource{Group: "trident.ne
 var tridentprovisionersKind = schema.GroupVersionKind{Group: "trident.netapp.io", Version: "v1", Kind: "TridentProvisioner"}
 
 // Get takes name of the tridentProvisioner, and returns the corresponding tridentProvisioner object, and an error if there is any.
-func (c *FakeTridentProvisioners) Get(name string, options v1.GetOptions) (result *netappv1.TridentProvisioner, err error) {
+func (c *FakeTridentProvisioners) Get(ctx context.Context, name string, options v1.GetOptions) (result *netappv1.TridentProvisioner, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(tridentprovisionersResource, c.ns, name), &netappv1.TridentProvisioner{})
 
@@ -36,7 +38,7 @@ func (c *FakeTridentProvisioners) Get(name string, options v1.GetOptions) (resul
 }
 
 // List takes label and field selectors, and returns the list of TridentProvisioners that match those selectors.
-func (c *FakeTridentProvisioners) List(opts v1.ListOptions) (result *netappv1.TridentProvisionerList, err error) {
+func (c *FakeTridentProvisioners) List(ctx context.Context, opts v1.ListOptions) (result *netappv1.TridentProvisionerList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(tridentprovisionersResource, tridentprovisionersKind, c.ns, opts), &netappv1.TridentProvisionerList{})
 
@@ -58,14 +60,14 @@ func (c *FakeTridentProvisioners) List(opts v1.ListOptions) (result *netappv1.Tr
 }
 
 // Watch returns a watch.Interface that watches the requested tridentProvisioners.
-func (c *FakeTridentProvisioners) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeTridentProvisioners) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(tridentprovisionersResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a tridentProvisioner and creates it.  Returns the server's representation of the tridentProvisioner, and an error, if there is any.
-func (c *FakeTridentProvisioners) Create(tridentProvisioner *netappv1.TridentProvisioner) (result *netappv1.TridentProvisioner, err error) {
+func (c *FakeTridentProvisioners) Create(ctx context.Context, tridentProvisioner *netappv1.TridentProvisioner, opts v1.CreateOptions) (result *netappv1.TridentProvisioner, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(tridentprovisionersResource, c.ns, tridentProvisioner), &netappv1.TridentProvisioner{})
 
@@ -76,7 +78,7 @@ func (c *FakeTridentProvisioners) Create(tridentProvisioner *netappv1.TridentPro
 }
 
 // Update takes the representation of a tridentProvisioner and updates it. Returns the server's representation of the tridentProvisioner, and an error, if there is any.
-func (c *FakeTridentProvisioners) Update(tridentProvisioner *netappv1.TridentProvisioner) (result *netappv1.TridentProvisioner, err error) {
+func (c *FakeTridentProvisioners) Update(ctx context.Context, tridentProvisioner *netappv1.TridentProvisioner, opts v1.UpdateOptions) (result *netappv1.TridentProvisioner, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(tridentprovisionersResource, c.ns, tridentProvisioner), &netappv1.TridentProvisioner{})
 
@@ -88,7 +90,7 @@ func (c *FakeTridentProvisioners) Update(tridentProvisioner *netappv1.TridentPro
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeTridentProvisioners) UpdateStatus(tridentProvisioner *netappv1.TridentProvisioner) (*netappv1.TridentProvisioner, error) {
+func (c *FakeTridentProvisioners) UpdateStatus(ctx context.Context, tridentProvisioner *netappv1.TridentProvisioner, opts v1.UpdateOptions) (*netappv1.TridentProvisioner, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(tridentprovisionersResource, "status", c.ns, tridentProvisioner), &netappv1.TridentProvisioner{})
 
@@ -99,7 +101,7 @@ func (c *FakeTridentProvisioners) UpdateStatus(tridentProvisioner *netappv1.Trid
 }
 
 // Delete takes name of the tridentProvisioner and deletes it. Returns an error if one occurs.
-func (c *FakeTridentProvisioners) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeTridentProvisioners) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(tridentprovisionersResource, c.ns, name), &netappv1.TridentProvisioner{})
 
@@ -107,15 +109,15 @@ func (c *FakeTridentProvisioners) Delete(name string, options *v1.DeleteOptions)
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeTridentProvisioners) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(tridentprovisionersResource, c.ns, listOptions)
+func (c *FakeTridentProvisioners) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(tridentprovisionersResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &netappv1.TridentProvisionerList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched tridentProvisioner.
-func (c *FakeTridentProvisioners) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *netappv1.TridentProvisioner, err error) {
+func (c *FakeTridentProvisioners) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *netappv1.TridentProvisioner, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(tridentprovisionersResource, c.ns, name, pt, data, subresources...), &netappv1.TridentProvisioner{})
 

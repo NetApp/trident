@@ -10,7 +10,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	commontypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
@@ -72,7 +71,7 @@ func (p *Plugin) updatePVPhase(
 	pvClone.Status.Phase = phase
 	pvClone.Status.Message = message
 
-	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(pvClone)
+	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx(), pvClone, updateOpts)
 }
 
 // patchPV patches a PV after an update.
@@ -93,7 +92,8 @@ func (p *Plugin) patchPV(oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume)
 		return nil, fmt.Errorf("error creating the two-way merge patch for PV %q: %v", newPV.Name, err)
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumes().Patch(newPV.Name, commontypes.StrategicMergePatchType, patchBytes)
+	return p.kubeClient.CoreV1().PersistentVolumes().Patch(
+		ctx(), newPV.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVC patches a PVC after an update.
@@ -117,7 +117,7 @@ func (p *Plugin) patchPVC(
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(oldPVC.Namespace).Patch(
-		newPVC.Name, commontypes.StrategicMergePatchType, patchBytes)
+		ctx(), newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVCStatus patches a PVC status after an update.
@@ -140,8 +140,8 @@ func (p *Plugin) patchPVCStatus(
 		return nil, fmt.Errorf("error creating the two-way merge patch for PVC %q: %v", newPVC.Name, err)
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumeClaims(newPVC.Namespace).Patch(newPVC.Name,
-		commontypes.StrategicMergePatchType, patchBytes, "status")
+	return p.kubeClient.CoreV1().PersistentVolumeClaims(newPVC.Namespace).Patch(
+		ctx(), newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
 }
 
 // getPVForPVC returns the PV for a bound PVC.
@@ -149,7 +149,7 @@ func (p *Plugin) getPVForPVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolum
 	if pvc.Status.Phase != v1.ClaimBound || pvc.Spec.VolumeName == "" {
 		return nil, nil
 	}
-	return p.kubeClient.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, metav1.GetOptions{})
+	return p.kubeClient.CoreV1().PersistentVolumes().Get(ctx(), pvc.Spec.VolumeName, getOpts)
 }
 
 // getPVCForPV returns the PVC for a PV.
@@ -158,7 +158,7 @@ func (p *Plugin) getPVCForPV(pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim
 		return nil, nil
 	}
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(
-		pv.Spec.ClaimRef.Namespace).Get(pv.Spec.ClaimRef.Name, metav1.GetOptions{})
+		pv.Spec.ClaimRef.Namespace).Get(ctx(), pv.Spec.ClaimRef.Name, getOpts)
 }
 
 // isPVNotManaged examines a PV and determines whether the notManaged annotation is present.

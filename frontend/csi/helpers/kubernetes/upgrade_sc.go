@@ -4,7 +4,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
 )
@@ -28,7 +27,7 @@ func (p *Plugin) addLegacyStorageClass(obj interface{}) {
 }
 
 // updateLegacyStorageClass is the update handler for the legacy storage class watcher.
-func (p *Plugin) updateLegacyStorageClass(oldObj, newObj interface{}) {
+func (p *Plugin) updateLegacyStorageClass(_, newObj interface{}) {
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
 		p.processLegacyStorageClass(convertStorageClassV1BetaToV1(sc), eventUpdate)
@@ -90,7 +89,7 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 	newSC.UID = ""
 
 	// Delete the old storage class
-	if err := p.kubeClient.StorageV1().StorageClasses().Delete(oldSC.Name, &metav1.DeleteOptions{}); err != nil {
+	if err := p.kubeClient.StorageV1().StorageClasses().Delete(ctx(), oldSC.Name, deleteOpts); err != nil {
 		log.WithFields(log.Fields{
 			"name":  oldSC.Name,
 			"error": err,
@@ -99,7 +98,7 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 	}
 
 	// Create the new storage class
-	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(newSC); err != nil {
+	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx(), newSC, createOpts); err != nil {
 
 		log.WithFields(log.Fields{
 			"name":  newSC.Name,
@@ -107,7 +106,7 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 		}).Error("Could not replace storage class, attempting to restore old one.")
 
 		// Failed to create the new storage class, so try to restore the old one
-		if _, err := p.kubeClient.StorageV1().StorageClasses().Create(oldSC); err != nil {
+		if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx(), oldSC, createOpts); err != nil {
 
 			log.WithFields(log.Fields{
 				"name":  oldSC.Name,

@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/spf13/cobra"
 	k8s "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
@@ -77,6 +79,12 @@ var (
 	Debug        bool
 	Server       string
 	OutputFormat string
+
+	listOpts   = metav1.ListOptions{}
+	updateOpts = metav1.UpdateOptions{}
+	deleteOpts = metav1.DeleteOptions{}
+
+	ctx = context.TODO
 )
 
 var RootCmd = &cobra.Command{

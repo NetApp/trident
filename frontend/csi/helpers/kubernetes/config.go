@@ -3,12 +3,14 @@
 package kubernetes
 
 import (
+	"context"
 	"time"
 
 	"github.com/netapp/trident/config"
 	csiConfig "github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/utils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -59,3 +61,14 @@ var features = map[helpers.Feature]*utils.Version{
 	csiConfig.ExpandCSIVolumes: utils.MustParseSemantic("1.16.0"),
 	csiConfig.CSIBlockVolumes:  utils.MustParseSemantic("1.14.0"),
 }
+
+var (
+	listOpts   = metav1.ListOptions{}
+	getOpts    = metav1.GetOptions{}
+	createOpts = metav1.CreateOptions{}
+	updateOpts = metav1.UpdateOptions{}
+	patchOpts  = metav1.PatchOptions{}
+	deleteOpts = metav1.DeleteOptions{}
+
+	ctx = context.TODO
+)
