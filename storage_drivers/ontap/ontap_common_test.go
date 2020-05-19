@@ -182,3 +182,34 @@ func Test_randomChapString16(t *testing.T) {
 		assert.Equal(t, 0, len(trimmed))
 	}
 }
+
+func TestValidateStoragePrefix(t *testing.T) {
+
+        var storagePrefixTests = []struct {
+                storagePrefix string
+                expected      bool
+        }{
+                {"+abcd_123_ABC", false},
+                {"1abcd_123_ABC", false},
+                {"_abcd_123_ABC", true},
+                {"abcd_123_ABC", true},
+                {"ABCD_123_abc", true},
+                {"abcd+123_ABC", false},
+                {"a", true},
+                {"1", false},
+                {"_", true},
+                {":", false},
+        }
+
+        for _, spt := range storagePrefixTests {
+
+                isValid := true
+                err := ValidateStoragePrefix(spt.storagePrefix)
+                if err != nil {
+                        isValid = false
+                }
+
+                assert.Equal(t, spt.expected, isValid)
+        }
+
+}

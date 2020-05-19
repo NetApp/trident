@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
@@ -1094,6 +1095,11 @@ func ValidateSANDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 		}
 	}
 
+        err := ValidateStoragePrefix(*config.StoragePrefix)
+        if err != nil {
+                return err
+        }
+
 	return nil
 }
 
@@ -1133,7 +1139,25 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 		}
 	}
 
+        err = ValidateStoragePrefix(*config.StoragePrefix)
+        if err != nil {
+                return err
+        }
+
 	return nil
+}
+
+func ValidateStoragePrefix(storagePrefix string) error {
+
+        // Ensure storage prefix is compatible with ONTAP
+        matched, err := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, storagePrefix)
+        if err != nil {
+                err = fmt.Errorf("could not check storage prefix; %v", err)
+        } else if !matched {
+                err = fmt.Errorf("storage prefix may only contain letters/digits/underscore and must begin with letter/underscore")
+        }
+
+        return err
 }
 
 func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {
