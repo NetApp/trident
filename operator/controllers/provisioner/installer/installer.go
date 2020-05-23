@@ -226,30 +226,19 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 			return "", fmt.Errorf(errMessage)
 		}
 
-		minSupportedTridentVersion, err := utils.ParseDate(MinSupportedTridentVersion)
+		supportedTridentVersion, err := utils.ParseDate(DefaultTridentVersion)
 		if err != nil {
-			errMessage := fmt.Sprintf("unexpected parse error during minimum supported Trident version; err: %v", err)
+			errMessage := fmt.Sprintf("unexpected parse error during supported Trident version; err: %v", err)
 			log.Errorf(errMessage)
 			return "", fmt.Errorf(errMessage)
 		}
 
-		maxSupportedTridentVersion, err := utils.ParseDate(MaxSupportedTridentVersion)
-		if err != nil {
-			errMessage := fmt.Sprintf("unexpected parse error during maximum supported Trident version; err: %v", err)
-			log.Errorf(errMessage)
-			return "", fmt.Errorf(errMessage)
-		}
+		tridentImageShortVersion := tridentImageVersion.ShortString()
+		supportedTridentShortVersion := supportedTridentVersion.ShortString()
 
-		tridentImageVersionMM := tridentImageVersion.ToMajorMinorVersion()
-		minSupportedTridentVersionMM := minSupportedTridentVersion.ToMajorMinorVersion()
-		maxSupportedTridentVersionMM := maxSupportedTridentVersion.ToMajorMinorVersion()
-
-		if tridentImageVersionMM.LessThan(minSupportedTridentVersionMM) || tridentImageVersionMM.
-			GreaterThan(maxSupportedTridentVersionMM) {
-			errMessage := fmt.Sprintf("unsupported Trident image version '%s', "+
-				"minimum supported Trident version is '%s', maximum supported Trident version is '%s'",
-				tridentImageVersion.ShortStringWithRelease(),
-				minSupportedTridentVersion.ShortStringWithRelease(), maxSupportedTridentVersion.ShortStringWithRelease())
+		if tridentImageShortVersion != supportedTridentShortVersion {
+			errMessage := fmt.Sprintf("unsupported Trident image version '%s', supported Trident version is '%s'",
+				tridentImageVersion.ShortStringWithRelease(), supportedTridentVersion.ShortStringWithRelease())
 			log.Errorf(errMessage)
 			return "", fmt.Errorf(errMessage)
 		}

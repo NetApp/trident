@@ -9,6 +9,7 @@ TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
+VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
 
 ## build flags variables
@@ -29,6 +30,7 @@ CLI_BIN ?= tridentctl
 CLI_PKG ?= github.com/netapp/trident/cli
 K8S ?= ""
 BUILD = build
+VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
 
 DR_LINUX = docker run --rm \
 	--net=host \
@@ -61,7 +63,7 @@ GO_MACOS = ${DR_MACOS} go
 default: dist
 
 ## version variables
-TRIDENT_VERSION ?= 20.07.0
+TRIDENT_VERSION ?= ${VERSION}
 TRIDENT_IMAGE ?= trident
 ifeq ($(BUILD_TYPE),custom)
 TRIDENT_VERSION := ${TRIDENT_VERSION}-custom
@@ -78,6 +80,13 @@ TRIDENT_TAG_OLD := ${REGISTRY_ADDR}/${TRIDENT_TAG_OLD}
 endif
 DIST_REGISTRY ?= netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
+
+## trident operator variable
+OPERATOR_IMAGE ?= trident-operator
+DEFAULT_TRIDENT_OPERATOR_REPO ?= netapp/${OPERATOR_IMAGE}
+DEFAULT_TRIDENT_OPERATOR_VERSION ?= ${VERSION}
+DEFAULT_TRIDENT_OPERATOR_IMAGE := ${DEFAULT_TRIDENT_OPERATOR_REPO}:${DEFAULT_TRIDENT_OPERATOR_VERSION}
+OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${TRIDENT_VERSION}
 
 ## etcd variables
 ifeq ($(ETCD_VERSION),)
@@ -148,6 +157,9 @@ dist_tar: build
 	@cp -a trident-installer /tmp/
 	@cp -a deploy /tmp/trident-installer/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
+	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/operator.yaml
+	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/bundle.yaml
+	@rm /tmp/trident-installer/deploy/*.bak
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
 	@mkdir -p /tmp/trident-installer/extras/macos/bin

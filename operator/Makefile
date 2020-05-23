@@ -8,7 +8,9 @@ OPERATOR_VOLUME = operator_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
+OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/provisioner/installer
 TRIDENT_PROVISIONER_PKG = github.com/netapp/trident/operator/controllers/provisioner
+VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.18.2
 
 ## build flags variables
@@ -25,6 +27,7 @@ BIN ?= trident-operator
 TARBALL_BIN ?= trident-operator
 K8S ?= ""
 BUILD = build
+VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
 
 DR_LINUX = docker run --rm \
 	--net=host \
@@ -42,7 +45,8 @@ GO_LINUX = ${DR_LINUX} go
 .PHONY = default build retag dist dist_tar dist_tag clean vet
 
 ## version variables
-OPERATOR_VERSION ?= 20.07.0
+OPERATOR_VERSION ?= ${VERSION}
+TRIDENT_IMAGE ?= trident
 OPERATOR_IMAGE ?= trident-operator
 ifeq ($(BUILD_TYPE),custom)
 OPERATOR_VERSION := ${OPERATOR_VERSION}-custom
@@ -59,6 +63,7 @@ OPERATOR_TAG_OLD := ${REGISTRY_ADDR}/${OPERATOR_TAG_OLD}
 endif
 DIST_REGISTRY ?= netapp
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${OPERATOR_VERSION}
+TRIDENT_IMAGE_REPO := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:
 
 ## etcd variables
 ifeq ($(ETCD_VERSION),)
@@ -69,7 +74,7 @@ ETCD_SERVER ?= http://localhost:${ETCD_PORT}
 ETCD_TAG := quay.io/coreos/etcd:${ETCD_VERSION}
 
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-X \"${OPERATOR_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${OPERATOR_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${OPERATOR_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${OPERATOR_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${OPERATOR_CONFIG_PKG}.BuildImage=$(OPERATOR_DIST_TAG)\" -X \"${OPERATOR_CONFIG_PKG}.BuildEtcdVersion=$(ETCD_VERSION)\" -X \"${OPERATOR_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
+BUILD_FLAGS = "-X \"${OPERATOR_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${OPERATOR_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${OPERATOR_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${OPERATOR_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${OPERATOR_CONFIG_PKG}.BuildImage=$(OPERATOR_DIST_TAG)\" -X \"${OPERATOR_CONFIG_PKG}.BuildEtcdVersion=$(ETCD_VERSION)\" -X \"${OPERATOR_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\" -X \"${OPERATOR_INSTALLER_CONFIG_PKG}.DefaultTridentVersion=$(OPERATOR_VERSION)\" -X \"${OPERATOR_INSTALLER_CONFIG_PKG}.DefaultTridentRepo=$(TRIDENT_IMAGE_REPO)\""
 
 ## Operator build targets
 

@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/netapp/trident/config"
 
 	log "github.com/sirupsen/logrus"
 
@@ -21,7 +22,7 @@ type Telemetry struct {
 const (
 	/* Misc. orchestrator constants */
 	OperatorName    = "trident-operator"
-	operatorVersion = "20.07.0"
+	operatorVersion = config.DefaultOrchestratorVersion
 )
 
 var (

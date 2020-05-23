@@ -33,8 +33,8 @@ const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
-	orchestratorVersion              = "20.07.0"
 	OrchestratorAPIVersion           = "1"
+	DefaultOrchestratorVersion       = "20.07.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -151,7 +151,7 @@ var (
 	BuildTime = "unknown"
 
 	// BuildImage is the Trident image that was built
-	BuildImage = "netapp/trident:" + orchestratorVersion + "-custom.0"
+	BuildImage = "netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
 
 	// BuildEtcdVersion is the etcd version that Trident should be deployed with
 	BuildEtcdVersion = "v3.3.18"
@@ -215,12 +215,12 @@ func version() string {
 
 	if BuildType != "stable" {
 		if BuildType == "custom" {
-			version = fmt.Sprintf("%v-%v+%v", orchestratorVersion, BuildType, BuildHash)
+			version = fmt.Sprintf("%v-%v+%v", DefaultOrchestratorVersion, BuildType, BuildHash)
 		} else {
-			version = fmt.Sprintf("%v-%v.%v+%v", orchestratorVersion, BuildType, BuildTypeRev, BuildHash)
+			version = fmt.Sprintf("%v-%v.%v+%v", DefaultOrchestratorVersion, BuildType, BuildTypeRev, BuildHash)
 		}
 	} else {
-		version = orchestratorVersion
+		version = DefaultOrchestratorVersion
 	}
 
 	return version
