@@ -1533,7 +1533,7 @@ func (k *KubeClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterR
 // matching the specified label exist.
 func (k *KubeClient) CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error) {
 
-	clusterRoleBindings, err := k.GetClusterRolesByLabel(label)
+	clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(label)
 	if err != nil {
 		return false, "", err
 	}

@@ -273,6 +273,9 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	if cr.Spec.LogFormat != "" {
 		logFormat = cr.Spec.LogFormat
 	}
+	if cr.Spec.KubeletDir != "" {
+		kubeletDir = cr.Spec.KubeletDir
+	}
 	if len(cr.Spec.ImagePullSecrets) != 0 {
 		imagePullSecrets = cr.Spec.ImagePullSecrets
 	}
@@ -1594,8 +1597,23 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 	log.Info("Waiting for Trident REST interface.")
 
 	if err := backoff.RetryNotify(checkRESTInterface, restBackoff, restNotify); err != nil {
-		log.Errorf("Trident REST interface was not available after %3.2f seconds.", k8sTimeout.Seconds())
-		return err
+		totalWaitTime := k8sTimeout
+		// In case of HTTP 503 error wait for extra 180 seconds, if the backends takes additional time to respond
+		// this will ensure we do not error out early.
+		if strings.Contains(err.Error(), "503 Service Unavailable") {
+			extraWaitTime := 180 * time.Second
+			totalWaitTime = totalWaitTime + extraWaitTime
+			restBackoff.MaxElapsedTime = extraWaitTime
+
+			log.Debugf("Encountered HTTP 503 error, REST interface is not up after 30 seconds, " +
+				"waiting %3.2f seconds extra.", extraWaitTime.Seconds())
+			err = backoff.RetryNotify(checkRESTInterface, restBackoff, restNotify)
+		}
+
+		if err != nil {
+			log.Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(), err)
+			return err
+		}
 	}
 
 	versionInfo, err := utils.ParseDate(versionWithMetadata)

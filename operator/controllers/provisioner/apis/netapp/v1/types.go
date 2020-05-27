@@ -36,6 +36,7 @@ type TridentProvisionerSpec struct {
 	LogFormat        string   `json:"logFormat,omitempty"`
 	TridentImage     string   `json:"tridentImage,omitempty"`
 	ImageRegistry    string   `json:"imageRegistry,omitempty"`
+	KubeletDir       string   `json:"kubeletDir,omitempty"`
 	Wipeout          []string `json:"wipeout,omitempty"`
 	ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
 }
