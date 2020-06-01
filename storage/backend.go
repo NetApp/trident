@@ -45,7 +45,7 @@ type Driver interface {
 	GetStorageBackendSpecs(backend *Backend) error
 	GetStorageBackendPhysicalPoolNames() []string
 	GetProtocol() tridentconfig.Protocol
-	Publish(name string, publishInfo *utils.VolumePublishInfo) error
+	Publish(volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 	GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
 	GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error)
 	CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
@@ -232,8 +232,21 @@ func (b *Backend) AddVolume(
 	// Always perform the follow-up steps
 	if err = b.Driver.CreateFollowup(volConfig); err != nil {
 
+		log.WithFields(log.Fields{
+			"backend":      b.Name,
+			"volume":       volConfig.InternalName,
+			"volumeExists": volumeExists,
+			"retry":        retry,
+		}).Errorf("CreateFollowup failed; %v", err)
+
 		// If follow-up fails and we just created the volume, clean up by deleting it
 		if !volumeExists || retry {
+
+			log.WithFields(log.Fields{
+				"backend": b.Name,
+				"volume":  volConfig.InternalName,
+			}).Errorf("CreateFollowup failed for newly created volume, deleting the volume.")
+
 			errDestroy := b.Driver.Destroy(volConfig.InternalName)
 			if errDestroy != nil {
 				log.WithFields(log.Fields{
@@ -359,6 +372,23 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 	vol := NewVolume(volConfig, b.BackendUUID, poolName, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
+}
+
+func (b *Backend) PublishVolume(volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+
+	log.WithFields(log.Fields{
+		"backend":        b.Name,
+		"backendUUID":    b.BackendUUID,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
+	}).Debug("Attempting volume publish.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnlineOrDeleting(); err != nil {
+		return err
+	}
+
+	return b.Driver.Publish(volConfig, publishInfo)
 }
 
 func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) {

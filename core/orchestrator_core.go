@@ -2704,7 +2704,7 @@ func (o *TridentOrchestrator) PublishVolume(
 	}
 	publishInfo.Nodes = nodes
 	publishInfo.BackendUUID = volume.BackendUUID
-	return o.backends[volume.BackendUUID].Driver.Publish(volume.Config.InternalName, publishInfo)
+	return o.backends[volume.BackendUUID].PublishVolume(volume.Config, publishInfo)
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,

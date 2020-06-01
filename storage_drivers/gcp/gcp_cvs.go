@@ -28,7 +28,7 @@ const (
 	MinimumVolumeSizeBytes    = 1000000000    // 1 GB
 	MinimumCVSVolumeSizeBytes = 1099511627776 // 1 TiB
 	MinimumAPIVersion         = "1.1.5"
-	MinimumSDEVersion         = "1.184.14"
+	MinimumSDEVersion         = "2020.2.6"
 
 	defaultServiceLevel    = api.UserServiceLevel1
 	defaultNfsMountOptions = "-o nfsvers=3"
@@ -650,6 +650,8 @@ func (d *NFSStorageDriver) Create(
 		volConfig.SnapshotReserve = snapshotReserve
 	}
 
+	protocolTypes := []string{api.ProtocolTypeNFSv4, api.ProtocolTypeNFSv3}
+
 	// Take network from volume config first (handles Docker case), then from pool
 	network := volConfig.Network
 	if network == "" {
@@ -665,12 +667,16 @@ func (d *NFSStorageDriver) Create(
 		"serviceLevel":    userServiceLevel,
 		"snapshotDir":     snapshotDirBool,
 		"snapshotReserve": snapshotReserve,
+		"protocolTypes":   protocolTypes,
 	}).Debug("Creating volume.")
 
 	apiExportRule := api.ExportRule{
 		AllowedClients: pool.InternalAttributes[ExportRule],
 		Access:         api.AccessReadWrite,
+		NFSv3:          api.Checked{Checked: true},
+		NFSv4:          api.Checked{Checked: true},
 	}
+
 	exportPolicy := api.ExportPolicy{
 		Rules: []api.ExportRule{apiExportRule},
 	}
@@ -691,7 +697,7 @@ func (d *NFSStorageDriver) Create(
 		CreationToken:     name,
 		ExportPolicy:      exportPolicy,
 		Labels:            d.getTelemetryLabels(),
-		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
+		ProtocolTypes:     protocolTypes,
 		QuotaInBytes:      int64(sizeBytes),
 		SecurityStyle:     defaultSecurityStyle,
 		ServiceLevel:      apiServiceLevel,
@@ -1052,7 +1058,9 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+func (d *NFSStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1076,11 +1084,17 @@ func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 		return fmt.Errorf("volume %s has no mount targets", name)
 	}
 
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
+	}
+
 	// Add fields needed by Attach
 	publishInfo.NfsServerIP = (volume.MountPoints)[0].Server
 	publishInfo.NfsPath = (volume.MountPoints)[0].Export
 	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = d.Config.NfsMountOptions
+	publishInfo.MountOptions = mountOptions
 
 	return nil
 }
@@ -1632,7 +1646,7 @@ func (d *NFSStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 	return bitmap
 }
 
-func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) error {
 
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

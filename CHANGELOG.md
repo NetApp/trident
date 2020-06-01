@@ -4,6 +4,11 @@
 
 ## Changes since v20.04.0
 
+**Fixes:**
+
+**Enhancements**
+- Added support for NFS v4.1 volumes to ANF, CVS-AWS, and CVS-GCP drivers.
+
 ## v20.04.0
 
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).

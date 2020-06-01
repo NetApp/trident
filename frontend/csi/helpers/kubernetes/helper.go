@@ -4,6 +4,7 @@ package kubernetes
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -82,7 +83,7 @@ func (p *Plugin) GetVolumeConfig(
 
 	// Create the volume config
 	volumeConfig := getVolumeConfig(pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
-		processPVCAnnotations(pvc, fsType), scName)
+		processPVCAnnotations(pvc, fsType), sc)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
 	if cloneSourcePVName, err := p.getCloneSourceInfo(pvc); err != nil {
@@ -270,8 +271,7 @@ func mapEventType(eventType string) string {
 // VolumeConfig structure as needed by Trident to create a new volume.
 func getVolumeConfig(
 	pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode, name string,
-	size resource.Quantity,
-	annotations map[string]string, storageClassName string,
+	size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
 ) *storage.VolumeConfig {
 
 	var accessModes []config.AccessMode
@@ -308,7 +308,7 @@ func getVolumeConfig(
 		SnapshotDir:        getAnnotation(annotations, AnnSnapshotDir),
 		ExportPolicy:       getAnnotation(annotations, AnnExportPolicy),
 		UnixPermissions:    getAnnotation(annotations, AnnUnixPermissions),
-		StorageClass:       storageClassName,
+		StorageClass:       storageClass.Name,
 		BlockSize:          getAnnotation(annotations, AnnBlockSize),
 		FileSystem:         getAnnotation(annotations, AnnFileSystem),
 		SplitOnClone:       getAnnotation(annotations, AnnSplitOnClone),
@@ -317,6 +317,7 @@ func getVolumeConfig(
 		ImportOriginalName: getAnnotation(annotations, AnnImportOriginalName),
 		ImportBackendUUID:  getAnnotation(annotations, AnnImportBackendUUID),
 		ImportNotManaged:   notManaged,
+		MountOptions:       strings.Join(storageClass.MountOptions, ","),
 	}
 }
 

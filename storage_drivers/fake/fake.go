@@ -167,7 +167,7 @@ func (d *StorageDriver) poolName(region string) string {
 }
 
 func (d *StorageDriver) Initialize(
-	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	_ tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -577,7 +577,7 @@ func (d *StorageDriver) BootstrapVolume(volume *storage.Volume) {
 	}
 }
 
-func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
+func (d *StorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -705,7 +705,7 @@ func (d *StorageDriver) Destroy(name string) error {
 	return nil
 }
 
-func (d *StorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+func (d *StorageDriver) Publish(_ *storage.VolumeConfig, _ *utils.VolumePublishInfo) error {
 	return errors.New("fake driver does not support Publish")
 }
 
@@ -1120,7 +1120,7 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 
 	return creatingVolumes
 }
-func (d *StorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *StorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) error {
 
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

@@ -304,6 +304,9 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	// If any mount options are passed in via CSI (e.g. from a StorageClass), then any mount options
+	// that were specified in the storage driver's backend configuration and passed here in the
+	// VolumePublishInfo struct are completely discarded and replaced by the CSI-supplied values.
 	mount := req.VolumeCapability.GetMount()
 	if mount != nil && len(mount.MountFlags) > 0 {
 		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")

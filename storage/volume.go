@@ -45,6 +45,7 @@ type VolumeConfig struct {
 	ImportOriginalName        string                 `json:"importOriginalName,omitempty"`
 	ImportBackendUUID         string                 `json:"importBackendUUID,omitempty"`
 	ImportNotManaged          bool                   `json:"importNotManaged,omitempty"`
+	MountOptions              string                 `json:"mountOptions,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

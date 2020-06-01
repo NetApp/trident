@@ -20,7 +20,7 @@ const (
 	ResizeSyncPeriod        = 3 * time.Minute
 	PVDeleteWaitPeriod      = 30 * time.Second
 	PodDeleteWaitPeriod     = 60 * time.Second
-	ImportPVCacheWaitPeriod = 75 * time.Second
+	ImportPVCacheWaitPeriod = 180 * time.Second
 
 	CacheBackoffInitialInterval     = 1 * time.Second
 	CacheBackoffRandomizationFactor = 0.1

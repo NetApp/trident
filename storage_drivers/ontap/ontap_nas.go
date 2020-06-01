@@ -481,7 +481,9 @@ func (d *NASStorageDriver) Rename(name string, newName string) error {
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+func (d *NASStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -494,11 +496,18 @@ func (d *NASStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 		defer log.WithFields(fields).Debug("<<<< Publish")
 	}
 
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
+	}
+
 	// Add fields needed by Attach
 	publishInfo.NfsPath = fmt.Sprintf("/%s", name)
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = d.Config.NfsMountOptions
+	publishInfo.MountOptions = mountOptions
+
 	return publishFlexVolShare(d.API, &d.Config, publishInfo, name)
 }
 

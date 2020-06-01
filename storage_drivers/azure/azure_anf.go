@@ -14,7 +14,6 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
-	api "github.com/netapp/trident/storage_drivers/azure/sdk"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -42,6 +41,14 @@ const (
 	Location       = "location"
 	VirtualNetwork = "virtualNetwork"
 	Subnet         = "subnet"
+
+	nfsVersion3  = "3"
+	nfsVersion4  = "4"
+	nfsVersion41 = "4.1"
+)
+
+var (
+	supportedNFSVersions = []string{nfsVersion3, nfsVersion4, nfsVersion41}
 )
 
 // NFSStorageDriver is for storage provisioning using Azure NetApp Files service in Azure
@@ -119,7 +126,7 @@ func (d *NFSStorageDriver) defaultCreateTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
 	default:
-		return api.VolumeCreateTimeout
+		return sdk.VolumeCreateTimeout
 	}
 }
 
@@ -129,7 +136,7 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerDefaultTimeout
 	default:
-		return api.DefaultTimeout
+		return sdk.DefaultTimeout
 	}
 }
 
@@ -504,11 +511,17 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volumeExists {
-		if extantVolume.ProvisioningState == api.StateCreating {
+		if extantVolume.ProvisioningState == sdk.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return utils.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
+				fmt.Sprintf("volume state is still %s, not %s", sdk.StateCreating, sdk.StateAvailable))
 		}
+
+		log.WithFields(log.Fields{
+			"name":  name,
+			"state": extantVolume.ProvisioningState,
+		}).Warning("Volume already exists.")
+
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -552,17 +565,36 @@ func (d *NFSStorageDriver) Create(
 		serviceLevel = pool.InternalAttributes[ServiceLevel]
 	}
 
-	log.WithFields(log.Fields{
-		"creationToken": name,
-		"size":          sizeBytes,
-		"serviceLevel":  serviceLevel,
-	}).Debug("Creating volume.")
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
+	}
+
+	// Determine protocol from mount options
+	var protocolTypes []string
+	var cifsAccess, nfsV3Access, nfsV41Access bool
+
+	nfsVersion, err := utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
+	if err != nil {
+		return err
+	}
+	switch nfsVersion {
+	case nfsVersion3:
+		nfsV3Access = true
+		protocolTypes = []string{sdk.ProtocolTypeNFSv3}
+	case nfsVersion4:
+		fallthrough
+	case nfsVersion41:
+		nfsV41Access = true
+		protocolTypes = []string{sdk.ProtocolTypeNFSv41}
+	}
 
 	apiExportRule := sdk.ExportRule{
 		AllowedClients: pool.InternalAttributes[ExportRule],
-		Cifs:           false,
-		Nfsv3:          true,
-		Nfsv4:          false,
+		Cifs:           cifsAccess,
+		Nfsv3:          nfsV3Access,
+		Nfsv41:         nfsV41Access,
 		RuleIndex:      1,
 		UnixReadOnly:   false,
 		UnixReadWrite:  true,
@@ -570,6 +602,14 @@ func (d *NFSStorageDriver) Create(
 	exportPolicy := sdk.ExportPolicy{
 		Rules: []sdk.ExportRule{apiExportRule},
 	}
+
+	log.WithFields(log.Fields{
+		"creationToken": name,
+		"size":          sizeBytes,
+		"serviceLevel":  serviceLevel,
+		"protocolTypes": protocolTypes,
+		"exportPolicy":  fmt.Sprintf("%+v", exportPolicy),
+	}).Debug("Creating volume.")
 
 	createRequest := &sdk.FilesystemCreateRequest{
 		Name:           volConfig.Name,
@@ -579,7 +619,7 @@ func (d *NFSStorageDriver) Create(
 		CreationToken:  name,
 		ExportPolicy:   exportPolicy,
 		Labels:         d.getTelemetryLabels(),
-		ProtocolTypes:  []string{sdk.ProtocolTypeNFSv3},
+		ProtocolTypes:  protocolTypes,
 		QuotaInBytes:   int64(sizeBytes),
 		ServiceLevel:   serviceLevel,
 		PoolID:         storagePool.Name,
@@ -631,10 +671,10 @@ func (d *NFSStorageDriver) CreateClone(volConfig *storage.VolumeConfig, _ *stora
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volumeExists {
-		if extantVolume.ProvisioningState == api.StateCreating {
+		if extantVolume.ProvisioningState == sdk.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return utils.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
+				fmt.Sprintf("volume state is still %s, not %s", sdk.StateCreating, sdk.StateAvailable))
 		}
 		return drivers.NewVolumeExistsError(name)
 	}
@@ -780,7 +820,7 @@ func (d *NFSStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 			log.WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
 		}
-		_, err := d.SDK.WaitForVolumeState(volume, sdk.StateAvailable, []string{sdk.StateError}, d.defaultCreateTimeout())
+		_, err := d.SDK.WaitForVolumeState(volume, sdk.StateAvailable, []string{sdk.StateError}, d.defaultTimeout())
 		if err != nil {
 			return fmt.Errorf("could not import volume %s: %v", originalName, err)
 		}
@@ -856,11 +896,11 @@ func (d *NFSStorageDriver) updateTelemetryLabels(volume *sdk.FileSystem) []strin
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
 func (d *NFSStorageDriver) waitForVolumeCreate(volume *sdk.FileSystem, volumeName string) error {
 
-	state, err := d.SDK.WaitForVolumeState(volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
+	state, err := d.SDK.WaitForVolumeState(volume, sdk.StateAvailable, []string{sdk.StateError}, d.volumeCreateTimeout)
 	if err != nil {
 
 		// Don't leave an ANF volume laying around in error state
-		if state == api.StateCreating {
+		if state == sdk.StateCreating {
 			log.WithFields(log.Fields{
 				"volume": volumeName,
 			}).Debug("Volume is in creating state.")
@@ -868,7 +908,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(volume *sdk.FileSystem, volumeNam
 		}
 
 		// Don't leave an ANF volume in a non-transitional state laying around in error state
-		if !api.IsTransitionalState(state) {
+		if !sdk.IsTransitionalState(state) {
 			errDelete := d.SDK.DeleteVolume(volume)
 			if errDelete != nil {
 				log.WithFields(log.Fields{
@@ -878,7 +918,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(volume *sdk.FileSystem, volumeNam
 		} else {
 			// Wait for deletion to complete
 			_, errDeleteWait := d.SDK.WaitForVolumeState(
-				volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
+				volume, sdk.StateDeleted, []string{sdk.StateError}, d.defaultTimeout())
 			if errDeleteWait != nil {
 				log.WithFields(log.Fields{
 					"volume": volumeName,
@@ -913,9 +953,9 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 	if !volumeExists {
 		log.WithField("volume", name).Warn("Volume already deleted.")
 		return nil
-	} else if extantVolume.ProvisioningState == api.StateDeleting {
+	} else if extantVolume.ProvisioningState == sdk.StateDeleting {
 		// This is a retry, so give it more time before giving up again.
-		_, err = d.SDK.WaitForVolumeState(extantVolume, api.StateDeleted, []string{api.StateError}, d.volumeCreateTimeout)
+		_, err = d.SDK.WaitForVolumeState(extantVolume, sdk.StateDeleted, []string{sdk.StateError}, d.volumeCreateTimeout)
 		return err
 	}
 
@@ -932,7 +972,9 @@ func (d *NFSStorageDriver) Destroy(name string) error {
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+func (d *NFSStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -960,11 +1002,17 @@ func (d *NFSStorageDriver) Publish(name string, publishInfo *utils.VolumePublish
 		return fmt.Errorf("volume %s has no mount targets", name)
 	}
 
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
+	}
+
 	// Add fields needed by Attach
 	publishInfo.NfsPath = "/" + volume.CreationToken
 	publishInfo.NfsServerIP = (*mountTargets)[0].IPAddress
 	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = d.Config.NfsMountOptions
+	publishInfo.MountOptions = mountOptions
 
 	return nil
 }
@@ -1504,7 +1552,7 @@ func (d *NFSStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 	return bitmap
 }
 
-func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) error {
 
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

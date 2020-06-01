@@ -30,7 +30,7 @@ apiURL                    CVS account API URL
 apiKey                    CVS account API key
 secretKey                 CVS account secret key
 proxyURL                  Proxy URL if proxy server required to connect to CVS Account
-nfsMountOptions           Fine-grained control of NFS mount options                       "-o nfsvers=3"
+nfsMountOptions           Fine-grained control of NFS mount options                       "nfsvers=3"
 limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 serviceLevel              The CVS service level for new volumes                           "standard"
 ========================= =============================================================== ================================================
@@ -47,14 +47,13 @@ The proxyURL config option must be used if a proxy server is needed to communica
 be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
 self-signed certificates in the proxy server. Proxy servers with authentication enabled are not supported.
 
-Each backend provisions volumes in a single AWS region. To create volumes in
-other regions, you can define additional backends.
+Each backend provisions volumes in a single AWS region. To create volumes in other regions, you can define additional
+backends.
 
 The serviceLevel values for CVS on AWS are ``standard``, ``premium``, and ``extreme``.
 
-You can control how each volume is provisioned by default using these options
-in a special section of the configuration. For an example, see the
-configuration examples below.
+You can control how each volume is provisioned by default using these options in a special section of the configuration.
+For an example, see the configuration examples below.
 
 ========================= =============================================================== ================================================
 Parameter                 Description                                                     Default

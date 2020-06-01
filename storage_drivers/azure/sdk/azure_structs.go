@@ -16,9 +16,9 @@ const (
 	StateDeleted    = "NoSuchState"
 	StateError      = "Failed"
 
-	ProtocolTypeNFSv3 = "NFSv3"
-	ProtocolTypeNFSv4 = "NFSv4"
-	ProtocolTypeCIFS  = "CIFS"
+	ProtocolTypeNFSv3  = "NFSv3"
+	ProtocolTypeNFSv41 = "NFSv4.1"
+	ProtocolTypeCIFS   = "CIFS"
 
 	ServiceLevelStandard = "Standard"
 	ServiceLevelPremium  = "Premium"
@@ -107,7 +107,7 @@ type ExportRule struct {
 	AllowedClients string `json:"allowedClients"`
 	Cifs           bool   `json:"cifs"`
 	Nfsv3          bool   `json:"nfsv3"`
-	Nfsv4          bool   `json:"nfsv4"`
+	Nfsv41         bool   `json:"nfsv41"`
 	RuleIndex      int    `json:"ruleIndex"`
 	UnixReadOnly   bool   `json:"unixReadOnly"`
 	UnixReadWrite  bool   `json:"unixReadWrite"`

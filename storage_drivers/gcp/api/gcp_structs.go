@@ -142,8 +142,14 @@ type ExportPolicy struct {
 }
 
 type ExportRule struct {
-	Access         string `json:"access"`
-	AllowedClients string `json:"allowedClients"`
+	Access         string  `json:"access"`
+	AllowedClients string  `json:"allowedClients"`
+	NFSv3          Checked `json:"nfsv3,omitempty"`
+	NFSv4          Checked `json:"nfsv4,omitempty"`
+}
+
+type Checked struct {
+	Checked bool `json:"checked"`
 }
 
 type SnapshotPolicy struct {

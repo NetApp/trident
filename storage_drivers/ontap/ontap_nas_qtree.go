@@ -489,7 +489,9 @@ func (d *NASQtreeStorageDriver) Destroy(name string) error {
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePublishInfo) error {
+func (d *NASQtreeStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -512,11 +514,17 @@ func (d *NASQtreeStorageDriver) Publish(name string, publishInfo *utils.VolumePu
 		return fmt.Errorf("volume %s not found", name)
 	}
 
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
+	}
+
 	// Add fields needed by Attach
 	publishInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, name)
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = d.Config.NfsMountOptions
+	publishInfo.MountOptions = mountOptions
 
 	return d.publishQtreeShare(name, flexvol, publishInfo)
 }

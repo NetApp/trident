@@ -15,7 +15,7 @@ import (
 
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-05-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-07-01/netapp"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	log "github.com/sirupsen/logrus"
@@ -168,7 +168,7 @@ func exportPolicyExportOne(er *ExportRule) *netapp.ExportPolicyRule {
 	naep.UnixReadWrite = &er.UnixReadWrite
 	naep.Cifs = &er.Cifs
 	naep.Nfsv3 = &er.Nfsv3
-	naep.Nfsv4 = &er.Nfsv4
+	naep.Nfsv41 = &er.Nfsv41
 	naep.AllowedClients = &er.AllowedClients
 
 	return &naep
@@ -213,8 +213,8 @@ func exportPolicyImportOne(epr *netapp.ExportPolicyRule) *ExportRule {
 		naer.Nfsv3 = *epr.Nfsv3
 	}
 
-	if epr.Nfsv4 != nil {
-		naer.Nfsv4 = *epr.Nfsv4
+	if epr.Nfsv41 != nil {
+		naer.Nfsv41 = *epr.Nfsv41
 	}
 
 	if epr.AllowedClients != nil {
@@ -879,8 +879,8 @@ func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, err
 			Location: *ns.Location,
 			// no such field: UsedBytes:
 		}
-		if ns.SnapshotProperties.CreationDate != nil {
-			s.Created = *ns.SnapshotProperties.CreationDate
+		if ns.SnapshotProperties.Created != nil {
+			s.Created = *ns.SnapshotProperties.Created
 		}
 		if ns.SnapshotProperties.FileSystemID != nil {
 			s.FileSystemID = *ns.SnapshotProperties.FileSystemID

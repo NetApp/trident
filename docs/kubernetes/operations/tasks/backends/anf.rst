@@ -43,9 +43,14 @@ serviceLevel       One of "Standard", "Premium" or "Ultra"                      
 location           Name of the Azure location new volumes will be created in       "" (random)
 virtualNetwork     Name of a virtual network with a delegated subnet               "" (random)
 subnet             Name of a subnet delegated to ``Microsoft.Netapp/volumes``      "" (random)
-nfsMountOptions    Fine-grained control of NFS mount options                       "-o nfsvers=3"
+nfsMountOptions    Fine-grained control of NFS mount options                       "nfsvers=3"
 limitVolumeSize    Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 ================== =============================================================== ================================================
+
+Whether a backend's volumes will be mounted using NFS v3 or NFS v4.1 is a decision that must be made when defining a
+backend or storage class.  The default is NFS v3, but you can use the ``nfsMountOptions`` backend setting to control
+this choice. Just include ``nfsvers=4`` in the comma-delimited mount options list to choose NFS v4.1. Any mount options
+set in a storage class will override mount options set in a backend configuration file.
 
 You can control how each volume is provisioned by default using these options in a special section of the configuration.
 For an example, see the configuration examples below.
