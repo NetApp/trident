@@ -15,7 +15,7 @@ var (
 			Name:      "ops_total",
 			Help:      "The total number of handled REST operations",
 		},
-		[]string{"op", "route"},
+		[]string{"op", "route", "status_code"},
 	)
 	restOpsSecondsTotal = promauto.NewSummaryVec(
 		prometheus.SummaryOpts{
@@ -25,6 +25,6 @@ var (
 			Help:       "The total number of seconds spent handling REST operations",
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
-		[]string{"op", "route"},
+		[]string{"op", "route", "status_code"},
 	)
 )
