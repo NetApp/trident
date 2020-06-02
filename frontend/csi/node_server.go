@@ -189,8 +189,59 @@ func (p *Plugin) NodeGetVolumeStats(
 	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
 ) (*csi.NodeGetVolumeStatsResponse, error) {
 
-	// Trident doesn't support GET_VOLUME_STATS capability
-	return nil, status.Error(codes.Unimplemented, "")
+        if req.GetVolumeId() == "" {
+                return nil, status.Error(codes.InvalidArgument, "empty volume id provided")
+        }
+
+        if req.GetVolumePath() == "" {
+                return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
+        }
+
+        // Ensure volume is published at path
+        _, err := os.Stat(req.GetVolumePath())
+        if err != nil {
+                return nil, status.Error(codes.NotFound,
+                        fmt.Sprintf("could not find volume mount at path: %s; %v ", req.GetVolumePath(), err))
+        }
+
+        // If raw block volume, dont return usage
+        isRawBlock := false
+        if req.StagingTargetPath != "" {
+                publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
+                if err != nil {
+                        return nil, status.Error(codes.Internal, err.Error())
+                }
+
+                isRawBlock = publishInfo.FilesystemType == fsRaw
+        }
+        if isRawBlock {
+                // Return no capacity info for raw block volumes, we cannot reliably determine the capacity
+                return &csi.NodeGetVolumeStatsResponse{}, nil
+        } else {
+                // If filesystem, return usage reported by FS
+                available, capacity, usage, inodes, inodesFree, inodesUsed, err := utils.GetFilesystemStats(req.GetVolumePath())
+                if err != nil {
+                        log.Errorf("unable to get filesystem stats at path: %s; %v", req.GetVolumePath(), err)
+                        return nil, status.Error(codes.Unknown, "Failed to get filesystem stats")
+                }
+                return &csi.NodeGetVolumeStatsResponse{
+                        Usage: []*csi.VolumeUsage{
+                                &csi.VolumeUsage{
+                                        Unit:      csi.VolumeUsage_BYTES,
+                                        Available: available,
+                                        Total:     capacity,
+                                        Used:      usage,
+                                },
+                                &csi.VolumeUsage{
+                                        Unit:      csi.VolumeUsage_INODES,
+                                        Available: inodesFree,
+                                        Total:     inodes,
+                                        Used:      inodesUsed,
+                                },
+                        },
+                }, nil
+        }
+
 }
 
 // The CO only calls NodeExpandVolume for the Block protocol as the filesystem has to be mounted to perform

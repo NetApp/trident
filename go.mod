@@ -21,23 +21,24 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // 2/12/2019
 	github.com/go-logfmt/logfmt v0.5.0
 	github.com/golang/protobuf v1.3.5
-	github.com/google/go-cmp v0.4.0
-	github.com/google/uuid v1.1.1
-	github.com/gorilla/mux v1.7.4
-	github.com/mitchellh/copystructure v1.0.0
-	github.com/mitchellh/hashstructure v1.0.0
-	github.com/olekukonko/tablewriter v0.0.4
-	github.com/prometheus/client_golang v1.5.1
-	github.com/rs/xid v1.2.1
-	github.com/sirupsen/logrus v1.5.0
+        github.com/google/go-cmp v0.4.0
+        github.com/google/uuid v1.1.1
+        github.com/gorilla/mux v1.7.4
+        github.com/mitchellh/copystructure v1.0.0
+        github.com/mitchellh/hashstructure v1.0.0
+        github.com/olekukonko/tablewriter v0.0.4
+        github.com/prometheus/client_golang v1.5.1
+        github.com/rs/xid v1.2.1
+        github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71 // github.com/golang/crypto
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // github.com/golang/oauth2
-	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // github.com/golang/sys
-	google.golang.org/grpc v1.26.0 // github.com/grpc/grpc-go
-	k8s.io/api v0.18.0 // github.com/kubernetes/api
-	k8s.io/apiextensions-apiserver v0.18.0 // github.com/kubernetes/apiextensions-apiserver
+        golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
+        golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // github.com/golang/oauth2
+        golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // github.com/golang/sys
+        google.golang.org/grpc v1.26.0 // github.com/grpc/grpc-go
+        k8s.io/api v0.18.0 // github.com/kubernetes/api
+        k8s.io/apiextensions-apiserver v0.18.0 // github.com/kubernetes/apiextensions-apiserver
 	k8s.io/apimachinery v0.18.0 // github.com/kubernetes/apimachinery
 	k8s.io/client-go v0.18.0 // github.com/kubernetes/client-go
 )
