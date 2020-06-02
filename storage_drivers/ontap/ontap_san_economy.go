@@ -1421,7 +1421,7 @@ func (d *SANEconomyStorageDriver) mapOntapSANLUN(volConfig *storage.VolumeConfig
 	}
 	// Map LUN
 	lunPath := GetLUNPathEconomy(flexvol, volConfig.InternalName)
-	lunID, err := d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath)
+	lunID, err := d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath, volConfig.ImportNotManaged)
 	if err != nil {
 		return err
 	}

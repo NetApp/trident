@@ -523,21 +523,23 @@ func PublishLUN(
 		log.WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 
-	// Add IQN to igroup
-	igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
-	err = api.GetError(igroupAddResponse, err)
-	zerr, zerrOK := err.(api.ZapiError)
-	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-		log.WithFields(log.Fields{
-			"IQN":    iqn,
-			"igroup": igroupName,
-		}).Debug("Host IQN already in igroup.")
-	} else {
-		return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+	if !publishInfo.Unmanaged {
+		// Add IQN to igroup
+		igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
+		err = api.GetError(igroupAddResponse, err)
+		zerr, zerrOK := err.(api.ZapiError)
+		if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+			log.WithFields(log.Fields{
+				"IQN":    iqn,
+				"igroup": igroupName,
+			}).Debug("Host IQN already in igroup.")
+		} else {
+			return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+		}
 	}
 
 	// Map LUN (it may already be mapped)
-	lunID, err := clientAPI.LunMapIfNotMapped(igroupName, lunPath)
+	lunID, err := clientAPI.LunMapIfNotMapped(igroupName, lunPath, publishInfo.Unmanaged)
 	if err != nil {
 		return err
 	}

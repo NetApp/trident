@@ -3,7 +3,6 @@
 package ontap
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -383,11 +382,108 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storageP
 }
 
 func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
-	return errors.New("import is not implemented")
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "Import",
+			"Type":         "SANStorageDriver",
+			"originalName": originalName,
+			"newName":      volConfig.InternalName,
+			"notManaged":   volConfig.ImportNotManaged,
+		}
+		log.WithFields(fields).Debug(">>>> Import")
+		defer log.WithFields(fields).Debug("<<<< Import")
+	}
+
+	// Ensure the volume exists
+	flexvol, err := d.API.VolumeGet(originalName)
+	if err != nil {
+		return err
+	} else if flexvol == nil {
+		return fmt.Errorf("volume %s not found", originalName)
+	}
+
+	// Ensure the volume has only one LUN
+	lunInfo, err := d.API.LunGet("/vol/" + originalName + "/*")
+	if err != nil {
+		return err
+	}
+	targetPath := "/vol/" + originalName + "/lun0"
+
+	// Validate the volume is what it should be
+	if flexvol.VolumeIdAttributesPtr != nil {
+		volumeIdAttrs := flexvol.VolumeIdAttributes()
+		if volumeIdAttrs.TypePtr != nil && volumeIdAttrs.Type() != "rw" {
+			log.WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
+			return fmt.Errorf("volume %s type is %s, not rw", originalName, volumeIdAttrs.Type())
+		}
+	}
+
+	// The LUN should be online
+	if lunInfo.OnlinePtr != nil {
+		if !lunInfo.Online() {
+			return fmt.Errorf("LUN %s is not online", lunInfo.Path())
+		}
+	}
+
+	// Use the LUN size
+	if lunInfo.SizePtr == nil {
+		log.WithField("originalName", originalName).Errorf("Could not import volume, size not available")
+		return fmt.Errorf("volume %s size not available", originalName)
+	}
+	volConfig.Size = strconv.FormatInt(int64(lunInfo.Size()), 10)
+
+	// Rename the volume or LUN if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
+		if lunInfo.Path() != targetPath {
+			renameResponse, err := d.API.LunRename(lunInfo.Path(), targetPath)
+			if err = api.GetError(renameResponse, err); err != nil {
+				log.WithField("path", lunInfo.Path()).Errorf("Could not import volume, rename LUN failed: %v", err)
+				return fmt.Errorf("LUN path %s rename failed: %v", lunInfo.Path(), err)
+			}
+		}
+
+		renameResponse, err := d.API.VolumeRename(originalName, volConfig.InternalName)
+		if err = api.GetError(renameResponse, err); err != nil {
+			log.WithField("originalName", originalName).Errorf("Could not import volume, rename volume failed: %v", err)
+			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
+		}
+	} else {
+		// Volume import is not managed by Trident
+		if flexvol.VolumeIdAttributesPtr == nil {
+			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
+		}
+		if lunInfo.Path() != targetPath {
+			return fmt.Errorf("Could not import volume, LUN is nammed incorrectly: %s", lunInfo.Path())
+		}
+		if lunInfo.MappedPtr != nil {
+			if !lunInfo.Mapped() {
+				return fmt.Errorf("Could not import volume, LUN is not mapped: %s", lunInfo.Path())
+			}
+		}
+	}
+
+	return nil
 }
 
 func (d *SANStorageDriver) Rename(name string, newName string) error {
-	return errors.New("rename is not implemented")
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "Rename",
+			"Type":    "SANStorageDriver",
+			"name":    name,
+			"newName": newName,
+		}
+		log.WithFields(fields).Debug(">>>> Rename")
+		defer log.WithFields(fields).Debug("<<<< Rename")
+	}
+
+	renameResponse, err := d.API.VolumeRename(name, newName)
+	if err = api.GetError(renameResponse, err); err != nil {
+		log.WithField("name", name).Warnf("Could not rename volume: %v", err)
+		return fmt.Errorf("could not rename volume %s: %v", name, err)
+	}
+
+	return nil
 }
 
 // Destroy the requested (volume,lun) storage tuple
@@ -660,7 +756,7 @@ func (d *SANStorageDriver) mapOntapSANLun(volConfig *storage.VolumeConfig) error
 
 	// get the lunPath and lunID
 	lunPath := fmt.Sprintf("/vol/%v/lun0", volConfig.InternalName)
-	lunID, err := d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath)
+	lunID, err := d.API.LunMapIfNotMapped(d.Config.IgroupName, lunPath, volConfig.ImportNotManaged)
 	if err != nil {
 		return err
 	}
@@ -698,7 +794,7 @@ func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 		return nil, err
 	}
 
-	lunPath := fmt.Sprintf("/vol/%v/lun0", name)
+	lunPath := fmt.Sprintf("/vol/%v/*", name)
 	lunAttrs, err := d.API.LunGet(lunPath)
 	if err != nil {
 		return nil, err

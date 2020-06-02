@@ -447,7 +447,7 @@ func (d Client) LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapRe
 	return response, err
 }
 
-func (d Client) LunMapIfNotMapped(initiatorGroupName, lunPath string) (int, error) {
+func (d Client) LunMapIfNotMapped(initiatorGroupName, lunPath string, importNotManaged bool) (int, error) {
 
 	// Read LUN maps to see if the LUN is already mapped to the igroup
 	lunMapListResponse, err := d.LunMapListInfo(lunPath)
@@ -461,7 +461,14 @@ func (d Client) LunMapIfNotMapped(initiatorGroupName, lunPath string) (int, erro
 	alreadyMapped := false
 	if lunMapListResponse.Result.InitiatorGroupsPtr != nil {
 		for _, igroup := range lunMapListResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
-			if igroup.InitiatorGroupName() == initiatorGroupName {
+			if igroup.InitiatorGroupName() != initiatorGroupName && !importNotManaged {
+				log.Debugf("deleting existing LUN mapping")
+				lunUnmapResponse, err := d.LunUnmap(igroup.InitiatorGroupName(), lunPath)
+				if err != nil {
+					return -1, fmt.Errorf("problem deleting map for LUN %s: %+v", lunPath, lunUnmapResponse.Result)
+				}
+			}
+			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
 
 				lunID = igroup.LunId()
 				alreadyMapped = true
@@ -569,7 +576,9 @@ func (d Client) LunGet(path string) (*azgo.LunInfoType, error) {
 		SetPath("").
 		SetVolume("").
 		SetSize(0).
-		SetCreationTimestamp(0)
+		SetCreationTimestamp(0).
+		SetOnline(false).
+		SetMapped(false)
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
@@ -707,6 +716,25 @@ func (d Client) LunCount(volume string) (int, error) {
 	}
 
 	return response.Result.NumRecords(), nil
+}
+
+// LunRename changes the name of a LUN
+func (d Client) LunRename(path, newPath string) (*azgo.LunMoveResponse, error) {
+	response, err := azgo.NewLunMoveRequest().
+		SetPath(path).
+		SetNewPath(newPath).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// LunUnmap deletes the lun mapping for the given LUN path and igroup
+// equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
+func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResponse, error) {
+	response, err := azgo.NewLunUnmapRequest().
+		SetInitiatorGroup(initiatorGroupName).
+		SetPath(lunPath).
+		ExecuteUsing(d.zr)
+	return response, err
 }
 
 // LUN operations END
