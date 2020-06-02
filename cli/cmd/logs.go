@@ -48,7 +48,7 @@ var (
 func init() {
 	RootCmd.AddCommand(logsCmd)
 	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto,
-		"Trident log to display. One of trident|auto|operator|all")
+		"Trident log to display. One of trident|auto|trident-operator|all")
 	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
 	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false, "Get the logs for the previous container instance if it exists.")
 	logsCmd.Flags().StringVar(&node, "node", "", "The kubernetes node name to gather node pod logs from.")

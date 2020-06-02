@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -252,7 +253,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 }
 
 func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
-	currentInstallationVersion string, shouldUpdate bool) (string, error) {
+	currentInstallationVersion string, shouldUpdate bool) (*netappv1.TridentProvisionerSpecValues, string, error) {
 
 	var defaultImageOverride bool
 	var identifiedImageVersion string
@@ -319,7 +320,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	if defaultImageOverride {
 		identifiedImageVersion, returnError = i.imagePrechecks(labels, controllingCRDetails)
 		if returnError != nil {
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		log.Debugf("Identified Trident image '%s' version to be '%s'", tridentImage, identifiedImageVersion)
@@ -337,7 +338,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	}
 	// Perform log prechecks
 	if returnError = i.logFormatPrechecks(); returnError != nil {
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	// Update the label with the correct version
@@ -352,26 +353,26 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 
 	// Create or patch or update the RBAC objects
 	if returnError = i.createRBACObjects(controllingCRDetails, labels, shouldUpdate); returnError != nil {
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	// Create CRDs and ensure they are established
 	returnError = i.createAndEnsureCRDs()
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = i.protectCustomResourceDefinitions(); returnError != nil {
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	// Create or patch or update the RBAC PSPs
 	returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Trident pod security policy; %v", returnError)
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	if !csi {
@@ -379,7 +380,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 	} else {
 
@@ -387,42 +388,42 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		returnError = i.createK8S113CSICustomResourceDefinitions()
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Kubernetes 1.13 CSI CRDs; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		// Create or patch or update the CSI Driver object if necessary (1.14+)
 		returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		// Create or patch or update the Trident Service
 		returnError = i.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Service; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		// Create or update the Trident Secret
 		returnError = i.createOrPatchTridentSecret(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Secret; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		// Create or update the Trident CSI deployment
 		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 
 		// Create or update the Trident CSI daemonset
 		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident DaemonSet; %v", returnError)
-			return "", returnError
+			return nil, "", returnError
 		}
 	}
 
@@ -431,21 +432,31 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 
 	tridentPod, returnError = i.waitForTridentPod()
 	if returnError != nil {
-		return "", returnError
+		return nil, "", returnError
 	}
 
 	// Wait for Trident REST interface to be available
 	returnError = i.waitForRESTInterface(tridentPod.Name)
 	if returnError != nil {
 		returnError = fmt.Errorf("%v; use 'tridentctl logs' to learn more", returnError)
-		return "", returnError
+		return nil, "", returnError
+	}
+
+	identifiedSpecValues := netappv1.TridentProvisionerSpecValues{
+		Debug: strconv.FormatBool(debug),
+		LogFormat: logFormat,
+		TridentImage:  tridentImage,
+		ImageRegistry: imageRegistry,
+		IPv6: strconv.FormatBool(useIPv6),
+		KubeletDir: kubeletDir,
 	}
 
 	log.WithFields(log.Fields{
 		"namespace": i.namespace,
 		"version":   identifiedImageVersion,
+		"specValues":  identifiedSpecValues,
 	}).Info("Trident is installed.")
-	return identifiedImageVersion, nil
+	return &identifiedSpecValues, identifiedImageVersion, nil
 }
 
 func (i *Installer) createCustomResourceDefinitions(crdName, crdYAML string) (returnError error) {

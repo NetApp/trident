@@ -5,13 +5,14 @@
 ## Changes since v20.04.0
 
 **Fixes:**
+- **Kubernetes:** Fixed setting of Kubelet directory via Trident Operator.
 
 **Enhancements**
 - Added support for NFS v4.1 volumes to ANF, CVS-AWS, and CVS-GCP drivers.
 
 ## v20.04.0
 
-**IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
+**IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
 
 **Fixes:**
 - **Kubernetes:** Changed Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))

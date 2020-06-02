@@ -116,7 +116,14 @@ the resources required for the operator deployment, such as:
 * a dedicated PodSecurityPolicy.
 * the Operator itself.
 
-The Trident Installer contains manifests for defining these resources.
+The Trident Installer contains manifests for defining these resources. By default
+the operator is deployed in ``trident`` namespace, if the ``trident`` namespace
+does not exist use the below manifest to create one.
+
+.. code-block:: console
+
+  $ kubectl apply -f deploy/namespace.yaml
+
 If you would like to deploy the operator in a namespace other than
 the default ``trident`` namespace, you will need to update the
 ``serviceaccount.yaml``, ``clusterrolebinding.yaml`` and ``operator.yaml``

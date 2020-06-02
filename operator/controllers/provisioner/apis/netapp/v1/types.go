@@ -43,8 +43,17 @@ type TridentProvisionerSpec struct {
 
 // TridentProvisionerStatus defines the observed state of TridentProvisioner
 type TridentProvisionerStatus struct {
-	Message string `json:"message"`
-	Status  string `json:"status"`
-	Version string `json:"version"`
+	Message                   string                       `json:"message"`
+	Status                    string                       `json:"status"`
+	Version                   string                       `json:"version"`
+	CurrentInstallationParams TridentProvisionerSpecValues `json:"currentInstallationParams"`
 }
 
+type TridentProvisionerSpecValues struct {
+	Debug         string `json:"debug"`
+	IPv6          string `json:"IPv6"`
+	LogFormat     string `json:"logFormat"`
+	TridentImage  string `json:"tridentImage"`
+	ImageRegistry string `json:"imageRegistry"`
+	KubeletDir    string `json:"kubeletDir"`
+}
