@@ -1319,7 +1319,9 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 			return err
 		}
 
+		fields = log.Fields{"size": size, "minSize": minSize}
 		if size < minSize {
+			log.WithFields(fields).Debug("Reloading the multipath device.")
 			err := reloadMultipathDevice(multipathDevice)
 			if err != nil {
 				return err
@@ -1333,6 +1335,8 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 				log.Error("Multipath device not large enough after resize.")
 				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
 			}
+		} else {
+			log.WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
 		}
 	}
 
@@ -2451,10 +2455,10 @@ func listAllISCSIDevices() {
 	out1, _ := execCommandWithTimeout("multipath", 5, "-ll")
 	out2, _ := execIscsiadmCommand("-m", "session")
 	log.WithFields(log.Fields{
-		"/dev/dm-*": dmLog,
-		"/dev/sd*": sdLog,
-		"/sys/block/*": sysLog,
-		"multipath -ll output": out1,
+		"/dev/dm-*":                  dmLog,
+		"/dev/sd*":                   sdLog,
+		"/sys/block/*":               sysLog,
+		"multipath -ll output":       out1,
 		"iscsiadm -m session output": out2,
 	}).Debug("Listing all iSCSI Devices.")
 }
