@@ -53,6 +53,18 @@ iSCSI
 
        sudo yum install -y lsscsi iscsi-initiator-utils sg3_utils device-mapper-multipath
 
+  #. Check that iscsi-initiator-utils version is 6.2.0.874-2.el7 or higher:
+
+     .. code-block:: bash
+
+       rpm -q iscsi-initiator-utils
+
+  #. Set scanning to manual:
+
+     .. code-block:: bash
+
+       sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
+
   #. Enable multipathing:
 
      .. code-block:: bash
@@ -63,15 +75,13 @@ iSCSI
 
      .. code-block:: bash
 
-       sudo systemctl enable iscsid multipathd
-       sudo systemctl start iscsid multipathd
+       sudo systemctl enable --now iscsid multipathd
 
   #. Start and enable ``iscsi``:
 
      .. code-block:: bash
 
-       sudo systemctl enable iscsi
-       sudo systemctl start iscsi
+       sudo systemctl enable --now iscsi
 
 **Ubuntu / Debian**
 
@@ -80,6 +90,18 @@ iSCSI
      .. code-block:: bash
 
        sudo apt-get install -y open-iscsi lsscsi sg3-utils multipath-tools scsitools
+
+  #. Check that open-iscsi version is 2.0.874-5ubuntu2.10 or higher (for bionic) or 2.0.874-7.1ubuntu6.1 or higher (for focal):
+
+     .. code-block:: bash
+
+       dpkg -l open-iscsi
+
+  #. Set scanning to manual:
+
+     .. code-block:: bash
+
+       sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
 
   #. Enable multipathing:
 
@@ -92,7 +114,7 @@ iSCSI
        }
        EOF
        
-       sudo systemctl enable multipath-tools.service
+       sudo systemctl enable --now multipath-tools.service
        sudo service multipath-tools restart
 
   #. Ensure that ``open-iscsi`` and ``multipath-tools`` are enabled and running:
@@ -100,6 +122,5 @@ iSCSI
      .. code-block:: bash
        
        sudo systemctl status multipath-tools
-       sudo systemctl enable open-iscsi.service
-       sudo service open-iscsi start
+       sudo systemctl enable --now open-iscsi.service
        sudo systemctl status open-iscsi

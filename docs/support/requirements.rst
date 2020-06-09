@@ -72,9 +72,8 @@ backend(s) you're using.
 These are the Linux distributions that are known to work:
 
 * Debian 8 or later
-* Ubuntu 16.04 or later
-* CentOS 7.0 or later
-* RHEL 7.0 or later
+* Ubuntu 18.04 or later
+* RHEL or CentOS 7.4 or later
 * CoreOS 1353.8.0 or later
 * RedHat CoreOS 4.2 and 4.3
 
