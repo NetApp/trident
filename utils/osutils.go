@@ -2143,6 +2143,25 @@ func Umount(mountpoint string) (err error) {
 }
 
 // loginISCSITarget logs in to an iSCSI target.
+func configureISCSITarget(iqn, portal, name, value string) error {
+
+	log.WithFields(log.Fields{
+		"IQN":    iqn,
+		"Portal": portal,
+		"Name":   name,
+		"Value":  value,
+	}).Debug(">>>> osutils.configureISCSITarget")
+	defer log.Debug("<<<< osutils.configureISCSITarget")
+
+	args := []string{"-m", "node", "-T", iqn, "-p", portal + ":3260", "-o", "update", "-n", name, "-v", value}
+	if _, err := execIscsiadmCommand(args...); err != nil {
+		log.WithField("error", err).Warn("Error configuring iSCSI target.")
+		return err
+	}
+	return nil
+}
+
+// loginISCSITarget logs in to an iSCSI target.
 func loginISCSITarget(iqn, portal string) error {
 
 	log.WithFields(log.Fields{
@@ -2286,7 +2305,16 @@ func EnsureISCSISession(hostDataIP string) error {
 		targetName := targets[targetIndex].TargetName
 		for _, target := range targets {
 			if target.TargetName == targetName {
-
+				// Set scan to manual
+				err = configureISCSITarget(target.TargetName, target.PortalIP, "node.session.scan", "manual")
+				if err != nil {
+					// Swallow this error, someone is running an old version of Debian/Ubuntu
+				}
+				// Update replacement timeout
+				err = configureISCSITarget(target.TargetName, target.PortalIP, "node.session.timeo.replacement_timeout", "5")
+				if err != nil {
+					return fmt.Errorf("set replacement timeout failed: %v", err)
+				}
 				// Log in to target
 				err = loginISCSITarget(target.TargetName, target.PortalIP)
 				if err != nil {
