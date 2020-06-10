@@ -509,6 +509,35 @@ func (d *SANEconomyStorageDriver) Create(
 			log.WithField("name", name).Warning("Failed to save the driver context attribute for new volume.")
 		}
 
+		// Resize Flexvol to be the same size or bigger than sum of constituent LUNs because ONTAP creates
+		// larger LUNs sometimes based on internal geometry
+		lunSize := uint64(lunCreateResponse.Result.ActualSize())
+		if lunSize > sizeBytes {
+			if initialVolumeSize, err := d.API.VolumeSize(bucketVol); err != nil {
+				log.WithField("name", bucketVol).Warning("Failed to get volume size.")
+			} else {
+				err = d.resizeFlexvol(bucketVol, 0)
+				if err != nil {
+					volConfig.Size = strconv.FormatUint(uint64(initialVolumeSize), 10)
+					log.WithFields(log.Fields{
+						"name":               bucketVol,
+						"initialVolumeSize":  initialVolumeSize,
+						"adjustedVolumeSize": uint64(initialVolumeSize) + lunSize - sizeBytes,
+					}).Warning("Failed to resize new volume to exact sum of LUNs' size.")
+				} else {
+					if adjustedVolumeSize, err := d.API.VolumeSize(bucketVol); err != nil {
+						log.WithField("name", bucketVol).
+							Warning("Failed to get volume size after the second resize operation.")
+					} else {
+						volConfig.Size = strconv.FormatUint(uint64(adjustedVolumeSize), 10)
+						log.WithFields(log.Fields{
+							"name":               bucketVol,
+							"initialVolumeSize":  initialVolumeSize,
+							"adjustedVolumeSize": adjustedVolumeSize}).Debug("FlexVol resized.")
+					}
+				}
+			}
+		}
 		return nil
 	}
 
@@ -1737,6 +1766,29 @@ func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBy
 	}
 
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
+
+	// Resize Flexvol to be the same size or bigger than LUN because ONTAP creates
+	// larger LUNs sometimes based on internal geometry
+	if returnSize > sizeBytes {
+		err = d.resizeFlexvol(bucketVol, 0)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"name":               bucketVol,
+				"initialVolumeSize":  flexvolSize,
+				"adjustedVolumeSize": flexvolSize + returnSize - sizeBytes,
+			}).Warning("Failed to resize new volume to exact sum of LUNs' size.")
+		} else {
+			if adjustedVolumeSize, err := d.API.VolumeSize(bucketVol); err != nil {
+				log.WithField("name", bucketVol).
+					Warning("Failed to get volume size after the second resize operation.")
+			} else {
+				log.WithFields(log.Fields{
+					"name":               bucketVol,
+					"initialVolumeSize":  flexvolSize,
+					"adjustedVolumeSize": adjustedVolumeSize}).Debug("FlexVol resized.")
+			}
+		}
+	}
 	log.WithField("size", returnSize).Debug("Returning.")
 
 	return nil
