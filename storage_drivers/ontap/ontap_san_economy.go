@@ -1621,7 +1621,7 @@ func (d *SANEconomyStorageDriver) LUNExists(name, bucketPrefix string) (bool, st
 	return false, "", nil
 }
 
-// Resize expands the Flexvol containing the LUN and updates the LUN size
+// Create a LUN with the specified options and find (or create) a bucket volume for the LUN
 func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
 	name := volConfig.InternalName
@@ -1657,33 +1657,46 @@ func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBy
 		return resizeError
 	}
 
-	volConfig.Size = strconv.FormatUint(totalLunSize, 10)
+	currentLunSize, resizeError := d.getLUNSize(name, bucketVol)
+	if err != nil {
+		log.WithField("error", err).Error("Failed to determine LUN size")
+		return resizeError
+	}
 
-	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(totalLunSize), tridentconfig.SANResizeDelta)
+	flexvolSize, err := d.getOptimalSizeForFlexvol(bucketVol, (sizeBytes - currentLunSize))
+	if err != nil {
+		log.Warnf("Could not calculate optimal Flexvol size. %v", err)
+		flexvolSize = totalLunSize + sizeBytes - currentLunSize
+	}
+
+	sameSize, err := utils.VolumeSizeWithinTolerance(int64(flexvolSize), int64(totalLunSize),
+		tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err
 	}
 
 	if sameSize {
 		log.WithFields(log.Fields{
-			"requestedSize":     sizeBytes,
+			"requestedSize":     flexvolSize,
 			"currentVolumeSize": totalLunSize,
 			"name":              name,
 			"delta":             tridentconfig.SANResizeDelta,
-		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		}).Info("Requested size and current volume size are within the delta and therefore considered " +
+			"the same size for SAN resize operations.")
+		volConfig.Size = strconv.FormatUint(currentLunSize, 10)
 		return nil
 	}
 
-	totalLunSizeBytes := totalLunSize
-	if sizeBytes < totalLunSizeBytes {
-		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, totalLunSizeBytes)
+	if flexvolSize < totalLunSize {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", flexvolSize, totalLunSize)
 	}
 
-	if aggrLimitsErr := checkAggregateLimitsForFlexvol(bucketVol, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(bucketVol, flexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(flexvolSize,
+		d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -1710,7 +1723,7 @@ func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBy
 	}
 
 	// Resize FlexVol
-	response, err := d.API.VolumeSetSize(bucketVol, strconv.FormatUint(sizeBytes, 10))
+	response, err := d.API.VolumeSetSize(bucketVol, strconv.FormatUint(flexvolSize, 10))
 	if err = api.GetError(response, err); err != nil {
 		log.WithField("error", err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")
@@ -1718,12 +1731,13 @@ func (d *SANEconomyStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBy
 
 	// Resize LUN
 	returnSize, err := d.API.LunResize(lunPath, int(sizeBytes))
-	if err != nil {
+	if err = api.GetError(response, err); err != nil {
 		log.WithField("error", err).Error("LUN resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
-	log.WithField("size", returnSize).Debug("Returning.")
+
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
+	log.WithField("size", returnSize).Debug("Returning.")
 
 	return nil
 }
