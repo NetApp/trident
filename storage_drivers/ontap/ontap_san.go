@@ -1007,10 +1007,9 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	}
 
 	// Resize operations
-	lunPath := fmt.Sprintf("/vol/%v/lun0", name)
 	if !d.API.SupportsFeature(api.LunGeometrySkip) {
 		// Check LUN geometry and verify LUN max size.
-		lunGeometry, err := d.API.LunGetGeometry(lunPath)
+		lunGeometry, err := d.API.LunGetGeometry(lunPath(name))
 		if err != nil {
 			log.WithField("error", err).Error("LUN resize failed.")
 			return fmt.Errorf("volume resize failed")
@@ -1022,7 +1021,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 				"error":      err,
 				"sizeBytes":  sizeBytes,
 				"lunMaxSize": lunMaxSize,
-				"lunPath":    lunPath,
+				"lunPath":    lunPath(name),
 			}).Error("Requested size is larger than LUN's maximum capacity.")
 			return fmt.Errorf("volume resize failed as requested size is larger than LUN's maximum capacity")
 		}
@@ -1036,7 +1035,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	}
 
 	// Resize LUN0
-	returnSize, err := d.API.LunResize(lunPath, int(sizeBytes))
+	returnSize, err := d.API.LunResize(lunPath(name), int(sizeBytes))
 	if err != nil {
 		log.WithField("error", err).Error("LUN resize failed.")
 		return fmt.Errorf("volume resize failed")
@@ -1071,11 +1070,16 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) error {
 
+	// Discover known nodes
 	nodeNames := make([]string, 0)
+	nodeIQNs := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
+		if node.IQN != "" {
+			nodeIQNs = append(nodeIQNs, node.IQN)
+		}
 	}
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1087,5 +1091,5 @@ func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID 
 		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
-	return nil
+	return reconcileSANNodeAccess(d.API, d.Config.IgroupName, nodeIQNs)
 }

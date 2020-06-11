@@ -375,6 +375,30 @@ func (d Client) IgroupList() (*azgo.IgroupGetIterResponse, error) {
 	return response, err
 }
 
+//IgroupGet gets a specified initiator group
+func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoType, error) {
+	query := &azgo.IgroupGetIterRequestQuery{}
+	iGroupInfo := azgo.NewInitiatorGroupInfoType().
+		SetInitiatorGroupName(initiatorGroupName)
+	query.SetInitiatorGroupInfo(*iGroupInfo)
+
+	response, err := azgo.NewIgroupGetIterRequest().
+		SetQuery(*query).
+		ExecuteUsing(d.zr)
+	if err != nil {
+		return &azgo.InitiatorGroupInfoType{}, err
+	} else if response.Result.NumRecords() == 0 {
+		return &azgo.InitiatorGroupInfoType{}, fmt.Errorf("igroup %s not found", initiatorGroupName)
+	} else if response.Result.NumRecords() > 1 {
+		return &azgo.InitiatorGroupInfoType{}, fmt.Errorf("more than one igroup %s found", initiatorGroupName)
+	} else if response.Result.AttributesListPtr == nil {
+		return &azgo.InitiatorGroupInfoType{}, fmt.Errorf("igroup %s not found", initiatorGroupName)
+	} else if response.Result.AttributesListPtr.InitiatorGroupInfoPtr != nil {
+		return &response.Result.AttributesListPtr.InitiatorGroupInfoPtr[0], nil
+	}
+	return &azgo.InitiatorGroupInfoType{}, fmt.Errorf("igroup %s not found", initiatorGroupName)
+}
+
 // IGROUP operations END
 /////////////////////////////////////////////////////////////////////////////
 

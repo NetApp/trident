@@ -377,6 +377,68 @@ func reconcileExportPolicyRules(policyName string, desiredPolicyRules []string, 
 	return nil
 }
 
+func reconcileSANNodeAccess(clientAPI *api.Client, igroupName string, nodeIQNs []string) error {
+	err := ensureIGroupExists(clientAPI, igroupName)
+	if err != nil {
+		return err
+	}
+
+	// Discover mapped initiators
+	var initiators []azgo.InitiatorInfoType
+	iGroup, err := clientAPI.IgroupGet(igroupName)
+	if err != nil {
+		log.WithField("igroup", igroupName).Errorf("failed to read igroup info; %v", err)
+		return fmt.Errorf("failed to read igroup info; err")
+	}
+	if iGroup.InitiatorsPtr != nil {
+		initiators = iGroup.InitiatorsPtr.InitiatorInfo()
+	} else {
+		initiators = make([]azgo.InitiatorInfoType, 0)
+	}
+	mappedIQNs := make(map[string]bool)
+	for _, initiator := range initiators {
+		mappedIQNs[initiator.InitiatorName()] = true
+	}
+
+	// Add missing initiators
+	for _, iqn := range nodeIQNs {
+		if _, ok := mappedIQNs[iqn]; ok {
+			// IQN is properly mapped; remove it from the list
+			delete(mappedIQNs, iqn)
+		} else {
+			// IQN isn't mapped and should be; add it
+			response, err := clientAPI.IgroupAdd(igroupName, iqn)
+			err = api.GetError(response, err)
+			zerr, zerrOK := err.(api.ZapiError)
+			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+				log.WithFields(log.Fields{
+					"IQN":    iqn,
+					"igroup": igroupName,
+				}).Debug("Host IQN already in igroup.")
+			} else {
+				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+			}
+		}
+	}
+
+	// mappedIQNs is now a list of mapped IQNs that we have no nodes for; remove them
+	for iqn := range mappedIQNs {
+		response, err := clientAPI.IgroupRemove(igroupName, iqn, true)
+		err = api.GetError(response, err)
+		zerr, zerrOK := err.(api.ZapiError)
+		if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
+			log.WithFields(log.Fields{
+				"IQN":    iqn,
+				"igroup": igroupName,
+			}).Debug("Host IQN not in igroup.")
+		} else {
+			return fmt.Errorf("error removing IQN %v from igroup %v: %v", iqn, igroupName, err)
+		}
+	}
+
+	return nil
+}
+
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
 func GetISCSITargetInfo(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
@@ -769,15 +831,9 @@ func InitializeSANDriver(context tridentconfig.DriverContext, clientAPI *api.Cli
 	}
 
 	// Create igroup
-	igroupResponse, err := clientAPI.IgroupCreate(config.IgroupName, "iscsi", "linux")
+	err := ensureIGroupExists(clientAPI, config.IgroupName)
 	if err != nil {
-		return fmt.Errorf("error creating igroup: %v", err)
-	}
-	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
-		// Handle case where the igroup already exists
-		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
-			return fmt.Errorf("error creating igroup %v: %v", config.IgroupName, zerr)
-		}
+		return err
 	}
 	if context == tridentconfig.ContextKubernetes {
 		log.WithFields(log.Fields{
@@ -853,6 +909,20 @@ func InitializeSANDriver(context tridentconfig.DriverContext, clientAPI *api.Cli
 		}
 	}
 
+	return nil
+}
+
+func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {
+	igroupResponse, err := clientAPI.IgroupCreate(igroupName, "iscsi", "linux")
+	if err != nil {
+		return fmt.Errorf("error creating igroup: %v", err)
+	}
+	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
+		// Handle case where the igroup already exists
+		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+			return fmt.Errorf("error creating igroup %v: %v", igroupName, zerr)
+		}
+	}
 	return nil
 }
 

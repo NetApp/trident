@@ -1817,11 +1817,16 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(flexvol string, sizeBytes uint64
 	return nil
 }
 
-func (d *SANEconomyStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *SANEconomyStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) error {
 
+	// Discover known nodes
 	nodeNames := make([]string, 0)
+	nodeIQNs := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
+		if node.IQN != "" {
+			nodeIQNs = append(nodeIQNs, node.IQN)
+		}
 	}
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1833,5 +1838,5 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backe
 		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
-	return nil
+	return reconcileSANNodeAccess(d.API, d.Config.IgroupName, nodeIQNs)
 }
