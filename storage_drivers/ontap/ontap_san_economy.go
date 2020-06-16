@@ -496,6 +496,8 @@ func (d *SANEconomyStorageDriver) Create(
 			continue
 		}
 
+		volConfig.Size = strconv.FormatUint(uint64(lunCreateResponse.Result.ActualSize()), 10)
+
 		// Save the fstype in a LUN attribute so we know what to do in Attach
 		attrResponse, err := d.API.LunSetAttribute(lunPath, LUNAttributeFSType, fstype)
 		if err = api.GetError(attrResponse, err); err != nil {
@@ -518,7 +520,6 @@ func (d *SANEconomyStorageDriver) Create(
 			} else {
 				err = d.resizeFlexvol(bucketVol, 0)
 				if err != nil {
-					volConfig.Size = strconv.FormatUint(uint64(initialVolumeSize), 10)
 					log.WithFields(log.Fields{
 						"name":               bucketVol,
 						"initialVolumeSize":  initialVolumeSize,
@@ -529,7 +530,6 @@ func (d *SANEconomyStorageDriver) Create(
 						log.WithField("name", bucketVol).
 							Warning("Failed to get volume size after the second resize operation.")
 					} else {
-						volConfig.Size = strconv.FormatUint(uint64(adjustedVolumeSize), 10)
 						log.WithFields(log.Fields{
 							"name":               bucketVol,
 							"initialVolumeSize":  initialVolumeSize,
