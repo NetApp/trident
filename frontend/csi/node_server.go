@@ -620,6 +620,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
 	publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
 	publishInfo.IscsiInitiatorSecret = req.PublishContext["iscsiInitiatorSecret"]
+	publishInfo.IscsiTargetUsername = req.PublishContext["iscsiTargetUsername"]
 	publishInfo.IscsiTargetSecret = req.PublishContext["iscsiTargetSecret"]
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
