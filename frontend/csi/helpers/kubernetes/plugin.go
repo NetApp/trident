@@ -340,6 +340,7 @@ func (p *Plugin) Activate() error {
 	go p.pvController.Run(p.pvControllerStopChan)
 	go p.scController.Run(p.scControllerStopChan)
 	go p.nodeController.Run(p.nodeControllerStopChan)
+	go p.reconcileNodes()
 
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
@@ -370,6 +371,52 @@ func (p *Plugin) GetName() string {
 // Version returns the version of this Trident frontend (the detected K8S version).
 func (p *Plugin) Version() string {
 	return p.kubeVersion.GitVersion
+}
+
+// listClusterNodes returns the list of worker node names as a map for kubernetes cluster
+func (p *Plugin) listClusterNodes() (map[string]bool, error) {
+	nodeNames := make(map[string]bool)
+	nodes, err := p.kubeClient.CoreV1().Nodes().List(ctx(), listOpts)
+	if err != nil {
+		err = fmt.Errorf("error reading kubernetes nodes; %v", err)
+		log.Error(err)
+		return nodeNames, err
+	}
+	for _, node := range nodes.Items {
+		nodeNames[node.Name] = true
+	}
+	return nodeNames, nil
+}
+
+// reconcileNodes will make sure that Trident's list of nodes does not include any unnecessary node
+func (p *Plugin) reconcileNodes() {
+	log.Debug("Performing node reconciliation.")
+	clusterNodes, err := p.listClusterNodes()
+	if err != nil {
+		log.WithField("err", err).Errorf("unable to list nodes in Kubernetes; aborting node reconciliation")
+		return
+	}
+	tridentNodes, err := p.orchestrator.ListNodes()
+	if err != nil {
+		log.WithField("err", err).Errorf("unable to list nodes in Trident; aborting node reconciliation")
+		return
+	}
+
+	for _, node := range tridentNodes {
+		if _, ok := clusterNodes[node.Name]; !ok {
+			// Trident node no longer exists in cluster, remove it
+			log.WithField("node", node.Name).
+				Debug("Node not found in Kubernetes; removing from Trident.")
+			err = p.orchestrator.DeleteNode(node.Name)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"node": node.Name,
+					"err":  err,
+				}).Error("error removing node from Trident")
+			}
+		}
+	}
+	log.Debug("Node reconciliation complete.")
 }
 
 // addPVC is the add handler for the PVC watcher.
