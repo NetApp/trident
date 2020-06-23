@@ -5,6 +5,8 @@ package installer
 import (
 	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/ghodss/yaml"
@@ -18,15 +20,17 @@ import (
 
 func (i *Installer) patchK8sCSIDriver(currentK8sCSIDriver *v1beta12.CSIDriver, newK8sCSIDriverYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentK8sCSIDriver, newK8sCSIDriverYAML, &v1beta12.CSIDriver{})
+	patchBytes, err := i.genericPatch(currentK8sCSIDriver, newK8sCSIDriverYAML, &v1beta12.CSIDriver{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current CSI driver %q: %v",
 			currentK8sCSIDriver.Name, err)
 	}
 
 	// Apply the patch to the current CSI driver
-	err = i.client.PatchCSIDriverByLabel(appLabel, patchBytes)
+	err = i.client.PatchCSIDriverByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident CSI driver; %v", err)
 	}
@@ -38,15 +42,17 @@ func (i *Installer) patchK8sCSIDriver(currentK8sCSIDriver *v1beta12.CSIDriver, n
 func (i *Installer) patchTridentServiceAccount(currentServiceAccount *v1.ServiceAccount,
 	newServiceAccountYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentServiceAccount, newServiceAccountYAML, &v1.ServiceAccount{})
+	patchBytes, err := i.genericPatch(currentServiceAccount, newServiceAccountYAML, &v1.ServiceAccount{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current Service account %q: %v",
 			currentServiceAccount.Name, err)
 	}
 
 	// Apply the patch to the current Service Account
-	err = i.client.PatchServiceAccountByLabel(appLabel, patchBytes)
+	err = i.client.PatchServiceAccountByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Service account; %v", err)
 	}
@@ -58,15 +64,17 @@ func (i *Installer) patchTridentServiceAccount(currentServiceAccount *v1.Service
 func (i *Installer) patchTridentClusterRole(currentClusterRole *v12.ClusterRole,
 	newClusterRoleYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentClusterRole, newClusterRoleYAML, &v12.ClusterRole{})
+	patchBytes, err := i.genericPatch(currentClusterRole, newClusterRoleYAML, &v12.ClusterRole{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current cluster role %q: %v",
 			currentClusterRole.Name, err)
 	}
 
 	// Apply the patch to the current Cluster Role
-	err = i.client.PatchClusterRoleByLabel(appLabel, patchBytes)
+	err = i.client.PatchClusterRoleByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Cluster role; %v", err)
 	}
@@ -78,15 +86,18 @@ func (i *Installer) patchTridentClusterRole(currentClusterRole *v12.ClusterRole,
 func (i *Installer) patchTridentClusterRoleBinding(currentClusterRoleBinding *v12.ClusterRoleBinding,
 	newClusterRoleBindingYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentClusterRoleBinding, newClusterRoleBindingYAML, &v12.ClusterRoleBinding{})
+	patchBytes, err := i.genericPatch(currentClusterRoleBinding, newClusterRoleBindingYAML,
+		&v12.ClusterRoleBinding{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current cluster role binding %q: %v",
 			currentClusterRoleBinding.Name, err)
 	}
 
 	// Apply the patch to the current Cluster Role Binding
-	err = i.client.PatchClusterRoleBindingByLabel(appLabel, patchBytes)
+	err = i.client.PatchClusterRoleBindingByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Cluster role binding; %v", err)
 	}
@@ -119,15 +130,17 @@ func (i *Installer) patchTridentOpenShiftSCC(currentOpenShiftSCC []byte,
 
 func (i *Installer) patchTridentPodSecurityPolicy(currentPSP *v1beta1.PodSecurityPolicy, newPSPYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentPSP, newPSPYAML, &v1beta1.PodSecurityPolicy{})
+	patchBytes, err := i.genericPatch(currentPSP, newPSPYAML, &v1beta1.PodSecurityPolicy{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current Pod security policy %q: %v",
 			currentPSP.Name, err)
 	}
 
 	// Apply the patch to the current Pod Security Policy
-	err = i.client.PatchPodSecurityPolicyByLabel(appLabel, patchBytes)
+	err = i.client.PatchPodSecurityPolicyByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Pod security policy; %v", err)
 	}
@@ -138,15 +151,17 @@ func (i *Installer) patchTridentPodSecurityPolicy(currentPSP *v1beta1.PodSecurit
 
 func (i *Installer) patchTridentService(currentService *v1.Service, newServiceYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentService, newServiceYAML, &v1.Service{})
+	patchBytes, err := i.genericPatch(currentService, newServiceYAML, &v1.Service{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current Service %q: %v",
 			currentService.Name, err)
 	}
 
 	// Apply the patch to the current Service
-	err = i.client.PatchServiceByLabel(appLabel, patchBytes)
+	err = i.client.PatchServiceByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Service; %v", err)
 	}
@@ -157,15 +172,17 @@ func (i *Installer) patchTridentService(currentService *v1.Service, newServiceYA
 
 func (i *Installer) patchTridentSecret(currentSecret *v1.Secret, newSecretYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentSecret, newSecretYAML, &v1.Secret{})
+	patchBytes, err := i.genericPatch(currentSecret, newSecretYAML, &v1.Secret{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current Secret %q: %v",
 			currentSecret.Name, err)
 	}
 
 	// Apply the patch to the current Secret
-	err = i.client.PatchSecretByLabel(appLabel, patchBytes)
+	err = i.client.PatchSecretByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident Secret; %v", err)
 	}
@@ -176,15 +193,17 @@ func (i *Installer) patchTridentSecret(currentSecret *v1.Secret, newSecretYAML [
 
 func (i *Installer) patchTridentDeployment(currentDeployment *appsv1.Deployment, newDeploymentYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentDeployment, newDeploymentYAML, &appsv1.Deployment{})
+	patchBytes, err := i.genericPatch(currentDeployment, newDeploymentYAML, &appsv1.Deployment{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current Deployment %q: %v",
 			currentDeployment.Name, err)
 	}
 
 	// Apply the patch to the current deployment
-	err = i.client.PatchDeploymentByLabel(appLabel, patchBytes)
+	err = i.client.PatchDeploymentByLabel(appLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident deployment; %v", err)
 	}
@@ -195,15 +214,17 @@ func (i *Installer) patchTridentDeployment(currentDeployment *appsv1.Deployment,
 
 func (i *Installer) patchTridentDaemonSet(currentDaemonSet *appsv1.DaemonSet, newDaemonSetYAML []byte) error {
 
+	patchType := types.MergePatchType
+
 	// Identify the deltas
-	patchBytes, err := i.genericPatch(currentDaemonSet, newDaemonSetYAML, &appsv1.DaemonSet{})
+	patchBytes, err := i.genericPatch(currentDaemonSet, newDaemonSetYAML, &appsv1.DaemonSet{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current DaemonSet %q: %v",
 			currentDaemonSet.Name, err)
 	}
 
 	// Apply the patch to the current DaemonSet
-	err = i.client.PatchDaemonSetByLabel(TridentNodeLabel, patchBytes)
+	err = i.client.PatchDaemonSetByLabel(TridentNodeLabel, patchBytes, patchType)
 	if err != nil {
 		return fmt.Errorf("could not patch Trident DaemonSet; %v", err)
 	}
@@ -213,7 +234,8 @@ func (i *Installer) patchTridentDaemonSet(currentDaemonSet *appsv1.DaemonSet, ne
 }
 
 // genericPatch takes current object, corresponding YAML to identify the changes and the patch that should be created
-func (i *Installer) genericPatch(original interface{}, modifiedYAML []byte, dataStruct interface{}) ([]byte, error) {
+func (i *Installer) genericPatch(original interface{}, modifiedYAML []byte, dataStruct interface{},
+patchType types.PatchType) ([]byte, error) {
 
 	// Get existing object in JSON format
 	originalJSON, err := json.Marshal(original)
@@ -228,8 +250,11 @@ func (i *Installer) genericPatch(original interface{}, modifiedYAML []byte, data
 	}
 
 	// Identify the deltas
-	return jsonpatch.MergePatch(originalJSON, modifiedJSON)
 
-	// Old alternative:
-	// return strategicpatch.CreateTwoWayMergePatch(originalJSON, modifiedJSON, dataStruct)
+	if patchType == types.StrategicMergePatchType {
+		return strategicpatch.CreateTwoWayMergePatch(originalJSON, modifiedJSON, dataStruct)
+	}
+
+	// JSON Merge patch
+	return jsonpatch.MergePatch(originalJSON, modifiedJSON)
 }

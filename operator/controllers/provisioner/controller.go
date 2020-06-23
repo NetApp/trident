@@ -40,7 +40,6 @@ const (
 	CRName            = "TridentProvisioner"
 	Operator          = "trident-operator.netapp.io"
 	CacheSyncPeriod   = 300 * time.Second
-	installTimeout    = 30 * time.Second
 
 	AppStatusNotInstalled AppStatus = ""             // default
 	AppStatusInstalling   AppStatus = "Installing"   // Set only on controlling CR
@@ -1170,8 +1169,7 @@ func (c *Controller) updateNeeded(tridentK8sConfigVersion string) bool {
 	}
 
 	currentTridentConfigK8sVersion := utils.MustParseSemantic(tridentK8sConfigVersion).ToMajorMinorVersion()
-	K8sVersion := utils.MustParseSemantic(c.K8SVersion.GitVersion).
-		ToMajorMinorVersion()
+	K8sVersion := utils.MustParseSemantic(c.K8SVersion.GitVersion).ToMajorMinorVersion()
 
 	if currentTridentConfigK8sVersion.LessThan(K8sVersion) || currentTridentConfigK8sVersion.GreaterThan(K8sVersion) {
 		log.Infof("Kubernetes version has changed from: %v to: %v; Trident operator"+
@@ -1224,7 +1222,7 @@ func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentP
 	var currentTridentVersionString string
 	var currentK8sVersionString string
 
-	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, tridentCR.Spec.K8sTimeout)
 	if err != nil {
 		return "", "", utils.ReconcileFailedError(err)
 	}
@@ -1262,7 +1260,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentPro
 	var identifiedSpecValues *netappv1.TridentProvisionerSpecValues
 
 	// Install or Patch or Update Trident
-	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, tridentCR.Spec.K8sTimeout)
 	if err != nil {
 		return utils.ReconcileFailedError(err)
 	}
@@ -1387,7 +1385,7 @@ func (c *Controller) wipeout(tridentCR netappv1.TridentProvisioner) (bool, error
 
 // uninstallTridentAll uninstalls Trident CSI, Trident CSI Preview, Trident Legacy
 func (c *Controller) uninstallTridentAll(namespace string) error {
-	i, err := installer.NewInstaller(c.KubeConfig, namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, namespace, 0)
 	if err != nil {
 		return err
 	}
@@ -1403,7 +1401,7 @@ func (c *Controller) uninstallTridentAll(namespace string) error {
 
 // uninstallCSIPreviewTrident uninstalls Trident CSI Preview
 func (c *Controller) uninstallCSIPreviewTrident(namespace string) error {
-	i, err := installer.NewInstaller(c.KubeConfig, namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, namespace, 0)
 	if err != nil {
 		return err
 	}
@@ -1420,7 +1418,7 @@ func (c *Controller) uninstallCSIPreviewTrident(namespace string) error {
 
 // uninstallLegacyTrident uninstalls Trident CSI Legacy
 func (c *Controller) uninstallLegacyTrident(namespace string) error {
-	i, err := installer.NewInstaller(c.KubeConfig, namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, namespace, 0)
 	if err != nil {
 		return err
 	}
@@ -1438,7 +1436,7 @@ func (c *Controller) uninstallLegacyTrident(namespace string) error {
 // $ tridentctl obliviate crds
 func (c *Controller) obliviateCRDs(tridentCR netappv1.TridentProvisioner) error {
 	// Obliviate CRDs Trident
-	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, installTimeout)
+	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Namespace, tridentCR.Spec.K8sTimeout)
 	if err != nil {
 		return err
 	}

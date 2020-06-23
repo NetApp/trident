@@ -10,6 +10,7 @@ import (
 	"k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
+	"k8s.io/apimachinery/pkg/types"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -398,20 +399,8 @@ func (c *KubectlClient) DeleteDeployment(name, namespace string) error {
 
 // PatchDeploymentByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchDeploymentByLabel(label string, patchBytes []byte) error {
-
-	cmdArgs := []string{"patch", "deployment", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes), "--type", "strategic"}
-	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-
-	log.WithFields(log.Fields{
-		"label":     label,
-		"namespace": c.namespace,
-	}).Debug("Patched Kubernetes deployment.")
-
-	return nil
+func (c *KubectlClient) PatchDeploymentByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, c.namespace, "deployment", "Deployment", patchBytes, patchType)
 }
 
 // GetServiceByLabel returns a service object matching the specified label if it is unique
@@ -517,21 +506,8 @@ func (c *KubectlClient) DeleteService(name, namespace string) error {
 
 // PatchServiceByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchServiceByLabel(label string, patchBytes []byte) error {
-
-	cmdArgs := []string{"patch", "service", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes),
-		"--type", "strategic"}
-	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-
-	log.WithFields(log.Fields{
-		"label":     label,
-		"namespace": c.namespace,
-	}).Debug("Patched Kubernetes service.")
-
-	return nil
+func (c *KubectlClient) PatchServiceByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, c.namespace, "service", "Service", patchBytes, patchType)
 }
 
 // GetStatefulSetByLabel returns a statefulset object matching the specified label if it is unique
@@ -738,20 +714,8 @@ func (c *KubectlClient) DeleteDaemonSet(name, namespace string) error {
 
 // PatchDaemonSetByLabel patches a DaemonSet object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchDaemonSetByLabel(label string, patchBytes []byte) error {
-
-	cmdArgs := []string{"patch", "daemonset", "-l", label, "--namespace", c.namespace, "-p", string(patchBytes), "--type", "strategic"}
-	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s; %v", string(out), err)
-	}
-
-	log.WithFields(log.Fields{
-		"label":     label,
-		"namespace": c.namespace,
-	}).Debug("Patched Kubernetes daemonset.")
-
-	return nil
+func (c *KubectlClient) PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, c.namespace, "daemonset", "Daemonset", patchBytes, patchType)
 }
 
 // GetConfigMapByLabel returns a configmap object matching the specified label if it is unique
@@ -1240,8 +1204,8 @@ func (c *KubectlClient) DeletePodSecurityPolicy(pspName string) error {
 
 // PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, "", "psp", "Pod Security Policy", patchBytes)
+func (c *KubectlClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, "", "psp", "Pod Security Policy", patchBytes, patchType)
 }
 
 // GetServiceAccountByLabel returns a service account object matching the specified label if it is unique
@@ -1324,8 +1288,8 @@ func (c *KubectlClient) DeleteServiceAccount(name, namespace string) error {
 
 // PatchServiceAccountByLabel patches a Service Account object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchServiceAccountByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, c.namespace, "serviceaccount", "Service Account", patchBytes)
+func (c *KubectlClient) PatchServiceAccountByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, c.namespace, "serviceaccount", "Service Account", patchBytes, patchType)
 }
 
 // GetClusterRoleByLabel returns a cluster role object matching the specified label if it is unique
@@ -1403,8 +1367,8 @@ func (c *KubectlClient) DeleteClusterRole(name string) error {
 
 // PatchClusterRoleByLabel patches a Cluster Role object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchClusterRoleByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, "", "clusterrole", "Cluster Role", patchBytes)
+func (c *KubectlClient) PatchClusterRoleByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, "", "clusterrole", "Cluster Role", patchBytes, patchType)
 }
 
 // GetClusterRoleBindingByLabel returns a cluster role binding object matching the specified label if it is unique
@@ -1482,8 +1446,8 @@ func (c *KubectlClient) DeleteClusterRoleBinding(name string) error {
 
 // PatchClusterRoleBindingByLabel patches a Cluster Role binding object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, "", "clusterrolebinding", "Cluster Role Binding", patchBytes)
+func (c *KubectlClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, "", "clusterrolebinding", "Cluster Role Binding", patchBytes, patchType)
 }
 
 // GetCSIDriverByLabel returns a CSI driver object matching the specified label if it is unique
@@ -1561,8 +1525,8 @@ func (c *KubectlClient) DeleteCSIDriver(name string) error {
 
 // PatchCSIDriverByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchCSIDriverByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, "", "CSIDriver", "CSI Driver", patchBytes)
+func (c *KubectlClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, "", "CSIDriver", "CSI Driver", patchBytes, patchType)
 }
 
 // GetSecretsByLabel returns all secret object matching specified label
@@ -1757,8 +1721,8 @@ func (c *KubectlClient) DeleteSecret(name, namespace string) error {
 
 // PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchSecretByLabel(label string, patchBytes []byte) error {
-	return c.PatchObjectByLabel(label, c.namespace, "secret", "Secret", patchBytes)
+func (c *KubectlClient) PatchSecretByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	return c.PatchObjectByLabel(label, c.namespace, "secret", "Secret", patchBytes, patchType)
 }
 
 // CheckNamespaceExists returns true if the specified namespace exists, false otherwise.
@@ -2190,9 +2154,9 @@ func (c *KubectlClient) DeleteObject(name, namespace, kind, kindName string) err
 
 // PatchObjectByLabelAndNamespace patches an object matching the specified label
 // in the namespace of the client.
-func (c *KubectlClient) PatchObjectByLabel(label, namespace, kind, kindName string, patchBytes []byte) error {
+func (c *KubectlClient) PatchObjectByLabel(label, namespace, kind, kindName string, patchBytes []byte, patchType types.PatchType) error {
 
-	cmdArgs := []string{"patch", kind, "-l", label, "-p", string(patchBytes), "--type", "merge"}
+	cmdArgs := []string{"patch", kind, "-l", label, "-p", string(patchBytes), "--type", string(patchType)}
 	if namespace != "" {
 		cmdArgs = append(cmdArgs, "--namespace", namespace)
 	}

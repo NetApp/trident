@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	commontypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -83,13 +83,13 @@ type Interface interface {
 	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDeploymentByLabel(label string) error
 	DeleteDeployment(name, namespace string) error
-	PatchDeploymentByLabel(label string, patchBytes []byte) error
+	PatchDeploymentByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
 	GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error)
 	CheckServiceExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteServiceByLabel(label string) error
 	DeleteService(name, namespace string) error
-	PatchServiceByLabel(label string, patchBytes []byte) error
+	PatchServiceByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error)
 	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
 	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
@@ -100,7 +100,7 @@ type Interface interface {
 	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDaemonSetByLabel(label string) error
 	DeleteDaemonSet(name, namespace string) error
-	PatchDaemonSetByLabel(label string, patchBytes []byte) error
+	PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
 	GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error)
 	CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error)
@@ -128,31 +128,31 @@ type Interface interface {
 	CheckPodSecurityPolicyExistsByLabel(label string) (bool, string, error)
 	DeletePodSecurityPolicyByLabel(label string) error
 	DeletePodSecurityPolicy(pspName string) error
-	PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error
+	PatchPodSecurityPolicyByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error)
 	GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error)
 	CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteServiceAccountByLabel(label string) error
 	DeleteServiceAccount(name, namespace string) error
-	PatchServiceAccountByLabel(label string, patchBytes []byte) error
+	PatchServiceAccountByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetClusterRoleByLabel(label string) (*v13.ClusterRole, error)
 	GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error)
 	CheckClusterRoleExistsByLabel(label string) (bool, string, error)
 	DeleteClusterRoleByLabel(label string) error
 	DeleteClusterRole(name string) error
-	PatchClusterRoleByLabel(label string, patchBytes []byte) error
+	PatchClusterRoleByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error)
 	GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterRoleBinding, error)
 	CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error)
 	DeleteClusterRoleBindingByLabel(label string) error
 	DeleteClusterRoleBinding(name string) error
-	PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error
+	PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error)
 	GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error)
 	CheckCSIDriverExistsByLabel(label string) (bool, string, error)
 	DeleteCSIDriverByLabel(label string) error
 	DeleteCSIDriver(name string) error
-	PatchCSIDriverByLabel(label string, patchBytes []byte) error
+	PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	UpdateSecret(secret *v1.Secret) (*v1.Secret, error)
@@ -164,7 +164,7 @@ type Interface interface {
 	DeleteSecretDefault(secretName string) error
 	DeleteSecretByLabel(label string) error
 	DeleteSecret(name, namespace string) error
-	PatchSecretByLabel(label string, patchBytes []byte) error
+	PatchSecretByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CreateObjectByFile(filePath string) error
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error
@@ -484,7 +484,7 @@ func (k *KubeClient) DeleteDeployment(name, namespace string) error {
 
 // PatchDeploymentByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	deployment, err := k.GetDeploymentByLabel(label, false)
 	if err != nil {
@@ -492,7 +492,7 @@ func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte) err
 	}
 
 	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(ctx(), deployment.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -601,7 +601,7 @@ func (k *KubeClient) DeleteService(name, namespace string) error {
 
 // PatchServiceByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	service, err := k.GetServiceByLabel(label, false)
 	if err != nil {
@@ -609,7 +609,7 @@ func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte) error 
 	}
 
 	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(ctx(), service.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -814,7 +814,7 @@ func (k *KubeClient) DeleteDaemonSet(name, namespace string) error {
 
 // PatchDaemonSetByLabel patches a DaemonSet object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	daemonSet, err := k.GetDaemonSetByLabel(label, false)
 	if err != nil {
@@ -822,7 +822,7 @@ func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte) erro
 	}
 
 	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(ctx(), daemonSet.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1248,7 +1248,7 @@ func (k *KubeClient) DeletePodSecurityPolicy(pspName string) error {
 
 // PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	psp, err := k.GetPodSecurityPolicyByLabel(label)
 	if err != nil {
@@ -1256,7 +1256,7 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 	}
 
 	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx(), psp.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1366,7 +1366,7 @@ func (k *KubeClient) DeleteServiceAccount(name, namespace string) error {
 
 // PatchServiceAccountByLabel patches a Service Account object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	serviceAccount, err := k.GetServiceAccountByLabel(label, false)
 	if err != nil {
@@ -1374,7 +1374,7 @@ func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte)
 	}
 
 	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(ctx(), serviceAccount.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1476,7 +1476,7 @@ func (k *KubeClient) DeleteClusterRole(name string) error {
 
 // PatchClusterRoleByLabel patches a Cluster Role object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	clusterRole, err := k.GetClusterRoleByLabel(label)
 	if err != nil {
@@ -1484,7 +1484,7 @@ func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte) er
 	}
 
 	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(ctx(), clusterRole.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1586,7 +1586,7 @@ func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
 
 // PatchClusterRoleBindingByLabel patches a Cluster Role binding object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	clusterRoleBinding, err := k.GetClusterRoleBindingByLabel(label)
 	if err != nil {
@@ -1594,7 +1594,7 @@ func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []b
 	}
 
 	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(ctx(), clusterRoleBinding.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1695,7 +1695,7 @@ func (k *KubeClient) DeleteCSIDriver(name string) error {
 
 // PatchCSIDriverByLabel patches a deployment object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	csiDriver, err := k.GetCSIDriverByLabel(label)
 	if err != nil {
@@ -1703,7 +1703,7 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte) erro
 	}
 
 	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(ctx(), csiDriver.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
@@ -1856,7 +1856,7 @@ func (k *KubeClient) DeleteSecret(name, namespace string) error {
 
 // PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte) error {
+func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 
 	secret, err := k.GetSecretByLabel(label, false)
 	if err != nil {
@@ -1864,7 +1864,7 @@ func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte) error {
 	}
 
 	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(ctx(), secret.Name,
-		commontypes.StrategicMergePatchType, patchBytes, patchOpts); err != nil {
+		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
