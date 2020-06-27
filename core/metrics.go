@@ -8,13 +8,32 @@ import (
 )
 
 var (
-	backendsGauge = promauto.NewGauge(
+	tridentBuildInfo = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "core",
+			Name:      "build_info",
+			Help:      "Trident build and release information",
+		},
+		[]string{"trident_revision", "trident_version", "build_type"},
+	)
+	tridentBackendInfo = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "core",
+			Name:      "backend_info",
+			Help:      "Trident backend information",
+		},
+		[]string{"backend_type", "backend_name", "backend_uuid"},
+	)
+	backendsGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Subsystem: "core",
 			Name:      "backend_count",
 			Help:      "The total number of backends",
 		},
+		[]string{"backend_type", "backend_state"},
 	)
 	backendsByTypeGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -34,13 +53,23 @@ var (
 		},
 		[]string{"state"},
 	)
-	volumesGauge = promauto.NewGauge(
+	backendAllocatedBytesGauge = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "core",
+			Name:      "backend_allocated_bytes",
+			Help:      "The allocated number of bytes in all backends",
+		},
+		[]string{"backend_type", "backend_uuid", "volume_state", "volume_type"},
+	)
+	volumesGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Subsystem: "core",
 			Name:      "volume_count",
 			Help:      "The total number of volumes",
 		},
+		[]string{"backend_type", "backend_uuid", "volume_state", "volume_type"},
 	)
 	volumesByBackendGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -93,13 +122,23 @@ var (
 			Help:      "The total number of nodes",
 		},
 	)
-	snapshotGauge = promauto.NewGauge(
+	snapshotGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Subsystem: "core",
 			Name:      "snapshot_count",
 			Help:      "The total number of snapshots",
 		},
+		[]string{"backend_type", "backend_uuid"},
+	)
+	snapshotAllocatedBytesGauge = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "core",
+			Name:      "snapshot_allocated_bytes",
+			Help:      "The allocated number of snapshot bytes in all backends",
+		},
+		[]string{"backend_type", "backend_uuid"},
 	)
 	operationDurationInMsSummary = promauto.NewSummaryVec(
 		prometheus.SummaryOpts{

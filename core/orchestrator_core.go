@@ -455,26 +455,40 @@ func (o *TridentOrchestrator) Stop() {
 // The caller should hold the orchestrator lock.
 func (o *TridentOrchestrator) updateMetrics() {
 
-	backendsGauge.Set(float64(len(o.backends)))
+	tridentBuildInfo.WithLabelValues(config.BuildHash,
+		config.OrchestratorVersion.ShortString(),
+		config.BuildType).Set(float64(1))
+
+	backendsGauge.Reset()
 	backendsByTypeGauge.Reset()
 	backendsByStateGauge.Reset()
 	for _, backend := range o.backends {
+		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State.String()).Inc()
 		backendsByTypeGauge.WithLabelValues(backend.GetDriverName()).Inc()
 		backendsByStateGauge.WithLabelValues(string(backend.State)).Inc()
+		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name, backend.BackendUUID).Set(float64(1))
 	}
 
-	volumesGauge.Set(float64(len(o.volumes)))
+	volumesGauge.Reset()
 	volumesByBackendGauge.Reset()
 	volumesByStateGauge.Reset()
 	volumesTotalBytesByBackendGauge.Reset()
 	volumesTotalBytes := float64(0)
+	backendAllocatedBytesGauge.Reset()
 	for _, volume := range o.volumes {
 		bytes, _ := strconv.ParseFloat(volume.Config.Size, 64)
 		volumesTotalBytes += bytes
 		if backend, err := o.getBackendByBackendUUID(volume.BackendUUID); err == nil {
 			driverName := backend.GetDriverName()
+			volumesGauge.WithLabelValues(driverName,
+				volume.BackendUUID,
+				string(volume.State),
+				string(volume.Config.VolumeMode)).Inc()
 			volumesByBackendGauge.WithLabelValues(driverName).Inc()
 			volumesTotalBytesByBackendGauge.WithLabelValues(driverName).Add(bytes)
+
+			backendAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID, string(volume.State),
+				string(volume.Config.VolumeMode)).Add(bytes)
 		}
 		volumesByStateGauge.WithLabelValues(string(volume.State)).Inc()
 	}
@@ -482,7 +496,21 @@ func (o *TridentOrchestrator) updateMetrics() {
 
 	scGauge.Set(float64(len(o.storageClasses)))
 	nodeGauge.Set(float64(len(o.nodes)))
-	snapshotGauge.Set(float64(len(o.snapshots)))
+	snapshotGauge.Reset()
+	snapshotAllocatedBytesGauge.Reset()
+	for _, snapshot := range o.snapshots {
+		vol := o.volumes[snapshot.Config.VolumeName]
+		if vol != nil {
+			if backend, err := o.getBackendByBackendUUID(vol.BackendUUID); err == nil {
+				driverName := backend.GetDriverName()
+				snapshotGauge.WithLabelValues(
+					driverName,
+					vol.BackendUUID).Inc()
+				snapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID).
+					Add(float64(snapshot.SizeBytes))
+			}
+		}
+	}
 }
 
 func (o *TridentOrchestrator) handleFailedTransaction(v *storage.VolumeTransaction) error {
@@ -776,7 +804,7 @@ func (o *TridentOrchestrator) GetVersion() (string, error) {
 
 // AddBackend handles creation of a new storage backend
 func (o *TridentOrchestrator) AddBackend(configJSON string) (
-		backendExternal *storage.BackendExternal, err error) {
+	backendExternal *storage.BackendExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -1214,7 +1242,7 @@ func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (*stor
 }
 
 func (o *TridentOrchestrator) GetBackend(backendName string) (
-		backendExternal *storage.BackendExternal, err error) {
+	backendExternal *storage.BackendExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -1244,10 +1272,10 @@ func (o *TridentOrchestrator) GetBackend(backendName string) (
 }
 
 func (o *TridentOrchestrator) GetBackendByBackendUUID(backendUUID string) (
-		backendExternal *storage.BackendExternal, err error) {
-		if o.bootstrapError != nil {
-			return nil, o.bootstrapError
-		}
+	backendExternal *storage.BackendExternal, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
 
 	defer recordTiming("backend_get", &err)()
 
@@ -1271,8 +1299,8 @@ func (o *TridentOrchestrator) GetBackendByBackendUUID(backendUUID string) (
 }
 
 func (o *TridentOrchestrator) ListBackends() (
-		backendExternals []*storage.BackendExternal, err error) {
-		if o.bootstrapError != nil {
+	backendExternals []*storage.BackendExternal, err error) {
+	if o.bootstrapError != nil {
 		log.WithFields(log.Fields{
 			"bootstrapError": o.bootstrapError,
 		}).Warn("ListBackends error")
@@ -1874,7 +1902,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 // volume exists or not. Instead it asks the driver if the volume exists before requesting
 // the volume size. Returns the VolumeExternal representation of the volume.
 func (o *TridentOrchestrator) GetVolumeExternal(volumeName string, backendName string) (
-		volExternal *storage.VolumeExternal, err error) {
+	volExternal *storage.VolumeExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -2964,7 +2992,7 @@ func (o *TridentOrchestrator) addSnapshotCleanup(
 }
 
 func (o *TridentOrchestrator) GetSnapshot(volumeName, snapshotName string) (
-		snapshotExternal *storage.SnapshotExternal, err error) {
+	snapshotExternal *storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3172,7 +3200,7 @@ func (o *TridentOrchestrator) ListSnapshots() (snapshots []*storage.SnapshotExte
 }
 
 func (o *TridentOrchestrator) ListSnapshotsByName(snapshotName string) (
-		snapshots []*storage.SnapshotExternal, err error) {
+	snapshots []*storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3193,7 +3221,7 @@ func (o *TridentOrchestrator) ListSnapshotsByName(snapshotName string) (
 }
 
 func (o *TridentOrchestrator) ListSnapshotsForVolume(volumeName string) (
-		snapshots []*storage.SnapshotExternal, err error) {
+	snapshots []*storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3218,7 +3246,7 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(volumeName string) (
 }
 
 func (o *TridentOrchestrator) ReadSnapshotsForVolume(volumeName string) (
-		externalSnapshots []*storage.SnapshotExternal, err error) {
+	externalSnapshots []*storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3490,7 +3518,7 @@ func (o *TridentOrchestrator) getProtocol(
 }
 
 func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (
-		scExternal *storageclass.External, err error) {
+	scExternal *storageclass.External, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3527,7 +3555,7 @@ func (o *TridentOrchestrator) AddStorageClass(scConfig *storageclass.Config) (
 }
 
 func (o *TridentOrchestrator) GetStorageClass(scName string) (
-		scExternal *storageclass.External, err error) {
+	scExternal *storageclass.External, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3547,7 +3575,7 @@ func (o *TridentOrchestrator) GetStorageClass(scName string) (
 }
 
 func (o *TridentOrchestrator) ListStorageClasses() (
-		scExternals []*storageclass.External, err error) {
+	scExternals []*storageclass.External, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3585,7 +3613,7 @@ func (o *TridentOrchestrator) DeleteStorageClass(scName string) (err error) {
 	// automatically, which is consistent with the method never having returned
 	// successfully.
 	err = o.storeClient.DeleteStorageClass(sc)
-	if  err != nil {
+	if err != nil {
 		return err
 	}
 	delete(o.storageClasses, scName)
