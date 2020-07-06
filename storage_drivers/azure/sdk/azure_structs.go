@@ -18,7 +18,7 @@ const (
 
 	ProtocolTypeNFSv3  = "NFSv3"
 	ProtocolTypeNFSv41 = "NFSv4.1"
-	ProtocolTypeCIFS   = "CIFS"
+	//ProtocolTypeCIFS   = "CIFS"
 
 	ServiceLevelStandard = "Standard"
 	ServiceLevelPremium  = "Premium"
@@ -41,23 +41,24 @@ type CapacityPool struct {
 }
 
 type FileSystem struct {
-	Created           time.Time    `json:"created,omitempty"`
-	ExportPolicy      ExportPolicy `json:"exportPolicy,omitempty"`
-	Labels            []string     `json:"labels,omitempty"`
-	FileSystemID      string       `json:"fileSystemId,omitempty"`
-	ID                string       `json:"id,omitempty"`
-	ProvisioningState string       `json:"provisioningState,omitempty"`
-	Name              string       `json:"name,omitempty"`
-	CapacityPoolName  string       `json:"capacityPoolName,omitempty"`
-	OwnerID           string       `json:"ownerId,omitempty"`
-	Location          string       `json:"location,omitempty"`
-	CreationToken     string       `json:"creationToken,omitempty"`
-	ProtocolTypes     []string     `json:"protocolTypes,omitempty"`
-	QuotaInBytes      int64        `json:"quotaInBytes,omitempty"`
-	ServiceLevel      string       `json:"serviceLevel,omitempty"`
-	Timezone          string       `json:"timezone,omitempty"`
-	UsedBytes         int          `json:"usedBytes,omitempty"`
-	Subnet            string       `json:"subnet,omitempty"`
+	Created           time.Time     `json:"created,omitempty"`
+	ExportPolicy      ExportPolicy  `json:"exportPolicy,omitempty"`
+	Labels            []string      `json:"labels,omitempty"`
+	FileSystemID      string        `json:"fileSystemId,omitempty"`
+	ID                string        `json:"id,omitempty"`
+	ProvisioningState string        `json:"provisioningState,omitempty"`
+	Name              string        `json:"name,omitempty"`
+	CapacityPoolName  string        `json:"capacityPoolName,omitempty"`
+	OwnerID           string        `json:"ownerId,omitempty"`
+	Location          string        `json:"location,omitempty"`
+	CreationToken     string        `json:"creationToken,omitempty"`
+	ProtocolTypes     []string      `json:"protocolTypes,omitempty"`
+	QuotaInBytes      int64         `json:"quotaInBytes,omitempty"`
+	ServiceLevel      string        `json:"serviceLevel,omitempty"`
+	Timezone          string        `json:"timezone,omitempty"`
+	UsedBytes         int           `json:"usedBytes,omitempty"`
+	Subnet            string        `json:"subnet,omitempty"`
+	MountTargets      []MountTarget `json:"mountTargets,omitempty"`
 }
 
 type FilesystemCreateRequest struct {
@@ -114,18 +115,15 @@ type ExportRule struct {
 }
 
 type MountTarget struct {
-	Created           time.Time `json:"created"`
-	FileSystemID      string    `json:"fileSystemId"`
-	ProvisioningState string    `json:"provisioningState"`
-	OwnerID           string    `json:"ownerId"`
-	Location          string    `json:"location"`
-	EndIP             string    `json:"endIP"`
-	Gateway           string    `json:"gateway"`
-	IPAddress         string    `json:"ipAddress"`
-	MountTargetID     string    `json:"mountTargetId"`
-	Netmask           string    `json:"netmask"`
-	StartIP           string    `json:"startIP"`
-	Subnet            string    `json:"subnet"`
+	MountTargetID string `json:"mountTargetId"`
+	FileSystemID  string `json:"fileSystemId"`
+	IPAddress     string `json:"ipAddress"`
+	Subnet        string `json:"subnet"`
+	StartIP       string `json:"startIP"`
+	EndIP         string `json:"endIP"`
+	Gateway       string `json:"gateway"`
+	Netmask       string `json:"netmask"`
+	SmbServerFqdn string `json:"smbServerFqdn"`
 }
 
 type Snapshot struct {

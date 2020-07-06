@@ -500,7 +500,7 @@ func (d *Client) getCapacityPool(poolname string) (*CapacityPool, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Couldn't find pool %v", poolname)
+	return nil, fmt.Errorf("couldn't find pool %v", poolname)
 }
 
 // getSubnetsForResourceGroup returns a list of all subnets in a given resource group

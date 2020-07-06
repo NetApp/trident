@@ -15,7 +15,7 @@ import (
 
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-07-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-11-01/netapp"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	log "github.com/sirupsen/logrus"
@@ -52,7 +52,6 @@ type AzureClient struct {
 	netapp.AccountsClient
 	netapp.PoolsClient
 	netapp.VolumesClient
-	netapp.MountTargetsClient
 	netapp.SnapshotsClient
 	AuthConfig            azauth.ClientCredentialsConfig
 	ResourcesClient       resources.Client
@@ -80,7 +79,6 @@ func NewSDKClient(config *ClientConfig) (c *AzureClient) {
 	c.AccountsClient = netapp.NewAccountsClient(config.SubscriptionID)
 	c.PoolsClient = netapp.NewPoolsClient(config.SubscriptionID)
 	c.VolumesClient = netapp.NewVolumesClient(config.SubscriptionID)
-	c.MountTargetsClient = netapp.NewMountTargetsClient(config.SubscriptionID)
 	c.SnapshotsClient = netapp.NewSnapshotsClient(config.SubscriptionID)
 	c.ResourcesClient = resources.NewClient(config.SubscriptionID)
 	c.VirtualNetworksClient = network.NewVirtualNetworksClient(config.SubscriptionID)
@@ -93,7 +91,6 @@ func (c *AzureClient) Authenticate() (err error) {
 	c.AccountsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.PoolsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.VolumesClient.Authorizer, err = c.AuthConfig.Authorizer()
-	c.MountTargetsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.SnapshotsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.ResourcesClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.VirtualNetworksClient.Authorizer, err = c.AuthConfig.Authorizer()
@@ -253,6 +250,7 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 		Location:         *vol.Location,
 		CapacityPoolName: pool.Name,
 		ServiceLevel:     pool.ServiceLevel,
+		MountTargets:     d.getMountTargetsFromVolume(vol),
 	}
 
 	// VolumeProperties strings are not always populated, nor is 'ID'
@@ -285,6 +283,53 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 	}
 
 	return &fs, nil
+}
+
+func (d *Client) getMountTargetsFromVolume(vol *netapp.Volume) []MountTarget {
+
+	mounts := make([]MountTarget, 0)
+
+	if vol.MountTargets == nil {
+		log.Warningf("Volume %s has nil MountTargetProperties.", *vol.Name)
+		return mounts
+	}
+
+	for _, mtp := range *vol.MountTargets {
+
+		var mt = MountTarget{}
+
+		if mtp.MountTargetID != nil {
+			mt.MountTargetID = *mtp.MountTargetID
+		}
+		if mtp.FileSystemID != nil {
+			mt.FileSystemID = *mtp.FileSystemID
+		}
+		if mtp.IPAddress != nil {
+			mt.IPAddress = *mtp.IPAddress
+		}
+		if mtp.Subnet != nil {
+			mt.Subnet = *mtp.Subnet
+		}
+		if mtp.StartIP != nil {
+			mt.StartIP = *mtp.StartIP
+		}
+		if mtp.EndIP != nil {
+			mt.EndIP = *mtp.EndIP
+		}
+		if mtp.Gateway != nil {
+			mt.Gateway = *mtp.Gateway
+		}
+		if mtp.Netmask != nil {
+			mt.Netmask = *mtp.Netmask
+		}
+		if mtp.SmbServerFqdn != nil {
+			mt.SmbServerFqdn = *mtp.SmbServerFqdn
+		}
+
+		mounts = append(mounts, mt)
+	}
+
+	return mounts
 }
 
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool
@@ -530,12 +575,12 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	subnet := request.Subnet
 
 	// We should only be seeing the trident telemetry label here.  Use a tag to store it.
-	tags := make(map[string]string)
+	tags := make(map[string]*string)
 	if len(request.Labels) > 1 {
 		log.Errorf("Too many labels (%d) in volume create request.", len(request.Labels))
 	}
 	for _, val := range request.Labels {
-		tags[tridentLabelTag] = val
+		tags[tridentLabelTag] = &val
 	}
 
 	// Get the capacity pool so we can validate location and inherit service level
@@ -698,23 +743,17 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 		return nil, errors.New("couldn't get volume for RelabelVolume")
 	}
 
-	tags := make(map[string]string)
+	tags := make(map[string]*string)
 	// Copy any existing tags first in order to make sure to preserve any custom tags that might've
 	// been applied prior to a volume import
 	if nv.Tags != nil {
-		m := nv.Tags.(map[string]interface{})
-		for idx, val := range m {
-			switch vv := val.(type) {
-			case string:
-				tags[idx] = vv
-			default:
-				return nil, errors.New("strange tag type detected in existing tags")
-			}
+		for k, v := range nv.Tags {
+			tags[k] = v
 		}
 	}
 	// Now update the working copy with the incoming change
 	for _, val := range labels {
-		tags[tridentLabelTag] = val
+		tags[tridentLabelTag] = &val
 	}
 	nv.Tags = tags
 
@@ -764,6 +803,7 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 
 // ResizeVolume sends a VolumePatch to update the Quota
 func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
+
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
@@ -781,18 +821,17 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		VolumePatchProperties: &patchprop,
 	}
 
-	newVol, err := d.SDKClient.VolumesClient.Update(d.SDKClient.Ctx, patch, *cookie.ResourceGroup,
-		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name)
+	if _, err := d.SDKClient.VolumesClient.Update(d.SDKClient.Ctx, patch, *cookie.ResourceGroup,
+		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name); err != nil {
+		return nil, err
+	}
+
+	newVol, err := d.GetVolumeByCreationToken(filesystem.CreationToken)
 	if err != nil {
 		return nil, err
 	}
 
-	newFS, err := d.newFileSystemFromVolume(&newVol, cookie)
-	if err != nil {
-		return nil, err
-	}
-
-	return newFS, nil
+	return newVol, nil
 }
 
 // DeleteVolume deletes a volume
@@ -813,45 +852,6 @@ func (d *Client) DeleteVolume(filesystem *FileSystem) error {
 	}).Info("Filesystem deleted.")
 
 	return nil
-}
-
-// GetMountTargetsForVolume returns mount target information for a volume
-func (d *Client) GetMountTargetsForVolume(filesystem *FileSystem) (*[]MountTarget, error) {
-	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
-			filesystem.Name, filesystem.CapacityPoolName)
-	}
-
-	mtlOuter, err := d.SDKClient.MountTargetsClient.List(d.SDKClient.Ctx,
-		*cookie.ResourceGroup, *cookie.NetAppAccount, *cookie.CapacityPoolName,
-		filesystem.Name)
-	if err != nil {
-		return nil, fmt.Errorf("error getting mount target list: %v", err)
-	}
-
-	var mounts []MountTarget
-	mtl := mtlOuter.Value
-
-	for _, mt := range *mtl {
-		var m = MountTarget{
-			FileSystemID:      *mt.MountTargetProperties.FileSystemID,
-			ProvisioningState: *mt.MountTargetProperties.ProvisioningState,
-			Location:          *mt.Location,
-			EndIP:             *mt.MountTargetProperties.EndIP,
-			Gateway:           *mt.MountTargetProperties.Gateway,
-			IPAddress:         *mt.MountTargetProperties.IPAddress,
-			MountTargetID:     *mt.MountTargetProperties.MountTargetID,
-			Netmask:           *mt.MountTargetProperties.Netmask,
-			StartIP:           *mt.MountTargetProperties.StartIP,
-		}
-		if mt.MountTargetProperties.Subnet != nil {
-			m.Subnet = *mt.MountTargetProperties.Subnet
-		}
-		mounts = append(mounts, m)
-	}
-
-	return &mounts, nil
 }
 
 // GetSnapshotsForVolume returns a list of snapshots on a volume

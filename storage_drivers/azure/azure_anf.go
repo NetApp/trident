@@ -994,11 +994,7 @@ func (d *NFSStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
 
-	mountTargets, err := d.SDK.GetMountTargetsForVolume(volume)
-	if err != nil {
-		return fmt.Errorf("could not read mount targets for volume %s: %v", name, err)
-	}
-	if len(*mountTargets) == 0 {
+	if len(volume.MountTargets) == 0 {
 		return fmt.Errorf("volume %s has no mount targets", name)
 	}
 
@@ -1010,7 +1006,7 @@ func (d *NFSStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 
 	// Add fields needed by Attach
 	publishInfo.NfsPath = "/" + volume.CreationToken
-	publishInfo.NfsServerIP = (*mountTargets)[0].IPAddress
+	publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
@@ -1421,16 +1417,12 @@ func (d *NFSStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		return fmt.Errorf("volume %s is in %s state: %s", creationToken, sdk.StateError, volume.ProvisioningState)
 	}
 
-	mountTargets, err := d.SDK.GetMountTargetsForVolume(volume)
-	if err != nil {
-		return fmt.Errorf("could not read mount targets for volume %s: %v", volConfig.InternalName, err)
-	}
-	if len(*mountTargets) == 0 {
+	if len(volume.MountTargets) == 0 {
 		return fmt.Errorf("volume %s has no mount targets", volConfig.InternalName)
 	}
 
 	// Just use the first mount target found
-	volConfig.AccessInfo.NfsServerIP = (*mountTargets)[0].IPAddress
+	volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 	volConfig.AccessInfo.NfsPath = "/" + volume.CreationToken
 	volConfig.FileSystem = ""
 
