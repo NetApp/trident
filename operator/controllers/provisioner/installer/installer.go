@@ -1707,7 +1707,7 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	podLabels := make(map[string]string)
 
 	podLabels[TridentVersionPodLabelKey] = TridentVersionPodLabelValue
-	podLabels[K8sVersionLabelKey] = i.client.ServerVersion().String()
+	podLabels[K8sVersionLabelKey] = i.client.ServerVersion().ShortStringWithRelease()
 
 	tridentctlFilePath := "/usr/local/bin/tridentctl"
 	tridentVersionCommand := []string{tridentctlFilePath, "version", "--client", "-o", "yaml"}
