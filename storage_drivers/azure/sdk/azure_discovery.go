@@ -90,7 +90,7 @@ func createCookie(rg string, naa string, cpool string, spool string) *AzureCapac
 }
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping
-func (d *Client) RegisterStoragePool(spool storage.Pool) {
+func (d *Client) registerStoragePool(spool storage.Pool) {
 	d.SDKClient.AzureResources.StoragePoolMap[spool.Name] = &spool
 }
 
@@ -153,10 +153,16 @@ func (d *Client) discoverResourceGroups() (*[]string, error) {
 	gc := resources.NewGroupsClient(d.config.SubscriptionID)
 	gc.Authorizer, _ = d.SDKClient.AuthConfig.Authorizer()
 
-	for list, err := gc.ListComplete(d.SDKClient.Ctx, "", nil); list.NotDone(); err = list.Next() {
+	list, err := gc.ListComplete(d.SDKClient.Ctx, "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching resource groups: %v", err)
+	}
+
+	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
 		if err != nil {
-			return nil, fmt.Errorf("error fetching resource groups: %v", err)
+			return nil, fmt.Errorf("error iterating resource groups: %v", err)
 		}
+
 		rg := *list.Value().Name
 		rgs = append(rgs, rg)
 	}
@@ -235,11 +241,17 @@ func (d *Client) discoverNetAppAccounts(rgroup string) (*[]NetAppAccount, error)
 
 // Get a list of Subnets within a given Resource_Group:VirtualNetwork pairing
 func (d *Client) discoverSubnets(rgroup string, vn VirtualNetwork) (*[]Subnet, error) {
+
 	var subnets []Subnet
 
-	for list, err := d.SDKClient.SubnetsClient.ListComplete(d.SDKClient.Ctx, rgroup, vn.Name); list.NotDone(); err = list.Next() {
+	list, err := d.SDKClient.SubnetsClient.ListComplete(d.SDKClient.Ctx, rgroup, vn.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching subnets for rg %s, vn %s: %v", rgroup, vn.Name, err)
+	}
+
+	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
 		if err != nil {
-			return nil, fmt.Errorf("error fetching subnets for rg %s, vn %s: %v", rgroup, vn.Name, err)
+			return nil, fmt.Errorf("error iterating subnets for rg %s, vn %s: %v", rgroup, vn.Name, err)
 		}
 
 		// Check the subnet delegations; only add this subnet to the list if it has
@@ -268,9 +280,14 @@ func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, erro
 
 	var vnets []VirtualNetwork
 
-	for list, err := d.SDKClient.VirtualNetworksClient.ListComplete(d.SDKClient.Ctx, rgroup); list.NotDone(); err = list.Next() {
+	list, err := d.SDKClient.VirtualNetworksClient.ListComplete(d.SDKClient.Ctx, rgroup)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching virtual networks for resource group %s: %v", rgroup, err)
+	}
+
+	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
 		if err != nil {
-			return nil, fmt.Errorf("error fetching virtualnetworks for %s: %v", rgroup, err)
+			return nil, fmt.Errorf("error iterating virtual networks for resource group %s: %v", rgroup, err)
 		}
 		vn := VirtualNetwork{
 			Name:          *list.Value().Name,
@@ -278,9 +295,9 @@ func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, erro
 			ResourceGroup: rgroup,
 		}
 
-		if exists, _ := d.resourceGroupForVirtualNetwork(vn.Name); exists != nil {
+		if otherRG, _ := d.resourceGroupForVirtualNetwork(vn.Name); otherRG != nil && *otherRG != rgroup {
 			log.Errorf("duplicate virtual network '%s' in resource group '%s' ignored during discovery; unique names required",
-				*exists, rgroup)
+				vn.Name, *otherRG)
 			continue
 		}
 
@@ -301,59 +318,87 @@ func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, erro
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// toplevel init functions
+// Top level init functions
 /////////////////////////////////////////////////////////////////////////////////
 
-func (d *Client) discoverAzureResources() error {
+func (d *Client) discoverAzureResources() (returnError error) {
 
 	// Start from scratch each time we are called.  All discovered resources are
 	// nested under ResourceGroups.
-	d.SDKClient.AzureResources.ResourceGroups = []ResourceGroup{}
+	newResourceGroups := make([]ResourceGroup, 0)
+
+	defer func() {
+		if returnError != nil {
+			log.WithField("error", returnError).Debug("Discovery error, not retaining any discovered resources.")
+			return
+		}
+
+		// Lock mutex while swapping out the discovered resources
+		d.SDKClient.AzureResources.m.Lock()
+		defer d.SDKClient.AzureResources.m.Unlock()
+
+		d.SDKClient.AzureResources.ResourceGroups = newResourceGroups
+		log.Debug("Switched to newly discovered resources.")
+	}()
 
 	// Get a list of resource group names and populate the cache
-	groups, err := d.discoverResourceGroups()
-	if err != nil {
-		return err
-	}
-
-	// Detect the lack of any groups: can occur when no connectivity, etc.
-	// Would like a better way of proactively finding out there is something wrong
-	// at a very basic level.  (Reproduce this by turning off your network!)
-	if len(*groups) == 0 {
-		return errors.New("no resource groups discovered: check connectivity, credentials")
+	groups, returnError := d.discoverResourceGroups()
+	if returnError != nil {
+		return returnError
 	}
 
 	for _, g := range *groups {
 		rg := ResourceGroup{Name: g}
 
 		// Fetch NetAppAccounts for this RG
-		naas, err := d.discoverNetAppAccounts(g)
-		if err != nil {
-			return err
+		naas, returnError := d.discoverNetAppAccounts(g)
+		if returnError != nil {
+			return returnError
 		}
 
 		// Fetch subnets for this RG
-		vnets, err := d.discoverVirtualNetworks(g)
-		if err != nil {
-			return err
+		vnets, returnError := d.discoverVirtualNetworks(g)
+		if returnError != nil {
+			return returnError
 		}
 
 		// Don't track resource groups that don't have either an ANF accounts or ANF subnets
 		if len(*naas) > 0 || len(*vnets) > 0 {
 			rg.NetAppAccounts = *naas
 			rg.VirtualNetworks = *vnets
-			d.SDKClient.AzureResources.ResourceGroups = append(d.SDKClient.AzureResources.ResourceGroups, rg)
+			newResourceGroups = append(newResourceGroups, rg)
 		} else {
 			log.Debugf("Ignoring discovered resource group '%s' because it has no ANF accounts or subnets.\n", g)
 		}
 	}
 
-	return nil
+	// Detect the lack of any resources: can occur when no connectivity, etc.
+	// Would like a better way of proactively finding out there is something wrong
+	// at a very basic level.  (Reproduce this by turning off your network!)
+	numResourceGroups, numCapacityPools, numVnets := d.countAzureResources(newResourceGroups)
+	if numResourceGroups == 0 {
+		returnError = errors.New("no resource groups discovered; check connectivity, credentials")
+		return
+	}
+	if numCapacityPools == 0 {
+		returnError = errors.New("no capacity pools discovered; volume provisioning may fail until corrected")
+		return
+	}
+	if numVnets == 0 {
+		returnError = errors.New("no virtual networks discovered; volume provisioning may fail until corrected")
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"resourceGroups":  numResourceGroups,
+		"capacityPools":   numCapacityPools,
+		"virtualNetworks": numVnets,
+	}).Info("Discovered Azure resources.")
+
+	return
 }
 
 func (d *Client) dumpAzureResources() {
-	vnetCount := 0
-	cpoolCount := 0
 
 	log.Debugf("Discovered Azure Resources:\n")
 	for _, rg := range d.SDKClient.AzureResources.ResourceGroups {
@@ -362,24 +407,33 @@ func (d *Client) dumpAzureResources() {
 			log.Debugf("    ANF Account: %s, Location: %s\n", na.Name, na.Location)
 			for _, cp := range na.CapacityPools {
 				log.Debugf("      CPool: %s, [%s]\n", cp.Name, cp.ServiceLevel)
-				cpoolCount++
 			}
 		}
 		for _, vn := range rg.VirtualNetworks {
 			for _, sn := range vn.Subnets {
 				log.Debugf("    Subnet: %s, Location: %s (vnet: %s)\n", sn.Name, vn.Location, vn.Name)
 			}
-			vnetCount++
+		}
+	}
+}
+
+// countAzureResources accepts a list of resource groups and returns the number of encompassed
+// resource groups, capacity pools, and subnets.
+func (d *Client) countAzureResources(resourceGroups []ResourceGroup) (int, int, int) {
+
+	vnetCount := 0
+	cpoolCount := 0
+
+	for _, rg := range resourceGroups {
+		for _, na := range rg.NetAppAccounts {
+			cpoolCount += len(na.CapacityPools)
+		}
+		for _, vn := range rg.VirtualNetworks {
+			vnetCount += len(vn.Subnets)
 		}
 	}
 
-	// Advisory warnings
-	if vnetCount == 0 {
-		log.Warnf("No virtual networks were discovered - volume creation will fail until this is rectified.")
-	}
-	if cpoolCount == 0 {
-		log.Warnf("No capacity pools were discovered - volume creation will fail until this is rectified.")
-	}
+	return len(resourceGroups), cpoolCount, vnetCount
 }
 
 // refreshAzureResources wraps the toplevel discovery process for the timer thread
@@ -387,15 +441,6 @@ func (d *Client) refreshAzureResources() {
 
 	// (re-)Discover what we have to work with in Azure
 	log.Debugf("Discovering Azure resources")
-
-	// If it is shown that this begins to take a measurable amount of time with max-config
-	// setups, a change should be made to build the new cache in a shadow data structure
-	// asynchronously and only hold the lock long enough to swap it out.  For now, this
-	// is completing in <1 second so I am considering that premature optimization.
-
-	// Lock mutex while rebuilding
-	d.SDKClient.AzureResources.m.Lock()
-	defer d.SDKClient.AzureResources.m.Unlock()
 
 	if err := d.discoverAzureResources(); err != nil {
 		log.Errorf("error discovering resources: %v", err)

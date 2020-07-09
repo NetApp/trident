@@ -3,8 +3,6 @@
 package sdk
 
 import (
-	"time"
-
 	"github.com/Azure/go-autorest/autorest/date"
 )
 
@@ -41,7 +39,6 @@ type CapacityPool struct {
 }
 
 type FileSystem struct {
-	Created           time.Time     `json:"created,omitempty"`
 	ExportPolicy      ExportPolicy  `json:"exportPolicy,omitempty"`
 	Labels            []string      `json:"labels,omitempty"`
 	FileSystemID      string        `json:"fileSystemId,omitempty"`

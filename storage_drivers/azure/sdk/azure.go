@@ -118,7 +118,7 @@ func (d *Client) Init(pools map[string]*storage.Pool) (err error) {
 
 	// Map vpools to backend
 	for _, p := range pools {
-		d.RegisterStoragePool(*p)
+		d.registerStoragePool(*p)
 	}
 
 	return nil
@@ -245,6 +245,14 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 		return nil, err
 	}
 
+	if vol.Name == nil {
+		return nil, errors.New("volume has no name")
+	}
+
+	if vol.Location == nil {
+		return nil, fmt.Errorf("volume %s has no location", *vol.Name)
+	}
+
 	fs := FileSystem{
 		Name:             *vol.Name,
 		Location:         *vol.Location,
@@ -282,6 +290,10 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 		fs.ExportPolicy = *exportPolicyImport(vol.VolumeProperties.ExportPolicy)
 	}
 
+	if vol.VolumeProperties.ProtocolTypes != nil {
+		fs.ProtocolTypes = *vol.VolumeProperties.ProtocolTypes
+	}
+
 	return &fs, nil
 }
 
@@ -290,7 +302,7 @@ func (d *Client) getMountTargetsFromVolume(vol *netapp.Volume) []MountTarget {
 	mounts := make([]MountTarget, 0)
 
 	if vol.MountTargets == nil {
-		log.Warningf("Volume %s has nil MountTargetProperties.", *vol.Name)
+		log.Debugf("Volume %s has nil MountTargetProperties.", *vol.Name)
 		return mounts
 	}
 
