@@ -946,6 +946,36 @@ func (d Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(name string) (*azg
 	return response, err
 }
 
+func (d Client) FlexGroupModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterAsyncResponse, error) {
+
+        volAttr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
+        volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+        volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
+        securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
+        volAttr.SetVolumeAttributes(*securityAttributes)
+
+        queryAttr := &azgo.VolumeModifyIterAsyncRequestQuery{}
+        volIDAttr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(volumeName))
+        volIDAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volIDAttr)
+        queryAttr.SetVolumeAttributes(*volIDAttrs)
+
+        response, err := azgo.NewVolumeModifyIterAsyncRequest().
+                SetQuery(*queryAttr).
+                SetAttributes(*volAttr).
+                ExecuteUsing(d.zr)
+
+        if zerr := GetError(response, err); zerr != nil {
+                return response, zerr
+        }
+
+        err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+        if err != nil {
+                return response, fmt.Errorf("error waiting for response: %v", err)
+        }
+
+        return response, err
+}
+
 // FlexGroupGet returns all relevant details for a single FlexGroup
 func (d Client) FlexGroupGet(name string) (*azgo.VolumeAttributesType, error) {
 	// Limit the FlexGroups to the one matching the name
@@ -1131,6 +1161,25 @@ func (d Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*
 		SetAttributes(*volAttr).
 		ExecuteUsing(d.zr)
 	return response, err
+}
+
+func (d Client) VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error) {
+        volAttr := &azgo.VolumeModifyIterRequestAttributes{}
+        volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+        volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
+        securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
+        volAttr.SetVolumeAttributes(*securityAttributes)
+
+        queryAttr := &azgo.VolumeModifyIterRequestQuery{}
+        volIDAttr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(volumeName))
+        volIDAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volIDAttr)
+        queryAttr.SetVolumeAttributes(*volIDAttrs)
+
+        response, err := azgo.NewVolumeModifyIterRequest().
+                SetQuery(*queryAttr).
+                SetAttributes(*volAttr).
+                ExecuteUsing(d.zr)
+        return response, err
 }
 
 // VolumeCloneCreate clones a volume from a snapshot
