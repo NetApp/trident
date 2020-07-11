@@ -5,10 +5,11 @@ package installer
 import (
 	"encoding/json"
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
-	jsonpatch "github.com/evanphx/json-patch"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -235,7 +236,7 @@ func (i *Installer) patchTridentDaemonSet(currentDaemonSet *appsv1.DaemonSet, ne
 
 // genericPatch takes current object, corresponding YAML to identify the changes and the patch that should be created
 func (i *Installer) genericPatch(original interface{}, modifiedYAML []byte, dataStruct interface{},
-patchType types.PatchType) ([]byte, error) {
+	patchType types.PatchType) ([]byte, error) {
 
 	// Get existing object in JSON format
 	originalJSON, err := json.Marshal(original)

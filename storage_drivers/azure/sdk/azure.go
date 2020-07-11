@@ -302,7 +302,7 @@ func (d *Client) getMountTargetsFromVolume(vol *netapp.Volume) []MountTarget {
 	mounts := make([]MountTarget, 0)
 
 	if vol.MountTargets == nil {
-		log.Debugf("Volume %s has nil MountTargetProperties.", *vol.Name)
+		log.Tracef("Volume %s has nil MountTargetProperties.", *vol.Name)
 		return mounts
 	}
 

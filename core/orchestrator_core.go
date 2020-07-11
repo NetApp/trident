@@ -214,12 +214,10 @@ func (o *TridentOrchestrator) bootstrapBackends() error {
 				o.backends[newBackendExternal.BackendUUID] = newBackend
 
 				log.WithFields(log.Fields{
-					"newBackend":                     newBackend,
 					"newBackendExternal":             newBackendExternal,
 					"newBackendExternal.Name":        newBackendExternal.Name,
 					"newBackendExternal.State":       newBackendExternal.State.String(),
 					"newBackendExternal.BackendUUID": newBackendExternal.BackendUUID,
-					"persistentBackend":              b,
 					"persistentBackend.Name":         b.Name,
 					"persistentBackend.State":        b.State.String(),
 					"persistentBackend.BackendUUID":  b.BackendUUID,

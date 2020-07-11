@@ -160,9 +160,10 @@ func NewFailedStorageBackend(driver Driver) *Backend {
 	}
 
 	log.WithFields(log.Fields{
-		"backend": backend,
-		"driver":  driver,
-	}).Debug("NewFailedStorageBackend.")
+		"backendUUID": backend.BackendUUID,
+		"backendName": backend.Name,
+		"driver":      driver.Name(),
+	}).Debug("Failed storage backend.")
 
 	return &backend
 }

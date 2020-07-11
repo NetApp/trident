@@ -819,7 +819,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.1.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
