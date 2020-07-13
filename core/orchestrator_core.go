@@ -822,7 +822,38 @@ func (o *TridentOrchestrator) validateBackendUpdate(
 		return fmt.Errorf("cannot update the backend as the old backend is of type %s and the new backend is of type"+
 			" %s", oldBackend.GetDriverName(), newBackend.GetDriverName())
 	}
+
+        oldStoragePrefix := o.getStoragePrefix(oldBackend)
+        newStoragePrefix := o.getStoragePrefix(newBackend)
+
+        if oldStoragePrefix != newStoragePrefix {
+                return fmt.Errorf("cannot update the backend as updating the StoragePrefix isn't currently supported")
+        }
+
 	return nil
+}
+
+func (o *TridentOrchestrator) getStoragePrefix(backend *storage.Backend) string {
+        backendConfig := backend.Driver.GetExternalConfig()
+        storagePrefix := ""
+        switch backendConf := backendConfig.(type) {
+        case drivers.OntapStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.AWSNFSStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.ESeriesStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.SolidfireStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.AzureNFSStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.GCPNFSStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        case drivers.FakeStorageDriverConfig:
+                storagePrefix = *backendConf.StoragePrefix
+        }
+
+	return storagePrefix
 }
 
 func (o *TridentOrchestrator) GetVersion() (string, error) {
