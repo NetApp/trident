@@ -1,11 +1,11 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 LABEL maintainer="Ardalan.Kangarlou@netapp.com" \
       app="trident.netapp.io" \
       description="Trident Storage Orchestrator"
 
 # Use APK mirrors for fault tolerance
-RUN printf "http://dl-1.alpinelinux.org/alpine/v3.11/main\nhttp://dl-2.alpinelinux.org/alpine/v3.11/main\nhttp://dl-3.alpinelinux.org/alpine/v3.11/main\nhttp://dl-4.alpinelinux.org/alpine/v3.11/main\nhttp://dl-5.alpinelinux.org/alpine/v3.11/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.11/community\nhttp://dl-2.alpinelinux.org/alpine/v3.11/community\nhttp://dl-3.alpinelinux.org/alpine/v3.11/community\nhttp://dl-4.alpinelinux.org/alpine/v3.11/community\nhttp://dl-5.alpinelinux.org/alpine/v3.11/community" > /etc/apk/repositories
+RUN printf "http://dl-2.alpinelinux.org/alpine/v3.12/main\nhttp://dl-3.alpinelinux.org/alpine/v3.12/main\nhttp://dl-4.alpinelinux.org/alpine/v3.12/main\nhttp://dl-5.alpinelinux.org/alpine/v3.12/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.12/community\nhttp://dl-2.alpinelinux.org/alpine/v3.12/community\nhttp://dl-3.alpinelinux.org/alpine/v3.12/community\nhttp://dl-4.alpinelinux.org/alpine/v3.12/community\nhttp://dl-5.alpinelinux.org/alpine/v3.12/community" > /etc/apk/repositories
 
 RUN apk update || true &&  \
 	apk add coreutils util-linux blkid \

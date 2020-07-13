@@ -1,7 +1,7 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 # Use APK mirrors for fault tolerance
-RUN printf "http://dl-1.alpinelinux.org/alpine/v3.11/main\nhttp://dl-2.alpinelinux.org/alpine/v3.11/main\nhttp://dl-3.alpinelinux.org/alpine/v3.11/main\nhttp://dl-4.alpinelinux.org/alpine/v3.11/main\nhttp://dl-5.alpinelinux.org/alpine/v3.11/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.11/community\nhttp://dl-2.alpinelinux.org/alpine/v3.11/community\nhttp://dl-3.alpinelinux.org/alpine/v3.11/community\nhttp://dl-4.alpinelinux.org/alpine/v3.11/community\nhttp://dl-5.alpinelinux.org/alpine/v3.11/community" > /etc/apk/repositories
+RUN printf "http://dl-2.alpinelinux.org/alpine/v3.12/main\nhttp://dl-3.alpinelinux.org/alpine/v3.12/main\nhttp://dl-4.alpinelinux.org/alpine/v3.12/main\nhttp://dl-5.alpinelinux.org/alpine/v3.12/main\n\nhttp://dl-1.alpinelinux.org/alpine/v3.12/community\nhttp://dl-2.alpinelinux.org/alpine/v3.12/community\nhttp://dl-3.alpinelinux.org/alpine/v3.12/community\nhttp://dl-4.alpinelinux.org/alpine/v3.12/community\nhttp://dl-5.alpinelinux.org/alpine/v3.12/community" > /etc/apk/repositories
 
 RUN apk update || true && \
     apk add coreutils nfs-utils util-linux blkid multipath-tools lsscsi e2fsprogs xfsprogs bash
@@ -44,4 +44,3 @@ ENV DOCKER_PLUGIN_MODE 1
 EXPOSE 8000
 
 CMD ["/netapp/container-launch.sh", "--config=/etc/netappdvp/config.json"]
-
