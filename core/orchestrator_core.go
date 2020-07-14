@@ -40,6 +40,7 @@ func recordTiming(operation string, err *error) func() {
 		if *err != nil {
 			success = "false"
 		}
+		operationDurationInMsSummaryDeprecated.WithLabelValues(operation, success).Observe(endTimeMS)
 		operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
 	}
 }
@@ -59,6 +60,7 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 	if *err != nil {
 		success = "false"
 	}
+	operationDurationInMsSummaryDeprecated.WithLabelValues(operation, success).Observe(endTimeMS)
 	operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
 }
 
@@ -453,57 +455,84 @@ func (o *TridentOrchestrator) Stop() {
 // The caller should hold the orchestrator lock.
 func (o *TridentOrchestrator) updateMetrics() {
 
+	tridentBuildInfoDeprecated.WithLabelValues(config.BuildHash,
+		config.OrchestratorVersion.ShortString(),
+		config.BuildType).Set(float64(1))
+
 	tridentBuildInfo.WithLabelValues(config.BuildHash,
 		config.OrchestratorVersion.ShortString(),
 		config.BuildType).Set(float64(1))
 
+	backendsGaugeDeprecated.Reset()
 	backendsGauge.Reset()
-	backendsByTypeGauge.Reset()
-	backendsByStateGauge.Reset()
+	backendsByTypeGaugeDeprecated.Reset()
+	backendsByStateGaugeDeprecated.Reset()
+	tridentBackendInfoDeprecated.Reset()
+	tridentBackendInfo.Reset()
 	for _, backend := range o.backends {
+		backendsGaugeDeprecated.WithLabelValues(backend.GetDriverName(), backend.State.String()).Inc()
 		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State.String()).Inc()
-		backendsByTypeGauge.WithLabelValues(backend.GetDriverName()).Inc()
-		backendsByStateGauge.WithLabelValues(string(backend.State)).Inc()
+		backendsByTypeGaugeDeprecated.WithLabelValues(backend.GetDriverName()).Inc()
+		backendsByStateGaugeDeprecated.WithLabelValues(string(backend.State)).Inc()
+		tridentBackendInfoDeprecated.WithLabelValues(backend.GetDriverName(), backend.Name, backend.BackendUUID).Set(float64(1))
 		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name, backend.BackendUUID).Set(float64(1))
 	}
 
+	volumesGaugeDeprecated.Reset()
 	volumesGauge.Reset()
-	volumesByBackendGauge.Reset()
-	volumesByStateGauge.Reset()
-	volumesTotalBytesByBackendGauge.Reset()
+	volumesByBackendGaugeDeprecated.Reset()
+	volumesByStateGaugeDeprecated.Reset()
+	volumesTotalBytesByBackendGaugeDeprecated.Reset()
 	volumesTotalBytes := float64(0)
-	backendAllocatedBytesGauge.Reset()
+	volumeAllocatedBytesGaugeDeprecated.Reset()
+	volumeAllocatedBytesGauge.Reset()
 	for _, volume := range o.volumes {
 		bytes, _ := strconv.ParseFloat(volume.Config.Size, 64)
 		volumesTotalBytes += bytes
 		if backend, err := o.getBackendByBackendUUID(volume.BackendUUID); err == nil {
 			driverName := backend.GetDriverName()
+			volumesGaugeDeprecated.WithLabelValues(driverName,
+				volume.BackendUUID,
+				string(volume.State),
+				string(volume.Config.VolumeMode)).Inc()
 			volumesGauge.WithLabelValues(driverName,
 				volume.BackendUUID,
 				string(volume.State),
 				string(volume.Config.VolumeMode)).Inc()
-			volumesByBackendGauge.WithLabelValues(driverName).Inc()
-			volumesTotalBytesByBackendGauge.WithLabelValues(driverName).Add(bytes)
+			volumesByBackendGaugeDeprecated.WithLabelValues(driverName).Inc()
+			volumesTotalBytesByBackendGaugeDeprecated.WithLabelValues(driverName).Add(bytes)
 
-			backendAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID, string(volume.State),
+			volumeAllocatedBytesGaugeDeprecated.WithLabelValues(driverName, backend.BackendUUID, string(volume.State),
+				string(volume.Config.VolumeMode)).Add(bytes)
+			volumeAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID, string(volume.State),
 				string(volume.Config.VolumeMode)).Add(bytes)
 		}
-		volumesByStateGauge.WithLabelValues(string(volume.State)).Inc()
+		volumesByStateGaugeDeprecated.WithLabelValues(string(volume.State)).Inc()
 	}
+	volumesTotalBytesGaugeDeprecated.Set(volumesTotalBytes)
 	volumesTotalBytesGauge.Set(volumesTotalBytes)
 
+	scGaugeDeprecated.Set(float64(len(o.storageClasses)))
 	scGauge.Set(float64(len(o.storageClasses)))
+	nodeGaugeDeprecated.Set(float64(len(o.nodes)))
 	nodeGauge.Set(float64(len(o.nodes)))
+	snapshotGaugeDeprecated.Reset()
 	snapshotGauge.Reset()
+	snapshotAllocatedBytesGaugeDeprecated.Reset()
 	snapshotAllocatedBytesGauge.Reset()
 	for _, snapshot := range o.snapshots {
 		vol := o.volumes[snapshot.Config.VolumeName]
 		if vol != nil {
 			if backend, err := o.getBackendByBackendUUID(vol.BackendUUID); err == nil {
 				driverName := backend.GetDriverName()
+				snapshotGaugeDeprecated.WithLabelValues(
+					driverName,
+					vol.BackendUUID).Inc()
 				snapshotGauge.WithLabelValues(
 					driverName,
 					vol.BackendUUID).Inc()
+				snapshotAllocatedBytesGaugeDeprecated.WithLabelValues(driverName, backend.BackendUUID).
+					Add(float64(snapshot.SizeBytes))
 				snapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID).
 					Add(float64(snapshot.SizeBytes))
 			}
