@@ -56,6 +56,7 @@ const (
 	ProvisioningType = "provisioningType"
 	SplitOnClone     = "splitOnClone"
 	TieringPolicy    = "tieringPolicy"
+	maxFlexGroupCloneWait = 120 * time.Second
 )
 
 //For legacy reasons, these strings mustn't change
@@ -83,11 +84,73 @@ type StorageDriver interface {
 	Name() string
 }
 
+type NASDriver interface {
+	GetVolumeOpts(*storage.VolumeConfig, map[string]sa.Request) (map[string]string, error)
+	GetAPI() *api.Client
+	GetConfig() *drivers.OntapStorageDriverConfig
+}
+
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
 func CleanBackendName(backendName string) string {
 	backendName = strings.ReplaceAll(backendName, "[", "")
 	backendName = strings.ReplaceAll(backendName, "]", "")
 	return strings.ReplaceAll(backendName, ":", ".")
+}
+
+func CreateCloneNAS(d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	useAsync bool) error {
+
+	// if cloning a FlexGroup, useAsync will be true
+	if useAsync && !d.GetAPI().SupportsFeature(api.NetAppFlexGroupsClone) {
+		return errors.New("the ONTAPI version does not support FlexGroup cloning")
+	}
+
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshot := volConfig.CloneSourceSnapshot
+
+	if d.GetConfig().DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":      "CreateClone",
+			"Type":        "NASFlexGroupStorageDriver",
+			"name":        name,
+			"source":      source,
+			"snapshot":    snapshot,
+			"storagePool": storagePool,
+		}
+		log.WithFields(fields).Debug(">>>> CreateClone")
+		defer log.WithFields(fields).Debug("<<<< CreateClone")
+	}
+
+	opts, err := d.GetVolumeOpts(volConfig, make(map[string]sa.Request))
+	if err != nil {
+		return err
+	}
+
+	// How "splitOnClone" value gets set:
+	// In the Core we first check clone's VolumeConfig for splitOnClone value
+	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
+	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
+	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
+
+	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
+	var storagePoolSplitOnCloneVal string
+	if storagePool != nil {
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
+	}
+
+	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
+	if storagePoolSplitOnCloneVal == "" {
+		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
+	}
+
+	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	if err != nil {
+		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
+	}
+
+	log.WithField("splitOnClone", split).Debug("Creating volume clone.")
+	return CreateOntapClone(name, source, snapshot, split, d.GetConfig(), d.GetAPI(), useAsync)
 }
 
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
@@ -1566,7 +1629,7 @@ func probeForVolume(name string, client *api.Client) error {
 // Create a volume clone
 func CreateOntapClone(
 	name, source, snapshot string, split bool, config *drivers.OntapStorageDriverConfig, client *api.Client,
-) error {
+	useAsync bool) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1600,23 +1663,19 @@ func CreateOntapClone(
 	}
 
 	// Create the clone based on a snapshot
-	cloneResponse, err := client.VolumeCloneCreate(name, source, snapshot)
-	if err != nil {
-		return fmt.Errorf("error creating clone: %v", err)
-	}
-	if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
-		if zerr.Code() == azgo.EOBJECTNOTFOUND {
-			return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
-		} else if zerr.IsFailedToLoadJobError() {
-			fields := log.Fields{
-				"zerr": zerr,
-			}
-			log.WithFields(fields).Warn("Problem encountered during the clone create operation, attempting to verify the clone was actually created")
-			if volumeLookupError := probeForVolume(name, client); volumeLookupError != nil {
-				return volumeLookupError
-			}
-		} else {
-			return fmt.Errorf("error creating clone: %v", zerr)
+	if useAsync {
+		cloneResponse, err := client.VolumeCloneCreateAsync(name, source, snapshot)
+		err = client.WaitForAsyncResponse(cloneResponse, maxFlexGroupCloneWait)
+		if err != nil {
+			return errors.New("waiting for async response failed")
+		}
+	} else {
+		cloneResponse, err := client.VolumeCloneCreate(name, source, snapshot)
+		if err != nil {
+			return fmt.Errorf("error creating clone: %v", err)
+		}
+		if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
+			return handleCreateOntapCloneErr(zerr, client, snapshot, source, name)
 		}
 	}
 
@@ -1634,6 +1693,24 @@ func CreateOntapClone(
 		if err = api.GetError(splitResponse, err); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
+	}
+
+	return nil
+}
+
+func handleCreateOntapCloneErr(zerr api.ZapiError, client *api.Client, snapshot, source, name string) error {
+	if zerr.Code() == azgo.EOBJECTNOTFOUND {
+		return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
+	} else if zerr.IsFailedToLoadJobError() {
+		fields := log.Fields{
+			"zerr": zerr,
+		}
+		log.WithFields(fields).Warn("Problem encountered during the clone create operation, attempting to verify the clone was actually created")
+		if volumeLookupError := probeForVolume(name, client); volumeLookupError != nil {
+			return volumeLookupError
+		}
+	} else {
+		return fmt.Errorf("error creating clone: %v", zerr)
 	}
 
 	return nil
@@ -1815,8 +1892,7 @@ func CreateSnapshot(
 
 // Restore a volume (in place) from a snapshot.
 func RestoreSnapshot(
-	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
-) error {
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1833,6 +1909,7 @@ func RestoreSnapshot(
 	}
 
 	snapResponse, err := client.SnapshotRestoreVolume(internalSnapName, internalVolName)
+
 	if err = api.GetError(snapResponse, err); err != nil {
 		return fmt.Errorf("error restoring snapshot: %v", err)
 	}
@@ -1847,8 +1924,7 @@ func RestoreSnapshot(
 
 // DeleteSnapshot deletes a single snapshot.
 func DeleteSnapshot(
-	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
-) error {
+	snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig, client *api.Client) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1865,6 +1941,7 @@ func DeleteSnapshot(
 	}
 
 	snapResponse, err := client.SnapshotDelete(internalSnapName, internalVolName)
+
 	if err != nil {
 		return fmt.Errorf("error deleting snapshot: %v", err)
 	}

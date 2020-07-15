@@ -310,53 +310,7 @@ func (d *NASStorageDriver) Create(
 
 // Create a volume clone
 func (d *NASStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
-
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":      "CreateClone",
-			"Type":        "NASStorageDriver",
-			"name":        name,
-			"source":      source,
-			"snapshot":    snapshot,
-			"storagePool": storagePool,
-		}
-		log.WithFields(fields).Debug(">>>> CreateClone")
-		defer log.WithFields(fields).Debug("<<<< CreateClone")
-	}
-
-	opts, err := d.GetVolumeOpts(volConfig, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
-
-	// How "splitOnClone" value gets set:
-	// In the Core we first check clone's VolumeConfig for splitOnClone value
-	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
-	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
-	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
-
-	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
-	var storagePoolSplitOnCloneVal string
-	if storagePool != nil {
-		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-	}
-
-	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
-	if storagePoolSplitOnCloneVal == "" {
-		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
-	}
-
-	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
-	if err != nil {
-		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
-	}
-
-	log.WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(name, source, snapshot, split, &d.Config, d.API)
+	return CreateCloneNAS(d, volConfig, storagePool, false)
 }
 
 // Destroy the volume

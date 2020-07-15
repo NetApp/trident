@@ -568,9 +568,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 	return nil
 }
 
-// CreateClone creates a volume clone
+// CreateClone creates a flexgroup clone
 func (d *NASFlexGroupStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
-	return errors.New("clones are not supported for FlexGroups")
+	return CreateCloneNAS(d, volConfig, storagePool, true)
 }
 
 // Import brings an existing volume under trident's control
@@ -731,8 +731,7 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConf
 		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	//return GetSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return GetSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
 }
 
 // Return the list of snapshots associated with the specified volume
@@ -748,8 +747,7 @@ func (d *NASFlexGroupStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig
 		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	//return GetSnapshots(volConfig, &d.Config, d.API, d.API.FlexGroupSize)
-	return make([]*storage.Snapshot, 0), nil
+	return GetSnapshots(volConfig, &d.Config, d.API, d.API.FlexGroupSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -769,8 +767,7 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotC
 		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	//return CreateSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return CreateSnapshot(snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -787,8 +784,7 @@ func (d *NASFlexGroupStorageDriver) RestoreSnapshot(snapConfig *storage.Snapshot
 		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	//return RestoreSnapshot(snapConfig, &d.Config, d.API)
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return RestoreSnapshot(snapConfig, &d.Config, d.API)
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -805,8 +801,7 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotC
 		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	//return DeleteSnapshot(snapConfig, &d.Config, d.API)
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return DeleteSnapshot(snapConfig, &d.Config, d.API)
 }
 
 // Tests the existence of a FlexGroup. Returns nil if the FlexGroup
@@ -880,7 +875,7 @@ func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Off
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(true),
-		sa.Clones:           sa.NewBoolOffer(false),
+		sa.Clones:           sa.NewBoolOffer(true),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

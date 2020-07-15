@@ -403,7 +403,7 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storageP
 	}
 
 	log.WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(name, source, snapshot, split, &d.Config, d.API)
+	return CreateOntapClone(name, source, snapshot, split, &d.Config, d.API, false)
 }
 
 func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {

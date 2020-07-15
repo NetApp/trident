@@ -286,6 +286,7 @@ type feature string
 const (
 	MinimumONTAPIVersion      feature = "MINIMUM_ONTAPI_VERSION"
 	NetAppFlexGroups          feature = "NETAPP_FLEXGROUPS"
+	NetAppFlexGroupsClone     feature = "NETAPP_FLEXGROUPS_CLONE_ONTAPI_MINIMUM"
 	NetAppFabricPoolFlexVol   feature = "NETAPP_FABRICPOOL_FLEXVOL"
 	NetAppFabricPoolFlexGroup feature = "NETAPP_FABRICPOOL_FLEXGROUP"
 	LunGeometrySkip           feature = "LUN_GEOMETRY_SKIP"
@@ -296,6 +297,7 @@ const (
 var features = map[feature]*utils.Version{
 	MinimumONTAPIVersion:      utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
 	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFlexGroupsClone:     utils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
 	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
@@ -820,7 +822,7 @@ func (d Client) FlexGroupCreate(
 		return response, zerr
 	}
 
-	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+	err = d.WaitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
 	if err != nil {
 		return response, fmt.Errorf("error waiting for response: %v", err)
 	}
@@ -846,7 +848,7 @@ func (d Client) FlexGroupDestroy(name string, force bool) (*azgo.VolumeDestroyAs
 		return response, gerr
 	}
 
-	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+	err = d.WaitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
 	if err != nil {
 		return response, fmt.Errorf("error waiting for response: %v", err)
 	}
@@ -874,7 +876,7 @@ func (d Client) FlexGroupExists(name string) (bool, error) {
 	}
 
 	// Wait for Async Job to complete
-	err = d.waitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
+	err = d.WaitForAsyncResponse(response, time.Duration(maxFlexGroupWait))
 	if err != nil {
 		return false, fmt.Errorf("error waiting for response: %v", err)
 	}
@@ -907,7 +909,7 @@ func (d Client) FlexGroupSetSize(name, newSize string) (*azgo.VolumeSizeAsyncRes
 		return response, zerr
 	}
 
-	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+	err = d.WaitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
 	if err != nil {
 		return response, fmt.Errorf("error waiting for response: %v", err)
 	}
@@ -938,7 +940,7 @@ func (d Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(name string) (*azg
 		return response, zerr
 	}
 
-	err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+	err = d.WaitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
 	if err != nil {
 		return response, fmt.Errorf("error waiting for response: %v", err)
 	}
@@ -968,7 +970,7 @@ func (d Client) FlexGroupModifyUnixPermissions(volumeName, unixPermissions strin
                 return response, zerr
         }
 
-        err = d.waitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
+        err = d.WaitForAsyncResponse(*response, time.Duration(maxFlexGroupWait))
         if err != nil {
                 return response, fmt.Errorf("error waiting for response: %v", err)
         }
@@ -993,8 +995,8 @@ func (d Client) FlexGroupGetAll(prefix string) (*azgo.VolumeGetIterResponse, err
 	return d.volumeGetIterAll(prefix, queryVolIDAttrs, queryVolStateAttrs)
 }
 
-// waitForAsyncResponse handles waiting for an AsyncResponse to return successfully or return an error.
-func (d Client) waitForAsyncResponse(zapiResult interface{}, maxWaitTime time.Duration) error {
+// WaitForAsyncResponse handles waiting for an AsyncResponse to return successfully or return an error.
+func (d Client) WaitForAsyncResponse(zapiResult interface{}, maxWaitTime time.Duration) error {
 
 	asyncResult, err := NewZapiAsyncResult(zapiResult)
 	if err != nil {
@@ -1185,6 +1187,16 @@ func (d Client) VolumeModifyUnixPermissions(volumeName, unixPermissions string) 
 // VolumeCloneCreate clones a volume from a snapshot
 func (d Client) VolumeCloneCreate(name, source, snapshot string) (*azgo.VolumeCloneCreateResponse, error) {
 	response, err := azgo.NewVolumeCloneCreateRequest().
+		SetVolume(name).
+		SetParentVolume(source).
+		SetParentSnapshot(snapshot).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// VolumeCloneCreateAsync clones a volume from a snapshot
+func (d Client) VolumeCloneCreateAsync(name, source, snapshot string) (*azgo.VolumeCloneCreateAsyncResponse, error) {
+	response, err := azgo.NewVolumeCloneCreateAsyncRequest().
 		SetVolume(name).
 		SetParentVolume(source).
 		SetParentSnapshot(snapshot).
@@ -1950,7 +1962,7 @@ func (d Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	return response, err
 }
 
-// SnapshotRestoreVolume restores a volume to a snapshot
+// SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 func (d Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	response, err := azgo.NewSnapshotRestoreVolumeRequest().
 		SetVolume(volumeName).
@@ -2252,8 +2264,7 @@ func (d Client) AggregateCommitment(aggregate string) (*AggregateCommitment, err
 
 // SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
 // equivalent to filer::> snapmirror show
-func (d Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.
-	SnapmirrorGetIterResponse, error) {
+func (d Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.SnapmirrorGetIterResponse, error) {
 	// Limit list-destination to relationship-group-type matching passed relGroupType
 	query := &azgo.SnapmirrorGetIterRequestQuery{}
 	relationshipGroupType := azgo.NewSnapmirrorInfoType().
