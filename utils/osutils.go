@@ -160,8 +160,10 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		return err
 	}
 
-	// Lookup all the SCSI device information
-	deviceInfo, err := getDeviceInfoForLUN(lunID, targetIQN, true)
+	// Lookup all the SCSI device information, and include filesystem type only if not raw block volume
+	needFSType := fstype != fsRaw
+
+	deviceInfo, err := getDeviceInfoForLUN(lunID, targetIQN, needFSType)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -624,11 +626,14 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*Scs
 
 	fsType := ""
 	if needFSType {
+		var devicePath string
 		if multipathDevice != "" {
-			fsType, err = getFSType("/dev/" + multipathDevice)
+			devicePath = "/dev/" + multipathDevice
 		} else {
-			fsType, err = getFSType("/dev/" + devices[0])
+			devicePath = "/dev/" + devices[0]
 		}
+
+		fsType, err = getFSType(devicePath)
 		if err != nil {
 			return nil, err
 		}
@@ -1976,18 +1981,32 @@ func getFSType(device string) (string, error) {
 	log.WithField("device", device).Debug(">>>> osutils.getFSType")
 	defer log.Debug("<<<< osutils.getFSType")
 
-	fsType := ""
+	// blkid return status=2 both in case of an unformatted filesystem as well as for the case when it is
+	// unable to get the filesystem (e.g. IO error), therefore ensure device is available before calling blkid
+	if err := waitForDevice(device); err != nil {
+		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s", device, err)
+	}
+
 	out, err := execCommandWithTimeout("blkid", 5, device)
 	if err != nil {
 		if IsTimeoutError(err) {
 			listAllISCSIDevices()
-			return fsType, err
-		} else {
-			// Do not fail when running fsType on a raw block device
-			log.WithField("device", device).Debug("Could not get FSType for device.")
-			return fsType, nil
+			return "", err
+		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
+			// EITHER: Disk device is unformatted.
+			// OR: For 'blkid', if the specified token (TYPE/PTTYPE, etc) was
+			// not found, or no (specified) devices could be identified, an
+			// exit code of 2 is returned.
+
+			log.WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
+			return "", nil
 		}
+
+		log.WithField("device", device).Errorf("could not determine FSType for device; err: %v", err)
+		return "", err
 	}
+
+	var fsType string
 
 	if strings.Contains(string(out), "TYPE=") {
 		for _, v := range strings.Split(string(out), " ") {
