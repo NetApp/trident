@@ -823,11 +823,23 @@ func (o *TridentOrchestrator) validateBackendUpdate(
 			" %s", oldBackend.GetDriverName(), newBackend.GetDriverName())
 	}
 
+        // storagePrefix attribute is not used and ignored in the SF driver
+        // hence we need not compare storagePrefix during backend updates.
+        if oldBackend.GetDriverName() == drivers.SolidfireSANStorageDriverName {
+                return nil
+        }
+
         oldStoragePrefix := o.getStoragePrefix(oldBackend)
         newStoragePrefix := o.getStoragePrefix(newBackend)
 
         if oldStoragePrefix != newStoragePrefix {
-                return fmt.Errorf("cannot update the backend as updating the StoragePrefix isn't currently supported")
+                err := fmt.Errorf("cannot update the backend as updating the StoragePrefix isn't currently supported")
+                log.WithFields(log.Fields{
+                        "oldStoragePrefix": oldStoragePrefix,
+                        "newStoragePrefix": newStoragePrefix,
+                }).Error(err)
+
+                return err
         }
 
 	return nil
@@ -838,19 +850,29 @@ func (o *TridentOrchestrator) getStoragePrefix(backend *storage.Backend) string 
         storagePrefix := ""
         switch backendConf := backendConfig.(type) {
         case drivers.OntapStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         case drivers.AWSNFSStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         case drivers.ESeriesStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
-        case drivers.SolidfireStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         case drivers.AzureNFSStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         case drivers.GCPNFSStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         case drivers.FakeStorageDriverConfig:
-                storagePrefix = *backendConf.StoragePrefix
+                if backendConf.StoragePrefix != nil {
+                        storagePrefix = *backendConf.StoragePrefix
+                }
         }
 
 	return storagePrefix
