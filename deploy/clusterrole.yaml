@@ -287,9 +287,9 @@ rules:
 - apiGroups:
   - security.openshift.io
   resources:
-  - trident
+  - securitycontextconstraints
   resourceNames:
-  - tridentpods
+  - trident
   verbs:
   - delete
   - update

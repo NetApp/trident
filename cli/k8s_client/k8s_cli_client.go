@@ -1518,7 +1518,7 @@ func (c *KubectlClient) DeleteCSIDriverByLabel(label string) error {
 	return c.DeleteObjectByLabel(label, "", "CSIDriver", "CSI Driver")
 }
 
-// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified name
+// DeleteCSIDriver deletes a CSI Driver object matching the specified name
 func (c *KubectlClient) DeleteCSIDriver(name string) error {
 	return c.DeleteObject(name, "", "CSIDriver", "CSI Driver")
 }

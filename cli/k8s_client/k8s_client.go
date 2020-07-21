@@ -1679,7 +1679,7 @@ func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
 	return nil
 }
 
-// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified name
+// DeleteCSIDriver deletes a CSI Driver object matching the specified name
 func (k *KubeClient) DeleteCSIDriver(name string) error {
 
 	if err := k.clientset.StorageV1beta1().CSIDrivers().Delete(ctx(), name, k.deleteOptions()); err != nil {

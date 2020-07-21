@@ -623,22 +623,48 @@ func (c *Controller) unsupportedInstallationsPrechecks(controllingCRBasedOnStatu
 		}
 	}
 
+	return nil
+}
+
+// removeTridentctlBasedInstallation identifies if the tridentctl-based CSI Trident is installed,
+// if it is installed it will be uninstalled.
+func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.TridentProvisioner) error {
+
+	var uninstallRequired bool
 	// Check for the CSI based Trident installation
 	csiDeploymentFound, csiTridentNamespace, err := c.isCSITridentInstalled()
 	if err != nil {
 		return utils.ReconcileFailedError(err)
 	} else if csiDeploymentFound {
-		if controllingCRBasedOnStatusExists || operatorCSIDeploymentFound {
-			// nothing to do, if we have any invalid Trident deployments, these will get removed as part of the
-			// auto-heal code
-			log.Debug("CSI based Trident installation exist.")
-		} else {
-			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation, "+
-				"found CSI Trident already installed in namespace '%v'.", csiTridentNamespace)
-			log.Error(errorMessage)
-			c.updateAllCRs(errorMessage)
-			return utils.UnsupportedConfigError(fmt.Errorf(errorMessage))
+		eventMessage := fmt.Sprintf("A 'tridentctl-based' CSI Trident installation found in the namespace '%v';" +
+			" it will be replaced with an Operator-based Trident installation.", csiTridentNamespace)
+
+		log.Info(eventMessage)
+		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(AppStatusInstalling), eventMessage)
+
+		uninstallRequired = true
+	}
+
+	if uninstallRequired {
+		if err := c.uninstallTridentAll(csiTridentNamespace); err != nil {
+			// Update status of the tridentCR  to `Failed`
+			logMessage := "Updating Trident Provisioner CR after failed installation."
+			failureMessage := fmt.Sprintf("Failed to install Trident; failed to remove existing tridentctl-based CSI" +
+				" Trident installation; err: %v", err)
+
+			log.Error(failureMessage)
+			c.eventRecorder.Event(tridentCR, corev1.EventTypeWarning, string(AppStatusFailed), failureMessage)
+			c.updateCRStatus(tridentCR, logMessage, failureMessage, string(AppStatusFailed), "", nil)
+
+			// Install failed, so fail the reconcile loop
+			return utils.ReconcileFailedError(err)
 		}
+
+		// Uninstall succeeded, so re-run the reconcile loop
+		eventMessage := fmt.Sprintf("tridentctl-based CSI Trident installation removed.")
+
+		log.Info(eventMessage)
+		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(AppStatusInstalling), eventMessage)
 	}
 
 	return nil
@@ -922,7 +948,7 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 
 func (c *Controller) reconcileTridentNotPresent() error {
 
-	log.Info("Reconciler found no Trident installation.")
+	log.Info("Reconciler found no Operator-based Trident installation.")
 
 	// Get all TridentProvisioner CRs
 	tridentCRs, err := c.getTridentCRsInNamespace(corev1.NamespaceAll)
@@ -964,7 +990,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 		return nil
 	}
 
-	// Update status of the tridentCR  to `Installing`
+	// Update status of the tridentCR to `Installing`
 	logMessage := "Updating TridentProvisioner CR before new installation"
 	statusMessage := "Installing Trident"
 
@@ -974,6 +1000,17 @@ func (c *Controller) reconcileTridentNotPresent() error {
 		return utils.ReconcileFailedError(fmt.Errorf(
 			"unable to update status of the CR '%v' in namespace '%v' to installing",
 			tridentCR.Name, tridentCR.Namespace))
+	}
+
+	// At this stage we have identified a valid controlling CR for Operator-based Trident installation,
+	// now we should also check if any tridentctl-based CSI Trident installation exists,
+	// if one does exists we can safely remove it to make way for the new Operator-based Trident installation.
+	//
+	// NOTE: If this method is placed before this point, then we can run into a risk where existing
+	// tridentctl-based installation would get removed and may not be replaced with an Operator-based
+	// Trident installation.
+	if err := c.removeTridentctlBasedInstallation(tridentCR); err != nil {
+		return err
 	}
 
 	if err := c.installTridentAndUpdateStatus(*newTridentCR, "", "", false); err != nil {
