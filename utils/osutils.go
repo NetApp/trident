@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -1357,7 +1358,7 @@ func reloadMultipathDevice(multipathDevice string) error {
 		return fmt.Errorf("cannot reload an empty multipathDevice")
 	}
 
-	_, err := execCommandWithTimeout("multipath", 30, "-r", "/dev/"+multipathDevice)
+	_, err := execCommandWithTimeout("multipath", 30, true, "-r", "/dev/"+multipathDevice)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"device": multipathDevice,
@@ -1880,7 +1881,7 @@ func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) {
 		return
 	}
 
-	_, err := execCommandWithTimeout("multipath", 30, "-f", "/dev/"+deviceInfo.MultipathDevice)
+	_, err := execCommandWithTimeout("multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
 	if err != nil {
 		// nothing to do if it generates an error but log it
 		log.WithFields(log.Fields{
@@ -1897,7 +1898,7 @@ func flushDevice(deviceInfo *ScsiDeviceInfo) {
 	defer log.Debug("<<<< osutils.flushDevice")
 
 	for _, device := range deviceInfo.Devices {
-		_, err := execCommandWithTimeout("blockdev", 5, "--flushbufs", "/dev/"+device)
+		_, err := execCommandWithTimeout("blockdev", 5, true, "--flushbufs", "/dev/"+device)
 		if err != nil {
 			// nothing to do if it generates an error but log it
 			log.WithFields(log.Fields{
@@ -1987,7 +1988,7 @@ func getFSType(device string) (string, error) {
 		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s", device, err)
 	}
 
-	out, err := execCommandWithTimeout("blkid", 5, device)
+	out, err := execCommandWithTimeout("blkid", 5, true, device)
 	if err != nil {
 		if IsTimeoutError(err) {
 			listAllISCSIDevices()
@@ -1999,6 +2000,12 @@ func getFSType(device string) (string, error) {
 			// exit code of 2 is returned.
 
 			log.WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
+
+			if err = ensureDeviceUnformatted(device); err != nil {
+				log.WithField("device", device).Errorf("device may not be unformatted; err: %v", err)
+				return "", err
+			}
+
 			return "", nil
 		}
 
@@ -2018,6 +2025,29 @@ func getFSType(device string) (string, error) {
 		}
 	}
 	return fsType, nil
+}
+
+// ensureDeviceUnformatted reads first 2 MBs of the device to ensures it is unformatted and contains all zeros
+func ensureDeviceUnformatted(device string) error {
+
+	log.WithField("device", device).Debug(">>>> osutils.ensureDeviceUnformatted")
+	defer log.Debug("<<<< osutils.ensureDeviceUnformatted")
+
+	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
+	out, err := execCommandWithTimeout("dd", 5, false, args...)
+	if err != nil {
+		log.WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
+		return err
+	}
+
+	if outWithoutZeros := bytes.Trim(out, "\x00"); len(outWithoutZeros) != 0 {
+		log.WithFields(log.Fields{"error": err, "device": device}).Error("device contains non-zero values")
+		return fmt.Errorf("device %v is not unformatted", device)
+	}
+
+	log.WithFields(log.Fields{"device": device}).Info("Device in unformatted.")
+
+	return nil
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
@@ -2148,11 +2178,11 @@ func Umount(mountpoint string) (err error) {
 	log.WithField("mountpoint", mountpoint).Debug(">>>> osutils.Umount")
 	defer log.Debug("<<<< osutils.Umount")
 
-	if _, err = execCommandWithTimeout("umount", 10, mountpoint); err != nil {
+	if _, err = execCommandWithTimeout("umount", 10, true, mountpoint); err != nil {
 		log.WithField("error", err).Error("Umount failed.")
 		if IsTimeoutError(err) {
 			var out []byte
-			out, err = execCommandWithTimeout("umount", 10, mountpoint, "-f")
+			out, err = execCommandWithTimeout("umount", 10, true, mountpoint, "-f")
 			if strings.Contains(string(out), "not mounted") {
 				err = nil
 			}
@@ -2388,7 +2418,7 @@ type execCommandResult struct {
 }
 
 // execCommand invokes an external shell command
-func execCommandWithTimeout(name string, timeoutSeconds time.Duration, args ...string) ([]byte, error) {
+func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput bool, args ...string) ([]byte, error) {
 
 	timeout := timeoutSeconds * time.Second
 
@@ -2425,11 +2455,18 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, args ...s
 		break
 	}
 
-	log.WithFields(log.Fields{
+	logFields := log.WithFields(log.Fields{
 		"command": name,
-		"output":  sanitizeString(string(result.Output)),
 		"error":   result.Error,
-	}).Debug("<<<< osutils.execCommandWithTimeout.")
+	})
+
+	if logOutput{
+		logFields.WithFields(log.Fields{
+			"output":  sanitizeString(string(result.Output)),
+		})
+	}
+
+	logFields.Debug("<<<< osutils.execCommandWithTimeout.")
 
 	return result.Output, result.Error
 }
@@ -2499,7 +2536,7 @@ func listAllISCSIDevices() {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := execCommandWithTimeout("multipath", 5, "-ll")
+	out1, _ := execCommandWithTimeout("multipath", 5, true, "-ll")
 	out2, _ := execIscsiadmCommand("-m", "session")
 	log.WithFields(log.Fields{
 		"/dev/dm-*":                  dmLog,

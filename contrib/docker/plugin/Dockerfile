@@ -18,6 +18,7 @@ ADD chroot-host-wrapper.sh /netapp
 RUN    ln -s /netapp/chroot-host-wrapper.sh /netapp/blkid \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/blockdev \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/cat \
+    && ln -s /netapp/chroot-host-wrapper.sh /netapp/dd \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/df \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/free \
     && ln -s /netapp/chroot-host-wrapper.sh /netapp/iscsiadm \
