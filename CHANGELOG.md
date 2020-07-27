@@ -4,11 +4,30 @@
 
 ## Changes since v20.04.0
 
+**IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
+
 **Fixes:**
-- **Kubernetes:** Fixed setting of Kubelet directory via Trident Operator.
+- Disabled automatic iSCSI scans and shortened the iSCSI session replacement timeout. (Issue [#410](https://github.com/NetApp/trident/issues/410))
+- Fixed volume cloning in the Azure NetApp Files driver.
+- **Kubernetes:** Fixed an issue where the NFS client could not start rpc-statd.
+- **Kubernetes:** Fixed various usability issues with the Trident Operator. (Issues [#409](https://github.com/NetApp/trident/issues/409), [#389](https://github.com/NetApp/trident/issues/389), [#399](https://github.com/NetApp/trident/issues/399))
+- **Kubernetes:** Fixed an issue with bidirectional iSCSI CHAP authentication. (Issue [#404](https://github.com/NetApp/trident/issues/404))
+- **Kubernetes:** Set unix permissions correctly during volume import. (Issue [#398](https://github.com/NetApp/trident/issues/398))
+- **Kubernetes:** Added various checks to improve resiliency of iSCSI volumes. (Issue [#418](https://github.com/NetApp/trident/issues/418))
+- **Kubernetes:** Enhanced startup logic to reconcile volume access rules with current cluster nodes. (Issues [#391](https://github.com/NetApp/trident/issues/391), [#352](https://github.com/NetApp/trident/issues/352))
+- **Kubernetes:** Added storage prefix validation to ONTAP drivers. (Issue [#401](https://github.com/NetApp/trident/issues/401))
 
 **Enhancements**
-- Added support for NFS v4.1 volumes to ANF, CVS-AWS, and CVS-GCP drivers.
+- Added support for NFS v4.1 volumes to Azure NetApp Files, CVS-AWS, and CVS-GCP drivers. (Issue [#334](https://github.com/NetApp/trident/issues/334))
+- Added cloning to ONTAP FlexGroup driver.
+- **Kubernetes:** Added support for CSI NodeGetVolumeStats endpoint. (Issue [#400](https://github.com/NetApp/trident/issues/400))
+- **Kubernetes:** Added volume import to ONTAP SAN driver. (Issue [#310](https://github.com/NetApp/trident/issues/310))
+- **Kubernetes:** Added automatic igroup management to ONTAP SAN and ONTAP SAN Economy drivers.
+- **Kubernetes:** Added more usage and capacity metrics. (Issue [#400](https://github.com/NetApp/trident/issues/400))
+- **Kubernetes:** Added upgrade support to the Trident Operator.
+
+**Deprecations:**
+- **Kubernetes:** Deprecated all of the 'core' metrics because their names are changing.
 
 ## v20.04.0
 
