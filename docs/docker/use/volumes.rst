@@ -52,7 +52,10 @@ Destroy a Volume
    # destroy the volume just like any other Docker volume
    docker volume rm firstVolume
 
-Please note that when using the solidfire-san driver, the above example deletes and purges the volume.
+.. note::
+
+   Please note that when using the solidfire-san driver, the above example
+   deletes and purges the volume.
 
 Volume Cloning
 --------------

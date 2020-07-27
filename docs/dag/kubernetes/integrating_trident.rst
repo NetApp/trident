@@ -213,9 +213,16 @@ Please refer to :ref:`Virtual Storage Pools <Virtual Storage Pools>` for more in
 Virtual Storage Pool Design
 ===========================
 
-While creating a backend, you can generally specify a set of parameters. It was impossible for the administrator to create another backend with the same storage credentials and with a different set of parameters. With the introduction of Virtual Storage Pools , this issue has been alleviated. Virtual Storage Pools is a level abstraction introduced between the backend and the Kubernetes Storage Class so that the administrator can define parameters along with labels which can be referenced through Kubernetes Storage Classes as a selector, in a backend-agnostic way.
-Virtual Storage Pools can be defined for all supported NetApp backends with Trident. That list
-includes E-Series, SolidFire/HCI, ONTAP, Cloud Volumes Service on AWS and GCP, as well as Azure
+While creating a backend, you can generally specify a set of parameters.
+It was impossible for the administrator to create another backend with the same
+storage credentials and with a different set of parameters. With the
+introduction of Virtual Storage Pools, this issue has been alleviated. Virtual
+Storage Pools is a level abstraction introduced between the backend and the
+Kubernetes Storage Class so that the administrator can define parameters along
+with labels which can be referenced through Kubernetes Storage Classes as a
+selector, in a backend-agnostic way. Virtual Storage Pools can be defined for
+all supported NetApp backends with Trident. That list includes E-Series,
+SolidFire/HCI, ONTAP, Cloud Volumes Service on AWS and GCP, as well as Azure
 NetApp Files.
 
 .. note::
@@ -231,7 +238,7 @@ Design Virtual Storage Pools for emulating different Service Levels/QoS
 It is possible to design Virtual Storage Pools for emulating service classes. Using the virtual pool implementation for Cloud Volume Service for AWS, let us examine how we can setup up different service classes. Configure the AWS-CVS backend with multiple labels, representing different performance levels. Set "servicelevel" aspect to the appropriate performance level and add other required aspects under each labels. Now create different Kubernetes Storage Classes that would map to different virtual Storage Pools. Using the ``parameters.selector`` field, each StorageClass calls out which virtual pool(s) may be used to host a volume.
 
 Design Virtual Pools for Assigning Specific Set of Aspects
----------------------------------------------------------
+----------------------------------------------------------
 
 Multiple Virtual Storage pools with a specific set of aspects can be designed from a single storage backend. For doing so, configure the backend with multiple labels and set the required aspects under each label. Now create different Kubernetes Storage Classes using the ``parameters.selector`` field that would map to different Virtual Storage Pools.The volumes that get provisioned on the backend will have the aspects defined in the chosen Virtual Storage Pool.
 
@@ -320,7 +327,7 @@ Take a look at the :ref:`Expanding an NFS volume` and
 To allow possible expansion later, set `allowVolumeExpansion` to `true` in your StorageClass associated with the volume. Whenever the Persistent Volume needs to be resized, edit the ``spec.resources.requests.storage`` annotation in the Persistent Volume Claim to the required volume size. Trident will automatically take care of resizing the volume on the storage cluster.
 
 .. note::
-   
+
    1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
    2. Kubernetes, prior to version 1.12, does not support PV resize as the admission controller may reject PVC size updates. The Trident team has changed Kubernetes to allow such changes starting with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still possible to resize NFS PVs for earlier versions of Kubernetes that support resize. This is done by disabling the PersistentVolumeClaimResize admission plugin when the Kubernetes API server is started.
 
