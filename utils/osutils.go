@@ -2027,7 +2027,7 @@ func getFSType(device string) (string, error) {
 	return fsType, nil
 }
 
-// ensureDeviceUnformatted reads first 2 MBs of the device to ensures it is unformatted and contains all zeros
+// ensureDeviceUnformatted reads first 2 MiBs of the device to ensures it is unformatted and contains all zeros
 func ensureDeviceUnformatted(device string) error {
 
 	log.WithField("device", device).Debug(">>>> osutils.ensureDeviceUnformatted")
@@ -2040,6 +2040,16 @@ func ensureDeviceUnformatted(device string) error {
 		return err
 	}
 
+	// Ensure 2MiB of data read
+	if len(out) != 2097152 {
+		log.WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
+		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to " +
+			"ensure if the device is actually unformatted", device, len(out))
+	}
+
+	log.WithField("device", device).Debug("Verified correct number of bytes read.")
+
+	// Ensure all zeros
 	if outWithoutZeros := bytes.Trim(out, "\x00"); len(outWithoutZeros) != 0 {
 		log.WithFields(log.Fields{"error": err, "device": device}).Error("device contains non-zero values")
 		return fmt.Errorf("device %v is not unformatted", device)
