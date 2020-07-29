@@ -823,59 +823,7 @@ func (o *TridentOrchestrator) validateBackendUpdate(
 			" %s", oldBackend.GetDriverName(), newBackend.GetDriverName())
 	}
 
-        // storagePrefix attribute is not used and ignored in the SF driver
-        // hence we need not compare storagePrefix during backend updates.
-        if oldBackend.GetDriverName() == drivers.SolidfireSANStorageDriverName {
-                return nil
-        }
-
-        oldStoragePrefix := o.getStoragePrefix(oldBackend)
-        newStoragePrefix := o.getStoragePrefix(newBackend)
-
-        if oldStoragePrefix != newStoragePrefix {
-                err := fmt.Errorf("cannot update the backend as updating the StoragePrefix isn't currently supported")
-                log.WithFields(log.Fields{
-                        "oldStoragePrefix": oldStoragePrefix,
-                        "newStoragePrefix": newStoragePrefix,
-                }).Error(err)
-
-                return err
-        }
-
 	return nil
-}
-
-func (o *TridentOrchestrator) getStoragePrefix(backend *storage.Backend) string {
-        backendConfig := backend.Driver.GetExternalConfig()
-        storagePrefix := ""
-        switch backendConf := backendConfig.(type) {
-        case drivers.OntapStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        case drivers.AWSNFSStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        case drivers.ESeriesStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        case drivers.AzureNFSStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        case drivers.GCPNFSStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        case drivers.FakeStorageDriverConfig:
-                if backendConf.StoragePrefix != nil {
-                        storagePrefix = *backendConf.StoragePrefix
-                }
-        }
-
-	return storagePrefix
 }
 
 func (o *TridentOrchestrator) GetVersion() (string, error) {
@@ -1131,33 +1079,43 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(backendName, configJSON
 	updateCode := backend.GetUpdateType(originalBackend)
 	switch {
 	case updateCode.Contains(storage.InvalidUpdate):
-		log.Error("invalid backend update")
-		return nil, fmt.Errorf("invalid backend update")
+		err := errors.New("invalid backend update")
+		log.WithField("error", err).Error("Backend update failed.")
+		return nil, err
 	case updateCode.Contains(storage.VolumeAccessInfoChange):
-		log.Error("updating the data plane IP address isn't currently supported")
-		return nil, fmt.Errorf("updating the data plane IP address isn't currently supported")
+		err := errors.New("updating the data plane IP address isn't currently supported")
+		log.WithField("error", err).Error("Backend update failed.")
+		return nil, err
 	case updateCode.Contains(storage.BackendRename):
 		checkingBackend, lookupErr := o.getBackendByBackendName(backend.Name)
 		if lookupErr == nil {
-			// don't rename if the name is already in use
-			log.Errorf("backend name %v is already in use by %v", backend.Name, checkingBackend.BackendUUID)
-			return nil, fmt.Errorf("backend name %v is already in use by %v", backend.Name, checkingBackend.BackendUUID)
+			// Don't rename if the name is already in use
+			err := fmt.Errorf("backend name %v is already in use by %v", backend.Name, checkingBackend.BackendUUID)
+			log.WithField("error", err).Error("Backend update failed.")
+			return nil, err
 		} else if utils.IsNotFoundError(lookupErr) {
-			// ok, we couldn't find it so it's not in use, let's rename
-			err = o.replaceBackendAndUpdateVolumesOnPersistentStore(originalBackend, backend)
-			if err != nil {
-				log.Errorf("problem while renaming backend from %v to %v error: %v", originalBackend.Name, backend.Name, err)
+			// We couldn't find it so it's not in use, let's rename
+			if err := o.replaceBackendAndUpdateVolumesOnPersistentStore(originalBackend, backend); err != nil {
+				log.WithField("error", err).Errorf(
+					"Could not rename backend from %v to %v", originalBackend.Name, backend.Name)
 				return nil, err
 			}
 		} else {
-			// unexpected error while checking if the backend is already in use
-			log.Errorf("unexpected problem while renaming backend from %v to %v error: %v", originalBackend.Name, backend.Name, lookupErr)
-			return nil, fmt.Errorf("unexpected problem while renaming backend from %v to %v error: %v", originalBackend.Name, backend.Name, lookupErr)
+			// Unexpected error while checking if the backend is already in use
+			err := fmt.Errorf("unexpected problem while renaming backend from %v to %v; %v",
+				originalBackend.Name, backend.Name, lookupErr)
+			log.WithField("error", err).Error("Backend update failed.")
+			return nil, err
 		}
+	case updateCode.Contains(storage.PrefixChange):
+		err := errors.New("updating the storage prefix isn't currently supported")
+		log.WithField("error", err).Error("Backend update failed.")
+		return nil, err
 	default:
 		// Update backend information
 		if err = o.updateBackendOnPersistentStore(backend, false); err != nil {
-			log.Errorf("problem persisting renamed backend from %v to  %v error: %v", originalBackend.Name, backend.Name, err)
+			log.WithField("error", err).Errorf("Could not persist renamed backend from %v to %v",
+				originalBackend.Name, backend.Name)
 			return nil, err
 		}
 	}

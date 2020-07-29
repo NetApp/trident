@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1616,6 +1617,10 @@ func (d *SANEconomyStorageDriver) GetUpdateType(driverOrig storage.Driver) *roar
 
 	if d.Config.Username != dOrig.Config.Username {
 		bitmap.Add(storage.UsernameChange)
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
 	}
 
 	return bitmap

@@ -694,6 +694,7 @@ const (
 	InvalidUpdate
 	UsernameChange
 	PasswordChange
+	PrefixChange
 )
 
 func (b *Backend) GetUpdateType(origBackend *Backend) *roaring.Bitmap {

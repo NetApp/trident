@@ -4,6 +4,7 @@ package ontap
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -397,19 +398,19 @@ func (d *NASStorageDriver) Import(volConfig *storage.VolumeConfig, originalName 
 		}
 	}
 
-        // Modify unix-permissions of the volume if Trident will manage its lifecycle
-        if !volConfig.ImportNotManaged {
-                // unixPermissions specified in PVC annotation takes precedence over backend's unixPermissions config
-                unixPerms := volConfig.UnixPermissions
-                if unixPerms == "" {
-                        unixPerms = d.Config.UnixPermissions
-                }
-                modifyUnixPermResponse, err := d.API.VolumeModifyUnixPermissions(volConfig.InternalName, unixPerms)
-                if err = api.GetError(modifyUnixPermResponse, err); err != nil {
-                        log.WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
-                        return fmt.Errorf("volume %s modify failed: %v", originalName, err)
-                }
-        }
+	// Modify unix-permissions of the volume if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
+		// unixPermissions specified in PVC annotation takes precedence over backend's unixPermissions config
+		unixPerms := volConfig.UnixPermissions
+		if unixPerms == "" {
+			unixPerms = d.Config.UnixPermissions
+		}
+		modifyUnixPermResponse, err := d.API.VolumeModifyUnixPermissions(volConfig.InternalName, unixPerms)
+		if err = api.GetError(modifyUnixPermResponse, err); err != nil {
+			log.WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
+			return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+		}
+	}
 
 	// Make sure we're not importing a volume without a junction path when not managed
 	if volConfig.ImportNotManaged {
@@ -768,6 +769,10 @@ func (d *NASStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 	if d.Config.Username != dOrig.Config.Username {
 		bitmap.Add(storage.UsernameChange)
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
 	}
 
 	return bitmap

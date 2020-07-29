@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1789,6 +1790,10 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 		if newUsername != origUsername {
 			bitmap.Add(storage.UsernameChange)
 		}
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
 	}
 
 	return bitmap

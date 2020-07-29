@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -1050,10 +1051,14 @@ func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExt
 func (d *StorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
 
 	bitmap := roaring.New()
-	_, ok := driverOrig.(*StorageDriver)
+	dOrig, ok := driverOrig.(*StorageDriver)
 	if !ok {
 		bitmap.Add(storage.InvalidUpdate)
 		return bitmap
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
 	}
 
 	return roaring.New()

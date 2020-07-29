@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1600,10 +1601,14 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 // GetUpdateType returns a bitmap populated with updates to the driver
 func (d *NFSStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
 	bitmap := roaring.New()
-	_, ok := driverOrig.(*NFSStorageDriver)
+	dOrig, ok := driverOrig.(*NFSStorageDriver)
 	if !ok {
 		bitmap.Add(storage.InvalidUpdate)
 		return bitmap
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
 	}
 
 	return bitmap
