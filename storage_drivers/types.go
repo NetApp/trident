@@ -4,11 +4,15 @@ package storagedrivers
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/utils"
 )
 
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
@@ -28,6 +32,12 @@ type CommonStorageDriverConfig struct {
 
 type CommonStorageDriverConfigDefaults struct {
 	Size string `json:"size"`
+}
+
+// Implement stringer interface for the CommonStorageDriverConfig driver
+func (d CommonStorageDriverConfig) String() string {
+	sensitive := d.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{}, nil)
 }
 
 // ESeriesStorageDriverConfig holds settings for ESeriesStorageDriver
@@ -69,6 +79,12 @@ type EseriesStorageDriverPool struct {
 
 type EseriesStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the E-Series driver
+func (d ESeriesStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"Password", "PasswordArray", "Username"}, nil)
 }
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
@@ -148,6 +164,12 @@ type SolidfireStorageDriverPool struct {
 
 type SolidfireStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the Solidfire driver
+func (d SolidfireStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"TenantName", "EndPoint"}, nil)
 }
 
 type AWSNFSStorageDriverConfig struct {
@@ -340,4 +362,42 @@ func NewSnapshotsNotSupportedError(backendType string) error {
 	return &SnapshotsNotSupportedError{
 		message: fmt.Sprintf("snapshots are not supported by backend type %s", backendType),
 	}
+}
+
+// ToString identifies attributes of a struct, stringifies them such that they can be consumed by the
+// struct's stringer interface, redacts elements specified in the redactList, and replaces
+// config with external config format depending upon the value of sensitive flag.
+func ToString(sensitive bool, structPointer interface{}, redactList []string, configVal interface{}) (out string) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Panic in types#ToString; err: %v", r)
+			out = "<panic>"
+		}
+	}()
+
+	elements := reflect.ValueOf(structPointer).Elem()
+	var output strings.Builder
+
+	for i := 0; i < elements.NumField(); i++ {
+
+		fieldName := elements.Type().Field(i).Name
+
+		if sensitive {
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
+		} else {
+			switch {
+			case fieldName == "Config" && configVal != nil:
+				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
+			case utils.SliceContainsString(redactList, fieldName):
+				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, "<REDACTED>"))
+			default:
+				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
+			}
+		}
+	}
+
+	out = output.String()
+
+	return
 }

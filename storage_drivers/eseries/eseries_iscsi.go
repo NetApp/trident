@@ -1198,9 +1198,9 @@ func (d *SANStorageDriver) GetExternalConfig() interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
 	drivers.Clone(d.Config, &cloneConfig)
-	cloneConfig.Username = ""      // redact the username
-	cloneConfig.Password = ""      // redact the password
-	cloneConfig.PasswordArray = "" // redact the password
+	cloneConfig.Username = "<REDACTED>"      // redact the username
+	cloneConfig.Password = "<REDACTED>"      // redact the password
+	cloneConfig.PasswordArray = "<REDACTED>" // redact the password
 	return cloneConfig
 }
 
@@ -1253,6 +1253,12 @@ func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 	}
 
 	return d.getVolumeExternal(&volumeAttrs), nil
+}
+
+// Implement stringer interface for the E-Series driver
+func (d SANStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, []string{"API"}, d.GetExternalConfig())
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
