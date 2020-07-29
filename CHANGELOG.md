@@ -5,6 +5,7 @@
 ## Changes since v20.04.0
 
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
+**IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
 
 **Fixes:**
 - Disabled automatic iSCSI scans and shortened the iSCSI session replacement timeout. (Issue [#410](https://github.com/NetApp/trident/issues/410))
@@ -25,6 +26,7 @@
 - **Kubernetes:** Added automatic igroup management to ONTAP SAN and ONTAP SAN Economy drivers.
 - **Kubernetes:** Added more usage and capacity metrics. (Issue [#400](https://github.com/NetApp/trident/issues/400))
 - **Kubernetes:** Added upgrade support to the Trident Operator.
+- **Kubernetes:** Automatic NetApp autosupport telemetry reporting via trident-autosupport sidecar, disabled via --silence-autosupport option in tridentctl install command
 
 **Deprecations:**
 - **Kubernetes:** Deprecated all of the 'core' metrics because their names are changing.

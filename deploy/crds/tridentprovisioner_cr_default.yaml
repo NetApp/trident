@@ -5,3 +5,4 @@ metadata:
   namespace: default
 spec:
   debug: false
+  silenceAutosupport: false

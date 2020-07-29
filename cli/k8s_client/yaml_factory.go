@@ -4,8 +4,10 @@ package k8sclient
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
+	commonconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
 
@@ -96,6 +98,9 @@ metadata:
   {OWNER_REF}
 rules:
   - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
     resources: ["persistentvolumes", "persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: [""]
@@ -131,6 +136,9 @@ metadata:
   {LABELS}
   {OWNER_REF}
 rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
   - apiGroups: [""]
     resources: ["persistentvolumes", "persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
@@ -331,10 +339,9 @@ spec:
     targetPort: 8001
 `
 
-func GetCSIDeploymentYAML(deploymentName, tridentImage, imageRegistry, logFormat string,
-	imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string,
-	debug, useIPv6 bool, version *utils.Version) string {
+func GetCSIDeploymentYAML(deploymentName, tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL,
+	imageRegistry, logFormat string, imagePullSecrets []string, labels, controllingCRDetails map[string]string,
+	debug, useIPv6, silenceAutosupport bool, version *utils.Version) string {
 
 	var debugLine, logLevel, ipLocalhost string
 
@@ -365,6 +372,20 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage, imageRegistry, logFormat
 		deploymentYAML = csiDeployment117YAMLTemplate
 	}
 
+	if autosupportImage == "" {
+		autosupportImage = commonconfig.DefaultAutosupportImage
+	}
+
+	autosupportProxyLine := ""
+	if autosupportProxy != "" {
+		autosupportProxyLine = fmt.Sprint("- -proxy-url=", autosupportProxy)
+	}
+
+	autosupportCustomURLLine := ""
+	if autosupportCustomURL != "" {
+		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", autosupportCustomURL)
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
@@ -373,6 +394,10 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage, imageRegistry, logFormat
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", logFormat)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", autosupportImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(silenceAutosupport))
 	deploymentYAML = replaceMultiline(deploymentYAML, labels, controllingCRDetails, imagePullSecrets)
 
 	return deploymentYAML
@@ -445,6 +470,20 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
+      - name: trident-autosupport
+        image: {AUTOSUPPORT_IMAGE}
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {DEBUG}
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.0.2
         args:
@@ -492,6 +531,8 @@ spec:
       - name: certs
         secret:
           secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
 `
 
 const csiDeployment114YAMLTemplate = `---
@@ -561,6 +602,20 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
+      - name: trident-autosupport
+        image: {AUTOSUPPORT_IMAGE}
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {DEBUG}
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
@@ -596,6 +651,8 @@ spec:
       - name: certs
         secret:
           secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
 `
 
 const csiDeployment116YAMLTemplate = `---
@@ -665,6 +722,20 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
+      - name: trident-autosupport
+        image: {AUTOSUPPORT_IMAGE}
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {DEBUG}
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
@@ -712,6 +783,8 @@ spec:
       - name: certs
         secret:
           secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
 `
 
 const csiDeployment117YAMLTemplate = `---
@@ -781,6 +854,20 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
+      - name: trident-autosupport
+        image: {AUTOSUPPORT_IMAGE}
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {DEBUG}
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
         args:
@@ -840,6 +927,8 @@ spec:
       - name: certs
         secret:
           secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
 `
 
 func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat string,

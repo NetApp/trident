@@ -65,21 +65,25 @@ const (
 
 var (
 	// CLI flags
-	generateYAML    bool
-	useYAML         bool
-	silent          bool
-	csi             bool
-	inCluster       bool
-	useIPv6         bool
-	pvName          string
-	pvcName         string
-	tridentImage    string
-	etcdImage       string
-	kubeletDir      string
-	imageRegistry   string
-	logFormat       string
-	k8sTimeout      time.Duration
-	migratorTimeout time.Duration
+	generateYAML       	    bool
+	useYAML            	    bool
+	silent             	    bool
+	csi                	    bool
+	inCluster         	    bool
+	useIPv6           	    bool
+	silenceAutosupport 	    bool
+	pvName             	    string
+	pvcName           	    string
+	tridentImage      	    string
+	etcdImage          	    string
+	autosupportImage   	    string
+	autosupportProxy   	    string
+	autosupportCustomURL    string
+	kubeletDir         	    string
+	imageRegistry      	    string
+	logFormat          	    string
+	k8sTimeout         	    time.Duration
+	migratorTimeout    	    time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -126,6 +130,7 @@ func init() {
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).")
 	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
+	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable", "Don't send autosupport bundles to NetApp automatically.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
@@ -134,6 +139,9 @@ func init() {
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
+	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "", "The address/port of a proxy for sending Autosupport Telemetry")
+	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "")
+	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage, "The container image for Autosupport Telemetry")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 300*time.Minute, "The timeout for etcd-to-CRD migration.")
@@ -233,7 +241,7 @@ func discoverInstallationEnvironment() error {
 	}
 	log.Debugf("Trident image: %s", tridentImage)
 
-	// Default deployment image to what etcd was built with
+	// Default etcd image to what Trident was built with
 	if etcdImage == "" {
 		etcdImage = tridentconfig.BuildEtcdImage
 
@@ -244,6 +252,11 @@ func discoverInstallationEnvironment() error {
 	} else if !strings.Contains(etcdImage, tridentconfig.BuildEtcdVersion) {
 		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", tridentconfig.BuildEtcdVersion)
 	}
+
+	if imageRegistry != "" {
+		autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
+	}
+	log.Debugf("Autosupport image: %s", autosupportImage)
 
 	// Create the Kubernetes client
 	if client, err = initClient(); err != nil {
@@ -509,7 +522,8 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-		tridentImage, csiSidecarRegistry, logFormat, []string{}, labels, nil, Debug, useIPv6, client.ServerVersion())
+		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, csiSidecarRegistry, logFormat,
+		[]string{}, labels, nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -923,7 +937,8 @@ func installTrident() (returnError error) {
 		} else {
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-					tridentImage, csiSidecarRegistry, logFormat, []string{}, labels, nil, Debug, useIPv6, client.ServerVersion()))
+					tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, csiSidecarRegistry, logFormat, []string{}, labels, nil,
+					Debug, useIPv6, silenceAutosupport, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {

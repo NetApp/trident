@@ -39,7 +39,8 @@ const (
 	CLIKubernetes = "kubectl"
 	CLIOpenshift  = "oc"
 
-	PodServer = "127.0.0.1:8000"
+	PodServer               = "127.0.0.1:8000"
+	PodAutosupportCollector = "127.0.0.1:8003"
 
 	ExitCodeSuccess = 0
 	ExitCodeFailure = 1
@@ -67,6 +68,8 @@ const (
 	TridentOperatorLabelKey   = "app"
 	TridentOperatorLabelValue = "operator.trident.netapp.io"
 	TridentOperatorLabel      = TridentOperatorLabelKey + "=" + TridentOperatorLabelValue
+
+	AutosupportCollectorURL = "/autosupport/v1"
 )
 
 var (
@@ -76,9 +79,10 @@ var (
 	TridentPodNamespace string
 	ExitCode            int
 
-	Debug        bool
-	Server       string
-	OutputFormat string
+	Debug                bool
+	Server               string
+	AutosupportCollector string
+	OutputFormat         string
 
 	listOpts   = metav1.ListOptions{}
 	updateOpts = metav1.UpdateOptions{}
@@ -110,12 +114,16 @@ func discoverOperatingMode(_ *cobra.Command) error {
 
 		switch OperatingMode {
 		case ModeDirect:
-			fmt.Printf("Operating mode = %s, Server = %s\n", OperatingMode, Server)
+			fmt.Printf("Operating mode = %s, Server = %s, Autosuport server = %s\n",
+				OperatingMode, Server, AutosupportCollector)
 		case ModeTunnel:
 			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",
 				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
 		}
 	}()
+
+	// Use the operating mode to inform the Autosupport collector
+	defer discoverAutosupportCollector()
 
 	var err error
 
@@ -175,6 +183,9 @@ func discoverJustOperatingMode(_ *cobra.Command) error {
 				OperatingMode, TridentPodName, TridentPodNamespace, KubernetesCLI)
 		}
 	}()
+
+	// Use the operating mode to inform the Autosupport server
+	defer discoverAutosupportCollector()
 
 	var err error
 
@@ -255,6 +266,21 @@ func getCurrentNamespace() (string, error) {
 	namespace := serviceAccount.ObjectMeta.Namespace
 
 	return namespace, nil
+}
+
+func discoverAutosupportCollector() {
+
+	switch OperatingMode {
+	case ModeDirect:
+		envCollector := os.Getenv("TRIDENT_AUTOSUPPORT_COLLECTOR")
+		if envCollector != "" {
+			AutosupportCollector = envCollector
+		} else {
+			AutosupportCollector = PodAutosupportCollector
+		}
+	case ModeTunnel:
+		// Nothing to do on the outside
+	}
 }
 
 // getTridentPod returns the name of the Trident pod in the specified namespace
@@ -456,6 +482,17 @@ func BaseURL() string {
 
 	if Debug {
 		fmt.Printf("Trident URL: %s\n", url)
+	}
+
+	return url
+}
+
+func BaseAutosupportURL() string {
+
+	url := fmt.Sprintf("http://%s%s", AutosupportCollector, AutosupportCollectorURL)
+
+	if Debug {
+		fmt.Printf("Trident autosupport URL: %s\n", url)
 	}
 
 	return url

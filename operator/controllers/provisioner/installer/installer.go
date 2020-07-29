@@ -55,14 +55,17 @@ const (
 
 var (
 	// CR inputs
-	csi     bool
-	debug   bool
-	useIPv6 bool
+	csi                bool
+	debug              bool
+	useIPv6            bool
+	silenceAutosupport bool
 
-	logFormat     string
-	tridentImage  string
-	imageRegistry string
-	kubeletDir    string
+	logFormat          string
+	tridentImage       string
+	imageRegistry      string
+	kubeletDir         string
+	autosupportImage   string
+	autosupportProxy   string
 
 	imagePullSecrets []string
 
@@ -245,6 +248,13 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	csi = true
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
+	silenceAutosupport = cr.Spec.SilenceAutosupport
+	if cr.Spec.AutosupportImage != "" {
+		autosupportImage = cr.Spec.AutosupportImage
+	}
+	if cr.Spec.AutosupportProxy != "" {
+		autosupportProxy = cr.Spec.AutosupportProxy
+	}
 	if cr.Spec.LogFormat != "" {
 		logFormat = cr.Spec.LogFormat
 	}
@@ -443,6 +453,9 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		TridentImage:     tridentImage,
 		ImageRegistry:    imageRegistry,
 		IPv6:             strconv.FormatBool(useIPv6),
+		SilenceAutosupport: strconv.FormatBool(silenceAutosupport),
+		AutosupportImage: autosupportImage,
+		AutosupportProxy: autosupportProxy,
 		KubeletDir:       kubeletDir,
 		K8sTimeout:       strconv.Itoa(int(k8sTimeout.Seconds())),
 		ImagePullSecrets: imagePullSecrets,
@@ -1353,11 +1366,11 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 	if err = i.RemoveMultipleDeployments(unwantedDeployments); err != nil {
 		return err
 	}
-
 	var newDeploymentYAML string
 	if csi {
-		newDeploymentYAML = k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage, imageRegistry,
-			logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6, i.client.ServerVersion())
+		newDeploymentYAML = k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
+			autosupportImage, autosupportProxy, "", imageRegistry, logFormat, imagePullSecrets, labels,
+			controllingCRDetails, debug, useIPv6, silenceAutosupport, i.client.ServerVersion())
 	} else {
 		newDeploymentYAML = k8sclient.GetDeploymentYAML(deploymentName, tridentImage, logFormat, imagePullSecrets, labels,
 			controllingCRDetails, debug)

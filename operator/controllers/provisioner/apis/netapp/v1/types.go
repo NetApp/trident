@@ -30,16 +30,19 @@ type TridentProvisionerList struct {
 
 // TridentProvisionerSpec defines the desired state of TridentProvisioner
 type TridentProvisionerSpec struct {
-	Debug            bool     `json:"debug"`
-	IPv6             bool     `json:"IPv6,omitempty"`
-	K8sTimeout       int      `json:"k8sTimeout,omitempty"`
-	Uninstall        bool     `json:"uninstall,omitempty"`
-	LogFormat        string   `json:"logFormat,omitempty"`
-	TridentImage     string   `json:"tridentImage,omitempty"`
-	ImageRegistry    string   `json:"imageRegistry,omitempty"`
-	KubeletDir       string   `json:"kubeletDir,omitempty"`
-	Wipeout          []string `json:"wipeout,omitempty"`
-	ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
+	Debug              bool     `json:"debug"`
+	IPv6               bool     `json:"IPv6,omitempty"`
+	K8sTimeout         int      `json:"k8sTimeout,omitempty"`
+	SilenceAutosupport bool     `json:"silenceAutosupport,omitempty"`
+	AutosupportImage   string   `json:"autosupportImage,omitempty"`
+	AutosupportProxy   string   `json:"autosupportProxy,omitempty"`
+	Uninstall          bool     `json:"uninstall,omitempty"`
+	LogFormat          string   `json:"logFormat,omitempty"`
+	TridentImage       string   `json:"tridentImage,omitempty"`
+	ImageRegistry      string   `json:"imageRegistry,omitempty"`
+	KubeletDir         string   `json:"kubeletDir,omitempty"`
+	Wipeout            []string `json:"wipeout,omitempty"`
+	ImagePullSecrets   []string `json:"imagePullSecrets,omitempty"`
 }
 
 // TridentProvisionerStatus defines the observed state of TridentProvisioner
@@ -51,12 +54,15 @@ type TridentProvisionerStatus struct {
 }
 
 type TridentProvisionerSpecValues struct {
-	Debug            string   `json:"debug"`
-	IPv6             string   `json:"IPv6"`
-	K8sTimeout       string   `json:"k8sTimeout"`
-	LogFormat        string   `json:"logFormat"`
-	TridentImage     string   `json:"tridentImage"`
-	ImageRegistry    string   `json:"imageRegistry"`
-	KubeletDir       string   `json:"kubeletDir"`
-	ImagePullSecrets []string `json:"imagePullSecrets"`
+	Debug              string   `json:"debug"`
+	IPv6               string   `json:"IPv6"`
+	SilenceAutosupport string   `json:"silenceAutosupport"`
+	AutosupportImage   string   `json:"autosupportImage"`
+	AutosupportProxy   string   `json:"autosupportProxy"`
+	K8sTimeout         string   `json:"k8sTimeout"`
+	LogFormat          string   `json:"logFormat"`
+	TridentImage       string   `json:"tridentImage"`
+	ImageRegistry      string   `json:"imageRegistry"`
+	KubeletDir         string   `json:"kubeletDir"`
+	ImagePullSecrets   []string `json:"imagePullSecrets"`
 }
