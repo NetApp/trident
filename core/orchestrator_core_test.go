@@ -3,9 +3,11 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -1212,6 +1214,14 @@ func addBackendStorageClass(
 	}
 }
 
+func captureOutput(f func()) string {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	f()
+	log.SetOutput(os.Stdout)
+	return buf.String()
+}
+
 func TestBackendUpdateAndDelete(t *testing.T) {
 	const (
 		backendName       = "updateBackend"
@@ -1327,7 +1337,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("%s:  unable to generate new backend config:  %v", c.name, err)
 			continue
 		}
+
 		_, err = orchestrator.UpdateBackend(backendName, newConfigJSON)
+
 		if err != nil {
 			t.Errorf("%s:  unable to update backend with a nonconflicting change:  %v", c.name, err)
 			continue
@@ -1507,6 +1519,57 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 	cleanup(t, orchestrator)
+}
+
+func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool) {
+
+	backendName := "passwordBackend"
+	backendProtocol := config.File
+
+	orchestrator := getOrchestrator()
+
+	fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(backendName, backendProtocol,
+		debugTraceFlags, "prefix1_")
+	if err != nil {
+		t.Fatalf("Unable to generate config JSON for %s:  %v", backendName, err)
+	}
+
+	_, err = orchestrator.AddBackend(fakeConfig)
+	if err != nil {
+		t.Errorf("Unable to add backend %s:  %v", backendName, err)
+	}
+
+	newConfigJSON, err := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(backendName, backendProtocol,
+		debugTraceFlags,"prefix2_")
+	if err != nil {
+		t.Errorf("%s:  unable to generate new backend config:  %v", backendName, err)
+	}
+
+	output := captureOutput(func() {
+		_, err = orchestrator.UpdateBackend(backendName, newConfigJSON)
+	})
+
+	if err != nil {
+		t.Errorf("%s:  unable to update backend with a nonconflicting change:  %v", backendName, err)
+	}
+
+	assert.Contains(t, output, "configJSON")
+	outputArr := strings.Split(output, "configJSON")
+	outputArr = strings.Split(outputArr[1], "=\"")
+	outputArr = strings.Split(outputArr[1], "\"")
+
+	if debugTraceFlags == nil || !debugTraceFlags["sensitive"]{
+		assert.Equal(t, outputArr[0], "<suppressed>")
+	} else {
+		assert.NotContains(t, outputArr[0], "<suppressed>")
+	}
+	cleanup(t, orchestrator)
+}
+
+func TestBackendPasswordsInLogs(t *testing.T) {
+	backendPasswordsInLogsHelper(t, nil)
+	backendPasswordsInLogsHelper(t, map[string]bool{"method": true,"sensitive":false})
+	backendPasswordsInLogsHelper(t, map[string]bool{"method": true,"sensitive":true})
 }
 
 func TestEmptyBackendDeletion(t *testing.T) {

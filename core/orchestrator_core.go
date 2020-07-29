@@ -1019,27 +1019,15 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(backendName, configJSON
 		backend *storage.Backend
 	)
 
-	defer func() {
-		log.WithFields(log.Fields{
-			"backendName": backendName,
-			"backendUUID": backendUUID,
-			"configJSON":  configJSON,
-		}).Debug("<<<<<< updateBackendByBackendUUID")
-		if backend != nil && err != nil {
-			backend.Terminate()
-		}
-	}()
-
-	log.WithFields(log.Fields{
-		"backendName": backendName,
-		"backendUUID": backendUUID,
-		"configJSON":  configJSON,
-	}).Debug(">>>>>> updateBackendByBackendUUID")
-
 	// Check whether the backend exists.
 	originalBackend, found := o.backends[backendUUID]
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendUUID))
+	}
+
+	logFields := log.Fields{"backendName": backendName, "backendUUID": backendUUID, "configJSON":  "<suppressed>"}
+	if originalBackend.GetDebugTraceFlags()["sensitive"] {
+		logFields["configJSON"] = configJSON
 	}
 
 	log.WithFields(log.Fields{
@@ -1047,6 +1035,15 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(backendName, configJSON
 		"originalBackend.BackendUUID": originalBackend.BackendUUID,
 		"GetExternalConfig":           originalBackend.Driver.GetExternalConfig(),
 	}).Debug("found original backend")
+
+	defer func() {
+		log.WithFields(logFields).Debug("<<<<<< updateBackendByBackendUUID")
+		if backend != nil && err != nil {
+			backend.Terminate()
+		}
+	}()
+
+	log.WithFields(logFields).Debug(">>>>>> updateBackendByBackendUUID")
 
 	// Second, validate the update.
 	backend, err = factory.NewStorageBackendForConfig(configJSON)

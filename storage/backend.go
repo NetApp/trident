@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -267,6 +268,34 @@ func (b *Backend) AddVolume(
 	vol := NewVolume(volConfig, b.BackendUUID, storagePool.Name, false)
 	b.Volumes[vol.Config.Name] = vol
 	return vol, nil
+}
+
+func (b *Backend) GetDebugTraceFlags() map[string]bool {
+
+	var emptyMap map[string]bool
+	if b == nil {
+		return emptyMap
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Warn("Panicked while getting debug trace flags.")
+		}
+	}()
+
+	// The backend configs are all different, so use reflection to pull out the debug trace flags map
+	cfg := b.ConstructExternal().Config
+	v := reflect.ValueOf(cfg)
+	field := v.FieldByName("DebugTraceFlags")
+	if field.IsZero() {
+		return emptyMap
+	} else if flags, ok := field.Interface().(map[string]bool); !ok {
+		return emptyMap
+	} else {
+		return flags
+	}
+
+	return emptyMap
 }
 
 func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry bool) (*Volume, error) {

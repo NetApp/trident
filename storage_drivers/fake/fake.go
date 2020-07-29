@@ -157,6 +157,28 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 	return string(jsonBytes), nil
 }
 
+func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(name string, protocol tridentconfig.Protocol,
+	debugTraceFlags map[string]bool, storagePrefix string) (string, error) {
+
+	jsonBytes, err := json.Marshal(
+		&drivers.FakeStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				Version:           1,
+				StorageDriverName: drivers.FakeStorageDriverName,
+				StoragePrefixRaw:  json.RawMessage("\"\""),
+				StoragePrefix:     &storagePrefix,
+				DebugTraceFlags:   debugTraceFlags,
+			},
+			Protocol:              protocol,
+			InstanceName:          name,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+
 func (d *StorageDriver) Name() string {
 	return drivers.FakeStorageDriverName
 }
