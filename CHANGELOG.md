@@ -17,7 +17,8 @@
 - **Kubernetes:** Added various checks to improve resiliency of iSCSI volumes. (Issue [#418](https://github.com/NetApp/trident/issues/418))
 - **Kubernetes:** Enhanced startup logic to reconcile volume access rules with current cluster nodes. (Issues [#391](https://github.com/NetApp/trident/issues/391), [#352](https://github.com/NetApp/trident/issues/352))
 - **Kubernetes:** Added storage prefix validation to ONTAP drivers. (Issue [#401](https://github.com/NetApp/trident/issues/401))
-- **Kubernetes:** Fixed issue where an unmanaged volume prevented the backend from being removed 
+- **Kubernetes:** Fixed issue where an unmanaged volume prevented the backend from being removed
+- **Kubernetes:** Redacted sensitive information in Trident logs
 
 **Enhancements**
 - Added support for NFS v4.1 volumes to Azure NetApp Files, CVS-AWS, and CVS-GCP drivers. (Issue [#334](https://github.com/NetApp/trident/issues/334))
