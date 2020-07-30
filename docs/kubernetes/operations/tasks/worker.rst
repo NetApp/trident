@@ -44,6 +44,17 @@ Install the following system packages:
 iSCSI
 =====
 
+.. _iscsi-worker-node-prep:
+
+.. warning::
+
+   If using RHCOS >=4.5 or RHEL >=8.2 with the ``solidfire-san`` driver ensure
+   that the CHAP authentication algorithm is set to ``MD5`` in ``/etc/iscsi/iscsid.conf``
+
+   .. code-block:: bash
+
+      sudo sed -i 's/^\(node.session.auth.chap_algs\).*/\1 = MD5/' /etc/iscsi/iscsid.conf
+
 
 **RHEL / CentOS**
 
@@ -91,7 +102,7 @@ iSCSI
    before starting ``open-iscsi`` for the iSCSI daemon to start. You
    can alternatively modify the ``iscsi`` service to start ``iscsid``
    automatically.
-   
+
 #. Install the following system packages:
 
    .. code-block:: bash
