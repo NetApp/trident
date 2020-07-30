@@ -547,6 +547,7 @@ func (b *Backend) RemoveVolume(volConfig *VolumeConfig) error {
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
+		b.RemoveCachedVolume(volConfig.Name)
 		return &NotManagedError{volConfig.InternalName}
 	}
 
