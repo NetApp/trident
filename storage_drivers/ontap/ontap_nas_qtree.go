@@ -1799,3 +1799,8 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backend
 
 	return reconcileNASNodeAccess(nodes, &d.Config, d.API, policyName)
 }
+// String makes NASQtreeStorageDriver satisfy the Stringer interface.
+func (d NASQtreeStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
+}

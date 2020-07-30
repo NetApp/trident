@@ -840,3 +840,9 @@ func (d *NASStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID 
 
 	return reconcileNASNodeAccess(nodes, &d.Config, d.API, policyName)
 }
+
+// String makes NASStorageDriver satisfy the Stringer interface.
+func (d NASStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
+}

@@ -1105,3 +1105,9 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, bac
 
 	return reconcileNASNodeAccess(nodes, &d.Config, d.API, policyName)
 }
+
+// String makes NASFlexGroupStorageDriver satisfy the Stringer interface.
+func (d NASFlexGroupStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
+}

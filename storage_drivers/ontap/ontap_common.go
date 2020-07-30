@@ -539,6 +539,13 @@ func GetISCSITargetInfo(
 	return
 }
 
+var	ontapDriverRedactList = [...]string{"API"}
+
+func GetOntapDriverRedactList() []string {
+	clone := ontapDriverRedactList
+	return clone[:]
+}
+
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMapping(
@@ -2714,8 +2721,8 @@ func getExternalConfig(config drivers.OntapStorageDriverConfig) interface{} {
 	drivers.Clone(config, &cloneConfig)
 
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
-	cloneConfig.Username = "" // redact the username
-	cloneConfig.Password = "" // redact the password
+	cloneConfig.Username = "<REDACTED>" // redact the username
+	cloneConfig.Password = "<REDACTED>" // redact the password
 	return cloneConfig
 }
 

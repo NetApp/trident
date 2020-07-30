@@ -1098,3 +1098,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) er
 
 	return reconcileSANNodeAccess(d.API, d.Config.IgroupName, nodeIQNs)
 }
+
+// String makes SANStorageDriver satisfy the Stringer interface.
+func (d SANStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
+}

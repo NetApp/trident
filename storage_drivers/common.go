@@ -18,6 +18,14 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+var	ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
+		"ChapTargetUsername", "ChapTargetInitiatorSecret"}
+
+func GetOntapConfigRedactList() []string {
+	clone := ontapConfigRedactList
+	return clone[:]
+}
+
 // ValidateCommonSettings attempts to "partially" decode the JSON into just the settings in CommonStorageDriverConfig
 func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, error) {
 

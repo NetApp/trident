@@ -114,6 +114,12 @@ type OntapStorageDriverConfig struct {
 	ChapTargetInitiatorSecret string                   `json:"chapTargetInitiatorSecret"`
 }
 
+// String makes OntapStorageDriverConfig satisfy the Stringer interface.
+func (d OntapStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, GetOntapConfigRedactList(), nil)
+}
+
 type OntapStorageDriverPool struct {
 	Labels                           map[string]string `json:"labels"`
 	Region                           string            `json:"region"`
@@ -384,7 +390,7 @@ func ToString(sensitive bool, structPointer interface{}, redactList []string, co
 		fieldName := elements.Type().Field(i).Name
 
 		if sensitive {
-			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
+			output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
 		} else {
 			switch {
 			case fieldName == "Config" && configVal != nil:
@@ -392,7 +398,7 @@ func ToString(sensitive bool, structPointer interface{}, redactList []string, co
 			case utils.SliceContainsString(redactList, fieldName):
 				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, "<REDACTED>"))
 			default:
-				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
+				output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
 			}
 		}
 	}

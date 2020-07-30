@@ -11,6 +11,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
 // ToStringPointer takes a string and returns a string pointer
@@ -159,4 +160,93 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 	volName2 := helper.GetExternalVolumeNameFromPath("myBucket/storagePrefix_myLun")
 	assert.NotEqual(t, "myLun", volName2, "Strings are equal")
 	assert.Equal(t, "", volName2, "Strings are NOT equal")
+}
+
+func newTestOntapSanEcoDriver(showSensitive *bool) *SANEconomyStorageDriver {
+	config := &drivers.OntapStorageDriverConfig{}
+	sp := func(s string) *string { return &s }
+
+	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
+	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
+	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
+	if showSensitive != nil {
+		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
+	}
+
+	config.ManagementLIF = "127.0.0.1"
+	config.SVM = "SVM1"
+	config.Aggregate = "aggr1"
+	config.Username = "ontap-san-economy-user"
+	config.Password = "password1!"
+	config.StorageDriverName = "ontap-san-economy"
+	config.StoragePrefix = sp("test_")
+
+	sanEcoDriver := &SANEconomyStorageDriver{}
+	sanEcoDriver.Config = *config
+
+	// ClientConfig holds the configuration data for Client objects
+	clientConfig := api.ClientConfig{
+		ManagementLIF: config.ManagementLIF,
+		SVM:					"SVM1",
+		Username:               "client_username",
+		Password:               "client_password",
+		DriverContext:           tridentconfig.DriverContext("driverContext"),
+		ContextBasedZapiRecords: 100,
+		DebugTraceFlags:         nil,
+	}
+
+	sanEcoDriver.API = api.NewClient(clientConfig)
+	sanEcoDriver.Telemetry = &Telemetry{
+		Plugin:        sanEcoDriver.Name(),
+		SVM:           sanEcoDriver.GetConfig().SVM,
+		StoragePrefix: *sanEcoDriver.GetConfig().StoragePrefix,
+		Driver:        sanEcoDriver,
+		done:          make(chan struct{}),
+	}
+
+	return sanEcoDriver
+}
+
+func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
+
+	var sanEcoDrivers = []SANEconomyStorageDriver {
+		*newTestOntapSanEcoDriver(&[]bool{true}[0]),
+		*newTestOntapSanEcoDriver(&[]bool{false}[0]),
+		*newTestOntapSanEcoDriver(nil),
+	}
+
+	for _, sanEcoDriver := range sanEcoDrivers {
+		sensitive, ok := sanEcoDriver.Config.DebugTraceFlags["sensitive"]
+
+		switch {
+
+		case !ok || (ok && !sensitive):
+			assert.Contains(t, sanEcoDriver.String(), "<REDACTED>",
+				"san economy driver did not contain <REDACTED>")
+			assert.Contains(t, sanEcoDriver.String(), "API:<REDACTED>",
+				"san economy driver does not redact client API information")
+			assert.Contains(t, sanEcoDriver.String(), "Username:<REDACTED>",
+				"san economy driver does not redact username")
+			assert.NotContains(t, sanEcoDriver.String(), "ontap-san-economy-user",
+				"san economy driver contains username")
+			assert.Contains(t, sanEcoDriver.String(), "Password:<REDACTED>",
+				"san economy driver does not redact password")
+			assert.NotContains(t, sanEcoDriver.String(), "password1!",
+				"san economy driver contains password")
+			assert.NotContains(t, sanEcoDriver.String(), "client_username",
+				"san economy driver contains username")
+			assert.NotContains(t, sanEcoDriver.String(), "client_password",
+				"san economy driver contains password")
+
+		case ok && sensitive:
+			assert.Contains(t, sanEcoDriver.String(), "ontap-san-economy-user",
+				"san economy driver does not contain username")
+			assert.Contains(t, sanEcoDriver.String(), "password1!",
+				"san economy driver does not contain password")
+			assert.Contains(t, sanEcoDriver.String(), "client_username",
+				"san economy driver contains client_username")
+			assert.Contains(t, sanEcoDriver.String(), "client_password",
+				"san economy driver contains client_password")
+		}
+	}
 }

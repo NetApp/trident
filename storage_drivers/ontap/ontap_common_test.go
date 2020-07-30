@@ -22,7 +22,7 @@ func newTestOntapSANConfig() *drivers.OntapStorageDriverConfig {
 	config.CommonStorageDriverConfig.DebugTraceFlags["api_get_volumes"] = true
 	config.DebugTraceFlags = config.CommonStorageDriverConfig.DebugTraceFlags
 
-	config.ManagementLIF = "127.0.01"
+	config.ManagementLIF = "127.0.0.1"
 	config.SVM = "SVM1"
 	config.Aggregate = "aggr1"
 	config.Username = "username"
