@@ -13,6 +13,11 @@ To get started, choose the storage system type that you will be using as a
 backend:
 
 .. toctree::
-   :glob:
+   :maxdepth: 2
 
-   *
+   anf.rst
+   cvs_aws.rst
+   cvs_gcp.rst
+   element.rst
+   ontap/index.rst
+   santricity.rst

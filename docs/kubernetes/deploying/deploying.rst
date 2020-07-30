@@ -1,7 +1,8 @@
 .. _deploying-in-kubernetes:
 
-Deploying
-^^^^^^^^^
+#################
+Deploying Trident
+#################
 
 This guide will take you through the process of deploying Trident for the
 first time and provisioning your first volume automatically. If you are a
@@ -12,7 +13,7 @@ If you are an existing user looking to upgrade, head on over to the
 
 There are two ways you can deploy Trident:
 
-1. **Using the Trident Operator:** The ``20.04`` release provides a
+1. **Using the Trident Operator:** Trident now provides a
    `Kubernetes Operator <https://kubernetes.io/docs/concepts/extend-kubernetes/operator/>`_
    to deploy Trident. The Trident Operator controls the installation of
    Trident, taking care to **self-heal the install and manage changes as
@@ -24,18 +25,13 @@ There are two ways you can deploy Trident:
    used. :ref:`This page <deploying-with-tridentctl>` explains all the steps
    involved in deploying Trident in this manner.
 
-.. important::
-
-   The 20.04 release limits the Trident Operator to
-   **greenfield installations only**.
-
 Choosing the right option
-=========================
+-------------------------
 
 To determine which deployment option to use, you must consider the following:
 
 Why should I use the Trident Operator?
-**************************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are a new user testing Trident (or) deploying a fresh installation of
 Trident in your cluster, the Trident Operator is a great way to dynamically
@@ -92,7 +88,7 @@ When the Kubernetes version of the cluster is upgraded to a
 updates an existing Trident installation automatically and changes it
 to make sure it meets the requirements of the Kubernetes version.
 
-If the cluster is upgraded to an unsupported version (``1.19 and above``):
+If the cluster is upgraded to an unsupported version:
 
 * the operator prevents installing Trident.
 
@@ -101,27 +97,18 @@ If the cluster is upgraded to an unsupported version (``1.19 and above``):
   version.
 
 When should I use tridentctl?
-*****************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you have an existing Trident deployment that must be upgraded to or if
 you are looking to highly customize your Trident install, you should take a
 look at using ``tridentctl`` to setup Trident. This is the conventional method
-of installing Trident, as well as the supported method of upgrading your Trident
-deployment to the ``20.04`` release. Take a look at the :ref:`Upgrading <Upgrading Trident>`
+of installing Trident. Take a look at the :ref:`Upgrading <Upgrading Trident>`
 page to upgrade Trident.
 
 Ultimately, the environment in question will determine the choice of deployment.
-**It is important to note that the 20.04 Trident Operator is meant for
-new deployments only**.
-
-.. note::
-
-   The ``20.04`` release of the Trident Operator is only meant to be used for
-   greenfield deployments. For existing installations, you must use ``tridentctl``
-   to upgrade to the latest release.
 
 Moving between installation methods
-===================================
+-----------------------------------
 
 It is not hard to imagine a scenario where moving between deployment methods is
 desired. Here's what you must know before attempting to move from a ``tridentctl``
@@ -130,16 +117,10 @@ install to an operator-based deployment, or vice versa:
 1. Always use the same method for uninstalling Trident. If you have deployed Trident
    with ``tridentctl``, you must use the appropriate version of the ``tridentctl``
    binary  to uninstall Trident. Similarly, if deploying Trident with the operator,
-   you must edit the ``TridentProvisioner`` CR and set ``spec.uninstall=true`` 
+   you must edit the ``TridentProvisioner`` CR and set ``spec.uninstall=true``
    to uninstall Trident.
 
-2. **The 20.04 release limits the Trident Operator to greenfield installations only**.
-   As a result, you can only use the Trident Operator to create a fresh install. For
-   existing Trident installs that must be moved to ``20.04``, you will need to use
-   ``tridentctl`` to uninstall and reinstall Trident. Future releases of the operator are
-   targeted to support upgrades.
-
-3. If you have a Trident Operator deployment that you want to remove and use ``tridentctl``
+2. If you have a Trident Operator deployment that you want to remove and use ``tridentctl``
    to deploy Trident, you must first edit the ``TridentProvisioner`` and set
    ``spec.uninstall=true`` to uninstall Trident. You will then have delete the
    ``TridentProvisioner`` and the operator deployment.

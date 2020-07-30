@@ -45,8 +45,8 @@ deployments Trident and the rest of the infrastructure is completely hidden
 from the user.
 
 Let's lift up the covers a bit to better understand Trident and what it is
-doing. This `introductory video`_ is a good place to start. While based on 
-an earlier version of Trident, it explains the core concepts involved 
+doing. This `introductory video`_ is a good place to start. While based on
+an earlier version of Trident, it explains the core concepts involved
 and is a great way to get started on the Trident journey.
 
 .. .. raw:: html
@@ -98,11 +98,9 @@ and is a great way to get started on the Trident journey.
 .. toctree::
     :maxdepth: 2
     :caption: Contents:
-    
-    upgrading
-    deploying
-    tridentctl-install
-    operator-install
+
+    upgrades/index
+    deploying/index
     operations/tasks/index
     concepts/index
     known-issues

@@ -132,6 +132,6 @@ Container Storage Interface
 The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container
 Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). CSI
 is meant to be a standard mechanism used by various container orchestrators to expose
-storage systems to containers. Trident v19.10 fully conforms with CSI 1.1 specifications
+storage systems to containers. Trident fully conforms with CSI v1.2 specifications
 and supports all volume operations. Trident's enhanced CSI support is production ready and currently supported
 on Kubernetes versions ``1.13`` and above.

@@ -43,5 +43,3 @@ This page contains a list of known issues that may be observed when using Triden
   unless the set of aggregates are unique to each provisioning request.
 * When using Trident over IPv6, the ``managementLIF`` and ``dataLIF`` in the backend definition
   must be specified within square brackets, like ``[fd20:8b1e:b258:2000:f816:3eff:feec:0]``.
-* If using CoreOS or Ubuntu on Kubernetes nodes, you must ensure ``rpc-statd`` is started
-  at boot time.

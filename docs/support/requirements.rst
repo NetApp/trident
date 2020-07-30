@@ -10,12 +10,13 @@ Trident supports multiple container engines and orchestrators, including:
 * Kubernetes 1.11 or later (latest: 1.18)
 * OpenShift 3.11, 4.2, 4.3 and 4.4
 * Docker Enterprise 2.1 or 3.0
-* Google Anthos 1.1 and 1.2
+* Anthos GKE On-Prem v1.1, v1.2 and v1.3 (latest: v1.3)
 
 The Trident Operator is supported with these releases:
 
 * Kubernetes 1.14 or later (latest 1.18)
 * OpenShift 4.2, 4.3 and 4.4
+* Anthos GKE On-Prem v1.1, v1.2 and v1.3 (latest: v1.3)
 
 In addition, Trident should work with any distribution of Docker or Kubernetes
 that uses one of the supported versions as a base, such as Rancher or Tectonic.
@@ -75,7 +76,6 @@ These are the Linux distributions that are known to work:
 * Debian 8 or later
 * Ubuntu 18.04 or later
 * RHEL or CentOS 7.4 or later
-* CoreOS 1353.8.0 or later
 * RedHat CoreOS 4.2 and 4.3
 
 The ``tridentctl`` utility also runs on any of these distributions of Linux.

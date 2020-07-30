@@ -25,6 +25,7 @@ commands and global options:
     import      Import an existing resource to Trident
     install     Install Trident
     logs        Print the logs from Trident
+    send        Send a resource from Trident
     uninstall   Uninstall Trident
     update      Modify a resource in Trident
     upgrade     Upgrade a resource in Trident
@@ -63,7 +64,7 @@ Remove one or more resources from Trident
   Available Commands:
     backend      Delete one or more storage backends from Trident
     node         Delete one or more csi nodes from Trident
-    snapshot     Delete one or more volume snapshots from Trident    
+    snapshot     Delete one or more volume snapshots from Trident
     storageclass Delete one or more storage classes from Trident
     volume       Delete one or more storage volumes from Trident
 
@@ -125,6 +126,9 @@ Install Trident
         --trident-image string    The Trident image to install.
         --use-custom-yaml         Use any existing YAML files that exist in setup directory.
         --use-ipv6                Use IPv6 for Trident's communication.
+        --autosupport-proxy       The address/port of a proxy for sending Autosupport Telemetry
+        --autosupport-image       The container image for Autosupport Telemetry
+        --silence-autosupport     Don't send autosupport bundles to NetApp automatically.
 
 logs
 ----
@@ -139,10 +143,23 @@ Print the logs from Trident
   Flags:
     -a, --archive       Create a support archive with all logs unless otherwise specified.
     -h, --help          help for logs
-    -l, --log string    Trident log to display. One of trident|operator|auto|all (default "auto")
+    -l, --log string    Trident log to display. One of trident|auto|trident-operator|all (default "auto")
         --node string   The kubernetes node name to gather node pod logs from.
     -p, --previous      Get the logs for the previous container instance if it exists.
         --sidecars      Get the logs for the sidecar containers as well.
+
+send
+----
+
+Send a resource from Trident
+
+.. code-block:: console
+
+  Usage:
+    tridentctl send [command]
+
+  Available Commands:
+    autosupport      Send an Autosupport archive to NetApp
 
 uninstall
 ---------

@@ -128,7 +128,7 @@ A few points worth considering are the following:
 1. We recommend cloning an idle volume
 2. A PVC and its clone must be in the same Kubernetes namespace and have the same storage
    class
-3. With ``ontap-\*`` drivers, it might be desirable to set the PVC annotation
+3. With the ``ontap-nas`` and ``ontap-san`` drivers, it might be desirable to set the PVC annotation
    ``trident.netapp.io/splitOnClone`` in conjunction with ``trident.netapp.io/cloneFromPVC``.
    With ``trident.netapp.io/splitOnClone`` set to ``true``, Trident splits the cloned volume
    from the parent volume and thus, completely decoupling the life cycle of the cloned volume

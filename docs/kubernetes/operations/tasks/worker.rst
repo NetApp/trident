@@ -85,42 +85,49 @@ iSCSI
 
 **Ubuntu / Debian**
 
-  #. Install the following system packages:
+.. note::
 
-     .. code-block:: bash
+   For Ubuntu 18.04 you must discover target ports with ``iscsiadm``
+   before starting ``open-iscsi`` for the iSCSI daemon to start. You
+   can alternatively modify the ``iscsi`` service to start ``iscsid``
+   automatically.
+   
+#. Install the following system packages:
 
-       sudo apt-get install -y open-iscsi lsscsi sg3-utils multipath-tools scsitools
+   .. code-block:: bash
 
-  #. Check that open-iscsi version is 2.0.874-5ubuntu2.10 or higher (for bionic) or 2.0.874-7.1ubuntu6.1 or higher (for focal):
+     sudo apt-get install -y open-iscsi lsscsi sg3-utils multipath-tools scsitools
 
-     .. code-block:: bash
+#. Check that open-iscsi version is 2.0.874-5ubuntu2.10 or higher (for bionic) or 2.0.874-7.1ubuntu6.1 or higher (for focal):
 
-       dpkg -l open-iscsi
+   .. code-block:: bash
 
-  #. Set scanning to manual:
+     dpkg -l open-iscsi
 
-     .. code-block:: bash
+#. Set scanning to manual:
 
-       sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
+   .. code-block:: bash
 
-  #. Enable multipathing:
+     sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
 
-     .. code-block:: bash
+#. Enable multipathing:
 
-       sudo tee /etc/multipath.conf <<-'EOF'
-       defaults {
-           user_friendly_names yes
-           find_multipaths yes
-       }
-       EOF
-       
-       sudo systemctl enable --now multipath-tools.service
-       sudo service multipath-tools restart
+   .. code-block:: bash
 
-  #. Ensure that ``open-iscsi`` and ``multipath-tools`` are enabled and running:
+     sudo tee /etc/multipath.conf <<-'EOF'
+     defaults {
+         user_friendly_names yes
+         find_multipaths yes
+     }
+     EOF
 
-     .. code-block:: bash
-       
-       sudo systemctl status multipath-tools
-       sudo systemctl enable --now open-iscsi.service
-       sudo systemctl status open-iscsi
+     sudo systemctl enable --now multipath-tools.service
+     sudo service multipath-tools restart
+
+#. Ensure that ``open-iscsi`` and ``multipath-tools`` are enabled and running:
+
+   .. code-block:: bash
+
+     sudo systemctl status multipath-tools
+     sudo systemctl enable --now open-iscsi.service
+     sudo systemctl status open-iscsi

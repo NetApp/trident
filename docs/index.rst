@@ -17,6 +17,7 @@ Storage Orchestrator for Containers
 
 .. toctree::
    :caption: Kubernetes
+   :maxdepth: 2
 
    kubernetes/index
    dag/kubernetes/index
@@ -24,7 +25,7 @@ Storage Orchestrator for Containers
 .. toctree::
    :maxdepth: 2
    :caption: Frequently Asked Questions
-   
+
    frequently_asked_questions
 
 .. toctree::
@@ -45,4 +46,3 @@ Storage Orchestrator for Containers
    reference/tridentctl
    reference/rest
    reference/simple-kubernetes
-

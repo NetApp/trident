@@ -13,24 +13,6 @@ Upgrading Trident
 The :ref:`Upgrade Guide <Upgrading Trident>` details the procedure for upgrading
 to the latest version of Trident.
 
-Monitoring Trident
-------------------
-
-Trident 20.01 provides a set of Prometheus metrics that can be used to obtain
-insight on how Trident operates. You can now define a Prometheus target to gather
-the metrics exposed by Trident and obtain information on the backends it manages,
-the volumes it creates and so on. Trident's metrics are exposed on the target port
-``8001``. These metrics are enabled by default when Trident is installed; to disable
-them from being reported, you will have to generate custom YAMLs (using the
-``--generate-custom-yaml`` flag) and edit them to remove the ``--metrics`` flag
-from being invoked for the ``trident-main`` container.
-
-This `blog <https://netapp.io/2020/02/20/prometheus-and-trident/>`_ is a great
-place to start. It explains how Prometheus and Grafana can
-be used with Trident 20.01 and above to retrieve metrics. The blog explains how you
-can run Prometheus as an operator in your Kubernetes cluster and the creation of a
-ServiceMonitor to obtain Trident's metrics.
-
 Uninstalling Trident
 --------------------
 
@@ -44,7 +26,7 @@ If you have installed Trident using the :ref:`operator <deploying-with-operator>
 you can uninstall Trident by either:
 
 1. **Editing the TridentProvisioner to set the uninstall flag:** You can
-   edit the TridentProvisioner and set ``spec.uninstall=true`` to 
+   edit the TridentProvisioner and set ``spec.uninstall=true`` to
    uninstall Trident.
 
 2. **Deleting the TridentProvisioner:** By removing the ``TridentProvisioner``
@@ -71,7 +53,7 @@ wipe the slate clean, you can edit the ``TridentProvisioner`` to pass the
 ``wipeout`` option.
 
 .. warning::
-      
+
    You must only consider wiping out the CRDs when performing a complete
    uninstallation. This will completely uninstall Trident and cannot be
    undone. **Do not wipeout the CRDs unless you are looking to start over
@@ -85,7 +67,7 @@ wipe the slate clean, you can edit the ``TridentProvisioner`` to pass the
 This will **completely uninstall Trident and clear all metadata related
 to backends and volumes it manages**. Subsequent installations will
 be treated as a fresh install.
- 
+
 Uninstalling with tridentctl
 ****************************
 

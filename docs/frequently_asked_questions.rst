@@ -120,10 +120,10 @@ of supported orchestrators.
 Why should I install Trident to work as a CSI Provisioner?
 ----------------------------------------------------------
 
-With the 19.07 release, Trident now fully adheres to the latest
-CSI 1.1 specification and is production ready. This enables users to
-experience all features exposed by the current release, as well as future
-releases. Trident can continue to fix issues or add features without touching
+With each new release, Trident aims to adhere to the latest
+CSI specification. This enables users to make use of developments
+in the upstream CSI community when Trident functions as a CSI Provisioner.
+Trident can continue to fix issues or add features without touching
 the Kubernetes core, while also absorbing any standardized future changes or features efficiently.
 
 How do I install Trident to work as a CSI Provisioner?

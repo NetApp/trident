@@ -1,19 +1,15 @@
 .. _deploying-with-operator:
 
+###################################
 Deploying with the Trident Operator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+###################################
 
 If you are looking to deploy Trident using the Trident Operator, you are
 in the right place. This page contains all the steps required for getting
 started with the Trident Operator to install and manage Trident.
 
-.. important::
-
-   The 20.04 release limits the Trident Operator to
-   **greenfield installations only**.
-
 Prerequisites
-=============
+-------------
 
 If you have not already familiarized yourself with the
 :ref:`basic concepts <What is Trident?>`, now is a great time to do that. Go
@@ -45,7 +41,7 @@ To deploy Trident using the operator you need:
 Got all that? Great! Let's get started.
 
 1: Qualify your Kubernetes cluster
-==================================
+----------------------------------
 
 You made sure that you have everything in hand from the
 :ref:`previous section <Before you begin>`, right? Right.
@@ -74,7 +70,7 @@ you have the necessary privileges to.
     ping <management IP>
 
 2: Download & setup the operator
-================================
+--------------------------------
 
 .. note::
 
@@ -86,12 +82,12 @@ you have the necessary privileges to.
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 20.04.0:
+For example, if the latest version is 20.07.0:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
-   tar -xf trident-installer-20.04.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.07.0/trident-installer-20.07.0.tar.gz
+   tar -xf trident-installer-20.07.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -107,7 +103,7 @@ later on to instantiate a Trident install by the operator.
 
   # If not, your Kubernetes version must be 1.16 and above
   kubectl create -f deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
-  
+
 Once the ``TridentProvisioner`` CRD is created, you will then have to create
 the resources required for the operator deployment, such as:
 
@@ -127,7 +123,7 @@ does not exist use the below manifest to create one.
 If you would like to deploy the operator in a namespace other than
 the default ``trident`` namespace, you will need to update the
 ``serviceaccount.yaml``, ``clusterrolebinding.yaml`` and ``operator.yaml``
-manifests and generate your ``bundle.yaml``. 
+manifests and generate your ``bundle.yaml``.
 
 .. code-block:: bash
 
@@ -159,7 +155,7 @@ worker nodes in your cluster.
    **Do not create multiple deployments of the Trident operator**.
 
 3: Creating a TridentProvisioner CR and installing Trident
-==========================================================
+----------------------------------------------------------
 
 You are now ready to install Trident using the operator! This will require
 creating a TridentProvisioner CR. The Trident installer comes with example
@@ -177,24 +173,34 @@ defintions for creating a TridentProvisioner CR.
    Name:         trident
    Namespace:    trident
    Labels:       <none>
-   Annotations:  <none>
+   Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                   {"apiVersion":"trident.netapp.io/v1","kind":"TridentProvisioner","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
    API Version:  trident.netapp.io/v1
    Kind:         TridentProvisioner
    ...
    Spec:
-     Debug:  true
+     Debug:          true
    Status:
-     Message:  Successfully installed Trident
-     Status:   Installed
-     Version:  v20.04
+     Current Installation Params:
+       IPv6:   false
+       Debug:  true
+       Image Pull Secrets:
+       Image Registry:  quay.io
+       k8sTimeout:      30
+       Kubelet Dir:     /var/lib/kubelet
+       Log Format:      text
+       Trident Image:   netapp/trident:20.07.0
+     Message:           Trident installed
+     Status:            Installed
+     Version:           v20.07.0
    Events:
-     Type    Reason      Age               From                        Message
-     ----    ------      ----              ----                        -------
-     Normal  Installing  25s               trident-operator.netapp.io  Installing Trident
-     Normal  Installed   1s (x4 over 59s)  trident-operator.netapp.io  Successfully installed Trident
+     Type    Reason      Age   From                        Message
+     ----    ------      ----  ----                        -------
+     Normal  Installing  19s   trident-operator.netapp.io  Installing Trident
+     Normal  Installed   5s    trident-operator.netapp.io  Trident installed
 
 Observing the status of the operator
-""""""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Status of the TridentProvisioner will indicate if the installation
 was successful and will display the version of Trident installed.
@@ -250,7 +256,7 @@ You can also use ``tridentctl`` to check the version of Trident installed.
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 20.04.0        | 20.04.0        |
+   | 20.07.0        | 20.07.0        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -271,14 +277,24 @@ first take a look at the ``TridentProvisioner`` status.
   Name:         trident-2
   Namespace:    trident
   Labels:       <none>
-  Annotations:  <none>
+  Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                  {"apiVersion":"trident.netapp.io/v1","kind":"TridentProvisioner","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
   API Version:  trident.netapp.io/v1
   Kind:         TridentProvisioner
   Status:
-    Message:  Trident is bound to another CR 'trident' in the same namespace
-    Status:   Error
-    Version:  
-  Events:     <none>
+    Current Installation Params:
+      IPv6:
+      Debug:
+      Image Pull Secrets:  <nil>
+      Image Registry:
+      k8sTimeout:
+      Kubelet Dir:
+      Log Format:
+      Trident Image:
+    Message:               Trident is bound to another CR 'trident' in the same namespace
+    Status:                Error
+    Version:
+  Events:                  <none>
 
 This error indicates that there already exists a TridentProvisioner that was
 used to install Trident. Since each Kubernetes cluster can only have one instance
@@ -320,8 +336,10 @@ accurate definition.
 If you continue to have trouble, visit the
 :ref:`troubleshooting guide <Troubleshooting>` for more advice.
 
+.. _operator-customize:
+
 Customizing your deployment
-"""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Trident operator provides users the ability to customize the manner in which
 Trident is installed, using the following attributes in the TridentProvisioner ``spec``:
@@ -331,13 +349,17 @@ Parameter                 Description                                           
 ========================= ====================================================================== ================================================
 debug                     Enable debugging for Trident                                           'false'
 useIPv6                   Install Trident over IPv6                                              'false'
-logFormat                 Trident logging format to be used [text,json]                          "text"
-kubeletDir                Path to the kubelet directory on the host                              "/var/lib/kubelet"
-imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port]`` "quay.io"
-tridentImage              Trident image to install                                               "netapp/trident:20.04"
-imagePullSecrets          Secrets to pull images from an internal registry                       
+k8sTimeout                Timeout for Kubernetes operations                                      30sec
+silenceAutosupport        Don't send autosupport bundles to NetApp automatically                 'false'
+autosupportImage          The container image for Autosupport Telemetry                          "netapp/trident-autosupport:20.07.0"
+autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry          "http://proxy.example.com:8888"
 uninstall                 A flag used to uninstall Trident                                       'false'
-wipeout                   A list of resources to delete to perform a complete removal of Trident 
+logFormat                 Trident logging format to be used [text,json]                          "text"
+tridentImage              Trident image to install                                               "netapp/trident:20.07"
+imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port]`` "quay.io"
+kubeletDir                Path to the kubelet directory on the host                              "/var/lib/kubelet"
+wipeout                   A list of resources to delete to perform a complete removal of Trident
+imagePullSecrets          Secrets to pull images from an internal registry
 ========================= ====================================================================== ================================================
 
 You can use the attributes mentioned above when defining a TridentProvisioner to
@@ -345,7 +367,7 @@ customize your Trident installation. Here's an example:
 
 .. code-block:: console
 
-   $ cat deploy/crds/tridentprovisioner_cr_imagepullsecrets.yaml 
+   $ cat deploy/crds/tridentprovisioner_cr_imagepullsecrets.yaml
    apiVersion: trident.netapp.io/v1
    kind: TridentProvisioner
    metadata:
@@ -353,7 +375,7 @@ customize your Trident installation. Here's an example:
      namespace: trident
    spec:
      debug: true
-     tridentImage: netapp/trident:20.04.0
+     tridentImage: netapp/trident:20.07.0
      imagePullSecrets:
      - thisisasecret
 
@@ -365,7 +387,7 @@ yaml manifests that you can modify as desired. Head on over to the
 how this works.
 
 4: Creating a Trident backend
-=============================
+-----------------------------
 
 You can now go ahead and create a backend that will be used by Trident
 to provision volumes. To do this, create a ``backend.json`` file that
@@ -404,7 +426,7 @@ and try again. If you continue to have trouble, visit the
 determine what went wrong.
 
 5: Creating a Storage Class
-===========================
+---------------------------
 
 Kubernetes users provision volumes using persistent volume claims (PVCs) that
 specify a `storage class`_ by name. The details are hidden from users, but a
@@ -435,34 +457,34 @@ installer, replacing ``__BACKEND_TYPE__`` with the storage driver name.
     | nas-backend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       0 |
     +-------------+----------------+--------------------------------------+--------+---------+
 
-    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic.yaml
+    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic-csi.yaml
 
     # Modify __BACKEND_TYPE__ with the storage driver field above (e.g., ontap-nas)
-    vi sample-input/storage-class-basic.yaml
+    vi sample-input/storage-class-basic-csi.yaml
 
 This is a Kubernetes object, so you will use ``kubectl`` to create it in
 Kubernetes.
 
 .. code-block:: console
 
-    kubectl create -f sample-input/storage-class-basic.yaml
+    kubectl create -f sample-input/storage-class-basic-csi.yaml
 
 You should now see a **basic** storage class in both Kubernetes and Trident,
 and Trident should have discovered the pools on the backend.
 
 .. code-block:: console
 
-    kubectl get sc basic
-    NAME     PROVISIONER             AGE
-    basic    csi.trident.netapp.io   15h
+    kubectl get sc basic-csi
+    NAME         PROVISIONER             AGE
+    basic-csi    csi.trident.netapp.io   15h
 
-    ./tridentctl -n trident get storageclass basic -o json
+    ./tridentctl -n trident get storageclass basic-csi -o json
     {
       "items": [
         {
           "Config": {
             "version": "1",
-            "name": "basic",
+            "name": "basic-csi",
             "attributes": {
               "backendType": "ontap-nas"
             },
@@ -484,7 +506,7 @@ and Trident should have discovered the pools on the backend.
 .. _storage class: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses
 
 6: Provision your first volume
-==============================
+------------------------------
 
 Now you're ready to dynamically provision your first volume. How exciting! This
 is done by creating a Kubernetes `persistent volume claim`_ (PVC) object, and
@@ -495,12 +517,12 @@ this is exactly how your users will do it too.
 Create a persistent volume claim (PVC) for a volume that uses the storage
 class that you just created.
 
-See ``sample-input/pvc-basic.yaml`` for an example. Make sure the storage
+See ``sample-input/pvc-basic-csi.yaml`` for an example. Make sure the storage
 class name matches the one that you created in 6.
 
 .. code-block:: bash
 
-    kubectl create -f sample-input/pvc-basic.yaml
+    kubectl create -f sample-input/pvc-basic-csi.yaml
 
     kubectl get pvc --watch
     NAME      STATUS    VOLUME                                     CAPACITY   ACCESS MODES  STORAGECLASS   AGE
@@ -509,7 +531,7 @@ class name matches the one that you created in 6.
     basic     Bound     pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   1Gi        RWO           basic          7s
 
 7: Mount the volume in a pod
-============================
+----------------------------
 
 Now that you have a volume, let's mount it. We'll launch an nginx pod that
 mounts the PV under ``/usr/share/nginx/html``.

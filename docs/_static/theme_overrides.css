@@ -1,0 +1,20 @@
+/* override table width restrictions */
+@media screen and (min-width: 767px) {
+
+   .wy-table-responsive table td {
+      /* !important prevents the common CSS stylesheets from overriding
+ *          this as on RTD they are loaded after this stylesheet */
+      white-space: normal !important;
+   }
+
+   .wy-table-responsive {
+      overflow: visible !important;
+   }
+}
+
+/*! Override sphinx rtd theme max-with of 800px */
+
+   .wy-nav-content{max-width:75%}
+/*! Override sphinx_rtd_theme - keeps left-nav from overwriting Documentation title */
+
+/*   .wy-nav-side{top:45px} */

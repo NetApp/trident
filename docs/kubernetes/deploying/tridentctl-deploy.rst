@@ -1,14 +1,15 @@
 .. _deploying-with-tridentctl:
 
+#########################
 Deploying with tridentctl
-^^^^^^^^^^^^^^^^^^^^^^^^^
+#########################
 
 Welcome to the Deployment Guide for installing Trident using
 ``tridentctl``! This page explains the various steps involved
 in deploying Trident in your Kubernetes cluster using ``tridentctl``.
 
 Before you begin
-================
+----------------
 
 If you have not already familiarized yourself with the
 :ref:`basic concepts <What is Trident?>`, now is a great time to do that. Go
@@ -39,7 +40,7 @@ To deploy Trident you need:
 Got all that? Great! Let's get started.
 
 1: Qualify your Kubernetes cluster
-==================================
+----------------------------------
 
 You made sure that you have everything in hand from the
 :ref:`previous section <Before you begin>`, right? Right.
@@ -71,7 +72,7 @@ Identify your Kubernetes server version. You will be using it when you
 :ref:`Install Trident <3: Install Trident>`.
 
 2: Download & extract the installer
-===================================
+-----------------------------------
 
 .. note::
    Trident's installer is responsible for creating a Trident pod, configuring
@@ -82,25 +83,25 @@ Identify your Kubernetes server version. You will be using it when you
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 20.04.0:
+For example, if the latest version is 20.07.0:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
-   tar -xf trident-installer-20.04.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.07.0/trident-installer-20.07.0.tar.gz
+   tar -xf trident-installer-20.07.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
 
 3: Install Trident
-==================
+------------------
 
 Install Trident in the desired namespace by executing the
 :ref:`tridentctl install <install>` command. The installation procedure
 slightly differs depending on the version of Kubernetes being used.
 
 Installing Trident on Kubernetes 1.13
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On Kubernetes ``1.13``, there are a couple of options when installing Trident:
 
@@ -117,7 +118,7 @@ On Kubernetes ``1.13``, there are a couple of options when installing Trident:
   specification.
 
 Installing Trident on Kubernetes 1.14 and above
------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install Trident in the desired namespace by executing the
 ``tridentctl install`` command.
@@ -138,7 +139,7 @@ Install Trident in the desired namespace by executing the
    INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-679648bd45-cv2mx
    INFO Waiting for Trident REST interface.
-   INFO Trident REST interface is up.                 version=20.04.0
+   INFO Trident REST interface is up.                 version=20.07.0
    INFO Trident installation succeeded.
    ....
 
@@ -156,7 +157,7 @@ the number of nodes in your Kubernetes cluster, you may observe more pods:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 20.04.0        | 20.04.0        |
+   | 20.07.0        | 20.07.0        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -190,7 +191,7 @@ If you continue to have trouble, visit the
 :ref:`troubleshooting guide <Troubleshooting>` for more advice.
 
 Customized Installation
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Trident's installer allows you to customize attributes. For example, if you have
 copied the Trident image to a private repository, you can specify the image name by using
@@ -225,7 +226,7 @@ then use the ``--use-custom-yaml`` to install your custom deployment of Trident.
   ./tridentctl install -n trident --use-custom-yaml
 
 4: Create and Verify your first backend
-=======================================
+---------------------------------------
 
 You can now go ahead and create a backend that will be used by Trident
 to provision volumes. To do this, create a ``backend.json`` file that
@@ -264,7 +265,7 @@ and try again. If you continue to have trouble, visit the
 determine what went wrong.
 
 5: Add your first storage class
-===============================
+-------------------------------
 
 Kubernetes users provision volumes using persistent volume claims (PVCs) that
 specify a `storage class`_ by name. The details are hidden from users, but a
@@ -295,34 +296,34 @@ installer, replacing ``__BACKEND_TYPE__`` with the storage driver name.
     | nas-backend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       0 |
     +-------------+----------------+--------------------------------------+--------+---------+
 
-    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic.yaml
+    cp sample-input/storage-class-csi.yaml.templ sample-input/storage-class-basic-csi.yaml
 
     # Modify __BACKEND_TYPE__ with the storage driver field above (e.g., ontap-nas)
-    vi sample-input/storage-class-basic.yaml
+    vi sample-input/storage-class-basic-csi.yaml
 
 This is a Kubernetes object, so you will use ``kubectl`` to create it in
 Kubernetes.
 
 .. code-block:: console
 
-    kubectl create -f sample-input/storage-class-basic.yaml
+    kubectl create -f sample-input/storage-class-basic-csi.yaml
 
-You should now see a **basic** storage class in both Kubernetes and Trident,
+You should now see a **basic-csi** storage class in both Kubernetes and Trident,
 and Trident should have discovered the pools on the backend.
 
 .. code-block:: console
 
-    kubectl get sc basic
-    NAME     PROVISIONER             AGE
-    basic    csi.trident.netapp.io   15h
+    kubectl get sc basic-csi
+    NAME         PROVISIONER             AGE
+    basic-csi    csi.trident.netapp.io   15h
 
-    ./tridentctl -n trident get storageclass basic -o json
+    ./tridentctl -n trident get storageclass basic-csi -o json
     {
       "items": [
         {
           "Config": {
             "version": "1",
-            "name": "basic",
+            "name": "basic-csi",
             "attributes": {
               "backendType": "ontap-nas"
             },
@@ -344,7 +345,7 @@ and Trident should have discovered the pools on the backend.
 .. _storage class: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses
 
 6: Provision your first volume
-==============================
+------------------------------
 
 Now you're ready to dynamically provision your first volume. How exciting! This
 is done by creating a Kubernetes `persistent volume claim`_ (PVC) object, and
@@ -355,12 +356,12 @@ this is exactly how your users will do it too.
 Create a persistent volume claim (PVC) for a volume that uses the storage
 class that you just created.
 
-See ``sample-input/pvc-basic.yaml`` for an example. Make sure the storage
+See ``sample-input/pvc-basic-csi.yaml`` for an example. Make sure the storage
 class name matches the one that you created in 6.
 
 .. code-block:: bash
 
-    kubectl create -f sample-input/pvc-basic.yaml
+    kubectl create -f sample-input/pvc-basic-csi.yaml
 
     kubectl get pvc --watch
     NAME      STATUS    VOLUME                                     CAPACITY   ACCESS MODES  STORAGECLASS   AGE
@@ -369,7 +370,7 @@ class name matches the one that you created in 6.
     basic     Bound     pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   1Gi        RWO           basic          7s
 
 7: Mount the volume in a pod
-============================
+----------------------------
 
 Now that you have a volume, let's mount it. We'll launch an nginx pod that
 mounts the PV under ``/usr/share/nginx/html``.

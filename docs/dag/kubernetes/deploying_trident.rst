@@ -89,8 +89,9 @@ Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no long
 Deploying Trident as an enhanced CSI Provisioner
 ================================================
 
-The Trident 19.10 release is built on a production-ready CSI 1.1 provisioner implementation. This allows
-Trident to absorb standardized features like snapshots, while still retaining its ability to innovate on the storage model.
+Trident provides a CSI frontend that can be used to install Trident as a CSI provisioner. Available exclusively
+for Kubernetes ``1.13`` and above, this allows Trident to absorb standardized features like snapshots
+while still retaining its ability to innovate on the storage model.
 
 To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <deploying-in-kubernetes>`. Ensure
 that the required :ref:`Feature Gates <Feature Requirements>` are enabled.

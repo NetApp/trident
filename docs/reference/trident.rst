@@ -2,6 +2,9 @@
 trident
 #######
 
+Command-line options
+--------------------
+
 Trident exposes several command-line options. Normally the defaults will suffice, but you may want to modify them in
 your deployment. They are:
 
@@ -31,3 +34,16 @@ REST
 * ``-address <ip-or-host>``: Optional; specifies the address on which Trident's REST server should listen. Defaults to localhost. When listening on localhost and running inside a Kubernetes pod, the REST interface will not be directly accessible from outside the pod. Use -address "" to make the REST interface accessible from the pod IP address.
 * ``-port <port-number>``: Optional; specifies the port on which Trident's REST server should listen. Defaults to 8000.
 * ``-rest``: Optional; enable the REST interface. Defaults to true.
+
+Ports
+-----
+
+Trident communicates over the following ports:
+
+======== ===========================
+  Port            Purpose
+======== ===========================
+8443     Backchannel HTTPS
+8001     Prometheus metrics endpoint
+8000     Trident REST server
+======== ===========================

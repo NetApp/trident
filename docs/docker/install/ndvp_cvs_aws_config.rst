@@ -64,7 +64,6 @@ Example CVS on AWS Config File
         "region": "us-east-1",
         "proxyURL": "http://proxy-server-hostname/",
         "serviceLevel": "premium",
-        "storagePrefix": "cvs-",
         "limitVolumeSize": "200Gi",
         "defaults": {
             "snapshotDir": "true",
