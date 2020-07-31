@@ -1111,3 +1111,8 @@ func (d NASFlexGroupStorageDriver) String() string {
 	sensitive := d.Config.DebugTraceFlags["sensitive"]
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
+
+// String makes NASFlexGroupStorageDriver satisfy the GoStringer interface.
+func (d NASFlexGroupStorageDriver) GoString() string {
+	return d.String()
+}

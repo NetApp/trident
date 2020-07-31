@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"reflect"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -239,6 +240,33 @@ func (t *Telemetry) Stop() {
 		close(t.done)
 		t.stopped = true
 	}
+}
+
+// String makes Telemetry satisfy the Stringer interface.
+func (t Telemetry) String() (out string) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Panic in Telemetry#ToString; err: %v", r)
+			out = "<panic>"
+		}
+	}()
+	elements := reflect.ValueOf(&t).Elem()
+	var output strings.Builder
+	for i := 0; i < elements.NumField(); i++ {
+		fieldName := elements.Type().Field(i).Name
+		switch fieldName {
+		case "Driver":
+			output.WriteString(fmt.Sprintf("%v:%v", "Telemetry.Name", t.Driver.Name()))
+		default:
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
+		}
+	}
+	out = output.String()
+	return
+}
+// String makes Telemetry satisfy the GoStringer interface.
+func (t Telemetry) GoString() string {
+	return t.String()
 }
 
 func deleteExportPolicy(policy string, clientAPI *api.Client) error {

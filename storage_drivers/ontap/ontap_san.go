@@ -1104,3 +1104,8 @@ func (d SANStorageDriver) String() string {
 	sensitive := d.Config.DebugTraceFlags["sensitive"]
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
+
+// String makes SANStorageDriver satisfy the GoStringer interface.
+func (d SANStorageDriver) GoString() string {
+	return d.String()
+}

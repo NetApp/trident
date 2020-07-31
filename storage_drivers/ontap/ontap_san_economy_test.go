@@ -215,38 +215,62 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 		*newTestOntapSanEcoDriver(nil),
 	}
 
+	sensitiveIncludeList := map[string]string{
+		"username"						: "ontap-san-economy-user",
+		"password"						: "password1!",
+		"client username"				: "client_username",
+		"client password"				: "client_password",
+	}
+
+	sensitiveExcludeList := map[string]string{
+		"some information"				: "<REDACTED>",
+	}
+
+	externalIncludeList := map[string]string{
+		"<REDACTED>"					: "<REDACTED>",
+		"username"						: "Username:<REDACTED>",
+		"password"						: "Password:<REDACTED>",
+		"api"							: "API:<REDACTED>",
+		"chap username"					: "ChapUsername:<REDACTED>",
+		"chap initiator secret"			: "ChapInitiatorSecret:<REDACTED>",
+		"chap target username"			: "ChapTargetUsername:<REDACTED>",
+		"chap target initiator secret"	: "ChapTargetInitiatorSecret:<REDACTED>",
+	}
+
 	for _, sanEcoDriver := range sanEcoDrivers {
 		sensitive, ok := sanEcoDriver.Config.DebugTraceFlags["sensitive"]
 
 		switch {
 
 		case !ok || (ok && !sensitive):
-			assert.Contains(t, sanEcoDriver.String(), "<REDACTED>",
-				"san economy driver did not contain <REDACTED>")
-			assert.Contains(t, sanEcoDriver.String(), "API:<REDACTED>",
-				"san economy driver does not redact client API information")
-			assert.Contains(t, sanEcoDriver.String(), "Username:<REDACTED>",
-				"san economy driver does not redact username")
-			assert.NotContains(t, sanEcoDriver.String(), "ontap-san-economy-user",
-				"san economy driver contains username")
-			assert.Contains(t, sanEcoDriver.String(), "Password:<REDACTED>",
-				"san economy driver does not redact password")
-			assert.NotContains(t, sanEcoDriver.String(), "password1!",
-				"san economy driver contains password")
-			assert.NotContains(t, sanEcoDriver.String(), "client_username",
-				"san economy driver contains username")
-			assert.NotContains(t, sanEcoDriver.String(), "client_password",
-				"san economy driver contains password")
+			for key, val := range externalIncludeList {
+				assert.Contains(t, sanEcoDriver.String(), val,
+					"ontap-san-economy driver does not contain %v", key)
+				assert.Contains(t, sanEcoDriver.GoString(), val,
+					"ontap-san-economy driver does not contain %v", key)
+			}
+
+			for key, val := range sensitiveIncludeList {
+				assert.NotContains(t, sanEcoDriver.String(), val,
+					"ontap-san-economy driver contains %v", key)
+				assert.NotContains(t, sanEcoDriver.GoString(), val,
+					"ontap-san-economy driver contains %v", key)
+			}
 
 		case ok && sensitive:
-			assert.Contains(t, sanEcoDriver.String(), "ontap-san-economy-user",
-				"san economy driver does not contain username")
-			assert.Contains(t, sanEcoDriver.String(), "password1!",
-				"san economy driver does not contain password")
-			assert.Contains(t, sanEcoDriver.String(), "client_username",
-				"san economy driver contains client_username")
-			assert.Contains(t, sanEcoDriver.String(), "client_password",
-				"san economy driver contains client_password")
+			for key, val := range sensitiveIncludeList {
+				assert.Contains(t, sanEcoDriver.String(), val,
+					"ontap-san-economy driver does not contain %v", key)
+				assert.Contains(t, sanEcoDriver.GoString(), val,
+					"ontap-san-economy driver does not contain %v", key)
+			}
+
+			for key, val := range sensitiveExcludeList {
+				assert.NotContains(t, sanEcoDriver.String(), val,
+					"ontap-san-economy driver redacts %v", key)
+				assert.NotContains(t, sanEcoDriver.GoString(), val,
+					"ontap-san-economy driver redacts %v", key)
+			}
 		}
 	}
 }
