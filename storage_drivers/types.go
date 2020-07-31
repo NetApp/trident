@@ -383,6 +383,7 @@ func ToString(sensitive bool, structPointer interface{}, redactList []string, co
 	}()
 
 	elements := reflect.ValueOf(structPointer).Elem()
+
 	var output strings.Builder
 
 	for i := 0; i < elements.NumField(); i++ {
@@ -404,6 +405,5 @@ func ToString(sensitive bool, structPointer interface{}, redactList []string, co
 	}
 
 	out = output.String()
-
 	return
 }

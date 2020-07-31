@@ -846,3 +846,8 @@ func (d NASStorageDriver) String() string {
 	sensitive := d.Config.DebugTraceFlags["sensitive"]
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
+
+// String makes NASStorageDriver satisfy the GoStringer interface.
+func (d NASStorageDriver) GoString() string {
+	return d.String()
+}
