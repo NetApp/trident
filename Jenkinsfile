@@ -1,4 +1,4 @@
-@Library('tools@master') _
+@Library('tools@stable/v20.07') _
 
 node {
 
