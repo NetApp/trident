@@ -10,6 +10,13 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
   - persistentvolumes
   - persistentvolumeclaims
   verbs:

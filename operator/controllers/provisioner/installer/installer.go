@@ -241,6 +241,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	tridentImage = TridentImage
 	imageRegistry = DefaultImageRegistry
 	kubeletDir = DefaultKubeletDir
+	autosupportImage = commonconfig.DefaultAutosupportImage
 
 	imagePullSecrets = []string{}
 
@@ -249,9 +250,6 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
 	silenceAutosupport = cr.Spec.SilenceAutosupport
-	if cr.Spec.AutosupportImage != "" {
-		autosupportImage = cr.Spec.AutosupportImage
-	}
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
 	}
@@ -278,6 +276,15 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 		// Do not use 'imageRegistry' here, it gets set to a default value.
 		if cr.Spec.ImageRegistry != "" {
 			tridentImage = utils.ReplaceImageRegistry(tridentImage, cr.Spec.ImageRegistry)
+		}
+	}
+	if cr.Spec.AutosupportImage != "" {
+		autosupportImage = cr.Spec.AutosupportImage
+	} else {
+		// Override registry only if using the default Autosupport image name and an alternate registry was supplied
+		// Do not use 'imageRegistry' here, it gets set to a default value.
+		if cr.Spec.ImageRegistry != "" {
+			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, cr.Spec.ImageRegistry)
 		}
 	}
 
