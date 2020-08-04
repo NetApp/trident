@@ -149,7 +149,7 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 
 	// Log the request
 	if d.config.DebugTraceFlags["api"] {
-		if method == "POST" && resourcePath == "" && !d.config.DebugTraceFlags["sensitive"] {
+		if resourcePath == "" && !d.config.DebugTraceFlags["sensitive"] {
 			// Suppress the empty POST body since it contains the array password
 			utils.LogHTTPRequest(request, []byte("<suppressed>"))
 		} else {
@@ -168,6 +168,7 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 		Transport: tr,
 		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
 	}
+
 	response, err := client.Do(request)
 	if err != nil {
 		log.Warnf("Error communicating with Web Services Proxy. %v", err)
