@@ -1444,7 +1444,7 @@ func (d *NFSStorageDriver) GetExternalConfig() interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = "" // redact the Secret
+	cloneConfig.ClientSecret = "<REDACTED>" // redact the Secret
 	return cloneConfig
 }
 
@@ -1531,6 +1531,17 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *sdk.FileSystem) *stora
 		Config: volumeConfig,
 		Pool:   drivers.UnsetPool,
 	}
+}
+
+// Implement stringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, []string{"SDK"}, d.GetExternalConfig())
+}
+
+// Implement GoStringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) GoString() string {
+	return d.String()
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver

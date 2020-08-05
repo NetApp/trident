@@ -87,6 +87,11 @@ func (d ESeriesStorageDriverConfig) String() string {
 	return ToString(sensitive, &d, []string{"Password", "PasswordArray", "Username"}, nil)
 }
 
+// Implement GoStringer interface for the ESeriesStorageDriverConfig driver
+func (d ESeriesStorageDriverConfig) GoString() string {
+	return d.String()
+}
+
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
 	*CommonStorageDriverConfig                // embedded types replicate all fields
@@ -178,6 +183,11 @@ func (d SolidfireStorageDriverConfig) String() string {
 	return ToString(sensitive, &d, []string{"TenantName", "EndPoint"}, nil)
 }
 
+// Implement GoStringer interface for the SolidfireStorageDriverConfig driver
+func (d SolidfireStorageDriverConfig) GoString() string {
+	return d.String()
+}
+
 type AWSNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	APIURL              string `json:"apiURL"`
@@ -204,6 +214,17 @@ type AWSNFSStorageDriverConfigDefaults struct {
 	SnapshotDir     string `json:"snapshotDir"`
 	SnapshotReserve string `json:"snapshotReserve"`
 	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the AWSNFSStorageDriverConfig driver
+func (d AWSNFSStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
+}
+
+// Implement GoStringer interface for the AWSNFSStorageDriverConfig driver
+func (d AWSNFSStorageDriverConfig) GoString() string {
+	return d.String()
 }
 
 type AzureNFSStorageDriverConfig struct {
@@ -234,6 +255,17 @@ type AzureNFSStorageDriverPool struct {
 type AzureNFSStorageDriverConfigDefaults struct {
 	ExportRule string `json:"exportRule"`
 	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the AzureNFSStorageDriverConfig driver
+func (d AzureNFSStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
+}
+
+// Implement GoStringer interface for the AzureNFSStorageDriverConfig driver
+func (d AzureNFSStorageDriverConfig) GoString() string {
+	return d.String()
 }
 
 type GCPNFSStorageDriverConfig struct {
@@ -275,6 +307,17 @@ type GCPPrivateKey struct {
 	TokenURI                string `json:"token_uri"`
 	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
 	ClientX509CertURL       string `json:"client_x509_cert_url"`
+}
+
+// Implement stringer interface for the GCPNFSStorageDriverConfig driver
+func (d GCPNFSStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"ProjectNumber", "APIKey"}, nil)
+}
+
+// Implement GoStringer interface for the GCPNFSStorageDriverConfig driver
+func (d GCPNFSStorageDriverConfig) GoString() string {
+	return d.String()
 }
 
 type FakeStorageDriverConfig struct {

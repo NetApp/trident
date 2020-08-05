@@ -6,13 +6,14 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/eseries/api"
@@ -21,7 +22,7 @@ import (
 const (
 	Username      = "tester"
 	Password      = "password"
-	PasswordArray = "Passwords"
+	PasswordArray = "passwords"
 )
 
 func newTestEseriesSANDriver(debugTraceFlags map[string]bool) *SANStorageDriver {
@@ -50,7 +51,7 @@ func newTestEseriesSANDriver(debugTraceFlags map[string]bool) *SANStorageDriver 
 	return sanDriver
 }
 
-func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api.Client{
+func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api.Client {
 
 	telemetry := make(map[string]string)
 	telemetry["version"] = "20.07.0"
@@ -69,7 +70,7 @@ func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api
 		PasswordArray:         config.PasswordArray,
 		PoolNameSearchPattern: config.PoolNameSearchPattern,
 		HostDataIP:            config.HostDataIP,
-		DebugTraceFlags: 	   config.DebugTraceFlags,
+		DebugTraceFlags:       config.DebugTraceFlags,
 		Protocol:              "iscsi",
 		AccessGroup:           config.AccessGroup,
 		HostType:              config.HostType,
@@ -80,55 +81,66 @@ func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api
 	return API
 }
 
+func callString(s SANStorageDriver) string {
+	return s.String()
+}
+
+func callGoString(s SANStorageDriver) string {
+	return s.GoString()
+}
+
 func TestEseriesSANStorageDriverConfigString(t *testing.T) {
 
-	var EseriesSANDrivers = []SANStorageDriver{
+	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
-			"method": true,
+			"method":    true,
 			"sensitive": true,
 		}),
 		*newTestEseriesSANDriver(map[string]bool{
-			"method": true,
+			"method":    true,
 			"sensitive": false,
 		}),
 		*newTestEseriesSANDriver(map[string]bool{}),
 	}
 
-	for _, EseriesSANDriver := range EseriesSANDrivers {
-		sensitive, ok := EseriesSANDriver.Config.DebugTraceFlags["sensitive"]
-		EseriesSANDriver.API = newTestEseriesSANDriverAPI(&EseriesSANDriver.Config)
+	for _, toString := range []func(SANStorageDriver) string{callString, callGoString} {
 
-		switch {
+		for _, eseriesSANDriver := range eseriesSANDrivers {
+			sensitive, ok := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
+			eseriesSANDriver.API = newTestEseriesSANDriverAPI(&eseriesSANDriver.Config)
 
-		case !ok:
-			assert.Contains(t, EseriesSANDriver.String(), "<REDACTED>",
-				"Eseries driver does not contain <REDACTED>")
-			assert.Contains(t, EseriesSANDriver.String(), "API:<REDACTED>",
-				"Eseries driver does not redact API information")
-			assert.NotContains(t, EseriesSANDriver.String(), Username,
-				"Eseries driver contains  username")
-			assert.NotContains(t, EseriesSANDriver.String(), Password,
-				"Eseries driver contains password")
-			assert.NotContains(t, EseriesSANDriver.String(), PasswordArray,
-				"Eseries driver contains password array")
-		case ok && sensitive:
-			assert.Contains(t, EseriesSANDriver.String(), Username,
-				"Eseries driver does not contain username")
-			assert.Contains(t, EseriesSANDriver.String(), Password,
-				"Eseries driver does not contain password")
-			assert.Contains(t, EseriesSANDriver.String(), PasswordArray,
-				"Eseries driver does not contain password array")
-		case ok && !sensitive:
-			assert.Contains(t, EseriesSANDriver.String(), "<REDACTED>",
-				"Eseries driver does not contain <REDACTED>")
-			assert.Contains(t, EseriesSANDriver.String(), "API:<REDACTED>",
-				"Eseries driver does not redact API information")
-			assert.NotContains(t, EseriesSANDriver.String(), Username,
-				"Eseries driver contains  username")
-			assert.NotContains(t, EseriesSANDriver.String(), Password,
-				"Eseries driver contains password")
-			assert.NotContains(t, EseriesSANDriver.String(), PasswordArray,
-				"Eseries driver contains password array")
+			switch {
+
+			case !ok:
+				assert.Contains(t, toString(eseriesSANDriver), "<REDACTED>",
+					"Eseries driver does not contain <REDACTED>")
+				assert.Contains(t, toString(eseriesSANDriver), "API:<REDACTED>",
+					"Eseries driver does not redact API information")
+				assert.NotContains(t, toString(eseriesSANDriver), Username,
+					"Eseries driver contains  username")
+				assert.NotContains(t, toString(eseriesSANDriver), Password,
+					"Eseries driver contains password")
+				assert.NotContains(t, toString(eseriesSANDriver), PasswordArray,
+					"Eseries driver contains password array")
+			case ok && sensitive:
+				assert.Contains(t, toString(eseriesSANDriver), Username,
+					"Eseries driver does not contain username")
+				assert.Contains(t, toString(eseriesSANDriver), Password,
+					"Eseries driver does not contain password")
+				assert.Contains(t, toString(eseriesSANDriver), PasswordArray,
+					"Eseries driver does not contain password array")
+			case ok && !sensitive:
+				assert.Contains(t, toString(eseriesSANDriver), "<REDACTED>",
+					"Eseries driver does not contain <REDACTED>")
+				assert.Contains(t, toString(eseriesSANDriver), "API:<REDACTED>",
+					"Eseries driver does not redact API information")
+				assert.NotContains(t, toString(eseriesSANDriver), Username,
+					"Eseries driver contains  username")
+				assert.NotContains(t, toString(eseriesSANDriver), Password,
+					"Eseries driver contains password")
+				assert.NotContains(t, toString(eseriesSANDriver), PasswordArray,
+					"Eseries driver contains password array")
+			}
 		}
 	}
 }
@@ -146,21 +158,21 @@ func captureOutput(f func()) string {
 
 func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 
-	sensitiveInfo, _ := json.Marshal("Body: {\"controllerAddresses\": [\"10.193.156.28\", \"10.193.156.29\"], " +
-		"\"password\": \"Netapp123\"}")
+	sensitiveInfo, _ := json.Marshal("Body: {\"controllerAddresses\": [\"10.10.10.1\", \"10.10.10.2\"], " +
+		"\"password\": \"RaNd0M\"}")
 
-	var EseriesSANDrivers = []SANStorageDriver{
+	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
-			"method": true,
+			"method":    true,
 			"sensitive": true,
-			"api": true,
+			"api":       true,
 		}),
 		*newTestEseriesSANDriver(map[string]bool{
-			"method": true,
+			"method":    true,
 			"sensitive": false,
-			"api": true,
-		 }),
-		 *newTestEseriesSANDriver(map[string]bool{}),
+			"api":       true,
+		}),
+		*newTestEseriesSANDriver(map[string]bool{}),
 	}
 
 	mux := http.NewServeMux()
@@ -188,34 +200,30 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 
 	defer server.Close()
 
-	for _, EseriesSANDriver := range EseriesSANDrivers {
-		api, _ := EseriesSANDriver.Config.DebugTraceFlags["api"]
-		sensitive, _ := EseriesSANDriver.Config.DebugTraceFlags["sensitive"]
+	for _, eseriesSANDriver := range eseriesSANDrivers {
+		api, _ := eseriesSANDriver.Config.DebugTraceFlags["api"]
+		sensitive, _ := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
 		server.Config.TLSConfig = &tls.Config{
-			InsecureSkipVerify: !EseriesSANDriver.Config.WebProxyVerifyTLS,
+			InsecureSkipVerify: !eseriesSANDriver.Config.WebProxyVerifyTLS,
 		}
 
-		EseriesSANDriver.Config.WebProxyPort = port
-		EseriesSANDriver.API = newTestEseriesSANDriverAPI(&EseriesSANDriver.Config)
+		eseriesSANDriver.Config.WebProxyPort = port
+		eseriesSANDriver.API = newTestEseriesSANDriverAPI(&eseriesSANDriver.Config)
 
 		output := captureOutput(func() {
-			EseriesSANDriver.API.InvokeAPI(sensitiveInfo, "", "")
+			eseriesSANDriver.API.InvokeAPI(sensitiveInfo, "", "")
 		})
 
 		switch {
-
 		case api && !sensitive:
-
-			assert.NotContains(t, output, "Netapp123", "Logs contain sensitive information")
+			assert.NotContains(t, output, "RaNd0M", "Logs contain sensitive information")
 			assert.Contains(t, output, "<suppressed>", "Logs do not suppress sensitive information")
 
 		case !api:
-
 			assert.Empty(t, output)
 
 		case api && sensitive:
-
-			assert.Contains(t, output, "Netapp123", "Logs do not print sensitive information")
+			assert.Contains(t, output, "RaNd0M", "Logs do not print sensitive information")
 			assert.NotContains(t, output, "<suppressed>", "Logs suppress sensitive information")
 		}
 	}

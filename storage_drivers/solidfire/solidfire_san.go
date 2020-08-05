@@ -1651,7 +1651,7 @@ func (d *SANStorageDriver) GetExternalConfig() interface{} {
 	if strings.Contains(cloneConfig.EndPoint, "@") {
 		endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
 		if len(endpointHalves) > 0 {
-			cloneConfig.EndPoint = fmt.Sprintf("https://%s", endpointHalves[1])
+			cloneConfig.EndPoint = fmt.Sprintf("https://<REDACTED>@%s", endpointHalves[1])
 		}
 	}
 	return cloneConfig
@@ -1720,6 +1720,11 @@ func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 func (d SANStorageDriver) String() string {
 	sensitive := d.Config.DebugTraceFlags["sensitive"]
 	return drivers.ToString(sensitive, &d, []string{"Client", "AccountID"}, d.GetExternalConfig())
+}
+
+// Implement GoStringer interface for the SANStorageDriver driver
+func (d SANStorageDriver) GoString() string {
+	return d.String()
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about

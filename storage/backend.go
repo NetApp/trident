@@ -169,10 +169,6 @@ func NewFailedStorageBackend(driver Driver) *Backend {
 	return &backend
 }
 
-func (b Backend) String() string {
-	return fmt.Sprintf("%#v", b)
-}
-
 func (b *Backend) AddStoragePool(pool *Pool) {
 	b.Storage[pool.Name] = pool
 }
