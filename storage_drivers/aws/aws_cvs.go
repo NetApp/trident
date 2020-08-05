@@ -1513,8 +1513,8 @@ func (d *NFSStorageDriver) GetExternalConfig() interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AWSNFSStorageDriverConfig
 	drivers.Clone(d.Config, &cloneConfig)
-	cloneConfig.APIKey = ""    // redact the API key
-	cloneConfig.SecretKey = "" // redact the Secret key
+	cloneConfig.APIKey = "<REDACTED>"    // redact the API key
+	cloneConfig.SecretKey = "<REDACTED>" // redact the Secret key
 	return cloneConfig
 }
 
@@ -1530,6 +1530,17 @@ func (d *NFSStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 	}
 
 	return d.getVolumeExternal(volumeAttrs), nil
+}
+
+// Implement stringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, []string{"API"}, d.GetExternalConfig())
+}
+
+// Implement GoStringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) GoString() string {
+	return d.String()
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about

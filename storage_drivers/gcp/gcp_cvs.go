@@ -1551,7 +1551,18 @@ func (d *NFSStorageDriver) GetExternalConfig() interface{} {
 		return drivers.GCPNFSStorageDriverConfig{}
 	}
 
-	cloneConfig.APIKey = drivers.GCPPrivateKey{} // redact the API key
+	cloneConfig.APIKey = drivers.GCPPrivateKey{
+		Type:                    "<REDACTED>",
+		ProjectID:               "<REDACTED>",
+		PrivateKeyID:            "<REDACTED>",
+		PrivateKey:              "<REDACTED>",
+		ClientEmail:             "<REDACTED>",
+		ClientID:                "<REDACTED>",
+		AuthURI:                 "<REDACTED>",
+		TokenURI:                "<REDACTED>",
+		AuthProviderX509CertURL: "<REDACTED>",
+		ClientX509CertURL:       "<REDACTED>",
+	}
 	return cloneConfig
 }
 
@@ -1567,6 +1578,18 @@ func (d *NFSStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExtern
 	}
 
 	return d.getVolumeExternal(volumeAttrs), nil
+}
+
+// Implement stringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	// Cannot use GetExternalConfig as it contains log statements
+	return drivers.ToString(sensitive, &d, []string{"API"}, nil)
+}
+
+// Implement GoStringer interface for the NFSStorageDriver driver
+func (d NFSStorageDriver) GoString() string {
+	return d.String()
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about

@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	TenantName = "tester"
-	AdminPass  = "admin:password"
-	Endpoint   = "https://" + AdminPass + "@10.0.0.1/json-rpc/7.0"
+	TenantName       = "tester"
+	AdminPass        = "admin:password"
+	Endpoint         = "https://" + AdminPass + "@10.0.0.1/json-rpc/7.0"
+	RedactedEndpoint = "https://<REDACTED>" + "@10.0.0.1/json-rpc/7.0"
 )
 
 func newTestSolidfireSANDriver(showSensitive *bool) *SANStorageDriver {
@@ -84,6 +85,14 @@ func newTestSolidfireSANDriver(showSensitive *bool) *SANStorageDriver {
 	return sanDriver
 }
 
+func callString(s SANStorageDriver) string {
+	return s.String()
+}
+
+func callGoString(s SANStorageDriver) string {
+	return s.GoString()
+}
+
 func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
 
 	var solidfireSANDrivers = []SANStorageDriver{
@@ -92,44 +101,47 @@ func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
 		*newTestSolidfireSANDriver(nil),
 	}
 
-	for _, solidfireSANDriver := range solidfireSANDrivers {
-		sensitive, ok := solidfireSANDriver.Config.DebugTraceFlags["sensitive"]
+	for _, toString := range []func(SANStorageDriver) string{callString, callGoString} {
 
-		switch {
+		for _, solidfireSANDriver := range solidfireSANDrivers {
+			sensitive, ok := solidfireSANDriver.Config.DebugTraceFlags["sensitive"]
 
-		case !ok:
-			assert.Contains(t, solidfireSANDriver.String(), "<REDACTED>",
-				"Solidfire driver does not contain <REDACTED>")
-			assert.Contains(t, solidfireSANDriver.String(), "Client:<REDACTED>",
-				"Solidfire driver does not redact client API information")
-			assert.Contains(t, solidfireSANDriver.String(), "AccountID:<REDACTED>",
-				"Solidfire driver does not redact Account ID information")
-			assert.NotContains(t, solidfireSANDriver.String(), TenantName,
-				"Solidfire driver contains tenant name")
-			assert.NotContains(t, solidfireSANDriver.String(), AdminPass,
-				"Solidfire driver contains endpoint's admin and password")
-			assert.NotContains(t, solidfireSANDriver.String(), "2222",
-				"Solidfire driver contains Account ID")
-		case ok && sensitive:
-			assert.Contains(t, solidfireSANDriver.String(), TenantName,
-				"Solidfire driver does not contain tenant name")
-			assert.Contains(t, solidfireSANDriver.String(), AdminPass,
-				"Solidfire driver does not contain endpoint's admin and password")
-			assert.Contains(t, solidfireSANDriver.String(), "2222",
-				"Solidfire driver does not contain Account ID")
-		case ok && !sensitive:
-			assert.Contains(t, solidfireSANDriver.String(), "<REDACTED>",
-				"Solidfire driver does not contain <REDACTED>")
-			assert.Contains(t, solidfireSANDriver.String(), "Client:<REDACTED>",
-				"Solidfire driver does not redact client API information")
-			assert.Contains(t, solidfireSANDriver.String(), "AccountID:<REDACTED>",
-				"Solidfire driver does not redact Account ID information")
-			assert.NotContains(t, solidfireSANDriver.String(), TenantName,
-				"Solidfire driver contains tenant name")
-			assert.NotContains(t, solidfireSANDriver.String(), AdminPass,
-				"Solidfire driver contains endpoint's admin and password")
-			assert.NotContains(t, solidfireSANDriver.String(), "2222",
-				"Solidfire driver contains Account ID")
+			switch {
+
+			case !ok:
+				assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
+					"Solidfire driver does not contain <REDACTED>")
+				assert.Contains(t, toString(solidfireSANDriver), "Client:<REDACTED>",
+					"Solidfire driver does not redact client API information")
+				assert.Contains(t, toString(solidfireSANDriver), "AccountID:<REDACTED>",
+					"Solidfire driver does not redact Account ID information")
+				assert.NotContains(t, toString(solidfireSANDriver), TenantName,
+					"Solidfire driver contains tenant name")
+				assert.NotContains(t, toString(solidfireSANDriver), RedactedEndpoint,
+					"Solidfire driver contains endpoint's admin and password")
+				assert.NotContains(t, toString(solidfireSANDriver), "2222",
+					"Solidfire driver contains Account ID")
+			case ok && sensitive:
+				assert.Contains(t, toString(solidfireSANDriver), TenantName,
+					"Solidfire driver does not contain tenant name")
+				assert.Contains(t, toString(solidfireSANDriver), Endpoint,
+					"Solidfire driver does not contain endpoint's admin and password")
+				assert.Contains(t, toString(solidfireSANDriver), "2222",
+					"Solidfire driver does not contain Account ID")
+			case ok && !sensitive:
+				assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
+					"Solidfire driver does not contain <REDACTED>")
+				assert.Contains(t, toString(solidfireSANDriver), "Client:<REDACTED>",
+					"Solidfire driver does not redact client API information")
+				assert.Contains(t, toString(solidfireSANDriver), "AccountID:<REDACTED>",
+					"Solidfire driver does not redact Account ID information")
+				assert.NotContains(t, toString(solidfireSANDriver), TenantName,
+					"Solidfire driver contains tenant name")
+				assert.NotContains(t, toString(solidfireSANDriver), RedactedEndpoint,
+					"Solidfire driver contains endpoint's admin and password")
+				assert.NotContains(t, toString(solidfireSANDriver), "2222",
+					"Solidfire driver contains Account ID")
+			}
 		}
 	}
 }

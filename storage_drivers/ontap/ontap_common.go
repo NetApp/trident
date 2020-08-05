@@ -256,7 +256,7 @@ func (t Telemetry) String() (out string) {
 		fieldName := elements.Type().Field(i).Name
 		switch fieldName {
 		case "Driver":
-			output.WriteString(fmt.Sprintf("%v:%v", "Telemetry.Name", t.Driver.Name()))
+			output.WriteString(fmt.Sprintf("%v:%v", "Telemetry.Driver.Name", t.Driver.Name()))
 		default:
 			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, elements.Field(i)))
 		}
