@@ -1105,7 +1105,7 @@ func (d SANStorageDriver) String() string {
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
 
-// String makes SANStorageDriver satisfy the GoStringer interface.
+// GoString makes SANStorageDriver satisfy the GoStringer interface.
 func (d SANStorageDriver) GoString() string {
 	return d.String()
 }

@@ -847,7 +847,7 @@ func (d NASStorageDriver) String() string {
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
 
-// String makes NASStorageDriver satisfy the GoStringer interface.
+// GoString makes NASStorageDriver satisfy the GoStringer interface.
 func (d NASStorageDriver) GoString() string {
 	return d.String()
 }
