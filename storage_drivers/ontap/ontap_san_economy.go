@@ -1852,7 +1852,7 @@ func (d SANEconomyStorageDriver) String() string {
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
 
-// String makes SANEconomyStorageDriver satisfy the GoStringer interface.
+// GoString makes SANEconomyStorageDriver satisfy the GoStringer interface.
 func (d SANEconomyStorageDriver) GoString() string {
 	return d.String()
 }

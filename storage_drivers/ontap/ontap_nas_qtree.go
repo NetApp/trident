@@ -1806,7 +1806,7 @@ func (d NASQtreeStorageDriver) String() string {
 	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig())
 }
 
-// String makes NASQtreeStorageDriver satisfy the GoStringer interface.
+// GoString makes NASQtreeStorageDriver satisfy the GoStringer interface.
 func (d NASQtreeStorageDriver) GoString() string {
 	return d.String()
 }

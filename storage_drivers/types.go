@@ -125,6 +125,11 @@ func (d OntapStorageDriverConfig) String() string {
 	return ToString(sensitive, &d, GetOntapConfigRedactList(), nil)
 }
 
+// GoString makes OntapStorageDriverConfig satisfy the GoStringer interface.
+func (d OntapStorageDriverConfig) GoString() string {
+	return d.String()
+}
+
 type OntapStorageDriverPool struct {
 	Labels                           map[string]string `json:"labels"`
 	Region                           string            `json:"region"`
