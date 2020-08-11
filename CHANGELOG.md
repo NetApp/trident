@@ -2,10 +2,19 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v20.04.0
+## Changes since v20.07.0
 
-**IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
-**IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
+- **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
+- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
+
+**Fixes:**
+
+**Enhancements:**
+
+## v20.07.0
+
+- **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
+- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
 
 **Fixes:**
 - Disabled automatic iSCSI scans and shortened the iSCSI session replacement timeout. (Issue [#410](https://github.com/NetApp/trident/issues/410))
