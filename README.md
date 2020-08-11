@@ -17,3 +17,5 @@ That list continues to grow.
 
 Detailed documentation for Trident can be found on [Read the Docs](https://netapp-trident.readthedocs.io).
 
+Trident's support policy is outlined on [NetApp's Support site](https://mysupport.netapp.com/site/info/version-support)
+under the [Trident's Release and Support Lifecycle](https://mysupport.netapp.com/site/info/trident-support) tab.

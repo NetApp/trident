@@ -20,6 +20,9 @@ plus the `Azure NetApp Files`_ service in `Azure`_, the
 `Cloud Volumes Service for GCP`_ in `Google Cloud`_.
 That list continues to grow.
 
+Trident's support policy is outlined on `NetApp's Support site`_ under the
+`Trident's Release and Support Lifecycle`_ tab.
+
 .. _open source project: https://github.com/netapp/trident
 .. _NetApp: https://www.netapp.com
 .. _Kubernetes: https://kubernetes.io
@@ -33,3 +36,5 @@ That list continues to grow.
 .. _Cloud Volumes Service for GCP: https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _Amazon Web Services: https://aws.amazon.com/
 .. _Google Cloud: https://cloud.google.com/
+.. _NetApp's Support site: https://mysupport.netapp.com/site/info/version-support
+.. _Trident's Release and Support Lifecycle: https://mysupport.netapp.com/site/info/trident-support
