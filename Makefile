@@ -88,17 +88,8 @@ DEFAULT_TRIDENT_OPERATOR_VERSION ?= ${VERSION}
 DEFAULT_TRIDENT_OPERATOR_IMAGE := ${DEFAULT_TRIDENT_OPERATOR_REPO}:${DEFAULT_TRIDENT_OPERATOR_VERSION}
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${TRIDENT_VERSION}
 
-## etcd variables
-ifeq ($(ETCD_VERSION),)
-ETCD_VERSION := v3.3.13
-endif
-ETCD_PORT ?= 8001
-ETCD_SERVER ?= http://localhost:${ETCD_PORT}
-ETCD_DIR ?= /tmp/etcd
-ETCD_TAG := quay.io/coreos/etcd:${ETCD_VERSION}
-
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdVersion=$(ETCD_VERSION)\" -X \"${TRIDENT_CONFIG_PKG}.BuildEtcdImage=$(ETCD_TAG)\""
+BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\""
 
 ## Trident build targets
 
@@ -117,7 +108,7 @@ trident_build: trident_retag
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	cp ${BIN_DIR}/${BIN} .
 	cp ${BIN_DIR}/${CLI_BIN} .
-	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg ETCDV3=${ETCD_SERVER} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
+	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 ifdef REGISTRY_ADDR
 	docker push ${TRIDENT_TAG}
 endif
@@ -172,40 +163,23 @@ dist_tar: build
 dist: dist_tar dist_tag
 
 ## Test targets
-test_core:
+test_all:
 	@mkdir -p ${COVERAGE_DIR}
 	@chmod 777 ${COVERAGE_DIR}
-	-docker kill etcd-test > /dev/null
-	-docker rm etcd-test > /dev/null
-	@docker run -d -p ${ETCD_PORT}:${ETCD_PORT} --name etcd-test quay.io/coreos/etcd:${ETCD_VERSION} /usr/local/bin/etcd -name etcd1 -advertise-client-urls http://localhost:${ETCD_PORT} -listen-client-urls http://0.0.0.0:${ETCD_PORT} > /dev/null
-	@go test -v -coverprofile=${COVERAGE_DIR}/persistent_store-coverage.out github.com/netapp/trident/persistent_store -args -etcd_v2=${ETCD_SERVER} -etcd_v3=${ETCD_SERVER} -etcd_src=${ETCD_SERVER} -etcd_dest=${ETCD_SERVER}
-	@sleep 1
-	@go test -cover -v github.com/netapp/trident/core -args -etcd_v2=${ETCD_SERVER}
-	@sleep 1
-	@go test -cover -v github.com/netapp/trident/core -args -etcd_v3=${ETCD_SERVER}
-	@sleep 1
-	@go test -v -coverprofile=${COVERAGE_DIR}/core-coverage.out github.com/netapp/trident/core
-	@docker kill etcd-test > /dev/null
-	@docker rm etcd-test > /dev/null
-
-test_other:
-	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/ | grep -v core | grep -v persistent_store && echo github.com/netapp/trident/persistent_store/crd/apis/netapp/v1)
+	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/)
 
 test_coverage_report:
-	@sed 1,1d ${COVERAGE_DIR}/persistent_store-coverage.out >>${COVERAGE_DIR}/coverage.out
-	@sed 1,1d ${COVERAGE_DIR}/core-coverage.out >>${COVERAGE_DIR}/coverage.out
 	@go tool cover -func=${COVERAGE_DIR}/coverage.out -o ${COVERAGE_DIR}/function-coverage.txt
 	@go tool cover -html=${COVERAGE_DIR}/coverage.out -o ${COVERAGE_DIR}/coverage.html
 
-test: test_core test_other test_coverage_report
+test: test_all test_coverage_report
 
 ## docker-compose targets
 docker_compose_up:
-	mkdir -p ${ETCD_DIR}
-	PORT=${PORT} ETCD_DIR=${ETCD_DIR} K8S=${K8S} COMPOSE_HTTP_TIMEOUT=1800 docker-compose up
+	PORT=${PORT} K8S=${K8S} COMPOSE_HTTP_TIMEOUT=1800 docker-compose up
 
 docker_compose_stop:
-	-PORT=${PORT} ETCD_DIR=${ETCD_DIR} docker-compose stop
+	-PORT=${PORT} docker-compose stop
 
 ## Misc. targets
 build: trident_build_all

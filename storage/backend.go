@@ -825,9 +825,8 @@ func (b *Backend) ConstructExternal() *BackendExternal {
 	return &backendExternal
 }
 
-// Used to store the requisite info for a backend in etcd.  Other than
-// the configuration, all other data will be reconstructed during the bootstrap
-// phase
+// Used to store the requisite info for a backend in the persistent store.  Other than
+// the configuration, all other data will be reconstructed during the bootstrap phase.
 
 type PersistentStorageBackendConfig struct {
 	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`

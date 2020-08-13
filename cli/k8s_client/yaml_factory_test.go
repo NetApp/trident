@@ -27,7 +27,6 @@ func TestYAML(t *testing.T) {
 		installerClusterRoleKubernetesYAMLTemplate,
 		installerClusterRoleBindingOpenShiftYAMLTemplate,
 		installerClusterRoleBindingKubernetesV1YAMLTemplate,
-		migratorPodYAMLTemplate,
 		installerPodTemplate,
 		uninstallerPodTemplate,
 		openShiftSCCQueryYAMLTemplate,

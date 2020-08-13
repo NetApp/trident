@@ -15,9 +15,6 @@ type StoreType string
 
 const (
 	MemoryStore      StoreType = "memory"
-	EtcdV2Store      StoreType = "etcdv2"
-	EtcdV3Store      StoreType = "etcdv3"
-	EtcdV3bStore     StoreType = "etcdv3b"
 	PassthroughStore StoreType = "passthrough"
 	CRDV1Store       StoreType = "crdv1"
 )
@@ -76,17 +73,6 @@ type Client interface {
 	DeleteSnapshot(snapshot *storage.Snapshot) error
 	DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error
 	DeleteSnapshots() error
-}
-
-type EtcdClient interface {
-	Client
-	Create(key, value string) error
-	Read(key string) (string, error)
-	ReadKeys(keyPrefix string) ([]string, error)
-	Update(key, value string) error
-	Set(key, value string) error
-	Delete(key string) error
-	DeleteKeys(keyPrefix string) error
 }
 
 type CRDClient interface {

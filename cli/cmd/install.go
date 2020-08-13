@@ -65,25 +65,23 @@ const (
 
 var (
 	// CLI flags
-	generateYAML       	    bool
-	useYAML            	    bool
-	silent             	    bool
-	csi                	    bool
-	inCluster         	    bool
-	useIPv6           	    bool
-	silenceAutosupport 	    bool
-	pvName             	    string
-	pvcName           	    string
-	tridentImage      	    string
-	etcdImage          	    string
-	autosupportImage   	    string
-	autosupportProxy   	    string
-	autosupportCustomURL    string
-	kubeletDir         	    string
-	imageRegistry      	    string
-	logFormat          	    string
-	k8sTimeout         	    time.Duration
-	migratorTimeout    	    time.Duration
+	generateYAML         bool
+	useYAML              bool
+	silent               bool
+	csi                  bool
+	inCluster            bool
+	useIPv6              bool
+	silenceAutosupport   bool
+	pvName               string
+	pvcName              string
+	tridentImage         string
+	autosupportImage     string
+	autosupportProxy     string
+	autosupportCustomURL string
+	kubeletDir           string
+	imageRegistry        string
+	logFormat            string
+	k8sTimeout           time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -132,10 +130,9 @@ func init() {
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable", "Don't send autosupport bundles to NetApp automatically.")
 
-	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will be migrated to CRDs.")
-	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will be migrated to CRDs.")
+	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will ensure this does not exist.")
+	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
-	installCmd.Flags().StringVar(&etcdImage, "etcd-image", "", "The etcd image to install.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
@@ -144,10 +141,8 @@ func init() {
 	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage, "The container image for Autosupport Telemetry")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
-	installCmd.Flags().DurationVar(&migratorTimeout, "migrator-timeout", 300*time.Minute, "The timeout for etcd-to-CRD migration.")
 
 	installCmd.Flags().MarkHidden("in-cluster")
-	installCmd.Flags().MarkHidden("migrator-timeout")
 }
 
 var installCmd = &cobra.Command{
@@ -240,18 +235,6 @@ func discoverInstallationEnvironment() error {
 		}
 	}
 	log.Debugf("Trident image: %s", tridentImage)
-
-	// Default etcd image to what Trident was built with
-	if etcdImage == "" {
-		etcdImage = tridentconfig.BuildEtcdImage
-
-		// Override registry only if using the default etcd image name and an alternate registry was supplied
-		if imageRegistry != "" {
-			etcdImage = utils.ReplaceImageRegistry(etcdImage, imageRegistry)
-		}
-	} else if !strings.Contains(etcdImage, tridentconfig.BuildEtcdVersion) {
-		log.Warningf("Trident was qualified with etcd %s. You appear to be using a different version.", tridentconfig.BuildEtcdVersion)
-	}
 
 	if imageRegistry != "" {
 		autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
@@ -564,11 +547,10 @@ func ensureSetupDirExists() error {
 func installTrident() (returnError error) {
 
 	var (
-		logFields     log.Fields
-		pvcExists     bool
-		pvExists      bool
-		migrateToCRDs bool
-		crd           *apiextensionv1beta1.CustomResourceDefinition
+		logFields log.Fields
+		pvcExists bool
+		pvExists  bool
+		crd       *apiextensionv1beta1.CustomResourceDefinition
 	)
 
 	// Ensure legacy Trident isn't already installed
@@ -662,9 +644,8 @@ func installTrident() (returnError error) {
 		}
 	}
 
-	// Let TridentVersions CRD be the deciding factor if CRD migration should be done
-	// or not, TridentVersions is the last CRD created during the migration, hence
-	// its presence signifies that migration (if it took place) was successful.
+	// Let TridentVersions CRD be the deciding factor if the CRDs exist, since
+	// TridentVersions is the last CRD created during installation.
 	if utils.SliceContainsString(installedCRDs, VersionCRDName) {
 		log.Debug("Trident Version CRD present, skipping PVC/PV check.")
 	} else {
@@ -675,13 +656,14 @@ func installTrident() (returnError error) {
 			return
 		}
 
-		migrateToCRDs = false
-
 		logFields = log.Fields{"pv": pvName, "pvc": pvcName}
 
 		if pvcExists && pvExists {
-			log.WithFields(logFields).Debug("PV and PVC exist, installer will migrate etcd data to CRDs.")
-			migrateToCRDs = true
+			log.WithFields(logFields).Debug("PV and PVC exist from a pre-19.07 Trident installation.")
+			returnError = errors.New("PV and PVC exist from a pre-19.07 Trident installation.  This data " +
+				"must be migrated to CRDs.  Install Trident 20.07 to accomplish this migration, and then upgrade " +
+				"to any Trident version newer than 20.07")
+			return
 		} else if !pvcExists && !pvExists {
 			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
 				"CRD-based deployment.")
@@ -696,22 +678,6 @@ func installTrident() (returnError error) {
 			returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
 				"Trident installation, please use the installer from that version to recreate the missing PVC, "+
 				"else delete the PV and try again", pvName, pvcName)
-			return
-		}
-
-		// If case of migration we need to ensure no CRD is present
-		if migrateToCRDs && len(installedCRDs) > 0 {
-			// If we are here it could mean either of the cases:
-			// 1. If user is running migration, and it failed during the CRD creation and cleanup didn't
-			//    perform a good job of clean. If this is the case user should run obliviate manually.
-			// 2. In non-migration scenario, between install and uninstall, TridentVersions CRD was deleted
-			//    and may be some other CRDs as well. If the TridentVersions CRD deletion was result of
-			//    obliviate command, then user should re-run the command again. If that is not the case
-			//    then user may need to install the missing CRDs manually to avoid running into
-			//    the migration scenario.
-			errMessage := fmt.Sprintf("migration cannot continue, CRDs %v already present", installedCRDs)
-			log.WithFields(logFields).Error(errMessage)
-			returnError = fmt.Errorf(errMessage)
 			return
 		}
 	}
@@ -740,40 +706,19 @@ func installTrident() (returnError error) {
 	}
 
 	// Create the CRDs and wait for them to be established in Kubernetes
-	crdsCreated := false
 	if !allCRDsPresent {
 
 		// Create CRDs and ensure they are established
-		if returnError = createAndEnsureCRDs(migrateToCRDs); returnError != nil {
+		if returnError = createAndEnsureCRDs(); returnError != nil {
 			log.Errorf("could not create the Trident CRDs; %v", returnError)
 			return
 		}
 
 		// Ensure we can create a CRD client
 		if _, returnError = getCRDClient(); returnError != nil {
-			// If CRD client creation failed *and* we created the CRDs,
-			// clean up by deleting the CRDs for the migration case only
 			log.Errorf("Could not create CRD client; %v", returnError)
-			if migrateToCRDs {
-				if err := deleteCustomResourceDefinitions(); err != nil {
-					log.Errorf("Could not delete CRDs; %v", err)
-				}
-			}
 			return
 		}
-
-		// Ensure no TridentVersion CR is present only if this is a migration scenario
-		if migrateToCRDs {
-			if returnError = validateTridentVersionCRNotPresent(TridentPodNamespace); returnError != nil {
-				log.Errorf("TridentVersion custom resource present; %v", returnError)
-				// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
-				if err := deleteCustomResourceDefinitions(); err != nil {
-					log.Errorf("Could not delete CRDs; %v", err)
-				}
-				return
-			}
-		}
-		crdsCreated = true
 	}
 
 	// Create pod security policy
@@ -808,28 +753,6 @@ func installTrident() (returnError error) {
 		return
 	}
 	log.WithFields(logFields).Info("Created Trident pod security policy.")
-
-	// Do the data migration if necessary
-	if migrateToCRDs {
-		if returnError = runTridentMigrator(); returnError != nil && crdsCreated {
-			// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
-			log.Errorf("Migration failed; %v", returnError)
-			if err := deleteCustomResourceDefinitions(); err != nil {
-				log.Errorf("Could not delete CRDs; %v", err)
-			}
-			return
-		}
-
-		// Ensure the migrator finished completely by writing a version resource
-		if returnError = validateTridentVersionCRPresent(TridentPodNamespace); returnError != nil && crdsCreated {
-			log.Errorf("TridentVersion custom resource not present; %v", returnError)
-			// If migration failed *and* we created the CRDs, clean up by deleting the CRDs
-			if err := deleteCustomResourceDefinitions(); err != nil {
-				log.Errorf("Could not delete CRDs; %v", err)
-			}
-			return
-		}
-	}
 
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = protectCustomResourceDefinitions(); returnError != nil {
@@ -1110,7 +1033,7 @@ func createNamespace() (returnError error) {
 	return nil
 }
 
-func createAndEnsureCRDs(migrateToCRDs bool) (returnError error) {
+func createAndEnsureCRDs() (returnError error) {
 
 	var bundleCRDYAML string
 	if useYAML && fileExists(crdsPath) {
@@ -1134,7 +1057,7 @@ func createAndEnsureCRDs(migrateToCRDs bool) (returnError error) {
 		return
 	}
 
-	returnError = createCRDs(crdMap, migrateToCRDs)
+	returnError = createCRDs(crdMap)
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
 		return
@@ -1209,19 +1132,11 @@ func validateCRDs(crdMap map[string]string) error {
 }
 
 // createCRDs creates and establishes each of the CRDs individually
-func createCRDs(crdMap map[string]string, migrateToCRDs bool) error {
+func createCRDs(crdMap map[string]string) error {
 	var returnError error
 
 	for crdName, crdYAML := range crdMap {
 		if returnError = createCRD(crdName, crdYAML); returnError != nil {
-			if migrateToCRDs {
-				// If CRD creation/registration failed *and* we created the CRDs,
-				// clean up by deleting all the CRDs
-				log.Errorf("CRD creation failed; %v", returnError)
-				if err := deleteCustomResourceDefinitions(); err != nil {
-					log.Errorf("Could not delete CRDs; %v", err)
-				}
-			}
 			return returnError
 		}
 	}
@@ -1959,10 +1874,6 @@ func installTridentInCluster() (returnError error) {
 		commandArgs = append(commandArgs, "--trident-image")
 		commandArgs = append(commandArgs, tridentImage)
 	}
-	if etcdImage != "" {
-		commandArgs = append(commandArgs, "--etcd-image")
-		commandArgs = append(commandArgs, etcdImage)
-	}
 	if logFormat != "" {
 		commandArgs = append(commandArgs, "--log-format")
 		commandArgs = append(commandArgs, logFormat)
@@ -2027,82 +1938,6 @@ func installTridentInCluster() (returnError error) {
 	}
 
 	log.Info("In-cluster installation completed.")
-
-	return
-}
-
-func runTridentMigrator() (returnError error) {
-
-	// Ensure Trident migrator pod isn't already present
-	if podPresent, namespace, err := client.CheckPodExistsByLabel(TridentMigratorLabel, true); err != nil {
-		return fmt.Errorf("could not check if Trident migrator pod is present; %v", err)
-	} else if podPresent {
-		return fmt.Errorf("trident migrator pod 'trident-migrator' is already present in namespace %s; "+
-			"please remove it manually and try again", namespace)
-	}
-
-	// Ensure the required namespace exists
-	namespaceExists, returnError := client.CheckNamespaceExists(TridentPodNamespace)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not check if namespace %s exists; %v", TridentPodNamespace, returnError)
-		return
-	}
-	if namespaceExists {
-		log.WithField("namespace", TridentPodNamespace).Debug("Namespace exists.")
-	} else {
-		log.WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
-
-		returnError = createNamespace()
-		if returnError != nil {
-			return
-		}
-	}
-
-	// Create the installer arguments
-	commandArgs := []string{
-		"tridentctl",
-		"migrate",
-		"--etcd-v3=http://127.0.0.1:8001",
-	}
-	if Debug {
-		commandArgs = append(commandArgs, "--debug")
-	}
-	if silent {
-		commandArgs = append(commandArgs, "--silent")
-	}
-
-	// Create the migrator pod
-	errMessage := "could not create migrator pod"
-	returnError = createObjectsByYAML("migratorPod",
-		k8sclient.GetMigratorPodYAML(pvcName, tridentImage, etcdImage,
-			TridentMigratorLabelValue, csi, commandArgs), errMessage)
-	if returnError != nil {
-		return
-	}
-	log.WithFields(log.Fields{"pod": "trident-migrator"}).Info("Created migrator pod.")
-
-	// Wait for Trident migrator pod to start
-	var migratorPod *v1.Pod
-	migratorPod, returnError = waitForPodToStart(TridentMigratorLabel, "migrator")
-	if returnError != nil {
-		return
-	}
-
-	// Wait for pod to finish & output logs
-	client.FollowPodLogs(migratorPod.Name, "trident-migrator", migratorPod.Namespace, logLogFmtMessage)
-
-	migratorPod, returnError = waitForContainerToFinish(TridentMigratorLabel, "trident-migrator",
-		"migrator", migratorTimeout)
-	if returnError != nil {
-		return
-	}
-
-	if returnError = client.DeletePodByLabel(TridentMigratorLabel); returnError != nil {
-		log.WithFields(log.Fields{"pod": "trident-migrator"}).Error("Could not delete migrator pod;" +
-			"please delete it manually.")
-	} else {
-		log.WithFields(log.Fields{"pod": "trident-migrator"}).Info("Deleted migrator pod.")
-	}
 
 	return
 }

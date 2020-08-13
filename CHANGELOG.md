@@ -11,6 +11,9 @@
 
 **Enhancements:**
 
+**Deprecations:**
+- **Kubernetes:** Removed etcd support, including ability to upgrade directly from etcd-based Trident (v19.04.1 or older).
+
 ## v20.07.0
 
 - **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).

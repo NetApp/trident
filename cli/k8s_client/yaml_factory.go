@@ -1386,63 +1386,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 
-func GetMigratorPodYAML(pvcName, tridentImage, etcdImage, label string, csi bool, commandArgs []string) string {
-
-	command := `["` + strings.Join(commandArgs, `", "`) + `"]`
-
-	podYAML := strings.ReplaceAll(migratorPodYAMLTemplate, "{TRIDENT_IMAGE}", tridentImage)
-	podYAML = strings.ReplaceAll(podYAML, "{ETCD_IMAGE}", etcdImage)
-	podYAML = strings.ReplaceAll(podYAML, "{PVC_NAME}", pvcName)
-	podYAML = strings.ReplaceAll(podYAML, "{LABEL_APP}", label)
-	podYAML = strings.ReplaceAll(podYAML, "{COMMAND}", command)
-
-	if csi {
-		podYAML = strings.ReplaceAll(podYAML, "{SERVICE_ACCOUNT}", "trident-csi")
-	} else {
-		podYAML = strings.ReplaceAll(podYAML, "{SERVICE_ACCOUNT}", "trident")
-	}
-
-	return podYAML
-}
-
-const migratorPodYAMLTemplate = `---
-apiVersion: v1
-kind: Pod
-metadata:
-  name: trident-migrator
-  labels:
-    app: {LABEL_APP}
-spec:
-  serviceAccount: {SERVICE_ACCOUNT}
-  restartPolicy: Never
-  containers:
-  - name: trident-migrator
-    image: {TRIDENT_IMAGE}
-    command: {COMMAND}
-  - name: etcd
-    image: {ETCD_IMAGE}
-    command:
-    - /usr/local/bin/etcd
-    args:
-    - "--name=etcd1"
-    - "--advertise-client-urls=http://127.0.0.1:8001"
-    - "--listen-client-urls=http://127.0.0.1:8001"
-    - "--initial-advertise-peer-urls=http://127.0.0.1:8002"
-    - "--listen-peer-urls=http://127.0.0.1:8002"
-    - "--data-dir=/var/etcd/data"
-    - "--initial-cluster=etcd1=http://127.0.0.1:8002"
-    volumeMounts:
-    - name: etcd-vol
-      mountPath: /var/etcd/data
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-    beta.kubernetes.io/arch: amd64
-  volumes:
-  - name: etcd-vol
-    persistentVolumeClaim:
-      claimName: {PVC_NAME}
-`
-
 func GetInstallerPodYAML(label, tridentImage string, commandArgs []string) string {
 
 	command := `["` + strings.Join(commandArgs, `", "`) + `"]`

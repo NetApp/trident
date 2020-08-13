@@ -113,16 +113,6 @@ func (o *TridentOrchestrator) transformPersistentState() error {
 		return fmt.Errorf("couldn't determine the orchestrator persistent state version: %v", err)
 	}
 
-	if version.PersistentStoreVersion == string(persistentstore.EtcdV3Store) {
-		transformer := persistentstore.NewEtcdDataTransformer(o.storeClient, false, true)
-		if err := transformer.RunPrechecks(); err != nil {
-			return err
-		}
-		if _, err := transformer.Run(); err != nil {
-			return err
-		}
-	}
-
 	if config.OrchestratorAPIVersion != version.OrchestratorAPIVersion {
 		log.WithFields(log.Fields{
 			"current_api_version": version.OrchestratorAPIVersion,
@@ -1025,7 +1015,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(backendName, configJSON
 		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendUUID))
 	}
 
-	logFields := log.Fields{"backendName": backendName, "backendUUID": backendUUID, "configJSON":  "<suppressed>"}
+	logFields := log.Fields{"backendName": backendName, "backendUUID": backendUUID, "configJSON": "<suppressed>"}
 	if originalBackend.GetDebugTraceFlags()["sensitive"] {
 		logFields["configJSON"] = configJSON
 	}

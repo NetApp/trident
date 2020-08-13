@@ -30,9 +30,7 @@ import (
 )
 
 var (
-	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API)")
-	etcdV3 = flag.String("etcd_v3", "", "etcd server (v3 API)")
-	debug  = flag.Bool("debug", false, "Enable debugging output")
+	debug = flag.Bool("debug", false, "Enable debugging output")
 
 	inMemoryClient *persistentstore.InMemoryClient
 )
@@ -42,9 +40,8 @@ func init() {
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
-	if *etcdV2 == "" && *etcdV3 == "" {
-		inMemoryClient = persistentstore.NewInMemoryClient()
-	}
+
+	inMemoryClient = persistentstore.NewInMemoryClient()
 }
 
 type deleteTest struct {
@@ -85,36 +82,10 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up snapshots:  ", err)
 	}
-	if *etcdV2 == "" && *etcdV3 == "" {
-		// Clear the InMemoryClient state so that it looks like we're
-		// bootstrapping afresh next time.
-		inMemoryClient.Stop()
-	}
-}
 
-func cleanupStoreVersion(t *testing.T, etcd string) {
-	// Deleting etcdv2 persistent state version
-	etcdv2Client, err := persistentstore.NewEtcdClientV2(etcd)
-	if err != nil {
-		t.Fatalf("Creating etcdv2 client failed: %v", err)
-	}
-	if err = etcdv2Client.Delete(config.StoreURL); err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
-		t.Fatalf("Couldn't delete etcdv2 persistent state version: %v", err)
-	}
-	if err = etcdv2Client.Stop(); err != nil {
-		t.Fatalf("Couldn't shut down etcdv2 client: %v", err)
-	}
-	// Deleting etcdv3 persistent state version
-	etcdv3Client, err := persistentstore.NewEtcdClientV3(etcd)
-	if err != nil {
-		t.Fatalf("Creating etcdv3 client failed: %v", err)
-	}
-	if err = etcdv3Client.Delete(config.StoreURL); err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
-		t.Fatalf("Couldn't delete etcdv3 persistent state version: %v", err)
-	}
-	if err = etcdv3Client.Stop(); err != nil {
-		t.Fatalf("Couldn't shut down etcdv3 client: %v", err)
-	}
+	// Clear the InMemoryClient state so that it looks like we're
+	// bootstrapping afresh next time.
+	inMemoryClient.Stop()
 }
 
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {
@@ -296,31 +267,12 @@ func getOrchestrator() *TridentOrchestrator {
 		err         error
 	)
 
-	// If the user specified an etcd store, use that; otherwise, use an
-	// in-memory store.  Keep both options available to avoid semantic drift
-	// between the two stores (e.g., differing error conditions) causing
-	// problems at a later time.
-	if *etcdV2 != "" {
-		log.Debug("Creating new etcdv2 client.")
-		// Note that this will panic if the etcd connection fails.
-		storeClient, err = persistentstore.NewEtcdClientV2(*etcdV2)
-		if err != nil {
-			panic(err)
-		}
-	} else if *etcdV3 != "" {
-		log.Debug("Creating new etcdv3 client.")
-		// Note that this will panic if the etcd connection fails.
-		storeClient, err = persistentstore.NewEtcdClientV3(*etcdV3)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		log.Debug("Using in-memory client.")
-		// This will have been created as not nil in init
-		// We can't create a new one here because tests that exercise
-		// bootstrapping need to have their data persist.
-		storeClient = inMemoryClient
-	}
+	log.Debug("Using in-memory client.")
+	// This will have been created as not nil in init
+	// We can't create a new one here because tests that exercise
+	// bootstrapping need to have their data persist.
+	storeClient = inMemoryClient
+
 	o := NewTridentOrchestrator(storeClient)
 	if err = o.Bootstrap(); err != nil {
 		log.Fatal("Failure occurred during bootstrapping: ", err)
@@ -1540,7 +1492,7 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	}
 
 	newConfigJSON, err := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(backendName, backendProtocol,
-		debugTraceFlags,"prefix2_")
+		debugTraceFlags, "prefix2_")
 	if err != nil {
 		t.Errorf("%s:  unable to generate new backend config:  %v", backendName, err)
 	}
@@ -1558,7 +1510,7 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	outputArr = strings.Split(outputArr[1], "=\"")
 	outputArr = strings.Split(outputArr[1], "\"")
 
-	if debugTraceFlags == nil || !debugTraceFlags["sensitive"]{
+	if debugTraceFlags == nil || !debugTraceFlags["sensitive"] {
 		assert.Equal(t, outputArr[0], "<suppressed>")
 	} else {
 		assert.NotContains(t, outputArr[0], "<suppressed>")
@@ -1568,8 +1520,8 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 
 func TestBackendPasswordsInLogs(t *testing.T) {
 	backendPasswordsInLogsHelper(t, nil)
-	backendPasswordsInLogsHelper(t, map[string]bool{"method": true,"sensitive":false})
-	backendPasswordsInLogsHelper(t, map[string]bool{"method": true,"sensitive":true})
+	backendPasswordsInLogsHelper(t, map[string]bool{"method": true, "sensitive": false})
+	backendPasswordsInLogsHelper(t, map[string]bool{"method": true, "sensitive": true})
 }
 
 func TestEmptyBackendDeletion(t *testing.T) {
@@ -1639,7 +1591,7 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 	orchestrator.mutex.Lock()
 	err = orchestrator.storeClient.DeleteVolume(vol)
 	if err != nil {
-		t.Fatalf("Unable to delete volume from etcd: %v", err)
+		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1685,12 +1637,12 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 	// Simulate deleting the existing backend without going through Trident then bootstrapping
 	backend, err := orchestrator.getBackendByBackendName(offlineBackendName)
 	if err != nil {
-		t.Fatalf("Unable to get backend from etcd: %v", err)
+		t.Fatalf("Unable to get backend from store: %v", err)
 	}
 	orchestrator.mutex.Lock()
 	err = orchestrator.storeClient.DeleteBackend(backend)
 	if err != nil {
-		t.Fatalf("Unable to delete volume from etcd: %v", err)
+		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1729,12 +1681,12 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 	// Simulate deleting the existing backend without going through Trident then bootstrapping
 	backend, err := orchestrator.getBackendByBackendName(offlineBackendName)
 	if err != nil {
-		t.Fatalf("Unable to get backend from etcd: %v", err)
+		t.Fatalf("Unable to get backend from store: %v", err)
 	}
 	orchestrator.mutex.Lock()
 	err = orchestrator.storeClient.DeleteBackend(backend)
 	if err != nil {
-		t.Fatalf("Unable to delete volume from etcd: %v", err)
+		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1787,7 +1739,7 @@ func TestBackendCleanup(t *testing.T) {
 	}
 	err = orchestrator.storeClient.DeleteVolume(vol)
 	if err != nil {
-		t.Fatalf("Unable to delete volume from etcd: %v", err)
+		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
 	orchestrator.mutex.Unlock()
 
@@ -1934,7 +1886,7 @@ func runRecoveryTests(
 					"%v", c.name, err)
 			}
 		} else {
-			t.Errorf("%s:  Found VolumeConfig still stored in etcd.", c.name)
+			t.Errorf("%s:  Found VolumeConfig still stored in store.", c.name)
 		}
 		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(); err != nil {
 			t.Errorf("%s: Unable to retrieve transactions from backing store: "+
@@ -2065,7 +2017,7 @@ func runSnapshotRecoveryTests(
 				t.Errorf("%s: unable to communicate with backing store: %v", c.name, err)
 			}
 		} else {
-			t.Errorf("%s: Found SnapshotConfig still stored in etcd.", c.name)
+			t.Errorf("%s: Found SnapshotConfig still stored in store.", c.name)
 		}
 		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(); err != nil {
 			t.Errorf("%s: Unable to retrieve transactions from backing store: %v", c.name, err)
@@ -2154,114 +2106,6 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 		})
 	cleanup(t, orchestrator)
 }
-
-func TestBadBootstrapEtcdV2(t *testing.T) {
-	if *etcdV2 == "" {
-		t.SkipNow()
-	}
-	_, err := persistentstore.NewEtcdClientV2("invalidIPAddress")
-	if err != nil && persistentstore.MatchUnavailableClusterErr(err) {
-	} else {
-		panic(fmt.Errorf("didn't catch invalid etcdv2 client"))
-	}
-}
-
-func TestBadBootstrapEtcdV3(t *testing.T) {
-	if *etcdV3 == "" {
-		t.SkipNow()
-	}
-	_, err := persistentstore.NewEtcdClientV3("invalidIPAddress")
-	if err != nil && persistentstore.MatchUnavailableClusterErr(err) {
-	} else {
-		panic(fmt.Errorf("didn't catch invalid etcdv3 client"))
-	}
-}
-
-//func TestBootstrapEtcdV2ToEtcdV3Migration(t *testing.T) {
-//	const (
-//		backendName = "bootstrapV2toV3_backend"
-//		scName      = "bootstrapV2toV3_class"
-//		volumeName  = "bootstrapV2toV3_vol"
-//	)
-//	if *etcdV3 == "" {
-//		t.SkipNow()
-//	}
-//	cleanupStoreVersion(t, *etcdV3)
-//
-//	// Populate the etcdv2 cluster with one backend, one storage class, and one volume
-//	etcdV2Orig := etcdV2
-//	etcdV2 = etcdV3
-//	orchestratorV2 := getOrchestrator()
-//	addBackendStorageClass(t, orchestratorV2, backendName, scName)
-//
-//	orchestratorV2.mutex.Lock()
-//	if _, ok := orchestratorV2.storageClasses[scName]; !ok {
-//		t.Fatal("Storage class not found in the orchestrator map!")
-//	}
-//	orchestratorV2.mutex.Unlock()
-//
-//	v2Volume, err := orchestratorV2.AddVolume(tu.GenerateVolumeConfig(volumeName, 50, scName,
-//		config.File))
-//	if err != nil {
-//		t.Fatal("Unable to create volume: ", err)
-//	}
-//	orchestratorV2.mutex.Lock()
-//	if _, ok := orchestratorV2.volumes[volumeName]; !ok {
-//		t.Fatal("Volume name found in orchestrator map!")
-//	}
-//	orchestratorV2.mutex.Unlock()
-//
-//	// Bootstrap etcdv3 orchestrator with etcdv2 data
-//	etcdV2 = etcdV2Orig
-//	orchestratorV3 := getOrchestrator()
-//
-//	// Verify etcdv2 to etcdv3 transformation
-//	if v3Backend, err := orchestratorV3.GetBackend(backendName); v3Backend == nil {
-//		t.Fatalf("Failed to find backend %s after bootstrapping! %v", backendName, err)
-//	}
-//	//TODO: Optionally we can diff etcdv2 and etcdv3 backends here
-//	v3StorageClass, err := orchestratorV3.GetStorageClass(scName)
-//	if v3StorageClass == nil || err != nil {
-//		t.Fatalf("Failed to find storage class %s after bootstrapping!", scName)
-//	}
-//	//TODO: Optionally we can diff etcdv2 and etcdv3 storage classes here
-//	v3Volume, err := orchestratorV3.GetVolume(volumeName)
-//	if v3Volume == nil || err != nil {
-//		t.Fatalf("Failed to find storage class %s after bootstrapping!", volumeName)
-//	}
-//	// Verifying the same volume exists on both clusters
-//	if !reflect.DeepEqual(v2Volume, v3Volume) {
-//		t.Fatalf("etcdv2 volume (%v) doesn't match the etcdv3 volume (%v)!",
-//			v2Volume, v3Volume)
-//	}
-//	etcdv3Client, err := persistentstore.NewEtcdClientV3(*etcdV3)
-//	if err != nil {
-//		t.Fatalf("Creating etcdv3 client failed: %v", err)
-//	}
-//	versionJSON, err := etcdv3Client.Read(config.StoreURL)
-//	if err != nil {
-//		t.Fatalf("Couldn't determine the orchestrator persistent state version: %v",
-//			err)
-//	}
-//	version := &config.PersistentStateVersion{}
-//	err = json.Unmarshal([]byte(versionJSON), version)
-//	if err != nil {
-//		t.Fatalf("Couldn't unmarshal the orchestrator persistent state version: %v", err)
-//	}
-//	if config.OrchestratorAPIVersion != version.OrchestratorAPIVersion ||
-//		string(orchestratorV3.storeClient.GetType()) != version.PersistentStoreVersion {
-//		t.Fatalf("Failed to set the orchestrator persistent state version after bootsrapping: %v",
-//			err)
-//	}
-//
-//	// cleanup
-//	if err = etcdv3Client.Stop(); err != nil {
-//		t.Fatalf("Couldn't shut down etcdv3 client: %v", err)
-//	}
-//	cleanup(t, orchestratorV2)
-//	cleanup(t, orchestratorV3)
-//	cleanupStoreVersion(t, *etcdV3)
-//}
 
 // The next series of tests test that bootstrap doesn't exit early if it
 // encounters a key error for one of the main types of entries.

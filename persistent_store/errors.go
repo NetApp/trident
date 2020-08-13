@@ -9,16 +9,10 @@ import (
 )
 
 const (
-	KeyNotFoundErr          = "Unable to find key"
-	KeyExistsErr            = "Key already exists"
-	UnavailableClusterErr   = "Unavailable etcd cluster"
-	NotSupported            = "Unsupported operation"
-	ContextDeadlineExceeded = "context deadline exceeded"
-	DialTCPError            = "dial tcp"
+	KeyNotFoundErr = "Unable to find key"
+	NotSupported   = "Unsupported operation"
 )
 
-// Error is used to turn etcd errors into something that callers can understand without
-// having to import the client library
 type Error struct {
 	Message string
 	Key     string
@@ -40,21 +34,6 @@ func MatchKeyNotFoundErr(err error) bool {
 		return true
 	}
 	return false
-}
-
-func MatchUnavailableClusterErr(err error) bool {
-	if err != nil && err.Error() == UnavailableClusterErr {
-		return true
-	}
-	return false
-}
-
-func IsStatusError(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*errors.StatusError)
-	return ok
 }
 
 func IsStatusNotFoundError(err error) bool {

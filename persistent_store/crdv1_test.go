@@ -4,6 +4,7 @@ package persistentstore
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -31,6 +32,11 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
 	"github.com/netapp/trident/utils"
+)
+
+var (
+	debug       = flag.Bool("debug", false, "Enable debugging output")
+	storagePool = "aggr1"
 )
 
 func init() {

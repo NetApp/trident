@@ -101,7 +101,6 @@ const (
 
 	/* Kubernetes deployment constants */
 	ContainerTrident = "trident-main"
-	ContainerEtcd    = "etcd"
 
 	ContextDocker     DriverContext = "docker"
 	ContextKubernetes DriverContext = "kubernetes"
@@ -154,12 +153,6 @@ var (
 
 	// BuildImage is the Trident image that was built
 	BuildImage = "netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
-
-	// BuildEtcdVersion is the etcd version that Trident should be deployed with
-	BuildEtcdVersion = "v3.3.18"
-
-	// BuildEtcdImage is the etcd image that Trident should be deployed with
-	BuildEtcdImage = "quay.io/coreos/etcd:" + BuildEtcdVersion
 
 	OrchestratorVersion = utils.MustParseDate(version())
 
