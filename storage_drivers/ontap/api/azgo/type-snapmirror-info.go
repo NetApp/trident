@@ -42,41 +42,41 @@ type SnapmirrorInfoType struct {
 	LastTransferNetworkCompressionRatioPtr *string `xml:"last-transfer-network-compression-ratio"`
 	LastTransferSizePtr                    *uint64 `xml:"last-transfer-size"`
 	LastTransferTypePtr                    *string `xml:"last-transfer-type"`
-	MaxTransferRatePtr                     *uint    `xml:"max-transfer-rate"`
+	MaxTransferRatePtr                     *uint   `xml:"max-transfer-rate"`
 	MirrorStatePtr                         *string `xml:"mirror-state"`
 	NetworkCompressionRatioPtr             *string `xml:"network-compression-ratio"`
 	NewestSnapshotPtr                      *string `xml:"newest-snapshot"`
 	NewestSnapshotTimestampPtr             *uint   `xml:"newest-snapshot-timestamp"`
 	// WARNING: Do not change opmask type to anything other than uint64, ZAPI param is of type uint64
 	//          and returns hugh numerical values. Also keep other unint/unint64 types as it is.
-	OpmaskPtr                              *uint64 `xml:"opmask"`
-	PolicyPtr                              *string `xml:"policy"`
-	PolicyTypePtr                          *string `xml:"policy-type"`
-	ProgressLastUpdatedPtr                 *uint   `xml:"progress-last-updated"`
-	RelationshipControlPlanePtr            *string `xml:"relationship-control-plane"`
-	RelationshipGroupTypePtr               *string `xml:"relationship-group-type"`
-	RelationshipIdPtr                      *string `xml:"relationship-id"`
-	RelationshipProgressPtr                *uint64 `xml:"relationship-progress"`
-	RelationshipStatusPtr                  *string `xml:"relationship-status"`
-	RelationshipTypePtr                    *string `xml:"relationship-type"`
-	ResyncFailedCountPtr                   *uint64 `xml:"resync-failed-count"`
-	ResyncSuccessfulCountPtr               *uint64 `xml:"resync-successful-count"`
-	SchedulePtr                            *string `xml:"schedule"`
-	SnapshotCheckpointPtr                  *uint64 `xml:"snapshot-checkpoint"`
-	SnapshotProgressPtr                    *uint64 `xml:"snapshot-progress"`
-	SourceClusterPtr                       *string `xml:"source-cluster"`
-	SourceLocationPtr                      *string `xml:"source-location"`
-	SourceVolumePtr                        *string `xml:"source-volume"`
-	SourceVserverPtr                       *string `xml:"source-vserver"`
-	SourceVserverUuidPtr                   *string `xml:"source-vserver-uuid"`
-	TotalTransferBytesPtr                  *uint64 `xml:"total-transfer-bytes"`
-	TotalTransferTimeSecsPtr               *uint   `xml:"total-transfer-time-secs"`
-	TransferSnapshotPtr                    *string `xml:"transfer-snapshot"`
-	TriesPtr                               *string `xml:"tries"`
-	UnhealthyReasonPtr                     *string `xml:"unhealthy-reason"`
-	UpdateFailedCountPtr                   *uint64 `xml:"update-failed-count"`
-	UpdateSuccessfulCountPtr               *uint64 `xml:"update-successful-count"`
-	VserverPtr                             *string `xml:"vserver"`
+	OpmaskPtr                   *uint64 `xml:"opmask"`
+	PolicyPtr                   *string `xml:"policy"`
+	PolicyTypePtr               *string `xml:"policy-type"`
+	ProgressLastUpdatedPtr      *uint   `xml:"progress-last-updated"`
+	RelationshipControlPlanePtr *string `xml:"relationship-control-plane"`
+	RelationshipGroupTypePtr    *string `xml:"relationship-group-type"`
+	RelationshipIdPtr           *string `xml:"relationship-id"`
+	RelationshipProgressPtr     *uint64 `xml:"relationship-progress"`
+	RelationshipStatusPtr       *string `xml:"relationship-status"`
+	RelationshipTypePtr         *string `xml:"relationship-type"`
+	ResyncFailedCountPtr        *uint64 `xml:"resync-failed-count"`
+	ResyncSuccessfulCountPtr    *uint64 `xml:"resync-successful-count"`
+	SchedulePtr                 *string `xml:"schedule"`
+	SnapshotCheckpointPtr       *uint64 `xml:"snapshot-checkpoint"`
+	SnapshotProgressPtr         *uint64 `xml:"snapshot-progress"`
+	SourceClusterPtr            *string `xml:"source-cluster"`
+	SourceLocationPtr           *string `xml:"source-location"`
+	SourceVolumePtr             *string `xml:"source-volume"`
+	SourceVserverPtr            *string `xml:"source-vserver"`
+	SourceVserverUuidPtr        *string `xml:"source-vserver-uuid"`
+	TotalTransferBytesPtr       *uint64 `xml:"total-transfer-bytes"`
+	TotalTransferTimeSecsPtr    *uint   `xml:"total-transfer-time-secs"`
+	TransferSnapshotPtr         *string `xml:"transfer-snapshot"`
+	TriesPtr                    *string `xml:"tries"`
+	UnhealthyReasonPtr          *string `xml:"unhealthy-reason"`
+	UpdateFailedCountPtr        *uint64 `xml:"update-failed-count"`
+	UpdateSuccessfulCountPtr    *uint64 `xml:"update-successful-count"`
+	VserverPtr                  *string `xml:"vserver"`
 }
 
 // NewSnapmirrorInfoType is a factory method for creating new instances of SnapmirrorInfoType objects

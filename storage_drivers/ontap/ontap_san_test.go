@@ -36,10 +36,10 @@ func newTestOntapSANDriver(showSensitive *bool) *SANStorageDriver {
 
 	// ClientConfig holds the configuration data for Client objects
 	clientConfig := api.ClientConfig{
-		ManagementLIF: config.ManagementLIF,
-		SVM:					"SVM1",
-		Username:               "client_username",
-		Password:               "client_password",
+		ManagementLIF:           config.ManagementLIF,
+		SVM:                     "SVM1",
+		Username:                "client_username",
+		Password:                "client_password",
 		DriverContext:           tridentconfig.DriverContext("driverContext"),
 		ContextBasedZapiRecords: 100,
 		DebugTraceFlags:         nil,
@@ -59,32 +59,32 @@ func newTestOntapSANDriver(showSensitive *bool) *SANStorageDriver {
 
 func TestOntapSanStorageDriverConfigString(t *testing.T) {
 
-	var ontapSanDrivers = []SANStorageDriver {
+	var ontapSanDrivers = []SANStorageDriver{
 		*newTestOntapSANDriver(&[]bool{true}[0]),
 		*newTestOntapSANDriver(&[]bool{false}[0]),
 		*newTestOntapSANDriver(nil),
 	}
 
 	sensitiveIncludeList := map[string]string{
-		"username"						: "ontap-san-user",
-		"password"						: "password1!",
-		"client username"				: "client_username",
-		"client password"				: "client_password",
+		"username":        "ontap-san-user",
+		"password":        "password1!",
+		"client username": "client_username",
+		"client password": "client_password",
 	}
 
 	sensitiveExcludeList := map[string]string{
-		"some information"				: "<REDACTED>",
+		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
-		"<REDACTED>"					: "<REDACTED>",
-		"username"						: "Username:<REDACTED>",
-		"password"						: "Password:<REDACTED>",
-		"api"							: "API:<REDACTED>",
-		"chap username"					: "ChapUsername:<REDACTED>",
-		"chap initiator secret"			: "ChapInitiatorSecret:<REDACTED>",
-		"chap target username"			: "ChapTargetUsername:<REDACTED>",
-		"chap target initiator secret"	: "ChapTargetInitiatorSecret:<REDACTED>",
+		"<REDACTED>":                   "<REDACTED>",
+		"username":                     "Username:<REDACTED>",
+		"password":                     "Password:<REDACTED>",
+		"api":                          "API:<REDACTED>",
+		"chap username":                "ChapUsername:<REDACTED>",
+		"chap initiator secret":        "ChapInitiatorSecret:<REDACTED>",
+		"chap target username":         "ChapTargetUsername:<REDACTED>",
+		"chap target initiator secret": "ChapTargetInitiatorSecret:<REDACTED>",
 	}
 
 	for _, ontapSanDriver := range ontapSanDrivers {

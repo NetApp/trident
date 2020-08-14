@@ -190,4 +190,3 @@ func (o *SnapshotCreateAsyncResponseResult) SetResultStatus(newValue string) *Sn
 	o.ResultStatusPtr = &newValue
 	return o
 }
-

@@ -203,4 +203,3 @@ func (o *SnapshotDeleteAsyncResponseResult) SetResultStatus(newValue string) *Sn
 	o.ResultStatusPtr = &newValue
 	return o
 }
-

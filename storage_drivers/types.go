@@ -331,10 +331,23 @@ type FakeStorageDriverConfig struct {
 	// Pools are the modeled physical pools.  At least one is required.
 	Pools map[string]*fake.StoragePool `json:"pools"`
 	// Volumes are the modeled backend volumes that exist when the driver starts.  Optional.
-	Volumes      []fake.Volume `json:"volumes"`
-	InstanceName string        `json:"instanceName"`
+	Volumes      []fake.Volume           `json:"volumes"`
+	InstanceName string                  `json:"instanceName"`
+	Storage      []FakeStorageDriverPool `json:"storage"`
+	Username     string                  `json:"username"`
+	Password     string                  `json:"password"`
 	FakeStorageDriverPool
-	Storage []FakeStorageDriverPool `json:"storage"`
+}
+
+// Implement Stringer interface for the FakeStorageDriverConfig driver
+func (d FakeStorageDriverConfig) String() string {
+	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
+	return ToString(sensitive, &d, []string{"Username", "Password"}, nil)
+}
+
+// Implement GoStringer interface for the FakeStorageDriverConfig driver
+func (d FakeStorageDriverConfig) GoString() string {
+	return d.String()
 }
 
 type FakeStorageDriverPool struct {
