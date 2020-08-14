@@ -2,6 +2,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -29,23 +31,24 @@ import (
 // retrieved from the K8S API server, and returns a VolumeConfig structure
 // as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
-	name string, sizeBytes int64, parameters map[string]string,
+	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 ) (*storage.VolumeConfig, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Kubernetes CSI passes us the name of what will become a new PV
 	pvName := name
 
 	fields := log.Fields{"Method": "GetVolumeConfig", "Type": "K8S helper", "name": pvName}
-	log.WithFields(fields).Debug(">>>> GetVolumeConfig")
-	defer log.WithFields(fields).Debug("<<<< GetVolumeConfig")
+	logc.WithFields(fields).Debug(">>>> GetVolumeConfig")
+	defer logc.WithFields(fields).Debug("<<<< GetVolumeConfig")
 
 	// Get the PVC corresponding to the new PV being provisioned
-	pvc, err := p.getPVCForCSIVolume(pvName)
+	pvc, err := p.getPVCForCSIVolume(ctx, pvName)
 	if err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"name":         pvc.Name,
 		"namespace":    pvc.Namespace,
 		"UID":          pvc.UID,
@@ -70,11 +73,11 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Get the cached storage class for this PVC
-	sc, err := p.getStorageClass(scName)
+	sc, err := p.getStorageClass(ctx, scName)
 	if err != nil {
 		return nil, err
 	}
-	log.WithField("name", sc.Name).Infof("Found storage class for requested volume %s.", pvName)
+	logc.WithField("name", sc.Name).Infof("Found storage class for requested volume %s.", pvName)
 
 	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
@@ -82,11 +85,11 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Create the volume config
-	volumeConfig := getVolumeConfig(pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
+	volumeConfig := getVolumeConfig(ctx, pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
 		processPVCAnnotations(pvc, fsType), sc)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
-	if cloneSourcePVName, err := p.getCloneSourceInfo(pvc); err != nil {
+	if cloneSourcePVName, err := p.getCloneSourceInfo(ctx, pvc); err != nil {
 		return nil, err
 	} else if cloneSourcePVName != "" {
 		volumeConfig.CloneSourceVolume = cloneSourcePVName
@@ -101,8 +104,9 @@ func (p *Plugin) GetVolumeConfig(
 // cache if not found after an initial wait, and waits again after the resync.  This strategy
 // is necessary because CSI only provides us with the PVC's UID, and the Kubernetes API does
 // not support querying objects by UID.
-func (p *Plugin) getPVCForCSIVolume(name string) (*v1.PersistentVolumeClaim, error) {
+func (p *Plugin) getPVCForCSIVolume(ctx context.Context, name string) (*v1.PersistentVolumeClaim, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Get the PVC UID from the volume name.  The CSI provisioner sidecar creates
 	// volume names of the form "pvc-<PVC_UID>".
 	pvcUID, err := getPVCUIDFromCSIVolumeName(name)
@@ -111,17 +115,17 @@ func (p *Plugin) getPVCForCSIVolume(name string) (*v1.PersistentVolumeClaim, err
 	}
 
 	// Get the cached PVC that started this workflow
-	pvc, err := p.waitForCachedPVCByUID(pvcUID, PreSyncCacheWaitPeriod)
+	pvc, err := p.waitForCachedPVCByUID(ctx, pvcUID, PreSyncCacheWaitPeriod)
 	if err != nil {
-		log.WithField("uid", pvcUID).Warningf("PVC not found in local cache: %v", err)
+		logc.WithField("uid", pvcUID).Warningf("PVC not found in local cache: %v", err)
 
 		// Not found immediately, so re-sync and try again
 		if err = p.pvcIndexer.Resync(); err != nil {
 			return nil, fmt.Errorf("could not refresh local PVC cache: %v", err)
 		}
 
-		if pvc, err = p.waitForCachedPVCByUID(pvcUID, PostSyncCacheWaitPeriod); err != nil {
-			log.WithField("uid", pvcUID).Errorf("PVC not found in local cache after resync: %v", err)
+		if pvc, err = p.waitForCachedPVCByUID(ctx, pvcUID, PostSyncCacheWaitPeriod); err != nil {
+			logc.WithField("uid", pvcUID).Errorf("PVC not found in local cache after resync: %v", err)
 			return nil, fmt.Errorf("could not find PVC with UID %s: %v", pvcUID, err)
 		}
 	}
@@ -152,19 +156,20 @@ func getPVCUIDFromCSIVolumeName(volumeName string) (string, error) {
 // getStorageClass accepts the name of a storage class and returns the storage class object
 // as read from the Kubernetes API server.  The method waits for the object to appear in cache,
 // resyncs the cache if not found after an initial wait, and waits again after the resync.
-func (p *Plugin) getStorageClass(name string) (*k8sstoragev1.StorageClass, error) {
+func (p *Plugin) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
 
-	sc, err := p.waitForCachedStorageClassByName(name, PreSyncCacheWaitPeriod)
+	logc := utils.GetLogWithRequestContext(ctx)
+	sc, err := p.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
 	if err != nil {
-		log.WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
+		logc.WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
 
 		// Not found immediately, so re-sync and try again
 		if err = p.scIndexer.Resync(); err != nil {
 			return nil, fmt.Errorf("could not refresh local storage class cache: %v", err)
 		}
 
-		if sc, err = p.waitForCachedStorageClassByName(name, PostSyncCacheWaitPeriod); err != nil {
-			log.WithField("name", name).Errorf("Storage class not found in local cache after resync: %v", err)
+		if sc, err = p.waitForCachedStorageClassByName(ctx, name, PostSyncCacheWaitPeriod); err != nil {
+			logc.WithField("name", name).Errorf("Storage class not found in local cache after resync: %v", err)
 			return nil, fmt.Errorf("could not find storage class %s: %v", name, err)
 		}
 	}
@@ -178,8 +183,9 @@ func (p *Plugin) getStorageClass(name string) (*k8sstoragev1.StorageClass, error
 // name of the source PV as needed by Trident to clone a volume as well as an optional
 // snapshot name (also potentially unknown to CSI).  Note that these legacy clone annotations
 // will be overridden if the VolumeContentSource is set in the CSI CreateVolume request.
-func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string, error) {
+func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.PersistentVolumeClaim) (string, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Check if this is a clone operation
 	annotations := processPVCAnnotations(clonePVC, "")
 	sourcePVCName := getAnnotation(annotations, AnnCloneFromPVC)
@@ -189,9 +195,9 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 
 	// Check that the source PVC is in the same namespace.
 	// NOTE: For VolumeContentSource this check is performed by CSI
-	sourcePVC, err := p.waitForCachedPVCByName(sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
+	sourcePVC, err := p.waitForCachedPVCByName(ctx, sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"sourcePVCName": sourcePVCName,
 			"namespace":     clonePVC.Namespace,
 		}).Errorf("Clone source PVC not found in local cache: %v", err)
@@ -201,7 +207,7 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 	// Check that both source and clone PVCs have the same storage class
 	// NOTE: For VolumeContentSource this check is performed by CSI
 	if getStorageClassForPVC(sourcePVC) != getStorageClassForPVC(clonePVC) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"clonePVCName":          clonePVC.Name,
 			"clonePVCNamespace":     clonePVC.Namespace,
 			"clonePVCStorageClass":  getStorageClassForPVC(clonePVC),
@@ -215,7 +221,7 @@ func (p *Plugin) getCloneSourceInfo(clonePVC *v1.PersistentVolumeClaim) (string,
 	// Check that the source PVC has an associated PV
 	sourcePVName := sourcePVC.Spec.VolumeName
 	if sourcePVName == "" {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"sourcePVCName":      sourcePVC.Name,
 			"sourcePVCNamespace": sourcePVC.Namespace,
 		}).Error("Cloning from a PVC requires the source to be bound to a PV.")
@@ -237,17 +243,18 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
-func (p *Plugin) RecordVolumeEvent(name, eventType, reason, message string) {
+func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
 
-	log.WithFields(log.Fields{
+	logc := utils.GetLogWithRequestContext(ctx)
+	logc.WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
 		"message":   message,
 	}).Debug("Volume event.")
 
-	if pvc, err := p.getPVCForCSIVolume(name); err != nil {
-		log.WithField("error", err).Debug("Failed to find PVC for event.")
+	if pvc, err := p.getPVCForCSIVolume(ctx, name); err != nil {
+		logc.WithField("error", err).Debug("Failed to find PVC for event.")
 	} else {
 		p.eventRecorder.Event(pvc, mapEventType(eventType), reason, message)
 	}
@@ -270,10 +277,11 @@ func mapEventType(eventType string) string {
 // getVolumeConfig accepts the attributes of a new volume and assembles them into a
 // VolumeConfig structure as needed by Trident to create a new volume.
 func getVolumeConfig(
-	pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode, name string,
-	size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
+	ctx context.Context, pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode,
+	name string, size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
 ) *storage.VolumeConfig {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var accessModes []config.AccessMode
 
 	for _, pvcAccessMode := range pvcAccessModes {
@@ -296,7 +304,7 @@ func getVolumeConfig(
 	}
 	notManaged, err := strconv.ParseBool(getAnnotation(annotations, AnnNotManaged))
 	if err != nil {
-		log.Warnf("unable to parse notManaged annotation into bool; %v", err)
+		logc.Warnf("unable to parse notManaged annotation into bool; %v", err)
 	}
 
 	return &storage.VolumeConfig{

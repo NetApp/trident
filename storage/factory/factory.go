@@ -1,6 +1,4 @@
-/*
- * Copyright 2018 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package factory
 
@@ -9,7 +7,6 @@ import (
 	"runtime/debug"
 
 	"github.com/ghodss/yaml"
-	"github.com/netapp/trident/storage_drivers/gcp"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -19,12 +16,12 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure"
 	"github.com/netapp/trident/storage_drivers/eseries"
 	"github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/storage_drivers/gcp"
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
 )
 
 func NewStorageBackendForConfig(configJSON string) (sb *storage.Backend, err error) {
-
 	var storageDriver storage.Driver
 
 	// Some drivers may panic during initialize if given invalid parameters,

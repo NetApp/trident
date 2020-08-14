@@ -2043,7 +2043,7 @@ func ensureDeviceUnformatted(device string) error {
 	// Ensure 2MiB of data read
 	if len(out) != 2097152 {
 		log.WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
-		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to " +
+		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to "+
 			"ensure if the device is actually unformatted", device, len(out))
 	}
 
@@ -2470,9 +2470,9 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput
 		"error":   result.Error,
 	})
 
-	if logOutput{
+	if logOutput {
 		logFields.WithFields(log.Fields{
-			"output":  sanitizeString(string(result.Output)),
+			"output": sanitizeString(string(result.Output)),
 		})
 	}
 

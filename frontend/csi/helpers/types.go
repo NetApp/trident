@@ -3,6 +3,8 @@
 package helpers
 
 import (
+	"context"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 )
@@ -26,7 +28,7 @@ type HybridPlugin interface {
 	// provisioner, adds in any CO-specific details about the new volume, and returns
 	// a VolumeConfig structure as needed by Trident to create a new volume.
 	GetVolumeConfig(
-		name string, sizeBytes int64, parameters map[string]string,
+		ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 		protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 	) (*storage.VolumeConfig, error)
 
@@ -37,10 +39,10 @@ type HybridPlugin interface {
 
 	// RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 	// event message in a manner appropriate to the container orchestrator.
-	RecordVolumeEvent(name, eventType, reason, message string)
+	RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string)
 
 	//SupportsFeature accepts a CSI feature and returns true if the feature is supported.
-	SupportsFeature(feature Feature) bool
+	SupportsFeature(ctx context.Context, feature Feature) bool
 
 	// Version returns the version of the CO this helper is managing, or the supported
 	// CSI version in the plain-CSI case.  This value is reported in Trident's telemetry.

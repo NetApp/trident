@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net"
@@ -13,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -181,8 +183,9 @@ func ConvertSizeToBytes(s string) (string, error) {
 // GetVolumeSizeBytes determines the size, in bytes, of a volume from the "size" opt value.  If "size" has a units
 // suffix, that is handled here.  If there are no units, the default is GiB.  If size is not in opts, the specified
 // default value is parsed identically and used instead.
-func GetVolumeSizeBytes(opts map[string]string, defaultVolumeSize string) (uint64, error) {
+func GetVolumeSizeBytes(ctx context.Context, opts map[string]string, defaultVolumeSize string) (uint64, error) {
 
+	logc := GetLogWithRequestContext(ctx)
 	usingDefaultSize := false
 	usingDefaultUnits := false
 
@@ -206,7 +209,7 @@ func GetVolumeSizeBytes(opts map[string]string, defaultVolumeSize string) (uint6
 	}
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"sizeBytes":         sizeBytes,
 		"size":              size,
 		"usingDefaultSize":  usingDefaultSize,
@@ -299,6 +302,9 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	requestURL, _ := url.Parse(request.URL.String())
 	requestURL.User = nil
 
+	ctx := request.Context()
+	logc := GetLogWithRequestContext(ctx)
+
 	headers := make(map[string][]string)
 	for k, v := range request.Header {
 		headers[k] = v
@@ -314,11 +320,12 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 		body = string(requestBody)
 	}
 
-	log.Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+	logc.Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
 		header, request.Method, requestURL, headers, body, footer)
 }
 
-func LogHTTPResponse(response *http.Response, responseBody []byte) {
+func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody []byte) {
+	logc := GetLogWithRequestContext(ctx)
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 
@@ -336,7 +343,7 @@ func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	} else {
 		body = string(responseBody)
 	}
-	log.Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
+	logc.Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
 		header, response.Status, headers, body, footer)
 }
 
@@ -535,4 +542,33 @@ func GetRegexSubmatches(r *regexp.Regexp, s string) map[string]string {
 		}
 	}
 	return paramsMap
+}
+
+func GenerateRequestContext(ctx context.Context, requestID, requestSource string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	} else {
+		if v := ctx.Value(ContextKeyRequestID); v != nil {
+			requestID = fmt.Sprint(v)
+		}
+		if v := ctx.Value(ContextKeyRequestSource); v != nil {
+			requestSource = fmt.Sprint(v)
+		}
+	}
+	if requestID == "" {
+		requestID = uuid.New().String()
+	}
+	if requestSource == "" {
+		requestSource = "Unknown"
+	}
+	ctx = context.WithValue(ctx, ContextKeyRequestID, requestID)
+	ctx = context.WithValue(ctx, ContextKeyRequestSource, requestSource)
+	return ctx
+}
+
+func GetLogWithRequestContext(ctx context.Context) *log.Entry {
+	return log.WithFields(log.Fields{
+		"requestID":     ctx.Value(ContextKeyRequestID),
+		"requestSource": ctx.Value(ContextKeyRequestSource),
+	})
 }

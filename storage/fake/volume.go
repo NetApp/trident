@@ -8,8 +8,8 @@ type Volume struct {
 }
 
 type CreatingVolume struct {
-	Name string
-	Iterations int
+	Name           string
+	Iterations     int
 	FinalIteration int
-	Error string
+	Error          string
 }

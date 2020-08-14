@@ -2,6 +2,8 @@
 package plain
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -12,6 +14,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 type Plugin struct {
@@ -59,7 +62,7 @@ func (p *Plugin) Version() string {
 // provisioner, finds or creates/registers a matching storage class, and returns
 // a VolumeConfig structure as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
-	name string, sizeBytes int64, parameters map[string]string,
+	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 ) (*storage.VolumeConfig, error) {
 
@@ -74,7 +77,7 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Find a matching storage class, or register a new one
-	scConfig, err := frontendcommon.GetStorageClass(parameters, p.orchestrator)
+	scConfig, err := frontendcommon.GetStorageClass(ctx, parameters, p.orchestrator)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "could not create a storage class from volume request")
 	}
@@ -95,8 +98,9 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 // event message to the debug log.
-func (p *Plugin) RecordVolumeEvent(name, eventType, reason, message string) {
-	log.WithFields(log.Fields{
+func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
+	logc := utils.GetLogWithRequestContext(ctx)
+	logc.WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
@@ -106,7 +110,7 @@ func (p *Plugin) RecordVolumeEvent(name, eventType, reason, message string) {
 
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
-func (p *Plugin) SupportsFeature(feature helpers.Feature) bool {
+func (p *Plugin) SupportsFeature(_ context.Context, feature helpers.Feature) bool {
 
 	if supported, ok := features[feature]; ok {
 		return supported

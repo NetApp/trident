@@ -18,7 +18,7 @@ import (
 )
 
 type BackendPoolInfo struct {
-	Pools []*storage.Pool
+	Pools             []*storage.Pool
 	PhysicalPoolNames map[string]struct{}
 }
 

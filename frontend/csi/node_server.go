@@ -34,13 +34,15 @@ func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	lockContext := "NodeStageVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeStageVolume")
-	defer log.WithFields(fields).Debug("<<<< NodeStageVolume")
+	logc.WithFields(fields).Debug(">>>> NodeStageVolume")
+	defer logc.WithFields(fields).Debug("<<<< NodeStageVolume")
 
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
@@ -56,13 +58,15 @@ func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeUnstageVolume", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeUnstageVolume")
-	defer log.WithFields(fields).Debug("<<<< NodeUnstageVolume")
+	logc.WithFields(fields).Debug(">>>> NodeUnstageVolume")
+	defer logc.WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
 	_, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
@@ -70,7 +74,7 @@ func (p *Plugin) NodeUnstageVolume(
 	}
 
 	// Read the device info from the staging path
-	publishInfo, err := p.readStagedDeviceInfo(stagingTargetPath)
+	publishInfo, err := p.readStagedDeviceInfo(ctx, stagingTargetPath)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "unable to read the staging target %s; %s", stagingTargetPath, err)
 	}
@@ -93,13 +97,15 @@ func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	lockContext := "NodePublishVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodePublishVolume")
-	defer log.WithFields(fields).Debug("<<<< NodePublishVolume")
+	logc.WithFields(fields).Debug(">>>> NodePublishVolume")
+	defer logc.WithFields(fields).Debug("<<<< NodePublishVolume")
 
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
@@ -115,13 +121,15 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
 	utils.Lock(lockContext, lockID)
 	defer utils.Unlock(lockContext, lockID)
 
 	fields := log.Fields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeUnpublishVolume")
-	defer log.WithFields(fields).Debug("<<<< NodeUnpublishVolume")
+	logc.WithFields(fields).Debug(">>>> NodeUnpublishVolume")
+	defer logc.WithFields(fields).Debug("<<<< NodeUnpublishVolume")
 
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
@@ -167,7 +175,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	}
 
 	if err = utils.Umount(targetPath); err != nil {
-		log.WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
+		logc.WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
 		return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
 	}
 
@@ -178,7 +186,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	// As a viable solution making it run as a goroutine
 	go func() {
 		if err = utils.DeleteResourceAtPath(targetPath); err != nil {
-			log.Debugf("Unable to delete resource at target path: %s; %s", targetPath, err)
+			logc.Debugf("Unable to delete resource at target path: %s; %s", targetPath, err)
 		}
 	}()
 
@@ -189,58 +197,60 @@ func (p *Plugin) NodeGetVolumeStats(
 	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
 ) (*csi.NodeGetVolumeStatsResponse, error) {
 
-        if req.GetVolumeId() == "" {
-                return nil, status.Error(codes.InvalidArgument, "empty volume id provided")
-        }
+	logc := utils.GetLogWithRequestContext(ctx)
 
-        if req.GetVolumePath() == "" {
-                return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
-        }
+	if req.GetVolumeId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "empty volume id provided")
+	}
 
-        // Ensure volume is published at path
-        _, err := os.Stat(req.GetVolumePath())
-        if err != nil {
-                return nil, status.Error(codes.NotFound,
-                        fmt.Sprintf("could not find volume mount at path: %s; %v ", req.GetVolumePath(), err))
-        }
+	if req.GetVolumePath() == "" {
+		return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
+	}
 
-        // If raw block volume, dont return usage
-        isRawBlock := false
-        if req.StagingTargetPath != "" {
-                publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
-                if err != nil {
-                        return nil, status.Error(codes.Internal, err.Error())
-                }
+	// Ensure volume is published at path
+	_, err := os.Stat(req.GetVolumePath())
+	if err != nil {
+		return nil, status.Error(codes.NotFound,
+			fmt.Sprintf("could not find volume mount at path: %s; %v ", req.GetVolumePath(), err))
+	}
 
-                isRawBlock = publishInfo.FilesystemType == fsRaw
-        }
-        if isRawBlock {
-                // Return no capacity info for raw block volumes, we cannot reliably determine the capacity
-                return &csi.NodeGetVolumeStatsResponse{}, nil
-        } else {
-                // If filesystem, return usage reported by FS
-                available, capacity, usage, inodes, inodesFree, inodesUsed, err := utils.GetFilesystemStats(req.GetVolumePath())
-                if err != nil {
-                        log.Errorf("unable to get filesystem stats at path: %s; %v", req.GetVolumePath(), err)
-                        return nil, status.Error(codes.Unknown, "Failed to get filesystem stats")
-                }
-                return &csi.NodeGetVolumeStatsResponse{
-                        Usage: []*csi.VolumeUsage{
-                                &csi.VolumeUsage{
-                                        Unit:      csi.VolumeUsage_BYTES,
-                                        Available: available,
-                                        Total:     capacity,
-                                        Used:      usage,
-                                },
-                                &csi.VolumeUsage{
-                                        Unit:      csi.VolumeUsage_INODES,
-                                        Available: inodesFree,
-                                        Total:     inodes,
-                                        Used:      inodesUsed,
-                                },
-                        },
-                }, nil
-        }
+	// If raw block volume, dont return usage
+	isRawBlock := false
+	if req.StagingTargetPath != "" {
+		publishInfo, err := p.readStagedDeviceInfo(ctx, req.StagingTargetPath)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		isRawBlock = publishInfo.FilesystemType == fsRaw
+	}
+	if isRawBlock {
+		// Return no capacity info for raw block volumes, we cannot reliably determine the capacity
+		return &csi.NodeGetVolumeStatsResponse{}, nil
+	} else {
+		// If filesystem, return usage reported by FS
+		available, capacity, usage, inodes, inodesFree, inodesUsed, err := utils.GetFilesystemStats(req.GetVolumePath())
+		if err != nil {
+			logc.Errorf("unable to get filesystem stats at path: %s; %v", req.GetVolumePath(), err)
+			return nil, status.Error(codes.Unknown, "Failed to get filesystem stats")
+		}
+		return &csi.NodeGetVolumeStatsResponse{
+			Usage: []*csi.VolumeUsage{
+				{
+					Unit:      csi.VolumeUsage_BYTES,
+					Available: available,
+					Total:     capacity,
+					Used:      usage,
+				},
+				{
+					Unit:      csi.VolumeUsage_INODES,
+					Available: inodesFree,
+					Total:     inodes,
+					Used:      inodesUsed,
+				},
+			},
+		}, nil
+	}
 
 }
 
@@ -251,9 +261,11 @@ func (p *Plugin) NodeExpandVolume(
 	ctx context.Context, req *csi.NodeExpandVolumeRequest,
 ) (*csi.NodeExpandVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	fields := log.Fields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeExpandVolume")
-	defer log.WithFields(fields).Debug("<<<< NodeExpandVolume")
+	logc.WithFields(fields).Debug(">>>> NodeExpandVolume")
+	defer logc.WithFields(fields).Debug("<<<< NodeExpandVolume")
 
 	volumeId := req.GetVolumeId()
 	if volumeId == "" {
@@ -268,7 +280,7 @@ func (p *Plugin) NodeExpandVolume(
 	requiredBytes := req.GetCapacityRange().GetRequiredBytes()
 	limitBytes := req.GetCapacityRange().GetLimitBytes()
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"volumeId":      volumeId,
 		"volumePath":    volumePath,
 		"requiredBytes": requiredBytes,
@@ -280,7 +292,7 @@ func (p *Plugin) NodeExpandVolume(
 	// If the PV was staged with a Trident version prior to 19.10 then the tracking file will not exist. The
 	// stagingTargetPath is likely to be the directory where the VolumePublishInfo file is located so we will attempt
 	// to set the stagingTargetPath to this location if the tracking file does not exist.
-	stagingTargetPath, err := p.readStagedTrackingFile(volumeId)
+	stagingTargetPath, err := p.readStagedTrackingFile(ctx, volumeId)
 	if err != nil {
 		if utils.IsNotFoundError(err) {
 			// Verify the volumePath is the stagingTargetPath
@@ -288,7 +300,7 @@ func (p *Plugin) NodeExpandVolume(
 			if _, err = os.Stat(filePath); !os.IsNotExist(err) {
 				stagingTargetPath = volumePath
 			} else {
-				log.WithField("filePath", filePath).Errorf("Unable to find volumePublishInfo.")
+				logc.WithField("filePath", filePath).Errorf("Unable to find volumePublishInfo.")
 				return nil, status.Errorf(codes.Internal, "unable to find volume publish info needed for resize")
 			}
 		} else {
@@ -299,21 +311,21 @@ func (p *Plugin) NodeExpandVolume(
 	// Current K8S behavior is to send the volumePath as the stagingTargetPath. Log what is received if the
 	// two variables don't match.
 	if stagingTargetPath != volumePath {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"stagingTargetPath": stagingTargetPath,
 			"volumePath":        volumePath,
 			"volumeId":          volumeId,
 		}).Info("Received something other than the expected stagingTargetPath.")
 	}
 
-	publishInfo, err := p.readStagedDeviceInfo(stagingTargetPath)
+	publishInfo, err := p.readStagedDeviceInfo(ctx, stagingTargetPath)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	lunID := int(publishInfo.IscsiLunNumber)
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"targetIQN":      publishInfo.IscsiTargetIQN,
 		"lunID":          lunID,
 		"devicePath":     publishInfo.DevicePath,
@@ -325,8 +337,9 @@ func (p *Plugin) NodeExpandVolume(
 	if utils.IsAlreadyAttached(lunID, publishInfo.IscsiTargetIQN) {
 
 		// Rescan device to detect increased size
-		if err = utils.ISCSIRescanDevices(publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
-			log.WithFields(log.Fields{
+		if err = utils.ISCSIRescanDevices(publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber,
+			requiredBytes); err != nil {
+			logc.WithFields(log.Fields{
 				"device": publishInfo.DevicePath,
 				"error":  err,
 			}).Error("Unable to scan device.")
@@ -337,26 +350,26 @@ func (p *Plugin) NodeExpandVolume(
 		if publishInfo.FilesystemType != fsRaw {
 			filesystemSize, err := utils.ExpandISCSIFilesystem(publishInfo, stagingTargetPath)
 			if err != nil {
-				log.WithFields(log.Fields{
+				logc.WithFields(log.Fields{
 					"device":         publishInfo.DevicePath,
 					"filesystemType": publishInfo.FilesystemType,
 					"error":          err,
 				}).Error("Unable to expand filesystem.")
 				return nil, status.Error(codes.Internal, err.Error())
 			}
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"filesystemSize": filesystemSize,
 				"requiredBytes":  requiredBytes,
 				"limitBytes":     limitBytes,
 			}).Debug("Filesystem size after expand.")
 		}
 	} else {
-		log.WithField("devicePath", publishInfo.DevicePath).Error("Unable to expand volume as device is not attached.")
+		logc.WithField("devicePath", publishInfo.DevicePath).Error("Unable to expand volume as device is not attached.")
 		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"volumePath": volumePath,
 		"volumeId":   volumeId,
 	}).Debug("Filesystem expansion completed.")
@@ -367,9 +380,11 @@ func (p *Plugin) NodeGetCapabilities(
 	ctx context.Context, req *csi.NodeGetCapabilitiesRequest,
 ) (*csi.NodeGetCapabilitiesResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	fields := log.Fields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeGetCapabilities")
-	defer log.WithFields(fields).Debug("<<<< NodeGetCapabilities")
+	logc.WithFields(fields).Debug(">>>> NodeGetCapabilities")
+	defer logc.WithFields(fields).Debug("<<<< NodeGetCapabilities")
 
 	return &csi.NodeGetCapabilitiesResponse{Capabilities: p.nsCap}, nil
 }
@@ -378,31 +393,34 @@ func (p *Plugin) NodeGetInfo(
 	ctx context.Context, req *csi.NodeGetInfoRequest,
 ) (*csi.NodeGetInfoResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
+
 	fields := log.Fields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
-	log.WithFields(fields).Debug(">>>> NodeGetInfo")
-	defer log.WithFields(fields).Debug("<<<< NodeGetInfo")
+	logc.WithFields(fields).Debug(">>>> NodeGetInfo")
+	defer logc.WithFields(fields).Debug("<<<< NodeGetInfo")
 
 	return &csi.NodeGetInfoResponse{NodeId: p.nodeName}, nil
 }
 
-func (p *Plugin) nodeGetInfo() *utils.Node {
+func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
+	logc := utils.GetLogWithRequestContext(ctx)
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns()
 	if err != nil {
-		log.WithField("error", err).Warn("Problem getting iSCSI initiator name.")
+		logc.WithField("error", err).Warn("Problem getting iSCSI initiator name.")
 	} else if iscsiWWNs == nil || len(iscsiWWNs) == 0 {
-		log.Warn("Could not find iSCSI initiator name.")
+		logc.Warn("Could not find iSCSI initiator name.")
 	} else {
 		iscsiWWN = iscsiWWNs[0]
 	}
 
 	ips, err := utils.GetIPAddresses()
 	if err != nil {
-		log.WithField("error", err).Error("Could not get IP addresses.")
+		logc.WithField("error", err).Error("Could not get IP addresses.")
 	} else if ips == nil || len(ips) == 0 {
-		log.Warn("Could not find any usable IP addresses.")
+		logc.Warn("Could not find any usable IP addresses.")
 	} else {
-		log.WithField("IP Addresses", ips).Info("Discovered IP addresses.")
+		logc.WithField("IP Addresses", ips).Info("Discovered IP addresses.")
 	}
 
 	node := &utils.Node{
@@ -413,19 +431,20 @@ func (p *Plugin) nodeGetInfo() *utils.Node {
 	return node
 }
 
-func (p *Plugin) nodeRegisterWithController() {
+func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Assemble the node details that we will register with the controller
-	node := p.nodeGetInfo()
+	node := p.nodeGetInfo(ctx)
 
 	// The controller may not be fully initialized by the time the node is ready to register,
 	// so retry until it is responding on the back channel and we have registered the node.
 	registerNode := func() error {
-		return p.restClient.CreateNode(node)
+		return p.restClient.CreateNode(ctx, node)
 	}
 
 	registerNodeNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"increment": duration,
 			"error":     err,
 		}).Debug("Controller not yet ready, waiting.")
@@ -444,8 +463,8 @@ func (p *Plugin) nodeRegisterWithController() {
 	log.WithField("node", p.nodeName).Debug("Communication with controller established, node registered.")
 }
 
-func (p *Plugin) nodeDeregisterWithController() error {
-	return p.restClient.DeleteNode(p.nodeName)
+func (p *Plugin) nodeDeregisterWithController(ctx context.Context) error {
+	return p.restClient.DeleteNode(ctx, p.nodeName)
 }
 
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
@@ -466,7 +485,7 @@ func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolum
 	}
 
 	// Save the device info to the staging path for use in the publish & unstage calls
-	if err := p.writeStagedDeviceInfo(stagingTargetPath, publishInfo, volumeId); err != nil {
+	if err := p.writeStagedDeviceInfo(ctx, stagingTargetPath, publishInfo, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -482,7 +501,7 @@ func (p *Plugin) nodeUnstageNFSVolume(
 	}
 
 	// Delete the device info we saved to the staging path so unstage can succeed
-	if err := p.clearStagedDeviceInfo(stagingTargetPath, volumeId); err != nil {
+	if err := p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -510,7 +529,7 @@ func (p *Plugin) nodePublishNFSVolume(
 		return &csi.NodePublishVolumeResponse{}, nil
 	}
 
-	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
+	publishInfo, err := p.readStagedDeviceInfo(ctx, req.StagingTargetPath)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -634,7 +653,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	// Save the device info to the staging path for use in the publish & unstage calls
-	if err := p.writeStagedDeviceInfo(stagingTargetPath, publishInfo, volumeId); err != nil {
+	if err := p.writeStagedDeviceInfo(ctx, stagingTargetPath, publishInfo, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -645,13 +664,14 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Delete the device from the host
 	utils.PrepareDeviceForRemoval(int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
 
 	// Get map of hosts and sessions for given Target IQN
 	hostSessionMap := utils.GetISCSIHostSessionMapForTarget(publishInfo.IscsiTargetIQN)
 	if len(hostSessionMap) == 0 {
-		log.Warnf("no iSCSI hosts found for target %s", publishInfo.IscsiTargetIQN)
+		logc.Warnf("no iSCSI hosts found for target %s", publishInfo.IscsiTargetIQN)
 	}
 
 	// Logout of the iSCSI session if appropriate for each applicable host
@@ -671,7 +691,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	if logout {
-		log.Debug("Safe to log out")
+		logc.Debug("Safe to log out")
 		utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal)
 		for _, portal := range publishInfo.IscsiPortals {
 			utils.ISCSIDisableDelete(publishInfo.IscsiTargetIQN, portal)
@@ -684,13 +704,13 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device info we saved to the staging path so unstage can succeed
-	if err := p.clearStagedDeviceInfo(stagingTargetPath, volumeId); err != nil {
+	if err := p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
 	if err := utils.UmountAndRemoveTemporaryMountPoint(stagingTargetPath); err != nil {
-		log.WithField("stagingTargetPath", stagingTargetPath).Errorf(
+		logc.WithField("stagingTargetPath", stagingTargetPath).Errorf(
 			"Failed to remove directory in staging target path; %s", err)
 		return nil, fmt.Errorf("failed to remove temporary directory in staging target path %s; %s",
 			stagingTargetPath, err)
@@ -706,7 +726,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 	var err error
 
 	// Read the device info from the staging path
-	publishInfo, err := p.readStagedDeviceInfo(req.StagingTargetPath)
+	publishInfo, err := p.readStagedDeviceInfo(ctx, req.StagingTargetPath)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -745,7 +765,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 }
 
 func (p *Plugin) writeStagedDeviceInfo(
-	stagingTargetPath string, publishInfo *utils.VolumePublishInfo, volumeId string,
+	ctx context.Context, stagingTargetPath string, publishInfo *utils.VolumePublishInfo, volumeId string,
 ) error {
 
 	publishInfoBytes, err := json.Marshal(publishInfo)
@@ -759,15 +779,16 @@ func (p *Plugin) writeStagedDeviceInfo(
 		return err
 	}
 
-	if err := p.writeStagedTrackingFile(volumeId, stagingTargetPath); err != nil {
+	if err := p.writeStagedTrackingFile(ctx, volumeId, stagingTargetPath); err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
 
 	return nil
 }
 
-func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePublishInfo, error) {
+func (p *Plugin) readStagedDeviceInfo(ctx context.Context, stagingTargetPath string) (*utils.VolumePublishInfo, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var publishInfo utils.VolumePublishInfo
 	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 
@@ -781,37 +802,39 @@ func (p *Plugin) readStagedDeviceInfo(stagingTargetPath string) (*utils.VolumePu
 		return nil, err
 	}
 
-	log.Debug("Publish Info found")
+	logc.Debug("Publish Info found")
 	return &publishInfo, nil
 }
 
-func (p *Plugin) clearStagedDeviceInfo(stagingTargetPath string, volumeId string) error {
+func (p *Plugin) clearStagedDeviceInfo(ctx context.Context, stagingTargetPath string, volumeId string) error {
+	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
-	log.WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
-	defer log.WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
+	logc.WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
+	defer logc.WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
 
 	filename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 
 	if _, err := os.Stat(filename); err == nil {
 		if err = os.Remove(filename); err != nil {
-			log.WithField("filename", filename).Errorf("Failed to remove staging target path; %s", err)
+			logc.WithField("filename", filename).Errorf("Failed to remove staging target path; %s", err)
 			return fmt.Errorf("failed to remove staging target path %s; %s", filename, err)
 		}
 	} else if !os.IsNotExist(err) {
-		log.WithFields(fields).Errorf("Can't determine if staging target path exists; %s", err)
+		logc.WithFields(fields).Errorf("Can't determine if staging target path exists; %s", err)
 		return fmt.Errorf("can't determine if staging target path %s exists; %s", filename, err)
 	}
 
-	if err := p.clearStagedTrackingFile(volumeId); err != nil {
-		log.WithField("volumeId", volumeId).Errorf("Failed to remove tracking file: %s", err)
+	if err := p.clearStagedTrackingFile(ctx, volumeId); err != nil {
+		logc.WithField("volumeId", volumeId).Errorf("Failed to remove tracking file: %s", err)
 	}
 
 	return nil
 }
 
 // writeStagedTrackingFile writes the serialized staged_target_path for a volumeId.
-func (p *Plugin) writeStagedTrackingFile(volumeId string, stagingTargetPath string) error {
+func (p *Plugin) writeStagedTrackingFile(ctx context.Context, volumeId string, stagingTargetPath string) error {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	volumeTrackingPublishInfo := &utils.VolumeTrackingPublishInfo{
 		StagingTargetPath: stagingTargetPath,
 	}
@@ -825,7 +848,7 @@ func (p *Plugin) writeStagedTrackingFile(volumeId string, stagingTargetPath stri
 	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
 
 	if err := ioutil.WriteFile(trackingFilename, volumeTrackingPublishInfoBytes, 0600); err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"volumeId": volumeId,
 			"error":    err.Error(),
 		}).Error("Unable to write tracking file.")
@@ -838,15 +861,16 @@ func (p *Plugin) writeStagedTrackingFile(volumeId string, stagingTargetPath stri
 // readStagedTrackingFile returns the staged_target_path given the volumeId for a staged device.
 // Devices that were created with 19.07 and prior will not have a tracking file.
 // Returns a status.Error if an error is returned.
-func (p *Plugin) readStagedTrackingFile(volumeId string) (string, error) {
+func (p *Plugin) readStagedTrackingFile(ctx context.Context, volumeId string) (string, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var publishInfoLocation utils.VolumeTrackingPublishInfo
 	trackingFile := volumeId + ".json"
 	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
 
 	// File may not exist so caller needs to handle not found error
 	if _, err := os.Stat(trackingFilename); err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"volumeId": volumeId,
 			"error":    err.Error(),
 		}).Error("Unable to find tracking file matching volumeId.")
@@ -860,28 +884,29 @@ func (p *Plugin) readStagedTrackingFile(volumeId string) (string, error) {
 
 	err = json.Unmarshal(publishInfoLocationBytes, &publishInfoLocation)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"volumeId": volumeId,
 			"error":    err.Error(),
 		})
 		return "", err
 	}
 
-	log.WithField("publishInfoLocation", publishInfoLocation).Debug("Publish info location found")
+	logc.WithField("publishInfoLocation", publishInfoLocation).Debug("Publish info location found")
 	return publishInfoLocation.StagingTargetPath, nil
 }
 
-func (p *Plugin) clearStagedTrackingFile(volumeId string) error {
+func (p *Plugin) clearStagedTrackingFile(ctx context.Context, volumeId string) error {
+	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"volumeId": volumeId}
-	log.WithFields(fields).Debug(">>>> clearStagedTrackingFile")
-	defer log.WithFields(fields).Debug("<<<< clearTrackingFile")
+	logc.WithFields(fields).Debug(">>>> clearStagedTrackingFile")
+	defer logc.WithFields(fields).Debug("<<<< clearTrackingFile")
 
 	trackingFile := volumeId + ".json"
 	trackingFilename := path.Join(tridentDeviceInfoPath, trackingFile)
 
 	err := os.Remove(trackingFilename)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"trackingFilename": trackingFilename,
 			"error":            err,
 		}).Error("Removing tracking file failed.")

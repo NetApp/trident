@@ -5,9 +5,10 @@ package ontap
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-	"github.com/stretchr/testify/assert"
 )
 
 func newTestOntapSANConfig() *drivers.OntapStorageDriverConfig {

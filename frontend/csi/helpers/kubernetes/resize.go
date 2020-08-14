@@ -1,15 +1,18 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	log "github.com/sirupsen/logrus"
+
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -23,15 +26,17 @@ import (
 // and PVC to match the request.
 func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceK8S)
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Ensure we got PVC objects
 	oldPVC, ok := oldObj.(*v1.PersistentVolumeClaim)
 	if !ok {
-		log.Errorf("K8S helper expected PVC; got %v", oldObj)
+		logc.Errorf("K8S helper expected PVC; got %v", oldObj)
 		return
 	}
 	newPVC, ok := newObj.(*v1.PersistentVolumeClaim)
 	if !ok {
-		log.Errorf("K8S helper expected PVC; got %v", newObj)
+		logc.Errorf("K8S helper expected PVC; got %v", newObj)
 		return
 	}
 
@@ -58,12 +63,12 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// Verify the storage class is available
 	scName := getStorageClassForPVC(newPVC)
 	if scName == "" {
-		log.WithField("name", newPVC.Name).Warning("K8S helper found empty storage class for PVC.")
+		logc.WithField("name", newPVC.Name).Warning("K8S helper found empty storage class for PVC.")
 		return
 	}
-	sc, err := p.getCachedStorageClassByName(scName)
+	sc, err := p.getCachedStorageClassByName(ctx, scName)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"name":         newPVC.Name,
 			"storageClass": scName,
 		}).Warning("K8S helper could not find storage class for PVC.")
@@ -72,7 +77,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 
 	// Verify the storage class is managed by Trident (all SC's will have been upgraded to the new provisioner)
 	if sc.Provisioner != csi.Provisioner {
-		log.WithField("name", scName).Warningf("The storage class provisioner is not %s.", csi.Provisioner)
+		logc.WithField("name", scName).Warningf("The storage class provisioner is not %s.", csi.Provisioner)
 		return
 	}
 
@@ -80,7 +85,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	if sc.AllowVolumeExpansion == nil || !(*sc.AllowVolumeExpansion) {
 		message := "can't resize a PV whose storage class doesn't allow volume expansion."
 		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC":          newPVC.Name,
 			"storageClass": sc.Name,
 		}).Debugf("K8S helper %s", message)
@@ -91,12 +96,12 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	if newPVCSize.Cmp(oldPVCSize) < 0 || (newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) > 0) {
 		message := "can't shrink a PV."
 		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
-		log.WithField("PVC", newPVC.Name).Warningf("K8S helper %s", message)
+		logc.WithField("PVC", newPVC.Name).Warningf("K8S helper %s", message)
 		return
 	}
 
 	// If we get this far, we potentially have a valid resize operation.
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PVC":          newPVC.Name,
 		"PVC_old_size": currentSize.String(),
 		"PVC_new_size": newPVCSize.String(),
@@ -110,9 +115,9 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// non-negligible amount of time.
 
 	// Verify Trident knows about the volume
-	volume, err := p.orchestrator.GetVolume(newPVC.Spec.VolumeName)
+	volume, err := p.orchestrator.GetVolume(ctx, newPVC.Spec.VolumeName)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC":   newPVC.Name,
 			"PV":    newPVC.Spec.VolumeName,
 			"error": err,
@@ -124,14 +129,14 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	if volume.Config.Protocol != tridentconfig.File {
 		message := "can't resize a non-NFS PV."
 		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
-		log.WithFields(log.Fields{"PVC": newPVC.Name}).Debugf("K8S helper %s", message)
+		logc.WithFields(log.Fields{"PVC": newPVC.Name}).Debugf("K8S helper %s", message)
 		return
 	}
 
 	// Get the PV from Kubernetes
-	pv, err := p.getPVForPVC(newPVC)
+	pv, err := p.getPVForPVC(ctx, newPVC)
 	if err != nil || pv == nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC":   newPVC.Name,
 			"PV":    newPVC.Spec.VolumeName,
 			"error": err,
@@ -140,15 +145,15 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	}
 
 	// Resize the volume and PV
-	if err = p.resizeVolumeAndPV(pv, newPVCSize); err != nil {
+	if err = p.resizeVolumeAndPV(ctx, pv, newPVCSize); err != nil {
 		message := fmt.Sprintf("failed in resizing the volume or PV: %v", err)
 		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
-		log.WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
+		logc.WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
 		return
 	}
 
 	// Update the PVC
-	updatedPVC, err := p.resizePVC(newPVC, newPVCSize)
+	updatedPVC, err := p.resizePVC(ctx, newPVC, newPVCSize)
 	if err != nil {
 		message := fmt.Sprintf("failed to update the PVC size: %v.", err)
 		if updatedPVC == nil {
@@ -156,19 +161,20 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 		} else {
 			p.eventRecorder.Event(updatedPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		}
-		log.WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
+		logc.WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
 		return
 	}
 	p.eventRecorder.Event(updatedPVC, v1.EventTypeNormal, "ResizeSuccess", "resized the PV and volume.")
 }
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the PV size.
-func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume, newSize resource.Quantity) error {
+func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume, newSize resource.Quantity) error {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	pvSize := pv.Spec.Capacity[v1.ResourceStorage]
 	if pvSize.Cmp(newSize) < 0 {
 		// Calling the orchestrator to resize the volume on the storage backend.
-		if err := p.orchestrator.ResizeVolume(pv.Name, fmt.Sprintf("%d", newSize.Value())); err != nil {
+		if err := p.orchestrator.ResizeVolume(ctx, pv.Name, fmt.Sprintf("%d", newSize.Value())); err != nil {
 			return err
 		}
 	} else if pvSize.Cmp(newSize) == 0 {
@@ -180,7 +186,7 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume, newSize resource.Qua
 	// Update the PV
 	pvClone := pv.DeepCopy()
 	pvClone.Spec.Capacity[v1.ResourceStorage] = newSize
-	pvUpdated, err := p.patchPV(pv, pvClone)
+	pvUpdated, err := p.patchPV(ctx, pv, pvClone)
 	if err != nil {
 		return err
 	}
@@ -189,7 +195,7 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume, newSize resource.Qua
 		return fmt.Errorf("PV capacity was not updated as expected")
 	}
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PV":          pv.Name,
 		"PV_old_size": pvSize.String(),
 		"PV_new_size": updatedSize.String(),
@@ -200,12 +206,13 @@ func (p *Plugin) resizeVolumeAndPV(pv *v1.PersistentVolume, newSize resource.Qua
 
 // resizePVC updates the PVC size.
 func (p *Plugin) resizePVC(
-	pvc *v1.PersistentVolumeClaim, newSize resource.Quantity,
+	ctx context.Context, pvc *v1.PersistentVolumeClaim, newSize resource.Quantity,
 ) (*v1.PersistentVolumeClaim, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	pvcClone := pvc.DeepCopy()
 	pvcClone.Status.Capacity[v1.ResourceStorage] = newSize
-	pvcUpdated, err := p.patchPVCStatus(pvc, pvcClone)
+	pvcUpdated, err := p.patchPVCStatus(ctx, pvc, pvcClone)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +222,7 @@ func (p *Plugin) resizePVC(
 	}
 
 	oldSize := pvc.Status.Capacity[v1.ResourceStorage]
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PVC":          pvc.Name,
 		"PVC_old_size": oldSize.String(),
 		"PVC_new_size": updatedSize.String(),

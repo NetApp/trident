@@ -19,7 +19,7 @@ func TestGetCRDMapFromBundle(t *testing.T) {
 
 	crdMap := getCRDMapFromBundle(CRDBundle)
 
-	assert.Equal(t, len(CRDnames), len(crdMap), "Mismatch between number of CRD names (" +
+	assert.Equal(t, len(CRDnames), len(crdMap), "Mismatch between number of CRD names ("+
 		"count %v) and CRDs in the map (count %v)", len(CRDnames), len(crdMap))
 
 	var missingCRDs []string
@@ -47,7 +47,7 @@ func TestValidateCRDsPass(t *testing.T) {
 func TestValidateCRDsMissingCRDsFail(t *testing.T) {
 	log.Debug("Running TestValidateCRDsMissingCRDsFail...")
 
-	CRDBundle := createCRDBundle(CRDnames[1:len(CRDnames)-1])
+	CRDBundle := createCRDBundle(CRDnames[1 : len(CRDnames)-1])
 
 	crdMap := getCRDMapFromBundle(CRDBundle)
 

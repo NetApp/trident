@@ -1,8 +1,9 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package docker
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -80,7 +81,6 @@ func registerDockerVolumePlugin(root string) error {
 }
 
 func (p *Plugin) initDockerVersion() {
-
 	time.Sleep(5 * time.Second)
 
 	// Get Docker version
@@ -118,7 +118,6 @@ func (p *Plugin) initDockerVersion() {
 }
 
 func (p *Plugin) Activate() error {
-
 	handler := volume.NewHandler(p)
 
 	// Start serving requests on a different thread
@@ -170,19 +169,22 @@ func (p *Plugin) Version() string {
 
 func (p *Plugin) Create(request *volume.CreateRequest) error {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method":  "Create",
 		"name":    request.Name,
 		"options": request.Options,
 	}).Debug("Docker frontend method is invoked.")
 
 	// Find a matching storage class, or register a new one
-	scConfig, err := frontendcommon.GetStorageClass(request.Options, p.orchestrator)
+	scConfig, err := frontendcommon.GetStorageClass(ctx, request.Options, p.orchestrator)
 	if err != nil {
-		return p.dockerError(err)
+		return p.dockerError(ctx, err)
 	}
 
-	sizeBytes, err := utils.GetVolumeSizeBytes(request.Options, "0")
+	sizeBytes, err := utils.GetVolumeSizeBytes(ctx, request.Options, "0")
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	}
@@ -192,32 +194,35 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 	volConfig, err := frontendcommon.GetVolumeConfig(
 		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny, config.Filesystem)
 	if err != nil {
-		return p.dockerError(err)
+		return p.dockerError(ctx, err)
 	}
 
 	// Invoke the orchestrator to create or clone the new volume
 	if volConfig.CloneSourceVolume != "" {
-		_, err = p.orchestrator.CloneVolume(volConfig)
+		_, err = p.orchestrator.CloneVolume(ctx, volConfig)
 	} else {
-		_, err = p.orchestrator.AddVolume(volConfig)
+		_, err = p.orchestrator.AddVolume(ctx, volConfig)
 	}
-	return p.dockerError(err)
+	return p.dockerError(ctx, err)
 }
 
 func (p *Plugin) List() (*volume.ListResponse, error) {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "List",
 	}).Debug("Docker frontend method is invoked.")
 
-	err := p.reloadVolumes()
+	err := p.reloadVolumes(ctx)
 	if err != nil {
-		return &volume.ListResponse{}, p.dockerError(err)
+		return &volume.ListResponse{}, p.dockerError(ctx, err)
 	}
 
-	tridentVols, err := p.orchestrator.ListVolumes()
+	tridentVols, err := p.orchestrator.ListVolumes(ctx)
 	if err != nil {
-		return &volume.ListResponse{}, p.dockerError(err)
+		return &volume.ListResponse{}, p.dockerError(ctx, err)
 	}
 
 	var dockerVols []*volume.Volume
@@ -232,28 +237,31 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 
 func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Get",
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked")
 
 	// Get is called at the start of every 'docker volume' workflow except List & Unmount,
 	// so refresh the volume list here.
-	err := p.reloadVolumes()
+	err := p.reloadVolumes(ctx)
 	if err != nil {
-		return &volume.GetResponse{}, p.dockerError(err)
+		return &volume.GetResponse{}, p.dockerError(ctx, err)
 	}
 
 	// Get the requested volume
-	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
-		return &volume.GetResponse{}, p.dockerError(err)
+		return &volume.GetResponse{}, p.dockerError(ctx, err)
 	}
 
 	// Get the volume's snapshots and convert to struct Docker expects
-	snapshots, err := p.orchestrator.ReadSnapshotsForVolume(request.Name)
+	snapshots, err := p.orchestrator.ReadSnapshotsForVolume(ctx, request.Name)
 	if err != nil {
-		return &volume.GetResponse{}, p.dockerError(err)
+		return &volume.GetResponse{}, p.dockerError(ctx, err)
 	}
 	dockerSnapshots := make([]*Snapshot, 0)
 	for _, snapshot := range snapshots {
@@ -267,7 +275,7 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 	}
 
 	// Get the mountpoint, if this volume is mounted
-	mountpoint, _ := p.getPath(tridentVol)
+	mountpoint, _ := p.getPath(ctx, tridentVol)
 
 	vol := &volume.Volume{
 		Name:       tridentVol.Config.Name,
@@ -280,36 +288,42 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 
 func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Remove",
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked.")
 
-	err := p.orchestrator.DeleteVolume(request.Name)
+	err := p.orchestrator.DeleteVolume(ctx, request.Name)
 	if err != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"volume": request.Name,
 			"error":  err,
 		}).Warn("Could not delete volume.")
 	}
-	return p.dockerError(err)
+	return p.dockerError(ctx, err)
 }
 
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Path",
 		"name":   request.Name,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
-		return &volume.PathResponse{}, p.dockerError(err)
+		return &volume.PathResponse{}, p.dockerError(ctx, err)
 	}
 
-	mountpoint, err := p.getPath(tridentVol)
+	mountpoint, err := p.getPath(ctx, tridentVol)
 	if err != nil {
-		return &volume.PathResponse{}, p.dockerError(err)
+		return &volume.PathResponse{}, p.dockerError(ctx, err)
 	}
 
 	return &volume.PathResponse{Mountpoint: mountpoint}, nil
@@ -317,32 +331,35 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 
 func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Mount",
 		"name":   request.Name,
 		"id":     request.ID,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
-		return &volume.MountResponse{}, p.dockerError(err)
+		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
 
 	// First call PublishVolume to make the volume available to the node
 	publishInfo := &utils.VolumePublishInfo{Localhost: true}
-	if err = p.orchestrator.PublishVolume(request.Name, publishInfo); err != nil {
+	if err = p.orchestrator.PublishVolume(ctx, request.Name, publishInfo); err != nil {
 		err = fmt.Errorf("error publishing volume %s: %v", request.Name, err)
-		log.Error(err)
-		return &volume.MountResponse{}, p.dockerError(err)
+		logc.Error(err)
+		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
 	// Then call AttachVolume to discover/format/mount the volume on the node
-	if err = p.orchestrator.AttachVolume(request.Name, mountpoint, publishInfo); err != nil {
+	if err = p.orchestrator.AttachVolume(ctx, request.Name, mountpoint, publishInfo); err != nil {
 		err = fmt.Errorf("error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
-		log.Error(err)
-		return &volume.MountResponse{}, p.dockerError(err)
+		logc.Error(err)
+		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
 	return &volume.MountResponse{Mountpoint: mountpoint}, nil
@@ -350,23 +367,26 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 
 func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Unmount",
 		"name":   request.Name,
 		"id":     request.ID,
 	}).Debug("Docker frontend method is invoked.")
 
-	tridentVol, err := p.orchestrator.GetVolume(request.Name)
+	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
-		return p.dockerError(err)
+		return p.dockerError(ctx, err)
 	}
 
 	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
 
-	if err = p.orchestrator.DetachVolume(request.Name, mountpoint); err != nil {
+	if err = p.orchestrator.DetachVolume(ctx, request.Name, mountpoint); err != nil {
 		err = fmt.Errorf("error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
-		log.Error(err)
-		return p.dockerError(err)
+		logc.Error(err)
+		return p.dockerError(ctx, err)
 	}
 
 	// No longer detaching and removing iSCSI session here because it was causing issues with 'docker cp'.
@@ -377,7 +397,10 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 
 func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 
-	log.WithFields(log.Fields{
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceDocker)
+	logc := utils.GetLogWithRequestContext(ctx)
+
+	logc.WithFields(log.Fields{
 		"method": "Capabilities",
 	}).Debug("Docker frontend method is invoked.")
 
@@ -385,11 +408,13 @@ func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 }
 
 // getPath returns the mount point if the path exists.
-func (p *Plugin) getPath(vol *storage.VolumeExternal) (string, error) {
+func (p *Plugin) getPath(ctx context.Context, vol *storage.VolumeExternal) (string, error) {
+
+	logc := utils.GetLogWithRequestContext(ctx)
 
 	mountpoint := p.mountpoint(vol.Config.InternalName)
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"name":         vol.Config.Name,
 		"internalName": vol.Config.InternalName,
 		"mountpoint":   mountpoint,
@@ -410,10 +435,12 @@ func (p *Plugin) mountpoint(name string) string {
 	return filepath.Join(p.volumePath, name)
 }
 
-func (p *Plugin) dockerError(err error) error {
+func (p *Plugin) dockerError(ctx context.Context, err error) error {
+
+	logc := utils.GetLogWithRequestContext(ctx)
 
 	if err != nil {
-		log.Errorf("Docker frontend method returning error: %v", err)
+		logc.Errorf("Docker frontend method returning error: %v", err)
 	}
 
 	if utils.IsBootstrapError(err) {
@@ -427,11 +454,13 @@ func (p *Plugin) dockerError(err error) error {
 // backend storage controller(s).  If Trident isn't ready, it will retry for nearly
 // the Docker timeout of 60 seconds.  Otherwise, it returns immediately with any
 // other error or nil if the operation succeeded.
-func (p *Plugin) reloadVolumes() error {
+func (p *Plugin) reloadVolumes(ctx context.Context) error {
+
+	logc := utils.GetLogWithRequestContext(ctx)
 
 	reloadVolumesFunc := func() error {
 
-		err := p.orchestrator.ReloadVolumes()
+		err := p.orchestrator.ReloadVolumes(ctx)
 		if err == nil {
 			return nil
 		} else if utils.IsNotReadyError(err) {
@@ -441,7 +470,7 @@ func (p *Plugin) reloadVolumes() error {
 		}
 	}
 	reloadNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Docker frontend waiting to reload volumes.")

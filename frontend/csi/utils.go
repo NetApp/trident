@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -10,8 +10,9 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	"github.com/netapp/trident/utils"
 )
 
 func ParseEndpoint(ep string) (string, string, error) {
@@ -49,13 +50,15 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 }
 
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	log.Debugf("GRPC call: %s", info.FullMethod)
-	log.Debugf("GRPC request: %+v", req)
+	ctx = utils.GenerateRequestContext(ctx, "", utils.ContextSourceCSI)
+	logc := utils.GetLogWithRequestContext(ctx)
+	logc.Debugf("GRPC call: %s", info.FullMethod)
+	logc.Debugf("GRPC request: %+v", req)
 	resp, err := handler(ctx, req)
 	if err != nil {
-		log.Errorf("GRPC error: %v", err)
+		logc.Errorf("GRPC error: %v", err)
 	} else {
-		log.Debugf("GRPC response: %+v", resp)
+		logc.Debugf("GRPC response: %+v", resp)
 	}
 	return resp, err
 }

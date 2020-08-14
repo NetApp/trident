@@ -1,6 +1,4 @@
-/*
- * Copyright 2019 NetApp, Inc. All Rights Reserved
- */
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -61,12 +59,12 @@ func TestLongRunningTransaction(t *testing.T) {
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
 
-	_, err := o.AddVolume(volumeConfig)
+	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 
-	_, err = o.AddVolume(volumeConfig)
+	_, err = o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -77,12 +75,12 @@ func TestLongRunningTransaction(t *testing.T) {
 	}
 	assert.Equal(t, volName, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 
-	_, err = o.AddVolume(volumeConfig)
+	_, err = o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 
-	vol, err := o.AddVolume(volumeConfig)
+	vol, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		t.Errorf("Unable to create volume %s: %v", volName, err)
 	}
@@ -100,7 +98,7 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
 
-	_, err := o.AddVolume(volumeConfig)
+	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -130,7 +128,7 @@ func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
 
-	_, err := o.AddVolume(volumeConfig)
+	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -167,7 +165,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 	volName := fakeDriver.PVC_creating_02
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
 
-	_, err := o.AddVolume(volumeConfig)
+	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -180,7 +178,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 	assert.Equal(t, volName, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 
 	// Call AddVolume again to receive volume creation error
-	_, err = o.AddVolume(volumeConfig)
+	_, err = o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		assert.Equal(t, "error occurred during creation on backend", err.Error())
 	}
@@ -205,7 +203,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
 	cloneVolumeConfig := tu.GenerateVolumeConfig(cloneName, 1, "slow", config.File)
 
-	_, err := o.AddVolume(volumeConfig)
+	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
 		t.Errorf("failed to create volume: %v", err)
 	}
@@ -213,7 +211,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	cloneVolumeConfig.CloneSourceVolume = volName
 	log.Debugf("CloneSourceVolume %s", cloneVolumeConfig.CloneSourceVolume)
 
-	_, err = o.CloneVolume(cloneVolumeConfig)
+	_, err = o.CloneVolume(ctx(), cloneVolumeConfig)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -228,7 +226,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	volName02 := fakeDriver.PVC_creating_01
 	volumeConfig02 := tu.GenerateVolumeConfig(volName02, 1, "slow", config.File)
 
-	_, err = o.AddVolume(volumeConfig02)
+	_, err = o.AddVolume(ctx(), volumeConfig02)
 	if err != nil {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
@@ -246,7 +244,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 			t.Errorf("did not find expected transaction name %s", volTxnName)
 		}
 	}
-	_, err = o.CloneVolume(cloneVolumeConfig)
+	_, err = o.CloneVolume(ctx(), cloneVolumeConfig)
 	if err != nil {
 		t.Errorf("failed to clone volume: %v", err)
 	}
@@ -272,7 +270,7 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 	backendName := "fakeOne"
 	volumes := make([]fake.Volume, 0)
 	fakeConfig, err := fakeDriver.NewFakeStorageDriverConfigJSON(backendName, config.File, tu.GenerateFakePools(1), volumes)
-	_, err = o.AddBackend(fakeConfig)
+	_, err = o.AddBackend(ctx(), fakeConfig)
 	if err != nil {
 		t.Errorf("Unable to add backend %s: %v", backendName, err)
 	}
@@ -293,7 +291,7 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 		},
 	}
 
-	_, err = o.AddStorageClass(sc)
+	_, err = o.AddStorageClass(ctx(), sc)
 	if err != nil {
 		t.Errorf("Unable to add storage class %s: %v", sc.Name, err)
 	}
@@ -305,6 +303,6 @@ func restartTransactionMonitor(o *TridentOrchestrator) {
 	// Bootstrap starts the transaction monitor.
 	// Need to stop and reinitialize transaction monitor with testable limits.
 	o.StopTransactionMonitor()
-	o.StartTransactionMonitor(period, maxAge)
+	o.StartTransactionMonitor(ctx(), period, maxAge)
 	time.Sleep(1 * time.Second)
 }

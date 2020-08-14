@@ -4,6 +4,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -137,10 +138,10 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	if c.Config.DebugTraceFlags["api"] {
 		if c.shouldLogResponseBody(method) {
 			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-			utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+			utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
 
 		} else {
-			utils.LogHTTPResponse(response, []byte("<suppressed>"))
+			utils.LogHTTPResponse(context.TODO(), response, []byte("<suppressed>"))
 		}
 	}
 

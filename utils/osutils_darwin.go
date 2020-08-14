@@ -19,9 +19,9 @@ func getFilesystemSize(path string) (int64, error) {
 }
 
 func GetFilesystemStats(path string) (int64, int64, int64, int64, int64, int64, error) {
-        log.Debug(">>>> osutils_darwin.GetFilesystemStats")
-        defer log.Debug("<<<< osutils_darwin.GetFilesystemStats")
-        return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for darwin")
+	log.Debug(">>>> osutils_darwin.GetFilesystemStats")
+	defer log.Debug("<<<< osutils_darwin.GetFilesystemStats")
+	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for darwin")
 }
 
 func getISCSIDiskSize(devicePath string) (int64, error) {

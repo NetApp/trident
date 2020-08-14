@@ -1,11 +1,15 @@
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 
 	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -16,45 +20,52 @@ import (
 
 // addLegacyStorageClass is the add handler for the legacy storage class watcher.
 func (p *Plugin) addLegacyStorageClass(obj interface{}) {
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceK8S)
+	logc := utils.GetLogWithRequestContext(ctx)
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processLegacyStorageClass(convertStorageClassV1BetaToV1(sc), eventAdd)
+		p.processLegacyStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventAdd)
 	case *k8sstoragev1.StorageClass:
-		p.processLegacyStorageClass(sc, eventAdd)
+		p.processLegacyStorageClass(ctx, sc, eventAdd)
 	default:
-		log.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
+		logc.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 
 // updateLegacyStorageClass is the update handler for the legacy storage class watcher.
 func (p *Plugin) updateLegacyStorageClass(_, newObj interface{}) {
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceK8S)
+	logc := utils.GetLogWithRequestContext(ctx)
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processLegacyStorageClass(convertStorageClassV1BetaToV1(sc), eventUpdate)
+		p.processLegacyStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventUpdate)
 	case *k8sstoragev1.StorageClass:
-		p.processLegacyStorageClass(sc, eventUpdate)
+		p.processLegacyStorageClass(ctx, sc, eventUpdate)
 	default:
-		log.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", newObj)
+		logc.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", newObj)
 	}
 }
 
 // deleteStorageClass is the delete handler for the storage class watcher.
 func (p *Plugin) deleteLegacyStorageClass(obj interface{}) {
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceK8S)
+	logc := utils.GetLogWithRequestContext(ctx)
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processLegacyStorageClass(convertStorageClassV1BetaToV1(sc), eventDelete)
+		p.processLegacyStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventDelete)
 	case *k8sstoragev1.StorageClass:
-		p.processLegacyStorageClass(sc, eventDelete)
+		p.processLegacyStorageClass(ctx, sc, eventDelete)
 	default:
-		log.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
+		logc.Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 
 // processLegacyStorageClass logs and handles add/update/delete events for legacy Trident storage classes.
 // Add & Delete events cause the storage class to be replaced with an identical one that references the
 // CSI Trident provisioner name.
-func (p *Plugin) processLegacyStorageClass(sc *k8sstoragev1.StorageClass, eventType string) {
+func (p *Plugin) processLegacyStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Validate the storage class
 	if sc.Provisioner != csi.LegacyProvisioner {
 		return
@@ -68,20 +79,21 @@ func (p *Plugin) processLegacyStorageClass(sc *k8sstoragev1.StorageClass, eventT
 
 	switch eventType {
 	case eventAdd:
-		log.WithFields(logFields).Debug("Legacy storage class added to cache.")
-		p.replaceLegacyStorageClass(sc)
+		logc.WithFields(logFields).Debug("Legacy storage class added to cache.")
+		p.replaceLegacyStorageClass(ctx, sc)
 	case eventUpdate:
-		log.WithFields(logFields).Debug("Legacy storage class updated in cache.")
-		p.replaceLegacyStorageClass(sc)
+		logc.WithFields(logFields).Debug("Legacy storage class updated in cache.")
+		p.replaceLegacyStorageClass(ctx, sc)
 	case eventDelete:
-		log.WithFields(logFields).Debug("Legacy storage class deleted from cache.")
+		logc.WithFields(logFields).Debug("Legacy storage class deleted from cache.")
 	}
 }
 
 // replaceLegacyStorageClass replaces a storage class with the legacy Trident provisioner name (netapp.io/trident)
 // with an identical storage class with the CSI Trident provisioner name (csi.trident.netapp.io).
-func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
+func (p *Plugin) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstoragev1.StorageClass) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Clone the storage class
 	newSC := oldSC.DeepCopy()
 	newSC.Provisioner = csi.Provisioner
@@ -89,8 +101,8 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 	newSC.UID = ""
 
 	// Delete the old storage class
-	if err := p.kubeClient.StorageV1().StorageClasses().Delete(ctx(), oldSC.Name, deleteOpts); err != nil {
-		log.WithFields(log.Fields{
+	if err := p.kubeClient.StorageV1().StorageClasses().Delete(ctx, oldSC.Name, deleteOpts); err != nil {
+		logc.WithFields(log.Fields{
 			"name":  oldSC.Name,
 			"error": err,
 		}).Error("Could not delete legacy storage class.")
@@ -98,17 +110,17 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 	}
 
 	// Create the new storage class
-	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx(), newSC, createOpts); err != nil {
+	if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx, newSC, createOpts); err != nil {
 
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"name":  newSC.Name,
 			"error": err,
 		}).Error("Could not replace storage class, attempting to restore old one.")
 
 		// Failed to create the new storage class, so try to restore the old one
-		if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx(), oldSC, createOpts); err != nil {
+		if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx, oldSC, createOpts); err != nil {
 
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"name":  oldSC.Name,
 				"error": err,
 			}).Error("Could not restore storage class, please recreate it manually.")
@@ -117,7 +129,7 @@ func (p *Plugin) replaceLegacyStorageClass(oldSC *k8sstoragev1.StorageClass) {
 		return
 	}
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"name":           newSC.Name,
 		"oldProvisioner": oldSC.Provisioner,
 		"newProvisioner": newSC.Provisioner,

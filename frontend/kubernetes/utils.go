@@ -1,7 +1,8 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -89,7 +90,8 @@ func getClaimProvisioner(claim *v1.PersistentVolumeClaim) string {
 }
 
 // PatchPV patches a PV after an update
-func PatchPV(kubeClient kubernetes.Interface,
+func PatchPV(ctx context.Context,
+	kubeClient kubernetes.Interface,
 	pv *v1.PersistentVolume,
 	pvUpdated *v1.PersistentVolume) (*v1.PersistentVolume, error) {
 	oldPVData, err := json.Marshal(pv)
@@ -108,11 +110,12 @@ func PatchPV(kubeClient kubernetes.Interface,
 	}
 
 	return kubeClient.CoreV1().PersistentVolumes().Patch(
-		ctx(), pvUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
+		ctx, pvUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // PatchPVC patches a PVC spec after an update
-func PatchPVC(kubeClient kubernetes.Interface,
+func PatchPVC(ctx context.Context,
+	kubeClient kubernetes.Interface,
 	pvc *v1.PersistentVolumeClaim,
 	pvcUpdated *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
 	oldPVCData, err := json.Marshal(pvc)
@@ -133,11 +136,12 @@ func PatchPVC(kubeClient kubernetes.Interface,
 	}
 
 	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(
-		ctx(), pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
+		ctx, pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // PatchPVCStatus patches a PVC status after an update
-func PatchPVCStatus(kubeClient kubernetes.Interface,
+func PatchPVCStatus(ctx context.Context,
+	kubeClient kubernetes.Interface,
 	pvc *v1.PersistentVolumeClaim,
 	pvcUpdated *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
 	oldPVCData, err := json.Marshal(pvc)
@@ -158,5 +162,5 @@ func PatchPVCStatus(kubeClient kubernetes.Interface,
 	}
 
 	return kubeClient.CoreV1().PersistentVolumeClaims(pvcUpdated.Namespace).Patch(
-		ctx(), pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
+		ctx, pvcUpdated.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
 }

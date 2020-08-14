@@ -3,86 +3,85 @@
 package utils
 
 import (
-        "fmt"
-        "os"
-        "syscall"
-        "time"
-        "unsafe"
+	"fmt"
+	"os"
+	"syscall"
+	"time"
+	"unsafe"
 
-        log "github.com/sirupsen/logrus"
-        unix "golang.org/x/sys/unix"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 )
 
 type statFSResult struct {
-        Output unix.Statfs_t
-        Error  error
+	Output unix.Statfs_t
+	Error  error
 }
 
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
 func GetFilesystemStats(path string) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
-        log.Debug(">>>> osutils_linux.GetFilesystemStats")
-        defer log.Debug("<<<< osutils_linux.GetFilesystemStats")
+	log.Debug(">>>> osutils_linux.GetFilesystemStats")
+	defer log.Debug("<<<< osutils_linux.GetFilesystemStats")
 
-        timedOut := false
-        var timeout time.Duration = 30 * time.Second
-        done := make(chan statFSResult, 1)
-        var result statFSResult
+	timedOut := false
+	var timeout time.Duration = 30 * time.Second
+	done := make(chan statFSResult, 1)
+	var result statFSResult
 
-        go func() {
-                // Warning: syscall.Statfs_t uses types that are OS and arch dependent. The following code has been
-                // confirmed to work with Linux/amd64 and Darwin/amd64.
-                var buf unix.Statfs_t
-                err := unix.Statfs(path, &buf)
-                done <- statFSResult{Output: buf, Error: err}
-        }()
+	go func() {
+		// Warning: syscall.Statfs_t uses types that are OS and arch dependent. The following code has been
+		// confirmed to work with Linux/amd64 and Darwin/amd64.
+		var buf unix.Statfs_t
+		err := unix.Statfs(path, &buf)
+		done <- statFSResult{Output: buf, Error: err}
+	}()
 
-        select {
-        case <-time.After(timeout):
-                timedOut = true
-        case result = <-done:
-                break
-        }
+	select {
+	case <-time.After(timeout):
+		timedOut = true
+	case result = <-done:
+		break
+	}
 
-        if result.Error != nil {
-                log.WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
-                return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, result.Error)
-        } else if timedOut {
-                log.WithField("path", path).Errorf("Failed to statfs due to timeout")
-                return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: timeout", path)
-        }
+	if result.Error != nil {
+		log.WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, result.Error)
+	} else if timedOut {
+		log.WithField("path", path).Errorf("Failed to statfs due to timeout")
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: timeout", path)
+	}
 
-        buf := result.Output
-        size := int64(buf.Blocks) * buf.Bsize
-        log.WithFields(log.Fields{
-                "path":   path,
+	buf := result.Output
+	size := int64(buf.Blocks) * buf.Bsize
+	log.WithFields(log.Fields{
+		"path":   path,
 		"size":   size,
 		"bsize":  buf.Bsize,
 		"blocks": buf.Blocks,
 		"avail":  buf.Bavail,
-                "free":   buf.Bfree,
-        }).Debug("Filesystem size information")
+		"free":   buf.Bfree,
+	}).Debug("Filesystem size information")
 
-        available = int64(buf.Bavail) * buf.Bsize
-        capacity = int64(size)
-        usage = int64(capacity - available)
-        inodes = int64(buf.Files)
-        inodesFree = int64(buf.Ffree)
-        inodesUsed = inodes - inodesFree
-        return available, capacity, usage, inodes, inodesFree, inodesUsed, nil
+	available = int64(buf.Bavail) * buf.Bsize
+	capacity = int64(size)
+	usage = int64(capacity - available)
+	inodes = int64(buf.Files)
+	inodesFree = int64(buf.Ffree)
+	inodesUsed = inodes - inodesFree
+	return available, capacity, usage, inodes, inodesFree, inodesUsed, nil
 }
-
 
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
 func getFilesystemSize(path string) (int64, error) {
-        log.Debug(">>>> osutils_linux.getFilesystemSize")
-        defer log.Debug("<<<< osutils_linux.getFilesystemSize")
+	log.Debug(">>>> osutils_linux.getFilesystemSize")
+	defer log.Debug("<<<< osutils_linux.getFilesystemSize")
 
-        _, size, _, _, _, _, err := GetFilesystemStats(path)
-        if err != nil {
-                return 0, err
-        }
+	_, size, _, _, _, _, err := GetFilesystemStats(path)
+	if err != nil {
+		return 0, err
+	}
 
 	return size, nil
 }

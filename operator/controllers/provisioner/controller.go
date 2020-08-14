@@ -636,7 +636,7 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 	if err != nil {
 		return utils.ReconcileFailedError(err)
 	} else if csiDeploymentFound {
-		eventMessage := fmt.Sprintf("A 'tridentctl-based' CSI Trident installation found in the namespace '%v';" +
+		eventMessage := fmt.Sprintf("A 'tridentctl-based' CSI Trident installation found in the namespace '%v';"+
 			" it will be replaced with an Operator-based Trident installation.", csiTridentNamespace)
 
 		log.Info(eventMessage)
@@ -649,7 +649,7 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 		if err := c.uninstallTridentAll(csiTridentNamespace); err != nil {
 			// Update status of the tridentCR  to `Failed`
 			logMessage := "Updating Trident Provisioner CR after failed installation."
-			failureMessage := fmt.Sprintf("Failed to install Trident; failed to remove existing tridentctl-based CSI" +
+			failureMessage := fmt.Sprintf("Failed to install Trident; failed to remove existing tridentctl-based CSI"+
 				" Trident installation; err: %v", err)
 
 			log.Error(failureMessage)

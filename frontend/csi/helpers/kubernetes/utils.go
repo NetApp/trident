@@ -1,7 +1,8 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -38,14 +39,14 @@ func (p *Plugin) validateKubeVersion() error {
 // the phase has actually changed from the version saved in API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updatePVPhaseWithEvent(
-	pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventType, reason, message string,
+	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventType, reason, message string,
 ) (*v1.PersistentVolume, error) {
 
 	if pv.Status.Phase == phase {
 		// Nothing to do.
 		return pv, nil
 	}
-	newPV, err := p.updatePVPhase(pv, phase, message)
+	newPV, err := p.updatePVPhase(ctx, pv, phase, message)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func (p *Plugin) updatePVPhaseWithEvent(
 // updatePVPhase saves new PV phase to API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updatePVPhase(
-	pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
+	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
 ) (*v1.PersistentVolume, error) {
 
 	if pv.Status.Phase == phase {
@@ -71,11 +72,12 @@ func (p *Plugin) updatePVPhase(
 	pvClone.Status.Phase = phase
 	pvClone.Status.Message = message
 
-	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx(), pvClone, updateOpts)
+	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx, pvClone, updateOpts)
 }
 
 // patchPV patches a PV after an update.
-func (p *Plugin) patchPV(oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume) (*v1.PersistentVolume, error) {
+func (p *Plugin) patchPV(
+	ctx context.Context, oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume) (*v1.PersistentVolume, error) {
 
 	oldPVData, err := json.Marshal(oldPV)
 	if err != nil {
@@ -93,12 +95,12 @@ func (p *Plugin) patchPV(oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume)
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumes().Patch(
-		ctx(), newPV.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
+		ctx, newPV.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVC patches a PVC after an update.
 func (p *Plugin) patchPVC(
-	oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
+	ctx context.Context, oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 
 	oldPVCData, err := json.Marshal(oldPVC)
@@ -117,12 +119,12 @@ func (p *Plugin) patchPVC(
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(oldPVC.Namespace).Patch(
-		ctx(), newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
+		ctx, newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVCStatus patches a PVC status after an update.
 func (p *Plugin) patchPVCStatus(
-	oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
+	ctx context.Context, oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 
 	oldPVCData, err := json.Marshal(oldPVC)
@@ -141,40 +143,41 @@ func (p *Plugin) patchPVCStatus(
 	}
 
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(newPVC.Namespace).Patch(
-		ctx(), newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
+		ctx, newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
 }
 
 // getPVForPVC returns the PV for a bound PVC.
-func (p *Plugin) getPVForPVC(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
+func (p *Plugin) getPVForPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
 	if pvc.Status.Phase != v1.ClaimBound || pvc.Spec.VolumeName == "" {
 		return nil, nil
 	}
-	return p.kubeClient.CoreV1().PersistentVolumes().Get(ctx(), pvc.Spec.VolumeName, getOpts)
+	return p.kubeClient.CoreV1().PersistentVolumes().Get(ctx, pvc.Spec.VolumeName, getOpts)
 }
 
 // getPVCForPV returns the PVC for a PV.
-func (p *Plugin) getPVCForPV(pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
+func (p *Plugin) getPVCForPV(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
 	if pv.Spec.ClaimRef == nil {
 		return nil, nil
 	}
 	return p.kubeClient.CoreV1().PersistentVolumeClaims(
-		pv.Spec.ClaimRef.Namespace).Get(ctx(), pv.Spec.ClaimRef.Name, getOpts)
+		pv.Spec.ClaimRef.Namespace).Get(ctx, pv.Spec.ClaimRef.Name, getOpts)
 }
 
 // isPVNotManaged examines a PV and determines whether the notManaged annotation is present.
-func isPVNotManaged(pv *v1.PersistentVolume) bool {
-	return isNotManaged(pv.Annotations, pv.Name, "PV")
+func isPVNotManaged(ctx context.Context, pv *v1.PersistentVolume) bool {
+	return isNotManaged(ctx, pv.Annotations, pv.Name, "PV")
 }
 
 // isNotManaged returns true if the notManaged annotation is present in the supplied map and
 // has a value of anything that doesn't resolve to 'false'.
-func isNotManaged(annotations map[string]string, name string, kind string) bool {
+func isNotManaged(ctx context.Context, annotations map[string]string, name string, kind string) bool {
+	logc := tridentutils.GetLogWithRequestContext(ctx)
 	if value, ok := annotations[AnnNotManaged]; ok {
 		if notManaged, err := strconv.ParseBool(value); err != nil {
-			log.WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
+			logc.WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
 			return true
 		} else if notManaged {
-			log.WithField(kind, name).Debugf("K8S helper ignored this notManaged %s.", kind)
+			logc.WithField(kind, name).Debugf("K8S helper ignored this notManaged %s.", kind)
 			return true
 		}
 	}
@@ -212,11 +215,12 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 	return ""
 }
 
-func (p *Plugin) checkValidStorageClassReceived(claim *v1.PersistentVolumeClaim) error {
+func (p *Plugin) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
 
+	logc := tridentutils.GetLogWithRequestContext(ctx)
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC": claim.Name,
 		}).Error("PVC has no storage class specified")
 		return fmt.Errorf("PVC %s has no storage class specified", claim.Name)

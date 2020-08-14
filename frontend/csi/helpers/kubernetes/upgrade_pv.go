@@ -1,7 +1,8 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -23,24 +24,27 @@ import (
 //
 /////////////////////////////////////////////////////////////////////////////
 
-func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error) {
+func (p *Plugin) UpgradeVolume(
+	ctx context.Context, request *storage.UpgradeVolumeRequest,
+) (*storage.VolumeExternal, error) {
 
-	log.WithFields(log.Fields{
+	logc := utils.GetLogWithRequestContext(ctx)
+	logc.WithFields(log.Fields{
 		"volume": request.Volume,
 		"type":   request.Type,
 	}).Infof("PV upgrade: workflow started.")
 
 	// Check volume exists in Trident
-	volume, err := p.orchestrator.GetVolume(request.Volume)
+	volume, err := p.orchestrator.GetVolume(ctx, request.Volume)
 	if err != nil {
 		message := "PV upgrade: could not find the volume to upgrade"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"Volume": request.Volume,
 			"error":  err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"volume": volume.Config.Name,
 		"type":   request.Type,
 	}).Infof("PV upgrade: volume found.")
@@ -48,72 +52,72 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	// Check volume state is online
 	if volume.State != storage.VolumeStateOnline {
 		message := "PV upgrade: Trident volume to be upgraded must be in online state"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"Volume": volume.Config.Name,
 			"State":  volume.State,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s", message)
 	}
-	log.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume is online.")
+	logc.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume is online.")
 
 	// Set the volume to upgrading state to prevent other operations from running against it
-	if err = p.orchestrator.SetVolumeState(volume.Config.Name, storage.VolumeStateUpgrading); err != nil {
+	if err = p.orchestrator.SetVolumeState(ctx, volume.Config.Name, storage.VolumeStateUpgrading); err != nil {
 		msg := fmt.Sprintf("PV upgrade: error setting volume to upgrading state; %v", err)
-		log.WithField("volume", volume.Config.Name).Errorf(msg)
+		logc.WithField("volume", volume.Config.Name).Errorf(msg)
 		return nil, fmt.Errorf(msg)
 	}
-	log.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume set to upgrading.")
+	logc.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume set to upgrading.")
 	defer func() {
-		if err = p.orchestrator.SetVolumeState(volume.Config.Name, storage.VolumeStateOnline); err != nil {
-			log.WithField(
+		if err = p.orchestrator.SetVolumeState(ctx, volume.Config.Name, storage.VolumeStateOnline); err != nil {
+			logc.WithField(
 				"volume", volume.Config.Name,
 			).Errorf("PV upgrade: error setting volume to online state; %v", err)
 			return
 		}
-		log.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume set to online.")
+		logc.WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume set to online.")
 	}()
 
 	// Get PV
-	pv, err := p.getCachedPVByName(request.Volume)
+	pv, err := p.getCachedPVByName(ctx, request.Volume)
 	if err != nil {
 		message := "PV upgrade: could not find the PV to upgrade"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    request.Volume,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PV", pv.Name).Debug("PV upgrade: PV found in cache.")
+	logc.WithField("PV", pv.Name).Debug("PV upgrade: PV found in cache.")
 
 	// Check volume type is iSCSI or NFS
 	if pv.Spec.NFS == nil && pv.Spec.ISCSI == nil {
 		message := "PV to be upgraded must be of type NFS or iSCSI"
-		log.WithField("PV", pv.Name).Errorf("%s.", message)
+		logc.WithField("PV", pv.Name).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s", message)
 	} else if pv.Spec.NFS != nil {
-		log.WithField("PV", pv.Name).Debug("PV upgrade: volume is NFS.")
+		logc.WithField("PV", pv.Name).Debug("PV upgrade: volume is NFS.")
 	} else if pv.Spec.ISCSI != nil {
-		log.WithField("PV", pv.Name).Debug("PV upgrade: volume is iSCSI.")
+		logc.WithField("PV", pv.Name).Debug("PV upgrade: volume is iSCSI.")
 	}
 
 	// Check PV is bound to a PVC
 	if pv.Status.Phase != v1.VolumeBound {
 		message := "PV upgrade: PV must be bound to a PVC"
-		log.WithField("PV", pv.Name).Errorf("%s.", message)
+		logc.WithField("PV", pv.Name).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s", message)
 	}
-	log.WithField("PV", pv.Name).Debug("PV upgrade: PV state is Bound.")
+	logc.WithField("PV", pv.Name).Debug("PV upgrade: PV state is Bound.")
 
 	// Ensure the legacy PV was provisioned by Trident
 	if pv.ObjectMeta.Annotations[AnnDynamicallyProvisioned] != csi.LegacyProvisioner {
 		message := "PV upgrade: PV must have been provisioned by Trident"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":          pv.Name,
 			"provisioner": csi.LegacyProvisioner,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s", message)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PV":          pv.Name,
 		"provisioner": csi.LegacyProvisioner,
 	}).Debug("PV upgrade: PV was provisioned by Trident.")
@@ -122,17 +126,17 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	pvcDisplayName := namespace + "/" + pv.Spec.ClaimRef.Name
 
 	// Get PVC
-	pvc, err := p.getCachedPVCByName(pv.Spec.ClaimRef.Name, pv.Spec.ClaimRef.Namespace)
+	pvc, err := p.getCachedPVCByName(ctx, pv.Spec.ClaimRef.Name, pv.Spec.ClaimRef.Namespace)
 	if err != nil {
 		message := "PV upgrade: could not find the PVC bound to the PV"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PV":  pv.Name,
 		"PVC": pvcDisplayName,
 	}).Debug("PV upgrade: PVC found in cache.")
@@ -144,10 +148,10 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	}
 
 	// Ensure no naked pods have PV mounted.  Owned pods will be deleted later in the workflow.
-	ownedPodsForPVC, nakedPodsForPVC, err := p.getPodsForPVC(pvc)
+	ownedPodsForPVC, nakedPodsForPVC, err := p.getPodsForPVC(ctx, pvc)
 	if err != nil {
 		message := "PV upgrade: could not check for pods using the PV"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
@@ -156,19 +160,19 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	} else if len(nakedPodsForPVC) > 0 {
 		message := fmt.Sprintf("PV upgrade: one or more naked pods are using the PV (%s); "+
 			"shut down these pods manually and try again", strings.Join(nakedPodsForPVC, ","))
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": pvcDisplayName,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s", message)
 	} else if len(ownedPodsForPVC) > 0 {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":   pv.Name,
 			"PVC":  pvcDisplayName,
 			"pods": strings.Join(ownedPodsForPVC, ","),
 		}).Info("PV upgrade: one or more owned pods are using the PV.")
 	} else {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": pvcDisplayName,
 		}).Info("PV upgrade: no owned pods are using the PV.")
@@ -178,7 +182,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	if pv.Finalizers != nil && len(pv.Finalizers) > 0 {
 		if pv.Finalizers[0] != FinalizerPVProtection || len(pv.Finalizers) > 1 {
 			message := "PV upgrade: PV has a finalizer other than kubernetes.io/pv-protection"
-			log.WithField("PV", pv.Name).Errorf("%s.", message)
+			logc.WithField("PV", pv.Name).Errorf("%s.", message)
 			return nil, fmt.Errorf("%s", message)
 		}
 	}
@@ -194,22 +198,22 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 		PVUpgradeConfig: upgradeConfig,
 		Op:              storage.UpgradeVolume,
 	}
-	txnErr := p.orchestrator.AddVolumeTransaction(volTxn)
+	txnErr := p.orchestrator.AddVolumeTransaction(ctx, volTxn)
 	if utils.IsFoundError(txnErr) {
-		oldTxn, getErr := p.orchestrator.GetVolumeTransaction(volTxn)
+		oldTxn, getErr := p.orchestrator.GetVolumeTransaction(ctx, volTxn)
 		if getErr != nil {
 			return nil, fmt.Errorf("PV upgrade: error gathering old upgrade transaction; %v", getErr)
 		}
 		if oldTxn.Op == storage.UpgradeVolume {
-			if cleanupErr := p.rollBackPVUpgrade(oldTxn); cleanupErr != nil {
+			if cleanupErr := p.rollBackPVUpgrade(ctx, oldTxn); cleanupErr != nil {
 				return nil, fmt.Errorf("PV upgrade: error rolling back previous upgrade attempt; %v", cleanupErr)
 			}
-			txnErr = p.orchestrator.AddVolumeTransaction(volTxn)
+			txnErr = p.orchestrator.AddVolumeTransaction(ctx, volTxn)
 		}
 	}
 	if txnErr != nil {
 		message := fmt.Sprintf("PV upgrade: error saving volume transaction; %v", txnErr)
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"VolConfig":       volTxn.Config,
 			"PVConfig":        volTxn.PVUpgradeConfig.PVConfig,
 			"PVCConfig":       volTxn.PVUpgradeConfig.PVCConfig,
@@ -227,14 +231,14 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 
 	// Defer error handling
 	defer func() {
-		upgradeTxn, getErr := p.orchestrator.GetVolumeTransaction(volTxn)
+		upgradeTxn, getErr := p.orchestrator.GetVolumeTransaction(ctx, volTxn)
 		if getErr != nil {
-			log.Errorf("PV upgrade: error verifying upgrade completed; %v", getErr)
+			logc.Errorf("PV upgrade: error verifying upgrade completed; %v", getErr)
 		}
 		if upgradeTxn != nil && upgradeTxn.Op == storage.UpgradeVolume {
-			log.Warningf("PV upgrade: error during upgrade; rolling back changes")
-			if cleanupErr := p.rollBackPVUpgrade(upgradeTxn); cleanupErr != nil {
-				log.Errorf("PV upgrade: error during rollback; %v", cleanupErr)
+			logc.Warningf("PV upgrade: error during upgrade; rolling back changes")
+			if cleanupErr := p.rollBackPVUpgrade(ctx, upgradeTxn); cleanupErr != nil {
+				logc.Errorf("PV upgrade: error during rollback; %v", cleanupErr)
 			}
 		}
 	}()
@@ -246,29 +250,29 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	}
 
 	// Delete the PV along with any finalizers
-	if err = p.deletePVForUpgrade(pv); err != nil {
+	if err = p.deletePVForUpgrade(ctx, pv); err != nil {
 		message := "PV upgrade: could not delete the PV"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PV", pv.Name).Infof("PV upgrade: PV deleted.")
+	logc.WithField("PV", pv.Name).Infof("PV upgrade: PV deleted.")
 
 	// Wait for PVC to become Lost or Pending
 	lostOrPending := []v1.PersistentVolumeClaimPhase{v1.ClaimLost, v1.ClaimPending}
-	lostPVC, err := p.waitForPVCPhase(pvc, lostOrPending, PVDeleteWaitPeriod)
+	lostPVC, err := p.waitForPVCPhase(ctx, pvc, lostOrPending, PVDeleteWaitPeriod)
 	if err != nil {
 		message := "PV upgrade: PVC did not reach the Lost or Pending state"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PV":  pv.Name,
 		"PVC": pvcDisplayName,
 	}).Infof("PV upgrade: PVC reached the Lost or Pending state.")
@@ -283,9 +287,9 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	for _, podName := range ownedPodsForPVC {
 
 		// Delete pod
-		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx(), podName, deleteOpts); err != nil {
+		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx, podName, deleteOpts); err != nil {
 			message := "PV upgrade: could not delete a pod using the PV"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"PVC":   pvcDisplayName,
 				"pod":   podName,
@@ -293,7 +297,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 			}).Errorf("%s.", message)
 			return nil, fmt.Errorf("%s: %v", message, err)
 		} else {
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
@@ -305,9 +309,9 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	for _, podName := range ownedPodsForPVC {
 
 		// Wait for pod to disappear or become pending
-		if _, err = p.waitForDeletedOrNonRunningPod(podName, namespace, PodDeleteWaitPeriod); err != nil {
+		if _, err = p.waitForDeletedOrNonRunningPod(ctx, podName, namespace, PodDeleteWaitPeriod); err != nil {
 			message := "PV upgrade: unexpected pod status"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"PVC":   pvcDisplayName,
 				"pod":   podName,
@@ -315,7 +319,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 			}).Errorf("%s.", message)
 			return nil, fmt.Errorf("%s: %v", message, err)
 		} else {
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
@@ -332,16 +336,16 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	// TODO: Do controller stuff (igroups, etc.) (?)
 
 	// Remove bind-completed annotation from PVC
-	unboundLostPVC, err := p.removePVCBindCompletedAnnotation(lostPVC)
+	unboundLostPVC, err := p.removePVCBindCompletedAnnotation(ctx, lostPVC)
 	if err != nil {
 		message := "PV upgrade: could not remove bind-completed annotation from PVC"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PVC", pvc.Name).Info("PV upgrade: removed bind-completed annotation from PVC.")
+	logc.WithField("PVC", pvc.Name).Info("PV upgrade: removed bind-completed annotation from PVC.")
 
 	// Trigger failure based on PVC name for testing rollback
 	if pvc.Name == "failure-e41d3d81-1771-47b4-bec3-2a949d0049bd" {
@@ -350,30 +354,30 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	}
 
 	// Create new PV
-	csiPV, err := p.createCSIPVFromPV(pv, volume)
+	csiPV, err := p.createCSIPVFromPV(ctx, pv, volume)
 	if err != nil {
 		message := "PV upgrade: could not create the CSI version of PV being upgraded"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"error": err,
 		}).Errorf("PV upgrade: %s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PV", csiPV.Name).Info("PV upgrade: created CSI version of PV.")
+	logc.WithField("PV", csiPV.Name).Info("PV upgrade: created CSI version of PV.")
 
 	// Wait for PVC to become Bound
 	bound := []v1.PersistentVolumeClaimPhase{v1.ClaimBound}
-	boundPVC, err := p.waitForPVCPhase(unboundLostPVC, bound, PVDeleteWaitPeriod)
+	boundPVC, err := p.waitForPVCPhase(ctx, unboundLostPVC, bound, PVDeleteWaitPeriod)
 	if err != nil {
 		message := "PV upgrade: PVC did not reach the Bound state"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	} else if boundPVC != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  csiPV.Name,
 			"PVC": pvcDisplayName,
 		}).Infof("PV upgrade: PVC bound.")
@@ -385,7 +389,7 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 			"failure-f26f23e5-4895-41cc-b983-6fe99d105841")
 	}
 
-	if err = p.orchestrator.DeleteVolumeTransaction(volTxn); err != nil {
+	if err = p.orchestrator.DeleteVolumeTransaction(ctx, volTxn); err != nil {
 		return nil, fmt.Errorf("PV upgrade: unable to delete upgrade transaction; %v", err)
 	}
 
@@ -393,57 +397,58 @@ func (p *Plugin) UpgradeVolume(request *storage.UpgradeVolumeRequest) (*storage.
 	return volume, nil
 }
 
-func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
+func (p *Plugin) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTransaction) error {
+	logc := utils.GetLogWithRequestContext(ctx)
 	// Check volume exists in Trident
-	volume, err := p.orchestrator.GetVolume(volTxn.Config.Name)
+	volume, err := p.orchestrator.GetVolume(ctx, volTxn.Config.Name)
 	if err != nil {
 		message := "PV rollback: could not find the volume to roll back"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"Volume": volTxn.Config.Name,
 			"error":  err,
 		}).Errorf("%s.", message)
 		return fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"volume": volume.Config.Name,
 	}).Infof("PV rollback: volume found.")
 
 	// Check volume state is upgrading
 	if volume.State != storage.VolumeStateUpgrading {
 		message := "PV rollback: Trident volume to be rolled back must be in upgrading state"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"Volume": volume.Config.Name,
 			"State":  string(volume.State),
 		}).Errorf("%s.", message)
 		return fmt.Errorf("%s", message)
 	}
-	log.WithField("volume", volume.Config.Name).Debug("PV rollback: Trident volume is upgrading.")
+	logc.WithField("volume", volume.Config.Name).Debug("PV rollback: Trident volume is upgrading.")
 
 	namespace := volTxn.PVUpgradeConfig.PVCConfig.Namespace
 	pvcDisplayName := namespace + "/" + volTxn.PVUpgradeConfig.PVCConfig.Name
 
 	// Get PVC
-	pvc, err := p.getCachedPVCByName(volTxn.PVUpgradeConfig.PVCConfig.Name, namespace)
+	pvc, err := p.getCachedPVCByName(ctx, volTxn.PVUpgradeConfig.PVCConfig.Name, namespace)
 	if err != nil {
 		message := "PV rollback: could not find the PVC bound to the PV"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    volTxn.PVUpgradeConfig.PVConfig.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"PV":  volTxn.PVUpgradeConfig.PVConfig.Name,
 		"PVC": pvcDisplayName,
 	}).Debug("PV rollback: PVC found in cache.")
 
 	// Does PV exist?
 	pv := &v1.PersistentVolume{}
-	pvExists, err := p.isPVInCache(volTxn.Config.Name)
+	pvExists, err := p.isPVInCache(ctx, volTxn.Config.Name)
 	if err != nil {
 		message := "PV rollback: could not check cache for PV to roll back"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    volTxn.Config.Name,
 			"error": err,
 		}).Errorf("%s.", message)
@@ -452,48 +457,48 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 
 	if pvExists {
 		// If the PV exists, delete it. This could be new or old PV so load cached one for most accurate info
-		pv, err = p.getCachedPVByName(volTxn.Config.Name)
+		pv, err = p.getCachedPVByName(ctx, volTxn.Config.Name)
 		if err != nil {
 			message := "PV rollback: could not find the PV to roll back"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    volTxn.Config.Name,
 				"error": err,
 			}).Errorf("%s.", message)
 			return fmt.Errorf("%s: %v", message, err)
 		}
-		log.WithField("PV", pv.Name).Debug("PV rollback: PV found in cache.")
+		logc.WithField("PV", pv.Name).Debug("PV rollback: PV found in cache.")
 		// Check that PV has at most one finalizer, which must be kubernetes.io/pv-protection
 		if pv.Finalizers != nil && len(pv.Finalizers) > 0 {
 			if pv.Finalizers[0] != FinalizerPVProtection || len(pv.Finalizers) > 1 {
 				message := "PV rollback: PV has a finalizer other than kubernetes.io/pv-protection"
-				log.WithField("PV", pv.Name).Errorf("%s.", message)
+				logc.WithField("PV", pv.Name).Errorf("%s.", message)
 				return fmt.Errorf("%s", message)
 			}
 		}
 		// Delete the PV along with any finalizers
-		if err = p.deletePVForUpgrade(pv); err != nil {
+		if err = p.deletePVForUpgrade(ctx, pv); err != nil {
 			message := "PV rollback: could not delete the PV"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"error": err,
 			}).Errorf("%s.", message)
 			return fmt.Errorf("%s: %v", message, err)
 		}
-		log.WithField("PV", pv.Name).Infof("PV rollback: PV deleted.")
+		logc.WithField("PV", pv.Name).Infof("PV rollback: PV deleted.")
 
 		// Wait for PVC to become Lost
 		lostOrPending := []v1.PersistentVolumeClaimPhase{v1.ClaimLost, v1.ClaimPending}
-		pvc, err = p.waitForPVCPhase(pvc, lostOrPending, PVDeleteWaitPeriod)
+		pvc, err = p.waitForPVCPhase(ctx, pvc, lostOrPending, PVDeleteWaitPeriod)
 		if err != nil {
 			message := "PV rollback: PVC did not reach the Lost or Pending state"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"PVC":   pvcDisplayName,
 				"error": err,
 			}).Errorf("%s.", message)
 			return fmt.Errorf("%s: %v", message, err)
 		}
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": pvcDisplayName,
 		}).Infof("PV rollback: PVC reached the Lost or Pending state.")
@@ -506,16 +511,16 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
 
 		// Delete pod
-		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx(), podName, deleteOpts); err != nil {
+		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx, podName, deleteOpts); err != nil {
 			message := "PV rollback: could not delete a pod using the PV"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"PVC":   pvcDisplayName,
 				"pod":   podName,
 				"error": err,
 			}).Warnf("%s.", message)
 		} else {
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
@@ -527,9 +532,9 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
 
 		// Wait for pod to disappear or become pending
-		if _, err = p.waitForDeletedOrNonRunningPod(podName, namespace, PodDeleteWaitPeriod); err != nil {
+		if _, err = p.waitForDeletedOrNonRunningPod(ctx, podName, namespace, PodDeleteWaitPeriod); err != nil {
 			message := "PV rollback: unexpected pod status"
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":    pv.Name,
 				"PVC":   pvcDisplayName,
 				"pod":   podName,
@@ -537,7 +542,7 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 			}).Errorf("%s.", message)
 			return fmt.Errorf("%s: %v", message, err)
 		} else {
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
@@ -547,65 +552,65 @@ func (p *Plugin) rollBackPVUpgrade(volTxn *storage.VolumeTransaction) error {
 	// TODO: Do controller stuff (igroups, etc.) (?)
 
 	// Remove bind-completed annotation from PVC
-	pvc, err = p.removePVCBindCompletedAnnotation(pvc)
+	pvc, err = p.removePVCBindCompletedAnnotation(ctx, pvc)
 	if err != nil {
 		message := "PV rollback: could not remove bind-completed annotation from PVC"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PVC", pvc.Name).Info("PV rollback: removed bind-completed annotation from PVC.")
+	logc.WithField("PVC", pvc.Name).Info("PV rollback: removed bind-completed annotation from PVC.")
 
 	// Create old PV
 	pv.ResourceVersion = ""
 	pv.UID = ""
-	oldPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx(), pv, createOpts)
+	oldPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx, pv, createOpts)
 	if err != nil {
 		message := "PV rollback: could not create the original version of PV being upgraded"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"error": err,
 		}).Errorf("PV upgrade: %s.", message)
 		return fmt.Errorf("%s: %v", message, err)
 	}
-	log.WithField("PV", oldPV.Name).Info("PV rollback: created original version of PV.")
+	logc.WithField("PV", oldPV.Name).Info("PV rollback: created original version of PV.")
 
 	// Wait for PVC to become Bound
 	bound := []v1.PersistentVolumeClaimPhase{v1.ClaimBound}
-	boundPVC, err := p.waitForPVCPhase(pvc, bound, PVDeleteWaitPeriod)
+	boundPVC, err := p.waitForPVCPhase(ctx, pvc, bound, PVDeleteWaitPeriod)
 	if err != nil {
 		message := "PV rollback: PVC did not reach the Bound state"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    oldPV.Name,
 			"PVC":   pvcDisplayName,
 			"error": err,
 		}).Errorf("%s.", message)
 		return fmt.Errorf("%s: %v", message, err)
 	} else if boundPVC != nil {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  oldPV.Name,
 			"PVC": pvcDisplayName,
 		}).Infof("PV rollback: PVC bound.")
 	}
 
 	// Set volume state to online
-	if err = p.orchestrator.SetVolumeState(volume.Config.Name, storage.VolumeStateOnline); err != nil {
+	if err = p.orchestrator.SetVolumeState(ctx, volume.Config.Name, storage.VolumeStateOnline); err != nil {
 		msg := fmt.Sprintf("PV rollback: error setting volume to online state; %v", err)
-		log.WithField("volume", volume.Config.Name).Errorf(msg)
+		logc.WithField("volume", volume.Config.Name).Errorf(msg)
 		return fmt.Errorf(msg)
 	}
 
 	// Delete the transaction
-	if err = p.orchestrator.DeleteVolumeTransaction(volTxn); err != nil {
+	if err = p.orchestrator.DeleteVolumeTransaction(ctx, volTxn); err != nil {
 		return fmt.Errorf("PV rollback: unable to delete upgrade transaction; %v", err)
 	}
 	// Return to caller
 	return nil
 }
 
-func (p *Plugin) deletePVForUpgrade(pv *v1.PersistentVolume) error {
+func (p *Plugin) deletePVForUpgrade(ctx context.Context, pv *v1.PersistentVolume) error {
 
 	// Check if PV has finalizers
 	hasFinalizers := pv.Finalizers != nil && len(pv.Finalizers) > 0
@@ -614,15 +619,15 @@ func (p *Plugin) deletePVForUpgrade(pv *v1.PersistentVolume) error {
 	if pv.DeletionTimestamp == nil {
 
 		// PV hasn't been deleted yet, so send the delete
-		if err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, deleteOpts); err != nil {
+		if err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.Name, deleteOpts); err != nil {
 			return err
 		}
 
 		// Wait for disappearance (unlikely) or a deletion timestamp (PV pinned by finalizer)
-		if deletedPV, err := p.waitForDeletedPV(pv.Name, PVDeleteWaitPeriod); err != nil {
+		if deletedPV, err := p.waitForDeletedPV(ctx, pv.Name, PVDeleteWaitPeriod); err != nil {
 			return err
 		} else if deletedPV != nil {
-			if _, err := p.removePVFinalizers(deletedPV); err != nil {
+			if _, err := p.removePVFinalizers(ctx, deletedPV); err != nil {
 				return err
 			}
 		}
@@ -630,14 +635,14 @@ func (p *Plugin) deletePVForUpgrade(pv *v1.PersistentVolume) error {
 
 		// PV was deleted previously, so just remove any finalizer so it can be fully deleted
 		if hasFinalizers {
-			if _, err := p.removePVFinalizers(pv); err != nil {
+			if _, err := p.removePVFinalizers(ctx, pv); err != nil {
 				return err
 			}
 		}
 	}
 
 	// Wait for PV to have deletion timestamp
-	if err := p.waitForPVDisappearance(pv.Name, PVDeleteWaitPeriod); err != nil {
+	if err := p.waitForPVDisappearance(ctx, pv.Name, PVDeleteWaitPeriod); err != nil {
 		return err
 	}
 
@@ -650,8 +655,10 @@ func (p *Plugin) deletePVForUpgrade(pv *v1.PersistentVolume) error {
 //    (nil, error) --> an error occurred checking for the PV in the cache
 //    (PV, error)  --> the PV was not deleted before the retry loop timed out
 //
-func (p *Plugin) waitForDeletedPV(name string, maxElapsedTime time.Duration) (*v1.PersistentVolume, error) {
+func (p *Plugin) waitForDeletedPV(
+	ctx context.Context, name string, maxElapsedTime time.Duration) (*v1.PersistentVolume, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var pv *v1.PersistentVolume
 	var ok bool
 
@@ -669,7 +676,7 @@ func (p *Plugin) waitForDeletedPV(name string, maxElapsedTime time.Duration) (*v
 		return nil
 	}
 	pvNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"pv":        name,
 			"increment": duration,
 		}).Debugf("PV not yet deleted, waiting.")
@@ -689,8 +696,9 @@ func (p *Plugin) waitForDeletedPV(name string, maxElapsedTime time.Duration) (*v
 }
 
 // waitForPVDisappearance waits for a PV to be fully deleted and gone from the cache.
-func (p *Plugin) waitForPVDisappearance(name string, maxElapsedTime time.Duration) error {
+func (p *Plugin) waitForPVDisappearance(ctx context.Context, name string, maxElapsedTime time.Duration) error {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	checkForDeletedPV := func() error {
 		if item, exists, err := p.pvIndexer.GetByKey(name); err != nil {
 			return err
@@ -703,7 +711,7 @@ func (p *Plugin) waitForPVDisappearance(name string, maxElapsedTime time.Duratio
 		}
 	}
 	pvNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"pv":        name,
 			"increment": duration,
 		}).Debugf("PV not yet fully deleted, waiting.")
@@ -724,14 +732,16 @@ func (p *Plugin) waitForPVDisappearance(name string, maxElapsedTime time.Duratio
 
 // waitForPVCPhase waits for a PVC to reach the specified phase.
 func (p *Plugin) waitForPVCPhase(
-	pvc *v1.PersistentVolumeClaim, phases []v1.PersistentVolumeClaimPhase, maxElapsedTime time.Duration,
+	ctx context.Context, pvc *v1.PersistentVolumeClaim, phases []v1.PersistentVolumeClaimPhase,
+	maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var latestPVC *v1.PersistentVolumeClaim
 	var err error
 
 	checkForPVCPhase := func() error {
-		latestPVC, err = p.getCachedPVCByName(pvc.Name, pvc.Namespace)
+		latestPVC, err = p.getCachedPVCByName(ctx, pvc.Name, pvc.Namespace)
 		if err != nil {
 			return err
 		} else {
@@ -745,7 +755,7 @@ func (p *Plugin) waitForPVCPhase(
 		}
 	}
 	pvcNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"name":      pvc.Name,
 			"namespace": pvc.Namespace,
 			"increment": duration,
@@ -767,27 +777,29 @@ func (p *Plugin) waitForPVCPhase(
 }
 
 // removePVFinalizers patches a PV by removing all finalizers.
-func (p *Plugin) removePVFinalizers(pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
-
+func (p *Plugin) removePVFinalizers(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
+	logc := utils.GetLogWithRequestContext(ctx)
 	pvClone := pv.DeepCopy()
 	pvClone.Finalizers = make([]string, 0)
-	if patchedPV, err := p.patchPV(pv, pvClone); err != nil {
+	if patchedPV, err := p.patchPV(ctx, pv, pvClone); err != nil {
 
 		message := "could not remove finalizers from PV"
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":    pv.Name,
 			"error": err,
 		}).Errorf("PV upgrade: %s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 
 	} else {
-		log.WithField("PV", pv.Name).Info("PV upgrade: removed finalizers from PV.")
+		logc.WithField("PV", pv.Name).Info("PV upgrade: removed finalizers from PV.")
 		return patchedPV, nil
 	}
 }
 
 // removePVCBindCompletedAnnotation patches a PVC by removing the bind-completed annotation.
-func (p *Plugin) removePVCBindCompletedAnnotation(pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
+func (p *Plugin) removePVCBindCompletedAnnotation(
+	ctx context.Context, pvc *v1.PersistentVolumeClaim,
+) (*v1.PersistentVolumeClaim, error) {
 
 	pvcClone := pvc.DeepCopy()
 	pvcClone.Annotations = make(map[string]string)
@@ -801,7 +813,7 @@ func (p *Plugin) removePVCBindCompletedAnnotation(pvc *v1.PersistentVolumeClaim)
 		}
 	}
 
-	if patchedPVC, err := p.patchPVC(pvc, pvcClone); err != nil {
+	if patchedPVC, err := p.patchPVC(ctx, pvc, pvcClone); err != nil {
 		return nil, err
 	} else {
 		return patchedPVC, nil
@@ -811,7 +823,7 @@ func (p *Plugin) removePVCBindCompletedAnnotation(pvc *v1.PersistentVolumeClaim)
 // createCSIPVFromPV accepts an NFS or iSCSI PV plus the corresponding Trident volume, converts the PV
 // to a CSI PV, and creates it in Kubernetes.
 func (p *Plugin) createCSIPVFromPV(
-	pv *v1.PersistentVolume, volume *storage.VolumeExternal,
+	ctx context.Context, pv *v1.PersistentVolume, volume *storage.VolumeExternal,
 ) (*v1.PersistentVolume, error) {
 
 	fsType := ""
@@ -848,19 +860,19 @@ func (p *Plugin) createCSIPVFromPV(
 	}
 	csiPV.Annotations[AnnDynamicallyProvisioned] = csi.Provisioner
 
-	if csiPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx(), csiPV, createOpts); err != nil {
+	if csiPV, err := p.kubeClient.CoreV1().PersistentVolumes().Create(ctx, csiPV, createOpts); err != nil {
 		return nil, err
 	} else {
 		return csiPV, nil
 	}
 }
 
-func (p *Plugin) getPodsForPVC(pvc *v1.PersistentVolumeClaim) ([]string, []string, error) {
+func (p *Plugin) getPodsForPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) ([]string, []string, error) {
 
 	nakedPodsForPVC := make([]string, 0)
 	ownedPodsForPVC := make([]string, 0)
 
-	podList, err := p.kubeClient.CoreV1().Pods(pvc.Namespace).List(ctx(), listOpts)
+	podList, err := p.kubeClient.CoreV1().Pods(pvc.Namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, nil, err
 	} else if podList.Items == nil {
@@ -883,18 +895,21 @@ func (p *Plugin) getPodsForPVC(pvc *v1.PersistentVolumeClaim) ([]string, []strin
 }
 
 // waitForDeletedOrNonRunningPod waits for a pod to be fully deleted or be in a non-Running state.
-func (p *Plugin) waitForDeletedOrNonRunningPod(name, namespace string, maxElapsedTime time.Duration) (*v1.Pod, error) {
+func (p *Plugin) waitForDeletedOrNonRunningPod(
+	ctx context.Context, name, namespace string, maxElapsedTime time.Duration,
+) (*v1.Pod, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	var pod *v1.Pod
 	var err error
 
 	checkForDeletedPod := func() error {
-		if pod, err = p.kubeClient.CoreV1().Pods(namespace).Get(ctx(), name, getOpts); err != nil {
+		if pod, err = p.kubeClient.CoreV1().Pods(namespace).Get(ctx, name, getOpts); err != nil {
 
 			// NotFound is a terminal success condition
 			if statusErr, ok := err.(*apierrors.StatusError); ok {
 				if statusErr.Status().Reason == metav1.StatusReasonNotFound {
-					log.WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Info("Pod not found.")
+					logc.WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Info("Pod not found.")
 					return nil
 				}
 			}
@@ -909,12 +924,12 @@ func (p *Plugin) waitForDeletedOrNonRunningPod(name, namespace string, maxElapse
 			return fmt.Errorf("pod %s/%s phase is %s", namespace, name, pod.Status.Phase)
 		} else {
 			// Any phase but Running is a terminal success condition
-			log.WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Infof("Pod phase is %s.", pod.Status.Phase)
+			logc.WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Infof("Pod phase is %s.", pod.Status.Phase)
 			return nil
 		}
 	}
 	podNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"pod":       name,
 			"namespace": namespace,
 			"increment": duration,
@@ -935,8 +950,8 @@ func (p *Plugin) waitForDeletedOrNonRunningPod(name, namespace string, maxElapse
 	return pod, nil
 }
 
-func (p *Plugin) handleFailedPVUpgrades() error {
-	volumes, err := p.orchestrator.ListVolumes()
+func (p *Plugin) handleFailedPVUpgrades(ctx context.Context) error {
+	volumes, err := p.orchestrator.ListVolumes(ctx)
 	if err != nil {
 		return fmt.Errorf("could not list known volumes; %v", err)
 	}
@@ -946,12 +961,12 @@ func (p *Plugin) handleFailedPVUpgrades() error {
 			volTxn := &storage.VolumeTransaction{
 				Config: volume.Config,
 			}
-			volTxn, err = p.orchestrator.GetVolumeTransaction(volTxn)
+			volTxn, err = p.orchestrator.GetVolumeTransaction(ctx, volTxn)
 			if err != nil {
 				return fmt.Errorf("could not get volume upgrade transaction; %v", err)
 			}
 			if volTxn.Op == storage.UpgradeVolume {
-				if err = p.rollBackPVUpgrade(volTxn); err != nil {
+				if err = p.rollBackPVUpgrade(ctx, volTxn); err != nil {
 					return fmt.Errorf("error rolling back PV upgrade; %v", err)
 				}
 			}

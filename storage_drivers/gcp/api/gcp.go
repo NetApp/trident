@@ -5,6 +5,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -205,7 +206,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*h
 		responseBody, err = ioutil.ReadAll(response.Body)
 
 		if d.config.DebugTraceFlags["api"] {
-			utils.LogHTTPResponse(response, responseBody)
+			utils.LogHTTPResponse(context.TODO(), response, responseBody)
 		}
 	}
 

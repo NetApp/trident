@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/netapp/trident/utils"
 )
 
 type loggingResponseWriter struct {
@@ -30,8 +31,14 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 func Logger(inner http.Handler, routeName string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		requestId := xid.New()
-		logRestCallInfo("REST API call received.", r, start, requestId, routeName, "")
+		requestId := ""
+		// Use the request's request ID if it already exists
+		if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
+			requestId = reqID
+		}
+		ctx := utils.GenerateRequestContext(r.Context(), requestId, utils.ContextSourceREST)
+		r = r.WithContext(ctx)
+		logRestCallInfo("REST API call received.", r, start, routeName, "")
 
 		lrw := NewLoggingResponseWriter(w)
 		inner.ServeHTTP(lrw, r)
@@ -41,20 +48,20 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		endTime := float64(time.Since(start).Milliseconds())
 		restOpsSecondsTotal.WithLabelValues(r.Method, routeName, statusCode).Observe(endTime)
 
-		logRestCallInfo("REST API call complete.", r, start, requestId, routeName, statusCode)
+		logRestCallInfo("REST API call complete.", r, start, routeName, statusCode)
 	})
 }
 
-func logRestCallInfo(msg string, r *http.Request, start time.Time, requestId xid.ID, name, statusCode string) {
+func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string) {
+	logc := utils.GetLogWithRequestContext(r.Context())
 	logFields := log.Fields{
-		"requestID": 	requestId,
-		"method":    	r.Method,
-		"uri":       	r.RequestURI,
-		"route":     	name,
-		"duration":     time.Since(start),
+		"method":   r.Method,
+		"uri":      r.RequestURI,
+		"route":    name,
+		"duration": time.Since(start),
 	}
 	if statusCode != "" {
 		logFields["status_code"] = statusCode
 	}
-	log.WithFields(logFields).Debug(msg)
+	logc.WithFields(logFields).Debug(msg)
 }

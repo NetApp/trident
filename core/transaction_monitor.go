@@ -3,11 +3,13 @@
 package core
 
 import (
+	"context"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -16,22 +18,25 @@ const (
 )
 
 // StartTransactionMonitor starts the thread that reaps abandoned long-running transactions.
-func (o *TridentOrchestrator) StartTransactionMonitor(txnPeriod time.Duration, txnMaxAge time.Duration) {
+func (o *TridentOrchestrator) StartTransactionMonitor(
+	ctx context.Context, txnPeriod time.Duration, txnMaxAge time.Duration) {
+
+	logc := utils.GetLogWithRequestContext(ctx)
 
 	go func() {
 		o.txnMonitorTicker = time.NewTicker(txnPeriod)
 		o.txnMonitorChannel = make(chan struct{})
-		log.Debug("Transaction monitor started.")
+		logc.Debug("Transaction monitor started.")
 
-		o.checkLongRunningTransactions(txnMaxAge)
+		o.checkLongRunningTransactions(ctx, txnMaxAge)
 
 		for {
 			select {
 			case tick := <-o.txnMonitorTicker.C:
-				log.WithField("tick", tick).Debug("Transaction monitor running.")
-				o.checkLongRunningTransactions(txnMaxAge)
+				logc.WithField("tick", tick).Debug("Transaction monitor running.")
+				o.checkLongRunningTransactions(ctx, txnMaxAge)
 			case <-o.txnMonitorChannel:
-				log.Debugf("Transaction monitor stopped.")
+				logc.Debugf("Transaction monitor stopped.")
 				return
 			}
 		}
@@ -52,16 +57,17 @@ func (o *TridentOrchestrator) StopTransactionMonitor() {
 
 // checkLongRunningTransactions is called periodically by the transaction monitor to
 // see if any long-running transactions exist that have expired and must be reaped.
-func (o *TridentOrchestrator) checkLongRunningTransactions(txnMaxAge time.Duration) {
+func (o *TridentOrchestrator) checkLongRunningTransactions(ctx context.Context, txnMaxAge time.Duration) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	if o.bootstrapError != nil {
-		log.WithField("error", o.bootstrapError).Errorf("Transaction monitor blocked by bootstrap error.")
+		logc.WithField("error", o.bootstrapError).Errorf("Transaction monitor blocked by bootstrap error.")
 		return
 	}
 
 	txns, err := o.storeClient.GetVolumeTransactions()
 	if err != nil {
-		log.WithField("error", err).Errorf("could not read transactions")
+		logc.WithField("error", err).Errorf("could not read transactions")
 		return
 	}
 	log.Debugf("Transaction monitor found %d long-running transaction(s).", len(txns))
@@ -83,7 +89,7 @@ func (o *TridentOrchestrator) checkLongRunningTransactions(txnMaxAge time.Durati
 
 		expirationTime := startTime.Add(txnMaxAge)
 
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"started": startTime,
 			"expires": expirationTime,
 			"op":      txn.Op,
@@ -91,19 +97,20 @@ func (o *TridentOrchestrator) checkLongRunningTransactions(txnMaxAge time.Durati
 		}).Debug("Transaction monitor checking transaction.")
 
 		if expirationTime.Before(time.Now()) {
-			o.reapLongRunningTransaction(txn)
+			o.reapLongRunningTransaction(ctx, txn)
 		}
 	}
 }
 
 // reapLongRunningTransaction cleans up any transactions that have expired so that any
 // storage resources associated with them are not orphaned indefinitely.
-func (o *TridentOrchestrator) reapLongRunningTransaction(txn *storage.VolumeTransaction) {
+func (o *TridentOrchestrator) reapLongRunningTransaction(ctx context.Context, txn *storage.VolumeTransaction) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	log.WithFields(log.Fields{
+	logc.WithFields(log.Fields{
 		"op":   txn.Op,
 		"name": txn.Name(),
 	}).Debug("Transaction monitor reaping transaction.")
@@ -115,7 +122,7 @@ func (o *TridentOrchestrator) reapLongRunningTransaction(txn *storage.VolumeTran
 		// If the volume was somehow fully created and the transaction was left around, don't delete the volume!
 		if _, found := o.volumes[txn.VolumeCreatingConfig.Name]; found {
 
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"volume": txn.VolumeCreatingConfig.Name,
 			}).Warning("Volume for expired transaction is known to Trident and will not be reaped.")
 			break
@@ -125,7 +132,7 @@ func (o *TridentOrchestrator) reapLongRunningTransaction(txn *storage.VolumeTran
 		backend, found := o.backends[txn.VolumeCreatingConfig.BackendUUID]
 		if !found {
 
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"backendUUID": txn.VolumeCreatingConfig.BackendUUID,
 				"volume":      txn.VolumeCreatingConfig.Name,
 			}).Error("Backend for expired transaction not found. Volume may have to be removed manually.")
@@ -136,7 +143,7 @@ func (o *TridentOrchestrator) reapLongRunningTransaction(txn *storage.VolumeTran
 		// know anything about the volume.
 		if err := backend.RemoveVolume(&txn.VolumeCreatingConfig.VolumeConfig); err != nil {
 
-			log.WithFields(log.Fields{
+			logc.WithFields(log.Fields{
 				"backendUUID": txn.VolumeCreatingConfig.BackendUUID,
 				"volume":      txn.VolumeCreatingConfig.Name,
 				"error":       err,
@@ -149,8 +156,8 @@ func (o *TridentOrchestrator) reapLongRunningTransaction(txn *storage.VolumeTran
 	}
 
 	// Delete the transaction record in all cases.
-	if err := o.DeleteVolumeTransaction(txn); err != nil {
-		log.WithFields(log.Fields{
+	if err := o.DeleteVolumeTransaction(ctx, txn); err != nil {
+		logc.WithFields(log.Fields{
 			"op":   txn.Op,
 			"name": txn.Name(),
 		}).Error("Could not delete expired transaction. Transaction record may have to be removed manually.")

@@ -2,8 +2,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // SnapshotDeleteAsyncRequest is a structure to represent a snapshot-delete-async Request ZAPI object

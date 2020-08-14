@@ -21,7 +21,6 @@ var (
 )
 
 const (
-
 	TridentAppLabelKey = "app"
 
 	TridentLegacyLabelKey   = TridentAppLabelKey

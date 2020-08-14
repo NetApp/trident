@@ -5,6 +5,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -185,14 +186,14 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 			// Suppress the potentially huge GET /volumes body unless asked for explicitly
 			if d.config.DebugTraceFlags["api_get_volumes"] {
 				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
 			} else if d.config.DebugTraceFlags["api"] {
-				utils.LogHTTPResponse(response, []byte("<suppressed>"))
+				utils.LogHTTPResponse(context.TODO(), response, []byte("<suppressed>"))
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
 				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
 			}
 		}
 	}
@@ -267,7 +268,7 @@ func (d Client) AboutInfo() (*AboutResponse, error) {
 		responseBody, err = ioutil.ReadAll(response.Body)
 		if d.config.DebugTraceFlags["api"] {
 			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-			utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+			utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
 		}
 	}
 

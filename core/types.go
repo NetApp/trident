@@ -1,8 +1,10 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package core
 
 import (
+	"context"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
@@ -13,59 +15,59 @@ import (
 type Orchestrator interface {
 	Bootstrap() error
 	AddFrontend(f frontend.Plugin)
-	GetFrontend(name string) (frontend.Plugin, error)
-	GetVersion() (string, error)
+	GetFrontend(ctx context.Context, name string) (frontend.Plugin, error)
+	GetVersion(ctx context.Context) (string, error)
 
-	AddBackend(configJSON string) (*storage.BackendExternal, error)
-	DeleteBackend(backend string) error
-	DeleteBackendByBackendUUID(backendName, backendUUID string) error
-	GetBackend(backend string) (*storage.BackendExternal, error)
-	GetBackendByBackendUUID(backendUUID string) (*storage.BackendExternal, error)
-	ListBackends() ([]*storage.BackendExternal, error)
-	UpdateBackend(backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
-	UpdateBackendByBackendUUID(backendName, configJSON, backendUUID string) (storageBackendExternal *storage.BackendExternal, err error)
-	UpdateBackendState(backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
+	AddBackend(ctx context.Context, configJSON string) (*storage.BackendExternal, error)
+	DeleteBackend(ctx context.Context, backend string) error
+	DeleteBackendByBackendUUID(ctx context.Context, backendName, backendUUID string) error
+	GetBackend(ctx context.Context, backend string) (*storage.BackendExternal, error)
+	GetBackendByBackendUUID(ctx context.Context, backendUUID string) (*storage.BackendExternal, error)
+	ListBackends(ctx context.Context) ([]*storage.BackendExternal, error)
+	UpdateBackend(ctx context.Context, backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendState(ctx context.Context, backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
 
-	AddVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	AttachVolume(volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
-	CloneVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	DetachVolume(volumeName, mountpoint string) error
-	DeleteVolume(volume string) error
-	GetVolume(volume string) (*storage.VolumeExternal, error)
-	GetVolumeExternal(volumeName string, backendName string) (*storage.VolumeExternal, error)
-	GetVolumeType(vol *storage.VolumeExternal) (config.VolumeType, error)
-	LegacyImportVolume(volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
-	ImportVolume(volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	ListVolumes() ([]*storage.VolumeExternal, error)
-	ListVolumesByPlugin(pluginName string) ([]*storage.VolumeExternal, error)
-	PublishVolume(volumeName string, publishInfo *utils.VolumePublishInfo) error
-	ResizeVolume(volumeName, newSize string) error
-	SetVolumeState(volumeName string, state storage.VolumeState) error
+	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
+	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
+	DeleteVolume(ctx context.Context, volume string) error
+	GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error)
+	GetVolumeExternal(ctx context.Context, volumeName string, backendName string) (*storage.VolumeExternal, error)
+	GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error)
+	LegacyImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
+	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
+	ListVolumesByPlugin(ctx context.Context, pluginName string) ([]*storage.VolumeExternal, error)
+	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
+	ResizeVolume(ctx context.Context, volumeName, newSize string) error
+	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
 
-	CreateSnapshot(snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
-	GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotExternal, error)
-	ListSnapshots() ([]*storage.SnapshotExternal, error)
-	ListSnapshotsByName(snapshotName string) ([]*storage.SnapshotExternal, error)
-	ListSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error)
-	ReadSnapshotsForVolume(volumeName string) ([]*storage.SnapshotExternal, error)
-	DeleteSnapshot(volumeName, snapshotName string) error
+	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
+	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
+	ListSnapshots(ctx context.Context) ([]*storage.SnapshotExternal, error)
+	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)
+	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
+	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
+	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
 
-	GetDriverTypeForVolume(vol *storage.VolumeExternal) (string, error)
-	ReloadVolumes() error
+	GetDriverTypeForVolume(ctx context.Context, vol *storage.VolumeExternal) (string, error)
+	ReloadVolumes(ctx context.Context) error
 
-	AddStorageClass(scConfig *storageclass.Config) (*storageclass.External, error)
-	DeleteStorageClass(scName string) error
-	GetStorageClass(scName string) (*storageclass.External, error)
-	ListStorageClasses() ([]*storageclass.External, error)
+	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
+	DeleteStorageClass(ctx context.Context, scName string) error
+	GetStorageClass(ctx context.Context, scName string) (*storageclass.External, error)
+	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)
 
-	AddNode(node *utils.Node) error
-	GetNode(nName string) (*utils.Node, error)
-	ListNodes() ([]*utils.Node, error)
-	DeleteNode(nName string) error
+	AddNode(ctx context.Context, node *utils.Node) error
+	GetNode(ctx context.Context, nName string) (*utils.Node, error)
+	ListNodes(ctx context.Context) ([]*utils.Node, error)
+	DeleteNode(ctx context.Context, nName string) error
 
-	AddVolumeTransaction(volTxn *storage.VolumeTransaction) error
-	GetVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
-	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
+	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
+	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
+	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 }
 
 type VolumeCallback func(*storage.VolumeExternal, string) error

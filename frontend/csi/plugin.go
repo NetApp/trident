@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,6 +14,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -99,7 +99,7 @@ func NewNodePlugin(
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-                csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
+		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
 	})
 
 	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
@@ -164,7 +164,7 @@ func NewAllInOnePlugin(
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
 		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
 		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-                csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
+		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
 	})
 	port := "34571"
 	for _, envVar := range os.Environ() {
@@ -195,23 +195,27 @@ func NewAllInOnePlugin(
 
 func (p *Plugin) Activate() error {
 	go func() {
-		log.Info("Activating CSI frontend.")
+		ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceInternal)
+		logc := utils.GetLogWithRequestContext(ctx)
+		logc.Info("Activating CSI frontend.")
 		p.grpc = NewNonBlockingGRPCServer()
 		p.grpc.Start(p.endpoint, p, p, p)
 		if p.role == CSINode || p.role == CSIAllInOne {
-			go p.nodeRegisterWithController()
+			go p.nodeRegisterWithController(ctx)
 		}
 	}()
 	return nil
 }
 
 func (p *Plugin) Deactivate() error {
-	log.Info("Deactivating CSI frontend.")
+	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceInternal)
+	logc := utils.GetLogWithRequestContext(ctx)
+	logc.Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
 	if p.role == CSINode || p.role == CSIAllInOne {
-		err := p.nodeDeregisterWithController()
+		err := p.nodeDeregisterWithController(ctx)
 		if err != nil {
-			log.Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
+			logc.Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
 			return err
 		}
 	}

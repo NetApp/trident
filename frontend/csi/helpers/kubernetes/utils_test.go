@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -23,7 +23,7 @@ func TestSupportsFeature(t *testing.T) {
 
 	for _, tc := range supportedTests {
 		plugin := Plugin{kubeVersion: &tc.versionInfo}
-		supported := plugin.SupportsFeature(csi.ExpandCSIVolumes)
+		supported := plugin.SupportsFeature(ctx(), csi.ExpandCSIVolumes)
 		if tc.expected {
 			print("bluh\n")
 			assert.True(t, supported, "Expected true")

@@ -1,8 +1,9 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -13,7 +14,7 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	k8sclient "github.com/netapp/trident/k8s_client"
 	"github.com/netapp/trident/storage"
-	k8sutilversion "github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils"
 )
 
 // canPVMatchWithPVC verifies that the volumeSize and volumeAccessModes
@@ -23,15 +24,14 @@ import (
 // Note that this allows volumes to exceed the attributes requested by the
 // claim; this is acceptable, though undesirable, and helps us avoid racing
 // with the binder.
-func canPVMatchWithPVC(pv *v1.PersistentVolume,
-	claim *v1.PersistentVolumeClaim,
-) bool {
+func canPVMatchWithPVC(ctx context.Context, pv *v1.PersistentVolume, claim *v1.PersistentVolumeClaim) bool {
+	logc := utils.GetLogWithRequestContext(ctx)
 	claimSize, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	claimAccessModes := claim.Spec.AccessModes
 	volumeAccessModes := pv.Spec.AccessModes
 	volumeSize, ok := pv.Spec.Capacity[v1.ResourceStorage]
 	if !ok {
-		log.WithFields(log.Fields{
+		logc.WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": claim.Name,
 		}).Error("Kubernetes frontend detected a corrupted PV with no size!")
@@ -118,21 +118,22 @@ func CreateNFSVolumeSource(vol *storage.VolumeExternal) *v1.NFSVolumeSource {
 }
 
 func findOrCreateCHAPSecret(
-	k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal,
+	ctx context.Context, k8sClient k8sclient.Interface, kubeVersion *utils.Version, vol *storage.VolumeExternal,
 ) (string, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	volConfig := vol.Config
 	secretName := vol.GetCHAPSecretName()
-	log.Debugf("Using secret: %v", secretName)
+	logc.Debugf("Using secret: %v", secretName)
 
-	if !kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.7.0")) {
+	if !kubeVersion.AtLeast(utils.MustParseSemantic("v1.7.0")) {
 		versionErr := fmt.Errorf("cannot use CHAP with Kubernetes version < v1.7.0")
 		return secretName, versionErr
 	}
 
 	secretExists, _ := k8sClient.CheckSecretExists(secretName)
 	if !secretExists {
-		log.Infof("Creating secret: %v", secretName)
+		logc.Infof("Creating secret: %v", secretName)
 		_, creationErr := k8sClient.CreateCHAPSecret(
 			secretName,
 			volConfig.AccessInfo.IscsiUsername,
@@ -141,32 +142,33 @@ func findOrCreateCHAPSecret(
 		if creationErr != nil {
 			return secretName, creationErr
 		} else {
-			log.Infof("Created secret: %v", secretName)
+			logc.Infof("Created secret: %v", secretName)
 		}
 	}
 	return secretName, nil
 }
 
 func CreateISCSIPersistentVolumeSource(
-	k8sClient k8sclient.Interface, kubeVersion *k8sutilversion.Version, vol *storage.VolumeExternal,
+	ctx context.Context, k8sClient k8sclient.Interface, kubeVersion *utils.Version, vol *storage.VolumeExternal,
 ) (*v1.ISCSIPersistentVolumeSource, error) {
 
+	logc := utils.GetLogWithRequestContext(ctx)
 	namespace := ""
 	switch {
-	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.9.0")):
+	case kubeVersion.AtLeast(utils.MustParseSemantic("v1.9.0")):
 		namespace = k8sClient.Namespace()
 	}
 	volConfig := vol.Config
 	var portals []string
 	switch {
-	case kubeVersion.AtLeast(k8sutilversion.MustParseSemantic("v1.6.0")):
+	case kubeVersion.AtLeast(utils.MustParseSemantic("v1.6.0")):
 		portals = volConfig.AccessInfo.IscsiPortals
 	}
 	if volConfig.AccessInfo.IscsiTargetSecret != "" {
 		// CHAP logic
-		secretName, chapError := findOrCreateCHAPSecret(k8sClient, kubeVersion, vol)
+		secretName, chapError := findOrCreateCHAPSecret(ctx, k8sClient, kubeVersion, vol)
 		if chapError != nil {
-			log.Errorf("Could not create secret: %v error: %v", secretName, chapError.Error())
+			logc.Errorf("Could not create secret: %v error: %v", secretName, chapError.Error())
 			return nil, chapError
 		}
 

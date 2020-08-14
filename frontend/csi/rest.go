@@ -1,9 +1,10 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package csi
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -54,7 +55,9 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 // InvokeAPI makes a REST call to the CSI Controller REST endpoint. The body must be a marshaled JSON byte array (
 // or nil). The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to
 // identify the desired server resource; it should start with '/'.
-func (c *RestClient) InvokeAPI(requestBody []byte, method string, resourcePath string) (*http.Response, []byte, error) {
+func (c *RestClient) InvokeAPI(
+	ctx context.Context, requestBody []byte, method string, resourcePath string,
+) (*http.Response, []byte, error) {
 
 	// Build URL
 	url := c.url + resourcePath
@@ -66,14 +69,15 @@ func (c *RestClient) InvokeAPI(requestBody []byte, method string, resourcePath s
 
 	// Create the request
 	if requestBody == nil {
-		request, err = http.NewRequest(method, url, nil)
+		request, err = http.NewRequestWithContext(ctx, method, url, nil)
 	} else {
-		request, err = http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(utils.ContextKeyRequestID)))
 	request.Header.Set("Content-Type", "application/json")
 
 	// Log the request
@@ -101,18 +105,18 @@ func (c *RestClient) InvokeAPI(requestBody []byte, method string, resourcePath s
 			return nil, nil, fmt.Errorf("error formating response body; %v", err)
 		}
 	}
-	utils.LogHTTPResponse(response, prettyResponseBuffer.Bytes())
+	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
 
 	return response, responseBody, err
 }
 
 // CreateNode registers the node with the CSI controller server
-func (c *RestClient) CreateNode(node *utils.Node) error {
+func (c *RestClient) CreateNode(ctx context.Context, node *utils.Node) error {
 	nodeData, err := json.Marshal(node)
 	if err != nil {
 		return fmt.Errorf("error parsing create node request; %v", err)
 	}
-	resp, _, err := c.InvokeAPI(nodeData, "PUT", config.NodeURL+"/"+node.Name)
+	resp, _, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name)
 	if err != nil {
 		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -129,8 +133,8 @@ type ListNodesResponse struct {
 }
 
 // GetNodes returns a list of nodes registered with the controller
-func (c *RestClient) GetNodes() ([]string, error) {
-	resp, respBody, err := c.InvokeAPI(nil, "GET", config.NodeURL)
+func (c *RestClient) GetNodes(ctx context.Context) ([]string, error) {
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.NodeURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -149,8 +153,8 @@ func (c *RestClient) GetNodes() ([]string, error) {
 }
 
 // DeleteNode deregisters the node with the CSI controller server
-func (c *RestClient) DeleteNode(name string) error {
-	resp, _, err := c.InvokeAPI(nil, "DELETE", config.NodeURL+"/"+name)
+func (c *RestClient) DeleteNode(ctx context.Context, name string) error {
+	resp, _, err := c.InvokeAPI(ctx, nil, "DELETE", config.NodeURL+"/"+name)
 	if err != nil {
 		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}

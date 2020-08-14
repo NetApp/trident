@@ -1,3 +1,4 @@
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 package crd
 
 import (
@@ -9,7 +10,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	testutils2 "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,6 +26,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
+	testutils2 "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils"
 )
 
@@ -268,7 +269,7 @@ func TestCrdController(t *testing.T) {
 		BackendUUID: uuid.New().String(),
 	}
 	orchestrator.AddFakeBackend(fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(fakeBackend.Name)
+	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}
@@ -344,7 +345,7 @@ func TestCrdController(t *testing.T) {
 	if !crdByName.HasTridentFinalizers() {
 		t.Fatalf("expected CRD to have finalizers")
 	}
-	crdController.removeFinalizers(crdByName, true)
+	crdController.removeFinalizers(ctx(), crdByName, true)
 	// to validate the finalizer removal, we must retrieve it again, after the update
 	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	if getErr != nil {
@@ -428,7 +429,7 @@ func TestCrdController2(t *testing.T) {
 		BackendUUID: uuid.New().String(),
 	}
 	orchestrator.AddFakeBackend(fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(fakeBackend.Name)
+	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}

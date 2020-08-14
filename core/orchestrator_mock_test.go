@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2020 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -38,7 +38,7 @@ func TestAddMockBackend(t *testing.T) {
 
 	// add an NFS FILE backend
 	m.AddMockONTAPNFSBackend("test-nfs", "192.0.0.2")
-	nfsBackend, err := m.GetBackend("test-nfs")
+	nfsBackend, err := m.GetBackend(ctx(), "test-nfs")
 	if err != nil {
 		t.Fatalf("cannot find backend '%v' error: %v", "test-nfs", err.Error())
 	}
@@ -52,7 +52,7 @@ func TestAddMockBackend(t *testing.T) {
 
 	// add an SAN iSCSI BLOCK backend
 	m.AddMockONTAPSANBackend("test-iscsi", "192.0.0.2")
-	iscsiBackend, err := m.GetBackend("test-iscsi")
+	iscsiBackend, err := m.GetBackend(ctx(), "test-iscsi")
 	if err != nil {
 		t.Fatalf("cannot find backend '%v' error: %v", "test-iscsi", err.Error())
 	}
@@ -68,12 +68,12 @@ func TestAddMockBackend(t *testing.T) {
 func addAndRetrieveVolume(
 	t *testing.T, vc *storage.VolumeConfig, m *MockOrchestrator,
 ) {
-	_, err := m.AddStorageClass(&sc.Config{Name: vc.StorageClass})
+	_, err := m.AddStorageClass(ctx(), &sc.Config{Name: vc.StorageClass})
 	if err != nil {
 		t.Fatalf("Unable to add storage class %s (%s): %v", vc.Name,
 			vc.Protocol, err)
 	}
-	vol, err := m.AddVolume(vc)
+	vol, err := m.AddVolume(ctx(), vc)
 	if err != nil {
 		t.Fatalf("Unable to add volume %s (%s): %s", vc.Name, vc.Protocol, err)
 	}
@@ -90,7 +90,7 @@ func addAndRetrieveVolume(
 	if !reflect.DeepEqual(found.ConstructExternal(), vol) {
 		t.Error("Found incorrect volume in map.")
 	}
-	foundVolume, _ := m.GetVolume(vc.Name)
+	foundVolume, _ := m.GetVolume(ctx(), vc.Name)
 	if foundVolume == nil {
 		t.Errorf("Failed to find volume %s (%s)", vc.Name, vc.Protocol)
 	} else if !reflect.DeepEqual(foundVolume, vol) {

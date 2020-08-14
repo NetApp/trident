@@ -60,12 +60,12 @@ var (
 	useIPv6            bool
 	silenceAutosupport bool
 
-	logFormat          string
-	tridentImage       string
-	imageRegistry      string
-	kubeletDir         string
-	autosupportImage   string
-	autosupportProxy   string
+	logFormat        string
+	tridentImage     string
+	imageRegistry    string
+	kubeletDir       string
+	autosupportImage string
+	autosupportProxy string
 
 	imagePullSecrets []string
 
@@ -455,17 +455,17 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	}
 
 	identifiedSpecValues := netappv1.TridentProvisionerSpecValues{
-		Debug:            strconv.FormatBool(debug),
-		LogFormat:        logFormat,
-		TridentImage:     tridentImage,
-		ImageRegistry:    imageRegistry,
-		IPv6:             strconv.FormatBool(useIPv6),
+		Debug:              strconv.FormatBool(debug),
+		LogFormat:          logFormat,
+		TridentImage:       tridentImage,
+		ImageRegistry:      imageRegistry,
+		IPv6:               strconv.FormatBool(useIPv6),
 		SilenceAutosupport: strconv.FormatBool(silenceAutosupport),
-		AutosupportImage: autosupportImage,
-		AutosupportProxy: autosupportProxy,
-		KubeletDir:       kubeletDir,
-		K8sTimeout:       strconv.Itoa(int(k8sTimeout.Seconds())),
-		ImagePullSecrets: imagePullSecrets,
+		AutosupportImage:   autosupportImage,
+		AutosupportProxy:   autosupportProxy,
+		KubeletDir:         kubeletDir,
+		K8sTimeout:         strconv.Itoa(int(k8sTimeout.Seconds())),
+		ImagePullSecrets:   imagePullSecrets,
 	}
 
 	log.WithFields(log.Fields{
