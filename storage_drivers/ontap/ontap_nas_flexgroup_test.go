@@ -36,10 +36,10 @@ func newTestOntapNASFGDriver(showSensitive *bool) *NASFlexGroupStorageDriver {
 
 	// ClientConfig holds the configuration data for Client objects
 	clientConfig := api.ClientConfig{
-		ManagementLIF: config.ManagementLIF,
-		SVM:					"SVM1",
-		Username:               "client_username",
-		Password:               "client_password",
+		ManagementLIF:           config.ManagementLIF,
+		SVM:                     "SVM1",
+		Username:                "client_username",
+		Password:                "client_password",
 		DriverContext:           tridentconfig.DriverContext("driverContext"),
 		ContextBasedZapiRecords: 100,
 		DebugTraceFlags:         nil,
@@ -59,32 +59,32 @@ func newTestOntapNASFGDriver(showSensitive *bool) *NASFlexGroupStorageDriver {
 
 func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
 
-	var ontapNasFgDrivers = []NASFlexGroupStorageDriver {
+	var ontapNasFgDrivers = []NASFlexGroupStorageDriver{
 		*newTestOntapNASFGDriver(&[]bool{true}[0]),
 		*newTestOntapNASFGDriver(&[]bool{false}[0]),
 		*newTestOntapNASFGDriver(nil),
 	}
 
 	sensitiveIncludeList := map[string]string{
-		"username"						: "ontap-nas-fg-user",
-		"password"						: "password1!",
-		"client username"				: "client_username",
-		"client password"				: "client_password",
+		"username":        "ontap-nas-fg-user",
+		"password":        "password1!",
+		"client username": "client_username",
+		"client password": "client_password",
 	}
 
 	sensitiveExcludeList := map[string]string{
-		"some information"				: "<REDACTED>",
+		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
-		"<REDACTED>"					: "<REDACTED>",
-		"username"						: "Username:<REDACTED>",
-		"password"						: "Password:<REDACTED>",
-		"api"							: "API:<REDACTED>",
-		"chap username"					: "ChapUsername:<REDACTED>",
-		"chap initiator secret"			: "ChapInitiatorSecret:<REDACTED>",
-		"chap target username"			: "ChapTargetUsername:<REDACTED>",
-		"chap target initiator secret"	: "ChapTargetInitiatorSecret:<REDACTED>",
+		"<REDACTED>":                   "<REDACTED>",
+		"username":                     "Username:<REDACTED>",
+		"password":                     "Password:<REDACTED>",
+		"api":                          "API:<REDACTED>",
+		"chap username":                "ChapUsername:<REDACTED>",
+		"chap initiator secret":        "ChapInitiatorSecret:<REDACTED>",
+		"chap target username":         "ChapTargetUsername:<REDACTED>",
+		"chap target initiator secret": "ChapTargetInitiatorSecret:<REDACTED>",
 	}
 
 	for _, ontapNasFgDriver := range ontapNasFgDrivers {

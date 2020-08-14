@@ -186,10 +186,10 @@ func newTestOntapSanEcoDriver(showSensitive *bool) *SANEconomyStorageDriver {
 
 	// ClientConfig holds the configuration data for Client objects
 	clientConfig := api.ClientConfig{
-		ManagementLIF: config.ManagementLIF,
-		SVM:					"SVM1",
-		Username:               "client_username",
-		Password:               "client_password",
+		ManagementLIF:           config.ManagementLIF,
+		SVM:                     "SVM1",
+		Username:                "client_username",
+		Password:                "client_password",
 		DriverContext:           tridentconfig.DriverContext("driverContext"),
 		ContextBasedZapiRecords: 100,
 		DebugTraceFlags:         nil,
@@ -209,32 +209,32 @@ func newTestOntapSanEcoDriver(showSensitive *bool) *SANEconomyStorageDriver {
 
 func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 
-	var sanEcoDrivers = []SANEconomyStorageDriver {
+	var sanEcoDrivers = []SANEconomyStorageDriver{
 		*newTestOntapSanEcoDriver(&[]bool{true}[0]),
 		*newTestOntapSanEcoDriver(&[]bool{false}[0]),
 		*newTestOntapSanEcoDriver(nil),
 	}
 
 	sensitiveIncludeList := map[string]string{
-		"username"						: "ontap-san-economy-user",
-		"password"						: "password1!",
-		"client username"				: "client_username",
-		"client password"				: "client_password",
+		"username":        "ontap-san-economy-user",
+		"password":        "password1!",
+		"client username": "client_username",
+		"client password": "client_password",
 	}
 
 	sensitiveExcludeList := map[string]string{
-		"some information"				: "<REDACTED>",
+		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
-		"<REDACTED>"					: "<REDACTED>",
-		"username"						: "Username:<REDACTED>",
-		"password"						: "Password:<REDACTED>",
-		"api"							: "API:<REDACTED>",
-		"chap username"					: "ChapUsername:<REDACTED>",
-		"chap initiator secret"			: "ChapInitiatorSecret:<REDACTED>",
-		"chap target username"			: "ChapTargetUsername:<REDACTED>",
-		"chap target initiator secret"	: "ChapTargetInitiatorSecret:<REDACTED>",
+		"<REDACTED>":                   "<REDACTED>",
+		"username":                     "Username:<REDACTED>",
+		"password":                     "Password:<REDACTED>",
+		"api":                          "API:<REDACTED>",
+		"chap username":                "ChapUsername:<REDACTED>",
+		"chap initiator secret":        "ChapInitiatorSecret:<REDACTED>",
+		"chap target username":         "ChapTargetUsername:<REDACTED>",
+		"chap target initiator secret": "ChapTargetInitiatorSecret:<REDACTED>",
 	}
 
 	for _, sanEcoDriver := range sanEcoDrivers {

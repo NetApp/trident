@@ -70,6 +70,19 @@ type StorageDriver struct {
 	// different driver instances with the same config won't actually share
 	// state.
 	DestroyedSnapshots map[string]bool
+
+	Secret string
+}
+
+// Implement Stringer interface for the FakeStorageDriver driver
+func (d StorageDriver) String() string {
+	sensitive := d.Config.DebugTraceFlags["sensitive"]
+	return drivers.ToString(sensitive, &d, []string{"Secret"}, nil)
+}
+
+// Implement GoStringer interface for the FakeStorageDriver driver
+func (d StorageDriver) GoString() string {
+	return d.String()
 }
 
 func NewFakeStorageBackend(configJSON string) (sb *storage.Backend, err error) {
@@ -101,9 +114,34 @@ func NewFakeStorageDriver(config drivers.FakeStorageDriverConfig) *StorageDriver
 		DestroyedVolumes:   make(map[string]bool),
 		Snapshots:          make(map[string]map[string]*storage.Snapshot),
 		DestroyedSnapshots: make(map[string]bool),
+		Secret:             "secret",
 	}
 	_ = driver.populateConfigurationDefaults(&config)
 	_ = driver.initializeStoragePools()
+	return driver
+}
+
+func NewFakeStorageDriverWithDebugTraceFlags(debugTraceFlags map[string]bool) *StorageDriver {
+	driver := &StorageDriver{
+		initialized: true,
+		Config: drivers.FakeStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				Version:           drivers.ConfigVersion,
+				StorageDriverName: drivers.FakeStorageDriverName,
+				DebugTraceFlags:   debugTraceFlags,
+			},
+			Protocol:     tridentconfig.File,
+			InstanceName: "fake-instance",
+			Username:     "fake-user",
+			Password:     "fake-password",
+		},
+		Volumes:            make(map[string]fake.Volume),
+		DestroyedVolumes:   make(map[string]bool),
+		Snapshots:          make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots: make(map[string]bool),
+		Secret:             "fake-secret",
+	}
+
 	return driver
 }
 
@@ -169,8 +207,8 @@ func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(name string, protocol tri
 				StoragePrefix:     &storagePrefix,
 				DebugTraceFlags:   debugTraceFlags,
 			},
-			Protocol:              protocol,
-			InstanceName:          name,
+			Protocol:     protocol,
+			InstanceName: name,
 		},
 	)
 	if err != nil {

@@ -18,8 +18,8 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-var	ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
-		"ChapTargetUsername", "ChapTargetInitiatorSecret"}
+var ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
+	"ChapTargetUsername", "ChapTargetInitiatorSecret"}
 
 func GetOntapConfigRedactList() []string {
 	clone := ontapConfigRedactList

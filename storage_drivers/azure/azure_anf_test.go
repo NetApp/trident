@@ -15,9 +15,9 @@ import (
 
 const (
 	SubscriptionID = "1-subid-23456789876454321"
-	TenantID = "1-tenantid-23456789876454321"
-	ClientID = "1-clientid-23456789876454321"
-	ClientSecret = "client-secret-23456789876454321"
+	TenantID       = "1-tenantid-23456789876454321"
+	ClientID       = "1-clientid-23456789876454321"
+	ClientSecret   = "client-secret-23456789876454321"
 )
 
 func newTestANFDriver(showSensitive *bool) *NFSStorageDriver {

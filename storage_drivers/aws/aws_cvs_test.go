@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	APIKey = "-----BEGIN PRIVATE KEY-----AAAABBBCCCCDDDDDDEEEEEEFFFF----END PRIVATE KEY-----"
-	APIURL = "https://randomapi.aws.com"
+	APIKey    = "-----BEGIN PRIVATE KEY-----AAAABBBCCCCDDDDDDEEEEEEFFFF----END PRIVATE KEY-----"
+	APIURL    = "https://randomapi.aws.com"
 	SecretKey = "-----BEGIN PRIVATE KEY-----GGGGHHHHIIIIIJJJJJJKKKKLLL----END PRIVATE KEY-----"
-	ProxyURL = "https://randomproxy.aws.com"
+	ProxyURL  = "https://randomproxy.aws.com"
 )
 
 func newTestAWSDriver(showSensitive *bool) *NFSStorageDriver {
@@ -57,7 +57,7 @@ func newTestAWSDriver(showSensitive *bool) *NFSStorageDriver {
 	AWSDriver.sdeVersion = utils.MustParseSemantic("20.6.2")
 	AWSDriver.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
 	AWSDriver.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{12}$`)
-	AWSDriver.apiRegions = []string{"us-central-9","us-central-10"}
+	AWSDriver.apiRegions = []string{"us-central-9", "us-central-10"}
 
 	return AWSDriver
 }

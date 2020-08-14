@@ -190,4 +190,3 @@ func (o *SnapshotRestoreVolumeAsyncResponseResult) SetResultStatus(newValue stri
 	o.ResultStatusPtr = &newValue
 	return o
 }
-

@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	ProjectNumber = "123456"
-	PrivateKeyId = "12345678987654321"
-	PrivateKey = "-----BEGIN PRIVATE KEY-----AAAABBBCCCCDDDDDDEEEEEEFFFF----END PRIVATE KEY-----"
-	ClientEmail = "random@random.com"
-	ClientID = "98765432123456789"
+	ProjectNumber     = "123456"
+	PrivateKeyId      = "12345678987654321"
+	PrivateKey        = "-----BEGIN PRIVATE KEY-----AAAABBBCCCCDDDDDDEEEEEEFFFF----END PRIVATE KEY-----"
+	ClientEmail       = "random@random.com"
+	ClientID          = "98765432123456789"
 	ClientX509CertURL = "https://random.com/x509Cert"
 )
 
@@ -71,7 +71,7 @@ func newTestGCPDriver(showSensitive *bool) *NFSStorageDriver {
 	GCPDriver.sdeVersion = utils.MustParseSemantic("20.6.2")
 	GCPDriver.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
 	GCPDriver.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{12}$`)
-	GCPDriver.apiRegions = []string{"us-central-9","us-central-10"}
+	GCPDriver.apiRegions = []string{"us-central-9", "us-central-10"}
 
 	return GCPDriver
 }

@@ -12,12 +12,12 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"regexp"
 	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"regexp"
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
@@ -37,26 +37,26 @@ const (
 	HousekeepingStartupDelaySecs = 10
 
 	// Constants for internal pool attributes
-	Size             = "size"
-	Region           = "region"
-	Zone             = "zone"
-	Media            = "media"
-	SpaceAllocation  = "spaceAllocation"
-	SnapshotDir      = "snapshotDir"
-	SpaceReserve     = "spaceReserve"
-	SnapshotPolicy   = "snapshotPolicy"
-	SnapshotReserve  = "snapshotReserve"
-	UnixPermissions  = "unixPermissions"
-	ExportPolicy     = "exportPolicy"
-	SecurityStyle    = "securityStyle"
-	BackendType      = "backendType"
-	Snapshots        = "snapshots"
-	Clones           = "clones"
-	Encryption       = "encryption"
-	FileSystemType   = "fileSystemType"
-	ProvisioningType = "provisioningType"
-	SplitOnClone     = "splitOnClone"
-	TieringPolicy    = "tieringPolicy"
+	Size                  = "size"
+	Region                = "region"
+	Zone                  = "zone"
+	Media                 = "media"
+	SpaceAllocation       = "spaceAllocation"
+	SnapshotDir           = "snapshotDir"
+	SpaceReserve          = "spaceReserve"
+	SnapshotPolicy        = "snapshotPolicy"
+	SnapshotReserve       = "snapshotReserve"
+	UnixPermissions       = "unixPermissions"
+	ExportPolicy          = "exportPolicy"
+	SecurityStyle         = "securityStyle"
+	BackendType           = "backendType"
+	Snapshots             = "snapshots"
+	Clones                = "clones"
+	Encryption            = "encryption"
+	FileSystemType        = "fileSystemType"
+	ProvisioningType      = "provisioningType"
+	SplitOnClone          = "splitOnClone"
+	TieringPolicy         = "tieringPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
 )
 
@@ -264,6 +264,7 @@ func (t Telemetry) String() (out string) {
 	out = output.String()
 	return
 }
+
 // String makes Telemetry satisfy the GoStringer interface.
 func (t Telemetry) GoString() string {
 	return t.String()
@@ -567,7 +568,7 @@ func GetISCSITargetInfo(
 	return
 }
 
-var	ontapDriverRedactList = [...]string{"API"}
+var ontapDriverRedactList = [...]string{"API"}
 
 func GetOntapDriverRedactList() []string {
 	clone := ontapDriverRedactList
@@ -1193,10 +1194,10 @@ func ValidateSANDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 		}
 	}
 
-        err := ValidateStoragePrefix(*config.StoragePrefix)
-        if err != nil {
-                return err
-        }
+	err := ValidateStoragePrefix(*config.StoragePrefix)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -1237,25 +1238,25 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 		}
 	}
 
-        err = ValidateStoragePrefix(*config.StoragePrefix)
-        if err != nil {
-                return err
-        }
+	err = ValidateStoragePrefix(*config.StoragePrefix)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func ValidateStoragePrefix(storagePrefix string) error {
 
-        // Ensure storage prefix is compatible with ONTAP
-        matched, err := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, storagePrefix)
-        if err != nil {
-                err = fmt.Errorf("could not check storage prefix; %v", err)
-        } else if !matched {
-                err = fmt.Errorf("storage prefix may only contain letters/digits/underscore and must begin with letter/underscore")
-        }
+	// Ensure storage prefix is compatible with ONTAP
+	matched, err := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, storagePrefix)
+	if err != nil {
+		err = fmt.Errorf("could not check storage prefix; %v", err)
+	} else if !matched {
+		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore and must begin with letter/underscore")
+	}
 
-        return err
+	return err
 }
 
 func ValidateDataLIF(dataLIF string, dataLIFs []string) ([]string, error) {

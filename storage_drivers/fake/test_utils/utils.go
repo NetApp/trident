@@ -42,9 +42,9 @@ func getFakeVirtualPool(size, region, zone string, labels map[string]string) dri
 	}
 
 	return drivers.FakeStorageDriverPool{
-		Labels: labels,
-		Region: region,
-		Zone:   zone,
+		Labels:                          labels,
+		Region:                          region,
+		Zone:                            zone,
 		FakeStorageDriverConfigDefaults: fakeConfigDefaults,
 	}
 }
