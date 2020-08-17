@@ -144,8 +144,8 @@ func (p *Plugin) NodeUnpublishVolume(
 	isDir, err := utils.IsLikelyDir(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound,
-				"target path (%s) not found; could not check if the target path is a directory.", targetPath)
+			logc.WithFields(fields).Infof("target path (%s) not found; volume is not mounted.", targetPath)
+			return &csi.NodeUnpublishVolumeResponse{}, nil
 		} else {
 			return nil, status.Errorf(codes.Internal,
 				"could not check if the target path (%s) is a directory; %s", targetPath, err)
