@@ -29,7 +29,6 @@ Choosing between the three NFS drivers has some ramifications to the features wh
 Note that, in the tables below, not all of the capabilities are exposed through Trident. Some must be applied by the storage administrator after provisioning if that functionality is desired. The superscript footnotes distinguish the functionality per feature and driver.
 
 .. table:: ONTAP NAS driver capabilities
-   :align: left
 
    +-----------------------------+---------------+-----------------+-------------------------+--------------+---------------+--------+---------------+
    | ONTAP NFS Drivers           | Snapshots     |      Clones     | Dynamic Export Policies | Multi-attach | QoS           | Resize |  Replication  |
@@ -45,8 +44,6 @@ Note that, in the tables below, not all of the capabilities are exposed through 
 Trident offers 2 SAN drivers for ONTAP, whose capabilities are shown below.
 
 .. table:: ONTAP SAN driver capabilities
-   :align: left
-
 
    +-----------------------------+-----------+--------+--------------+--------------------+---------------+---------------+---------------+
    | ONTAP SAN Driver            | Snapshots | Clones | Multi-attach | Bidirectional CHAP | QoS           | Resize        | Replication   |
@@ -80,7 +77,6 @@ Element (HCI/SolidFire)
 The ``solidfire-san`` driver used with the HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element OS storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element OS Web UI.
 
 .. table:: SolidFire SAN driver capabilities
-   :align: left
 
    +-------------------+----------------+--------+--------------+------+------+--------+---------------+
    | SolidFire Driver  | Snapshots      | Clones | Multi-attach | CHAP | QoS  | Resize | Replication   |
@@ -97,7 +93,6 @@ SANtricity (E-Series)
 To configure an E-Series backend for Trident, set the ``storageDriverName`` parameter to ``eseries-iscsi`` driver in the backend configuration. Once the E-Series backend has been configured, any requests to provision volume from the E-Series will be handled by Trident based on the host groups. Trident uses host groups to gain access to the LUNs that it provisions and by default, it looks for a host group named ``trident`` unless a different host group name is specified using the ``accessGroupName`` parameter in the backend configuration. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, E-Series storage features like volume resize and volume replication are not supported through the ``eseries-iscsi`` driver. These operations should be done manually through SANtricity System Manager.
 
 .. table:: E-Series driver capabilities
-   :align: left
 
    +-------------------+---------------+---------------+--------------+------+--------+---------------+
    | E-Series Driver   | Snapshots     | Clones        | Multi-attach | QoS  | Resize | Replication   |
@@ -120,7 +115,6 @@ More information about this driver and how to configure it can be found in Tride
 :ref:`Azure NetApp Files backend documentation <Azure NetApp Files>`.
 
 .. table:: Azure NetApp Files driver capabilities
-   :align: left
 
    +---------------------------+--------------+--------+--------------+------+-------------------+---------------+
    | Azure NetApp Files Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
@@ -137,7 +131,6 @@ Cloud Volumes Service with AWS Backend Driver
 Trident uses the ``aws-cvs`` driver to link with the Cloud Volumes Service on the AWS backend. To configure the AWS backend on Trident, you are required specify ``apiRegion``, ``apiURL``, ``apiKey``, and the ``secretKey`` in the backend file. These values can be found in the CVS web portal in Account settings/API access. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for AWS Documentation <Cloud Volumes Service for AWS>`. Currently, 100G is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
 
 .. table:: Cloud Volume Service driver capabilities
-   :align: left
 
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
    | CVS for AWS Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
@@ -156,7 +149,6 @@ Cloud Volumes Service with GCP Backend Driver
 Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on the GCP backend. To configure the GCP backend on Trident, you are required specify ``projectNumber``, ``apiRegion``, and ``apiKey`` in the backend file. The project number may be found in the GCP web portal, while the API key must be taken from the service account private key file that you created while setting up API access for Cloud Volumes on GCP. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`. Currently, 1 TiB is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
 
 .. table:: Cloud Volume Service driver capabilities
-   :align: left
 
    +--------------------+--------------+--------+--------------+------+-------------------+---------------+
    | CVS for GCP Driver | Snapshots    | Clones | Multi-attach | QoS  | Expand            | Replication   |
@@ -255,12 +247,11 @@ When requesting storage via a PVC, one of the mandatory fields is the access mod
 Trident will attempt to match the storage protocol used with the access method specified according to the following matrix. This is independent of the underlying storage platform.
 
 .. table:: Protocols used by access modes
-   :align: left
 
    +-------+---------------+--------------+---------------+
    |       | ReadWriteOnce | ReadOnlyMany | ReadWriteMany |
    +=======+===============+==============+===============+
-   | iSCSI | Yes           | Yes          | No            |
+   | iSCSI | Yes           | Yes          | Yes(Raw block)|
    +-------+---------------+--------------+---------------+
    | NFS   | Yes           | Yes          | Yes           |
    +-------+---------------+--------------+---------------+
@@ -386,7 +377,6 @@ Configuring the Ansible variables according to the deployment method is importan
 The variables in the below table will result in the Ansible playbook creating a PV and PVC for the logging service using the details provided.  This method is significantly less flexible than using the component installation playbook after OpenShift installation, however, if you have existing volumes available, it is an option.
 
 .. table:: Logging variables when deploying at OpenShift install time
-   :align: left
 
    +---------------------------------------------+------------------------------------------------+
    | Variable                                    | Details                                        |
@@ -413,7 +403,6 @@ The variables in the below table will result in the Ansible playbook creating a 
 If your OpenShift cluster is already running, and therefore Trident has been deployed and configured, the installer can use dynamic provisioning to create the volumes.  The following variables will need to be configured.
 
 .. table:: Logging variables when deploying after OpenShift install
-   :align: left
 
    +-----------------------------------------------------+--------------------------------------------------------------------------------------+
    | Variable                                            | Details                                                                              |
@@ -455,7 +444,6 @@ Like with the logging service, and OpenShift as a whole, Ansible is used to depl
    The tables below only contain the variables which are relevant for storage configuration as it relates to the metrics service.  There are many other options found in the documentation which should be reviewed, configured, and used according to your deployment.
 
 .. table:: Metrics variables when deploying at OpenShift install time
-   :align: left
 
    +---------------------------------------------+-----------------------------------------------------+
    | Variable                                    | Details                                             |
@@ -479,7 +467,6 @@ Like with the logging service, and OpenShift as a whole, Ansible is used to depl
 If your OpenShift cluster is already running, and therefore Trident has been deployed and configured, the installer can use dynamic provisioning to create the volumes.  The following variables will need to be configured.
 
 .. table:: Metrics variables when deploying after OpenShift install
-   :align: left
 
    +-------------------------------------------------------+-------------------------------------------------------------+
    | Variable                                              | Details                                                     |
