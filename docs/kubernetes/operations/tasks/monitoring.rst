@@ -155,6 +155,16 @@ installation by passing the ``--silence-autosupport`` flag. In addition, this
 information can be sent to NetApp support on-demand via
 ``tridentctl send autosupport``.
 
+This information is collected and sent via a ``trident-autosupport`` container
+that is installed alongside Trident. You can obtain the container image at
+`netapp/trident-autosupport <https://hub.docker.com/r/netapp/trident-autosupport>`_
+Trident Autosupport does not gather or transmit Personally Identifiable Information
+(PII) or Personal Information.
+It comes with a `EULA <https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf>`_
+that is not applicable to the `Trident <https://hub.docker.com/r/netapp/trident>`_
+container image itself. You can learn more about NetApp's commitment to data
+security and trust `here <https://www.netapp.com/us/company/trust-center/index.aspx,>`_.
+
 An example payload sent by Trident looks like this:
 
 .. code-block:: json
@@ -181,6 +191,9 @@ An example payload sent by Trident looks like this:
       ]
     }
 
-This information is collected and sent via a ``trident-autosupport`` container
-that is installed alongside Trident. You can obtain the container image at
-`netapp/trident-autosupport <https://hub.docker.com/r/netapp/trident-autosupport>`_
+The Autosupport messages are sent to NetApp's Autosupport endpoint. If you are
+using a private registry to store container images the ``--image-registry`` flag
+can be used. Proxy URLs can also be configured by generating the installation
+YAML files. This can be done by using ``tridentctl install --generate-custom-yaml``
+to create the YAML files and adding the ``--proxy-url`` argument for the
+``trident-autosupport`` container in ``trident-deployment.yaml``.
