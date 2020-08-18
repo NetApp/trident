@@ -34,8 +34,8 @@ const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
 const VolumeCreateTimeout = 10 * time.Second
 const DefaultTimeout = 120 * time.Second
-const apiServer = "https://cloudvolumesgcp-api.netapp.com"
-const apiAudience = apiServer
+const defaultAPIURL = "https://cloudvolumesgcp-api.netapp.com"
+const defaultAPIAudienceURL = defaultAPIURL
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
@@ -54,6 +54,12 @@ type ClientConfig struct {
 
 	// Options
 	DebugTraceFlags map[string]bool
+
+	// CVS api url
+	APIURL string
+
+	// CVS api audience url
+	APIAudienceURL string
 }
 
 type Client struct {
@@ -65,6 +71,12 @@ type Client struct {
 
 // NewDriver is a factory method for creating a new instance.
 func NewDriver(config ClientConfig) *Client {
+	if config.APIURL == "" {
+		config.APIURL = defaultAPIURL
+	}
+	if config.APIAudienceURL == "" {
+		config.APIAudienceURL = defaultAPIAudienceURL
+	}
 
 	d := &Client{
 		config: &config,
@@ -75,7 +87,8 @@ func NewDriver(config ClientConfig) *Client {
 }
 
 func (d *Client) makeURL(resourcePath string) string {
-	return fmt.Sprintf("%s/v2/projects/%s/locations/%s%s", apiServer, d.config.ProjectNumber, d.config.APIRegion, resourcePath)
+	return fmt.Sprintf("%s/v2/projects/%s/locations/%s%s", d.config.APIURL, d.config.ProjectNumber,
+		d.config.APIRegion, resourcePath)
 }
 
 func (d *Client) initTokenSource() error {
@@ -85,7 +98,7 @@ func (d *Client) initTokenSource() error {
 		return err
 	}
 
-	tokenSource, err := google.JWTAccessTokenSourceFromJSON(keyBytes, apiAudience)
+	tokenSource, err := google.JWTAccessTokenSourceFromJSON(keyBytes, d.config.APIAudienceURL)
 	if err != nil {
 		return err
 	}

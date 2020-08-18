@@ -430,6 +430,8 @@ func (d *NFSStorageDriver) initializeGCPAPIClient(
 		ProjectNumber:   config.ProjectNumber,
 		APIKey:          config.APIKey,
 		APIRegion:       config.APIRegion,
+		APIURL:          config.APIURL,
+		APIAudienceURL:  config.APIAudienceURL,
 		ProxyURL:        config.ProxyURL,
 		DebugTraceFlags: config.DebugTraceFlags,
 	})

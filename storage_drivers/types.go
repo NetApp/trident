@@ -278,6 +278,8 @@ type GCPNFSStorageDriverConfig struct {
 	ProjectNumber       string        `json:"projectNumber"`
 	APIKey              GCPPrivateKey `json:"apiKey"`
 	APIRegion           string        `json:"apiRegion"`
+	APIURL              string        `json:"apiURL"`
+	APIAudienceURL      string        `json:"apiAudienceURL"`
 	ProxyURL            string        `json:"proxyURL"`
 	NfsMountOptions     string        `json:"nfsMountOptions"`
 	VolumeCreateTimeout string        `json:"volumeCreateTimeout"`
