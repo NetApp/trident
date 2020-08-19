@@ -268,7 +268,7 @@ func TestCrdController(t *testing.T) {
 		Name:        "fake1",
 		BackendUUID: uuid.New().String(),
 	}
-	orchestrator.AddFakeBackend(fakeBackend)
+	orchestrator.AddFakeBackend(ctx(), fakeBackend)
 	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
@@ -279,14 +279,14 @@ func TestCrdController(t *testing.T) {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver.Initialize("testing", configJSON, commonConfig); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.Online = true
 	fakeBackend.State = storage.BackendState("online")
 
 	// create a k8s CRD Object for use by the client-go bindings and crd persistence layer
-	backendCRD, err := tridentv1.NewTridentBackend(fakeBackend.ConstructPersistent())
+	backendCRD, err := tridentv1.NewTridentBackend(ctx(), fakeBackend.ConstructPersistent(ctx()))
 	if err != nil {
 		t.Fatal("Unable to construct TridentBackend CRD: ", err)
 	}
@@ -428,7 +428,7 @@ func TestCrdController2(t *testing.T) {
 		Name:        "fake1",
 		BackendUUID: uuid.New().String(),
 	}
-	orchestrator.AddFakeBackend(fakeBackend)
+	orchestrator.AddFakeBackend(ctx(), fakeBackend)
 	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
@@ -439,14 +439,14 @@ func TestCrdController2(t *testing.T) {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver.Initialize("testing", configJSON, commonConfig); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.Online = true
 	fakeBackend.State = storage.BackendState("online")
 
 	// create a k8s CRD Object for use by the client-go bindings and crd persistence layer
-	backendCRD, err := tridentv1.NewTridentBackend(fakeBackend.ConstructPersistent())
+	backendCRD, err := tridentv1.NewTridentBackend(ctx(), fakeBackend.ConstructPersistent(ctx()))
 	if err != nil {
 		t.Fatal("Unable to construct TridentBackend CRD: ", err)
 	}
@@ -478,7 +478,7 @@ func TestCrdController2(t *testing.T) {
 	}
 
 	// Convert to Kubernetes Object using NewTridentVolume
-	volumeCRD, err := tridentv1.NewTridentVolume(vol.ConstructExternal())
+	volumeCRD, err := tridentv1.NewTridentVolume(ctx(), vol.ConstructExternal())
 	if err != nil {
 		t.Fatal("Unable to construct TridentVolume CRD: ", err)
 	}

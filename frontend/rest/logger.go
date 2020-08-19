@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/logger"
 )
 
 type loggingResponseWriter struct {
@@ -36,7 +36,7 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
 			requestId = reqID
 		}
-		ctx := utils.GenerateRequestContext(r.Context(), requestId, utils.ContextSourceREST)
+		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST)
 		r = r.WithContext(ctx)
 		logRestCallInfo("REST API call received.", r, start, routeName, "")
 
@@ -53,7 +53,7 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 }
 
 func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string) {
-	logc := utils.GetLogWithRequestContext(r.Context())
+
 	logFields := log.Fields{
 		"method":   r.Method,
 		"uri":      r.RequestURI,
@@ -63,5 +63,5 @@ func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusC
 	if statusCode != "" {
 		logFields["status_code"] = statusCode
 	}
-	logc.WithFields(logFields).Debug(msg)
+	Logc(r.Context()).WithFields(logFields).Debug(msg)
 }

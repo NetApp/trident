@@ -3,14 +3,16 @@
 package api
 
 import (
+	"context"
 	"testing"
 
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
 func TestGetError(t *testing.T) {
-	e := GetError(nil, nil)
+	e := GetError(context.Background(), nil, nil)
 
 	assert.Equal(t, "failed", e.(ZapiError).Status(), "Strings not equal")
 

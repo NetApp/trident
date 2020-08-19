@@ -19,6 +19,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -27,13 +28,12 @@ func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
 ) (*csi.CreateVolumeResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "CreateVolume", "Type": "CSI_Controller", "name": req.Name}
-	logc.WithFields(fields).Debug(">>>> CreateVolume")
-	defer logc.WithFields(fields).Debug("<<<< CreateVolume")
+	Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateVolume")
 
 	if _, ok := p.opCache[req.Name]; ok {
-		logc.WithFields(fields).Debug("Create already in progress, returning DeadlineExceeded.")
+		Logc(ctx).WithFields(fields).Debug("Create already in progress, returning DeadlineExceeded.")
 		return nil, status.Error(codes.DeadlineExceeded, "create already in progress")
 	} else {
 		p.opCache[req.Name] = true
@@ -80,7 +80,7 @@ func (p *Plugin) CreateVolume(
 	// AccessMode: It can take values - Read Write Once (RWO), Read Only Many (ROX) or Read Write Many (RWX)
 
 	// Check for matching volume capabilities
-	logc.Debugf("Volume capabilities (%d): %v", len(req.GetVolumeCapabilities()), req.GetVolumeCapabilities())
+	Logc(ctx).Debugf("Volume capabilities (%d): %v", len(req.GetVolumeCapabilities()), req.GetVolumeCapabilities())
 	var accessModes []tridentconfig.AccessMode
 	var csiAccessModes []csi.VolumeCapability_AccessMode_Mode
 	var isRawBlockAccessType, isFileMountAccessType bool
@@ -115,7 +115,7 @@ func (p *Plugin) CreateVolume(
 		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
 	} else if isRawBlockAccessType {
 		if !p.helper.SupportsFeature(ctx, CSIBlockVolumes) {
-			logc.WithFields(fields).Error("Raw block volumes are not supported for this container orchestrator.")
+			Logc(ctx).WithFields(fields).Error("Raw block volumes are not supported for this container orchestrator.")
 			return nil, status.Error(codes.FailedPrecondition, "raw block volumes are not supported for this container orchestrator")
 		}
 		volumeMode = tridentconfig.RawBlock
@@ -177,7 +177,7 @@ func (p *Plugin) CreateVolume(
 				return nil, status.Error(codes.InvalidArgument, "content source snapshot ID missing in request")
 			}
 			if cloneSourceVolume, cloneSourceSnapshot, err := storage.ParseSnapshotID(snapshotID); err != nil {
-				logc.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"volumeName": req.Name,
 					"snapshotID": contentSource.Snapshot.SnapshotId,
 				}).Error("Cannot create clone, invalid snapshot ID.")
@@ -218,10 +218,9 @@ func (p *Plugin) DeleteVolume(
 	ctx context.Context, req *csi.DeleteVolumeRequest,
 ) (*csi.DeleteVolumeResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "DeleteVolume", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> DeleteVolume")
-	defer logc.WithFields(fields).Debug("<<<< DeleteVolume")
+	Logc(ctx).WithFields(fields).Debug(">>>> DeleteVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteVolume")
 
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
@@ -229,7 +228,7 @@ func (p *Plugin) DeleteVolume(
 
 	if err := p.orchestrator.DeleteVolume(ctx, req.VolumeId); err != nil {
 
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeName": req.VolumeId,
 			"error":      err,
 		}).Debugf("Could not delete volume.")
@@ -258,10 +257,9 @@ func (p *Plugin) ControllerPublishVolume(
 	ctx context.Context, req *csi.ControllerPublishVolumeRequest,
 ) (*csi.ControllerPublishVolumeResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ControllerPublishVolume", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ControllerPublishVolume")
-	defer logc.WithFields(fields).Debug("<<<< ControllerPublishVolume")
+	Logc(ctx).WithFields(fields).Debug(">>>> ControllerPublishVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerPublishVolume")
 
 	volumeID := req.GetVolumeId()
 	if volumeID == "" {
@@ -288,7 +286,7 @@ func (p *Plugin) ControllerPublishVolume(
 	// Get node attributes from the node ID
 	nodeInfo, err := p.orchestrator.GetNode(ctx, nodeID)
 	if err != nil {
-		logc.WithField("node", nodeID).Error("Node info not found.")
+		Logc(ctx).WithField("node", nodeID).Error("Node info not found.")
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
@@ -346,10 +344,9 @@ func (p *Plugin) ControllerUnpublishVolume(
 	ctx context.Context, req *csi.ControllerUnpublishVolumeRequest,
 ) (*csi.ControllerUnpublishVolumeResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ControllerUnpublishVolume", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
-	defer logc.WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
+	Logc(ctx).WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
 
 	volumeID := req.GetVolumeId()
 	if volumeID == "" {
@@ -415,10 +412,9 @@ func (p *Plugin) ListVolumes(
 	ctx context.Context, req *csi.ListVolumesRequest,
 ) (*csi.ListVolumesResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ListVolumes", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ListVolumes")
-	defer logc.WithFields(fields).Debug("<<<< ListVolumes")
+	Logc(ctx).WithFields(fields).Debug(">>>> ListVolumes")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ListVolumes")
 
 	// Verify volume named same as starting-token exists or not.
 	if req.StartingToken != "" {
@@ -484,10 +480,9 @@ func (p *Plugin) ControllerGetCapabilities(
 	ctx context.Context, req *csi.ControllerGetCapabilitiesRequest,
 ) (*csi.ControllerGetCapabilitiesResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ControllerGetCapabilities", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ControllerGetCapabilities")
-	defer logc.WithFields(fields).Debug("<<<< ControllerGetCapabilities")
+	Logc(ctx).WithFields(fields).Debug(">>>> ControllerGetCapabilities")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerGetCapabilities")
 
 	return &csi.ControllerGetCapabilitiesResponse{Capabilities: p.csCap}, nil
 }
@@ -496,10 +491,9 @@ func (p *Plugin) CreateSnapshot(
 	ctx context.Context, req *csi.CreateSnapshotRequest,
 ) (*csi.CreateSnapshotResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "CreateSnapshot", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> CreateSnapshot")
-	defer logc.WithFields(fields).Debug("<<<< CreateSnapshot")
+	Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 
 	volumeName := req.GetSourceVolumeId()
 	if volumeName == "" {
@@ -531,12 +525,12 @@ func (p *Plugin) CreateSnapshot(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	} else if len(existingSnapshots) > 0 {
 		for _, s := range existingSnapshots {
-			logc.Errorf("Found existing snapshot %s in another volume %s.", s.Config.Name, s.Config.VolumeName)
+			Logc(ctx).Errorf("Found existing snapshot %s in another volume %s.", s.Config.Name, s.Config.VolumeName)
 		}
 		// We already handled the same name / same volume case, so getting here has to mean a different volume
 		return nil, status.Error(codes.AlreadyExists, "snapshot exists on a different volume")
 	} else {
-		logc.Debugf("Found no existing snapshot %s in other volumes.", snapshotName)
+		Logc(ctx).Debugf("Found no existing snapshot %s in other volumes.", snapshotName)
 	}
 
 	// Convert snapshot creation options into a Trident snapshot config
@@ -566,10 +560,9 @@ func (p *Plugin) DeleteSnapshot(
 	ctx context.Context, req *csi.DeleteSnapshotRequest,
 ) (*csi.DeleteSnapshotResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "DeleteSnapshot", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> DeleteSnapshot")
-	defer logc.WithFields(fields).Debug("<<<< DeleteSnapshot")
+	Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 
 	snapshotID := req.GetSnapshotId()
 	if snapshotID == "" {
@@ -579,14 +572,14 @@ func (p *Plugin) DeleteSnapshot(
 	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
 	if err != nil {
 		// An invalid ID is treated an a non-existent snapshot, so we log the error and return success
-		logc.Error(err)
+		Logc(ctx).Error(err)
 		return &csi.DeleteSnapshotResponse{}, nil
 	}
 
 	// Delete the snapshot
 	if err = p.orchestrator.DeleteSnapshot(ctx, volumeName, snapshotName); err != nil {
 
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeName":   volumeName,
 			"snapshotName": snapshotName,
 			"error":        err,
@@ -605,10 +598,9 @@ func (p *Plugin) ListSnapshots(
 	ctx context.Context, req *csi.ListSnapshotsRequest,
 ) (*csi.ListSnapshotsResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ListSnapshots", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ListSnapshots")
-	defer logc.WithFields(fields).Debug("<<<< ListSnapshots")
+	Logc(ctx).WithFields(fields).Debug(">>>> ListSnapshots")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ListSnapshots")
 
 	entries := make([]*csi.ListSnapshotsResponse_Entry, 0)
 
@@ -637,7 +629,7 @@ func (p *Plugin) ListSnapshots(
 
 	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
 	if err != nil {
-		logc.WithFields(fields).Warnf("Snapshot %s not found.", snapshotID)
+		Logc(ctx).WithFields(fields).Warnf("Snapshot %s not found.", snapshotID)
 		// CSI spec calls for empty return if snapshot is not found
 		return &csi.ListSnapshotsResponse{}, nil
 	}
@@ -646,7 +638,7 @@ func (p *Plugin) ListSnapshots(
 	snapshot, err := p.orchestrator.GetSnapshot(ctx, volumeName, snapshotName)
 	if err != nil {
 
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeName":   volumeName,
 			"snapshotName": snapshotName,
 			"error":        err,
@@ -708,10 +700,9 @@ func (p *Plugin) ControllerExpandVolume(
 	ctx context.Context, req *csi.ControllerExpandVolumeRequest,
 ) (*csi.ControllerExpandVolumeResponse, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	fields := log.Fields{"Method": "ControllerExpandVolume", "Type": "CSI_Controller"}
-	logc.WithFields(fields).Debug(">>>> ControllerExpandVolume")
-	defer logc.WithFields(fields).Debug("<<<< ControllerExpandVolume")
+	Logc(ctx).WithFields(fields).Debug(">>>> ControllerExpandVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerExpandVolume")
 
 	volumeId := req.GetVolumeId()
 	if volumeId == "" {
@@ -729,7 +720,7 @@ func (p *Plugin) ControllerExpandVolume(
 	}
 	newSize := strconv.FormatInt(minSize, 10)
 
-	logc.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volumeId":         volumeId,
 		"capRequiredBytes": newSize,
 		"capLimitBytes":    minSize,
@@ -737,7 +728,7 @@ func (p *Plugin) ControllerExpandVolume(
 
 	volume, err := p.orchestrator.GetVolume(ctx, volumeId)
 	if err != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeId":          volumeId,
 			"requestedCapacity": newSize,
 		}).Error("Could not find volume.")
@@ -745,7 +736,7 @@ func (p *Plugin) ControllerExpandVolume(
 	}
 
 	if err = p.orchestrator.ResizeVolume(ctx, volume.Config.Name, newSize); err != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeId":          volumeId,
 			"requestedCapacity": newSize,
 			"error":             err,
@@ -756,7 +747,7 @@ func (p *Plugin) ControllerExpandVolume(
 	// Get the volume again to get the real volume size
 	resizedVolume, err := p.orchestrator.GetVolume(ctx, volumeId)
 	if err != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeId": volumeId,
 		}).Error("Could not find resized volume.")
 		return nil, p.getCSIErrorForOrchestratorError(err)
@@ -765,7 +756,7 @@ func (p *Plugin) ControllerExpandVolume(
 	nodeExpansionRequired := resizedVolume.Config.Protocol == tridentconfig.Block
 	responseSize, err := strconv.ParseInt(resizedVolume.Config.Size, 10, 64)
 	if err != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volumeId":          volumeId,
 			"requestedCapacity": resizedVolume.Config.Size,
 			"error":             err,
@@ -784,10 +775,9 @@ func (p *Plugin) ControllerExpandVolume(
 func (p *Plugin) getCSIVolumeFromTridentVolume(
 	ctx context.Context, volume *storage.VolumeExternal) (*csi.Volume, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
 	if err != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volume": volume.Config.InternalName,
 			"size":   volume.Config.Size,
 		}).Error("Could not parse volume size.")
@@ -811,10 +801,9 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(
 func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 	ctx context.Context, snapshot *storage.SnapshotExternal) (*csi.Snapshot, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	createdSeconds, err := time.Parse(time.RFC3339, snapshot.Created)
 	if err != nil {
-		logc.WithField("time", snapshot.Created).Error("Could not parse RFC3339 snapshot time.")
+		Logc(ctx).WithField("time", snapshot.Created).Error("Could not parse RFC3339 snapshot time.")
 		createdSeconds = time.Now()
 	}
 

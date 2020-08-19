@@ -3,6 +3,7 @@
 package persistentstore
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -42,6 +44,7 @@ type PassthroughClient struct {
 // and has no support for storage classes.
 func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 	client := &PassthroughClient{
 		liveBackends: make(map[string]*storage.Backend),
 		bootBackends: make([]*storage.BackendPersistent, 0),
@@ -51,7 +54,7 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 		},
 	}
 
-	err := client.initialize(configPath)
+	err := client.initialize(ctx, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +63,7 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 }
 
 // initialize loads one or more driver config files from the specified config path
-func (c *PassthroughClient) initialize(configPath string) error {
+func (c *PassthroughClient) initialize(ctx context.Context, configPath string) error {
 
 	if configPath == "" {
 		return errors.New("passthrough store initialization failed, config path must be specified")
@@ -79,7 +82,7 @@ func (c *PassthroughClient) initialize(configPath string) error {
 	if configPathInfo.Mode().IsDir() {
 
 		// If config path is a directory, load all config files.
-		log.WithField("configPath", configPath).Debug("Passthrough store loading config directory.")
+		Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config directory.")
 
 		files, err := ioutil.ReadDir(configPath)
 		if err != nil {
@@ -91,7 +94,7 @@ func (c *PassthroughClient) initialize(configPath string) error {
 			if !file.Mode().IsRegular() {
 				continue
 			}
-			err = c.loadBackend(filepath.Join(configPath, file.Name()))
+			err = c.loadBackend(ctx, filepath.Join(configPath, file.Name()))
 			if err != nil {
 				return err
 			}
@@ -101,7 +104,7 @@ func (c *PassthroughClient) initialize(configPath string) error {
 	} else if configPathInfo.Mode().IsRegular() {
 
 		// If config path is a single file, just load it.
-		return c.loadBackend(configPath)
+		return c.loadBackend(ctx, configPath)
 
 	} else {
 		return errors.New("passthrough store initialization failed, invalid config path")
@@ -109,21 +112,21 @@ func (c *PassthroughClient) initialize(configPath string) error {
 }
 
 // loadBackend loads a single driver config file from the specified path
-func (c *PassthroughClient) loadBackend(configPath string) error {
+func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) error {
 
-	log.WithField("configPath", configPath).Debug("Passthrough store loading config file.")
+	Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config file.")
 
 	// Read config file
 	fileContents, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"configPath": configPath,
 			"error":      err,
 		}).Fatal("Passthrough store could not read configuration file.")
 	}
 
 	// Convert config file to persistent backend JSON
-	backendJSON, err := c.unmarshalConfig(fileContents)
+	backendJSON, err := c.unmarshalConfig(ctx, fileContents)
 	if err != nil {
 		return err
 	}
@@ -140,7 +143,7 @@ func (c *PassthroughClient) loadBackend(configPath string) error {
 
 // unmarshalConfig accepts a driver JSON/YAML config and converts it to a persistent backend
 // JSON config as needed by the bootstrapping process.
-func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error) {
+func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []byte) (string, error) {
 
 	// Convert config (JSON or YAML) to JSON
 	configJSONBytes, err := yaml.YAMLToJSON(fileContents)
@@ -149,7 +152,7 @@ func (c *PassthroughClient) unmarshalConfig(fileContents []byte) (string, error)
 	}
 	configJSON := string(configJSONBytes)
 
-	commonConfig, err := drivers.ValidateCommonSettings(configJSON)
+	commonConfig, err := drivers.ValidateCommonSettings(ctx, configJSON)
 	if err != nil {
 		return "", fmt.Errorf("input failed validation: %v", err)
 	}
@@ -206,56 +209,57 @@ func (c *PassthroughClient) GetConfig() *ClientConfig {
 	return &ClientConfig{}
 }
 
-func (c *PassthroughClient) GetVersion() (*config.PersistentStateVersion, error) {
+func (c *PassthroughClient) GetVersion(context.Context) (*config.PersistentStateVersion, error) {
 	return c.version, nil
 }
 
-func (c *PassthroughClient) SetVersion(version *config.PersistentStateVersion) error {
+func (c *PassthroughClient) SetVersion(context.Context, *config.PersistentStateVersion) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddBackend(backend *storage.Backend) error {
+func (c *PassthroughClient) AddBackend(ctx context.Context, backend *storage.Backend) error {
 
 	// The passthrough store persists backends for the purpose of contacting
 	// the storage controllers.  If the store ever needs to write backends
 	// back to a file system for subsequent bootstrapping, that logic will live
 	// here and in UpdateBackend().
-	log.WithField("backend", backend.Name).Debugf("Passthrough store adding backend.")
+
+	Logc(ctx).WithField("backend", backend.Name).Debugf("Passthrough store adding backend.")
 	c.liveBackends[backend.Name] = backend
 	return nil
 }
 
-func (c *PassthroughClient) AddBackendPersistent(backend *storage.BackendPersistent) error {
+func (c *PassthroughClient) AddBackendPersistent(context.Context, *storage.BackendPersistent) error {
 	return NewPersistentStoreError(NotSupported, "")
 }
 
-func (c *PassthroughClient) GetBackend(backendName string) (*storage.BackendPersistent, error) {
+func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error) {
 
 	existingBackend, ok := c.liveBackends[backendName]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, backendName)
 	}
 
-	return existingBackend.ConstructPersistent(), nil
+	return existingBackend.ConstructPersistent(ctx), nil
 }
 
-func (c *PassthroughClient) UpdateBackend(backend *storage.Backend) error {
+func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend *storage.Backend) error {
 
 	if _, ok := c.liveBackends[backend.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
 	}
 
-	log.Debugf("Passthrough store updating backend: %s", backend.Name)
+	Logc(ctx).Debugf("Passthrough store updating backend: %s", backend.Name)
 	c.liveBackends[backend.Name] = backend
 	return nil
 }
 
 // UpdateBackendPersistent updates a backend's persistent state
-func (c *PassthroughClient) UpdateBackendPersistent(update *storage.BackendPersistent) error {
+func (c *PassthroughClient) UpdateBackendPersistent(context.Context, *storage.BackendPersistent) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteBackend(backend *storage.Backend) error {
+func (c *PassthroughClient) DeleteBackend(_ context.Context, backend *storage.Backend) error {
 
 	if _, ok := c.liveBackends[backend.Name]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
@@ -268,7 +272,8 @@ func (c *PassthroughClient) DeleteBackend(backend *storage.Backend) error {
 // ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
 // reflect the new backend name
 func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(
-	origBackend, newBackend *storage.Backend) error {
+	context.Context, *storage.Backend, *storage.Backend,
+) error {
 	//TODO
 	return NewPersistentStoreError(NotSupported, "")
 }
@@ -276,7 +281,7 @@ func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(
 // GetBackends is called by the orchestrator during bootstrapping, so the
 // passthrough store returns the persistent backend objects it read from config
 // files.
-func (c *PassthroughClient) GetBackends() ([]*storage.BackendPersistent, error) {
+func (c *PassthroughClient) GetBackends(context.Context) ([]*storage.BackendPersistent, error) {
 
 	backendList := make([]*storage.BackendPersistent, 0)
 
@@ -287,40 +292,40 @@ func (c *PassthroughClient) GetBackends() ([]*storage.BackendPersistent, error) 
 	return backendList, nil
 }
 
-func (c *PassthroughClient) DeleteBackends() error {
+func (c *PassthroughClient) DeleteBackends(context.Context) error {
 	c.liveBackends = make(map[string]*storage.Backend)
 	return nil
 }
 
-func (c *PassthroughClient) AddVolume(vol *storage.Volume) error {
+func (c *PassthroughClient) AddVolume(context.Context, *storage.Volume) error {
 	return nil
 }
 
 // AddVolumePersistent saves a volume's persistent state to the persistent store
-func (c *PassthroughClient) AddVolumePersistent(volume *storage.VolumeExternal) error {
+func (c *PassthroughClient) AddVolumePersistent(context.Context, *storage.VolumeExternal) error {
 	return nil
 }
 
 // GetVolume is not called by the orchestrator, which caches all volumes in
 // memory after bootstrapping.  So this method need not do anything.
-func (c *PassthroughClient) GetVolume(volName string) (*storage.VolumeExternal, error) {
+func (c *PassthroughClient) GetVolume(_ context.Context, volName string) (*storage.VolumeExternal, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, volName)
 }
 
-func (c *PassthroughClient) UpdateVolume(vol *storage.Volume) error {
+func (c *PassthroughClient) UpdateVolume(context.Context, *storage.Volume) error {
 	return nil
 }
 
 // UpdateVolumePersistent updates a volume's persistent state
-func (c *PassthroughClient) UpdateVolumePersistent(volume *storage.VolumeExternal) error {
+func (c *PassthroughClient) UpdateVolumePersistent(context.Context, *storage.VolumeExternal) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteVolume(vol *storage.Volume) error {
+func (c *PassthroughClient) DeleteVolume(context.Context, *storage.Volume) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) error {
+func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(context.Context, *storage.Volume) error {
 	return nil
 }
 
@@ -329,7 +334,7 @@ func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(vol *storage.Volume) erro
 // backends may be managed by the orchestrator, the passthrough layer should remain
 // as responsive as possible even if a backend is unavailable or returns an error
 // during volume discovery.
-func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
+func (c *PassthroughClient) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error) {
 
 	volumeChannel := make(chan *storage.VolumeExternalWrapper)
 
@@ -338,7 +343,7 @@ func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 
 	// Get volumes from each backend in a goroutine
 	for _, backend := range c.liveBackends {
-		go c.getVolumesFromBackend(backend, volumeChannel, &waitGroup)
+		go c.getVolumesFromBackend(ctx, backend, volumeChannel, &waitGroup)
 	}
 
 	// Close the channel when all other goroutines are done
@@ -351,7 +356,7 @@ func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 	volumes := make([]*storage.VolumeExternal, 0)
 	for wrapper := range volumeChannel {
 		if wrapper.Error != nil {
-			log.Error(wrapper.Error)
+			Logc(ctx).Error(wrapper.Error)
 		} else {
 			volumes = append(volumes, wrapper.Volume)
 		}
@@ -364,7 +369,7 @@ func (c *PassthroughClient) GetVolumes() ([]*storage.VolumeExternal, error) {
 // This method is designed to run in a goroutine, so it passes its results back
 // via a channel that is shared by all such goroutines.
 func (c *PassthroughClient) getVolumesFromBackend(
-	backend *storage.Backend, volumeChannel chan *storage.VolumeExternalWrapper,
+	ctx context.Context, backend *storage.Backend, volumeChannel chan *storage.VolumeExternalWrapper,
 	waitGroup *sync.WaitGroup,
 ) {
 	defer waitGroup.Done()
@@ -372,7 +377,7 @@ func (c *PassthroughClient) getVolumesFromBackend(
 	// Create a channel that each backend can use, then copy values from
 	// there to the common channel until the backend channel is closed.
 	backendChannel := make(chan *storage.VolumeExternalWrapper)
-	go backend.Driver.GetVolumeExternalWrappers(backendChannel)
+	go backend.Driver.GetVolumeExternalWrappers(ctx, backendChannel)
 	for volume := range backendChannel {
 		if volume.Volume != nil {
 			//volume.Volume.Backend = backend.Name
@@ -382,83 +387,87 @@ func (c *PassthroughClient) getVolumesFromBackend(
 	}
 }
 
-func (c *PassthroughClient) DeleteVolumes() error {
+func (c *PassthroughClient) DeleteVolumes(context.Context) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+func (c *PassthroughClient) AddVolumeTransaction(context.Context, *storage.VolumeTransaction) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetVolumeTransactions() ([]*storage.VolumeTransaction, error) {
+func (c *PassthroughClient) GetVolumeTransactions(context.Context) ([]*storage.VolumeTransaction, error) {
 	return make([]*storage.VolumeTransaction, 0), nil
 }
 
-func (c *PassthroughClient) GetExistingVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
+func (c *PassthroughClient) GetExistingVolumeTransaction(
+	context.Context, *storage.VolumeTransaction,
+) (*storage.VolumeTransaction, error) {
 	return nil, nil
 }
 
-func (c *PassthroughClient) UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+func (c *PassthroughClient) UpdateVolumeTransaction(context.Context, *storage.VolumeTransaction) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error {
+func (c *PassthroughClient) DeleteVolumeTransaction(context.Context, *storage.VolumeTransaction) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddStorageClass(sc *sc.StorageClass) error {
+func (c *PassthroughClient) AddStorageClass(context.Context, *sc.StorageClass) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetStorageClass(scName string) (*sc.Persistent, error) {
+func (c *PassthroughClient) GetStorageClass(_ context.Context, scName string) (*sc.Persistent, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, scName)
 }
 
-func (c *PassthroughClient) GetStorageClasses() ([]*sc.Persistent, error) {
+func (c *PassthroughClient) GetStorageClasses(context.Context) ([]*sc.Persistent, error) {
 	return make([]*sc.Persistent, 0), nil
 }
 
-func (c *PassthroughClient) DeleteStorageClass(sc *sc.StorageClass) error {
+func (c *PassthroughClient) DeleteStorageClass(context.Context, *sc.StorageClass) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddOrUpdateNode(n *utils.Node) error {
+func (c *PassthroughClient) AddOrUpdateNode(context.Context, *utils.Node) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetNode(nName string) (*utils.Node, error) {
+func (c *PassthroughClient) GetNode(_ context.Context, nName string) (*utils.Node, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, nName)
 }
 
-func (c *PassthroughClient) GetNodes() ([]*utils.Node, error) {
+func (c *PassthroughClient) GetNodes(context.Context) ([]*utils.Node, error) {
 	return make([]*utils.Node, 0), nil
 }
 
-func (c *PassthroughClient) DeleteNode(n *utils.Node) error {
+func (c *PassthroughClient) DeleteNode(context.Context, *utils.Node) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddSnapshot(snapshot *storage.Snapshot) error {
+func (c *PassthroughClient) AddSnapshot(context.Context, *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
+func (c *PassthroughClient) GetSnapshot(
+	_ context.Context, _, snapshotName string,
+) (*storage.SnapshotPersistent, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, snapshotName)
 }
 
 // GetSnapshots retrieves all snapshots
-func (c *PassthroughClient) GetSnapshots() ([]*storage.SnapshotPersistent, error) {
+func (c *PassthroughClient) GetSnapshots(context.Context) ([]*storage.SnapshotPersistent, error) {
 	return make([]*storage.SnapshotPersistent, 0), nil
 }
 
-func (c *PassthroughClient) DeleteSnapshot(snapshot *storage.Snapshot) error {
+func (c *PassthroughClient) DeleteSnapshot(context.Context, *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error {
+func (c *PassthroughClient) DeleteSnapshotIgnoreNotFound(context.Context, *storage.Snapshot) error {
 	return nil
 }
 
-func (c *PassthroughClient) DeleteSnapshots() error {
+func (c *PassthroughClient) DeleteSnapshots(context.Context) error {
 	return nil
 }

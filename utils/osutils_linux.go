@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"syscall"
@@ -11,6 +12,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
+
+	. "github.com/netapp/trident/logger"
 )
 
 type statFSResult struct {
@@ -20,9 +23,12 @@ type statFSResult struct {
 
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func GetFilesystemStats(path string) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
-	log.Debug(">>>> osutils_linux.GetFilesystemStats")
-	defer log.Debug("<<<< osutils_linux.GetFilesystemStats")
+func GetFilesystemStats(
+	ctx context.Context, path string,
+) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
+
+	Logc(ctx).Debug(">>>> osutils_linux.GetFilesystemStats")
+	defer Logc(ctx).Debug("<<<< osutils_linux.GetFilesystemStats")
 
 	timedOut := false
 	var timeout time.Duration = 30 * time.Second
@@ -45,16 +51,16 @@ func GetFilesystemStats(path string) (available, capacity, usage, inodes, inodes
 	}
 
 	if result.Error != nil {
-		log.WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
+		Logc(ctx).WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, result.Error)
 	} else if timedOut {
-		log.WithField("path", path).Errorf("Failed to statfs due to timeout")
+		Logc(ctx).WithField("path", path).Errorf("Failed to statfs due to timeout")
 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: timeout", path)
 	}
 
 	buf := result.Output
 	size := int64(buf.Blocks) * buf.Bsize
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"path":   path,
 		"size":   size,
 		"bsize":  buf.Bsize,
@@ -74,11 +80,12 @@ func GetFilesystemStats(path string) (available, capacity, usage, inodes, inodes
 
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func getFilesystemSize(path string) (int64, error) {
-	log.Debug(">>>> osutils_linux.getFilesystemSize")
-	defer log.Debug("<<<< osutils_linux.getFilesystemSize")
+func getFilesystemSize(ctx context.Context, path string) (int64, error) {
 
-	_, size, _, _, _, _, err := GetFilesystemStats(path)
+	Logc(ctx).Debug(">>>> osutils_linux.getFilesystemSize")
+	defer Logc(ctx).Debug("<<<< osutils_linux.getFilesystemSize")
+
+	_, size, _, _, _, _, err := GetFilesystemStats(ctx, path)
 	if err != nil {
 		return 0, err
 	}
@@ -87,14 +94,15 @@ func getFilesystemSize(path string) (int64, error) {
 }
 
 // getISCSIDiskSize queries the current block size in bytes
-func getISCSIDiskSize(devicePath string) (int64, error) {
+func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
+
 	fields := log.Fields{"devicePath": devicePath}
-	log.WithFields(fields).Debug(">>>> osutils_linux.getISCSIDiskSize")
-	defer log.WithFields(fields).Debug("<<<< osutils_linux.getISCSIDiskSize")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils_linux.getISCSIDiskSize")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils_linux.getISCSIDiskSize")
 
 	disk, err := os.Open(devicePath)
 	if err != nil {
-		log.Error("Failed to open disk.")
+		Logc(ctx).Error("Failed to open disk.")
 		return 0, fmt.Errorf("failed to open disk %s: %s", devicePath, err)
 	}
 	defer disk.Close()
@@ -103,7 +111,7 @@ func getISCSIDiskSize(devicePath string) (int64, error) {
 	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKGETSIZE64, uintptr(unsafe.Pointer(&size)))
 	if errno != 0 {
 		err := os.NewSyscallError("ioctl", errno)
-		log.Error("BLKGETSIZE64 ioctl failed")
+		Logc(ctx).Error("BLKGETSIZE64 ioctl failed")
 		return 0, fmt.Errorf("BLKGETSIZE64 ioctl failed %s: %s", devicePath, err)
 	}
 

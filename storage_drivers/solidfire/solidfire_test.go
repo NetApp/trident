@@ -3,6 +3,7 @@
 package solidfire
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -15,6 +16,8 @@ const (
 	minimumEndpoint = "https://admin:solidfire@10.63.171.151/json-rpc/" + sfMinimumAPIVersion
 	newerEndpoint   = "https://admin:solidfire@10.63.171.151/json-rpc/9.0"
 )
+
+var ctx = context.Background
 
 func getDriver() *SANStorageDriver {
 
@@ -69,7 +72,7 @@ func getDriver() *SANStorageDriver {
 
 func TestGetExternalConfig(t *testing.T) {
 	driver := getDriver()
-	newConfig := driver.GetExternalConfig().(drivers.SolidfireStorageDriverConfig)
+	newConfig := driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)
 	if newConfig.EndPoint == driver.Config.EndPoint {
 		t.Errorf("EndPoints are equal; expected different. Got: %s", newConfig.EndPoint)
 	}
@@ -91,7 +94,7 @@ func TestGetExternalConfig(t *testing.T) {
 
 func TestUpgradeOlderEndpointAPIVersion(t *testing.T) {
 	driver := getDriver()
-	endpoint, err := driver.getEndpoint(&driver.Config)
+	endpoint, err := driver.getEndpoint(ctx(), &driver.Config)
 	if err != nil {
 		t.Errorf("Received error from getEndpoint: %v", err)
 	}
@@ -103,7 +106,7 @@ func TestUpgradeOlderEndpointAPIVersion(t *testing.T) {
 func TestNoUpgradeNewerEndpointAPIVersion(t *testing.T) {
 	driver := getDriver()
 	driver.Config.EndPoint = newerEndpoint
-	endpoint, err := driver.getEndpoint(&driver.Config)
+	endpoint, err := driver.getEndpoint(ctx(), &driver.Config)
 	if err != nil {
 		t.Errorf("Received error from getEndpoint: %v", err)
 	}
@@ -117,7 +120,7 @@ func TestGetEndpointCredentials(t *testing.T) {
 	// good path, should work
 	driver := getDriver()
 	driver.Config.EndPoint = newerEndpoint
-	username, password, err := driver.getEndpointCredentials(driver.Config)
+	username, password, err := driver.getEndpointCredentials(ctx(), driver.Config)
 	if err != nil {
 		t.Errorf("Received error from getEndpointCredentials: %v", err)
 	}
@@ -139,7 +142,7 @@ func TestGetEndpointCredentials(t *testing.T) {
 	// invalid URL, should error
 	badEndpoint := "://admin:solidfire@10.63.171.151/json-rpc/9.0"
 	driver.Config.EndPoint = badEndpoint
-	username, password, err = driver.getEndpointCredentials(driver.Config)
+	username, password, err = driver.getEndpointCredentials(ctx(), driver.Config)
 	if err == nil {
 		t.Errorf("Should have received error from getEndpointCredentials: %v", err)
 	}
@@ -156,7 +159,7 @@ func TestGetEndpointCredentials(t *testing.T) {
 	// no username, password (wouldn't work, but we should handle)
 	badEndpoint2 := "https://10.63.171.151/json-rpc/9.0"
 	driver.Config.EndPoint = badEndpoint2
-	username, password, err = driver.getEndpointCredentials(driver.Config)
+	username, password, err = driver.getEndpointCredentials(ctx(), driver.Config)
 	if username != "" {
 		t.Errorf("Received unexpected username %v from getEndpointCredentials: %v", username, err)
 	}

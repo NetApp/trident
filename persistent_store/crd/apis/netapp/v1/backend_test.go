@@ -3,23 +3,25 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"testing"
 
-	"github.com/netapp/trident/storage"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap"
-
 	"github.com/google/go-cmp/cmp"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/netapp/trident/storage"
+	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap"
 )
 
 var (
 	debug = flag.Bool("debug", false, "Enable debugging output")
+	ctx   = context.Background
 )
 
 func init() {
@@ -50,7 +52,7 @@ func TestNewBackend(t *testing.T) {
 	}
 
 	// Convert to Kubernetes Object using the NewTridentBackend method
-	backend, err := NewTridentBackend(nfsServer.ConstructPersistent())
+	backend, err := NewTridentBackend(ctx(), nfsServer.ConstructPersistent(ctx()))
 	if err != nil {
 		t.Fatal("Unable to construct TridentBackend CRD: ", err)
 	}
@@ -68,7 +70,7 @@ func TestNewBackend(t *testing.T) {
 		Online:      false,
 		Version:     "1",
 		Config: runtime.RawExtension{
-			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent().Config)),
+			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent(ctx()).Config)),
 		},
 	}
 	expected.ObjectMeta.Name = backend.ObjectMeta.Name
@@ -130,7 +132,7 @@ func TestBackend_Persistent(t *testing.T) {
 		Online:      false,
 		Version:     "1",
 		Config: runtime.RawExtension{
-			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent().Config)),
+			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent(ctx()).Config)),
 		},
 	}
 
@@ -141,7 +143,7 @@ func TestBackend_Persistent(t *testing.T) {
 	}
 
 	// Build expected persistent object
-	expected := nfsServer.ConstructPersistent()
+	expected := nfsServer.ConstructPersistent(ctx())
 
 	// Compare
 	if !cmp.Equal(persistent, expected) {

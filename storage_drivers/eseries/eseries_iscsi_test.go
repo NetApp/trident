@@ -4,6 +4,7 @@ package eseries
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"net"
@@ -58,7 +59,7 @@ func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api
 	telemetry["plugin"] = "eseries"
 	telemetry["storagePrefix"] = *config.StoragePrefix
 
-	API := api.NewAPIClient(api.ClientConfig{
+	API := api.NewAPIClient(context.Background(), api.ClientConfig{
 		WebProxyHostname:      config.WebProxyHostname,
 		WebProxyPort:          config.WebProxyPort,
 		WebProxyUseHTTP:       config.WebProxyUseHTTP,
@@ -211,7 +212,7 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 		eseriesSANDriver.API = newTestEseriesSANDriverAPI(&eseriesSANDriver.Config)
 
 		output := captureOutput(func() {
-			eseriesSANDriver.API.InvokeAPI(sensitiveInfo, "", "")
+			eseriesSANDriver.API.InvokeAPI(context.Background(), sensitiveInfo, "", "")
 		})
 
 		switch {

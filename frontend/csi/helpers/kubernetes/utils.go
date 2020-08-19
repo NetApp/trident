@@ -15,16 +15,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	"github.com/netapp/trident/config"
-	tridentutils "github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/logger"
+	"github.com/netapp/trident/utils"
 )
 
 // validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.
 func (p *Plugin) validateKubeVersion() error {
 
 	// Parse Kubernetes version into a SemVer object for simple comparisons
-	if version, err := tridentutils.ParseSemantic(p.kubeVersion.GitVersion); err != nil {
+	if version, err := utils.ParseSemantic(p.kubeVersion.GitVersion); err != nil {
 		return err
-	} else if !version.AtLeast(tridentutils.MustParseSemantic(config.KubernetesCSIVersionMinOptional)) {
+	} else if !version.AtLeast(utils.MustParseSemantic(config.KubernetesCSIVersionMinOptional)) {
 		log.Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
 			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
 			config.OrchestratorName, config.OrchestratorVersion, p.kubeVersion.Major, p.kubeVersion.Minor,
@@ -171,13 +172,13 @@ func isPVNotManaged(ctx context.Context, pv *v1.PersistentVolume) bool {
 // isNotManaged returns true if the notManaged annotation is present in the supplied map and
 // has a value of anything that doesn't resolve to 'false'.
 func isNotManaged(ctx context.Context, annotations map[string]string, name string, kind string) bool {
-	logc := tridentutils.GetLogWithRequestContext(ctx)
+
 	if value, ok := annotations[AnnNotManaged]; ok {
 		if notManaged, err := strconv.ParseBool(value); err != nil {
-			logc.WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
+			Logc(ctx).WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
 			return true
 		} else if notManaged {
-			logc.WithField(kind, name).Debugf("K8S helper ignored this notManaged %s.", kind)
+			Logc(ctx).WithField(kind, name).Debugf("K8S helper ignored this notManaged %s.", kind)
 			return true
 		}
 	}
@@ -217,10 +218,9 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 
 func (p *Plugin) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
 
-	logc := tridentutils.GetLogWithRequestContext(ctx)
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"PVC": claim.Name,
 		}).Error("PVC has no storage class specified")
 		return fmt.Errorf("PVC %s has no storage class specified", claim.Name)

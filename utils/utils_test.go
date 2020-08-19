@@ -242,7 +242,7 @@ func TestFilterIPs(t *testing.T) {
 	})
 
 	for _, testIO := range testIOs {
-		outputIPs, _ := FilterIPs(inputIPs, testIO.inputCIDRs)
+		outputIPs, _ := FilterIPs(ctx(), inputIPs, testIO.inputCIDRs)
 		assert.Equal(t, testIO.outputIPs, outputIPs)
 	}
 }

@@ -3,6 +3,7 @@
 package persistentstore
 
 import (
+	"context"
 	"crypto/tls"
 
 	"github.com/netapp/trident/config"
@@ -25,61 +26,63 @@ type ClientConfig struct {
 }
 
 type Client interface {
-	GetVersion() (*config.PersistentStateVersion, error)
-	SetVersion(version *config.PersistentStateVersion) error
+	GetVersion(ctx context.Context) (*config.PersistentStateVersion, error)
+	SetVersion(ctx context.Context, version *config.PersistentStateVersion) error
 	GetConfig() *ClientConfig
 	GetType() StoreType
 	Stop() error
 
-	AddBackend(b *storage.Backend) error
-	AddBackendPersistent(b *storage.BackendPersistent) error
-	GetBackend(backendName string) (*storage.BackendPersistent, error)
-	UpdateBackend(b *storage.Backend) error
-	UpdateBackendPersistent(b *storage.BackendPersistent) error
-	DeleteBackend(backend *storage.Backend) error
-	GetBackends() ([]*storage.BackendPersistent, error)
-	DeleteBackends() error
-	ReplaceBackendAndUpdateVolumes(origBackend, newBackend *storage.Backend) error
+	AddBackend(ctx context.Context, b *storage.Backend) error
+	AddBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
+	GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error)
+	UpdateBackend(ctx context.Context, b *storage.Backend) error
+	UpdateBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
+	DeleteBackend(ctx context.Context, backend *storage.Backend) error
+	GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error)
+	DeleteBackends(ctx context.Context) error
+	ReplaceBackendAndUpdateVolumes(ctx context.Context, origBackend, newBackend *storage.Backend) error
 
-	AddVolume(vol *storage.Volume) error
-	AddVolumePersistent(vol *storage.VolumeExternal) error
-	GetVolume(volName string) (*storage.VolumeExternal, error)
-	UpdateVolume(vol *storage.Volume) error
-	UpdateVolumePersistent(vol *storage.VolumeExternal) error
-	DeleteVolume(vol *storage.Volume) error
-	DeleteVolumeIgnoreNotFound(vol *storage.Volume) error
-	GetVolumes() ([]*storage.VolumeExternal, error)
-	DeleteVolumes() error
+	AddVolume(ctx context.Context, vol *storage.Volume) error
+	AddVolumePersistent(ctx context.Context, vol *storage.VolumeExternal) error
+	GetVolume(ctx context.Context, volName string) (*storage.VolumeExternal, error)
+	UpdateVolume(ctx context.Context, vol *storage.Volume) error
+	UpdateVolumePersistent(ctx context.Context, vol *storage.VolumeExternal) error
+	DeleteVolume(ctx context.Context, vol *storage.Volume) error
+	DeleteVolumeIgnoreNotFound(ctx context.Context, vol *storage.Volume) error
+	GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
+	DeleteVolumes(ctx context.Context) error
 
-	AddVolumeTransaction(volTxn *storage.VolumeTransaction) error
-	GetVolumeTransactions() ([]*storage.VolumeTransaction, error)
-	UpdateVolumeTransaction(volTxn *storage.VolumeTransaction) error
-	GetExistingVolumeTransaction(volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
-	DeleteVolumeTransaction(volTxn *storage.VolumeTransaction) error
+	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
+	GetVolumeTransactions(ctx context.Context) ([]*storage.VolumeTransaction, error)
+	UpdateVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
+	GetExistingVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (
+		*storage.VolumeTransaction, error,
+	)
+	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
-	AddStorageClass(sc *storageclass.StorageClass) error
-	GetStorageClass(scName string) (*storageclass.Persistent, error)
-	GetStorageClasses() ([]*storageclass.Persistent, error)
-	DeleteStorageClass(sc *storageclass.StorageClass) error
+	AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
+	GetStorageClass(ctx context.Context, scName string) (*storageclass.Persistent, error)
+	GetStorageClasses(ctx context.Context) ([]*storageclass.Persistent, error)
+	DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
 
-	AddOrUpdateNode(n *utils.Node) error
-	GetNode(nName string) (*utils.Node, error)
-	GetNodes() ([]*utils.Node, error)
-	DeleteNode(n *utils.Node) error
+	AddOrUpdateNode(ctx context.Context, n *utils.Node) error
+	GetNode(ctx context.Context, nName string) (*utils.Node, error)
+	GetNodes(ctx context.Context) ([]*utils.Node, error)
+	DeleteNode(ctx context.Context, n *utils.Node) error
 
-	AddSnapshot(snapshot *storage.Snapshot) error
-	GetSnapshot(volumeName, snapshotName string) (*storage.SnapshotPersistent, error)
-	GetSnapshots() ([]*storage.SnapshotPersistent, error)
-	DeleteSnapshot(snapshot *storage.Snapshot) error
-	DeleteSnapshotIgnoreNotFound(snapshot *storage.Snapshot) error
-	DeleteSnapshots() error
+	AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
+	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotPersistent, error)
+	GetSnapshots(ctx context.Context) ([]*storage.SnapshotPersistent, error)
+	DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
+	DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error
+	DeleteSnapshots(ctx context.Context) error
 }
 
 type CRDClient interface {
 	Client
-	HasBackends() (bool, error)
-	AddStorageClassPersistent(b *storageclass.Persistent) error
-	HasStorageClasses() (bool, error)
-	HasVolumes() (bool, error)
-	HasVolumeTransactions() (bool, error)
+	HasBackends(ctx context.Context) (bool, error)
+	AddStorageClassPersistent(ctx context.Context, b *storageclass.Persistent) error
+	HasStorageClasses(ctx context.Context) (bool, error)
+	HasVolumes(ctx context.Context) (bool, error)
+	HasVolumeTransactions(ctx context.Context) (bool, error)
 }

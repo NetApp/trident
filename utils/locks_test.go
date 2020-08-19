@@ -3,14 +3,17 @@
 package utils
 
 import (
+	"context"
 	"testing"
 	"time"
 )
 
+var ctx = context.Background
+
 func TestLockCreated(t *testing.T) {
 
-	Lock("testContext", "myLock")
-	defer Unlock("testContext", "myLock")
+	Lock(ctx(), "testContext", "myLock")
+	defer Unlock(ctx(), "testContext", "myLock")
 
 	if _, ok := sharedLocks.lockMap["myLock"]; !ok {
 		t.Error("Expected lock myLock to exist.")
@@ -23,13 +26,13 @@ func TestLockCreated(t *testing.T) {
 
 func TestLockReused(t *testing.T) {
 
-	Lock("testContext", "reuseLock")
-	Unlock("testContext", "reuseLock")
+	Lock(ctx(), "testContext", "reuseLock")
+	Unlock(ctx(), "testContext", "reuseLock")
 
 	lock1 := sharedLocks.lockMap["reuseLock"]
 
-	Lock("testContext", "reuseLock")
-	Unlock("testContext", "reuseLock")
+	Lock(ctx(), "testContext", "reuseLock")
+	Unlock(ctx(), "testContext", "reuseLock")
 
 	lock2 := sharedLocks.lockMap["reuseLock"]
 
@@ -43,9 +46,9 @@ func acquire1(m1, r chan string) {
 		op := <-m1
 		switch op {
 		case "lock":
-			Lock("testContext1", "behaviorLock")
+			Lock(ctx(), "testContext1", "behaviorLock")
 		case "unlock":
-			Unlock("testContext1", "behaviorLock")
+			Unlock(ctx(), "testContext1", "behaviorLock")
 		case "done":
 			close(m1)
 			r <- "done1"
@@ -59,9 +62,9 @@ func acquire2(m2, r chan string) {
 		op := <-m2
 		switch op {
 		case "lock":
-			Lock("testContext2", "behaviorLock")
+			Lock(ctx(), "testContext2", "behaviorLock")
 		case "unlock":
-			Unlock("testContext2", "behaviorLock")
+			Unlock(ctx(), "testContext2", "behaviorLock")
 		case "done":
 			close(m2)
 			r <- "done2"

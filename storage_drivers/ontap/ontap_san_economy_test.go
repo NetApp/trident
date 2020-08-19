@@ -3,6 +3,7 @@
 package ontap
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -19,7 +20,7 @@ func ToStringPointer(s string) *string {
 	return &s
 }
 
-func NewTestLUNHelper(storagePrefix string, context tridentconfig.DriverContext) *LUNHelper {
+func NewTestLUNHelper(storagePrefix string, driverContext tridentconfig.DriverContext) *LUNHelper {
 	commonConfigJSON := fmt.Sprintf(`
 {   
     "managementLIF":     "10.0.207.8",
@@ -35,14 +36,14 @@ func NewTestLUNHelper(storagePrefix string, context tridentconfig.DriverContext)
 }
 `, storagePrefix)
 	// parse commonConfigJSON into a CommonStorageDriverConfig object
-	commonConfig, err := drivers.ValidateCommonSettings(commonConfigJSON)
+	commonConfig, err := drivers.ValidateCommonSettings(context.Background(), commonConfigJSON)
 	if err != nil {
 		log.Errorf("could not decode JSON configuration: %v", err)
 		return nil
 	}
 	config := &drivers.OntapStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
-	helper := NewLUNHelper(*config, context)
+	helper := NewLUNHelper(*config, driverContext)
 	return helper
 }
 

@@ -91,14 +91,14 @@ func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON string) (*
 		State:       storage.Online,
 		Storage:     make(map[string]*storage.Pool),
 	}
-	mock := newMockBackend(backend.GetProtocol())
+	mock := newMockBackend(backend.GetProtocol(ctx))
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	//m.backends[backend.Name] = backend
 	//m.mockBackends[backend.Name] = mock
 	m.backendsByUUID[backend.BackendUUID] = backend
 	m.mockBackendsByUUID[backend.BackendUUID] = mock
-	return backend.ConstructExternal(), nil
+	return backend.ConstructExternal(ctx), nil
 }
 
 // Convenience method for test harnesses to avoid having to create a
@@ -124,7 +124,7 @@ func (m *MockOrchestrator) addMockBackend(
 	return backend
 }
 
-func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.BackendExternal {
+func (m *MockOrchestrator) AddMockONTAPNFSBackend(ctx context.Context, name, lif string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.File)
 	backend.Driver = &ontap.NASStorageDriver{
 		Config: drivers.OntapStorageDriverConfig{
@@ -137,10 +137,10 @@ func (m *MockOrchestrator) AddMockONTAPNFSBackend(name, lif string) *storage.Bac
 	}
 	mock := m.mockBackendsByUUID[backend.BackendUUID]
 	mock.accessInfo.NfsServerIP = lif
-	return backend.ConstructExternal()
+	return backend.ConstructExternal(ctx)
 }
 
-func (m *MockOrchestrator) AddMockONTAPSANBackend(name, lif string) *storage.BackendExternal {
+func (m *MockOrchestrator) AddMockONTAPSANBackend(ctx context.Context, name, lif string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
 	backend.Driver = &ontap.SANStorageDriver{
 		Config: drivers.OntapStorageDriverConfig{
@@ -154,22 +154,22 @@ func (m *MockOrchestrator) AddMockONTAPSANBackend(name, lif string) *storage.Bac
 	// add any iscsi specific bits you need here...
 	//mock := m.mockBackendsByUUID[backend.BackendUUID]
 	//mock.accessInfo.IscsiUsername = "user"
-	return backend.ConstructExternal()
+	return backend.ConstructExternal(ctx)
 }
 
-func (m *MockOrchestrator) AddFakeBackend(backend *storage.Backend) *storage.BackendExternal {
+func (m *MockOrchestrator) AddFakeBackend(ctx context.Context, backend *storage.Backend) *storage.BackendExternal {
 	mock := &mockBackend{
 		name:        backend.Name,
 		backendUUID: backend.BackendUUID,
 		volumes:     make(map[string]*storage.Volume),
-		protocol:    backend.GetProtocol(),
+		protocol:    backend.GetProtocol(ctx),
 	}
 	m.backendsByUUID[backend.BackendUUID] = backend
 	m.mockBackendsByUUID[backend.BackendUUID] = mock
-	return backend.ConstructExternal()
+	return backend.ConstructExternal(ctx)
 }
 
-func (m *MockOrchestrator) AddMockFakeSANBackend(name string) *storage.BackendExternal {
+func (m *MockOrchestrator) AddMockFakeSANBackend(ctx context.Context, name string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
 	backend.Driver = &fake.StorageDriver{
 		Config: drivers.FakeStorageDriverConfig{
@@ -181,10 +181,10 @@ func (m *MockOrchestrator) AddMockFakeSANBackend(name string) *storage.BackendEx
 		},
 	}
 	//mock := m.mockBackendsByUUID[backend.BackendUUID]
-	return backend.ConstructExternal()
+	return backend.ConstructExternal(ctx)
 }
 
-func (m *MockOrchestrator) AddMockFakeNASBackend(name string) *storage.BackendExternal {
+func (m *MockOrchestrator) AddMockFakeNASBackend(ctx context.Context, name string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
 	backend.Driver = &fake.StorageDriver{
 		Config: drivers.FakeStorageDriverConfig{
@@ -196,7 +196,7 @@ func (m *MockOrchestrator) AddMockFakeNASBackend(name string) *storage.BackendEx
 		},
 	}
 	//mock := m.mockBackendsByUUID[backend.BackendUUID]
-	return backend.ConstructExternal()
+	return backend.ConstructExternal(ctx)
 }
 
 //TODO:  Add other mock backends here as necessary.
@@ -219,14 +219,14 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backe
 		return nil, utils.NotFoundError(fmt.Sprintf("backend name:%v uuid:%v was not found", backendName, backendUUID))
 	}
 
-	newBackend, err := factory.NewStorageBackendForConfig(configJSON)
+	newBackend, err := factory.NewStorageBackendForConfig(ctx, configJSON)
 	if err != nil {
 		return nil, err
 	}
 
-	originalBackend.Terminate()
+	originalBackend.Terminate(ctx)
 	m.backendsByUUID[backendName] = newBackend
-	return newBackend.ConstructExternal(), nil
+	return newBackend.ConstructExternal(ctx), nil
 }
 
 // UpdateBackendState updates an existing backend
@@ -284,7 +284,7 @@ func (m *MockOrchestrator) GetBackend(ctx context.Context, backendName string) (
 		return nil, err
 	}
 
-	return b.ConstructExternal(), nil
+	return b.ConstructExternal(ctx), nil
 }
 
 func (m *MockOrchestrator) GetBackendByBackendUUID(ctx context.Context, backendUUID string) (*storage.BackendExternal, error) {
@@ -296,17 +296,17 @@ func (m *MockOrchestrator) GetBackendByBackendUUID(ctx context.Context, backendU
 	if !found {
 		return nil, utils.NotFoundError("not found")
 	}
-	return b.ConstructExternal(), nil
+	return b.ConstructExternal(ctx), nil
 }
 
-func (m *MockOrchestrator) ListBackends(context.Context) ([]*storage.BackendExternal, error) {
+func (m *MockOrchestrator) ListBackends(ctx context.Context) ([]*storage.BackendExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	// backends := make([]*storage.BackendExternal, 0, len(m.backends))
 	// for _, b := range m.backends {
 	backends := make([]*storage.BackendExternal, 0, len(m.backendsByUUID))
 	for _, b := range m.backendsByUUID {
-		backends = append(backends, b.ConstructExternal())
+		backends = append(backends, b.ConstructExternal(ctx))
 	}
 	return backends, nil
 }
@@ -584,7 +584,7 @@ func NewMockOrchestrator() *MockOrchestrator {
 func (m *MockOrchestrator) AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error) {
 	sc := storageclass.New(scConfig)
 	m.storageClasses[sc.GetName()] = sc
-	return sc.ConstructExternal(), nil
+	return sc.ConstructExternal(ctx), nil
 }
 
 func (m *MockOrchestrator) GetStorageClass(ctx context.Context, scName string) (*storageclass.External, error) {
@@ -595,13 +595,13 @@ func (m *MockOrchestrator) GetStorageClass(ctx context.Context, scName string) (
 	if !found {
 		return nil, utils.NotFoundError("not found")
 	}
-	return sc.ConstructExternal(), nil
+	return sc.ConstructExternal(ctx), nil
 }
 
-func (m *MockOrchestrator) ListStorageClasses(context.Context) ([]*storageclass.External, error) {
+func (m *MockOrchestrator) ListStorageClasses(ctx context.Context) ([]*storageclass.External, error) {
 	ret := make([]*storageclass.External, 0, len(m.storageClasses))
 	for _, sc := range m.storageClasses {
-		ret = append(ret, sc.ConstructExternal())
+		ret = append(ret, sc.ConstructExternal(ctx))
 	}
 	return ret, nil
 }

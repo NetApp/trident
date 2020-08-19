@@ -3,27 +3,29 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
-	log "github.com/sirupsen/logrus"
+	. "github.com/netapp/trident/logger"
 )
 
 // Get cluster hardware info
-func (c *Client) GetClusterHardwareInfo() (*ClusterHardwareInfo, error) {
+func (c *Client) GetClusterHardwareInfo(ctx context.Context) (*ClusterHardwareInfo, error) {
+
 	var (
 		clusterHardwareInfoReq    struct{}
 		clusterHardwareInfoResult GetClusterHardwareInfoResult
 	)
 
-	response, err := c.Request("GetClusterHardwareInfo", clusterHardwareInfoReq, NewReqID())
+	response, err := c.Request(ctx, "GetClusterHardwareInfo", clusterHardwareInfoReq, NewReqID())
 	if err != nil {
-		log.Errorf("Error detected in GetClusterHardwareInfo API response: %+v", err)
+		Logc(ctx).Errorf("Error detected in GetClusterHardwareInfo API response: %+v", err)
 		return nil, errors.New("device API error")
 	}
 
-	if err := json.Unmarshal([]byte(response), &clusterHardwareInfoResult); err != nil {
-		log.Errorf("Error detected unmarshalling json response: %+v", err)
+	if err := json.Unmarshal(response, &clusterHardwareInfoResult); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling json response: %+v", err)
 		return nil, errors.New("json decode error")
 	}
 	return &clusterHardwareInfoResult.Result.ClusterHardwareInfo, err

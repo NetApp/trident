@@ -1,9 +1,10 @@
 package utils
 
 import (
+	"context"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	. "github.com/netapp/trident/logger"
 )
 
 type locks struct {
@@ -24,7 +25,7 @@ func init() {
 // getLock returns a mutex with the specified ID.  If the lock does not exist, one is created.
 // This method uses the check-lock-check pattern to defend against race conditions where multiple
 // callers try to get a non-existent lock at the same time.
-func getLock(lockID string) *sync.Mutex {
+func getLock(ctx context.Context, lockID string) *sync.Mutex {
 
 	var lock *sync.Mutex
 	var ok bool
@@ -37,7 +38,7 @@ func getLock(lockID string) *sync.Mutex {
 		if lock, ok = sharedLocks.lockMap[lockID]; !ok {
 			lock = &sync.Mutex{}
 			sharedLocks.lockMap[lockID] = lock
-			log.WithField("lock", lockID).Debug("Created shared lock.")
+			Logc(ctx).WithField("lock", lockID).Debug("Created shared lock.")
 		}
 	}
 
@@ -46,15 +47,17 @@ func getLock(lockID string) *sync.Mutex {
 
 // Lock acquires a mutex with the specified ID.  The mutex does not need to exist before
 // calling this method.  The semantics of this method are intentionally identical to sync.Mutex.Lock().
-func Lock(ctx, lockID string) {
-	log.WithField("lock", lockID).Debugf("Attempting to acquire shared lock (%s).", ctx)
-	getLock(lockID).Lock()
-	log.WithField("lock", lockID).Debugf("Acquired shared lock (%s).", ctx)
+func Lock(ctx context.Context, lockContext, lockID string) {
+
+	Logc(ctx).WithField("lock", lockID).Debugf("Attempting to acquire shared lock (%s).", lockContext)
+	getLock(ctx, lockID).Lock()
+	Logc(ctx).WithField("lock", lockID).Debugf("Acquired shared lock (%s).", lockContext)
 }
 
 // Unlock releases a mutex with the specified ID.  The semantics of this method are intentionally
 // identical to sync.Mutex.Unlock().
-func Unlock(ctx, lockID string) {
-	getLock(lockID).Unlock()
-	log.WithField("lock", lockID).Debugf("Released shared lock (%s).", ctx)
+func Unlock(ctx context.Context, lockContext, lockID string) {
+
+	getLock(ctx, lockID).Unlock()
+	Logc(ctx).WithField("lock", lockID).Debugf("Released shared lock (%s).", lockContext)
 }

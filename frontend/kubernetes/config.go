@@ -3,7 +3,6 @@
 package kubernetes
 
 import (
-	"context"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,6 +50,4 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	patchOpts  = metav1.PatchOptions{}
 	deleteOpts = metav1.DeleteOptions{}
-
-	ctx = context.TODO
 )

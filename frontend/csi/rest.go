@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -77,7 +78,7 @@ func (c *RestClient) InvokeAPI(
 		return nil, nil, err
 	}
 
-	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(utils.ContextKeyRequestID)))
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(ContextKeyRequestID)))
 	request.Header.Set("Content-Type", "application/json")
 
 	// Log the request

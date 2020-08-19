@@ -3,6 +3,7 @@
 package eseries
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -19,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
@@ -77,7 +79,8 @@ func (d *SANStorageDriver) Protocol() string {
 
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
-	context tridentconfig.DriverContext, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
+	commonConfig *drivers.CommonStorageDriverConfig,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here
@@ -85,8 +88,8 @@ func (d *SANStorageDriver) Initialize(
 		"Method": "Initialize",
 		"Type":   "SANStorageDriver",
 	}
-	log.WithFields(fields).Debug(">>>> Initialize")
-	defer log.WithFields(fields).Debug("<<<< Initialize")
+	Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 
@@ -101,12 +104,12 @@ func (d *SANStorageDriver) Initialize(
 	d.Config = *config
 
 	// Apply config defaults
-	if err := d.populateConfigurationDefaults(config); err != nil {
+	if err := d.populateConfigurationDefaults(ctx, config); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 	d.Config = *config
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Version":           config.Version,
 		"StorageDriverName": config.StorageDriverName,
 		"DebugTraceFlags":   config.DebugTraceFlags,
@@ -119,7 +122,7 @@ func (d *SANStorageDriver) Initialize(
 	telemetry["plugin"] = d.Name()
 	telemetry["storagePrefix"] = *d.Config.StoragePrefix
 
-	d.API = api.NewAPIClient(api.ClientConfig{
+	d.API = api.NewAPIClient(ctx, api.ClientConfig{
 		WebProxyHostname:      config.WebProxyHostname,
 		WebProxyPort:          config.WebProxyPort,
 		WebProxyUseHTTP:       config.WebProxyUseHTTP,
@@ -141,27 +144,27 @@ func (d *SANStorageDriver) Initialize(
 	})
 
 	// Connect to web services proxy
-	_, err = d.API.Connect()
+	_, err = d.API.Connect(ctx)
 	if err != nil {
 		return fmt.Errorf("could not connect to Web Services Proxy: %v", err)
 	}
 
 	// After connected to web service, identify physical and virtual pools
-	if err := d.initializeStoragePools(); err != nil {
+	if err := d.initializeStoragePools(ctx); err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
 
 	// Ensure the config is valid, including virtual pool config
-	if err := d.validate(); err != nil {
+	if err := d.validate(ctx); err != nil {
 		return fmt.Errorf("could not validate SANStorageDriver config: %v", err)
 	}
 
 	// Log chassis serial number
-	chassisSerialNumber, err := d.API.GetChassisSerialNumber()
+	chassisSerialNumber, err := d.API.GetChassisSerialNumber(ctx)
 	if err != nil {
-		log.Warnf("Could not determine chassis serial number. %v", err)
+		Logc(ctx).Warnf("Could not determine chassis serial number. %v", err)
 	} else {
-		log.WithField("serialNumber", chassisSerialNumber).Info("Chassis serial number.")
+		Logc(ctx).WithField("serialNumber", chassisSerialNumber).Info("Chassis serial number.")
 		d.Config.SerialNumbers = []string{chassisSerialNumber}
 	}
 
@@ -170,18 +173,18 @@ func (d *SANStorageDriver) Initialize(
 	// For K8S CSI, we create a host group if necessary and create the hosts automatically during the Publish calls
 	if context == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the E-series iSCSI target
-		err = utils.EnsureISCSISession(d.Config.HostDataIP)
+		err = utils.EnsureISCSISession(ctx, d.Config.HostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not establish iSCSI session: %v", err)
 		}
 
 		// Make sure there is a host defined on the array for this system
-		_, err = d.CreateHostForLocalHost()
+		_, err = d.CreateHostForLocalHost(ctx)
 		if err != nil {
 			return err
 		}
 	} else if context == tridentconfig.ContextKubernetes {
-		hostGroup, err := d.API.GetHostGroup(d.Config.AccessGroup)
+		hostGroup, err := d.API.GetHostGroup(ctx, d.Config.AccessGroup)
 		if err != nil {
 			return fmt.Errorf("could not check for host group %s: %v", d.Config.AccessGroup, err)
 		} else if hostGroup.ClusterRef == "" {
@@ -189,14 +192,14 @@ func (d *SANStorageDriver) Initialize(
 				"created; please also ensure all relevant Hosts are defined on the array and added to the Host Group",
 				d.Config.AccessGroup, d.Config.ControllerA)
 		} else {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"driver":     d.Name(),
 				"controller": d.Config.ControllerA,
 				"hostGroup":  hostGroup.Label,
 			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", d.Config.AccessGroup)
 		}
 	} else if context == tridentconfig.ContextCSI {
-		_, err = d.API.EnsureHostGroup()
+		_, err = d.API.EnsureHostGroup(ctx)
 		if err != nil {
 			return fmt.Errorf("could not check for host group %s: %v", d.Config.AccessGroup, err)
 		}
@@ -210,24 +213,26 @@ func (d *SANStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
-func (d *SANStorageDriver) Terminate(string) {
+func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "SANStorageDriver"}
-		log.WithFields(fields).Debug(">>>> Terminate")
-		defer log.WithFields(fields).Debug("<<<< Terminate")
+		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
 	}
 
 	d.initialized = false
 }
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
-func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.ESeriesStorageDriverConfig) error {
+func (d *SANStorageDriver) populateConfigurationDefaults(
+	ctx context.Context, config *drivers.ESeriesStorageDriverConfig,
+) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
-		log.WithFields(fields).Debug(">>>> populateConfigurationDefaults")
-		defer log.WithFields(fields).Debug("<<<< populateConfigurationDefaults")
+		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
 	}
 
 	if config.StoragePrefix == nil {
@@ -259,7 +264,7 @@ func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.ESeries
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"StoragePrefix":         *config.StoragePrefix,
 		"AccessGroup":           config.AccessGroup,
 		"HostType":              config.HostType,
@@ -270,7 +275,7 @@ func (d *SANStorageDriver) populateConfigurationDefaults(config *drivers.ESeries
 	return nil
 }
 
-func (d *SANStorageDriver) initializeStoragePools() error {
+func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 	d.physicalPools = make(map[string]*storage.Pool)
 	d.virtualPools = make(map[string]*storage.Pool)
@@ -279,7 +284,7 @@ func (d *SANStorageDriver) initializeStoragePools() error {
 	mediaOffers := make([]sa.Offer, 0)
 
 	// Get pools
-	physicalStoragePools, err := d.API.GetVolumePools("", 0, "")
+	physicalStoragePools, err := d.API.GetVolumePools(ctx, "", 0, "")
 	if err != nil {
 		return fmt.Errorf("could not get storage pools from array: %v", err)
 	}
@@ -373,12 +378,12 @@ func (d *SANStorageDriver) initializeStoragePools() error {
 }
 
 // Validate the driver configuration
-func (d *SANStorageDriver) validate() error {
+func (d *SANStorageDriver) validate(ctx context.Context) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "SANStorageDriver"}
-		log.WithFields(fields).Debug(">>>> validate")
-		defer log.WithFields(fields).Debug("<<<< validate")
+		Logc(ctx).WithFields(fields).Debug(">>>> validate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
 	// Make sure the essential information was specified in the config
@@ -418,7 +423,7 @@ func (d *SANStorageDriver) validate() error {
 				case sa.HDD, sa.SSD:
 					break
 				default:
-					log.Errorf("invalid media type in pool %s: %s", pool.Name, mediaType)
+					Logc(ctx).Errorf("invalid media type in pool %s: %s", pool.Name, mediaType)
 				}
 			}
 		}
@@ -431,7 +436,7 @@ func (d *SANStorageDriver) validate() error {
 // and disk media type may be provided in the opts map. If more than one pool on the storage controller can satisfy the request, the
 // one with the most free space is selected.
 func (d *SANStorageDriver) Create(
-	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -445,12 +450,12 @@ func (d *SANStorageDriver) Create(
 			"name":   name,
 			"attrs":  volAttributes,
 		}
-		log.WithFields(fields).Debug(">>>> Create")
-		defer log.WithFields(fields).Debug("<<<< Create")
+		Logc(ctx).WithFields(fields).Debug(">>>> Create")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
 	}
 
 	// If the volume already exists, bail out
-	extantVolume, err := d.API.GetVolume(name)
+	extantVolume, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
@@ -459,7 +464,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Get candidate physical pools
-	physicalPools, err := d.getPoolsForCreate(volConfig, storagePool, volAttributes)
+	physicalPools, err := d.getPoolsForCreate(ctx, volConfig, storagePool, volAttributes)
 	if err != nil {
 		return err
 	}
@@ -481,12 +486,13 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(volConfig, storagePool, volAttributes)
+	opts, err := d.GetVolumeOpts(ctx, volConfig, storagePool, volAttributes)
 	if err != nil {
 		return err
 	}
@@ -494,7 +500,8 @@ func (d *SANStorageDriver) Create(
 	// Get media type, or default to "hdd" if not specified
 	mediaType := utils.GetV(opts, "mediaType", "")
 
-	fstype, err = drivers.CheckSupportedFilesystem(utils.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
+	fstype, err = drivers.CheckSupportedFilesystem(
+		ctx, utils.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
 	if err != nil {
 		return err
 	}
@@ -508,10 +515,10 @@ func (d *SANStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, poolName)
 
 		// expect pool of size 1
-		pools, err := d.API.GetVolumePools(mediaType, sizeBytes, poolName)
+		pools, err := d.API.GetVolumePools(ctx, mediaType, sizeBytes, poolName)
 		if err != nil {
 			errMessage := fmt.Sprintf("E-series pool %s not found", poolName)
-			log.Error(errMessage)
+			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
@@ -520,15 +527,15 @@ func (d *SANStorageDriver) Create(
 		pool := pools[0]
 
 		// Create the volume
-		vol, err := d.API.CreateVolume(name, pool.VolumeGroupRef, sizeBytes, mediaType, fstype)
+		vol, err := d.API.CreateVolume(ctx, name, pool.VolumeGroupRef, sizeBytes, mediaType, fstype)
 		if err != nil {
 			errMessage := fmt.Sprintf("E-series pool %s could not create volume %s: %v", poolName, name, err)
-			log.Error(errMessage)
+			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name":          name,
 			"Size":          sizeBytes,
 			"MediaType":     mediaType,
@@ -546,7 +553,8 @@ func (d *SANStorageDriver) Create(
 
 // getPoolsForCreate returns candidate storage pools for creating volumes
 func (d *SANStorageDriver) getPoolsForCreate(
-	volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	volAttributes map[string]sa.Request,
 ) ([]*storage.Pool, error) {
 
 	// If a physical pool was requested, just use it
@@ -571,7 +579,7 @@ func (d *SANStorageDriver) getPoolsForCreate(
 	candidatePools := make([]*storage.Pool, 0)
 
 	for _, pool := range d.physicalPools {
-		if storageClass.Matches(pool) {
+		if storageClass.Matches(ctx, pool) {
 			candidatePools = append(candidatePools, pool)
 		}
 	}
@@ -590,7 +598,7 @@ func (d *SANStorageDriver) getPoolsForCreate(
 }
 
 // Destroy is called by Docker to delete a container volume.
-func (d *SANStorageDriver) Destroy(name string) error {
+func (d *SANStorageDriver) Destroy(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -598,8 +606,8 @@ func (d *SANStorageDriver) Destroy(name string) error {
 			"Type":   "SANStorageDriver",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Destroy")
-		defer log.WithFields(fields).Debug("<<<< Destroy")
+		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
 	}
 
 	var (
@@ -608,7 +616,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		lunID         int
 	)
 
-	vol, err := d.API.GetVolume(name)
+	vol, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", name, err)
 	}
@@ -616,9 +624,9 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
-		iSCSINodeName, _, err = d.getISCSITargetInfo()
+		iSCSINodeName, _, err = d.getISCSITargetInfo(ctx)
 		if err != nil {
-			log.WithField("error", err).Error("Could not get target info.")
+			Logc(ctx).WithField("error", err).Error("Could not get target info.")
 			return err
 		}
 
@@ -629,14 +637,14 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		}
 		if lunID >= 0 {
 			// Inform the host about the device removal
-			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName)
+			utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName)
 		}
 	}
 
 	if d.API.IsRefValid(vol.VolumeRef) {
 
 		// Destroy volume on storage array
-		err = d.API.DeleteVolume(vol)
+		err = d.API.DeleteVolume(ctx, vol)
 		if err != nil {
 			return fmt.Errorf("could not destroy volume %s: %v", name, err)
 		}
@@ -644,7 +652,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	} else {
 
 		// If volume was deleted on this storage for any reason, don't fail it here.
-		log.WithField("Name", name).Warn("Could not find volume on array. Allowing deletion to proceed.")
+		Logc(ctx).WithField("Name", name).Warn("Could not find volume on array. Allowing deletion to proceed.")
 	}
 
 	return nil
@@ -653,7 +661,9 @@ func (d *SANStorageDriver) Destroy(name string) error {
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+func (d *SANStorageDriver) Publish(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+) error {
 
 	name := volConfig.InternalName
 
@@ -663,12 +673,12 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 			"Type":   "SANStorageDriver",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Publish")
-		defer log.WithFields(fields).Debug("<<<< Publish")
+		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
 	}
 
 	// Get the volume
-	vol, err := d.API.GetVolume(name)
+	vol, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", name, err)
 	}
@@ -677,7 +687,7 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 	}
 
 	// Get the Target IQN
-	targetIQN, err := d.API.GetTargetIQN()
+	targetIQN, err := d.API.GetTargetIQN(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get target IQN from array: %v", err)
 	}
@@ -687,13 +697,13 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 	for _, tag := range vol.VolumeTags {
 		if tag.Key == "fstype" {
 			fstype = tag.Value
-			log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Debug("Found LUN fstype.")
+			Logc(ctx).WithFields(log.Fields{"LUN": name, "fstype": fstype}).Debug("Found LUN fstype.")
 			break
 		}
 	}
 	if fstype == "" {
 		fstype = drivers.DefaultFileSystemType
-		log.WithFields(log.Fields{"LUN": name, "fstype": fstype}).Warn("LUN fstype not found, using default.")
+		Logc(ctx).WithFields(log.Fields{"LUN": name, "fstype": fstype}).Warn("LUN fstype not found, using default.")
 	}
 
 	var iqn string
@@ -703,7 +713,7 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 	if publishInfo.Localhost {
 
 		// Lookup local host IQNs
-		iqns, err := utils.GetInitiatorIqns()
+		iqns, err := utils.GetInitiatorIqns(ctx)
 		if err != nil {
 			return fmt.Errorf("error determining host initiator IQN: %v", err)
 		} else if len(iqns) == 0 {
@@ -712,7 +722,7 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 		iqn = iqns[0]
 
 		// Map the volume to the local host
-		mapping, err = d.MapVolumeToLocalHost(vol)
+		mapping, err = d.MapVolumeToLocalHost(ctx, vol)
 		if err != nil {
 			return fmt.Errorf("could not map volume %s: %v", name, err)
 		}
@@ -727,20 +737,20 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 		hostname = publishInfo.HostName
 
 		// Get the host group
-		hostGroup, err := d.API.EnsureHostGroup()
+		hostGroup, err := d.API.EnsureHostGroup(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get host group: %v", err)
 		}
 
 		// See if there is already a host for the specified IQN
-		host, err := d.API.GetHostForIQN(iqn)
+		host, err := d.API.GetHostForIQN(ctx, iqn)
 		if err != nil {
 			return fmt.Errorf("could not get host for IQN %s: %v", iqn, err)
 		}
 
 		// Create the host if necessary
 		if host.HostRef == "" {
-			host, err = d.API.CreateHost(hostname, iqn, d.Config.HostType, hostGroup)
+			host, err = d.API.CreateHost(ctx, hostname, iqn, d.Config.HostType, hostGroup)
 			if err != nil {
 				return fmt.Errorf("could not create host for IQN %s: %v", iqn, err)
 			}
@@ -756,7 +766,7 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 			HostRef:    api.NullRef,
 			ClusterRef: hostGroup.ClusterRef,
 		}
-		mapping, err = d.API.MapVolume(vol, mapHost)
+		mapping, err = d.API.MapVolume(ctx, vol, mapHost)
 		if err != nil {
 			return fmt.Errorf("could not map volume %s to Host Group %s: %v", name, hostGroup.Label, err)
 		}
@@ -773,9 +783,11 @@ func (d *SANStorageDriver) Publish(volConfig *storage.VolumeConfig, publishInfo 
 	return nil
 }
 
-func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
+func (d *SANStorageDriver) getISCSITargetInfo(
+	ctx context.Context,
+) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
 
-	targetSettings, err := d.API.GetTargetSettings()
+	targetSettings, err := d.API.GetTargetSettings(ctx)
 	if err != nil {
 		returnError = fmt.Errorf("could not get iSCSI target info: %v", err)
 		return
@@ -797,10 +809,10 @@ func (d *SANStorageDriver) getISCSITargetInfo() (iSCSINodeName string, iSCSIInte
 
 // CreateHostForLocalHost ensures a Host definition corresponding to the local host exists on the array,
 // defining a Host & HostGroup if not.
-func (d *SANStorageDriver) CreateHostForLocalHost() (api.HostEx, error) {
+func (d *SANStorageDriver) CreateHostForLocalHost(ctx context.Context) (api.HostEx, error) {
 
 	// Get the IQN for this host
-	iqns, err := utils.GetInitiatorIqns()
+	iqns, err := utils.GetInitiatorIqns(ctx)
 	if err != nil {
 		return api.HostEx{}, fmt.Errorf("could not determine host initiator IQNs: %v", err)
 	}
@@ -810,7 +822,7 @@ func (d *SANStorageDriver) CreateHostForLocalHost() (api.HostEx, error) {
 	iqn := iqns[0]
 
 	// Ensure we have an E-series host to which to map the volume
-	host, err := d.API.EnsureHostForIQN(iqn)
+	host, err := d.API.EnsureHostForIQN(ctx, iqn)
 	if err != nil {
 		return api.HostEx{}, fmt.Errorf("could not define array host for IQN %s: %v", iqn, err)
 	}
@@ -820,7 +832,7 @@ func (d *SANStorageDriver) CreateHostForLocalHost() (api.HostEx, error) {
 
 // MapVolumeToLocalHost gets the iSCSI identity of the local host, ensures a corresponding Host definition exists on the array
 // (defining a Host & HostGroup if not), maps the specified volume to the host/group (if it isn't already), and returns the mapping info.
-func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMapping, error) {
+func (d *SANStorageDriver) MapVolumeToLocalHost(ctx context.Context, volume api.VolumeEx) (api.LUNMapping, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -828,18 +840,18 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 			"Type":   "SANStorageDriver",
 			"volume": volume.Label,
 		}
-		log.WithFields(fields).Debug(">>>> MapVolumeToLocalHost")
-		defer log.WithFields(fields).Debug("<<<< MapVolumeToLocalHost")
+		Logc(ctx).WithFields(fields).Debug(">>>> MapVolumeToLocalHost")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< MapVolumeToLocalHost")
 	}
 
 	// Ensure we have a host to map the volume to
-	host, err := d.CreateHostForLocalHost()
+	host, err := d.CreateHostForLocalHost(ctx)
 	if err != nil {
 		return api.LUNMapping{}, fmt.Errorf("could not map volume %s to host: %v", volume.Label, err)
 	}
 
 	// Map the volume
-	mapping, err := d.API.MapVolume(volume, host)
+	mapping, err := d.API.MapVolume(ctx, volume, host)
 	if err != nil {
 		return api.LUNMapping{}, fmt.Errorf("could not map volume %s to host %s: %v", volume.Label, host.Label, err)
 	}
@@ -848,7 +860,9 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(volume api.VolumeEx) (api.LUNMap
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
-func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
+	*storage.Snapshot, error,
+) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -857,8 +871,8 @@ func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*sto
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> GetSnapshot")
-		defer log.WithFields(fields).Debug("<<<< GetSnapshot")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
 	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
@@ -866,7 +880,9 @@ func (d *SANStorageDriver) GetSnapshot(snapConfig *storage.SnapshotConfig) (*sto
 
 // SnapshotList returns the list of snapshots associated with the specified volume. The E-series volume
 // plugin does not support snapshots, so this method always returns an empty array.
-func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
+	[]*storage.Snapshot, error,
+) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -874,8 +890,8 @@ func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*sto
 			"Type":       "SANStorageDriver",
 			"volumeName": volConfig.InternalName,
 		}
-		log.WithFields(fields).Debug(">>>> GetSnapshots")
-		defer log.WithFields(fields).Debug("<<<< GetSnapshots")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
 	return make([]*storage.Snapshot, 0), nil
@@ -883,7 +899,9 @@ func (d *SANStorageDriver) GetSnapshots(volConfig *storage.VolumeConfig) ([]*sto
 
 // CreateSnapshot creates a snapshot for the given volume. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*storage.Snapshot, error) {
+func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
+	*storage.Snapshot, error,
+) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -892,15 +910,15 @@ func (d *SANStorageDriver) CreateSnapshot(snapConfig *storage.SnapshotConfig) (*
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer log.WithFields(fields).Debug("<<<< CreateSnapshot")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
 	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *SANStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -909,15 +927,15 @@ func (d *SANStorageDriver) RestoreSnapshot(snapConfig *storage.SnapshotConfig) e
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer log.WithFields(fields).Debug("<<<< RestoreSnapshot")
+		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
 	return drivers.NewSnapshotsNotSupportedError(d.Name())
 }
 
 // DeleteSnapshot deletes a volume snapshot.
-func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -926,8 +944,8 @@ func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) er
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}
-		log.WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer log.WithFields(fields).Debug("<<<< DeleteSnapshot")
+		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
 	return drivers.NewSnapshotsNotSupportedError(d.Name())
@@ -935,7 +953,9 @@ func (d *SANStorageDriver) DeleteSnapshot(snapConfig *storage.SnapshotConfig) er
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storagePool *storage.Pool) error {
+func (d *SANStorageDriver) CreateClone(
+	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
+) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -949,23 +969,23 @@ func (d *SANStorageDriver) CreateClone(volConfig *storage.VolumeConfig, storageP
 			"source":   source,
 			"snapshot": snapshot,
 		}
-		log.WithFields(fields).Debug(">>>> CreateClone")
-		defer log.WithFields(fields).Debug("<<<< CreateClone")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
 	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
 
-func (d *SANStorageDriver) Import(volConfig *storage.VolumeConfig, originalName string) error {
+func (d *SANStorageDriver) Import(context.Context, *storage.VolumeConfig, string) error {
 	return errors.New("import is not implemented")
 }
 
-func (d *SANStorageDriver) Rename(name string, newName string) error {
+func (d *SANStorageDriver) Rename(context.Context, string, string) error {
 	return errors.New("rename is not implemented")
 }
 
 // Get test for the existence of a volume
-func (d *SANStorageDriver) Get(name string) error {
+func (d *SANStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -973,11 +993,11 @@ func (d *SANStorageDriver) Get(name string) error {
 			"Type":   "SANStorageDriver",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> Get")
-		defer log.WithFields(fields).Debug("<<<< Get")
+		Logc(ctx).WithFields(fields).Debug(">>>> Get")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
 	}
 
-	_, err := d.getVolume(name)
+	_, err := d.getVolume(ctx, name)
 	if err != nil {
 		return err
 	}
@@ -985,21 +1005,21 @@ func (d *SANStorageDriver) Get(name string) error {
 	return nil
 }
 
-func (d *SANStorageDriver) getVolume(name string) (api.VolumeEx, error) {
+func (d *SANStorageDriver) getVolume(ctx context.Context, name string) (api.VolumeEx, error) {
 
-	vol, err := d.API.GetVolume(name)
+	vol, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return vol, fmt.Errorf("could not find volume %s: %v", name, err)
 	} else if !d.API.IsRefValid(vol.VolumeRef) {
 		return vol, fmt.Errorf("could not find volume %s", name)
 	}
-	log.WithField("volume", vol).Debug("Found volume.")
+	Logc(ctx).WithField("volume", vol).Debug("Found volume.")
 
 	return vol, nil
 }
 
 // GetStorageBackendSpecs retrieve storage capabilities and register pools with specified backend.
-func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) error {
+func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
 	backend.Name = d.backendName()
 
 	virtual := len(d.virtualPools) > 0
@@ -1021,12 +1041,12 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(backend *storage.Backend) erro
 	return nil
 }
 
-func (d *SANStorageDriver) CreatePrepare(volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(volConfig.Name)
+func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
 }
 
 // Retrieve storage backend physical pools
-func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
+func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	physicalPoolNames := make([]string, 0)
 	for poolName := range d.physicalPools {
 		physicalPoolNames = append(physicalPoolNames, poolName)
@@ -1034,7 +1054,7 @@ func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames() []string {
 	return physicalPoolNames
 }
 
-func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
+func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
 
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
@@ -1056,7 +1076,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 			return name
 		}
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name":   name,
 			"UUID":   uuid4string,
 			"Base64": b64string,
@@ -1067,6 +1087,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(name string) string {
 }
 
 func (d *SANStorageDriver) GetVolumeOpts(
+	ctx context.Context,
 	volConfig *storage.VolumeConfig,
 	pool *storage.Pool,
 	requests map[string]sa.Request,
@@ -1087,14 +1108,14 @@ func (d *SANStorageDriver) GetVolumeOpts(
 			} else if mediaType == sa.SSD {
 				opts["mediaType"] = "ssd"
 			} else {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"provisioner":      "E-series",
 					"method":           "GetVolumeOpts",
 					"provisioningType": mediaTypeReq.Value(),
 				}).Warnf("Expected 'ssd' or 'hdd' for %s; ignoring.", sa.Media)
 			}
 		} else {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"provisioner":      "E-series",
 				"method":           "GetVolumeOpts",
 				"provisioningType": mediaTypeReq.Value(),
@@ -1106,7 +1127,7 @@ func (d *SANStorageDriver) GetVolumeOpts(
 		opts["fileSystemType"] = volConfig.FileSystem
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volConfig": volConfig,
 		"pool":      pool,
 		"requests":  requests,
@@ -1116,7 +1137,7 @@ func (d *SANStorageDriver) GetVolumeOpts(
 	return opts, nil
 }
 
-func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1125,18 +1146,18 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 			"name":         volConfig.Name,
 			"internalName": volConfig.InternalName,
 		}
-		log.WithFields(fields).Debug(">>>> CreateFollowup")
-		defer log.WithFields(fields).Debug("<<<< CreateFollowup")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		log.Debug("No follow-up create actions for Docker.")
+		Logc(ctx).Debug("No follow-up create actions for Docker.")
 		return nil
 	}
 
 	// Get the volume
 	name := volConfig.InternalName
-	volume, err := d.API.GetVolume(name)
+	volume, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", name, err)
 	}
@@ -1145,13 +1166,13 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 	}
 
 	// Get the Target IQN
-	targetIQN, err := d.API.GetTargetIQN()
+	targetIQN, err := d.API.GetTargetIQN(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get target IQN from array: %v", err)
 	}
 
 	// Get the Trident Host Group
-	hostGroup, err := d.API.GetHostGroup(d.Config.AccessGroup)
+	hostGroup, err := d.API.GetHostGroup(ctx, d.Config.AccessGroup)
 	if err != nil {
 		return fmt.Errorf("could not get Host Group %s from array: %v", d.Config.AccessGroup, err)
 	}
@@ -1161,7 +1182,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 		HostRef:    api.NullRef,
 		ClusterRef: hostGroup.ClusterRef,
 	}
-	mapping, err := d.API.MapVolume(volume, host)
+	mapping, err := d.API.MapVolume(ctx, volume, host)
 	if err != nil {
 		return fmt.Errorf("could not map volume %s to Host Group %s: %v", name, hostGroup.Label, err)
 	}
@@ -1170,7 +1191,7 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
 	volConfig.AccessInfo.IscsiLunNumber = int32(mapping.LunNumber)
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,
 		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
@@ -1181,23 +1202,25 @@ func (d *SANStorageDriver) CreateFollowup(volConfig *storage.VolumeConfig) error
 	return nil
 }
 
-func (d *SANStorageDriver) GetProtocol() tridentconfig.Protocol {
+func (d *SANStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {
 	return tridentconfig.Block
 }
 
-func (d *SANStorageDriver) StoreConfig(b *storage.PersistentStorageBackendConfig) {
-	log.Debugln("EseriesStorageDriver:StoreConfig")
+func (d *SANStorageDriver) StoreConfig(ctx context.Context, b *storage.PersistentStorageBackendConfig) {
+
+	Logc(ctx).Debugln("EseriesStorageDriver:StoreConfig")
 
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 	b.EseriesConfig = &d.Config
 }
 
-func (d *SANStorageDriver) GetExternalConfig() interface{} {
-	log.Debugln("EseriesStorageDriver:GetExternalConfig")
+func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
+
+	Logc(ctx).Debugln("EseriesStorageDriver:GetExternalConfig")
 
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
-	drivers.Clone(d.Config, &cloneConfig)
+	drivers.Clone(ctx, d.Config, &cloneConfig)
 	cloneConfig.Username = "<REDACTED>"      // redact the username
 	cloneConfig.Password = "<REDACTED>"      // redact the password
 	cloneConfig.PasswordArray = "<REDACTED>" // redact the password
@@ -1242,9 +1265,9 @@ func (d *SANStorageDriver) base64ToUUID(b64 string) (string, error) {
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *SANStorageDriver) GetVolumeExternal(name string) (*storage.VolumeExternal, error) {
+func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
 
-	volumeAttrs, err := d.API.GetVolume(name)
+	volumeAttrs, err := d.API.GetVolume(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -1271,14 +1294,13 @@ func (d SANStorageDriver) GoString() string {
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *SANStorageDriver) GetVolumeExternalWrappers(
-	channel chan *storage.VolumeExternalWrapper) {
+func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
 
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
 	// Get all volumes
-	volumes, err := d.API.GetVolumes()
+	volumes, err := d.API.GetVolumes(ctx)
 	if err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
@@ -1340,7 +1362,7 @@ func (d *SANStorageDriver) getVolumeExternal(
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver
-func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bitmap {
+func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage.Driver) *roaring.Bitmap {
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*SANStorageDriver)
 	if !ok {
@@ -1369,10 +1391,10 @@ func (d *SANStorageDriver) GetUpdateType(driverOrig storage.Driver) *roaring.Bit
 
 // Resize expands the volume size. This method relies on the desired state model of Kubernetes
 // and will not work with Docker.
-func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
 	name := volConfig.InternalName
-	vol, err := d.getVolume(name)
+	vol, err := d.getVolume(ctx, name)
 	if err != nil {
 		return err
 	}
@@ -1380,7 +1402,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	// Check to see if a volume expand operation is already being processed.
 	// If true then return the error, to K8S, which indicates that the volume resize is in progress.
 	// If no errors exist continue to attempt to resize the volume.
-	isResizing, err := d.API.ResizingVolume(vol)
+	isResizing, err := d.API.ResizingVolume(ctx, vol)
 	if isResizing || (err != nil) {
 		return err
 	}
@@ -1397,7 +1419,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	}
 
 	if sameSize {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"requestedSize":     sizeBytes,
 			"currentVolumeSize": volSizeBytes,
 			"name":              name,
@@ -1411,22 +1433,23 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
 	}
 
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
-	d.API.ResizeVolume(vol, sizeBytes)
+	d.API.ResizeVolume(ctx, vol, sizeBytes)
 
 	// Check to see if a volume expand operation is still being processed.
 	// If true then return the error, to K8S, which indicates that the volume resize is in progress.
 	// If no errors exist then return nil as resize succeeded.
-	isResizing, err = d.API.ResizingVolume(vol)
+	isResizing, err = d.API.ResizingVolume(ctx, vol)
 	if isResizing || (err != nil) {
 		return err
 	}
 
 	// Update volSizeBytes to return new volume size
-	vol, err = d.getVolume(name)
+	vol, err = d.getVolume(ctx, name)
 	volSizeBytes, err = strconv.ParseUint(vol.VolumeSize, 10, 64)
 	if err != nil {
 		return fmt.Errorf("error occurred when checking final volume size")
@@ -1436,7 +1459,7 @@ func (d *SANStorageDriver) Resize(volConfig *storage.VolumeConfig, sizeBytes uin
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
 
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
@@ -1448,8 +1471,8 @@ func (d *SANStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, backendUUID 
 			"Type":   "SANStorageDriver",
 			"Nodes":  nodeNames,
 		}
-		log.WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
 	return nil

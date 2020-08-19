@@ -3,6 +3,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
@@ -24,47 +26,47 @@ import (
 // Driver provides a common interface for storage related operations
 type Driver interface {
 	Name() string
-	Initialize(tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
+	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
-	Terminate(backendUUID string)
-	Create(volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
-	CreatePrepare(volConfig *VolumeConfig)
+	Terminate(ctx context.Context, backendUUID string)
+	Create(ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
+	CreatePrepare(ctx context.Context, volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
-	CreateFollowup(volConfig *VolumeConfig) error
+	CreateFollowup(ctx context.Context, volConfig *VolumeConfig) error
 	// GetInternalVolumeName will return a name that satisfies any character
 	// constraints present on the backend and that will be unique to Trident.
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
-	CreateClone(volConfig *VolumeConfig, storagePool *Pool) error
-	Import(volConfig *VolumeConfig, originalName string) error
-	Destroy(name string) error
-	Rename(name string, newName string) error
-	Resize(volConfig *VolumeConfig, sizeBytes uint64) error
-	Get(name string) error
-	GetInternalVolumeName(name string) string
-	GetStorageBackendSpecs(backend *Backend) error
-	GetStorageBackendPhysicalPoolNames() []string
-	GetProtocol() tridentconfig.Protocol
-	Publish(volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
-	GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
-	GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error)
-	CreateSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error)
-	RestoreSnapshot(snapConfig *SnapshotConfig) error
-	DeleteSnapshot(snapConfig *SnapshotConfig) error
-	StoreConfig(b *PersistentStorageBackendConfig)
+	CreateClone(ctx context.Context, volConfig *VolumeConfig, storagePool *Pool) error
+	Import(ctx context.Context, volConfig *VolumeConfig, originalName string) error
+	Destroy(ctx context.Context, name string) error
+	Rename(ctx context.Context, name, newName string) error
+	Resize(ctx context.Context, volConfig *VolumeConfig, sizeBytes uint64) error
+	Get(ctx context.Context, name string) error
+	GetInternalVolumeName(ctx context.Context, name string) string
+	GetStorageBackendSpecs(ctx context.Context, backend *Backend) error
+	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
+	GetProtocol(ctx context.Context) tridentconfig.Protocol
+	Publish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
+	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
+	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
+	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
+	DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
+	StoreConfig(ctx context.Context, b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
-	GetExternalConfig() interface{}
+	GetExternalConfig(ctx context.Context) interface{}
 	// GetVolumeExternal accepts the internal name of a volume and returns a VolumeExternal
 	// object.  This method is only available if using the passthrough store (i.e. Docker).
-	GetVolumeExternal(name string) (*VolumeExternal, error)
+	GetVolumeExternal(ctx context.Context, name string) (*VolumeExternal, error)
 	// GetVolumeExternalWrappers reads all volumes owned by this driver from the storage backend and
 	// writes them to the supplied channel as VolumeExternalWrapper objects.  This method is only
 	// available if using the passthrough store (i.e. Docker).
-	GetVolumeExternalWrappers(chan *VolumeExternalWrapper)
-	GetUpdateType(driver Driver) *roaring.Bitmap
-	ReconcileNodeAccess(nodes []*utils.Node, backendUUID string) error
+	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
+	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
+	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error
 }
 
 type Backend struct {
@@ -135,7 +137,7 @@ func (s BackendState) IsFailed() bool {
 	return s == Failed
 }
 
-func NewStorageBackend(driver Driver) (*Backend, error) {
+func NewStorageBackend(ctx context.Context, driver Driver) (*Backend, error) {
 	backend := Backend{
 		Driver:  driver,
 		State:   Online,
@@ -145,14 +147,15 @@ func NewStorageBackend(driver Driver) (*Backend, error) {
 	}
 
 	// retrieve backend specs
-	if err := backend.Driver.GetStorageBackendSpecs(&backend); err != nil {
+	if err := backend.Driver.GetStorageBackendSpecs(ctx, &backend); err != nil {
 		return nil, err
 	}
 
 	return &backend, nil
 }
 
-func NewFailedStorageBackend(driver Driver) *Backend {
+func NewFailedStorageBackend(ctx context.Context, driver Driver) *Backend {
+
 	backend := Backend{
 		Driver:  driver,
 		State:   Failed,
@@ -160,7 +163,7 @@ func NewFailedStorageBackend(driver Driver) *Backend {
 		Volumes: make(map[string]*Volume),
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backendUUID": backend.BackendUUID,
 		"backendName": backend.Name,
 		"driver":      driver.Name(),
@@ -173,25 +176,25 @@ func (b *Backend) AddStoragePool(pool *Pool) {
 	b.Storage[pool.Name] = pool
 }
 
-func (b *Backend) GetPhysicalPoolNames() []string {
-	return b.Driver.GetStorageBackendPhysicalPoolNames()
+func (b *Backend) GetPhysicalPoolNames(ctx context.Context) []string {
+	return b.Driver.GetStorageBackendPhysicalPoolNames(ctx)
 }
 
 func (b *Backend) GetDriverName() string {
 	return b.Driver.Name()
 }
 
-func (b *Backend) GetProtocol() tridentconfig.Protocol {
-	return b.Driver.GetProtocol()
+func (b *Backend) GetProtocol(ctx context.Context) tridentconfig.Protocol {
+	return b.Driver.GetProtocol(ctx)
 }
 
 func (b *Backend) AddVolume(
-	volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request, retry bool,
+	ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request, retry bool,
 ) (*Volume, error) {
 
 	var err error
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"backendUUID":    b.BackendUUID,
 		"volume":         volConfig.Name,
@@ -202,7 +205,7 @@ func (b *Backend) AddVolume(
 	}).Debug("Attempting volume create.")
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
@@ -213,14 +216,14 @@ func (b *Backend) AddVolume(
 
 	// Add volume to the backend
 	volumeExists := false
-	if err = b.Driver.Create(volConfig, storagePool, volAttributes); err != nil {
+	if err = b.Driver.Create(ctx, volConfig, storagePool, volAttributes); err != nil {
 
 		if drivers.IsVolumeExistsError(err) {
 
 			// Implement idempotency by ignoring the error if the volume exists already
 			volumeExists = true
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"backend": b.Name,
 				"volume":  volConfig.InternalName,
 			}).Warning("Volume already exists.")
@@ -232,9 +235,9 @@ func (b *Backend) AddVolume(
 	}
 
 	// Always perform the follow-up steps
-	if err = b.Driver.CreateFollowup(volConfig); err != nil {
+	if err = b.Driver.CreateFollowup(ctx, volConfig); err != nil {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"backend":      b.Name,
 			"volume":       volConfig.InternalName,
 			"volumeExists": volumeExists,
@@ -244,14 +247,14 @@ func (b *Backend) AddVolume(
 		// If follow-up fails and we just created the volume, clean up by deleting it
 		if !volumeExists || retry {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"backend": b.Name,
 				"volume":  volConfig.InternalName,
 			}).Errorf("CreateFollowup failed for newly created volume, deleting the volume.")
 
-			errDestroy := b.Driver.Destroy(volConfig.InternalName)
+			errDestroy := b.Driver.Destroy(ctx, volConfig.InternalName)
 			if errDestroy != nil {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"backend": b.Name,
 					"volume":  volConfig.InternalName,
 				}).Warnf("Mapping the created volume failed "+
@@ -270,7 +273,7 @@ func (b *Backend) AddVolume(
 	return vol, nil
 }
 
-func (b *Backend) GetDebugTraceFlags() map[string]bool {
+func (b *Backend) GetDebugTraceFlags(ctx context.Context) map[string]bool {
 
 	var emptyMap map[string]bool
 	if b == nil {
@@ -279,12 +282,12 @@ func (b *Backend) GetDebugTraceFlags() map[string]bool {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warn("Panicked while getting debug trace flags.")
+			Logc(ctx).Warn("Panicked while getting debug trace flags.")
 		}
 	}()
 
 	// The backend configs are all different, so use reflection to pull out the debug trace flags map
-	cfg := b.ConstructExternal().Config
+	cfg := b.ConstructExternal(ctx).Config
 	v := reflect.ValueOf(cfg)
 	field := v.FieldByName("DebugTraceFlags")
 	if field.IsZero() {
@@ -298,9 +301,11 @@ func (b *Backend) GetDebugTraceFlags() map[string]bool {
 	return emptyMap
 }
 
-func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry bool) (*Volume, error) {
+func (b *Backend) CloneVolume(
+	ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, retry bool,
+) (*Volume, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":                volConfig.Name,
 		"backendUUID":            b.BackendUUID,
 		"storage_class":          volConfig.StorageClass,
@@ -317,7 +322,7 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
@@ -331,14 +336,14 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 
 	// Clone volume on the backend
 	volumeExists := false
-	if err := b.Driver.CreateClone(volConfig, storagePool); err != nil {
+	if err := b.Driver.CreateClone(ctx, volConfig, storagePool); err != nil {
 
 		if drivers.IsVolumeExistsError(err) {
 
 			// Implement idempotency by ignoring the error if the volume exists already
 			volumeExists = true
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"backend": b.Name,
 				"volume":  volConfig.InternalName,
 			}).Warning("Volume already exists.")
@@ -351,10 +356,10 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 
 	// The clone may not be fully created when the clone API returns, so wait here until it exists.
 	checkCloneExists := func() error {
-		return b.Driver.Get(volConfig.InternalName)
+		return b.Driver.Get(ctx, volConfig.InternalName)
 	}
 	cloneExistsNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Clone not yet present, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("Clone not yet present, waiting.")
 	}
 	cloneBackoff := backoff.NewExponentialBackOff()
 	cloneBackoff.InitialInterval = 1 * time.Second
@@ -364,19 +369,19 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 
 	// Run the clone check using an exponential backoff
 	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
-		log.WithField("clone_volume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
+		Logc(ctx).WithField("clone_volume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
 			float64(cloneBackoff.MaxElapsedTime))
 	} else {
-		log.WithField("clone_volume", volConfig.Name).Debug("Clone found.")
+		Logc(ctx).WithField("clone_volume", volConfig.Name).Debug("Clone found.")
 	}
 
-	if err := b.Driver.CreateFollowup(volConfig); err != nil {
+	if err := b.Driver.CreateFollowup(ctx, volConfig); err != nil {
 
 		// If follow-up fails and we just created the volume, clean up by deleting it
 		if !volumeExists || retry {
-			errDestroy := b.Driver.Destroy(volConfig.InternalName)
+			errDestroy := b.Driver.Destroy(ctx, volConfig.InternalName)
 			if errDestroy != nil {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"backend": b.Name,
 					"volume":  volConfig.InternalName,
 				}).Warnf("Mapping the created volume failed "+
@@ -404,9 +409,11 @@ func (b *Backend) CloneVolume(volConfig *VolumeConfig, storagePool *Pool, retry 
 	return vol, nil
 }
 
-func (b *Backend) PublishVolume(volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error {
+func (b *Backend) PublishVolume(
+	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"backendUUID":    b.BackendUUID,
 		"volume":         volConfig.Name,
@@ -414,25 +421,25 @@ func (b *Backend) PublishVolume(volConfig *VolumeConfig, publishInfo *utils.Volu
 	}).Debug("Attempting volume publish.")
 
 	// Ensure backend is ready
-	if err := b.ensureOnlineOrDeleting(); err != nil {
+	if err := b.ensureOnlineOrDeleting(ctx); err != nil {
 		return err
 	}
 
-	return b.Driver.Publish(volConfig, publishInfo)
+	return b.Driver.Publish(ctx, volConfig, publishInfo)
 }
 
-func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) {
+func (b *Backend) GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error) {
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
-	if b.Driver.Get(volumeName) != nil {
+	if b.Driver.Get(ctx, volumeName) != nil {
 		return nil, fmt.Errorf("volume %s was not found", volumeName)
 	}
 
-	volExternal, err := b.Driver.GetVolumeExternal(volumeName)
+	volExternal, err := b.Driver.GetVolumeExternal(ctx, volumeName)
 	if err != nil {
 		return nil, fmt.Errorf("error requesting volume size: %v", err)
 	}
@@ -441,16 +448,16 @@ func (b *Backend) GetVolumeExternal(volumeName string) (*VolumeExternal, error) 
 	return volExternal, nil
 }
 
-func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
+func (b *Backend) ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":    b.Name,
 		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": volConfig.ImportNotManaged,
 	}).Debug("Backend#ImportVolume")
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
@@ -459,15 +466,15 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
 		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
 		// Sanitize the volume name
-		b.Driver.CreatePrepare(volConfig)
+		b.Driver.CreatePrepare(ctx, volConfig)
 	}
 
-	err := b.Driver.Import(volConfig, volConfig.ImportOriginalName)
+	err := b.Driver.Import(ctx, volConfig, volConfig.ImportOriginalName)
 	if err != nil {
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
 
-	err = b.Driver.CreateFollowup(volConfig)
+	err = b.Driver.CreateFollowup(ctx, volConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed post import volume operations : %v", err)
 	}
@@ -477,7 +484,7 @@ func (b *Backend) ImportVolume(volConfig *VolumeConfig) (*Volume, error) {
 	return volume, nil
 }
 
-func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
+func (b *Backend) ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error {
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
@@ -485,7 +492,7 @@ func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return err
 	}
 
@@ -499,15 +506,15 @@ func (b *Backend) ResizeVolume(volConfig *VolumeConfig, newSize string) error {
 		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":     b.Name,
 		"volume":      volConfig.InternalName,
 		"volume_size": newSizeBytes,
 	}).Debug("Attempting volume resize.")
-	return b.Driver.Resize(volConfig, newSizeBytes)
+	return b.Driver.Resize(ctx, volConfig, newSizeBytes)
 }
 
-func (b *Backend) RenameVolume(volConfig *VolumeConfig, newName string) error {
+func (b *Backend) RenameVolume(ctx context.Context, volConfig *VolumeConfig, newName string) error {
 
 	oldName := volConfig.InternalName
 
@@ -517,25 +524,25 @@ func (b *Backend) RenameVolume(volConfig *VolumeConfig, newName string) error {
 	}
 
 	if b.State != Online {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"state":         b.State,
 			"expectedState": string(Online),
 		}).Error("Invalid backend state.")
 		return fmt.Errorf("backend %s is not Online", b.Name)
 	}
 
-	if err := b.Driver.Get(oldName); err != nil {
+	if err := b.Driver.Get(ctx, oldName); err != nil {
 		return fmt.Errorf("volume %s not found on backend %s; %v", oldName, b.Name, err)
 	}
-	if err := b.Driver.Rename(oldName, newName); err != nil {
+	if err := b.Driver.Rename(ctx, oldName, newName); err != nil {
 		return fmt.Errorf("error attempting to rename volume %s on backend %s: %v", oldName, b.Name, err)
 	}
 	return nil
 }
 
-func (b *Backend) RemoveVolume(volConfig *VolumeConfig) error {
+func (b *Backend) RemoveVolume(ctx context.Context, volConfig *VolumeConfig) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
@@ -548,11 +555,11 @@ func (b *Backend) RemoveVolume(volConfig *VolumeConfig) error {
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnlineOrDeleting(); err != nil {
+	if err := b.ensureOnlineOrDeleting(ctx); err != nil {
 		return err
 	}
 
-	if err := b.Driver.Destroy(volConfig.InternalName); err != nil {
+	if err := b.Driver.Destroy(ctx, volConfig.InternalName); err != nil {
 		// TODO:  Check the error being returned once the nDVP throws errors
 		// for volumes that aren't found.
 		return err
@@ -568,9 +575,9 @@ func (b *Backend) RemoveCachedVolume(volumeName string) {
 	}
 }
 
-func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
+func (b *Backend) GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -578,11 +585,11 @@ func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
 	}).Debug("GetSnapshot.")
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
-	if snapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+	if snapshot, err := b.Driver.GetSnapshot(ctx, snapConfig); err != nil {
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return nil, err
 	} else if snapshot == nil {
@@ -593,25 +600,27 @@ func (b *Backend) GetSnapshot(snapConfig *SnapshotConfig) (*Snapshot, error) {
 	}
 }
 
-func (b *Backend) GetSnapshots(volConfig *VolumeConfig) ([]*Snapshot, error) {
+func (b *Backend) GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
 	}).Debug("GetSnapshots.")
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
-	return b.Driver.GetSnapshots(volConfig)
+	return b.Driver.GetSnapshots(ctx, volConfig)
 }
 
-func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error) {
+func (b *Backend) CreateSnapshot(
+	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
+) (*Snapshot, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -624,7 +633,7 @@ func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
@@ -633,14 +642,14 @@ func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 	snapConfig.InternalName = snapConfig.Name
 
 	// Implement idempotency by checking for the snapshot first
-	if existingSnapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+	if existingSnapshot, err := b.Driver.GetSnapshot(ctx, snapConfig); err != nil {
 
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return nil, err
 
 	} else if existingSnapshot != nil {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"backend":      b.Name,
 			"volumeName":   snapConfig.VolumeName,
 			"snapshotName": snapConfig.Name,
@@ -651,12 +660,12 @@ func (b *Backend) CreateSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 	}
 
 	// Create snapshot
-	return b.Driver.CreateSnapshot(snapConfig)
+	return b.Driver.CreateSnapshot(ctx, snapConfig)
 }
 
-func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
+func (b *Backend) RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -669,17 +678,17 @@ func (b *Backend) RestoreSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeC
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnline(); err != nil {
+	if err := b.ensureOnline(ctx); err != nil {
 		return err
 	}
 
 	// Restore snapshot
-	return b.Driver.RestoreSnapshot(snapConfig)
+	return b.Driver.RestoreSnapshot(ctx, snapConfig)
 }
 
-func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
+func (b *Backend) DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.Name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -692,19 +701,19 @@ func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 	}
 
 	// Ensure backend is ready
-	if err := b.ensureOnlineOrDeleting(); err != nil {
+	if err := b.ensureOnlineOrDeleting(ctx); err != nil {
 		return err
 	}
 
 	// Implement idempotency by checking for the snapshot first
-	if existingSnapshot, err := b.Driver.GetSnapshot(snapConfig); err != nil {
+	if existingSnapshot, err := b.Driver.GetSnapshot(ctx, snapConfig); err != nil {
 
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return err
 
 	} else if existingSnapshot == nil {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"backend":      b.Name,
 			"volumeName":   snapConfig.VolumeName,
 			"snapshotName": snapConfig.Name,
@@ -715,7 +724,7 @@ func (b *Backend) DeleteSnapshot(snapConfig *SnapshotConfig, volConfig *VolumeCo
 	}
 
 	// Delete snapshot
-	return b.Driver.DeleteSnapshot(snapConfig)
+	return b.Driver.DeleteSnapshot(ctx, snapConfig)
 }
 
 const (
@@ -727,8 +736,8 @@ const (
 	PrefixChange
 )
 
-func (b *Backend) GetUpdateType(origBackend *Backend) *roaring.Bitmap {
-	updateCode := b.Driver.GetUpdateType(origBackend.Driver)
+func (b *Backend) GetUpdateType(ctx context.Context, origBackend *Backend) *roaring.Bitmap {
+	updateCode := b.Driver.GetUpdateType(ctx, origBackend.Driver)
 	if b.Name != origBackend.Name {
 		updateCode.Add(BackendRename)
 	}
@@ -744,7 +753,7 @@ func (b *Backend) HasVolumes() bool {
 // Terminate informs the backend that it is being deleted from the core
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
-func (b *Backend) Terminate() {
+func (b *Backend) Terminate(ctx context.Context) {
 
 	logFields := log.Fields{
 		"backend":     b.Name,
@@ -754,26 +763,27 @@ func (b *Backend) Terminate() {
 	}
 
 	if !b.Driver.Initialized() {
-		log.WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
+		Logc(ctx).WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
 	} else {
-		log.WithFields(logFields).Debug("Terminating backend.")
-		b.Driver.Terminate(b.BackendUUID)
+		Logc(ctx).WithFields(logFields).Debug("Terminating backend.")
+		b.Driver.Terminate(ctx, b.BackendUUID)
 	}
 }
 
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
-func (b *Backend) ReconcileNodeAccess(nodes []*utils.Node) error {
+func (b *Backend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node) error {
 	if b.State == Online || b.State == Deleting {
-		return b.Driver.ReconcileNodeAccess(nodes, b.BackendUUID)
+		return b.Driver.ReconcileNodeAccess(ctx, nodes, b.BackendUUID)
 	}
 	return nil
 }
 
-func (b *Backend) ensureOnline() error {
+func (b *Backend) ensureOnline(ctx context.Context) error {
+
 	if b.State != Online {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"state":         b.State,
 			"expectedState": string(Online),
 		}).Error("Invalid backend state.")
@@ -782,9 +792,10 @@ func (b *Backend) ensureOnline() error {
 	return nil
 }
 
-func (b *Backend) ensureOnlineOrDeleting() error {
+func (b *Backend) ensureOnlineOrDeleting(ctx context.Context) error {
+
 	if b.State != Online && b.State != Deleting {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"state":         b.State,
 			"expectedState": string(Online) + "/" + string(Deleting),
 		}).Error("Invalid backend state.")
@@ -804,12 +815,12 @@ type BackendExternal struct {
 	Volumes     []string               `json:"volumes"`
 }
 
-func (b *Backend) ConstructExternal() *BackendExternal {
+func (b *Backend) ConstructExternal(ctx context.Context) *BackendExternal {
 	backendExternal := BackendExternal{
 		Name:        b.Name,
 		BackendUUID: b.BackendUUID,
-		Protocol:    b.GetProtocol(),
-		Config:      b.Driver.GetExternalConfig(),
+		Protocol:    b.GetProtocol(ctx),
+		Config:      b.Driver.GetExternalConfig(ctx),
 		Storage:     make(map[string]interface{}),
 		Online:      b.Online,
 		State:       b.State,
@@ -847,7 +858,7 @@ type BackendPersistent struct {
 	State       BackendState                   `json:"state"`
 }
 
-func (b *Backend) ConstructPersistent() *BackendPersistent {
+func (b *Backend) ConstructPersistent(ctx context.Context) *BackendPersistent {
 	persistentBackend := &BackendPersistent{
 		Version:     tridentconfig.OrchestratorAPIVersion,
 		Config:      PersistentStorageBackendConfig{},
@@ -856,7 +867,7 @@ func (b *Backend) ConstructPersistent() *BackendPersistent {
 		State:       b.State,
 		BackendUUID: b.BackendUUID,
 	}
-	b.Driver.StoreConfig(&persistentBackend.Config)
+	b.Driver.StoreConfig(ctx, &persistentBackend.Config)
 	return persistentBackend
 }
 

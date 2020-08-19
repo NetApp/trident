@@ -13,12 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/netapp/trident/frontend/crd"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/crd"
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"

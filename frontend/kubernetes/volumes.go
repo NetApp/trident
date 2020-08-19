@@ -13,6 +13,7 @@ import (
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	k8sclient "github.com/netapp/trident/k8s_client"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -25,13 +26,13 @@ import (
 // claim; this is acceptable, though undesirable, and helps us avoid racing
 // with the binder.
 func canPVMatchWithPVC(ctx context.Context, pv *v1.PersistentVolume, claim *v1.PersistentVolumeClaim) bool {
-	logc := utils.GetLogWithRequestContext(ctx)
+
 	claimSize, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	claimAccessModes := claim.Spec.AccessModes
 	volumeAccessModes := pv.Spec.AccessModes
 	volumeSize, ok := pv.Spec.Capacity[v1.ResourceStorage]
 	if !ok {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"PV":  pv.Name,
 			"PVC": claim.Name,
 		}).Error("Kubernetes frontend detected a corrupted PV with no size!")
@@ -121,10 +122,9 @@ func findOrCreateCHAPSecret(
 	ctx context.Context, k8sClient k8sclient.Interface, kubeVersion *utils.Version, vol *storage.VolumeExternal,
 ) (string, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	volConfig := vol.Config
 	secretName := vol.GetCHAPSecretName()
-	logc.Debugf("Using secret: %v", secretName)
+	Logc(ctx).Debugf("Using secret: %v", secretName)
 
 	if !kubeVersion.AtLeast(utils.MustParseSemantic("v1.7.0")) {
 		versionErr := fmt.Errorf("cannot use CHAP with Kubernetes version < v1.7.0")
@@ -133,7 +133,7 @@ func findOrCreateCHAPSecret(
 
 	secretExists, _ := k8sClient.CheckSecretExists(secretName)
 	if !secretExists {
-		logc.Infof("Creating secret: %v", secretName)
+		Logc(ctx).Infof("Creating secret: %v", secretName)
 		_, creationErr := k8sClient.CreateCHAPSecret(
 			secretName,
 			volConfig.AccessInfo.IscsiUsername,
@@ -142,7 +142,7 @@ func findOrCreateCHAPSecret(
 		if creationErr != nil {
 			return secretName, creationErr
 		} else {
-			logc.Infof("Created secret: %v", secretName)
+			Logc(ctx).Infof("Created secret: %v", secretName)
 		}
 	}
 	return secretName, nil
@@ -152,7 +152,6 @@ func CreateISCSIPersistentVolumeSource(
 	ctx context.Context, k8sClient k8sclient.Interface, kubeVersion *utils.Version, vol *storage.VolumeExternal,
 ) (*v1.ISCSIPersistentVolumeSource, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
 	namespace := ""
 	switch {
 	case kubeVersion.AtLeast(utils.MustParseSemantic("v1.9.0")):
@@ -168,7 +167,7 @@ func CreateISCSIPersistentVolumeSource(
 		// CHAP logic
 		secretName, chapError := findOrCreateCHAPSecret(ctx, k8sClient, kubeVersion, vol)
 		if chapError != nil {
-			logc.Errorf("Could not create secret: %v error: %v", secretName, chapError.Error())
+			Logc(ctx).Errorf("Could not create secret: %v error: %v", secretName, chapError.Error())
 			return nil, chapError
 		}
 

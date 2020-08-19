@@ -3,17 +3,20 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	. "github.com/netapp/trident/logger"
+	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 // NewTridentVolume creates a new storage class CRD object from a internal
 // storage.VolumeExternal object
-func NewTridentVolume(persistent *storage.VolumeExternal) (*TridentVolume, error) {
+func NewTridentVolume(ctx context.Context, persistent *storage.VolumeExternal) (*TridentVolume, error) {
 
 	volume := &TridentVolume{
 		TypeMeta: metav1.TypeMeta{
@@ -27,11 +30,11 @@ func NewTridentVolume(persistent *storage.VolumeExternal) (*TridentVolume, error
 		BackendUUID: persistent.BackendUUID,
 	}
 
-	if err := volume.Apply(persistent); err != nil {
+	if err := volume.Apply(ctx, persistent); err != nil {
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume.Name":        volume.Name,
 		"volume.BackendUUID": volume.BackendUUID,
 		"volume.Orphaned":    volume.Orphaned,
@@ -43,9 +46,9 @@ func NewTridentVolume(persistent *storage.VolumeExternal) (*TridentVolume, error
 
 // Apply applies changes from an internal storage.VolumeExternal
 // object to its Kubernetes CRD equivalent
-func (in *TridentVolume) Apply(persistent *storage.VolumeExternal) error {
+func (in *TridentVolume) Apply(ctx context.Context, persistent *storage.VolumeExternal) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"persistent.BackendUUID": persistent.BackendUUID,
 		"persistent.Orphaned":    persistent.Orphaned,
 		"persistent.Pool":        persistent.Pool,

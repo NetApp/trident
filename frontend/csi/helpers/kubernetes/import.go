@@ -14,8 +14,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -27,8 +27,8 @@ import (
 func (p *Plugin) ImportVolume(
 	ctx context.Context, request *storage.ImportVolumeRequest,
 ) (*storage.VolumeExternal, error) {
-	logc := utils.GetLogWithRequestContext(ctx)
-	logc.WithField("request", request).Debug("ImportVolume")
+
+	Logc(ctx).WithField("request", request).Debug("ImportVolume")
 
 	// Get PVC from ImportVolumeRequest
 	jsonData, err := base64.StdEncoding.DecodeString(request.PVCData)
@@ -42,7 +42,7 @@ func (p *Plugin) ImportVolume(
 		return nil, fmt.Errorf("could not parse JSON PVC: %v", err)
 	}
 
-	logc.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"PVC":               claim.Name,
 		"PVC_storageClass":  getStorageClassForPVC(claim),
 		"PVC_accessModes":   claim.Spec.AccessModes,
@@ -84,20 +84,20 @@ func (p *Plugin) ImportVolume(
 		claim.Spec.Resources.Requests = v1.ResourceList{}
 	}
 	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(volExternal.Config.Size)
-	logc.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"size":      volExternal.Config.Size,
 		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
 	}).Debug("Volume import determined volume size")
 
 	pvc, pvcErr := p.createImportPVC(ctx, claim)
 	if pvcErr != nil {
-		logc.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"claim": claim.Name,
 			"error": pvcErr,
 		}).Warn("ImportVolume: error occurred during PVC creation.")
 		return nil, pvcErr
 	}
-	logc.WithField("PVC", pvc).Debug("ImportVolume: created pending PVC.")
+	Logc(ctx).WithField("PVC", pvc).Debug("ImportVolume: created pending PVC.")
 
 	pvName := fmt.Sprintf("pvc-%s", pvc.GetUID())
 
@@ -119,8 +119,7 @@ func (p *Plugin) createImportPVC(
 	ctx context.Context, claim *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 
-	logc := utils.GetLogWithRequestContext(ctx)
-	logc.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"claim":     claim,
 		"namespace": claim.Namespace,
 	}).Debug("CreateImportPVC: ready to create PVC")

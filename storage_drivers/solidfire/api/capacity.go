@@ -3,26 +3,28 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
-	log "github.com/sirupsen/logrus"
+	. "github.com/netapp/trident/logger"
 )
 
 // Get cluster capacity stats
-func (c *Client) GetClusterCapacity() (capacity *ClusterCapacity, err error) {
+func (c *Client) GetClusterCapacity(ctx context.Context) (capacity *ClusterCapacity, err error) {
+
 	var (
 		clusterCapReq    GetClusterCapacityRequest
 		clusterCapResult GetClusterCapacityResult
 	)
 
-	response, err := c.Request("GetClusterCapacity", clusterCapReq, NewReqID())
+	response, err := c.Request(ctx, "GetClusterCapacity", clusterCapReq, NewReqID())
 	if err != nil {
-		log.Errorf("Error detected in GetClusterCapacity API response: %+v", err)
+		Logc(ctx).Errorf("Error detected in GetClusterCapacity API response: %+v", err)
 		return nil, errors.New("device API error")
 	}
-	if err := json.Unmarshal([]byte(response), &clusterCapResult); err != nil {
-		log.Errorf("Error detected unmarshalling json response: %+v", err)
+	if err := json.Unmarshal(response, &clusterCapResult); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling json response: %+v", err)
 		return nil, errors.New("json decode error")
 	}
 	return &clusterCapResult.Result.ClusterCapacity, err

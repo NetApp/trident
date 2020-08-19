@@ -4,6 +4,7 @@
 package sdk
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -13,6 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 )
 
@@ -145,7 +147,7 @@ func (d *Client) GetCookieByStoragePoolName(spoolname string) (*AzureCapacityPoo
 // Internal functions to do discovery
 /////////////////////////////////////////////////////////////////////////////////
 
-func (d *Client) discoverResourceGroups() (*[]string, error) {
+func (d *Client) discoverResourceGroups(ctx context.Context) (*[]string, error) {
 
 	var rgs []string
 
@@ -153,12 +155,12 @@ func (d *Client) discoverResourceGroups() (*[]string, error) {
 	gc := resources.NewGroupsClient(d.config.SubscriptionID)
 	gc.Authorizer, _ = d.SDKClient.AuthConfig.Authorizer()
 
-	list, err := gc.ListComplete(d.SDKClient.Ctx, "", nil)
+	list, err := gc.ListComplete(ctx, "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching resource groups: %v", err)
 	}
 
-	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
+	for ; list.NotDone(); err = list.NextWithContext(ctx) {
 		if err != nil {
 			return nil, fmt.Errorf("error iterating resource groups: %v", err)
 		}
@@ -171,13 +173,14 @@ func (d *Client) discoverResourceGroups() (*[]string, error) {
 }
 
 // Get a list of CapacityPools within a given Resource Group : NetAppAccount pair
-func (d *Client) discoverCapacityPools(rgroup string, naa string) (*[]CapacityPool, error) {
+func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa string) (*[]CapacityPool, error) {
+
 	var cpools []CapacityPool
 
-	pools, err := d.SDKClient.PoolsClient.List(d.SDKClient.Ctx, rgroup, naa)
+	pools, err := d.SDKClient.PoolsClient.List(ctx, rgroup, naa)
 
 	if err != nil {
-		log.Errorf("error fetching capacity pools for rg %s, account %s: %v\n", rgroup, naa, err)
+		Logc(ctx).Errorf("error fetching capacity pools for rg %s, account %s: %v\n", rgroup, naa, err)
 		return nil, err
 	}
 
@@ -185,7 +188,7 @@ func (d *Client) discoverCapacityPools(rgroup string, naa string) (*[]CapacityPo
 
 	for _, p := range plist {
 		if exists, _ := d.capacityPoolWithName(*p.Name); exists != nil {
-			log.Errorf("duplicate capacity pool '%s' in resource group '%s' ignored during discovery; unique names required",
+			Logc(ctx).Errorf("duplicate capacity pool '%s' in resource group '%s' ignored during discovery; unique names required",
 				exists.Name, rgroup)
 			continue
 		}
@@ -210,9 +213,9 @@ func (d *Client) discoverCapacityPools(rgroup string, naa string) (*[]CapacityPo
 }
 
 // Get a list of NetAppAccounts within a given Resource Group
-func (d *Client) discoverNetAppAccounts(rgroup string) (*[]NetAppAccount, error) {
+func (d *Client) discoverNetAppAccounts(ctx context.Context, rgroup string) (*[]NetAppAccount, error) {
 
-	naaListIter, err := d.SDKClient.AccountsClient.List(d.SDKClient.Ctx, rgroup)
+	naaListIter, err := d.SDKClient.AccountsClient.List(ctx, rgroup)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching netappaccounts for %s: %v", rgroup, err)
 	}
@@ -227,7 +230,7 @@ func (d *Client) discoverNetAppAccounts(rgroup string) (*[]NetAppAccount, error)
 		}
 
 		// Go ahead and get the capacity pools for this rg:naa pair
-		cpools, err := d.discoverCapacityPools(rgroup, na.Name)
+		cpools, err := d.discoverCapacityPools(ctx, rgroup, na.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -240,16 +243,16 @@ func (d *Client) discoverNetAppAccounts(rgroup string) (*[]NetAppAccount, error)
 }
 
 // Get a list of Subnets within a given Resource_Group:VirtualNetwork pairing
-func (d *Client) discoverSubnets(rgroup string, vn VirtualNetwork) (*[]Subnet, error) {
+func (d *Client) discoverSubnets(ctx context.Context, rgroup string, vn VirtualNetwork) (*[]Subnet, error) {
 
 	var subnets []Subnet
 
-	list, err := d.SDKClient.SubnetsClient.ListComplete(d.SDKClient.Ctx, rgroup, vn.Name)
+	list, err := d.SDKClient.SubnetsClient.ListComplete(ctx, rgroup, vn.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching subnets for rg %s, vn %s: %v", rgroup, vn.Name, err)
 	}
 
-	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
+	for ; list.NotDone(); err = list.NextWithContext(ctx) {
 		if err != nil {
 			return nil, fmt.Errorf("error iterating subnets for rg %s, vn %s: %v", rgroup, vn.Name, err)
 		}
@@ -276,16 +279,16 @@ func (d *Client) discoverSubnets(rgroup string, vn VirtualNetwork) (*[]Subnet, e
 }
 
 // Get a list of VirtualNetworks within a given Resource Group
-func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, error) {
+func (d *Client) discoverVirtualNetworks(ctx context.Context, rgroup string) (*[]VirtualNetwork, error) {
 
 	var vnets []VirtualNetwork
 
-	list, err := d.SDKClient.VirtualNetworksClient.ListComplete(d.SDKClient.Ctx, rgroup)
+	list, err := d.SDKClient.VirtualNetworksClient.ListComplete(ctx, rgroup)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching virtual networks for resource group %s: %v", rgroup, err)
 	}
 
-	for ; list.NotDone(); err = list.NextWithContext(d.SDKClient.Ctx) {
+	for ; list.NotDone(); err = list.NextWithContext(ctx) {
 		if err != nil {
 			return nil, fmt.Errorf("error iterating virtual networks for resource group %s: %v", rgroup, err)
 		}
@@ -296,13 +299,13 @@ func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, erro
 		}
 
 		if otherRG, _ := d.resourceGroupForVirtualNetwork(vn.Name); otherRG != nil && *otherRG != rgroup {
-			log.Errorf("duplicate virtual network '%s' in resource group '%s' ignored during discovery; unique names required",
+			Logc(ctx).Errorf("duplicate virtual network '%s' in resource group '%s' ignored during discovery; unique names required",
 				vn.Name, *otherRG)
 			continue
 		}
 
 		// Populate subnets for this virtual network
-		subnets, err := d.discoverSubnets(rgroup, vn)
+		subnets, err := d.discoverSubnets(ctx, rgroup, vn)
 		if err != nil {
 			return nil, err
 		}
@@ -321,7 +324,7 @@ func (d *Client) discoverVirtualNetworks(rgroup string) (*[]VirtualNetwork, erro
 // Top level init functions
 /////////////////////////////////////////////////////////////////////////////////
 
-func (d *Client) discoverAzureResources() (returnError error) {
+func (d *Client) discoverAzureResources(ctx context.Context) (returnError error) {
 
 	// Start from scratch each time we are called.  All discovered resources are
 	// nested under ResourceGroups.
@@ -329,7 +332,7 @@ func (d *Client) discoverAzureResources() (returnError error) {
 
 	defer func() {
 		if returnError != nil {
-			log.WithField("error", returnError).Debug("Discovery error, not retaining any discovered resources.")
+			Logc(ctx).WithField("error", returnError).Debug("Discovery error, not retaining any discovered resources.")
 			return
 		}
 
@@ -338,11 +341,11 @@ func (d *Client) discoverAzureResources() (returnError error) {
 		defer d.SDKClient.AzureResources.m.Unlock()
 
 		d.SDKClient.AzureResources.ResourceGroups = newResourceGroups
-		log.Debug("Switched to newly discovered resources.")
+		Logc(ctx).Debug("Switched to newly discovered resources.")
 	}()
 
 	// Get a list of resource group names and populate the cache
-	groups, returnError := d.discoverResourceGroups()
+	groups, returnError := d.discoverResourceGroups(ctx)
 	if returnError != nil {
 		return returnError
 	}
@@ -351,13 +354,13 @@ func (d *Client) discoverAzureResources() (returnError error) {
 		rg := ResourceGroup{Name: g}
 
 		// Fetch NetAppAccounts for this RG
-		naas, returnError := d.discoverNetAppAccounts(g)
+		naas, returnError := d.discoverNetAppAccounts(ctx, g)
 		if returnError != nil {
 			return returnError
 		}
 
 		// Fetch subnets for this RG
-		vnets, returnError := d.discoverVirtualNetworks(g)
+		vnets, returnError := d.discoverVirtualNetworks(ctx, g)
 		if returnError != nil {
 			return returnError
 		}
@@ -368,7 +371,7 @@ func (d *Client) discoverAzureResources() (returnError error) {
 			rg.VirtualNetworks = *vnets
 			newResourceGroups = append(newResourceGroups, rg)
 		} else {
-			log.Debugf("Ignoring discovered resource group '%s' because it has no ANF accounts or subnets.\n", g)
+			Logc(ctx).Debugf("Ignoring discovered resource group '%s' because it has no ANF accounts or subnets.\n", g)
 		}
 	}
 
@@ -389,7 +392,7 @@ func (d *Client) discoverAzureResources() (returnError error) {
 		return
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"resourceGroups":  numResourceGroups,
 		"capacityPools":   numCapacityPools,
 		"virtualNetworks": numVnets,
@@ -398,20 +401,20 @@ func (d *Client) discoverAzureResources() (returnError error) {
 	return
 }
 
-func (d *Client) dumpAzureResources() {
+func (d *Client) dumpAzureResources(ctx context.Context) {
 
-	log.Debugf("Discovered Azure Resources:\n")
+	Logc(ctx).Debugf("Discovered Azure Resources:\n")
 	for _, rg := range d.SDKClient.AzureResources.ResourceGroups {
-		log.Debugf("  Resource Group: %s\n", rg.Name)
+		Logc(ctx).Debugf("  Resource Group: %s\n", rg.Name)
 		for _, na := range rg.NetAppAccounts {
-			log.Debugf("    ANF Account: %s, Location: %s\n", na.Name, na.Location)
+			Logc(ctx).Debugf("    ANF Account: %s, Location: %s\n", na.Name, na.Location)
 			for _, cp := range na.CapacityPools {
-				log.Debugf("      CPool: %s, [%s]\n", cp.Name, cp.ServiceLevel)
+				Logc(ctx).Debugf("      CPool: %s, [%s]\n", cp.Name, cp.ServiceLevel)
 			}
 		}
 		for _, vn := range rg.VirtualNetworks {
 			for _, sn := range vn.Subnets {
-				log.Debugf("    Subnet: %s, Location: %s (vnet: %s)\n", sn.Name, vn.Location, vn.Name)
+				Logc(ctx).Debugf("    Subnet: %s, Location: %s (vnet: %s)\n", sn.Name, vn.Location, vn.Name)
 			}
 		}
 	}
@@ -437,27 +440,27 @@ func (d *Client) countAzureResources(resourceGroups []ResourceGroup) (int, int, 
 }
 
 // refreshAzureResources wraps the toplevel discovery process for the timer thread
-func (d *Client) refreshAzureResources() {
+func (d *Client) refreshAzureResources(ctx context.Context) {
 
 	// (re-)Discover what we have to work with in Azure
-	log.Debugf("Discovering Azure resources")
+	Logc(ctx).Debugf("Discovering Azure resources")
 
-	if err := d.discoverAzureResources(); err != nil {
-		log.Errorf("error discovering resources: %v", err)
+	if err := d.discoverAzureResources(ctx); err != nil {
+		Logc(ctx).Errorf("error discovering resources: %v", err)
 	}
 
 	// This is noisy, hide it behind api tracing.
 	if d.config.DebugTraceFlags["api"] {
-		d.dumpAzureResources()
+		d.dumpAzureResources(ctx)
 	}
 }
 
 // refreshTimer waits refreshIntervalMinutes, does the refresh work, and then reschedules itself
-func (d *Client) refreshTimer() {
+func (d *Client) refreshTimer(ctx context.Context) {
 
 	nextRefresh := time.Now().Add(time.Minute * refreshIntervalMinutes)
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"time": nextRefresh,
 	}).Debugf("Resource refresh in %d minutes", refreshIntervalMinutes)
 
@@ -468,19 +471,19 @@ func (d *Client) refreshTimer() {
 		return
 	}
 
-	d.refreshAzureResources()
+	d.refreshAzureResources(ctx)
 
-	go d.refreshTimer()
+	go d.refreshTimer(ctx)
 }
 
 // discoveryInit initializes the discovery pieces at startup
-func (d *Client) discoveryInit() {
+func (d *Client) discoveryInit(ctx context.Context) {
 	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]*storage.Pool)
 	d.SDKClient.AzureResources.m = &sync.Mutex{}
 
 	// Discover resources at startup synchronously, then kick off the refresh timer thread
-	d.refreshAzureResources()
-	go d.refreshTimer()
+	d.refreshAzureResources(ctx)
+	go d.refreshTimer(ctx)
 }
 
 /////////////////////////////////////////////////////////////////////////////////

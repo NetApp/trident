@@ -3,6 +3,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -292,7 +293,7 @@ func newTestPlugin(
 	for _, p := range protocols {
 		switch p {
 		case config.File:
-			orchestrator.AddMockONTAPNFSBackend("nfs", testNFSServer)
+			orchestrator.AddMockONTAPNFSBackend(context.Background(), "nfs", testNFSServer)
 		default:
 			log.Panic("Unsupported protocol:  ", p)
 		}

@@ -19,6 +19,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -65,16 +66,17 @@ func (d *Client) makeURL(resourcePath string) string {
 
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
-func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*http.Response, []byte, error) {
+func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method string, awsURL string) (*http.Response,
+	[]byte, error) {
 
 	var request *http.Request
 	var response *http.Response
 	var err error
 
 	if requestBody == nil {
-		request, err = http.NewRequest(method, awsURL, nil)
+		request, err = http.NewRequestWithContext(ctx, method, awsURL, nil)
 	} else {
-		request, err = http.NewRequest(method, awsURL, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequestWithContext(ctx, method, awsURL, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
@@ -83,6 +85,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
 	request.Header.Set("API-Key", d.config.APIKey)
 	request.Header.Set("Secret-Key", d.config.SecretKey)
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(ContextKeyRequestID)))
 
 	tr := &http.Transport{}
 	// Use ProxyUrl if set
@@ -120,7 +123,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 	response, err = d.invokeAPINoRetry(client, request)
 
 	if response == nil && err != nil {
-		log.Warnf("Error communicating with AWS REST interface. %v", err)
+		Logc(ctx).Warnf("Error communicating with AWS REST interface. %v", err)
 		return nil, nil, err
 	} else if response != nil {
 		defer func() { _ = response.Body.Close() }()
@@ -132,7 +135,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, awsURL string) (*h
 		responseBody, err = ioutil.ReadAll(response.Body)
 
 		if d.config.DebugTraceFlags["api"] {
-			utils.LogHTTPResponse(context.TODO(), response, responseBody)
+			utils.LogHTTPResponse(ctx, response, responseBody)
 		}
 	}
 
@@ -167,7 +170,7 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 		return nil
 	}
 	invokeNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(request.Context()).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Retrying API.")
@@ -176,14 +179,15 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 	invokeBackoff.MaxElapsedTime = retryTimeoutSeconds * time.Second
 
 	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		log.Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
+		Logc(request.Context()).Errorf("API has not succeeded after %3.2f seconds.",
+			invokeBackoff.MaxElapsedTime.Seconds())
 		return response, err
 	}
 
 	return response, nil
 }
 
-func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
+func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error) {
 
 	versionURL, err := url.Parse(d.config.APIURL)
 	if err != nil {
@@ -191,7 +195,7 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 	}
 	versionURL.Path = "/version"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", versionURL.String())
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", versionURL.String())
 	if err != nil {
 		return nil, nil, errors.New("failed to read version")
 	}
@@ -217,7 +221,7 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 		return nil, nil, fmt.Errorf("invalid semantic version for SDE version (%s): %v", version.SdeVersion, err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"apiVersion": apiVersion.String(),
 		"sdeVersion": sdeVersion.String(),
 	}).Info("Read CVS version.")
@@ -225,11 +229,11 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 	return apiVersion, sdeVersion, nil
 }
 
-func (d *Client) GetRegions() (*[]Region, error) {
+func (d *Client) GetRegions(ctx context.Context) (*[]Region, error) {
 
 	resourcePath := "/Storage/Regions"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read regions")
 	}
@@ -245,16 +249,16 @@ func (d *Client) GetRegions() (*[]Region, error) {
 		return nil, fmt.Errorf("could not parse region data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(regions)).Info("Read regions.")
+	Logc(ctx).WithField("count", len(regions)).Info("Read regions.")
 
 	return &regions, nil
 }
 
-func (d *Client) GetVolumes() (*[]FileSystem, error) {
+func (d *Client) GetVolumes(ctx context.Context) (*[]FileSystem, error) {
 
 	resourcePath := "/FileSystems"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read filesystems")
 	}
@@ -270,14 +274,14 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(filesystems)).Debug("Read filesystems.")
+	Logc(ctx).WithField("count", len(filesystems)).Debug("Read filesystems.")
 
 	return &filesystems, nil
 }
 
-func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
+func (d *Client) GetVolumeByName(ctx context.Context, name string) (*FileSystem, error) {
 
-	filesystems, err := d.GetVolumes()
+	filesystems, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -299,11 +303,11 @@ func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
 	return &matchingFilesystems[0], nil
 }
 
-func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, error) {
+func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get filesystem")
 	}
@@ -328,11 +332,11 @@ func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, er
 	return &filesystems[0], nil
 }
 
-func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileSystem, error) {
+func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return false, nil, errors.New("failed to get filesystem")
 	}
@@ -354,11 +358,11 @@ func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileS
 	return true, &filesystems[0], nil
 }
 
-func (d *Client) GetVolumeByID(fileSystemId string) (*FileSystem, error) {
+func (d *Client) GetVolumeByID(ctx context.Context, fileSystemId string) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", fileSystemId)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get filesystem")
 	}
@@ -378,14 +382,15 @@ func (d *Client) GetVolumeByID(fileSystemId string) (*FileSystem, error) {
 }
 
 func (d *Client) WaitForVolumeState(
-	filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, filesystem *FileSystem, desiredState string, abortStates []string,
+	maxElapsedTime time.Duration,
 ) (string, error) {
 
 	volumeState := ""
 
 	checkVolumeState := func() error {
 
-		f, err := d.GetVolumeByID(filesystem.FileSystemID)
+		f, err := d.GetVolumeByID(ctx, filesystem.FileSystemID)
 		if err != nil {
 			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
@@ -413,7 +418,7 @@ func (d *Client) WaitForVolumeState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for volume state.")
@@ -425,24 +430,24 @@ func (d *Client) WaitForVolumeState(
 	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for volume state.")
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Volume reached terminal state: %v", terminalStateErr)
+			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
 		} else {
-			log.Errorf("Volume state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
 	return volumeState, nil
 }
 
-func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, error) {
+func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequest) (*FileSystem, error) {
 
 	resourcePath := "/FileSystems"
 
@@ -451,7 +456,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +472,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -476,7 +481,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	return &filesystem, nil
 }
 
-func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSystem, error) {
+func (d *Client) RenameVolume(ctx context.Context, filesystem *FileSystem, newName string) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
@@ -492,7 +497,7 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -507,7 +512,7 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -516,7 +521,7 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 	return filesystem, nil
 }
 
-func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSystem, error) {
+func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labels []string) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
@@ -532,7 +537,7 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -547,7 +552,7 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -556,7 +561,9 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 	return filesystem, nil
 }
 
-func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, labels []string) (*FileSystem, error) {
+func (d *Client) RenameRelabelVolume(
+	ctx context.Context, filesystem *FileSystem, newName string, labels []string,
+) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
@@ -573,7 +580,7 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -588,7 +595,7 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -597,7 +604,7 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 	return filesystem, nil
 }
 
-func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
+func (d *Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
@@ -613,7 +620,7 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -628,7 +635,7 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		return nil, fmt.Errorf("could not parse filesystem data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"size":          newSizeBytes,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -637,11 +644,11 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 	return filesystem, nil
 }
 
-func (d *Client) DeleteVolume(filesystem *FileSystem) error {
+func (d *Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
 		return errors.New("failed to delete volume")
 	}
@@ -651,18 +658,18 @@ func (d *Client) DeleteVolume(filesystem *FileSystem) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume": filesystem.CreationToken,
 	}).Info("Filesystem deleted.")
 
 	return nil
 }
 
-func (d *Client) GetMountTargetsForVolume(filesystem *FileSystem) (*[]MountTarget, error) {
+func (d *Client) GetMountTargetsForVolume(ctx context.Context, filesystem *FileSystem) (*[]MountTarget, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s/MountTargets", filesystem.FileSystemID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read mount targets")
 	}
@@ -678,16 +685,16 @@ func (d *Client) GetMountTargetsForVolume(filesystem *FileSystem) (*[]MountTarge
 		return nil, fmt.Errorf("could not parse mount target data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(mountTargets)).Debug("Read mount targets for filesystem.")
+	Logc(ctx).WithField("count", len(mountTargets)).Debug("Read mount targets for filesystem.")
 
 	return &mountTargets, nil
 }
 
-func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, error) {
+func (d *Client) GetSnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]Snapshot, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", filesystem.FileSystemID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read snapshots")
 	}
@@ -703,14 +710,16 @@ func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, err
 		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(snapshots)).Debug("Read filesystem snapshots.")
+	Logc(ctx).WithField("count", len(snapshots)).Debug("Read filesystem snapshots.")
 
 	return &snapshots, nil
 }
 
-func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName string) (*Snapshot, error) {
+func (d *Client) GetSnapshotForVolume(
+	ctx context.Context, filesystem *FileSystem, snapshotName string,
+) (*Snapshot, error) {
 
-	snapshots, err := d.GetSnapshotsForVolume(filesystem)
+	snapshots, err := d.GetSnapshotsForVolume(ctx, filesystem)
 	if err != nil {
 		return nil, err
 	}
@@ -718,7 +727,7 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == snapshotName {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"snapshot":   snapshotName,
 				"filesystem": filesystem.CreationToken,
 			}).Debug("Found filesystem snapshot.")
@@ -727,7 +736,7 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot":   snapshotName,
 		"filesystem": filesystem.CreationToken,
 	}).Error("Snapshot not found.")
@@ -735,11 +744,11 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 	return nil, fmt.Errorf("snapshot %s not found", snapshotName)
 }
 
-func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
+func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snapshot, error) {
 
 	resourcePath := fmt.Sprintf("/Snapshots/%s", snapshotId)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get snapshot")
 	}
@@ -759,12 +768,12 @@ func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
 }
 
 func (d *Client) WaitForSnapshotState(
-	snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) error {
 
 	checkSnapshotState := func() error {
 
-		s, err := d.GetSnapshotByID(snapshot.SnapshotID)
+		s, err := d.GetSnapshotByID(ctx, snapshot.SnapshotID)
 		if err != nil {
 			return fmt.Errorf("could not get snapshot status; %v", err)
 		}
@@ -790,7 +799,7 @@ func (d *Client) WaitForSnapshotState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for snapshot state.")
@@ -802,24 +811,24 @@ func (d *Client) WaitForSnapshotState(
 	stateBackoff.InitialInterval = 2 * time.Second
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
 
 	if err := backoff.RetryNotify(checkSnapshotState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Snapshot reached terminal state: %v", terminalStateErr)
+			Logc(ctx).Errorf("Snapshot reached terminal state: %v", terminalStateErr)
 		} else {
-			log.Errorf("Snapshot state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Snapshot state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("Desired snapshot state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired snapshot state reached.")
 
 	return nil
 }
 
-func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, error) {
+func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) (*Snapshot, error) {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", request.FileSystemID)
 
@@ -828,7 +837,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -844,7 +853,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
 	}).Info("Filesystem snapshot created.")
@@ -852,7 +861,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 	return &snapshot, nil
 }
 
-func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+func (d *Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Revert", filesystem.FileSystemID)
 
@@ -867,7 +876,7 @@ func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) err
 		return fmt.Errorf("could not marshal JSON request: %v; %v", snapshotRevertRequest, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return err
 	}
@@ -876,7 +885,7 @@ func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) err
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot":   snapshot.Name,
 		"filesystem": filesystem.CreationToken,
 	}).Info("Filesystem reverted to snapshot.")
@@ -884,11 +893,11 @@ func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) err
 	return nil
 }
 
-func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+func (d *Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
 
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots/%s", filesystem.FileSystemID, snapshot.SnapshotID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
 		return errors.New("failed to delete snapshot")
 	}
@@ -898,7 +907,7 @@ func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) erro
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot": snapshot.Name,
 		"volume":   filesystem.CreationToken,
 	}).Info("Deleted filesystem snapshot.")

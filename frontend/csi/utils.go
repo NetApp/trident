@@ -12,7 +12,7 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"google.golang.org/grpc"
 
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/logger"
 )
 
 func ParseEndpoint(ep string) (string, string, error) {
@@ -50,15 +50,15 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 }
 
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	ctx = utils.GenerateRequestContext(ctx, "", utils.ContextSourceCSI)
-	logc := utils.GetLogWithRequestContext(ctx)
-	logc.Debugf("GRPC call: %s", info.FullMethod)
-	logc.Debugf("GRPC request: %+v", req)
+
+	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI)
+	Logc(ctx).Debugf("GRPC call: %s", info.FullMethod)
+	Logc(ctx).Debugf("GRPC request: %+v", req)
 	resp, err := handler(ctx, req)
 	if err != nil {
-		logc.Errorf("GRPC error: %v", err)
+		Logc(ctx).Errorf("GRPC error: %v", err)
 	} else {
-		logc.Debugf("GRPC response: %+v", resp)
+		Logc(ctx).Debugf("GRPC response: %+v", resp)
 	}
 	return resp, err
 }

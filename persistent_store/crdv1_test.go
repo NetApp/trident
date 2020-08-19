@@ -3,6 +3,7 @@
 package persistentstore
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -37,6 +38,7 @@ import (
 var (
 	debug       = flag.Bool("debug", false, "Enable debugging output")
 	storagePool = "aggr1"
+	ctx         = context.Background
 )
 
 func init() {
@@ -208,7 +210,7 @@ func TestKubernetesBackend(t *testing.T) {
 	}
 	NFSServer.BackendUUID = uuid.New().String()
 
-	err := p.AddBackend(NFSServer)
+	err := p.AddBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -217,7 +219,7 @@ func TestKubernetesBackend(t *testing.T) {
 	// Getting a storage backend
 	//var recoveredBackend *storage.BackendPersistent
 	var ontapConfig drivers.OntapStorageDriverConfig
-	recoveredBackend, err := p.GetBackend(NFSServer.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -243,11 +245,11 @@ func TestKubernetesBackend(t *testing.T) {
 		Password:      "NETAPP",
 	}
 	NFSDriver.Config = NFSServerNewConfig
-	err = p.UpdateBackend(NFSServer)
+	err = p.UpdateBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	recoveredBackend, err = p.GetBackend(NFSServer.Name)
+	recoveredBackend, err = p.GetBackend(ctx(), NFSServer.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -262,7 +264,7 @@ func TestKubernetesBackend(t *testing.T) {
 	}
 
 	// Deleting a storage backend
-	err = p.DeleteBackend(NFSServer)
+	err = p.DeleteBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -294,14 +296,14 @@ func TestKubernetesBackends(t *testing.T) {
 			BackendUUID: uuid.New().String(),
 		}
 
-		err = p.AddBackend(NFSServer)
+		err = p.AddBackend(ctx(), NFSServer)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
 		}
 
 		log.Info(">>CHECKING BACKENDS.")
-		backends, err = p.GetBackends()
+		backends, err = p.GetBackends(ctx())
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -345,7 +347,7 @@ func TestKubernetesBackends(t *testing.T) {
 	}
 
 	// Retrieving all backends
-	if backends, err = p.GetBackends(); err != nil {
+	if backends, err = p.GetBackends(ctx()); err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
@@ -355,10 +357,10 @@ func TestKubernetesBackends(t *testing.T) {
 	}
 
 	// Deleting all backends
-	if err = p.DeleteBackends(); err != nil {
+	if err = p.DeleteBackends(ctx()); err != nil {
 		t.Error(err.Error())
 	}
-	if backends, err = p.GetBackends(); err != nil {
+	if backends, err = p.GetBackends(ctx()); err != nil {
 		t.Error(err.Error())
 	} else if len(backends) != 0 {
 		t.Error("Deleting backends failed!")
@@ -386,18 +388,18 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 	}
 	NFSServer.BackendUUID = uuid.New().String()
 
-	err := p.AddBackend(NFSServer)
+	err := p.AddBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
 
-	err = p.AddBackend(NFSServer)
+	err = p.AddBackend(ctx(), NFSServer)
 	if err == nil {
 		t.Error("Second Create should have failed!")
 	}
 
-	err = p.DeleteBackend(NFSServer)
+	err = p.DeleteBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -436,7 +438,7 @@ func TestKubernetesVolume(t *testing.T) {
 		BackendUUID: NFSServer.BackendUUID,
 		Pool:        storagePool,
 	}
-	err := p.AddVolume(vol1)
+	err := p.AddVolume(ctx(), vol1)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -444,7 +446,7 @@ func TestKubernetesVolume(t *testing.T) {
 
 	// Getting a volume
 	var recoveredVolume *storage.VolumeExternal
-	recoveredVolume, err = p.GetVolume(vol1.Config.Name)
+	recoveredVolume, err = p.GetVolume(ctx(), vol1.Config.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -454,11 +456,11 @@ func TestKubernetesVolume(t *testing.T) {
 
 	// Updating a volume
 	vol1Config.Size = "2GB"
-	err = p.UpdateVolume(vol1)
+	err = p.UpdateVolume(ctx(), vol1)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	recoveredVolume, err = p.GetVolume(vol1.Config.Name)
+	recoveredVolume, err = p.GetVolume(ctx(), vol1.Config.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -467,7 +469,7 @@ func TestKubernetesVolume(t *testing.T) {
 	}
 
 	// Deleting a volume
-	err = p.DeleteVolume(vol1)
+	err = p.DeleteVolume(ctx(), vol1)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -509,7 +511,7 @@ func TestKubernetesVolumes(t *testing.T) {
 			Config:      &volConfig,
 			BackendUUID: NFSServer.BackendUUID,
 		}
-		err = p.AddVolume(vol)
+		err = p.AddVolume(ctx(), vol)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -518,7 +520,7 @@ func TestKubernetesVolumes(t *testing.T) {
 
 	// Retrieving all volumes
 	var volumes []*storage.VolumeExternal
-	if volumes, err = p.GetVolumes(); err != nil {
+	if volumes, err = p.GetVolumes(ctx()); err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
@@ -528,10 +530,10 @@ func TestKubernetesVolumes(t *testing.T) {
 	}
 
 	// Deleting all volumes
-	if err = p.DeleteVolumes(); err != nil {
+	if err = p.DeleteVolumes(ctx()); err != nil {
 		t.Error(err.Error())
 	}
-	if volumes, err = p.GetVolumes(); err != nil {
+	if volumes, err = p.GetVolumes(ctx()); err != nil {
 		t.Error(err.Error())
 	} else if len(volumes) != 0 {
 		t.Error("Deleting volumes failed!")
@@ -556,14 +558,14 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 			Config: &volConfig,
 			Op:     storage.AddVolume,
 		}
-		if err = p.AddVolumeTransaction(volTxn); err != nil {
+		if err = p.AddVolumeTransaction(ctx(), volTxn); err != nil {
 			t.Error(err.Error())
 			t.FailNow()
 		}
 	}
 
 	// Retrieving volume transactions
-	volTxns, err := p.GetVolumeTransactions()
+	volTxns, err := p.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -574,7 +576,7 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 
 	// Getting and Deleting volume transactions
 	for _, v := range volTxns {
-		txn, err := p.GetExistingVolumeTransaction(v)
+		txn, err := p.GetExistingVolumeTransaction(ctx(), v)
 		if err != nil {
 			t.Errorf("Unable to get existing volume transaction %s:  %v",
 				v.Config.Name, err)
@@ -583,9 +585,9 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 			t.Errorf("Got incorrect volume transaction for %s (got %s)",
 				v.Config.Name, txn.Config.Name)
 		}
-		p.DeleteVolumeTransaction(v)
+		p.DeleteVolumeTransaction(ctx(), v)
 	}
-	volTxns, err = p.GetVolumeTransactions()
+	volTxns, err = p.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -621,13 +623,13 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 		Op: storage.AddVolume,
 	}
 
-	if err = p.AddVolumeTransaction(firstTxn); err != nil {
+	if err = p.AddVolumeTransaction(ctx(), firstTxn); err != nil {
 		t.Error("Unable to add first volume transaction: ", err)
 	}
-	if err = p.AddVolumeTransaction(secondTxn); err == nil {
+	if err = p.AddVolumeTransaction(ctx(), secondTxn); err == nil {
 		t.Error("Should not have been able to add second volume transaction: ", err)
 	}
-	volTxns, err := p.GetVolumeTransactions()
+	volTxns, err := p.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Fatal("Unable to retrieve volume transactions: ", err)
 	}
@@ -638,7 +640,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 			" got %s.", volTxns[0].Config.StorageClass)
 	}
 	for i, volTxn := range volTxns {
-		if err = p.DeleteVolumeTransaction(volTxn); err != nil {
+		if err = p.DeleteVolumeTransaction(ctx(), volTxn); err != nil {
 			t.Errorf("Unable to delete volume transaction %d:  %v", i+1, err)
 		}
 	}
@@ -662,12 +664,12 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 		Name: "solidfire" + "_10.0.0.9",
 	}
 	sfBackend.BackendUUID = uuid.New().String()
-	if err = p.AddBackend(sfBackend); err != nil {
+	if err = p.AddBackend(ctx(), sfBackend); err != nil {
 		t.Fatal(err.Error())
 	}
 
 	var retrievedConfig drivers.SolidfireStorageDriverConfig
-	recoveredBackend, err := p.GetBackend(sfBackend.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), sfBackend.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -682,7 +684,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 			retrievedConfig.Size, sfConfig.Size)
 	}
 
-	if err = p.DeleteBackend(sfBackend); err != nil {
+	if err = p.DeleteBackend(ctx(), sfBackend); err != nil {
 		t.Fatal(err.Error())
 	}
 }
@@ -702,11 +704,11 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 	bronzeConfig.AdditionalPools["ontapsan_10.0.207.103"] = []string{"aggr1"}
 	bronzeClass := storageclass.New(bronzeConfig)
 
-	if err := p.AddStorageClass(bronzeClass); err != nil {
+	if err := p.AddStorageClass(ctx(), bronzeClass); err != nil {
 		t.Fatal(err.Error())
 	}
 
-	retrievedSC, err := p.GetStorageClass(bronzeConfig.Name)
+	retrievedSC, err := p.GetStorageClass(ctx(), bronzeConfig.Name)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -739,7 +741,7 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 		}
 	}
 
-	if err := p.DeleteStorageClass(bronzeClass); err != nil {
+	if err := p.DeleteStorageClass(ctx(), bronzeClass); err != nil {
 		t.Fatal(err.Error())
 	}
 }
@@ -768,12 +770,12 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 		Name:   "ontapnas_" + NFSServerConfig.DataLIF,
 	}
 	NFSServer.BackendUUID = uuid.New().String()
-	err = p.AddBackend(NFSServer)
+	err = p.AddBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Fatalf("Backend creation failed: %v\n", err)
 	}
 
-	recoveredBackend, err := p.GetBackend(NFSServer.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name)
 	if err != nil {
 		t.Error(err.Error())
 		t.Fatalf("Backend lookup failed for:%v err: %v\n", recoveredBackend, err)
@@ -796,27 +798,27 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 			BackendUUID: recoveredBackend.BackendUUID,
 			Pool:        storagePool,
 		}
-		err = p.AddVolume(vol)
+		err = p.AddVolume(ctx(), vol)
 	}
 
-	backends, err := p.GetBackends()
+	backends, err := p.GetBackends(ctx())
 	if err != nil || len(backends) != 1 {
 		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
 	}
 	log.Debugf("GetBackends: %v, %v\n", backends, err)
-	backend, err := p.GetBackend(backends[0].Name)
+	backend, err := p.GetBackend(ctx(), backends[0].Name)
 	if err != nil ||
 		backend.Name != NFSServer.Name {
 		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
 	}
 	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
-	volumes, err := p.GetVolumes()
+	volumes, err := p.GetVolumes(ctx())
 	if err != nil || len(volumes) != 5 {
 		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
 	}
 	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
 	for i := 0; i < 5; i++ {
-		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		volume, err := p.GetVolume(ctx(), fmt.Sprintf("vol%d", i))
 		log.WithFields(log.Fields{
 			"volume": volume,
 		}).Debug("GetVolumes.")
@@ -832,18 +834,18 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 		Name:        "AFF",
 		BackendUUID: NFSServer.BackendUUID,
 	}
-	err = p.ReplaceBackendAndUpdateVolumes(NFSServer, newNFSServer)
+	err = p.ReplaceBackendAndUpdateVolumes(ctx(), NFSServer, newNFSServer)
 	if err != nil {
 		t.Fatalf("ReplaceBackendAndUpdateVolumes failed: %v\n", err)
 	}
 
 	// Validate successful renaming of the backend
-	backends, err = p.GetBackends()
+	backends, err = p.GetBackends(ctx())
 	if err != nil || len(backends) != 1 {
 		t.Fatalf("Backend retrieval failed; backends:%v err:%v\n", backends, err)
 	}
 	log.Debugf("GetBackends: %v, %v\n", backends, err)
-	backend, err = p.GetBackend(backends[0].Name)
+	backend, err = p.GetBackend(ctx(), backends[0].Name)
 	if err != nil ||
 		backend.Name != newNFSServer.Name {
 		t.Fatalf("Backend retrieval failed; backend.Name:%v newNFSServer.Name:%v err:%v\n", backend.Name, newNFSServer.Name, err)
@@ -851,13 +853,13 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
 
 	// Validate successful renaming of the volumes
-	volumes, err = p.GetVolumes()
+	volumes, err = p.GetVolumes(ctx())
 	if err != nil || len(volumes) != 5 {
 		t.Fatalf("Volume retrieval failed; volumes:%v err:%v\n", volumes, err)
 	}
 	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
 	for i := 0; i < 5; i++ {
-		volume, err := p.GetVolume(fmt.Sprintf("vol%d", i))
+		volume, err := p.GetVolume(ctx(), fmt.Sprintf("vol%d", i))
 		log.WithFields(log.Fields{
 			"volume":                   volume,
 			"volume.BackendUUID":       volume.BackendUUID,
@@ -875,13 +877,13 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	}
 
 	// Deleting the storage backend
-	err = p.DeleteBackend(newNFSServer)
+	err = p.DeleteBackend(ctx(), newNFSServer)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
 	// Deleting all volumes
-	if err = p.DeleteVolumes(); err != nil {
+	if err = p.DeleteVolumes(ctx()); err != nil {
 		t.Error(err.Error())
 	}
 }
@@ -898,18 +900,18 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 	}
 
 	// should not exist
-	_, err := p.GetNode(utilsNode.Name)
+	_, err := p.GetNode(ctx(), utilsNode.Name)
 	if !IsStatusNotFoundError(err) {
 		t.Fatal(err.Error())
 	}
 
 	// should be added
-	if err := p.AddOrUpdateNode(utilsNode); err != nil {
+	if err := p.AddOrUpdateNode(ctx(), utilsNode); err != nil {
 		t.Fatal(err.Error())
 	}
 
 	// validate we can find what we added
-	node, err := p.GetNode(utilsNode.Name)
+	node, err := p.GetNode(ctx(), utilsNode.Name)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -926,7 +928,7 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 		t.Fatalf("%v differs:  '%v' != '%v'", "IPs", node.IPs, utilsNode.IPs)
 	}
 
-	for i, _ := range node.IPs {
+	for i := range node.IPs {
 		if node.IPs[i] != utilsNode.IPs[i] {
 			t.Fatalf("%v differs:  '%v' != '%v'", "IPs", node.IPs, utilsNode.IPs)
 		}
@@ -934,10 +936,10 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 
 	// update it
 	utilsNode.IQN = "iqnUpdated"
-	if err := p.AddOrUpdateNode(utilsNode); err != nil {
+	if err := p.AddOrUpdateNode(ctx(), utilsNode); err != nil {
 		t.Fatal(err.Error())
 	}
-	node, err = p.GetNode(utilsNode.Name)
+	node, err = p.GetNode(ctx(), utilsNode.Name)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -946,12 +948,12 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 	}
 
 	// remove it
-	if err := p.DeleteNode(utilsNode); err != nil {
+	if err := p.DeleteNode(ctx(), utilsNode); err != nil {
 		t.Fatal(err.Error())
 	}
 
 	// validate it's gone
-	_, err = p.GetNode(utilsNode.Name)
+	_, err = p.GetNode(ctx(), utilsNode.Name)
 	if !IsStatusNotFoundError(err) {
 		t.Fatal(err.Error())
 	}
@@ -990,7 +992,7 @@ func TestKubernetesSnapshot(t *testing.T) {
 		BackendUUID: NFSServer.BackendUUID,
 		Pool:        storagePool,
 	}
-	err := p.AddVolume(vol1)
+	err := p.AddVolume(ctx(), vol1)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -1005,14 +1007,14 @@ func TestKubernetesSnapshot(t *testing.T) {
 	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 	size := int64(1000000000)
 	snap1 := storage.NewSnapshot(snap1Config, now, size)
-	err = p.AddSnapshot(snap1)
+	err = p.AddSnapshot(ctx(), snap1)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
 
 	// Getting a snapshot
-	recoveredSnapshot, err := p.GetSnapshot(snap1.Config.VolumeName, snap1.Config.Name)
+	recoveredSnapshot, err := p.GetSnapshot(ctx(), snap1.Config.VolumeName, snap1.Config.Name)
 	if err != nil {
 		t.Error(err.Error())
 		t.FailNow()
@@ -1023,23 +1025,23 @@ func TestKubernetesSnapshot(t *testing.T) {
 	}
 
 	// Deleting a snapshot
-	err = p.DeleteSnapshot(snap1)
+	err = p.DeleteSnapshot(ctx(), snap1)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	_, err = p.GetSnapshot(snap1.Config.VolumeName, snap1.Config.Name)
+	_, err = p.GetSnapshot(ctx(), snap1.Config.VolumeName, snap1.Config.Name)
 	if err == nil {
 		t.Error("Snapshot should have been deleted.")
 		t.FailNow()
 	}
 
 	// Deleting a non-existent snapshot
-	err = p.DeleteSnapshot(snap1)
+	err = p.DeleteSnapshot(ctx(), snap1)
 	if err == nil {
 		t.Error("DeleteSnapshot should have failed.")
 	}
-	err = p.DeleteSnapshotIgnoreNotFound(snap1)
+	err = p.DeleteSnapshotIgnoreNotFound(ctx(), snap1)
 	if err != nil {
 		t.Error("DeleteSnapshotIgnoreNotFound should have succeeded.")
 	}
@@ -1081,7 +1083,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 			Config:      &volConfig,
 			BackendUUID: NFSServer.BackendUUID,
 		}
-		err = p.AddVolume(vol)
+		err = p.AddVolume(ctx(), vol)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -1096,7 +1098,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 		now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 		size := int64(1000000000)
 		snap := storage.NewSnapshot(snapConfig, now, size)
-		err = p.AddSnapshot(snap)
+		err = p.AddSnapshot(ctx(), snap)
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
@@ -1105,7 +1107,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 
 	// Retrieving all snapshots
 	var snapshots []*storage.SnapshotPersistent
-	if snapshots, err = p.GetSnapshots(); err != nil {
+	if snapshots, err = p.GetSnapshots(ctx()); err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
@@ -1114,10 +1116,10 @@ func TestKubernetesSnapshots(t *testing.T) {
 	}
 
 	// Deleting all snapshots
-	if err = p.DeleteSnapshots(); err != nil {
+	if err = p.DeleteSnapshots(ctx()); err != nil {
 		t.Error(err.Error())
 	}
-	if snapshots, err = p.GetSnapshots(); err != nil {
+	if snapshots, err = p.GetSnapshots(ctx()); err != nil {
 		t.Error(err.Error())
 	} else if len(snapshots) != 0 {
 		t.Error("Deleting snapshots failed!")

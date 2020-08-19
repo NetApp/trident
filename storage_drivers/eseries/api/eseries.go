@@ -22,6 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -74,7 +75,7 @@ type Client struct {
 }
 
 // NewAPIClient is a factory method for creating a new instance.
-func NewAPIClient(config ClientConfig) *Client {
+func NewAPIClient(ctx context.Context, config ClientConfig) *Client {
 	c := &Client{
 		config: &config,
 		m:      &sync.Mutex{},
@@ -85,7 +86,7 @@ func NewAPIClient(config ClientConfig) *Client {
 
 	compiledRegex, err := regexp.Compile(c.config.PoolNameSearchPattern)
 	if err != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"PoolNameSearchPattern": c.config.PoolNameSearchPattern,
 			"DefaultSearchPattern":  defaultPoolSearchPattern,
 			"Error":                 err,
@@ -112,7 +113,9 @@ func (d Client) makeVolumeTags() []VolumeTag {
 // InvokeAPI makes a REST call to the Web Services Proxy. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to identify
 // the desired server resource; it should start with '/'.
-func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string) (*http.Response, []byte, error) {
+func (d Client) InvokeAPI(
+	ctx context.Context, requestBody []byte, method string, resourcePath string,
+) (*http.Response, []byte, error) {
 
 	// Default to secure connection
 	scheme, port := "https", "8443"
@@ -137,15 +140,16 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 
 	// Create the request
 	if requestBody == nil {
-		request, err = http.NewRequest(method, url, nil)
+		request, err = http.NewRequestWithContext(ctx, method, url, nil)
 	} else {
-		request, err = http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(ContextKeyRequestID)))
 	request.SetBasicAuth(d.config.Username, d.config.Password)
 
 	// Log the request
@@ -172,7 +176,7 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 
 	response, err := client.Do(request)
 	if err != nil {
-		log.Warnf("Error communicating with Web Services Proxy. %v", err)
+		Logc(ctx).Warnf("Error communicating with Web Services Proxy. %v", err)
 		return nil, nil, err
 	}
 	defer response.Body.Close()
@@ -186,14 +190,14 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 			// Suppress the potentially huge GET /volumes body unless asked for explicitly
 			if d.config.DebugTraceFlags["api_get_volumes"] {
 				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
 			} else if d.config.DebugTraceFlags["api"] {
-				utils.LogHTTPResponse(context.TODO(), response, []byte("<suppressed>"))
+				utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"))
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
 				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
 			}
 		}
 	}
@@ -201,8 +205,8 @@ func (d Client) InvokeAPI(requestBody []byte, method string, resourcePath string
 	return response, responseBody, err
 }
 
-// AboutInfo retries information about this E-Series system
-func (d Client) AboutInfo() (*AboutResponse, error) {
+// AboutInfo retrieves information about this E-Series system
+func (d Client) AboutInfo(ctx context.Context) (*AboutResponse, error) {
 
 	// Default to secure connection
 	scheme, port := "https", "8443"
@@ -225,13 +229,14 @@ func (d Client) AboutInfo() (*AboutResponse, error) {
 	var prettyResponseBuffer bytes.Buffer
 
 	// Create the request
-	request, err = http.NewRequest("GET", url, nil)
+	request, err = http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("accept", "application/json")
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(ContextKeyRequestID)))
 	request.SetBasicAuth(d.config.Username, d.config.Password)
 
 	// Log the request
@@ -247,11 +252,11 @@ func (d Client) AboutInfo() (*AboutResponse, error) {
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
 	}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Warnf("Error communicating with Web Services Proxy. %v", err)
+		Logc(ctx).Warnf("Error communicating with Web Services Proxy. %v", err)
 		return nil, err
 	}
 	defer response.Body.Close()
@@ -268,7 +273,7 @@ func (d Client) AboutInfo() (*AboutResponse, error) {
 		responseBody, err = ioutil.ReadAll(response.Body)
 		if d.config.DebugTraceFlags["api"] {
 			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-			utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
+			utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
 		}
 	}
 
@@ -282,8 +287,8 @@ func (d Client) AboutInfo() (*AboutResponse, error) {
 }
 
 // Connect to the E-Series system via the Web Services Proxy or the onboard system, as appropriate
-func (d Client) Connect() (string, error) {
-	aboutInfo, err := d.AboutInfo()
+func (d Client) Connect(ctx context.Context) (string, error) {
+	aboutInfo, err := d.AboutInfo(ctx)
 	if err != nil {
 		return "", fmt.Errorf("could not determine proxy status: %v", err)
 	}
@@ -291,21 +296,21 @@ func (d Client) Connect() (string, error) {
 		return "", fmt.Errorf("could not determine proxy status: aboutInfo was empty")
 	}
 	if aboutInfo.RunningAsProxy {
-		return d.connectUsingPOST()
+		return d.connectUsingPOST(ctx)
 	}
-	return d.connectUsingGET()
+	return d.connectUsingGET(ctx)
 }
 
 // connectUsingPOST connects to the Web Services Proxy via POST
-func (d Client) connectUsingPOST() (string, error) {
+func (d Client) connectUsingPOST(ctx context.Context) (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Connect",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> Connect")
-		defer log.WithFields(fields).Debug("<<<< Connect")
+		Logc(ctx).WithFields(fields).Debug(">>>> Connect")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Connect")
 	}
 
 	// Send a login/connect request for array to web services proxy
@@ -317,7 +322,7 @@ func (d Client) connectUsingPOST() (string, error) {
 	}
 
 	// Send the message (using HTTP POST)
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "")
 	if err != nil {
 		return "", fmt.Errorf("could not log into the Web Services Proxy: %v", err)
 	}
@@ -342,7 +347,7 @@ func (d Client) connectUsingPOST() (string, error) {
 	d.config.ArrayID = responseData.ArrayID
 	AlreadyRegistered := responseData.AlreadyExists
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"ArrayID":           d.config.ArrayID,
 		"AlreadyRegistered": AlreadyRegistered,
 	}).Debug("Connected to Web Services Proxy.")
@@ -351,15 +356,15 @@ func (d Client) connectUsingPOST() (string, error) {
 }
 
 // connectUsingGET connects to the onboard Web Services via GET
-func (d Client) connectUsingGET() (string, error) {
+func (d Client) connectUsingGET(ctx context.Context) (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Connect",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> Connect")
-		defer log.WithFields(fields).Debug("<<<< Connect")
+		Logc(ctx).WithFields(fields).Debug(">>>> Connect")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Connect")
 	}
 
 	// Send a login/connect request for array to web services proxy
@@ -371,7 +376,7 @@ func (d Client) connectUsingGET() (string, error) {
 	}
 
 	// Send the message (using HTTP GET)
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "GET", "")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "GET", "")
 	if err != nil {
 		return "", fmt.Errorf("could not log into the Web Services Proxy: %v", err)
 	}
@@ -400,7 +405,7 @@ func (d Client) connectUsingGET() (string, error) {
 	d.config.ArrayID = responseData[0].ArrayID
 	AlreadyRegistered := responseData[0].AlreadyExists
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"ArrayID":           d.config.ArrayID,
 		"AlreadyRegistered": AlreadyRegistered,
 	}).Debug("Connected to Web Services Proxy.")
@@ -409,19 +414,19 @@ func (d Client) connectUsingGET() (string, error) {
 }
 
 // GetStorageSystem returns a struct detailing the storage system.
-func (d Client) GetStorageSystem() (*StorageSystem, error) {
+func (d Client) GetStorageSystem(ctx context.Context) (*StorageSystem, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetStorageSystem",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetStorageSystem")
-		defer log.WithFields(fields).Debug("<<<< GetStorageSystem")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetStorageSystem")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetStorageSystem")
 	}
 
 	// Query array
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/")
 	if err != nil {
 		return nil, errors.New("could not read storage system")
 	}
@@ -439,24 +444,24 @@ func (d Client) GetStorageSystem() (*StorageSystem, error) {
 		return nil, fmt.Errorf("could not parse storage system data: %s. %v", string(responseBody), err)
 	}
 
-	log.WithField("Name", storageSystem.Name).Debug("Read storage system.")
+	Logc(ctx).WithField("Name", storageSystem.Name).Debug("Read storage system.")
 
 	return &storageSystem, nil
 }
 
 // GetChassisSerialNumber returns the chassis serial number for this storage system.
-func (d Client) GetChassisSerialNumber() (string, error) {
+func (d Client) GetChassisSerialNumber(ctx context.Context) (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetChassisSerialNumber",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetChassisSerialNumber")
-		defer log.WithFields(fields).Debug("<<<< GetChassisSerialNumber")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetChassisSerialNumber")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetChassisSerialNumber")
 	}
 
-	storageSystem, err := d.GetStorageSystem()
+	storageSystem, err := d.GetStorageSystem(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -470,7 +475,9 @@ func (d Client) GetChassisSerialNumber() (string, error) {
 
 // GetVolumePools reads all pools on the array, including volume groups and dynamic disk pools. It then
 // filters them based on several selection parameters and returns the ones that match.
-func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolName string) ([]VolumeGroupEx, error) {
+func (d Client) GetVolumePools(
+	ctx context.Context, mediaType string, minFreeSpaceBytes uint64, poolName string,
+) ([]VolumeGroupEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -480,12 +487,12 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 			"minFreeSpaceBytes": minFreeSpaceBytes,
 			"poolName":          poolName,
 		}
-		log.WithFields(fields).Debug(">>>> GetVolumePools")
-		defer log.WithFields(fields).Debug("<<<< GetVolumePools")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumePools")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumePools")
 	}
 
 	// Get the storage pools (includes volume RAID groups and dynamic disk pools)
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/storage-pools")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/storage-pools")
 	if err != nil {
 		return nil, fmt.Errorf("could not get storage pools: %v", err)
 	}
@@ -507,27 +514,27 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 	matchingPools := make([]VolumeGroupEx, 0)
 	for _, pool := range allPools {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name": pool.Label,
 			"Pool": pool,
 		}).Debug("Considering pool.")
 
 		// Pool must match regex from config
 		if !d.config.CompiledPoolNameSearchPattern.MatchString(pool.Label) {
-			log.WithFields(log.Fields{"Name": pool.Label}).Debug("Pool does not match search pattern.")
+			Logc(ctx).WithFields(log.Fields{"Name": pool.Label}).Debug("Pool does not match search pattern.")
 			continue
 		}
 
 		// Pool must be online
 		if pool.IsOffline {
-			log.WithFields(log.Fields{"Name": pool.Label}).Debug("Pool is offline.")
+			Logc(ctx).WithFields(log.Fields{"Name": pool.Label}).Debug("Pool is offline.")
 			continue
 		}
 
 		// Pool name
 		if poolName != "" {
 			if poolName != pool.Label {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name":          pool.Label,
 					"RequestedName": poolName,
 				}).Debug("Pool does not match requested pool name.")
@@ -538,7 +545,7 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 		// Drive media type
 		if mediaType != "" {
 			if mediaType != pool.DriveMediaType {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name":               pool.Label,
 					"MediaType":          pool.DriveMediaType,
 					"RequestedMediaType": mediaType,
@@ -551,14 +558,14 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 		if minFreeSpaceBytes > 0 {
 			poolFreeSpace, err := strconv.ParseUint(pool.FreeSpace, 10, 64)
 			if err != nil {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name":  pool.Label,
 					"Error": err,
 				}).Warn("Could not parse free space for pool.")
 				continue
 			}
 			if poolFreeSpace < minFreeSpaceBytes {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name":           pool.Label,
 					"FreeSpace":      poolFreeSpace,
 					"RequestedSpace": minFreeSpaceBytes,
@@ -575,7 +582,7 @@ func (d Client) GetVolumePools(mediaType string, minFreeSpaceBytes uint64, poolN
 }
 
 // GetVolumePoolByRef returns the pool with the specified volumeGroupRef.
-func (d Client) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error) {
+func (d Client) GetVolumePoolByRef(ctx context.Context, volumeGroupRef string) (VolumeGroupEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -583,13 +590,13 @@ func (d Client) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error)
 			"Type":           "Client",
 			"volumeGroupRef": volumeGroupRef,
 		}
-		log.WithFields(fields).Debug(">>>> GetVolumePoolByRef")
-		defer log.WithFields(fields).Debug("<<<< GetVolumePoolByRef")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumePoolByRef")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumePoolByRef")
 	}
 
 	// Get the storage pool (may be either volume RAID group or dynamic disk pool)
 	resourcePath := "/storage-pools/" + volumeGroupRef
-	response, responseBody, err := d.InvokeAPI(nil, "GET", resourcePath)
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", resourcePath)
 	if err != nil {
 		return VolumeGroupEx{}, fmt.Errorf("could not get storage pool: %v", err)
 	}
@@ -611,19 +618,19 @@ func (d Client) GetVolumePoolByRef(volumeGroupRef string) (VolumeGroupEx, error)
 }
 
 // GetVolumes returns an array containing all the volumes on the array.
-func (d Client) GetVolumes() ([]VolumeEx, error) {
+func (d Client) GetVolumes(ctx context.Context) ([]VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetVolumes",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetVolumes")
-		defer log.WithFields(fields).Debug("<<<< GetVolumes")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumes")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumes")
 	}
 
 	// Query volumes on array
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/volumes")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/volumes")
 	if err != nil {
 		return nil, errors.New("failed to read volumes")
 	}
@@ -641,24 +648,24 @@ func (d Client) GetVolumes() ([]VolumeEx, error) {
 		return nil, fmt.Errorf("could not parse volume data: %s. %v", string(responseBody), err)
 	}
 
-	log.WithField("Count", len(volumes)).Debug("Read volumes.")
+	Logc(ctx).WithField("Count", len(volumes)).Debug("Read volumes.")
 
 	return volumes, nil
 }
 
 // ListVolumes returns an array containing all the volume names on the array.
-func (d Client) ListVolumes() ([]string, error) {
+func (d Client) ListVolumes(ctx context.Context) ([]string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ListVolumes",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> ListVolumes")
-		defer log.WithFields(fields).Debug("<<<< ListVolumes")
+		Logc(ctx).WithFields(fields).Debug(">>>> ListVolumes")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< ListVolumes")
 	}
 
-	volumes, err := d.GetVolumes()
+	volumes, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -669,7 +676,7 @@ func (d Client) ListVolumes() ([]string, error) {
 		volumeNames = append(volumeNames, vol.Label)
 	}
 
-	log.WithField("Count", len(volumeNames)).Debug("Read volume names.")
+	Logc(ctx).WithField("Count", len(volumeNames)).Debug("Read volume names.")
 
 	return volumeNames, nil
 }
@@ -678,7 +685,7 @@ func (d Client) ListVolumes() ([]string, error) {
 // at most once per workflow, because the Web Services Proxy does not support server-side filtering so the only choice is to
 // read all volumes to find the one of interest. Most methods in this module operate on the returned VolumeEx structure, not
 // the volume name, to minimize the need for calling this method.
-func (d Client) GetVolume(name string) (VolumeEx, error) {
+func (d Client) GetVolume(ctx context.Context, name string) (VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -686,11 +693,11 @@ func (d Client) GetVolume(name string) (VolumeEx, error) {
 			"Type":   "Client",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> GetVolume")
-		defer log.WithFields(fields).Debug("<<<< GetVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolume")
 	}
 
-	volumes, err := d.GetVolumes()
+	volumes, err := d.GetVolumes(ctx)
 	if err != nil {
 		return VolumeEx{}, err
 	}
@@ -705,7 +712,7 @@ func (d Client) GetVolume(name string) (VolumeEx, error) {
 }
 
 // GetVolumeByRef gets a single volume from the array.
-func (d Client) GetVolumeByRef(volumeRef string) (VolumeEx, error) {
+func (d Client) GetVolumeByRef(ctx context.Context, volumeRef string) (VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -713,12 +720,12 @@ func (d Client) GetVolumeByRef(volumeRef string) (VolumeEx, error) {
 			"Type":      "Client",
 			"volumeRef": volumeRef,
 		}
-		log.WithFields(fields).Debug(">>>> GetVolumeByRef")
-		defer log.WithFields(fields).Debug("<<<< GetVolumeByRef")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeByRef")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeByRef")
 	}
 
 	// Get a single volume by its ref ID from storage array
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/volumes/"+volumeRef)
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/volumes/"+volumeRef)
 	if err != nil {
 		return VolumeEx{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -741,7 +748,7 @@ func (d Client) GetVolumeByRef(volumeRef string) (VolumeEx, error) {
 
 // CreateVolume creates a volume (i.e. a LUN) on the array, and it returns the resulting VolumeEx structure.
 func (d Client) CreateVolume(
-	name string, volumeGroupRef string, size uint64, mediaType, fstype string,
+	ctx context.Context, name string, volumeGroupRef string, size uint64, mediaType, fstype string,
 ) (VolumeEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
@@ -753,8 +760,8 @@ func (d Client) CreateVolume(
 			"size":           size,
 			"mediaType":      mediaType,
 		}
-		log.WithFields(fields).Debug(">>>> CreateVolume")
-		defer log.WithFields(fields).Debug("<<<< CreateVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateVolume")
 	}
 
 	// Ensure that we do not exceed the maximum allowed volume length
@@ -783,7 +790,7 @@ func (d Client) CreateVolume(
 	}
 
 	// Create the volume
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "/volumes")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "/volumes")
 	if err != nil {
 		return VolumeEx{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -791,22 +798,22 @@ func (d Client) CreateVolume(
 	// Work around Web Services Proxy bug by re-reading the volume we (hopefully) just created
 	if response.StatusCode == http.StatusUnprocessableEntity {
 
-		log.Debug("Volume created failed with 422 response, attempting to re-read volume.")
+		Logc(ctx).Debug("Volume created failed with 422 response, attempting to re-read volume.")
 
-		retryVolume, retryError := d.GetVolume(name)
+		retryVolume, retryError := d.GetVolume(ctx, name)
 		if retryError != nil {
 			return VolumeEx{}, retryError
 		}
 
 		// Make sure the volume is legit by verifying it has the tag(s) we requested
 		if !d.volumeHasTags(retryVolume, tags) {
-			log.WithField("Name", retryVolume.Label).Debug("Re-read volume tags mismatch.")
+			Logc(ctx).WithField("Name", retryVolume.Label).Debug("Re-read volume tags mismatch.")
 			apiError := d.getErrorFromHTTPResponse(response, responseBody)
 			apiError.Message = fmt.Sprintf("could not create volume %s; %s", name, apiError.Message)
 			return VolumeEx{}, apiError
 		}
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name":           retryVolume.Label,
 			"VolumeRef":      retryVolume.VolumeRef,
 			"VolumeGroupRef": retryVolume.VolumeGroupRef,
@@ -829,7 +836,7 @@ func (d Client) CreateVolume(
 			return VolumeEx{}, fmt.Errorf("could not parse API response: %s; %v", string(responseBody), err)
 		}
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name":           vol.Label,
 			"VolumeRef":      vol.VolumeRef,
 			"VolumeGroupRef": vol.VolumeGroupRef,
@@ -861,19 +868,20 @@ func (d Client) volumeHasTags(volume VolumeEx, tags []VolumeTag) bool {
 }
 
 // ResizingVolume checks to see if an expand operation is in progress for the volume.
-func (d Client) ResizingVolume(volume VolumeEx) (bool, error) {
+func (d Client) ResizingVolume(ctx context.Context, volume VolumeEx) (bool, error) {
+
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ResizingVolume",
 			"Type":   "Client",
 			"name":   volume.Label,
 		}
-		log.WithFields(fields).Debug(">>>> ResizingVolume")
-		defer log.WithFields(fields).Debug("<<<< ResizingVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> ResizingVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< ResizingVolume")
 	}
 
 	resourcePath := "/volumes/" + volume.VolumeRef + "/expand"
-	response, responseBody, err := d.InvokeAPI(nil, "GET", resourcePath)
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", resourcePath)
 	if err != nil {
 		return false, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -883,7 +891,7 @@ func (d Client) ResizingVolume(volume VolumeEx) (bool, error) {
 	if err := json.Unmarshal(responseBody, &responseData); err != nil {
 		return false, fmt.Errorf("could not parse volume resize status response: %s; %v", string(responseBody), err)
 	}
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"percentComplete":  responseData.PercentComplete,
 		"timeToCompletion": responseData.TimeToCompletion,
 		"action":           responseData.Action,
@@ -907,7 +915,8 @@ func (d Client) ResizingVolume(volume VolumeEx) (bool, error) {
 
 // ResizeVolume expands a volume's size. Thin provisioning is not supported on E-series
 // so we only call the API for expanding thick provisioned volumes.
-func (d Client) ResizeVolume(volume VolumeEx, size uint64) error {
+func (d Client) ResizeVolume(ctx context.Context, volume VolumeEx, size uint64) error {
+
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ResizeVolume",
@@ -915,8 +924,8 @@ func (d Client) ResizeVolume(volume VolumeEx, size uint64) error {
 			"name":   volume.Label,
 			"size":   size,
 		}
-		log.WithFields(fields).Debug(">>>> ResizeVolume")
-		defer log.WithFields(fields).Debug("<<<< ResizeVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> ResizeVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< ResizeVolume")
 	}
 
 	// The API requires size to be an int (not uint64) so pass as an int but in KB.
@@ -933,14 +942,14 @@ func (d Client) ResizeVolume(volume VolumeEx, size uint64) error {
 		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 	resourcePath := "/volumes/" + volume.VolumeRef + "/expand"
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", resourcePath)
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", resourcePath)
 	if err != nil {
 		return fmt.Errorf("API invocation failed: %v", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
 		apiError := d.getErrorFromHTTPResponse(response, responseBody)
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"name":       volume,
 			"statusCode": response.StatusCode,
 			"message":    apiError.Message,
@@ -953,7 +962,7 @@ func (d Client) ResizeVolume(volume VolumeEx, size uint64) error {
 }
 
 // DeleteVolume deletes a volume from the array.
-func (d Client) DeleteVolume(volume VolumeEx) error {
+func (d Client) DeleteVolume(ctx context.Context, volume VolumeEx) error {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -961,12 +970,12 @@ func (d Client) DeleteVolume(volume VolumeEx) error {
 			"Type":   "Client",
 			"name":   volume.Label,
 		}
-		log.WithFields(fields).Debug(">>>> DeleteVolume")
-		defer log.WithFields(fields).Debug("<<<< DeleteVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> DeleteVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteVolume")
 	}
 
 	// Remove this volume from storage array
-	response, responseBody, err := d.InvokeAPI(nil, "DELETE", "/volumes/"+volume.VolumeRef)
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", "/volumes/"+volume.VolumeRef)
 	if err != nil {
 		return fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -984,7 +993,7 @@ func (d Client) DeleteVolume(volume VolumeEx) error {
 		return apiError
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":           volume.Label,
 		"VolumeRef":      volume.VolumeRef,
 		"VolumeGroupRef": volume.VolumeGroupRef,
@@ -997,7 +1006,7 @@ func (d Client) DeleteVolume(volume VolumeEx) error {
 // verifies whether a Host is already configured on the array. If so, the Host info is returned and no further action is
 // taken. If not, this method chooses a unique name for the Host and creates it on the array. Once the Host is created,
 // it is placed in the Host Group used for nDVP volumes.
-func (d Client) EnsureHostForIQN(iqn string) (HostEx, error) {
+func (d Client) EnsureHostForIQN(ctx context.Context, iqn string) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1005,12 +1014,12 @@ func (d Client) EnsureHostForIQN(iqn string) (HostEx, error) {
 			"Type":   "Client",
 			"iqn":    iqn,
 		}
-		log.WithFields(fields).Debug(">>>> EnsureHostForIQN")
-		defer log.WithFields(fields).Debug("<<<< EnsureHostForIQN")
+		Logc(ctx).WithFields(fields).Debug(">>>> EnsureHostForIQN")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureHostForIQN")
 	}
 
 	// See if there is already a host for the specified IQN
-	host, err := d.GetHostForIQN(iqn)
+	host, err := d.GetHostForIQN(ctx, iqn)
 	if err != nil {
 		return HostEx{}, fmt.Errorf("could not ensure host for IQN %s: %v", iqn, err)
 	}
@@ -1019,7 +1028,7 @@ func (d Client) EnsureHostForIQN(iqn string) (HostEx, error) {
 	// by nDVP or by an admin. Otherwise, we'll create a host for our purposes.
 	if host.HostRef != "" {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"IQN":        iqn,
 			"HostRef":    host.HostRef,
 			"ClusterRef": host.ClusterRef,
@@ -1032,13 +1041,13 @@ func (d Client) EnsureHostForIQN(iqn string) (HostEx, error) {
 	hostname := d.createNameForHost(iqn)
 
 	// Ensure we have a group for the new host. If for any reason this fails, we'll create the host anyway with no group.
-	hostGroup, err := d.EnsureHostGroup()
+	hostGroup, err := d.EnsureHostGroup(ctx)
 	if err != nil {
-		log.Warn("Could not ensure host group for new host.")
+		Logc(ctx).Warn("Could not ensure host group for new host.")
 	}
 
 	// Create the new host in the group
-	return d.CreateHost(hostname, iqn, d.config.HostType, hostGroup)
+	return d.CreateHost(ctx, hostname, iqn, d.config.HostType, hostGroup)
 }
 
 func (d Client) createNameForHost(iqn string) string {
@@ -1083,7 +1092,7 @@ func (d Client) createNameForPort(host string) string {
 
 // GetHostForIQN queries the Host objects on the array an returns one matching the supplied IQN. An empty struct is
 // returned if a matching host is not found, so the caller should check for empty values in the result.
-func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
+func (d Client) GetHostForIQN(ctx context.Context, iqn string) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1091,12 +1100,12 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 			"Type":   "Client",
 			"iqn":    iqn,
 		}
-		log.WithFields(fields).Debug(">>>> GetHostForIQN")
-		defer log.WithFields(fields).Debug("<<<< GetHostForIQN")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetHostForIQN")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetHostForIQN")
 	}
 
 	// Get hosts
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/hosts")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/hosts")
 	if err != nil {
 		return HostEx{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1117,7 +1126,7 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 	// Find initiator with matching IQN
 	for _, host := range hosts {
 		for _, f := range host.Initiators {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"f.NodeName.IoInterfaceType": f.NodeName.IoInterfaceType,
 				"f.NodeName.IscsiNodeName":   f.NodeName.IscsiNodeName,
 				"f.InitiatorNodeName.NodeName.IoInterfaceType	": f.InitiatorNodeName.NodeName.IoInterfaceType,
@@ -1127,7 +1136,7 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 
 			if f.NodeName.IoInterfaceType == "iscsi" && f.NodeName.IscsiNodeName == iqn {
 
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name": host.Label,
 					"IQN":  iqn,
 				}).Debug("Found host.")
@@ -1136,7 +1145,7 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 
 			} else if f.InitiatorNodeName.NodeName.IoInterfaceType == "iscsi" && f.InitiatorNodeName.NodeName.IscsiNodeName == iqn {
 
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"Name": host.Label,
 					"IQN":  iqn,
 				}).Debug("Found host.")
@@ -1147,12 +1156,12 @@ func (d Client) GetHostForIQN(iqn string) (HostEx, error) {
 	}
 
 	// Nothing failed, so return an empty structure if we didn't find anything
-	log.WithField("IQN", iqn).Debug("No host found.")
+	Logc(ctx).WithField("IQN", iqn).Debug("No host found.")
 	return HostEx{}, nil
 }
 
 // CreateHost creates a Host on the array. If a HostGroup is specified, the Host is placed in that group.
-func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup HostGroup) (HostEx, error) {
+func (d Client) CreateHost(ctx context.Context, name, iqn, hostType string, hostGroup HostGroup) (HostEx, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1163,14 +1172,14 @@ func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup H
 			"hostType":  hostType,
 			"hostGroup": hostGroup.Label,
 		}
-		log.WithFields(fields).Debug(">>>> CreateHost")
-		defer log.WithFields(fields).Debug("<<<< CreateHost")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateHost")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateHost")
 	}
 
 	// Set up the host create request
 	var request HostCreateRequest
 	request.Name = name
-	request.HostType.Index = d.getBestIndexForHostType(hostType)
+	request.HostType.Index = d.getBestIndexForHostType(ctx, hostType)
 	request.GroupID = hostGroup.ClusterRef
 	request.Ports = make([]HostPort, 1)
 	request.Ports[0].Label = d.createNameForPort(name)
@@ -1182,14 +1191,14 @@ func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup H
 		return HostEx{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":  name,
 		"Group": hostGroup.Label,
 		"IQN":   iqn,
 	}).Debug("Creating host.")
 
 	// Create the host
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "/hosts")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "/hosts")
 	if err != nil {
 		return HostEx{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1207,7 +1216,7 @@ func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup H
 		return HostEx{}, fmt.Errorf("could not parse host data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":          host.Label,
 		"HostRef":       host.HostRef,
 		"ClusterRef":    host.ClusterRef,
@@ -1217,24 +1226,24 @@ func (d Client) CreateHost(name string, iqn string, hostType string, hostGroup H
 	return host, nil
 }
 
-func (d Client) getBestIndexForHostType(hostType string) int {
+func (d Client) getBestIndexForHostType(ctx context.Context, hostType string) int {
 
 	hostTypeIndex := -1
 
 	// Try the mapped values first
 	_, ok := HostTypes[hostType]
 	if ok {
-		hostTypeIndex, _ = d.getIndexForHostType(HostTypes[hostType])
+		hostTypeIndex, _ = d.getIndexForHostType(ctx, HostTypes[hostType])
 	}
 
 	// If not found, try matching the E-series host type codes directly
 	if hostTypeIndex == -1 {
-		hostTypeIndex, _ = d.getIndexForHostType(hostType)
+		hostTypeIndex, _ = d.getIndexForHostType(ctx, hostType)
 	}
 
 	// If still not found, fall back to standard Linux DM-MPIO multipath driver
 	if hostTypeIndex == -1 {
-		hostTypeIndex, _ = d.getIndexForHostType("LnxALUA")
+		hostTypeIndex, _ = d.getIndexForHostType(ctx, "LnxALUA")
 	}
 
 	// Failing that, use index 0, which should be the factory default
@@ -1247,7 +1256,7 @@ func (d Client) getBestIndexForHostType(hostType string) int {
 
 // getIndexForHostType queries the array for a host type matching the specified value. If found, it returns the
 // index by which the type is known on the array. If not found, it returns -1.
-func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
+func (d Client) getIndexForHostType(ctx context.Context, hostTypeCode string) (int, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1255,12 +1264,12 @@ func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
 			"Type":         "Client",
 			"hostTypeCode": hostTypeCode,
 		}
-		log.WithFields(fields).Debug(">>>> getIndexForHostType")
-		defer log.WithFields(fields).Debug("<<<< getIndexForHostType")
+		Logc(ctx).WithFields(fields).Debug(">>>> getIndexForHostType")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< getIndexForHostType")
 	}
 
 	// Get host types
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/host-types")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/host-types")
 	if err != nil {
 		return -1, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1282,7 +1291,7 @@ func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
 	for _, hostType := range hostTypes {
 		if hostType.Code == hostTypeCode {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"Name":  hostType.Name,
 				"Index": hostType.Index,
 				"Code":  hostType.Code,
@@ -1292,22 +1301,22 @@ func (d Client) getIndexForHostType(hostTypeCode string) (int, error) {
 		}
 	}
 
-	log.WithField("Code", hostTypeCode).Debug("Host type not found.")
+	Logc(ctx).WithField("Code", hostTypeCode).Debug("Host type not found.")
 	return -1, nil
 }
 
 // EnsureHostGroup ensures that an E-series HostGroup exists to contain all Host objects created by the nDVP E-series driver.
 // The group name is taken from the config structure. If the group exists, the group structure is returned and no further
 // action is taken. If not, this method creates the group and returns the resulting group structure.
-func (d Client) EnsureHostGroup() (HostGroup, error) {
+func (d Client) EnsureHostGroup(ctx context.Context) (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "EnsureHostGroup",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> EnsureHostGroup")
-		defer log.WithFields(fields).Debug("<<<< EnsureHostGroup")
+		Logc(ctx).WithFields(fields).Debug(">>>> EnsureHostGroup")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureHostGroup")
 	}
 
 	hostGroupName := d.config.AccessGroup
@@ -1316,24 +1325,24 @@ func (d Client) EnsureHostGroup() (HostGroup, error) {
 	}
 
 	// Get the group with the preconfigured name
-	hostGroup, err := d.GetHostGroup(hostGroupName)
+	hostGroup, err := d.GetHostGroup(ctx, hostGroupName)
 	if err != nil {
 		return HostGroup{}, fmt.Errorf("could not ensure host group %s: %v", hostGroupName, err)
 	}
 
 	// Group found, so use it for host creation
 	if hostGroup.ClusterRef != "" {
-		log.WithFields(log.Fields{"Name": hostGroup.Label}).Debug("Host group found.")
+		Logc(ctx).WithFields(log.Fields{"Name": hostGroup.Label}).Debug("Host group found.")
 		return hostGroup, nil
 	}
 
 	// Create the group
-	hostGroup, err = d.CreateHostGroup(hostGroupName)
+	hostGroup, err = d.CreateHostGroup(ctx, hostGroupName)
 	if err != nil {
 		return HostGroup{}, fmt.Errorf("could not create host group %s: %v", hostGroupName, err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":       hostGroup.Label,
 		"ClusterRef": hostGroup.ClusterRef,
 	}).Debug("Host group created.")
@@ -1343,7 +1352,7 @@ func (d Client) EnsureHostGroup() (HostGroup, error) {
 
 // GetHostGroup returns an E-series HostGroup structure with the specified name. If no matching group is found, an
 // empty structure is returned, so the caller should check for empty values in the result.
-func (d Client) GetHostGroup(name string) (HostGroup, error) {
+func (d Client) GetHostGroup(ctx context.Context, name string) (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1351,12 +1360,12 @@ func (d Client) GetHostGroup(name string) (HostGroup, error) {
 			"Type":   "Client",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> GetHostGroup")
-		defer log.WithFields(fields).Debug("<<<< GetHostGroup")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetHostGroup")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetHostGroup")
 	}
 
 	// Get host groups
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/host-groups")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/host-groups")
 	if err != nil {
 		return HostGroup{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1385,7 +1394,7 @@ func (d Client) GetHostGroup(name string) (HostGroup, error) {
 }
 
 // CreateHostGroup creates an E-series HostGroup object with the specified name and returns the resulting HostGroup structure.
-func (d Client) CreateHostGroup(name string) (HostGroup, error) {
+func (d Client) CreateHostGroup(ctx context.Context, name string) (HostGroup, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1393,8 +1402,8 @@ func (d Client) CreateHostGroup(name string) (HostGroup, error) {
 			"Type":   "Client",
 			"name":   name,
 		}
-		log.WithFields(fields).Debug(">>>> CreateHostGroup")
-		defer log.WithFields(fields).Debug("<<<< CreateHostGroup")
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateHostGroup")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateHostGroup")
 	}
 
 	// Set up the host group create request
@@ -1409,7 +1418,7 @@ func (d Client) CreateHostGroup(name string) (HostGroup, error) {
 	}
 
 	// Create the host group
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "/host-groups")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "/host-groups")
 	if err != nil {
 		return HostGroup{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1434,7 +1443,7 @@ func (d Client) CreateHostGroup(name string) (HostGroup, error) {
 // specified host, either directly or to the containing host group, no action is taken. If the volume is mapped to a different host,
 // the method returns an error. Note that if the host is in a group, the volume will actually be mapped to the group instead of the
 // individual host.
-func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
+func (d Client) MapVolume(ctx context.Context, volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1443,21 +1452,21 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
-		log.WithFields(fields).Debug(">>>> MapVolume")
-		defer log.WithFields(fields).Debug("<<<< MapVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> MapVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< MapVolume")
 	}
 
 	if !volume.IsMapped {
 
 		// Volume is not already mapped, so map it now
-		mapping, err := d.mapVolume(volume, host)
+		mapping, err := d.mapVolume(ctx, volume, host)
 
 		// Work around Web Services Proxy bug by re-reading the map
 		if apiError, ok := err.(Error); ok && apiError.Code == http.StatusUnprocessableEntity {
 
-			log.Debug("Volume map failed with 422 response, attempting to re-read volume/map.")
+			Logc(ctx).Debug("Volume map failed with 422 response, attempting to re-read volume/map.")
 
-			retryVolume, retryError := d.GetVolumeByRef(volume.VolumeRef)
+			retryVolume, retryError := d.GetVolumeByRef(ctx, volume.VolumeRef)
 			if retryError != nil {
 				return LUNMapping{}, retryError
 			} else if len(retryVolume.Mappings) == 0 {
@@ -1466,7 +1475,7 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 			mapping = retryVolume.Mappings[0]
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"Name":      retryVolume.Label,
 				"VolumeRef": retryVolume.VolumeRef,
 				"MapRef":    mapping.MapRef,
@@ -1482,12 +1491,12 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 	} else {
 
 		// Volume is mapped, so check if it is mapped to this host/group
-		mappedToHost, mapping := d.volumeIsMappedToHost(volume, host)
+		mappedToHost, mapping := d.volumeIsMappedToHost(ctx, volume, host)
 
 		if mappedToHost {
 
 			// Mapped here, so nothing to do
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"Host":      host.Label,
 				"Name":      volume.Label,
 				"VolumeRef": volume.VolumeRef,
@@ -1509,7 +1518,7 @@ func (d Client) MapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 // mapVolume maps a volume to a host with no checks for an existing mapping. If the host is in a host group, the volume is
 // mapped to the group instead. The resulting mapping structure is returned.
-func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
+func (d Client) mapVolume(ctx context.Context, volume VolumeEx, host HostEx) (LUNMapping, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1518,8 +1527,8 @@ func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
-		log.WithFields(fields).Debug(">>>> mapVolume")
-		defer log.WithFields(fields).Debug("<<<< mapVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> mapVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< mapVolume")
 	}
 
 	// Map to host group if available, else a host
@@ -1540,7 +1549,7 @@ func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 	}
 
 	// Create the mapping
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", "/volume-mappings")
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "/volume-mappings")
 	if err != nil {
 		return LUNMapping{}, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1558,7 +1567,7 @@ func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 		return LUNMapping{}, fmt.Errorf("could not parse volume mapping data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":      volume.Label,
 		"VolumeRef": volume.VolumeRef,
 		"MapRef":    mapping.MapRef,
@@ -1572,7 +1581,7 @@ func (d Client) mapVolume(volume VolumeEx, host HostEx) (LUNMapping, error) {
 // volumeIsMappedToHost checks whether a volume is mapped to the specified host (or containing host group). If the mapping
 // exists, the method returns true with the associated mapping structure. If no mapping exists, or if the volume is mapped
 // elsewhere, the method returns false with an empty structure.
-func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMapping) {
+func (d Client) volumeIsMappedToHost(ctx context.Context, volume VolumeEx, host HostEx) (bool, LUNMapping) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1581,19 +1590,19 @@ func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMap
 			"volumeName": volume.Label,
 			"hostName":   host.Label,
 		}
-		log.WithFields(fields).Debug(">>>> volumeIsMappedToHost")
-		defer log.WithFields(fields).Debug("<<<< volumeIsMappedToHost")
+		Logc(ctx).WithFields(fields).Debug(">>>> volumeIsMappedToHost")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< volumeIsMappedToHost")
 	}
 
 	// Quick check to skip everything else
 	if !volume.IsMapped {
-		log.WithField("Name", volume.Label).Debug("Volume is not mapped.")
+		Logc(ctx).WithField("Name", volume.Label).Debug("Volume is not mapped.")
 		return false, LUNMapping{}
 	}
 
 	// E-series only supports a single mapping per volume
 	if len(volume.Mappings) == 0 {
-		log.WithField("Name", volume.Label).Debug("Volume has no mappings.")
+		Logc(ctx).WithField("Name", volume.Label).Debug("Volume has no mappings.")
 		return false, LUNMapping{}
 	}
 	mapping := volume.Mappings[0]
@@ -1610,7 +1619,7 @@ func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMap
 
 		if mapping.MapRef == host.ClusterRef {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"volumeName": volume.Label,
 				"hostName":   host.Label,
 			}).Debug("Volume is mapped to the host's enclosing group.")
@@ -1622,7 +1631,7 @@ func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMap
 
 		if mapping.MapRef == host.HostRef {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"volumeName": volume.Label,
 				"hostName":   host.Label,
 			}).Debug("Volume is mapped to the host.")
@@ -1631,7 +1640,7 @@ func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMap
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volumeName": volume.Label,
 		"hostName":   host.Label,
 	}).Debug("Volume is mapped to a different host or group.")
@@ -1640,7 +1649,7 @@ func (d Client) volumeIsMappedToHost(volume VolumeEx, host HostEx) (bool, LUNMap
 }
 
 // UnmapVolume removes a mapping from the specified volume. If no map exists, no action is taken.
-func (d Client) UnmapVolume(volume VolumeEx) error {
+func (d Client) UnmapVolume(ctx context.Context, volume VolumeEx) error {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1648,14 +1657,14 @@ func (d Client) UnmapVolume(volume VolumeEx) error {
 			"Type":   "Client",
 			"volume": volume.Label,
 		}
-		log.WithFields(fields).Debug(">>>> UnmapVolume")
-		defer log.WithFields(fields).Debug("<<<< UnmapVolume")
+		Logc(ctx).WithFields(fields).Debug(">>>> UnmapVolume")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< UnmapVolume")
 	}
 
 	// If volume isn't mapped, there's nothing to do
 	if !volume.IsMapped || len(volume.Mappings) == 0 {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Name":      volume.Label,
 			"VolumeRef": volume.VolumeRef,
 		}).Warn("Volume unmap requested, but volume is not mapped.")
@@ -1665,7 +1674,7 @@ func (d Client) UnmapVolume(volume VolumeEx) error {
 	mapping := volume.Mappings[0]
 
 	// Remove this volume mapping from storage array
-	response, _, err := d.InvokeAPI(nil, "DELETE", "/volume-mappings/"+mapping.LunMappingRef)
+	response, _, err := d.InvokeAPI(ctx, nil, "DELETE", "/volume-mappings/"+mapping.LunMappingRef)
 	if err != nil {
 		return fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1677,7 +1686,7 @@ func (d Client) UnmapVolume(volume VolumeEx) error {
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"Name":      volume.Label,
 		"VolumeRef": volume.VolumeRef,
 		"MapRef":    mapping.MapRef,
@@ -1689,19 +1698,19 @@ func (d Client) UnmapVolume(volume VolumeEx) error {
 }
 
 // GetTargetIQN returns the IQN for the array.
-func (d *Client) GetTargetIQN() (string, error) {
+func (d *Client) GetTargetIQN(ctx context.Context) (string, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetTargetIqn",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetTargetIqn")
-		defer log.WithFields(fields).Debug("<<<< GetTargetIqn")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetTargetIqn")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetTargetIqn")
 	}
 
 	// Query iSCSI target settings
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/iscsi/target-settings")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/iscsi/target-settings")
 	if err != nil {
 		return "", fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1719,7 +1728,7 @@ func (d *Client) GetTargetIQN() (string, error) {
 		return "", fmt.Errorf("could not parse iSCSI settings data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"IargetIQN": settings.NodeName.IscsiNodeName,
 	}).Debug("Got target iSCSI node name.")
 
@@ -1727,19 +1736,19 @@ func (d *Client) GetTargetIQN() (string, error) {
 }
 
 // GetTargetSettings returns the iSCSI target settings for the array.
-func (d *Client) GetTargetSettings() (*IscsiTargetSettings, error) {
+func (d *Client) GetTargetSettings(ctx context.Context) (*IscsiTargetSettings, error) {
 
 	if d.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetTargetSettings",
 			"Type":   "Client",
 		}
-		log.WithFields(fields).Debug(">>>> GetTargetSettings")
-		defer log.WithFields(fields).Debug("<<<< GetTargetSettings")
+		Logc(ctx).WithFields(fields).Debug(">>>> GetTargetSettings")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetTargetSettings")
 	}
 
 	// Query iSCSI target settings
-	response, responseBody, err := d.InvokeAPI(nil, "GET", "/iscsi/target-settings")
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", "/iscsi/target-settings")
 	if err != nil {
 		return nil, fmt.Errorf("API invocation failed. %v", err)
 	}
@@ -1757,7 +1766,7 @@ func (d *Client) GetTargetSettings() (*IscsiTargetSettings, error) {
 		return nil, fmt.Errorf("could not parse iSCSI settings data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"IargetIQN": settings.NodeName.IscsiNodeName,
 	}).Debug("Got target iSCSI target settings.")
 

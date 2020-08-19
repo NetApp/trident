@@ -5,16 +5,18 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"os"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
+
+	. "github.com/netapp/trident/logger"
 )
 
 const (
@@ -82,11 +84,11 @@ func IsLikelyNotMountPoint(mountpoint string) (bool, error) {
 	return true, nil
 }
 
-func GetDeviceNameFromMount(mountpath string) (string, int, error) {
+func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int, error) {
 
 	fields := log.Fields{"mountpath": mountpath}
-	log.WithFields(fields).Debug(">>>> k8s_utils.GetDeviceNameFromMount")
-	defer log.WithFields(fields).Debug("<<<< k8s_utils.GetDeviceNameFromMount")
+	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils.GetDeviceNameFromMount")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils.GetDeviceNameFromMount")
 
 	mps, err := listProcMounts(procMountsPath)
 	if err != nil {
@@ -116,7 +118,7 @@ func GetDeviceNameFromMount(mountpath string) (string, int, error) {
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"mountpath": mountpath,
 		"device":    device,
 		"refCount":  refCount,
@@ -150,7 +152,7 @@ func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
 		expectedFieldsPerLine := expectedNumProcSelfMntInfoFieldsPerLine
 		if fieldLines > expectedFieldsPerLine || fieldLines < (expectedFieldsPerLine-1) {
 			return nil, fmt.Errorf("wrong number of fields (expected %d or %d, got %d): %s", expectedFieldsPerLine,
-				(expectedFieldsPerLine - 1), len(fields), line)
+				expectedFieldsPerLine-1, len(fields), line)
 		}
 
 		// If root value is marked deleted, skip the entry

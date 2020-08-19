@@ -2,6 +2,7 @@
 package kubernetes
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestSupportsFeature(t *testing.T) {
 
 	for _, tc := range supportedTests {
 		plugin := Plugin{kubeVersion: &tc.versionInfo}
-		supported := plugin.SupportsFeature(ctx(), csi.ExpandCSIVolumes)
+		supported := plugin.SupportsFeature(context.Background(), csi.ExpandCSIVolumes)
 		if tc.expected {
 			print("bluh\n")
 			assert.True(t, supported, "Expected true")

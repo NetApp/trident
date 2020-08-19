@@ -14,6 +14,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -195,9 +196,9 @@ func NewAllInOnePlugin(
 
 func (p *Plugin) Activate() error {
 	go func() {
-		ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceInternal)
-		logc := utils.GetLogWithRequestContext(ctx)
-		logc.Info("Activating CSI frontend.")
+		ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+
+		Logc(ctx).Info("Activating CSI frontend.")
 		p.grpc = NewNonBlockingGRPCServer()
 		p.grpc.Start(p.endpoint, p, p, p)
 		if p.role == CSINode || p.role == CSIAllInOne {
@@ -208,14 +209,14 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
-	ctx := utils.GenerateRequestContext(nil, "", utils.ContextSourceInternal)
-	logc := utils.GetLogWithRequestContext(ctx)
-	logc.Info("Deactivating CSI frontend.")
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+
+	Logc(ctx).Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
 	if p.role == CSINode || p.role == CSIAllInOne {
 		err := p.nodeDeregisterWithController(ctx)
 		if err != nil {
-			logc.Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
+			Logc(ctx).Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
 			return err
 		}
 	}

@@ -4,6 +4,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -21,6 +22,8 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
+
+	. "github.com/netapp/trident/logger"
 )
 
 const (
@@ -51,32 +54,32 @@ func init() {
 
 // Attach the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.
-func AttachNFSVolume(name, mountpoint string, publishInfo *VolumePublishInfo) error {
+func AttachNFSVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo) error {
 
-	log.Debug(">>>> osutils.AttachNFSVolume")
-	defer log.Debug("<<<< osutils.AttachNFSVolume")
+	Logc(ctx).Debug(">>>> osutils.AttachNFSVolume")
+	defer Logc(ctx).Debug("<<<< osutils.AttachNFSVolume")
 
 	var exportPath = fmt.Sprintf("%s:%s", publishInfo.NfsServerIP, publishInfo.NfsPath)
 	var options = publishInfo.MountOptions
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume":     name,
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,
 		"options":    options,
 	}).Debug("Publishing NFS volume.")
 
-	return mountNFSPath(exportPath, mountpoint, options)
+	return mountNFSPath(ctx, exportPath, mountpoint, options)
 }
 
 // AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
 // parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
 // so that it may be mounted later instead.
-func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) error {
+func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo) error {
 
-	log.Debug(">>>> osutils.AttachISCSIVolume")
-	defer log.Debug("<<<< osutils.AttachISCSIVolume")
+	Logc(ctx).Debug(">>>> osutils.AttachISCSIVolume")
+	defer Logc(ctx).Debug("<<<< osutils.AttachISCSIVolume")
 
 	var err error
 	var lunID = int(publishInfo.IscsiLunNumber)
@@ -109,7 +112,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		iscsiInterface = "default"
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume":         name,
 		"mountpoint":     mountpoint,
 		"lunID":          lunID,
@@ -119,28 +122,30 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		"fstype":         fstype,
 	}).Debug("Attaching iSCSI volume.")
 
-	if ISCSISupported() == false {
+	if ISCSISupported(ctx) == false {
 		err := errors.New("unable to attach: open-iscsi tools not found on host")
-		log.Errorf("Unable to attach volume: open-iscsi utils not found")
+		Logc(ctx).Errorf("Unable to attach volume: open-iscsi utils not found")
 		return err
 	}
 
 	// If not logged in, login first
-	sessionExists, err := iSCSISessionExistsToTargetIQN(targetIQN)
+	sessionExists, err := iSCSISessionExistsToTargetIQN(ctx, targetIQN)
 	if err != nil {
 		return err
 	}
 	if !sessionExists {
 		if publishInfo.UseCHAP {
 			for _, portal := range bkportal {
-				err = loginWithChap(targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret, iscsiInterface, false)
+				err = loginWithChap(
+					ctx, targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret,
+					iscsiInterface, false)
 				if err != nil {
-					log.Errorf("Failed to login with CHAP credentials: %+v ", err)
+					Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
 					return fmt.Errorf("iSCSI login error: %v", err)
 				}
 			}
 		} else {
-			err = EnsureISCSISessions(portalIps)
+			err = EnsureISCSISessions(ctx, portalIps)
 			if err != nil {
 				return fmt.Errorf("iSCSI session error: %v", err)
 			}
@@ -149,14 +154,14 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 
 	// If LUN isn't present, scan the target and wait for the device(s) to appear
 	// if not attached need to scan
-	shouldScan := !IsAlreadyAttached(lunID, targetIQN)
-	err = waitForDeviceScanIfNeeded(lunID, targetIQN, shouldScan)
+	shouldScan := !IsAlreadyAttached(ctx, lunID, targetIQN)
+	err = waitForDeviceScanIfNeeded(ctx, lunID, targetIQN, shouldScan)
 	if err != nil {
-		log.Errorf("Could not find iSCSI device: %+v", err)
+		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
 		return err
 	}
 
-	err = waitForMultipathDeviceForLUN(lunID, targetIQN)
+	err = waitForMultipathDeviceForLUN(ctx, lunID, targetIQN)
 	if err != nil {
 		return err
 	}
@@ -164,14 +169,14 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 	// Lookup all the SCSI device information, and include filesystem type only if not raw block volume
 	needFSType := fstype != fsRaw
 
-	deviceInfo, err := getDeviceInfoForLUN(lunID, targetIQN, needFSType)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, targetIQN, needFSType)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
 		return fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"scsiLun":         deviceInfo.LUN,
 		"multipathDevice": deviceInfo.MultipathDevice,
 		"devices":         deviceInfo.Devices,
@@ -188,7 +193,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		return fmt.Errorf("could not determine device to use for %v", name)
 	}
 	devicePath := "/dev/" + deviceToUse
-	if err := waitForDevice(devicePath); err != nil {
+	if err := waitForDevice(ctx, devicePath); err != nil {
 		return fmt.Errorf("could not find device %v; %s", devicePath, err)
 	}
 
@@ -201,13 +206,13 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 
 	existingFstype := deviceInfo.Filesystem
 	if existingFstype == "" {
-		log.WithFields(log.Fields{"volume": name, "fstype": fstype}).Debug("Formatting LUN.")
-		err := formatVolume(devicePath, fstype)
+		Logc(ctx).WithFields(log.Fields{"volume": name, "fstype": fstype}).Debug("Formatting LUN.")
+		err := formatVolume(ctx, devicePath, fstype)
 		if err != nil {
 			return fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != fstype {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volume":          name,
 			"existingFstype":  existingFstype,
 			"requestedFstype": fstype,
@@ -215,7 +220,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 		return fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
 			name, deviceToUse, existingFstype)
 	} else {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"volume": name,
 			"fstype": deviceInfo.Filesystem,
 		}).Debug("LUN already formatted.")
@@ -223,7 +228,7 @@ func AttachISCSIVolume(name, mountpoint string, publishInfo *VolumePublishInfo) 
 
 	// Optionally mount the device
 	if mountpoint != "" {
-		if err := MountDevice(devicePath, mountpoint, options, false); err != nil {
+		if err := MountDevice(ctx, devicePath, mountpoint, options, false); err != nil {
 			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountpoint, err)
 		}
@@ -239,19 +244,19 @@ type DFInfo struct {
 }
 
 // GetDFOutput returns parsed DF output
-func GetDFOutput() ([]DFInfo, error) {
+func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 
-	log.Debug(">>>> osutils.GetDFOutput")
-	defer log.Debug("<<<< osutils.GetDFOutput")
+	Logc(ctx).Debug(">>>> osutils.GetDFOutput")
+	defer Logc(ctx).Debug("<<<< osutils.GetDFOutput")
 
 	var result []DFInfo
-	out, err := execCommand("df", "--output=target,source")
+	out, err := execCommand(ctx, "df", "--output=target,source")
 	if err != nil {
 		// df returns an error if there's a stale file handle that we can
 		// safely ignore. There may be other reasons. Consider it a warning if
 		// it printed anything to stdout.
 		if len(out) == 0 {
-			log.Error("Error encountered gathering df output.")
+			Logc(ctx).Error("Error encountered gathering df output.")
 			return nil, err
 		}
 	}
@@ -274,16 +279,16 @@ func GetDFOutput() ([]DFInfo, error) {
 }
 
 // GetInitiatorIqns returns parsed contents of /etc/iscsi/initiatorname.iscsi
-func GetInitiatorIqns() ([]string, error) {
+func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 
-	log.Debug(">>>> osutils.GetInitiatorIqns")
-	defer log.Debug("<<<< osutils.GetInitiatorIqns")
+	Logc(ctx).Debug(">>>> osutils.GetInitiatorIqns")
+	defer Logc(ctx).Debug("<<<< osutils.GetInitiatorIqns")
 
 	iqns := make([]string, 0)
 
-	out, err := execCommand("cat", "/etc/iscsi/initiatorname.iscsi")
+	out, err := execCommand(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
-		log.WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
+		Logc(ctx).WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
 		return nil, err
 	}
 	lines := strings.Split(string(out), "\n")
@@ -296,13 +301,14 @@ func GetInitiatorIqns() ([]string, error) {
 }
 
 // GetIPAddresses returns the sorted list of Global Unicast IP addresses available to Trident
-func GetIPAddresses() ([]string, error) {
+func GetIPAddresses(ctx context.Context) ([]string, error) {
+
 	ipAddrs := make([]string, 0)
 	addrsMap := make(map[string]bool)
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		err = fmt.Errorf("could not gather system IP addresses; %v", err)
-		log.Error(err)
+		Logc(ctx).Error(err)
 		return nil, err
 	}
 
@@ -311,11 +317,11 @@ func GetIPAddresses() ([]string, error) {
 		// net.Addr are of form 1.2.3.4/32, but IP needs 1.2.3.4, so we must strip the netmask (also works for IPv6)
 		parsedAddr := net.ParseIP(strings.Split(addr.String(), "/")[0])
 		if parsedAddr.IsGlobalUnicast() {
-			log.WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
+			Logc(ctx).WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
 			// Use a map to ensure addresses are deduplicated
 			addrsMap[parsedAddr.String()] = true
 		} else {
-			log.WithField("IPAddress", parsedAddr.String()).Debug("Ignoring unusable IP address.")
+			Logc(ctx).WithField("IPAddress", parsedAddr.String()).Debug("Ignoring unusable IP address.")
 		}
 	}
 
@@ -336,22 +342,23 @@ func PathExists(path string) bool {
 }
 
 // EnsureFileExists makes sure that file of given name exists
-func EnsureFileExists(path string) error {
+func EnsureFileExists(ctx context.Context, path string) error {
+
 	fields := log.Fields{"path": path}
 	if info, err := os.Stat(path); err == nil {
 		if info.IsDir() {
-			log.WithFields(fields).Error("Path exists but is a directory")
+			Logc(ctx).WithFields(fields).Error("Path exists but is a directory")
 			return fmt.Errorf("path exists but is a directory: %s", path)
 		}
 		return nil
 	} else if !os.IsNotExist(err) {
-		log.WithFields(fields).Errorf("Can't determine if file exists; %s", err)
+		Logc(ctx).WithFields(fields).Errorf("Can't determine if file exists; %s", err)
 		return fmt.Errorf("can't determine if file %s exists; %s", path, err)
 	}
 
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC, 0600)
 	if nil != err {
-		log.WithFields(fields).Errorf("OpenFile failed; %s", err)
+		Logc(ctx).WithFields(fields).Errorf("OpenFile failed; %s", err)
 		return fmt.Errorf("failed to create file %s; %s", path, err)
 	}
 	file.Close()
@@ -360,28 +367,28 @@ func EnsureFileExists(path string) error {
 }
 
 // DeleteResourceAtPath makes sure that given named file or (empty) directory is removed
-func DeleteResourceAtPath(resource string) error {
-	return waitForResourceDeletionAtPath(resource)
+func DeleteResourceAtPath(ctx context.Context, resource string) error {
+	return waitForResourceDeletionAtPath(ctx, resource)
 }
 
 // waitForResourceDeletionAtPath accepts a resource name and waits until it is deleted and returns error if it times out
-func waitForResourceDeletionAtPath(resource string) error {
+func waitForResourceDeletionAtPath(ctx context.Context, resource string) error {
 
 	fields := log.Fields{"resource": resource}
-	log.WithFields(fields).Debug(">>>> osutils.waitForResourceDeletionAtPath")
-	defer log.WithFields(fields).Debug("<<<< osutils.waitForResourceDeletionAtPath")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForResourceDeletionAtPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForResourceDeletionAtPath")
 
 	maxDuration := resourceDeletionTimeoutSecs * time.Second
 
 	checkResourceDeletion := func() error {
 		if _, err := os.Stat(resource); err == nil {
 			if err = os.Remove(resource); err != nil {
-				log.WithFields(fields).Debugf("Failed to remove resource, %s", err)
-				return fmt.Errorf("Failed to remove resource %s; %s", resource, err)
+				Logc(ctx).WithFields(fields).Debugf("Failed to remove resource, %s", err)
+				return fmt.Errorf("failed to remove resource %s; %s", resource, err)
 			}
 			return nil
 		} else if !os.IsNotExist(err) {
-			log.WithFields(fields).Debugf("Can't determine if resource exists; %s", err)
+			Logc(ctx).WithFields(fields).Debugf("Can't determine if resource exists; %s", err)
 			return fmt.Errorf("can't determine if resource %s exists; %s", resource, err)
 		}
 
@@ -389,7 +396,7 @@ func waitForResourceDeletionAtPath(resource string) error {
 	}
 
 	deleteNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Resource not deleted yet, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("Resource not deleted yet, waiting.")
 	}
 
 	deleteBackoff := backoff.NewExponentialBackOff()
@@ -402,30 +409,31 @@ func waitForResourceDeletionAtPath(resource string) error {
 	if err := backoff.RetryNotify(checkResourceDeletion, deleteBackoff, deleteNotify); err != nil {
 		return fmt.Errorf("could not delete resource after %3.2f seconds", maxDuration.Seconds())
 	} else {
-		log.WithField("resource", resource).Debug("Resource deleted.")
+		Logc(ctx).WithField("resource", resource).Debug("Resource deleted.")
 		return nil
 	}
 }
 
 // EnsureDirExists makes sure that given directory structure exists
-func EnsureDirExists(path string) error {
+func EnsureDirExists(ctx context.Context, path string) error {
+
 	fields := log.Fields{
 		"path": path,
 	}
 	if info, err := os.Stat(path); err == nil {
 		if !info.IsDir() {
-			log.WithFields(fields).Error("Path exists but is not a directory")
+			Logc(ctx).WithFields(fields).Error("Path exists but is not a directory")
 			return fmt.Errorf("path exists but is not a directory: %s", path)
 		}
 		return nil
 	} else if !os.IsNotExist(err) {
-		log.WithFields(fields).Errorf("Can't determine if directory exists; %s", err)
+		Logc(ctx).WithFields(fields).Errorf("Can't determine if directory exists; %s", err)
 		return fmt.Errorf("can't determine if directory %s exists; %s", path, err)
 	}
 
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
-		log.WithFields(fields).Errorf("Mkdir failed; %s", err)
+		Logc(ctx).WithFields(fields).Errorf("Mkdir failed; %s", err)
 		return fmt.Errorf("failed to mkdir %s; %s", path, err)
 	}
 
@@ -438,9 +446,10 @@ func getSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
 
 	paths := make([]string, 0)
 	for hostNumber, sessionNumber := range hostSessionMap {
-		path := fmt.Sprintf(chrootPathPrefix+"/sys/class/scsi_host/host%d/device/session%d/iscsi_session/session%d/device/target%d:0:0/%d:0:0:%d",
+		p := fmt.Sprintf(
+			chrootPathPrefix+"/sys/class/scsi_host/host%d/device/session%d/iscsi_session/session%d/device/target%d:0:0/%d:0:0:%d",
 			hostNumber, sessionNumber, sessionNumber, hostNumber, hostNumber, lunID)
-		paths = append(paths, path)
+		paths = append(paths, p)
 	}
 	return paths
 }
@@ -449,8 +458,8 @@ func getSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
 func getDevicesForLUN(paths []string) ([]string, error) {
 
 	devices := make([]string, 0)
-	for _, path := range paths {
-		dirname := path + "/block"
+	for _, p := range paths {
+		dirname := p + "/block"
 		if !PathExists(dirname) {
 			continue
 		}
@@ -473,42 +482,42 @@ func getDevicesForLUN(paths []string) ([]string, error) {
 
 // waitForDeviceScanIfNeeded scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool) error {
+func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName string, shouldScan bool) error {
 
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.waitForDeviceScanIfNeeded")
-	defer log.WithFields(fields).Debug("<<<< osutils.waitForDeviceScanIfNeeded")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForDeviceScanIfNeeded")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForDeviceScanIfNeeded")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
 
-	log.WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
+	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
 	hosts := make([]int, 0)
 	for hostNumber := range hostSessionMap {
 		hosts = append(hosts, hostNumber)
 	}
 
 	if shouldScan {
-		if err := iSCSIScanTargetLUN(lunID, hosts); err != nil {
-			log.WithField("scanError", err).Error("Could not scan for new LUN.")
+		if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+			Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 		}
 	}
 
 	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
-	log.Debugf("Scanning paths: %v", paths)
+	Logc(ctx).Debugf("Scanning paths: %v", paths)
 	found := make([]string, 0)
 
 	checkAllDevicesExist := func() error {
 
 		found := make([]string, 0)
 		// Check if any paths present, and return nil (success) if so
-		for _, path := range paths {
-			dirname := path + "/block"
+		for _, p := range paths {
+			dirname := p + "/block"
 			if !PathExists(dirname) {
 				return errors.New("device not present yet")
 			}
@@ -518,7 +527,7 @@ func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool)
 	}
 
 	devicesNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("All devices not yet present, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("All devices not yet present, waiting.")
 	}
 
 	deviceBackoff := backoff.NewExponentialBackOff()
@@ -528,18 +537,18 @@ func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool)
 	deviceBackoff.MaxElapsedTime = 5 * time.Second
 
 	if err := backoff.RetryNotify(checkAllDevicesExist, deviceBackoff, devicesNotify); err == nil {
-		log.Debugf("Paths found: %v", found)
+		Logc(ctx).Debugf("Paths found: %v", found)
 		return nil
 	}
 
-	log.Debugf("Paths found so far: %v", found)
+	Logc(ctx).Debugf("Paths found so far: %v", found)
 
 	checkAnyDeviceExists := func() error {
 
 		found := make([]string, 0)
 		// Check if any paths present, and return nil (success) if so
-		for _, path := range paths {
-			dirname := path + "/block"
+		for _, p := range paths {
+			dirname := p + "/block"
 			if PathExists(dirname) {
 				found = append(found, dirname)
 			}
@@ -551,7 +560,7 @@ func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool)
 	}
 
 	devicesNotify = func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("No devices present yet, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("No devices present yet, waiting.")
 	}
 
 	deviceBackoff = backoff.NewExponentialBackOff()
@@ -562,19 +571,19 @@ func waitForDeviceScanIfNeeded(lunID int, iSCSINodeName string, shouldScan bool)
 
 	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(checkAnyDeviceExists, deviceBackoff, devicesNotify); err != nil {
-		log.Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
+		Logc(ctx).Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
 
 		// In the case of a failure, log info about what devices are present
-		execCommand("ls", "-al", "/dev")
-		execCommand("ls", "-al", "/dev/mapper")
-		execCommand("ls", "-al", "/dev/disk/by-path")
-		execCommand("lsscsi")
-		execCommand("lsscsi", "-t")
-		execCommand("free")
+		execCommand(ctx, "ls", "-al", "/dev")
+		execCommand(ctx, "ls", "-al", "/dev/mapper")
+		execCommand(ctx, "ls", "-al", "/dev/disk/by-path")
+		execCommand(ctx, "lsscsi")
+		execCommand(ctx, "lsscsi", "-t")
+		execCommand(ctx, "free")
 		return err
 	}
 
-	log.Debugf("Paths found: %v", found)
+	Logc(ctx).Debugf("Paths found: %v", found)
 	return nil
 }
 
@@ -593,17 +602,19 @@ type ScsiDeviceInfo struct {
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScanIfNeeded so that the device paths are known to exist.
-func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*ScsiDeviceInfo, error) {
+func getDeviceInfoForLUN(
+	ctx context.Context, lunID int, iSCSINodeName string, needFSType bool,
+) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 		"needFSType":    needFSType,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.getDeviceInfoForLUN")
-	defer log.WithFields(fields).Debug("<<<< osutils.getDeviceInfoForLUN")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.getDeviceInfoForLUN")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.getDeviceInfoForLUN")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -619,7 +630,7 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*Scs
 
 	multipathDevice := ""
 	for _, device := range devices {
-		multipathDevice = findMultipathDeviceForDevice(device)
+		multipathDevice = findMultipathDeviceForDevice(ctx, device)
 		if multipathDevice != "" {
 			break
 		}
@@ -634,13 +645,13 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*Scs
 			devicePath = "/dev/" + devices[0]
 		}
 
-		fsType, err = getFSType(devicePath)
+		fsType, err = getFSType(ctx, devicePath)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"LUN":             strconv.Itoa(lunID),
 		"multipathDevice": multipathDevice,
 		"fsType":          fsType,
@@ -663,13 +674,13 @@ func getDeviceInfoForLUN(lunID int, iSCSINodeName string, needFSType bool) (*Scs
 // getDeviceInfoForMountPath discovers the device that is currently mounted at the specified mount path.  It
 // uses the ScsiDeviceInfo struct so that it may return a multipath device (if any) plus one or more underlying
 // physical devices.
-func getDeviceInfoForMountPath(mountpath string) (*ScsiDeviceInfo, error) {
+func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{"mountpath": mountpath}
-	log.WithFields(fields).Debug(">>>> osutils.getDeviceInfoForMountPath")
-	defer log.WithFields(fields).Debug("<<<< osutils.getDeviceInfoForMountPath")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.getDeviceInfoForMountPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.getDeviceInfoForMountPath")
 
-	device, _, err := GetDeviceNameFromMount(mountpath)
+	device, _, err := GetDeviceNameFromMount(ctx, mountpath)
 	if err != nil {
 		return nil, err
 	}
@@ -689,12 +700,12 @@ func getDeviceInfoForMountPath(mountpath string) (*ScsiDeviceInfo, error) {
 		}
 	} else {
 		deviceInfo = &ScsiDeviceInfo{
-			Devices:         findDevicesForMultipathDevice(device),
+			Devices:         findDevicesForMultipathDevice(ctx, device),
 			MultipathDevice: device,
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"multipathDevice": deviceInfo.MultipathDevice,
 		"devices":         deviceInfo.Devices,
 	}).Debug("Found SCSI device.")
@@ -703,15 +714,16 @@ func getDeviceInfoForMountPath(mountpath string) (*ScsiDeviceInfo, error) {
 }
 
 // waitForMultipathDeviceForLUN
-func waitForMultipathDeviceForLUN(lunID int, iSCSINodeName string) error {
+func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName string) error {
+
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForLUN")
-	defer log.WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForLUN")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForLUN")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForLUN")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(iSCSINodeName)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -723,24 +735,24 @@ func waitForMultipathDeviceForLUN(lunID int, iSCSINodeName string) error {
 		return err
 	}
 
-	waitForMultipathDeviceForDevices(devices)
+	waitForMultipathDeviceForDevices(ctx, devices)
 	return nil
 }
 
 // waitForMultipathDeviceForDevices accepts a list of sd* device names and waits until
 // a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
-func waitForMultipathDeviceForDevices(devices []string) string {
+func waitForMultipathDeviceForDevices(ctx context.Context, devices []string) string {
 
 	fields := log.Fields{"devices": devices}
-	log.WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForDevices")
-	defer log.WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForDevices")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForDevices")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForDevices")
 
 	if len(devices) <= 1 {
-		log.Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
+		Logc(ctx).Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
 		return ""
-	} else if !multipathdIsRunning() {
-		log.Debug("Skipping multipath discovery, multipathd isn't running.")
+	} else if !multipathdIsRunning(ctx) {
+		Logc(ctx).Debug("Skipping multipath discovery, multipathd isn't running.")
 		return ""
 	}
 
@@ -750,7 +762,7 @@ func waitForMultipathDeviceForDevices(devices []string) string {
 	checkMultipathDeviceExists := func() error {
 
 		for _, device := range devices {
-			multipathDevice = findMultipathDeviceForDevice(device)
+			multipathDevice = findMultipathDeviceForDevice(ctx, device)
 			if multipathDevice != "" {
 				return nil
 			}
@@ -762,7 +774,7 @@ func waitForMultipathDeviceForDevices(devices []string) string {
 	}
 
 	deviceNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
 	}
 
 	multipathDeviceBackoff := backoff.NewExponentialBackOff()
@@ -773,19 +785,19 @@ func waitForMultipathDeviceForDevices(devices []string) string {
 
 	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
-		log.Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
+		Logc(ctx).Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
 	} else {
-		log.WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
+		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
 	}
 	return multipathDevice
 }
 
 // waitForDevice accepts a device name and waits until it is present and returns error if it times out
-func waitForDevice(device string) error {
+func waitForDevice(ctx context.Context, device string) error {
 
 	fields := log.Fields{"device": device}
-	log.WithFields(fields).Debug(">>>> osutils.waitForDevice")
-	defer log.WithFields(fields).Debug("<<<< osutils.waitForDevice")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForDevice")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForDevice")
 
 	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
 
@@ -797,7 +809,7 @@ func waitForDevice(device string) error {
 	}
 
 	deviceNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Device not yet present, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("Device not yet present, waiting.")
 	}
 
 	deviceBackoff := backoff.NewExponentialBackOff()
@@ -810,16 +822,16 @@ func waitForDevice(device string) error {
 	if err := backoff.RetryNotify(checkDeviceExists, deviceBackoff, deviceNotify); err != nil {
 		return fmt.Errorf("could not find device after %3.2f seconds", maxDuration.Seconds())
 	} else {
-		log.WithField("device", device).Debug("Device found.")
+		Logc(ctx).WithField("device", device).Debug("Device found.")
 		return nil
 	}
 }
 
 // findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
-func findMultipathDeviceForDevice(device string) string {
+func findMultipathDeviceForDevice(ctx context.Context, device string) string {
 
-	log.WithField("device", device).Debug(">>>> osutils.findMultipathDeviceForDevice")
-	defer log.WithField("device", device).Debug("<<<< osutils.findMultipathDeviceForDevice")
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.findMultipathDeviceForDevice")
+	defer Logc(ctx).WithField("device", device).Debug("<<<< osutils.findMultipathDeviceForDevice")
 
 	holdersDir := chrootPathPrefix + "/sys/block/" + device + "/holders"
 	if dirs, err := ioutil.ReadDir(holdersDir); err == nil {
@@ -831,15 +843,15 @@ func findMultipathDeviceForDevice(device string) string {
 		}
 	}
 
-	log.WithField("device", device).Debug("Could not find multipath device for device.")
+	Logc(ctx).WithField("device", device).Debug("Could not find multipath device for device.")
 	return ""
 }
 
 // findDevicesForMultipathDevice finds the constituent devices for a devicemapper parent device like /dev/dm-0.
-func findDevicesForMultipathDevice(device string) []string {
+func findDevicesForMultipathDevice(ctx context.Context, device string) []string {
 
-	log.WithField("device", device).Debug(">>>> osutils.findDevicesForMultipathDevice")
-	defer log.WithField("device", device).Debug("<<<< osutils.findDevicesForMultipathDevice")
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.findDevicesForMultipathDevice")
+	defer Logc(ctx).WithField("device", device).Debug("<<<< osutils.findDevicesForMultipathDevice")
 
 	devices := make([]string, 0)
 
@@ -854,9 +866,9 @@ func findDevicesForMultipathDevice(device string) []string {
 	}
 
 	if len(devices) == 0 {
-		log.WithField("device", device).Debug("Could not find devices for multipath device.")
+		Logc(ctx).WithField("device", device).Debug("Could not find devices for multipath device.")
 	} else {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"device":  device,
 			"devices": devices,
 		}).Debug("Found devices for multipath device.")
@@ -866,75 +878,75 @@ func findDevicesForMultipathDevice(device string) []string {
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(lunID int, iSCSINodeName string) {
+func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string) {
 
 	fields := log.Fields{
 		"lunID":            lunID,
 		"iSCSINodeName":    iSCSINodeName,
 		"chrootPathPrefix": chrootPathPrefix,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
-	defer log.WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
 
-	deviceInfo, err := getDeviceInfoForLUN(lunID, iSCSINodeName, false)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false)
 	if err != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"error": err,
 			"lunID": lunID,
 		}).Warn("Could not get device info for removal, skipping host removal steps.")
 		return
 	}
 
-	removeSCSIDevice(deviceInfo)
+	removeSCSIDevice(ctx, deviceInfo)
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
-func PrepareDeviceAtMountPathForRemoval(mountpoint string, unmount bool) error {
+func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount bool) error {
 
 	fields := log.Fields{"mountpoint": mountpoint}
-	log.WithFields(fields).Debug(">>>> osutils.PrepareDeviceAtMountPathForRemoval")
-	defer log.WithFields(fields).Debug("<<<< osutils.PrepareDeviceAtMountPathForRemoval")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.PrepareDeviceAtMountPathForRemoval")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.PrepareDeviceAtMountPathForRemoval")
 
-	deviceInfo, err := getDeviceInfoForMountPath(mountpoint)
+	deviceInfo, err := getDeviceInfoForMountPath(ctx, mountpoint)
 	if err != nil {
 		return err
 	}
 
 	if unmount {
-		if err := Umount(mountpoint); err != nil {
+		if err := Umount(ctx, mountpoint); err != nil {
 			return err
 		}
 	}
 
-	removeSCSIDevice(deviceInfo)
+	removeSCSIDevice(ctx, deviceInfo)
 	return nil
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
 // the devices and multipathDevice fields set.
-func removeSCSIDevice(deviceInfo *ScsiDeviceInfo) {
+func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	// Flush multipath device
-	multipathFlushDevice(deviceInfo)
+	multipathFlushDevice(ctx, deviceInfo)
 
 	// Remove device
-	removeDevice(deviceInfo)
+	removeDevice(ctx, deviceInfo)
 
 	// Give the host a chance to fully process the removal
 	time.Sleep(time.Second)
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 }
 
 // ISCSISupported returns true if iscsiadm is installed and in the PATH.
-func ISCSISupported() bool {
+func ISCSISupported(ctx context.Context) bool {
 
-	log.Debug(">>>> osutils.ISCSISupported")
-	defer log.Debug("<<<< osutils.ISCSISupported")
+	Logc(ctx).Debug(">>>> osutils.ISCSISupported")
+	defer Logc(ctx).Debug("<<<< osutils.ISCSISupported")
 
-	_, err := execIscsiadmCommand("-V")
+	_, err := execIscsiadmCommand(ctx, "-V")
 	if err != nil {
-		log.Debug("iscsiadm tools not found on this host.")
+		Logc(ctx).Debug("iscsiadm tools not found on this host.")
 		return false
 	}
 	return true
@@ -948,12 +960,12 @@ type ISCSIDiscoveryInfo struct {
 }
 
 // iSCSIDiscovery uses the 'iscsiadm' command to perform discovery.
-func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
+func iSCSIDiscovery(ctx context.Context, portal string) ([]ISCSIDiscoveryInfo, error) {
 
-	log.WithField("portal", portal).Debug(">>>> osutils.iSCSIDiscovery")
-	defer log.Debug("<<<< osutils.iSCSIDiscovery")
+	Logc(ctx).WithField("portal", portal).Debug(">>>> osutils.iSCSIDiscovery")
+	defer Logc(ctx).Debug("<<<< osutils.iSCSIDiscovery")
 
-	out, err := execIscsiadmCommand("-m", "discovery", "-t", "sendtargets", "-p", portal)
+	out, err := execIscsiadmCommand(ctx, "-m", "discovery", "-t", "sendtargets", "-p", portal)
 	if err != nil {
 		return nil, err
 	}
@@ -996,7 +1008,7 @@ func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 				TargetName: a[1],
 			})
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"Portal":     a[0],
 				"PortalIP":   portalIP,
 				"TargetName": a[1],
@@ -1015,19 +1027,19 @@ type ISCSISessionInfo struct {
 }
 
 // getISCSISessionInfo parses output from 'iscsiadm -m session' and returns the parsed output.
-func getISCSISessionInfo() ([]ISCSISessionInfo, error) {
+func getISCSISessionInfo(ctx context.Context) ([]ISCSISessionInfo, error) {
 
-	log.Debug(">>>> osutils.getISCSISessionInfo")
-	defer log.Debug("<<<< osutils.getISCSISessionInfo")
+	Logc(ctx).Debug(">>>> osutils.getISCSISessionInfo")
+	defer Logc(ctx).Debug("<<<< osutils.getISCSISessionInfo")
 
-	out, err := execIscsiadmCommand("-m", "session")
+	out, err := execIscsiadmCommand(ctx, "-m", "session")
 	if err != nil {
 		exitErr, ok := err.(*exec.ExitError)
 		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == iSCSIErrNoObjsFound {
-			log.Debug("No iSCSI session found.")
+			Logc(ctx).Debug("No iSCSI session found.")
 			return []ISCSISessionInfo{}, nil
 		} else {
-			log.WithField("error", err).Error("Problem checking iSCSI sessions.")
+			Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
 			return nil, err
 		}
 	}
@@ -1071,7 +1083,7 @@ func getISCSISessionInfo() ([]ISCSISessionInfo, error) {
 				TargetName: a[3],
 			})
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"SID":        sid,
 				"Portal":     a[2],
 				"PortalIP":   portalIP,
@@ -1084,39 +1096,40 @@ func getISCSISessionInfo() ([]ISCSISessionInfo, error) {
 }
 
 // ISCSIDisableDelete logs out from the supplied target and removes the iSCSI device.
-func ISCSIDisableDelete(targetIQN, targetPortal string) error {
+func ISCSIDisableDelete(ctx context.Context, targetIQN, targetPortal string) error {
 
 	logFields := log.Fields{
 		"targetIQN":    targetIQN,
 		"targetPortal": targetPortal,
 	}
-	log.WithFields(logFields).Debug(">>>> osutils.ISCSIDisableDelete")
-	defer log.WithFields(logFields).Debug("<<<< osutils.ISCSIDisableDelete")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ISCSIDisableDelete")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ISCSIDisableDelete")
 
-	listAllISCSIDevices()
-	_, err := execIscsiadmCommand("-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u")
+	listAllISCSIDevices(ctx)
+	_, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u")
 	if err != nil {
-		log.WithField("error", err).Debug("Error during iSCSI logout.")
+		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
 	}
 
-	_, err = execIscsiadmCommand("-m", "node", "-o", "delete", "-T", targetIQN)
-	listAllISCSIDevices()
+	_, err = execIscsiadmCommand(ctx, "-m", "node", "-o", "delete", "-T", targetIQN)
+	listAllISCSIDevices(ctx)
 	return err
 }
 
 // UmountAndRemoveTemporaryMountPoint unmounts and removes the TemporaryMountDir
-func UmountAndRemoveTemporaryMountPoint(mountPath string) error {
-	log.Debug(">>>> osutils.UmountAndRemoveTemporaryMountPoint")
-	defer log.Debug("<<<< osutils.UmountAndRemoveTemporaryMountPoint")
+func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
+
+	Logc(ctx).Debug(">>>> osutils.UmountAndRemoveTemporaryMountPoint")
+	defer Logc(ctx).Debug("<<<< osutils.UmountAndRemoveTemporaryMountPoint")
 
 	// Delete the temporary mount point if it exists.
 	tmpDir := path.Join(mountPath, temporaryMountDir)
 	if _, err := os.Stat(tmpDir); err == nil {
-		if err = removeMountPoint(tmpDir); err != nil {
+		if err = removeMountPoint(ctx, tmpDir); err != nil {
 			return fmt.Errorf("failed to remove directory in staging target path %s; %s", tmpDir, err)
 		}
 	} else if !os.IsNotExist(err) {
-		log.WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s", err)
+		Logc(ctx).WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s", err)
 		return fmt.Errorf("can't determine if temporary dir path %s exists; %s", tmpDir, err)
 	}
 
@@ -1124,19 +1137,20 @@ func UmountAndRemoveTemporaryMountPoint(mountPath string) error {
 }
 
 // removeMountPoint attempts to unmount and remove the directory of the mountPointPath
-func removeMountPoint(mountPointPath string) error {
-	log.Debug(">>>> osutils.removeMountPoint")
-	defer log.Debug("<<<< osutils.removeMountPoint")
+func removeMountPoint(ctx context.Context, mountPointPath string) error {
 
-	err := Umount(mountPointPath)
+	Logc(ctx).Debug(">>>> osutils.removeMountPoint")
+	defer Logc(ctx).Debug("<<<< osutils.removeMountPoint")
+
+	err := Umount(ctx, mountPointPath)
 	if err != nil {
-		log.WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
+		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
 		return err
 	}
 
 	err = os.Remove(mountPointPath)
 	if err != nil {
-		log.WithField("mountPointPath", mountPointPath).Errorf("Remove dir failed; %s", err)
+		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Remove dir failed; %s", err)
 		return fmt.Errorf("failed to remove dir %s; %s", mountPointPath, err)
 	}
 	return nil
@@ -1144,17 +1158,20 @@ func removeMountPoint(mountPointPath string) error {
 
 // mountFilesystemForResize expands a filesystem. The xfs_growfs utility requires a mount point to expand the
 // filesystem. Determining the size of the filesystem requires that the filesystem be mounted.
-func mountFilesystemForResize(devicePath string, stagedTargetPath string, mountOptions string) (string, error) {
+func mountFilesystemForResize(
+	ctx context.Context, devicePath string, stagedTargetPath string, mountOptions string,
+) (string, error) {
+
 	logFields := log.Fields{
 		"devicePath":       devicePath,
 		"stagedTargetPath": stagedTargetPath,
 		"mountOptions":     mountOptions,
 	}
-	log.WithFields(logFields).Debug(">>>> osutils.mountAndExpandFilesystem")
-	defer log.WithFields(logFields).Debug("<<<< osutils.mountAndExpandFilesystem")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.mountAndExpandFilesystem")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.mountAndExpandFilesystem")
 
 	tmpMountPoint := path.Join(stagedTargetPath, temporaryMountDir)
-	err := MountDevice(devicePath, tmpMountPoint, mountOptions, false)
+	err := MountDevice(ctx, devicePath, tmpMountPoint, mountOptions, false)
 	if err != nil {
 		return "", fmt.Errorf("unable to mount device; %s", err)
 	}
@@ -1162,7 +1179,10 @@ func mountFilesystemForResize(devicePath string, stagedTargetPath string, mountO
 }
 
 // ExpandISCSIFilesystem will expand the filesystem of an already expanded volume.
-func ExpandISCSIFilesystem(publishInfo *VolumePublishInfo, stagedTargetPath string) (int64, error) {
+func ExpandISCSIFilesystem(
+	ctx context.Context, publishInfo *VolumePublishInfo, stagedTargetPath string,
+) (int64, error) {
+
 	devicePath := publishInfo.DevicePath
 	logFields := log.Fields{
 		"devicePath":       devicePath,
@@ -1170,26 +1190,27 @@ func ExpandISCSIFilesystem(publishInfo *VolumePublishInfo, stagedTargetPath stri
 		"mountOptions":     publishInfo.MountOptions,
 		"filesystemType":   publishInfo.FilesystemType,
 	}
-	log.WithFields(logFields).Debug(">>>> osutils.ExpandISCSIFilesystem")
-	defer log.WithFields(logFields).Debug("<<<< osutils.ExpandISCSIFilesystem")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ExpandISCSIFilesystem")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ExpandISCSIFilesystem")
 
-	tmpMountPoint, err := mountFilesystemForResize(publishInfo.DevicePath, stagedTargetPath, publishInfo.MountOptions)
+	tmpMountPoint, err := mountFilesystemForResize(
+		ctx, publishInfo.DevicePath, stagedTargetPath, publishInfo.MountOptions)
 	if err != nil {
 		return 0, err
 	}
-	defer removeMountPoint(tmpMountPoint)
+	defer removeMountPoint(ctx, tmpMountPoint)
 
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
 	switch publishInfo.FilesystemType {
 	case "xfs":
-		size, err = expandFilesystem("xfs_growfs", tmpMountPoint, tmpMountPoint)
+		size, err = expandFilesystem(ctx, "xfs_growfs", tmpMountPoint, tmpMountPoint)
 		if err != nil {
 			return 0, err
 		}
 	case "ext3", "ext4":
-		size, err = expandFilesystem("resize2fs", devicePath, tmpMountPoint)
+		size, err = expandFilesystem(ctx, "resize2fs", devicePath, tmpMountPoint)
 		if err != nil {
 			return 0, err
 		}
@@ -1200,46 +1221,47 @@ func ExpandISCSIFilesystem(publishInfo *VolumePublishInfo, stagedTargetPath stri
 	return size, err
 }
 
-func expandFilesystem(cmd string, cmdArguments string, tmpMountPoint string) (int64, error) {
+func expandFilesystem(ctx context.Context, cmd string, cmdArguments string, tmpMountPoint string) (int64, error) {
+
 	logFields := log.Fields{
 		"cmd":           cmd,
 		"cmdArguments":  cmdArguments,
 		"tmpMountPoint": tmpMountPoint,
 	}
-	log.WithFields(logFields).Debug(">>>> osutils.expandFilesystem")
-	defer log.WithFields(logFields).Debug("<<<< osutils.expandFilesystem")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.expandFilesystem")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.expandFilesystem")
 
-	preExpandSize, err := getFilesystemSize(tmpMountPoint)
+	preExpandSize, err := getFilesystemSize(ctx, tmpMountPoint)
 	if err != nil {
 		return 0, err
 	}
-	_, err = execCommand(cmd, cmdArguments)
+	_, err = execCommand(ctx, cmd, cmdArguments)
 	if err != nil {
-		log.Errorf("Expanding filesystem failed; %s", err)
+		Logc(ctx).Errorf("Expanding filesystem failed; %s", err)
 		return 0, err
 	}
 
-	postExpandSize, err := getFilesystemSize(tmpMountPoint)
+	postExpandSize, err := getFilesystemSize(ctx, tmpMountPoint)
 	if err != nil {
 		return 0, err
 	}
 
 	if postExpandSize == preExpandSize {
-		log.Warnf("Failed to expand filesystem; size=%d", postExpandSize)
+		Logc(ctx).Warnf("Failed to expand filesystem; size=%d", postExpandSize)
 	}
 
 	return postExpandSize, nil
 }
 
 // iSCSISessionExists checks to see if a session exists to the specified portal.
-func iSCSISessionExists(portal string) (bool, error) {
+func iSCSISessionExists(ctx context.Context, portal string) (bool, error) {
 
-	log.Debug(">>>> osutils.iSCSISessionExists")
-	defer log.Debug("<<<< osutils.iSCSISessionExists")
+	Logc(ctx).Debug(">>>> osutils.iSCSISessionExists")
+	defer Logc(ctx).Debug("<<<< osutils.iSCSISessionExists")
 
-	sessionInfo, err := getISCSISessionInfo()
+	sessionInfo, err := getISCSISessionInfo(ctx)
 	if err != nil {
-		log.WithField("error", err).Error("Problem checking iSCSI sessions.")
+		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
 		return false, err
 	}
 
@@ -1253,14 +1275,14 @@ func iSCSISessionExists(portal string) (bool, error) {
 }
 
 // iSCSISessionExistsToTargetIQN checks to see if a session exists to the specified target.
-func iSCSISessionExistsToTargetIQN(targetIQN string) (bool, error) {
+func iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool, error) {
 
-	log.Debug(">>>> osutils.iSCSISessionExistsToTargetIQN")
-	defer log.Debug("<<<< osutils.iSCSISessionExistsToTargetIQN")
+	Logc(ctx).Debug(">>>> osutils.iSCSISessionExistsToTargetIQN")
+	defer Logc(ctx).Debug("<<<< osutils.iSCSISessionExistsToTargetIQN")
 
-	sessionInfo, err := getISCSISessionInfo()
+	sessionInfo, err := getISCSISessionInfo(ctx)
 	if err != nil {
-		log.WithField("error", err).Error("Problem checking iSCSI sessions.")
+		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
 		return false, err
 	}
 
@@ -1273,12 +1295,13 @@ func iSCSISessionExistsToTargetIQN(targetIQN string) (bool, error) {
 	return false, nil
 }
 
-func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
-	fields := log.Fields{"targetIQN": targetIQN, "lunID": lunID}
-	log.WithFields(fields).Debug(">>>> osutils.ISCSIRescanDevices")
-	defer log.WithFields(fields).Debug("<<<< osutils.ISCSIRescanDevices")
+func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
 
-	deviceInfo, err := getDeviceInfoForLUN(int(lunID), targetIQN, false)
+	fields := log.Fields{"targetIQN": targetIQN, "lunID": lunID}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.ISCSIRescanDevices")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.ISCSIRescanDevices")
+
+	deviceInfo, err := getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
 	} else if deviceInfo == nil {
@@ -1287,7 +1310,7 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 
 	allLargeEnough := true
 	for _, diskDevice := range deviceInfo.Devices {
-		size, err := getISCSIDiskSize("/dev/" + diskDevice)
+		size, err := getISCSIDiskSize(ctx, "/dev/"+diskDevice)
 		if err != nil {
 			return err
 		}
@@ -1297,9 +1320,9 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 			continue
 		}
 
-		err = iSCSIRescanDisk(diskDevice)
+		err = iSCSIRescanDisk(ctx, diskDevice)
 		if err != nil {
-			log.WithField("diskDevice", diskDevice).Error("Failed to rescan disk.")
+			Logc(ctx).WithField("diskDevice", diskDevice).Error("Failed to rescan disk.")
 			return fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err)
 		}
 	}
@@ -1307,12 +1330,12 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 	if !allLargeEnough {
 		time.Sleep(time.Second)
 		for _, diskDevice := range deviceInfo.Devices {
-			size, err := getISCSIDiskSize("/dev/" + diskDevice)
+			size, err := getISCSIDiskSize(ctx, "/dev/"+diskDevice)
 			if err != nil {
 				return err
 			}
 			if size < minSize {
-				log.Error("Disk size not large enough after resize.")
+				Logc(ctx).Error("Disk size not large enough after resize.")
 				return fmt.Errorf("disk size not large enough after resize: %d, %d", size, minSize)
 			}
 		}
@@ -1320,127 +1343,129 @@ func ISCSIRescanDevices(targetIQN string, lunID int32, minSize int64) error {
 
 	if deviceInfo.MultipathDevice != "" {
 		multipathDevice := deviceInfo.MultipathDevice
-		size, err := getISCSIDiskSize("/dev/" + multipathDevice)
+		size, err := getISCSIDiskSize(ctx, "/dev/"+multipathDevice)
 		if err != nil {
 			return err
 		}
 
 		fields = log.Fields{"size": size, "minSize": minSize}
 		if size < minSize {
-			log.WithFields(fields).Debug("Reloading the multipath device.")
-			err := reloadMultipathDevice(multipathDevice)
+			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
+			err := reloadMultipathDevice(ctx, multipathDevice)
 			if err != nil {
 				return err
 			}
 			time.Sleep(time.Second)
-			size, err = getISCSIDiskSize("/dev/" + multipathDevice)
+			size, err = getISCSIDiskSize(ctx, "/dev/"+multipathDevice)
 			if err != nil {
 				return err
 			}
 			if size < minSize {
-				log.Error("Multipath device not large enough after resize.")
+				Logc(ctx).Error("Multipath device not large enough after resize.")
 				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
 			}
 		} else {
-			log.WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
+			Logc(ctx).WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
 		}
 	}
 
 	return nil
 }
 
-func reloadMultipathDevice(multipathDevice string) error {
+func reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
+
 	fields := log.Fields{"multipathDevice": multipathDevice}
-	log.WithFields(fields).Debug(">>>> osutils.reloadMultipathDevice")
-	defer log.WithFields(fields).Debug("<<<< osutils.reloadMultipathDevice")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.reloadMultipathDevice")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.reloadMultipathDevice")
 
 	if multipathDevice == "" {
 		return fmt.Errorf("cannot reload an empty multipathDevice")
 	}
 
-	_, err := execCommandWithTimeout("multipath", 30, true, "-r", "/dev/"+multipathDevice)
+	_, err := execCommandWithTimeout(ctx, "multipath", 30, true, "-r", "/dev/"+multipathDevice)
 	if err != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"device": multipathDevice,
 			"error":  err,
 		}).Error("Failed to reload multipathDevice.")
 		return fmt.Errorf("failed to reload multipathDevice %s: %s", multipathDevice, err)
 	}
 
-	log.WithFields(fields).Debug("Multipath device reloaded.")
+	Logc(ctx).WithFields(fields).Debug("Multipath device reloaded.")
 	return nil
 }
 
 // iSCSIRescanDisk causes the kernel to rescan a single iSCSI disk/block device.
 // This is how size changes are found when expanding a volume.
-func iSCSIRescanDisk(deviceName string) error {
-	fields := log.Fields{"deviceName": deviceName}
-	log.WithFields(fields).Debug(">>>> osutils.iSCSIRescanDisk")
-	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIRescanDisk")
+func iSCSIRescanDisk(ctx context.Context, deviceName string) error {
 
-	listAllISCSIDevices()
+	fields := log.Fields{"deviceName": deviceName}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.iSCSIRescanDisk")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.iSCSIRescanDisk")
+
+	listAllISCSIDevices(ctx)
 	filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
-	log.WithField("filename", filename).Debug("Opening file for writing.")
+	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
 
 	f, err := os.OpenFile(filename, os.O_WRONLY, 0)
 	if err != nil {
-		log.WithField("file", filename).Warning("Could not open file for writing.")
+		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
 	}
 	defer f.Close()
 
 	written, err := f.WriteString("1")
 	if err != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"file":  filename,
 			"error": err,
 		}).Warning("Could not write to file.")
 		return err
 	} else if written == 0 {
-		log.WithField("file", filename).Warning("Zero bytes written to file.")
+		Logc(ctx).WithField("file", filename).Warning("Zero bytes written to file.")
 		return fmt.Errorf("no data written to %s", filename)
 	}
 
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	return nil
 }
 
 // iSCSIScanTargetLUN scans a single LUN on an iSCSI target to discover it.
-func iSCSIScanTargetLUN(lunID int, hosts []int) error {
+func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 
 	fields := log.Fields{"hosts": hosts, "lunID": lunID}
-	log.WithFields(fields).Debug(">>>> osutils.iSCSIScanTargetLUN")
-	defer log.WithFields(fields).Debug("<<<< osutils.iSCSIScanTargetLUN")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.iSCSIScanTargetLUN")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.iSCSIScanTargetLUN")
 
 	var (
 		f   *os.File
 		err error
 	)
 
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	for _, hostNumber := range hosts {
 
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
-			log.WithField("file", filename).Warning("Could not open file for writing.")
+			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 			return err
 		}
 
 		scanCmd := fmt.Sprintf("0 0 %d", lunID)
 		if written, err := f.WriteString(scanCmd); err != nil {
-			log.WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+			Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
 			return err
 		} else if written == 0 {
-			log.WithField("file", filename).Warning("No data written to file.")
+			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
 			f.Close()
 			return fmt.Errorf("no data written to %s", filename)
 		}
 
 		f.Close()
 
-		listAllISCSIDevices()
-		log.WithFields(log.Fields{
+		listAllISCSIDevices(ctx)
+		Logc(ctx).WithFields(log.Fields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
 		}).Debug("Invoked single-LUN scan.")
@@ -1450,9 +1475,9 @@ func iSCSIScanTargetLUN(lunID int, hosts []int) error {
 }
 
 // IsAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
-func IsAlreadyAttached(lunID int, targetIqn string) bool {
+func IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool {
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(targetIqn)
+	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, targetIqn)
 	if len(hostSessionMap) == 0 {
 		return false
 	}
@@ -1469,11 +1494,11 @@ func IsAlreadyAttached(lunID int, targetIqn string) bool {
 
 // GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
 // for a given iSCSI target.
-func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
+func GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) map[int]int {
 
 	fields := log.Fields{"iSCSINodeName": iSCSINodeName}
-	log.WithFields(fields).Debug(">>>> osutils.GetISCSIHostSessionMapForTarget")
-	defer log.WithFields(fields).Debug("<<<< osutils.GetISCSIHostSessionMapForTarget")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.GetISCSIHostSessionMapForTarget")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.GetISCSIHostSessionMapForTarget")
 
 	var (
 		hostNumber    int
@@ -1484,7 +1509,7 @@ func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 
 	sysPath := chrootPathPrefix + "/sys/class/iscsi_host/"
 	if hostDirs, err := ioutil.ReadDir(sysPath); err != nil {
-		log.WithField("error", err).Errorf("Could not read %s", sysPath)
+		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return hostSessionMap
 	} else {
 		for _, hostDir := range hostDirs {
@@ -1493,13 +1518,13 @@ func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 			if !strings.HasPrefix(hostName, "host") {
 				continue
 			} else if hostNumber, err = strconv.Atoi(strings.TrimPrefix(hostName, "host")); err != nil {
-				log.WithField("host", hostName).Error("Could not parse host number")
+				Logc(ctx).WithField("host", hostName).Error("Could not parse host number")
 				continue
 			}
 
 			devicePath := sysPath + hostName + "/device/"
 			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"error":      err,
 					"devicePath": devicePath,
 				}).Error("Could not read device path.")
@@ -1511,21 +1536,21 @@ func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 					if !strings.HasPrefix(sessionName, "session") {
 						continue
 					} else if sessionNumber, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
-						log.WithField("session", sessionName).Error("Could not parse session number")
+						Logc(ctx).WithField("session", sessionName).Error("Could not parse session number")
 						continue
 					}
 
 					targetNamePath := devicePath + sessionName + "/iscsi_session/" + sessionName + "/targetname"
 					if targetName, err := ioutil.ReadFile(targetNamePath); err != nil {
 
-						log.WithFields(log.Fields{
+						Logc(ctx).WithFields(log.Fields{
 							"path":  targetNamePath,
 							"error": err,
 						}).Error("Could not read targetname file")
 
 					} else if strings.TrimSpace(string(targetName)) == iSCSINodeName {
 
-						log.WithFields(log.Fields{
+						Logc(ctx).WithFields(log.Fields{
 							"hostNumber":    hostNumber,
 							"sessionNumber": sessionNumber,
 						}).Debug("Found iSCSI host/session.")
@@ -1541,10 +1566,10 @@ func GetISCSIHostSessionMapForTarget(iSCSINodeName string) map[int]int {
 }
 
 // GetISCSIDevices returns a list of iSCSI devices that are attached to (but not necessarily mounted on) this host.
-func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
+func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 
-	log.Debug(">>>> osutils.GetISCSIDevices")
-	defer log.Debug("<<<< osutils.GetISCSIDevices")
+	Logc(ctx).Debug(">>>> osutils.GetISCSIDevices")
+	defer Logc(ctx).Debug("<<<< osutils.GetISCSIDevices")
 
 	devices := make([]*ScsiDeviceInfo, 0)
 	hostSessionMapCache := make(map[string]map[int]int)
@@ -1553,7 +1578,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	sysPath := chrootPathPrefix + "/sys/class/iscsi_session/"
 	sessionDirs, err := ioutil.ReadDir(sysPath)
 	if err != nil {
-		log.WithField("error", err).Errorf("Could not read %s", sysPath)
+		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return nil, err
 	}
 
@@ -1564,7 +1589,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		if !strings.HasPrefix(sessionName, "session") {
 			continue
 		} else if _, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
-			log.WithField("session", sessionName).Error("Could not parse session number")
+			Logc(ctx).WithField("session", sessionName).Error("Could not parse session number")
 			return nil, err
 		}
 
@@ -1573,7 +1598,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		targetNamePath := sessionPath + "/targetname"
 		targetNameBytes, err := ioutil.ReadFile(targetNamePath)
 		if err != nil {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"path":  targetNamePath,
 				"error": err,
 			}).Error("Could not read targetname file")
@@ -1582,7 +1607,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 
 		targetIQN := strings.TrimSpace(string(targetNameBytes))
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"targetIQN":   targetIQN,
 			"sessionName": sessionName,
 		}).Debug("Found iSCSI session / target IQN.")
@@ -1591,7 +1616,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		sessionDevicePath := sessionPath + "/device/"
 		targetDirs, err := ioutil.ReadDir(sessionDevicePath)
 		if err != nil {
-			log.WithField("error", err).Errorf("Could not read %s", sessionDevicePath)
+			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDevicePath)
 			return nil, err
 		}
 
@@ -1609,13 +1634,13 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		}
 
 		if hostBusDeviceName == "" {
-			log.Warningf("Could not find a host:bus:device directory at %s", sessionDevicePath)
+			Logc(ctx).Warningf("Could not find a host:bus:device directory at %s", sessionDevicePath)
 			continue
 		}
 
 		sessionDeviceHBDPath := sessionDevicePath + targetDirName + "/"
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"hbdPath": sessionDeviceHBDPath,
 			"hbdName": hostBusDeviceName,
 		}).Debug("Found host/bus/device path.")
@@ -1623,7 +1648,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		// Find the devices at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL (host:bus:device:lun)
 		hostBusDeviceLunDirs, err := ioutil.ReadDir(sessionDeviceHBDPath)
 		if err != nil {
-			log.WithField("error", err).Errorf("Could not read %s", sessionDeviceHBDPath)
+			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDeviceHBDPath)
 			return nil, err
 		}
 
@@ -1636,14 +1661,14 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 
 			sessionDeviceHBDLPath := sessionDeviceHBDPath + hostBusDeviceLunDirName + "/"
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"hbdlPath": sessionDeviceHBDLPath,
 				"hbdlName": hostBusDeviceLunDirName,
 			}).Debug("Found host/bus/device/LUN path.")
 
 			hbdlValues := strings.Split(hostBusDeviceLunDirName, ":")
 			if len(hbdlValues) != 4 {
-				log.Errorf("Could not parse values from %s", hostBusDeviceLunDirName)
+				Logc(ctx).Errorf("Could not parse values from %s", hostBusDeviceLunDirName)
 				return nil, err
 			}
 
@@ -1657,7 +1682,7 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 			// Find the block device at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL/block
 			blockDeviceDirs, err := ioutil.ReadDir(blockPath)
 			if err != nil {
-				log.WithField("error", err).Errorf("Could not read %s", blockPath)
+				Logc(ctx).WithField("error", err).Errorf("Could not read %s", blockPath)
 				return nil, err
 			}
 
@@ -1665,13 +1690,13 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 
 				blockDeviceName := blockDeviceDir.Name()
 
-				log.WithField("blockDeviceName", blockDeviceName).Debug("Found block device.")
+				Logc(ctx).WithField("blockDeviceName", blockDeviceName).Debug("Found block device.")
 
 				// Find multipath device, if any
 				var slaveDevices []string
-				multipathDevice := findMultipathDeviceForDevice(blockDeviceName)
+				multipathDevice := findMultipathDeviceForDevice(ctx, blockDeviceName)
 				if multipathDevice != "" {
-					slaveDevices = findDevicesForMultipathDevice(multipathDevice)
+					slaveDevices = findDevicesForMultipathDevice(ctx, multipathDevice)
 				} else {
 					slaveDevices = []string{blockDeviceName}
 				}
@@ -1679,11 +1704,11 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 				// Get the host/session map, using a cached value if available
 				hostSessionMap, ok := hostSessionMapCache[targetIQN]
 				if !ok {
-					hostSessionMap = GetISCSIHostSessionMapForTarget(targetIQN)
+					hostSessionMap = GetISCSIHostSessionMapForTarget(ctx, targetIQN)
 					hostSessionMapCache[targetIQN] = hostSessionMap
 				}
 
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(log.Fields{
 					"host":            hostNum,
 					"lun":             lunNum,
 					"devices":         slaveDevices,
@@ -1712,19 +1737,19 @@ func GetISCSIDevices() ([]*ScsiDeviceInfo, error) {
 }
 
 // IsMounted verifies if the supplied device is attached at the supplied location.
-func IsMounted(sourceDevice, mountpoint string) (bool, error) {
+func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, error) {
 
 	fields := log.Fields{
 		"source": sourceDevice,
 		"target": mountpoint,
 	}
-	log.WithFields(fields).Debug(">>>> osutils.IsMounted")
-	defer log.WithFields(fields).Debug("<<<< osutils.IsMounted")
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.IsMounted")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.IsMounted")
 
 	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
 
 	if err != nil {
-		log.WithFields(fields).Errorf("checking mounted failed; %s", err)
+		Logc(ctx).WithFields(fields).Errorf("checking mounted failed; %s", err)
 		return false, fmt.Errorf("checking mounted failed; %s", err)
 	}
 
@@ -1739,10 +1764,10 @@ func IsMounted(sourceDevice, mountpoint string) (bool, error) {
 			continue
 		}
 
-		log.Debugf("Mountpoint found: %v", procMount)
+		Logc(ctx).Debugf("Mountpoint found: %v", procMount)
 
 		if sourceDevice == "" {
-			log.Debugf("Source device: none, Target: %s, is mounted: true", mountpoint)
+			Logc(ctx).Debugf("Source device: none, Target: %s, is mounted: true", mountpoint)
 			return true, nil
 		}
 
@@ -1753,7 +1778,7 @@ func IsMounted(sourceDevice, mountpoint string) (bool, error) {
 		if hasDevMountSourcePrefix {
 			device, err := filepath.EvalSymlinks(procMount.MountSource)
 			if err != nil {
-				log.Error(err)
+				Logc(ctx).Error(err)
 				continue
 			}
 			mountedDevice = strings.TrimPrefix(device, "/dev/")
@@ -1762,20 +1787,20 @@ func IsMounted(sourceDevice, mountpoint string) (bool, error) {
 		}
 
 		if sourceDeviceName == mountedDevice {
-			log.Debugf("Source device: %s, Target: %s, is mounted: true", sourceDeviceName, mountpoint)
+			Logc(ctx).Debugf("Source device: %s, Target: %s, is mounted: true", sourceDeviceName, mountpoint)
 			return true, nil
 		}
 	}
 
-	log.Debugf("Source device: %s, Target: %s, is mounted: false", sourceDevice, mountpoint)
+	Logc(ctx).Debugf("Source device: %s, Target: %s, is mounted: false", sourceDevice, mountpoint)
 	return false, nil
 }
 
 // GetMountedISCSIDevices returns a list of iSCSI devices that are *mounted* on this host.
-func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
+func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 
-	log.Debug(">>>> osutils.GetMountedISCSIDevices")
-	defer log.Debug("<<<< osutils.GetMountedISCSIDevices")
+	Logc(ctx).Debug(">>>> osutils.GetMountedISCSIDevices")
+	defer Logc(ctx).Debug("<<<< osutils.GetMountedISCSIDevices")
 
 	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
 	if err != nil {
@@ -1798,7 +1823,7 @@ func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 		if hasDevMountSourcePrefix {
 			device, err := filepath.EvalSymlinks(procMount.MountSource)
 			if err != nil {
-				log.Error(err)
+				Logc(ctx).Error(err)
 				continue
 			}
 			mountedDevice = strings.TrimPrefix(device, "/dev/")
@@ -1810,7 +1835,7 @@ func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	}
 
 	// Get all known iSCSI devices
-	iscsiDevices, err := GetISCSIDevices()
+	iscsiDevices, err := GetISCSIDevices(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1841,7 +1866,7 @@ func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 	}
 
 	for _, md := range mountedISCSIDevices {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"host":            md.Host,
 			"lun":             md.LUN,
 			"devices":         md.Devices,
@@ -1855,9 +1880,9 @@ func GetMountedISCSIDevices() ([]*ScsiDeviceInfo, error) {
 }
 
 // ISCSITargetHasMountedDevice returns true if this host has any mounted devices on the specified target.
-func ISCSITargetHasMountedDevice(targetIQN string) (bool, error) {
+func ISCSITargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, error) {
 
-	mountedISCSIDevices, err := GetMountedISCSIDevices()
+	mountedISCSIDevices, err := GetMountedISCSIDevices(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -1872,19 +1897,19 @@ func ISCSITargetHasMountedDevice(targetIQN string) (bool, error) {
 }
 
 // multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
-func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) {
+func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 
-	log.WithField("device", deviceInfo.MultipathDevice).Debug(">>>> osutils.multipathFlushDevice")
-	defer log.Debug("<<<< osutils.multipathFlushDevice")
+	Logc(ctx).WithField("device", deviceInfo.MultipathDevice).Debug(">>>> osutils.multipathFlushDevice")
+	defer Logc(ctx).Debug("<<<< osutils.multipathFlushDevice")
 
 	if deviceInfo.MultipathDevice == "" {
 		return
 	}
 
-	_, err := execCommandWithTimeout("multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
+	_, err := execCommandWithTimeout(ctx, "multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
 	if err != nil {
 		// nothing to do if it generates an error but log it
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"device": deviceInfo.MultipathDevice,
 			"error":  err,
 		}).Warning("Error encountered in multipath flush device command.")
@@ -1892,16 +1917,16 @@ func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) {
 }
 
 // flushDevice flushes any outstanding I/O to all paths to a device.
-func flushDevice(deviceInfo *ScsiDeviceInfo) {
+func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 
-	log.Debug(">>>> osutils.flushDevice")
-	defer log.Debug("<<<< osutils.flushDevice")
+	Logc(ctx).Debug(">>>> osutils.flushDevice")
+	defer Logc(ctx).Debug("<<<< osutils.flushDevice")
 
 	for _, device := range deviceInfo.Devices {
-		_, err := execCommandWithTimeout("blockdev", 5, true, "--flushbufs", "/dev/"+device)
+		_, err := execCommandWithTimeout(ctx, "blockdev", 5, true, "--flushbufs", "/dev/"+device)
 		if err != nil {
 			// nothing to do if it generates an error but log it
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"device": device,
 				"error":  err,
 			}).Warning("Error encountered in blockdev --flushbufs command.")
@@ -1910,88 +1935,88 @@ func flushDevice(deviceInfo *ScsiDeviceInfo) {
 }
 
 // removeDevice tells Linux that a device will be removed.
-func removeDevice(deviceInfo *ScsiDeviceInfo) {
+func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 
-	log.Debug(">>>> osutils.removeDevice")
-	defer log.Debug("<<<< osutils.removeDevice")
+	Logc(ctx).Debug(">>>> osutils.removeDevice")
+	defer Logc(ctx).Debug("<<<< osutils.removeDevice")
 
 	var (
 		f   *os.File
 		err error
 	)
 
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	for _, deviceName := range deviceInfo.Devices {
 
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
-			log.WithField("file", filename).Warning("Could not open file for writing.")
+			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 			return
 		}
 
 		if written, err := f.WriteString("1"); err != nil {
-			log.WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+			Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
 			return
 		} else if written == 0 {
-			log.WithField("file", filename).Warning("No data written to file.")
+			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
 			f.Close()
 			return
 		}
 
 		f.Close()
 
-		listAllISCSIDevices()
-		log.WithField("scanFile", filename).Debug("Invoked device delete.")
+		listAllISCSIDevices(ctx)
+		Logc(ctx).WithField("scanFile", filename).Debug("Invoked device delete.")
 	}
 }
 
 // multipathdIsRunning returns true if the multipath daemon is running.
-func multipathdIsRunning() bool {
+func multipathdIsRunning(ctx context.Context) bool {
 
-	log.Debug(">>>> osutils.multipathdIsRunning")
-	defer log.Debug("<<<< osutils.multipathdIsRunning")
+	Logc(ctx).Debug(">>>> osutils.multipathdIsRunning")
+	defer Logc(ctx).Debug("<<<< osutils.multipathdIsRunning")
 
-	out, err := execCommand("pgrep", "multipathd")
+	out, err := execCommand(ctx, "pgrep", "multipathd")
 	if err == nil {
 		pid := strings.TrimSpace(string(out))
 		if pidRegex.MatchString(pid) {
-			log.WithField("pid", pid).Debug("multipathd is running")
+			Logc(ctx).WithField("pid", pid).Debug("multipathd is running")
 			return true
 		}
 	} else {
-		log.Error(err)
+		Logc(ctx).Error(err)
 	}
 
-	out, err = execCommand("multipathd", "show", "daemon")
+	out, err = execCommand(ctx, "multipathd", "show", "daemon")
 	if err == nil {
 		if pidRunningRegex.MatchString(string(out)) {
-			log.Debug("multipathd is running")
+			Logc(ctx).Debug("multipathd is running")
 			return true
 		}
 	} else {
-		log.Error(err)
+		Logc(ctx).Error(err)
 	}
 
 	return false
 }
 
 // getFSType returns the filesystem for the supplied device.
-func getFSType(device string) (string, error) {
+func getFSType(ctx context.Context, device string) (string, error) {
 
-	log.WithField("device", device).Debug(">>>> osutils.getFSType")
-	defer log.Debug("<<<< osutils.getFSType")
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.getFSType")
+	defer Logc(ctx).Debug("<<<< osutils.getFSType")
 
 	// blkid return status=2 both in case of an unformatted filesystem as well as for the case when it is
 	// unable to get the filesystem (e.g. IO error), therefore ensure device is available before calling blkid
-	if err := waitForDevice(device); err != nil {
+	if err := waitForDevice(ctx, device); err != nil {
 		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s", device, err)
 	}
 
-	out, err := execCommandWithTimeout("blkid", 5, true, device)
+	out, err := execCommandWithTimeout(ctx, "blkid", 5, true, device)
 	if err != nil {
 		if IsTimeoutError(err) {
-			listAllISCSIDevices()
+			listAllISCSIDevices(ctx)
 			return "", err
 		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
 			// EITHER: Disk device is unformatted.
@@ -1999,17 +2024,17 @@ func getFSType(device string) (string, error) {
 			// not found, or no (specified) devices could be identified, an
 			// exit code of 2 is returned.
 
-			log.WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
+			Logc(ctx).WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
 
-			if err = ensureDeviceUnformatted(device); err != nil {
-				log.WithField("device", device).Errorf("device may not be unformatted; err: %v", err)
+			if err = ensureDeviceUnformatted(ctx, device); err != nil {
+				Logc(ctx).WithField("device", device).Errorf("device may not be unformatted; err: %v", err)
 				return "", err
 			}
 
 			return "", nil
 		}
 
-		log.WithField("device", device).Errorf("could not determine FSType for device; err: %v", err)
+		Logc(ctx).WithField("device", device).Errorf("could not determine FSType for device; err: %v", err)
 		return "", err
 	}
 
@@ -2028,44 +2053,44 @@ func getFSType(device string) (string, error) {
 }
 
 // ensureDeviceUnformatted reads first 2 MiBs of the device to ensures it is unformatted and contains all zeros
-func ensureDeviceUnformatted(device string) error {
+func ensureDeviceUnformatted(ctx context.Context, device string) error {
 
-	log.WithField("device", device).Debug(">>>> osutils.ensureDeviceUnformatted")
-	defer log.Debug("<<<< osutils.ensureDeviceUnformatted")
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.ensureDeviceUnformatted")
+	defer Logc(ctx).Debug("<<<< osutils.ensureDeviceUnformatted")
 
 	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
-	out, err := execCommandWithTimeout("dd", 5, false, args...)
+	out, err := execCommandWithTimeout(ctx, "dd", 5, false, args...)
 	if err != nil {
-		log.WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
+		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
 		return err
 	}
 
 	// Ensure 2MiB of data read
 	if len(out) != 2097152 {
-		log.WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
+		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
 		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to "+
 			"ensure if the device is actually unformatted", device, len(out))
 	}
 
-	log.WithField("device", device).Debug("Verified correct number of bytes read.")
+	Logc(ctx).WithField("device", device).Debug("Verified correct number of bytes read.")
 
 	// Ensure all zeros
 	if outWithoutZeros := bytes.Trim(out, "\x00"); len(outWithoutZeros) != 0 {
-		log.WithFields(log.Fields{"error": err, "device": device}).Error("device contains non-zero values")
+		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("device contains non-zero values")
 		return fmt.Errorf("device %v is not unformatted", device)
 	}
 
-	log.WithFields(log.Fields{"device": device}).Info("Device in unformatted.")
+	Logc(ctx).WithFields(log.Fields{"device": device}).Info("Device in unformatted.")
 
 	return nil
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
-func formatVolume(device, fstype string) error {
+func formatVolume(ctx context.Context, device, fstype string) error {
 
 	logFields := log.Fields{"device": device, "fsType": fstype}
-	log.WithFields(logFields).Debug(">>>> osutils.formatVolume")
-	defer log.WithFields(logFields).Debug("<<<< osutils.formatVolume")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.formatVolume")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.formatVolume")
 
 	maxDuration := 30 * time.Second
 
@@ -2075,11 +2100,11 @@ func formatVolume(device, fstype string) error {
 
 		switch fstype {
 		case "xfs":
-			_, err = execCommand("mkfs.xfs", "-f", device)
+			_, err = execCommand(ctx, "mkfs.xfs", "-f", device)
 		case "ext3":
-			_, err = execCommand("mkfs.ext3", "-F", device)
+			_, err = execCommand(ctx, "mkfs.ext3", "-F", device)
 		case "ext4":
-			_, err = execCommand("mkfs.ext4", "-F", device)
+			_, err = execCommand(ctx, "mkfs.ext4", "-F", device)
 		default:
 			return fmt.Errorf("unsupported file system type: %s", fstype)
 		}
@@ -2088,7 +2113,7 @@ func formatVolume(device, fstype string) error {
 	}
 
 	formatNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Format failed, retrying.")
+		Logc(ctx).WithField("increment", duration).Debug("Format failed, retrying.")
 	}
 
 	formatBackoff := backoff.NewExponentialBackOff()
@@ -2099,23 +2124,23 @@ func formatVolume(device, fstype string) error {
 
 	// Run the check/scan using an exponential backoff
 	if err := backoff.RetryNotify(formatVolume, formatBackoff, formatNotify); err != nil {
-		log.Warnf("Could not format device after %3.2f seconds.", maxDuration.Seconds())
+		Logc(ctx).Warnf("Could not format device after %3.2f seconds.", maxDuration.Seconds())
 		return err
 	}
 
-	log.WithFields(logFields).Info("Device formatted.")
+	Logc(ctx).WithFields(logFields).Info("Device formatted.")
 	return nil
 }
 
 // MountDevice attaches the supplied device at the supplied location.  Use this for iSCSI devices.
-func MountDevice(device, mountpoint, options string, isMountPointFile bool) (err error) {
+func MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"device":     device,
 		"mountpoint": mountpoint,
 		"options":    options,
 	}).Debug(">>>> osutils.MountDevice")
-	defer log.Debug("<<<< osutils.MountDevice")
+	defer Logc(ctx).Debug("<<<< osutils.MountDevice")
 
 	// Build the command
 	var args []string
@@ -2125,26 +2150,26 @@ func MountDevice(device, mountpoint, options string, isMountPointFile bool) (err
 		args = []string{device, mountpoint}
 	}
 
-	mounted, _ := IsMounted(device, mountpoint)
+	mounted, _ := IsMounted(ctx, device, mountpoint)
 	exists := PathExists(mountpoint)
 
-	log.Debugf("Already mounted: %v, mountpoint exists: %v", mounted, exists)
+	Logc(ctx).Debugf("Already mounted: %v, mountpoint exists: %v", mounted, exists)
 
 	if !exists {
 		if isMountPointFile {
-			if err = EnsureFileExists(mountpoint); err != nil {
-				log.WithField("error", err).Warning("File check failed.")
+			if err = EnsureFileExists(ctx, mountpoint); err != nil {
+				Logc(ctx).WithField("error", err).Warning("File check failed.")
 			}
 		} else {
-			if err = EnsureDirExists(mountpoint); err != nil {
-				log.WithField("error", err).Warning("Mkdir failed.")
+			if err = EnsureDirExists(ctx, mountpoint); err != nil {
+				Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 			}
 		}
 	}
 
 	if !mounted {
-		if _, err = execCommand("mount", args...); err != nil {
-			log.WithField("error", err).Error("Mount failed.")
+		if _, err = execCommand(ctx, "mount", args...); err != nil {
+			Logc(ctx).WithField("error", err).Error("Mount failed.")
 		}
 	}
 
@@ -2152,14 +2177,14 @@ func MountDevice(device, mountpoint, options string, isMountPointFile bool) (err
 }
 
 // mountNFSPath attaches the supplied NFS share at the supplied location with options.
-func mountNFSPath(exportPath, mountpoint, options string) (err error) {
+func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (err error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,
 		"options":    options,
 	}).Debug(">>>> osutils.mountNFSPath")
-	defer log.Debug("<<<< osutils.mountNFSPath")
+	defer Logc(ctx).Debug("<<<< osutils.mountNFSPath")
 
 	// Build the command
 	var args []string
@@ -2170,12 +2195,12 @@ func mountNFSPath(exportPath, mountpoint, options string) (err error) {
 	}
 
 	// Create the mount point dir if necessary
-	if _, err = execCommand("mkdir", "-p", mountpoint); err != nil {
-		log.WithField("error", err).Warning("Mkdir failed.")
+	if _, err = execCommand(ctx, "mkdir", "-p", mountpoint); err != nil {
+		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
-	if out, err := execCommand("mount", args...); err != nil {
-		log.WithField("output", string(out)).Debug("Mount failed.")
+	if out, err := execCommand(ctx, "mount", args...); err != nil {
+		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
 	}
 
@@ -2183,16 +2208,16 @@ func mountNFSPath(exportPath, mountpoint, options string) (err error) {
 }
 
 // Umount detaches from the supplied location.
-func Umount(mountpoint string) (err error) {
+func Umount(ctx context.Context, mountpoint string) (err error) {
 
-	log.WithField("mountpoint", mountpoint).Debug(">>>> osutils.Umount")
-	defer log.Debug("<<<< osutils.Umount")
+	Logc(ctx).WithField("mountpoint", mountpoint).Debug(">>>> osutils.Umount")
+	defer Logc(ctx).Debug("<<<< osutils.Umount")
 
-	if _, err = execCommandWithTimeout("umount", 10, true, mountpoint); err != nil {
-		log.WithField("error", err).Error("Umount failed.")
+	if _, err = execCommandWithTimeout(ctx, "umount", 10, true, mountpoint); err != nil {
+		Logc(ctx).WithField("error", err).Error("Umount failed.")
 		if IsTimeoutError(err) {
 			var out []byte
-			out, err = execCommandWithTimeout("umount", 10, true, mountpoint, "-f")
+			out, err = execCommandWithTimeout(ctx, "umount", 10, true, mountpoint, "-f")
 			if strings.Contains(string(out), "not mounted") {
 				err = nil
 			}
@@ -2202,45 +2227,48 @@ func Umount(mountpoint string) (err error) {
 }
 
 // loginISCSITarget logs in to an iSCSI target.
-func configureISCSITarget(iqn, portal, name, value string) error {
+func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"IQN":    iqn,
 		"Portal": portal,
 		"Name":   name,
 		"Value":  value,
 	}).Debug(">>>> osutils.configureISCSITarget")
-	defer log.Debug("<<<< osutils.configureISCSITarget")
+	defer Logc(ctx).Debug("<<<< osutils.configureISCSITarget")
 
 	args := []string{"-m", "node", "-T", iqn, "-p", portal + ":3260", "-o", "update", "-n", name, "-v", value}
-	if _, err := execIscsiadmCommand(args...); err != nil {
-		log.WithField("error", err).Warn("Error configuring iSCSI target.")
+	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
+		Logc(ctx).WithField("error", err).Warn("Error configuring iSCSI target.")
 		return err
 	}
 	return nil
 }
 
 // loginISCSITarget logs in to an iSCSI target.
-func loginISCSITarget(iqn, portal string) error {
+func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"IQN":    iqn,
 		"Portal": portal,
 	}).Debug(">>>> osutils.loginISCSITarget")
-	defer log.Debug("<<<< osutils.loginISCSITarget")
+	defer Logc(ctx).Debug("<<<< osutils.loginISCSITarget")
 
 	args := []string{"-m", "node", "-T", iqn, "-l", "-p", portal + ":3260"}
-	listAllISCSIDevices()
-	if _, err := execIscsiadmCommand(args...); err != nil {
-		log.WithField("error", err).Error("Error logging in to iSCSI target.")
+	listAllISCSIDevices(ctx)
+	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
+		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	return nil
 }
 
 // loginWithChap will login to the iSCSI target with the supplied credentials.
-func loginWithChap(tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string, logSensitiveInfo bool) error {
+func loginWithChap(
+	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string,
+	logSensitiveInfo bool,
+) error {
 
 	logFields := log.Fields{
 		"IQN":                   tiqn,
@@ -2255,87 +2283,87 @@ func loginWithChap(tiqn, portal, username, password, targetUsername, targetIniti
 		logFields["password"] = password
 		logFields["targetInitiatorSecret"] = targetInitiatorSecret
 	}
-	log.WithFields(logFields).Debug(">>>> osutils.loginWithChap")
-	defer log.Debug("<<<< osutils.loginWithChap")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.loginWithChap")
+	defer Logc(ctx).Debug("<<<< osutils.loginWithChap")
 
 	args := []string{"-m", "node", "-T", tiqn, "-p", portal + ":3260"}
 
 	createArgs := append(args, []string{"--interface", iface, "--op", "new"}...)
-	listAllISCSIDevices()
-	if _, err := execIscsiadmCommand(createArgs...); err != nil {
-		log.Error("Error running iscsiadm node create.")
+	listAllISCSIDevices(ctx)
+	if _, err := execIscsiadmCommand(ctx, createArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm node create.")
 		return err
 	}
 
 	authMethodArgs := append(args, []string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
-	if _, err := execIscsiadmCommand(authMethodArgs...); err != nil {
-		log.Error("Error running iscsiadm set authmethod.")
+	if _, err := execIscsiadmCommand(ctx, authMethodArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm set authmethod.")
 		return err
 	}
 
 	authUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
-	if _, err := execIscsiadmCommand(authUserArgs...); err != nil {
-		log.Error("Error running iscsiadm set authuser.")
+	if _, err := execIscsiadmCommand(ctx, authUserArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm set authuser.")
 		return err
 	}
 
 	authPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
-	if _, err := execIscsiadmCommand(authPasswordArgs...); err != nil {
-		log.Error("Error running iscsiadm set authpassword.")
+	if _, err := execIscsiadmCommand(ctx, authPasswordArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm set authpassword.")
 		return err
 	}
 
 	if targetUsername != "" && targetInitiatorSecret != "" {
 		targetAuthUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
-		if _, err := execIscsiadmCommand(targetAuthUserArgs...); err != nil {
-			log.Error("Error running iscsiadm set authuser_in.")
+		if _, err := execIscsiadmCommand(ctx, targetAuthUserArgs...); err != nil {
+			Logc(ctx).Error("Error running iscsiadm set authuser_in.")
 			return err
 		}
 
 		targetAuthPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
-		if _, err := execIscsiadmCommand(targetAuthPasswordArgs...); err != nil {
-			log.Error("Error running iscsiadm set authpassword_in.")
+		if _, err := execIscsiadmCommand(ctx, targetAuthPasswordArgs...); err != nil {
+			Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
 			return err
 		}
 	}
 
 	loginArgs := append(args, []string{"--login"}...)
-	if _, err := execIscsiadmCommand(loginArgs...); err != nil {
-		log.Error("Error running iscsiadm login.")
+	if _, err := execIscsiadmCommand(ctx, loginArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm login.")
 		return err
 	}
-	listAllISCSIDevices()
+	listAllISCSIDevices(ctx)
 	return nil
 }
 
-func EnsureISCSISessions(hostDataIPs []string) error {
+func EnsureISCSISessions(ctx context.Context, hostDataIPs []string) error {
 	for _, ip := range hostDataIPs {
-		if err := EnsureISCSISession(ip); nil != err {
+		if err := EnsureISCSISession(ctx, ip); nil != err {
 			return err
 		}
 	}
 	return nil
 }
 
-func EnsureISCSISession(hostDataIP string) error {
+func EnsureISCSISession(ctx context.Context, hostDataIP string) error {
 
-	log.WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureISCSISession")
-	defer log.Debug("<<<< osutils.EnsureISCSISession")
+	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureISCSISession")
+	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISession")
 
 	// Ensure iSCSI is supported on system
-	if !ISCSISupported() {
+	if !ISCSISupported(ctx) {
 		return errors.New("iSCSI support not detected")
 	}
 
 	// Ensure iSCSI session exists for the specified iSCSI portal
-	sessionExists, err := iSCSISessionExists(hostDataIP)
+	sessionExists, err := iSCSISessionExists(ctx, hostDataIP)
 	if err != nil {
 		return fmt.Errorf("could not check for iSCSI session: %v", err)
 	}
 	if !sessionExists {
 
 		// Run discovery in case we haven't seen this target from this host
-		targets, err := iSCSIDiscovery(hostDataIP)
+		targets, err := iSCSIDiscovery(ctx, hostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not run iSCSI discovery: %v", err)
 		}
@@ -2343,7 +2371,7 @@ func EnsureISCSISession(hostDataIP string) error {
 			return errors.New("iSCSI discovery found no targets")
 		}
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"Targets": targets,
 		}).Debug("Found matching iSCSI targets.")
 
@@ -2365,17 +2393,18 @@ func EnsureISCSISession(hostDataIP string) error {
 		for _, target := range targets {
 			if target.TargetName == targetName {
 				// Set scan to manual
-				err = configureISCSITarget(target.TargetName, target.PortalIP, "node.session.scan", "manual")
+				err = configureISCSITarget(ctx, target.TargetName, target.PortalIP, "node.session.scan", "manual")
 				if err != nil {
 					// Swallow this error, someone is running an old version of Debian/Ubuntu
 				}
 				// Update replacement timeout
-				err = configureISCSITarget(target.TargetName, target.PortalIP, "node.session.timeo.replacement_timeout", "5")
+				err = configureISCSITarget(
+					ctx, target.TargetName, target.PortalIP, "node.session.timeo.replacement_timeout", "5")
 				if err != nil {
 					return fmt.Errorf("set replacement timeout failed: %v", err)
 				}
 				// Log in to target
-				err = loginISCSITarget(target.TargetName, target.PortalIP)
+				err = loginISCSITarget(ctx, target.TargetName, target.PortalIP)
 				if err != nil {
 					return fmt.Errorf("login to iSCSI target failed: %v", err)
 				}
@@ -2383,7 +2412,7 @@ func EnsureISCSISession(hostDataIP string) error {
 		}
 
 		// Recheck to ensure a session is now open
-		sessionExists, err = iSCSISessionExists(hostDataIP)
+		sessionExists, err = iSCSISessionExists(ctx, hostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
 		}
@@ -2392,27 +2421,27 @@ func EnsureISCSISession(hostDataIP string) error {
 		}
 	}
 
-	log.WithField("hostDataIP", hostDataIP).Debug("Found session to iSCSI portal.")
+	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug("Found session to iSCSI portal.")
 
 	return nil
 }
 
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations
-func execIscsiadmCommand(args ...string) ([]byte, error) {
-	return execCommand("iscsiadm", args...)
+func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
+	return execCommand(ctx, "iscsiadm", args...)
 }
 
 // execCommand invokes an external process
-func execCommand(name string, args ...string) ([]byte, error) {
+func execCommand(ctx context.Context, name string, args ...string) ([]byte, error) {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"command": name,
 		"args":    args,
 	}).Debug(">>>> osutils.execCommand.")
 
 	out, err := exec.Command(name, args...).CombinedOutput()
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"command": name,
 		"output":  sanitizeString(string(out)),
 		"error":   err,
@@ -2428,11 +2457,13 @@ type execCommandResult struct {
 }
 
 // execCommand invokes an external shell command
-func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput bool, args ...string) ([]byte, error) {
+func execCommandWithTimeout(
+	ctx context.Context, name string, timeoutSeconds time.Duration, logOutput bool, args ...string,
+) ([]byte, error) {
 
 	timeout := timeoutSeconds * time.Second
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"command":        name,
 		"timeoutSeconds": timeout,
 		"args":           args,
@@ -2450,13 +2481,13 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput
 	select {
 	case <-time.After(timeout):
 		if err := cmd.Process.Kill(); err != nil {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"process": name,
 				"error":   err,
 			}).Error("failed to kill process")
 			result = execCommandResult{Output: nil, Error: err}
 		} else {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"process": name,
 			}).Error("process killed after timeout")
 			result = execCommandResult{Output: nil, Error: TimeoutError("process killed after timeout")}
@@ -2465,7 +2496,7 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput
 		break
 	}
 
-	logFields := log.WithFields(log.Fields{
+	logFields := Logc(ctx).WithFields(log.Fields{
 		"command": name,
 		"error":   result.Error,
 	})
@@ -2491,10 +2522,10 @@ func sanitizeString(s string) string {
 
 // SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
 // true if there are none, indicating that logging out would be safe.
-func SafeToLogOut(hostNumber, sessionNumber int) bool {
+func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 
-	log.Debug(">>>> osutils.SafeToLogOut")
-	defer log.Debug("<<<< osutils.SafeToLogOut")
+	Logc(ctx).Debug(">>>> osutils.SafeToLogOut")
+	defer Logc(ctx).Debug("<<<< osutils.SafeToLogOut")
 
 	devicePath := fmt.Sprintf("/sys/class/iscsi_host/host%d/device", hostNumber)
 
@@ -2508,7 +2539,7 @@ func SafeToLogOut(hostNumber, sessionNumber int) bool {
 		if os.IsNotExist(err) {
 			return true
 		}
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"path":  targetPath,
 			"error": err,
 		}).Warn("Failed to read dir")
@@ -2525,9 +2556,10 @@ func SafeToLogOut(hostNumber, sessionNumber int) bool {
 }
 
 // In the case of a iscsi trace debug, log info about session and what devices are present
-func listAllISCSIDevices() {
-	log.Debug(">>>> osutils.listAllISCSIDevices")
-	defer log.Debug("<<<< osutils.listAllISCSIDevices")
+func listAllISCSIDevices(ctx context.Context) {
+
+	Logc(ctx).Debug(">>>> osutils.listAllISCSIDevices")
+	defer Logc(ctx).Debug("<<<< osutils.listAllISCSIDevices")
 	// Log information about all the devices
 	dmLog := make([]string, 0)
 	sdLog := make([]string, 0)
@@ -2546,9 +2578,9 @@ func listAllISCSIDevices() {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := execCommandWithTimeout("multipath", 5, true, "-ll")
-	out2, _ := execIscsiadmCommand("-m", "session")
-	log.WithFields(log.Fields{
+	out1, _ := execCommandWithTimeout(ctx, "multipath", 5, true, "-ll")
+	out2, _ := execIscsiadmCommand(ctx, "-m", "session")
+	Logc(ctx).WithFields(log.Fields{
 		"/dev/dm-*":                  dmLog,
 		"/dev/sd*":                   sdLog,
 		"/sys/block/*":               sysLog,

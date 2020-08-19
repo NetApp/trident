@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -70,7 +71,7 @@ func NewFromParameters(pendpoint string, psvip string, pcfg Config) (c *Client, 
 }
 
 // Request performs a json-rpc POST to the configured endpoint
-func (c *Client) Request(method string, params interface{}, id int) ([]byte, error) {
+func (c *Client) Request(ctx context.Context, method string, params interface{}, id int) ([]byte, error) {
 
 	var err error
 	var request *http.Request
@@ -79,7 +80,7 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	var prettyResponseBuffer bytes.Buffer
 
 	if c.Endpoint == "" {
-		log.Error("endpoint is not set, unable to issue json-rpc requests")
+		Logc(ctx).Error("endpoint is not set, unable to issue json-rpc requests")
 		err = errors.New("no endpoint set")
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	})
 
 	// Create the request
-	request, err = http.NewRequest("POST", c.Endpoint, strings.NewReader(string(requestBody)))
+	request, err = http.NewRequestWithContext(ctx, "POST", c.Endpoint, strings.NewReader(string(requestBody)))
 	if err != nil {
 		return nil, err
 	}
@@ -109,18 +110,18 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	}
 	httpClient := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
 	}
 	response, err = httpClient.Do(request)
 	if err != nil {
-		log.Errorf("Error response from SolidFire API request: %v", err)
+		Logc(ctx).Errorf("Error response from SolidFire API request: %v", err)
 		return nil, errors.New("device API error")
 	}
 
 	// Handle HTTP errors such as 401 (Unauthorized)
 	httpError := utils.NewHTTPError(response)
 	if httpError != nil {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"request":        method,
 			"responseCode":   response.StatusCode,
 			"responseStatus": response.Status,
@@ -138,18 +139,18 @@ func (c *Client) Request(method string, params interface{}, id int) ([]byte, err
 	if c.Config.DebugTraceFlags["api"] {
 		if c.shouldLogResponseBody(method) {
 			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-			utils.LogHTTPResponse(context.TODO(), response, prettyResponseBuffer.Bytes())
+			utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
 
 		} else {
-			utils.LogHTTPResponse(context.TODO(), response, []byte("<suppressed>"))
+			utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"))
 		}
 	}
 
 	// Look for any errors returned from the controller
 	apiError := Error{}
-	json.Unmarshal([]byte(responseBody), &apiError)
+	json.Unmarshal(responseBody, &apiError)
 	if apiError.Fields.Code != 0 {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"ID":      apiError.ID,
 			"code":    apiError.Fields.Code,
 			"message": apiError.Fields.Message,

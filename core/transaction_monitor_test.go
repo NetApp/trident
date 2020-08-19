@@ -69,7 +69,7 @@ func TestLongRunningTransaction(t *testing.T) {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 
-	volTxns, err := storeClient.GetVolumeTransactions()
+	volTxns, err := storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -86,7 +86,7 @@ func TestLongRunningTransaction(t *testing.T) {
 	}
 	assert.Equal(t, volName, vol.Config.Name)
 
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	assert.True(t, len(volTxns) == 0, "number of volume transactions should be 0")
 }
 
@@ -103,7 +103,7 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 
-	volTxns, err := storeClient.GetVolumeTransactions()
+	volTxns, err := storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 
 	// Allow time to check for expired transaction and to reap the transaction
 	time.Sleep(maxAge + (2 * time.Second))
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 
-	volTxns, err := storeClient.GetVolumeTransactions()
+	volTxns, err := storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -144,13 +144,13 @@ func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 
 	// Update the transaction
 	volumeTransaction.VolumeCreatingConfig.Size = "5000000000"
-	err = storeClient.UpdateVolumeTransaction(volumeTransaction)
+	err = storeClient.UpdateVolumeTransaction(ctx(), volumeTransaction)
 	if err != nil {
 		t.Errorf("failed to update volume transactions: %v", err)
 	}
 
 	// Verify updated size
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed second get volume transactions call: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 	}
 
 	// Verify transaction exists
-	volTxns, err := storeClient.GetVolumeTransactions()
+	volTxns, err := storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -184,7 +184,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 	}
 
 	// Verify transaction deleted after error returned
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -216,7 +216,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 		assert.True(t, utils.IsVolumeCreatingError(err))
 	}
 	// Verify transaction exists
-	volTxns, err := storeClient.GetVolumeTransactions()
+	volTxns, err := storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -232,7 +232,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	}
 
 	// Verify transactions exist
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -250,7 +250,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	}
 
 	// Verify clone transaction is deleted
-	volTxns, err = storeClient.GetVolumeTransactions()
+	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
 	}
@@ -275,7 +275,7 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 		t.Errorf("Unable to add backend %s: %v", backendName, err)
 	}
 
-	backends, err := storeClient.GetBackends()
+	backends, err := storeClient.GetBackends(ctx())
 	if err != nil {
 		t.Errorf("Unable to get backends: %v", err)
 	}

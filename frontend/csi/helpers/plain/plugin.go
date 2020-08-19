@@ -13,8 +13,8 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 )
 
 type Plugin struct {
@@ -99,8 +99,8 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 // event message to the debug log.
 func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
-	logc := utils.GetLogWithRequestContext(ctx)
-	logc.WithFields(log.Fields{
+
+	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,

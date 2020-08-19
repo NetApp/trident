@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/storage"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -31,7 +32,7 @@ func TestNewVolume(t *testing.T) {
 	}
 
 	// Convert to Kubernetes Object using NewTridentVolume
-	volume, err := NewTridentVolume(vol.ConstructExternal())
+	volume, err := NewTridentVolume(ctx(), vol.ConstructExternal())
 	if err != nil {
 		t.Fatal("Unable to construct TridentVolume CRD: ", err)
 	}

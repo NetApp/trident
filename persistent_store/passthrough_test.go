@@ -34,8 +34,8 @@ func getFakeBackendWithName(name string) *storage.Backend {
 		InstanceName: name,
 	}
 
-	fakeStorageDriver := fakedriver.NewFakeStorageDriver(fakeConfig)
-	fakeBackend, _ := storage.NewStorageBackend(fakeStorageDriver)
+	fakeStorageDriver := fakedriver.NewFakeStorageDriver(ctx(), fakeConfig)
+	fakeBackend, _ := storage.NewStorageBackend(ctx(), fakeStorageDriver)
 	return fakeBackend
 }
 
@@ -131,7 +131,7 @@ func newPassthroughClient() *PassthroughClient {
 func TestPassthroughClient_NewPassthroughClientSingleFile(t *testing.T) {
 
 	configPath := "/tmp/fake_backend"
-	backendJSON, _ := getFakeBackend().ConstructPersistent().MarshalConfig()
+	backendJSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
 	err := ioutil.WriteFile(configPath, []byte(backendJSON), 0644)
 	if err != nil {
 		t.Error(err.Error())
@@ -155,12 +155,12 @@ func TestPassthroughClient_NewPassthroughClientDirectory(t *testing.T) {
 
 	configPath := "/tmp/fake_backends"
 	os.MkdirAll(configPath, 0755)
-	backend1JSON, _ := getFakeBackend().ConstructPersistent().MarshalConfig()
+	backend1JSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
 	err := ioutil.WriteFile(configPath+"/backend1", []byte(backend1JSON), 0644)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	backend2JSON, _ := getFakeBackend().ConstructPersistent().MarshalConfig()
+	backend2JSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
 	err = ioutil.WriteFile(configPath+"/backend2", []byte(backend2JSON), 0644)
 	if err != nil {
 		t.Error(err.Error())
@@ -194,7 +194,7 @@ func TestPassthroughClient_GetType(t *testing.T) {
 
 func TestPassthroughClient_Stop(t *testing.T) {
 	p := newPassthroughClient()
-	p.AddBackend(getFakeBackend())
+	p.AddBackend(ctx(), getFakeBackend())
 
 	if len(p.liveBackends) == 0 {
 		t.Error("Could not add backend to passthrough client!")
@@ -221,7 +221,7 @@ func TestPassthroughClient_GetConfig(t *testing.T) {
 func TestPassthroughClient_GetVersion(t *testing.T) {
 	p := newPassthroughClient()
 
-	result, _ := p.GetVersion()
+	result, _ := p.GetVersion(ctx())
 
 	expected := &config.PersistentStateVersion{
 		"passthrough",
@@ -235,9 +235,9 @@ func TestPassthroughClient_GetVersion(t *testing.T) {
 func TestPassthroughClient_SetVersion(t *testing.T) {
 	p := newPassthroughClient()
 
-	p.SetVersion(&config.PersistentStateVersion{"invalid", "unknown"})
+	p.SetVersion(ctx(), &config.PersistentStateVersion{"invalid", "unknown"})
 
-	result, _ := p.GetVersion()
+	result, _ := p.GetVersion(ctx())
 	expected := &config.PersistentStateVersion{
 		"passthrough",
 		config.OrchestratorAPIVersion,
@@ -251,7 +251,7 @@ func TestPassthroughClient_AddBackend(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 
-	err := p.AddBackend(fakeBackend)
+	err := p.AddBackend(ctx(), fakeBackend)
 
 	if err != nil {
 		t.Error("Could not add backend to passthrough client!")
@@ -260,7 +260,7 @@ func TestPassthroughClient_AddBackend(t *testing.T) {
 		t.Error("Could not add backend to passthrough client!")
 	}
 
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 
 	if len(p.liveBackends) != 1 {
 		t.Error("Added backend a second time to passthrough client!")
@@ -270,9 +270,9 @@ func TestPassthroughClient_AddBackend(t *testing.T) {
 func TestPassthroughClient_GetBackend(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	err := p.AddBackend(fakeBackend)
+	err := p.AddBackend(ctx(), fakeBackend)
 
-	result, err := p.GetBackend(fakeBackend.Name)
+	result, err := p.GetBackend(ctx(), fakeBackend.Name)
 
 	if err != nil {
 		t.Error("Could not get backend from passthrough client!")
@@ -286,7 +286,7 @@ func TestPassthroughClient_GetBackendNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 
-	result, err := p.GetBackend(fakeBackend.Name)
+	result, err := p.GetBackend(ctx(), fakeBackend.Name)
 
 	if result != nil || err == nil {
 		t.Error("Got incorrect backend from passthrough client!")
@@ -296,15 +296,15 @@ func TestPassthroughClient_GetBackendNonexistent(t *testing.T) {
 func TestPassthroughClient_UpdateBackend(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeBackend.State = storage.Deleting
 
-	err := p.UpdateBackend(fakeBackend)
+	err := p.UpdateBackend(ctx(), fakeBackend)
 
 	if err != nil {
 		t.Error("Could not update backend on passthrough client!")
 	}
-	result, err := p.GetBackend(fakeBackend.Name)
+	result, err := p.GetBackend(ctx(), fakeBackend.Name)
 	if err != nil {
 		t.Error("Could not get backend from passthrough client!")
 	}
@@ -317,7 +317,7 @@ func TestPassthroughClient_UpdateBackendNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 
-	err := p.UpdateBackend(fakeBackend)
+	err := p.UpdateBackend(ctx(), fakeBackend)
 
 	if err == nil {
 		t.Error("Backend update should have failed on passthrough client!")
@@ -327,12 +327,12 @@ func TestPassthroughClient_UpdateBackendNonexistent(t *testing.T) {
 func TestPassthroughClient_DeleteBackend(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	if len(p.liveBackends) != 1 {
 		t.Error("Could not add backend to passthrough client!")
 	}
 
-	err := p.DeleteBackend(fakeBackend)
+	err := p.DeleteBackend(ctx(), fakeBackend)
 
 	if err != nil {
 		t.Error("Could not delete backend on passthrough client!")
@@ -346,7 +346,7 @@ func TestPassthroughClient_DeleteBackendNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 
-	err := p.DeleteBackend(fakeBackend)
+	err := p.DeleteBackend(ctx(), fakeBackend)
 
 	if err == nil {
 		t.Error("Backend delete should have failed on passthrough client!")
@@ -357,12 +357,12 @@ func TestPassthroughClient_GetBackends(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend1 := getFakeBackend()
 	fakeBackend1.Name = "fake1"
-	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent())
+	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent(ctx()))
 	fakeBackend2 := getFakeBackend()
 	fakeBackend2.Name = "fake2"
-	p.bootBackends = append(p.bootBackends, fakeBackend2.ConstructPersistent())
+	p.bootBackends = append(p.bootBackends, fakeBackend2.ConstructPersistent(ctx()))
 
-	result, err := p.GetBackends()
+	result, err := p.GetBackends(ctx())
 
 	if err != nil {
 		t.Error("Could not get backends from passthrough client!")
@@ -377,9 +377,9 @@ func TestPassthroughClient_GetBackends(t *testing.T) {
 
 func TestPassthroughClient_GetBackendsNonexistent(t *testing.T) {
 	p := newPassthroughClient()
-	p.AddBackend(getFakeBackend())
+	p.AddBackend(ctx(), getFakeBackend())
 
-	result, err := p.GetBackends()
+	result, err := p.GetBackends(ctx())
 
 	if err != nil {
 		t.Error("Could not get backends from passthrough client!")
@@ -393,14 +393,14 @@ func TestPassthroughClient_DeleteBackends(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend1 := getFakeBackend()
 	fakeBackend1.Name = "fake1"
-	p.AddBackend(fakeBackend1)
-	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent())
+	p.AddBackend(ctx(), fakeBackend1)
+	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent(ctx()))
 	fakeBackend2 := getFakeBackend()
 	fakeBackend2.Name = "fake2"
-	p.AddBackend(fakeBackend2)
-	p.bootBackends = append(p.bootBackends, fakeBackend2.ConstructPersistent())
+	p.AddBackend(ctx(), fakeBackend2)
+	p.bootBackends = append(p.bootBackends, fakeBackend2.ConstructPersistent(ctx()))
 
-	err := p.DeleteBackends()
+	err := p.DeleteBackends(ctx())
 
 	if err != nil {
 		t.Error("Could not delete backends from passthrough client!")
@@ -416,12 +416,12 @@ func TestPassthroughClient_DeleteBackends(t *testing.T) {
 func TestPassthroughClient_DeleteBackendsNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 
-	err := p.DeleteBackends()
+	err := p.DeleteBackends(ctx())
 
 	if err != nil {
 		t.Error("Could not delete backends from passthrough client!")
 	}
-	backends, _ := p.GetBackends()
+	backends, _ := p.GetBackends(ctx())
 	if len(backends) != 0 {
 		t.Error("Could not delete backends from passthrough client!")
 	}
@@ -430,10 +430,10 @@ func TestPassthroughClient_DeleteBackendsNonexistent(t *testing.T) {
 func TestPassthroughClient_AddVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
 
-	err := p.AddVolume(fakeVolume)
+	err := p.AddVolume(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not add volume to passthrough client!")
@@ -443,11 +443,11 @@ func TestPassthroughClient_AddVolume(t *testing.T) {
 func TestPassthroughClient_GetVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
-	p.AddVolume(fakeVolume)
+	p.AddVolume(ctx(), fakeVolume)
 
-	vol, err := p.GetVolume("fake_volume")
+	vol, err := p.GetVolume(ctx(), "fake_volume")
 
 	if vol != nil || err == nil {
 		t.Error("Get volume should have failed on passthrough client!")
@@ -457,9 +457,9 @@ func TestPassthroughClient_GetVolume(t *testing.T) {
 func TestPassthroughClient_GetVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 
-	vol, err := p.GetVolume("fake_volume")
+	vol, err := p.GetVolume(ctx(), "fake_volume")
 
 	if vol != nil || err == nil {
 		t.Error("Get volume should have failed on passthrough client!")
@@ -469,11 +469,11 @@ func TestPassthroughClient_GetVolumeNonexistent(t *testing.T) {
 func TestPassthroughClient_UpdateVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
-	p.AddVolume(fakeVolume)
+	p.AddVolume(ctx(), fakeVolume)
 
-	err := p.UpdateVolume(fakeVolume)
+	err := p.UpdateVolume(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not update volume on passthrough client!")
@@ -483,10 +483,10 @@ func TestPassthroughClient_UpdateVolume(t *testing.T) {
 func TestPassthroughClient_UpdateVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
 
-	err := p.UpdateVolume(fakeVolume)
+	err := p.UpdateVolume(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not update volume on passthrough client!")
@@ -496,11 +496,11 @@ func TestPassthroughClient_UpdateVolumeNonexistent(t *testing.T) {
 func TestPassthroughClient_DeleteVolume(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
-	p.AddVolume(fakeVolume)
+	p.AddVolume(ctx(), fakeVolume)
 
-	err := p.DeleteVolume(fakeVolume)
+	err := p.DeleteVolume(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not delete volume from passthrough client!")
@@ -510,10 +510,10 @@ func TestPassthroughClient_DeleteVolume(t *testing.T) {
 func TestPassthroughClient_DeleteVolumeNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
 
-	err := p.DeleteVolume(fakeVolume)
+	err := p.DeleteVolume(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not delete volume on passthrough client!")
@@ -523,11 +523,11 @@ func TestPassthroughClient_DeleteVolumeNonexistent(t *testing.T) {
 func TestPassthroughClient_DeleteVolumeIgnoreNotFound(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
-	p.AddVolume(fakeVolume)
+	p.AddVolume(ctx(), fakeVolume)
 
-	err := p.DeleteVolumeIgnoreNotFound(fakeVolume)
+	err := p.DeleteVolumeIgnoreNotFound(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not delete volume from passthrough client!")
@@ -537,10 +537,10 @@ func TestPassthroughClient_DeleteVolumeIgnoreNotFound(t *testing.T) {
 func TestPassthroughClient_DeleteVolumeIgnoreNotFoundNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
 
-	err := p.DeleteVolumeIgnoreNotFound(fakeVolume)
+	err := p.DeleteVolumeIgnoreNotFound(ctx(), fakeVolume)
 
 	if err != nil {
 		t.Error("Could not delete volume on passthrough client!")
@@ -556,7 +556,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_1",
 		Size:         "1000000000",
 	}
-	err := fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	err := fakeBackend.Driver.Create(ctx(), volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}
@@ -566,14 +566,14 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_2",
 		Size:         "2000000000",
 	}
-	err = fakeBackend.Driver.Create(volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	err = fakeBackend.Driver.Create(ctx(), volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}
 
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 
-	result, err := p.GetVolumes()
+	result, err := p.GetVolumes(ctx())
 	if err != nil {
 		t.Error("Could not get volumes from passthrough client!")
 	}
@@ -595,9 +595,9 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 func TestPassthroughClient_GetVolumesNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 
-	result, err := p.GetVolumes()
+	result, err := p.GetVolumes(ctx())
 
 	if err != nil {
 		t.Error("Could not get volumes from passthrough client!")
@@ -610,11 +610,11 @@ func TestPassthroughClient_GetVolumesNonexistent(t *testing.T) {
 func TestPassthroughClient_DeleteVolumes(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeVolume := getFakeVolume(fakeBackend)
-	p.AddVolume(fakeVolume)
+	p.AddVolume(ctx(), fakeVolume)
 
-	err := p.DeleteVolumes()
+	err := p.DeleteVolumes(ctx())
 
 	if err != nil {
 		t.Error("Could not delete volumes on passthrough client!")
@@ -624,9 +624,9 @@ func TestPassthroughClient_DeleteVolumes(t *testing.T) {
 func TestPassthroughClient_DeleteVolumesNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 
-	err := p.DeleteVolumes()
+	err := p.DeleteVolumes(ctx())
 
 	if err != nil {
 		t.Error("Could not delete volumes on passthrough client!")
@@ -636,10 +636,10 @@ func TestPassthroughClient_DeleteVolumesNonexistent(t *testing.T) {
 func TestPassthroughClient_AddVolumeTransaction(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeTransaction := getFakeVolumeTransaction()
 
-	err := p.AddVolumeTransaction(fakeTransaction)
+	err := p.AddVolumeTransaction(ctx(), fakeTransaction)
 
 	if err != nil {
 		t.Error("Could not add volume transaction to passthrough client!")
@@ -649,11 +649,11 @@ func TestPassthroughClient_AddVolumeTransaction(t *testing.T) {
 func TestPassthroughClient_GetVolumeTransactions(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeTransaction := getFakeVolumeTransaction()
-	p.AddVolumeTransaction(fakeTransaction)
+	p.AddVolumeTransaction(ctx(), fakeTransaction)
 
-	result, err := p.GetVolumeTransactions()
+	result, err := p.GetVolumeTransactions(ctx())
 
 	if err != nil {
 		t.Error("Could not get volume transactions from passthrough client!")
@@ -666,11 +666,11 @@ func TestPassthroughClient_GetVolumeTransactions(t *testing.T) {
 func TestPassthroughClient_GetExistingVolumeTransaction(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeTransaction := getFakeVolumeTransaction()
-	p.AddVolumeTransaction(fakeTransaction)
+	p.AddVolumeTransaction(ctx(), fakeTransaction)
 
-	result, err := p.GetExistingVolumeTransaction(fakeTransaction)
+	result, err := p.GetExistingVolumeTransaction(ctx(), fakeTransaction)
 
 	if err != nil {
 		t.Error("Could not get volume transaction from passthrough client!")
@@ -683,11 +683,11 @@ func TestPassthroughClient_GetExistingVolumeTransaction(t *testing.T) {
 func TestPassthroughClient_DeleteVolumeTransaction(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeTransaction := getFakeVolumeTransaction()
-	p.AddVolumeTransaction(fakeTransaction)
+	p.AddVolumeTransaction(ctx(), fakeTransaction)
 
-	err := p.DeleteVolumeTransaction(fakeTransaction)
+	err := p.DeleteVolumeTransaction(ctx(), fakeTransaction)
 
 	if err != nil {
 		t.Error("Could not delete volume transaction from passthrough client!")
@@ -697,10 +697,10 @@ func TestPassthroughClient_DeleteVolumeTransaction(t *testing.T) {
 func TestPassthroughClient_AddStorageClass(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeSC := getFakeStorageClass()
 
-	err := p.AddStorageClass(fakeSC)
+	err := p.AddStorageClass(ctx(), fakeSC)
 
 	if err != nil {
 		t.Error("Could not add storage class to passthrough client!")
@@ -710,11 +710,11 @@ func TestPassthroughClient_AddStorageClass(t *testing.T) {
 func TestPassthroughClient_GetStorageClass(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeSC := getFakeStorageClass()
-	p.AddStorageClass(fakeSC)
+	p.AddStorageClass(ctx(), fakeSC)
 
-	result, err := p.GetStorageClass(fakeSC.GetName())
+	result, err := p.GetStorageClass(ctx(), fakeSC.GetName())
 
 	if result != nil || err == nil {
 		t.Error("Did not expect to get storage class from passthrough client!")
@@ -724,11 +724,11 @@ func TestPassthroughClient_GetStorageClass(t *testing.T) {
 func TestPassthroughClient_GetStorageClasses(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeSC := getFakeStorageClass()
-	p.AddStorageClass(fakeSC)
+	p.AddStorageClass(ctx(), fakeSC)
 
-	result, err := p.GetStorageClasses()
+	result, err := p.GetStorageClasses(ctx())
 
 	if err != nil {
 		t.Error("Could not get storage classes from passthrough client!")
@@ -741,11 +741,11 @@ func TestPassthroughClient_GetStorageClasses(t *testing.T) {
 func TestPassthroughClient_DeleteStorageClass(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
-	p.AddBackend(fakeBackend)
+	p.AddBackend(ctx(), fakeBackend)
 	fakeSC := getFakeStorageClass()
-	p.AddStorageClass(fakeSC)
+	p.AddStorageClass(ctx(), fakeSC)
 
-	err := p.DeleteStorageClass(fakeSC)
+	err := p.DeleteStorageClass(ctx(), fakeSC)
 
 	if err != nil {
 		t.Error("Could not delete storage class from passthrough client!")
@@ -756,7 +756,7 @@ func TestPassthroughClient_AddNode(t *testing.T) {
 	p := newPassthroughClient()
 	fakeNode := getFakeNode()
 
-	err := p.AddOrUpdateNode(fakeNode)
+	err := p.AddOrUpdateNode(ctx(), fakeNode)
 
 	if err != nil {
 		t.Error("Could not add node to passthrough client!")
@@ -766,9 +766,9 @@ func TestPassthroughClient_AddNode(t *testing.T) {
 func TestPassthroughClient_GetNode(t *testing.T) {
 	p := newPassthroughClient()
 	fakeNode := getFakeNode()
-	p.AddOrUpdateNode(fakeNode)
+	p.AddOrUpdateNode(ctx(), fakeNode)
 
-	result, err := p.GetNode(fakeNode.Name)
+	result, err := p.GetNode(ctx(), fakeNode.Name)
 
 	if result != nil || err == nil {
 		t.Error("Did not expect to get node from passthrough client!")
@@ -778,9 +778,9 @@ func TestPassthroughClient_GetNode(t *testing.T) {
 func TestPassthroughClient_GetNodes(t *testing.T) {
 	p := newPassthroughClient()
 	fakeNode := getFakeNode()
-	p.AddOrUpdateNode(fakeNode)
+	p.AddOrUpdateNode(ctx(), fakeNode)
 
-	result, err := p.GetNodes()
+	result, err := p.GetNodes(ctx())
 
 	if err != nil {
 		t.Error("Could not get nodes from passthrough client!")
@@ -793,9 +793,9 @@ func TestPassthroughClient_GetNodes(t *testing.T) {
 func TestPassthroughClient_DeleteNode(t *testing.T) {
 	p := newPassthroughClient()
 	fakeNode := getFakeNode()
-	p.AddOrUpdateNode(fakeNode)
+	p.AddOrUpdateNode(ctx(), fakeNode)
 
-	err := p.DeleteNode(fakeNode)
+	err := p.DeleteNode(ctx(), fakeNode)
 
 	if err != nil {
 		t.Error("Could not delete node from passthrough client!")
@@ -806,7 +806,7 @@ func TestPassthroughClient_AddSnapshot(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
 
-	err := p.AddSnapshot(fakeSnapshot)
+	err := p.AddSnapshot(ctx(), fakeSnapshot)
 
 	if err != nil {
 		t.Error("Could not add snapshot to passthrough client!")
@@ -816,9 +816,9 @@ func TestPassthroughClient_AddSnapshot(t *testing.T) {
 func TestPassthroughClient_GetSnapshot(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(fakeSnapshot)
+	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
-	result, err := p.GetSnapshot(fakeSnapshot.Config.VolumeName, fakeSnapshot.Config.Name)
+	result, err := p.GetSnapshot(ctx(), fakeSnapshot.Config.VolumeName, fakeSnapshot.Config.Name)
 
 	if result != nil || err == nil {
 		t.Error("Did not expect to get snapshot from passthrough client!")
@@ -828,9 +828,9 @@ func TestPassthroughClient_GetSnapshot(t *testing.T) {
 func TestPassthroughClient_GetSnapshots(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(fakeSnapshot)
+	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
-	result, err := p.GetSnapshots()
+	result, err := p.GetSnapshots(ctx())
 
 	if err != nil {
 		t.Error("Could not get snapshots from passthrough client!")
@@ -843,9 +843,9 @@ func TestPassthroughClient_GetSnapshots(t *testing.T) {
 func TestPassthroughClient_DeleteSnapshot(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(fakeSnapshot)
+	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
-	err := p.DeleteSnapshot(fakeSnapshot)
+	err := p.DeleteSnapshot(ctx(), fakeSnapshot)
 
 	if err != nil {
 		t.Error("Could not delete snapshot from passthrough client!")
@@ -855,9 +855,9 @@ func TestPassthroughClient_DeleteSnapshot(t *testing.T) {
 func TestPassthroughClient_DeleteSnapshotIgnoreNotFound(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(fakeSnapshot)
+	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
-	err := p.DeleteSnapshotIgnoreNotFound(fakeSnapshot)
+	err := p.DeleteSnapshotIgnoreNotFound(ctx(), fakeSnapshot)
 
 	if err != nil {
 		t.Error("Could not delete snapshot from passthrough client!")
@@ -867,9 +867,9 @@ func TestPassthroughClient_DeleteSnapshotIgnoreNotFound(t *testing.T) {
 func TestPassthroughClient_DeleteSnapshots(t *testing.T) {
 	p := newPassthroughClient()
 	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(fakeSnapshot)
+	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
-	err := p.DeleteSnapshots()
+	err := p.DeleteSnapshots(ctx())
 
 	if err != nil {
 		t.Error("Could not delete snapshots from passthrough client!")

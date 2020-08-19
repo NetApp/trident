@@ -3,6 +3,7 @@
 package externaltest
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -37,11 +38,11 @@ func TestConstructExternalBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to construct config JSON.")
 	}
-	fakeBackend, err := factory.NewStorageBackendForConfig(configJSON)
+	fakeBackend, err := factory.NewStorageBackendForConfig(context.Background(), configJSON)
 	if err != nil {
 		t.Fatal("Unable to construct backend:  ", err)
 	}
-	externalBackend := fakeBackend.ConstructExternal()
+	externalBackend := fakeBackend.ConstructExternal(context.Background())
 	externalJSON, err := json.Marshal(externalBackend)
 	if err != nil {
 		t.Fatal("Unable to marshal JSON:  ", err)

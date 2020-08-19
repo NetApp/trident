@@ -3,6 +3,7 @@
 package factory
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestInitializeRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to marshal ONTAP config:  ", err)
 	}
-	_, err = NewStorageBackendForConfig(string(marshaledJSON))
+	_, err = NewStorageBackendForConfig(context.Background(), string(marshaledJSON))
 	if err == nil {
 		t.Error("Failed to get error for invalid configuration.")
 	}

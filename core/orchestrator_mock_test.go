@@ -37,7 +37,7 @@ func TestAddMockBackend(t *testing.T) {
 	m := NewMockOrchestrator()
 
 	// add an NFS FILE backend
-	m.AddMockONTAPNFSBackend("test-nfs", "192.0.0.2")
+	m.AddMockONTAPNFSBackend(ctx(),"test-nfs", "192.0.0.2")
 	nfsBackend, err := m.GetBackend(ctx(), "test-nfs")
 	if err != nil {
 		t.Fatalf("cannot find backend '%v' error: %v", "test-nfs", err.Error())
@@ -51,7 +51,7 @@ func TestAddMockBackend(t *testing.T) {
 	}
 
 	// add an SAN iSCSI BLOCK backend
-	m.AddMockONTAPSANBackend("test-iscsi", "192.0.0.2")
+	m.AddMockONTAPSANBackend(ctx(), "test-iscsi", "192.0.0.2")
 	iscsiBackend, err := m.GetBackend(ctx(), "test-iscsi")
 	if err != nil {
 		t.Fatalf("cannot find backend '%v' error: %v", "test-iscsi", err.Error())
@@ -102,10 +102,10 @@ func addAndRetrieveVolume(
 
 func TestAddVolume(t *testing.T) {
 	m := NewMockOrchestrator()
-	m.AddMockONTAPNFSBackend("test-nfs", "192.0.0.2")
-	m.AddMockONTAPSANBackend("test-iscsi", "192.0.0.2")
-	m.AddMockFakeNASBackend("fake-nfs")
-	m.AddMockFakeSANBackend("fake-iscsi")
+	m.AddMockONTAPNFSBackend(ctx(), "test-nfs", "192.0.0.2")
+	m.AddMockONTAPSANBackend(ctx(), "test-iscsi", "192.0.0.2")
+	m.AddMockFakeNASBackend(ctx(), "fake-nfs")
+	m.AddMockFakeSANBackend(ctx(), "fake-iscsi")
 	// m.addMockBackend("test-nfs", config.File)
 	// m.addMockBackend("test-iscsi", config.Block)
 	for _, v := range []*storage.VolumeConfig{

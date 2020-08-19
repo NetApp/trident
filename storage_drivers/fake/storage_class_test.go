@@ -3,6 +3,7 @@
 package fake
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -14,6 +15,8 @@ import (
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
 
+var ctx = context.Background
+
 func TestAttributeMatches(t *testing.T) {
 	mockPools := tu.GetFakePools()
 	volumes := make([]fake.Volume, 0)
@@ -21,7 +24,7 @@ func TestAttributeMatches(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
-	backend, err := NewFakeStorageBackend(fakeConfig)
+	backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
 	if err != nil {
 		t.Fatalf("Unable to construct backend using mock driver.")
 	}
@@ -152,7 +155,7 @@ func TestAttributeMatches(t *testing.T) {
 			expectedPools: []string{},
 		},
 	} {
-		test.sc.CheckAndAddBackend(backend)
+		test.sc.CheckAndAddBackend(ctx(), backend)
 		expectedMap := make(map[string]bool, len(test.expectedPools))
 		for _, pool := range test.expectedPools {
 			expectedMap[pool] = true
@@ -195,7 +198,7 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
-	backend, err := NewFakeStorageBackend(fakeConfig)
+	backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
 	if err != nil {
 		t.Fatalf("Unable to construct backend using mock driver.")
 	}
@@ -271,7 +274,7 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 			expectedPools: []string{},
 		},
 	} {
-		test.sc.CheckAndAddBackend(backend)
+		test.sc.CheckAndAddBackend(ctx(), backend)
 		expectedMap := make(map[string]bool, len(test.expectedPools))
 		for _, pool := range test.expectedPools {
 			expectedMap[pool] = true
@@ -330,7 +333,7 @@ func TestSpecificBackends(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
-		backend, err := NewFakeStorageBackend(fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -380,10 +383,10 @@ func TestSpecificBackends(t *testing.T) {
 		},
 	} {
 		for _, backend := range backends {
-			test.sc.CheckAndAddBackend(backend)
+			test.sc.CheckAndAddBackend(ctx(), backend)
 		}
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, vc := range test.sc.GetStoragePoolsForProtocol(protocol) {
+			for _, vc := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
 				for _, scName := range vc.StorageClasses {
 					if scName == test.sc.GetName() {
@@ -448,7 +451,7 @@ func TestRegex(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := NewFakeStorageBackend(fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -604,11 +607,11 @@ func TestRegex(t *testing.T) {
 	} {
 		// add the backends to the test StorageClass
 		for _, backend := range backends {
-			test.sc.CheckAndAddBackend(backend)
+			test.sc.CheckAndAddBackend(ctx(), backend)
 		}
 		// validate the results for the test StorageClass
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, pool := range test.sc.GetStoragePoolsForProtocol(protocol) {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
 				for _, scName := range pool.StorageClasses {
 					if scName == test.sc.GetName() {
@@ -672,7 +675,7 @@ func TestRegex2(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := NewFakeStorageBackend(fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -729,11 +732,11 @@ func TestRegex2(t *testing.T) {
 	} {
 		// add the backends to the test StorageClass
 		for _, backend := range backends {
-			test.sc.CheckAndAddBackend(backend)
+			test.sc.CheckAndAddBackend(ctx(), backend)
 		}
 		// validate the results for the test StorageClass
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, pool := range test.sc.GetStoragePoolsForProtocol(protocol) {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
 				for _, scName := range pool.StorageClasses {
 					if scName == test.sc.GetName() {

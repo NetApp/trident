@@ -4,6 +4,7 @@ package storagedrivers
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	trident "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
@@ -27,7 +29,7 @@ func GetOntapConfigRedactList() []string {
 }
 
 // ValidateCommonSettings attempts to "partially" decode the JSON into just the settings in CommonStorageDriverConfig
-func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, error) {
+func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStorageDriverConfig, error) {
 
 	config := &CommonStorageDriverConfig{}
 
@@ -49,12 +51,12 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 
 	// Warn about ignored fields in common config if any are set
 	if config.DisableDelete {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"driverName": config.StorageDriverName,
 		}).Warn("disableDelete set in backend config.  This will be ignored.")
 	}
 	if config.Debug {
-		log.Warnf("The debug setting in the configuration file is now ignored; " +
+		Logc(ctx).Warnf("The debug setting in the configuration file is now ignored; " +
 			"use the command line --debug switch instead.")
 	}
 
@@ -73,21 +75,21 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 		rawPrefix := string(config.StoragePrefixRaw)
 		if rawPrefix == "{}" || rawPrefix == "null" {
 			config.StoragePrefix = nil
-			log.Debugf("Storage prefix is %s, will use default prefix.", rawPrefix)
+			Logc(ctx).Debugf("Storage prefix is %s, will use default prefix.", rawPrefix)
 		} else if rawPrefix == "\"\"" {
 			empty := ""
 			config.StoragePrefix = &empty
-			log.Debug("Storage prefix is empty, will use no prefix.")
+			Logc(ctx).Debug("Storage prefix is empty, will use no prefix.")
 		} else if strings.HasPrefix(rawPrefix, "\"") && strings.HasSuffix(rawPrefix, "\"") {
 			prefix := string(config.StoragePrefixRaw[1 : len(config.StoragePrefixRaw)-1])
 			config.StoragePrefix = &prefix
-			log.WithField("storagePrefix", prefix).Debug("Parsed storage prefix.")
+			Logc(ctx).WithField("storagePrefix", prefix).Debug("Parsed storage prefix.")
 		} else {
 			return nil, fmt.Errorf("invalid value for storage prefix: %v", config.StoragePrefixRaw)
 		}
 	} else {
 		config.StoragePrefix = nil
-		log.Debug("Storage prefix is absent, will use default prefix.")
+		Logc(ctx).Debug("Storage prefix is absent, will use default prefix.")
 	}
 
 	// Validate volume size limit (if set)
@@ -97,7 +99,7 @@ func ValidateCommonSettings(configJSON string) (*CommonStorageDriverConfig, erro
 		}
 	}
 
-	log.Debugf("Parsed commonConfig: %+v", *config)
+	Logc(ctx).Debugf("Parsed commonConfig: %+v", *config)
 
 	return config, nil
 }
@@ -148,16 +150,18 @@ func GetCommonInternalVolumeName(c *CommonStorageDriverConfig, name string) stri
 }
 
 // CheckVolumeSizeLimits if a limit has been set, ensures the requestedSize is under it.
-func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverConfig) (bool, uint64, error) {
+func CheckVolumeSizeLimits(
+	ctx context.Context, requestedSizeInt uint64, config *CommonStorageDriverConfig,
+) (bool, uint64, error) {
 
 	requestedSize := float64(requestedSizeInt)
 	// If the user specified a limit for volume size, parse and enforce it
 	limitVolumeSize := config.LimitVolumeSize
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"limitVolumeSize": limitVolumeSize,
 	}).Debugf("Limits")
 	if limitVolumeSize == "" {
-		log.Debugf("No limits specified, not limiting volume size")
+		Logc(ctx).Debugf("No limits specified, not limiting volume size")
 		return false, 0, nil
 	}
 
@@ -168,23 +172,25 @@ func CheckVolumeSizeLimits(requestedSizeInt uint64, config *CommonStorageDriverC
 	}
 	volumeSizeLimit, _ = strconv.ParseUint(volumeSizeLimitStr, 10, 64)
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"limitVolumeSize":    limitVolumeSize,
 		"volumeSizeLimit":    volumeSizeLimit,
 		"requestedSizeBytes": requestedSize,
 	}).Debugf("Comparing limits")
 
 	if requestedSize > float64(volumeSizeLimit) {
-		return true, volumeSizeLimit, fmt.Errorf("requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit)
+		return true, volumeSizeLimit, fmt.Errorf(
+			"requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit)
 	}
 
 	return true, volumeSizeLimit, nil
 }
 
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
-func Clone(source, destination interface{}) {
+func Clone(ctx context.Context, source, destination interface{}) {
+
 	if reflect.TypeOf(destination).Kind() != reflect.Ptr {
-		log.Error("storage_drivers.Clone, destination parameter must be a pointer")
+		Logc(ctx).Error("storage_drivers.Clone, destination parameter must be a pointer")
 	}
 
 	buff := new(bytes.Buffer)
@@ -195,11 +201,12 @@ func Clone(source, destination interface{}) {
 }
 
 // CheckSupportedFilesystem checks for a supported file system type
-func CheckSupportedFilesystem(fs string, volumeInternalName string) (string, error) {
+func CheckSupportedFilesystem(ctx context.Context, fs string, volumeInternalName string) (string, error) {
+
 	fstype := strings.ToLower(fs)
 	switch fstype {
 	case FsXfs, FsExt3, FsExt4, FsRaw:
-		log.WithFields(log.Fields{"fileSystemType": fstype, "name": volumeInternalName}).Debug("Filesystem format.")
+		Logc(ctx).WithFields(log.Fields{"fileSystemType": fstype, "name": volumeInternalName}).Debug("Filesystem format.")
 		return fstype, nil
 	default:
 		return fstype, fmt.Errorf("unsupported fileSystemType option: %s", fstype)

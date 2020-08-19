@@ -3,14 +3,14 @@
 package kubernetes
 
 import (
-	"context"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
 	csiConfig "github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	"github.com/netapp/trident/utils"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -69,6 +69,4 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	patchOpts  = metav1.PatchOptions{}
 	deleteOpts = metav1.DeleteOptions{}
-
-	ctx = context.TODO
 )

@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,21 +11,24 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
 
 // ListVolumesForAccount tbd
-func (c *Client) ListVolumesForAccount(listReq *ListVolumesForAccountRequest) (volumes []Volume, err error) {
-	response, err := c.Request("ListVolumesForAccount", listReq, NewReqID())
+func (c *Client) ListVolumesForAccount(
+	ctx context.Context, listReq *ListVolumesForAccountRequest,
+) (volumes []Volume, err error) {
+
+	response, err := c.Request(ctx, "ListVolumesForAccount", listReq, NewReqID())
 	if err != nil {
-		log.Errorf("Error detected in ListVolumesForAccount API response: %+v", err)
+		Logc(ctx).Errorf("Error detected in ListVolumesForAccount API response: %+v", err)
 		return nil, errors.New("device API error")
 	}
 	var result ListVolumesResult
-	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("Error detected unmarshalling ListVolumesForAccount API response: %+v", err)
+	if err := json.Unmarshal(response, &result); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling ListVolumesForAccount API response: %+v", err)
 		return nil, errors.New("json-decode error")
 	}
 	volumes = result.Result.Volumes
@@ -32,7 +36,7 @@ func (c *Client) ListVolumesForAccount(listReq *ListVolumesForAccountRequest) (v
 }
 
 // GetVolumeByID returns the volume with the specified ID.
-func (c *Client) GetVolumeByID(volID int64) (Volume, error) {
+func (c *Client) GetVolumeByID(ctx context.Context, volID int64) (Volume, error) {
 
 	var limit int64 = 1
 
@@ -42,7 +46,7 @@ func (c *Client) GetVolumeByID(volID int64) (Volume, error) {
 		Limit:         &limit,
 	}
 
-	volumes, err := c.ListVolumes(listRequest)
+	volumes, err := c.ListVolumes(ctx, listRequest)
 	if err != nil {
 		return Volume{}, err
 	}
@@ -56,20 +60,20 @@ func (c *Client) GetVolumeByID(volID int64) (Volume, error) {
 }
 
 // WaitForVolumeByID polls for the volume with specified ID to appear, with backoff retry logic.
-func (c *Client) WaitForVolumeByID(volID int64) (Volume, error) {
+func (c *Client) WaitForVolumeByID(ctx context.Context, volID int64) (Volume, error) {
 
 	volume := Volume{}
 
 	checkVolumeExists := func() error {
 		var err error
-		volume, err = c.GetVolumeByID(volID)
+		volume, err = c.GetVolumeByID(ctx, volID)
 		if err != nil {
 			return fmt.Errorf("volume %d does not yet exist; %v", volID, err)
 		}
 		return nil
 	}
 	volumeExistsNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debug("Volume not yet present, waiting.")
+		Logc(ctx).WithField("increment", duration).Debug("Volume not yet present, waiting.")
 	}
 	volumeBackoff := backoff.NewExponentialBackOff()
 	volumeBackoff.InitialInterval = 2 * time.Second
@@ -79,25 +83,26 @@ func (c *Client) WaitForVolumeByID(volID int64) (Volume, error) {
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
-		log.WithField("volumeID", volID).Warnf(
+		Logc(ctx).WithField("volumeID", volID).Warnf(
 			"Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
 		return volume, fmt.Errorf("volume %d does not exist", volID)
 	} else {
-		log.WithField("volumeID", volID).Debug("Volume found.")
+		Logc(ctx).WithField("volumeID", volID).Debug("Volume found.")
 		return volume, nil
 	}
 }
 
 // ListVolumes returns all volumes using the specified request object.
-func (c *Client) ListVolumes(listVolReq *ListVolumesRequest) (volumes []Volume, err error) {
-	response, err := c.Request("ListVolumes", listVolReq, NewReqID())
+func (c *Client) ListVolumes(ctx context.Context, listVolReq *ListVolumesRequest) (volumes []Volume, err error) {
+
+	response, err := c.Request(ctx, "ListVolumes", listVolReq, NewReqID())
 	if err != nil {
-		log.Errorf("Error response from ListVolumes request: %v ", err)
+		Logc(ctx).Errorf("Error response from ListVolumes request: %v ", err)
 		return nil, errors.New("device API error")
 	}
 	var result ListVolumesResult
-	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("Error detected unmarshalling ListVolumes API response: %v", err)
+	if err := json.Unmarshal(response, &result); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling ListVolumes API response: %v", err)
 		return nil, errors.New("json-decode error")
 	}
 	volumes = result.Result.Volumes
@@ -107,13 +112,16 @@ func (c *Client) ListVolumes(listVolReq *ListVolumesRequest) (volumes []Volume, 
 // CloneVolume invokes the supplied clone volume request.  It waits for the source volume
 // (which itself may be new in a test scenario) to be ready to be cloned, and it waits for
 // the clone to exist.
-func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
-	var cloneError error
-	var response []byte
-	var result CloneVolumeResult
+func (c *Client) CloneVolume(ctx context.Context, req *CloneVolumeRequest) (Volume, error) {
+
+	var (
+		cloneError error
+		response   []byte
+		result     CloneVolumeResult
+	)
 
 	cloneExists := func() error {
-		response, cloneError = c.Request("CloneVolume", req, NewReqID())
+		response, cloneError = c.Request(ctx, "CloneVolume", req, NewReqID())
 		if cloneError != nil {
 			errorMessage := cloneError.Error()
 			if strings.Contains(errorMessage, "SliceNotRegistered") {
@@ -123,14 +131,14 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
 			} else if strings.Contains(errorMessage, "xNotReadyForIO") {
 				return fmt.Errorf("detected xNotReadyForIO on Clone operation")
 			} else {
-				log.Debugf("encountered err: %s during volume clone operation", cloneError)
+				Logc(ctx).Debugf("encountered err: %s during volume clone operation", cloneError)
 				backoff.Permanent(cloneError)
 			}
 		}
 		return nil
 	}
 	cloneExistsNotify := func(err error, duration time.Duration) {
-		log.WithField("increment", duration).Debugf("Clone not yet present, waiting; err: %+v", err)
+		Logc(ctx).WithField("increment", duration).Debugf("Clone not yet present, waiting; err: %+v", err)
 	}
 
 	cloneBackoff := backoff.NewExponentialBackOff()
@@ -142,89 +150,94 @@ func (c *Client) CloneVolume(req *CloneVolumeRequest) (Volume, error) {
 
 	// Sometimes it can take a few seconds for the Slice to finalize even though the Volume reports ready.
 	if err := backoff.RetryNotify(cloneExists, cloneBackoff, cloneExistsNotify); err != nil {
-		log.WithField("clone", cloneBackoff).Warnf("Failed to clone volume after %3.2f seconds.",
+		Logc(ctx).WithField("clone", cloneBackoff).Warnf("Failed to clone volume after %3.2f seconds.",
 			cloneBackoff.MaxElapsedTime.Seconds())
 		return Volume{}, fmt.Errorf("failed to clone volume: %s", req.Name)
 	}
 
-	log.Info("Clone request succeeded")
+	Logc(ctx).Info("Clone request succeeded")
 
-	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("Error detected unmarshalling CloneVolume API response: %v", err)
+	if err := json.Unmarshal(response, &result); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling CloneVolume API response: %v", err)
 		return Volume{}, errors.New("json-decode error")
 	}
 
-	return c.WaitForVolumeByID(result.Result.VolumeID)
+	return c.WaitForVolumeByID(ctx, result.Result.VolumeID)
 }
 
 // CreateVolume tbd
-func (c *Client) CreateVolume(createReq *CreateVolumeRequest) (Volume, error) {
-	response, err := c.Request("CreateVolume", createReq, NewReqID())
+func (c *Client) CreateVolume(ctx context.Context, createReq *CreateVolumeRequest) (Volume, error) {
+
+	response, err := c.Request(ctx, "CreateVolume", createReq, NewReqID())
 	if err != nil {
-		log.Errorf("Error response from CreateVolume request: %v ", err)
+		Logc(ctx).Errorf("Error response from CreateVolume request: %v ", err)
 		return Volume{}, errors.New("device API error")
 	}
 	var result CreateVolumeResult
-	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		log.Errorf("Error detected unmarshalling CreateVolume API response: %v", err)
+	if err := json.Unmarshal(response, &result); err != nil {
+		Logc(ctx).Errorf("Error detected unmarshalling CreateVolume API response: %v", err)
 		return Volume{}, errors.New("json-decode error")
 	}
 
-	return c.WaitForVolumeByID(result.Result.VolumeID)
+	return c.WaitForVolumeByID(ctx, result.Result.VolumeID)
 }
 
 // AddVolumesToAccessGroup tbd
-func (c *Client) AddVolumesToAccessGroup(req *AddVolumesToVolumeAccessGroupRequest) (err error) {
-	_, err = c.Request("AddVolumesToVolumeAccessGroup", req, NewReqID())
+func (c *Client) AddVolumesToAccessGroup(ctx context.Context, req *AddVolumesToVolumeAccessGroupRequest) (err error) {
+
+	_, err = c.Request(ctx, "AddVolumesToVolumeAccessGroup", req, NewReqID())
 	if err != nil {
 		if apiErr, ok := err.(Error); ok && apiErr.Fields.Name == "xAlreadyInVolumeAccessGroup" {
 			return nil
 		}
-		log.Errorf("error response from Add to VAG request: %+v ", err)
+		Logc(ctx).Errorf("error response from Add to VAG request: %+v ", err)
 		return errors.New("device API error")
 	}
 	return err
 }
 
 // DeleteRange tbd
-func (c *Client) DeleteRange(startID, endID int64) {
+func (c *Client) DeleteRange(ctx context.Context, startID, endID int64) {
 	idx := startID
 	for idx < endID {
-		c.DeleteVolume(idx)
+		c.DeleteVolume(ctx, idx)
 	}
 	return
 }
 
 // DeleteVolume tbd
-func (c *Client) DeleteVolume(volumeID int64) (err error) {
+func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
+
 	// TODO(jdg): Add options like purge=True|False, range, ALL etc
 	var req DeleteVolumeRequest
 	req.VolumeID = volumeID
-	_, err = c.Request("DeleteVolume", req, NewReqID())
+	_, err = c.Request(ctx, "DeleteVolume", req, NewReqID())
 	if err != nil {
 		// TODO: distinguish what the error was?
-		log.Errorf("Error response from DeleteVolume request: %+v ", err)
+		Logc(ctx).Errorf("Error response from DeleteVolume request: %+v ", err)
 		return errors.New("device API error")
 	}
-	_, err = c.Request("PurgeDeletedVolume", req, NewReqID())
+	_, err = c.Request(ctx, "PurgeDeletedVolume", req, NewReqID())
 	return
 }
 
 // DetachVolume tbd
-func (c *Client) DetachVolume(v Volume) (err error) {
+func (c *Client) DetachVolume(ctx context.Context, v Volume) (err error) {
+
 	if c.SVIP == "" {
-		log.Errorf("error response from DetachVolume request: %+v ", err)
+		Logc(ctx).Errorf("error response from DetachVolume request: %+v ", err)
 		return errors.New("detach volume error")
 	}
 
-	err = utils.ISCSIDisableDelete(v.Iqn, c.SVIP)
+	err = utils.ISCSIDisableDelete(ctx, v.Iqn, c.SVIP)
 	return
 }
 
-func (c *Client) ModifyVolume(req *ModifyVolumeRequest) (err error) {
-	_, err = c.Request("ModifyVolume", req, NewReqID())
+func (c *Client) ModifyVolume(ctx context.Context, req *ModifyVolumeRequest) (err error) {
+
+	_, err = c.Request(ctx, "ModifyVolume", req, NewReqID())
 	if err != nil {
-		log.Errorf("Error response from ModifyVolume request: %+v ", err)
+		Logc(ctx).Errorf("Error response from ModifyVolume request: %+v ", err)
 		return errors.New("device API error")
 	}
 	return err

@@ -34,7 +34,7 @@ var (
 	debug = flag.Bool("debug", false, "Enable debugging output")
 
 	inMemoryClient *persistentstore.InMemoryClient
-	ctx            = context.TODO
+	ctx            = context.Background
 )
 
 func init() {
@@ -59,28 +59,28 @@ type recoveryTest struct {
 }
 
 func cleanup(t *testing.T, o *TridentOrchestrator) {
-	err := o.storeClient.DeleteBackends()
+	err := o.storeClient.DeleteBackends(ctx())
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up backends:  ", err)
 	}
-	storageClasses, err := o.storeClient.GetStorageClasses()
+	storageClasses, err := o.storeClient.GetStorageClasses(ctx())
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to retrieve storage classes:  ", err)
 	} else if err == nil {
 		for _, psc := range storageClasses {
 			sc := storageclass.NewFromPersistent(psc)
-			err := o.storeClient.DeleteStorageClass(sc)
+			err := o.storeClient.DeleteStorageClass(ctx(), sc)
 			if err != nil {
 				t.Fatalf("Unable to clean up storage class %s:  %v", sc.GetName(),
 					err)
 			}
 		}
 	}
-	err = o.storeClient.DeleteVolumes()
+	err = o.storeClient.DeleteVolumes(ctx())
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up volumes:  ", err)
 	}
-	err = o.storeClient.DeleteSnapshots()
+	err = o.storeClient.DeleteSnapshots(ctx())
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		t.Fatal("Unable to clean up snapshots:  ", err)
 	}
@@ -242,7 +242,7 @@ func runDeleteTest(
 		if _, found = backend.Volumes[d.name]; found {
 			t.Errorf("Volume %s shouldn't exist on backend %s!", d.name, backendUUID)
 		}
-		externalVol, err := orchestrator.storeClient.GetVolume(d.name)
+		externalVol, err := orchestrator.storeClient.GetVolume(ctx(), d.name)
 		if err != nil {
 			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
@@ -299,7 +299,7 @@ func validateStorageClass(
 		remaining[i] = match
 	}
 	for _, protocol := range []config.Protocol{config.File, config.Block} {
-		for _, pool := range sc.GetStoragePoolsForProtocol(protocol) {
+		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 			nameFound := false
 			for _, scName := range pool.StorageClasses {
 				if scName == name {
@@ -337,7 +337,7 @@ func validateStorageClass(
 		t.Errorf("%s:  Storage class failed to match storage pools %s",
 			name, strings.Join(remainingNames, ", "))
 	}
-	persistentSC, err := o.storeClient.GetStorageClass(name)
+	persistentSC, err := o.storeClient.GetStorageClass(ctx(), name)
 	if err != nil {
 		t.Fatalf("Unable to get storage class %s from backend:  %v", name,
 			err)
@@ -412,11 +412,11 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Backend %s not stored in orchestrator, err %s", c.name, err)
 		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(c.name)
+		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
 		if err != nil {
 			t.Fatalf("Unable to get backend %s from persistent store:  %v",
 				c.name, err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(), persistentBackend) {
+		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()), persistentBackend) {
 			t.Error("Wrong data stored for backend ", c.name)
 		}
 		orchestrator.mutex.Unlock()
@@ -759,7 +759,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 				volume.Pool)
 		}
 
-		externalVolume, err := orchestrator.storeClient.GetVolume(s.config.Name)
+		externalVolume, err := orchestrator.storeClient.GetVolume(ctx(), s.config.Name)
 		if err != nil {
 			t.Errorf("%s:  unable to communicate with backing store:  %v",
 				s.name, err)
@@ -817,7 +817,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 				}
 			}
 		}
-		externalSC, err := orchestrator.storeClient.GetStorageClass(s.config.Name)
+		externalSC, err := orchestrator.storeClient.GetStorageClass(ctx(), s.config.Name)
 		if err != nil {
 			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
@@ -891,12 +891,11 @@ func TestCloneVolumes(t *testing.T) {
 		if backend == nil || err != nil {
 			t.Fatalf("Backend %s not stored in orchestrator", c.name)
 		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(
-			c.name)
+		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
 		if err != nil {
 			t.Fatalf("Unable to get backend %s from persistent store:  %v",
 				c.name, err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(),
+		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()),
 			persistentBackend) {
 			t.Error("Wrong data stored for backend ", c.name)
 		}
@@ -1086,7 +1085,7 @@ func TestCloneVolumes(t *testing.T) {
 		}
 
 		// Clone should be registered in the store just like any other volume
-		externalClone, err := orchestrator.storeClient.GetVolume(cloneName)
+		externalClone, err := orchestrator.storeClient.GetVolume(ctx(), cloneName)
 		if err != nil {
 			t.Errorf("%s:  unable to communicate with backing store:  %v", cloneName, err)
 		}
@@ -1308,7 +1307,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		if !newBackend.Driver.Initialized() {
 			t.Errorf("Updated backend %s is not initialized.", backendName)
 		}
-		pools := sc.GetStoragePoolsForProtocol(config.File)
+		pools := sc.GetStoragePoolsForProtocol(ctx(), config.File)
 		foundNewBackend := false
 		for _, pool := range pools {
 			for i, b := range previousBackends {
@@ -1351,11 +1350,11 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		if volume.Pool != matchingPool.Name {
 			t.Errorf("%s: volume does not point to the right storage pool.", c.name)
 		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(backendName)
+		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), backendName)
 		if err != nil {
 			t.Error("Unable to retrieve backend from store client:  ", err)
-		} else if !cmp.Equal(newBackend.ConstructPersistent(), persistentBackend) {
-			if diff := cmp.Diff(newBackend.ConstructPersistent(), persistentBackend); diff != "" {
+		} else if !cmp.Equal(newBackend.ConstructPersistent(ctx()), persistentBackend) {
+			if diff := cmp.Diff(newBackend.ConstructPersistent(ctx()), persistentBackend); diff != "" {
 				t.Errorf("Failure for %v; mismatch (-want +got):\n%s", c.name, diff)
 			}
 			t.Errorf("Backend not correctly updated in persistent store.")
@@ -1380,7 +1379,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		t.Error("Created volume volume on offline backend.")
 	}
 	orchestrator.mutex.Lock()
-	pools := sc.GetStoragePoolsForProtocol(config.File)
+	pools := sc.GetStoragePoolsForProtocol(ctx(), config.File)
 	if len(pools) == 1 {
 		t.Error("Offline backend not removed from storage pool in " +
 			"storage class.")
@@ -1395,7 +1394,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if volume.Pool != pool {
 		t.Error("Storage pool changed for volume after backend offlined.")
 	}
-	persistentBackend, err := orchestrator.storeClient.GetBackend(backendName)
+	persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), backendName)
 	if err != nil {
 		t.Error("Unable to retrieve backend from store client after offlining:"+
 			"  ", err)
@@ -1427,8 +1426,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	orchestrator.mutex.Lock()
 	if bootstrappedBackend, _ := newOrchestrator.GetBackend(ctx(), backendName); bootstrappedBackend == nil {
 		t.Error("Unable to find backend after bootstrapping.")
-	} else if !reflect.DeepEqual(bootstrappedBackend, backend.ConstructExternal()) {
-		diffExternalBackends(t, backend.ConstructExternal(), bootstrappedBackend)
+	} else if !reflect.DeepEqual(bootstrappedBackend, backend.ConstructExternal(ctx())) {
+		diffExternalBackends(t, backend.ConstructExternal(ctx()), bootstrappedBackend)
 	}
 
 	orchestrator.mutex.Unlock()
@@ -1440,7 +1439,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Fatalf("Unable to find storage class %s after bootstrapping.",
 				name)
 		}
-		pools = newSC.GetStoragePoolsForProtocol(config.File)
+		pools = newSC.GetStoragePoolsForProtocol(ctx(), config.File)
 		if len(pools) == 1 {
 			t.Errorf("Offline backend readded to storage class %s after "+
 				"bootstrapping.", name)
@@ -1456,7 +1455,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if backend.Driver.Initialized() {
 		t.Errorf("Deleted backend %s is still initialized.", backendName)
 	}
-	persistentBackend, err = orchestrator.storeClient.GetBackend(backendName)
+	persistentBackend, err = orchestrator.storeClient.GetBackend(ctx(), backendName)
 	if err == nil {
 		t.Error("Backend remained on store client after deleting the last " +
 			"volume present.")
@@ -1544,7 +1543,7 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	if backend.Driver.Initialized() {
 		t.Errorf("Deleted backend %s is still initialized.", backendName)
 	}
-	_, err = orchestrator.storeClient.GetBackend(backendName)
+	_, err = orchestrator.storeClient.GetBackend(ctx(), backendName)
 	if err == nil {
 		t.Error("Empty backend remained on store client after offlining")
 	}
@@ -1587,7 +1586,7 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 		t.Fatalf("Unable to find volume %s in backend.", volumeName)
 	}
 	orchestrator.mutex.Lock()
-	err = orchestrator.storeClient.DeleteVolume(vol)
+	err = orchestrator.storeClient.DeleteVolume(ctx(), vol)
 	if err != nil {
 		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
@@ -1638,7 +1637,7 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 		t.Fatalf("Unable to get backend from store: %v", err)
 	}
 	orchestrator.mutex.Lock()
-	err = orchestrator.storeClient.DeleteBackend(backend)
+	err = orchestrator.storeClient.DeleteBackend(ctx(), backend)
 	if err != nil {
 		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
@@ -1682,7 +1681,7 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 		t.Fatalf("Unable to get backend from store: %v", err)
 	}
 	orchestrator.mutex.Lock()
-	err = orchestrator.storeClient.DeleteBackend(backend)
+	err = orchestrator.storeClient.DeleteBackend(ctx(), backend)
 	if err != nil {
 		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
@@ -1735,7 +1734,7 @@ func TestBackendCleanup(t *testing.T) {
 	if !ok {
 		t.Fatalf("Unable to find volume %s in backend.", volumeName)
 	}
-	err = orchestrator.storeClient.DeleteVolume(vol)
+	err = orchestrator.storeClient.DeleteVolume(ctx(), vol)
 	if err != nil {
 		t.Fatalf("Unable to delete volume from store: %v", err)
 	}
@@ -1776,7 +1775,7 @@ func TestLoadBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to initially add backend:  ", err)
 	}
-	persistentBackend, err := orchestrator.storeClient.GetBackend(backendName)
+	persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), backendName)
 	if err != nil {
 		t.Fatal("Unable to retrieve backend from store client:  ", err)
 	}
@@ -1852,7 +1851,7 @@ func runRecoveryTests(
 			Config: c.volumeConfig,
 			Op:     op,
 		}
-		err := orchestrator.storeClient.AddVolumeTransaction(volTxn)
+		err := orchestrator.storeClient.AddVolumeTransaction(ctx(), volTxn)
 		if err != nil {
 			t.Fatalf("%s: Unable to create volume transaction:  %v", c.name,
 				err)
@@ -1871,11 +1870,10 @@ func runRecoveryTests(
 		}
 		f := backend.Driver.(*fakedriver.StorageDriver)
 		// Destroy should be always called on the backend
-		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(
-			c.volumeConfig.Name)]; !ok && c.expectDestroy {
+		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(ctx(), c.volumeConfig.Name)]; !ok && c.expectDestroy {
 			t.Errorf("%s:  Destroy not called on volume.", c.name)
 		}
-		_, err = newOrchestrator.storeClient.GetVolume(c.volumeConfig.Name)
+		_, err = newOrchestrator.storeClient.GetVolume(ctx(), c.volumeConfig.Name)
 		if err != nil {
 			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s:  unable to communicate with backing store:  "+
@@ -1884,7 +1882,7 @@ func runRecoveryTests(
 		} else {
 			t.Errorf("%s:  Found VolumeConfig still stored in store.", c.name)
 		}
-		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(); err != nil {
+		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(ctx()); err != nil {
 			t.Errorf("%s: Unable to retrieve transactions from backing store: "+
 				" %v", c.name, err)
 		} else if len(txns) > 0 {
@@ -1983,7 +1981,7 @@ func runSnapshotRecoveryTests(
 			SnapshotConfig: c.snapshotConfig,
 			Op:             op,
 		}
-		if err := orchestrator.storeClient.AddVolumeTransaction(volTxn); err != nil {
+		if err := orchestrator.storeClient.AddVolumeTransaction(ctx(), volTxn); err != nil {
 			t.Fatalf("%s: Unable to create volume transaction:  %v", c.name, err)
 		}
 		newOrchestrator := getOrchestrator()
@@ -2007,7 +2005,7 @@ func runSnapshotRecoveryTests(
 			t.Errorf("%s:  Destroy should not have been called on snapshot.", c.name)
 		}
 
-		_, err = newOrchestrator.storeClient.GetSnapshot(c.snapshotConfig.VolumeName, c.snapshotConfig.Name)
+		_, err = newOrchestrator.storeClient.GetSnapshot(ctx(), c.snapshotConfig.VolumeName, c.snapshotConfig.Name)
 		if err != nil {
 			if !persistentstore.MatchKeyNotFoundErr(err) {
 				t.Errorf("%s: unable to communicate with backing store: %v", c.name, err)
@@ -2015,7 +2013,7 @@ func runSnapshotRecoveryTests(
 		} else {
 			t.Errorf("%s: Found SnapshotConfig still stored in store.", c.name)
 		}
-		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(); err != nil {
+		if txns, err := newOrchestrator.storeClient.GetVolumeTransactions(ctx()); err != nil {
 			t.Errorf("%s: Unable to retrieve transactions from backing store: %v", c.name, err)
 		} else if len(txns) > 0 {
 			t.Errorf("%s:  Transaction not cleared from the backing store", c.name)
@@ -2339,7 +2337,7 @@ func TestImportVolumeFailures(t *testing.T) {
 
 	// verify that importVolumeCleanup renamed volume to originalName
 	backend, _ := orchestrator.getBackendByBackendName(backendName)
-	volExternal, err := backend.Driver.GetVolumeExternal(originalName01)
+	volExternal, err := backend.Driver.GetVolumeExternal(ctx(), originalName01)
 	if err != nil {
 		t.Errorf("falied to get volumeExternal for %s", originalName01)
 	}
@@ -2351,7 +2349,7 @@ func TestImportVolumeFailures(t *testing.T) {
 	if _, ok := orchestrator.volumes[volumeConfig.Name]; ok {
 		t.Errorf("volume %s should not exist in orchestrator's volume cache", volumeConfig.Name)
 	}
-	persistedVolume, err := orchestrator.storeClient.GetVolume(volumeConfig.Name)
+	persistedVolume, err := orchestrator.storeClient.GetVolume(ctx(), volumeConfig.Name)
 	if persistedVolume != nil {
 		t.Errorf("volume %s should not be persisted", volumeConfig.Name)
 	}
@@ -2760,12 +2758,11 @@ func TestSnapshotVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Backend %s not stored in orchestrator", c.name)
 		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(
-			c.name)
+		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
 		if err != nil {
 			t.Fatalf("Unable to get backend %s from persistent store:  %v",
 				c.name, err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(),
+		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()),
 			persistentBackend) {
 			t.Error("Wrong data stored for backend ", c.name)
 		}
@@ -2873,7 +2870,7 @@ func TestSnapshotVolumes(t *testing.T) {
 
 		orchestrator.mutex.Lock()
 		// Snapshot should be registered in the store
-		persistentSnapshot, err := orchestrator.storeClient.GetSnapshot(volume.Config.Name, snapshotName)
+		persistentSnapshot, err := orchestrator.storeClient.GetSnapshot(ctx(), volume.Config.Name, snapshotName)
 		if err != nil {
 			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
 		}
@@ -2900,7 +2897,7 @@ func TestSnapshotVolumes(t *testing.T) {
 
 		orchestrator.mutex.Lock()
 		// Snapshot should not be registered in the store
-		persistentSnapshot, err = orchestrator.storeClient.GetSnapshot(volume.Config.Name, snapshotName)
+		persistentSnapshot, err = orchestrator.storeClient.GetSnapshot(ctx(), volume.Config.Name, snapshotName)
 		if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 			t.Errorf("%s: unable to communicate with backing store: %v", snapshotName, err)
 		}

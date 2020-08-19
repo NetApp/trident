@@ -12,7 +12,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/cenkalti/backoff/v4"
-
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-11-01/netapp"
@@ -20,6 +19,7 @@ import (
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 )
 
@@ -48,7 +48,6 @@ type ClientConfig struct {
 
 // AzureClient holds operational Azure SDK objects
 type AzureClient struct {
-	Ctx context.Context
 	netapp.AccountsClient
 	netapp.PoolsClient
 	netapp.VolumesClient
@@ -70,7 +69,6 @@ type Client struct {
 // NewSDKClient allocates the various clients for the SDK
 func NewSDKClient(config *ClientConfig) (c *AzureClient) {
 	c = new(AzureClient)
-	c.Ctx = context.Background()
 
 	c.AuthConfig = azauth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID)
 	c.AuthConfig.AADEndpoint = azure.PublicCloud.ActiveDirectoryEndpoint
@@ -111,10 +109,10 @@ func NewDriver(config ClientConfig) *Client {
 }
 
 // Init runs startup logic after allocating the driver resources
-func (d *Client) Init(pools map[string]*storage.Pool) (err error) {
+func (d *Client) Init(ctx context.Context, pools map[string]*storage.Pool) (err error) {
 
 	// Find out what we have to work with in Azure
-	d.discoveryInit()
+	d.discoveryInit(ctx)
 
 	// Map vpools to backend
 	for _, p := range pools {
@@ -238,7 +236,9 @@ func exportPolicyImport(ep *netapp.VolumePropertiesExportPolicy) *ExportPolicy {
 // newFileSystemFromVolume creates a new internal FileSystem struct from a netapp.Volume
 // as best it can.  There are fields in FileSystem that do not exist in netapp.Volume, and
 // vice-versa.
-func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapacityPoolCookie) (*FileSystem, error) {
+func (d *Client) newFileSystemFromVolume(
+	ctx context.Context, vol *netapp.Volume, cookie *AzureCapacityPoolCookie,
+) (*FileSystem, error) {
 
 	pool, err := d.getCapacityPool(*cookie.CapacityPoolName)
 	if err != nil {
@@ -258,7 +258,7 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 		Location:         *vol.Location,
 		CapacityPoolName: pool.Name,
 		ServiceLevel:     pool.ServiceLevel,
-		MountTargets:     d.getMountTargetsFromVolume(vol),
+		MountTargets:     d.getMountTargetsFromVolume(ctx, vol),
 	}
 
 	// VolumeProperties strings are not always populated, nor is 'ID'
@@ -297,12 +297,12 @@ func (d *Client) newFileSystemFromVolume(vol *netapp.Volume, cookie *AzureCapaci
 	return &fs, nil
 }
 
-func (d *Client) getMountTargetsFromVolume(vol *netapp.Volume) []MountTarget {
+func (d *Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volume) []MountTarget {
 
 	mounts := make([]MountTarget, 0)
 
 	if vol.MountTargets == nil {
-		log.Tracef("Volume %s has nil MountTargetProperties.", *vol.Name)
+		Logc(ctx).Tracef("Volume %s has nil MountTargetProperties.", *vol.Name)
 		return mounts
 	}
 
@@ -345,17 +345,19 @@ func (d *Client) getMountTargetsFromVolume(vol *netapp.Volume) []MountTarget {
 }
 
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool
-func (d *Client) getVolumesFromPool(cookie *AzureCapacityPoolCookie, poolName string) (*[]FileSystem, error) {
+func (d *Client) getVolumesFromPool(
+	ctx context.Context, cookie *AzureCapacityPoolCookie, poolName string,
+) (*[]FileSystem, error) {
 
 	// poolName is an override, use the cookie's if not specified
 	if poolName == "" {
 		poolName = *cookie.CapacityPoolName
 	}
 
-	volumelist, err := d.SDKClient.VolumesClient.List(d.SDKClient.Ctx,
+	volumelist, err := d.SDKClient.VolumesClient.List(ctx,
 		*cookie.ResourceGroup, *cookie.NetAppAccount, poolName)
 	if err != nil {
-		log.Errorf("Error fetching volumes from pool %s: %s", poolName, err)
+		Logc(ctx).Errorf("Error fetching volumes from pool %s: %s", poolName, err)
 		return nil, err
 	}
 
@@ -364,9 +366,9 @@ func (d *Client) getVolumesFromPool(cookie *AzureCapacityPoolCookie, poolName st
 	var fses []FileSystem
 
 	for _, v := range volumes {
-		fs, err := d.newFileSystemFromVolume(&v, cookie)
+		fs, err := d.newFileSystemFromVolume(ctx, &v, cookie)
 		if err != nil {
-			log.Errorf("Internal error creating filesystem")
+			Logc(ctx).Errorf("Internal error creating filesystem")
 			return nil, err
 		}
 		fses = append(fses, *fs)
@@ -376,7 +378,8 @@ func (d *Client) getVolumesFromPool(cookie *AzureCapacityPoolCookie, poolName st
 }
 
 // GetVolumes returns a list of ALL volumes
-func (d *Client) GetVolumes() (*[]FileSystem, error) {
+func (d *Client) GetVolumes(ctx context.Context) (*[]FileSystem, error) {
+
 	var filesystems []FileSystem
 
 	pools := d.getCapacityPools()
@@ -388,9 +391,9 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 			return nil, err
 		}
 
-		fs, err := d.getVolumesFromPool(cookie, poolShortname(p.Name))
+		fs, err := d.getVolumesFromPool(ctx, cookie, poolShortname(p.Name))
 		if err != nil {
-			log.Errorf("Error fetching volumes from pool %s: %s", p.Name, err)
+			Logc(ctx).Errorf("Error fetching volumes from pool %s: %s", p.Name, err)
 			return nil, err
 		}
 		for _, f := range *fs {
@@ -404,7 +407,7 @@ func (d *Client) GetVolumes() (*[]FileSystem, error) {
 }
 
 // GetVolumeByName fetches a Filesystem based on its readable name
-func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
+func (d *Client) GetVolumeByName(ctx context.Context, name string) (*FileSystem, error) {
 	// See GetVolumeByCreationToken for comments on Azure API searchability.
 	//
 	// Even lacking that capability, this could be a direct 'Get' call -- bypassing
@@ -414,7 +417,7 @@ func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
 	// If this volume-fetching becomes a performance bottleneck, maintaining a cache
 	// here could be very helpful.
 
-	filesystems, err := d.GetVolumes()
+	filesystems, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -429,10 +432,10 @@ func (d *Client) GetVolumeByName(name string) (*FileSystem, error) {
 }
 
 // GetVolumeByCreationToken fetches a Filesystem by its immutable creation token
-func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, error) {
+func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*FileSystem, error) {
 	// SDK does not support searching by creation token. Or anything besides pool+name,
 	// for that matter. Get all volumes and find it ourselves. This is far from ideal.
-	filesystems, err := d.GetVolumes()
+	filesystems, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -447,8 +450,8 @@ func (d *Client) GetVolumeByCreationToken(creationToken string) (*FileSystem, er
 }
 
 // VolumeExistsByCreationToken checks whether a volume exists using its token as a key
-func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileSystem, error) {
-	fs, _ := d.GetVolumeByCreationToken(creationToken)
+func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
+	fs, _ := d.GetVolumeByCreationToken(ctx, creationToken)
 
 	// Volume exists
 	if fs != nil {
@@ -459,9 +462,9 @@ func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *FileS
 }
 
 // GetVolumeByID returns a Filesystem based on its ID
-func (d *Client) GetVolumeByID(fileSystemID string) (*FileSystem, error) {
+func (d *Client) GetVolumeByID(ctx context.Context, fileSystemID string) (*FileSystem, error) {
 	// Same problem
-	filesystems, err := d.GetVolumes()
+	filesystems, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -477,8 +480,10 @@ func (d *Client) GetVolumeByID(fileSystemID string) (*FileSystem, error) {
 
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved
 func (d *Client) WaitForVolumeState(
-	filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, filesystem *FileSystem, desiredState string, abortStates []string,
+	maxElapsedTime time.Duration,
 ) (string, error) {
+
 	volumeState := ""
 
 	checkVolumeState := func() error {
@@ -487,9 +492,9 @@ func (d *Client) WaitForVolumeState(
 
 		// Properties fields are not populated on create; use Name instead
 		if filesystem.FileSystemID == "" {
-			f, err = d.GetVolumeByName(filesystem.Name)
+			f, err = d.GetVolumeByName(ctx, filesystem.Name)
 		} else {
-			f, err = d.GetVolumeByID(filesystem.FileSystemID)
+			f, err = d.GetVolumeByID(ctx, filesystem.FileSystemID)
 		}
 		if err != nil {
 			volumeState = ""
@@ -503,11 +508,11 @@ func (d *Client) WaitForVolumeState(
 					return fmt.Errorf("waitForVolumeState internal error re-checking volume: %v", err)
 				}
 
-				vol, err := d.SDKClient.VolumesClient.Get(d.SDKClient.Ctx, *cookie.ResourceGroup,
+				vol, err := d.SDKClient.VolumesClient.Get(ctx, *cookie.ResourceGroup,
 					*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name)
 				if err != nil && vol.StatusCode == 404 {
 					// Deleted!
-					log.Debugf("Implied deletion for volume %s", filesystem.Name)
+					Logc(ctx).Debugf("Implied deletion for volume %s", filesystem.Name)
 					return nil
 				} else {
 					return fmt.Errorf("waitForVolumeState internal error re-checking volume: %v", err)
@@ -534,7 +539,7 @@ func (d *Client) WaitForVolumeState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for volume state.")
@@ -546,25 +551,25 @@ func (d *Client) WaitForVolumeState(
 	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for volume state.")
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Volume reached terminal state: %v.", terminalStateErr)
+			Logc(ctx).Errorf("Volume reached terminal state: %v.", terminalStateErr)
 		} else {
-			log.Errorf("Volume state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
 	return volumeState, nil
 }
 
 // CreateVolume creates a new volume
-func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, error) {
+func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequest) (*FileSystem, error) {
 
 	// Fetch the required cached access details from the pool name.  Hack alert: If the
 	// pool name is DoNotUseSPoolName, then we are coming from a path where this information
@@ -589,21 +594,21 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	// We should only be seeing the trident telemetry label here.  Use a tag to store it.
 	tags := make(map[string]*string)
 	if len(request.Labels) > 1 {
-		log.Errorf("Too many labels (%d) in volume create request.", len(request.Labels))
+		Logc(ctx).Errorf("Too many labels (%d) in volume create request.", len(request.Labels))
 	}
 	for _, val := range request.Labels {
 		tags[tridentLabelTag] = &val
 	}
 
 	// Get the capacity pool so we can validate location and inherit service level
-	cpool, err := d.SDKClient.PoolsClient.Get(d.SDKClient.Ctx, resourceGroup, netAppAccount, cpoolName)
+	cpool, err := d.SDKClient.PoolsClient.Get(ctx, resourceGroup, netAppAccount, cpoolName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get capacity pool: %v", err)
 	}
 
 	// Fetch a volume first.  This has probably already been checked once but we
 	// need the sdk structs.
-	newVol, err := d.SDKClient.VolumesClient.Get(d.SDKClient.Ctx, resourceGroup, netAppAccount, cpoolName, request.Name)
+	newVol, err := d.SDKClient.VolumesClient.Get(ctx, resourceGroup, netAppAccount, cpoolName, request.Name)
 	if err != nil && newVol.StatusCode != 404 {
 		return nil, fmt.Errorf("couldn't get volume: %v", err)
 	}
@@ -656,9 +661,9 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 		if subnet == "" {
 			logstr := "No subnet specified in volume creation request, selecting "
 			if vNet != "" {
-				log.Debugf(logstr+"from vnet %s.", vNet)
+				Logc(ctx).Debugf(logstr+"from vnet %s.", vNet)
 			} else {
-				log.Debugf(logstr+"at random in %s.", *cpool.Location)
+				Logc(ctx).Debugf(logstr+"at random in %s.", *cpool.Location)
 			}
 			randomSubnet := d.randomSubnetForLocation(vNet, *cpool.Location)
 			if randomSubnet == nil {
@@ -693,7 +698,7 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	newVol.SubnetID = &subnetID
 
 	if d.config.DebugTraceFlags["api"] {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"name":           request.Name,
 			"creationToken":  request.CreationToken,
 			"resourceGroup":  resourceGroup,
@@ -711,17 +716,17 @@ func (d *Client) CreateVolume(request *FilesystemCreateRequest) (*FileSystem, er
 	// code.  Will ignore this struct for the time being, but we may want to look
 	// into what interesting features the Azure method may provide.
 	// TBD
-	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(d.SDKClient.Ctx, newVol,
+	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(ctx, newVol,
 		resourceGroup, netAppAccount, cpoolName, request.Name); err != nil {
 		return nil, err
 	}
 
-	filesystem, err := d.newFileSystemFromVolume(&newVol, cookie)
+	filesystem, err := d.newFileSystemFromVolume(ctx, &newVol, cookie)
 	if err != nil {
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 	}).Info("Filesystem created.")
@@ -735,11 +740,11 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 }
 
 // RelabelVolume updates the 'trident' telemetry label on a volume
-func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSystem, error) {
+func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labels []string) (*FileSystem, error) {
 
 	// Only updating trident labels
 	if len(labels) > 1 {
-		log.Errorf("Too many labels (%d) passed to RelabelVolume.", len(labels))
+		Logc(ctx).Errorf("Too many labels (%d) passed to RelabelVolume.", len(labels))
 	}
 
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
@@ -749,7 +754,7 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 	}
 
 	// Fetch the netapp.Volume to fill in the new Tags field
-	nv, err := d.SDKClient.VolumesClient.Get(d.SDKClient.Ctx, *cookie.ResourceGroup,
+	nv, err := d.SDKClient.VolumesClient.Get(ctx, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name)
 	if err != nil {
 		return nil, errors.New("couldn't get volume for RelabelVolume")
@@ -784,23 +789,23 @@ func (d *Client) RelabelVolume(filesystem *FileSystem, labels []string) (*FileSy
 	nv.ProtocolTypes = nil
 	nv.MountTargets = nil
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          nv.Name,
 		"creationToken": nv.CreationToken,
 		"tags":          nv.Tags,
 	}).Info("Relabeling filesystem.")
 
-	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(d.SDKClient.Ctx, nv, *cookie.ResourceGroup,
+	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(ctx, nv, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name); err != nil {
 		return nil, err
 	}
 
-	fs, err := d.newFileSystemFromVolume(&nv, cookie)
+	fs, err := d.newFileSystemFromVolume(ctx, &nv, cookie)
 	if err != nil {
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          fs.Name,
 		"creationToken": fs.CreationToken,
 	}).Info("Filesystem relabeled.")
@@ -814,7 +819,7 @@ func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, lab
 }
 
 // ResizeVolume sends a VolumePatch to update the Quota
-func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
+func (d *Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
 
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
@@ -833,12 +838,12 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 		VolumePatchProperties: &patchprop,
 	}
 
-	if _, err := d.SDKClient.VolumesClient.Update(d.SDKClient.Ctx, patch, *cookie.ResourceGroup,
+	if _, err := d.SDKClient.VolumesClient.Update(ctx, patch, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name); err != nil {
 		return nil, err
 	}
 
-	newVol, err := d.GetVolumeByCreationToken(filesystem.CreationToken)
+	newVol, err := d.GetVolumeByCreationToken(ctx, filesystem.CreationToken)
 	if err != nil {
 		return nil, err
 	}
@@ -847,19 +852,20 @@ func (d *Client) ResizeVolume(filesystem *FileSystem, newSizeBytes int64) (*File
 }
 
 // DeleteVolume deletes a volume
-func (d *Client) DeleteVolume(filesystem *FileSystem) error {
+func (d *Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
+
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
 		return fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
 			filesystem.Name, filesystem.CapacityPoolName)
 	}
 
-	if _, err = d.SDKClient.VolumesClient.Delete(d.SDKClient.Ctx, *cookie.ResourceGroup,
+	if _, err = d.SDKClient.VolumesClient.Delete(ctx, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name); err != nil {
 		return fmt.Errorf("error deleting volume: %v", err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume": filesystem.CreationToken,
 	}).Info("Filesystem deleted.")
 
@@ -867,14 +873,14 @@ func (d *Client) DeleteVolume(filesystem *FileSystem) error {
 }
 
 // GetSnapshotsForVolume returns a list of snapshots on a volume
-func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, error) {
+func (d *Client) GetSnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]Snapshot, error) {
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
 			filesystem.Name, filesystem.CapacityPoolName)
 	}
 
-	slist, err := d.SDKClient.SnapshotsClient.List(d.SDKClient.Ctx, *cookie.ResourceGroup,
+	slist, err := d.SDKClient.SnapshotsClient.List(ctx, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error listing snapshots on volume %s: %v", filesystem.Name, err)
@@ -907,8 +913,10 @@ func (d *Client) GetSnapshotsForVolume(filesystem *FileSystem) (*[]Snapshot, err
 }
 
 // GetSnapshotForVolume fetches a specific snaphot on a volume by its name
-func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName string) (*Snapshot, error) {
-	snapshots, err := d.GetSnapshotsForVolume(filesystem)
+func (d *Client) GetSnapshotForVolume(
+	ctx context.Context, filesystem *FileSystem, snapshotName string,
+) (*Snapshot, error) {
+	snapshots, err := d.GetSnapshotsForVolume(ctx, filesystem)
 	if err != nil {
 		return nil, err
 	}
@@ -923,8 +931,9 @@ func (d *Client) GetSnapshotForVolume(filesystem *FileSystem, snapshotName strin
 }
 
 // GetSnapshotByID fetches a specific snapshot on a volume by its ID
-func (d *Client) GetSnapshotByID(snapshotID string, filesystem *FileSystem) (*Snapshot, error) {
-	snapshots, err := d.GetSnapshotsForVolume(filesystem)
+func (d *Client) GetSnapshotByID(ctx context.Context, snapshotID string, filesystem *FileSystem) (*Snapshot, error) {
+
+	snapshots, err := d.GetSnapshotsForVolume(ctx, filesystem)
 	if err != nil {
 		return nil, err
 	}
@@ -940,10 +949,12 @@ func (d *Client) GetSnapshotByID(snapshotID string, filesystem *FileSystem) (*Sn
 
 // WaitForSnapshotState waits for a desired snapshot state and returns once that state is achieved
 func (d *Client) WaitForSnapshotState(
-	snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string,
+	maxElapsedTime time.Duration,
 ) error {
+
 	checkSnapshotState := func() error {
-		s, err := d.GetSnapshotForVolume(filesystem, snapshot.Name)
+		s, err := d.GetSnapshotForVolume(ctx, filesystem, snapshot.Name)
 
 		// Same rigamarole as with deleted volumes: if we are trying to delete, and
 		// suddenly can't query the snapshot, check and see if it's a 404.
@@ -953,11 +964,11 @@ func (d *Client) WaitForSnapshotState(
 				if err != nil {
 					return fmt.Errorf("waitForSnapshotState internal error re-checking snapshot: %v", err)
 				}
-				snap, err := d.SDKClient.SnapshotsClient.Get(d.SDKClient.Ctx, *cookie.ResourceGroup,
+				snap, err := d.SDKClient.SnapshotsClient.Get(ctx, *cookie.ResourceGroup,
 					*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name, snapshot.Name)
 				if err != nil && snap.StatusCode == 404 {
 					// Deleted!
-					log.Debugf("Implied deletion for snapshot %s.", snapshot.Name)
+					Logc(ctx).Debugf("Implied deletion for snapshot %s.", snapshot.Name)
 					return nil
 				} else {
 					return fmt.Errorf("waitForSnapshotState internal error re-checking snapshot: %v", err)
@@ -984,7 +995,7 @@ func (d *Client) WaitForSnapshotState(
 	}
 
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for snapshot state.")
@@ -996,25 +1007,25 @@ func (d *Client) WaitForSnapshotState(
 	stateBackoff.InitialInterval = 2 * time.Second
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
 
 	if err := backoff.RetryNotify(checkSnapshotState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Snapshot reached terminal state: %v.", terminalStateErr)
+			Logc(ctx).Errorf("Snapshot reached terminal state: %v.", terminalStateErr)
 		} else {
-			log.Errorf("Snapshot state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Snapshot state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return err
 	}
 
-	log.WithField("desiredState", desiredState).Debugf("Desired snapshot state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debugf("Desired snapshot state reached.")
 
 	return nil
 }
 
 // CreateSnapshot creates a new snapshot
-func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, error) {
+func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) (*Snapshot, error) {
 
 	fs := *request.Volume
 
@@ -1030,7 +1041,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 	}
 
 	// This returns another "future" object..
-	if _, err = d.SDKClient.SnapshotsClient.Create(d.SDKClient.Ctx, snap, *cookie.ResourceGroup,
+	if _, err = d.SDKClient.SnapshotsClient.Create(ctx, snap, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, fs.CapacityPoolName, fs.Name, request.Name); err != nil {
 		return nil, err
 	}
@@ -1047,13 +1058,14 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) (*Snapshot, erro
 }
 
 // RestoreSnapshot does not seem to have an API on Azure, unless it's the mysterious 'Do'
-func (d *Client) RestoreSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
-	log.Errorf("Restore snapshot not implemented in ANF.")
+func (d *Client) RestoreSnapshot(ctx context.Context, _ *FileSystem, _ *Snapshot) error {
+
+	Logc(ctx).Errorf("Restore snapshot not implemented in ANF.")
 	return nil
 }
 
 // DeleteSnapshot deletes a snapshot
-func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) error {
+func (d *Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
 		return fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
@@ -1061,18 +1073,19 @@ func (d *Client) DeleteSnapshot(filesystem *FileSystem, snapshot *Snapshot) erro
 	}
 
 	// Another "future" object
-	_, err = d.SDKClient.SnapshotsClient.Delete(d.SDKClient.Ctx, *cookie.ResourceGroup,
+	_, err = d.SDKClient.SnapshotsClient.Delete(ctx, *cookie.ResourceGroup,
 		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name, snapshot.Name)
 
 	return err
 }
 
-func IsTransitionalState(volumeState string) bool {
+func IsTransitionalState(ctx context.Context, volumeState string) bool {
+
 	switch volumeState {
 	case StateCreating, StateDeleting:
 		return true
 	case StateInProgress:
-		log.Error("***** FOUND InProgress VOLUME STATE! *****")
+		Logc(ctx).Error("***** FOUND InProgress VOLUME STATE! *****")
 		return true
 	default:
 		return false

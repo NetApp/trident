@@ -3,6 +3,7 @@
 package storageclass
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -13,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 )
@@ -60,7 +62,10 @@ func NewFromAttributes(attributes map[string]storageattribute.Request) *StorageC
 	}
 }
 
-func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBackendName string, storagePoolList []string) bool {
+func (s *StorageClass) regexMatcherImpl(
+	ctx context.Context, storagePool *storage.Pool, storagePoolBackendName string, storagePoolList []string,
+) bool {
+
 	if storagePool == nil {
 		return false
 	}
@@ -82,7 +87,7 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 	for _, storagePoolName := range storagePoolList {
 		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend.Name)
 		if err != nil {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"storagePoolName":          storagePoolName,
 				"storagePool.Name":         storagePool.Name,
 				"storagePool.Backend.Name": storagePool.Backend.Name,
@@ -91,7 +96,7 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 			}).Warning("Error comparing backend names in regexMatcher.")
 			continue
 		}
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"storagePool.Backend.Name": storagePool.Backend.Name,
 			"storagePoolBackendName":   storagePoolBackendName,
 			"backendMatch":             backendMatch,
@@ -102,7 +107,7 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 
 		matched, err := regexp.MatchString(storagePoolName, storagePool.Name)
 		if err != nil {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"storagePoolName":          storagePoolName,
 				"storagePool.Name":         storagePool.Name,
 				"storagePool.Backend.Name": storagePool.Backend.Name,
@@ -114,7 +119,7 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 		if matched {
 			poolsMatch = true
 		}
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"storagePoolName":          storagePoolName,
 			"storagePool.Name":         storagePool.Name,
 			"storagePool.Backend.Name": storagePool.Backend.Name,
@@ -124,11 +129,11 @@ func (s *StorageClass) regexMatcherImpl(storagePool *storage.Pool, storagePoolBa
 	return poolsMatch
 }
 
-func (s *StorageClass) regexMatcher(storagePool *storage.Pool, poolMap map[string][]string) bool {
+func (s *StorageClass) regexMatcher(ctx context.Context, storagePool *storage.Pool, poolMap map[string][]string) bool {
 	poolsMatch := false
 	if len(poolMap) > 0 {
 		for storagePoolBackendName, storagePoolList := range poolMap {
-			poolsMatch = s.regexMatcherImpl(storagePool, storagePoolBackendName, storagePoolList)
+			poolsMatch = s.regexMatcherImpl(ctx, storagePool, storagePoolBackendName, storagePoolList)
 			if poolsMatch {
 				return true
 			}
@@ -137,9 +142,9 @@ func (s *StorageClass) regexMatcher(storagePool *storage.Pool, poolMap map[strin
 	return poolsMatch
 }
 
-func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
+func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) bool {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"storageClass": s.GetName(),
 		"config":       s.config,
 		"pool":         storagePool.Name,
@@ -148,14 +153,14 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 
 	// Check excludeStoragePools first, since it can reject a match
 	if len(s.config.ExcludePools) > 0 {
-		if matches := s.regexMatcher(storagePool, s.config.ExcludePools); matches {
+		if matches := s.regexMatcher(ctx, storagePool, s.config.ExcludePools); matches {
 			return false
 		}
 	}
 
 	// Check additionalStoragePools next, since it can yield a match result by itself
 	if len(s.config.AdditionalPools) > 0 {
-		if matches := s.regexMatcher(storagePool, s.config.AdditionalPools); matches {
+		if matches := s.regexMatcher(ctx, storagePool, s.config.AdditionalPools); matches {
 			return true
 		}
 
@@ -163,7 +168,7 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 		// there are no attributes or storagePools specified in the storage class.  This should
 		// always return false.
 		if len(s.config.Attributes) == 0 && len(s.config.Pools) == 0 {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
 			}).Debug("Pool failed to match storage class additionalStoragePools attribute.")
@@ -183,7 +188,7 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 		}
 
 		if offer, ok := storagePool.Attributes[name]; !ok || !offer.Matches(request) {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"offer":        offer,
 				"request":      request,
 				"storageClass": s.GetName(),
@@ -201,12 +206,12 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 	// class, then the pool must be in the list.
 	poolsMatch := true
 	if len(s.config.Pools) > 0 {
-		poolsMatch = s.regexMatcher(storagePool, s.config.Pools)
+		poolsMatch = s.regexMatcher(ctx, storagePool, s.config.Pools)
 	}
 
 	result := attributesMatch && poolsMatch
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"attributesMatch": attributesMatch,
 		"poolsMatch":      poolsMatch,
 		"match":           result,
@@ -220,25 +225,25 @@ func (s *StorageClass) Matches(storagePool *storage.Pool) bool {
 // CheckAndAddBackend iterates through each of the storage pools
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
-func (s *StorageClass) CheckAndAddBackend(b *storage.Backend) int {
+func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b *storage.Backend) int {
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"backend":      b.Name,
 		"storageClass": s.GetName(),
 	}).Debug("Checking backend for storage class")
 
 	if !b.State.IsOnline() {
-		log.WithField("backend", b.Name).Warn("Backend not online.")
+		Logc(ctx).WithField("backend", b.Name).Warn("Backend not online.")
 		return 0
 	}
 
 	added := 0
 	for _, storagePool := range b.Storage {
-		if s.Matches(storagePool) {
+		if s.Matches(ctx, storagePool) {
 			s.pools = append(s.pools, storagePool)
 			storagePool.AddStorageClass(s.GetName())
 			added++
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"pool":         storagePool.Name,
 				"storageClass": s.GetName(),
 			}).Debug("Storage class added to the storage pool.")
@@ -286,11 +291,11 @@ func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
 	return s.config.AdditionalPools
 }
 
-func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.Pool {
+func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol) []*storage.Pool {
 	ret := make([]*storage.Pool, 0, len(s.pools))
 	// TODO:  Change this to work with indices of backends?
 	for _, storagePool := range s.pools {
-		if p == config.ProtocolAny || storagePool.Backend.GetProtocol() == p {
+		if p == config.ProtocolAny || storagePool.Backend.GetProtocol(ctx) == p {
 			ret = append(ret, storagePool)
 		}
 	}
@@ -301,17 +306,19 @@ func (s *StorageClass) GetStoragePoolsForProtocol(p config.Protocol) []*storage.
 // each pool matches the supplied protocol.  Each pool list is shuffled, so the caller may use the list
 // to select backends and pools at random.  The caller may assume that each value in the map is a list
 // containing at least one pool.
-func (s *StorageClass) GetStoragePoolsForProtocolByBackend(p config.Protocol) map[string]*BackendPoolInfo {
+func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
+	ctx context.Context, p config.Protocol,
+) map[string]*BackendPoolInfo {
 
 	// Get all matching pools
-	pools := s.GetStoragePoolsForProtocol(p)
+	pools := s.GetStoragePoolsForProtocol(ctx, p)
 
 	// Build a map of backends to a list of matching pools and physical pool names on each backend
 	poolMap := make(map[string]*BackendPoolInfo)
 	for _, pool := range pools {
 		if _, ok := poolMap[pool.Backend.Name]; !ok {
 			// Get Names of physical Pools associated with this backend
-			physicalPoolNames := pool.Backend.GetPhysicalPoolNames()
+			physicalPoolNames := pool.Backend.GetPhysicalPoolNames(ctx)
 			physicalPoolNamesMap := make(map[string]struct{})
 			for _, physicalPoolName := range physicalPoolNames {
 				physicalPoolNamesMap[physicalPoolName] = struct{}{}
@@ -338,7 +345,8 @@ func (s *StorageClass) Pools() []*storage.Pool {
 	return s.pools
 }
 
-func (s *StorageClass) ConstructExternal() *External {
+func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
+
 	ret := &External{
 		Config:       s.config,
 		StoragePools: make(map[string][]string),
@@ -346,7 +354,7 @@ func (s *StorageClass) ConstructExternal() *External {
 	for _, storagePool := range s.pools {
 		backendName := storagePool.Backend.Name
 		if storagePoolList, ok := ret.StoragePools[backendName]; ok {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
 				"Backend":      backendName,
@@ -354,7 +362,7 @@ func (s *StorageClass) ConstructExternal() *External {
 			}).Debug("Appending to existing storage pool list for backend.")
 			ret.StoragePools[backendName] = append(storagePoolList, storagePool.Name)
 		} else {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name,
 				"Backend":      backendName,

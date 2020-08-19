@@ -14,8 +14,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+
+	. "github.com/netapp/trident/logger"
 )
 
 // Linux is a constant value for the runtime.GOOS that represents the Linux OS
@@ -185,7 +186,6 @@ func ConvertSizeToBytes(s string) (string, error) {
 // default value is parsed identically and used instead.
 func GetVolumeSizeBytes(ctx context.Context, opts map[string]string, defaultVolumeSize string) (uint64, error) {
 
-	logc := GetLogWithRequestContext(ctx)
 	usingDefaultSize := false
 	usingDefaultUnits := false
 
@@ -209,7 +209,7 @@ func GetVolumeSizeBytes(ctx context.Context, opts map[string]string, defaultVolu
 	}
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
-	logc.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"sizeBytes":         sizeBytes,
 		"size":              size,
 		"usingDefaultSize":  usingDefaultSize,
@@ -303,7 +303,6 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	requestURL.User = nil
 
 	ctx := request.Context()
-	logc := GetLogWithRequestContext(ctx)
 
 	headers := make(map[string][]string)
 	for k, v := range request.Header {
@@ -320,12 +319,11 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 		body = string(requestBody)
 	}
 
-	logc.Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+	Logc(ctx).Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
 		header, request.Method, requestURL, headers, body, footer)
 }
 
 func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody []byte) {
-	logc := GetLogWithRequestContext(ctx)
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 
@@ -343,7 +341,7 @@ func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody 
 	} else {
 		body = string(responseBody)
 	}
-	logc.Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
+	Logc(ctx).Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
 		header, response.Status, headers, body, footer)
 }
 
@@ -407,7 +405,8 @@ func ReplaceImageRegistry(image, registry string) string {
 
 // FilterIPs takes a list of IPs and CIDRs and returns the sorted list of IPs that are contained by one or more of the
 // CIDRs
-func FilterIPs(ips, cidrs []string) ([]string, error) {
+func FilterIPs(ctx context.Context, ips, cidrs []string) ([]string, error) {
+
 	networks := make([]*net.IPNet, len(cidrs))
 	filteredIPs := make([]string, 0)
 
@@ -415,7 +414,7 @@ func FilterIPs(ips, cidrs []string) ([]string, error) {
 		_, ipNet, err := net.ParseCIDR(cidr)
 		if err != nil {
 			err = fmt.Errorf("error parsing CIDR; %v", err)
-			log.WithField("CIDR", cidr).Error(err)
+			Logc(ctx).WithField("CIDR", cidr).Error(err)
 			return nil, err
 		}
 		networks[i] = ipNet
@@ -429,11 +428,11 @@ func FilterIPs(ips, cidrs []string) ([]string, error) {
 				"Network": network.String(),
 			}
 			if network.Contains(parsedIP) {
-				log.WithFields(fields).Debug("IP found in network.")
+				Logc(ctx).WithFields(fields).Debug("IP found in network.")
 				filteredIPs = append(filteredIPs, ip)
 				break
 			} else {
-				log.WithFields(fields).Debug("IP not found in network.")
+				Logc(ctx).WithFields(fields).Debug("IP not found in network.")
 			}
 		}
 	}
@@ -542,33 +541,4 @@ func GetRegexSubmatches(r *regexp.Regexp, s string) map[string]string {
 		}
 	}
 	return paramsMap
-}
-
-func GenerateRequestContext(ctx context.Context, requestID, requestSource string) context.Context {
-	if ctx == nil {
-		ctx = context.Background()
-	} else {
-		if v := ctx.Value(ContextKeyRequestID); v != nil {
-			requestID = fmt.Sprint(v)
-		}
-		if v := ctx.Value(ContextKeyRequestSource); v != nil {
-			requestSource = fmt.Sprint(v)
-		}
-	}
-	if requestID == "" {
-		requestID = uuid.New().String()
-	}
-	if requestSource == "" {
-		requestSource = "Unknown"
-	}
-	ctx = context.WithValue(ctx, ContextKeyRequestID, requestID)
-	ctx = context.WithValue(ctx, ContextKeyRequestSource, requestSource)
-	return ctx
-}
-
-func GetLogWithRequestContext(ctx context.Context) *log.Entry {
-	return log.WithFields(log.Fields{
-		"requestID":     ctx.Value(ContextKeyRequestID),
-		"requestSource": ctx.Value(ContextKeyRequestSource),
-	})
 }

@@ -21,6 +21,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
+	. "github.com/netapp/trident/logger"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
@@ -39,7 +40,7 @@ const defaultAPIAudienceURL = defaultAPIURL
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
-
+	utils.MountPoint
 	// GCP project number
 	ProjectNumber string
 
@@ -91,7 +92,7 @@ func (d *Client) makeURL(resourcePath string) string {
 		d.config.APIRegion, resourcePath)
 }
 
-func (d *Client) initTokenSource() error {
+func (d *Client) initTokenSource(ctx context.Context) error {
 
 	keyBytes, err := json.Marshal(d.config.APIKey)
 	if err != nil {
@@ -104,18 +105,18 @@ func (d *Client) initTokenSource() error {
 	}
 	d.tokenSource = &tokenSource
 
-	log.Debug("Got token source.")
+	Logc(ctx).Debug("Got token source.")
 
 	return nil
 }
 
-func (d *Client) refreshToken() error {
+func (d *Client) refreshToken(ctx context.Context) error {
 
 	var err error
 
 	// Get token source (once per API client instance)
 	if d.tokenSource == nil {
-		if err = d.initTokenSource(); err != nil {
+		if err = d.initTokenSource(ctx); err != nil {
 			return err
 		}
 	}
@@ -123,7 +124,7 @@ func (d *Client) refreshToken() error {
 	// If we have a valid token, just return
 	if d.token != nil && d.token.Valid() {
 
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"type":    d.token.Type(),
 			"token":   d.token.AccessToken,
 			"expires": d.token.Expiry.String(),
@@ -138,7 +139,7 @@ func (d *Client) refreshToken() error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"type":    d.token.Type(),
 		"token":   d.token.AccessToken,
 		"expires": d.token.Expiry.String(),
@@ -149,26 +150,29 @@ func (d *Client) refreshToken() error {
 
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
-func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*http.Response, []byte, error) {
+func (d *Client) InvokeAPI(
+	ctx context.Context, requestBody []byte, method string, gcpURL string,
+) (*http.Response, []byte, error) {
 
 	var request *http.Request
 	var response *http.Response
 	var err error
 
-	if err = d.refreshToken(); err != nil {
+	if err = d.refreshToken(ctx); err != nil {
 		return nil, nil, fmt.Errorf("cannot invoke API %s, no valid token; %v", gcpURL, err)
 	}
 
 	if requestBody == nil {
-		request, err = http.NewRequest(method, gcpURL, nil)
+		request, err = http.NewRequestWithContext(ctx, method, gcpURL, nil)
 	} else {
-		request, err = http.NewRequest(method, gcpURL, bytes.NewBuffer(requestBody))
+		request, err = http.NewRequestWithContext(ctx, method, gcpURL, bytes.NewBuffer(requestBody))
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	request.Header.Set("X-Request-ID", fmt.Sprint(ctx.Value(ContextKeyRequestID)))
 	d.token.SetAuthHeader(request)
 
 	tr := &http.Transport{}
@@ -207,7 +211,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*h
 	response, err = d.invokeAPIWithRetry(client, request)
 
 	if response == nil && err != nil {
-		log.Warnf("Error communicating with GCP REST interface. %v", err)
+		Logc(ctx).Warnf("Error communicating with GCP REST interface. %v", err)
 		return nil, nil, err
 	} else if response != nil {
 		defer func() { _ = response.Body.Close() }()
@@ -219,7 +223,7 @@ func (d *Client) InvokeAPI(requestBody []byte, method string, gcpURL string) (*h
 		responseBody, err = ioutil.ReadAll(response.Body)
 
 		if d.config.DebugTraceFlags["api"] {
-			utils.LogHTTPResponse(context.TODO(), response, responseBody)
+			utils.LogHTTPResponse(ctx, response, responseBody)
 		}
 	}
 
@@ -254,7 +258,7 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 		return nil
 	}
 	invokeNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(request.Context()).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Retrying API.")
@@ -263,18 +267,19 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 	invokeBackoff.MaxElapsedTime = retryTimeoutSeconds * time.Second
 
 	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		log.Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
+		Logc(request.Context()).Errorf("API has not succeeded after %3.2f seconds.",
+			invokeBackoff.MaxElapsedTime.Seconds())
 		return response, err
 	}
 
 	return response, nil
 }
 
-func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
+func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error) {
 
 	resourcePath := "/version"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, nil, errors.New("failed to read version")
 	}
@@ -300,7 +305,7 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 		return nil, nil, fmt.Errorf("invalid semantic version for SDE version (%s): %v", version.SdeVersion, err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"apiVersion": apiVersion.String(),
 		"sdeVersion": sdeVersion.String(),
 	}).Info("Read CVS version.")
@@ -308,11 +313,11 @@ func (d *Client) GetVersion() (*utils.Version, *utils.Version, error) {
 	return apiVersion, sdeVersion, nil
 }
 
-func (d *Client) GetServiceLevels() (map[string]string, error) {
+func (d *Client) GetServiceLevels(ctx context.Context) (map[string]string, error) {
 
 	resourcePath := "/Storage/ServiceLevels"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read service levels")
 	}
@@ -333,7 +338,7 @@ func (d *Client) GetServiceLevels() (map[string]string, error) {
 		serviceLevelMap[serviceLevel.Name] = serviceLevel.Performance
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"count":  len(serviceLevels),
 		"levels": serviceLevelMap,
 	}).Info("Read service levels.")
@@ -341,11 +346,11 @@ func (d *Client) GetServiceLevels() (map[string]string, error) {
 	return serviceLevelMap, nil
 }
 
-func (d *Client) GetVolumes() (*[]Volume, error) {
+func (d *Client) GetVolumes(ctx context.Context) (*[]Volume, error) {
 
 	resourcePath := "/Volumes"
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read volume")
 	}
@@ -361,14 +366,14 @@ func (d *Client) GetVolumes() (*[]Volume, error) {
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(volumes)).Debug("Read volumes.")
+	Logc(ctx).WithField("count", len(volumes)).Debug("Read volumes.")
 
 	return &volumes, nil
 }
 
-func (d *Client) GetVolumeByName(name string) (*Volume, error) {
+func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, error) {
 
-	volumes, err := d.GetVolumes()
+	volumes, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -390,11 +395,11 @@ func (d *Client) GetVolumeByName(name string) (*Volume, error) {
 	return &matchingVolumes[0], nil
 }
 
-func (d *Client) GetVolumeByCreationToken(creationToken string) (*Volume, error) {
+func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get volume")
 	}
@@ -419,11 +424,11 @@ func (d *Client) GetVolumeByCreationToken(creationToken string) (*Volume, error)
 	return &volumes[0], nil
 }
 
-func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *Volume, error) {
+func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return false, nil, errors.New("failed to get volume")
 	}
@@ -445,11 +450,11 @@ func (d *Client) VolumeExistsByCreationToken(creationToken string) (bool, *Volum
 	return true, &volumes[0], nil
 }
 
-func (d *Client) GetVolumeByID(volumeId string) (*Volume, error) {
+func (d *Client) GetVolumeByID(ctx context.Context, volumeId string) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volumeId)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get volume")
 	}
@@ -469,14 +474,14 @@ func (d *Client) GetVolumeByID(volumeId string) (*Volume, error) {
 }
 
 func (d *Client) WaitForVolumeState(
-	volume *Volume, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, volume *Volume, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
 
 	volumeState := ""
 
 	checkVolumeState := func() error {
 
-		f, err := d.GetVolumeByID(volume.VolumeID)
+		f, err := d.GetVolumeByID(ctx, volume.VolumeID)
 		if err != nil {
 			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
@@ -504,7 +509,7 @@ func (d *Client) WaitForVolumeState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for volume state.")
@@ -516,24 +521,24 @@ func (d *Client) WaitForVolumeState(
 	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for volume state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for volume state.")
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Volume reached terminal state: %v", terminalStateErr)
+			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
 		} else {
-			log.Errorf("Volume state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("Desired volume state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
 	return volumeState, nil
 }
 
-func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
+func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) error {
 
 	resourcePath := "/Volumes"
 
@@ -542,7 +547,7 @@ func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
 		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return err
 	}
@@ -558,7 +563,7 @@ func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
 	//	return fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	//}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -567,7 +572,7 @@ func (d *Client) CreateVolume(request *VolumeCreateRequest) error {
 	return nil
 }
 
-func (d *Client) RenameVolume(volume *Volume, newName string) (*Volume, error) {
+func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName string) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
@@ -584,7 +589,7 @@ func (d *Client) RenameVolume(volume *Volume, newName string) (*Volume, error) {
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -599,7 +604,7 @@ func (d *Client) RenameVolume(volume *Volume, newName string) (*Volume, error) {
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -608,7 +613,7 @@ func (d *Client) RenameVolume(volume *Volume, newName string) (*Volume, error) {
 	return volume, nil
 }
 
-func (d *Client) RelabelVolume(volume *Volume, labels []string) (*Volume, error) {
+func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels []string) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
@@ -625,7 +630,7 @@ func (d *Client) RelabelVolume(volume *Volume, labels []string) (*Volume, error)
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -640,7 +645,7 @@ func (d *Client) RelabelVolume(volume *Volume, labels []string) (*Volume, error)
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -649,7 +654,9 @@ func (d *Client) RelabelVolume(volume *Volume, labels []string) (*Volume, error)
 	return volume, nil
 }
 
-func (d *Client) RenameRelabelVolume(volume *Volume, newName string, labels []string) (*Volume, error) {
+func (d *Client) RenameRelabelVolume(
+	ctx context.Context, volume *Volume, newName string, labels []string,
+) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
@@ -667,7 +674,7 @@ func (d *Client) RenameRelabelVolume(volume *Volume, newName string, labels []st
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -682,7 +689,7 @@ func (d *Client) RenameRelabelVolume(volume *Volume, newName string, labels []st
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -691,7 +698,7 @@ func (d *Client) RenameRelabelVolume(volume *Volume, newName string, labels []st
 	return volume, nil
 }
 
-func (d *Client) ResizeVolume(volume *Volume, newSizeBytes int64) (*Volume, error) {
+func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes int64) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
@@ -708,7 +715,7 @@ func (d *Client) ResizeVolume(volume *Volume, newSizeBytes int64) (*Volume, erro
 		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "PUT", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, err
 	}
@@ -723,7 +730,7 @@ func (d *Client) ResizeVolume(volume *Volume, newSizeBytes int64) (*Volume, erro
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"size":          newSizeBytes,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -732,11 +739,11 @@ func (d *Client) ResizeVolume(volume *Volume, newSizeBytes int64) (*Volume, erro
 	return volume, nil
 }
 
-func (d *Client) DeleteVolume(volume *Volume) error {
+func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
 		return errors.New("failed to delete volume")
 	}
@@ -746,18 +753,18 @@ func (d *Client) DeleteVolume(volume *Volume) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volume": volume.CreationToken,
 	}).Info("Volume deleted.")
 
 	return nil
 }
 
-func (d *Client) GetSnapshotsForVolume(volume *Volume) (*[]Snapshot, error) {
+func (d *Client) GetSnapshotsForVolume(ctx context.Context, volume *Volume) (*[]Snapshot, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots", volume.VolumeID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to read snapshots")
 	}
@@ -773,14 +780,14 @@ func (d *Client) GetSnapshotsForVolume(volume *Volume) (*[]Snapshot, error) {
 		return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	}
 
-	log.WithField("count", len(snapshots)).Debug("Read volume snapshots.")
+	Logc(ctx).WithField("count", len(snapshots)).Debug("Read volume snapshots.")
 
 	return &snapshots, nil
 }
 
-func (d *Client) GetSnapshotForVolume(volume *Volume, snapshotName string) (*Snapshot, error) {
+func (d *Client) GetSnapshotForVolume(ctx context.Context, volume *Volume, snapshotName string) (*Snapshot, error) {
 
-	snapshots, err := d.GetSnapshotsForVolume(volume)
+	snapshots, err := d.GetSnapshotsForVolume(ctx, volume)
 	if err != nil {
 		return nil, err
 	}
@@ -788,7 +795,7 @@ func (d *Client) GetSnapshotForVolume(volume *Volume, snapshotName string) (*Sna
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == snapshotName {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(log.Fields{
 				"snapshot": snapshotName,
 				"volume":   volume.CreationToken,
 			}).Debug("Found volume snapshot.")
@@ -797,7 +804,7 @@ func (d *Client) GetSnapshotForVolume(volume *Volume, snapshotName string) (*Sna
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot": snapshotName,
 		"volume":   volume.CreationToken,
 	}).Error("Snapshot not found.")
@@ -805,11 +812,11 @@ func (d *Client) GetSnapshotForVolume(volume *Volume, snapshotName string) (*Sna
 	return nil, fmt.Errorf("snapshot %s not found", snapshotName)
 }
 
-func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
+func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snapshot, error) {
 
 	resourcePath := fmt.Sprintf("/Snapshots/%s", snapshotId)
 
-	response, responseBody, err := d.InvokeAPI(nil, "GET", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
 		return nil, errors.New("failed to get snapshot")
 	}
@@ -829,12 +836,12 @@ func (d *Client) GetSnapshotByID(snapshotId string) (*Snapshot, error) {
 }
 
 func (d *Client) WaitForSnapshotState(
-	snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) error {
 
 	checkSnapshotState := func() error {
 
-		s, err := d.GetSnapshotByID(snapshot.SnapshotID)
+		s, err := d.GetSnapshotByID(ctx, snapshot.SnapshotID)
 		if err != nil {
 			return fmt.Errorf("could not get snapshot status; %v", err)
 		}
@@ -860,7 +867,7 @@ func (d *Client) WaitForSnapshotState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for snapshot state.")
@@ -872,24 +879,24 @@ func (d *Client) WaitForSnapshotState(
 	stateBackoff.InitialInterval = 2 * time.Second
 	stateBackoff.Multiplier = 1.414
 
-	log.WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
+	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
 
 	if err := backoff.RetryNotify(checkSnapshotState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			log.Errorf("Snapshot reached terminal state: %v", terminalStateErr)
+			Logc(ctx).Errorf("Snapshot reached terminal state: %v", terminalStateErr)
 		} else {
-			log.Errorf("Snapshot state was not %s after %3.2f seconds.",
+			Logc(ctx).Errorf("Snapshot state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return err
 	}
 
-	log.WithField("desiredState", desiredState).Debug("Desired snapshot state reached.")
+	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired snapshot state reached.")
 
 	return nil
 }
 
-func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) error {
+func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) error {
 
 	resourcePath := "/Snapshots"
 
@@ -898,7 +905,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) error {
 		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return err
 	}
@@ -914,7 +921,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) error {
 	//	return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
 	//}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
 	}).Info("Volume snapshot created.")
@@ -922,7 +929,7 @@ func (d *Client) CreateSnapshot(request *SnapshotCreateRequest) error {
 	return nil
 }
 
-func (d *Client) RestoreSnapshot(volume *Volume, snapshot *Snapshot) error {
+func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s/Revert", volume.VolumeID)
 
@@ -936,7 +943,7 @@ func (d *Client) RestoreSnapshot(volume *Volume, snapshot *Snapshot) error {
 		return fmt.Errorf("could not marshal JSON request: %v; %v", snapshotRevertRequest, err)
 	}
 
-	response, responseBody, err := d.InvokeAPI(jsonRequest, "POST", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
 	if err != nil {
 		return err
 	}
@@ -945,7 +952,7 @@ func (d *Client) RestoreSnapshot(volume *Volume, snapshot *Snapshot) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot": snapshot.Name,
 		"volume":   volume.CreationToken,
 	}).Info("Volume reverted to snapshot.")
@@ -953,11 +960,11 @@ func (d *Client) RestoreSnapshot(volume *Volume, snapshot *Snapshot) error {
 	return nil
 }
 
-func (d *Client) DeleteSnapshot(volume *Volume, snapshot *Snapshot) error {
+func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots/%s", volume.VolumeID, snapshot.SnapshotID)
 
-	response, responseBody, err := d.InvokeAPI(nil, "DELETE", d.makeURL(resourcePath))
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
 	if err != nil {
 		return errors.New("failed to delete snapshot")
 	}
@@ -967,7 +974,7 @@ func (d *Client) DeleteSnapshot(volume *Volume, snapshot *Snapshot) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"snapshot": snapshot.Name,
 		"volume":   volume.CreationToken,
 	}).Info("Deleted volume snapshot.")
