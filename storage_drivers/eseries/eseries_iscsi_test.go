@@ -228,3 +228,78 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateStoragePrefix(t *testing.T) {
+	tests := []struct {
+		Name          string
+		StoragePrefix string
+	}{
+		{
+			Name:          "storage prefix starts with plus",
+			StoragePrefix: "+abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts with digit",
+			StoragePrefix: "1abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts with underscore",
+			StoragePrefix: "_abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix ends capitalized",
+			StoragePrefix: "abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts capitalized",
+			StoragePrefix: "ABCD_123_abc",
+		},
+		{
+			Name:          "storage prefix has plus",
+			StoragePrefix: "abcd+123_ABC",
+		},
+		{
+			Name:          "storage prefix has dash",
+			StoragePrefix: "abcd-123",
+		},
+		{
+			Name:          "storage prefix is single letter",
+			StoragePrefix: "a",
+		},
+		{
+			Name:          "storage prefix is single digit",
+			StoragePrefix: "1",
+		},
+		{
+			Name:          "storage prefix is single underscore",
+			StoragePrefix: "_",
+		},
+		{
+			Name:          "storage prefix is single colon",
+			StoragePrefix: ":",
+		},
+		{
+			Name:          "storage prefix is single dash",
+			StoragePrefix: "-",
+		},
+		{
+			Name:          "storage prefix is empty",
+			StoragePrefix: "",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			d := newTestEseriesSANDriver(nil)
+			d.Config.StoragePrefix = &test.StoragePrefix
+
+			err := d.populateConfigurationDefaults(&d.Config)
+			assert.NoError(t, err)
+
+			err = d.validate()
+			assert.NoError(t, err, "eseries validation should not fail")
+			assert.NotNil(t, d.Config.StoragePrefix, "eseries storage prefix should not be nil")
+			assert.Equal(t, *d.Config.StoragePrefix, test.StoragePrefix,
+				"eseries storage prefix should be equal to configured prefix")
+		})
+	}
+}

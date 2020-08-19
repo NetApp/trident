@@ -479,11 +479,8 @@ func (d *NFSStorageDriver) validate() error {
 	}
 
 	// Ensure storage prefix is compatible with cloud service
-	matched, err := regexp.MatchString(`[^a-zA-Z-_]+`, *d.Config.StoragePrefix)
-	if err != nil {
-		return fmt.Errorf("could not check storage prefix; %v", err)
-	} else if matched {
-		return fmt.Errorf("storage prefix may only contain letters and hyphens")
+	if err := validateStoragePrefix(*d.Config.StoragePrefix); err != nil {
+		return err
 	}
 
 	// Validate pool-level attributes
@@ -1641,5 +1638,15 @@ func (d *NFSStorageDriver) ReconcileNodeAccess(nodes []*utils.Node, _ string) er
 		defer log.WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
+	return nil
+}
+
+func validateStoragePrefix(storagePrefix string) error {
+	matched, err := regexp.MatchString(`[^a-zA-Z-_]+`, storagePrefix)
+	if err != nil {
+		return fmt.Errorf("could not check storage prefix; %v", err)
+	} else if matched {
+		return fmt.Errorf("storage prefix may only contain letters, hyphens and underscores")
+	}
 	return nil
 }

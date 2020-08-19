@@ -575,6 +575,10 @@ func (d *SANStorageDriver) validate() error {
 		return errors.New("missing required SVIP in config")
 	}
 
+	if d.Config.StoragePrefix != nil && *d.Config.StoragePrefix != "" {
+		return errors.New("storage prefix must be empty string")
+	}
+
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Validate the environment
 		isIscsiSupported := utils.ISCSISupported()
