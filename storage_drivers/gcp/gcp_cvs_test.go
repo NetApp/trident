@@ -158,3 +158,78 @@ func TestGCPStorageDriverConfigString(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateStoragePrefix(t *testing.T) {
+	tests := []struct {
+		Name          string
+		StoragePrefix string
+		Valid         bool
+	}{
+		//Invalid storage prefixes
+		{
+			Name:          "storage prefix starts with plus",
+			StoragePrefix: "+abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts with digit",
+			StoragePrefix: "1abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts with underscore",
+			StoragePrefix: "_abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix ends capitalized",
+			StoragePrefix: "abcd_123_ABC",
+		},
+		{
+			Name:          "storage prefix starts capitalized",
+			StoragePrefix: "ABCD_123_abc",
+		},
+		{
+			Name:          "storage prefix has plus",
+			StoragePrefix: "abcd+123_ABC",
+		},
+		{
+			Name:          "storage prefix is single digit",
+			StoragePrefix: "1",
+		},
+		{
+			Name:          "storage prefix is single underscore",
+			StoragePrefix: "_",
+		},
+		{
+			Name:          "storage prefix is single colon",
+			StoragePrefix: ":",
+		},
+		{
+			Name:          "storage prefix is single dash",
+			StoragePrefix: "-",
+		},
+		{
+			Name:          "storage prefix is empty",
+			StoragePrefix: "",
+		},
+		//Valid storage prefixes
+		{
+			Name:          "storage prefix has dash",
+			StoragePrefix: "abcd-123",
+			Valid:         true,
+		},
+		{
+			Name:          "storage prefix is single letter",
+			StoragePrefix: "a",
+			Valid:         true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			err := validateStoragePrefix(test.StoragePrefix)
+			if test.Valid {
+				assert.NoError(t, err, "should be valid")
+			} else {
+				assert.Error(t, err, "should be invalid")
+			}
+		})
+	}
+}

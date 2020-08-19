@@ -1249,11 +1249,11 @@ func ValidateNASDriver(api *api.Client, config *drivers.OntapStorageDriverConfig
 func ValidateStoragePrefix(storagePrefix string) error {
 
 	// Ensure storage prefix is compatible with ONTAP
-	matched, err := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, storagePrefix)
+	matched, err := regexp.MatchString(`^$|^[a-zA-Z_-][a-zA-Z0-9_-]*$`, storagePrefix)
 	if err != nil {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
-		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore and must begin with letter/underscore")
+		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
 	}
 
 	return err

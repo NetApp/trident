@@ -195,10 +195,13 @@ func TestValidateStoragePrefix(t *testing.T) {
 		{"abcd_123_ABC", true},
 		{"ABCD_123_abc", true},
 		{"abcd+123_ABC", false},
+		{"abcd-123", true},
 		{"a", true},
 		{"1", false},
 		{"_", true},
+		{"-", true},
 		{":", false},
+		{"", true},
 	}
 
 	for _, spt := range storagePrefixTests {
