@@ -54,9 +54,11 @@ DR_MACOS = docker run --rm \
 	-w $(TRIDENT_VOLUME_PATH) \
 	$(GO_IMAGE)
 
-GO_LINUX = ${DR_LINUX} go
+GO_CMD ?= go
 
-GO_MACOS = ${DR_MACOS} go
+GO_LINUX = ${DR_LINUX} ${GO_CMD}
+
+GO_MACOS = ${DR_MACOS} ${GO_CMD}
 
 .PHONY = default build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
