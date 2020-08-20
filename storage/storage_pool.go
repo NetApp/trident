@@ -3,8 +3,12 @@
 package storage
 
 import (
+	"context"
+	"encoding/json"
 	"sort"
+	"strings"
 
+	. "github.com/netapp/trident/logger"
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
@@ -64,4 +68,31 @@ func (pool *Pool) ConstructExternal() *PoolExternal {
 	// there are cases where the order won't always be the same.
 	sort.Strings(external.StorageClasses)
 	return external
+}
+
+// GetLabelsJSON returns a JSON-formatted string containing the labels on this pool, suitable
+// for a label set on a storage volume.  The outer key may be customized.  For example:
+// {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
+func (pool *Pool) GetLabelsJSON(ctx context.Context, key string) string {
+
+	labelOffer, ok := pool.Attributes[sa.Labels].(sa.LabelOffer)
+	if !ok {
+		return ""
+	}
+
+	labelOfferMap := labelOffer.Labels()
+	if len(labelOfferMap) == 0 {
+		return ""
+	}
+
+	poolLabelMap := make(map[string]map[string]string)
+	poolLabelMap[key] = labelOfferMap
+
+	poolLabelJSON, err := json.Marshal(poolLabelMap)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to marshal pool labels: %+v", poolLabelMap)
+		return ""
+	}
+
+	return strings.ReplaceAll(string(poolLabelJSON), " ", "")
 }

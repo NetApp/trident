@@ -11,13 +11,18 @@ import (
 )
 
 var (
-	labelEqualRegex     = regexp.MustCompile(`^(?P<labelName>[\w]+)\s*={1,2}\s*(?P<labelValue>[\w]+)$`)
-	labelNotEqualRegex  = regexp.MustCompile(`^(?P<labelName>[\w]+)\s*!=\s*(?P<labelValue>[\w]+)$`)
-	labelInSetRegex     = regexp.MustCompile(`^(?P<labelName>[\w]+)\s+in\s+[(](?P<labelSet>[\s\w,]+)[)]$`)
-	labelNotInSetRegex  = regexp.MustCompile(`^(?P<labelName>[\w]+)\s+notin\s+[(](?P<labelSet>[\s\w,]+)[)]$`)
-	labelExistsRegex    = regexp.MustCompile(`^(?P<labelName>[\w]+)$`)
-	labelNotExistsRegex = regexp.MustCompile(`^!(?P<labelName>[\w]+)$`)
+	labelEqualRegex     = regexp.MustCompile(`^(?P<labelName>[\w-]+)\s*={1,2}\s*(?P<labelValue>[\w-]+)$`)
+	labelNotEqualRegex  = regexp.MustCompile(`^(?P<labelName>[\w-]+)\s*!=\s*(?P<labelValue>[\w-]+)$`)
+	labelInSetRegex     = regexp.MustCompile(`^(?P<labelName>[\w-]+)\s+in\s+[(](?P<labelSet>[\s\w,-]+)[)]$`)
+	labelNotInSetRegex  = regexp.MustCompile(`^(?P<labelName>[\w-]+)\s+notin\s+[(](?P<labelSet>[\s\w,-]+)[)]$`)
+	labelExistsRegex    = regexp.MustCompile(`^(?P<labelName>[\w-]+)$`)
+	labelNotExistsRegex = regexp.MustCompile(`^!(?P<labelName>[\w-]+)$`)
 )
+
+type LabelOffer interface {
+	Offer
+	Labels() map[string]string
+}
 
 func NewLabelOffer(labelMaps ...map[string]string) Offer {
 
@@ -66,6 +71,14 @@ func (o *labelOffer) String() string {
 
 func (o *labelOffer) ToString() string {
 	return fmt.Sprintf("%v", o.Offers)
+}
+
+func (o *labelOffer) Labels() map[string]string {
+	mapCopy := make(map[string]string)
+	for k, v := range o.Offers {
+		mapCopy[k] = v
+	}
+	return mapCopy
 }
 
 func NewLabelRequest(request string) (Request, error) {

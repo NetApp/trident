@@ -17,9 +17,9 @@ const (
 	ProtocolTypeNFSv4 = "NFSv4"
 	ProtocolTypeCIFS  = "CIFS"
 
-	APIServiceLevel1 = "low"
-	APIServiceLevel2 = "medium"
-	APIServiceLevel3 = "high"
+	APIServiceLevel1 = "basic"    // "low"
+	APIServiceLevel2 = "standard" // "medium"
+	APIServiceLevel3 = "extreme"  // "high"
 
 	UserServiceLevel1 = "standard"
 	UserServiceLevel2 = "premium"

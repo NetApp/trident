@@ -293,10 +293,10 @@ func TestValidateStoragePrefix(t *testing.T) {
 			d := newTestEseriesSANDriver(nil)
 			d.Config.StoragePrefix = &test.StoragePrefix
 
-			err := d.populateConfigurationDefaults(&d.Config)
+			err := d.populateConfigurationDefaults(context.Background(), &d.Config)
 			assert.NoError(t, err)
 
-			err = d.validate()
+			err = d.validate(context.Background())
 			assert.NoError(t, err, "eseries validation should not fail")
 			assert.NotNil(t, d.Config.StoragePrefix, "eseries storage prefix should not be nil")
 			assert.Equal(t, *d.Config.StoragePrefix, test.StoragePrefix,

@@ -465,6 +465,9 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
+	// Log the service level mapping
+	_, _ = d.API.GetServiceLevels(ctx)
+
 	if _, err := d.API.GetVolumes(ctx); err != nil {
 		return fmt.Errorf("could not read volumes in %s region; %v", d.Config.APIRegion, err)
 	}
@@ -666,13 +669,14 @@ func (d *NFSStorageDriver) Create(
 	gcpNetwork := fmt.Sprintf("projects/%s/global/networks/%s", d.Config.ProjectNumber, network)
 
 	Logc(ctx).WithFields(log.Fields{
-		"creationToken":   name,
-		"size":            sizeBytes,
-		"network":         network,
-		"serviceLevel":    userServiceLevel,
-		"snapshotDir":     snapshotDirBool,
-		"snapshotReserve": snapshotReserve,
-		"protocolTypes":   protocolTypes,
+		"creationToken":    name,
+		"size":             sizeBytes,
+		"network":          network,
+		"userServiceLevel": userServiceLevel,
+		"apiServiceLevel":  apiServiceLevel,
+		"snapshotDir":      snapshotDirBool,
+		"snapshotReserve":  snapshotReserve,
+		"protocolTypes":    protocolTypes,
 	}).Debug("Creating volume.")
 
 	apiExportRule := api.ExportRule{
@@ -684,6 +688,12 @@ func (d *NFSStorageDriver) Create(
 
 	exportPolicy := api.ExportPolicy{
 		Rules: []api.ExportRule{apiExportRule},
+	}
+
+	labels := []string{d.getTelemetryLabels(ctx)}
+	poolLabels := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag)
+	if poolLabels != "" {
+		labels = append(labels, poolLabels)
 	}
 
 	snapshotPolicy := api.SnapshotPolicy{
@@ -701,7 +711,7 @@ func (d *NFSStorageDriver) Create(
 		Region:            d.Config.APIRegion,
 		CreationToken:     name,
 		ExportPolicy:      exportPolicy,
-		Labels:            d.getTelemetryLabels(ctx),
+		Labels:            labels,
 		ProtocolTypes:     protocolTypes,
 		QuotaInBytes:      int64(sizeBytes),
 		SecurityStyle:     defaultSecurityStyle,
@@ -850,7 +860,7 @@ func (d *NFSStorageDriver) CreateClone(
 		Region:            sourceVolume.Region,
 		CreationToken:     name,
 		ExportPolicy:      sourceVolume.ExportPolicy,
-		Labels:            d.getTelemetryLabels(ctx),
+		Labels:            d.updateTelemetryLabels(ctx, sourceVolume),
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		QuotaInBytes:      sourceVolume.QuotaInBytes,
 		SecurityStyle:     defaultSecurityStyle,
@@ -940,17 +950,16 @@ func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // getTelemetryLabels builds the labels that are set on each volume.
-func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) []string {
+func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
 
-	telemetry := map[string]Telemetry{"trident": *d.getTelemetry()}
-	telemetryLabel := ""
+	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.getTelemetry()}
+
 	telemetryJSON, err := json.Marshal(telemetry)
 	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetryLabel)
-	} else {
-		telemetryLabel = strings.Replace(string(telemetryJSON), " ", "", -1)
+		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetry)
 	}
-	return []string{telemetryLabel}
+
+	return strings.ReplaceAll(string(telemetryJSON), " ", "")
 }
 
 func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
@@ -960,7 +969,7 @@ func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
 	if err != nil {
 		return false
 	}
-	if _, ok := telemetry["trident"]; !ok {
+	if _, ok := telemetry[drivers.TridentLabelTag]; !ok {
 		return false
 	}
 	return true
@@ -969,7 +978,7 @@ func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
 // getTelemetryLabels builds the labels that are set on each volume.
 func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *api.Volume) []string {
 
-	newLabels := d.getTelemetryLabels(ctx)
+	newLabels := []string{d.getTelemetryLabels(ctx)}
 
 	for _, label := range volume.Labels {
 		if !d.isTelemetryLabel(label) {

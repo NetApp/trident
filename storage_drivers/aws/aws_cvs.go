@@ -682,6 +682,12 @@ func (d *NFSStorageDriver) Create(
 		Rules: []api.ExportRule{apiExportRule},
 	}
 
+	labels := []string{d.getTelemetryLabels(ctx)}
+	poolLabels := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag)
+	if poolLabels != "" {
+		labels = append(labels, poolLabels)
+	}
+
 	snapshotPolicy := api.SnapshotPolicy{
 		Enabled: false,
 		MonthlySchedule: api.MonthlySchedule{
@@ -697,7 +703,7 @@ func (d *NFSStorageDriver) Create(
 		Region:            d.Config.APIRegion,
 		CreationToken:     name,
 		ExportPolicy:      exportPolicy,
-		Labels:            d.getTelemetryLabels(ctx),
+		Labels:            labels,
 		ProtocolTypes:     protocolTypes,
 		QuotaInBytes:      int64(sizeBytes),
 		SecurityStyle:     defaultSecurityStyle,
@@ -828,7 +834,7 @@ func (d *NFSStorageDriver) CreateClone(
 		Region:            sourceVolume.Region,
 		CreationToken:     name,
 		ExportPolicy:      sourceVolume.ExportPolicy,
-		Labels:            d.getTelemetryLabels(ctx),
+		Labels:            d.updateTelemetryLabels(ctx, sourceVolume),
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		QuotaInBytes:      sourceVolume.QuotaInBytes,
 		ServiceLevel:      sourceVolume.ServiceLevel,
@@ -909,17 +915,16 @@ func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // getTelemetryLabels builds the labels that are set on each volume.
-func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) []string {
+func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
 
-	telemetry := map[string]Telemetry{"trident": *d.getTelemetry()}
-	telemetryLabel := ""
+	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.getTelemetry()}
+
 	telemetryJSON, err := json.Marshal(telemetry)
 	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetryLabel)
-	} else {
-		telemetryLabel = strings.Replace(string(telemetryJSON), " ", "", -1)
+		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetry)
 	}
-	return []string{telemetryLabel}
+
+	return strings.ReplaceAll(string(telemetryJSON), " ", "")
 }
 
 func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
@@ -929,7 +934,7 @@ func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
 	if err != nil {
 		return false
 	}
-	if _, ok := telemetry["trident"]; !ok {
+	if _, ok := telemetry[drivers.TridentLabelTag]; !ok {
 		return false
 	}
 	return true
@@ -938,7 +943,7 @@ func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
 // updateTelemetryLabels updates the labels that are set on each volume.
 func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *api.FileSystem) []string {
 
-	newLabels := d.getTelemetryLabels(ctx)
+	newLabels := []string{d.getTelemetryLabels(ctx)}
 
 	for _, label := range volume.Labels {
 		if !d.isTelemetryLabel(label) {

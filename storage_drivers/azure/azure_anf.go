@@ -295,7 +295,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		}
 
 		pool.InternalAttributes[Size] = d.Config.Size
-		pool.InternalAttributes[ServiceLevel] = d.Config.ServiceLevel
+		pool.InternalAttributes[ServiceLevel] = strings.Title(d.Config.ServiceLevel)
 		pool.InternalAttributes[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes[Location] = d.Config.Location
 		pool.InternalAttributes[VirtualNetwork] = d.Config.VirtualNetwork
@@ -364,7 +364,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			}
 
 			pool.InternalAttributes[Size] = size
-			pool.InternalAttributes[ServiceLevel] = serviceLevel
+			pool.InternalAttributes[ServiceLevel] = strings.Title(serviceLevel)
 			pool.InternalAttributes[ExportRule] = exportRule
 			pool.InternalAttributes[Location] = location
 			pool.InternalAttributes[VirtualNetwork] = vnet
@@ -562,7 +562,7 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	// Take service level from volume config first (handles Docker case), then from pool
-	serviceLevel := volConfig.ServiceLevel
+	serviceLevel := strings.Title(volConfig.ServiceLevel)
 	if serviceLevel == "" {
 		serviceLevel = pool.InternalAttributes[ServiceLevel]
 	}
@@ -605,6 +605,10 @@ func (d *NFSStorageDriver) Create(
 		Rules: []sdk.ExportRule{apiExportRule},
 	}
 
+	labels := make(map[string]string)
+	labels[drivers.TridentLabelTag] = d.getTelemetryLabels(ctx)
+	labels[drivers.ProvisioningLabelTag] = pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag)
+
 	Logc(ctx).WithFields(log.Fields{
 		"creationToken": name,
 		"size":          sizeBytes,
@@ -620,7 +624,7 @@ func (d *NFSStorageDriver) Create(
 		Subnet:         pool.InternalAttributes[Subnet],
 		CreationToken:  name,
 		ExportPolicy:   exportPolicy,
-		Labels:         d.getTelemetryLabels(ctx),
+		Labels:         labels,
 		ProtocolTypes:  protocolTypes,
 		QuotaInBytes:   int64(sizeBytes),
 		ServiceLevel:   serviceLevel,
@@ -767,7 +771,7 @@ func (d *NFSStorageDriver) CreateClone(
 		CapacityPool:  sourceVolume.CapacityPoolName, // critical value for clone path
 		CreationToken: name,
 		ExportPolicy:  sourceVolume.ExportPolicy,
-		Labels:        d.getTelemetryLabels(ctx),
+		Labels:        d.updateTelemetryLabels(ctx, sourceVolume),
 		ProtocolTypes: sourceVolume.ProtocolTypes,
 		QuotaInBytes:  sourceVolume.QuotaInBytes,
 		ServiceLevel:  sourceVolume.ServiceLevel,
@@ -857,42 +861,23 @@ func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // getTelemetryLabels builds the labels that are set on each volume.
-func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) []string {
+func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
 
-	telemetry := map[string]Telemetry{"trident": *d.getTelemetry()}
-	telemetryLabel := ""
+	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.getTelemetry()}
+
 	telemetryJSON, err := json.Marshal(telemetry)
 	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetryLabel)
-	} else {
-		telemetryLabel = strings.Replace(string(telemetryJSON), " ", "", -1)
+		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetry)
 	}
-	return []string{telemetryLabel}
-}
 
-func (d *NFSStorageDriver) isTelemetryLabel(label string) bool {
-
-	var telemetry map[string]Telemetry
-	if err := json.Unmarshal([]byte(label), &telemetry); err != nil {
-		return false
-	}
-	if _, ok := telemetry["trident"]; !ok {
-		return false
-	}
-	return true
+	return strings.ReplaceAll(string(telemetryJSON), " ", "")
 }
 
 // getTelemetryLabels builds the labels that are set on each volume.
-func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *sdk.FileSystem) []string {
+func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *sdk.FileSystem) map[string]string {
 
-	newLabels := d.getTelemetryLabels(ctx)
-
-	for _, label := range volume.Labels {
-		if !d.isTelemetryLabel(label) {
-			newLabels = append(newLabels, label)
-		}
-	}
-
+	newLabels := volume.Labels
+	newLabels[drivers.TridentLabelTag] = d.getTelemetryLabels(ctx)
 	return newLabels
 }
 

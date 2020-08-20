@@ -3,6 +3,7 @@
 package solidfire
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -209,10 +210,10 @@ func TestValidateStoragePrefix(t *testing.T) {
 			d := newTestSolidfireSANDriver(nil)
 			d.Config.StoragePrefix = &test.StoragePrefix
 
-			err := d.populateConfigurationDefaults(&d.Config)
+			err := d.populateConfigurationDefaults(context.Background(), &d.Config)
 			assert.NoError(t, err)
 
-			err = d.validate()
+			err = d.validate(context.Background())
 			assert.NoError(t, err, "Solidfire driver validation should never fail")
 			if d.Config.StoragePrefix != nil {
 				assert.Empty(t, *d.Config.StoragePrefix,

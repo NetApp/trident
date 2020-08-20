@@ -741,8 +741,8 @@ func (d *SANStorageDriver) Create(
 	var fstype string
 	telemetry, _ := json.Marshal(d.getTelemetry())
 	var meta = map[string]string{
-		"trident":     string(telemetry),
-		"docker-name": name,
+		drivers.TridentLabelTag: string(telemetry),
+		"docker-name":           name,
 	}
 
 	// Get the pool since most default values are pool-specific
@@ -935,8 +935,8 @@ func (d *SANStorageDriver) CreateClone(
 		return fmt.Errorf("could not read telemetry data; %v", err)
 	}
 	var meta = map[string]string{
-		"trident":     string(telemetry),
-		"docker-name": name,
+		drivers.TridentLabelTag: string(telemetry),
+		"docker-name":           name,
 	}
 
 	// Check to see if the clone already exists
@@ -1026,7 +1026,7 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if !ok {
 			return errors.New("could not read volume attributes")
 		}
-		attrs["trident"] = string(telemetry)
+		attrs[drivers.TridentLabelTag] = string(telemetry)
 		attrs["docker-name"] = originalName
 		attrs["fstype"] = strings.ToLower(volConfig.FileSystem)
 

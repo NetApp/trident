@@ -39,40 +39,40 @@ type CapacityPool struct {
 }
 
 type FileSystem struct {
-	ExportPolicy      ExportPolicy  `json:"exportPolicy,omitempty"`
-	Labels            []string      `json:"labels,omitempty"`
-	FileSystemID      string        `json:"fileSystemId,omitempty"`
-	ID                string        `json:"id,omitempty"`
-	ProvisioningState string        `json:"provisioningState,omitempty"`
-	Name              string        `json:"name,omitempty"`
-	CapacityPoolName  string        `json:"capacityPoolName,omitempty"`
-	OwnerID           string        `json:"ownerId,omitempty"`
-	Location          string        `json:"location,omitempty"`
-	CreationToken     string        `json:"creationToken,omitempty"`
-	ProtocolTypes     []string      `json:"protocolTypes,omitempty"`
-	QuotaInBytes      int64         `json:"quotaInBytes,omitempty"`
-	ServiceLevel      string        `json:"serviceLevel,omitempty"`
-	Timezone          string        `json:"timezone,omitempty"`
-	UsedBytes         int           `json:"usedBytes,omitempty"`
-	Subnet            string        `json:"subnet,omitempty"`
-	MountTargets      []MountTarget `json:"mountTargets,omitempty"`
+	ExportPolicy      ExportPolicy      `json:"exportPolicy,omitempty"`
+	Labels            map[string]string `json:"labels,omitempty"`
+	FileSystemID      string            `json:"fileSystemId,omitempty"`
+	ID                string            `json:"id,omitempty"`
+	ProvisioningState string            `json:"provisioningState,omitempty"`
+	Name              string            `json:"name,omitempty"`
+	CapacityPoolName  string            `json:"capacityPoolName,omitempty"`
+	OwnerID           string            `json:"ownerId,omitempty"`
+	Location          string            `json:"location,omitempty"`
+	CreationToken     string            `json:"creationToken,omitempty"`
+	ProtocolTypes     []string          `json:"protocolTypes,omitempty"`
+	QuotaInBytes      int64             `json:"quotaInBytes,omitempty"`
+	ServiceLevel      string            `json:"serviceLevel,omitempty"`
+	Timezone          string            `json:"timezone,omitempty"`
+	UsedBytes         int               `json:"usedBytes,omitempty"`
+	Subnet            string            `json:"subnet,omitempty"`
+	MountTargets      []MountTarget     `json:"mountTargets,omitempty"`
 }
 
 type FilesystemCreateRequest struct {
-	Name           string       `json:"name"`
-	Location       string       `json:"location"`
-	CapacityPool   string       `json:"capacityPool"`
-	VirtualNetwork string       `json:"virtualNetwork"`
-	Subnet         string       `json:"subnet"`
-	CreationToken  string       `json:"creationToken"`
-	ExportPolicy   ExportPolicy `json:"exportPolicy,omitempty"`
-	Labels         []string     `json:"labels,omitempty"`
-	PoolID         string       `json:"poolId,omitempty"`
-	ProtocolTypes  []string     `json:"protocolTypes,omitempty"`
-	QuotaInBytes   int64        `json:"quotaInBytes"`
-	ServiceLevel   string       `json:"serviceLevel"`
-	Timezone       string       `json:"timezone,omitempty"`
-	SnapshotID     string       `json:"snapshotId,omitempty"`
+	Name           string            `json:"name"`
+	Location       string            `json:"location"`
+	CapacityPool   string            `json:"capacityPool"`
+	VirtualNetwork string            `json:"virtualNetwork"`
+	Subnet         string            `json:"subnet"`
+	CreationToken  string            `json:"creationToken"`
+	ExportPolicy   ExportPolicy      `json:"exportPolicy,omitempty"`
+	Labels         map[string]string `json:"labels,omitempty"`
+	PoolID         string            `json:"poolId,omitempty"`
+	ProtocolTypes  []string          `json:"protocolTypes,omitempty"`
+	QuotaInBytes   int64             `json:"quotaInBytes"`
+	ServiceLevel   string            `json:"serviceLevel"`
+	Timezone       string            `json:"timezone,omitempty"`
+	SnapshotID     string            `json:"snapshotId,omitempty"`
 }
 
 type FilesystemRenameRequest struct {

@@ -30,7 +30,6 @@ const (
 	// to avoid bigger problems.
 	SnapshotTimeout = 240 * time.Second
 	DefaultTimeout  = 120 * time.Second
-	tridentLabelTag = "trident"
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -254,6 +253,7 @@ func (d *Client) newFileSystemFromVolume(
 	}
 
 	fs := FileSystem{
+		Labels:           d.getLabelsFromVolume(vol),
 		Name:             *vol.Name,
 		Location:         *vol.Location,
 		CapacityPoolName: pool.Name,
@@ -342,6 +342,17 @@ func (d *Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volu
 	}
 
 	return mounts
+}
+
+func (d *Client) getLabelsFromVolume(vol *netapp.Volume) map[string]string {
+
+	labels := make(map[string]string)
+
+	for k, v := range vol.Tags {
+		labels[k] = *v
+	}
+
+	return labels
 }
 
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool
@@ -591,15 +602,6 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 	vNet := request.VirtualNetwork
 	subnet := request.Subnet
 
-	// We should only be seeing the trident telemetry label here.  Use a tag to store it.
-	tags := make(map[string]*string)
-	if len(request.Labels) > 1 {
-		Logc(ctx).Errorf("Too many labels (%d) in volume create request.", len(request.Labels))
-	}
-	for _, val := range request.Labels {
-		tags[tridentLabelTag] = &val
-	}
-
 	// Get the capacity pool so we can validate location and inherit service level
 	cpool, err := d.SDKClient.PoolsClient.Get(ctx, resourceGroup, netAppAccount, cpoolName)
 	if err != nil {
@@ -622,6 +624,12 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 		location = *cpool.Location
 	} else if location != *cpool.Location {
 		return nil, errors.New("new volume requested with location different from capacity pool location")
+	}
+
+	tags := make(map[string]*string)
+	for k, v := range request.Labels {
+		s := fmt.Sprintf("%s", v)
+		tags[k] = &s
 	}
 
 	newVol.Location = &location
@@ -740,7 +748,9 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 }
 
 // RelabelVolume updates the 'trident' telemetry label on a volume
-func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labels []string) (*FileSystem, error) {
+func (d *Client) RelabelVolume(
+	ctx context.Context, filesystem *FileSystem, labels map[string]string,
+) (*FileSystem, error) {
 
 	// Only updating trident labels
 	if len(labels) > 1 {
@@ -763,14 +773,13 @@ func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labe
 	tags := make(map[string]*string)
 	// Copy any existing tags first in order to make sure to preserve any custom tags that might've
 	// been applied prior to a volume import
-	if nv.Tags != nil {
-		for k, v := range nv.Tags {
-			tags[k] = v
-		}
+	for k, v := range nv.Tags {
+		tags[k] = v
 	}
+
 	// Now update the working copy with the incoming change
-	for _, val := range labels {
-		tags[tridentLabelTag] = &val
+	for k, v := range labels {
+		tags[k] = &v
 	}
 	nv.Tags = tags
 
