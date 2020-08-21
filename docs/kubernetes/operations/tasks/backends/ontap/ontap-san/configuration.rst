@@ -21,8 +21,14 @@ password                  Password to connect to the cluster/SVM
 storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value for the economy driver             "" (not enforced by default)
+debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
 ========================= ================================================================================================= ================================================
 
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
+  
 For the ``ontap-san*`` drivers, the default is to use all data LIF IPs from
 the SVM and to use iSCSI multipath. Specifying an IP address for the ``dataLIF``
 for the ``ontap-san*`` drivers forces them to disable multipath and use only the
@@ -76,3 +82,26 @@ encryption                Enable NetApp volume encryption                       
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
+
+Here's an example with defaults defined:
+
+.. code-block:: bash
+
+  {
+   "version": 1,
+   "storageDriverName": "ontap-san",
+   "managementLIF": "10.0.0.1",
+   "dataLIF": "10.0.0.2",
+   "svm": "trident_svm",
+   "username": "admin",
+   "password": "password",
+   "storagePrefix": "alternate-trident",
+   "igroupName": "custom",
+   "debugTraceFlags": {"api":false, "method":true},
+   "defaults": {
+       "spaceReserve": "volume",
+       "spaceAllocation": "false",
+       "snapshotPolicy": "default",
+       "snapshotReserve": "10"
+   }
+  }

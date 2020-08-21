@@ -35,8 +35,15 @@ nfsMountOptions           Fine-grained control of NFS mount options             
 limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 network                   GCP network used for CVS volumes                                "default"
 serviceLevel              The CVS service level for new volumes                           "standard"
+debugTraceFlags           Debug flags to use when troubleshooting.
+                          E.g.: {"api":false, "method":true}                              null
 ========================= =============================================================== ================================================
 
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
+  
 The required value ``projectNumber`` may be found in the GCP web portal's Home screen.  The ``apiRegion`` is the
 GCP region where this backend will provision volumes. The ``apiKey`` is the JSON-formatted contents of a GCP
 service account's private key file (copied verbatim into the backend config file).  The service account must have

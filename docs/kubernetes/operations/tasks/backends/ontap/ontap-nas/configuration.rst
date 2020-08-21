@@ -19,7 +19,13 @@ storagePrefix             Prefix used when provisioning new volumes in the SVM. 
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value                                    "" (not enforced by default)
 nfsMountOptions           Comma-separated list of NFS mount options                                                         ""
+debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
 ========================= ================================================================================================= ================================================
+
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
 
 .. note::
 
@@ -82,3 +88,27 @@ securityStyle             Security style for new volumes                        
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
 
+Here's an example that establishes default values:
+
+.. code-block:: bash
+
+  {
+   "version": 1,
+   "storageDriverName": "ontap-nas",
+   "backendName": "customBackendName",
+   "managementLIF": "10.0.0.1",
+   "dataLIF": "10.0.0.2",
+   "svm": "trident_svm",
+   "username": "cluster-admin",
+   "password": "password",
+   "limitAggregateUsage": "80%",
+   "limitVolumeSize": "50Gi",
+   "nfsMountOptions": "nfsvers=4",
+   "debugTraceFlags": {"api":false, "method":true},
+   "defaults": {
+       "spaceReserve": "volume",
+       "exportPolicy": "myk8scluster",
+       "snapshotPolicy": "default",
+       "snapshotReserve": "10"
+               }
+  }

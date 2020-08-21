@@ -61,8 +61,15 @@ poolNameSearchPattern Regular expression for matching available storage pools   
 hostType              E-Series Host types created by the driver                       "linux_dm_mp"
 accessGroupName       E-Series Host Group used by the driver                          "trident"
 limitVolumeSize       Fail provisioning if requested volume size is above this value  "" (not enforced by default)
+debugTraceFlags       Debug flags to use when troubleshooting.
+                      E.g.: {"api":false, "method":true}                              null
 ===================== =============================================================== ================================================
 
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
+  
 Example configuration
 ---------------------
 
@@ -85,7 +92,7 @@ Example configuration
 
 **Example 2 - Backend and Storage Class configuration for eseries-iscsi driver with Virtual Storage Pools**
 
-This example shows the backend definition file configured with :ref:`Virtual Storage Pools <Virtual Storage Pools>` 
+This example shows the backend definition file configured with :ref:`Virtual Storage Pools <Virtual Storage Pools>`
 along with StorageClasses that refer back to them.
 
 In the sample backend definition file shown below, the Virtual Storage Pools are defined in the ``storage`` section.
@@ -171,4 +178,3 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=bronze"
-

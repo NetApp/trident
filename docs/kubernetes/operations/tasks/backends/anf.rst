@@ -45,7 +45,14 @@ virtualNetwork     Name of a virtual network with a delegated subnet            
 subnet             Name of a subnet delegated to ``Microsoft.Netapp/volumes``      "" (random)
 nfsMountOptions    Fine-grained control of NFS mount options                       "nfsvers=3"
 limitVolumeSize    Fail provisioning if requested volume size is above this value  "" (not enforced by default)
+debugTraceFlags    Debug flags to use when troubleshooting.
+                   E.g.: {"api":false, "method":true}                               null
 ================== =============================================================== ================================================
+
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
 
 Whether a backend's volumes will be mounted using NFS v3 or NFS v4.1 is a decision that must be made when defining a
 backend or storage class.  The default is NFS v3, but you can use the ``nfsMountOptions`` backend setting to control

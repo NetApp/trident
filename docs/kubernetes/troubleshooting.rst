@@ -15,6 +15,11 @@ Troubleshooting
 * If there's not enough information in the Trident logs, you can try enabling
   the debug mode for Trident by passing the ``-d`` flag to the install
   parameter: ``./tridentctl install -d -n trident``.
+* You can also obtain debug logs for each backend by including ``debugTraceFlags`` in
+  your backend definition. For example, include
+  ``debugTraceFlags: {“api”:true, “method”:true,}`` to obtain
+  API calls and method traversals in the Trident logs. Existing backends can
+  have ``debugTraceFlags`` configured with a ``tridentctl backend update``.
 * When using RedHat CoreOS, it is important to make sure that ``iscsid`` is enabled on
   the worker nodes and started by default. This can be done using OpenShift
   MachineConfigs or by modifying the ignition templates.
@@ -50,7 +55,7 @@ Troubleshooting
   used by the earlier installed version of Trident. **Newly created PVs will
   not be usable when moving back to an earlier version.**
   **Changes made to objects
-  such as backends, PVs, storage classes and Volume Snapshots 
+  such as backends, PVs, storage classes and Volume Snapshots
   (created/updated/deleted) will not be visible to Trident when
   downgraded**. The PV that was used by the earlier version of Trident installed will still be
   visible to Trident. Going back to an earlier version will not disrupt access for
