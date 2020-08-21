@@ -65,23 +65,26 @@ const (
 
 var (
 	// CLI flags
-	generateYAML         bool
-	useYAML              bool
-	silent               bool
-	csi                  bool
-	inCluster            bool
-	useIPv6              bool
-	silenceAutosupport   bool
-	pvName               string
-	pvcName              string
-	tridentImage         string
-	autosupportImage     string
-	autosupportProxy     string
-	autosupportCustomURL string
-	kubeletDir           string
-	imageRegistry        string
-	logFormat            string
-	k8sTimeout           time.Duration
+	generateYAML				bool
+	useYAML						bool
+	silent						bool
+	csi							bool
+	inCluster					bool
+	useIPv6						bool
+	silenceAutosupport			bool
+	pvName						string
+	pvcName						string
+	tridentImage				string
+	etcdImage					string
+	autosupportImage			string
+	autosupportProxy			string
+	autosupportCustomURL		string
+	autosupportSerialNumber		string
+	autosupportHostname			string
+	kubeletDir					string
+	imageRegistry				string
+	logFormat					string
+	k8sTimeout					time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -137,12 +140,17 @@ func init() {
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "", "The address/port of a proxy for sending Autosupport Telemetry")
-	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "")
+	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
 	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage, "The container image for Autosupport Telemetry")
+	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "", "The value to set for the serial number field in Autosupport payloads")
+	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "", "The value to set for the hostname field in Autosupport payloads")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 
 	installCmd.Flags().MarkHidden("in-cluster")
+	installCmd.Flags().MarkHidden("autosupport-custom-url")
+	installCmd.Flags().MarkHidden("autosupport-serial-number")
+	installCmd.Flags().MarkHidden("autosupport-hostname")
 }
 
 var installCmd = &cobra.Command{
@@ -505,8 +513,9 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, csiSidecarRegistry, logFormat,
-		[]string{}, labels, nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion())
+		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
+		autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels,
+		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion())
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -547,10 +556,10 @@ func ensureSetupDirExists() error {
 func installTrident() (returnError error) {
 
 	var (
-		logFields log.Fields
-		pvcExists bool
-		pvExists  bool
-		crd       *apiextensionv1beta1.CustomResourceDefinition
+		logFields		log.Fields
+		pvcExists		bool
+		pvExists		bool
+		crd				*apiextensionv1beta1.CustomResourceDefinition
 	)
 
 	// Ensure legacy Trident isn't already installed
@@ -860,7 +869,8 @@ func installTrident() (returnError error) {
 		} else {
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-					tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, csiSidecarRegistry, logFormat, []string{}, labels, nil,
+					tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
+					autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels, nil,
 					Debug, useIPv6, silenceAutosupport, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
@@ -953,9 +963,9 @@ func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error)
 		}
 
 		log.WithFields(log.Fields{
-			"pvc":       pvcName,
-			"namespace": pvc.Namespace,
-			"phase":     pvc.Status.Phase,
+			"pvc":			pvcName,
+			"namespace":	pvc.Namespace,
+			"phase":		pvc.Status.Phase,
 		}).Debug("PVC already exists.")
 
 	} else {

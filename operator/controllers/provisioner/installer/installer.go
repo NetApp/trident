@@ -60,12 +60,15 @@ var (
 	useIPv6            bool
 	silenceAutosupport bool
 
-	logFormat        string
-	tridentImage     string
-	imageRegistry    string
-	kubeletDir       string
-	autosupportImage string
-	autosupportProxy string
+	logFormat          string
+	tridentImage       string
+	imageRegistry      string
+	kubeletDir         string
+
+	autosupportImage          string
+	autosupportProxy          string
+	autosupportSerialNumber   string
+	autosupportHostname        string
 
 	imagePullSecrets []string
 
@@ -252,6 +255,12 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	silenceAutosupport = cr.Spec.SilenceAutosupport
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
+	}
+	if cr.Spec.AutosupportSerialNumber != "" {
+		autosupportSerialNumber = cr.Spec.AutosupportSerialNumber
+	}
+	if cr.Spec.AutosupportHostname != "" {
+		autosupportHostname = cr.Spec.AutosupportHostname
 	}
 	if cr.Spec.LogFormat != "" {
 		logFormat = cr.Spec.LogFormat
@@ -461,11 +470,13 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		ImageRegistry:      imageRegistry,
 		IPv6:               strconv.FormatBool(useIPv6),
 		SilenceAutosupport: strconv.FormatBool(silenceAutosupport),
-		AutosupportImage:   autosupportImage,
-		AutosupportProxy:   autosupportProxy,
-		KubeletDir:         kubeletDir,
-		K8sTimeout:         strconv.Itoa(int(k8sTimeout.Seconds())),
-		ImagePullSecrets:   imagePullSecrets,
+		AutosupportImage: autosupportImage,
+		AutosupportProxy: autosupportProxy,
+		AutosupportSerialNumber: autosupportSerialNumber,
+		AutosupportHostname: autosupportHostname,
+		KubeletDir:       kubeletDir,
+		K8sTimeout:       strconv.Itoa(int(k8sTimeout.Seconds())),
+		ImagePullSecrets: imagePullSecrets,
 	}
 
 	log.WithFields(log.Fields{
@@ -1376,8 +1387,9 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 	var newDeploymentYAML string
 	if csi {
 		newDeploymentYAML = k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
-			autosupportImage, autosupportProxy, "", imageRegistry, logFormat, imagePullSecrets, labels,
-			controllingCRDetails, debug, useIPv6, silenceAutosupport, i.client.ServerVersion())
+			autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
+			imageRegistry, logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
+			silenceAutosupport, i.client.ServerVersion())
 	} else {
 		newDeploymentYAML = k8sclient.GetDeploymentYAML(deploymentName, tridentImage, logFormat, imagePullSecrets, labels,
 			controllingCRDetails, debug)
