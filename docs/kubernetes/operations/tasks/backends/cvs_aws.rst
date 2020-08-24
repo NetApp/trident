@@ -33,8 +33,15 @@ proxyURL                  Proxy URL if proxy server required to connect to CVS A
 nfsMountOptions           Fine-grained control of NFS mount options                       "nfsvers=3"
 limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
 serviceLevel              The CVS service level for new volumes                           "standard"
+debugTraceFlags           Debug flags to use when troubleshooting.
+                          E.g.: {"api":false, "method":true}                              null
 ========================= =============================================================== ================================================
 
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
+  
 The required values ``apiRegion``, ``apiURL``, ``apiKey``, and ``secretKey``
 may be found in the CVS web portal in Account settings / API access.
 The ``apiURL`` is unique for each ``apiRegion``. For example, the ``us-west-2``

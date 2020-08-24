@@ -51,8 +51,15 @@ UseCHAP            Use CHAP to authenticate iSCSI
 AccessGroups       List of Access Group IDs to use                                 Finds the ID of an access group named "trident"
 Types              QoS specifications (see below)
 limitVolumeSize    Fail provisioning if requested volume size is above this value  "" (not enforced by default)
+debugTraceFlags    Debug flags to use when troubleshooting.
+                   E.g.: {"api":false, "method":true}                              null
 ================== =============================================================== ================================================
 
+.. warning::
+
+  Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
+  detailed log dump.
+  
 Example configuration
 ---------------------
 
