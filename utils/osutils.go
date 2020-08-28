@@ -2552,7 +2552,7 @@ func listAllISCSIDevices() {
 		"/dev/dm-*":                  dmLog,
 		"/dev/sd*":                   sdLog,
 		"/sys/block/*":               sysLog,
-		"multipath -ll output":       out1,
-		"iscsiadm -m session output": out2,
+		"multipath -ll output":       string(out1),
+		"iscsiadm -m session output": string(out2),
 	}).Debug("Listing all iSCSI Devices.")
 }
