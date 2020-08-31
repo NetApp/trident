@@ -23,6 +23,11 @@ Troubleshooting
 * When using RedHat CoreOS, it is important to make sure that ``iscsid`` is enabled on
   the worker nodes and started by default. This can be done using OpenShift
   MachineConfigs or by modifying the ignition templates.
+* A common problem you could encounter when using Trident with
+  `Azure NetApp Files <https://azure.microsoft.com/en-us/services/netapp/>`_ is
+  when the tenant and client secrets come from an app registration with insufficient
+  permissions. For a complete list of Trident requirements, check
+  :ref:`Azure Preparation<azure_prep>`.
 * If there are problems with mounting a PV to a container, ensure that ``rpcbind`` is
   installed and running. Use the required package manager for the host OS and check if
   ``rpcbind`` is running. You can check the status of the ``rpcbind`` service by running
