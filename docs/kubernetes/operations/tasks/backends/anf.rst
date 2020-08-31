@@ -6,6 +6,8 @@ Azure NetApp Files
   The Azure NetApp Files service does not support volumes less than 100 GB in size. To make it easier to deploy
   applications, Trident automatically creates 100 GB volumes if a smaller volume is requested.
 
+.. _azure_prep:
+
 Preparation
 -----------
 
@@ -13,10 +15,19 @@ To configure and use an `Azure NetApp Files`_ backend, you will need:
 
 .. _Azure NetApp Files: https://azure.microsoft.com/en-us/services/netapp/
 
-* ``subscriptionID`` from an Azure subscription with Azure NetApp Files enabled
+* ``subscriptionID`` from an Azure subscription with Azure NetApp Files enabled.
 * ``tenantID``, ``clientID``, and ``clientSecret`` from an `App Registration`_ in Azure Active Directory with
-  sufficient permissions to the Azure NetApp Files service
-* Azure ``location`` that contains at least one `delegated subnet`_
+  sufficient permissions to the Azure NetApp Files service. The App Registration
+  must carry the ``Owner`` or ``Contributor`` role that's predefined by Azure.
+* Azure ``location`` that contains at least one `delegated subnet`_.
+
+Trident needs an App registration that permits the creation of ANF volumes. As
+stated above, this will need to use the ``Owner`` or ``Contributor`` role that
+Azure provides. To learn more about Azure built-in roles visit the
+`Azure Documentation <https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles>`_.
+Based on the backend configuration [subnet, virtual network, service level and
+location] Trident will create ANF volumes on capacity pools that are available
+in the requested location and match the requested service level and subnet.
 
 .. _App Registration: https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 .. _delegated subnet: https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-delegate-subnet
@@ -53,6 +64,16 @@ debugTraceFlags    Debug flags to use when troubleshooting.
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
+
+.. warning::
+
+  If you encounter a "No capacity pools found" error when attempting to create a
+  PVC, it is likely your app registration doesn't have the required permissions
+  and resources [subnet, virtual network, capacity pool] associated. Trident will
+  log the Azure resources it discovered when the backend is created
+  [``tridentctl logs``] when :ref:`debug <operator-customize>` is enabled.
+  Be sure to revisit the :ref:`Preparation <azure_prep>` section and check if
+  an appropriate role is being used.
 
 Whether a backend's volumes will be mounted using NFS v3 or NFS v4.1 is a decision that must be made when defining a
 backend or storage class.  The default is NFS v3, but you can use the ``nfsMountOptions`` backend setting to control
