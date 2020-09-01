@@ -1758,7 +1758,7 @@ func (i *Installer) getTridentClientVersionInfo(imageName string, controllingCRD
 
 // getTridentVersionYAML takes trident image name and identifies the Trident client version YAML, this workflow
 // resembles the `kubectl run --rm -it --restart=Never transient-trident-verion-pod --image=<image_name> --
-// /usr/local/bin/tridentctl version --client -o yaml` command
+// /bin/tridentctl version --client -o yaml` command
 func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails map[string]string) ([]byte, error) {
 
 	podName := "transient-trident-version-pod"
@@ -1767,7 +1767,7 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	podLabels[TridentVersionPodLabelKey] = TridentVersionPodLabelValue
 	podLabels[K8sVersionLabelKey] = i.client.ServerVersion().ShortStringWithRelease()
 
-	tridentctlFilePath := "/usr/local/bin/tridentctl"
+	tridentctlFilePath := "/bin/tridentctl"
 	tridentVersionCommand := []string{tridentctlFilePath, "version", "--client", "-o", "yaml"}
 
 	// Create TridentVersion Pod from image

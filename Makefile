@@ -34,6 +34,7 @@ VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
 
 DR_LINUX = docker run --rm \
 	--net=host \
+	-e CGO_ENABLED=0 \
 	-e GOOS=linux \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
@@ -60,7 +61,7 @@ GO_LINUX = ${DR_LINUX} ${GO_CMD}
 
 GO_MACOS = ${DR_MACOS} ${GO_CMD}
 
-.PHONY = default build trident_build trident_build_all trident_retag tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
+.PHONY = default build trident_build trident_build_all tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
 default: dist
 
@@ -75,10 +76,8 @@ endif
 
 ## tag variables
 TRIDENT_TAG := ${TRIDENT_IMAGE}:${TRIDENT_VERSION}
-TRIDENT_TAG_OLD := ${TRIDENT_IMAGE}:${TRIDENT_VERSION}_old
 ifdef REGISTRY_ADDR
 TRIDENT_TAG := ${REGISTRY_ADDR}/${TRIDENT_TAG}
-TRIDENT_TAG_OLD := ${REGISTRY_ADDR}/${TRIDENT_TAG_OLD}
 endif
 DIST_REGISTRY ?= netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
@@ -91,32 +90,23 @@ DEFAULT_TRIDENT_OPERATOR_IMAGE := ${DEFAULT_TRIDENT_OPERATOR_REPO}:${DEFAULT_TRI
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${TRIDENT_VERSION}
 
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\""
+BUILD_FLAGS = "-s -w -X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\""
 
 ## Trident build targets
 
-trident_retag:
-	-docker volume rm $(TRIDENT_VOLUME) || true
-	-docker tag ${TRIDENT_TAG} ${TRIDENT_TAG_OLD}
-	-docker rmi ${TRIDENT_TAG}
-
-operator_retag:
-	cd operator && $(MAKE) retag
-
-trident_build: trident_retag
+trident_build:
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
-	cp ${BIN_DIR}/${BIN} .
-	cp ${BIN_DIR}/${CLI_BIN} .
+	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/chwrap chwrap/chwrap.go
+	cp ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} .
+	chwrap/make-tarball.sh ${BIN_DIR}/chwrap chwrap.tar
 	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 ifdef REGISTRY_ADDR
 	docker push ${TRIDENT_TAG}
 endif
-	rm ${BIN}
-	rm ${CLI_BIN}
-	-docker rmi ${TRIDENT_TAG_OLD}
+	rm ${BIN} ${CLI_BIN} chwrap.tar
 
 tridentctl_build:
 	@mkdir -p ${BIN_DIR}

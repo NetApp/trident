@@ -9,7 +9,7 @@ services:
      - /dev:/dev
     privileged: true
     tty: true
-    command: /usr/local/bin/trident_orchestrator -address "" -port "${PORT}" -etcd_v2 http://etcd:2379 -k8s_api_server "${K8S}"
+    command: /trident_orchestrator -address "" -port "${PORT}" -etcd_v2 http://etcd:2379 -k8s_api_server "${K8S}"
     depends_on:
      - etcd  
   etcd:

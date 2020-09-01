@@ -287,7 +287,7 @@ spec:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--crd_persistence"
         - "--k8s_pod"
@@ -443,7 +443,7 @@ spec:
         - containerPort: 8443
         - containerPort: 8001
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--crd_persistence"
         - "--k8s_pod"
@@ -577,7 +577,7 @@ spec:
         - containerPort: 8443
         - containerPort: 8001
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--crd_persistence"
         - "--k8s_pod"
@@ -699,7 +699,7 @@ spec:
         - containerPort: 8443
         - containerPort: 8001
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--crd_persistence"
         - "--k8s_pod"
@@ -833,7 +833,7 @@ spec:
         - containerPort: 8443
         - containerPort: 8001
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--crd_persistence"
         - "--k8s_pod"
@@ -1017,7 +1017,7 @@ spec:
           allowPrivilegeEscalation: true
         image: {TRIDENT_IMAGE}
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--no_persistence"
         - "--rest=false"
@@ -1035,7 +1035,7 @@ spec:
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
         - name: PATH
-          value: /netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          value: /netapp:/bin
         volumeMounts:
         - name: plugin-dir
           mountPath: /plugin
@@ -1154,7 +1154,7 @@ spec:
           allowPrivilegeEscalation: true
         image: {TRIDENT_IMAGE}
         command:
-        - /usr/local/bin/trident_orchestrator
+        - /trident_orchestrator
         args:
         - "--no_persistence"
         - "--rest=false"
@@ -1172,7 +1172,7 @@ spec:
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
         - name: PATH
-          value: /netapp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          value: /netapp:/bin
         volumeMounts:
         - name: plugin-dir
           mountPath: /plugin
@@ -1499,8 +1499,8 @@ spec:
   - name: trident-main
     imagePullPolicy: IfNotPresent
     image: {TRIDENT_IMAGE}
-    command: ["sleep"]
-    args: ["60"]
+    command: ["tridentctl"]
+    args: ["pause"]
   {IMAGE_PULL_SECRETS}
   nodeSelector:
     beta.kubernetes.io/os: linux

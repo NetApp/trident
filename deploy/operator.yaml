@@ -22,7 +22,7 @@ spec:
         - name: trident-operator
           image: netapp/trident-operator:20.10.0
           command:
-          - "/usr/local/bin/trident-operator"
+          - "/trident-operator"
           - "--debug"
           imagePullPolicy: IfNotPresent
           env:

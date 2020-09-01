@@ -6,7 +6,7 @@ After=docker.service
 [Service]
 Type=Simple
 Restart=always
-ExecStart=/usr/local/bin/trident --config=/etc/netappdvp/configuration.json
+ExecStart=/trident --config=/etc/netappdvp/configuration.json
 
 [Install]
 WantedBy=multi-user.target

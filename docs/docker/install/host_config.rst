@@ -131,7 +131,7 @@ Traditional Install Method (Docker <= 1.12)
       tar zxf trident-installer-19.10.0.tar.gz
 
       # move to a location in the bin path
-      sudo mv trident-installer/extras/bin/trident /usr/local/bin
+      sudo mv trident-installer/extras/bin/trident /usr/local/bin/
       sudo chown root:root /usr/local/bin/trident
       sudo chmod 755 /usr/local/bin/trident
 

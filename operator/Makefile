@@ -31,6 +31,7 @@ VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
 
 DR_LINUX = docker run --rm \
 	--net=host \
+	-e CGO_ENABLED=0 \
 	-e GOOS=linux \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
@@ -42,7 +43,7 @@ DR_LINUX = docker run --rm \
 
 GO_LINUX = ${DR_LINUX} go
 
-.PHONY = default build retag dist dist_tar dist_tag clean vet
+.PHONY = default build dist dist_tar dist_tag clean vet
 
 ## version variables
 OPERATOR_VERSION ?= ${VERSION}
@@ -56,10 +57,8 @@ endif
 
 ## tag variables
 OPERATOR_TAG := ${OPERATOR_IMAGE}:${OPERATOR_VERSION}
-OPERATOR_TAG_OLD := ${OPERATOR_IMAGE}:${OPERATOR_VERSION}_old
 ifdef REGISTRY_ADDR
 OPERATOR_TAG := ${REGISTRY_ADDR}/${OPERATOR_TAG}
-OPERATOR_TAG_OLD := ${REGISTRY_ADDR}/${OPERATOR_TAG_OLD}
 endif
 DIST_REGISTRY ?= netapp
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${OPERATOR_VERSION}
@@ -80,12 +79,7 @@ BUILD_FLAGS = "-X \"${OPERATOR_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${OPERATO
 
 default: dist
 
-retag:
-	-docker volume rm $(OPERATOR_VOLUME) || true
-	-docker tag ${OPERATOR_TAG} ${OPERATOR_TAG_OLD}
-	-docker rmi ${OPERATOR_TAG}
-
-build: retag
+build:
     #$(info ${GO_LINUX})
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
@@ -96,7 +90,6 @@ ifdef REGISTRY_ADDR
 	docker push ${OPERATOR_TAG}
 endif
 	rm ${BIN}
-	-docker rmi ${OPERATOR_TAG_OLD}
 
 dist_tag:
 ifneq ($(OPERATOR_DIST_TAG),$(OPERATOR_TAG))

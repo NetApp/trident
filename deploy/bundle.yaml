@@ -354,7 +354,7 @@ spec:
     spec:
       containers:
       - command:
-        - /usr/local/bin/trident-operator
+        - /trident-operator
         - --debug
         env:
         - name: POD_NAME
