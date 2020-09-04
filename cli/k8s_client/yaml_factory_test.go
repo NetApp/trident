@@ -13,10 +13,11 @@ const (
 	Namespace       = "trident"
 	FlavorK8s       = "k8s"
 	FlavorOpenshift = "openshift"
-	Secret          = "thisisasecret"
 	ImageName       = "trident-image"
 	LogFormat       = "text"
 )
+
+var Secrets = []string {"thisisasecret1", "thisisasecret2"}
 
 // TestYAML simple validation of the YAML
 func TestYAML(t *testing.T) {
@@ -58,8 +59,8 @@ func TestYAMLFactory(t *testing.T) {
 	imagePullSecrets := []string{"thisisasecret"}
 
 	yamlsOutputs := []string{
-		GetServiceAccountYAML(Name, "", nil, nil),
-		GetServiceAccountYAML(Name, Secret, labels, ownerRef),
+		GetServiceAccountYAML(Name, nil, nil, nil),
+		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
 		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef),

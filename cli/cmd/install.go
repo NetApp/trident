@@ -429,7 +429,7 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(false), "", nil, nil)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(false), nil, nil, nil)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
@@ -486,7 +486,7 @@ func prepareCSIYAMLFiles() error {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
 	}
 
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(true), "", nil, nil)
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(true), nil, nil, nil)
 	if err = writeFile(serviceAccountPath, serviceAccountYAML); err != nil {
 		return fmt.Errorf("could not write service account YAML file; %v", err)
 	}
@@ -1339,7 +1339,7 @@ func createRBACObjects() (returnError error) {
 		returnError = client.CreateObjectByFile(serviceAccountPath)
 		logFields = log.Fields{"path": serviceAccountPath}
 	} else {
-		returnError = client.CreateObjectByYAML(k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), "", nil,
+		returnError = client.CreateObjectByYAML(k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), nil, nil,
 			nil))
 		logFields = log.Fields{}
 	}
@@ -1432,7 +1432,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	}
 
 	// Delete service account
-	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), "", nil,
+	serviceAccountYAML := k8sclient.GetServiceAccountYAML(getServiceAccountName(csi), nil, nil,
 		nil)
 	if err := client.DeleteObjectByYAML(serviceAccountYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete service account.")
