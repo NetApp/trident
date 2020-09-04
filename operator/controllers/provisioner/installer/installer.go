@@ -800,7 +800,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 	createServiceAccount := true
 	var currentServiceAccount *v1.ServiceAccount
 	var unwantedServiceAccounts []v1.ServiceAccount
-	var serviceAccountSecretName string
+	var serviceAccountSecretNames []string
 	var logFields log.Fields
 	var err error
 
@@ -825,18 +825,21 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 		unwantedServiceAccounts = serviceAccounts
 	} else {
 		// Rules:
-		// 1. If there is no service accounts named trident-csi and one or many other service accounts
+		// 1. If there are no service accounts named trident-csi and one or many other service accounts
 		//    exist that matches the label then remove all the service accounts.
 		// 2. If there is a service accounts named trident-csi and one or many other service accounts
 		//    exist that matches the label then remove all other service accounts.
 		for _, serviceAccount := range serviceAccounts {
 			if serviceAccount.Name == serviceAccountName {
 				// Found a service account named trident-csi in the same namespace
-				log.Infof("A Trident Security account named '%s' was found by label.", serviceAccountName)
+				log.Infof("A Trident Service account named '%s' was found by label.", serviceAccountName)
 
 				currentServiceAccount = &serviceAccount
 				createServiceAccount = false
-				serviceAccountSecretName = serviceAccount.Secrets[0].Name
+
+				for _, serviceAccountSecret := range serviceAccount.Secrets {
+					serviceAccountSecretNames = append(serviceAccountSecretNames, serviceAccountSecret.Name)
+				}
 			} else {
 				log.Errorf("a Trident Service account %s was found by label "+
 					"but does not meet name '%s' requirement, marking it for deletion",
@@ -851,7 +854,8 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 		return err
 	}
 
-	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretName, labels, controllingCRDetails)
+	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretNames, labels,
+		controllingCRDetails)
 
 	if createServiceAccount {
 		err = i.client.CreateObjectByYAML(newServiceAccountYAML)

@@ -26,13 +26,14 @@ metadata:
   name: {NAMESPACE}
 `
 
-func GetServiceAccountYAML(serviceAccountName, secret string, labels, controllingCRDetails map[string]string) string {
+func GetServiceAccountYAML(serviceAccountName string, secrets []string, labels,
+	controllingCRDetails map[string]string) string {
 
 	var saYAML string
 
-	if secret != "" {
+	if len(secrets) > 0 {
 		saYAML = serviceAccountWithSecretYAML
-		saYAML = strings.ReplaceAll(saYAML, "{SECRET_NAME}", secret)
+		saYAML = strings.Replace(saYAML, "{SECRETS}", constructServiceAccountSecrets(secrets), 1)
 	} else {
 		saYAML = serviceAccountYAML
 	}
@@ -59,8 +60,7 @@ metadata:
   name: {NAME}
   {LABELS}
   {OWNER_REF}
-secrets:
-- name: {SECRET_NAME}
+{SECRETS}
 `
 
 func GetClusterRoleYAML(flavor OrchestratorFlavor, clusterRoleName string, labels,
@@ -2559,4 +2559,17 @@ func constructImagePullSecrets(imagePullSecrets []string, spaces string) string 
 	}
 
 	return imagePullSecretsData
+}
+
+func constructServiceAccountSecrets(serviceAccountSecrets []string) string {
+
+	var serviceAccountSecretsData string
+	if len(serviceAccountSecrets) > 0 {
+		serviceAccountSecretsData += "secrets:\n"
+		for _, value := range serviceAccountSecrets {
+			serviceAccountSecretsData += fmt.Sprintf("- name: %s\n", value)
+		}
+	}
+
+	return serviceAccountSecretsData
 }
