@@ -12,6 +12,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/cenkalti/backoff/v4"
+
 	// Forced to use "latest" in order to get subnet Delegations
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-11-01/netapp"
@@ -751,11 +752,6 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 func (d *Client) RelabelVolume(
 	ctx context.Context, filesystem *FileSystem, labels map[string]string,
 ) (*FileSystem, error) {
-
-	// Only updating trident labels
-	if len(labels) > 1 {
-		Logc(ctx).Errorf("Too many labels (%d) passed to RelabelVolume.", len(labels))
-	}
 
 	cookie, err := d.GetCookieByCapacityPoolName(filesystem.CapacityPoolName)
 	if err != nil {
