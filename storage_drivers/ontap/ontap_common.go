@@ -180,6 +180,12 @@ func InitializeOntapConfig(
 		return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
 
+	// Load default config parameters
+	err = PopulateConfigurationDefaults(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
+
 	return config, nil
 }
 
@@ -1108,12 +1114,6 @@ func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriv
 		Logc(ctx).WithFields(log.Fields{
 			"serialNumbers": strings.Join(config.SerialNumbers, ","),
 		}).Info("Controller serial numbers.")
-	}
-
-	// Load default config parameters
-	err = PopulateConfigurationDefaults(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
 	return client, nil
