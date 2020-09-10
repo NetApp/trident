@@ -170,7 +170,7 @@ Trident Autosupport does not gather or transmit Personally Identifiable Informat
 It comes with a `EULA <https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf>`_
 that is not applicable to the `Trident <https://hub.docker.com/r/netapp/trident>`_
 container image itself. You can learn more about NetApp's commitment to data
-security and trust `here <https://www.netapp.com/us/company/trust-center/index.aspx,>`_.
+security and trust `here <https://www.netapp.com/us/company/trust-center/index.aspx>`_.
 
 An example payload sent by Trident looks like this:
 
