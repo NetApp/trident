@@ -60,6 +60,7 @@ type Version struct {
 	PreRelease    string `json:"preRelease"`
 	BuildMetadata string `json:"buildMetadata"`
 	APIVersion    string `json:"apiVersion"`
+	GoVersion     string `json:"goVersion"`
 }
 
 type VersionResponse struct {

@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -323,14 +324,16 @@ func (r *AddBackendResponse) logFailure(ctx context.Context) {
 }
 
 type GetVersionResponse struct {
-	Version string `json:"version"`
-	Error   string `json:"error,omitempty"`
+	Version   string `json:"version"`
+	GoVersion string `json:"goVersion"`
+	Error     string `json:"error,omitempty"`
 }
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	response := &GetVersionResponse{}
 	GetGenericNoArg(w, r, response,
 		func() int {
+			response.GoVersion = runtime.Version()
 			version, err := orchestrator.GetVersion(r.Context())
 			if err != nil {
 				response.Error = err.Error()

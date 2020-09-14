@@ -7,13 +7,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/utils"
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -63,6 +65,9 @@ var versionCmd = &cobra.Command{
 
 			// Add the client version, which is always hardcoded at compile time
 			versions := addClientVersion(parsedServerVersion)
+
+			// Add the server's Go version
+			versions.Server.GoVersion = serverVersion.GoVersion
 
 			writeVersions(versions)
 		}
@@ -116,7 +121,8 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	}
 
 	version := rest.GetVersionResponse{
-		Version: tunnelVersionResponse.Server.Version,
+		Version:   tunnelVersionResponse.Server.Version,
+		GoVersion: tunnelVersionResponse.Server.GoVersion,
 	}
 	return version, nil
 }
@@ -131,6 +137,7 @@ func getClientVersion() *api.ClientVersionResponse {
 			PreRelease:    config.OrchestratorVersion.PreRelease(),
 			BuildMetadata: config.OrchestratorVersion.BuildMetadata(),
 			APIVersion:    config.OrchestratorAPIVersion,
+			GoVersion:     runtime.Version(),
 		},
 	}
 }
@@ -207,11 +214,12 @@ func writeVersionsTable(versions *api.VersionResponse) {
 func writeWideVersionTable(version *api.ClientVersionResponse) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Client Version", "Client API Version"})
+	table.SetHeader([]string{"Client Version", "Client API Version", "Client Go Version"})
 
 	table.Append([]string{
 		version.Client.Version,
 		version.Client.APIVersion,
+		version.Client.GoVersion,
 	})
 
 	table.Render()
@@ -220,13 +228,16 @@ func writeWideVersionTable(version *api.ClientVersionResponse) {
 func writeWideVersionsTable(versions *api.VersionResponse) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Server Version", "Server API Version", "Client Version", "Client API Version"})
+	table.SetHeader([]string{"Server Version", "Server API Version", "Server Go Version", "Client Version",
+		"Client API Version", "Client Go Version"})
 
 	table.Append([]string{
 		versions.Server.Version,
 		versions.Server.APIVersion,
+		versions.Server.GoVersion,
 		versions.Client.Version,
 		versions.Client.APIVersion,
+		versions.Client.GoVersion,
 	})
 
 	table.Render()
