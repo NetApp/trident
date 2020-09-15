@@ -46,7 +46,7 @@ The ``ontap-san-economy`` driver creates PVs as ONTAP LUNs within a pool of
 automatically managed FlexVols. Each PV maps to an ONTAP LUN and this driver offers
 higher scalability for SAN workloads. Since PVs map to LUNs
 within shared FlexVols, Kubernetes VolumeSnapshots are created using ONTAP's FlexClone
-technology. FlexClone LUNs and their parent LUNs share blocks, minimizing disk usage. 
+technology. FlexClone LUNs and their parent LUNs share blocks, minimizing disk usage.
 
 Choose the ``ontap-nas-flexgroup`` driver to increase parallelism to a single volume
 that can grow into the petabyte range with billions of files. Some ideal use cases
@@ -140,11 +140,11 @@ Prerequisites
 """""""""""""
 
 .. warning::
-   
+
    The auto-management of export policies is only available for CSI Trident.
    It is important to ensure that **the worker nodes are not being NATed**.
    For Trident to discover the node IPs and add rules to the export policy
-   dynamically, it **must be able to discover the node IPs**.  
+   dynamically, it **must be able to discover the node IPs**.
 
 There are two configuration options that must be used. Here's an example backend
 definition:
@@ -237,7 +237,7 @@ Updating your Kubernetes cluster configuration
 
 As nodes are added to a Kubernetes cluster and registered with the Trident controller,
 export policies of existing backends are updated (provided they fall in the address
-range specified in the ``autoExportCIDRs`` for the backend). The CSI Trident daemonset 
+range specified in the ``autoExportCIDRs`` for the backend). The CSI Trident daemonset
 spins up a pod on all available nodes in the Kuberentes cluster.
 Upon registering an eligible node, Trident checks if it contains IP addresses in the
 CIDR block that is allowed on a per-backend basis. Trident then updates the export policies
@@ -266,7 +266,7 @@ the newly created export policy when they are mounted again.
 
    If the IP address of a live node is updated, you must restart the Trident pod
    on the node. Trident will then update the export policy for backends it manages
-   to reflect this IP change. 
+   to reflect this IP change.
 
 ontap-san, ontap-san-economy
 ----------------------------
@@ -294,17 +294,27 @@ to contain the iSCSI IQNs from every worker node in the Kubernetes cluster. The
 igroup needs to be updated when new nodes are added to the cluster, and
 they should be removed when nodes are removed as well.
 
-Trident can authenticate iSCSI sessions with bidirectional CHAP beginning with 20.04
+Trident can authenticate iSCSI sessions with CHAP beginning with 20.04
 for the ``ontap-san`` and ``ontap-san-economy`` drivers. This requires enabling the
 ``useCHAP`` option in your backend definition. When set to ``true``, Trident
-configures the SVM's default initiator security to bidirectional CHAP and set
+configures the SVM's default initiator security to CHAP and set
 the username and secrets from the backend file. The section below explains this
 in detail.
 
 Using CHAP with ONTAP SAN drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Trident 20.04 introduces bidirectional CHAP support for the ``ontap-san`` and
+.. warning::
+
+  A bug with ``20.04`` prevents bidirectional CHAP from working as expected.
+  This is fixed with ``20.07``. Users can still define all 4 CHAP parameters in
+  their backend config and have Trident maintain **unidirectional CHAP** for
+  authentication with ``20.04``. Trident will only use the ``chapUsername`` and
+  ``chapInitiatorSecret``. By defining all 4 parameters in the backend, you can
+  directly upgrade to ``20.07`` to use bidirectional CHAP.
+  You can find more details about the bug `here <https://github.com/NetApp/trident/issues/404>`_.
+
+Trident 20.04 introduces CHAP support for the ``ontap-san`` and
 ``ontap-san-economy`` drivers. This simplifies the configuration of CHAP on the ONTAP
 cluster and provides a convenient method of creating CHAP credentials and rotating
 them using ``tridentctl``. Enabling CHAP on the ONTAP backend requires adding the
@@ -330,12 +340,12 @@ Configuration
        "chapTargetUsername": "iJF4heBRT0TCwxyz",
        "chapUsername": "uh2aNCLSd6cNwxyz",
    }
- 
+
 .. warning::
 
    The ``useCHAP`` parameter is a Boolean option that can be configured only once.
    It is set to ``false`` by default. Once set to ``true``, it cannot be set to
-   ``false``. NetApp recommends using Bidirectional CHAP to authenticate connections. 
+   ``false``. NetApp recommends using Bidirectional CHAP to authenticate connections.
 
 In addition to ``useCHAP=true``, the ``chapInitiatorSecret``,
 ``chapTargetInitiatorSecret``, ``chapTargetUsername`` and ``chapUsername``
@@ -375,14 +385,14 @@ the ``backend.json`` file. This will require updating the CHAP secrets
 and using the ``tridentctl update`` command to reflect these changes.
 
 .. warning::
-      
+
    When updating the CHAP secrets for a backend, you **must use**
    ``tridentctl`` to update the backend. **Do not** update the credentials
    on the storage cluster through the CLI/ONTAP UI as Trident
    will not be able to pick up these changes.
 
 .. code-block:: console
-   
+
    $ cat backend-san.json
    {
        "version": 1,
@@ -471,7 +481,7 @@ section.
 
 To enable the ``ontap-san*`` drivers to use CHAP, set the ``useCHAP`` parameter to
 ``true`` in your backend definition. Trident will then configure and use
-bidirectional CHAP as the default authentication for the SVM given in the backend.
+CHAP as the default authentication for the SVM given in the backend.
 The :ref:`CHAP with ONTAP SAN drivers<Using CHAP with ONTAP SAN drivers>`
 section explains how this works.
 
@@ -582,6 +592,10 @@ Example configurations
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret"
@@ -597,6 +611,10 @@ Example configurations
         "managementLIF": "10.0.0.1",
         "svm": "svm_iscsi_eco",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret"
@@ -804,6 +822,10 @@ pools are defined in the ``storage`` section. In this example, some of the stora
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret",
@@ -852,6 +874,10 @@ pools are defined in the ``storage`` section. In this example, some of the stora
         "managementLIF": "10.0.0.1",
         "svm": "svm_iscsi_eco",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret",

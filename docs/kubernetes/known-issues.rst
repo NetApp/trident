@@ -9,6 +9,14 @@ This page contains a list of known issues that may be observed when using Triden
   the Kubernetes cluster that ``tridentctl`` must work against. When working
   with multiple Kubernetes environments, care must be taken to ensure the
   KUBECONFIG file is sourced accurately.
+* A `bug <https://github.com/NetApp/trident/issues/404>`_ has been identified in
+  ``20.04`` with bidirectional CHAP using the
+  ``ontap-san`` and ``ontap-san-economy`` drivers. You can still use Trident to
+  connect with unidirectional CHAP. This requires defining all 4 CHAP config
+  parameters (``chapUsername``, ``chapInitiatorSecret``,
+  ``chapTargetInitiatorSecret``, and ``chapTargetUsername``). Trident will only
+  use the initiator parameters to authenticate connections over unidirectional
+  CHAP. **This bug has been fixed with the 20.07 release of Trident**.
 * To perform online space reclamation for iSCSI PVs, the underlying OS on the
   worker node may require mount options to be passed to the volume. This is
   true for RHEL/RedHat CoreOS instances, which require the ``discard``
