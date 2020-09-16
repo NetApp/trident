@@ -890,7 +890,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"

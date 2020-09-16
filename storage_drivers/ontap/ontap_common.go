@@ -631,6 +631,13 @@ func PopulateOntapLunMapping(
 		}
 	}
 
+	lunSerialResponse, err := clientAPI.LunGetSerialNumber(lunPath)
+	if err != nil || "passed" != lunSerialResponse.Result.ResultStatusAttr {
+		return fmt.Errorf("problem retrieving LUN info: %v, %v", err,
+			lunSerialResponse.Result.ResultErrnoAttr)
+	}
+	serial := lunSerialResponse.Result.SerialNumber()
+
 	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName)
 	if err != nil {
 		return err
@@ -646,6 +653,7 @@ func PopulateOntapLunMapping(
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
 	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
 	volConfig.AccessInfo.IscsiIgroup = config.IgroupName
+	volConfig.AccessInfo.IscsiLunSerial = serial
 	Logc(ctx).WithFields(log.Fields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,

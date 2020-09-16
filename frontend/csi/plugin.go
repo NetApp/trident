@@ -33,6 +33,8 @@ type Plugin struct {
 	endpoint string
 	role     string
 
+	unsafeDetach bool
+
 	restClient *RestClient
 	helper     helpers.HybridPlugin
 
@@ -85,6 +87,7 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey string, orchestrator core.Orchestrator,
+	unsafeDetach bool,
 ) (*Plugin, error) {
 
 	p := &Plugin{
@@ -94,6 +97,7 @@ func NewNodePlugin(
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
 		role:         CSINode,
+		unsafeDetach: unsafeDetach,
 		opCache:      make(map[string]bool),
 	}
 
@@ -138,6 +142,7 @@ func NewNodePlugin(
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey string,
 	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
+	unsafeDetach bool,
 ) (*Plugin, error) {
 
 	p := &Plugin{
@@ -147,6 +152,7 @@ func NewAllInOnePlugin(
 		version:      tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:     endpoint,
 		role:         CSIAllInOne,
+		unsafeDetach: unsafeDetach,
 		helper:       *helper,
 		opCache:      make(map[string]bool),
 	}

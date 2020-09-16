@@ -243,7 +243,6 @@ func (p *Plugin) NodeGetVolumeStats(
 			},
 		}, nil
 	}
-
 }
 
 // The CO only calls NodeExpandVolume for the Block protocol as the filesystem has to be mounted to perform
@@ -620,6 +619,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
 	publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
@@ -650,7 +650,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 
 	// Delete the device from the host
-	utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN)
+	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
+		p.unsafeDetach)
+	if nil != err && !p.unsafeDetach {
+		return nil, err
+	}
 
 	// Get map of hosts and sessions for given Target IQN
 	hostSessionMap := utils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)

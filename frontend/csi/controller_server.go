@@ -327,6 +327,7 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["iscsiTargetIqn"] = volume.Config.AccessInfo.IscsiTargetIQN
 		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volume.Config.AccessInfo.IscsiLunNumber))
 		publishInfo["iscsiInterface"] = volume.Config.AccessInfo.IscsiInterface
+		publishInfo["iscsiLunSerial"] = volume.Config.AccessInfo.IscsiLunSerial
 		publishInfo["iscsiIgroup"] = volume.Config.AccessInfo.IscsiIgroup
 		publishInfo["iscsiUsername"] = volumePublishInfo.IscsiUsername               //volume.Config.AccessInfo.IscsiUsername
 		publishInfo["iscsiInitiatorSecret"] = volumePublishInfo.IscsiInitiatorSecret //volume.Config.AccessInfo.IscsiInitiatorSecret

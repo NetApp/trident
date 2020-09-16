@@ -117,3 +117,26 @@ func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
 
 	return size, nil
 }
+
+// flushOneDevice flushes any outstanding I/O to a disk
+func flushOneDevice(ctx context.Context, devicePath string) error {
+	fields := log.Fields{"devicePath": devicePath}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils_linux.flushOneDevice")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils_linux.flushOneDevice")
+
+	disk, err := os.Open(devicePath)
+	if err != nil {
+		Logc(ctx).Error("Failed to open disk.")
+		return fmt.Errorf("failed to open disk %s: %s", devicePath, err)
+	}
+	defer disk.Close()
+
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKFLSBUF, 0)
+	if errno != 0 {
+		err := os.NewSyscallError("ioctl", errno)
+		Logc(ctx).Error("BLKFLSBUF ioctl failed")
+		return fmt.Errorf("BLKFLSBUF ioctl failed %s: %s", devicePath, err)
+	}
+
+	return nil
+}

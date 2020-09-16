@@ -5,6 +5,7 @@ package utils
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -105,6 +106,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	var targetUsername = publishInfo.IscsiTargetUsername      // bidirectional CHAP field
 	var targetInitiatorSecret = publishInfo.IscsiTargetSecret // bidirectional CHAP field
 	var iscsiInterface = publishInfo.IscsiInterface
+	var lunSerial = publishInfo.IscsiLunSerial
 	var fstype = publishInfo.FilesystemType
 	var options = publishInfo.MountOptions
 
@@ -152,12 +154,37 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		}
 	}
 
+	// First attempt to fix invalid serials by rescanning them
+	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, rescanOneLun)
+	if err != nil {
+		return err
+	}
+
+	// Then attempt to fix invalid serials by purging them (to be scanned
+	// again later)
+	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, purgeOneLun)
+	if err != nil {
+		return err
+	}
+
 	// If LUN isn't present, scan the target and wait for the device(s) to appear
 	// if not attached need to scan
 	shouldScan := !IsAlreadyAttached(ctx, lunID, targetIQN)
 	err = waitForDeviceScanIfNeeded(ctx, lunID, targetIQN, shouldScan)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
+		return err
+	}
+
+	// At this point if the serials are still invalid, give up so the
+	// caller can retry (invoking the remediation steps above in the
+	// process, if they haven't already been run).
+	failHandler := func(ctx context.Context, path string) error {
+		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
+		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
+	}
+	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, failHandler)
+	if err != nil {
 		return err
 	}
 
@@ -636,14 +663,20 @@ func getDeviceInfoForLUN(
 		}
 	}
 
+	var devicePath string
+	if multipathDevice != "" {
+		devicePath = "/dev/" + multipathDevice
+	} else {
+		devicePath = "/dev/" + devices[0]
+	}
+
+	err = ensureDeviceReadable(ctx, devicePath)
+	if err != nil {
+		return nil, err
+	}
+
 	fsType := ""
 	if needFSType {
-		var devicePath string
-		if multipathDevice != "" {
-			devicePath = "/dev/" + multipathDevice
-		} else {
-			devicePath = "/dev/" + devices[0]
-		}
 
 		fsType, err = getFSType(ctx, devicePath)
 		if err != nil {
@@ -878,7 +911,7 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string) {
+func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string, force bool) error {
 
 	fields := log.Fields{
 		"lunID":            lunID,
@@ -894,14 +927,14 @@ func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName strin
 			"error": err,
 			"lunID": lunID,
 		}).Warn("Could not get device info for removal, skipping host removal steps.")
-		return
+		return err
 	}
 
-	removeSCSIDevice(ctx, deviceInfo)
+	return removeSCSIDevice(ctx, deviceInfo, force)
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
-func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount bool) error {
+func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount, force bool) error {
 
 	fields := log.Fields{"mountpoint": mountpoint}
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils.PrepareDeviceAtMountPathForRemoval")
@@ -918,24 +951,47 @@ func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, 
 		}
 	}
 
-	removeSCSIDevice(ctx, deviceInfo)
-	return nil
+	return removeSCSIDevice(ctx, deviceInfo, force)
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
 // the devices and multipathDevice fields set.
-func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
+// IMPORTANT: The force argument has significant ramifications. Setting force=true will cause
+// the function to ignore errors, and try as hard as possible to remove the device, even if
+// that results in data loss, data corruption, or putting the system into an invalid state.
+// Setting force=false will fail at the first problem encountered, so that callers can be
+// assured that a successful return indicates that the device was cleanly removed.
+// This is important because while most of the time the top priority is to avoid data
+// loss or data corruption, there are times when data loss is unavoidable, or has already
+// happened, and in those cases it's better to be able to clean up than to be stuck in an
+// endless retry loop.
+func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
 
 	listAllISCSIDevices(ctx)
+
 	// Flush multipath device
-	multipathFlushDevice(ctx, deviceInfo)
+	err := multipathFlushDevice(ctx, deviceInfo)
+	if nil != err && !force {
+		return err
+	}
+
+	// Flush devices
+	err = flushDevice(ctx, deviceInfo, force)
+	if nil != err && !force {
+		return err
+	}
 
 	// Remove device
-	removeDevice(ctx, deviceInfo)
+	err = removeDevice(ctx, deviceInfo, force)
+	if nil != err && !force {
+		return err
+	}
 
 	// Give the host a chance to fully process the removal
 	time.Sleep(time.Second)
 	listAllISCSIDevices(ctx)
+
+	return nil
 }
 
 // ISCSISupported returns true if iscsiadm is installed and in the PATH.
@@ -1492,6 +1548,140 @@ func IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool {
 	return 0 < len(devices)
 }
 
+// getLunSerial get Linux's idea of what the LUN serial number is
+func getLunSerial(ctx context.Context, path string) (string, error) {
+	Logc(ctx).WithField("path", path).Debug("Get LUN Serial")
+	// We're going to read the SCSI VPD page 80 serial number
+	// information. Linux helpfully provides this through sysfs
+	// so we don't need to open the device and send the ioctl
+	// ourselves.
+	filename := path + "/vpd_pg80"
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	if 4 > len(b) || 0x80 != b[1] {
+		Logc(ctx).WithFields(log.Fields{
+			"data": b,
+		}).Error("VPD page 80 format check failed")
+		return "", fmt.Errorf("malformed VPD page 80 data")
+	}
+	length := int(binary.BigEndian.Uint16(b[2:4]))
+	if len(b) != length+4 {
+		Logc(ctx).WithFields(log.Fields{
+			"actual":   len(b),
+			"expected": length + 4,
+		}).Error("VPD page 80 length check failed")
+		return "", fmt.Errorf("incorrect length for VPD page 80 serial number")
+	}
+	return string(b[4:]), nil
+}
+
+// purgeOneLun issues a delete for one LUN, based on the sysfs path
+func purgeOneLun(ctx context.Context, path string) error {
+	Logc(ctx).WithField("path", path).Debug("Purging one LUN")
+	filename := path + "/delete"
+
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200)
+	if err != nil {
+		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
+		return err
+	}
+	defer f.Close()
+
+	// Deleting a LUN is achieved by writing the string "1" to the "delete" file
+	written, err := f.WriteString("1")
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+		return err
+	}
+	if written == 0 {
+		Logc(ctx).WithField("file", filename).Warning("No data written to file.")
+		return errors.New("too few bytes written to sysfs file")
+	}
+
+	return nil
+}
+
+// rescanOneLun issues a rescan for one LUN, based on the sysfs path
+func rescanOneLun(ctx context.Context, path string) error {
+	Logc(ctx).WithField("path", path).Debug("Rescaning one LUN")
+	filename := path + "/rescan"
+
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200)
+	if err != nil {
+		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
+		return err
+	}
+	defer f.Close()
+
+	written, err := f.WriteString("1")
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
+		return err
+	}
+	if written == 0 {
+		Logc(ctx).WithField("file", filename).Warning("No data written to file.")
+		return errors.New("too few bytes written to sysfs file")
+	}
+
+	return nil
+}
+
+// handleInvalidSerials checks the LUN serial number for each path of a given LUN, and
+// if it doesn't match the expected value, runs a handler function.
+func handleInvalidSerials(ctx context.Context, lunID int, targetIqn, expectedSerial string,
+	handler func(ctx context.Context, path string) error,
+) error {
+	if "" == expectedSerial {
+		// Empty string means don't care
+		return nil
+	}
+
+	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, targetIqn)
+	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	for _, path := range paths {
+		serial, err := getLunSerial(ctx, path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// LUN either isn't scanned yet, or this kernel
+				// doesn't support VPD page 80 in sysfs. Assume
+				// correctness and move on
+				Logc(ctx).WithFields(log.Fields{
+					"lun":    lunID,
+					"target": targetIqn,
+					"path":   path,
+				}).Debug("LUN serial check skipped")
+				continue
+			}
+			return err
+		}
+
+		if serial != expectedSerial {
+			Logc(ctx).WithFields(log.Fields{
+				"expected": expectedSerial,
+				"actual":   serial,
+				"lun":      lunID,
+				"target":   targetIqn,
+				"path":     path,
+			}).Warn("LUN serial check failed")
+			err = handler(ctx, path)
+			if err != nil {
+				return err
+			}
+		} else {
+			Logc(ctx).WithFields(log.Fields{
+				"serial": serial,
+				"lun":    lunID,
+				"target": targetIqn,
+				"path":   path,
+			}).Debug("LUN serial check passed")
+		}
+	}
+
+	return nil
+}
+
 // GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
 // for a given iSCSI target.
 func GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) map[int]int {
@@ -1897,45 +2087,51 @@ func ISCSITargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, e
 }
 
 // multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
-func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
+func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error {
 
 	Logc(ctx).WithField("device", deviceInfo.MultipathDevice).Debug(">>>> osutils.multipathFlushDevice")
 	defer Logc(ctx).Debug("<<<< osutils.multipathFlushDevice")
 
 	if deviceInfo.MultipathDevice == "" {
-		return
+		return nil
 	}
 
-	_, err := execCommandWithTimeout(ctx, "multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
+	err := flushOneDevice(ctx, "/dev/"+deviceInfo.MultipathDevice)
+	if err != nil {
+		return err
+	}
+
+	_, err = execCommandWithTimeout(ctx, "multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
 	if err != nil {
 		// nothing to do if it generates an error but log it
 		Logc(ctx).WithFields(log.Fields{
 			"device": deviceInfo.MultipathDevice,
 			"error":  err,
-		}).Warning("Error encountered in multipath flush device command.")
+		}).Error("Error encountered in multipath flush device command.")
+		return err
 	}
+
+	return nil
 }
 
 // flushDevice flushes any outstanding I/O to all paths to a device.
-func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
+func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
 
 	Logc(ctx).Debug(">>>> osutils.flushDevice")
 	defer Logc(ctx).Debug("<<<< osutils.flushDevice")
 
 	for _, device := range deviceInfo.Devices {
-		_, err := execCommandWithTimeout(ctx, "blockdev", 5, true, "--flushbufs", "/dev/"+device)
-		if err != nil {
-			// nothing to do if it generates an error but log it
-			Logc(ctx).WithFields(log.Fields{
-				"device": device,
-				"error":  err,
-			}).Warning("Error encountered in blockdev --flushbufs command.")
+		err := flushOneDevice(ctx, "/dev/"+device)
+		if err != nil && !force {
+			return err
 		}
 	}
+
+	return nil
 }
 
 // removeDevice tells Linux that a device will be removed.
-func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
+func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
 
 	Logc(ctx).Debug(">>>> osutils.removeDevice")
 	defer Logc(ctx).Debug("<<<< osutils.removeDevice")
@@ -1951,17 +2147,26 @@ func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0200); err != nil {
 			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
-			return
+			if force {
+				continue
+			}
+			return err
 		}
 
 		if written, err := f.WriteString("1"); err != nil {
 			Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
-			return
+			if force {
+				continue
+			}
+			return err
 		} else if written == 0 {
 			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
 			f.Close()
-			return
+			if force {
+				continue
+			}
+			return errors.New("too few bytes written to sysfs file")
 		}
 
 		f.Close()
@@ -1969,6 +2174,8 @@ func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) {
 		listAllISCSIDevices(ctx)
 		Logc(ctx).WithField("scanFile", filename).Debug("Invoked device delete.")
 	}
+
+	return nil
 }
 
 // multipathdIsRunning returns true if the multipath daemon is running.
@@ -2050,6 +2257,28 @@ func getFSType(ctx context.Context, device string) (string, error) {
 		}
 	}
 	return fsType, nil
+}
+
+// ensureDeviceReadable reads first 4 KiBs of the device to ensures it is readable
+func ensureDeviceReadable(ctx context.Context, device string) error {
+
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.ensureDeviceReadable")
+	defer Logc(ctx).Debug("<<<< osutils.ensureDeviceReadable")
+
+	args := []string{"if=" + device, "bs=4096", "count=1", "status=none"}
+	out, err := execCommandWithTimeout(ctx, "dd", 5, false, args...)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
+		return err
+	}
+
+	// Ensure 4KiB of data read
+	if len(out) != 4096 {
+		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 4KiB")
+		return fmt.Errorf("did not read 4KiB bytes from the device %v, instead read %d bytes", device, len(out))
+	}
+
+	return nil
 }
 
 // ensureDeviceUnformatted reads first 2 MiBs of the device to ensures it is unformatted and contains all zeros
@@ -2558,8 +2787,13 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 // In the case of a iscsi trace debug, log info about session and what devices are present
 func listAllISCSIDevices(ctx context.Context) {
 
-	Logc(ctx).Debug(">>>> osutils.listAllISCSIDevices")
-	defer Logc(ctx).Debug("<<<< osutils.listAllISCSIDevices")
+	if !Logc(ctx).Logger.IsLevelEnabled(log.TraceLevel) {
+		// Don't even run the commands if trace logging is not enabled
+		return
+	}
+
+	Logc(ctx).Trace(">>>> osutils.listAllISCSIDevices")
+	defer Logc(ctx).Trace("<<<< osutils.listAllISCSIDevices")
 	// Log information about all the devices
 	dmLog := make([]string, 0)
 	sdLog := make([]string, 0)
@@ -2586,5 +2820,5 @@ func listAllISCSIDevices(ctx context.Context) {
 		"/sys/block/*":               sysLog,
 		"multipath -ll output":       string(out1),
 		"iscsiadm -m session output": string(out2),
-	}).Debug("Listing all iSCSI Devices.")
+	}).Trace("Listing all iSCSI Devices.")
 }
