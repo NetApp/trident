@@ -57,6 +57,8 @@ var (
 	csiNodeName = flag.String("csi_node_name", "", "CSI node name")
 	csiRole     = flag.String("csi_role", "", fmt.Sprintf("CSI role to play: '%s' or '%s'", csi.CSIController, csi.CSINode))
 
+	csiUnsafeNodeDetach = flag.Bool("csi_unsafe_detach", false, "Prefer to detach successfully rather than safely")
+
 	// Persistence
 	etcdV2 = flag.String("etcd_v2", "", "etcd server (v2 API) for "+
 		"persisting orchestrator state (e.g., -etcd_v2=http://127.0.0.1:8001)")
@@ -393,10 +395,10 @@ func main() {
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator)
+				*httpsClientKey, orchestrator, *csiUnsafeNodeDetach)
 		case csi.CSIAllInOne:
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator, &hybridPlugin)
+				*httpsClientKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)

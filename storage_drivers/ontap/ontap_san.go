@@ -566,7 +566,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 		}
 		if lunID >= 0 {
 			// Inform the host about the device removal
-			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName)
+			utils.PrepareDeviceForRemoval(lunID, iSCSINodeName, true)
 		}
 	}
 

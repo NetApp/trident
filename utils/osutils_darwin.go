@@ -29,3 +29,9 @@ func getISCSIDiskSize(devicePath string) (int64, error) {
 	defer log.Debug("<<<< osutils_darwin.getISCSIDiskSize")
 	return 0, errors.New("getBlockSize is not supported for darwin")
 }
+
+func flushOneDevice(devicePath string) error {
+	log.Debug(">>>> osutils_darwin.flushOneDevice")
+	defer log.Debug("<<<< osutils_darwin.flushOneDevice")
+	return errors.New("flushOneDevice is not supported for darwin")
+}

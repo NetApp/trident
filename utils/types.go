@@ -20,6 +20,7 @@ type IscsiAccessInfo struct {
 	IscsiInitiatorSecret string   `json:"iscsiInitiatorSecret,omitempty"`
 	IscsiTargetUsername  string   `json:"iscsiTargetUsername,omitempty"`
 	IscsiTargetSecret    string   `json:"iscsiTargetSecret,omitempty"`
+	IscsiLunSerial       string   `json:"iscsiLunSerial,omitempty"`
 }
 
 type NfsAccessInfo struct {

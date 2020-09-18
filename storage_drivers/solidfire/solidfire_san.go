@@ -1056,7 +1056,7 @@ func (d *SANStorageDriver) Destroy(name string) error {
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Inform the host about the device removal
-		utils.PrepareDeviceForRemoval(0, v.Iqn)
+		utils.PrepareDeviceForRemoval(0, v.Iqn, true)
 
 		// Logout from the session
 		err = d.Client.DetachVolume(v)
