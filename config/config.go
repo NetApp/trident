@@ -34,7 +34,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "20.07.0"
+	DefaultOrchestratorVersion       = "20.07.1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second

@@ -82,12 +82,12 @@ you have the necessary privileges to.
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 20.07.0:
+For example, if the latest version is 20.07.1:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v20.07.0/trident-installer-20.07.0.tar.gz
-   tar -xf trident-installer-20.07.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.07.1/trident-installer-20.07.1.tar.gz
+   tar -xf trident-installer-20.07.1.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
