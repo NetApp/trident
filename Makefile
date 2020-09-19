@@ -106,7 +106,7 @@ trident_build:
 ifdef REGISTRY_ADDR
 	docker push ${TRIDENT_TAG}
 endif
-	rm ${BIN} ${CLI_BIN} chwrap.tar
+	rm ${BIN} ${CLI_BIN}
 
 tridentctl_build:
 	@mkdir -p ${BIN_DIR}

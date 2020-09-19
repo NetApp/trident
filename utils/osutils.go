@@ -1986,6 +1986,14 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, erro
 	return false, nil
 }
 
+// GetMountInfo returns the list of mounts found in /proc/self/mountinfo
+func GetMountInfo(ctx context.Context) ([]MountInfo, error) {
+	Logc(ctx).Debug(">>>> osutils.GetMountInfo")
+	defer Logc(ctx).Debug("<<<< osutils.GetMountInfo")
+
+	return listProcSelfMountinfo(procSelfMountinfoPath)
+}
+
 // GetMountedISCSIDevices returns a list of iSCSI devices that are *mounted* on this host.
 func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 

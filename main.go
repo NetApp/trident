@@ -3,11 +3,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -175,6 +177,41 @@ func processCmdLineArgs() {
 	config.UsingPassthroughStore = storeClient.GetType() == persistentstore.PassthroughStore
 }
 
+// getenvAsPointerToBool returns the key's value and defaults to false if not set
+func getenvAsPointerToBool(key string) *bool {
+	result := false
+	if v := os.Getenv(key); v != "" {
+		if strings.EqualFold("true", v) {
+			result = true
+		}
+	}
+	return &result
+}
+
+// processDockerPluginArgs replaces our container-launch.sh script
+// see also:  https://github.com/NetApp/trident/blob/stable/v20.07/contrib/docker/plugin/container-launch.sh
+func processDockerPluginArgs() error {
+	if os.Getenv(config.DockerPluginModeEnvVariable) == "" {
+		// not running in docker plugin mode, can stop further processing here
+		return nil
+	}
+
+	debug = getenvAsPointerToBool("debug")
+	enableREST = getenvAsPointerToBool("rest")
+	if configEnv := os.Getenv("config"); configEnv != "" {
+		configFile := filepath.Join(config.DockerPluginConfigLocation, configEnv)
+		if _, err := os.Stat(configFile); err != nil {
+			if os.IsNotExist(err) {
+				return errors.New("config file '" + configFile + "' does not exist")
+			} else {
+				return err
+			}
+		}
+		configPath = &configFile
+	}
+	return nil
+}
+
 func main() {
 
 	var err error
@@ -186,6 +223,12 @@ func main() {
 
 	// Seed RNG one time
 	rand.Seed(time.Now().UnixNano())
+
+	// Process any docker plugin environment variables (after we flag.Parse() the CLI above)
+	err = processDockerPluginArgs()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Set log level
 	err = logging.InitLogLevel(*debug, *logLevel)

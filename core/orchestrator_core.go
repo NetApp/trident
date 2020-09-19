@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -2812,22 +2813,31 @@ func (o *TridentOrchestrator) AttachVolume(
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
+	hostMountpoint := mountpoint
+	isDockerPluginModeSet := false
+	if os.Getenv(config.DockerPluginModeEnvVariable) != "" {
+		isDockerPluginModeSet = true
+		hostMountpoint = filepath.Join("/host", mountpoint)
+	}
+
 	Logc(ctx).WithFields(log.Fields{
-		"volume":     volumeName,
-		"mountpoint": mountpoint,
+		"volume":                volumeName,
+		"mountpoint":            mountpoint,
+		"hostMountpoint":        hostMountpoint,
+		"isDockerPluginModeSet": isDockerPluginModeSet,
 	}).Debug("Mounting volume.")
 
 	// Ensure mount point exists and is a directory
-	fileInfo, err := os.Lstat(mountpoint)
+	fileInfo, err := os.Lstat(hostMountpoint)
 	if os.IsNotExist(err) {
-		// Make mount point if it doesn't exist
-		if err := os.MkdirAll(mountpoint, 0755); err != nil {
+		// Create the mount point if it doesn't exist
+		if err := os.MkdirAll(hostMountpoint, 0755); err != nil {
 			return err
 		}
 	} else if err != nil {
 		return err
 	} else if !fileInfo.IsDir() {
-		return fmt.Errorf("%v already exists and it's not a directory", mountpoint)
+		return fmt.Errorf("%v already exists and it's not a directory", hostMountpoint)
 	}
 
 	// Check if volume is already mounted

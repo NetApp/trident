@@ -1,8 +1,20 @@
 {
         "description": "Trident - NetApp Docker Volume Plugin",
         "documentation": "https://github.com/NetApp/trident",
-        "entrypoint": ["/netapp/container-launch.sh"],
+        "entrypoint": ["/netapp/trident", "--address=0.0.0.0", "--port=8000"],
         "Env": [
+        {
+            "Description": "Enable docker plugin mode (not user settable)",
+            "Name": "DOCKER_PLUGIN_MODE",
+            "Settable": null,
+            "Value": "1"
+        },
+        {
+            "Description": "Modify docker plugin PATH (not user settable)",
+            "Name": "PATH",
+            "Settable": null,
+            "Value": "/netapp:/usr/sbin:/usr/bin:/sbin:/bin"
+        },
 		{
 			"Description": "Enable debug logging",
 			"Name": "debug",
@@ -28,12 +40,9 @@
 			"Value": "config.json"
 		}
         ],
-        "network": {
-                   "type": "host"
-                   },
-        "ipc": {
-                   "type": "host"
-                   },
+        "network": { "type": "host" },
+        "ipchost": true,
+        "pidhost": true,
         "interface" : {
                    "socket": "netapp.sock",
                    "types": ["docker.volumedriver/1.0"]

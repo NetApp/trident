@@ -30,33 +30,74 @@ const (
 	startupTimeout = 50 * time.Second
 )
 
+// Plugin implements the frontendcommon Plugin interface
 type Plugin struct {
-	orchestrator core.Orchestrator
-	driverName   string
-	driverPort   string
-	volumePath   string
-	version      *Version
-	mutex        *sync.Mutex
+	orchestrator       core.Orchestrator
+	driverName         string
+	driverPort         string
+	volumePath         string
+	version            *Version
+	mutex              *sync.Mutex
+	isDockerPluginMode bool
+	hostVolumePath     string
 }
 
 func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*Plugin, error) {
 
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
+
+	Logc(ctx).Debug(">>>> docker.NewPlugin")
+	defer Logc(ctx).Debug("<<<< docker.NewPlugin")
+
+	isDockerPluginMode := false
+	if os.Getenv(config.DockerPluginModeEnvVariable) != "" {
+		isDockerPluginMode = true
+	}
+
 	// Create the plugin object
 	plugin := &Plugin{
-		orchestrator: orchestrator,
-		driverName:   driverName,
-		driverPort:   driverPort,
-		volumePath:   filepath.Join(volume.DefaultDockerRootDirectory, driverName),
-		mutex:        &sync.Mutex{},
+		orchestrator:       orchestrator,
+		driverName:         driverName,
+		driverPort:         driverPort,
+		volumePath:         filepath.Join(volume.DefaultDockerRootDirectory, driverName),
+		mutex:              &sync.Mutex{},
+		isDockerPluginMode: isDockerPluginMode,
+		hostVolumePath:     "",
 	}
 
-	// Register the plugin with Docker
-	err := registerDockerVolumePlugin(plugin.volumePath)
-	if err != nil {
-		return nil, err
+	if plugin.isDockerPluginMode {
+		mountInfo, err := utils.GetMountInfo(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+	mountInfoSearch:
+		for _, procMount := range mountInfo {
+			Logc(ctx).Debugf("root: %v, mountPoint: %v\n", procMount.Root, procMount.MountPoint)
+			if procMount.MountPoint == volume.DefaultDockerRootDirectory+"/netapp" {
+				plugin.hostVolumePath = filepath.Join(procMount.Root)
+				Logc(ctx).WithFields(log.Fields{
+					"plugin.volumePath":     plugin.volumePath,
+					"plugin.hostVolumePath": plugin.hostVolumePath,
+				}).Debugf("Running in Docker plugin mode.")
+				break mountInfoSearch
+			}
+		}
+
+		if plugin.hostVolumePath == "" {
+			return nil, fmt.Errorf("could not find proc mount entry for %v", volume.DefaultDockerRootDirectory)
+		}
+
+	} else {
+
+		// Register the plugin with Docker, needed in binary mode (non-plugin mode)
+		err := registerDockerVolumePlugin(ctx, plugin.volumePath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(log.Fields{
 		"volumePath":   plugin.volumePath,
 		"volumeDriver": driverName,
 	}).Info("Initializing Docker frontend.")
@@ -64,7 +105,9 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 	return plugin, nil
 }
 
-func registerDockerVolumePlugin(root string) error {
+func registerDockerVolumePlugin(ctx context.Context, root string) error {
+	Logc(ctx).Debugf(">>>> docker.registerDockerVolumePlugin(%s)", root)
+	defer Logc(ctx).Debugf("<<<< docker.registerDockerVolumePlugin(%s)", root)
 
 	// If root (volumeDir) doesn't exist, make it.
 	dir, err := os.Lstat(root)
@@ -340,8 +383,6 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
-	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
-
 	// First call PublishVolume to make the volume available to the node
 	publishInfo := &utils.VolumePublishInfo{Localhost: true}
 	if err = p.orchestrator.PublishVolume(ctx, request.Name, publishInfo); err != nil {
@@ -350,13 +391,18 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
+	// if this is binary mode, then hostMountpoint and mountpoint will be the same
+	hostMountpoint := p.hostMountpoint(tridentVol.Config.InternalName)
+
 	// Then call AttachVolume to discover/format/mount the volume on the node
-	if err = p.orchestrator.AttachVolume(ctx, request.Name, mountpoint, publishInfo); err != nil {
-		err = fmt.Errorf("error attaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
+	if err = p.orchestrator.AttachVolume(ctx, request.Name, hostMountpoint, publishInfo); err != nil {
+		err = fmt.Errorf("error attaching volume %v, hostMountpoint %v, error: %v", request.Name, hostMountpoint, err)
 		Logc(ctx).Error(err)
 		return &volume.MountResponse{}, p.dockerError(ctx, err)
 	}
 
+	// if this is binary mode, then hostMountpoint and mountpoint will be the same
+	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
 	return &volume.MountResponse{Mountpoint: mountpoint}, nil
 }
 
@@ -375,10 +421,11 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 		return p.dockerError(ctx, err)
 	}
 
-	mountpoint := p.mountpoint(tridentVol.Config.InternalName)
+	// if this is binary mode, then hostMountpoint and mountpoint will be the same
+	hostMountpoint := p.hostMountpoint(tridentVol.Config.InternalName)
 
-	if err = p.orchestrator.DetachVolume(ctx, request.Name, mountpoint); err != nil {
-		err = fmt.Errorf("error detaching volume %v, mountpoint %v, error: %v", request.Name, mountpoint, err)
+	if err = p.orchestrator.DetachVolume(ctx, request.Name, hostMountpoint); err != nil {
+		err = fmt.Errorf("error detaching volume %v, hostMountpoint %v, error: %v", request.Name, hostMountpoint, err)
 		Logc(ctx).Error(err)
 		return p.dockerError(ctx, err)
 	}
@@ -422,7 +469,16 @@ func (p *Plugin) getPath(ctx context.Context, vol *storage.VolumeExternal) (stri
 	return mountpoint, nil
 }
 
+// mountpoint differs from hostMountpoint when running in docker plugin container mode
 func (p *Plugin) mountpoint(name string) string {
+	return filepath.Join(p.volumePath, name)
+}
+
+// hostMountpoint TBD but it's where the plugin's /var/lib/docker-volumes/netapp lives on the host
+func (p *Plugin) hostMountpoint(name string) string {
+	if p.isDockerPluginMode {
+		return filepath.Join(p.hostVolumePath, name)
+	}
 	return filepath.Join(p.volumePath, name)
 }
 

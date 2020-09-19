@@ -99,6 +99,10 @@ const (
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240
 
+	/* Docker constants */
+	DockerPluginModeEnvVariable = "DOCKER_PLUGIN_MODE" // set via contrib/docker/plugin/plugin.json
+	DockerPluginConfigLocation  = "/etc/netappdvp"
+
 	/* Kubernetes deployment constants */
 	ContainerTrident = "trident-main"
 

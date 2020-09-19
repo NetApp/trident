@@ -8,12 +8,15 @@ docker plugin rm -f ${PN}
 service docker stop
 service docker start
 
-sudo cp -f ./container-launch.sh ./myplugin/rootfs/netapp/container-launch.sh
-sudo cp -f ./trident ./myplugin/rootfs/netapp/trident
-sudo cp -f ./plugin.json ./myplugin/config.json
+### plugin's build directory, use /tmp to avoid pitfalls with VM mountss
+#PBD=/tmp/trident/build
+PBD=.
 
-sudo docker plugin create ${PN} ./myplugin 
+sudo cp -f ../../../trident .
+sudo cp -f ./trident ${PBD}/myplugin/rootfs/netapp/trident
+sudo cp -f ./plugin.json ${PBD}/myplugin/config.json
+
+sudo docker plugin create ${PN} ${PBD}/myplugin
 ./pushPlugin
 sudo docker plugin rm $PN
-sudo docker plugin install --disable --grant-all-permissions ${PN} debug=true 
-
+sudo docker plugin install --grant-all-permissions ${PN} debug=true

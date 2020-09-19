@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-sudo rm -rf ./myplugin
+### plugin's build directory, use /tmp to avoid pitfalls with VM mounts
+#PBD=/tmp/trident/build
+PBD=.
+sudo rm -rf ${PBD}/myplugin
 
 docker build -t rootfsimage .
-id=$(docker create rootfsimage true) 
-sudo mkdir -p myplugin/rootfs
-sudo docker export "$id" | sudo tar -x -C myplugin/rootfs
+id=$(docker create rootfsimage true)
+sudo mkdir -p ${PBD}/myplugin/rootfs
+sudo docker export "$id" | sudo tar -x -C ${PBD}/myplugin/rootfs
 docker rm -vf "$id"
 docker rmi rootfsimage
-
