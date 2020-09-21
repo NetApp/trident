@@ -33,6 +33,7 @@ import (
 func (p *Plugin) GetVolumeConfig(
 	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
+	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 ) (*storage.VolumeConfig, error) {
 
 	// Kubernetes CSI passes us the name of what will become a new PV
@@ -85,7 +86,7 @@ func (p *Plugin) GetVolumeConfig(
 
 	// Create the volume config
 	volumeConfig := getVolumeConfig(ctx, pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
-		processPVCAnnotations(pvc, fsType), sc)
+		processPVCAnnotations(pvc, fsType), sc, requisiteTopology, preferredTopology)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
 	if cloneSourcePVName, err := p.getCloneSourceInfo(ctx, pvc); err != nil {
@@ -274,6 +275,7 @@ func mapEventType(eventType string) string {
 func getVolumeConfig(
 	ctx context.Context, pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode,
 	name string, size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
+	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
 
 	var accessModes []config.AccessMode
@@ -310,16 +312,18 @@ func getVolumeConfig(
 		SnapshotDir:        getAnnotation(annotations, AnnSnapshotDir),
 		ExportPolicy:       getAnnotation(annotations, AnnExportPolicy),
 		UnixPermissions:    getAnnotation(annotations, AnnUnixPermissions),
-		StorageClass:       storageClass.Name,
-		BlockSize:          getAnnotation(annotations, AnnBlockSize),
-		FileSystem:         getAnnotation(annotations, AnnFileSystem),
-		SplitOnClone:       getAnnotation(annotations, AnnSplitOnClone),
-		VolumeMode:         config.VolumeMode(*volumeMode),
-		AccessMode:         accessMode,
-		ImportOriginalName: getAnnotation(annotations, AnnImportOriginalName),
-		ImportBackendUUID:  getAnnotation(annotations, AnnImportBackendUUID),
-		ImportNotManaged:   notManaged,
-		MountOptions:       strings.Join(storageClass.MountOptions, ","),
+		StorageClass:        storageClass.Name,
+		BlockSize:           getAnnotation(annotations, AnnBlockSize),
+		FileSystem:          getAnnotation(annotations, AnnFileSystem),
+		SplitOnClone:        getAnnotation(annotations, AnnSplitOnClone),
+		VolumeMode:          config.VolumeMode(*volumeMode),
+		AccessMode:          accessMode,
+		ImportOriginalName:  getAnnotation(annotations, AnnImportOriginalName),
+		ImportBackendUUID:   getAnnotation(annotations, AnnImportBackendUUID),
+		ImportNotManaged:    notManaged,
+		MountOptions:        strings.Join(storageClass.MountOptions, ","),
+		RequisiteTopologies: requisiteTopology,
+		PreferredTopologies: preferredTopology,
 	}
 }
 

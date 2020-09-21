@@ -1375,6 +1375,11 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 
 	deploymentName := getDeploymentName(csi)
 
+	topologyEnabled, err := i.client.IsTopologyInUse()
+	if err != nil {
+		return err
+	}
+
 	currentDeployment, unwantedDeployments, createDeployment, err := i.TridentDeploymentInformation(appLabel, csi)
 	if err != nil {
 		return err
@@ -1393,7 +1398,7 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 		newDeploymentYAML = k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
 			autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
 			imageRegistry, logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
-			silenceAutosupport, i.client.ServerVersion())
+			silenceAutosupport, i.client.ServerVersion(), topologyEnabled)
 	} else {
 		newDeploymentYAML = k8sclient.GetDeploymentYAML(deploymentName, tridentImage, logFormat, imagePullSecrets, labels,
 			controllingCRDetails, debug)

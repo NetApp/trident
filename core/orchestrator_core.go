@@ -1504,7 +1504,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	if !ok {
 		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
 	}
-	poolsByBackend := sc.GetStoragePoolsForProtocolByBackend(ctx, protocol)
+	poolsByBackend := sc.GetStoragePoolsForProtocolByBackend(ctx, protocol, volumeConfig.RequisiteTopologies, volumeConfig.PreferredTopologies)
 	if len(poolsByBackend) == 0 {
 		return nil, fmt.Errorf("no available backends for storage class %s", volumeConfig.StorageClass)
 	}
@@ -3741,6 +3741,7 @@ func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node) (er
 	if err := o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
 		return err
 	}
+
 	o.nodes[node.Name] = node
 
 	return o.reconcileNodeAccessOnAllBackends(ctx)

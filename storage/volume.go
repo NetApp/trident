@@ -46,6 +46,9 @@ type VolumeConfig struct {
 	ImportBackendUUID         string                 `json:"importBackendUUID,omitempty"`
 	ImportNotManaged          bool                   `json:"importNotManaged,omitempty"`
 	MountOptions              string                 `json:"mountOptions,omitempty"`
+	RequisiteTopologies       []map[string]string    `json:"requisiteTopologies,omitempty"`
+	PreferredTopologies       []map[string]string    `json:"preferredTopologies,omitempty"`
+	AllowedTopologies         []map[string]string    `json:"allowedTopologies,omitempty"`
 }
 
 type VolumeCreatingConfig struct {
@@ -145,12 +148,12 @@ func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned boo
 }
 
 type VolumeExternal struct {
-	Config      *VolumeConfig
-	Backend     string      `json:"backend"`     // replaced w/ backendUUID, remains to read old records
-	BackendUUID string      `json:"backendUUID"` // UUID of the storage backend
-	Pool        string      `json:"pool"`
-	Orphaned    bool        `json:"orphaned"`
-	State       VolumeState `json:"state"`
+	Config		*VolumeConfig
+	Backend		string		`json:"backend"`     // replaced w/ backendUUID, remains to read old records
+	BackendUUID	string		`json:"backendUUID"` // UUID of the storage backend
+	Pool		string		`json:"pool"`
+	Orphaned	bool		`json:"orphaned"`
+	State		VolumeState	`json:"state"`
 }
 
 func (v *VolumeExternal) GetCHAPSecretName() string {

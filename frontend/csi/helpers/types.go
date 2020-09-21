@@ -30,9 +30,10 @@ type HybridPlugin interface {
 	GetVolumeConfig(
 		ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 		protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
+		requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 	) (*storage.VolumeConfig, error)
 
-	// GetSnapshotConfig accepts the attributes of a snapshot being requested byt the CSI
+	// GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
 	// provisioner, adds in any CO-specific details about the new volume, and returns
 	// a SnapshotConfig structure as needed by Trident to create a new snapshot.
 	GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error)

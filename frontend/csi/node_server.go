@@ -31,6 +31,10 @@ const (
 	volumePublishInfoFilename = "volumePublishInfo.json"
 )
 
+var (
+	topologyLabels	= make(map[string]string)
+)
+
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
@@ -384,7 +388,11 @@ func (p *Plugin) NodeGetInfo(
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeGetInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGetInfo")
 
-	return &csi.NodeGetInfoResponse{NodeId: p.nodeName}, nil
+	topology := &csi.Topology{
+		Segments: topologyLabels,
+	}
+
+	return &csi.NodeGetInfoResponse{NodeId: p.nodeName, AccessibleTopology: topology}, nil
 }
 
 func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
@@ -424,7 +432,10 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 	// The controller may not be fully initialized by the time the node is ready to register,
 	// so retry until it is responding on the back channel and we have registered the node.
 	registerNode := func() error {
-		return p.restClient.CreateNode(ctx, node)
+		nodeDetails, err := p.restClient.CreateNode(ctx, node)
+		topologyLabels = nodeDetails.TopologyLabels
+		node.TopologyLabels = nodeDetails.TopologyLabels
+		return err
 	}
 
 	registerNodeNotify := func(err error, duration time.Duration) {
@@ -445,6 +456,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 	backoff.RetryNotify(registerNode, registerNodeBackoff, registerNodeNotify)
 
 	log.WithField("node", p.nodeName).Debug("Communication with controller established, node registered.")
+	log.WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
 }
 
 func (p *Plugin) nodeDeregisterWithController(ctx context.Context) error {

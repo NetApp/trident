@@ -342,7 +342,7 @@ spec:
 func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber, autosupportHostname,
 	imageRegistry, logFormat string, imagePullSecrets []string, labels, controllingCRDetails map[string]string,
-	debug, useIPv6, silenceAutosupport bool, version *utils.Version) string {
+	debug, useIPv6, silenceAutosupport bool, version *utils.Version, topologyEnabled bool) string {
 
 	var debugLine, logLevel, ipLocalhost string
 
@@ -396,6 +396,10 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	if autosupportHostname != "" {
 		autosupportHostnameLine = fmt.Sprint("- -hostname=", autosupportHostname)
 	}
+	provisionerFeatureGates := ""
+	if topologyEnabled {
+		provisionerFeatureGates = "- --feature-gates=Topology=True"
+	}
 
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
@@ -411,6 +415,7 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(silenceAutosupport))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = replaceMultiline(deploymentYAML, labels, controllingCRDetails, imagePullSecrets)
 
 	return deploymentYAML
@@ -895,6 +900,7 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
+        {PROVISIONER_FEATURE_GATES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock

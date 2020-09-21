@@ -203,13 +203,13 @@ func NewAllInOnePlugin(
 func (p *Plugin) Activate() error {
 	go func() {
 		ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+		p.grpc = NewNonBlockingGRPCServer()
 
 		Logc(ctx).Info("Activating CSI frontend.")
-		p.grpc = NewNonBlockingGRPCServer()
-		p.grpc.Start(p.endpoint, p, p, p)
 		if p.role == CSINode || p.role == CSIAllInOne {
-			go p.nodeRegisterWithController(ctx)
+			p.nodeRegisterWithController(ctx)
 		}
+		p.grpc.Start(p.endpoint, p, p, p)
 	}()
 	return nil
 }

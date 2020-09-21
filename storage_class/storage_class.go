@@ -307,7 +307,7 @@ func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.
 // to select backends and pools at random.  The caller may assume that each value in the map is a list
 // containing at least one pool.
 func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
-	ctx context.Context, p config.Protocol,
+	ctx context.Context, p config.Protocol, requisiteTopologies, preferredTopologies []map[string]string,
 ) map[string]*BackendPoolInfo {
 
 	// Get all matching pools

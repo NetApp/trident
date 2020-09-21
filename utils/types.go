@@ -48,7 +48,8 @@ type VolumeTrackingPublishInfo struct {
 }
 
 type Node struct {
-	Name string   `json:"name"`
-	IQN  string   `json:"iqn,omitempty"`
-	IPs  []string `json:"ips,omitempty"`
+	Name 			string				`json:"name"`
+	IQN				string				`json:"iqn,omitempty"`
+	IPs				[]string			`json:"ips,omitempty"`
+	TopologyLabels	map[string]string	`json:"topologyLabels,omitempty"`
 }

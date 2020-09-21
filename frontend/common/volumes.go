@@ -118,6 +118,7 @@ func makeStorageClass(ctx context.Context, options map[string]string) (*storagec
 func GetVolumeConfig(
 	name, storageClass string, sizeBytes int64, opts map[string]string,
 	protocol config.Protocol, accessMode config.AccessMode, volumeMode config.VolumeMode,
+	requisiteTopologies, preferredTopologies []map[string]string,
 ) (*storage.VolumeConfig, error) {
 
 	return &storage.VolumeConfig{
@@ -144,6 +145,8 @@ func GetVolumeConfig(
 		CloneSourceSnapshot: utils.GetV(opts, "fromSnap|fromSnapshot", ""),
 		ServiceLevel:        utils.GetV(opts, "serviceLevel", ""),
 		Network:             utils.GetV(opts, "network", ""),
+		RequisiteTopologies: requisiteTopologies,
+		PreferredTopologies: preferredTopologies,
 	}, nil
 }
 

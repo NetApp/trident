@@ -177,6 +177,7 @@ type Interface interface {
 	AddFinalizerToCRDs(CRDnames []string) error
 	RemoveFinalizerFromCRD(crdName string) error
 	GetCRDClient() (*crdclient.Clientset, error)
+	IsTopologyInUse() (bool, error)
 }
 
 type KubeClient struct {
@@ -2431,6 +2432,22 @@ func (k *KubeClient) deleteOptions() metav1.DeleteOptions {
 	return metav1.DeleteOptions{
 		PropagationPolicy: &propagationPolicy,
 	}
+}
+
+func (k *KubeClient) IsTopologyInUse() (bool, error) {
+	nodes, err := k.clientset.CoreV1().Nodes().List(ctx(), metav1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+	for _, node := range nodes.Items {
+		for key, _ := range node.Labels {
+			if strings.Contains(key, "topology.kubernetes.io") {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {

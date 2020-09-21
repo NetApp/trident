@@ -235,7 +235,7 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 
 	// Convert volume creation options into a Trident volume config
 	volConfig, err := frontendcommon.GetVolumeConfig(
-		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny, config.Filesystem)
+		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny, config.Filesystem, nil, nil)
 	if err != nil {
 		return p.dockerError(ctx, err)
 	}

@@ -481,6 +481,11 @@ func prepareCSIYAMLFiles() error {
 		csiSidecarRegistry = "quay.io"
 	}
 
+	topologyEnabled, err := client.IsTopologyInUse()
+	if err != nil {
+		return fmt.Errorf("could not determine node topology; %v", err)
+	}
+
 	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
@@ -515,7 +520,7 @@ func prepareCSIYAMLFiles() error {
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
 		autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels,
-		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion())
+		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
@@ -799,6 +804,11 @@ func installTrident() (returnError error) {
 			csiSidecarRegistry = "quay.io"
 		}
 
+		topologyEnabled, err := client.IsTopologyInUse()
+		if err != nil {
+			return fmt.Errorf("could not determine node topology; %v", err)
+		}
+
 		// Create the CSI CRDs if necessary (1.13 only)
 		returnError = createK8S113CSICustomResourceDefinitions()
 		if returnError != nil {
@@ -871,7 +881,7 @@ func installTrident() (returnError error) {
 				k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 					tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
 					autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels, nil,
-					Debug, useIPv6, silenceAutosupport, client.ServerVersion()))
+					Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {

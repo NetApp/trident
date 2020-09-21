@@ -111,21 +111,29 @@ func (c *RestClient) InvokeAPI(
 	return response, responseBody, err
 }
 
+type CreateNodeResponse struct {
+	TopologyLabels map[string]string `json:"topologyLabels"`
+}
+
 // CreateNode registers the node with the CSI controller server
-func (c *RestClient) CreateNode(ctx context.Context, node *utils.Node) error {
+func (c *RestClient) CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error) {
 	nodeData, err := json.Marshal(node)
 	if err != nil {
-		return fmt.Errorf("error parsing create node request; %v", err)
+		return CreateNodeResponse{}, fmt.Errorf("error parsing create node request; %v", err)
 	}
-	resp, _, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name)
+	resp, respBody, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name)
 	if err != nil {
-		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+		return CreateNodeResponse{}, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+	}
+	createResponse := CreateNodeResponse{}
+	if err := json.Unmarshal(respBody, &createResponse); err != nil {
+		return createResponse, fmt.Errorf("could not parse node : %s; %v", string(respBody), err)
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not add CSI node")
+		return createResponse, fmt.Errorf("could not add CSI node")
 	}
-	return nil
+	return createResponse, nil
 }
 
 type ListNodesResponse struct {

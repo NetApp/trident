@@ -309,6 +309,13 @@ func newKubernetesPlugin(
 	return p, nil
 }
 
+func (p *Plugin) GetNode(ctx context.Context, nodeName string) (*v1.Node, error) {
+	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
+
+	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	return node, err
+}
+
 // MetaUIDKeyFunc is a KeyFunc which knows how to make keys for API objects
 // which implement meta.Interface.  The key is the object's UID.
 func MetaUIDKeyFunc(obj interface{}) ([]string, error) {

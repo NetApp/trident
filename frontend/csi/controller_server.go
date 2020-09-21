@@ -152,9 +152,28 @@ func (p *Plugin) CreateVolume(
 		sizeBytes = req.CapacityRange.RequiredBytes
 	}
 
+	// Get topology requirements
+	var requisiteTopologies = make([]map[string]string, 0)
+	for _, topReq := range req.GetAccessibilityRequirements().GetRequisite() {
+		requirement := make(map[string]string)
+		for k, v := range topReq.GetSegments() {
+			requirement[k] = v
+		}
+		requisiteTopologies = append(requisiteTopologies, requirement)
+	}
+
+	var preferredTopologies = make([]map[string]string, 0)
+	for _, topReq := range req.GetAccessibilityRequirements().GetPreferred() {
+		preference := make(map[string]string)
+		for k, v := range topReq.GetSegments() {
+			preference[k] = v
+		}
+		preferredTopologies = append(preferredTopologies, preference)
+	}
+
 	// Convert volume creation options into a Trident volume config
 	volConfig, err := p.helper.GetVolumeConfig(ctx, req.Name, sizeBytes, req.Parameters, protocol, accessModes,
-		volumeMode, fsType)
+		volumeMode, fsType, requisiteTopologies, preferredTopologies, nil)
 	if err != nil {
 		p.helper.RecordVolumeEvent(ctx, req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
@@ -792,10 +811,18 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(
 		"protocol":     string(volume.Config.Protocol),
 	}
 
+	accessibleTopologies := make([]*csi.Topology, 0)
+	if volume.Config.AllowedTopologies != nil {
+		for _, segment := range volume.Config.AllowedTopologies {
+			accessibleTopologies = append(accessibleTopologies, &csi.Topology{Segments: segment})
+		}
+	}
+
 	return &csi.Volume{
-		CapacityBytes: capacity,
-		VolumeId:      volume.Config.Name,
-		VolumeContext: attributes,
+		CapacityBytes:      capacity,
+		VolumeId:           volume.Config.Name,
+		VolumeContext:      attributes,
+		AccessibleTopology: accessibleTopologies,
 	}, nil
 }
 

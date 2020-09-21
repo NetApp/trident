@@ -64,6 +64,7 @@ func (p *Plugin) Version() string {
 func (p *Plugin) GetVolumeConfig(
 	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
+	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 ) (*storage.VolumeConfig, error) {
 
 	accessMode := frontendcommon.CombineAccessModes(accessModes)
@@ -83,7 +84,8 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Create the volume config from all available info from the CSI request
-	return frontendcommon.GetVolumeConfig(name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode)
+	return frontendcommon.GetVolumeConfig(name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode,
+		requisiteTopology, preferredTopology)
 }
 
 // GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI

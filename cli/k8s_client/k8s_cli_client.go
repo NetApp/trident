@@ -2172,3 +2172,32 @@ func (c *KubectlClient) PatchObjectByLabel(label, namespace, kind, kindName stri
 
 	return nil
 }
+
+func (c *KubectlClient) IsTopologyInUse() (bool, error) {
+	cmd := exec.Command(c.cli, "get", "node", "-o=json")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return false, err
+	}
+	if err := cmd.Start(); err != nil {
+		return false, err
+	}
+
+	var nodeList *v1.NodeList
+	if err := json.NewDecoder(stdout).Decode(&nodeList); err != nil {
+		return false, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return false, err
+	}
+
+	for _, node := range nodeList.Items {
+		for key, _ := range node.Labels {
+			if strings.Contains(key, "topology.kubernetes.io") {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}

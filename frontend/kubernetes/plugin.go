@@ -49,6 +49,7 @@ import (
 type KubernetesPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
+	GetNode(ctx context.Context, nodeName string) (*v1.Node, error)
 }
 
 // StorageClassSummary captures relevant fields in the storage class that are needed during PV creation or PV resize.
@@ -653,6 +654,13 @@ func (p *Plugin) processPendingClaim(ctx context.Context, claim *v1.PersistentVo
 		"PV":        orchestratorClaimName,
 		"PV_volume": pv.Name,
 	}).Infof("Kubernetes frontend %s", message)
+}
+func (p *Plugin) GetNode(ctx context.Context, nodeName string) (*v1.Node, error) {
+
+	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
+
+	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	return node, err
 }
 
 func (p *Plugin) ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error) {

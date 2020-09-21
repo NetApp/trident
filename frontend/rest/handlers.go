@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"runtime"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -866,6 +867,7 @@ func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 
 type AddNodeResponse struct {
 	Name  string `json:"name"`
+	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
@@ -875,6 +877,9 @@ func (a *AddNodeResponse) setError(err error) {
 
 func (a *AddNodeResponse) isError() bool {
 	return a.Error != ""
+}
+func (a *AddNodeResponse) setTopologyLabels(payload map[string]string) {
+	a.TopologyLabels = payload
 }
 
 func (a *AddNodeResponse) logSuccess(ctx context.Context) {
@@ -896,6 +901,7 @@ func (a *AddNodeResponse) logFailure(ctx context.Context) {
 func AddNode(w http.ResponseWriter, r *http.Request) {
 	response := &AddNodeResponse{
 		Name:  "",
+		TopologyLabels: make(map[string]string),
 		Error: "",
 	}
 	UpdateGeneric(w, r, "node", response,
@@ -906,6 +912,38 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForAdd(err)
 			}
+
+			// Get topology labels from the K8s node object
+			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), string(config.ContextKubernetes))
+			if err != nil {
+				k8sFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
+			}
+			if err != nil {
+				Logc(r.Context()).Warn("Could not get Kubernetes helper frontend")
+			} else {
+				k8s, ok := k8sFrontend.(kubernetes.KubernetesPlugin)
+				if !ok {
+					err = fmt.Errorf("unable to obtain Kubernetes frontend")
+					response.setError(err)
+					return httpStatusCodeForAdd(err)
+				}
+				nodeDetails, err := k8s.GetNode(r.Context(), node.Name)
+				if err != nil {
+					response.setError(err)
+					return httpStatusCodeForAdd(err)
+				}
+				topologyLabels := make(map[string]string)
+				for k, v := range nodeDetails.Labels {
+					if strings.HasPrefix(k, "topology.kubernetes.io") {
+						topologyLabels[k] = v
+					}
+				}
+				node.TopologyLabels = topologyLabels
+				response.setTopologyLabels(topologyLabels)
+				Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
+					topologyLabels)
+			}
+
 			err = orchestrator.AddNode(r.Context(), node)
 			if err != nil {
 				response.setError(err)
