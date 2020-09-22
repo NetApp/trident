@@ -9,6 +9,25 @@ volumes that have been created by Trident and can also be used to schedule
 the creation of additional volumes (clones). This feature is available for
 Kubernetes ``1.17`` and above.
 
+Creating volume snapshots requires an external snapshot controller to be created,
+as well as some Custom Resource Definitions (CRDs). This is the responsibility of
+the Kubernetes orchestrator that is being used (E.g., Kubeadm, GKE, OpenShift).
+Check with your Kubernetes orchestrator to confirm these requirements are met.
+You can create an external snapshot-controller and snapshot CRDs using the code
+snippet below.
+
+.. code-block:: bash
+
+   $ cat snapshot-setup.sh
+   #!/bin/bash
+   # Create volume snapshot CRDs
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+   # Create the snapshot-controller in the default namespace.
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
 .. note::
 
    Volume snapshot is supported by the ``ontap-nas``, ``ontap-san``,
@@ -19,7 +38,7 @@ Kubernetes ``1.17`` and above.
 Trident handles the creation of VolumeSnapshots for its drivers as explained
 below:
 
-  * For the ``ontap-nas``, ``ontap-san``, ``aws-cvs`` and ``azure-netapp-files``
+  * For the ``ontap-nas``, ``ontap-san``, ``aws-cvs``, ``gcp-cvs`` and ``azure-netapp-files``
     drivers, each PV maps to a FlexVol. As a result, VolumeSnapshots are created
     as NetApp Snapshots. NetApp's Snapshot technology delivers more stability,
     scalability, recoverability, and performance than competing snapshot

@@ -3,6 +3,36 @@ Known issues
 
 This page contains a list of known issues that may be observed when using Trident.
 
+* An upstream Kubernetes `bug <https://github.com/kubernetes/kubernetes/issues/84226>`_
+  that could be encountered when rapidly attaching/detaching volumes has been
+  fixed with Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
+  and the
+  `v2.0.1 <https://github.com/kubernetes-csi/external-provisioner/blob/release-2.0/CHANGELOG/CHANGELOG-2.0.md#urgent-upgrade-notes>`_
+  release of the CSI external-provisioner sidecar. Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
+  will use the ``2.0.1`` release of the ``external-provisioner`` sidecar for all
+  Kubernetes clusters running ``1.17`` and above. If using Kubernetes ``1.16``
+  or below, you must upgrade your Kubernetes cluster to ``1.17`` or above for
+  Trident v20.07.1 to fix this issue.
+* A previously identified `issue <https://github.com/NetApp/trident/issues/430>`_
+  with updating the storage prefix for a Trident backend has been resolved with
+  Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_.
+  Users can work with backends that use an empty storage prefix (``""``) or one
+  that includes ``"-"``.
+* With Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
+  using the `v2.0.1 <https://github.com/kubernetes-csi/external-provisioner/blob/release-2.0/CHANGELOG/CHANGELOG-2.0.md#urgent-upgrade-notes>`_
+  release of the CSI external-provisioner sidecar, customers can set a blank ``fsType``
+  on the storageClass. For Kubernetes clusters
+  running ``1.17`` or above, upgrading to Trident ``20.07.1`` would enable users
+  to override the default ``ext4`` fsType. Setting the ``fsType`` blank
+  ("") for NAS volumes will make Trident set ``fsType=nas`` on all created volumes.
+* Trident has continually improved the resiliency for iSCSI volumes.
+  The `v20.07.0 <https://github.com/NetApp/trident/releases/tag/v20.07.0>`_
+  release implements
+  `multiple additional checks <https://github.com/NetApp/trident/issues/418#issuecomment-666019020>`_
+  that eliminate accidental deletions from occuring.
+* Trident may create multiple unintended secrets when it attempts to patch Trident
+  service accounts. This is a bug and **is fixed** with
+  `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_.
 * When installing Trident (using ``tridentctl`` or the Trident Operator) and
   using ``tridentctl`` to manage Trident, you must ensure the
   ``KUBECONFIG`` environment variable is set. This is necessary to indicate
