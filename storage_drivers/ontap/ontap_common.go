@@ -1840,6 +1840,7 @@ func GetSnapshot(
 					Config:    snapConfig,
 					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
 					SizeBytes: int64(size),
+					State:     storage.SnapshotStateOnline,
 				}, nil
 			}
 		}
@@ -1902,6 +1903,7 @@ func GetSnapshots(
 				},
 				Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
 				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
 			}
 
 			snapshots = append(snapshots, snapshot)
@@ -1962,6 +1964,7 @@ func CreateSnapshot(
 					Config:    snapConfig,
 					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
 					SizeBytes: int64(size),
+					State:     storage.SnapshotStateOnline,
 				}, nil
 			}
 		}

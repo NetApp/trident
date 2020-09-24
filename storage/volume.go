@@ -41,7 +41,9 @@ type VolumeConfig struct {
 	QoS                       string                 `json:"qos,omitempty"`
 	QoSType                   string                 `json:"type,omitempty"`
 	ServiceLevel              string                 `json:"serviceLevel,omitempty"`
+	CVSStorageClass           string                 `json:"cvsStorageClass,omitempty"`
 	Network                   string                 `json:"network,omitempty"`
+	Zone                      string                 `json:"zone,omitempty"`
 	ImportOriginalName        string                 `json:"importOriginalName,omitempty"`
 	ImportBackendUUID         string                 `json:"importBackendUUID,omitempty"`
 	ImportNotManaged          bool                   `json:"importNotManaged,omitempty"`

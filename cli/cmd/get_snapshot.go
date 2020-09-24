@@ -167,6 +167,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 			snapshot.Config.VolumeName,
 			snapshot.Created,
 			humanize.IBytes(uint64(snapshot.SizeBytes)),
+			string(snapshot.State),
 		})
 	}
 

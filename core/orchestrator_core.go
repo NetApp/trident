@@ -339,7 +339,7 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 	for _, s := range snapshots {
 		// TODO:  If the API evolves, check the Version field here.
 		var snapshot *storage.Snapshot
-		snapshot = storage.NewSnapshot(s.Config, s.Created, s.SizeBytes)
+		snapshot = storage.NewSnapshot(s.Config, s.Created, s.SizeBytes, s.State)
 		o.snapshots[snapshot.ID()] = snapshot
 		volume, ok := o.volumes[s.Config.VolumeName]
 		if !ok {
@@ -3063,7 +3063,10 @@ func (o *TridentOrchestrator) addSnapshotCleanup(
 	return err
 }
 
-func (o *TridentOrchestrator) GetSnapshot(ctx context.Context, volumeName, snapshotName string) (snapshotExternal *storage.SnapshotExternal, err error) {
+func (o *TridentOrchestrator) GetSnapshot(
+	ctx context.Context, volumeName, snapshotName string,
+) (snapshotExternal *storage.SnapshotExternal, err error) {
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3073,12 +3076,68 @@ func (o *TridentOrchestrator) GetSnapshot(ctx context.Context, volumeName, snaps
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	return o.getSnapshot(ctx, volumeName, snapshotName, true)
+}
+
+func (o *TridentOrchestrator) getSnapshot(
+	ctx context.Context, volumeName, snapshotName string, update bool,
+) (*storage.SnapshotExternal, error) {
+
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 	snapshot, found := o.snapshots[snapshotID]
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("snapshot %v was not found", snapshotName))
+	} else if snapshot.State != storage.SnapshotStateCreating && snapshot.State != storage.SnapshotStateUploading {
+		return snapshot.ConstructExternal(), nil
 	}
-	return snapshot.ConstructExternal(), nil
+
+	if updatedSnapshot, err := o.updateSnapshot(ctx, snapshot); err != nil {
+		return snapshot.ConstructExternal(), err
+	} else {
+		return updatedSnapshot.ConstructExternal(), nil
+	}
+}
+
+func (o *TridentOrchestrator) updateSnapshot(
+	ctx context.Context, snapshot *storage.Snapshot,
+) (*storage.Snapshot, error) {
+
+	// If the snapshot is known to be ready, just return it
+	if snapshot.State != storage.SnapshotStateCreating && snapshot.State != storage.SnapshotStateUploading {
+		return snapshot, nil
+	}
+
+	snapshotID := snapshot.Config.ID()
+	snapshot, ok := o.snapshots[snapshotID]
+	if !ok {
+		return snapshot, utils.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
+			snapshot.Config.Name, snapshot.Config.VolumeName))
+	}
+
+	volume, ok := o.volumes[snapshot.Config.VolumeName]
+	if !ok {
+		return snapshot, utils.NotFoundError(fmt.Sprintf("volume %s not found", snapshot.Config.VolumeName))
+	}
+
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		return snapshot, utils.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+	}
+
+	updatedSnapshot, err := backend.GetSnapshot(ctx, snapshot.Config)
+	if err != nil {
+		return snapshot, err
+	}
+
+	// If the snapshot state has changed, persist it here and in the store
+	if updatedSnapshot != nil && updatedSnapshot.State != snapshot.State {
+		o.snapshots[snapshotID] = updatedSnapshot
+		if err := o.storeClient.UpdateSnapshot(ctx, updatedSnapshot); err != nil {
+			Logc(ctx).Errorf("could not update snapshot %s in persistent store; %v", snapshotID, err)
+		}
+	}
+
+	return updatedSnapshot, nil
 }
 
 // deleteSnapshot does the necessary work to delete a snapshot entirely.  It does

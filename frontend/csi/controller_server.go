@@ -840,7 +840,7 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		SnapshotId:     storage.MakeSnapshotID(snapshot.Config.VolumeName, snapshot.Config.Name),
 		SourceVolumeId: snapshot.Config.VolumeName,
 		CreationTime:   &timestamp.Timestamp{Seconds: createdSeconds.Unix()},
-		ReadyToUse:     true,
+		ReadyToUse:     snapshot.State == storage.SnapshotStateOnline,
 	}, nil
 }
 

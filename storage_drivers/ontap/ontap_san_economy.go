@@ -923,6 +923,7 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 		Config:    snapConfig,
 		Created:   time.Unix(int64(lunInfo.CreationTimestamp()), 0).UTC().Format(storage.SnapshotTimestampFormat),
 		SizeBytes: int64(lunInfo.Size()),
+		State:     storage.SnapshotStateOnline,
 	}, nil
 
 }
@@ -999,6 +1000,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 				Created: time.Unix(int64(snapLunInfo.CreationTimestamp()), 0).
 					UTC().Format(storage.SnapshotTimestampFormat),
 				SizeBytes: int64(snapLunInfo.Size()),
+				State:     storage.SnapshotStateOnline,
 			}
 			snapshots = append(snapshots, snapshot)
 		}
@@ -1071,6 +1073,7 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 				Config:    snapConfig,
 				Created:   snap.Created,
 				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
 			}, nil
 		}
 	}

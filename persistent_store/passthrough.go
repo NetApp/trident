@@ -460,6 +460,10 @@ func (c *PassthroughClient) GetSnapshots(context.Context) ([]*storage.SnapshotPe
 	return make([]*storage.SnapshotPersistent, 0), nil
 }
 
+func (c *PassthroughClient) UpdateSnapshot(context.Context, *storage.Snapshot) error {
+	return nil
+}
+
 func (c *PassthroughClient) DeleteSnapshot(context.Context, *storage.Snapshot) error {
 	return nil
 }

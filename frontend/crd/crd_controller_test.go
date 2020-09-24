@@ -499,7 +499,7 @@ func TestCrdController2(t *testing.T) {
 	}
 	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 	size := int64(1000000000)
-	snapshot := storage.NewSnapshot(testSnapshotConfig, now, size)
+	snapshot := storage.NewSnapshot(testSnapshotConfig, now, size, storage.SnapshotStateOnline)
 	snapshotCRD, err := tridentv1.NewTridentSnapshot(snapshot.ConstructPersistent())
 	if err != nil {
 		t.Fatal("Unable to construct TridentSnapshot CRD: ", err)

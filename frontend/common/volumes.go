@@ -144,9 +144,11 @@ func GetVolumeConfig(
 		CloneSourceVolume:   utils.GetV(opts, "from", ""),
 		CloneSourceSnapshot: utils.GetV(opts, "fromSnap|fromSnapshot", ""),
 		ServiceLevel:        utils.GetV(opts, "serviceLevel", ""),
+		CVSStorageClass:     utils.GetV(opts, "cvsStorageClass", ""),
 		Network:             utils.GetV(opts, "network", ""),
 		RequisiteTopologies: requisiteTopologies,
 		PreferredTopologies: preferredTopologies,
+		Zone:                utils.GetV(opts, "zone", ""),
 	}, nil
 }
 

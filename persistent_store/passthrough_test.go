@@ -114,6 +114,7 @@ func getFakeSnapshot() *storage.Snapshot {
 		Config:    snapConfig,
 		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
 		SizeBytes: 1000000000,
+		State:     storage.SnapshotStateOnline,
 	}
 }
 

@@ -33,21 +33,31 @@ func (c *SnapshotConfig) Validate() error {
 
 type Snapshot struct {
 	Config    *SnapshotConfig
-	Created   string `json:"dateCreated"` // The UTC time that the snapshot was created, in RFC3339 format
-	SizeBytes int64  `json:"size"`        // The size of the volume at the time the snapshot was created
-	State     SnapshotState
+	Created   string        `json:"dateCreated"` // The UTC time that the snapshot was created, in RFC3339 format
+	SizeBytes int64         `json:"size"`        // The size of the volume at the time the snapshot was created
+	State     SnapshotState `json:"state"`
 }
 
 type SnapshotState string
 
 const (
+	SnapshotStateCreating       = SnapshotState("creating")  // Request accepted, data upload not started
+	SnapshotStateUploading      = SnapshotState("uploading") // Snapshot cut, being uploaded, not ready for use
 	SnapshotStateOnline         = SnapshotState("online")
 	SnapshotStateMissingBackend = SnapshotState("missing_backend")
 	SnapshotStateMissingVolume  = SnapshotState("missing_volume")
 )
 
+func (s SnapshotState) IsCreating() bool {
+	return s == SnapshotStateCreating
+}
+
+func (s SnapshotState) IsUploading() bool {
+	return s == SnapshotStateUploading
+}
+
 func (s SnapshotState) IsOnline() bool {
-	return s == SnapshotStateOnline
+	return s == SnapshotStateOnline || s == ""
 }
 
 func (s SnapshotState) IsMissingBackend() bool {
@@ -70,12 +80,12 @@ type SnapshotPersistent struct {
 	Snapshot
 }
 
-func NewSnapshot(config *SnapshotConfig, created string, sizeBytes int64) *Snapshot {
+func NewSnapshot(config *SnapshotConfig, created string, sizeBytes int64, state SnapshotState) *Snapshot {
 	return &Snapshot{
 		Config:    config,
 		Created:   created,
 		SizeBytes: sizeBytes,
-		State:     SnapshotStateOnline,
+		State:     state,
 	}
 }
 

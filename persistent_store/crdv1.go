@@ -1306,6 +1306,25 @@ func (k *CRDClientV1) GetSnapshots(ctx context.Context) ([]*storage.SnapshotPers
 	return results, nil
 }
 
+func (k *CRDClientV1) UpdateSnapshot(ctx context.Context, update *storage.Snapshot) error {
+
+	snapshot, err := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Get(ctx, v1.NameFix(update.ID()), getOpts)
+	if err != nil {
+		return err
+	}
+
+	if err = snapshot.Apply(update.ConstructPersistent()); err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentSnapshots(k.namespace).Update(ctx, snapshot, updateOpts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (k *CRDClientV1) DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	return k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, v1.NameFix(snapshot.ID()), k.deleteOpts())
 }

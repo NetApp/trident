@@ -73,6 +73,7 @@ type Client interface {
 	AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotPersistent, error)
 	GetSnapshots(ctx context.Context) ([]*storage.SnapshotPersistent, error)
+	UpdateSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshots(ctx context.Context) error

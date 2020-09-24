@@ -68,7 +68,7 @@ func getFakeSnapshot() *storage.Snapshot {
 
 	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 	size := int64(1000000000)
-	testSnapshot := storage.NewSnapshot(testSnapshotConfig, now, size)
+	testSnapshot := storage.NewSnapshot(testSnapshotConfig, now, size, storage.SnapshotStateOnline)
 
 	return testSnapshot
 }

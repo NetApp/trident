@@ -1195,6 +1195,7 @@ func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 				Config:    snapConfig,
 				Created:   snap.CreateTime,
 				SizeBytes: volume.TotalSize,
+				State:     storage.SnapshotStateOnline,
 			}, nil
 		}
 	}
@@ -1255,6 +1256,7 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 			},
 			Created:   snap.CreateTime,
 			SizeBytes: volume.TotalSize,
+			State:     storage.SnapshotStateOnline,
 		}
 
 		snapshots = append(snapshots, snapshot)
@@ -1302,6 +1304,7 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 		Config:    snapConfig,
 		Created:   snapshot.CreateTime,
 		SizeBytes: sourceVolume.TotalSize,
+		State:     storage.SnapshotStateOnline,
 	}, nil
 }
 

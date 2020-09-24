@@ -1054,6 +1054,7 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 				Config:    snapConfig,
 				Created:   created,
 				SizeBytes: volume.QuotaInBytes,
+				State:     storage.SnapshotStateOnline,
 			}, nil
 		}
 	}
@@ -1115,6 +1116,7 @@ func (d *NFSStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 			},
 			Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
+			State:     storage.SnapshotStateOnline,
 		})
 	}
 
@@ -1173,6 +1175,7 @@ func (d *NFSStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 		Config:    snapConfig,
 		Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
 		SizeBytes: sourceVolume.QuotaInBytes,
+		State:     storage.SnapshotStateOnline,
 	}, nil
 }
 

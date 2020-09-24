@@ -45,3 +45,6 @@ const DefaultVolumeSize = "1G"
 // Volume label names
 const TridentLabelTag = "trident"
 const ProvisioningLabelTag = "provisioning"
+
+// Topology label names
+const TopologyLabelPrefix = "topology.kubernetes.io"

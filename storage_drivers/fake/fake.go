@@ -864,6 +864,7 @@ func (d *StorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.
 		Config:    snapConfig,
 		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
 		SizeBytes: int64(volume.SizeBytes),
+		State:     storage.SnapshotStateOnline,
 	}
 	d.Snapshots[internalVolName][internalSnapName] = snapshot
 	d.DestroyedSnapshots[snapConfig.ID()] = false

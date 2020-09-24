@@ -47,6 +47,9 @@ func (in *TridentSnapshot) Apply(persistent *storage.SnapshotPersistent) error {
 	in.SizeBytes = persistent.SizeBytes
 	in.Created = persistent.Created
 	in.State = string(persistent.State)
+	if in.State == "" {
+		in.State = string(storage.SnapshotStateOnline)
+	}
 
 	return nil
 }
@@ -60,6 +63,9 @@ func (in *TridentSnapshot) Persistent() (*storage.SnapshotPersistent, error) {
 	persistent.SizeBytes = in.SizeBytes
 	persistent.Created = in.Created
 	persistent.State = storage.SnapshotState(in.State)
+	if persistent.State == "" {
+		persistent.State = storage.SnapshotStateOnline
+	}
 
 	return persistent, json.Unmarshal(in.Spec.Raw, persistent.Config)
 }

@@ -12,6 +12,7 @@ const (
 	StateDeleting  = "deleting"
 	StateDeleted   = "deleted"
 	StateError     = "error"
+	StateRestoring = "restoring"
 
 	ProtocolTypeNFSv3 = "NFSv3"
 	ProtocolTypeNFSv4 = "NFSv4"
@@ -27,6 +28,9 @@ const (
 
 	AccessReadOnly  = "ReadOnly"
 	AccessReadWrite = "ReadWrite"
+
+	StorageClassHardware = "hardware"
+	StorageClassSoftware = "software"
 )
 
 // CallResponseError is used for errors on RESTful calls to return what went wrong
@@ -54,6 +58,7 @@ type Volume struct {
 	Name                  string         `json:"name"`
 	OwnerID               string         `json:"ownerId"`
 	Region                string         `json:"region"`
+	Zone                  string         `json:"zone,omitempty"`
 	VolumeID              string         `json:"volumeId"`
 	CreationToken         string         `json:"creationToken"`
 	ExportPolicy          ExportPolicy   `json:"exportPolicy"`
@@ -69,6 +74,7 @@ type Volume struct {
 	SnapshotPolicy        SnapshotPolicy `json:"snapshotPolicy"`
 	Timezone              string         `json:"timezone,omitempty"`
 	UsedBytes             int            `json:"usedBytes"`
+	StorageClass          string         `json:"storageClass"`
 }
 
 type MountPoint struct {
@@ -85,6 +91,7 @@ type Job struct{}
 type VolumeCreateRequest struct {
 	Name              string         `json:"name"`
 	Region            string         `json:"region"`
+	Zone              string         `json:"zone,omitempty"`
 	BackupPolicy      *BackupPolicy  `json:"backupPolicy,omitempty"`
 	CreationToken     string         `json:"creationToken"`
 	ExportPolicy      ExportPolicy   `json:"exportPolicy,omitempty"`
@@ -94,6 +101,7 @@ type VolumeCreateRequest struct {
 	QuotaInBytes      int64          `json:"quotaInBytes"`
 	SecurityStyle     string         `json:"securityStyle"`
 	ServiceLevel      string         `json:"serviceLevel"`
+	StorageClass      string         `json:"storageClass,omitempty"`
 	SnapReserve       *int64         `json:"snapReserve,omitempty"`
 	SnapshotDirectory bool           `json:"snapshotDirectory"`
 	SnapshotPolicy    SnapshotPolicy `json:"snapshotPolicy,omitempty"`
@@ -205,4 +213,23 @@ type SnapshotCreateRequest struct {
 type SnapshotRevertRequest struct {
 	Name   string `json:"name"`
 	Region string `json:"region"`
+}
+
+type Backup struct {
+	Created               time.Time `json:"created"`
+	VolumeID              string    `json:"volumeId"`
+	LifeCycleState        string    `json:"lifeCycleState"`
+	LifeCycleStateDetails string    `json:"lifeCycleStateDetails"`
+	Name                  string    `json:"name"`
+	OwnerID               string    `json:"ownerId"`
+	Region                string    `json:"region"`
+	BackupID              string    `json:"backupId"`
+	LogicalSize           int64     `json:"logicalSize"`
+	BytesTransferred      int64     `json:"bytesTransferred"`
+	ProgressPercentage    int       `json:"progressPercentage"`
+}
+
+type BackupCreateRequest struct {
+	VolumeID string `json:"volumeId"`
+	Name     string `json:"name"`
 }

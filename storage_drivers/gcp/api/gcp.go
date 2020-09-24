@@ -473,8 +473,8 @@ func (d *Client) GetVolumeByID(ctx context.Context, volumeId string) (*Volume, e
 	return &volume, nil
 }
 
-func (d *Client) WaitForVolumeState(
-	ctx context.Context, volume *Volume, desiredState string, abortStates []string, maxElapsedTime time.Duration,
+func (d *Client) WaitForVolumeStates(
+	ctx context.Context, volume *Volume, desiredStates []string, abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
 
 	volumeState := ""
@@ -489,14 +489,15 @@ func (d *Client) WaitForVolumeState(
 
 		volumeState = f.LifeCycleState
 
-		if volumeState == desiredState {
+		if utils.SliceContainsString(desiredStates, volumeState) {
 			return nil
 		}
 
 		if f.LifeCycleStateDetails != "" {
-			err = fmt.Errorf("volume state is %s, not %s: %s", volumeState, desiredState, f.LifeCycleStateDetails)
+			err = fmt.Errorf("volume state is %s, not any of %s: %s",
+				f.LifeCycleState, desiredStates, f.LifeCycleStateDetails)
 		} else {
-			err = fmt.Errorf("volume state is %s, not %s", volumeState, desiredState)
+			err = fmt.Errorf("volume state is %s, not any of %s", f.LifeCycleState, desiredStates)
 		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
@@ -521,19 +522,19 @@ func (d *Client) WaitForVolumeState(
 	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
 	stateBackoff.Multiplier = 1.414
 
-	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for volume state.")
+	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for volume state.")
 
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if terminalStateErr, ok := err.(*TerminalStateError); ok {
 			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
 		} else {
-			Logc(ctx).Errorf("Volume state was not %s after %3.2f seconds.",
-				desiredState, stateBackoff.MaxElapsedTime.Seconds())
+			Logc(ctx).Errorf("Volume state was not any of %s after %3.2f seconds.",
+				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
 
-	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired volume state reached.")
+	Logc(ctx).WithField("desiredStates", desiredStates).Debug("Desired volume state reached.")
 
 	return volumeState, nil
 }
@@ -915,12 +916,6 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 		return err
 	}
 
-	//var snapshot Snapshot
-	//err = json.Unmarshal(responseBody, &snapshot)
-	//if err != nil {
-	//	return nil, fmt.Errorf("could not parse snapshot data: %s; %v", string(responseBody), err)
-	//}
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
@@ -982,6 +977,197 @@ func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *S
 	return nil
 }
 
+func (d *Client) GetBackupsForVolume(ctx context.Context, volume *Volume) (*[]Backup, error) {
+
+	resourcePath := fmt.Sprintf("/Volumes/%s/Backups", volume.VolumeID)
+
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, errors.New("failed to read backups")
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var backups []Backup
+	err = json.Unmarshal(responseBody, &backups)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse backup data: %s; %v", string(responseBody), err)
+	}
+
+	Logc(ctx).WithField("count", len(backups)).Debug("Read volume backups.")
+
+	return &backups, nil
+}
+
+func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupName string) (*Backup, error) {
+
+	backups, err := d.GetBackupsForVolume(ctx, volume)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, backup := range *backups {
+		if backup.Name == backupName {
+
+			Logc(ctx).WithFields(log.Fields{
+				"backup": backupName,
+				"volume": volume.CreationToken,
+			}).Debug("Found volume backup.")
+
+			return &backup, nil
+		}
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"backup": backupName,
+		"volume": volume.CreationToken,
+	}).Error("Backup not found.")
+
+	return nil, fmt.Errorf("backup %s not found", backupName)
+}
+
+func (d *Client) GetBackupByID(ctx context.Context, backupId string) (*Backup, error) {
+
+	resourcePath := fmt.Sprintf("/Backups/%s", backupId)
+
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, errors.New("failed to get backup")
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var backup Backup
+	err = json.Unmarshal(responseBody, &backup)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse backup data: %s; %v", string(responseBody), err)
+	}
+
+	return &backup, nil
+}
+
+func (d *Client) WaitForBackupStates(
+	ctx context.Context, backup *Backup, desiredStates []string, abortStates []string, maxElapsedTime time.Duration,
+) error {
+
+	var b *Backup
+	var err error
+
+	checkBackupState := func() error {
+
+		b, err = d.GetBackupByID(ctx, backup.BackupID)
+		if err != nil {
+			return fmt.Errorf("could not get backup status; %v", err)
+		}
+
+		if utils.SliceContainsString(desiredStates, b.LifeCycleState) {
+			return nil
+		}
+
+		if b.LifeCycleStateDetails != "" {
+			err = fmt.Errorf("backup state is %s, not any of %s: %s",
+				b.LifeCycleState, desiredStates, b.LifeCycleStateDetails)
+		} else {
+			err = fmt.Errorf("backup state is %s, not any of %s", b.LifeCycleState, desiredStates)
+		}
+
+		// Return a permanent error to stop retrying if we reached one of the abort states
+		for _, abortState := range abortStates {
+			if b.LifeCycleState == abortState {
+				return backoff.Permanent(TerminalState(err))
+			}
+		}
+
+		return err
+	}
+	stateNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(log.Fields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Waiting for backup state.")
+	}
+	stateBackoff := backoff.NewExponentialBackOff()
+	stateBackoff.MaxElapsedTime = maxElapsedTime
+	stateBackoff.MaxInterval = 5 * time.Second
+	stateBackoff.RandomizationFactor = 0.1
+	stateBackoff.InitialInterval = 2 * time.Second
+	stateBackoff.Multiplier = 1.414
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for backup state.")
+
+	if err := backoff.RetryNotify(checkBackupState, stateBackoff, stateNotify); err != nil {
+		if terminalStateErr, ok := err.(*TerminalStateError); ok {
+			Logc(ctx).Errorf("Backup reached terminal state: %v", terminalStateErr)
+		} else {
+			Logc(ctx).Errorf("Backup state was not any of %s after %3.2f seconds.",
+				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
+		}
+		return err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"state":         b.LifeCycleState,
+		"desiredStates": desiredStates,
+	}).Debug("Desired backup state reached.")
+
+	return nil
+}
+
+func (d *Client) CreateBackup(ctx context.Context, request *BackupCreateRequest) error {
+
+	resourcePath := "/Backups"
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
+	if err != nil {
+		return err
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"name":       request.Name,
+		"statusCode": response.StatusCode,
+	}).Info("Volume backup created.")
+
+	return nil
+}
+
+func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backup) error {
+
+	resourcePath := fmt.Sprintf("/Volumes/%s/Backups/%s", volume.VolumeID, backup.BackupID)
+
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
+	if err != nil {
+		return errors.New("failed to delete backup")
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"backup": backup.Name,
+		"volume": volume.CreationToken,
+	}).Info("Deleted volume backup.")
+
+	return nil
+}
+
 func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody []byte) error {
 
 	if response.StatusCode >= 300 {
@@ -1034,7 +1220,7 @@ func GCPAPIServiceLevelFromUserServiceLevel(userServiceLevel string) string {
 
 func IsTransitionalState(volumeState string) bool {
 	switch volumeState {
-	case StateCreating, StateUpdating, StateDeleting:
+	case StateCreating, StateUpdating, StateDeleting, StateRestoring:
 		return true
 	default:
 		return false

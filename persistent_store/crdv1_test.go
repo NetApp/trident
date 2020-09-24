@@ -1006,7 +1006,7 @@ func TestKubernetesSnapshot(t *testing.T) {
 	}
 	now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 	size := int64(1000000000)
-	snap1 := storage.NewSnapshot(snap1Config, now, size)
+	snap1 := storage.NewSnapshot(snap1Config, now, size, storage.SnapshotStateOnline)
 	err = p.AddSnapshot(ctx(), snap1)
 	if err != nil {
 		t.Error(err.Error())
@@ -1097,7 +1097,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 		}
 		now := time.Now().UTC().Format(storage.SnapshotNameFormat)
 		size := int64(1000000000)
-		snap := storage.NewSnapshot(snapConfig, now, size)
+		snap := storage.NewSnapshot(snapConfig, now, size, storage.SnapshotStateOnline)
 		err = p.AddSnapshot(ctx(), snap)
 		if err != nil {
 			t.Error(err.Error())

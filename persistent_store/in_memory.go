@@ -380,6 +380,15 @@ func (c *InMemoryClient) GetSnapshots(context.Context) ([]*storage.SnapshotPersi
 	return ret, nil
 }
 
+func (c *InMemoryClient) UpdateSnapshot(_ context.Context, snapshot *storage.Snapshot) error {
+	// UpdateSnapshot requires the snapshot to already exist.
+	if _, ok := c.snapshots[snapshot.ID()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, snapshot.Config.Name)
+	}
+	c.snapshots[snapshot.ID()] = snapshot.ConstructPersistent()
+	return nil
+}
+
 // DeleteSnapshot deletes a snapshot from the persistent store
 func (c *InMemoryClient) DeleteSnapshot(_ context.Context, snapshot *storage.Snapshot) error {
 	if _, ok := c.snapshots[snapshot.ID()]; !ok {
