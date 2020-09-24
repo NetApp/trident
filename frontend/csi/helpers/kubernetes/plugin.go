@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -978,6 +979,23 @@ func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType strin
 		}
 		Logc(ctx).WithFields(logFields).Debug("Node deleted from cache.")
 	}
+}
+
+func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
+
+	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
+
+	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	if err != nil {
+		return nil, err
+	}
+	topologyLabels := make(map[string]string)
+	for k, v := range node.Labels {
+		if strings.HasPrefix(k, "topology.kubernetes.io") {
+			topologyLabels[k] = v
+		}
+	}
+	return topologyLabels, err
 }
 
 // SupportsFeature accepts a CSI feature and returns true if the

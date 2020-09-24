@@ -38,6 +38,10 @@ type HybridPlugin interface {
 	// a SnapshotConfig structure as needed by Trident to create a new snapshot.
 	GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error)
 
+	// GetNodeTopologyLabels returns topology labels for a given node
+	// Example: map[string]string{"topology.kubernetes.io/region": "us-east1"}
+	GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error)
+
 	// RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 	// event message in a manner appropriate to the container orchestrator.
 	RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string)

@@ -98,6 +98,10 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 	}, nil
 }
 
+func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
+	return map[string]string{}, nil
+}
+
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 // event message to the debug log.
 func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {

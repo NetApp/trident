@@ -10,13 +10,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"runtime"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
 	"github.com/netapp/trident/frontend/kubernetes"
@@ -913,36 +913,33 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 
-			// Get topology labels from the K8s node object
-			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), string(config.ContextKubernetes))
+			var csiFrontend frontend.Plugin
+			csiFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
 			if err != nil {
-				k8sFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
+				csiFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.PlainCSIHelper)
 			}
 			if err != nil {
-				Logc(r.Context()).Warn("Could not get Kubernetes helper frontend")
-			} else {
-				k8s, ok := k8sFrontend.(kubernetes.KubernetesPlugin)
-				if !ok {
-					err = fmt.Errorf("unable to obtain Kubernetes frontend")
-					response.setError(err)
-					return httpStatusCodeForAdd(err)
-				}
-				nodeDetails, err := k8s.GetNode(r.Context(), node.Name)
-				if err != nil {
-					response.setError(err)
-					return httpStatusCodeForAdd(err)
-				}
-				topologyLabels := make(map[string]string)
-				for k, v := range nodeDetails.Labels {
-					if strings.HasPrefix(k, "topology.kubernetes.io") {
-						topologyLabels[k] = v
-					}
-				}
-				node.TopologyLabels = topologyLabels
-				response.setTopologyLabels(topologyLabels)
-				Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
-					topologyLabels)
+				err = fmt.Errorf("could not get CSI helper frontend")
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
 			}
+
+			helper, ok := csiFrontend.(helpers.HybridPlugin)
+			if !ok {
+				err = fmt.Errorf("could not get CSI hybrid frontend")
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			topologyLabels, err := helper.GetNodeTopologyLabels(r.Context(), node.Name)
+			if err != nil {
+				response.setError(err)
+				return httpStatusCodeForAdd(err)
+			}
+			node.TopologyLabels = topologyLabels
+			node.TopologyLabels = topologyLabels
+			response.setTopologyLabels(topologyLabels)
+			Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
+				topologyLabels)
 
 			err = orchestrator.AddNode(r.Context(), node)
 			if err != nil {
