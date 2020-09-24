@@ -20,10 +20,8 @@ Driver              Protocol Mount Type Access Modes Supported
 ontap-nas           NFS      File       RWO,RWX,ROX
 ontap-nas-economy   NFS      File       RWO,RWX,ROX
 ontap-nas-flexgroup NFS      File       RWO,RWX,ROX
-ontap-san           iSCSI    Block      RWO,ROX,RWX
-ontap-san-economy   iSCSI    Block      RWO,ROX,RWX
-ontap-san           iSCSI    File       RWO,ROX
-ontap-san-economy   iSCSI    File       RWO,ROX
+ontap-san           iSCSI    Block      RWO,ROX
+ontap-san-economy   iSCSI    Block      RWO,ROX
 =================== ======== ========== ======================
 
 .. note::
