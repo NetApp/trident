@@ -37,7 +37,7 @@ const (
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
-var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
+var pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
 
@@ -2205,7 +2205,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 
 	out, err = execCommand(ctx, "multipathd", "show", "daemon")
 	if err == nil {
-		if pidRunningRegex.MatchString(string(out)) {
+		if pidRunningOrIdleRegex.MatchString(string(out)) {
 			Logc(ctx).Debug("multipathd is running")
 			return true
 		}
