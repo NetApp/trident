@@ -587,9 +587,19 @@ If the Trident pod is destroyed, will we lose the data?
 No data will be lost if the Trident pod is destroyed. Trident's metadata will be stored in CRD objects.
 All PVs that have been provisioned by Trident will function normally.
 
+
 My storage system's password has changed and Trident no longer works, how do I recover?
 ---------------------------------------------------------------------------------------
 
 Update the backend's password with a ``tridentctl update backend myBackend -f </path/to_new_backend.json> -n trident``.
 Replace `myBackend` in the example with your backend name, and `/path/to_new_backend.json` with the path to the correct
 backend.json file.
+
+
+Trident cannot find my Kubernetes node, how do I fix this?
+----------------------------------------------------------
+
+There are two likely scenarios why Trident does not find a Kubernetes node. It can be because of a networking issue
+within Kubernetes or a DNS issue. The Trident node daemonset that runs on each Kubernetes node must be able to
+communicate with the Trident controller to register the node with Trident. If networking changes occurred after Trident
+was installed this problem may only be observed with new Kubernetes nodes that are added to the cluster.

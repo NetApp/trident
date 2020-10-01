@@ -239,9 +239,9 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 				"backend":                        newBackend.Name,
 				"backendUUID":                    newBackend.BackendUUID,
 				"persistentBackends.BackendUUID": b.BackendUUID,
-				"online":                         newBackend.Online,
-				"state":                          newBackend.State,
-				"handler":                        "Bootstrap",
+				"online":  newBackend.Online,
+				"state":   newBackend.State,
+				"handler": "Bootstrap",
 			}).Info("Added an existing backend.")
 		} else {
 			Logc(ctx).WithFields(log.Fields{
@@ -3818,6 +3818,9 @@ func (o *TridentOrchestrator) GetNode(ctx context.Context, nName string) (node *
 
 	node, found := o.nodes[nName]
 	if !found {
+		Logc(ctx).WithFields(log.Fields{"node": nName}).Info(
+			"There may exist a networking or DNS issue preventing this node from registering with the" +
+				" Trident controller")
 		return nil, utils.NotFoundError(fmt.Sprintf("node %v was not found", nName))
 	}
 	return node, nil
