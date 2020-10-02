@@ -875,6 +875,10 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	ctx context.Context, flexvol string, newQtreeSizeBytes uint64,
 ) (uint64, error) {
 
+	// TODO: I'm not convinced the snapshot reserve is working.
+	//  Also I think I need to convert the snapshot size to bytes. Also,
+	//  Andrew said to do the max of (quotas + snapshot size) or (quotas + snap reserve).
+	//  I'm not quite sure how to work with the percentage.
 	// Get more info about the Flexvol
 	volAttrs, err := d.API.VolumeGet(flexvol)
 	if err != nil {
@@ -895,7 +899,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 				"created":                 snap.AccessTime(),
 				"percentageOfTotalBlocks": snap.PercentageOfTotalBlocks(),
 			}).Debug("TORI: Found snapshot.")
-			snapshotSize = (float64(snap.PercentageOfTotalBlocks()) / 100.0) * float64(volSpaceAttrs.Size())
+			snapshotSize += (float64(snap.PercentageOfTotalBlocks()) / 100.0) * float64(volSpaceAttrs.Size())
 		}
 	}
 
