@@ -882,22 +882,20 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	}
 	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
 	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
+	var snapshotSize float64
 	snapListResponse, err := d.API.SnapshotList(flexvol)
 	if err = api.GetError(ctx, snapListResponse, err); err != nil {
 		return 0, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
-			if snap.Name() == flexvol {
-
-				Logc(ctx).WithFields(log.Fields{
-					"snapshotName":            snap.Name(),
-					"volumeName":              flexvol,
-					"created":                 snap.AccessTime(),
-					"percentageOfTotalBlocks": snap.PercentageOfTotalBlocks(),
-					"percentageOfUsedBlocks":  snap.PercentageOfUsedBlocks(),
-				}).Debug("TORI: Found snapshot.")
-			}
+			Logc(ctx).WithFields(log.Fields{
+				"snapshotName":            snap.Name(),
+				"volumeName":              flexvol,
+				"created":                 snap.AccessTime(),
+				"percentageOfTotalBlocks": snap.PercentageOfTotalBlocks(),
+			}).Debug("TORI: Found snapshot.")
+			snapshotSize = (float64(snap.PercentageOfTotalBlocks()) / 100.0) * float64(volSpaceAttrs.Size())
 		}
 	}
 
@@ -906,12 +904,13 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
+	usableSpaceBytes := float64(newQtreeSizeBytes+totalDiskLimitBytes) + snapshotSize
 	flexvolSizeBytes := uint64(usableSpaceBytes / snapReserveDivisor)
 
 	Logc(ctx).WithFields(log.Fields{
 		"flexvol":             flexvol,
 		"snapReserveDivisor":  snapReserveDivisor,
+		"snapshotSize":        snapshotSize,
 		"totalDiskLimitBytes": totalDiskLimitBytes,
 		"newQtreeSizeBytes":   newQtreeSizeBytes,
 		"flexvolSizeBytes":    flexvolSizeBytes,
