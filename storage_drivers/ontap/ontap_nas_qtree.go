@@ -882,6 +882,24 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	}
 	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
 	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
+	snapListResponse, err := d.API.SnapshotList(flexvol)
+	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+		return 0, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+	if snapListResponse.Result.AttributesListPtr != nil {
+		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
+			if snap.Name() == flexvol {
+
+				Logc(ctx).WithFields(log.Fields{
+					"snapshotName":            snap.Name(),
+					"volumeName":              flexvol,
+					"created":                 snap.AccessTime(),
+					"percentageOfTotalBlocks": snap.PercentageOfTotalBlocks(),
+					"percentageOfUsedBlocks":  snap.PercentageOfUsedBlocks(),
+				}).Debug("TORI: Found snapshot.")
+			}
+		}
+	}
 
 	totalDiskLimitBytes, err := d.getTotalHardDiskLimitQuota(flexvol)
 	if err != nil {
