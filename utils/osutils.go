@@ -670,7 +670,7 @@ func getDeviceInfoForLUN(
 		devicePath = "/dev/" + devices[0]
 	}
 
-	err = ensureDeviceReadable(ctx, devicePath)
+	err = ensureDeviceReadableWithRetry(ctx, devicePath)
 	if err != nil {
 		return nil, err
 	}
@@ -2265,6 +2265,33 @@ func getFSType(ctx context.Context, device string) (string, error) {
 		}
 	}
 	return fsType, nil
+}
+
+// ensureDeviceReadableWithRetry reads first 4 KiBs of the device to ensures it is readable and retries on errors
+func ensureDeviceReadableWithRetry(ctx context.Context, device string) error {
+	readNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Failed to read the device, retrying.")
+	}
+
+	attemptToRead := func() error {
+		return ensureDeviceReadable(ctx, device)
+	}
+
+	maxDuration := 30 * time.Second
+
+	readBackoff := backoff.NewExponentialBackOff()
+	readBackoff.InitialInterval = 2 * time.Second
+	readBackoff.Multiplier = 2
+	readBackoff.RandomizationFactor = 0.1
+	readBackoff.MaxElapsedTime = maxDuration
+
+	// Run the read check using an exponential backoff
+	if err := backoff.RetryNotify(attemptToRead, readBackoff, readNotify); err != nil {
+		Logc(ctx).Errorf("Could not read device %v after %3.2f seconds.", device, maxDuration.Seconds())
+		return err
+	}
+
+	return nil
 }
 
 // ensureDeviceReadable reads first 4 KiBs of the device to ensures it is readable
