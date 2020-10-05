@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/netapp/trident/config"
 
 	log "github.com/sirupsen/logrus"

@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"k8s.io/api/policy/v1beta1"
-	v13 "k8s.io/api/rbac/v1"
-	v1beta12 "k8s.io/api/storage/v1beta1"
-	"k8s.io/apimachinery/pkg/types"
 	"os/exec"
 	"regexp"
 	"strings"
 	"time"
+
+	"k8s.io/api/policy/v1beta1"
+	v13 "k8s.io/api/rbac/v1"
+	v1beta12 "k8s.io/api/storage/v1beta1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ghodss/yaml"
@@ -2192,7 +2193,7 @@ func (c *KubectlClient) IsTopologyInUse() (bool, error) {
 	}
 
 	for _, node := range nodeList.Items {
-		for key, _ := range node.Labels {
+		for key := range node.Labels {
 			if strings.Contains(key, "topology.kubernetes.io") {
 				return true, nil
 			}

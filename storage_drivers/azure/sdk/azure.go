@@ -148,9 +148,9 @@ func volumeShortname(full string) string {
 }
 
 // serviceLevelFromString converts a string into a predefined service level
-func serviceLevelFromString(level string) netapp.ServiceLevel {
-	return netapp.ServiceLevel(level)
-}
+// func serviceLevelFromString(level string) netapp.ServiceLevel {
+// 	return netapp.ServiceLevel(level)
+// }
 
 // exportPolicyExportOne converts one export rule at a time on behalf of exportPolicyExport
 func exportPolicyExportOne(er *ExportRule) *netapp.ExportPolicyRule {

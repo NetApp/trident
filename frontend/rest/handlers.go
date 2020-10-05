@@ -866,9 +866,9 @@ func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 }
 
 type AddNodeResponse struct {
-	Name  string `json:"name"`
+	Name           string            `json:"name"`
 	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
-	Error string `json:"error,omitempty"`
+	Error          string            `json:"error,omitempty"`
 }
 
 func (a *AddNodeResponse) setError(err error) {
@@ -900,9 +900,9 @@ func (a *AddNodeResponse) logFailure(ctx context.Context) {
 
 func AddNode(w http.ResponseWriter, r *http.Request) {
 	response := &AddNodeResponse{
-		Name:  "",
+		Name:           "",
 		TopologyLabels: make(map[string]string),
-		Error: "",
+		Error:          "",
 	}
 	UpdateGeneric(w, r, "node", response,
 		func(name string, body []byte) int {

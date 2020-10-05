@@ -304,14 +304,14 @@ func getVolumeConfig(
 	}
 
 	return &storage.VolumeConfig{
-		Name:               name,
-		Size:               fmt.Sprintf("%d", size.Value()),
-		Protocol:           config.Protocol(getAnnotation(annotations, AnnProtocol)),
-		SnapshotPolicy:     getAnnotation(annotations, AnnSnapshotPolicy),
-		SnapshotReserve:    getAnnotation(annotations, AnnSnapshotReserve),
-		SnapshotDir:        getAnnotation(annotations, AnnSnapshotDir),
-		ExportPolicy:       getAnnotation(annotations, AnnExportPolicy),
-		UnixPermissions:    getAnnotation(annotations, AnnUnixPermissions),
+		Name:                name,
+		Size:                fmt.Sprintf("%d", size.Value()),
+		Protocol:            config.Protocol(getAnnotation(annotations, AnnProtocol)),
+		SnapshotPolicy:      getAnnotation(annotations, AnnSnapshotPolicy),
+		SnapshotReserve:     getAnnotation(annotations, AnnSnapshotReserve),
+		SnapshotDir:         getAnnotation(annotations, AnnSnapshotDir),
+		ExportPolicy:        getAnnotation(annotations, AnnExportPolicy),
+		UnixPermissions:     getAnnotation(annotations, AnnUnixPermissions),
 		StorageClass:        storageClass.Name,
 		BlockSize:           getAnnotation(annotations, AnnBlockSize),
 		FileSystem:          getAnnotation(annotations, AnnFileSystem),

@@ -2440,7 +2440,7 @@ func (k *KubeClient) IsTopologyInUse() (bool, error) {
 		return false, err
 	}
 	for _, node := range nodes.Items {
-		for key, _ := range node.Labels {
+		for key := range node.Labels {
 			if strings.Contains(key, "topology.kubernetes.io") {
 				return true, nil
 			}

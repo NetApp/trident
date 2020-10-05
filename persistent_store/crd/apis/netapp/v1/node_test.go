@@ -45,7 +45,7 @@ func TestNewNode(t *testing.T) {
 		t.Fatalf("%v differs:  '%v' != '%v'", "IPs", node.IPs, utilsNode.IPs)
 	}
 
-	for i, _ := range node.IPs {
+	for i := range node.IPs {
 		if node.IPs[i] != utilsNode.IPs[i] {
 			t.Fatalf("%v differs:  '%v' != '%v'", "IPs", node.IPs, utilsNode.IPs)
 		}

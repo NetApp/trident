@@ -6,8 +6,9 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // LunMapGetIterRequest is a structure to represent a lun-map-get-iter ZAPI request object

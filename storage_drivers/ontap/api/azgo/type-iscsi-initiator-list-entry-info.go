@@ -2,8 +2,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // IscsiInitiatorListEntryInfoType is a structure to represent a iscsi-initiator-list-entry-info ZAPI object

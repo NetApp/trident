@@ -150,12 +150,12 @@ func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned boo
 }
 
 type VolumeExternal struct {
-	Config		*VolumeConfig
-	Backend		string		`json:"backend"`     // replaced w/ backendUUID, remains to read old records
-	BackendUUID	string		`json:"backendUUID"` // UUID of the storage backend
-	Pool		string		`json:"pool"`
-	Orphaned	bool		`json:"orphaned"`
-	State		VolumeState	`json:"state"`
+	Config      *VolumeConfig
+	Backend     string      `json:"backend"`     // replaced w/ backendUUID, remains to read old records
+	BackendUUID string      `json:"backendUUID"` // UUID of the storage backend
+	Pool        string      `json:"pool"`
+	Orphaned    bool        `json:"orphaned"`
+	State       VolumeState `json:"state"`
 }
 
 func (v *VolumeExternal) GetCHAPSecretName() string {

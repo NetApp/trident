@@ -5,6 +5,7 @@ GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
 GO_IMAGE = golang:1.14
+GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
@@ -202,3 +203,12 @@ k8s_codegen:
 
 k8s_codegen_operator:
 	cd operator && $(MAKE) k8s_codegen
+
+install-lint:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI-LINT_VERSION}
+
+lint-precommit: install-lint
+	cp hooks/golangci-lint.sh .git/hooks/pre-commit
+
+lint-prepush: install-lint .git/hooks/pre-push
+	cp hooks/golangci-lint.sh .git/hooks/pre-push

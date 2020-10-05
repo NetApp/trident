@@ -17,7 +17,7 @@ const (
 	LogFormat       = "text"
 )
 
-var Secrets = []string {"thisisasecret1", "thisisasecret2"}
+var Secrets = []string{"thisisasecret1", "thisisasecret2"}
 
 // TestYAML simple validation of the YAML
 func TestYAML(t *testing.T) {

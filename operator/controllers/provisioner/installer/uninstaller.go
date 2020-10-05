@@ -4,6 +4,7 @@ package installer
 
 import (
 	"fmt"
+
 	"github.com/netapp/trident/utils"
 
 	log "github.com/sirupsen/logrus"

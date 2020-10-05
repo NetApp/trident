@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	topologyLabels	= make(map[string]string)
+	topologyLabels = make(map[string]string)
 )
 
 func (p *Plugin) NodeStageVolume(

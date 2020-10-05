@@ -37,7 +37,7 @@ func TestAddMockBackend(t *testing.T) {
 	m := NewMockOrchestrator()
 
 	// add an NFS FILE backend
-	m.AddMockONTAPNFSBackend(ctx(),"test-nfs", "192.0.0.2")
+	m.AddMockONTAPNFSBackend(ctx(), "test-nfs", "192.0.0.2")
 	nfsBackend, err := m.GetBackend(ctx(), "test-nfs")
 	if err != nil {
 		t.Fatalf("cannot find backend '%v' error: %v", "test-nfs", err.Error())

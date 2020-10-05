@@ -655,7 +655,6 @@ func (p *Plugin) processPendingClaim(ctx context.Context, claim *v1.PersistentVo
 	}).Infof("Kubernetes frontend %s", message)
 }
 
-
 func (p *Plugin) ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error) {
 
 	Logc(ctx).WithField("request", request).Debug("ImportVolume")

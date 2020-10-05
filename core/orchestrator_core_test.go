@@ -2598,9 +2598,9 @@ func TestValidateImportVolumeSanBackend(t *testing.T) {
 
 func TestAddNode(t *testing.T) {
 	node := &utils.Node{
-		Name: "testNode",
-		IQN:  "myIQN",
-		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+		Name:           "testNode",
+		IQN:            "myIQN",
+		IPs:            []string{"1.1.1.1", "2.2.2.2"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
 	}
 	orchestrator := getOrchestrator()
@@ -2612,15 +2612,15 @@ func TestAddNode(t *testing.T) {
 func TestGetNode(t *testing.T) {
 	orchestrator := getOrchestrator()
 	expectedNode := &utils.Node{
-		Name: "testNode",
-		IQN:  "myIQN",
-		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+		Name:           "testNode",
+		IQN:            "myIQN",
+		IPs:            []string{"1.1.1.1", "2.2.2.2"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
 	}
 	unexpectedNode := &utils.Node{
-		Name: "testNode2",
-		IQN:  "myOtherIQN",
-		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+		Name:           "testNode2",
+		IQN:            "myOtherIQN",
+		IPs:            []string{"3.3.3.3", "4.4.4.4"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region2"},
 	}
 	initialNodes := map[string]*utils.Node{}

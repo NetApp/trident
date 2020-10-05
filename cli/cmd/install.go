@@ -65,26 +65,26 @@ const (
 
 var (
 	// CLI flags
-	generateYAML				bool
-	useYAML						bool
-	silent						bool
-	csi							bool
-	inCluster					bool
-	useIPv6						bool
-	silenceAutosupport			bool
-	pvName						string
-	pvcName						string
-	tridentImage				string
-	etcdImage					string
-	autosupportImage			string
-	autosupportProxy			string
-	autosupportCustomURL		string
-	autosupportSerialNumber		string
-	autosupportHostname			string
-	kubeletDir					string
-	imageRegistry				string
-	logFormat					string
-	k8sTimeout					time.Duration
+	generateYAML            bool
+	useYAML                 bool
+	silent                  bool
+	csi                     bool
+	inCluster               bool
+	useIPv6                 bool
+	silenceAutosupport      bool
+	pvName                  string
+	pvcName                 string
+	tridentImage            string
+	etcdImage               string
+	autosupportImage        string
+	autosupportProxy        string
+	autosupportCustomURL    string
+	autosupportSerialNumber string
+	autosupportHostname     string
+	kubeletDir              string
+	imageRegistry           string
+	logFormat               string
+	k8sTimeout              time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -561,10 +561,10 @@ func ensureSetupDirExists() error {
 func installTrident() (returnError error) {
 
 	var (
-		logFields		log.Fields
-		pvcExists		bool
-		pvExists		bool
-		crd				*apiextensionv1beta1.CustomResourceDefinition
+		logFields log.Fields
+		pvcExists bool
+		pvExists  bool
+		crd       *apiextensionv1beta1.CustomResourceDefinition
 	)
 
 	// Ensure legacy Trident isn't already installed
@@ -973,9 +973,9 @@ func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error)
 		}
 
 		log.WithFields(log.Fields{
-			"pvc":			pvcName,
-			"namespace":	pvc.Namespace,
-			"phase":		pvc.Status.Phase,
+			"pvc":       pvcName,
+			"namespace": pvc.Namespace,
+			"phase":     pvc.Status.Phase,
 		}).Debug("PVC already exists.")
 
 	} else {
@@ -1095,9 +1095,9 @@ func getCRDMapFromBundle(bundle string) map[string]string {
 	yamls := strings.Split(bundle, "---")
 	crdMap := make(map[string]string)
 
-	for i, _ := range yamls {
+	for i := range yamls {
 		match := labelEqualRegex.FindStringSubmatch(yamls[i])
-		for j, _ := range labelEqualRegex.SubexpNames() {
+		for j := range labelEqualRegex.SubexpNames() {
 			if j > 0 && j <= len(match) {
 				crdMap[match[j]] = yamls[i]
 				break

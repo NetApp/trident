@@ -13,7 +13,6 @@ require (
 	github.com/RoaringBitmap/roaring v0.4.23
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/container-storage-interface/spec v1.2.0
-	github.com/coreos/etcd v3.3.20+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-plugins-helpers v0.0.0-20200102110956-c9a8a2d92ccc
 	github.com/dustin/go-humanize v1.0.0
