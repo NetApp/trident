@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"strconv"
@@ -875,10 +876,6 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	ctx context.Context, flexvol string, newQtreeSizeBytes uint64,
 ) (uint64, error) {
 
-	// TODO: I'm not convinced the snapshot reserve is working.
-	//  Also I think I need to convert the snapshot size to bytes. Also,
-	//  Andrew said to do the max of (quotas + snapshot size) or (quotas + snap reserve).
-	//  I'm not quite sure how to work with the percentage.
 	// Get more info about the Flexvol
 	volAttrs, err := d.API.VolumeGet(flexvol)
 	if err != nil {
@@ -908,16 +905,22 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	usableSpaceBytes := float64(newQtreeSizeBytes+totalDiskLimitBytes) + snapshotSize
-	flexvolSizeBytes := uint64(usableSpaceBytes / snapReserveDivisor)
+	usableSpaceWithSnapshots := float64(newQtreeSizeBytes+totalDiskLimitBytes) + snapshotSize
+	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
+	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
+
+	flexvolSizeBytes := uint64(math.Max(usableSpaceWithSnapshots, usableSpaceSnapReserve))
 
 	Logc(ctx).WithFields(log.Fields{
-		"flexvol":             flexvol,
-		"snapReserveDivisor":  snapReserveDivisor,
-		"snapshotSize":        snapshotSize,
-		"totalDiskLimitBytes": totalDiskLimitBytes,
-		"newQtreeSizeBytes":   newQtreeSizeBytes,
-		"flexvolSizeBytes":    flexvolSizeBytes,
+		"flexvol":              flexvol,
+		"snapshotReserve":      volSpaceAttrs.PercentageSnapshotReserve(),
+		"snapReserveDivisor":   snapReserveDivisor,
+		"snapshotSize":         snapshotSize,
+		"totalDiskLimitBytes":  totalDiskLimitBytes,
+		"newQtreeSizeBytes":    newQtreeSizeBytes,
+		"spaceWithSnapshots":   usableSpaceWithSnapshots,
+		"spaceWithSnapReserve": usableSpaceSnapReserve,
+		"flexvolSizeBytes":     flexvolSizeBytes,
 	}).Debug("Calculated optimal size for Flexvol with new qtree.")
 
 	return flexvolSizeBytes, nil
