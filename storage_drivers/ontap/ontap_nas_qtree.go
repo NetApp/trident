@@ -893,9 +893,8 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 			Logc(ctx).WithFields(log.Fields{
 				"snapshotName":            snap.Name(),
 				"volumeName":              flexvol,
-				"created":                 snap.AccessTime(),
 				"percentageOfTotalBlocks": snap.PercentageOfTotalBlocks(),
-			}).Debug("TORI: Found snapshot.")
+			}).Debug("Found snapshot.")
 			snapshotSize += (float64(snap.PercentageOfTotalBlocks()) / 100.0) * float64(volSpaceAttrs.Size())
 		}
 	}
@@ -905,8 +904,8 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	usableSpaceWithSnapshots := float64(newQtreeSizeBytes+totalDiskLimitBytes) + snapshotSize
 	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
+	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSize
 	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
 
 	flexvolSizeBytes := uint64(math.Max(usableSpaceWithSnapshots, usableSpaceSnapReserve))
