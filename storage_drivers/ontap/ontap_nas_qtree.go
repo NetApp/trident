@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 	"reflect"
 	"strconv"
@@ -893,7 +892,12 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSizeBytes
 	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
 
-	flexvolSizeBytes := uint64(math.Max(usableSpaceWithSnapshots, usableSpaceSnapReserve))
+	var flexvolSizeBytes uint64
+	if usableSpaceSnapReserve < usableSpaceWithSnapshots {
+		flexvolSizeBytes = uint64(usableSpaceWithSnapshots)
+	} else {
+		flexvolSizeBytes = uint64(usableSpaceSnapReserve)
+	}
 
 	Logc(ctx).WithFields(log.Fields{
 		"flexvol":              flexvol,
