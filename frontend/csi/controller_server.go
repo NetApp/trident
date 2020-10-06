@@ -32,12 +32,12 @@ func (p *Plugin) CreateVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateVolume")
 
-	if _, ok := p.opCache[req.Name]; ok {
+	if _, ok := p.opCache.Load(req.Name); ok {
 		Logc(ctx).WithFields(fields).Debug("Create already in progress, returning DeadlineExceeded.")
 		return nil, status.Error(codes.DeadlineExceeded, "create already in progress")
 	} else {
-		p.opCache[req.Name] = true
-		defer delete(p.opCache, req.Name)
+		p.opCache.Store(req.Name, true)
+		defer p.opCache.Delete(req.Name)
 	}
 
 	// Check arguments

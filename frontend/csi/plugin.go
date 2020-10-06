@@ -5,6 +5,7 @@ package csi
 import (
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
@@ -44,7 +45,7 @@ type Plugin struct {
 	nsCap []*csi.NodeServiceCapability
 	vCap  []*csi.VolumeCapability_AccessMode
 
-	opCache map[string]bool
+	opCache sync.Map
 }
 
 func NewControllerPlugin(
@@ -59,7 +60,7 @@ func NewControllerPlugin(
 		endpoint:     endpoint,
 		role:         CSIController,
 		helper:       *helper,
-		opCache:      make(map[string]bool),
+		opCache:      sync.Map{},
 	}
 
 	// Define controller capabilities
@@ -98,7 +99,7 @@ func NewNodePlugin(
 		endpoint:     endpoint,
 		role:         CSINode,
 		unsafeDetach: unsafeDetach,
-		opCache:      make(map[string]bool),
+		opCache:      sync.Map{},
 	}
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
@@ -154,7 +155,7 @@ func NewAllInOnePlugin(
 		role:         CSIAllInOne,
 		unsafeDetach: unsafeDetach,
 		helper:       *helper,
-		opCache:      make(map[string]bool),
+		opCache:      sync.Map{},
 	}
 
 	// Define controller capabilities
