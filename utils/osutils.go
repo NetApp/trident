@@ -130,27 +130,31 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return err
 	}
 
-	// If not logged in, login first
-	sessionExists, err := iSCSISessionExistsToTargetIQN(ctx, targetIQN)
-	if err != nil {
-		return err
-	}
-	if !sessionExists {
-		if publishInfo.UseCHAP {
-			for _, portal := range bkportal {
-				err = loginWithChap(
-					ctx, targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret,
-					iscsiInterface, false)
-				if err != nil {
-					Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
-					return fmt.Errorf("iSCSI login error: %v", err)
-				}
-			}
-		} else {
-			err = EnsureISCSISessions(ctx, portalIps)
+	// Ensure we are logged into correct portals
+	if publishInfo.UseCHAP {
+		bkPortalsToLogin, err := portalsToLogin(ctx, targetIQN, bkportal)
+		if err != nil {
+			return err
+		}
+
+		for _, portal := range bkPortalsToLogin {
+			err = loginWithChap(
+				ctx, targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret,
+				iscsiInterface, false)
 			if err != nil {
-				return fmt.Errorf("iSCSI session error: %v", err)
+				Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
+				return fmt.Errorf("iSCSI login error: %v", err)
 			}
+		}
+	} else {
+		portalIpsToLogin, err := portalsIpsToLogin(ctx, targetIQN, portalIps)
+		if err != nil {
+			return err
+		}
+
+		err = EnsureISCSISessions(ctx, targetIQN, iscsiInterface, portalIpsToLogin)
+		if err != nil {
+			return fmt.Errorf("iSCSI session error: %v", err)
 		}
 	}
 
@@ -1349,6 +1353,77 @@ func iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool,
 	}
 
 	return false, nil
+}
+
+// portalsToLogin checks to see if session to for all the specified portals exist to the specified
+// target. If a session does not exist for a give portal it is added to list of portals that Trident
+// needs to login to.
+func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]string, error) {
+
+	logFields := log.Fields{
+		"targetIQN": targetIQN,
+		"portals":   portals,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.portalsToLogin")
+	defer Logc(ctx).Debug("<<<< osutils.portalsToLogin")
+
+	portalsNotLoggedIn := make([]string, len(portals))
+	copy(portalsNotLoggedIn, portals)
+
+	sessionInfo, err := getISCSISessionInfo(ctx)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
+		return portalsNotLoggedIn, err
+	}
+
+	for _, e := range sessionInfo {
+		if e.TargetName == targetIQN {
+
+			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
+			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
+			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal,
+				func(main, val string) bool {
+					mainIpAddress := strings.Split(main, ":")[0]
+					valIpAddress := strings.Split(val, ":")[0]
+
+				return mainIpAddress == valIpAddress
+			})
+		}
+	}
+
+	return portalsNotLoggedIn, nil
+}
+
+// portalsIpsToLogin checks to see if session to for all the specified portal IPs exist to the specified
+// target. If a session does not exist for a give portal IP it is added to list of portals IPs that Trident
+// needs to login to.
+func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []string) ([]string, error) {
+
+	logFields := log.Fields{
+		"targetIQN":  targetIQN,
+		"portalsIps": portalsIps,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.portalsToLogin")
+	defer Logc(ctx).Debug("<<<< osutils.portalsToLogin")
+
+	portalIpsNotLoggedIn := make([]string, len(portalsIps))
+	copy(portalIpsNotLoggedIn, portalsIps)
+
+	sessionInfo, err := getISCSISessionInfo(ctx)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
+		return portalIpsNotLoggedIn, err
+	}
+
+	for _, e := range sessionInfo {
+		if e.TargetName == targetIQN {
+			portalIpsNotLoggedIn = RemoveStringFromSlice(portalIpsNotLoggedIn, e.PortalIP)
+		}
+	}
+
+	return portalIpsNotLoggedIn, nil
 }
 
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
@@ -2600,19 +2675,70 @@ func loginWithChap(
 	return nil
 }
 
-func EnsureISCSISessions(ctx context.Context, hostDataIPs []string) error {
+func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIps []string) error {
+
+	logFields := log.Fields{
+		"targetIQN":  targetIQN,
+		"portalsIps": portalsIps,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.EnsureISCSISessions")
+	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISessions")
+
+	for _, portalIp := range portalsIps {
+		args := []string{"-m", "node", "-T", targetIQN, "-p", portalIp + ":3260", "--interface", iface, "--op", "new"}
+		listAllISCSIDevices(ctx)
+		if _, err := execIscsiadmCommand(ctx, args...); err != nil {
+			return fmt.Errorf("error running iscsiadm node create: %v", err)
+		}
+
+		// Set scanning to manual
+		if err := configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual"); err != nil {
+			// Swallow this error, someone is running an old version of Debian/Ubuntu
+		}
+
+		// Update replacement timeout
+		if err := configureISCSITarget(
+			ctx, targetIQN, portalIp, "node.session.timeo.replacement_timeout", "5"); err != nil {
+			return fmt.Errorf("set replacement timeout failed: %v", err)
+		}
+
+		// Log in to target
+		if err := loginISCSITarget(ctx, targetIQN, portalIp); err != nil {
+			return fmt.Errorf("login to iSCSI target failed: %v", err)
+		}
+	}
+
+	for _, portalIp := range portalsIps {
+		// Recheck to ensure a session is now open
+		sessionExists, err := iSCSISessionExists(ctx, portalIp)
+		if err != nil {
+			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
+		}
+		if !sessionExists {
+			return fmt.Errorf("expected iSCSI session %v NOT found, please login to the iSCSI portal", portalIp)
+		}
+
+		Logc(ctx).WithField("portalIp", portalIp).Debug("Session established with iSCSI portal.")
+	}
+
+	return nil
+}
+
+func EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error {
+
 	for _, ip := range hostDataIPs {
-		if err := EnsureISCSISession(ctx, ip); nil != err {
+		if err := EnsureISCSISessionWithPortalDiscovery(ctx, ip); nil != err {
 			return err
 		}
 	}
 	return nil
 }
 
-func EnsureISCSISession(ctx context.Context, hostDataIP string) error {
+func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP string) error {
 
-	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureISCSISession")
-	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISession")
+	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug(">>>> osutils.EnsureISCSISessionWithPortalDiscovery")
+	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISessionWithPortalDiscovery")
 
 	// Ensure iSCSI is supported on system
 	if !ISCSISupported(ctx) {

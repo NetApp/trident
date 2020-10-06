@@ -373,8 +373,13 @@ func SliceContainsString(slice []string, s string) bool {
 
 // RemoveStringFromSlice removes a string from a []string
 func RemoveStringFromSlice(slice []string, s string) (result []string) {
+	return RemoveStringFromSliceConditionally(slice, s, func(val1, val2 string) bool { return val1 == val2 })
+}
+
+// RemoveStringFromSliceConditionally removes a string from a []string if it meets certain criteria
+func RemoveStringFromSliceConditionally(slice []string, s string, fn func(string, string) bool) (result []string) {
 	for _, item := range slice {
-		if item == s {
+		if fn(s, item) {
 			continue
 		}
 		result = append(result, item)

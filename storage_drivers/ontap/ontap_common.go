@@ -1223,7 +1223,7 @@ func ValidateSANDriver(ctx context.Context, _ *api.Client, config *drivers.Ontap
 
 	if config.DriverContext == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the ONTAP iSCSI target
-		err := utils.EnsureISCSISessions(ctx, ips)
+		err := utils.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
 		}

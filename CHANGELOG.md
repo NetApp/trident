@@ -8,6 +8,7 @@
 - **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
 
 **Fixes:**
+- Fixed issue of SLM portal login for iSCSI backends (Issue [#387](https://github.com/NetApp/trident/issues/387)).
 
 **Enhancements:**
 
@@ -125,13 +126,13 @@
 - **Kubernetes:** Removed 'dry-run' switch from the installer. (Issue [#192](https://github.com/NetApp/trident/issues/192))
 - Changed minimum supported ONTAP version to 9.1.
 - Removed support for running Trident with an external etcd instance.
-  
+
 ## v19.07.0
 
 **Fixes:**
 - **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
-- **Kubernetes:** Prevent operations on failed backends. 
+- **Kubernetes:** Prevent operations on failed backends.
 - **Kubernetes:** Removed size requirement for volume import PVC file.
 
 **Enhancements:**

@@ -154,6 +154,69 @@ func TestRemoveStringFromSlice(t *testing.T) {
 	}
 }
 
+func TestRemoveStringFromSliceConditionally(t *testing.T) {
+	log.Debug("Running TestRemoveStringFromSlice...")
+
+	slice := []string{
+		"foo",
+		"bar",
+		"earn",
+		"baz",
+		"ear",
+		"con:1234",
+		"silicon:1234",
+		"bigstring",
+		"verybigstring",
+		"superbingstring",
+	}
+	updatedSlice := slice
+
+	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "foo",
+		func(val1, val2 string) bool { return val1 == val2 })
+	if SliceContainsString(updatedSlice, "foo") {
+		t.Errorf("Slice should NOT contain string %v", "foo")
+	}
+
+	lenBefore := len(updatedSlice)
+	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "random",
+		func(val1, val2 string) bool { return val1 == val2 })
+	lenAfter := len(updatedSlice)
+	if lenBefore != lenAfter {
+		t.Errorf("Slice should have NOT removed element(s)")
+	}
+
+	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "earnest",
+		func(main, val string) bool {return strings.Contains(main, val)})
+	if SliceContainsString(updatedSlice, "ear") {
+		t.Errorf("Slice should NOT contain string %v", "ear")
+	}
+	if SliceContainsString(updatedSlice, "earn") {
+		t.Errorf("Slice should NOT contain string %v", "earn")
+	}
+
+	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "con:3421",
+		func(main, val string) bool {
+			mainIpAddress := strings.Split(main, ":")[0]
+			valIpAddress := strings.Split(val, ":")[0]
+			return mainIpAddress == valIpAddress
+		})
+	if SliceContainsString(updatedSlice, "con:1234") {
+		t.Errorf("Slice should NOT contain string %v", "con:1234")
+	}
+	if !SliceContainsString(updatedSlice, "silicon:1234") {
+		t.Errorf("Slice should contain string %v", "silicon:1234")
+	}
+
+	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "bigstring",
+		func(main, val string) bool {return len(val) > len (main) })
+	if SliceContainsString(updatedSlice, "verybigstring") {
+		t.Errorf("Slice should NOT contain string %v", "verybigstring")
+	}
+	if SliceContainsString(updatedSlice, "superbingstring") {
+		t.Errorf("Slice should NOT contain string %v", "superbingstring")
+	}
+}
+
 func TestSplitImageDomain(t *testing.T) {
 	log.Debug("Running TestSplitImageDomain...")
 

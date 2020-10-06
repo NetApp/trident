@@ -173,7 +173,7 @@ func (d *SANStorageDriver) Initialize(
 	// For K8S CSI, we create a host group if necessary and create the hosts automatically during the Publish calls
 	if context == tridentconfig.ContextDocker {
 		// Make sure this host is logged into the E-series iSCSI target
-		err = utils.EnsureISCSISession(ctx, d.Config.HostDataIP)
+		err = utils.EnsureISCSISessionWithPortalDiscovery(ctx, d.Config.HostDataIP)
 		if err != nil {
 			return fmt.Errorf("could not establish iSCSI session: %v", err)
 		}
