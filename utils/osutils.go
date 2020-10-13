@@ -34,7 +34,7 @@ const (
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
-var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
+var pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
 
@@ -939,7 +939,7 @@ func PrepareDeviceAtMountPathForRemoval(mountpoint string, unmount, force bool) 
 		}
 	}
 
-return removeSCSIDevice(deviceInfo, force)
+	return removeSCSIDevice(deviceInfo, force)
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
@@ -2071,7 +2071,7 @@ func multipathFlushDevice(deviceInfo *ScsiDeviceInfo) error {
 		return nil
 	}
 
-	err := flushOneDevice("/dev/"+deviceInfo.MultipathDevice)
+	err := flushOneDevice("/dev/" + deviceInfo.MultipathDevice)
 	if err != nil {
 		return err
 	}
@@ -2096,7 +2096,7 @@ func flushDevice(deviceInfo *ScsiDeviceInfo, force bool) error {
 	defer log.Debug("<<<< osutils.flushDevice")
 
 	for _, device := range deviceInfo.Devices {
-	err := flushOneDevice("/dev/"+device)
+		err := flushOneDevice("/dev/" + device)
 		if err != nil && !force {
 			return err
 		}
@@ -2173,7 +2173,7 @@ func multipathdIsRunning() bool {
 
 	out, err = execCommand("multipathd", "show", "daemon")
 	if err == nil {
-		if pidRunningRegex.MatchString(string(out)) {
+		if pidRunningOrIdleRegex.MatchString(string(out)) {
 			log.Debug("multipathd is running")
 			return true
 		}
@@ -2273,7 +2273,7 @@ func ensureDeviceUnformatted(device string) error {
 	// Ensure 2MiB of data read
 	if len(out) != 2097152 {
 		log.WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
-		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to " +
+		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to "+
 			"ensure if the device is actually unformatted", device, len(out))
 	}
 
@@ -2700,9 +2700,9 @@ func execCommandWithTimeout(name string, timeoutSeconds time.Duration, logOutput
 		"error":   result.Error,
 	})
 
-	if logOutput{
+	if logOutput {
 		logFields.WithFields(log.Fields{
-			"output":  sanitizeString(string(result.Output)),
+			"output": sanitizeString(string(result.Output)),
 		})
 	}
 

@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"fmt"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -115,5 +116,72 @@ func TestParseIPv4Valid(t *testing.T) {
 		t.Logf("Running test case '%s'", testName)
 
 		assert.False(t, test.predicate(test.input), "Predicate failed")
+	}
+}
+
+func TestSanitizeString(t *testing.T) {
+	log.Debug("Running TestSanitizeString...")
+
+	tests := map[string]struct {
+		input  string
+		output string
+	}{
+		"Replace xtermControlRegex#1": {
+			input:  "\x1B[A" + "HelloWorld",
+			output: "HelloWorld",
+		},
+		"Strip trailing newline": {
+			input:  "\n\n",
+			output: "\n",
+		},
+	}
+	for testName, test := range tests {
+		t.Logf("Running test case '%s'", testName)
+		result := sanitizeString(test.input)
+		t.Logf("      test.input: '%s'", test.input)
+		t.Logf("     test.output: '%s'", test.output)
+		t.Logf("          result: '%s'", result)
+		assert.True(t, test.output == result, fmt.Sprintf("Expected %v not %v", test.output, result))
+	}
+}
+
+func TestPidRunningOrIdleRegex(t *testing.T) {
+	log.Debug("Running TestPidRegexes...")
+
+	tests := map[string]struct {
+		input          string
+		expectedOutput bool
+	}{
+		// Negative tests
+		"Negative input #1": {
+			input:          "",
+			expectedOutput: false,
+		},
+		"Negative input #2": {
+			input:          "pid -5 running",
+			expectedOutput: false,
+		},
+		"Negative input #3": {
+			input:          "pid running",
+			expectedOutput: false,
+		},
+		// Positive tests
+		"Positive input #1": {
+			input:          "pid 5 running",
+			expectedOutput: true,
+		},
+		// Positive tests
+		"Positive input #2": {
+			input:          "pid 2509 idle",
+			expectedOutput: true,
+		},
+	}
+	for testName, test := range tests {
+		t.Logf("Running test case '%s'", testName)
+		result := pidRunningOrIdleRegex.MatchString(test.input)
+		t.Logf("              test.input: '%s'", test.input)
+		t.Logf("     test.expectedOutput: '%v'", test.expectedOutput)
+		t.Logf("           actual result: '%v'", result)
+		assert.True(t, test.expectedOutput == result)
 	}
 }
