@@ -30,7 +30,7 @@ const (
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
-var pidRunningRegex = regexp.MustCompile(`pid \d+ running`)
+var pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
 
@@ -930,7 +930,7 @@ func iSCSIDiscovery(portal string) ([]ISCSIDiscoveryInfo, error) {
 		if len(a) >= 2 {
 
 			portalIP := ""
-			if  IPv6Check(a[0]) {
+			if IPv6Check(a[0]) {
 				// This is an IPv6 address
 				portalIP = strings.Split(a[0], "]")[0]
 				portalIP += "]"
@@ -1901,7 +1901,7 @@ func multipathdIsRunning() bool {
 
 	out, err = execCommand("multipathd", "show", "daemon")
 	if err == nil {
-		if pidRunningRegex.MatchString(string(out)) {
+		if pidRunningOrIdleRegex.MatchString(string(out)) {
 			log.Debug("multipathd is running")
 			return true
 		}
