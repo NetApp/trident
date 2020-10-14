@@ -9,6 +9,7 @@
 
 **Fixes:**
 - Fixed issue of SLM portal login for iSCSI backends (Issue [#387](https://github.com/NetApp/trident/issues/387)).
+- Fixed issue where Trident would crash when creating a volume if ONTAP FCP interfaces were present in the target SVM.
 
 **Enhancements:**
 

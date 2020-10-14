@@ -66,8 +66,10 @@ func (o NetInterfaceInfoType) String() string {
 
 // Address is a 'getter' method
 func (o *NetInterfaceInfoType) Address() IpAddressType {
-	r := *o.AddressPtr
-	return r
+	if o.AddressPtr != nil {
+		return *o.AddressPtr
+	}
+	return ""
 }
 
 // SetAddress is a fluent style 'setter' method that can be chained
