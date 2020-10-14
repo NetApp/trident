@@ -2343,6 +2343,8 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
 		pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
 
+		pool.SupportedTopologies = config.SupportedTopologies
+
 		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes[SpaceAllocation] = config.SpaceAllocation
 			pool.InternalAttributes[FileSystemType] = config.FileSystemType
@@ -2367,6 +2369,10 @@ func InitializeStoragePoolsCommon(
 		size := config.Size
 		if vpool.Size != "" {
 			size = vpool.Size
+		}
+		supportedTopologies := config.SupportedTopologies
+		if vpool.SupportedTopologies != nil {
+			supportedTopologies = vpool.SupportedTopologies
 		}
 
 		spaceAllocation := config.SpaceAllocation
@@ -2473,6 +2479,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes[ExportPolicy] = exportPolicy
 		pool.InternalAttributes[SecurityStyle] = securityStyle
 		pool.InternalAttributes[TieringPolicy] = tieringPolicy
+		pool.SupportedTopologies = supportedTopologies
 
 		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes[SpaceAllocation] = spaceAllocation

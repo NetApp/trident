@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
@@ -239,9 +238,9 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 				"backend":                        newBackend.Name,
 				"backendUUID":                    newBackend.BackendUUID,
 				"persistentBackends.BackendUUID": b.BackendUUID,
-				"online":  newBackend.Online,
-				"state":   newBackend.State,
-				"handler": "Bootstrap",
+				"online":                         newBackend.Online,
+				"state":                          newBackend.State,
+				"handler":                        "Bootstrap",
 			}).Info("Added an existing backend.")
 		} else {
 			Logc(ctx).WithFields(log.Fields{
@@ -1504,8 +1503,8 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	if !ok {
 		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
 	}
-	poolsByBackend := sc.GetStoragePoolsForProtocolByBackend(ctx, protocol, volumeConfig.RequisiteTopologies, volumeConfig.PreferredTopologies)
-	if len(poolsByBackend) == 0 {
+	pools := sc.GetStoragePoolsForProtocolByBackend(ctx, protocol, volumeConfig.RequisiteTopologies, volumeConfig.PreferredTopologies)
+	if len(pools) == 0 {
 		return nil, fmt.Errorf("no available backends for storage class %s", volumeConfig.StorageClass)
 	}
 
@@ -1526,33 +1525,21 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, vol, txn, volumeConfig)
 	}()
 
-	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage backends.", len(poolsByBackend))
+	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
 
 	errorMessages := make([]string, 0)
+	ineligibleBackends := make(map[string]struct{}, 0)
 
-	// Keep trying until we run out of matching backends/pools
-	for len(poolsByBackend) > 0 {
+	// The pool lists are already shuffled, so just try them in order.
+	// The loop terminates when creation on all matching pools has failed.
+	for _, pool = range pools {
 
-		// Choose a backend at random from the pool map
-		backendNames := make([]string, 0)
-		for backendName := range poolsByBackend {
-			backendNames = append(backendNames, backendName)
-		}
-		backendName := backendNames[rand.Intn(len(backendNames))]
-
-		// The pool lists are already shuffled, so just pick the first one from the chosen backend and
-		// pop it from the list.  If the backend has no more eligible pools, remove it from the map so
-		// the loop terminates when creation on all matching pools has failed.
-		pools := poolsByBackend[backendName].Pools
-		pool = pools[0]
-		if len(pools) == 1 {
-			delete(poolsByBackend, backendName)
-		} else {
-			poolsByBackend[backendName].Pools = pools[1:]
-		}
-
-		// Add volume to the backend of the selected pool
 		backend = pool.Backend
+
+		// If the pool's backend cannot possibly work, skip trying
+		if _, ok := ineligibleBackends[backend.BackendUUID]; ok {
+			continue
+		}
 
 		// CreatePrepare has a side effect that updates the volumeConfig with the backend-specific internal name
 		backend.Driver.CreatePrepare(ctx, volumeConfig)
@@ -1584,28 +1571,19 @@ func (o *TridentOrchestrator) addVolumeInitial(
 				return nil, err
 			}
 
-			// Log failure and continue for loop to find a backend that can create the volume.
-			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this backend.")
+			// Log failure and continue for loop to find a pool that can create the volume.
+			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
 			errorMessages = append(errorMessages,
 				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
 					volumeConfig.Name, pool.Name, backend.Name, err.Error()))
 
 			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
 			if drivers.IsBackendIneligibleError(err) {
-				if _, ok := poolsByBackend[backendName]; ok {
-					_, ineligiblePhysicalPoolNames := drivers.GetIneligiblePhysicalPoolNames(err)
-					for _, ineligiblePhysicalPoolName := range ineligiblePhysicalPoolNames {
-						delete(poolsByBackend[backendName].PhysicalPoolNames, ineligiblePhysicalPoolName)
-					}
-
-					if len(poolsByBackend[backendName].PhysicalPoolNames) == 0 {
-						delete(poolsByBackend, backendName)
-					}
-				}
+				ineligibleBackends[backend.BackendUUID] = struct{}{}
 			}
 		} else {
 			// Volume creation succeeded, so register it and return the result
-			return o.addVolumeFinish(ctx, txn, vol, backend)
+			return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 		}
 	}
 
@@ -1682,19 +1660,27 @@ func (o *TridentOrchestrator) addVolumeRetry(
 	}
 
 	// Volume creation succeeded, so register it and return the result
-	return o.addVolumeFinish(ctx, txn, vol, backend)
+	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
 // addVolumeFinish is called after successful completion of a volume create/clone operation
 // to save the volume in the persistent store as well as Trident's in-memory cache.
 func (o *TridentOrchestrator) addVolumeFinish(
 	ctx context.Context, txn *storage.VolumeTransaction, vol *storage.Volume, backend *storage.Backend,
+	pool *storage.Pool,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	recordTransactionTiming(txn, &err)
 
 	if vol.Config.Protocol == config.ProtocolAny {
 		vol.Config.Protocol = backend.GetProtocol(ctx)
+	}
+
+	// If allowed topologies was not set by the driver, update it if the pool limits supported topologies
+	if len(vol.Config.AllowedTopologies) == 0 {
+		if len(pool.SupportedTopologies) > 0 {
+			vol.Config.AllowedTopologies = pool.SupportedTopologies
+		}
 	}
 
 	// Add new volume to persistent store
@@ -1878,7 +1864,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	}
 
 	// Volume creation succeeded, so register it and return the result
-	return o.addVolumeFinish(ctx, txn, vol, backend)
+	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
 func (o *TridentOrchestrator) cloneVolumeRetry(
@@ -1948,7 +1934,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	}
 
 	// Volume creation succeeded, so register it and return the result
-	return o.addVolumeFinish(ctx, txn, vol, backend)
+	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
 // This func is used by volume import so it doesn't check core's o.volumes to see if the

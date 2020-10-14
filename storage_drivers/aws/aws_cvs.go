@@ -310,6 +310,8 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes[Region] = d.Config.Region
 		pool.InternalAttributes[Zone] = d.Config.Zone
 
+		pool.SupportedTopologies = d.Config.SupportedTopologies
+
 		d.pools[pool.Name] = pool
 
 	} else {
@@ -332,6 +334,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			size := d.Config.Size
 			if vpool.Size != "" {
 				size = vpool.Size
+			}
+
+			supportedTopologies := d.Config.SupportedTopologies
+			if vpool.SupportedTopologies != nil {
+				supportedTopologies = vpool.SupportedTopologies
 			}
 
 			serviceLevel := d.Config.ServiceLevel
@@ -375,6 +382,8 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes[ExportRule] = exportRule
 			pool.InternalAttributes[Region] = region
 			pool.InternalAttributes[Zone] = zone
+
+			pool.SupportedTopologies = supportedTopologies
 
 			d.pools[pool.Name] = pool
 		}

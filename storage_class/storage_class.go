@@ -302,43 +302,117 @@ func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.
 	return ret
 }
 
-// GetStoragePoolsForProtocolByBackend returns a map of backend to list of pools on that backend, where
-// each pool matches the supplied protocol.  Each pool list is shuffled, so the caller may use the list
-// to select backends and pools at random.  The caller may assume that each value in the map is a list
-// containing at least one pool.
+// isTopologySupportedByPool returns whether the specific pool can create volumes accessible by the given topology
+func isTopologySupportedByPool(ctx context.Context, pool *storage.Pool, topology map[string]string) bool {
+	requisiteFound := false
+	for _, supported := range pool.SupportedTopologies {
+		eachFound := true
+		for k, v := range topology {
+			if sup, ok := supported[k]; ok && sup != v {
+				eachFound = false
+				break
+			}
+		}
+		if eachFound {
+			requisiteFound = true
+		}
+	}
+	return requisiteFound
+}
+
+// FilterPoolsOnTopology returns a subset of the provided pools that can support any of the requisiteTopologies.
+func FilterPoolsOnTopology(
+	ctx context.Context, pools []*storage.Pool, requisiteTopologies []map[string]string,
+) []*storage.Pool {
+	filteredPools := make([]*storage.Pool, 0)
+
+	if len(requisiteTopologies) == 0 {
+		return pools
+	}
+
+	for _, pool := range pools {
+		if len(pool.SupportedTopologies) > 0 {
+			for _, topology := range requisiteTopologies {
+				if isTopologySupportedByPool(ctx, pool, topology) {
+					filteredPools = append(filteredPools, pool)
+					break
+				}
+			}
+		} else {
+			filteredPools = append(filteredPools, pool)
+		}
+	}
+
+	return filteredPools
+}
+
+// SortPoolsByPreferredTopologies returns a list of pools ordered by the pools supportedTopologies field against
+// the provided list of preferredTopologies. If 2 or more pools can support a given preferredTopology, they are shuffled
+// randomly within that segment of the list, in order to prevent hotspots.
+func SortPoolsByPreferredTopologies(
+	ctx context.Context, pools []*storage.Pool, preferredTopologies []map[string]string,
+) []*storage.Pool {
+	remainingPools := make([]*storage.Pool, len(pools))
+	copy(remainingPools, pools)
+	orderedPools := make([]*storage.Pool, 0)
+
+	for _, preferred := range preferredTopologies {
+
+		newRemainingPools := make([]*storage.Pool, 0)
+		poolBucket := make([]*storage.Pool, 0)
+
+		for _, pool := range remainingPools {
+			// If it supports topology, pop it and add to bucket. Otherwise, add it to newRemaining pools to be
+			// addressed in future loop iterations.
+			if isTopologySupportedByPool(ctx, pool, preferred) {
+				poolBucket = append(poolBucket, pool)
+			} else {
+				newRemainingPools = append(newRemainingPools, pool)
+			}
+		}
+
+		// make new list of remaining pools
+		remainingPools = make([]*storage.Pool, len(newRemainingPools))
+		copy(remainingPools, newRemainingPools)
+
+		// shuffle bucket
+		rand.Shuffle(len(poolBucket), func(i, j int) {
+			poolBucket[i], poolBucket[j] = poolBucket[j], poolBucket[i]
+		})
+
+		// add all in bucket to final list
+		for _, pool := range poolBucket {
+			orderedPools = append(orderedPools, pool)
+		}
+	}
+
+	// shuffle and add leftover pools the did not match any preference
+	rand.Shuffle(len(remainingPools), func(i, j int) {
+		remainingPools[i], remainingPools[j] = remainingPools[j], remainingPools[i]
+	})
+	return append(orderedPools, remainingPools...)
+}
+
+// GetStoragePoolsForProtocolByBackend returns an ordered list of pools, where
+// each pool matches the supplied protocol.
 func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	ctx context.Context, p config.Protocol, requisiteTopologies, preferredTopologies []map[string]string,
-) map[string]*BackendPoolInfo {
+) []*storage.Pool {
 
 	// Get all matching pools
-	pools := s.GetStoragePoolsForProtocol(ctx, p)
+	var pools []*storage.Pool
 
-	// Build a map of backends to a list of matching pools and physical pool names on each backend
-	poolMap := make(map[string]*BackendPoolInfo)
-	for _, pool := range pools {
-		if _, ok := poolMap[pool.Backend.Name]; !ok {
-			// Get Names of physical Pools associated with this backend
-			physicalPoolNames := pool.Backend.GetPhysicalPoolNames(ctx)
-			physicalPoolNamesMap := make(map[string]struct{})
-			for _, physicalPoolName := range physicalPoolNames {
-				physicalPoolNamesMap[physicalPoolName] = struct{}{}
-			}
-
-			poolMap[pool.Backend.Name] = &BackendPoolInfo{Pools: make([]*storage.Pool, 0),
-				PhysicalPoolNames: physicalPoolNamesMap}
-		}
-		poolMap[pool.Backend.Name].Pools = append(poolMap[pool.Backend.Name].Pools, pool)
+	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p)
+	if len(pools) == 0 {
+		Logc(ctx).Info(fmt.Sprintf("no backend pools support the requisite protocol"))
 	}
-
-	// Shuffle the pools in each backend list
-	for _, backendPoolInfo := range poolMap {
-		backendPools := backendPoolInfo.Pools
-		rand.Shuffle(len(backendPools), func(i, j int) {
-			backendPools[i], backendPools[j] = backendPools[j], backendPools[i]
-		})
+	pools = FilterPoolsOnTopology(ctx, poolsForProtocol, requisiteTopologies)
+	if len(pools) == 0 {
+		Logc(ctx).Info(fmt.Sprintf("no backend pools support any requisite topologies"))
 	}
+	pools = SortPoolsByPreferredTopologies(ctx, pools, preferredTopologies)
 
-	return poolMap
+	return pools
 }
 
 func (s *StorageClass) Pools() []*storage.Pool {

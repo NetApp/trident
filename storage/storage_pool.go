@@ -15,10 +15,11 @@ import (
 type Pool struct {
 	Name string
 	// A Trident storage pool can potentially satisfy more than one storage class.
-	StorageClasses     []string
-	Backend            *Backend
-	Attributes         map[string]sa.Offer // These attributes are used to match storage classes
-	InternalAttributes map[string]string   // These attributes are defined & used internally by storage drivers
+	StorageClasses      []string
+	Backend             *Backend
+	Attributes          map[string]sa.Offer // These attributes are used to match storage classes
+	InternalAttributes  map[string]string   // These attributes are defined & used internally by storage drivers
+	SupportedTopologies []map[string]string
 }
 
 func NewStoragePool(backend *Backend, name string) *Pool {
@@ -54,14 +55,16 @@ type PoolExternal struct {
 	Name           string   `json:"name"`
 	StorageClasses []string `json:"storageClasses"`
 	//TODO: can't have an interface here for unmarshalling
-	Attributes map[string]sa.Offer `json:"storageAttributes"`
+	Attributes          map[string]sa.Offer `json:"storageAttributes"`
+	SupportedTopologies []map[string]string `json:"supportedTopologies"`
 }
 
 func (pool *Pool) ConstructExternal() *PoolExternal {
 	external := &PoolExternal{
-		Name:           pool.Name,
-		StorageClasses: pool.StorageClasses,
-		Attributes:     pool.Attributes,
+		Name:                pool.Name,
+		StorageClasses:      pool.StorageClasses,
+		Attributes:          pool.Attributes,
+		SupportedTopologies: pool.SupportedTopologies,
 	}
 
 	// We want to sort these so that the output remains consistent;

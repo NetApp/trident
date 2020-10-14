@@ -71,9 +71,10 @@ type ESeriesStorageDriverConfig struct {
 }
 
 type EseriesStorageDriverPool struct {
-	Labels                             map[string]string `json:"labels"`
-	Region                             string            `json:"region"`
-	Zone                               string            `json:"zone"`
+	Labels                             map[string]string   `json:"labels"`
+	Region                             string              `json:"region"`
+	Zone                               string              `json:"zone"`
+	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
 	EseriesStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -131,9 +132,10 @@ func (d OntapStorageDriverConfig) GoString() string {
 }
 
 type OntapStorageDriverPool struct {
-	Labels                           map[string]string `json:"labels"`
-	Region                           string            `json:"region"`
-	Zone                             string            `json:"zone"`
+	Labels                           map[string]string   `json:"labels"`
+	Region                           string              `json:"region"`
+	Zone                             string              `json:"zone"`
+	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -171,10 +173,11 @@ type SolidfireStorageDriverConfig struct {
 }
 
 type SolidfireStorageDriverPool struct {
-	Labels                               map[string]string `json:"labels"`
-	Region                               string            `json:"region"`
-	Zone                                 string            `json:"zone"`
-	Type                                 string            `json:"type"`
+	Labels                               map[string]string   `json:"labels"`
+	Region                               string              `json:"region"`
+	Zone                                 string              `json:"zone"`
+	Type                                 string              `json:"type"`
+	SupportedTopologies                  []map[string]string `json:"supportedTopologies"`
 	SolidfireStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -207,10 +210,11 @@ type AWSNFSStorageDriverConfig struct {
 }
 
 type AWSNFSStorageDriverPool struct {
-	Labels                            map[string]string `json:"labels"`
-	Region                            string            `json:"region"`
-	Zone                              string            `json:"zone"`
-	ServiceLevel                      string            `json:"serviceLevel"`
+	Labels                            map[string]string   `json:"labels"`
+	Region                            string              `json:"region"`
+	Zone                              string              `json:"zone"`
+	ServiceLevel                      string              `json:"serviceLevel"`
+	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	AWSNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -247,13 +251,14 @@ type AzureNFSStorageDriverConfig struct {
 // Note that 'Region' and 'Zone' are internal specifiers, not related to Azure's
 // 'Location' field.
 type AzureNFSStorageDriverPool struct {
-	Labels                              map[string]string `json:"labels"`
-	Region                              string            `json:"region"`
-	Zone                                string            `json:"zone"`
-	Location                            string            `json:"location"`
-	ServiceLevel                        string            `json:"serviceLevel"`
-	VirtualNetwork                      string            `json:"virtualNetwork"`
-	Subnet                              string            `json:"subnet"`
+	Labels                              map[string]string   `json:"labels"`
+	Region                              string              `json:"region"`
+	Zone                                string              `json:"zone"`
+	Location                            string              `json:"location"`
+	ServiceLevel                        string              `json:"serviceLevel"`
+	VirtualNetwork                      string              `json:"virtualNetwork"`
+	Subnet                              string              `json:"subnet"`
+	SupportedTopologies                 []map[string]string `json:"supportedTopologies"`
 	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -288,12 +293,13 @@ type GCPNFSStorageDriverConfig struct {
 }
 
 type GCPNFSStorageDriverPool struct {
-	Labels                            map[string]string `json:"labels"`
-	Region                            string            `json:"region"`
-	Zone                              string            `json:"zone"`
-	ServiceLevel                      string            `json:"serviceLevel"`
-	StorageClass                      string            `json:"storageClass"`
-	Network                           string            `json:"network"`
+	Labels                            map[string]string   `json:"labels"`
+	Region                            string              `json:"region"`
+	Zone                              string              `json:"zone"`
+	ServiceLevel                      string              `json:"serviceLevel"`
+	StorageClass                      string              `json:"storageClass"`
+	Network                           string              `json:"network"`
+	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -354,9 +360,10 @@ func (d FakeStorageDriverConfig) GoString() string {
 }
 
 type FakeStorageDriverPool struct {
-	Labels                          map[string]string `json:"labels"`
-	Region                          string            `json:"region"`
-	Zone                            string            `json:"zone"`
+	Labels                          map[string]string   `json:"labels"`
+	Region                          string              `json:"region"`
+	Zone                            string              `json:"zone"`
+	SupportedTopologies             []map[string]string `json:"supportedTopologies"`
 	FakeStorageDriverConfigDefaults `json:"defaults"`
 }
 

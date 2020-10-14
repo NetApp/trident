@@ -489,6 +489,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes[Zone] = d.Config.Zone
 			pool.InternalAttributes[QoSType] = storageVolPool.Type
 			pool.InternalAttributes[Media] = sa.SSD
+			pool.SupportedTopologies = d.Config.SupportedTopologies
 
 			d.virtualPools[pool.Name] = pool
 		}
@@ -511,6 +512,11 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			size := d.Config.Size
 			if vpool.Size != "" {
 				size = vpool.Size
+			}
+
+			supportedTopologies := d.Config.SupportedTopologies
+			if vpool.SupportedTopologies != nil {
+				supportedTopologies = vpool.SupportedTopologies
 			}
 
 			qosType := d.Config.Type
@@ -557,6 +563,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes[Zone] = zone
 			pool.InternalAttributes[QoSType] = qosType
 			pool.InternalAttributes[Media] = sa.SSD
+			pool.SupportedTopologies = supportedTopologies
 
 			d.virtualPools[pool.Name] = pool
 		}

@@ -326,6 +326,8 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes[Region] = d.Config.Region
 		pool.InternalAttributes[Zone] = d.Config.Zone
 
+		pool.SupportedTopologies = d.Config.SupportedTopologies
+
 		d.physicalPools[pool.Name] = pool
 	}
 
@@ -345,6 +347,11 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 		size := d.Config.Size
 		if vpool.Size != "" {
 			size = vpool.Size
+		}
+
+		supportedTopologies := d.Config.SupportedTopologies
+		if vpool.SupportedTopologies != nil {
+			supportedTopologies = vpool.SupportedTopologies
 		}
 
 		pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
@@ -370,6 +377,8 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes[Size] = size
 		pool.InternalAttributes[Region] = region
 		pool.InternalAttributes[Zone] = zone
+
+		pool.SupportedTopologies = supportedTopologies
 
 		d.virtualPools[pool.Name] = pool
 	}

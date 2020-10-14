@@ -301,6 +301,8 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes[VirtualNetwork] = d.Config.VirtualNetwork
 		pool.InternalAttributes[Subnet] = d.Config.Subnet
 
+		pool.SupportedTopologies = d.Config.SupportedTopologies
+
 		d.pools[pool.Name] = pool
 	} else {
 
@@ -327,6 +329,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			size := d.Config.Size
 			if vpool.Size != "" {
 				size = vpool.Size
+			}
+
+			supportedTopologies := d.Config.SupportedTopologies
+			if vpool.SupportedTopologies != nil {
+				supportedTopologies = vpool.SupportedTopologies
 			}
 
 			serviceLevel := d.Config.ServiceLevel
@@ -369,6 +376,8 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes[Location] = location
 			pool.InternalAttributes[VirtualNetwork] = vnet
 			pool.InternalAttributes[Subnet] = subnet
+
+			pool.SupportedTopologies = supportedTopologies
 
 			d.pools[pool.Name] = pool
 		}
