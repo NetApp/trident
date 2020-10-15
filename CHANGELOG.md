@@ -10,6 +10,7 @@
 **Fixes:**
 - Fixed issue of SLM portal login for iSCSI backends (Issue [#387](https://github.com/NetApp/trident/issues/387)).
 - Fixed issue where Trident would crash when creating a volume if ONTAP FCP interfaces were present in the target SVM.
+- Fixed issue where storage prefix with period would cause backend to fail when updating or creating backend or upgrading Trident from v20.01
 
 **Enhancements:**
 

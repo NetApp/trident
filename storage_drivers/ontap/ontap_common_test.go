@@ -197,11 +197,13 @@ func TestValidateStoragePrefix(t *testing.T) {
 		{"ABCD_123_abc", true},
 		{"abcd+123_ABC", false},
 		{"abcd-123", true},
+		{"abc.", true},
 		{"a", true},
 		{"1", false},
 		{"_", true},
 		{"-", true},
 		{":", false},
+		{".", true},
 		{"", true},
 	}
 
