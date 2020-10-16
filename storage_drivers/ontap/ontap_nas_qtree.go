@@ -880,13 +880,21 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	if err != nil {
 		return 0, err
 	}
-	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
-	snapshotSizeBytes := float64(volSpaceAttrs.SizeUsedBySnapshots())
 	totalDiskLimitBytes, err := d.getTotalHardDiskLimitQuota(flexvol)
 	if err != nil {
 		return 0, err
 	}
+
+	return calculateOptimalSizeForFlexvol(ctx, flexvol, volAttrs, newQtreeSizeBytes, totalDiskLimitBytes), nil
+}
+
+func calculateOptimalSizeForFlexvol(
+	ctx context.Context, flexvol string, volAttrs *azgo.VolumeAttributesType, newQtreeSizeBytes,
+	totalDiskLimitBytes uint64,
+) uint64 {
+	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
+	snapshotSizeBytes := float64(volSpaceAttrs.SizeUsedBySnapshots())
 
 	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
 	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSizeBytes
@@ -911,7 +919,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		"flexvolSizeBytes":     flexvolSizeBytes,
 	}).Debug("Calculated optimal size for Flexvol with new qtree.")
 
-	return flexvolSizeBytes, nil
+	return flexvolSizeBytes
 }
 
 // addDefaultQuotaForFlexvol adds a default quota rule to a Flexvol so that quotas for

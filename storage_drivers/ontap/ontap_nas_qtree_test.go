@@ -3,6 +3,7 @@
 package ontap
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
 func newNASQtreeStorageDriver(showSensitive *bool) *NASQtreeStorageDriver {
@@ -122,5 +124,63 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 					"ontap-nas-economy driver redacts %v", key)
 			}
 		}
+	}
+}
+
+func TestOntapNasQTreeCalculateOptimalFlexVolSize(t *testing.T) {
+	tests := []struct {
+		name                      string
+		flexvol                   string
+		newQtreeSize              uint64
+		totalDiskLimit            uint64
+		percentageSnapshotReserve int
+		sizeUsedBySnapshots       int
+		expectedFlexvolSize       uint64
+	}{
+		{
+			name:                      "3 gb snapshot add 1 gb",
+			newQtreeSize:              1073741824,
+			totalDiskLimit:            1073741824,
+			percentageSnapshotReserve: 0,
+			sizeUsedBySnapshots:       3158216704,
+			expectedFlexvolSize:       5305700352,
+		},
+		{
+			name:                      "0 gb snapshot add 4 gb",
+			newQtreeSize:              1073741824,
+			totalDiskLimit:            3221225472,
+			percentageSnapshotReserve: 0,
+			sizeUsedBySnapshots:       0,
+			expectedFlexvolSize:       4294967296,
+		},
+		{
+			name:                      "1 gb snapshot add 1 gb 20 snap reserve",
+			newQtreeSize:              1073741824,
+			totalDiskLimit:            1073741824,
+			percentageSnapshotReserve: 20,
+			sizeUsedBySnapshots:       983871488,
+			expectedFlexvolSize:       3131355136,
+		},
+		{
+			name:                      "1 gb snapshot add 7 gb 20 snap reserve",
+			newQtreeSize:              7516192768,
+			totalDiskLimit:            1073741824,
+			percentageSnapshotReserve: 20,
+			sizeUsedBySnapshots:       1022541824,
+			expectedFlexvolSize:       10737418240,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volAttrs := &azgo.VolumeAttributesType{
+				VolumeSpaceAttributesPtr: &azgo.VolumeSpaceAttributesType{
+					PercentageSnapshotReservePtr: &test.percentageSnapshotReserve,
+					SizeUsedBySnapshotsPtr:       &test.sizeUsedBySnapshots,
+				},
+			}
+			newFlexvolSize := calculateOptimalSizeForFlexvol(context.Background(), test.flexvol, volAttrs,
+				test.newQtreeSize, test.totalDiskLimit)
+			assert.Equal(t, test.expectedFlexvolSize, newFlexvolSize)
+		})
 	}
 }
