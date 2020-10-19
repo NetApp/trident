@@ -427,7 +427,7 @@ func (d *NFSStorageDriver) initializeAzureSDKClient(
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 
-	if err := client.SDKClient.Authenticate(); err != nil {
+	if err := client.SDKClient.Authenticate(ctx); err != nil {
 		return nil, err
 	}
 

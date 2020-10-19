@@ -85,7 +85,11 @@ func NewSDKClient(config *ClientConfig) (c *AzureClient) {
 }
 
 // Authenticate plumbs the authorization through to subclients
-func (c *AzureClient) Authenticate() (err error) {
+func (c *AzureClient) Authenticate(ctx context.Context) (err error) {
+	err = confirmAzureAPIAccessibleFirst(c, ctx)
+	if err != nil {
+		return err
+	}
 	c.AccountsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.PoolsClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.VolumesClient.Authorizer, err = c.AuthConfig.Authorizer()
@@ -93,6 +97,34 @@ func (c *AzureClient) Authenticate() (err error) {
 	c.ResourcesClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.VirtualNetworksClient.Authorizer, err = c.AuthConfig.Authorizer()
 	c.SubnetsClient.Authorizer, err = c.AuthConfig.Authorizer()
+	return
+}
+
+// Attempt to perform an Azure REST API call to see if we're authenticated and
+// good to go.
+//
+// HACK: There was no way to mock network.VirtualNetworksClient.List(...) since
+// VirtualNetworks is a struct, not an interface. Moreover, changing
+// AzureClient to an interface would be a large refactor that won't be justifiable
+// for a single test.
+// Therefore, we'll have our tracer bullet call a function that's mapped to a `var`,
+// as that is easy to override in testing.
+var attemptToResolveVirtualNetworks = attempt_to_resolve_virtual_networks
+
+func attempt_to_resolve_virtual_networks(c *AzureClient, ctx context.Context) (err error) {
+	cookie := &AzureCapacityPoolCookie{}
+	_, err = c.VirtualNetworksClient.List(ctx, *cookie.ResourceGroup)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func confirmAzureAPIAccessibleFirst(c *AzureClient, ctx context.Context) (err error) {
+	err = attemptToResolveVirtualNetworks(c, ctx)
+	if err != nil {
+		return fmt.Errorf("Failed to access the Azure API: %v", err)
+	}
 	return
 }
 
