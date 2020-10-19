@@ -1350,24 +1350,12 @@ func (d *SANEconomyStorageDriver) getOptimalSizeForFlexvol(
 	if err != nil {
 		return 0, err
 	}
-	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
-
 	totalDiskLimitBytes, err := d.getTotalLUNSize(flexvol)
 	if err != nil {
 		return 0, err
 	}
 
-	usableSpaceBytes := float64(newLunSizeBytes + totalDiskLimitBytes)
-	flexvolSizeBytes := uint64(usableSpaceBytes / snapReserveDivisor)
-
-	Logc(ctx).WithFields(log.Fields{
-		"flexvol":             flexvol,
-		"snapReserveDivisor":  snapReserveDivisor,
-		"totalDiskLimitBytes": totalDiskLimitBytes,
-		"newLUNSizeBytes":     newLunSizeBytes,
-		"flexvolSizeBytes":    flexvolSizeBytes,
-	}).Debug("Calculated optimal size for Flexvol with new LUN.")
+	flexvolSizeBytes := calculateOptimalSizeForFlexvol(ctx, flexvol, volAttrs, newLunSizeBytes, totalDiskLimitBytes)
 
 	return flexvolSizeBytes, nil
 }

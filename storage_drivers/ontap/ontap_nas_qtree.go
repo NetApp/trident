@@ -888,40 +888,6 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 	return calculateOptimalSizeForFlexvol(ctx, flexvol, volAttrs, newQtreeSizeBytes, totalDiskLimitBytes), nil
 }
 
-func calculateOptimalSizeForFlexvol(
-	ctx context.Context, flexvol string, volAttrs *azgo.VolumeAttributesType, newQtreeSizeBytes,
-	totalDiskLimitBytes uint64,
-) uint64 {
-	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
-	snapshotSizeBytes := float64(volSpaceAttrs.SizeUsedBySnapshots())
-
-	usableSpaceBytes := float64(newQtreeSizeBytes + totalDiskLimitBytes)
-	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSizeBytes
-	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
-
-	var flexvolSizeBytes uint64
-	if usableSpaceSnapReserve < usableSpaceWithSnapshots {
-		flexvolSizeBytes = uint64(usableSpaceWithSnapshots)
-	} else {
-		flexvolSizeBytes = uint64(usableSpaceSnapReserve)
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"flexvol":              flexvol,
-		"snapshotReserve":      volSpaceAttrs.PercentageSnapshotReserve(),
-		"snapReserveDivisor":   snapReserveDivisor,
-		"snapshotSizeBytes":    snapshotSizeBytes,
-		"totalDiskLimitBytes":  totalDiskLimitBytes,
-		"newQtreeSizeBytes":    newQtreeSizeBytes,
-		"spaceWithSnapshots":   usableSpaceWithSnapshots,
-		"spaceWithSnapReserve": usableSpaceSnapReserve,
-		"flexvolSizeBytes":     flexvolSizeBytes,
-	}).Debug("Calculated optimal size for Flexvol with new qtree.")
-
-	return flexvolSizeBytes
-}
-
 // addDefaultQuotaForFlexvol adds a default quota rule to a Flexvol so that quotas for
 // new qtrees may be added on demand with simple quota resize instead of a heavyweight
 // quota reinitialization.
