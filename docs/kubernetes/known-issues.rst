@@ -3,6 +3,22 @@ Known issues
 
 This page contains a list of known issues that may be observed when using Trident.
 
+.. _igroup-bug:
+* When using Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
+  for non-CSI deployments [Kubernetes ``1.11`` - ``1.13``], users may observe
+  existing ``igroups`` being cleared of all existing IQNs. This has been identified
+  as a bug and is to be fixed in the ``20.10`` release of Trident. Since this
+  can only be observed when Trident initializes a backend/restarts if scheduled on
+  a new node, users have a couple of options to address this error for the time
+  being:
+
+  1. Prevent the Trident pod from being rescheduled to another node and thus,
+  effectively prevent it initializing again.
+
+  2. Downgrade to 20.04 (or) upgrade to 20.10 once it is available. Keep in mind
+  that this issue is **only observed** if you are bouncing the Trident pod or
+  updating the backend.
+
 * An upstream Kubernetes `bug <https://github.com/kubernetes/kubernetes/issues/84226>`_
   that could be encountered when rapidly attaching/detaching volumes has been
   fixed with Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
@@ -18,13 +34,16 @@ This page contains a list of known issues that may be observed when using Triden
   Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_.
   Users can work with backends that use an empty storage prefix (``""``) or one
   that includes ``"-"``.
+.. _fstype-fix:
 * With Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
   using the `v2.0.1 <https://github.com/kubernetes-csi/external-provisioner/blob/release-2.0/CHANGELOG/CHANGELOG-2.0.md#urgent-upgrade-notes>`_
-  release of the CSI external-provisioner sidecar, customers can set a blank ``fsType``
-  on the storageClass. For Kubernetes clusters
-  running ``1.17`` or above, upgrading to Trident ``20.07.1`` would enable users
-  to override the default ``ext4`` fsType. Setting the ``fsType`` blank
-  ("") for NAS volumes will make Trident set ``fsType=nas`` on all created volumes.
+  release of the CSI external-provisioner sidecar, users will now observe Trident
+  enforcing a blank fsType (``fsType=""``) for volumes that don't specify the
+  ``fsType`` in their `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/>`_.
+  When working with Kubernetes ``1.17`` or above, upgrading to Trident ``20.07.1`` would enable users
+  to provide a blank ``fsType`` for NFS volumes. For iSCSI volumes, if you are
+  enforcing an ``fsGroup`` using a Security Context, users are **required to set**
+  the ``fsType`` on their StorageClass.
 * Trident has continually improved the resiliency for iSCSI volumes.
   The `v20.07.0 <https://github.com/NetApp/trident/releases/tag/v20.07.0>`_
   release implements
