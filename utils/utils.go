@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -19,14 +20,26 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
-// Linux is a constant value for the runtime.GOOS that represents the Linux OS
-const Linux = "linux"
+const (
+	// Linux is a constant value for the runtime.GOOS that represents the Linux OS
+	Linux = "linux"
 
-// Windows is a constant value for the runtime.GOOS that represents the Windows OS
-const Windows = "windows"
+	// Windows is a constant value for the runtime.GOOS that represents the Windows OS
+	Windows = "windows"
 
-// Darwin is a constant value for the runtime.GOOS that represents Apple MacOS
-const Darwin = "darwin"
+	// Darwin is a constant value for the runtime.GOOS that represents Apple MacOS
+	Darwin = "darwin"
+
+	PrepPending   NodePrepStatus = "pending"
+	PrepRunning   NodePrepStatus = "running"
+	PrepCompleted NodePrepStatus = "completed"
+	PrepFailed    NodePrepStatus = "failed"
+	PrepOutdated  NodePrepStatus = "outdated"
+
+	Centos = "centos"
+	RHEL   = "rhel"
+	Ubuntu = "ubuntu"
+)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -546,4 +559,16 @@ func GetRegexSubmatches(r *regexp.Regexp, s string) map[string]string {
 		}
 	}
 	return paramsMap
+}
+
+// Detect if code is running in a container or not
+func RunningInContainer() bool {
+	return os.Getenv("CSI_ENDPOINT") != ""
+}
+
+func Max(x, y int64) int64 {
+	if x > y {
+		return x
+	}
+	return y
 }

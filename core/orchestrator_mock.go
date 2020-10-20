@@ -614,7 +614,7 @@ func (m *MockOrchestrator) DeleteStorageClass(ctx context.Context, scName string
 	return nil
 }
 
-func (m *MockOrchestrator) AddNode(ctx context.Context, node *utils.Node) error {
+func (m *MockOrchestrator) AddNode(_ context.Context, node *utils.Node, _ NodeEventCallback) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	m.nodes[node.Name] = node

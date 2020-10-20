@@ -39,3 +39,40 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 	defer Logc(ctx).Debug("<<<< osutils_darwin.flushOneDevice")
 	return errors.New("flushOneDevice is not supported for darwin")
 }
+
+func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
+
+	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
+	msg := "GetHostSystemInfo is not is not supported for darwin"
+	return nil, UnsupportedError(msg)
+}
+
+func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
+
+	Logc(ctx).Debug(">>>> osutils_darwin.PrepareNFSPackagesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.PrepareNFSPackagesOnHost")
+	msg := "PrepareNFSPackagesOnHost is not is not supported for darwin"
+	return UnsupportedError(msg)
+}
+
+func PrepareNFSServicesOnHost(ctx context.Context) error {
+	Logc(ctx).Debug(">>>> osutils_darwin.PrepareNFSServicesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.PrepareNFSServicesOnHost")
+	msg := "PrepareNFSServicesOnHost is not is not supported for darwin"
+	return UnsupportedError(msg)
+}
+
+func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_darwin.ServiceActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.ServiceActiveOnHost")
+	msg := "ServiceActiveOnHost is not is not supported for darwin"
+	return false, UnsupportedError(msg)
+}
+
+func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_darwin.ServiceEnabledOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.ServiceEnabledOnHost")
+	msg := "ServiceEnabledOnHost is not is not supported for darwin"
+	return false, UnsupportedError(msg)
+}

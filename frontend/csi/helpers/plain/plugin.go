@@ -114,6 +114,18 @@ func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 	}).Debug("Volume event.")
 }
 
+// RecordNodeEvent accepts the name of a CSI node and writes the specified
+// event message to the debug log.
+func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
+
+	Logc(ctx).WithFields(log.Fields{
+		"name":      name,
+		"eventType": eventType,
+		"reason":    reason,
+		"message":   message,
+	}).Debug("Node event.")
+}
+
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
 func (p *Plugin) SupportsFeature(_ context.Context, feature helpers.Feature) bool {

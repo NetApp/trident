@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -139,17 +140,27 @@ func writeNodeTable(nodes []utils.Node) {
 func writeWideNodeTable(nodes []utils.Node) {
 
 	table := tablewriter.NewWriter(os.Stdout)
+
 	header := []string{
 		"Name",
 		"IQN",
+		"IPs",
+		"NFS Prep",
 	}
 	table.SetHeader(header)
 
 	for _, node := range nodes {
 
+		nfsStatus := "Disabled"
+		if node.NodePrep != nil && node.NodePrep.Enabled {
+			nfsStatus = string(node.NodePrep.NFS)
+		}
+
 		table.Append([]string{
 			node.Name,
 			node.IQN,
+			strings.Join(node.IPs, "\n"),
+			nfsStatus,
 		})
 	}
 

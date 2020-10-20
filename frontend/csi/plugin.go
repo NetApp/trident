@@ -3,6 +3,7 @@
 package csi
 
 import (
+	"context"
 	"os"
 	"strings"
 	"sync"
@@ -35,6 +36,9 @@ type Plugin struct {
 	role     string
 
 	unsafeDetach bool
+
+	hostInfo *utils.HostSystem
+	nodePrep *utils.NodePrep
 
 	restClient *RestClient
 	helper     helpers.HybridPlugin
@@ -88,8 +92,10 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey string, orchestrator core.Orchestrator,
-	unsafeDetach bool,
+	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
 		orchestrator: orchestrator,
@@ -100,13 +106,19 @@ func NewNodePlugin(
 		role:         CSINode,
 		unsafeDetach: unsafeDetach,
 		opCache:      sync.Map{},
+		nodePrep:     &utils.NodePrep{Enabled: nodePrep},
 	}
 
-	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
-		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
-		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
-	})
+	// Initialize node prep statuses
+	p.initNodePrep(ctx)
+
+	p.addNodeServiceCapabilities(
+		[]csi.NodeServiceCapability_RPC_Type{
+			csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+			csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+			csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
+		},
+	)
 
 	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
 	if port == "" {
@@ -126,13 +138,15 @@ func NewNodePlugin(
 	}
 
 	// Define volume capabilities
-	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
-		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
-		csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
-		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
-		csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
-		csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
-	})
+	p.addVolumeCapabilityAccessModes(
+		[]csi.VolumeCapability_AccessMode_Mode{
+			csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+			csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
+			csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
+			csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
+			csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+		},
+	)
 
 	return p, nil
 }
@@ -143,8 +157,10 @@ func NewNodePlugin(
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey string,
 	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
-	unsafeDetach bool,
+	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
 		orchestrator: orchestrator,
@@ -156,7 +172,11 @@ func NewAllInOnePlugin(
 		unsafeDetach: unsafeDetach,
 		helper:       *helper,
 		opCache:      sync.Map{},
+		nodePrep:     &utils.NodePrep{Enabled: nodePrep},
 	}
+
+	// Initialize node prep statuses
+	p.initNodePrep(ctx)
 
 	// Define controller capabilities
 	p.addControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
@@ -203,12 +223,12 @@ func NewAllInOnePlugin(
 
 func (p *Plugin) Activate() error {
 	go func() {
-		ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+		ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 		p.grpc = NewNonBlockingGRPCServer()
 
 		Logc(ctx).Info("Activating CSI frontend.")
 		if p.role == CSINode || p.role == CSIAllInOne {
-			p.nodeRegisterWithController(ctx)
+			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
 		}
 		p.grpc.Start(p.endpoint, p, p, p)
 	}()
@@ -216,7 +236,7 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
@@ -283,5 +303,27 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.NotFound, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())
+	}
+}
+
+func (p *Plugin) initNodePrep(ctx context.Context) {
+	if p.nodePrep.Enabled {
+
+		p.nodePrep.NFS = utils.PrepPending
+
+		// Check if the protocols have previously been successfully set up
+		breadcrumb, err := p.readNodePrepBreadcrumbFile(ctx)
+		if err != nil && !utils.IsNotFoundError(err) {
+			Logc(ctx).Warn("Node prep status file was found, but could not be read; ignoring old statuses.")
+		} else if err == nil {
+			if breadcrumb.NFS != "" {
+				if breadcrumb.TridentVersion == tridentconfig.OrchestratorVersion.String() {
+					p.nodePrep.NFS = utils.PrepCompleted
+				} else {
+					p.nodePrep.NFS = utils.PrepOutdated
+				}
+				p.nodePrep.NFSStatusMessage = breadcrumb.NFS
+			}
+		}
 	}
 }

@@ -61,6 +61,8 @@ var (
 
 	csiUnsafeNodeDetach = flag.Bool("csi_unsafe_detach", false, "Prefer to detach successfully rather than safely")
 
+	nodePrep = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
+
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
@@ -387,10 +389,10 @@ func main() {
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator, *csiUnsafeNodeDetach)
+				*httpsClientKey, orchestrator, *csiUnsafeNodeDetach, *nodePrep)
 		case csi.CSIAllInOne:
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach)
+				*httpsClientKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach, *nodePrep)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)

@@ -145,6 +145,10 @@ type TridentNode struct {
 	IQN string `json:"iqn,omitempty"`
 	// IPs is a list of IP addresses for the TridentNode
 	IPs []string `json:"ips,omitempty"`
+	// NodePrep is the current status of node preparation for this node
+	NodePrep runtime.RawExtension `json:"nodePrep,omitempty"`
+	// HostInfo contains information about the node's host machine
+	HostInfo runtime.RawExtension `json:"hostInfo,omitempty"`
 }
 
 // TridentNodeList is a list of TridentNode objects.

@@ -52,4 +52,29 @@ type Node struct {
 	IQN            string            `json:"iqn,omitempty"`
 	IPs            []string          `json:"ips,omitempty"`
 	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
+	NodePrep       *NodePrep         `json:"nodePrep"`
+	HostInfo       *HostSystem       `json:"hostInfo,omitempty"`
+}
+
+type NodePrep struct {
+	Enabled          bool           `json:"enabled"`
+	NFS              NodePrepStatus `json:"nfs,omitempty"`
+	NFSStatusMessage string         `json:"nfsStatusMessage,omitempty"`
+}
+
+type NodePrepStatus string
+
+type HostSystem struct {
+	OS SystemOS `json:"os"`
+}
+
+type SystemOS struct {
+	Distro  string `json:"distro"` // ubuntu/centos/rhel
+	Version string `json:"version"`
+	Release string `json:"release"`
+}
+
+type NodePrepBreadcrumb struct {
+	TridentVersion string `json:"tridentVersion"`
+	NFS            string `json:"nfs,omitempty"`
 }

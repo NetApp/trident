@@ -3,6 +3,8 @@
 package v1
 
 import (
+	"encoding/json"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/utils"
@@ -40,6 +42,17 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 	in.IQN = persistent.IQN
 	in.IPs = persistent.IPs
 
+	nodePrep, err := json.Marshal(persistent.NodePrep)
+	if err != nil {
+		return err
+	}
+	in.NodePrep.Raw = nodePrep
+	hostInfo, err := json.Marshal(persistent.HostInfo)
+	if err != nil {
+		return err
+	}
+	in.HostInfo.Raw = hostInfo
+
 	return nil
 }
 
@@ -47,9 +60,24 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 // utils.TridentNode equivalent.
 func (in *TridentNode) Persistent() (*utils.Node, error) {
 	persistent := &utils.Node{
-		Name: in.Name,
-		IQN:  in.IQN,
-		IPs:  in.IPs,
+		Name:     in.Name,
+		IQN:      in.IQN,
+		IPs:      in.IPs,
+		NodePrep: &utils.NodePrep{},
+		HostInfo: &utils.HostSystem{},
+	}
+
+	if string(in.NodePrep.Raw) != "" {
+		err := json.Unmarshal(in.NodePrep.Raw, persistent.NodePrep)
+		if err != nil {
+			return persistent, err
+		}
+	}
+	if string(in.HostInfo.Raw) != "" {
+		err := json.Unmarshal(in.HostInfo.Raw, persistent.HostInfo)
+		if err != nil {
+			return persistent, err
+		}
 	}
 
 	return persistent, nil

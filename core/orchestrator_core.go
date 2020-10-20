@@ -19,6 +19,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
@@ -3772,7 +3773,9 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 	return nil
 }
 
-func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node) (err error) {
+func (o *TridentOrchestrator) AddNode(
+	ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback,
+) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -3783,6 +3786,21 @@ func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node) (er
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
+	if node.NodePrep != nil && node.NodePrep.Enabled {
+		// Check if node prep status has changed
+		oldNode, found := o.nodes[node.Name]
+		if found && oldNode.NodePrep != nil {
+			// NFS
+			if node.NodePrep.NFS != oldNode.NodePrep.NFS {
+				o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
+			}
+			// TODO (akerr) check iSCSI
+		} else {
+			o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
+			// TODO (akerr) handle iSCSI
+		}
+	}
+
 	if err := o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
 		return err
 	}
@@ -3790,6 +3808,44 @@ func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node) (er
 	o.nodes[node.Name] = node
 
 	return o.reconcileNodeAccessOnAllBackends(ctx)
+}
+
+func (o *TridentOrchestrator) handleUpdatedNodePrep(
+	ctx context.Context, protocol string, node *utils.Node, nodeEventCallback NodeEventCallback,
+) {
+
+	var status utils.NodePrepStatus
+	var message string
+
+	switch protocol {
+	case "NFS":
+		status = node.NodePrep.NFS
+		message = node.NodePrep.NFSStatusMessage
+	// TODO (akerr) handle iSCSI
+	default:
+		Logc(ctx).WithField("protocol", protocol).Error(
+			"Cannot report node prep status: unsupported protocol.")
+		return
+	}
+
+	fields := log.Fields{
+		"node":    node.Name,
+		"message": message,
+	}
+
+	switch status {
+	case utils.PrepFailed:
+		Logc(ctx).WithFields(fields).Warnf("Node prep for %s failed on node.", protocol)
+		nodeEventCallback(helpers.EventTypeWarning, fmt.Sprintf("%sNodePrepFailed", protocol), message)
+	case utils.PrepCompleted:
+		Logc(ctx).WithFields(fields).Infof("Node prep for %s completed on node.", protocol)
+		nodeEventCallback(helpers.EventTypeNormal, fmt.Sprintf("%sNodePrepCompleted", protocol), message)
+	case utils.PrepRunning:
+		Logc(ctx).WithFields(fields).Debugf("Node prep for %s started on node.", protocol)
+		if log.GetLevel() == log.DebugLevel {
+			nodeEventCallback(helpers.EventTypeNormal, fmt.Sprintf("%sNodePrepStarted", protocol), message)
+		}
+	}
 }
 
 func (o *TridentOrchestrator) GetNode(ctx context.Context, nName string) (node *utils.Node, err error) {

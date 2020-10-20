@@ -941,7 +941,10 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
 				topologyLabels)
 
-			err = orchestrator.AddNode(r.Context(), node)
+			nodeEventCallback := func(eventType, reason, message string) {
+				helper.RecordNodeEvent(r.Context(), node.Name, eventType, reason, message)
+			}
+			err = orchestrator.AddNode(r.Context(), node, nodeEventCallback)
 			if err != nil {
 				response.setError(err)
 			}

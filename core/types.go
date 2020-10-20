@@ -60,7 +60,7 @@ type Orchestrator interface {
 	GetStorageClass(ctx context.Context, scName string) (*storageclass.External, error)
 	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)
 
-	AddNode(ctx context.Context, node *utils.Node) error
+	AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) error
 	GetNode(ctx context.Context, nName string) (*utils.Node, error)
 	ListNodes(ctx context.Context) ([]*utils.Node, error)
 	DeleteNode(ctx context.Context, nName string) error
@@ -71,3 +71,4 @@ type Orchestrator interface {
 }
 
 type VolumeCallback func(*storage.VolumeExternal, string) error
+type NodeEventCallback func(eventType, reason, message string)

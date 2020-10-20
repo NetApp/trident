@@ -962,7 +962,7 @@ spec:
 `
 
 func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat string,
-	imagePullSecrets []string, labels, controllingCRDetails map[string]string, debug bool,
+	imagePullSecrets []string, labels, controllingCRDetails map[string]string, debug, nodePrep bool,
 	version *utils.Version) string {
 
 	var debugLine, logLevel string
@@ -991,6 +991,7 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", logFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(nodePrep))
 	daemonSetYAML = replaceMultiline(daemonSetYAML, labels, controllingCRDetails, imagePullSecrets)
 
 	return daemonSetYAML
@@ -1034,6 +1035,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--node_prep={NODE_PREP}"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME
@@ -1171,6 +1173,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--node_prep={NODE_PREP}"
         {DEBUG}
         env:
         - name: KUBE_NODE_NAME

@@ -25,10 +25,11 @@ import (
 )
 
 const (
-	tridentDeviceInfoPath     = "/var/lib/trident/tracking"
-	fsRaw                     = "raw"
-	lockID                    = "csi_node_server"
-	volumePublishInfoFilename = "volumePublishInfo.json"
+	tridentDeviceInfoPath      = "/var/lib/trident/tracking"
+	fsRaw                      = "raw"
+	lockID                     = "csi_node_server"
+	volumePublishInfoFilename  = "volumePublishInfo.json"
+	nodePrepBreadcrumbFilename = "nodePrepInfo.json"
 )
 
 var (
@@ -397,11 +398,33 @@ func (p *Plugin) NodeGetInfo(
 
 func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 
+	// Only get the host system info if node prep is enabled and we don't have the info yet.
+	if p.nodePrep.Enabled && p.hostInfo == nil {
+		// Discover host OS info
+		host, err := utils.GetHostSystemInfo(ctx)
+		if err != nil {
+			p.hostInfo = nil
+			if p.nodePrep.NFS != utils.PrepCompleted {
+				p.nodePrep.NFS = utils.PrepFailed
+				p.nodePrep.NFSStatusMessage = "Unable to get host system information."
+			}
+			Logc(ctx).WithError(err).Warn("Unable to get host system information; worker prep will be skipped.")
+		} else {
+			p.hostInfo = host
+			Logc(ctx).WithFields(
+				log.Fields{
+					"distro":  host.OS.Distro,
+					"version": host.OS.Version,
+				}).Debug("Discovered host info.")
+			// TODO (akerr) detect if iscsi/multipath are already installed
+		}
+	}
+
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Warn("Problem getting iSCSI initiator name.")
-	} else if iscsiWWNs == nil || len(iscsiWWNs) == 0 {
+	} else if len(iscsiWWNs) == 0 {
 		Logc(ctx).Warn("Could not find iSCSI initiator name.")
 	} else {
 		iscsiWWN = iscsiWWNs[0]
@@ -410,21 +433,23 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 	ips, err := utils.GetIPAddresses(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not get IP addresses.")
-	} else if ips == nil || len(ips) == 0 {
+	} else if len(ips) == 0 {
 		Logc(ctx).Warn("Could not find any usable IP addresses.")
 	} else {
 		Logc(ctx).WithField("IP Addresses", ips).Info("Discovered IP addresses.")
 	}
 
 	node := &utils.Node{
-		Name: p.nodeName,
-		IQN:  iscsiWWN,
-		IPs:  ips,
+		Name:     p.nodeName,
+		IQN:      iscsiWWN,
+		IPs:      ips,
+		NodePrep: p.nodePrep,
+		HostInfo: p.hostInfo,
 	}
 	return node
 }
 
-func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
+func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Duration) {
 
 	// Assemble the node details that we will register with the controller
 	node := p.nodeGetInfo(ctx)
@@ -433,8 +458,10 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 	// so retry until it is responding on the back channel and we have registered the node.
 	registerNode := func() error {
 		nodeDetails, err := p.restClient.CreateNode(ctx, node)
-		topologyLabels = nodeDetails.TopologyLabels
-		node.TopologyLabels = nodeDetails.TopologyLabels
+		if err == nil {
+			topologyLabels = nodeDetails.TopologyLabels
+			node.TopologyLabels = nodeDetails.TopologyLabels
+		}
 		return err
 	}
 
@@ -442,7 +469,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 		Logc(ctx).WithFields(log.Fields{
 			"increment": duration,
 			"error":     err,
-		}).Debug("Controller not yet ready, waiting.")
+		}).Warn("Could not update Trident controller with node registration, will retry.")
 	}
 
 	registerNodeBackoff := backoff.NewExponentialBackOff()
@@ -450,13 +477,16 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context) {
 	registerNodeBackoff.Multiplier = 2
 	registerNodeBackoff.MaxInterval = 5 * time.Second
 	registerNodeBackoff.RandomizationFactor = 0.1
-	registerNodeBackoff.MaxElapsedTime = 0 // Indefinite
+	registerNodeBackoff.MaxElapsedTime = timeout
 
 	// Retry using an exponential backoff that never ends until it succeeds
-	backoff.RetryNotify(registerNode, registerNodeBackoff, registerNodeNotify)
-
-	log.WithField("node", p.nodeName).Debug("Communication with controller established, node registered.")
-	log.WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
+	err := backoff.RetryNotify(registerNode, registerNodeBackoff, registerNodeNotify)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Unable to update Trident controller with node registration.")
+	} else {
+		Logc(ctx).WithField("node", p.nodeName).Info("Updated Trident controller with node registration.")
+		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
+	}
 }
 
 func (p *Plugin) nodeDeregisterWithController(ctx context.Context) error {
@@ -465,6 +495,10 @@ func (p *Plugin) nodeDeregisterWithController(ctx context.Context) error {
 
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+
+	if p.nodePrep.Enabled {
+		p.nodePrepForNFS(ctx)
+	}
 
 	publishInfo := &utils.VolumePublishInfo{
 		Localhost:      true,
@@ -486,6 +520,137 @@ func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolum
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodePrepForNFS(ctx context.Context) {
+
+	switch p.nodePrep.NFS {
+	case utils.PrepCompleted:
+		Logc(ctx).Debug("Node preparation for NFS has already completed; continuing.")
+		return
+	case utils.PrepFailed:
+		Logc(ctx).WithField("FailureReason", p.nodePrep.NFSStatusMessage).Warn(
+			"Node preparation for NFS failed; NFS mounts to this node may fail.")
+		return
+	case utils.PrepRunning:
+		Logc(ctx).Warn("Node preparation for NFS is incomplete; NFS mounts to this node may fail.")
+		return
+	case utils.PrepOutdated:
+		Logc(ctx).Debug("Previously complete node prep was from a different version of Trident; will rerun.")
+		fallthrough
+	case utils.PrepPending:
+		Logc(ctx).Debug("Preparing node for NFS...")
+	default:
+		Logc(ctx).WithField("nfsStatus", p.nodePrep.NFS).Error(
+			"Node preparation for NFS is in an unknown state; NFS mounts to this node may fail")
+		return
+	}
+
+	// Set NFS prep to running
+	t := time.Now()
+	p.nodePrep.NFS = utils.PrepRunning
+	p.nodePrep.NFSStatusMessage = fmt.Sprintf("Started at %s", t.Format("2006-01-02 15:04:05"))
+
+	// Update the controller with the new status
+	p.nodeRegisterWithController(ctx, 30*time.Second)
+	defer p.nodeRegisterWithController(ctx, 30*time.Second)
+
+	// Install required packages
+	err := utils.PrepareNFSPackagesOnHost(ctx, *p.hostInfo)
+	if err != nil {
+		err = fmt.Errorf("error preparing NFS packages on the host; %+v", err)
+		Logc(ctx).Warn(err)
+		p.nodePrep.NFS = utils.PrepFailed
+		p.nodePrep.NFSStatusMessage = fmt.Sprint(err)
+		return
+	}
+
+	// Enable required services
+	err = utils.PrepareNFSServicesOnHost(ctx)
+	if err != nil {
+		err = fmt.Errorf("error preparing NFS services on the host; %+v", err)
+		Logc(ctx).Warn(err)
+		p.nodePrep.NFS = utils.PrepFailed
+		p.nodePrep.NFSStatusMessage = fmt.Sprint(err)
+		return
+	}
+
+	// Set NFS prep to completed
+	t = time.Now()
+	p.nodePrep.NFS = utils.PrepCompleted
+	p.nodePrep.NFSStatusMessage = fmt.Sprintf("Completed at %s", t.Format("2006-01-02 15:04:05"))
+	Logc(ctx).Info("Successfully completed Worker Node Prep for NFS.")
+
+	// Write the breadcrumb file to persist completed status beyond restarts
+	err = p.writeNodePrepBreadcrumbFile(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn(
+			"Could not write node prep status file; node prep may run again if node restarts.")
+	}
+}
+
+func (p *Plugin) writeNodePrepBreadcrumbFile(ctx context.Context) error {
+
+	// We should only write statuses that have succeeded
+	breadcrumbs := utils.NodePrepBreadcrumb{TridentVersion: tridentconfig.OrchestratorVersion.String()}
+	if p.nodePrep.NFS == utils.PrepCompleted {
+		breadcrumbs.NFS = p.nodePrep.NFSStatusMessage
+	}
+
+	// Convert struct to json
+	breadcrumbBytes, err := json.Marshal(breadcrumbs)
+	if err != nil {
+		return err
+	}
+
+	// Write the file; piggyback on deviceInfoPath as that is already being created on the host
+	breadcrumbFile := path.Join(tridentDeviceInfoPath, nodePrepBreadcrumbFilename)
+	err = ioutil.WriteFile(breadcrumbFile, breadcrumbBytes, 0600)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"file":  breadcrumbFile,
+			"error": err,
+		}).Error("Could not write file.")
+		return err
+	}
+
+	Logc(ctx).Debug("Node prep status file written.")
+	return nil
+}
+
+// readNodePrepBreadcrumbFile returns the contents of the node prep status file, if it exists.
+// Returns a status.Error if an error is returned.
+func (p *Plugin) readNodePrepBreadcrumbFile(ctx context.Context) (*utils.NodePrepBreadcrumb, error) {
+
+	// File may not exist so caller needs to handle not found error
+	breadcrumbFile := path.Join(tridentDeviceInfoPath, nodePrepBreadcrumbFilename)
+	if _, err := os.Stat(breadcrumbFile); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"file":  breadcrumbFile,
+			"error": err.Error(),
+		}).Debug("Unable to find node prep status file.")
+		return nil, utils.NotFoundError("node prep status file not found")
+	}
+
+	breadcrumb := utils.NodePrepBreadcrumb{}
+
+	breadcrumbBytes, err := ioutil.ReadFile(breadcrumbFile)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	err = json.Unmarshal(breadcrumbBytes, &breadcrumb)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"file":  breadcrumb,
+			"raw":   string(breadcrumbBytes),
+			"error": err.Error(),
+		}).Error("Could not parse node prep status.")
+		return nil, err
+	}
+
+	Logc(ctx).WithField("nodePrepStatus", breadcrumb).Debug("Node prep status found.")
+	return &breadcrumb, nil
 }
 
 func (p *Plugin) nodeUnstageNFSVolume(
@@ -884,7 +1049,7 @@ func (p *Plugin) readStagedTrackingFile(ctx context.Context, volumeId string) (s
 		Logc(ctx).WithFields(log.Fields{
 			"volumeId": volumeId,
 			"error":    err.Error(),
-		})
+		}).Error("Could not parse publish info location.")
 		return "", err
 	}
 

@@ -256,6 +256,24 @@ func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 	}
 }
 
+// RecordNodeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
+// PVC, and posts and event message on the PVC object with the K8S API server.
+func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
+
+	Logc(ctx).WithFields(log.Fields{
+		"name":      name,
+		"eventType": eventType,
+		"reason":    reason,
+		"message":   message,
+	}).Debug("Node event.")
+
+	if node, err := p.GetNode(ctx, name); err != nil {
+		Logc(ctx).WithField("error", err).Debug("Failed to find Node for event.")
+	} else {
+		p.eventRecorder.Event(node, mapEventType(eventType), reason, message)
+	}
+}
+
 // mapEventType maps between K8S API event types and Trident CSI helper event types.  The
 // two sets of types may be identical, but the CSI helper interface should not be tightly
 // coupled to Kubernetes.

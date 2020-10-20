@@ -2604,7 +2604,7 @@ func TestAddNode(t *testing.T) {
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
 	}
 	orchestrator := getOrchestrator()
-	if err := orchestrator.AddNode(ctx(), node); err != nil {
+	if err := orchestrator.AddNode(ctx(), node, nil); err != nil {
 		t.Errorf("adding node failed; %v", err)
 	}
 }

@@ -72,10 +72,10 @@ var (
 	inCluster               bool
 	useIPv6                 bool
 	silenceAutosupport      bool
+	disableNodePrep         bool
 	pvName                  string
 	pvcName                 string
 	tridentImage            string
-	etcdImage               string
 	autosupportImage        string
 	autosupportProxy        string
 	autosupportCustomURL    string
@@ -132,6 +132,8 @@ func init() {
 	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable", "Don't send autosupport bundles to NetApp automatically.")
+	installCmd.Flags().BoolVar(&disableNodePrep, "disable-node-prep", false,
+		"Don't attempt to install required packages on nodes.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will ensure this does not exist.")
@@ -526,7 +528,8 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-		tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug, client.ServerVersion())
+		tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
+		!disableNodePrep, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -906,7 +909,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
 					tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
-					client.ServerVersion()))
+					!disableNodePrep, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {

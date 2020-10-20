@@ -13,6 +13,9 @@
 - Fixed issue where storage prefix with period would cause backend to fail when updating or creating backend or upgrading Trident from v20.01
 
 **Enhancements:**
+- **Kubernetes:** Added automatic node preparation for NFS protocol. By default, Trident will now attempt to make
+ sure NFS packages and services are installed and running the first time an NFS volume is mounted on a worker node.
+  Can be disabled with `--disable-node-prep` installation option.
 
 **Deprecations:**
 - **Kubernetes:** Removed etcd support, including ability to upgrade directly from etcd-based Trident (v19.04.1 or older).

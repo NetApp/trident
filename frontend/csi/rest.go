@@ -117,7 +117,7 @@ type CreateNodeResponse struct {
 
 // CreateNode registers the node with the CSI controller server
 func (c *RestClient) CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error) {
-	nodeData, err := json.Marshal(node)
+	nodeData, err := json.MarshalIndent(node, "", " ")
 	if err != nil {
 		return CreateNodeResponse{}, fmt.Errorf("error parsing create node request; %v", err)
 	}

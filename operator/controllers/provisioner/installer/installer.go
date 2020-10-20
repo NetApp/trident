@@ -59,6 +59,7 @@ var (
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
+	disableNodePrep    bool
 
 	logFormat     string
 	tridentImage  string
@@ -252,6 +253,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	csi = true
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
+	disableNodePrep = cr.Spec.DisableNodePrep
 	silenceAutosupport = cr.Spec.SilenceAutosupport
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
@@ -477,6 +479,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		KubeletDir:              kubeletDir,
 		K8sTimeout:              strconv.Itoa(int(k8sTimeout.Seconds())),
 		ImagePullSecrets:        imagePullSecrets,
+		DisableNodePrep:         strconv.FormatBool(disableNodePrep),
 	}
 
 	log.WithFields(log.Fields{
@@ -1489,7 +1492,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 	labels[appLabelKey] = TridentNodeLabelValue
 
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
-		logFormat, imagePullSecrets, labels, controllingCRDetails, debug, i.client.ServerVersion())
+		logFormat, imagePullSecrets, labels, controllingCRDetails, debug, !disableNodePrep, i.client.ServerVersion())
 
 	if createDaemonset {
 		// Create the daemonset

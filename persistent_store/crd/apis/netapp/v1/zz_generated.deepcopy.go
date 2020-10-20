@@ -84,6 +84,8 @@ func (in *TridentNode) DeepCopyInto(out *TridentNode) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	in.NodePrep.DeepCopyInto(&out.NodePrep)
+	in.HostInfo.DeepCopyInto(&out.HostInfo)
 	return
 }
 

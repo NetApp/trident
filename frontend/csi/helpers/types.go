@@ -46,7 +46,11 @@ type HybridPlugin interface {
 	// event message in a manner appropriate to the container orchestrator.
 	RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string)
 
-	//SupportsFeature accepts a CSI feature and returns true if the feature is supported.
+	// RecordNodeEvent accepts the name of a CSI node and writes the specified
+	// event message in a manner appropriate to the container orchestrator.
+	RecordNodeEvent(ctx context.Context, name, eventType, reason, message string)
+
+	// SupportsFeature accepts a CSI feature and returns true if the feature is supported.
 	SupportsFeature(ctx context.Context, feature Feature) bool
 
 	// Version returns the version of the CO this helper is managing, or the supported
