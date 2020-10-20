@@ -1365,6 +1365,12 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return err
 	}
 
+	// Wait for resize operation to complete
+	_, err = d.SDK.WaitForVolumeState(ctx, volume, sdk.StateAvailable, []string{sdk.StateError}, d.defaultTimeout())
+	if err != nil {
+		return fmt.Errorf("could not resize volume %s: %v", name, err)
+	}
+
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }

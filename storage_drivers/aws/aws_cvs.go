@@ -1397,6 +1397,7 @@ func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 	return err
 }
 
+// Resize increases a volume's quota
 func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
 	name := volConfig.InternalName
@@ -1445,6 +1446,12 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	_, err = d.API.ResizeVolume(ctx, volume, int64(sizeBytes))
 	if err != nil {
 		return err
+	}
+
+	// Wait for resize operation to complete
+	_, err = d.API.WaitForVolumeState(ctx, volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
+	if err != nil {
+		return fmt.Errorf("could not resize volume %s: %v", name, err)
 	}
 
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
