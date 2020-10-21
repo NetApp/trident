@@ -17,7 +17,7 @@ Some of the best practices guides are listed below, however, refer to the `NetAp
   * `NFS Best Practice and Implementation Guide <https://www.netapp.com/us/media/tr-4067.pdf>`_
   * `SAN Administration Guide <http://docs.netapp.com/ontap-9/index.jsp?topic=%2Fcom.netapp.doc.dot-cm-sanag%2Fhome.html>`_ (for iSCSI)
   * `iSCSI Express Configuration for RHEL <http://docs.netapp.com/ontap-9/index.jsp?topic=%2Fcom.netapp.doc.exp-iscsi-rhel-cg%2Fhome.html>`_
-  
+
 * Element
 
   * `Configuring SolidFire for Linux <http://www.netapp.com/us/media/tr-4639.pdf>`_
@@ -37,7 +37,7 @@ Some example application best practices guides:
 
 Not all applications will have specific guidelines, it's important to work with your NetApp team and to refer to the `library <https://www.netapp.com/us/search/index.aspx?i=1&q1=Documents&x1=t1>`_ for the most up-to-date recommendations and guides.
 
-Best practices for configuring ONTAP and Cloud Volumes ONTAP 
+Best practices for configuring ONTAP and Cloud Volumes ONTAP
 ============================================================
 
 The following recommendations are guidelines for configuring ONTAP for containerized workloads which consume volumes that are dynamically provisioned by Trident. Each should be considered and evaluated for appropriateness in your environment.
@@ -51,7 +51,7 @@ There are several options available for the management of the SVM:
 
 * Provide the cluster management interface in the backend configuration, along with appropriate credentials, and specify the SVM name.
 * Create a dedicated management interface for the SVM using ONTAP System Manager or CLI.
-* Share the management role with an NFS data interface. 
+* Share the management role with an NFS data interface.
 
 In each case, the interface should be in DNS, and the DNS name should be used when configuring Trident. This helps to facilitate some DR scenarios, for example, SVM-DR without the use of network identity retention.
 
@@ -62,7 +62,10 @@ Limit the maximum volume count
 
 ONTAP storage systems have a maximum volume count which varies based on the software version and hardware platform, see the `Hardware Universe <https://hwu.netapp.com/>`_ for your specific platform and ONTAP version to determine exact limits.  When the volume count is exhausted, provisioning operations will fail not only for Trident but for all storage requests.
 
-Trident's ``ontap-nas`` and ``ontap-san`` drivers provision a FlexVolume for each Kubernetes Persistent Volume (PV) which is created. The ``ontap-nas-economy`` driver creates approximately one FlexVolume for every 200 PVs.  To prevent Trident from consuming all available volumes on the storage system, it is recommended that a limit be placed on the SVM.  This can be done from the command line:
+Trident's ``ontap-nas`` and ``ontap-san`` drivers provision a FlexVolume for each Kubernetes Persistent Volume (PV)
+which is created. The ``ontap-nas-economy`` driver creates approximately one FlexVolume for every 200 PVs (configurable
+between 50 and 300).  To prevent Trident from consuming all available volumes on the storage system, it is recommended
+that a limit be placed on the SVM.  This can be done from the command line:
 
 .. code-block:: console
 
@@ -110,8 +113,8 @@ Creating a QoS policy for the SVM can be done in a few steps.  Refer to the docu
 
    # create the policy group for the SVM
    qos policy-group create -policy-group <policy_name> -vserver <svm_name> -max-throughput 5000iops
-   
-   # assign the policy group to the SVM, note this will not work 
+
+   # assign the policy group to the SVM, note this will not work
    # if volumes or files in the SVM have existing QoS policies
    vserver modify -vserver <svm_name> -qos-policy-group <policy_name>
 
@@ -131,7 +134,7 @@ Limiting access to the NFS volumes and iSCSI LUNs created by Trident is a critic
 
 It's important to understand that namespaces are the logical boundary for resources in Kubernetes.  The assumption is that resources in the same namespace are able to be shared, however, importantly, there is no cross-namespace capability.  This means that even though PVs are global objects, when bound to a PVC they are only accessible by pods which are in the same namespace.  It's critical to ensure that namespaces are used to provide separation when appropriate.
 
-The primary concern for most organizations, with regard to data security in a Kubernetes context, is that a process in a container can access storage mounted to the host, but which is not intended for the container.  Simply put, this is not possible, the underlying technology for containers i.e. `namespaces <https://en.wikipedia.org/wiki/Linux_namespaces>`_, are designed to prevent this type of compromise.  However, there is one exception: privileged containers. 
+The primary concern for most organizations, with regard to data security in a Kubernetes context, is that a process in a container can access storage mounted to the host, but which is not intended for the container.  Simply put, this is not possible, the underlying technology for containers i.e. `namespaces <https://en.wikipedia.org/wiki/Linux_namespaces>`_, are designed to prevent this type of compromise.  However, there is one exception: privileged containers.
 
 A privileged container is one that is run with substantially more host-level permissions than normal.  These are not denied by default, so disabling the capability using `pod security policies <https://kubernetes.io/docs/concepts/policy/pod-security-policy/>`_ is very important for preventing this accidental exposure.
 
@@ -139,7 +142,7 @@ For volumes where access is desired from both Kubernetes and external hosts, the
 
 For deployments which have dedicated infrastructure nodes (e.g. OpenShift), or other nodes which are not schedulable for user applications, separate export policies should be used to further limit access to storage resources.  This includes creating an export policy for services which are deployed to those infrastructure nodes, such as, the OpenShift Metrics and Logging services, and standard applications which are deployed to non-infrastructure nodes.
 
-Use a dedicated export policy 
+Use a dedicated export policy
 -----------------------------
 
 It is important to ensure that an export policy exists for each backend
@@ -194,12 +197,12 @@ The following table shows the possible minimum, maximum, and Burst IOPS values f
  +-------------------+----------------------------------------------------+-----------+---------------+----------------+
  |     Burst IOPS    |   Maximum IOPS allowed in a short burst scenario.  | 50        |     15000     |   200,000      |
  +-------------------+----------------------------------------------------+-----------+---------------+----------------+
-  
+
 Note: Although the Max IOPS and Burst IOPS can be set as high as 200,000, the real-world maximum performance of a volume is limited by cluster usage and per-node performance.
-  
+
 Block size and bandwidth have a direct influence on the number of IOPS. As block sizes increase, the system increases bandwidth to a level necessary to process the larger block sizes. As bandwidth increases the number of IOPS the system is able to attain decreases. For more information on QoS and performance, refer to the `NetApp SolidFire Quality of Service (QoS) <https://www.netapp.com/us/media/tr-4644.pdf>`_ Guide.
- 
-   
+
+
 **SolidFire authentication**
 
 SolidFire Element supports two methods for authentication: CHAP and Volume Access Groups (VAG). CHAP uses the CHAP protocol to authenticate the host to the backend. Volume Access Groups controls access to the volumes it provisions. NetApp recommends using CHAP for authentication as it's simpler and has no scaling limits.
@@ -217,7 +220,7 @@ However, if CHAP is cannot be enabled and VAGs are required, create the access g
 
 For more information on how to setup Volume Access Groups and CHAP authentication, please refer the NetApp HCI Installation and setup guide.
 
-Best practices for configuring E-Series 
+Best practices for configuring E-Series
 =======================================
 
 **E-Series Disk Pools and Volume Groups**
@@ -230,18 +233,18 @@ Host groups are used by Trident to access the volumes (LUNs) that it provisions.
 
 **E-Series Snapshot Schedule**
 
-Create a snapshot schedule and assign the volume created by Trident to a snapshot schedule so that volume backups can be taken at the required interval. Based on the snapshots taken as per the snapshot policy, rollback operations can be done on volumes by restoring a snapshot image to the base volume. Setting up Snapshot Consistency Groups are also ideal for applications that span multiple volumes. The purpose of a consistency group is to take simultaneous snapshot images of multiple volumes, thus ensuring consistent copies of a collection of volumes at a particular point in time. Snapshot schedule and Consistency group cannot be set through Trident. It has to be configured through SANtricity System Manager 
+Create a snapshot schedule and assign the volume created by Trident to a snapshot schedule so that volume backups can be taken at the required interval. Based on the snapshots taken as per the snapshot policy, rollback operations can be done on volumes by restoring a snapshot image to the base volume. Setting up Snapshot Consistency Groups are also ideal for applications that span multiple volumes. The purpose of a consistency group is to take simultaneous snapshot images of multiple volumes, thus ensuring consistent copies of a collection of volumes at a particular point in time. Snapshot schedule and Consistency group cannot be set through Trident. It has to be configured through SANtricity System Manager
 
-Best practices for configuring Cloud Volumes Service on AWS 
+Best practices for configuring Cloud Volumes Service on AWS
 ===========================================================
 
-**Create Export Policy** 
+**Create Export Policy**
 
-To make sure that only the authorized set of nodes have access to the volume provisioned through Cloud Volumes Service, set appropriate rules for the export policy while creating a Cloud Volumes Service. When provisioning volumes on Cloud Volume Services through Trident make sure to use ``exportRule`` parameter in the backend file to give access to the required Kubernetes nodes. 
+To make sure that only the authorized set of nodes have access to the volume provisioned through Cloud Volumes Service, set appropriate rules for the export policy while creating a Cloud Volumes Service. When provisioning volumes on Cloud Volume Services through Trident make sure to use ``exportRule`` parameter in the backend file to give access to the required Kubernetes nodes.
 
-**Create Snapshot Policy** 
+**Create Snapshot Policy**
 
-Setting a snapshot policy for the volumes provisioned through Cloud Volume Service makes sure that snapshots are taken at required intervals. This guarantees data backup at regular intervals and data can be restored in the event of a data loss or data corruption. Snapshot Policy for volumes hosted by Cloud Volume Service can be set by selecting the appropriate schedule on the volumes details page. 
+Setting a snapshot policy for the volumes provisioned through Cloud Volume Service makes sure that snapshots are taken at required intervals. This guarantees data backup at regular intervals and data can be restored in the event of a data loss or data corruption. Snapshot Policy for volumes hosted by Cloud Volume Service can be set by selecting the appropriate schedule on the volumes details page.
 
 **Choosing the appropriate Service Level, Storage Capacity and Storage Bandwidth**
 
@@ -249,7 +252,7 @@ AWS Cloud Volume Services offer different Service Levels like Standard, Premium 
 
 The required size of allocated storage should be chosen during volume creation based on the specific needs of the application. There are two factors that need to be taken into consideration while deciding on the allocated storage. They are the storage requirements of the specific application and the bandwidth that you require at the peak or the edge.
 
-The bandwidth depends on the combination of the service level and the allocated capacity that you have chosen. Therefore choose the right service level and allocated capacity keeping the required bandwidth in mind.  
+The bandwidth depends on the combination of the service level and the allocated capacity that you have chosen. Therefore choose the right service level and allocated capacity keeping the required bandwidth in mind.
 
 **Limit the maximum size of volumes created by the Trident**
 

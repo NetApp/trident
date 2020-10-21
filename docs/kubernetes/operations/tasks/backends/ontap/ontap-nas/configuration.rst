@@ -19,6 +19,7 @@ storagePrefix             Prefix used when provisioning new volumes in the SVM. 
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value                                    "" (not enforced by default)
 nfsMountOptions           Comma-separated list of NFS mount options                                                         ""
+qtreesPerFlexvol          Maximum qtrees per FlexVol, must be in range [50, 300]                                            "200"
 debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
 ========================= ================================================================================================= ================================================
 
@@ -57,9 +58,10 @@ drivers and explained in the
 :ref:`Dynamic Export Policies <Dynamic Export Policies with ONTAP NAS>`
 section.
 
-For the ``ontap-nas-economy`` driver, the ``limitVolumeSize``
-option will also restrict the maximum size of
-the volumes it manages for qtrees and LUNs.
+For the ``ontap-nas-economy`` driver, the ``limitVolumeSize`` option will also
+restrict the maximum size of the volumes it manages for qtrees and LUNs, and
+the ``qtreesPerFlexvol`` option allows customizing the maximum number of qtrees
+per FlexVol.
 
 The ``nfsMountOptions`` parameter can be used to specify mount options.
 The mount options for Kubernetes persistent volumes are normally specified in
@@ -93,22 +95,22 @@ Here's an example that establishes default values:
 .. code-block:: bash
 
   {
-   "version": 1,
-   "storageDriverName": "ontap-nas",
-   "backendName": "customBackendName",
-   "managementLIF": "10.0.0.1",
-   "dataLIF": "10.0.0.2",
-   "svm": "trident_svm",
-   "username": "cluster-admin",
-   "password": "password",
-   "limitAggregateUsage": "80%",
-   "limitVolumeSize": "50Gi",
-   "nfsMountOptions": "nfsvers=4",
-   "debugTraceFlags": {"api":false, "method":true},
-   "defaults": {
-       "spaceReserve": "volume",
-       "exportPolicy": "myk8scluster",
-       "snapshotPolicy": "default",
-       "snapshotReserve": "10"
-               }
+    "version": 1,
+    "storageDriverName": "ontap-nas",
+    "backendName": "customBackendName",
+    "managementLIF": "10.0.0.1",
+    "dataLIF": "10.0.0.2",
+    "svm": "trident_svm",
+    "username": "cluster-admin",
+    "password": "password",
+    "limitAggregateUsage": "80%",
+    "limitVolumeSize": "50Gi",
+    "nfsMountOptions": "nfsvers=4",
+    "debugTraceFlags": {"api":false, "method":true},
+    "defaults": {
+      "spaceReserve": "volume",
+      "exportPolicy": "myk8scluster",
+      "snapshotPolicy": "default",
+      "snapshotReserve": "10"
+    }
   }

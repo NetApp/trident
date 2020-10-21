@@ -82,12 +82,15 @@ For the ``ontap-san*`` drivers, an additional top level option is available to s
 +------------------------------+--------------------------------------------------------------------------+------------+
 
 For the ``ontap-nas-economy`` driver, the ``limitVolumeSize`` option will additionally limit the size of the
-FlexVols that it creates.
+FlexVols that it creates, and the ``qtreesPerFlexvol`` option allows customizing the maximum number of qtrees
+per FlexVol.
 
 +------------------------------+--------------------------------------------------------------------------+------------+
 | Option                       | Description                                                              | Example    |
 +==============================+==========================================================================+============+
 | ``limitVolumeSize``          | Maximum requestable volume size and qtree parent volume size             | 300g       |
++------------------------------+--------------------------------------------------------------------------+------------+
+| ``qtreesPerFlexvol``         | Maximum qtrees per FlexVol, must be in range [50, 300], default is 200   | 300        |
 +------------------------------+--------------------------------------------------------------------------+------------+
 
 Also, when using ONTAP, these default option settings are available to avoid having to specify them on every volume create.

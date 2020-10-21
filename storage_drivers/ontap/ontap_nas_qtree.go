@@ -30,7 +30,9 @@ import (
 const (
 	deletedQtreeNamePrefix                      = "deleted_"
 	maxQtreeNameLength                          = 64
-	maxQtreesPerFlexvol                         = 200
+	minQtreesPerFlexvol                         = 50
+	defaultQtreesPerFlexvol                     = 200
+	maxQtreesPerFlexvol                         = 300
 	defaultPruneFlexvolsPeriodSecs              = uint64(600)   // default to 10 minutes
 	defaultResizeQuotasPeriodSecs               = uint64(60)    // default to 1 minute
 	defaultEmptyFlexvolDeferredDeletePeriodSecs = uint64(28800) // default to 8 hours
@@ -52,6 +54,7 @@ type NASQtreeStorageDriver struct {
 	sharedLockID                     string
 	emptyFlexvolMap                  map[string]time.Time
 	emptyFlexvolDeferredDeletePeriod time.Duration
+	qtreesPerFlexvol                 int
 
 	physicalPools map[string]*storage.Pool
 	virtualPools  map[string]*storage.Pool
@@ -137,9 +140,25 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.sharedLockID = d.API.SVMUUID + "-" + *d.Config.StoragePrefix
 	d.emptyFlexvolMap = make(map[string]time.Time)
 
+	// Ensure the qtree cap is valid
+	if config.QtreesPerFlexvol == "" {
+		d.qtreesPerFlexvol = defaultQtreesPerFlexvol
+	} else {
+		if d.qtreesPerFlexvol, err = strconv.Atoi(config.QtreesPerFlexvol); err != nil {
+			return fmt.Errorf("invalid config value for qtreesPerFlexvol: %v", err)
+		}
+		if d.qtreesPerFlexvol < minQtreesPerFlexvol {
+			return fmt.Errorf("invalid config value for qtreesPerFlexvol (minimum is %d)", minQtreesPerFlexvol)
+		}
+		if d.qtreesPerFlexvol > maxQtreesPerFlexvol {
+			return fmt.Errorf("invalid config value for qtreesPerFlexvol (maximum is %d)", maxQtreesPerFlexvol)
+		}
+	}
+
 	Logc(ctx).WithFields(log.Fields{
 		"FlexvolNamePrefix":   d.flexvolNamePrefix,
 		"FlexvolExportPolicy": d.flexvolExportPolicy,
+		"QtreesPerFlexvol":    d.qtreesPerFlexvol,
 		"SharedLockID":        d.sharedLockID,
 	}).Debugf("Qtree driver settings.")
 
@@ -851,7 +870,7 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 				return "", fmt.Errorf("error enumerating qtrees: %v", err)
 			}
 
-			if count < maxQtreesPerFlexvol {
+			if count < d.qtreesPerFlexvol {
 				volumes = append(volumes, volName)
 			}
 		}

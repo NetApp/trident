@@ -17,6 +17,7 @@
 - **Kubernetes:** Added automatic node preparation for NFS protocol. By default, Trident will now attempt to make
  sure NFS packages and services are installed and running the first time an NFS volume is mounted on a worker node.
   Can be disabled with `--disable-node-prep` installation option.
+- Added `qtreesPerFlexvol` option to allow customizing the number of qtrees per FlexVol in the ontap-nas-economy driver.
 
 **Deprecations:**
 - **Kubernetes:** Removed etcd support, including ability to upgrade directly from etcd-based Trident (v19.04.1 or older).

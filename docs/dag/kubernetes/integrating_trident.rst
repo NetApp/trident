@@ -19,7 +19,7 @@ At a higher level, if your application has components which need shared storage 
 The five drivers for ONTAP backends are listed below:
 
 * ``ontap-nas`` – Each PV provisioned is a full ONTAP FlexVolume.
-* ``ontap-nas-economy`` – Each PV provisioned is a qtree, with up to 200 qtrees per FlexVolume.
+* ``ontap-nas-economy`` – Each PV provisioned is a qtree, with a configurable number of qtrees per FlexVolume (default is 200).
 * ``ontap-nas-flexgroup`` - Each PV provisioned as a full ONTAP FlexGroup, and all aggregates assigned to a SVM are used.
 * ``ontap-san`` – Each PV provisioned is a LUN within its own FlexVolume.
 * ``ontap-san-economy`` - Each PV provisioned is a LUN within a set of automatically managed FlexVols.
