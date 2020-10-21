@@ -27,6 +27,9 @@ const (
 	maxZapiRecords       = 0xfffffffe
 	NumericalValueNotSet = -1
 	maxFlexGroupWait     = 30 * time.Second
+
+	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
+	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
 )
 
 // ClientConfig holds the configuration data for Client objects
@@ -412,7 +415,14 @@ func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoTy
 
 // LunCreate creates a lun with the specified attributes
 // equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
-func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error) {
+func (d Client) LunCreate(
+	lunPath string, sizeInBytes int, osType string, spaceReserved bool, spaceAllocated bool,
+) (*azgo.LunCreateBySizeResponse, error) {
+
+	if strings.Contains(lunPath, failureLUNCreate) {
+		return nil, errors.New("injected error")
+	}
+
 	response, err := azgo.NewLunCreateBySizeRequest().
 		SetPath(lunPath).
 		SetSize(sizeInBytes).
@@ -574,6 +584,11 @@ func (d Client) LunDestroy(lunPath string) (*azgo.LunDestroyResponse, error) {
 
 // LunSetAttribute sets a named attribute for a given LUN.
 func (d Client) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttributeResponse, error) {
+
+	if strings.Contains(lunPath, failureLUNSetAttr) {
+		return nil, errors.New("injected error")
+	}
+
 	response, err := azgo.NewLunSetAttributeRequest().
 		SetPath(lunPath).
 		SetName(name).

@@ -465,29 +465,42 @@ func (d *SANEconomyStorageDriver) Create(
 				aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Move on to the next pool
 			continue
 		}
 
 		// Make sure we have a Flexvol for the new LUN
-		bucketVol, err := d.ensureFlexvolForLUN(
-			ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, false, enableEncryption, sizeBytes, opts,
-			d.Config, storagePool)
+		bucketVol, newVol, err := d.ensureFlexvolForLUN(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy,
+			false, enableEncryption, sizeBytes, opts, d.Config, storagePool)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; BucketVol location/creation failed %s: %v",
-				storagePool.Name,
-				aggregate, name, err)
+				storagePool.Name, aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Move on to the next pool
 			continue
 		}
 
 		// Grow or shrink the Flexvol as needed
-		err = d.resizeFlexvol(ctx, bucketVol, sizeBytes)
-		if err != nil {
+		if err = d.resizeFlexvol(ctx, bucketVol, sizeBytes); err != nil {
+
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; Flexvol resize failed %s/%s: %v",
 				storagePool.Name, aggregate, bucketVol, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Don't leave the new Flexvol around if we just created it
+			if newVol {
+				if _, err := d.API.VolumeDestroy(bucketVol, true); err != nil {
+					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after resize error.")
+				}
+			}
+
+			// Move on to the next pool
 			continue
 		}
 
@@ -497,10 +510,22 @@ func (d *SANEconomyStorageDriver) Create(
 		// Create the LUN
 		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
+
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v", storagePool.Name,
 				aggregate, bucketVol, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Don't leave the new Flexvol around if we just created it
+			if newVol {
+				if _, err := d.API.VolumeDestroy(bucketVol, true); err != nil {
+					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
+				}
+			}
+
+			// Move on to the next pool
 			continue
 		}
 
@@ -509,10 +534,32 @@ func (d *SANEconomyStorageDriver) Create(
 		// Save the fstype in a LUN attribute so we know what to do in Attach
 		attrResponse, err := d.API.LunSetAttribute(lunPath, LUNAttributeFSType, fstype)
 		if err = api.GetError(ctx, attrResponse, err); err != nil {
-			d.API.LunDestroy(lunPath)
-			return fmt.Errorf("ONTAP-SAN-ECONOMY pool %s/%s; error saving file system type for LUN %s/%s: %v",
+
+			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; error saving file system type for LUN %s/%s: %v",
 				storagePool.Name, aggregate, bucketVol, name, err)
+			Logc(ctx).Error(errMessage)
+			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Don't leave the new LUN around
+			if _, err := d.API.LunDestroy(lunPath); err != nil {
+				Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
+			} else {
+				Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after set attribute error.")
+			}
+
+			// Don't leave the new Flexvol around if we just created it
+			if newVol {
+				if _, err := d.API.VolumeDestroy(bucketVol, true); err != nil {
+					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
+				} else {
+					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after set attribute error.")
+				}
+			}
+
+			// Move on to the next pool
+			continue
 		}
+
 		// Save the context
 		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", string(d.Config.DriverContext))
 		if err = api.GetError(ctx, attrResponse, err); err != nil {
@@ -1177,16 +1224,17 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 }
 
 // ensureFlexvolForLUN accepts a set of Flexvol characteristics and either finds one to contain a new
-// LUN or it creates a new Flexvol with the needed attributes.
+// LUN or it creates a new Flexvol with the needed attributes.  The name of the matching volume is returned,
+// as is a boolean indicating whether the volume was newly created to satisfy this request.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
 	sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig, storagePool *storage.Pool,
-) (string, error) {
+) (string, bool, error) {
 
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, config.CommonStorageDriverConfig)
 	if checkVolumeSizeLimitsError != nil {
-		return "", checkVolumeSizeLimitsError
+		return "", false, checkVolumeSizeLimitsError
 	}
 
 	// Check if a suitable Flexvol already exists
@@ -1195,22 +1243,22 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 		shouldLimitVolumeSize, flexvolSizeLimit)
 
 	if err != nil {
-		return "", fmt.Errorf("error finding Flexvol for LUN: %v", err)
+		return "", false, fmt.Errorf("error finding Flexvol for LUN: %v", err)
 	}
 
 	// Found one
 	if flexvol != "" {
-		return flexvol, nil
+		return flexvol, false, nil
 	}
 
 	// Nothing found, so create a suitable Flexvol
 	flexvol, err = d.createFlexvolForLUN(
 		ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, encrypt, opts, storagePool)
 	if err != nil {
-		return "", fmt.Errorf("error creating Flexvol for LUN: %v", err)
+		return "", false, fmt.Errorf("error creating Flexvol for LUN: %v", err)
 	}
 
-	return flexvol, nil
+	return flexvol, true, nil
 }
 
 // createFlexvolForLUN creates a new Flexvol matching the specified attributes for

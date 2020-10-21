@@ -279,6 +279,8 @@ func (d *SANStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Move on to the next pool
 			continue
 		}
 
@@ -301,29 +303,62 @@ func (d *SANStorageDriver) Create(
 				aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Move on to the next pool
 			continue
 		}
 
 		lunPath := lunPath(name)
 		osType := "linux"
 
-		// Create the LUN
+		// Create the LUN.  If this fails, clean up and move on to the next pool.
 		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name,
-				aggregate, name, err)
+
+			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v",
+				storagePool.Name, aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Don't leave the new Flexvol around
+			if _, err := d.API.VolumeDestroy(name, true); err != nil {
+				Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
+			} else {
+				Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
+			}
+
+			// Move on to the next pool
 			continue
 		}
 
-		// Save the fstype in a LUN attribute so we know what to do in Attach
+		// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
+		// move on to the next pool.
 		attrResponse, err := d.API.LunSetAttribute(lunPath, LUNAttributeFSType, fstype)
 		if err = api.GetError(ctx, attrResponse, err); err != nil {
-			defer d.API.LunDestroy(lunPath)
-			return fmt.Errorf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v", storagePool.Name,
-				aggregate, name, err)
+
+			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",
+				storagePool.Name, aggregate, name, err)
+			Logc(ctx).Error(errMessage)
+			createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+			// Don't leave the new LUN around
+			if _, err := d.API.LunDestroy(lunPath); err != nil {
+				Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
+			} else {
+				Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after set attribute error.")
+			}
+
+			// Don't leave the new Flexvol around
+			if _, err := d.API.VolumeDestroy(name, true); err != nil {
+				Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
+			} else {
+				Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after set attribute error.")
+			}
+
+			// Move on to the next pool
+			continue
 		}
+
 		// Save the context
 		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", string(d.Config.DriverContext))
 		if err = api.GetError(ctx, attrResponse, err); err != nil {
