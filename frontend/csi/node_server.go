@@ -489,10 +489,6 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	}
 }
 
-func (p *Plugin) nodeDeregisterWithController(ctx context.Context) error {
-	return p.restClient.DeleteNode(ctx, p.nodeName)
-}
-
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 

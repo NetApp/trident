@@ -385,6 +385,11 @@ func (o *TridentOrchestrator) bootstrapVolTxns(ctx context.Context) error {
 
 func (o *TridentOrchestrator) bootstrapNodes(ctx context.Context) error {
 
+	// Don't bootstrap nodes if we're not CSI
+	if config.CurrentDriverContext != config.ContextCSI {
+		return nil
+	}
+
 	nodes, err := o.storeClient.GetNodes(ctx)
 	if err != nil {
 		return err
@@ -3745,6 +3750,10 @@ func (o *TridentOrchestrator) DeleteStorageClass(ctx context.Context, scName str
 
 func (o *TridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx context.Context) error {
 
+	if config.CurrentDriverContext != config.ContextCSI {
+		return nil
+	}
+
 	Logc(ctx).Debug("Reconciling node access on current backends.")
 	for _, b := range o.backends {
 		err := o.reconcileNodeAccessOnBackend(ctx, b)
@@ -3756,6 +3765,10 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx context.Conte
 }
 
 func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b *storage.Backend) error {
+
+	if config.CurrentDriverContext != config.ContextCSI {
+		return nil
+	}
 
 	nodes := make([]*utils.Node, 0)
 

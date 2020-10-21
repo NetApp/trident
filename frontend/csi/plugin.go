@@ -240,13 +240,6 @@ func (p *Plugin) Deactivate() error {
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
-	if p.role == CSINode || p.role == CSIAllInOne {
-		err := p.nodeDeregisterWithController(ctx)
-		if err != nil {
-			Logc(ctx).Errorf("Error deregistering node %s with controller; %v", p.nodeName, err)
-			return err
-		}
-	}
 	return nil
 }
 
