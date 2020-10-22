@@ -1,6 +1,6 @@
 FROM busybox:latest as busybox
 
-FROM gcr.io/distroless/static:eddfb5cd7a24d656f77afae595ffe6c232eab847
+FROM gcr.io/distroless/static:a71e663938c986f0bfd79938b93fdd3d03599b8a
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident.netapp.io" \
