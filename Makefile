@@ -204,11 +204,15 @@ k8s_codegen:
 k8s_codegen_operator:
 	cd operator && $(MAKE) k8s_codegen
 
+.git/hooks:
+	mkdir -p $@ 
+
+.PHONY: install-lint lint-precommit lint-prepush
 install-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI-LINT_VERSION}
 
-lint-precommit: install-lint
+lint-precommit: .git/hooks install-lint
 	cp hooks/golangci-lint.sh .git/hooks/pre-commit
 
-lint-prepush: install-lint .git/hooks/pre-push
+lint-prepush: .git/hooks install-lint .git/hooks/pre-push
 	cp hooks/golangci-lint.sh .git/hooks/pre-push
