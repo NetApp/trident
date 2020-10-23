@@ -303,6 +303,7 @@ func (p *Plugin) initNodePrep(ctx context.Context) {
 	if p.nodePrep.Enabled {
 
 		p.nodePrep.NFS = utils.PrepPending
+		p.nodePrep.ISCSI = utils.PrepPending
 
 		// Check if the protocols have previously been successfully set up
 		breadcrumb, err := p.readNodePrepBreadcrumbFile(ctx)
@@ -316,6 +317,14 @@ func (p *Plugin) initNodePrep(ctx context.Context) {
 					p.nodePrep.NFS = utils.PrepOutdated
 				}
 				p.nodePrep.NFSStatusMessage = breadcrumb.NFS
+			}
+			if breadcrumb.ISCSI != "" {
+				if breadcrumb.TridentVersion == tridentconfig.OrchestratorVersion.String() {
+					p.nodePrep.ISCSI = utils.PrepCompleted
+				} else {
+					p.nodePrep.ISCSI = utils.PrepOutdated
+				}
+				p.nodePrep.ISCSIStatusMessage = breadcrumb.ISCSI
 			}
 		}
 	}

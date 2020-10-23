@@ -30,11 +30,12 @@ const (
 	// Darwin is a constant value for the runtime.GOOS that represents Apple MacOS
 	Darwin = "darwin"
 
-	PrepPending   NodePrepStatus = "pending"
-	PrepRunning   NodePrepStatus = "running"
-	PrepCompleted NodePrepStatus = "completed"
-	PrepFailed    NodePrepStatus = "failed"
-	PrepOutdated  NodePrepStatus = "outdated"
+	PrepPending       NodePrepStatus = "pending"
+	PrepRunning       NodePrepStatus = "running"
+	PrepCompleted     NodePrepStatus = "completed"
+	PrepFailed        NodePrepStatus = "failed"
+	PrepOutdated      NodePrepStatus = "outdated"
+	PrepPreConfigured NodePrepStatus = "preconfigured"
 
 	Centos = "centos"
 	RHEL   = "rhel"

@@ -45,7 +45,7 @@ type TridentProvisionerSpec struct {
 	KubeletDir              string   `json:"kubeletDir,omitempty"`
 	Wipeout                 []string `json:"wipeout,omitempty"`
 	ImagePullSecrets        []string `json:"imagePullSecrets,omitempty"`
-	DisableNodePrep         bool     `json:"disableNodePrep,omitempty"`
+	EnableNodePrep          bool     `json:"enableNodePrep,omitempty"`
 }
 
 // TridentProvisionerStatus defines the observed state of TridentProvisioner
@@ -70,5 +70,5 @@ type TridentProvisionerSpecValues struct {
 	ImageRegistry           string   `json:"imageRegistry"`
 	KubeletDir              string   `json:"kubeletDir"`
 	ImagePullSecrets        []string `json:"imagePullSecrets"`
-	DisableNodePrep         string   `json:"disableNodePrep"`
+	EnableNodePrep          string   `json:"enableNodePrep"`
 }

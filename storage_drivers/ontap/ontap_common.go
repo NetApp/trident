@@ -126,7 +126,7 @@ func CreateCloneNAS(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(nil, volConfig, make(map[string]sa.Request))
+	opts, err := d.GetVolumeOpts(context.Background(), volConfig, make(map[string]sa.Request))
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ func (t Telemetry) GoString() string {
 func deleteExportPolicy(ctx context.Context, policy string, clientAPI *api.Client) error {
 	response, err := clientAPI.ExportPolicyDestroy(policy)
 	if err = api.GetError(ctx, response, err); err != nil {
-		err = fmt.Errorf("error deleteing export policy: %v", err)
+		err = fmt.Errorf("error deleting export policy: %v", err)
 	}
 	return err
 }
@@ -467,7 +467,7 @@ func reconcileExportPolicyRules(
 	if err = api.GetError(ctx, ruleListResponse, err); err != nil {
 		return fmt.Errorf("error listing export policy rules: %v", err)
 	}
-	rulesToRemove := make(map[string]int, 0)
+	rulesToRemove := make(map[string]int)
 	if ruleListResponse.Result.NumRecords() > 0 {
 		rulesAttrList := ruleListResponse.Result.AttributesList()
 		rules := rulesAttrList.ExportRuleInfo()
@@ -722,18 +722,50 @@ func PublishLUN(
 		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 
+	allowEmptyIQN := false
+	if config.DriverContext == tridentconfig.ContextCSI {
+		// Get the info about the targeted node
+		var targetNode *utils.Node
+		for _, node := range publishInfo.Nodes {
+			if node.Name == publishInfo.HostName {
+				targetNode = node
+				break
+			}
+		}
+		if targetNode == nil {
+			err = fmt.Errorf("node %s has not registered with Trident", publishInfo.HostName)
+			Logc(ctx).Error(err)
+			return err
+		}
+
+		// The IQN may be blank if we're in CSI mode and node prep is enabled and hasn't run yet.
+		if targetNode.NodePrep.Enabled {
+			switch targetNode.NodePrep.ISCSI {
+			case "", utils.PrepPending, utils.PrepOutdated, utils.PrepRunning:
+				allowEmptyIQN = true
+			}
+		}
+	}
+
 	if !publishInfo.Unmanaged {
-		// Add IQN to igroup
-		igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
-		err = api.GetError(ctx, igroupAddResponse, err)
-		zerr, zerrOK := err.(api.ZapiError)
-		if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-			Logc(ctx).WithFields(log.Fields{
-				"IQN":    iqn,
-				"igroup": igroupName,
-			}).Debug("Host IQN already in igroup.")
-		} else {
-			return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+		if iqn != "" {
+			// Add IQN to igroup
+			igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
+			err = api.GetError(ctx, igroupAddResponse, err)
+			zerr, zerrOK := err.(api.ZapiError)
+			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+				Logc(ctx).WithFields(
+					log.Fields{
+						"IQN":    iqn,
+						"igroup": igroupName,
+					}).Debug("Host IQN already in igroup.")
+			} else {
+				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+			}
+		} else if !allowEmptyIQN {
+			err = fmt.Errorf("unknown initiator for node %s", publishInfo.HostName)
+			Logc(ctx).Error(err)
+			return err
 		}
 	}
 
@@ -870,7 +902,7 @@ func ValidateBidrectionalChapCredentials(getDefaultAuthResponse *azgo.IscsiIniti
 	}
 
 	// make sure it's one of the 3 types we understand
-	if isDefaultAuthTypeNone == false && isDefaultAuthTypeCHAP == false && isDefaultAuthTypeDeny == false {
+	if !isDefaultAuthTypeNone && !isDefaultAuthTypeCHAP && !isDefaultAuthTypeDeny {
 		return nil, fmt.Errorf("default initiator's auth type is unsupported")
 	}
 
@@ -2269,7 +2301,7 @@ func InitializeStoragePoolsCommon(
 	physicalPools := make(map[string]*storage.Pool)
 	virtualPools := make(map[string]*storage.Pool)
 
-	// To identify list of media types supported by physcial pools
+	// To identify list of media types supported by physical pools
 	mediaOffers := make([]sa.Offer, 0)
 
 	// Get name of the physical storage pools which in case of ONTAP is list of aggregates
@@ -2493,7 +2525,7 @@ func InitializeStoragePoolsCommon(
 }
 
 // ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
-// for a field then a default should have been set in for that field in the intialize storage pools
+// for a field then a default should have been set in for that field in the initialize storage pools
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, driverType string,
 ) error {

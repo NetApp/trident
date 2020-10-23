@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -169,6 +170,32 @@ func determineNFSPackages(ctx context.Context, host HostSystem) ([]string, error
 	return packages, nil
 }
 
+func determineISCSIPackages(ctx context.Context, host HostSystem, iscsiPreconfigured bool) ([]string, error) {
+
+	packages := make([]string, 0)
+
+	switch host.OS.Distro {
+	case Centos, RHEL:
+		packages = append(packages, []string{"lsscsi", "sg3_utils"}...)
+		// If iscsi is already configured we don't want to install/update it or multipath's daemon
+		if !iscsiPreconfigured {
+			packages = append(packages, []string{"iscsi-initiator-utils", "device-mapper-multipath"}...)
+		}
+	case Ubuntu:
+		packages = append(packages, []string{"lsscsi", "sg3-utils", "scsitools"}...)
+		// If iscsi is already configured we don't want to install/update it or multipath's daemon
+		if !iscsiPreconfigured {
+			packages = append(packages, []string{"open-iscsi", "multipath-tools"}...)
+		}
+	default:
+		err := fmt.Errorf("unsupported Linux distro")
+		Logc(ctx).WithField("distro", host.OS.Distro).Error(err)
+		return nil, err
+	}
+
+	return packages, nil
+}
+
 func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
 
 	Logc(ctx).Debug(">>>> osutils_linux.PrepareNFSPackagesOnHost")
@@ -181,10 +208,31 @@ func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
 		return err
 	}
 
-	var notInstalled []string
-	_, notInstalled, err = checkPackagesOnHost(ctx, packages, host)
+	return installMissingPackagesOnHost(ctx, packages, host)
+}
+
+// PrepareISCSIPackagesOnHost installs the system packages required by Trident for iSCSI mounts
+func PrepareISCSIPackagesOnHost(ctx context.Context, host HostSystem, iscsiPreconfigured bool) error {
+
+	Logc(ctx).Debug(">>>> osutils_linux.PrepareISCSIPackagesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareISCSIPackagesOnHost")
+
+	packages, err := determineISCSIPackages(ctx, host, iscsiPreconfigured)
 	if err != nil {
-		err = fmt.Errorf("error checking for installed nfs packages; %+v", err)
+		err = fmt.Errorf("could not determine iSCSI packages; %+v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	return installMissingPackagesOnHost(ctx, packages, host)
+}
+
+// installMissingPackagesOnHost checks if the given packages are already installed, and if not installs them
+func installMissingPackagesOnHost(ctx context.Context, packages []string, host HostSystem) error {
+
+	notInstalled, err := checkPackagesOnHost(ctx, packages, host)
+	if err != nil {
+		err = fmt.Errorf("error checking for installed packages; %+v", err)
 		Logc(ctx).WithField("packages", packages)
 		return err
 	}
@@ -195,12 +243,11 @@ func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
 		Logc(ctx).WithField("packages", packages).Error(err)
 		return err
 	}
+
 	return nil
 }
 
-func checkPackagesOnHost(
-	ctx context.Context, packages []string, host HostSystem,
-) (installed, notInstalled []string, err error) {
+func checkPackagesOnHost(ctx context.Context, packages []string, host HostSystem) (notInstalled []string, err error) {
 
 	for _, pkg := range packages {
 		found, err2 := packageInstalledOnHost(ctx, pkg, host)
@@ -209,9 +256,7 @@ func checkPackagesOnHost(
 			Logc(ctx).WithField("package", pkg).Error(err)
 			return
 		}
-		if found {
-			installed = append(installed, pkg)
-		} else {
+		if !found {
 			notInstalled = append(notInstalled, pkg)
 		}
 	}
@@ -394,6 +439,101 @@ func PrepareNFSServicesOnHost(ctx context.Context) error {
 	return nil
 }
 
+func determineISCSIServices(host HostSystem) ([]string, error) {
+
+	services := make([]string, 0)
+
+	switch host.OS.Distro {
+	case Centos, RHEL:
+		services = []string{"iscsid", "multipathd"}
+	case Ubuntu:
+		services = []string{"open-iscsi", "multipath-tools"}
+	default:
+		err := fmt.Errorf("unsupported Linux distro: %s", host.OS.Distro)
+		return services, err
+	}
+
+	return services, nil
+}
+
+// PrepareISCSIServicesOnHost configures, enables, and starts the system services required by Trident for iSCSI mounts
+func PrepareISCSIServicesOnHost(ctx context.Context, host HostSystem) error {
+
+	Logc(ctx).Debug(">>>> osutils_linux.PrepareISCSIServicesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareISCSIServicesOnHost")
+
+	// Get the list of services needed
+	services, err := determineISCSIServices(host)
+	if err != nil {
+		err = fmt.Errorf("could not determine proper iSCSI services for the host: %s", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	// Configure multipathing
+	err = configureMultipathServiceOnHost(ctx, host)
+	if err != nil {
+		err = fmt.Errorf("error configuring multipath service; %+v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	// Re/Start and enable the services
+	for _, service := range services {
+		err = enableAndStartServiceOnHost(ctx, service)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func configureMultipathServiceOnHost(ctx context.Context, host HostSystem) error {
+
+	var err error
+	var output []byte
+
+	switch host.OS.Distro {
+	case Centos, RHEL:
+		output, err = execCommandWithTimeout(ctx, "mpathconf", 30, true, "--enable", "--with_multipathd", "y")
+		if err != nil {
+			err = fmt.Errorf("%s; %+v", string(output), err)
+		}
+	case Ubuntu:
+		multipathConf := `defaults {
+    user_friendly_names yes
+    find_multipaths yes
+}
+`
+		err = ioutil.WriteFile("/etc/multipath.conf", []byte(multipathConf), 644)
+	default:
+		err = fmt.Errorf("unsupported Linux distro: %s", host.OS.Distro)
+	}
+	return err
+}
+
+// ISCSIActiveOnHost will return if the iscsi daemon is active on the given host
+func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
+
+	Logc(ctx).Debug(">>>> osutils_linux.ISCSIActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_linux.ISCSIActiveOnHost")
+
+	var serviceName string
+
+	switch host.OS.Distro {
+	case Centos, RHEL:
+		serviceName = "iscsid"
+	case Ubuntu:
+		serviceName = "open-iscsi"
+	default:
+		err := fmt.Errorf("unsupported distro: %s", host.OS.Distro)
+		Logc(ctx).Error(err)
+		return false, err
+	}
+
+	return ServiceActiveOnHost(ctx, serviceName)
+}
+
 func enableAndStartServiceOnHost(ctx context.Context, service string) error {
 
 	var (
@@ -441,15 +581,13 @@ func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 
 	output, err := execCommandWithTimeout(ctx, "systemctl", 30, true, "is-active", service)
 	if err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			if exitError.ExitCode() == 1 {
-				Logc(ctx).WithField("service", service).Debug("Service is not active on the host.")
-				return false, nil
-			} else {
-				err = fmt.Errorf("unexpected error while checking if service is active; %s; %+v", string(output), err)
-				Logc(ctx).WithField("service", service).Error(err)
-				return false, err
-			}
+		if _, ok := err.(*exec.ExitError); ok {
+			Logc(ctx).WithField("service", service).Debug("Service is not active on the host.")
+			return false, nil
+		} else {
+			err = fmt.Errorf("unexpected error while checking if service is active; %s; %+v", string(output), err)
+			Logc(ctx).WithField("service", service).Error(err)
+			return false, err
 		}
 	}
 	Logc(ctx).WithField("service", service).Debug("Service is active on the host.")
@@ -479,7 +617,7 @@ func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
 	return true, nil
 }
 
-// Return information about the host system
+// GetHostSystemInfo returns information about the host system
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 
 	Logc(ctx).Debug(">>>> osutils_linux.GetHostSystemInfo")

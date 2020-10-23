@@ -484,7 +484,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 
-	// limits checks are not currently applicable to the Flexgroups driver, ommited here on purpose
+	// limits checks are not currently applicable to the Flexgroups driver, omitted here on purpose
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {

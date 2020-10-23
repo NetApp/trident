@@ -76,3 +76,24 @@ func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
 	msg := "ServiceEnabledOnHost is not is not supported for darwin"
 	return false, UnsupportedError(msg)
 }
+
+func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_darwin.ISCSIActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.ISCSIActiveOnHost")
+	msg := "ISCSIActiveOnHost is not is not supported for darwin"
+	return false, UnsupportedError(msg)
+}
+
+func PrepareISCSIPackagesOnHost(ctx context.Context, host HostSystem, iscsiPreconfigured bool) error {
+	Logc(ctx).Debug(">>>> osutils_darwin.PrepareISCSIPackagesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.PrepareISCSIPackagesOnHost")
+	msg := "PrepareISCSIPackagesOnHost is not is not supported for darwin"
+	return UnsupportedError(msg)
+}
+
+func PrepareISCSIServicesOnHost(ctx context.Context, host HostSystem) error {
+	Logc(ctx).Debug(">>>> osutils_darwin.PrepareISCSIServicesOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.PrepareISCSIServicesOnHost")
+	msg := "PrepareISCSIServicesOnHost is not is not supported for darwin"
+	return UnsupportedError(msg)
+}

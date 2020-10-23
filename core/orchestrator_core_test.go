@@ -1753,7 +1753,7 @@ func TestLoadBackend(t *testing.T) {
 	const (
 		backendName = "load-backend-test"
 	)
-	// volumes must be nil in order to satisfy reflect.DeepEqual comparision. It isn't recommended to compare slices with deepEqual
+	// volumes must be nil in order to satisfy reflect.DeepEqual comparison. It isn't recommended to compare slices with deepEqual
 	var volumes []fake.Volume
 	orchestrator := getOrchestrator()
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(

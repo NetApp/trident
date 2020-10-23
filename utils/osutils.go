@@ -124,7 +124,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"fstype":         fstype,
 	}).Debug("Attaching iSCSI volume.")
 
-	if ISCSISupported(ctx) == false {
+	if !ISCSISupported(ctx) {
 		err := errors.New("unable to attach: open-iscsi tools not found on host")
 		Logc(ctx).Errorf("Unable to attach volume: open-iscsi utils not found")
 		return err
@@ -1387,8 +1387,8 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 					mainIpAddress := strings.Split(main, ":")[0]
 					valIpAddress := strings.Split(val, ":")[0]
 
-				return mainIpAddress == valIpAddress
-			})
+					return mainIpAddress == valIpAddress
+				})
 		}
 	}
 
@@ -2783,10 +2783,9 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 		for _, target := range targets {
 			if target.TargetName == targetName {
 				// Set scan to manual
-				err = configureISCSITarget(ctx, target.TargetName, target.PortalIP, "node.session.scan", "manual")
-				if err != nil {
-					// Swallow this error, someone is running an old version of Debian/Ubuntu
-				}
+				// Swallow this error, someone is running an old version of Debian/Ubuntu
+				_ = configureISCSITarget(ctx, target.TargetName, target.PortalIP, "node.session.scan", "manual")
+
 				// Update replacement timeout
 				err = configureISCSITarget(
 					ctx, target.TargetName, target.PortalIP, "node.session.timeo.replacement_timeout", "5")

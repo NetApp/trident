@@ -144,6 +144,7 @@ func writeWideNodeTable(nodes []utils.Node) {
 	header := []string{
 		"Name",
 		"IQN",
+		"iSCSI Prep",
 		"IPs",
 		"NFS Prep",
 	}
@@ -155,10 +156,15 @@ func writeWideNodeTable(nodes []utils.Node) {
 		if node.NodePrep != nil && node.NodePrep.Enabled {
 			nfsStatus = string(node.NodePrep.NFS)
 		}
+		iscsiStatus := "Disabled"
+		if node.NodePrep != nil && node.NodePrep.Enabled {
+			iscsiStatus = string(node.NodePrep.ISCSI)
+		}
 
 		table.Append([]string{
 			node.Name,
 			node.IQN,
+			iscsiStatus,
 			strings.Join(node.IPs, "\n"),
 			nfsStatus,
 		})

@@ -59,7 +59,7 @@ var (
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
-	disableNodePrep    bool
+	enableNodePrep     bool
 
 	logFormat     string
 	tridentImage  string
@@ -253,7 +253,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	csi = true
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
-	disableNodePrep = cr.Spec.DisableNodePrep
+	enableNodePrep = cr.Spec.EnableNodePrep
 	silenceAutosupport = cr.Spec.SilenceAutosupport
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
@@ -479,7 +479,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		KubeletDir:              kubeletDir,
 		K8sTimeout:              strconv.Itoa(int(k8sTimeout.Seconds())),
 		ImagePullSecrets:        imagePullSecrets,
-		DisableNodePrep:         strconv.FormatBool(disableNodePrep),
+		EnableNodePrep:          strconv.FormatBool(enableNodePrep),
 	}
 
 	log.WithFields(log.Fields{
@@ -1427,7 +1427,7 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 
 // TridentDeploymentInformation identifies the Operator based Trident CSI deployment and unwanted deployments,
 // this method can be used for multiple purposes at different point during the Reconcile so it makes sense to
-// keep it seperate from the createOrPatchTridentDeployment
+// keep it separate from the createOrPatchTridentDeployment
 func (i *Installer) TridentDeploymentInformation(deploymentLabel string, csiVal bool) (*appsv1.Deployment,
 	[]appsv1.Deployment, bool, error) {
 	createDeployment := true
@@ -1492,7 +1492,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 	labels[appLabelKey] = TridentNodeLabelValue
 
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
-		logFormat, imagePullSecrets, labels, controllingCRDetails, debug, !disableNodePrep, i.client.ServerVersion())
+		logFormat, imagePullSecrets, labels, controllingCRDetails, debug, enableNodePrep, i.client.ServerVersion())
 
 	if createDaemonset {
 		// Create the daemonset
@@ -1514,7 +1514,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 
 // TridentDaemonSetInformation identifies the Operator based Trident CSI daemonset and unwanted daemonsets,
 // this method can be used for multiple purposes at different point during the Reconcile so it makes sense to
-// keep it seperate from the createOrPatchTridentDaemonSet
+// keep it separate from the createOrPatchTridentDaemonSet
 func (i *Installer) TridentDaemonSetInformation() (*appsv1.DaemonSet,
 	[]appsv1.DaemonSet, bool, error) {
 

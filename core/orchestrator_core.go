@@ -2440,7 +2440,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 		if volume, ok := o.volumes[volumeConfig.Name]; ok {
 			delete(o.volumes, volumeConfig.Name)
 			if err = o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
-				return fmt.Errorf("error occured removing volume from persistent store; %v", err)
+				return fmt.Errorf("error occurred removing volume from persistent store; %v", err)
 			}
 		}
 	}
@@ -3807,10 +3807,13 @@ func (o *TridentOrchestrator) AddNode(
 			if node.NodePrep.NFS != oldNode.NodePrep.NFS {
 				o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
 			}
-			// TODO (akerr) check iSCSI
+			// iSCSI
+			if node.NodePrep.ISCSI != oldNode.NodePrep.ISCSI {
+				o.handleUpdatedNodePrep(ctx, "ISCSI", node, nodeEventCallback)
+			}
 		} else {
 			o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
-			// TODO (akerr) handle iSCSI
+			o.handleUpdatedNodePrep(ctx, "ISCSI", node, nodeEventCallback)
 		}
 	}
 
@@ -3834,7 +3837,9 @@ func (o *TridentOrchestrator) handleUpdatedNodePrep(
 	case "NFS":
 		status = node.NodePrep.NFS
 		message = node.NodePrep.NFSStatusMessage
-	// TODO (akerr) handle iSCSI
+	case "ISCSI":
+		status = node.NodePrep.ISCSI
+		message = node.NodePrep.ISCSIStatusMessage
 	default:
 		Logc(ctx).WithField("protocol", protocol).Error(
 			"Cannot report node prep status: unsupported protocol.")
@@ -3850,6 +3855,9 @@ func (o *TridentOrchestrator) handleUpdatedNodePrep(
 	case utils.PrepFailed:
 		Logc(ctx).WithFields(fields).Warnf("Node prep for %s failed on node.", protocol)
 		nodeEventCallback(helpers.EventTypeWarning, fmt.Sprintf("%sNodePrepFailed", protocol), message)
+	case utils.PrepPreConfigured:
+		Logc(ctx).WithFields(fields).Warnf("Node was preconfigured for %s.", protocol)
+		nodeEventCallback(helpers.EventTypeWarning, fmt.Sprintf("%sNodePrepPreconfigured", protocol), message)
 	case utils.PrepCompleted:
 		Logc(ctx).WithFields(fields).Infof("Node prep for %s completed on node.", protocol)
 		nodeEventCallback(helpers.EventTypeNormal, fmt.Sprintf("%sNodePrepCompleted", protocol), message)

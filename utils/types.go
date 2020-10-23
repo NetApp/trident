@@ -57,9 +57,11 @@ type Node struct {
 }
 
 type NodePrep struct {
-	Enabled          bool           `json:"enabled"`
-	NFS              NodePrepStatus `json:"nfs,omitempty"`
-	NFSStatusMessage string         `json:"nfsStatusMessage,omitempty"`
+	Enabled            bool           `json:"enabled"`
+	NFS                NodePrepStatus `json:"nfs,omitempty"`
+	NFSStatusMessage   string         `json:"nfsStatusMessage,omitempty"`
+	ISCSI              NodePrepStatus `json:"iscsi,omitempty"`
+	ISCSIStatusMessage string         `json:"iscsiStatusMessage,omitempty"`
 }
 
 type NodePrepStatus string
@@ -77,4 +79,5 @@ type SystemOS struct {
 type NodePrepBreadcrumb struct {
 	TridentVersion string `json:"tridentVersion"`
 	NFS            string `json:"nfs,omitempty"`
+	ISCSI          string `json:"iscsi,omitempty"`
 }

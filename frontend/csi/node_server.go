@@ -416,7 +416,6 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 					"distro":  host.OS.Distro,
 					"version": host.OS.Version,
 				}).Debug("Discovered host info.")
-			// TODO (akerr) detect if iscsi/multipath are already installed
 		}
 	}
 
@@ -428,6 +427,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		Logc(ctx).Warn("Could not find iSCSI initiator name.")
 	} else {
 		iscsiWWN = iscsiWWNs[0]
+		Logc(ctx).WithField("IQN", iscsiWWN).Info("Discovered iSCSI initiator name.")
 	}
 
 	ips, err := utils.GetIPAddresses(ctx)
@@ -532,7 +532,7 @@ func (p *Plugin) nodePrepForNFS(ctx context.Context) {
 		Logc(ctx).Warn("Node preparation for NFS is incomplete; NFS mounts to this node may fail.")
 		return
 	case utils.PrepOutdated:
-		Logc(ctx).Debug("Previously complete node prep was from a different version of Trident; will rerun.")
+		Logc(ctx).Debug("Previously completed node preparation was from a different version of Trident; will rerun.")
 		fallthrough
 	case utils.PrepPending:
 		Logc(ctx).Debug("Preparing node for NFS...")
@@ -585,12 +585,117 @@ func (p *Plugin) nodePrepForNFS(ctx context.Context) {
 	}
 }
 
+func (p *Plugin) nodePrepForISCSI(ctx context.Context) {
+
+	outdated := false
+
+	switch p.nodePrep.ISCSI {
+	case utils.PrepCompleted:
+		Logc(ctx).Debug("Node preparation for iSCSI has already completed; continuing.")
+		return
+	case utils.PrepFailed:
+		Logc(ctx).WithField("FailureReason", p.nodePrep.ISCSIStatusMessage).Warn(
+			"Node preparation for iSCSI failed; iSCSI mounts to this node may fail.")
+		return
+	case utils.PrepRunning:
+		Logc(ctx).Warn("Node preparation for iSCSI is incomplete; iSCSI mounts to this node may fail.")
+		return
+	case utils.PrepPreConfigured:
+		// We do not record a preconfigured status in the breadcrumb file.
+		// This is so that it will retry on pod restarts as the user may not have been aware that iscsi was partially
+		// implemented on their nodes already.
+		Logc(ctx).Warn("iSCSI was preconfigured; iSCSI mounts to this node may fail.")
+		return
+	case utils.PrepOutdated:
+		Logc(ctx).Debug("Previously completed node preparation was from a different version of Trident; will rerun.")
+		outdated = true
+		fallthrough
+	case utils.PrepPending:
+		Logc(ctx).Debug("Preparing node for iSCSI...")
+	default:
+		Logc(ctx).WithField("iscsiStatus", p.nodePrep.ISCSI).Warn(
+			"Node preparation for iSCSI is in an unknown state; iSCSI mounts to this node may fail")
+		return
+	}
+
+	// Set iSCSI prep to running
+	t := time.Now()
+	p.nodePrep.ISCSI = utils.PrepRunning
+	p.nodePrep.ISCSIStatusMessage = fmt.Sprintf("Started at %s", t.Format("2006-01-02 15:04:05"))
+
+	// Update the controller with the new status
+	p.nodeRegisterWithController(ctx, 30*time.Second)
+	defer p.nodeRegisterWithController(ctx, 30*time.Second)
+
+	var iscsiPreconfigured bool
+	var err error
+
+	// If this is an outdated Trident prep, then iscsi is expected to be preconfigured, so skip this check.
+	if !outdated {
+		// Check if iSCSI is currently running as that indicates it may be in use and we should not adjust iSCSI or
+		// multipath settings/packages.
+		iscsiPreconfigured, err = utils.ISCSIActiveOnHost(ctx, *p.hostInfo)
+		if err != nil {
+			err = fmt.Errorf("error checking status of iscsi daemon on host; %+v", err)
+			Logc(ctx).Warn(err)
+			p.nodePrep.ISCSI = utils.PrepFailed
+			p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
+			return
+		}
+	}
+
+	// Install required packages, skipping iscsi/multipath if iscsi already is running
+	err = utils.PrepareISCSIPackagesOnHost(ctx, *p.hostInfo, iscsiPreconfigured)
+	if err != nil {
+		err = fmt.Errorf("error preparing iSCSI packages on the host; %+v", err)
+		Logc(ctx).Warn(err)
+		p.nodePrep.ISCSI = utils.PrepFailed
+		p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
+		return
+	}
+
+	if iscsiPreconfigured {
+		Logc(ctx).Warn("iSCSI service is already running; skipping iSCSI and multipath configuration; iSCSI " +
+			"mounts to this node may fail.")
+		p.nodePrep.ISCSI = utils.PrepPreConfigured
+		p.nodePrep.ISCSIStatusMessage = "iSCSI service was already running on the host; " +
+			"iSCSI and multipath configuration skipped; iSCSI mounts to this node may fail."
+		return
+	}
+
+	// Enable required services
+	err = utils.PrepareISCSIServicesOnHost(ctx, *p.hostInfo)
+	if err != nil {
+		err = fmt.Errorf("error preparing iSCSI services on the host; %+v", err)
+		Logc(ctx).Warn(err)
+		p.nodePrep.ISCSI = utils.PrepFailed
+		p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
+		return
+	}
+
+	// Set iSCSI prep to completed
+	t = time.Now()
+	p.nodePrep.ISCSI = utils.PrepCompleted
+	p.nodePrep.ISCSIStatusMessage = fmt.Sprintf("Completed at %s", t.Format("2006-01-02 15:04:05"))
+	Logc(ctx).Info("Successfully completed node prep for iSCSI.")
+
+	// Write the breadcrumb file to persist completed status beyond restarts
+	err = p.writeNodePrepBreadcrumbFile(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn(
+			"Could not write node prep status file; node prep may run again if node restarts.")
+	}
+}
+
 func (p *Plugin) writeNodePrepBreadcrumbFile(ctx context.Context) error {
 
 	// We should only write statuses that have succeeded
 	breadcrumbs := utils.NodePrepBreadcrumb{TridentVersion: tridentconfig.OrchestratorVersion.String()}
 	if p.nodePrep.NFS == utils.PrepCompleted {
 		breadcrumbs.NFS = p.nodePrep.NFSStatusMessage
+	}
+	if p.nodePrep.ISCSI == utils.PrepCompleted {
+		breadcrumbs.ISCSI = p.nodePrep.ISCSIStatusMessage
 	}
 
 	// Convert struct to json
@@ -739,6 +844,10 @@ func (p *Plugin) nodeStageISCSIVolume(
 
 	var err error
 	var fstype string
+
+	if p.nodePrep.Enabled {
+		p.nodePrepForISCSI(ctx)
+	}
 
 	mountCapability := req.GetVolumeCapability().GetMount()
 	blockCapability := req.GetVolumeCapability().GetBlock()
