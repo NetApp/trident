@@ -159,10 +159,7 @@ func (o *LUNHelper) GetLUNPathPattern(volName string) string {
 func (o *LUNHelper) IsValidSnapLUNPath(snapLunPath string) bool {
 	snapLunPath = strings.ReplaceAll(snapLunPath, "-", "_")
 	snapshotName := o.GetSnapshotNameFromSnapLUNPath(snapLunPath)
-	if snapshotName == "" {
-		return false
-	}
-	return true
+	return snapshotName != ""
 }
 
 func (o *LUNHelper) getLunPathComponents(snapLunPath string) []string {
@@ -1114,15 +1111,13 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
-	if snapListResponse != nil {
-		for _, snap := range snapListResponse {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.Created,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
+	for _, snap := range snapListResponse {
+		return &storage.Snapshot{
+			Config:    snapConfig,
+			Created:   snap.Created,
+			SizeBytes: int64(size),
+			State:     storage.SnapshotStateOnline,
+		}, nil
 	}
 	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolumeName)
 }

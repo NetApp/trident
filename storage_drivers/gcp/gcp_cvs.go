@@ -1654,7 +1654,6 @@ func (d *NFSStorageDriver) getSnapshotStateForBackup(backup *api.Backup) storage
 		if backup.ProgressPercentage < 100 {
 			state = storage.SnapshotStateUploading
 		}
-		break
 	}
 
 	return state

@@ -569,10 +569,7 @@ func (b *Backend) RemoveVolume(ctx context.Context, volConfig *VolumeConfig) err
 }
 
 func (b *Backend) RemoveCachedVolume(volumeName string) {
-
-	if _, ok := b.Volumes[volumeName]; ok {
-		delete(b.Volumes, volumeName)
-	}
+	delete(b.Volumes, volumeName)
 }
 
 func (b *Backend) GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error) {

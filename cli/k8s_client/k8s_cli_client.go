@@ -1922,7 +1922,7 @@ func (c *KubectlClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) erro
 func (c *KubectlClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte, error) {
 	var SCCExist, SCCUserExist bool
 	sccUser := fmt.Sprintf("system:serviceaccount:%s:%s", c.namespace, user)
-	sccName := fmt.Sprintf("\"name\": \"trident\"")
+	sccName := `"name": "trident"`
 
 	if c.flavor != FlavorOpenShift {
 		return SCCExist, SCCUserExist, nil, errors.New("the current client context is not OpenShift")

@@ -52,13 +52,13 @@ type TestingCache struct {
 
 func NewTestingCache() *TestingCache {
 	result := &TestingCache{
-		backendCache:      make(map[string]*tridentv1.TridentBackend, 0),
-		nodeCache:         make(map[string]*tridentv1.TridentNode, 0),
-		storageClassCache: make(map[string]*tridentv1.TridentStorageClass, 0),
-		transactionCache:  make(map[string]*tridentv1.TridentTransaction, 0),
-		versionCache:      make(map[string]*tridentv1.TridentVersion, 0),
-		volumeCache:       make(map[string]*tridentv1.TridentVolume, 0),
-		snapshotCache:     make(map[string]*tridentv1.TridentSnapshot, 0),
+		backendCache:      make(map[string]*tridentv1.TridentBackend),
+		nodeCache:         make(map[string]*tridentv1.TridentNode),
+		storageClassCache: make(map[string]*tridentv1.TridentStorageClass),
+		transactionCache:  make(map[string]*tridentv1.TridentTransaction),
+		versionCache:      make(map[string]*tridentv1.TridentVersion),
+		volumeCache:       make(map[string]*tridentv1.TridentVolume),
+		snapshotCache:     make(map[string]*tridentv1.TridentSnapshot),
 	}
 	return result
 }

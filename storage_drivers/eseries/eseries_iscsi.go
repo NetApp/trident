@@ -1316,7 +1316,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	}
 
 	prefix := *d.Config.StoragePrefix
-	reposRegex, _ := regexp.Compile("^repos_\\d{4}$")
+	reposRegex, _ := regexp.Compile(`^repos_\d{4}$`)
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range volumes {

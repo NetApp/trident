@@ -29,9 +29,9 @@ func NewFakeKubeClientBasic(config *rest.Config, namespace string) (Interface, e
 			Minor:      "8",
 			GitVersion: "v1.8.0",
 		},
-		Deployments: make(map[string]*appsv1.Deployment, 0),
-		PVCs:        make(map[string]*v1.PersistentVolumeClaim, 0),
-		failMatrix:  make(map[string]bool, 0),
+		Deployments: make(map[string]*appsv1.Deployment),
+		PVCs:        make(map[string]*v1.PersistentVolumeClaim),
+		failMatrix:  make(map[string]bool),
 	}, nil
 }
 
@@ -42,8 +42,8 @@ func NewFakeKubeClient(failMatrix map[string]bool, versionMajor, versionMinor st
 			Minor:      versionMinor,
 			GitVersion: "v" + versionMajor + "." + versionMinor + ".0",
 		},
-		Deployments: make(map[string]*appsv1.Deployment, 0),
-		PVCs:        make(map[string]*v1.PersistentVolumeClaim, 0),
+		Deployments: make(map[string]*appsv1.Deployment),
+		PVCs:        make(map[string]*v1.PersistentVolumeClaim),
 		failMatrix:  failMatrix,
 	}
 }

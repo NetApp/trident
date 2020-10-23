@@ -27,7 +27,7 @@ import (
 // with the binder.
 func canPVMatchWithPVC(ctx context.Context, pv *v1.PersistentVolume, claim *v1.PersistentVolumeClaim) bool {
 
-	claimSize, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	claimSize := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	claimAccessModes := claim.Spec.AccessModes
 	volumeAccessModes := pv.Spec.AccessModes
 	volumeSize, ok := pv.Spec.Capacity[v1.ResourceStorage]

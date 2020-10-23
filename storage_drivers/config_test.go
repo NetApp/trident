@@ -21,7 +21,7 @@ func TestGetCommonInternalVolumeName(t *testing.T) {
 		},
 		{
 			prefix:   &[]string{""}[0],
-			expected: fmt.Sprintf("%s", name),
+			expected: name,
 		},
 		{
 			prefix:   nil,

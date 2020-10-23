@@ -202,8 +202,8 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 	defer server.Close()
 
 	for _, eseriesSANDriver := range eseriesSANDrivers {
-		api, _ := eseriesSANDriver.Config.DebugTraceFlags["api"]
-		sensitive, _ := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
+		api := eseriesSANDriver.Config.DebugTraceFlags["api"]
+		sensitive := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
 		server.Config.TLSConfig = &tls.Config{
 			InsecureSkipVerify: !eseriesSANDriver.Config.WebProxyVerifyTLS,
 		}

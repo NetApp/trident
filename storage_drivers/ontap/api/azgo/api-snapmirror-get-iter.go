@@ -115,7 +115,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 	combined.Result.SetAttributesList(SnapmirrorGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -150,7 +150,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr

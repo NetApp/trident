@@ -55,7 +55,7 @@ func (o *stringOffer) String() string {
 }
 
 func (o *stringOffer) ToString() string {
-	return fmt.Sprintf("%s", strings.Join(o.Offers, ","))
+	return strings.Join(o.Offers, ",")
 }
 
 func NewStringRequest(request string) Request {

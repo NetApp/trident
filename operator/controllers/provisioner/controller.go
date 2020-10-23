@@ -661,7 +661,7 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 		}
 
 		// Uninstall succeeded, so re-run the reconcile loop
-		eventMessage := fmt.Sprintf("tridentctl-based CSI Trident installation removed.")
+		eventMessage := "tridentctl-based CSI Trident installation removed."
 
 		log.Info(eventMessage)
 		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(AppStatusInstalling), eventMessage)
@@ -977,7 +977,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 	// 2. Prefer a CR in the same namespace as the Operator
 	var tridentCR *netappv1.TridentProvisioner
 	for _, cr := range tridentCRs {
-		if cr.Spec.Uninstall != true {
+		if !cr.Spec.Uninstall {
 			tridentCR = &cr
 			if cr.Namespace == c.Namespace {
 				break

@@ -114,7 +114,7 @@ func (o *VolumeGetIterRequest) executeWithIteration(zr *ZapiRunner) (*VolumeGetI
 	combined.Result.SetAttributesList(VolumeGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -149,7 +149,7 @@ func (o *VolumeGetIterRequest) executeWithIteration(zr *ZapiRunner) (*VolumeGetI
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr

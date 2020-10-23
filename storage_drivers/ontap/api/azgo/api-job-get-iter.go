@@ -114,7 +114,7 @@ func (o *JobGetIterRequest) executeWithIteration(zr *ZapiRunner) (*JobGetIterRes
 	combined.Result.SetAttributesList(JobGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -149,7 +149,7 @@ func (o *JobGetIterRequest) executeWithIteration(zr *ZapiRunner) (*JobGetIterRes
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr

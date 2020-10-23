@@ -2467,7 +2467,7 @@ func (d Client) SystemGetOntapiVersion(ctx context.Context) (string, error) {
 
 func (d Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 
-	serialNumbers := make([]string, 0, 0)
+	serialNumbers := make([]string, 0)
 	zr := d.GetNontunneledZapiRunner()
 
 	// Limit the returned data to only the serial numbers

@@ -285,9 +285,7 @@ func (c *PassthroughClient) GetBackends(context.Context) ([]*storage.BackendPers
 
 	backendList := make([]*storage.BackendPersistent, 0)
 
-	for _, backend := range c.bootBackends {
-		backendList = append(backendList, backend)
-	}
+	backendList = append(backendList, c.bootBackends...)
 
 	return backendList, nil
 }

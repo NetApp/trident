@@ -114,7 +114,7 @@ func (o *IscsiInterfaceGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Is
 	combined.Result.SetAttributesList(IscsiInterfaceGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -149,7 +149,7 @@ func (o *IscsiInterfaceGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Is
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr

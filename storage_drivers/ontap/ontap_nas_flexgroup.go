@@ -458,9 +458,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	vserverAggrNames := make([]azgo.AggrNameType, 0)
-	for _, aggrName := range vserverAggrs {
-		vserverAggrNames = append(vserverAggrNames, aggrName)
-	}
+	vserverAggrNames = append(vserverAggrNames, vserverAggrs...)
 
 	Logc(ctx).WithFields(log.Fields{
 		"aggregates": vserverAggrs,

@@ -92,7 +92,7 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 
-	diffs := make([]string, 0, 0)
+	diffs := make([]string, 0)
 	expectedStruct := reflect.Indirect(reflect.ValueOf(expected))
 	gotStruct := reflect.Indirect(reflect.ValueOf(got))
 
@@ -295,9 +295,7 @@ func validateStorageClass(
 		t.Errorf("%s:  Storage class not found in backend.", name)
 	}
 	remaining := make([]*tu.PoolMatch, len(expected))
-	for i, match := range expected {
-		remaining[i] = match
-	}
+	copy(remaining, expected)
 	for _, protocol := range []config.Protocol{config.File, config.Block} {
 		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 			nameFound := false
@@ -2686,10 +2684,7 @@ func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 			delete(diff, _y)
 		}
 	}
-	if len(diff) == 0 {
-		return true
-	}
-	return false
+	return len(diff) == 0
 }
 
 func TestDeleteNode(t *testing.T) {

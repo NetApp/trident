@@ -321,7 +321,7 @@ func getNodeLogs(logName, nodeName string) error {
 	}
 
 	nodeLogName := "trident-node-" + nodeName
-	if prev == true {
+	if prev {
 		nodeLogName = nodeLogName + "-previous"
 	}
 	// Build command to get K8S logs
@@ -393,7 +393,7 @@ func getAllNodeLogs(logName string) error {
 
 	for node, pod := range tridentNodeNames {
 		nodeLogName := "trident-node-" + node
-		if prev == true {
+		if prev {
 			nodeLogName = nodeLogName + "-previous"
 		}
 		// Build command to get K8S logs

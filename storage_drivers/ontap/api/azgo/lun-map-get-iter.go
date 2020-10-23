@@ -43,7 +43,7 @@ func (o *LunMapGetIterRequest) ExecuteUsing(zr *ZapiRunner) (LunMapGetIterRespon
 	combined := NewLunMapGetIterResponse()
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 
 		resp, err := zr.SendZapi(o)
 		if err != nil {
@@ -91,7 +91,7 @@ func (o *LunMapGetIterRequest) ExecuteUsing(zr *ZapiRunner) (LunMapGetIterRespon
 				combined.Result.SetAttributesList(append(combined.Result.AttributesList(), n.Result.AttributesList()...))
 			}
 
-			if done == true {
+			if done {
 				combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 				combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr
 				combined.Result.ResultStatusAttr = n.Result.ResultStatusAttr
@@ -109,22 +109,22 @@ func (o LunMapGetIterRequest) String() string {
 	if o.DesiredAttributesPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "desired-attributes", *o.DesiredAttributesPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("desired-attributes: nil\n"))
+		buffer.WriteString("desired-attributes: nil\n")
 	}
 	if o.MaxRecordsPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "max-records", *o.MaxRecordsPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("max-records: nil\n"))
+		buffer.WriteString("max-records: nil\n")
 	}
 	if o.QueryPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "query", *o.QueryPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("query: nil\n"))
+		buffer.WriteString("query: nil\n")
 	}
 	if o.TagPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "tag", *o.TagPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("tag: nil\n"))
+		buffer.WriteString("tag: nil\n")
 	}
 	return buffer.String()
 }
@@ -228,22 +228,22 @@ func (o LunMapGetIterResponseResult) String() string {
 	if o.AttributesListPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "attributes-list", o.AttributesListPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("attributes-list: nil\n"))
+		buffer.WriteString("attributes-list: nil\n")
 	}
 	if o.NextTagPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "next-tag", *o.NextTagPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("next-tag: nil\n"))
+		buffer.WriteString("next-tag: nil\n")
 	}
 	if o.NumRecordsPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "num-records", *o.NumRecordsPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("num-records: nil\n"))
+		buffer.WriteString("num-records: nil\n")
 	}
 	if o.VolumeErrorsPtr != nil {
 		buffer.WriteString(fmt.Sprintf("%s: %v\n", "volume-errors", o.VolumeErrorsPtr))
 	} else {
-		buffer.WriteString(fmt.Sprintf("volume-errors: nil\n"))
+		buffer.WriteString("volume-errors: nil\n")
 	}
 	return buffer.String()
 }

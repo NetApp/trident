@@ -10,7 +10,7 @@ import (
 
 var ErrNamesDontMatch = errors.New("names do not match")
 
-var nameMatchRegex = regexp.MustCompile("[^a-z0-9\\.\\-]")
+var nameMatchRegex = regexp.MustCompile(`[^a-z0-9\.\-]`)
 
 func NameFix(n string) string {
 	n = strings.ToLower(n)

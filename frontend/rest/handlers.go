@@ -447,7 +447,7 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				Logc(r.Context()).Errorf("ListBackends: %v", err)
 				response.Error = err.Error()
-			} else if backends != nil && len(backends) > 0 {
+			} else if len(backends) > 0 {
 				backendNames = make([]string, 0, len(backends))
 				for _, backend := range backends {
 					backendNames = append(backendNames, backend.Name)
@@ -584,7 +584,7 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 			volumes, err := orchestrator.ListVolumes(r.Context())
 			if err != nil {
 				response.Error = err.Error()
-			} else if volumes != nil && len(volumes) > 0 {
+			} else if len(volumes) > 0 {
 				volumeNames = make([]string, 0, len(volumes))
 				for _, volume := range volumes {
 					volumeNames = append(volumeNames, volume.Config.Name)
@@ -829,7 +829,7 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 			storageClasses, err := orchestrator.ListStorageClasses(r.Context())
 			if err != nil {
 				response.Error = err.Error()
-			} else if storageClasses != nil && len(storageClasses) > 0 {
+			} else if len(storageClasses) > 0 {
 				storageClassNames = make([]string, 0, len(storageClasses))
 				for _, sc := range storageClasses {
 					storageClassNames = append(storageClassNames, sc.GetName())
@@ -991,7 +991,7 @@ func ListNodes(w http.ResponseWriter, r *http.Request) {
 			nodes, err := orchestrator.ListNodes(r.Context())
 			if err != nil {
 				response.Error = err.Error()
-			} else if nodes != nil && len(nodes) > 0 {
+			} else if len(nodes) > 0 {
 				nodeNames = make([]string, 0, len(nodes))
 				for _, node := range nodes {
 					nodeNames = append(nodeNames, node.Name)
@@ -1044,7 +1044,7 @@ func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 			snapshots, err := orchestrator.ListSnapshots(r.Context())
 			if err != nil {
 				response.Error = err.Error()
-			} else if snapshots != nil && len(snapshots) > 0 {
+			} else if len(snapshots) > 0 {
 				snapshotIDs = make([]string, 0, len(snapshots))
 				for _, snapshot := range snapshots {
 					snapshotIDs = append(snapshotIDs, snapshot.ID())
@@ -1064,7 +1064,7 @@ func ListSnapshotsForVolume(w http.ResponseWriter, r *http.Request) {
 			snapshots, err := orchestrator.ListSnapshotsForVolume(r.Context(), volumeName)
 			if err != nil {
 				response.Error = err.Error()
-			} else if snapshots != nil && len(snapshots) > 0 {
+			} else if len(snapshots) > 0 {
 				snapshotIDs = make([]string, 0, len(snapshots))
 				for _, snapshot := range snapshots {
 					snapshotIDs = append(snapshotIDs, snapshot.ID())

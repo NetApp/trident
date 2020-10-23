@@ -571,7 +571,6 @@ func (p *Plugin) processBoundClaim(ctx context.Context, claim *v1.PersistentVolu
 		return
 	}
 	// The names match, so the PVC is successfully bound to the provisioned PV.
-	return
 }
 
 // processLostClaim cleans up Trident-created PVs.
@@ -580,7 +579,6 @@ func (p *Plugin) processLostClaim(claim *v1.PersistentVolumeClaim) {
 	p.mutex.Lock()
 	delete(p.pendingClaimMatchMap, volName)
 	p.mutex.Unlock()
-	return
 }
 
 // processDeletedClaim cleans up Trident-created PVs.
@@ -1101,7 +1099,7 @@ func (p *Plugin) createVolumeAndPV(
 	storageClass := GetPersistentVolumeClaimClass(claim)
 	annotations := p.processStorageClassAnnotations(claim, storageClass)
 
-	size, _ := claim.Spec.Resources.Requests[v1.ResourceStorage]
+	size := claim.Spec.Resources.Requests[v1.ResourceStorage]
 	accessModes := claim.Spec.AccessModes
 	volumeMode := claim.Spec.VolumeMode
 	volConfig := getVolumeConfig(accessModes, volumeMode, uniqueName, size, annotations)
@@ -1304,7 +1302,6 @@ func (p *Plugin) processDeletedVolume(ctx context.Context, pv *v1.PersistentVolu
 			"volume": pv.Name,
 		}).Infof("Kubernetes frontend %s", message)
 	}
-	return
 }
 
 // processUpdatedVolume processes updated Trident-created PVs.

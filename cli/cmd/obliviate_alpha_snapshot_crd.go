@@ -75,7 +75,7 @@ func deleteAlphaSnapshotCRDs() error {
 			}
 		}
 
-		if alpha == false {
+		if !alpha {
 			log.WithFields(logFields).Info("CRD is not alpha")
 			continue
 		}

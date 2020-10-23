@@ -298,8 +298,7 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 		// TODO:  If the API evolves, check the Version field here.
 		var backend *storage.Backend
 		var ok bool
-		var vol *storage.Volume
-		vol = storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned)
+		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned)
 		o.volumes[vol.Config.Name] = vol
 
 		if backend, ok = o.backends[v.BackendUUID]; !ok {
@@ -338,8 +337,7 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 	}
 	for _, s := range snapshots {
 		// TODO:  If the API evolves, check the Version field here.
-		var snapshot *storage.Snapshot
-		snapshot = storage.NewSnapshot(s.Config, s.Created, s.SizeBytes, s.State)
+		snapshot := storage.NewSnapshot(s.Config, s.Created, s.SizeBytes, s.State)
 		o.snapshots[snapshot.ID()] = snapshot
 		volume, ok := o.volumes[s.Config.VolumeName]
 		if !ok {
@@ -1158,7 +1156,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 			updatePersistentStore := false
 			volumeExists := backend.Driver.Get(ctx, vol.Config.InternalName) == nil
 			if !volumeExists {
-				if vol.Orphaned == false {
+				if !vol.Orphaned {
 					vol.Orphaned = true
 					updatePersistentStore = true
 					Logc(ctx).WithFields(log.Fields{
@@ -1168,7 +1166,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 					}).Warn("Backend update resulted in an orphaned volume.")
 				}
 			} else {
-				if vol.Orphaned == true {
+				if vol.Orphaned {
 					vol.Orphaned = false
 					updatePersistentStore = true
 					Logc(ctx).WithFields(log.Fields{
@@ -1429,7 +1427,7 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 
 	backend.Online = false // TODO eventually remove
 	backend.State = storage.Deleting
-	storageClasses := make(map[string]*storageclass.StorageClass, 0)
+	storageClasses := make(map[string]*storageclass.StorageClass)
 	for _, storagePool := range backend.Storage {
 		for _, scName := range storagePool.StorageClasses {
 			storageClasses[scName] = o.storageClasses[scName]
@@ -1534,7 +1532,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
 
 	errorMessages := make([]string, 0)
-	ineligibleBackends := make(map[string]struct{}, 0)
+	ineligibleBackends := make(map[string]struct{})
 
 	// The pool lists are already shuffled, so just try them in order.
 	// The loop terminates when creation on all matching pools has failed.

@@ -1632,7 +1632,7 @@ func waitForTridentPod() (*v1.Pod, error) {
 			if pod.Status.Phase != "" {
 				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
 				if pod.Status.Message != "" {
-					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+					errMessages = append(errMessages, pod.Status.Message)
 				}
 			}
 			errMessages = append(errMessages,
@@ -1661,7 +1661,7 @@ func waitForRESTInterface() error {
 		cliCommand := []string{"tridentctl", "version", "-o", "json"}
 		versionJSON, err := client.Exec(TridentPodName, tridentconfig.ContainerTrident, cliCommand)
 		if err != nil {
-			if versionJSON != nil && len(versionJSON) > 0 {
+			if len(versionJSON) > 0 {
 				err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
 			}
 			return err
@@ -2153,7 +2153,7 @@ func waitForPodToStart(label, purpose string) (*v1.Pod, error) {
 			if pod.Status.Phase != "" {
 				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
 				if pod.Status.Message != "" {
-					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+					errMessages = append(errMessages, pod.Status.Message)
 				}
 			}
 			errMessages = append(errMessages,
@@ -2214,7 +2214,7 @@ func waitForPodToFinish(label, purpose string) (*v1.Pod, error) {
 			if pod.Status.Phase != "" {
 				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
 				if pod.Status.Message != "" {
-					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+					errMessages = append(errMessages, pod.Status.Message)
 				}
 			}
 			errMessages = append(errMessages,
@@ -2290,7 +2290,7 @@ func waitForContainerToFinish(podLabel, containerName, purpose string, timeout t
 			if pod.Status.Phase != "" {
 				errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
 				if pod.Status.Message != "" {
-					errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+					errMessages = append(errMessages, pod.Status.Message)
 				}
 			}
 			errMessages = append(errMessages,

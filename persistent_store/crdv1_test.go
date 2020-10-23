@@ -58,7 +58,7 @@ type TestingCache struct {
 
 func NewTestingCache() *TestingCache {
 	result := &TestingCache{
-		backendCache: make(map[string]*v1.TridentBackend, 0),
+		backendCache: make(map[string]*v1.TridentBackend),
 	}
 	return result
 }

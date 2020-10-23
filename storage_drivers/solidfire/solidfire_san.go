@@ -84,7 +84,7 @@ func parseType(ctx context.Context, vTypes []api.VolType, typeName string) (qos 
 			break
 		}
 	}
-	if foundType == false {
+	if !foundType {
 		Logc(ctx).Errorf("Specified type label not found: %v", typeName)
 		err = errors.New("specified type not found")
 	}
@@ -349,7 +349,7 @@ func (d *SANStorageDriver) getEndpointCredentials(
 
 func (d *SANStorageDriver) getNodeSerialNumbers(ctx context.Context, c *drivers.CommonStorageDriverConfig) {
 
-	c.SerialNumbers = make([]string, 0, 0)
+	c.SerialNumbers = make([]string, 0)
 	hwInfo, err := d.Client.GetClusterHardwareInfo(ctx)
 	if err != nil {
 		Logc(ctx).Errorf("Unable to determine controller serial numbers: %+v ", err)

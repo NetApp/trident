@@ -52,7 +52,7 @@ func (c *Client) GetVolumeByID(ctx context.Context, volID int64) (Volume, error)
 	}
 
 	// This API isn't guaranteed to return the volume being sought, so make sure the result matches the request!
-	if volumes == nil || len(volumes) == 0 || volumes[0].VolumeID != volID {
+	if len(volumes) == 0 || volumes[0].VolumeID != volID {
 		return Volume{}, fmt.Errorf("volume %d not found", volID)
 	}
 
@@ -202,7 +202,6 @@ func (c *Client) DeleteRange(ctx context.Context, startID, endID int64) {
 	for idx < endID {
 		c.DeleteVolume(ctx, idx)
 	}
-	return
 }
 
 // DeleteVolume tbd

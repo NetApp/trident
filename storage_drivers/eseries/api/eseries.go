@@ -1810,7 +1810,7 @@ func (d Client) getErrorFromHTTPResponse(response *http.Response, responseBody [
 		// Other error
 		return Error{
 			Code:    response.StatusCode,
-			Message: fmt.Sprintf("API failed"),
+			Message: "API failed",
 		}
 	}
 }

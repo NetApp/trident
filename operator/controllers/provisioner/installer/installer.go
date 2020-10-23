@@ -1600,8 +1600,8 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 			}
 
 			log.Errorf("encountered error while creating container(s): %v", containerErrors)
-			return errors.New(fmt.Sprintf("unable to provision pod; encountered error while creating container(s): %v",
-				containerErrors))
+			return fmt.Errorf("unable to provision pod; encountered error while creating container(s): %v",
+				containerErrors)
 		}
 		return nil
 	}
@@ -1639,7 +1639,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 				if pod.Status.Phase != "" {
 					errMessages = append(errMessages, fmt.Sprintf("Pod status is %s.", pod.Status.Phase))
 					if pod.Status.Message != "" {
-						errMessages = append(errMessages, fmt.Sprintf("%s", pod.Status.Message))
+						errMessages = append(errMessages, pod.Status.Message)
 					}
 				}
 				errMessages = append(errMessages,
@@ -1661,7 +1661,7 @@ func (i *Installer) checkVersionUsingREST(tridentPodName string) (string, error)
 	cliCommand := []string{"tridentctl", "-s", ControllerServer, "version", "-o", "json"}
 	versionJSON, err := i.client.Exec(tridentPodName, TridentContainer, cliCommand)
 	if err != nil {
-		if versionJSON != nil && len(versionJSON) > 0 {
+		if len(versionJSON) > 0 {
 			err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
 		}
 		return "", err
@@ -1685,7 +1685,7 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 		cliCommand := []string{"tridentctl", "-s", ControllerServer, "version", "-o", "json"}
 		versionJSON, err := i.client.Exec(tridentPodName, TridentContainer, cliCommand)
 		if err != nil {
-			if versionJSON != nil && len(versionJSON) > 0 {
+			if len(versionJSON) > 0 {
 				err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
 			}
 			return err

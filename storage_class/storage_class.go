@@ -381,9 +381,7 @@ func SortPoolsByPreferredTopologies(
 		})
 
 		// add all in bucket to final list
-		for _, pool := range poolBucket {
-			orderedPools = append(orderedPools, pool)
-		}
+		orderedPools = append(orderedPools, poolBucket...)
 	}
 
 	// shuffle and add leftover pools the did not match any preference
@@ -404,11 +402,11 @@ func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 
 	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p)
 	if len(pools) == 0 {
-		Logc(ctx).Info(fmt.Sprintf("no backend pools support the requisite protocol"))
+		Logc(ctx).Info("no backend pools support the requisite protocol")
 	}
 	pools = FilterPoolsOnTopology(ctx, poolsForProtocol, requisiteTopologies)
 	if len(pools) == 0 {
-		Logc(ctx).Info(fmt.Sprintf("no backend pools support any requisite topologies"))
+		Logc(ctx).Info("no backend pools support any requisite topologies")
 	}
 	pools = SortPoolsByPreferredTopologies(ctx, pools, preferredTopologies)
 
@@ -442,7 +440,7 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 				"Backend":      backendName,
 				"Method":       "ConstructExternal",
 			}).Debug("Creating new storage pool list for backend.")
-			ret.StoragePools[backendName] = make([]string, 1, 1)
+			ret.StoragePools[backendName] = make([]string, 1)
 			ret.StoragePools[backendName][0] = storagePool.Name
 		}
 	}

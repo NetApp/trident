@@ -186,7 +186,7 @@ func TestRemoveStringFromSliceConditionally(t *testing.T) {
 	}
 
 	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "earnest",
-		func(main, val string) bool {return strings.Contains(main, val)})
+		func(main, val string) bool { return strings.Contains(main, val) })
 	if SliceContainsString(updatedSlice, "ear") {
 		t.Errorf("Slice should NOT contain string %v", "ear")
 	}
@@ -208,7 +208,7 @@ func TestRemoveStringFromSliceConditionally(t *testing.T) {
 	}
 
 	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "bigstring",
-		func(main, val string) bool {return len(val) > len (main) })
+		func(main, val string) bool { return len(val) > len(main) })
 	if SliceContainsString(updatedSlice, "verybigstring") {
 		t.Errorf("Slice should NOT contain string %v", "verybigstring")
 	}

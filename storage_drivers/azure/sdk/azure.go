@@ -629,8 +629,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 
 	tags := make(map[string]*string)
 	for k, v := range request.Labels {
-		s := fmt.Sprintf("%s", v)
-		tags[k] = &s
+		tags[k] = &v
 	}
 
 	newVol.Location = &location

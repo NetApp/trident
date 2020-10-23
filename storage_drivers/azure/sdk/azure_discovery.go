@@ -559,9 +559,7 @@ func (d *Client) getSubnetsForResourceGroup(rgroup string) *[]Subnet {
 	for _, rg := range d.SDKClient.AzureResources.ResourceGroups {
 		if rg.Name == rgroup {
 			for _, vnet := range rg.VirtualNetworks {
-				for _, sn := range vnet.Subnets {
-					subnets = append(subnets, sn)
-				}
+				subnets = append(subnets, vnet.Subnets...)
 			}
 		}
 	}
@@ -632,9 +630,7 @@ func (d *Client) getSubnets() *[]Subnet {
 
 	for _, rg := range d.SDKClient.AzureResources.ResourceGroups {
 		for _, vnet := range rg.VirtualNetworks {
-			for _, sn := range vnet.Subnets {
-				subnets = append(subnets, sn)
-			}
+			subnets = append(subnets, vnet.Subnets...)
 		}
 	}
 

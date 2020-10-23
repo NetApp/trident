@@ -203,13 +203,10 @@ func NewFileHook(logName, logFormat string) (*FileHook, error) {
 	switch runtime.GOOS {
 	case utils.Linux:
 		logFileLocation = LogRoot + "/" + logName + ".log"
-		break
 	case utils.Darwin:
 		logFileLocation = LogRoot + "/" + logName + ".log"
-		break
 	case utils.Windows:
 		logFileLocation = logName + ".log"
-		break
 	}
 
 	return &FileHook{logFileLocation, formatter, &sync.Mutex{}}, nil
@@ -272,11 +269,7 @@ func (hook *FileHook) logfileNeedsRotation() bool {
 	size := fileInfo.Size()
 	logFile.Close()
 
-	if size >= LogRotationThreshold {
-		return true
-	}
-
-	return false
+	return size >= LogRotationThreshold
 }
 
 // maybeDoLogfileRotation prevents descending into doLogfileRotation on every call as the inner

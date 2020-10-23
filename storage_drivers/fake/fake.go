@@ -935,9 +935,7 @@ func (d *StorageDriver) DeleteSnapshot(_ context.Context, snapConfig *storage.Sn
 		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
 	}
 
-	if _, ok := d.Snapshots[internalVolName][internalSnapName]; ok {
-		delete(d.Snapshots[internalVolName], internalSnapName)
-	}
+	delete(d.Snapshots[internalVolName], internalSnapName)
 
 	d.DestroyedSnapshots[snapConfig.ID()] = true
 
@@ -1173,8 +1171,7 @@ func (d *StorageDriver) handleVolumeCreatingTransaction(ctx context.Context, vol
 			createVolume.Iterations++
 			d.CreatingVolumes[createVolume.Name] = createVolume
 			Logc(ctx).Debug("createVolume.Iterations: " + strconv.Itoa(createVolume.Iterations))
-			return utils.VolumeCreatingError(
-				fmt.Sprintf("volume state is still creating, not available"))
+			return utils.VolumeCreatingError("volume state is still creating, not available")
 		}
 	}
 	return nil
