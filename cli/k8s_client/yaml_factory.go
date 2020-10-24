@@ -166,6 +166,9 @@ rules:
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots", "volumesnapshotclasses"]
     verbs: ["get", "list", "watch", "update", "patch"]
@@ -642,7 +645,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -654,7 +657,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -764,7 +767,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -776,7 +779,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -789,10 +792,10 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.5.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
-        - "--csiTimeout=300s"
+        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -898,7 +901,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.3
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -911,7 +914,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v3.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -924,10 +927,10 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v0.5.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
-        - "--csiTimeout=300s"
+        - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
         - name: ADDRESS
@@ -936,7 +939,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v2.1.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v3.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -1206,7 +1209,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.3.0
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v2.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -1314,7 +1317,7 @@ rules:
     resources: ["clusterroles", "clusterrolebindings"]
     verbs: ["*"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "volumeattachments"]
+    resources: ["storageclasses", "volumeattachments", "volumeattachments/status"]
     verbs: ["*"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["*"]
@@ -1352,7 +1355,7 @@ rules:
     resources: ["clusterroles", "clusterrolebindings"]
     verbs: ["*"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "volumeattachments", "csidrivers", "csinodes"]
+    resources: ["storageclasses", "volumeattachments", "volumeattachments/status", csidrivers", "csinodes"]
     verbs: ["*"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["*"]

@@ -109,6 +109,13 @@ rules:
   - update
   - patch
 - apiGroups:
+  - storage.k8s.io
+  resources:
+  - volumeattachments/status
+  verbs:
+  - update
+  - patch
+- apiGroups:
   - snapshot.storage.k8s.io
   resources:
   - volumesnapshots
