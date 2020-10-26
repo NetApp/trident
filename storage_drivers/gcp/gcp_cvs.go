@@ -720,18 +720,25 @@ func (d *NFSStorageDriver) Create(
 	// Ensure configured topology (zone/region) matches provided topology for software volumes
 	//   The zone/region of the node is defined as the first element in PreferredTopology
 	if len(volConfig.PreferredTopologies) > 0 {
-		if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
-			if zone != "" && zone != z {
-				return fmt.Errorf("configured zone does not match topology zone")
-			}
-			zone = z
-		}
 		if r, ok := volConfig.PreferredTopologies[0][topologyRegionLabel]; ok {
 			if d.Config.APIRegion != r {
 				return fmt.Errorf("configured region does not match topology region")
 			}
 		}
-		volConfig.AllowedTopologies = []map[string]string{volConfig.PreferredTopologies[0]}
+		// In the case of CVS-SO, we need to ensure we are creating the volume on the correct zone
+		// and limit the allowedTopologies of the volume to that zone
+		if storageClass == api.StorageClassSoftware {
+			if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
+				if zone != "" && zone != z {
+					return fmt.Errorf("configured zone does not match topology zone")
+				}
+				zone = z
+			}
+
+			volConfig.AllowedTopologies = []map[string]string{volConfig.PreferredTopologies[0]}
+		} else {
+			volConfig.AllowedTopologies = []map[string]string{{topologyRegionLabel: d.Config.APIRegion}}
+		}
 	}
 
 	if volConfig.StorageClass == api.StorageClassSoftware && zone == "" {
