@@ -584,12 +584,12 @@ func GetExitCodeFromError(err error) int {
 	}
 }
 
-func getUserConfirmation(s string) (bool, error) {
+func getUserConfirmation(s string, cmd *cobra.Command) (bool, error) {
 
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(cmd.InOrStdin())
 
 	for {
-		fmt.Printf("%s [y/n]: ", s)
+		cmd.Printf("%s [y/n]: ", s)
 
 		input, err := reader.ReadString('\n')
 		if err != nil {

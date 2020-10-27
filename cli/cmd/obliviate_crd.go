@@ -46,7 +46,7 @@ var obliviateCRDCmd = &cobra.Command{
 
 		if OperatingMode == ModeTunnel {
 			if !forceObliviate {
-				if forceObliviate, err = getUserConfirmation(crdConfirmation); err != nil {
+				if forceObliviate, err = getUserConfirmation(crdConfirmation, cmd); err != nil {
 					return err
 				} else if !forceObliviate {
 					return errors.New("obliviation canceled")

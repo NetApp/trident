@@ -89,7 +89,7 @@ func initClients() error {
 	} else {
 
 		if !forceObliviate {
-			if forceObliviate, err = getUserConfirmation(crdConfirmation); err != nil {
+			if forceObliviate, err = getUserConfirmation(crdConfirmation, obliviateCmd); err != nil {
 				return err
 			} else if !forceObliviate {
 				return errors.New("obliviation canceled")
