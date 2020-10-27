@@ -1596,13 +1596,22 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 
 			if tempError {
 				log.Debug("Containers are still in creating state.")
-				return errors.New("pod provisioning in progress; containers are still in creating state")
+				return utils.TempOperatorError(fmt.Errorf(
+					"pod provisioning in progress; containers are still in creating state"))
 			}
 
 			log.Errorf("encountered error while creating container(s): %v", containerErrors)
 			return fmt.Errorf("unable to provision pod; encountered error while creating container(s): %v",
 				containerErrors)
 		}
+
+		// If DeletionTimestamp is set this pod is in a terminating state
+		// and may be related to a terminating deployment.
+		if pod.DeletionTimestamp != nil {
+			log.Debug("Unable to find Trident pod; found a pod in terminating state.")
+			return utils.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
+		}
+
 		return nil
 	}
 	podNotify := func(err error, duration time.Duration) {
@@ -1619,13 +1628,13 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		totalWaitTime := k8sTimeout
 		// In case pod is still creating and taking extra time due to issues such as latency in pulling
 		// container image, then additional time should be allocated for the pod to come online.
-		if strings.Contains(err.Error(), "pod provisioning in progress") {
+		if utils.IsTempOperatorError(err) {
 			extraWaitTime := 150 * time.Second
 			totalWaitTime = totalWaitTime + extraWaitTime
 			podBackoff.MaxElapsedTime = extraWaitTime
 
-			log.Debugf("Pod is still provisioning after 30 seconds, "+
-				"waiting %3.2f seconds extra.", extraWaitTime.Seconds())
+			log.Debugf("Pod is still provisioning after %3.2f seconds, "+
+				"waiting %3.2f seconds extra.", k8sTimeout.Seconds(), extraWaitTime.Seconds())
 			err = backoff.RetryNotify(checkPodRunning, podBackoff, podNotify)
 		}
 

@@ -291,3 +291,27 @@ func IsUnsupportedConfigError(err error) bool {
 	_, ok := err.(*unsupportedConfigError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// tempOperatorError
+/////////////////////////////////////////////////////////////////////////////
+
+type tempOperatorError struct {
+	message string
+}
+
+func (e *tempOperatorError) Error() string { return e.message }
+
+func TempOperatorError(err error) error {
+	return &tempOperatorError{
+		message: fmt.Sprintf("temporary operator error; %s", err.Error()),
+	}
+}
+
+func IsTempOperatorError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*tempOperatorError)
+	return ok
+}
