@@ -87,17 +87,12 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	var bkportal []string
 	var portalIps []string
-	bkportal = append(bkportal, publishInfo.IscsiTargetPortal)
+	bkportal = append(bkportal, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
+	portalIps = append(portalIps, getHostportIP(publishInfo.IscsiTargetPortal))
 
-	if IPv6Check(publishInfo.IscsiTargetPortal) {
-		// this is an IPv6 address
-		portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, "]")[0])
-	} else {
-		portalIps = append(portalIps, strings.Split(publishInfo.IscsiTargetPortal, ":")[0])
-	}
 	for _, p := range publishInfo.IscsiPortals {
-		bkportal = append(bkportal, p)
-		portalIps = append(portalIps, strings.Split(p, ":")[0])
+		bkportal = append(bkportal, ensureHostportFormatted(p))
+		portalIps = append(portalIps, getHostportIP(p))
 	}
 
 	var targetIQN = publishInfo.IscsiTargetIQN
@@ -1382,13 +1377,14 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 
 			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
 			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
-			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal,
-				func(main, val string) bool {
-					mainIpAddress := strings.Split(main, ":")[0]
-					valIpAddress := strings.Split(val, ":")[0]
+			matchFunc := func(main, val string) bool {
+				mainIpAddress := getHostportIP(main)
+				valIpAddress := getHostportIP(val)
 
-					return mainIpAddress == valIpAddress
-				})
+				return mainIpAddress == valIpAddress
+			}
+
+			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
 		}
 	}
 
@@ -1405,8 +1401,8 @@ func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []strin
 		"portalsIps": portalsIps,
 	}
 
-	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.portalsToLogin")
-	defer Logc(ctx).Debug("<<<< osutils.portalsToLogin")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.portalsIpsToLogin")
+	defer Logc(ctx).Debug("<<<< osutils.portalsIpsToLogin")
 
 	portalIpsNotLoggedIn := make([]string, len(portalsIps))
 	copy(portalIpsNotLoggedIn, portalsIps)
@@ -1424,6 +1420,36 @@ func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []strin
 	}
 
 	return portalIpsNotLoggedIn, nil
+}
+
+// getHostportIP returns just the IP address part of the given input IP address and strips any port information
+func getHostportIP(hostport string) string {
+	ipAddress := ""
+	if IPv6Check(hostport) {
+		// this is an IPv6 address, remove port value and add square brackets around the IP address
+		if hostport[0] == '[' {
+			ipAddress = strings.Split(hostport, "]")[0] + "]"
+		} else {
+			// assumption here is that without the square brackets its only IP address without port information
+			ipAddress = "[" + hostport + "]"
+		}
+	} else {
+		ipAddress = strings.Split(hostport, ":")[0]
+	}
+
+	return ipAddress
+}
+
+// ensureHostportFormatted ensures IPv6 hostport is in correct format
+func ensureHostportFormatted(hostport string) string {
+	// If this is an IPv6 address, ensure IP address is enclosed in square
+	// brackets, as in "[::1]:80".
+	if IPv6Check(hostport) && hostport[0] != '[' {
+		// assumption here is that without the square brackets its only IP address without port information
+		return "[" + hostport + "]"
+	}
+
+	return hostport
 }
 
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {

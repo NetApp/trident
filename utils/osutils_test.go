@@ -185,3 +185,94 @@ func TestPidRunningOrIdleRegex(t *testing.T) {
 		assert.True(t, test.expectedOutput == result)
 	}
 }
+
+func TestGetHostportIP(t *testing.T) {
+	log.Debug("Running TestGetHostportIP...")
+
+	type IPAddresses struct {
+		InputIP   string
+		OutputIP  string
+	}
+
+	tests := []IPAddresses {
+		{
+			InputIP:    "1.2.3.4:5678",
+			OutputIP:   "1.2.3.4",
+		},
+		{
+			InputIP:    "1.2.3.4",
+			OutputIP:   "1.2.3.4",
+		},
+		{
+			InputIP:    "[1:2:3:4]:5678",
+			OutputIP:   "[1:2:3:4]",
+		},
+		{
+			InputIP:    "[1:2:3:4]",
+			OutputIP:   "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+	}
+	for _, testCase := range tests {
+		assert.Equal(t, testCase.OutputIP, getHostportIP(testCase.InputIP), "IP mismatch")
+	}
+}
+
+func TestEnsureHostportFormatted(t *testing.T) {
+	log.Debug("Running TestEnsureHostportFormatted...")
+
+	type IPAddresses struct {
+		InputIP   string
+		OutputIP  string
+	}
+
+	tests := []IPAddresses {
+		{
+			InputIP:    "1.2.3.4:5678",
+			OutputIP:   "1.2.3.4:5678",
+		},
+		{
+			InputIP:    "1.2.3.4",
+			OutputIP:   "1.2.3.4",
+		},
+		{
+			InputIP:    "[1:2:3:4]:5678",
+			OutputIP:   "[1:2:3:4]:5678",
+		},
+		{
+			InputIP:    "[1:2:3:4]",
+			OutputIP:   "[1:2:3:4]",
+		},
+		{
+			InputIP:    "1:2:3:4",
+			OutputIP:   "[1:2:3:4]",
+		},
+		{
+			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+		},
+	}
+	for _, testCase := range tests {
+		assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
+			"Hostport not correctly formatted")
+	}
+}
