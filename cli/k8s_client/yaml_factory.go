@@ -507,6 +507,9 @@ spec:
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
         {DEBUG}
+        resources:
+          limits:
+            memory: 1Gi
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -559,6 +562,8 @@ spec:
           secretName: trident-csi
       - name: asup-dir
         emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
 `
 
 const csiDeployment114YAMLTemplate = `---
@@ -641,6 +646,9 @@ spec:
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
         {DEBUG}
+        resources:
+          limits:
+            memory: 1Gi
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -681,6 +689,8 @@ spec:
           secretName: trident-csi
       - name: asup-dir
         emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
 `
 
 const csiDeployment116YAMLTemplate = `---
@@ -763,6 +773,9 @@ spec:
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
         {DEBUG}
+        resources:
+          limits:
+            memory: 1Gi
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -815,6 +828,8 @@ spec:
           secretName: trident-csi
       - name: asup-dir
         emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
 `
 
 const csiDeployment117YAMLTemplate = `---
@@ -897,6 +912,9 @@ spec:
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
         {DEBUG}
+        resources:
+          limits:
+            memory: 1Gi
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -962,6 +980,8 @@ spec:
           secretName: trident-csi
       - name: asup-dir
         emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
 `
 
 func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat string,
