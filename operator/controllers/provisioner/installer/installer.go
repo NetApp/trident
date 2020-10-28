@@ -190,7 +190,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 		log.Debugf("Image version check needed.")
 
 		// Create the RBAC objects for the trident version pod
-		if err = i.createRBACObjects(controllingCRDetails, labels, false); err != nil {
+		if _, err = i.createRBACObjects(controllingCRDetails, labels, false); err != nil {
 			return "", fmt.Errorf("unable to create RBAC objects while verifying Trident version; err: %v", err)
 		}
 
@@ -359,6 +359,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	currentInstallationVersion string, shouldUpdate bool) (*netappv1.TridentProvisionerSpecValues, string, error) {
 
 	var returnError error
+	var newServiceAccount bool
 
 	// Set installation params
 	controllingCRDetails, labels, imageUpdateNeeded, err := i.setInstallationParams(cr, currentInstallationVersion)
@@ -375,7 +376,8 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 	log.WithField("namespace", i.namespace).Info("Starting Trident installation.")
 
 	// Create or patch or update the RBAC objects
-	if returnError = i.createRBACObjects(controllingCRDetails, labels, shouldUpdate); returnError != nil {
+	if newServiceAccount, returnError = i.createRBACObjects(controllingCRDetails, labels,
+		shouldUpdate); returnError != nil {
 		return nil, "", returnError
 	}
 
@@ -400,7 +402,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 
 	if !csi {
 		// Create or patch or update the legacy deployment object
-		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate)
+		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
 			return nil, "", returnError
@@ -436,14 +438,14 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		}
 
 		// Create or update the Trident CSI deployment
-		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate)
+		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
 			return nil, "", returnError
 		}
 
 		// Create or update the Trident CSI daemonset
-		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate)
+		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 		if returnError != nil {
 			returnError = fmt.Errorf("could not create the Trident DaemonSet; %v", returnError)
 			return nil, "", returnError
@@ -773,10 +775,10 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 }
 
 func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) (returnError error) {
+	shouldUpdate bool) (newServiceAccount bool, returnError error) {
 
 	// Create service account
-	returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
+	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Trident service account; %v", returnError)
 		return
@@ -810,8 +812,9 @@ func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]st
 }
 
 func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+	shouldUpdate bool) (bool, error) {
 	createServiceAccount := true
+	newServiceAccount := false
 	var currentServiceAccount *v1.ServiceAccount
 	var unwantedServiceAccounts []v1.ServiceAccount
 	var serviceAccountSecretNames []string
@@ -822,7 +825,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 
 	if serviceAccounts, err := i.client.GetServiceAccountsByLabel(appLabel, false); err != nil {
 		log.Errorf("Unable to get list of service accounts by label %v", appLabel)
-		return fmt.Errorf("unable to get list of service accounts")
+		return newServiceAccount, fmt.Errorf("unable to get list of service accounts")
 	} else if len(serviceAccounts) == 0 {
 		log.Info("Trident service account not found.")
 
@@ -865,7 +868,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 	}
 
 	if err = i.RemoveMultipleServiceAccounts(unwantedServiceAccounts); err != nil {
-		return err
+		return newServiceAccount, err
 	}
 
 	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretNames, labels,
@@ -876,8 +879,9 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 		logFields = log.Fields{}
 
 		if err != nil {
-			return fmt.Errorf("could not create service account; %v", err)
+			return newServiceAccount, fmt.Errorf("could not create service account; %v", err)
 		}
+		newServiceAccount = true
 		log.WithFields(logFields).Info("Created service account.")
 	} else {
 		log.WithFields(log.Fields{
@@ -888,7 +892,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 		err = i.patchTridentServiceAccount(currentServiceAccount, []byte(newServiceAccountYAML))
 	}
 
-	return nil
+	return newServiceAccount, nil
 }
 
 func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels map[string]string,
@@ -1374,7 +1378,7 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 }
 
 func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+	shouldUpdate, newServiceAccount bool) error {
 
 	deploymentName := getDeploymentName(csi)
 
@@ -1388,7 +1392,9 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 		return err
 	}
 
-	if currentDeployment != nil && shouldUpdate {
+	// Create a new deployment if there is a current deployment and
+	// a new service account or it should be updated
+	if currentDeployment != nil && (shouldUpdate || newServiceAccount) {
 		unwantedDeployments = append(unwantedDeployments, *currentDeployment)
 		createDeployment = true
 	}
@@ -1471,7 +1477,7 @@ func (i *Installer) TridentDeploymentInformation(deploymentLabel string, csiVal 
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+	shouldUpdate, newServiceAccount bool) error {
 
 	daemonsetName := getDaemonSetName()
 
@@ -1480,7 +1486,9 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 		return err
 	}
 
-	if currentDaemonset != nil && shouldUpdate {
+	// Create a new daemonset if there is a current daemonset and
+	// a new service account or it should be updated
+	if currentDaemonset != nil && (shouldUpdate || newServiceAccount) {
 		unwantedDaemonsets = append(unwantedDaemonsets, *currentDaemonset)
 		createDaemonset = true
 	}
