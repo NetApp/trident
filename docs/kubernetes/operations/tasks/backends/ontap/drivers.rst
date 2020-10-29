@@ -14,17 +14,35 @@ Trident provides 5 unique storage drivers for communicating with ONTAP
 clusters. Each driver handles the creation of volumes and access control
 differently and their capabilities are detailed in this section.
 
-=================== ======== ========== ======================
-Driver              Protocol Mount Type Access Modes Supported
-=================== ======== ========== ======================
-ontap-nas           NFS      File       RWO,RWX,ROX
-ontap-nas-economy   NFS      File       RWO,RWX,ROX
-ontap-nas-flexgroup NFS      File       RWO,RWX,ROX
-ontap-san           iSCSI    Block      RWO,ROX,RWX
-ontap-san-economy   iSCSI    Block      RWO,ROX,RWX
-ontap-san           iSCSI    File       RWO,ROX
-ontap-san-economy   iSCSI    File       RWO,ROX
-=================== ======== ========== ======================
+=================== ======== ========== ====================== ===============================
+Driver              Protocol VolumeMode Access Modes Supported File Systems Supported
+=================== ======== ========== ====================== ===============================
+ontap-nas           NFS      Filesystem RWO,RWX,ROX            ``""``, ``nfs``
+ontap-nas-economy   NFS      Filesystem RWO,RWX,ROX            ``""``, ``nfs``
+ontap-nas-flexgroup NFS      Filesystem RWO,RWX,ROX            ``""``, ``nfs``
+ontap-san           iSCSI    Block      RWO,ROX,RWX            No Filesystem. Raw block device
+ontap-san-economy   iSCSI    Block      RWO,ROX,RWX            No Filesystem. Raw block device
+ontap-san           iSCSI    Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
+ontap-san-economy   iSCSI    Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
+=================== ======== ========== ====================== ===============================
+
+The ``ontap-san`` and ``ontap-san-economy`` drivers support the ``Filesystem``
+and ``Block`` volumeModes. Users can choose to create a raw block volume with
+no file system (or) have Trident create a volume with a file system. For the
+latter, the ``fsType`` is specified through the Storage Class.
+
+For example:
+
+.. code-block:: yaml
+
+    kind: StorageClass
+    apiVersion: storage.k8s.io/v1
+    metadata:
+    name: netapp-san-economy
+    provisioner: csi.trident.netapp.io
+    parameters:
+    backendType: "ontap-san-economy"
+    fsType: "ext4"
 
 .. note::
    Please refer to the `NetApp Hardware Universe <http://hwu.netapp.com>`_
@@ -42,8 +60,9 @@ limits, choose the ``ontap-nas-economy`` or the ``ontap-san-economy`` driver.
 
 The ``ontap-nas-economy`` driver creates PVs as ONTAP
 Qtrees within a pool of automatically managed FlexVols. Qtrees offer far
-greater scaling at
-the expense of granular data management features.
+greater scaling at the expense of granular data management features. Users can
+configure the number of Qtrees created per FlexVol (between 50 and 300) for a
+backend. By default, a FlexVol created by Trident can contain 200 Qtrees.
 
 The ``ontap-san-economy`` driver creates PVs as ONTAP LUNs within a pool of
 automatically managed FlexVols. Each PV maps to an ONTAP LUN and this driver offers

@@ -13,6 +13,19 @@ To create and use an Element backend, you will need:
 Preparation
 -----------
 
+The ``solidfire-san`` storage driver supports both volume modes: file and block.
+For the ``Filesystem`` volumeMode, Trident creates a volume and creates a
+filesystem. The filesystem type is specified by the StorageClass.
+
+=================== ======== ========== ====================== ===============================
+Driver              Protocol VolumeMode Access Modes Supported File Systems Supported
+=================== ======== ========== ====================== ===============================
+solidfire-san        iSCSI   Block      RWO,ROX,RWX            No Filesystem. Raw block device
+solidfire-san        iSCSI   Block      RWO,ROX,RWX            No Filesystem. Raw block device
+solidfire-san        iSCSI   Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
+solidfire-san        iSCSI   Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
+=================== ======== ========== ====================== ===============================
+
 All of your Kubernetes worker nodes must have the appropriate iSCSI tools
 installed. See the :ref:`worker configuration guide <iSCSI>` for more details.
 
@@ -59,7 +72,7 @@ debugTraceFlags    Debug flags to use when troubleshooting.
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
-  
+
 Example configuration
 ---------------------
 
@@ -155,6 +168,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=gold; cost=4"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -163,6 +177,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver; cost=3"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -171,6 +186,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=bronze; cost=2"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -179,6 +195,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver; cost=1"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -187,7 +204,7 @@ which Virtual Storage Pool is selected and will ensure the storage requirement i
     provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=silver"
-
+      fsType: "ext4"
 
 Using access groups
 -------------------

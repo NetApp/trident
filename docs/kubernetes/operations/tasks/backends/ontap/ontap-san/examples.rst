@@ -181,6 +181,7 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     provisioner: netapp.io/trident
     parameters:
       selector: "protection=gold"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -189,6 +190,7 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     provisioner: netapp.io/trident
     parameters:
       selector: "protection!=gold"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -197,6 +199,7 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     provisioner: netapp.io/trident
     parameters:
       selector: "app=mysqldb"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -205,6 +208,7 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     provisioner: netapp.io/trident
     parameters:
       selector: "protection=silver; creditpoints=20000"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -213,3 +217,4 @@ Trident will decide which virtual storage pool is selected and will ensure the s
     provisioner: netapp.io/trident
     parameters:
       selector: "creditpoints=5000"
+      fsType: "ext4"

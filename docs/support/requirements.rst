@@ -7,14 +7,14 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* Kubernetes 1.11 or later (latest: 1.18)
+* Kubernetes 1.11 or later (latest: 1.19)
 * OpenShift 3.11, 4.2, 4.3, 4.4, and 4.5
 * Docker Enterprise 2.1, 3.0, and 3.1
 * Anthos GKE On-Prem v1.1, v1.2, v1.3, and v1.4 (latest: v1.4)
 
 The Trident Operator is supported with these releases:
 
-* Kubernetes 1.14 or later (latest 1.18)
+* Kubernetes 1.14 or later (latest 1.19)
 * OpenShift 4.2, 4.3, 4.4, and 4.5
 * Anthos GKE On-Prem v1.1, v1.2, v1.3, and v1.4 (latest: v1.4)
 
@@ -51,6 +51,8 @@ iSCSI PV resize                  19.10 and above       1.16 and above           
 ONTAP Bidirectional CHAP         20.04 and above       1.11 and above                    No
 Dynamic Export Policies          20.04 and above  1.13\ :sup:`1` and above   Requires CSI Trident\ :sup:`1`
 Trident Operator                 20.04 and above       1.14 and above                    No
+Auto Worker Node Prep (beta)     20.10 and above  1.13\ :sup:`1` and above   Requires CSI Trident\ :sup:`1`
+CSI Topology                     20.10 and above       1.17 and above                    No
 ================================ =============== ========================== ===============================
 
 | Footnote:

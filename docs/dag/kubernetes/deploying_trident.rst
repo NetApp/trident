@@ -56,13 +56,14 @@ In many organizations, production and development environments do not have acces
 To perform an air-gapped installation of Trident, you can use the ``--image-registry`` flag
 when invoking ``tridentctl install`` to point to a private image registry. If installing with
 the Trident Operator, you can alternatively specify ``spec.imageRegistry`` in your
-TridentProvisioner. This registry must contain the Trident image
-(obtained `here <https://hub.docker.com/r/netapp/trident/>`_)
+TridentProvisioner. This registry must contain the Trident image,
+(obtained `here <https://hub.docker.com/r/netapp/trident/>`_), the Trident
+Autosupport image (obtained `here <https://hub.docker.com/r/netapp/trident-autosupport/>`_),
 and the CSI sidecar images as required by your Kubernetes version.
 
 To customize your installation further, you can use ``tridentctl`` to generate the manifests
 for Trident's resources. This includes the deployment, daemonset, service account and the cluster
-role that Trident creates as part of its installation. 
+role that Trident creates as part of its installation.
 The :ref:`Customized Installation <Customized Installation>` section talks about the options available
 for performing a custom Trident install.
 

@@ -146,7 +146,18 @@ The ``aws-cvs`` driver uses virtual storage pools. Virtual storage pools abstrac
 Cloud Volumes Service with GCP Backend Driver
 ---------------------------------------------
 
-Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on the GCP backend. To configure the GCP backend on Trident, you are required specify ``projectNumber``, ``apiRegion``, and ``apiKey`` in the backend file. The project number may be found in the GCP web portal, while the API key must be taken from the service account private key file that you created while setting up API access for Cloud Volumes on GCP. The supported service levels are aligned with CVS and include `standard`, `premium`, and `extreme`. More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`. Currently, 1 TiB is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
+Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on the GCP backend. To configure the GCP backend on Trident, you are required specify ``projectNumber``, ``apiRegion``, and ``apiKey`` in the backend file. The project number may be found in the GCP web portal, while the API key must be taken from the service account private key file that you created while setting up API access for Cloud Volumes on GCP.
+Trident can create CVS volumes in one of two service types:
+
+1. The base CVS service type, which provides high zonal availability with
+   limited/moderate performance levels. Trident's support for the base CVS service
+   is **beta**.
+2. The CVS-Performance service type, which is performance optimized and suited
+   for production workloads that value performance. Choose from three unique service levels
+   [`standard`, `premium`, and `extreme`].
+
+More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`.
+Currently, 1 TiB is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
 
 .. table:: Cloud Volume Service driver capabilities
 

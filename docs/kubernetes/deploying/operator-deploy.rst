@@ -82,12 +82,10 @@ you have the necessary privileges to.
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 20.07.0:
-
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v20.07.0/trident-installer-20.07.0.tar.gz
-   tar -xf trident-installer-20.07.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.10.0/trident-installer-20.10.0.tar.gz
+   tar -xf trident-installer-20.10.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -189,10 +187,10 @@ defintions for creating a TridentProvisioner CR.
        k8sTimeout:      30
        Kubelet Dir:     /var/lib/kubelet
        Log Format:      text
-       Trident Image:   netapp/trident:20.07.0
+       Trident Image:   netapp/trident:20.10.0
      Message:           Trident installed
      Status:            Installed
-     Version:           v20.07.0
+     Version:           v20.10.0
    Events:
      Type    Reason      Age   From                        Message
      ----    ------      ----  ----                        -------
@@ -256,7 +254,7 @@ You can also use ``tridentctl`` to check the version of Trident installed.
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 20.07.0        | 20.07.0        |
+   | 20.10.0        | 20.10.0        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -351,16 +349,22 @@ debug                     Enable debugging for Trident                          
 useIPv6                   Install Trident over IPv6                                              'false'
 k8sTimeout                Timeout for Kubernetes operations                                      30sec
 silenceAutosupport        Don't send autosupport bundles to NetApp automatically                 'false'
-autosupportImage          The container image for Autosupport Telemetry                          "netapp/trident-autosupport:20.07.0"
+enableNodePrep            Manage worker node dependencies automatically (**BETA**)               'false'
+autosupportImage          The container image for Autosupport Telemetry                          "netapp/trident-autosupport:20.10.0"
 autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry          "http://proxy.example.com:8888"
 uninstall                 A flag used to uninstall Trident                                       'false'
 logFormat                 Trident logging format to be used [text,json]                          "text"
-tridentImage              Trident image to install                                               "netapp/trident:20.07"
+tridentImage              Trident image to install                                               "netapp/trident:20.10"
 imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port]`` "quay.io"
 kubeletDir                Path to the kubelet directory on the host                              "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
 imagePullSecrets          Secrets to pull images from an internal registry
 ========================= ====================================================================== ================================================
+
+.. warning::
+
+	Automatic worker node prep is a **beta feature** meant to be used in
+  non-production environments only.
 
 You can use the attributes mentioned above when defining a TridentProvisioner to
 customize your Trident installation. Here's an example:
@@ -375,7 +379,7 @@ customize your Trident installation. Here's an example:
      namespace: trident
    spec:
      debug: true
-     tridentImage: netapp/trident:20.07.0
+     tridentImage: netapp/trident:20.10.0
      imagePullSecrets:
      - thisisasecret
 

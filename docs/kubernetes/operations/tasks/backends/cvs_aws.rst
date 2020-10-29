@@ -41,7 +41,7 @@ debugTraceFlags           Debug flags to use when troubleshooting.
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
-  
+
 The required values ``apiRegion``, ``apiURL``, ``apiKey``, and ``secretKey``
 may be found in the CVS web portal in Account settings / API access.
 The ``apiURL`` is unique for each ``apiRegion``. For example, the ``us-west-2``
@@ -73,6 +73,15 @@ size                      The size of new volumes                               
 
 The ``exportRule`` value must be a comma-separated list of any combination of
 IPv4 addresses or IPv4 subnets in CIDR notation.
+
+.. note::
+
+  For all volumes created on a CVS-AWS backend, Trident will copy all labels present
+  on a :ref:`storage pool <aws-virtual-storage-pool>` to the storage volume at
+  the time it is provisioned. Storage
+  admins can define labels per storage pool and group all volumes created per
+  storage pool. This provides a convenient way of differentiating volumes based
+  on a set of customizable labels that are provided in the backend configuration.
 
 Example configurations
 ----------------------
@@ -115,6 +124,8 @@ This example shows a backend file that applies the same aspects to all Trident c
             "size": "200Gi"
         }
     }
+
+.. _aws-virtual-storage-pool:
 
 **Example 3 - Backend and storage class configuration for aws-cvs driver with virtual storage pools**
 

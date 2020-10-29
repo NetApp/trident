@@ -149,11 +149,18 @@ Individual volume usage
 
 Trident Autosupport Telemetry
 -----------------------------
+
 By default, Trident will send Prometheus metrics and basic backend information
 to NetApp on a daily cadence. This behavior can be disabled during Trident
-installation by passing the ``--silence-autosupport`` flag. In addition, this
-information can be sent to NetApp support on-demand via
-``tridentctl send autosupport``.
+installation by passing the --silence-autosupport flag. In addition, Trident
+can also send Trident container logs along with everything mentioned above
+to NetApp support on-demand via ``tridentctl send autosupport``. Users will
+always need to trigger Trident to upload it's logs. Unless specified, Trident
+will fetch the logs from the past 24 hours. Users can specify the log retention
+timeframe with the ``--since`` flag, e.g: ``tridentctl send autosupport --since=1h``.
+Submitting the logs will require users to accept NetApp's
+`privacy policy <https://www.netapp.com/company/legal/privacy-policy/>`_.
+
 
 This information is collected and sent via a ``trident-autosupport`` container
 that is installed alongside Trident. You can obtain the container image at

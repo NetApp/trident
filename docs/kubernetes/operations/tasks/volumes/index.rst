@@ -10,6 +10,7 @@ documentation
   :maxdepth: 1
   :glob:
 
+  topology
   snapshots
   vol-expansion
   import

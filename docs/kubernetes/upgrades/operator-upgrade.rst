@@ -12,7 +12,7 @@ the upgrade will work.
 Prerequisites
 -------------
 
-To upgrade to ``20.07`` using the Trident operator:
+To upgrade using the Trident operator:
 
 1. Only CSI based Trident Installation may exist. To check if you are running
    CSI Trident, examine the pods in your Trident namespace. If they follow the

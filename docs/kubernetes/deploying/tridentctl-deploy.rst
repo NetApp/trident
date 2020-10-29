@@ -83,12 +83,12 @@ Identify your Kubernetes server version. You will be using it when you
 Download the latest version of the `Trident installer bundle`_ from the
 *Downloads* section and extract it.
 
-For example, if the latest version is 20.07.0:
+For example, if the latest version is 20.10.0:
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v20.07.0/trident-installer-20.07.0.tar.gz
-   tar -xf trident-installer-20.07.0.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v20.10.0/trident-installer-20.10.0.tar.gz
+   tar -xf trident-installer-20.10.0.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -139,7 +139,7 @@ Install Trident in the desired namespace by executing the
    INFO Waiting for Trident pod to start.
    INFO Trident pod started.                          namespace=trident pod=trident-csi-679648bd45-cv2mx
    INFO Waiting for Trident REST interface.
-   INFO Trident REST interface is up.                 version=20.07.0
+   INFO Trident REST interface is up.                 version=20.10.0
    INFO Trident installation succeeded.
    ....
 
@@ -157,7 +157,7 @@ the number of nodes in your Kubernetes cluster, you may observe more pods:
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 20.07.0        | 20.07.0        |
+   | 20.10.0        | 20.10.0        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not
@@ -199,6 +199,15 @@ copied the Trident image to a private repository, you can specify the image name
 sidecar images to a private repository, it may be preferable to specify the location
 of that repository by using the ``--image-registry`` switch, which takes the form
 ``<registry FQDN>[:port]``.
+
+To have Trident automatically configure worker nodes for you, use
+``--enable-node-prep``. For more details on how it works, take a look at the
+Auto Worker Node Prep section.
+
+.. warning::
+
+	Automatic worker node prep is a **beta feature** meant to be used in
+  non-production environments only.
 
 If you are using a distribution of Kubernetes where kubelet keeps its data on a path
 other than the usual ``/var/lib/kubelet``, you can specify the alternate path by using

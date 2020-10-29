@@ -29,6 +29,13 @@ To delete a storage class from Kubernetes, run:
 Any persistent volumes that were created through this storage class will
 remain untouched, and Trident will continue to manage them.
 
+.. note::
+
+  Trident enforces a blank ``fsType`` for the volumes it creates. For iSCSI backends,
+  it is recommended to enforce ``parameters.fsType`` in the StorageClass.
+  Existing StorageClasses must be deleted and recreated with ``parameters.fsType``
+  specified.
+
 Viewing the existing storage classes
 ------------------------------------
 

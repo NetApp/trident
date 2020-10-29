@@ -112,23 +112,23 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
-        --csi                     Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
-        --etcd-image string       The etcd image to install.
-        --generate-custom-yaml    Generate YAML files, but don't install anything.
-    -h, --help                    help for install
-        --image-registry string   The address/port of an internal image registry.
-        --k8s-timeout duration    The timeout for all Kubernetes operations. (default 3m0s)
-        --kubelet-dir string      The host location of kubelet's internal state. (default "/var/lib/kubelet")
-        --log-format string       The Trident logging format (text, json). (default "text")
-        --pv string               The name of the legacy PV used by Trident, will be migrated to CRDs. (default "trident")
-        --pvc string              The name of the legacy PVC used by Trident, will be migrated to CRDs. (default "trident")
-        --silent                  Disable most output during installation.
-        --trident-image string    The Trident image to install.
-        --use-custom-yaml         Use any existing YAML files that exist in setup directory.
-        --use-ipv6                Use IPv6 for Trident's communication.
-        --autosupport-proxy       The address/port of a proxy for sending Autosupport Telemetry
-        --autosupport-image       The container image for Autosupport Telemetry
-        --silence-autosupport     Don't send autosupport bundles to NetApp automatically.
+      --autosupport-image string   The container image for Autosupport Telemetry (default "netapp/trident-autosupport:20.07.0")
+      --autosupport-proxy string   The address/port of a proxy for sending Autosupport Telemetry
+      --csi                        Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
+      --enable-node-prep           Attempt to install required packages on nodes.
+      --generate-custom-yaml       Generate YAML files, but don't install anything.
+  -h, --help                       help for install
+      --image-registry string      The address/port of an internal image registry.
+      --k8s-timeout duration       The timeout for all Kubernetes operations. (default 3m0s)
+      --kubelet-dir string         The host location of kubelet's internal state. (default "/var/lib/kubelet")
+      --log-format string          The Trident logging format (text, json). (default "text")
+      --pv string                  The name of the legacy PV used by Trident, will ensure this does not exist. (default "trident")
+      --pvc string                 The name of the legacy PVC used by Trident, will ensure this does not exist. (default "trident")
+      --silence-autosupport        Don't send autosupport bundles to NetApp automatically. (default true)
+      --silent                     Disable most output during installation.
+      --trident-image string       The Trident image to install.
+      --use-custom-yaml            Use any existing YAML files that exist in setup directory.
+      --use-ipv6                   Use IPv6 for Trident's communication.
 
 logs
 ----

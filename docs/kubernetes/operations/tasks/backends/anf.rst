@@ -93,6 +93,15 @@ size             The default size of new volumes                                
 The ``exportRule`` value must be a comma-separated list of any combination of IPv4 addresses or IPv4 subnets in CIDR
 notation.
 
+.. note::
+
+  For all volumes created on an ANF backend, Trident will copy all labels present
+  on a :ref:`storage pool <anf-virtual-storage-pool>` to the storage volume at
+  the time it is provisioned. Storage
+  admins can define labels per storage pool and group all volumes created in a
+  storage pool. This provides a convenient way of differentiating volumes based
+  on a set of customizable labels that are provided in the backend configuration.
+
 Example configurations
 ----------------------
 
@@ -166,6 +175,7 @@ volume provisioning defaults.
         }
     }
 
+.. _anf-virtual-storage-pool:
 
 **Example 4 - Virtual storage pools with azure-netapp-files**
 

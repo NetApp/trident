@@ -69,7 +69,7 @@ debugTraceFlags       Debug flags to use when troubleshooting.
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
-  
+
 Example configuration
 ---------------------
 
@@ -146,6 +146,7 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=gold; cost=4"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -154,6 +155,7 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=silver; cost=3"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -162,6 +164,7 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=bronze; cost=2"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -170,6 +173,7 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=bronze; cost=1"
+      fsType: "ext4"
     ---
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
@@ -178,3 +182,4 @@ The first StorageClass (``eseries-gold-four``) will map to the first virtual sto
     provisioner: netapp.io/trident
     parameters:
       selector: "performance=bronze"
+      fsType: "ext4"

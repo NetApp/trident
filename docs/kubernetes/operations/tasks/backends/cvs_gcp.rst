@@ -21,33 +21,49 @@ To create and use a Cloud Volumes Service (CVS) for GCP backend, you will need:
 Backend configuration options
 -----------------------------
 
-========================= =============================================================== ================================================
-Parameter                 Description                                                     Default
-========================= =============================================================== ================================================
+========================= ================================================================= =================================================
+Parameter                 Description                                                       Default
+========================= ================================================================= =================================================
 version                   Always 1
 storageDriverName         "gcp-cvs"
-backendName               Custom name for the storage backend                             Driver name + "_" + part of API key
+backendName               Custom name for the storage backend                               Driver name + "_" + part of API key
+storageClass              Type of storage. Choose from ``hardware`` [Performance Optimized] "hardware"
+                          or ``software`` [Scale Optimized (beta)]
 projectNumber             GCP account project number
 apiRegion                 CVS account region
 apiKey                    API key for GCP service account with CVS admin role
 proxyURL                  Proxy URL if proxy server required to connect to CVS Account
-nfsMountOptions           Fine-grained control of NFS mount options                       "nfsvers=3"
-limitVolumeSize           Fail provisioning if requested volume size is above this value  "" (not enforced by default)
-network                   GCP network used for CVS volumes                                "default"
-serviceLevel              The CVS service level for new volumes                           "standard"
+nfsMountOptions           Fine-grained control of NFS mount options                         "nfsvers=3"
+limitVolumeSize           Fail provisioning if requested volume size is above this value    "" (not enforced by default)
+network                   GCP network used for CVS volumes                                  "default"
+serviceLevel              The CVS service level for new volumes                             "standard"
 debugTraceFlags           Debug flags to use when troubleshooting.
-                          E.g.: {"api":false, "method":true}                              null
-========================= =============================================================== ================================================
+                          E.g.: {"api":false, "method":true}                                null
+========================= ================================================================= =================================================
 
 .. warning::
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
-  
+
 The required value ``projectNumber`` may be found in the GCP web portal's Home screen.  The ``apiRegion`` is the
 GCP region where this backend will provision volumes. The ``apiKey`` is the JSON-formatted contents of a GCP
 service account's private key file (copied verbatim into the backend config file).  The service account must have
 the ``netappcloudvolumes.admin`` role.
+
+The ``storageClass`` is an optional parameter that can be used to choose the
+desired `CVS service type <https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US>`_.
+Users can choose from the base CVS service type[``storageClass=software``] or the CVS-Performance service
+type [``storageClass=hardware``], which Trident uses by default. Make sure you specify an ``apiRegion`` that
+provides the respective CVS ``storageClass`` in your backend definition.
+
+.. note::
+
+   Trident's integration with the base
+   `CVS service type <https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US>`_
+   on GCP is a **beta feature**, not meant for production
+   workloads. Trident is **fully supported** with the CVS-Performance service type
+   and uses it by default.
 
 The proxyURL config option must be used if a proxy server is needed to communicate with GCP. The proxy server may either
 be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
@@ -72,6 +88,15 @@ size                      The size of new volumes                               
 
 The ``exportRule`` value must be a comma-separated list of any combination of
 IPv4 addresses or IPv4 subnets in CIDR notation.
+
+.. note::
+
+  For all volumes created on a GCP backend, Trident will copy all labels present
+  on a :ref:`storage pool <gcp-virtual-storage-pool>` to the storage volume at
+  the time it is provisioned. Storage admins can define labels per storage pool
+  and group all volumes created per storage pool. This provides a convenient way
+  of differentiating volumes based on a set of customizable labels that are
+  provided in the backend configuration.
 
 Example configurations
 ----------------------
@@ -99,7 +124,36 @@ Example configurations
         }
     }
 
-**Example 2 -  Backend configuration for gcp-cvs driver with single service level**
+**Example 2 - Backend configuration for gcp-cvs driver with the base CVS service type**
+
+This example shows a backend definition that uses the base CVS service type, which
+is meant for general-purpose workloads and provides light/moderate performance,
+coupled with high zonal availability. This is a **beta** Trident integration that
+can be used in test environments.
+
+.. code-block:: json
+
+    {
+        "version": 1,
+        "storageDriverName": "gcp-cvs",
+        "projectNumber": "012345678901",
+        "storageClass": "software",
+        "apiRegion": "us-east4",
+        "apiKey": {
+            "type": "service_account",
+            "project_id": "my-gcp-project",
+            "private_key_id": "1234567890123456789012345678901234567890",
+            "private_key": "-----BEGIN PRIVATE KEY-----\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nznHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE4jK3bl/qp8B4Kws8zX5ojY9m\nXsYg6gyxy4zq7OlwWgLwGa==\n-----END PRIVATE KEY-----\n",
+            "client_email": "cloudvolumes-admin-sa@my-gcp-project.iam.gserviceaccount.com",
+            "client_id": "123456789012345678901",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloudvolumes-admin-sa%40my-gcp-project.iam.gserviceaccount.com"
+        }
+    }
+
+**Example 3 -  Backend configuration for gcp-cvs driver with single service level**
 
 This example shows a backend file that applies the same aspects to all Trident created storage in the GCP us-west2
 region. This example also shows the usage of proxyURL config option in a backend file.
@@ -135,13 +189,15 @@ region. This example also shows the usage of proxyURL config option in a backend
         }
     }
 
-**Example 3 - Backend and storage class configuration for gcp-cvs driver with virtual storage pools**
+.. _gcp-virtual-storage-pool:
+
+**Example 4 - Backend and storage class configuration for gcp-cvs driver with virtual storage pools**
 
 This example shows the backend definition file configured with :ref:`Virtual Storage Pools <Virtual Storage Pools>`
 along with StorageClasses that refer back to them.
 
-In the sample backend definition file shown below, specific defaults are set for all storage pools, which set th
-``snapshotReserve`` at 5% and the ``exportRule`` to 0.0.0.0/0. The virtual storage pools are defined in th
+In the sample backend definition file shown below, specific defaults are set for all storage pools, which set the
+``snapshotReserve`` at 5% and the ``exportRule`` to 0.0.0.0/0. The virtual storage pools are defined in the
 ``storage`` section. In this example, each individual storage pool sets its own ``serviceLevel``, and some pools
 overwrite the default values set above.
 
