@@ -10,14 +10,28 @@
 **Fixes:**
 - Fixed issue of SLM portal login for iSCSI backends (Issue [#387](https://github.com/NetApp/trident/issues/387)).
 - Fixed issue where Trident would crash when creating a volume if ONTAP FCP interfaces were present in the target SVM.
-- Fixed issue where storage prefix with period would cause backend to fail when updating or creating backend or upgrading Trident from v20.01
+- Fixed issue where storage prefix with period would cause backend to fail when updating or creating backend or upgrading Trident from v20.01 (Issue [#455](https://github.com/NetApp/trident/issues/455)).
 - Fixed ONTAP SAN drivers to clean up if provisioning fails (Issue [#442](https://github.com/NetApp/trident/issues/442)).
+- **Kubernetes:** Fixed issue that would cause initiators to be removed from the igroup in the ontap-san and ontap-san-economy drivers in non-CSI installations in Kubernetes <= 1.13 (Issue [#463](https://github.com/NetApp/trident/issues/463)).
+- Fixed issue where volume resizes may fail when large ONTAP snapshots were present for the FlexVol.
+- **Kubernetes:** Fixed issue where Trident may panic with a concurrent map write (Issue [#456](https://github.com/NetApp/trident/issues/456)).
+- **Kubernetes:** Fixed issue where Trident Operator may create additional service account secrets (Issue [#469](https://github.com/NetApp/trident/issues/469)).
+- **Kubernetes:** Fixed issue where Trident uses old Kubernetes secrets after Operator updates the service account (Issue [#444](https://github.com/NetApp/trident/issues/444)).
 
 **Enhancements:**
+- **Kubernetes:** Added support for Kubernetes 1.19
+- **Kubernetes:** Updated CSI sidecars to newest major versions.
+- Switched to `distroless` for base-image, reducing size and attack surface.
 - Added `qtreesPerFlexvol` option to allow customizing the number of qtrees per FlexVol in the ontap-nas-economy driver.
+- **Kubernetes:** Added support for WaitForFirstConsumer via CSI-topology (Issue [#405](https://github.com/NetApp/trident/issues/405)).
+- Added `requestID` fields to most log statements to assist in following individual request through Trident.
+- **Kubernetes** Trident can now send its logs to NetApp Autosupport Telemetry.
+- Added support for storage volume labels in ANF, AWS, and GCP backends.
 
-**Tech Previews:**
+**Beta Features:**
+***These should not be used in production scenarios and are for testing and preview purposes only.***
 - **Kubernetes:** Automatic node preparation for NFS and iSCSI protocols. Trident can now attempt to make sure NFS and/or iSCSI packages and services are installed and running the first time an NFS or iSCSI volume is mounted on a worker node. Can be enabled with `--enable-node-prep` installation option.
+- Added support for the default [CVS](https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US) service type on GCP.
 
 **Deprecations:**
 - **Kubernetes:** Removed etcd support, including ability to upgrade directly from etcd-based Trident (v19.04.1 or older).
