@@ -4,7 +4,7 @@
 [![Chat](https://img.shields.io/badge/chat-slack-4C9689.svg)](http://netapp.io/slack/)
 [![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)](https://github.com/NetApp/trident/commits)
 [![license](https://img.shields.io/github/license/netapp/trident.svg)](LICENSE)
-[![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=latest)](https://netapp-trident.readthedocs.io)
+[![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=stable-v20.10)](https://netapp-trident.readthedocs.io/en/stable-v20.10)
 [![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident)](https://goreportcard.com/report/github.com/netapp/trident)
 
 Trident is a fully supported open source project maintained by [NetApp](https://www.netapp.com). It has been designed from the ground up to help you meet the sophisticated persistence demands of your containerized applications.
