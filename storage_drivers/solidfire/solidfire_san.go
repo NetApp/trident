@@ -103,8 +103,8 @@ func (d SANStorageDriver) Name() string {
 	return drivers.SolidfireSANStorageDriverName
 }
 
-// backendName returns the name of the backend managed by this driver instance
-func (d *SANStorageDriver) backendName() string {
+// BackendName returns the name of the backend managed by this driver instance
+func (d *SANStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
 		return "solidfire_" + strings.Split(d.Config.SVIP, ":")[0]
@@ -117,7 +117,7 @@ func (d *SANStorageDriver) backendName() string {
 func (d *SANStorageDriver) poolName(name string) string {
 
 	return fmt.Sprintf("%s_%s",
-		d.backendName(),
+		d.BackendName(),
 		strings.Replace(name, "-", "", -1))
 }
 
@@ -1505,7 +1505,7 @@ func (d *SANStorageDriver) VolumeExists(ctx context.Context, name string) (bool,
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
 
-	backend.Name = d.backendName()
+	backend.Name = d.BackendName()
 
 	virtual := len(d.virtualPools) > 0
 

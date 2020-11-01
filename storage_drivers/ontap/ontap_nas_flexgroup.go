@@ -55,8 +55,8 @@ func (d *NASFlexGroupStorageDriver) Name() string {
 	return drivers.OntapNASFlexGroupStorageDriverName
 }
 
-// backendName returns the name of the backend managed by this driver instance
-func (d *NASFlexGroupStorageDriver) backendName() string {
+// BackendName returns the name of the backend managed by this driver instance
+func (d *NASFlexGroupStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
 		return CleanBackendName("ontapnasfg_" + d.Config.DataLIF)
@@ -256,7 +256,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 				tieringPolicy = vpool.TieringPolicy
 			}
 
-			pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), d.backendName()))
+			pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), d.BackendName()))
 
 			// Update pool with attributes set by default for this backend
 			// We do not set internal attributes with these values as this
@@ -844,7 +844,7 @@ func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error 
 
 // getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
 func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
-	backend.Name = d.backendName()
+	backend.Name = d.BackendName()
 
 	virtual := len(d.virtualPools) > 0
 

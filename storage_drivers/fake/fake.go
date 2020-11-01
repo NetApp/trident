@@ -223,6 +223,16 @@ func (d *StorageDriver) Name() string {
 	return drivers.FakeStorageDriverName
 }
 
+// BackendName returns the name of the backend managed by this driver instance
+func (d *StorageDriver) BackendName() string {
+	if d.Config.BackendName == "" {
+		// Use the old naming scheme if no name is specified
+		return fmt.Sprintf("fake-#{Config.InstanceName}")
+	} else {
+		return d.Config.BackendName
+	}
+}
+
 // poolName returns the name of the pool reported by this driver instance
 func (d *StorageDriver) poolName(region string) string {
 	name := fmt.Sprintf("%s_%s", d.Name(), strings.Replace(region, "-", "", -1))

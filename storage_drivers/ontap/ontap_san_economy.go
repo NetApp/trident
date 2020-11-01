@@ -234,8 +234,8 @@ func (d *SANEconomyStorageDriver) Name() string {
 	return drivers.OntapSANEconomyStorageDriverName
 }
 
-// backendName returns the name of the backend managed by this driver instance
-func (d *SANEconomyStorageDriver) backendName() string {
+// BackendName returns the name of the backend managed by this driver instance
+func (d *SANEconomyStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
 		return CleanBackendName("ontapsaneco_" + d.ips[0])
@@ -305,7 +305,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}).Debugf("SAN Economy driver settings.")
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.backendName())
+		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
@@ -1440,7 +1440,7 @@ func (d *SANEconomyStorageDriver) getTotalLUNSize(flexvol string) (uint64, error
 
 // Retrieve storage backend capabilities
 func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.backendName())
+	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
 // Retrieve storage backend physical pools

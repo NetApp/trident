@@ -98,8 +98,8 @@ func (d *NFSStorageDriver) defaultBackendName() string {
 	return fmt.Sprintf("%s_%s", strings.Replace(d.Name(), "-", "", -1), id)
 }
 
-// backendName returns the name of the backend managed by this driver instance
-func (d *NFSStorageDriver) backendName() string {
+// BackendName returns the name of the backend managed by this driver instance
+func (d *NFSStorageDriver) BackendName() string {
 	if d.Config.BackendName != "" {
 		return d.Config.BackendName
 	} else {
@@ -110,7 +110,7 @@ func (d *NFSStorageDriver) backendName() string {
 
 // poolName constructs the name of the pool reported by this driver instance
 func (d *NFSStorageDriver) poolName(name string) string {
-	return fmt.Sprintf("%s_%s", d.backendName(), strings.Replace(name, "-", "", -1))
+	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
 }
 
 // validateName checks that the name of a new volume matches the requirements of a creation token
@@ -1378,7 +1378,7 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 // Retrieve storage capabilities and register pools with specified backend.
 func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
 
-	backend.Name = d.backendName()
+	backend.Name = d.BackendName()
 
 	for _, pool := range d.pools {
 		pool.Backend = backend

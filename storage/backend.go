@@ -26,6 +26,7 @@ import (
 // Driver provides a common interface for storage related operations
 type Driver interface {
 	Name() string
+	BackendName() string
 	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
@@ -157,6 +158,7 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*Backend, error) {
 func NewFailedStorageBackend(ctx context.Context, driver Driver) *Backend {
 
 	backend := Backend{
+		Name:    driver.BackendName(),
 		Driver:  driver,
 		State:   Failed,
 		Storage: make(map[string]*Pool),

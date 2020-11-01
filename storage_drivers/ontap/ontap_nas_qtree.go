@@ -78,8 +78,8 @@ func (d *NASQtreeStorageDriver) Name() string {
 	return drivers.OntapNASQtreeStorageDriverName
 }
 
-// backendName returns the name of the backend managed by this driver instance
-func (d *NASQtreeStorageDriver) backendName() string {
+// BackendName returns the name of the backend managed by this driver instance
+func (d *NASQtreeStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
 		return CleanBackendName("ontapnaseco_" + d.Config.DataLIF)
@@ -163,7 +163,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}).Debugf("Qtree driver settings.")
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.backendName())
+		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
@@ -1289,7 +1289,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Contex
 
 // Retrieve storage backend capabilities
 func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
-	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.backendName())
+	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
 // Retrieve storage backend physical pools
