@@ -898,7 +898,6 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 		}).Debug("NewStorageBackendForConfig failed.")
 
 		if backend != nil && backend.State.IsFailed() {
-			o.backends[backend.BackendUUID] = backend
 			return backend.ConstructExternal(ctx), err
 		}
 		return nil, err
