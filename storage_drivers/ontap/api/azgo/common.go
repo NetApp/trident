@@ -113,7 +113,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	req.SetBasicAuth(o.Username, o.Password)
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinTLSVersion},
 	}
 
 	client := &http.Client{

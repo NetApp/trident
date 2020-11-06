@@ -167,6 +167,7 @@ func (d Client) InvokeAPI(
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: !d.config.WebProxyVerifyTLS, // Allow certificate validation override
+			MinVersion: tridentconfig.MinTLSVersion,
 		},
 	}
 	client := &http.Client{

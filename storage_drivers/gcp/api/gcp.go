@@ -21,6 +21,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
@@ -179,6 +180,10 @@ func (d *Client) InvokeAPI(
 	// Use ProxyUrl if set
 	proxyURL := d.config.ProxyURL
 
+	tr.TLSClientConfig = &tls.Config{
+		MinVersion: config.MinTLSVersion,
+	}
+
 	if proxyURL != "" {
 		proxy, err := url.Parse(proxyURL)
 		if err != nil {
@@ -188,15 +193,11 @@ func (d *Client) InvokeAPI(
 		tr.Proxy = http.ProxyURL(proxy)
 
 		// Skip certificate validation
-		tr.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: true,
-		}
+		tr.TLSClientConfig.InsecureSkipVerify = true
 	} else {
 
 		// Require certificate validation if not using a proxy
-		tr.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: false,
-		}
+		tr.TLSClientConfig.InsecureSkipVerify = false
 	}
 
 	if d.config.DebugTraceFlags["api"] {

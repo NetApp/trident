@@ -106,7 +106,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 
 	// Send the request
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinTLSVersion},
 	}
 	httpClient := &http.Client{
 		Transport: tr,
