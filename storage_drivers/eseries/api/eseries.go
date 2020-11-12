@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -746,6 +747,69 @@ func (d Client) GetVolumeByRef(ctx context.Context, volumeRef string) (VolumeEx,
 	return volume, nil
 }
 
+// ensureVolumeTagsWithRetry attempts to add missing tags to the supplied volume (if needed)
+func (d Client) ensureVolumeTagsWithRetry(ctx context.Context, volumeRef string, tags []VolumeTag) (VolumeEx, error) {
+	fixNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debugf("Failed to correct tags for volume %s; retrying", volumeRef)
+	}
+
+	attemptToFixTags := func() error {
+		retryVolume, retryError := d.GetVolumeByRef(ctx, volumeRef)
+		if retryError != nil {
+			return retryError
+		}
+
+		if d.volumeHasTags(retryVolume, tags) {
+			// the expected tags are present, we can successfully return
+			// note: this 422 can occur from the original CreateVolume call OR this function's UpdateVolumeTags call
+			Logc(ctx).WithFields(log.Fields{
+				"Name":           retryVolume.Label,
+				"VolumeRef":      retryVolume.VolumeRef,
+				"VolumeGroupRef": retryVolume.VolumeGroupRef,
+			}).Debug("Volume (re-read after HTTP 422) now has expected tags.")
+			return nil
+		}
+
+		// the expected tags are missing, try to update the volume with the expected tags
+		Logc(ctx).WithField("Name", retryVolume.Label).Debug("Re-read volume tags mismatch.")
+
+		updateVolume, updateError := d.UpdateVolumeTags(ctx, volumeRef, tags)
+		if updateError != nil {
+			// this update could've failed with another 422, return an error and try again
+			return updateError
+		}
+
+		if d.volumeHasTags(updateVolume, tags) {
+			// the expected tags are present on the updated volume, we can successfully return
+			Logc(ctx).WithFields(log.Fields{
+				"Name":           updateVolume.Label,
+				"VolumeRef":      updateVolume.VolumeRef,
+				"VolumeGroupRef": updateVolume.VolumeGroupRef,
+			}).Debug("Updated volume (re-read after HTTP 422) now has expected tags.")
+			return nil
+		}
+
+		// the volume is still missing the expected tags, return an error so we will retry all of this again
+		return fmt.Errorf("volume %s missing expected tags %v", volumeRef, tags)
+	}
+
+	maxDuration := 30 * time.Second
+
+	fixBackoff := backoff.NewExponentialBackOff()
+	fixBackoff.InitialInterval = 2 * time.Second
+	fixBackoff.Multiplier = 2
+	fixBackoff.RandomizationFactor = 0.1
+	fixBackoff.MaxElapsedTime = maxDuration
+
+	// Read and correct the volume tags, if needed, with an exponential backoff
+	if err := backoff.RetryNotify(attemptToFixTags, fixBackoff, fixNotify); err != nil {
+		Logc(ctx).Errorf("could not correct tags for volume %v after %3.2f seconds.", volumeRef, maxDuration.Seconds())
+		return VolumeEx{}, err
+	}
+
+	return d.GetVolumeByRef(ctx, volumeRef)
+}
+
 // CreateVolume creates a volume (i.e. a LUN) on the array, and it returns the resulting VolumeEx structure.
 func (d Client) CreateVolume(
 	ctx context.Context, name string, volumeGroupRef string, size uint64, mediaType, fstype string,
@@ -797,53 +861,43 @@ func (d Client) CreateVolume(
 
 	// Work around Web Services Proxy bug by re-reading the volume we (hopefully) just created
 	if response.StatusCode == http.StatusUnprocessableEntity {
+		Logc(ctx).Debugf("Volume create failed with 422 response, attempting to re-read volume %v", name)
 
-		Logc(ctx).Debug("Volume created failed with 422 response, attempting to re-read volume.")
-
-		retryVolume, retryError := d.GetVolume(ctx, name)
-		if retryError != nil {
-			return VolumeEx{}, retryError
+		retryVolume, getError := d.GetVolume(ctx, name)
+		if getError != nil {
+			return VolumeEx{}, getError
 		}
 
-		// Make sure the volume is legit by verifying it has the tag(s) we requested
-		if !d.volumeHasTags(retryVolume, tags) {
-			Logc(ctx).WithField("Name", retryVolume.Label).Debug("Re-read volume tags mismatch.")
-			apiError := d.getErrorFromHTTPResponse(response, responseBody)
-			apiError.Message = fmt.Sprintf("could not create volume %s; %s", name, apiError.Message)
-			return VolumeEx{}, apiError
+		result, retryErr := d.ensureVolumeTagsWithRetry(ctx, retryVolume.VolumeRef, tags)
+		if retryErr != nil {
+			// best effort cleanup of the volume we created that never received its required tags
+			if deleteErr := d.DeleteVolume(ctx, retryVolume); deleteErr != nil {
+				return VolumeEx{}, fmt.Errorf("%v; %v", retryErr.Error(), deleteErr.Error())
+			}
+			return VolumeEx{}, retryErr
 		}
-
-		Logc(ctx).WithFields(log.Fields{
-			"Name":           retryVolume.Label,
-			"VolumeRef":      retryVolume.VolumeRef,
-			"VolumeGroupRef": retryVolume.VolumeGroupRef,
-		}).Debug("Created volume (re-read after HTTP 422).")
-
-		return retryVolume, nil
+		return result, nil
 	}
 
 	if response.StatusCode != http.StatusOK {
-
 		apiError := d.getErrorFromHTTPResponse(response, responseBody)
 		apiError.Message = fmt.Sprintf("could not create volume %s; %s", name, apiError.Message)
 		return VolumeEx{}, apiError
-
-	} else {
-
-		// Parse JSON volume data
-		vol := VolumeEx{}
-		if err := json.Unmarshal(responseBody, &vol); err != nil {
-			return VolumeEx{}, fmt.Errorf("could not parse API response: %s; %v", string(responseBody), err)
-		}
-
-		Logc(ctx).WithFields(log.Fields{
-			"Name":           vol.Label,
-			"VolumeRef":      vol.VolumeRef,
-			"VolumeGroupRef": vol.VolumeGroupRef,
-		}).Debug("Created volume.")
-
-		return vol, nil
 	}
+
+	// Parse JSON volume data
+	vol := VolumeEx{}
+	if err := json.Unmarshal(responseBody, &vol); err != nil {
+		return VolumeEx{}, fmt.Errorf("could not parse API response: %s; %v", string(responseBody), err)
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"Name":           vol.Label,
+		"VolumeRef":      vol.VolumeRef,
+		"VolumeGroupRef": vol.VolumeGroupRef,
+	}).Debug("Created volume.")
+
+	return vol, nil
 }
 
 func (d Client) volumeHasTags(volume VolumeEx, tags []VolumeTag) bool {
@@ -865,6 +919,64 @@ func (d Client) volumeHasTags(volume VolumeEx, tags []VolumeTag) bool {
 	}
 
 	return true
+}
+
+// UpdateVolumeTags updates the tags for a given volume
+func (d Client) UpdateVolumeTags(
+	ctx context.Context, volumeRef string, tags []VolumeTag,
+) (VolumeEx, error) {
+
+	if d.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":    "UpdateVolumeTags",
+			"Type":      "Client",
+			"volumeRef": volumeRef,
+			"tags":      tags,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> UpdateVolumeTags")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< UpdateVolumeTags")
+	}
+
+	// We need a valid volumeRef
+	if len(volumeRef) <= 0 {
+		return VolumeEx{}, fmt.Errorf("the volumeRef is invalid")
+	}
+
+	// Set up the volume update request
+	request := VolumeUpdateRequest{
+		VolumeTags: tags,
+	}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return VolumeEx{}, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	// Update the volume
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", "/volumes/"+volumeRef)
+	if err != nil {
+		return VolumeEx{}, fmt.Errorf("API invocation failed. %v", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		apiError := d.getErrorFromHTTPResponse(response, responseBody)
+		apiError.Message = fmt.Sprintf("could not update volume %s; %s", volumeRef, apiError.Message)
+		return VolumeEx{}, apiError
+	}
+
+	// Parse JSON volume data
+	vol := VolumeEx{}
+	if err := json.Unmarshal(responseBody, &vol); err != nil {
+		return VolumeEx{}, fmt.Errorf("could not parse API response: %s; %v", string(responseBody), err)
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"Name":           vol.Label,
+		"VolumeRef":      vol.VolumeRef,
+		"VolumeGroupRef": vol.VolumeGroupRef,
+	}).Debug("Updated volume.")
+
+	return vol, nil
 }
 
 // ResizingVolume checks to see if an expand operation is in progress for the volume.

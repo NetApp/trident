@@ -164,6 +164,12 @@ type VolumeCreateRequest struct {
 	VolumeTags       []VolumeTag `json:"metaTags,omitempty"`
 }
 
+// VolumeUpdateRequest is used to update a volume
+type VolumeUpdateRequest struct {
+	Name       string      `json:"name,omitempty"`     // the new name (to rename it)
+	VolumeTags []VolumeTag `json:"metaTags,omitempty"` // Key/Value pair for volume meta data
+}
+
 type VolumeTag struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
