@@ -5,6 +5,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"net"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -12,6 +13,13 @@ import (
 // The Trident build process builds the Trident CLI client for both linux and darwin.
 // At compile time golang will type checks the entire code base. Since the CLI is part
 // of the Trident code base this file exists to handle darwin specific code.
+
+func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
+
+	Logc(ctx).Debug(">>>> osutils_darwin.getIPAddresses")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.getIPAddresses")
+	return nil, errors.New("getIPAddresses is not supported for darwin")
+}
 
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 
