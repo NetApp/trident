@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
+	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 )
 
@@ -64,7 +65,9 @@ func (o *TridentOrchestrator) checkLongRunningTransactions(ctx context.Context, 
 
 	txns, err := o.storeClient.GetVolumeTransactions(ctx)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Errorf("could not read transactions")
+		if !persistentstore.MatchKeyNotFoundErr(err) {
+			Logc(ctx).WithField("error", err).Errorf("Could not read transactions.")
+		}
 		return
 	}
 	log.Debugf("Transaction monitor found %d long-running transaction(s).", len(txns))
