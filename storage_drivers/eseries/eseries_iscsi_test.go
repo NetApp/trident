@@ -212,7 +212,9 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 		eseriesSANDriver.API = newTestEseriesSANDriverAPI(&eseriesSANDriver.Config)
 
 		output := captureOutput(func() {
-			eseriesSANDriver.API.InvokeAPI(context.Background(), sensitiveInfo, "", "")
+			if _, _, err := eseriesSANDriver.API.InvokeAPI(context.Background(), sensitiveInfo, "", ""); err != nil {
+				t.Fatal(err)
+			}
 		})
 
 		switch {

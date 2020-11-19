@@ -87,7 +87,9 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 
 	// Clear the InMemoryClient state so that it looks like we're
 	// bootstrapping afresh next time.
-	inMemoryClient.Stop()
+	if err = inMemoryClient.Stop(); err != nil {
+		t.Fatalf("Unable to stop in memory client for orchestrator: %v", o)
+	}
 }
 
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {

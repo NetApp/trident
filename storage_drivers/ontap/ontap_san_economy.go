@@ -782,7 +782,9 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, name string) erro
 		}
 		if lunID >= 0 {
 			// Inform the host about the device removal
-			utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true)
+			if err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true); err != nil {
+				Logc(ctx).Error(err)
+			}
 		}
 	}
 

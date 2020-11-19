@@ -420,13 +420,17 @@ func main() {
 	// still initializing.  Other frontends such as legacy Kubernetes and CSI benefit from starting after
 	// the core is ready.
 	for _, f := range preBootstrapFrontends {
-		f.Activate()
+		if err := f.Activate(); err != nil {
+			log.Error(err)
+		}
 	}
 	if err = orchestrator.Bootstrap(); err != nil {
 		log.Error(err.Error())
 	}
 	for _, f := range postBootstrapFrontends {
-		f.Activate()
+		if err := f.Activate(); err != nil {
+			log.Error(err)
+		}
 	}
 
 	// Register and wait for a shutdown signal
@@ -435,11 +439,17 @@ func main() {
 	<-c
 	log.Info("Shutting down.")
 	for _, f := range postBootstrapFrontends {
-		f.Deactivate()
+		if err := f.Deactivate(); err != nil {
+			log.Error(err)
+		}
 	}
 	orchestrator.Stop()
 	for _, f := range preBootstrapFrontends {
-		f.Deactivate()
+		if err := f.Deactivate(); err != nil {
+			log.Error(err)
+		}
 	}
-	storeClient.Stop()
+	if err = storeClient.Stop(); err != nil {
+		log.Error(err)
+	}
 }

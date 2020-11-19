@@ -1176,7 +1176,9 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 				}
 			}
 			if updatePersistentStore {
-				o.updateVolumeOnPersistentStore(ctx, vol)
+				if err := o.updateVolumeOnPersistentStore(ctx, vol); err != nil {
+					return nil, err
+				}
 			}
 			o.backends[backend.BackendUUID].Volumes[volName] = vol
 		}

@@ -364,7 +364,7 @@ func (c *TridentCrdController) Version() string {
 // as syncing informer caches and starting workers. It will block until stopCh
 // is closed, at which point it will shutdown the workqueue and wait for
 // workers to finish processing their current work items.
-func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) error {
+func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) {
 	log.WithFields(log.Fields{
 		"threadiness": threadiness,
 	}).Debug("TridentCrdController#Run")
@@ -387,7 +387,7 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) erro
 		c.snapshotsSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
 		log.Errorf("Error: %v", waitErr)
-		return waitErr
+		return
 	}
 
 	// Launch workers to process CRD resources
@@ -399,8 +399,6 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) erro
 	log.Info("Started workers.")
 	<-stopCh
 	log.Info("Shutting down workers.")
-
-	return nil
 }
 
 // runWorker is a long-running function that will continually call the

@@ -93,5 +93,7 @@ func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, c
 		log.Debug("Registered CSI node server.")
 	}
 
-	server.Serve(listener)
+	if err := server.Serve(listener); err != nil {
+		log.Fatal(err)
+	}
 }

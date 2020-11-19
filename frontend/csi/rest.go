@@ -23,7 +23,7 @@ type RestClient struct {
 }
 
 func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, error) {
-	tlsConfig := &tls.Config{ MinVersion: config.MinTLSVersion }
+	tlsConfig := &tls.Config{MinVersion: config.MinTLSVersion}
 	if "" != caFile {
 		caCert, err := ioutil.ReadFile(caFile)
 		if err != nil {

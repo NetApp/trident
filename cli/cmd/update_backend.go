@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -25,7 +26,9 @@ func init() {
 	updateCmd.AddCommand(updateBackendCmd)
 	updateBackendCmd.Flags().StringVarP(&updateFilename, "filename", "f", "", "Path to YAML or JSON file")
 	updateBackendCmd.Flags().StringVarP(&updateBase64Data, "base64", "", "", "Base64 encoding")
-	updateBackendCmd.Flags().MarkHidden("base64")
+	if err := updateBackendCmd.Flags().MarkHidden("base64"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 var updateBackendCmd = &cobra.Command{

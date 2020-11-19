@@ -30,7 +30,9 @@ func init() {
 	importVolumeCmd.Flags().StringVarP(&importFilename, "filename", "f", "", "Path to YAML or JSON PVC file")
 	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false, "Create PV/PVC only, don't assume volume lifecycle management")
 	importVolumeCmd.Flags().StringVarP(&importBase64Data, "base64", "", "", "Base64 encoding")
-	importVolumeCmd.Flags().MarkHidden("base64")
+	if err := importVolumeCmd.Flags().MarkHidden("base64"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 var importVolumeCmd = &cobra.Command{

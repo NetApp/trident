@@ -508,7 +508,9 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, name string) error 
 	destroyResponse, err := d.API.QtreeDestroyAsync(deletedPath, true)
 	if err = api.GetError(ctx, destroyResponse, err); err != nil {
 		Logc(ctx).Errorf("Qtree async delete failed. %v", err)
-		defer d.API.QtreeRename(deletedPath, path)
+		if _, err := d.API.QtreeRename(deletedPath, path); err != nil {
+			Logc(ctx).Error(err)
+		}
 		return deleteError
 	}
 
@@ -802,7 +804,9 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	if !enableSnapshotDir {
 		snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(flexvol)
 		if err = api.GetError(ctx, snapDirResponse, err); err != nil {
-			defer d.API.VolumeDestroy(flexvol, true)
+			if _, err := d.API.VolumeDestroy(flexvol, true); err != nil {
+				Logc(ctx).Error(err)
+			}
 			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
@@ -810,14 +814,18 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Mount the volume at the specified junction
 	mountResponse, err := d.API.VolumeMount(flexvol, "/"+flexvol)
 	if err = api.GetError(ctx, mountResponse, err); err != nil {
-		defer d.API.VolumeDestroy(flexvol, true)
+		if _, err := d.API.VolumeDestroy(flexvol, true); err != nil {
+			Logc(ctx).Error(err)
+		}
 		return "", fmt.Errorf("error mounting Flexvol: %v", err)
 	}
 
 	// Create the default quota rule so we can use quota-resize for new qtrees
 	err = d.addDefaultQuotaForFlexvol(ctx, flexvol)
 	if err != nil {
-		defer d.API.VolumeDestroy(flexvol, true)
+		if _, err := d.API.VolumeDestroy(flexvol, true); err != nil {
+			Logc(ctx).Error(err)
+		}
 		return "", fmt.Errorf("error adding default quota to Flexvol: %v", err)
 	}
 
@@ -1231,7 +1239,9 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
 		for _, qtree := range listResponse.Result.AttributesListPtr.QtreeInfoPtr {
 			qtreePath := fmt.Sprintf("/vol/%s/%s", qtree.Volume(), qtree.Qtree())
 			Logc(ctx).WithField("qtree", qtreePath).Debug("Housekeeping, reaping deleted qtree.")
-			d.API.QtreeDestroyAsync(qtreePath, true)
+			if _, err := d.API.QtreeDestroyAsync(qtreePath, true); err != nil {
+				Logc(ctx).Error(err)
+			}
 		}
 	}
 }

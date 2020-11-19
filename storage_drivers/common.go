@@ -196,8 +196,12 @@ func Clone(ctx context.Context, source, destination interface{}) {
 	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 	dec := gob.NewDecoder(buff)
-	enc.Encode(source)
-	dec.Decode(destination)
+	if err := enc.Encode(source); err != nil {
+		Logc(ctx).Error(err)
+	}
+	if err := dec.Decode(destination); err != nil {
+		Logc(ctx).Error(err)
+	}
 }
 
 // CheckSupportedFilesystem checks for a supported file system type

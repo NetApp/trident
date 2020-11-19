@@ -585,7 +585,9 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 			t.Errorf("Got incorrect volume transaction for %s (got %s)",
 				v.Config.Name, txn.Config.Name)
 		}
-		p.DeleteVolumeTransaction(ctx(), v)
+		if err := p.DeleteVolumeTransaction(ctx(), v); err != nil {
+			t.Errorf("Unable to delete volume: %v", err)
+		}
 	}
 	volTxns, err = p.GetVolumeTransactions(ctx())
 	if err != nil {

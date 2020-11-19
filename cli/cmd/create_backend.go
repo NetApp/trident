@@ -28,7 +28,9 @@ func init() {
 	createCmd.AddCommand(createBackendCmd)
 	createBackendCmd.Flags().StringVarP(&createFilename, "filename", "f", "", "Path to YAML or JSON file")
 	createBackendCmd.Flags().StringVarP(&createBase64Data, "base64", "", "", "Base64 encoding")
-	createBackendCmd.Flags().MarkHidden("base64")
+	if err := createBackendCmd.Flags().MarkHidden("base64"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 var createBackendCmd = &cobra.Command{

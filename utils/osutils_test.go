@@ -190,26 +190,26 @@ func TestGetHostportIP(t *testing.T) {
 	log.Debug("Running TestGetHostportIP...")
 
 	type IPAddresses struct {
-		InputIP   string
-		OutputIP  string
+		InputIP  string
+		OutputIP string
 	}
 
-	tests := []IPAddresses {
+	tests := []IPAddresses{
 		{
-			InputIP:    "1.2.3.4:5678",
-			OutputIP:   "1.2.3.4",
+			InputIP:  "1.2.3.4:5678",
+			OutputIP: "1.2.3.4",
 		},
 		{
-			InputIP:    "1.2.3.4",
-			OutputIP:   "1.2.3.4",
+			InputIP:  "1.2.3.4",
+			OutputIP: "1.2.3.4",
 		},
 		{
-			InputIP:    "[1:2:3:4]:5678",
-			OutputIP:   "[1:2:3:4]",
+			InputIP:  "[1:2:3:4]:5678",
+			OutputIP: "[1:2:3:4]",
 		},
 		{
-			InputIP:    "[1:2:3:4]",
-			OutputIP:   "[1:2:3:4]",
+			InputIP:  "[1:2:3:4]",
+			OutputIP: "[1:2:3:4]",
 		},
 		{
 			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
@@ -233,30 +233,30 @@ func TestEnsureHostportFormatted(t *testing.T) {
 	log.Debug("Running TestEnsureHostportFormatted...")
 
 	type IPAddresses struct {
-		InputIP   string
-		OutputIP  string
+		InputIP  string
+		OutputIP string
 	}
 
-	tests := []IPAddresses {
+	tests := []IPAddresses{
 		{
-			InputIP:    "1.2.3.4:5678",
-			OutputIP:   "1.2.3.4:5678",
+			InputIP:  "1.2.3.4:5678",
+			OutputIP: "1.2.3.4:5678",
 		},
 		{
-			InputIP:    "1.2.3.4",
-			OutputIP:   "1.2.3.4",
+			InputIP:  "1.2.3.4",
+			OutputIP: "1.2.3.4",
 		},
 		{
-			InputIP:    "[1:2:3:4]:5678",
-			OutputIP:   "[1:2:3:4]:5678",
+			InputIP:  "[1:2:3:4]:5678",
+			OutputIP: "[1:2:3:4]:5678",
 		},
 		{
-			InputIP:    "[1:2:3:4]",
-			OutputIP:   "[1:2:3:4]",
+			InputIP:  "[1:2:3:4]",
+			OutputIP: "[1:2:3:4]",
 		},
 		{
-			InputIP:    "1:2:3:4",
-			OutputIP:   "[1:2:3:4]",
+			InputIP:  "1:2:3:4",
+			OutputIP: "[1:2:3:4]",
 		},
 		{
 			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",

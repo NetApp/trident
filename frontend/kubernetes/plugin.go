@@ -1167,7 +1167,7 @@ func (p *Plugin) deleteVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume)
 	if err != nil && !utils.IsNotFoundError(err) {
 		message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Volume and PV may "+
 			"need to be manually deleted.", pv.GetName(), err.Error())
-		p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
+		p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message) //nolint
 		return fmt.Errorf("Kubernetes frontend %s", message)
 	}
 	err = p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.GetName(), deleteOpts)
@@ -1327,7 +1327,7 @@ func (p *Plugin) processUpdatedVolume(ctx context.Context, pv *v1.PersistentVolu
 					if err != nil {
 						message := fmt.Sprintf("failed to update PersistentVolumeReclaimPolicy for PV %s:%s "+
 							"Will eventually retry.", pv.Name, err.Error())
-						p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeBound, v1.EventTypeWarning,
+						p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeBound, v1.EventTypeWarning, //nolint
 							"FailedVolumeUpdate", message)
 						Logc(ctx).Errorf("Kubernetes frontend %s", message)
 						return
@@ -1352,7 +1352,7 @@ func (p *Plugin) processUpdatedVolume(ctx context.Context, pv *v1.PersistentVolu
 			// Updating the PV's phase to "VolumeFailed", so that a storage admin can take action.
 			message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Will eventually retry, "+
 				"but volume and PV may need to be manually deleted.", pv.Name, err.Error())
-			p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
+			p.updateVolumePhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message) //nolint
 			Logc(ctx).Errorf("Kubernetes frontend %s", message)
 			// PV needs to be manually deleted by the admin after removing the volume.
 			return
@@ -1423,18 +1423,18 @@ func (p *Plugin) updateVolumePhase(
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updatePVCWithEvent(
 	claim *v1.PersistentVolumeClaim, eventtype, reason, message string,
-) (*v1.PersistentVolumeClaim, error) {
+) *v1.PersistentVolumeClaim {
 	p.eventRecorder.Event(claim, eventtype, reason, message)
-	return claim, nil
+	return claim
 }
 
 // updatePVWithEvent emits given event on the PV.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
 func (p *Plugin) updatePVWithEvent(
 	pv *v1.PersistentVolume, eventtype, reason, message string,
-) (*v1.PersistentVolume, error) {
+) *v1.PersistentVolume {
 	p.eventRecorder.Event(pv, eventtype, reason, message)
-	return pv, nil
+	return pv
 }
 
 func convertStorageClassV1BetaToV1(class *k8sstoragev1beta.StorageClass) *k8sstoragev1.StorageClass {

@@ -913,9 +913,15 @@ func (i *Installer) deleteTridentTridentOpenShiftSCC() error {
 	}
 
 	// Remove old objects that may have been created pre-20.04
-	i.client.RemoveTridentUserFromOpenShiftSCC("trident-installer", "privileged")
-	i.client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged")
-	i.client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid")
+	if err = i.client.RemoveTridentUserFromOpenShiftSCC("trident-installer", "privileged"); err != nil {
+		log.Debug(err)
+	}
+	if err = i.client.RemoveTridentUserFromOpenShiftSCC("trident-csi", "privileged"); err != nil {
+		log.Debug(err)
+	}
+	if err = i.client.RemoveTridentUserFromOpenShiftSCC("trident", "anyuid"); err != nil {
+		log.Debug(err)
+	}
 
 	return nil
 }

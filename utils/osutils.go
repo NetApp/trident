@@ -603,12 +603,24 @@ func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName str
 		Logc(ctx).Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
 
 		// In the case of a failure, log info about what devices are present
-		execCommand(ctx, "ls", "-al", "/dev")
-		execCommand(ctx, "ls", "-al", "/dev/mapper")
-		execCommand(ctx, "ls", "-al", "/dev/disk/by-path")
-		execCommand(ctx, "lsscsi")
-		execCommand(ctx, "lsscsi", "-t")
-		execCommand(ctx, "free")
+		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
+			Logc(ctx).Warnf("Could not run ls -al /dev: %v", err)
+		}
+		if _, err := execCommand(ctx, "ls", "-al", "/dev/mapper"); err != nil {
+			Logc(ctx).Warnf("Could not run ls -al /dev/mapper: %v", err)
+		}
+		if _, err := execCommand(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
+			Logc(ctx).Warnf("Could not run ls -al /dev/disk/by-path: %v", err)
+		}
+		if _, err := execCommand(ctx, "lsscsi"); err != nil {
+			Logc(ctx).Warnf("Could not run lsscsi: %v", err)
+		}
+		if _, err := execCommand(ctx, "lsscsi", "-t"); err != nil {
+			Logc(ctx).Warnf("Could not run lsscsi -t: %v", err)
+		}
+		if _, err := execCommand(ctx, "free"); err != nil {
+			Logc(ctx).Warnf("Could not run free: %v", err)
+		}
 		return err
 	}
 
@@ -1163,15 +1175,16 @@ func ISCSIDisableDelete(ctx context.Context, targetIQN, targetPortal string) err
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ISCSIDisableDelete")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ISCSIDisableDelete")
 
-	listAllISCSIDevices(ctx)
-	_, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u")
-	if err != nil {
+	defer listAllISCSIDevices(ctx)
+	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u"); err != nil {
 		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
 	}
 
-	_, err = execIscsiadmCommand(ctx, "-m", "node", "-o", "delete", "-T", targetIQN)
-	listAllISCSIDevices(ctx)
-	return err
+	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-o", "delete", "-T", targetIQN); err != nil {
+		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
+		return err
+	}
+	return nil
 }
 
 // UmountAndRemoveTemporaryMountPoint unmounts and removes the TemporaryMountDir
@@ -1256,27 +1269,22 @@ func ExpandISCSIFilesystem(
 	if err != nil {
 		return 0, err
 	}
-	defer removeMountPoint(ctx, tmpMountPoint)
-
+	defer removeMountPoint(ctx, tmpMountPoint) //nolint
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
 	switch publishInfo.FilesystemType {
 	case "xfs":
 		size, err = expandFilesystem(ctx, "xfs_growfs", tmpMountPoint, tmpMountPoint)
-		if err != nil {
-			return 0, err
-		}
 	case "ext3", "ext4":
 		size, err = expandFilesystem(ctx, "resize2fs", devicePath, tmpMountPoint)
-		if err != nil {
-			return 0, err
-		}
 	default:
 		err = fmt.Errorf("unsupported file system type: %s", publishInfo.FilesystemType)
 	}
-
-	return size, err
+	if err != nil {
+		return 0, err
+	}
+	return size, nil
 }
 
 func expandFilesystem(ctx context.Context, cmd string, cmdArguments string, tmpMountPoint string) (int64, error) {

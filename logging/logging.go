@@ -156,10 +156,16 @@ func (hook *ConsoleHook) Fire(entry *log.Entry) error {
 		return err
 	}
 	if len(lineBytes) > MaxLogEntryLength {
-		logWriter.Write(lineBytes[:MaxLogEntryLength])
-		logWriter.Write([]byte("<truncated>\n"))
+		if _, err := logWriter.Write(lineBytes[:MaxLogEntryLength]); err != nil {
+			return err
+		}
+		if _, err = logWriter.Write([]byte("<truncated>\n")); err != nil {
+			return err
+		}
 	} else {
-		logWriter.Write(lineBytes)
+		if _, err := logWriter.Write(lineBytes); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -227,14 +233,18 @@ func (hook *FileHook) Fire(entry *log.Entry) error {
 
 	// Write log entry to file
 	logFile, err := hook.openFile()
+	defer logFile.Close() //nolint
 	if err != nil {
 		return err
 	}
-	logFile.WriteString(string(lineBytes))
-	logFile.Close()
+	if _, err = logFile.WriteString(string(lineBytes)); err != nil {
+		return err
+	}
 
 	// Rotate the file as needed
-	hook.maybeDoLogfileRotation()
+	if err = hook.maybeDoLogfileRotation(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -295,7 +305,9 @@ func (hook *FileHook) doLogfileRotation() error {
 		if hook.logfileNeedsRotation() {
 			// Do the rotation.  The Rename call will overwrite any previous .old file.
 			oldLogFileLocation := hook.logFileLocation + ".old"
-			os.Rename(hook.logFileLocation, oldLogFileLocation)
+			if err := os.Rename(hook.logFileLocation, oldLogFileLocation); err != nil {
+				return err
+			}
 		}
 	}
 

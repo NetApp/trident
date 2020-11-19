@@ -132,7 +132,7 @@ func (c *Client) CloneVolume(ctx context.Context, req *CloneVolumeRequest) (Volu
 				return fmt.Errorf("detected xNotReadyForIO on Clone operation")
 			} else {
 				Logc(ctx).Debugf("encountered err: %s during volume clone operation", cloneError)
-				backoff.Permanent(cloneError)
+				return backoff.Permanent(cloneError)
 			}
 		}
 		return nil
@@ -200,7 +200,7 @@ func (c *Client) AddVolumesToAccessGroup(ctx context.Context, req *AddVolumesToV
 func (c *Client) DeleteRange(ctx context.Context, startID, endID int64) {
 	idx := startID
 	for idx < endID {
-		c.DeleteVolume(ctx, idx)
+		c.DeleteVolume(ctx, idx) //nolint
 	}
 }
 
@@ -221,15 +221,13 @@ func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
 }
 
 // DetachVolume tbd
-func (c *Client) DetachVolume(ctx context.Context, v Volume) (err error) {
+func (c *Client) DetachVolume(ctx context.Context, v Volume) error {
 
 	if c.SVIP == "" {
-		Logc(ctx).Errorf("error response from DetachVolume request: %+v ", err)
+		Logc(ctx).Errorf("Cannot detach volume, SVIP is not set.")
 		return errors.New("detach volume error")
 	}
-
-	err = utils.ISCSIDisableDelete(ctx, v.Iqn, c.SVIP)
-	return
+	return utils.ISCSIDisableDelete(ctx, v.Iqn, c.SVIP)
 }
 
 func (c *Client) ModifyVolume(ctx context.Context, req *ModifyVolumeRequest) (err error) {

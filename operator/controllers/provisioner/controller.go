@@ -595,7 +595,9 @@ func (c *Controller) unsupportedInstallationsPrechecks(controllingCRBasedOnStatu
 			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation, "+
 				"found CSI Preview Trident already installed in namespace '%v'.", CSIPreviewNamespace)
 			log.Error(errorMessage)
-			c.updateAllCRs(errorMessage)
+			if crErr := c.updateAllCRs(errorMessage); crErr != nil {
+				log.Error(crErr)
+			}
 			return utils.UnsupportedConfigError(fmt.Errorf(errorMessage))
 		}
 	}
@@ -618,7 +620,9 @@ func (c *Controller) unsupportedInstallationsPrechecks(controllingCRBasedOnStatu
 			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation, "+
 				"found non-CSI Trident already installed in namespace '%v'.", legacyTridentNamespace)
 			log.Error(errorMessage)
-			c.updateAllCRs(errorMessage)
+			if crErr := c.updateAllCRs(errorMessage); crErr != nil {
+				log.Error(crErr)
+			}
 			return utils.UnsupportedConfigError(fmt.Errorf(errorMessage))
 		}
 	}
@@ -654,7 +658,9 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 
 			log.Error(failureMessage)
 			c.eventRecorder.Event(tridentCR, corev1.EventTypeWarning, string(AppStatusFailed), failureMessage)
-			c.updateCRStatus(tridentCR, logMessage, failureMessage, string(AppStatusFailed), "", nil)
+			if _, crErr := c.updateCRStatus(tridentCR, logMessage, failureMessage, string(AppStatusFailed), "", nil); crErr != nil {
+				log.Error(crErr)
+			}
 
 			// Install failed, so fail the reconcile loop
 			return utils.ReconcileFailedError(err)
@@ -720,7 +726,9 @@ func (c *Controller) alphaSnapshotCRDsPreinstallationCheck() error {
 
 	if alphaSnapshotCRDsExist {
 		log.Error(errorMessage)
-		c.updateAllCRs(errorMessage)
+		if crErr := c.updateAllCRs(errorMessage); crErr != nil {
+			log.Error(crErr)
+		}
 		return utils.UnsupportedConfigError(fmt.Errorf(errorMessage))
 	}
 
@@ -752,9 +760,10 @@ func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.
 		// Log error in the event recorder and return error message
 		c.eventRecorder.Event(tridentCR, corev1.EventTypeWarning, string(AppStatusFailed), errorMessage)
 
-		c.updateCRStatus(tridentCR, logMessage, errorMessage, string(AppStatusFailed),
-			currentInstalledTridentVersion, &tridentCR.Status.CurrentInstallationParams)
-
+		if _, crErr := c.updateCRStatus(tridentCR, logMessage, errorMessage, string(AppStatusFailed),
+			currentInstalledTridentVersion, &tridentCR.Status.CurrentInstallationParams); crErr != nil {
+			log.Error(crErr)
+		}
 		// Alpha snapshot CRDs check failed, so fail the reconcile loop
 		return utils.ReconcileFailedError(fmt.Errorf(errorMessage))
 	}
@@ -767,7 +776,9 @@ func (c *Controller) k8sVersionPreinstallationCheck() error {
 
 	if isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion(); !isCurrentK8sVersionValid {
 		log.Error(warningMessage)
-		c.updateAllCRs(warningMessage)
+		if crErr := c.updateAllCRs(warningMessage); crErr != nil {
+			log.Error(crErr)
+		}
 		return utils.UnsupportedConfigError(fmt.Errorf(warningMessage))
 	}
 
@@ -1060,7 +1071,9 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		statusMessage := "Uninstalled Trident" + crdNote + UninstallationNote
 
 		c.eventRecorder.Event(controllingCR, corev1.EventTypeWarning, controllingCR.Status.Status, statusMessage)
-		c.updateCRStatus(controllingCR, logMessage, statusMessage, string(AppStatusUninstalled), "", nil)
+		if _, crErr := c.updateCRStatus(controllingCR, logMessage, statusMessage, string(AppStatusUninstalled), "", nil); crErr != nil {
+			log.Error(crErr)
+		}
 		log.Warnf(fmt.Sprintf("Remove CR '%v' in namespace '%v' with uninstalled status to allow new Trident"+
 			" installation.", controllingCR.Name, controllingCR.Namespace))
 
@@ -1314,8 +1327,9 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentPro
 		// Log error in the event recorder and return error message
 		c.eventRecorder.Event(&tridentCR, corev1.EventTypeWarning, string(AppStatusFailed), statusMessage)
 
-		c.updateCRStatus(&tridentCR, logMessage, statusMessage, string(AppStatusFailed), "", nil)
-
+		if _, crErr := c.updateCRStatus(&tridentCR, logMessage, statusMessage, string(AppStatusFailed), "", nil); crErr != nil {
+			log.Error(crErr)
+		}
 		// Install failed, so fail the reconcile loop
 		return utils.ReconcileFailedError(err)
 	}
@@ -1364,9 +1378,10 @@ func (c *Controller) uninstallTridentAndUpdateStatus(tridentCR netappv1.TridentP
 		// Log error in the event recorder and return error message
 		c.eventRecorder.Event(newTridentCR, corev1.EventTypeWarning, string(AppStatusFailed), statusMessage)
 
-		c.updateCRStatus(newTridentCR, logMessage, statusMessage, string(AppStatusFailed),
-			currentInstalledTridentVersion, &tridentCR.Status.CurrentInstallationParams)
-
+		if _, crErr := c.updateCRStatus(newTridentCR, logMessage, statusMessage, string(AppStatusFailed),
+			currentInstalledTridentVersion, &tridentCR.Status.CurrentInstallationParams); crErr != nil {
+			log.Error(crErr)
+		}
 		// Uninstall failed, so fail the reconcile loop
 		return nil, utils.ReconcileFailedError(err)
 	}

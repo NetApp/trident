@@ -1102,12 +1102,12 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, label
 	if createOpenShiftSCC {
 
 		// Remove trident user from built-in SCC from previous installation
-		i.client.RemoveTridentUserFromOpenShiftSCC(openShiftSCCOldUserName, openShiftSCCOldName)
-
-		err = i.client.CreateObjectByYAML(newOpenShiftSCCYAML)
+		if err = i.client.RemoveTridentUserFromOpenShiftSCC(openShiftSCCOldUserName, openShiftSCCOldName); err != nil {
+			log.Debugf("No Trident user was found in SCC - continuing anyway: %v", err)
+		}
 		logFields = log.Fields{}
 
-		if err != nil {
+		if err = i.client.CreateObjectByYAML(newOpenShiftSCCYAML); err != nil {
 			return fmt.Errorf("could not create OpenShift SCC; %v", err)
 		}
 		log.WithFields(logFields).Info("Created OpenShift SCC.")

@@ -12,7 +12,9 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	RootCmd.SetOut(b)
 	RootCmd.SetIn(strings.NewReader("N\n"))
 	RootCmd.SetArgs([]string{"send", "autosupport", "--server=dont_exist"})
-	RootCmd.Execute()
+	if err := RootCmd.Execute(); err != nil {
+		t.Log(err)
+	}
 	out, err := ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
@@ -26,7 +28,9 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	RootCmd.SetOut(b)
 	RootCmd.SetIn(strings.NewReader("no\n"))
 	RootCmd.SetArgs([]string{"send", "autosupport", "--server=dont_exist"})
-	RootCmd.Execute()
+	if err := RootCmd.Execute(); err != nil {
+		t.Log(err)
+	}
 	out, err = ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +44,9 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	RootCmd.SetOut(b)
 	RootCmd.SetIn(strings.NewReader("Y\n"))
 	RootCmd.SetArgs([]string{"send", "autosupport", "--server=dont_exist"})
-	RootCmd.Execute()
+	if err := RootCmd.Execute(); err != nil {
+		t.Log(err)
+	}
 	out, err = ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +62,9 @@ func TestSendAutosupportAcceptAgreementFlag(t *testing.T) {
 	RootCmd.SetOut(b)
 	RootCmd.SetIn(strings.NewReader("no\n"))
 	RootCmd.SetArgs([]string{"send", "autosupport", "--accept-agreement=false", "--server=dont_exist"})
-	RootCmd.Execute()
+	if err := RootCmd.Execute(); err != nil {
+		t.Log(err)
+	}
 	out, err := ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +77,9 @@ func TestSendAutosupportAcceptAgreementFlag(t *testing.T) {
 	b = bytes.NewBufferString("")
 	RootCmd.SetOut(b)
 	RootCmd.SetArgs([]string{"send", "autosupport", "--accept-agreement", "--server=dont_exist"})
-	RootCmd.Execute()
+	if err := RootCmd.Execute(); err != nil {
+		t.Log(err)
+	}
 	out, err = ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)

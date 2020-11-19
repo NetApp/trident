@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -18,8 +19,12 @@ func init() {
 	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
 	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the uninstaller as a job in the cluster.")
 
-	uninstallCmd.Flags().MarkHidden("trident-image")
-	uninstallCmd.Flags().MarkHidden("in-cluster")
+	if err := uninstallCmd.Flags().MarkHidden("trident-image"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	if err := uninstallCmd.Flags().MarkHidden("in-cluster"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 var uninstallCmd = &cobra.Command{

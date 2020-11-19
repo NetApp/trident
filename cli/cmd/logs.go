@@ -146,7 +146,9 @@ func archiveLogs() error {
 	zipWriter = zip.NewWriter(zipFile)
 	defer zipWriter.Close()
 
-	getLogs()
+	if err := getLogs(); err != nil {
+		fmt.Fprintf(os.Stderr, "Errors collected during log aggregation. Please check %s for more information.\n", zipFileName)
+	}
 
 	if len(logErrors) > 0 {
 		entry, err := zipWriter.Create("errors")
@@ -197,37 +199,47 @@ func getLogs() error {
 			err = getNodeLogs(logNameNode, node)
 		}
 	case logTypeAll:
-		getTridentLogs(logNameTrident)
+		if err := getTridentLogs(logNameTrident); err != nil {
+			logErrors = appendErrorf(logErrors, "error retrieving trident logs from running container: %s", err)
+		}
 		if node == "" {
-			getAllNodeLogs(logNameNode)
+			err = getAllNodeLogs(logNameNode)
 		} else {
-			getNodeLogs(logNameNode, node)
+			err = getNodeLogs(logNameNode, node)
 		}
 	case logTypeTridentOperator:
-		getTridentOperatorLogs(logNameTridentOperator)
+		err = getTridentOperatorLogs(logNameTridentOperator)
 	}
-
+	if err != nil {
+		logErrors = appendErrorf(logErrors, "error retrieving auxilliary logs: %s", err)
+	}
+	err = nil
 	if previous {
 		switch logType {
 		case logTypeTrident, logTypeAuto:
 			if node == "" {
-				getTridentLogs(logNameTridentPrevious)
+				err = getTridentLogs(logNameTridentPrevious)
 			} else {
-				getNodeLogs(logNameNodePrevious, node)
+				err = getNodeLogs(logNameNodePrevious, node)
 			}
 		case logTypeAll:
-			getTridentLogs(logNameTridentPrevious)
+			err = getTridentLogs(logNameTridentPrevious)
+			if err != nil {
+				logErrors = appendErrorf(logErrors, "error retrieving trident logs from previously running container: %s", err)
+			}
 			if node == "" {
-				getAllNodeLogs(logNameNodePrevious)
+				err = getAllNodeLogs(logNameNodePrevious)
 			} else {
-				getNodeLogs(logNameNodePrevious, node)
+				err = getNodeLogs(logNameNodePrevious, node)
 			}
 		case logTypeTridentOperator:
-			getTridentOperatorLogs(logNameTridentOperatorPrevious)
+			err = getTridentOperatorLogs(logNameTridentOperatorPrevious)
 		}
 	}
-
-	return err
+	if err != nil {
+		logErrors = appendErrorf(logErrors, "error retrieving previous trident container logs: %s", err)
+	}
+	return nil
 }
 
 func checkValidLog() error {
@@ -267,8 +279,7 @@ func getTridentLogs(logName string) error {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
 		if err = writeLogs(logName, logBytes); err != nil {
-			writeError := fmt.Sprintf("could not write log %s; %v", logName, err)
-			logErrors = appendError(logErrors, []byte(writeError))
+			logErrors = appendErrorf(logErrors, "could not write log %s; %v", logName, err)
 		}
 	}
 
@@ -291,8 +302,7 @@ func getTridentLogs(logName string) error {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
 				if err = writeLogs(logName+"-sidecar-"+sidecar, logBytes); err != nil {
-					writeError := fmt.Sprintf("could not write log %s; %v", logName+"-sidecar-"+sidecar, err)
-					logErrors = appendError(logErrors, []byte(writeError))
+					logErrors = appendErrorf(logErrors, "could not write log %s; %v", logName+"-sidecar-"+sidecar, err)
 				}
 			}
 		}
@@ -338,8 +348,7 @@ func getNodeLogs(logName, nodeName string) error {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
 		if err = writeLogs(nodeLogName, logBytes); err != nil {
-			writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName, err)
-			logErrors = appendError(logErrors, []byte(writeError))
+			logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName, err)
 		}
 	}
 
@@ -362,8 +371,7 @@ func getNodeLogs(logName, nodeName string) error {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
 				if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
-					writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
-					logErrors = appendError(logErrors, []byte(writeError))
+					logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
 				}
 			}
 		}
@@ -410,8 +418,7 @@ func getAllNodeLogs(logName string) error {
 			logErrors = appendError(logErrors, logBytes)
 		} else {
 			if err = writeLogs(nodeLogName, logBytes); err != nil {
-				writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName, err)
-				logErrors = appendError(logErrors, []byte(writeError))
+				logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName, err)
 			}
 		}
 
@@ -434,8 +441,7 @@ func getAllNodeLogs(logName string) error {
 					logErrors = appendError(logErrors, logBytes)
 				} else {
 					if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
-						writeError := fmt.Sprintf("could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
-						logErrors = appendError(logErrors, []byte(writeError))
+						logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
 					}
 				}
 			}
@@ -472,8 +478,7 @@ func getTridentOperatorLogs(logName string) error {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
 		if err = writeLogs(logName, logBytes); err != nil {
-			writeError := fmt.Sprintf("could not write log %s; %v", logName, err)
-			logErrors = appendError(logErrors, []byte(writeError))
+			logErrors = appendErrorf(logErrors, "could not write log %s; %v", logName, err)
 		}
 	}
 
@@ -492,4 +497,11 @@ func appendError(oldErrors, newError []byte) []byte {
 		oldErrors = append([]byte(oldErrorsStr), newError...)
 		return oldErrors
 	}
+}
+
+// appendErrorf is a printf-like function to append a string-format error to a byte slice of related errors
+// eg newErrors = appendErrorf(oldErrors, "this is my new %s", "error")
+func appendErrorf(oldErrors []byte, formatString string, a ...interface{}) []byte {
+	formattedString := fmt.Sprintf(formatString, a...)
+	return appendError(oldErrors, []byte(formattedString))
 }

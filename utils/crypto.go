@@ -46,7 +46,10 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		return nil, err
 	}
 	certInfo.CAKey = caKeyBase64
-
+	caKeyId, err := bigIntHash(caKey.D)
+	if err != nil {
+		return nil, err
+	}
 	// Create CA cert
 	caCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(1),
@@ -61,7 +64,7 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		NotAfter:              notAfter,
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		IsCA:                  true,
-		SubjectKeyId:          bigIntHash(caKey.D),
+		SubjectKeyId:          caKeyId,
 		BasicConstraintsValid: true,
 	}
 
@@ -82,6 +85,10 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	}
 	certInfo.ServerKey = serverKeyBase64
 
+	serverKeyId, err := bigIntHash(serverKey.D)
+	if err != nil {
+		return nil, err
+	}
 	// Create HTTPS server cert
 	serverCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(2),
@@ -96,7 +103,7 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		NotAfter:       notAfter,
 		ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		AuthorityKeyId: caCert.SubjectKeyId,
-		SubjectKeyId:   bigIntHash(serverKey.D),
+		SubjectKeyId:   serverKeyId,
 	}
 
 	derBytes, err = x509.CreateCertificate(rand.Reader, &serverCert, &caCert, &serverKey.PublicKey, caKey)
@@ -116,6 +123,10 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	}
 	certInfo.ClientKey = clientKeyBase64
 
+	clientKeyId, err := bigIntHash(clientKey.D)
+	if err != nil {
+		return nil, err
+	}
 	// Create HTTPS client cert
 	clientCert := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(3),
@@ -130,7 +141,7 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		NotAfter:       notAfter,
 		ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		AuthorityKeyId: caCert.SubjectKeyId,
-		SubjectKeyId:   bigIntHash(clientKey.D),
+		SubjectKeyId:   clientKeyId,
 	}
 
 	derBytes, err = x509.CreateCertificate(rand.Reader, &clientCert, &caCert, &clientKey.PublicKey, caKey)
@@ -156,8 +167,10 @@ func certToBase64String(derBytes []byte) string {
 	return base64.StdEncoding.EncodeToString(certBytes)
 }
 
-func bigIntHash(n *big.Int) []byte {
+func bigIntHash(n *big.Int) ([]byte, error) {
 	hash := sha1.New()
-	hash.Write(n.Bytes())
-	return hash.Sum(nil)
+	if _, err := hash.Write(n.Bytes()); err != nil {
+		return nil, err
+	}
+	return hash.Sum(nil), nil
 }

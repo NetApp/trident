@@ -99,7 +99,7 @@ const (
 
 	/* REST frontend constants */
 	MaxRESTRequestSize = 10240
-	MinTLSVersion = tls.VersionTLS12
+	MinTLSVersion      = tls.VersionTLS12
 
 	/* Docker constants */
 	DockerPluginModeEnvVariable = "DOCKER_PLUGIN_MODE" // set via contrib/docker/plugin/plugin.json

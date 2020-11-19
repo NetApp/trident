@@ -149,10 +149,18 @@ func init() {
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 
-	installCmd.Flags().MarkHidden("in-cluster")
-	installCmd.Flags().MarkHidden("autosupport-custom-url")
-	installCmd.Flags().MarkHidden("autosupport-serial-number")
-	installCmd.Flags().MarkHidden("autosupport-hostname")
+	if err := installCmd.Flags().MarkHidden("in-cluster"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("autosupport-custom-url"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("autosupport-serial-number"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 var installCmd = &cobra.Command{

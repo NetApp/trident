@@ -846,7 +846,7 @@ func randomChapString(strSize int) (string, error) {
 	b := make([]byte, strSize)
 	_, err := cryptorand.Read(b)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Error(err)
 		return "", err
 	}
 	encoded := base64.StdEncoding.EncodeToString(b)

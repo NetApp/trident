@@ -159,7 +159,9 @@ func (d Client) InvokeAPI(
 			// Suppress the empty POST body since it contains the array password
 			utils.LogHTTPRequest(request, []byte("<suppressed>"))
 		} else {
-			json.Indent(&prettyRequestBuffer, requestBody, "", "  ")
+			if err := json.Indent(&prettyRequestBuffer, requestBody, "", "  "); err != nil {
+				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
+			}
 			utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
 		}
 	}
@@ -191,15 +193,21 @@ func (d Client) InvokeAPI(
 		if method == "GET" && resourcePath == "/volumes" {
 			// Suppress the potentially huge GET /volumes body unless asked for explicitly
 			if d.config.DebugTraceFlags["api_get_volumes"] {
-				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
+					Logc(ctx).Errorf("Could not format API request for logging; %v", err)
+				} else {
+					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				}
 			} else if d.config.DebugTraceFlags["api"] {
 				utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"))
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
-				json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
+					Logc(ctx).Errorf("Could not format API request for logging; %v", err)
+				} else {
+					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				}
 			}
 		}
 	}
@@ -273,9 +281,15 @@ func (d Client) AboutInfo(ctx context.Context) (*AboutResponse, error) {
 	responseBody := []byte{}
 	if err == nil {
 		responseBody, err = ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
 		if d.config.DebugTraceFlags["api"] {
-			json.Indent(&prettyResponseBuffer, responseBody, "", "  ")
-			utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+			if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
+				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
+			} else {
+				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+			}
 		}
 	}
 

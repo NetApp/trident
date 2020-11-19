@@ -1803,7 +1803,7 @@ func (c *KubectlClient) createObjectByYAML(yaml string) error {
 
 	go func() {
 		defer stdin.Close()
-		stdin.Write([]byte(yaml))
+		stdin.Write([]byte(yaml)) //nolint
 	}()
 
 	out, err := cmd.CombinedOutput()
@@ -1854,7 +1854,7 @@ func (c *KubectlClient) DeleteObjectByYAML(yaml string, ignoreNotFound bool) err
 
 	go func() {
 		defer stdin.Close()
-		stdin.Write([]byte(yaml))
+		stdin.Write([]byte(yaml)) //nolint
 	}()
 
 	out, err := cmd.CombinedOutput()
@@ -1879,7 +1879,7 @@ func (c *KubectlClient) updateObjectByYAML(yaml string) error {
 
 	go func() {
 		defer stdin.Close()
-		stdin.Write([]byte(yaml))
+		stdin.Write([]byte(yaml)) //nolint
 	}()
 
 	out, err := cmd.CombinedOutput()
