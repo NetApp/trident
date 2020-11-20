@@ -40,6 +40,15 @@ node {
        stages: stages
     )
 
+    if (env.STOP_ON_STAGE_FAILURES == 'false') {
+      stage('Check-Status') {
+        if (process_status_files() == false) {
+          failures = readFile file: 'failure_report.txt'
+          error 'Check-Status: One or more stages have failed\n' + failures
+        }
+      }
+    }
+
     stage('Propagate') {
       propagate_changes(
         stage: 'Propagate'
