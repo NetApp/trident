@@ -754,7 +754,8 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 		return err
 	}
 
-	newK8sCSIDriverYAML := k8sclient.GetCSIDriverCRYAML(CSIDriverName, labels, controllingCRDetails)
+	// Do not set ownerReferences on cluster-scoped objects
+	newK8sCSIDriverYAML := k8sclient.GetCSIDriverCRYAML(CSIDriverName, labels, nil)
 
 	if createCSIDriver {
 		err = i.client.CreateObjectByYAML(newK8sCSIDriverYAML)
@@ -949,7 +950,8 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 		return err
 	}
 
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(i.client.Flavor(), clusterRoleName, labels, controllingCRDetails, csi)
+	// Do not set ownerReferences on cluster-scoped objects
+	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(i.client.Flavor(), clusterRoleName, labels, nil, csi)
 
 	if createClusterRole {
 		err = i.client.CreateObjectByYAML(newClusterRoleYAML)
@@ -1025,8 +1027,9 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 		return err
 	}
 
+	// Do not set ownerReferences on cluster-scoped objects
 	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(), clusterRoleBindingName,
-		labels, controllingCRDetails)
+		labels, nil)
 
 	if createClusterRoleBinding {
 		err = i.client.CreateObjectByYAML(newClusterRoleBindingYAML)
@@ -1096,8 +1099,9 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, label
 		}
 	}
 
+	// Do not set ownerReferences on cluster-scoped objects
 	newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCName, openShiftSCCUserName, i.namespace,
-		labels, controllingCRDetails)
+		labels, nil)
 
 	if createOpenShiftSCC {
 
@@ -1186,9 +1190,11 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, 
 
 	var newPSPYAML string
 	if csi {
-		newPSPYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
+		// Do not set ownerReferences on cluster-scoped objects
+		newPSPYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, nil)
 	} else {
-		newPSPYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
+		// Do not set ownerReferences on cluster-scoped objects
+		newPSPYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(pspName, labels, nil)
 	}
 
 	if createPSP {
