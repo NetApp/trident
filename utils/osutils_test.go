@@ -3,7 +3,9 @@
 package utils
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -274,5 +276,129 @@ func TestEnsureHostportFormatted(t *testing.T) {
 	for _, testCase := range tests {
 		assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
 			"Hostport not correctly formatted")
+	}
+}
+
+func TestFormatPortal(t *testing.T) {
+	log.Debug("Running TestFormatPortal...")
+
+	type IPAddresses struct {
+		InputPortal  string
+		OutputPortal string
+	}
+
+	tests := []IPAddresses{
+		{
+			InputPortal:  "203.0.113.1",
+			OutputPortal: "203.0.113.1:3260",
+		},
+		{
+			InputPortal:  "203.0.113.1:3260",
+			OutputPortal: "203.0.113.1:3260",
+		},
+		{
+			InputPortal:  "203.0.113.1:3261",
+			OutputPortal: "203.0.113.1:3261",
+		},
+		{
+			InputPortal:  "[2001:db8::1]",
+			OutputPortal: "[2001:db8::1]:3260",
+		},
+		{
+			InputPortal:  "[2001:db8::1]:3260",
+			OutputPortal: "[2001:db8::1]:3260",
+		},
+		{
+			InputPortal:  "[2001:db8::1]:3261",
+			OutputPortal: "[2001:db8::1]:3261",
+		},
+	}
+	for _, testCase := range tests {
+		assert.Equal(t, testCase.OutputPortal, formatPortal(testCase.InputPortal),
+			"Portal not correctly formatted")
+	}
+}
+
+func TestFilterTargets(t *testing.T) {
+	log.Debug("Running TestFilterTargets...")
+
+	type FilterCase struct {
+		CommandOutput string
+		InputPortal   string
+		OutputIQNs    []string
+		ExpectedError error
+	}
+
+	tests := []FilterCase{
+		{
+			// Simple positive test, expect first
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
+			InputPortal:   "203.0.113.1:3260",
+			OutputIQNs:    []string{"iqn.1992-08.com.netapp:foo"},
+			ExpectedError: nil,
+		},
+		{
+			// Simple positive test, expect second
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
+			InputPortal:   "203.0.113.2:3260",
+			OutputIQNs:    []string{"iqn.1992-08.com.netapp:bar"},
+			ExpectedError: nil,
+		},
+		{
+			// Expect empty list
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
+			InputPortal:   "203.0.113.3:3260",
+			OutputIQNs:    []string{},
+			ExpectedError: nil,
+		},
+		{
+			// Expect multiple
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:baz\n",
+			InputPortal:   "203.0.113.2:3260",
+			OutputIQNs:    []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
+			ExpectedError: nil,
+		},
+		{
+			// Expect error
+			CommandOutput: "" +
+				"Foobar\n",
+			InputPortal:   "203.0.113.2:3260",
+			OutputIQNs:    nil,
+			ExpectedError: fmt.Errorf("failed to parse node list: \"Foobar\""),
+		},
+		{
+			// Try nonstandard port number
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
+				"203.0.113.2:3261,1025 iqn.1992-08.com.netapp:baz\n",
+			InputPortal:   "203.0.113.2:3261",
+			OutputIQNs:    []string{"iqn.1992-08.com.netapp:baz"},
+			ExpectedError: nil,
+		},
+	}
+	for _, testCase := range tests {
+		targets, err := filterTargets(context.TODO(),
+			testCase.CommandOutput, testCase.InputPortal)
+		if nil == testCase.ExpectedError && nil != err {
+			t.Errorf("Unexpected error: %v", err)
+			t.Fail()
+		} else if nil != testCase.ExpectedError && nil == err {
+			t.Errorf("Expected error missing")
+			t.Fail()
+		} else if !reflect.DeepEqual(testCase.ExpectedError, err) {
+			t.Errorf("Wrong error reported, expected '%v' got '%v'", testCase.ExpectedError, err)
+			t.Fail()
+		}
+		assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
 	}
 }

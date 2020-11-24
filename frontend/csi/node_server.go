@@ -962,11 +962,12 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	if logout {
 		Logc(ctx).Debug("Safe to log out")
-		if err := utils.ISCSIDisableDelete(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
+
+		if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
 			Logc(ctx).Error(err)
 		}
 		for _, portal := range publishInfo.IscsiPortals {
-			if err := utils.ISCSIDisableDelete(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
+			if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}

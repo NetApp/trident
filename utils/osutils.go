@@ -37,6 +37,7 @@ const (
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
+var portalPortPattern = regexp.MustCompile(`.+:\d+$`)
 var pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 var pidRegex = regexp.MustCompile(`^\d+$`)
 var chrootPathPrefix string
@@ -134,8 +135,8 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 		for _, portal := range bkPortalsToLogin {
 			err = loginWithChap(
-				ctx, targetIQN, portal, username, initiatorSecret, targetUsername, targetInitiatorSecret,
-				iscsiInterface, false)
+				ctx, targetIQN, portal, username, initiatorSecret, targetUsername,
+				targetInitiatorSecret, iscsiInterface, false)
 			if err != nil {
 				Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
 				return fmt.Errorf("iSCSI login error: %v", err)
@@ -1165,25 +1166,26 @@ func getISCSISessionInfo(ctx context.Context) ([]ISCSISessionInfo, error) {
 	return sessionInfo, nil
 }
 
-// ISCSIDisableDelete logs out from the supplied target and removes the iSCSI device.
-func ISCSIDisableDelete(ctx context.Context, targetIQN, targetPortal string) error {
+// ISCSILogout logs out from the supplied target
+func ISCSILogout(ctx context.Context, targetIQN, targetPortal string) error {
 
 	logFields := log.Fields{
 		"targetIQN":    targetIQN,
 		"targetPortal": targetPortal,
 	}
-	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ISCSIDisableDelete")
-	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ISCSIDisableDelete")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ISCSILogout")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ISCSILogout")
 
 	defer listAllISCSIDevices(ctx)
 	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u"); err != nil {
 		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
 	}
 
-	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-o", "delete", "-T", targetIQN); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
-		return err
-	}
+	// We used to delete the iscsi "node" at this point but that could interfere with
+	// another iSCSI client (such as kubelet with and "iscsi" PV) attempting to use
+	// the same node.
+
+	listAllISCSIDevices(ctx)
 	return nil
 }
 
@@ -1461,6 +1463,16 @@ func ensureHostportFormatted(hostport string) string {
 	}
 
 	return hostport
+}
+
+// formatPortal returns the iSCSI portal string, appending a port number if one isn't
+// already present, and also appending a target portal group tag if one is not present
+func formatPortal(portal string) string {
+	if portalPortPattern.MatchString(portal) {
+		return portal
+	} else {
+		return portal + ":3260"
+	}
 }
 
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
@@ -2602,6 +2614,187 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 	return
 }
 
+// filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
+// and returns the target IQNs for a given portal
+func filterTargets(ctx context.Context, output, tp string) ([]string, error) {
+	regex := regexp.MustCompile(`^([^,]+),(\d+)\s+(.+)$`)
+	targets := make([]string, 0)
+	for idx, line := range strings.Split(output, "\n") {
+		if 0 == len(line) {
+			continue
+		}
+		matches := regex.FindStringSubmatch(line)
+		if 4 != len(matches) {
+			Logc(ctx).WithFields(log.Fields{
+				"linenum": idx + 1,
+				"output":  output,
+			}).Error("Failed to parse node list")
+			return nil, fmt.Errorf("failed to parse node list: \"%s\"", line)
+		}
+		portal := matches[1]
+		iqn := matches[3]
+		if tp == portal {
+			targets = append(targets, iqn)
+		}
+	}
+	return targets, nil
+}
+
+// getTargets gets a list of discovered iSCSI targets
+func getTargets(ctx context.Context, tp string) ([]string, error) {
+	Logc(ctx).WithFields(log.Fields{
+		"Portal": tp,
+	}).Debug(">>>> osutils.getTargets")
+	defer Logc(ctx).Debug("<<<< osutils.getTargets")
+
+	output, err := execCommand(ctx, "iscsiadm", "-m", "node")
+	if nil != err {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+				if iSCSIErrNoObjsFound == status.ExitStatus() {
+					Logc(ctx).Debug("No iSCSI nodes found.")
+					// No records
+					return nil, nil
+				}
+			}
+		}
+		Logc(ctx).WithFields(log.Fields{
+			"error":  err,
+			"output": string(output),
+		}).Error("Failed to list nodes")
+		return nil, fmt.Errorf("failed to list nodes: %v", err)
+	}
+	return filterTargets(ctx, string(output), tp)
+}
+
+func updateDiscoveryDb(ctx context.Context, tp, iface, key, value string) error {
+	Logc(ctx).WithFields(log.Fields{
+		"Key":       key,
+		"Value":     value,
+		"Portal":    tp,
+		"Interface": iface,
+	}).Debug(">>>> osutils.updateDiscoveryDb")
+	defer Logc(ctx).Debug("<<<< osutils.updateDiscoveryDb")
+
+	output, err := execCommand(ctx, "iscsiadm", "-m", "discoverydb",
+		"-t", "st", "-p", tp, "-I", iface, "-o", "update", "-n", key, "-v", value)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"portal": tp,
+			"error":  err,
+			"key":    key,
+			"value":  value,
+			"output": string(output),
+		}).Error("Failed to update discovery DB.")
+		return fmt.Errorf("failed to update discovery db: %v", err)
+	}
+
+	return nil
+}
+
+// ensureIscsiTarget creates the iSCSI target if we haven't done so already
+// This function first checks if the target is already known, and if not,
+// uses sendtargets to try to discover it. Because sendtargets will find
+// all of the targets given just 1 portal, it will be very common to hit
+// the case where the target is already known.
+// Note: Adding iSCSI targets using sendtargets rather than static discover
+// ensures that targets are added with the correct target group portal tags.
+func ensureIscsiTarget(ctx context.Context, tp, targetIqn, username, password, targetUsername, targetInitiatorSecret, iface string) error {
+	Logc(ctx).WithFields(log.Fields{
+		"IQN":       targetIqn,
+		"Portal":    tp,
+		"Interface": iface,
+	}).Debug(">>>> osutils.ensureIscsiTarget")
+	defer Logc(ctx).Debug("<<<< osutils.ensureIscsiTarget")
+
+	targets, err := getTargets(ctx, tp)
+	if err != nil {
+		// Already logged
+		return err
+	}
+	for _, iqn := range targets {
+		if targetIqn == iqn {
+			Logc(ctx).WithField("Target", iqn).Info("Target exists already")
+			return nil
+		}
+	}
+
+	if "" != username && "" != password {
+		// To do discovery on a CHAP-enabled target, we need to set the CHAP
+		// secrets on the discoverydb object before making the sendtargets
+		// call.
+
+		// Ignore result
+		_, _ = execCommand(ctx, "iscsiadm", "-m", "discoverydb", "-t", "st", "-p", tp, "-I", iface, "-o", "new")
+
+		err = updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.authmethod", "CHAP")
+		if err != nil {
+			// Already logged
+			return err
+		}
+
+		err = updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.username", username)
+		if err != nil {
+			// Already logged
+			return err
+		}
+
+		err = updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.password", password)
+		if err != nil {
+			// Already logged
+			return err
+		}
+
+		if targetUsername != "" && targetInitiatorSecret != "" {
+			// Bidirectional CHAP case
+
+			err = updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.username_in", targetUsername)
+			if err != nil {
+				// Already logged
+				return err
+			}
+
+			err = updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.password_in", targetInitiatorSecret)
+			if err != nil {
+				// Already logged
+				return err
+			}
+		}
+	}
+
+	// Discovery is here. This will populate the iscsiadm database with the
+	// ALL of the nodes known to the given portal.
+	output, err := execCommand(ctx, "iscsiadm", "-m", "discoverydb",
+		"-t", "st", "-p", tp, "-I", iface, "-D")
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"portal": tp,
+			"error":  err,
+			"output": string(output),
+		}).Error("Failed to discover targets")
+		return fmt.Errorf("failed to discover targets: %v", err)
+	}
+
+	targets, err = filterTargets(ctx, string(output), tp)
+	if err != nil {
+		// Logged
+		return err
+	}
+	for _, iqn := range targets {
+		if targetIqn == iqn {
+			Logc(ctx).WithField("Target", iqn).Info("Target discovered successfully")
+			// Discovered successfully
+			return nil
+		}
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"portal": tp,
+		"iqn":    targetIqn,
+	}).Warning("Target not discovered")
+	return fmt.Errorf("target not discovered")
+}
+
 // loginISCSITarget logs in to an iSCSI target.
 func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) error {
 
@@ -2613,7 +2806,7 @@ func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) 
 	}).Debug(">>>> osutils.configureISCSITarget")
 	defer Logc(ctx).Debug("<<<< osutils.configureISCSITarget")
 
-	args := []string{"-m", "node", "-T", iqn, "-p", portal + ":3260", "-o", "update", "-n", name, "-v", value}
+	args := []string{"-m", "node", "-T", iqn, "-p", formatPortal(portal), "-o", "update", "-n", name, "-v", value}
 	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
 		Logc(ctx).WithField("error", err).Warn("Error configuring iSCSI target.")
 		return err
@@ -2630,7 +2823,7 @@ func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 	}).Debug(">>>> osutils.loginISCSITarget")
 	defer Logc(ctx).Debug("<<<< osutils.loginISCSITarget")
 
-	args := []string{"-m", "node", "-T", iqn, "-l", "-p", portal + ":3260"}
+	args := []string{"-m", "node", "-T", iqn, "-l", "-p", formatPortal(portal)}
 	listAllISCSIDevices(ctx)
 	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
@@ -2662,11 +2855,10 @@ func loginWithChap(
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.loginWithChap")
 	defer Logc(ctx).Debug("<<<< osutils.loginWithChap")
 
-	args := []string{"-m", "node", "-T", tiqn, "-p", portal + ":3260"}
+	args := []string{"-m", "node", "-T", tiqn, "-p", formatPortal(portal)}
 
-	createArgs := append(args, []string{"--interface", iface, "--op", "new"}...)
 	listAllISCSIDevices(ctx)
-	if _, err := execIscsiadmCommand(ctx, createArgs...); err != nil {
+	if err := ensureIscsiTarget(ctx, formatPortal(portal), tiqn, username, password, targetUsername, targetInitiatorSecret, iface); err != nil {
 		Logc(ctx).Error("Error running iscsiadm node create.")
 		return err
 	}
@@ -2723,10 +2915,11 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISessions")
 
 	for _, portalIp := range portalsIps {
-		args := []string{"-m", "node", "-T", targetIQN, "-p", portalIp + ":3260", "--interface", iface, "--op", "new"}
 		listAllISCSIDevices(ctx)
-		if _, err := execIscsiadmCommand(ctx, args...); err != nil {
-			return fmt.Errorf("error running iscsiadm node create: %v", err)
+
+		if err := ensureIscsiTarget(ctx, formatPortal(portalIp), targetIQN, "", "", "", "", iface); nil != err {
+			// Logged
+			return err
 		}
 
 		// Set scanning to manual

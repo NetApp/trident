@@ -227,7 +227,7 @@ func (c *Client) DetachVolume(ctx context.Context, v Volume) error {
 		Logc(ctx).Errorf("Cannot detach volume, SVIP is not set.")
 		return errors.New("detach volume error")
 	}
-	return utils.ISCSIDisableDelete(ctx, v.Iqn, c.SVIP)
+	return utils.ISCSILogout(ctx, v.Iqn, c.SVIP)
 }
 
 func (c *Client) ModifyVolume(ctx context.Context, req *ModifyVolumeRequest) (err error) {
