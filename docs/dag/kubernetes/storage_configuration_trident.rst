@@ -55,7 +55,7 @@ There are several options available for the management of the SVM:
 
 In each case, the interface should be in DNS, and the DNS name should be used when configuring Trident. This helps to facilitate some DR scenarios, for example, SVM-DR without the use of network identity retention.
 
-There is no preference between having a dedicated or shared management LIF for the SVM, however, you should ensure that your network security policies align with the approach you choose.  Regardless, the management LIF should be accessible via DNS to facilitate maximum flexibility should `SVM-DR <https://library.netapp.com/ecm/ecm_download_file/ECMLP2496252>`_ be used in conjunction with Trident.
+There is no preference between having a dedicated or shared management LIF for the SVM, however, you should ensure that your network security policies align with the approach you choose.  Regardless, the management LIF should be accessible via DNS to facilitate maximum flexibility should `SVM-DR <https://docs.netapp.com/ontap-9/topic/com.netapp.doc.pow-dap/GUID-B9E36563-1C7A-48F5-A9FF-1578B99AADA9.html>`_ be used in conjunction with Trident.
 
 Limit the maximum volume count
 ------------------------------
