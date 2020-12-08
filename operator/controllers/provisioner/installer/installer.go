@@ -967,6 +967,9 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 		}).Debug("Patching Trident Cluster role.")
 
 		err = i.patchTridentClusterRole(currentClusterRole, []byte(newClusterRoleYAML))
+		if err != nil {
+			return fmt.Errorf("could not patch cluster role '%s'; %v", currentClusterRole.Name, err)
+		}
 	}
 
 	return nil
