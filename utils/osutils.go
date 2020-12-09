@@ -2923,9 +2923,8 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		}
 
 		// Set scanning to manual
-		if err := configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual"); err != nil {
-			// Swallow this error, someone is running an old version of Debian/Ubuntu
-		}
+		// Swallow this error, someone is running an old version of Debian/Ubuntu
+		_ = configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual")
 
 		// Update replacement timeout
 		if err := configureISCSITarget(

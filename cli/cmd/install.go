@@ -861,6 +861,12 @@ func installTrident() (returnError error) {
 			return
 		}
 
+		aesKey, err := utils.GenerateAESKey()
+		if err != nil {
+			returnError = fmt.Errorf("could not generate secure AES key; %v", err)
+			return
+		}
+
 		// Create the secret for the HTTP certs & keys
 		secretMap := map[string]string{
 			tridentconfig.CAKeyFile:      certInfo.CAKey,
@@ -869,6 +875,7 @@ func installTrident() (returnError error) {
 			tridentconfig.ServerCertFile: certInfo.ServerCert,
 			tridentconfig.ClientKeyFile:  certInfo.ClientKey,
 			tridentconfig.ClientCertFile: certInfo.ClientCert,
+			tridentconfig.AESKeyFile:     aesKey,
 		}
 		err = client.CreateObjectByYAML(
 			k8sclient.GetSecretYAML(getSecretName(), TridentPodNamespace, labels, nil, secretMap, nil))

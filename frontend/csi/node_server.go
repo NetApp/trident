@@ -904,10 +904,26 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]
-	publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
-	publishInfo.IscsiInitiatorSecret = req.PublishContext["iscsiInitiatorSecret"]
-	publishInfo.IscsiTargetUsername = req.PublishContext["iscsiTargetUsername"]
-	publishInfo.IscsiTargetSecret = req.PublishContext["iscsiTargetSecret"]
+
+	if useCHAP {
+		publishInfo.IscsiUsername = req.PublishContext["iscsiUsername"]
+		publishInfo.IscsiInitiatorSecret = req.PublishContext["iscsiInitiatorSecret"]
+		publishInfo.IscsiTargetUsername = req.PublishContext["iscsiTargetUsername"]
+		publishInfo.IscsiTargetSecret = req.PublishContext["iscsiTargetSecret"]
+
+		encryptedCHAP := containsEncryptedCHAP(req.PublishContext)
+
+		if p.aesKey != nil && encryptedCHAP {
+			if err = decryptCHAPPublishInfo(ctx, publishInfo, req.PublishContext, p.aesKey); err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+		} else if encryptedCHAP {
+			// Only error if the key is not set and the publishContext includes encrypted fields
+			msg := "encryption key not set; cannot decrypt CHAP credentials"
+			Logc(ctx).Error(msg)
+			return nil, status.Error(codes.Internal, msg)
+		}
+	}
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolume(ctx, req.VolumeContext["internalName"], "", publishInfo); err != nil {

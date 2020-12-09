@@ -6,6 +6,7 @@
 
 **Fixes:**
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
+- **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
 
 **Enhancements:**
 

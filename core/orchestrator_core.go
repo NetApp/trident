@@ -367,7 +367,7 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 func (o *TridentOrchestrator) bootstrapVolTxns(ctx context.Context) error {
 
 	volTxns, err := o.storeClient.GetVolumeTransactions(ctx)
-	if err != nil && !persistentstore.MatchKeyNotFoundErr(err){
+	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
 		Logc(ctx).Warnf("Couldn't retrieve volume transaction logs: %s", err.Error())
 	}
 	for _, v := range volTxns {

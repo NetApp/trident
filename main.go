@@ -85,6 +85,8 @@ var (
 	httpsClientKey  = flag.String("https_client_key", config.ClientKeyPath, "HTTPS client private key")
 	httpsClientCert = flag.String("https_client_cert", config.ClientCertPath, "HTTPS client certificate")
 
+	aesKey = flag.String("aes_key", config.AESKeyPath, "AES encryption key")
+
 	// HTTP metrics interface
 	metricsAddress = flag.String("metrics_address", "", "Storage orchestrator metrics address")
 	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
@@ -386,13 +388,13 @@ func main() {
 		var csiFrontend *csi.Plugin
 		switch *csiRole {
 		case csi.CSIController:
-			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, orchestrator, &hybridPlugin)
+			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator, *csiUnsafeNodeDetach, *nodePrep)
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, *nodePrep)
 		case csi.CSIAllInOne:
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach, *nodePrep)
+				*httpsClientKey, *aesKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach, *nodePrep)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)

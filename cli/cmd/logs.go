@@ -11,8 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/netapp/trident/config"
 	"github.com/spf13/cobra"
+
+	"github.com/netapp/trident/config"
 )
 
 const (
@@ -211,7 +212,7 @@ func getLogs() error {
 		err = getTridentOperatorLogs(logNameTridentOperator)
 	}
 	if err != nil {
-		logErrors = appendErrorf(logErrors, "error retrieving auxilliary logs: %s", err)
+		logErrors = appendErrorf(logErrors, "error retrieving auxiliary logs: %s", err)
 	}
 	err = nil
 	if previous {

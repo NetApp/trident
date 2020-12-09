@@ -348,10 +348,18 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["iscsiInterface"] = volume.Config.AccessInfo.IscsiInterface
 		publishInfo["iscsiLunSerial"] = volume.Config.AccessInfo.IscsiLunSerial
 		publishInfo["iscsiIgroup"] = volume.Config.AccessInfo.IscsiIgroup
-		publishInfo["iscsiUsername"] = volumePublishInfo.IscsiUsername               //volume.Config.AccessInfo.IscsiUsername
-		publishInfo["iscsiInitiatorSecret"] = volumePublishInfo.IscsiInitiatorSecret //volume.Config.AccessInfo.IscsiInitiatorSecret
-		publishInfo["iscsiTargetUsername"] = volumePublishInfo.IscsiTargetUsername   //volume.Config.AccessInfo.IscsiTargetUsername
-		publishInfo["iscsiTargetSecret"] = volumePublishInfo.IscsiTargetSecret       //volume.Config.AccessInfo.IscsiTargetSecret
+		// Encrypt and add CHAP credentials if they're needed
+		if volumePublishInfo.UseCHAP {
+			if p.aesKey != nil {
+				if err := encryptCHAPPublishInfo(ctx, publishInfo, volumePublishInfo, p.aesKey); err != nil {
+					return nil, status.Error(codes.Internal, err.Error())
+				}
+			} else {
+				msg := "encryption key not set; cannot encrypt CHAP credentials for transit"
+				Logc(ctx).Error(msg)
+				return nil, status.Error(codes.Internal, msg)
+			}
+		}
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)

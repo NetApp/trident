@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -43,6 +44,8 @@ type Plugin struct {
 	restClient *RestClient
 	helper     helpers.HybridPlugin
 
+	aesKey []byte
+
 	grpc NonBlockingGRPCServer
 
 	csCap []*csi.ControllerServiceCapability
@@ -53,8 +56,10 @@ type Plugin struct {
 }
 
 func NewControllerPlugin(
-	nodeName, endpoint string, orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
+	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
 ) (*Plugin, error) {
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
 		orchestrator: orchestrator,
@@ -65,6 +70,12 @@ func NewControllerPlugin(
 		role:         CSIController,
 		helper:       *helper,
 		opCache:      sync.Map{},
+	}
+
+	var err error
+	p.aesKey, err = ReadAESKey(ctx, aesKeyFile)
+	if err != nil {
+		return nil, err
 	}
 
 	// Define controller capabilities
@@ -91,7 +102,7 @@ func NewControllerPlugin(
 }
 
 func NewNodePlugin(
-	nodeName, endpoint, caCert, clientCert, clientKey string, orchestrator core.Orchestrator,
+	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
 
@@ -137,6 +148,10 @@ func NewNodePlugin(
 		return nil, err
 	}
 
+	p.aesKey, err = ReadAESKey(ctx, aesKeyFile)
+	if err != nil {
+		return nil, err
+	}
 	// Define volume capabilities
 	p.addVolumeCapabilityAccessModes(
 		[]csi.VolumeCapability_AccessMode_Mode{
@@ -155,7 +170,7 @@ func NewNodePlugin(
 // CSI Sanity expects a single process to respond to controller, node, and
 // identity interfaces.
 func NewAllInOnePlugin(
-	nodeName, endpoint, caCert, clientCert, clientKey string,
+	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string,
 	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
 	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
@@ -205,6 +220,11 @@ func NewAllInOnePlugin(
 	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
 	var err error
 	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
+	if err != nil {
+		return nil, err
+	}
+
+	p.aesKey, err = ReadAESKey(ctx, aesKeyFile)
 	if err != nil {
 		return nil, err
 	}
@@ -328,4 +348,19 @@ func (p *Plugin) initNodePrep(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
+	var aesKey []byte
+	var err error
+
+	if "" != aesKeyFile {
+		aesKey, err = ioutil.ReadFile(aesKeyFile)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		Logc(ctx).Warn("AES encryption key not provided!")
+	}
+	return aesKey, nil
 }

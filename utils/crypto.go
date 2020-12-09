@@ -3,6 +3,9 @@
 package utils
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -11,6 +14,9 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/pem"
+	"errors"
+	"fmt"
+	"io"
 	"math/big"
 	"time"
 )
@@ -173,4 +179,96 @@ func bigIntHash(n *big.Int) ([]byte, error) {
 		return nil, err
 	}
 	return hash.Sum(nil), nil
+}
+
+// GenerateAESKey generates a cryptographically random 32-byte key, returned as a base64-encoded string
+func GenerateAESKey() (string, error) {
+	key := make([]byte, 32)
+	_, err := rand.Read(key)
+	return base64.StdEncoding.EncodeToString(key), err
+}
+
+// EncryptStringWithAES takes a string and a key and returns the encrypted,
+// base64-encoded form of the string
+func EncryptStringWithAES(plainText string, key []byte) (string, error) {
+
+	// Create the cipher
+	block, err2 := aes.NewCipher(key)
+	if err2 != nil {
+		return "", err2
+	}
+
+	// Pad the input
+	paddedBytes := PKCS7Pad([]byte(plainText), aes.BlockSize)
+
+	// Create the encryptor
+	encryptedBytes := make([]byte, aes.BlockSize+len(paddedBytes))
+	iv := encryptedBytes[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+	cfb := cipher.NewCFBEncrypter(block, iv)
+
+	// Encrypt
+	cfb.XORKeyStream(encryptedBytes[aes.BlockSize:], paddedBytes)
+
+	// Return in string format
+	return base64.StdEncoding.EncodeToString(encryptedBytes), nil
+}
+
+// DecryptStringWithAES takes an encrypted,
+// base64-encoded string and a key and returns the plaintext form of the string
+func DecryptStringWithAES(encryptedText string, key []byte) (string, error) {
+
+	// Decode the string into byte array
+	encryptedBytes, err2 := base64.StdEncoding.DecodeString(encryptedText)
+	if err2 != nil {
+		return "", err2
+	}
+	if len(encryptedBytes) < aes.BlockSize {
+		return "", fmt.Errorf("encrypted text too short")
+	}
+
+	// Create the cipher
+	block, err3 := aes.NewCipher(key)
+	if err3 != nil {
+		return "", err3
+	}
+
+	// Create the decrypter
+	iv := encryptedBytes[:aes.BlockSize]
+	encryptedBytes = encryptedBytes[aes.BlockSize:]
+	cfb := cipher.NewCFBDecrypter(block, iv)
+
+	// Decrypt
+	paddedBytes := make([]byte, len(encryptedBytes))
+	cfb.XORKeyStream(paddedBytes, encryptedBytes)
+
+	// Unpad
+	plainText, err4 := PKCS7Unpad(paddedBytes)
+	if err4 != nil {
+		return "", err4
+	}
+
+	// Return in string format
+	return string(plainText), nil
+}
+
+// PKCS7Pad will pad the input to a multiple of blocksize according to PKCS#7 standard
+func PKCS7Pad(input []byte, blockSize int) []byte {
+	padLength := blockSize - len(input)%blockSize
+	padding := bytes.Repeat([]byte{byte(padLength)}, padLength)
+	return append(input, padding...)
+}
+
+// PKCS7Pad will remove the padding from input according to PKCS#7 standard
+func PKCS7Unpad(input []byte) ([]byte, error) {
+	inputLength := len(input)
+	paddingLength := int(input[inputLength-1])
+
+	if paddingLength > inputLength {
+		return nil, errors.New("error unpadding")
+	}
+
+	return input[:(inputLength - paddingLength)], nil
 }

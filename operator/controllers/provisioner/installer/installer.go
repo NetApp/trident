@@ -1350,6 +1350,11 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 			return fmt.Errorf("could not create Trident X509 certificates; %v", err)
 		}
 
+		aesKey, err := utils.GenerateAESKey()
+		if err != nil {
+			return fmt.Errorf("could not generate secure AES key; %v", err)
+		}
+
 		// Create the secret for the HTTP certs & keys
 		secretMap = map[string]string{
 			commonconfig.CAKeyFile:      certInfo.CAKey,
@@ -1358,6 +1363,7 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 			commonconfig.ServerCertFile: certInfo.ServerCert,
 			commonconfig.ClientKeyFile:  certInfo.ClientKey,
 			commonconfig.ClientCertFile: certInfo.ClientCert,
+			commonconfig.AESKeyFile:     aesKey,
 		}
 	}
 

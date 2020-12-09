@@ -1631,9 +1631,6 @@ func (d *SANStorageDriver) mapSolidfireLun(ctx context.Context, volConfig *stora
 		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
 		"interface":       volConfig.AccessInfo.IscsiInterface,
 		"VAGs":            volConfig.AccessInfo.IscsiVAGs,
-		"Username":        volConfig.AccessInfo.IscsiUsername,
-		"InitiatorSecret": volConfig.AccessInfo.IscsiInitiatorSecret,
-		"TargetSecret":    volConfig.AccessInfo.IscsiTargetSecret,
 		"UseCHAP":         d.Config.UseCHAP,
 	}).Debug("Mapped SolidFire LUN.")
 
