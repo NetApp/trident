@@ -1,0 +1,16 @@
+@Library(['jenkins-pipeline-utils', 'trident-pipeline-utils']) _
+pipeline {
+    agent { label 'rhel7'}
+    options {
+        disableConcurrentBuilds()
+    }
+    stages {
+        stage("propagate") {
+            steps {
+                script {
+                    tridentPropagate()
+                }
+            }
+        }
+    }
+}
