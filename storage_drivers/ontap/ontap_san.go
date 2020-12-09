@@ -155,7 +155,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), api.MaxSANLabelLength); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, api.MaxSANLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -231,6 +231,8 @@ func (d *SANStorageDriver) Create(
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
+	qosPolicy := storagePool.InternalAttributes[QosPolicy]
+	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
@@ -257,24 +259,31 @@ func (d *SANStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+	volConfig.QosPolicy = qosPolicy
+	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+
 	Logc(ctx).WithFields(log.Fields{
-		"name":            name,
-		"size":            size,
-		"spaceAllocation": spaceAllocation,
-		"spaceReserve":    spaceReserve,
-		"snapshotPolicy":  snapshotPolicy,
-		"snapshotReserve": snapshotReserveInt,
-		"unixPermissions": unixPermissions,
-		"snapshotDir":     snapshotDir,
-		"exportPolicy":    exportPolicy,
-		"securityStyle":   securityStyle,
-		"encryption":      enableEncryption,
+		"name":              name,
+		"size":              size,
+		"spaceAllocation":   spaceAllocation,
+		"spaceReserve":      spaceReserve,
+		"snapshotPolicy":    snapshotPolicy,
+		"snapshotReserve":   snapshotReserveInt,
+		"unixPermissions":   unixPermissions,
+		"snapshotDir":       snapshotDir,
+		"exportPolicy":      exportPolicy,
+		"securityStyle":     securityStyle,
+		"encryption":        enableEncryption,
+		"qosPolicy":         qosPolicy,
+		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
-
-	adaptivePolicyGroupName := ""
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
@@ -296,12 +305,9 @@ func (d *SANStorageDriver) Create(
 		}
 
 		// Create the volume
-		// For the the ONTAP SAN volume driver, we set the QoS policy at the volume layer instead of LUN layer.
-		adaptivePolicyGroupName = d.Config.AdaptivePolicyGroupName
 		volCreateResponse, err := d.API.VolumeCreate(
-			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt,
-			adaptivePolicyGroupName)
+			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
+			tieringPolicy, labels, api.QosPolicyGroup{}, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -325,14 +331,14 @@ func (d *SANStorageDriver) Create(
 		lunPath := lunPath(name)
 		osType := "linux"
 
-		// Create the LUN
-		// For the the ONTAP SAN volume driver, we set the QoS policy at the volume layer instead of LUN layer.
-		adaptivePolicyGroupName = ""
-		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation, adaptivePolicyGroupName)
+		// Create the LUN.  If this fails, clean up and move on to the next pool.
+		// QoS policy is set at the LUN layer
+		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, qosPolicyGroup, false,
+			spaceAllocation)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name,
 				aggregate, name, err)
-			log.Error(errMessage)
+			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 
 			// Don't leave the new Flexvol around
@@ -466,8 +472,27 @@ func (d *SANStorageDriver) CreateClone(
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
 
+	qosPolicy := utils.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := utils.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, labels, split, &d.Config, d.API, false)
+	if err := CreateOntapClone(ctx, name, source, snapshot, labels, split, &d.Config, d.API, false,
+		api.QosPolicyGroup{}); err != nil {
+		return err
+	}
+
+	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
+		qosResponse, err := d.API.LunSetQosPolicyGroup(lunPath(name), qosPolicyGroup)
+		if err = api.GetError(ctx, qosResponse, err); err != nil {
+			return fmt.Errorf("error setting QoS policy group: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {

@@ -21,6 +21,7 @@
 **Enhancements:**
 - **Kubernetes:** Updated scope of the Trident Operator to cluster-scope.
 - Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.
+- Added support for ONTAP QoS policy groups (Issue [#108](https://github.com/NetApp/trident/issues/108))
 - Added `lunsPerFlexvol` option to allow customizing the number of LUNs per FlexVol in the ontap-san-economy driver.
 - Allow user to authenticate with certificate and key for ONTAP backends.
 - Allow CA certificates for validating ONTAP certificates.

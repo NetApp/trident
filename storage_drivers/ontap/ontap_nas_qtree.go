@@ -249,7 +249,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -337,6 +337,7 @@ func (d *NASQtreeStorageDriver) Create(
 	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	snapshotReserve := storagePool.InternalAttributes[SnapshotReserve]
+	qosPolicy := storagePool.InternalAttributes[QosPolicy]
 
 	// Get qtree options with default fallback values
 	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
@@ -361,6 +362,8 @@ func (d *NASQtreeStorageDriver) Create(
 	if d.Config.AutoExportPolicy {
 		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
 	}
+
+	volConfig.QosPolicy = qosPolicy
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
@@ -401,9 +404,8 @@ func (d *NASQtreeStorageDriver) Create(
 		}
 
 		// Create the qtree
-		qtreeResponse, err := d.API.QtreeCreate(name, flexvol, unixPermissions, exportPolicy, securityStyle)
+		qtreeResponse, err := d.API.QtreeCreate(name, flexvol, unixPermissions, exportPolicy, securityStyle, qosPolicy)
 		if err = api.GetError(ctx, qtreeResponse, err); err != nil {
-
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Qtree creation failed %s/%s: %v", storagePool.Name,
 				aggregate, flexvol, name, err)
 			Logc(ctx).Error(errMessage)
@@ -799,12 +801,11 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		"encryption":      enableEncryption,
 	}).Debug("Creating Flexvol for qtrees.")
 
-	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
-
 	// Create the Flexvol
 	createResponse, err := d.API.VolumeCreate(
 		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, "", enableEncryption, snapshotReserveInt, adaptivePolicyGroupName)
+		exportPolicy, securityStyle, tieringPolicy, "", api.QosPolicyGroup{}, enableEncryption,
+		snapshotReserveInt)
 	if err = api.GetError(ctx, createResponse, err); err != nil {
 		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}

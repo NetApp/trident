@@ -145,8 +145,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 	if err := ValidateStoragePrefix(*d.Config.StoragePrefix); err != nil {
 		return err
 	}
-
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), api.MaxNASLabelLength); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -218,6 +217,8 @@ func (d *NASStorageDriver) Create(
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
+	qosPolicy := storagePool.InternalAttributes[QosPolicy]
+	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
@@ -247,24 +248,31 @@ func (d *NASStorageDriver) Create(
 		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
 	}
 
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+	volConfig.QosPolicy = qosPolicy
+	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+
 	Logc(ctx).WithFields(log.Fields{
-		"name":            name,
-		"size":            size,
-		"spaceReserve":    spaceReserve,
-		"snapshotPolicy":  snapshotPolicy,
-		"snapshotReserve": snapshotReserveInt,
-		"unixPermissions": unixPermissions,
-		"snapshotDir":     enableSnapshotDir,
-		"exportPolicy":    exportPolicy,
-		"securityStyle":   securityStyle,
-		"encryption":      enableEncryption,
-		"tieringPolicy":   tieringPolicy,
+		"name":              name,
+		"size":              size,
+		"spaceReserve":      spaceReserve,
+		"snapshotPolicy":    snapshotPolicy,
+		"snapshotReserve":   snapshotReserveInt,
+		"unixPermissions":   unixPermissions,
+		"snapshotDir":       enableSnapshotDir,
+		"exportPolicy":      exportPolicy,
+		"securityStyle":     securityStyle,
+		"encryption":        enableEncryption,
+		"tieringPolicy":     tieringPolicy,
+		"qosPolicy":         qosPolicy,
+		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
-
-	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
@@ -285,9 +293,8 @@ func (d *NASStorageDriver) Create(
 
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
-			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt,
-			adaptivePolicyGroupName)
+			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
+			tieringPolicy, labels, qosPolicyGroup, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {

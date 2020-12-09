@@ -38,8 +38,10 @@ type VolumeConfig struct {
 	CloneSourceVolumeInternal string                 `json:"cloneSourceVolumeInternal"`
 	CloneSourceSnapshot       string                 `json:"cloneSourceSnapshot"`
 	SplitOnClone              string                 `json:"splitOnClone"`
-	QoS                       string                 `json:"qos,omitempty"`
-	QoSType                   string                 `json:"type,omitempty"`
+	QosPolicy                 string                 `json:"qosPolicy,omitempty"`
+	AdaptiveQosPolicy         string                 `json:"adaptiveQosPolicy,omitempty"`
+	Qos                       string                 `json:"qos,omitempty"`
+	QosType                   string                 `json:"type,omitempty"`
 	ServiceLevel              string                 `json:"serviceLevel,omitempty"`
 	CVSStorageClass           string                 `json:"cvsStorageClass,omitempty"`
 	Network                   string                 `json:"network,omitempty"`

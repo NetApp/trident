@@ -289,6 +289,40 @@ func GetError(ctx context.Context, zapiResult interface{}, errorIn error) (error
 	return
 }
 
+type QosPolicyGroupKindType int
+
+const (
+	InvalidQosPolicyGroupKind QosPolicyGroupKindType = iota
+	QosPolicyGroupKind
+	QosAdaptivePolicyGroupKind
+)
+
+type QosPolicyGroup struct {
+	Name string
+	Kind QosPolicyGroupKindType
+}
+
+func NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy string) (QosPolicyGroup, error) {
+	switch {
+	case qosPolicy != "" && adaptiveQosPolicy != "":
+		return QosPolicyGroup{}, fmt.Errorf("only one kind of QoS policy group may be defined")
+	case qosPolicy != "":
+		return QosPolicyGroup{
+			Name: qosPolicy,
+			Kind: QosPolicyGroupKind,
+		}, nil
+	case adaptiveQosPolicy != "":
+		return QosPolicyGroup{
+			Name: adaptiveQosPolicy,
+			Kind: QosAdaptivePolicyGroupKind,
+		}, nil
+	default:
+		return QosPolicyGroup{
+			Kind: InvalidQosPolicyGroupKind,
+		}, nil
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // API feature operations BEGIN
 
@@ -306,17 +340,19 @@ const (
 	NetAppFabricPoolFlexGroup feature = "NETAPP_FABRICPOOL_FLEXGROUP"
 	LunGeometrySkip           feature = "LUN_GEOMETRY_SKIP"
 	FabricPoolForSVMDR        feature = "FABRICPOOL_FOR_SVMDR"
+	QosPolicies               feature = "QOS_POLICIES"
 )
 
 // Indicate the minimum Ontapi version for each feature here
 var features = map[feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("1.110.0"), // cDOT 9.1.0
+	MinimumONTAPIVersion:      utils.MustParseSemantic("1.130.0"), // cDOT 9.3.0
 	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFlexGroupsClone:     utils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
 	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	FabricPoolForSVMDR:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	QosPolicies:               utils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -424,9 +460,15 @@ func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoTy
 
 // LunCreate creates a lun with the specified attributes
 // equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
-func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceReserved bool,
-	spaceAllocated bool, adaptivePolicyGroupName string,
+func (d Client) LunCreate(
+	lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved bool,
+	spaceAllocated bool,
 ) (*azgo.LunCreateBySizeResponse, error) {
+
+	if strings.Contains(lunPath, failureLUNCreate) {
+		return nil, errors.New("injected error")
+	}
+
 	request := azgo.NewLunCreateBySizeRequest().
 		SetPath(lunPath).
 		SetSize(sizeInBytes).
@@ -434,8 +476,11 @@ func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceR
 		SetSpaceReservationEnabled(spaceReserved).
 		SetSpaceAllocationEnabled(spaceAllocated)
 
-	if adaptivePolicyGroupName != "" {
-		request.SetQosAdaptivePolicyGroup(adaptivePolicyGroupName)
+	switch qosPolicyGroup.Kind {
+	case QosPolicyGroupKind:
+		request.SetQosPolicyGroup(qosPolicyGroup.Name)
+	case QosAdaptivePolicyGroupKind:
+		request.SetQosAdaptivePolicyGroup(qosPolicyGroup.Name)
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
@@ -443,14 +488,35 @@ func (d Client) LunCreate(lunPath string, sizeInBytes int, osType string, spaceR
 }
 
 // LunCloneCreate clones a LUN from a snapshot
-func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string, adaptivePolicyGroupName string) (*azgo.CloneCreateResponse, error) {
+func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string,
+	qosPolicyGroup QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
 	request := azgo.NewCloneCreateRequest().
 		SetVolume(volumeName).
 		SetSourcePath(sourceLun).
 		SetDestinationPath(destinationLun)
 
-	if adaptivePolicyGroupName != "" {
-		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	switch qosPolicyGroup.Kind {
+	case QosAdaptivePolicyGroupKind:
+		request.SetQosAdaptivePolicyGroupName(qosPolicyGroup.Name)
+	case QosPolicyGroupKind:
+		request.SetQosPolicyGroupName(qosPolicyGroup.Name)
+	}
+
+	response, err := request.ExecuteUsing(d.zr)
+	return response, err
+}
+
+// LunSetQosPolicyGroup sets the qos policy group or adaptive qos policy group on a lun; does not unset policy groups
+func (d Client) LunSetQosPolicyGroup(lunPath string,
+	qosPolicyGroup QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error) {
+	request := azgo.NewLunSetQosPolicyGroupRequest().
+		SetPath(lunPath)
+
+	switch qosPolicyGroup.Kind {
+	case QosAdaptivePolicyGroupKind:
+		request.SetQosAdaptivePolicyGroup(qosPolicyGroup.Name)
+	case QosPolicyGroupKind:
+		request.SetQosPolicyGroup(qosPolicyGroup.Name)
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
@@ -807,8 +873,8 @@ func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResp
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy,
-	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, encrypt bool, snapshotReserve int,
-	adaptivePolicyGroupName string,
+	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
+	encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 
 	junctionPath := fmt.Sprintf("/%s", name)
@@ -829,8 +895,11 @@ func (d Client) FlexGroupCreate(
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
 
-	if adaptivePolicyGroupName != "" {
-		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
+	switch qosPolicyGroup.Kind {
+	case QosPolicyGroupKind:
+		request.SetQosPolicyGroupName(qosPolicyGroup.Name)
+	case QosAdaptivePolicyGroupKind:
+		request.SetQosAdaptivePolicyGroupName(qosPolicyGroup.Name)
 	}
 
 	if snapshotReserve != NumericalValueNotSet {
@@ -1176,8 +1245,8 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy string, comment string, encrypt bool, snapshotReserve int,
-	adaptivePolicyGroupName string,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	snapshotReserve int,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -1190,10 +1259,6 @@ func (d Client) VolumeCreate(
 		SetVolumeSecurityStyle(securityStyle).
 		SetEncrypt(encrypt).
 		SetVolumeComment(comment)
-
-	if adaptivePolicyGroupName != "" {
-		request.SetQosAdaptivePolicyGroupName(adaptivePolicyGroupName)
-	}
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1224,6 +1289,13 @@ func (d Client) VolumeCreate(
 
 	if d.SupportsFeature(ctx, NetAppFabricPoolFlexVol) {
 		request.SetTieringPolicy(tieringPolicy)
+	}
+
+	switch qosPolicyGroup.Kind {
+	case QosPolicyGroupKind:
+		request.SetQosPolicyGroupName(qosPolicyGroup.Name)
+	case QosAdaptivePolicyGroupKind:
+		request.SetQosAdaptivePolicyGroupName(qosPolicyGroup.Name)
 	}
 
 	response, err := request.ExecuteUsing(d.zr)
@@ -1315,22 +1387,31 @@ func (d Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeM
 	return response, err
 }
 
-// Use this to set the QoS Adaptive Policy Group for volume clones since
-// we can't set it directly during volume clone creation.
-func (d Client) VolumeSetQosAdaptivePolicyGroupName(name string, adaptivePolicyGroupName string) (*azgo.VolumeModifyIterResponse, error) {
-	volattr := &azgo.VolumeModifyIterRequestAttributes{}
-	ssattr := azgo.NewVolumeQosAttributesType().SetAdaptivePolicyGroupName(adaptivePolicyGroupName)
-	volQosAttrs := azgo.NewVolumeAttributesType().SetVolumeQosAttributes(*ssattr)
-	volattr.SetVolumeAttributes(*volQosAttrs)
+// Use this to set the QoS Policy Group for volume clones since
+// we can't set adaptive policy groups directly during volume clone creation.
+func (d Client) VolumeSetQosPolicyGroupName(name string,
+	qosPolicyGroup QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error) {
+	volModAttr := &azgo.VolumeModifyIterRequestAttributes{}
+	volQosAttr := azgo.NewVolumeQosAttributesType()
+
+	switch qosPolicyGroup.Kind {
+	case QosPolicyGroupKind:
+		volQosAttr.SetPolicyGroupName(qosPolicyGroup.Name)
+	case QosAdaptivePolicyGroupKind:
+		volQosAttr.SetAdaptivePolicyGroupName(qosPolicyGroup.Name)
+	}
+
+	volAttrs := azgo.NewVolumeAttributesType().SetVolumeQosAttributes(*volQosAttr)
+	volModAttr.SetVolumeAttributes(*volAttrs)
 
 	queryattr := &azgo.VolumeModifyIterRequestQuery{}
-	volidattr := azgo.NewVolumeIdAttributesType().SetName(azgo.VolumeNameType(name))
+	volidattr := azgo.NewVolumeIdAttributesType().SetName(name)
 	volIdAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volidattr)
 	queryattr.SetVolumeAttributes(*volIdAttrs)
 
 	response, err := azgo.NewVolumeModifyIterRequest().
 		SetQuery(*queryattr).
-		SetAttributes(*volattr).
+		SetAttributes(*volModAttr).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -1566,6 +1647,7 @@ func (d Client) VolumeListByAttrs(
 		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs).
 		SetVolumeStateAttributes(*queryVolStateAttrs).
 		SetEncrypt(encrypt)
+
 	query.SetVolumeAttributes(*volumeAttributes)
 
 	// Limit the returned data to only the Flexvol names
@@ -1664,14 +1746,19 @@ func (d Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComme
 // QtreeCreate creates a qtree with the specified options
 // equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
 func (d Client) QtreeCreate(name, volumeName, unixPermissions, exportPolicy,
-	securityStyle string) (*azgo.QtreeCreateResponse, error) {
-	response, err := azgo.NewQtreeCreateRequest().
+	securityStyle, qosPolicy string) (*azgo.QtreeCreateResponse, error) {
+	request := azgo.NewQtreeCreateRequest().
 		SetQtree(name).
 		SetVolume(volumeName).
 		SetMode(unixPermissions).
 		SetSecurityStyle(securityStyle).
-		SetExportPolicy(exportPolicy).
-		ExecuteUsing(d.zr)
+		SetExportPolicy(exportPolicy)
+
+	if qosPolicy != "" {
+		request.SetQosPolicyGroup(qosPolicy)
+	}
+
+	response, err := request.ExecuteUsing(d.zr)
 	return response, err
 }
 

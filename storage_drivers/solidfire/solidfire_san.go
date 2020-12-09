@@ -1695,16 +1695,16 @@ func (d *SANStorageDriver) GetVolumeOpts(
 	if volConfig.BlockSize != "" {
 		opts["blocksize"] = volConfig.BlockSize
 	}
-	if volConfig.QoS != "" {
-		opts["qos"] = volConfig.QoS
+	if volConfig.Qos != "" {
+		opts["qos"] = volConfig.Qos
 	}
 
 	// take QoS type from volume config first (handles Docker case), then from pool
-	qosType := volConfig.QoSType
+	qosType := volConfig.QosType
 
-	// if QoSType is empty as well as QoS and pool information has been provided
+	// if QosType is empty as well as QoS and pool information has been provided
 	// then use the pool's QoS Type
-	if qosType == "" && volConfig.QoS == "" && pool != nil {
+	if qosType == "" && volConfig.Qos == "" && pool != nil {
 		qosType = pool.InternalAttributes[QoSType]
 	}
 

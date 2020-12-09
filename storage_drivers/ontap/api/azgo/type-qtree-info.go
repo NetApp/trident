@@ -15,6 +15,7 @@ type QtreeInfoType struct {
 	IsExportPolicyInheritedPtr *bool    `xml:"is-export-policy-inherited"`
 	ModePtr                    *string  `xml:"mode"`
 	OplocksPtr                 *string  `xml:"oplocks"`
+	QosPolicyGroupPtr          *string  `xml:"qos-policy-group"`
 	QtreePtr                   *string  `xml:"qtree"`
 	SecurityStylePtr           *string  `xml:"security-style"`
 	StatusPtr                  *string  `xml:"status"`
@@ -98,6 +99,18 @@ func (o *QtreeInfoType) Oplocks() string {
 // SetOplocks is a fluent style 'setter' method that can be chained
 func (o *QtreeInfoType) SetOplocks(newValue string) *QtreeInfoType {
 	o.OplocksPtr = &newValue
+	return o
+}
+
+// QosPolicyGroup is a 'getter' method
+func (o *QtreeInfoType) QosPolicyGroup() string {
+	r := *o.QosPolicyGroupPtr
+	return r
+}
+
+// SetQosPolicyGroup is a 'setter' method
+func (o *QtreeInfoType) SetQosPolicyGroup(newValue string) *QtreeInfoType {
+	o.QosPolicyGroupPtr = &newValue
 	return o
 }
 

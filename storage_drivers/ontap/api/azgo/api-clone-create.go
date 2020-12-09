@@ -9,29 +9,29 @@ import (
 
 // CloneCreateRequest is a structure to represent a clone-create Request ZAPI object
 type CloneCreateRequest struct {
-	XMLName               xml.Name                       `xml:"clone-create"`
-	AutodeletePtr         *bool                          `xml:"autodelete"`
-	BlockRangesPtr        *CloneCreateRequestBlockRanges `xml:"block-ranges"`
-	BypassLicenseCheckPtr *bool                          `xml:"bypass-license-check"`
-	BypassThrottlePtr     *bool                          `xml:"bypass-throttle"`
-	DestinationExistsPtr  *bool                          `xml:"destination-exists"`
-	DestinationPathPtr    *string                        `xml:"destination-path"`
-	DestinationVolumePtr  *string                        `xml:"destination-volume"`
-	FixedBlockCountPtr    *int                           `xml:"fixed-block-count"`
-	IgnoreLocksPtr        *bool                          `xml:"ignore-locks"`
-	IgnoreStreamsPtr      *bool                          `xml:"ignore-streams"`
-	IsBackupPtr           *bool                          `xml:"is-backup"`
-	IsFixedBlockCountPtr  *bool                          `xml:"is-fixed-block-count"`
-	IsVvolBackupPtr       *bool                          `xml:"is-vvol-backup"`
-	LunSerialNumberPtr    *string                        `xml:"lun-serial-number"`
-	NosplitEntryPtr       *bool                          `xml:"nosplit-entry"`
-	QosPolicyGroupNamePtr *string                        `xml:"qos-policy-group-name"`
-	QosAdaptivePolicyGroupNamePtr *string                `xml:"qos-adaptive-policy-group-name"`
-	SnapshotNamePtr       *string                        `xml:"snapshot-name"`
-	SourcePathPtr         *string                        `xml:"source-path"`
-	SpaceReservePtr       *bool                          `xml:"space-reserve"`
-	TokenUuidPtr          *string                        `xml:"token-uuid"`
-	VolumePtr             *string                        `xml:"volume"`
+	XMLName                       xml.Name                       `xml:"clone-create"`
+	AutodeletePtr                 *bool                          `xml:"autodelete"`
+	BlockRangesPtr                *CloneCreateRequestBlockRanges `xml:"block-ranges"`
+	BypassLicenseCheckPtr         *bool                          `xml:"bypass-license-check"`
+	BypassThrottlePtr             *bool                          `xml:"bypass-throttle"`
+	DestinationExistsPtr          *bool                          `xml:"destination-exists"`
+	DestinationPathPtr            *string                        `xml:"destination-path"`
+	DestinationVolumePtr          *string                        `xml:"destination-volume"`
+	FixedBlockCountPtr            *int                           `xml:"fixed-block-count"`
+	IgnoreLocksPtr                *bool                          `xml:"ignore-locks"`
+	IgnoreStreamsPtr              *bool                          `xml:"ignore-streams"`
+	IsBackupPtr                   *bool                          `xml:"is-backup"`
+	IsFixedBlockCountPtr          *bool                          `xml:"is-fixed-block-count"`
+	IsVvolBackupPtr               *bool                          `xml:"is-vvol-backup"`
+	LunSerialNumberPtr            *string                        `xml:"lun-serial-number"`
+	NosplitEntryPtr               *bool                          `xml:"nosplit-entry"`
+	QosPolicyGroupNamePtr         *string                        `xml:"qos-policy-group-name"`
+	QosAdaptivePolicyGroupNamePtr *string                        `xml:"qos-adaptive-policy-group-name"`
+	SnapshotNamePtr               *string                        `xml:"snapshot-name"`
+	SourcePathPtr                 *string                        `xml:"source-path"`
+	SpaceReservePtr               *bool                          `xml:"space-reserve"`
+	TokenUuidPtr                  *string                        `xml:"token-uuid"`
+	VolumePtr                     *string                        `xml:"volume"`
 }
 
 // CloneCreateResponse is a structure to represent a clone-create Response ZAPI object

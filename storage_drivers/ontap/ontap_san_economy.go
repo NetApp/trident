@@ -377,7 +377,7 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -455,6 +455,8 @@ func (d *SANEconomyStorageDriver) Create(
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
+	qosPolicy := storagePool.InternalAttributes[QosPolicy]
+	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
 
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
@@ -472,11 +474,15 @@ func (d *SANEconomyStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+	volConfig.QosPolicy = qosPolicy
+	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
-
-	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
-	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
 
 	for _, physicalPool := range physicalPools {
 		aggregate := physicalPool.Name
@@ -494,8 +500,8 @@ func (d *SANEconomyStorageDriver) Create(
 		}
 
 		// Make sure we have a Flexvol for the new LUN
-		bucketVol, newVol, err := d.ensureFlexvolForLUN(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy,
-			false, enableEncryption, sizeBytes, opts, d.Config, storagePool)
+		bucketVol, newVol, err := d.ensureFlexvolForLUN(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, false, enableEncryption, sizeBytes, opts, d.Config,
+			storagePool)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; BucketVol location/creation failed %s: %v",
 				storagePool.Name, aggregate, name, err)
@@ -532,7 +538,8 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Create the LUN
 		// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
-		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, false, spaceAllocation, adaptivePolicyGroupName)
+		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, qosPolicyGroup, false,
+			spaceAllocation)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v", storagePool.Name,
 				aggregate, bucketVol, name, err)
@@ -632,26 +639,36 @@ func (d *SANEconomyStorageDriver) CreateClone(
 	name := volConfig.InternalName
 	snapshot := volConfig.CloneSourceSnapshot
 	isFromSnapshot := snapshot != ""
+	qosPolicy := volConfig.QosPolicy
+	adaptiveQosPolicy := volConfig.AdaptiveQosPolicy
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "SANEconomyStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
+			"Method":            "CreateClone",
+			"Type":              "SANEconomyStorageDriver",
+			"name":              name,
+			"source":            source,
+			"snapshot":          snapshot,
+			"qosPolicy":         qosPolicy,
+			"adaptiveQosPolicy": adaptiveQosPolicy,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	return d.createLUNClone(ctx, name, source, snapshot, &d.Config, d.API, d.FlexvolNamePrefix(), isFromSnapshot)
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+
+	return d.createLUNClone(ctx, name, source, snapshot, &d.Config, d.API, d.FlexvolNamePrefix(), isFromSnapshot,
+		qosPolicyGroup)
 }
 
 // Create a volume clone
 func (d *SANEconomyStorageDriver) createLUNClone(
 	ctx context.Context, lunName, source, snapshot string, config *drivers.OntapStorageDriverConfig,
-	client *api.Client, prefix string, isLunCreateFromSnapshot bool,
+	client *api.Client, prefix string, isLunCreateFromSnapshot bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -692,8 +709,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 
 	// Create the clone based on given LUN
 	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
-	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
-	cloneResponse, err := client.LunCloneCreate(flexvol, source, lunName, adaptivePolicyGroupName)
+	cloneResponse, err := client.LunCloneCreate(flexvol, source, lunName, qosPolicyGroup)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
 	}
@@ -1135,7 +1151,8 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 
 	// Create the "snap-LUN" where the snapshot is a LUN clone of the source LUN
 	err = d.createLUNClone(
-		ctx, lunName, snapConfig.VolumeInternalName, snapConfig.Name, &d.Config, d.API, d.FlexvolNamePrefix(), false)
+		ctx, lunName, snapConfig.VolumeInternalName, snapConfig.Name, &d.Config, d.API, d.FlexvolNamePrefix(), false,
+		api.QosPolicyGroup{})
 	if err != nil {
 		return nil, fmt.Errorf("could not create snapshot: %v", err)
 	}
@@ -1257,8 +1274,9 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 // LUN or it creates a new Flexvol with the needed attributes.  The name of the matching volume is returned,
 // as is a boolean indicating whether the volume was newly created to satisfy this request.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
-	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
-	sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig, storagePool *storage.Pool,
+	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir,
+	encrypt bool, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
+	storagePool *storage.Pool,
 ) (string, bool, error) {
 
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -1326,13 +1344,10 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		"encryption":      encryption,
 	}).Debug("Creating Flexvol for LUNs.")
 
-	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
-	adaptivePolicyGroupName := ""
-
 	// Create the flexvol
 	volCreateResponse, err := d.API.VolumeCreate(
-		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, tieringPolicy, "", encrypt, snapshotReserveInt, adaptivePolicyGroupName)
+		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
+		tieringPolicy, "", api.QosPolicyGroup{}, encrypt, snapshotReserveInt)
 
 	if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)
@@ -1360,8 +1375,8 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
-	volListResponse, err := d.API.VolumeListByAttrs(
-		d.FlexvolNamePrefix(), aggregate, spaceReserve, tieringPolicy, snapshotPolicy, enableSnapshotDir, encrypt)
+	volListResponse, err := d.API.VolumeListByAttrs(d.FlexvolNamePrefix(), aggregate, spaceReserve, tieringPolicy,
+		snapshotPolicy, enableSnapshotDir, encrypt)
 
 	if err = api.GetError(ctx, volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)

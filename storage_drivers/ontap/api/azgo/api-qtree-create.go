@@ -9,13 +9,14 @@ import (
 
 // QtreeCreateRequest is a structure to represent a qtree-create Request ZAPI object
 type QtreeCreateRequest struct {
-	XMLName          xml.Name `xml:"qtree-create"`
-	ExportPolicyPtr  *string  `xml:"export-policy"`
-	ModePtr          *string  `xml:"mode"`
-	OplocksPtr       *string  `xml:"oplocks"`
-	QtreePtr         *string  `xml:"qtree"`
-	SecurityStylePtr *string  `xml:"security-style"`
-	VolumePtr        *string  `xml:"volume"`
+	XMLName           xml.Name `xml:"qtree-create"`
+	ExportPolicyPtr   *string  `xml:"export-policy"`
+	ModePtr           *string  `xml:"mode"`
+	OplocksPtr        *string  `xml:"oplocks"`
+	QosPolicyGroupPtr *string  `xml:"qos-policy-group"`
+	QtreePtr          *string  `xml:"qtree"`
+	SecurityStylePtr  *string  `xml:"security-style"`
+	VolumePtr         *string  `xml:"volume"`
 }
 
 // QtreeCreateResponse is a structure to represent a qtree-create Response ZAPI object
@@ -140,6 +141,18 @@ func (o *QtreeCreateRequest) Oplocks() string {
 // SetOplocks is a fluent style 'setter' method that can be chained
 func (o *QtreeCreateRequest) SetOplocks(newValue string) *QtreeCreateRequest {
 	o.OplocksPtr = &newValue
+	return o
+}
+
+// QosPolicyGroup is a 'getter' method
+func (o *QtreeCreateRequest) QosPolicyGroup() string {
+	r := *o.QosPolicyGroupPtr
+	return r
+}
+
+// SetQosPolicyGroup is fluent style 'setter' method that can be chained
+func (o *QtreeCreateRequest) SetQosPolicyGroup(newValue string) *QtreeCreateRequest {
+	o.QosPolicyGroupPtr = &newValue
 	return o
 }
 

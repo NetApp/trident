@@ -187,6 +187,8 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
 	pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
 	pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
+	pool.InternalAttributes[QosPolicy] = config.QosPolicy
+	pool.InternalAttributes[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 
 	d.physicalPool = pool
 
@@ -256,6 +258,16 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 				tieringPolicy = vpool.TieringPolicy
 			}
 
+			qosPolicy := config.QosPolicy
+			if vpool.QosPolicy != "" {
+				qosPolicy = vpool.QosPolicy
+			}
+
+			adaptiveQosPolicy := config.AdaptiveQosPolicy
+			if vpool.AdaptiveQosPolicy != "" {
+				adaptiveQosPolicy = vpool.AdaptiveQosPolicy
+			}
+
 			pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), d.BackendName()))
 
 			// Update pool with attributes set by default for this backend
@@ -299,6 +311,8 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			pool.InternalAttributes[ExportPolicy] = exportPolicy
 			pool.InternalAttributes[SecurityStyle] = securityStyle
 			pool.InternalAttributes[TieringPolicy] = tieringPolicy
+			pool.InternalAttributes[QosPolicy] = qosPolicy
+			pool.InternalAttributes[AdaptiveQosPolicy] = adaptiveQosPolicy
 
 			d.virtualPools[pool.Name] = pool
 		}
@@ -397,7 +411,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	var physicalPools = map[string]*storage.Pool{
 		d.physicalPool.Name: d.physicalPool,
 	}
-	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d.Name(), api.MaxNASLabelLength); err != nil {
+	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -484,6 +498,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
 	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
+	qosPolicy := storagePool.InternalAttributes[QosPolicy]
+	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
 
 	// limits checks are not currently applicable to the Flexgroups driver, omitted here on purpose
 
@@ -510,6 +526,13 @@ func (d *NASFlexGroupStorageDriver) Create(
 		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
 	}
 
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+	volConfig.QosPolicy = qosPolicy
+	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+
 	Logc(ctx).WithFields(log.Fields{
 		"name":            name,
 		"size":            size,
@@ -522,6 +545,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"aggregates":      vserverAggrNames,
 		"securityStyle":   securityStyle,
 		"encryption":      enableEncryption,
+		"qosPolicy":       qosPolicy,
 	}).Debug("Creating FlexGroup.")
 
 	createErrors := make([]error, 0)
@@ -532,14 +556,12 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if err != nil {
 		return err
 	}
-	adaptivePolicyGroupName := d.Config.AdaptivePolicyGroupName
 
 	// Create the FlexGroup
 	checkVolumeCreated := func() error {
 		_, err = d.API.FlexGroupCreate(
 			ctx, name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt,
-			adaptivePolicyGroupName)
+			exportPolicy, securityStyle, tieringPolicy, labels, qosPolicyGroup, enableEncryption, snapshotReserveInt)
 
 		return err
 	}

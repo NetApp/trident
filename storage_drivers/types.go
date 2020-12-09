@@ -113,7 +113,6 @@ type OntapStorageDriverConfig struct {
 	LimitAggregateUsage              string   `json:"limitAggregateUsage"`
 	AutoExportPolicy                 bool     `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string `json:"autoExportCIDRs"`
-        AdaptivePolicyGroupName          string   `json:"adaptivePolicyGroupName"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
@@ -146,18 +145,20 @@ type OntapStorageDriverPool struct {
 }
 
 type OntapStorageDriverConfigDefaults struct {
-	SpaceAllocation string `json:"spaceAllocation"`
-	SpaceReserve    string `json:"spaceReserve"`
-	SnapshotPolicy  string `json:"snapshotPolicy"`
-	SnapshotReserve string `json:"snapshotReserve"`
-	SnapshotDir     string `json:"snapshotDir"`
-	UnixPermissions string `json:"unixPermissions"`
-	ExportPolicy    string `json:"exportPolicy"`
-	SecurityStyle   string `json:"securityStyle"`
-	SplitOnClone    string `json:"splitOnClone"`
-	FileSystemType  string `json:"fileSystemType"`
-	Encryption      string `json:"encryption"`
-	TieringPolicy   string `json:"tieringPolicy"`
+	SpaceAllocation   string `json:"spaceAllocation"`
+	SpaceReserve      string `json:"spaceReserve"`
+	SnapshotPolicy    string `json:"snapshotPolicy"`
+	SnapshotReserve   string `json:"snapshotReserve"`
+	SnapshotDir       string `json:"snapshotDir"`
+	UnixPermissions   string `json:"unixPermissions"`
+	ExportPolicy      string `json:"exportPolicy"`
+	SecurityStyle     string `json:"securityStyle"`
+	SplitOnClone      string `json:"splitOnClone"`
+	FileSystemType    string `json:"fileSystemType"`
+	Encryption        string `json:"encryption"`
+	TieringPolicy     string `json:"tieringPolicy"`
+	QosPolicy         string `json:"qosPolicy"`
+	AdaptiveQosPolicy string `json:"adaptiveQosPolicy"`
 	CommonStorageDriverConfigDefaults
 }
 

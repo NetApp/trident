@@ -59,6 +59,8 @@ const (
 	ProvisioningType      = "provisioningType"
 	SplitOnClone          = "splitOnClone"
 	TieringPolicy         = "tieringPolicy"
+	QosPolicy             = "qosPolicy"
+	AdaptiveQosPolicy     = "adaptiveQosPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
 )
 
@@ -157,8 +159,17 @@ func CreateCloneNAS(
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
+
+	qosPolicy := utils.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := utils.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, labels, split, d.GetConfig(), d.GetAPI(), useAsync)
+	return CreateOntapClone(ctx, name, source, snapshot, labels, split, d.GetConfig(), d.GetAPI(), useAsync,
+		qosPolicyGroup)
 }
 
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
@@ -1146,7 +1157,7 @@ func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriv
 		return nil, fmt.Errorf("could not determine Data ONTAP API version: %v", err)
 	}
 	if !client.SupportsFeature(ctx, api.MinimumONTAPIVersion) {
-		return nil, errors.New("ONTAP 9.1 or later is required")
+		return nil, errors.New("ONTAP 9.3 or later is required")
 	}
 	Logc(ctx).WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
@@ -1391,7 +1402,6 @@ const DefaultEncryption = "false"
 const DefaultLimitAggregateUsage = ""
 const DefaultLimitVolumeSize = ""
 const DefaultTieringPolicy = ""
-const DefaultAdaptivePolicyGroupName = ""
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
@@ -1497,31 +1507,26 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
-	if config.AdaptivePolicyGroupName == "" {
-		config.AdaptivePolicyGroupName = DefaultAdaptivePolicyGroupName
-	}
-
-	log.WithFields(log.Fields{
-		"StoragePrefix":           *config.StoragePrefix,
-		"SpaceAllocation":         config.SpaceAllocation,
-		"SpaceReserve":            config.SpaceReserve,
-		"SnapshotPolicy":          config.SnapshotPolicy,
-		"SnapshotReserve":         config.SnapshotReserve,
-		"UnixPermissions":         config.UnixPermissions,
-		"SnapshotDir":             config.SnapshotDir,
-		"ExportPolicy":            config.ExportPolicy,
-		"SecurityStyle":           config.SecurityStyle,
-		"NfsMountOptions":         config.NfsMountOptions,
-		"SplitOnClone":            config.SplitOnClone,
-		"FileSystemType":          config.FileSystemType,
-		"Encryption":              config.Encryption,
-		"LimitAggregateUsage":     config.LimitAggregateUsage,
-		"LimitVolumeSize":         config.LimitVolumeSize,
-		"Size":                    config.Size,
-		"TieringPolicy":           config.TieringPolicy,
-		"AutoExportPolicy":        config.AutoExportPolicy,
-		"AutoExportCIDRs":         config.AutoExportCIDRs,
-		"AdaptivePolicyGroupName": config.AdaptivePolicyGroupName,
+	Logc(ctx).WithFields(log.Fields{
+		"StoragePrefix":       *config.StoragePrefix,
+		"SpaceAllocation":     config.SpaceAllocation,
+		"SpaceReserve":        config.SpaceReserve,
+		"SnapshotPolicy":      config.SnapshotPolicy,
+		"SnapshotReserve":     config.SnapshotReserve,
+		"UnixPermissions":     config.UnixPermissions,
+		"SnapshotDir":         config.SnapshotDir,
+		"ExportPolicy":        config.ExportPolicy,
+		"SecurityStyle":       config.SecurityStyle,
+		"NfsMountOptions":     config.NfsMountOptions,
+		"SplitOnClone":        config.SplitOnClone,
+		"FileSystemType":      config.FileSystemType,
+		"Encryption":          config.Encryption,
+		"LimitAggregateUsage": config.LimitAggregateUsage,
+		"LimitVolumeSize":     config.LimitVolumeSize,
+		"Size":                config.Size,
+		"TieringPolicy":       config.TieringPolicy,
+		"AutoExportPolicy":    config.AutoExportPolicy,
+		"AutoExportCIDRs":     config.AutoExportCIDRs,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -1752,7 +1757,7 @@ func probeForVolume(ctx context.Context, name string, client *api.Client) error 
 // Create a volume clone
 func CreateOntapClone(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
-	client *api.Client, useAsync bool,
+	client *api.Client, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -1817,12 +1822,11 @@ func CreateOntapClone(
 		}
 	}
 
-	// Set the Adaptive QoS Policy if necessary
-	adaptivePolicyGroupName := config.AdaptivePolicyGroupName
-	if adaptivePolicyGroupName != "" {
-		adaptiveQosResponse, err := client.VolumeSetQosAdaptivePolicyGroupName(name, adaptivePolicyGroupName)
-		if err = api.GetError(ctx, adaptiveQosResponse, err); err != nil {
-			return fmt.Errorf("error setting QoS Adaptive Policy Group: %v", err)
+	// Set the QoS Policy if necessary
+	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
+		qosResponse, err := client.VolumeSetQosPolicyGroupName(name, qosPolicyGroup)
+		if err = api.GetError(ctx, qosResponse, err); err != nil {
+			return fmt.Errorf("error setting QoS policy: %v", err)
 		}
 	}
 
@@ -2407,6 +2411,8 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
 		pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
 		pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
+		pool.InternalAttributes[QosPolicy] = config.QosPolicy
+		pool.InternalAttributes[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 
 		pool.SupportedTopologies = config.SupportedTopologies
 
@@ -2500,6 +2506,16 @@ func InitializeStoragePoolsCommon(
 			tieringPolicy = vpool.TieringPolicy
 		}
 
+		qosPolicy := config.QosPolicy
+		if vpool.QosPolicy != "" {
+			qosPolicy = vpool.QosPolicy
+		}
+
+		adaptiveQosPolicy := config.AdaptiveQosPolicy
+		if vpool.AdaptiveQosPolicy != "" {
+			adaptiveQosPolicy = vpool.AdaptiveQosPolicy
+		}
+
 		pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), backendName))
 
 		// Update pool with attributes set by default for this backend
@@ -2544,6 +2560,8 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes[ExportPolicy] = exportPolicy
 		pool.InternalAttributes[SecurityStyle] = securityStyle
 		pool.InternalAttributes[TieringPolicy] = tieringPolicy
+		pool.InternalAttributes[QosPolicy] = qosPolicy
+		pool.InternalAttributes[AdaptiveQosPolicy] = adaptiveQosPolicy
 		pool.SupportedTopologies = supportedTopologies
 
 		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
@@ -2560,8 +2578,7 @@ func InitializeStoragePoolsCommon(
 // ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
 // for a field then a default should have been set in for that field in the initialize storage pools
 func ValidateStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, driverType string, labelLimit int,
-) error {
+	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, d StorageDriver, labelLimit int) error {
 
 	// Validate pool-level attributes
 	allPools := make([]*storage.Pool, 0, len(physicalPools)+len(virtualPools))
@@ -2641,6 +2658,22 @@ func ValidateStoragePools(
 				poolName)
 		}
 
+		// Validate QoS policy or adaptive QoS policy
+		if pool.InternalAttributes[QosPolicy] != "" || pool.InternalAttributes[AdaptiveQosPolicy] != "" {
+			if !d.GetAPI().SupportsFeature(ctx, api.QosPolicies) {
+				return fmt.Errorf("trident does not support QoS policies for ONTAP version")
+			}
+
+			if _, err := api.NewQosPolicyGroup(pool.InternalAttributes[QosPolicy],
+				pool.InternalAttributes[AdaptiveQosPolicy]); err != nil {
+				return err
+			}
+
+			if d.Name() == drivers.OntapNASQtreeStorageDriverName && pool.InternalAttributes[AdaptiveQosPolicy] != "" {
+				return fmt.Errorf("qtrees do not support adaptive QoS policies")
+			}
+		}
+
 		// Validate media type
 		if pool.InternalAttributes[Media] != "" {
 			for _, mediaType := range strings.Split(pool.InternalAttributes[Media], ",") {
@@ -2665,7 +2698,7 @@ func ValidateStoragePools(
 		}
 
 		// Cloning is not supported on ONTAP FlexGroups driver
-		if driverType != drivers.OntapNASFlexGroupStorageDriverName {
+		if d.Name() != drivers.OntapNASFlexGroupStorageDriverName {
 			// Validate splitOnClone
 			if pool.InternalAttributes[SplitOnClone] == "" {
 				return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
@@ -2677,7 +2710,7 @@ func ValidateStoragePools(
 			}
 		}
 
-		if driverType == drivers.OntapSANStorageDriverName || driverType == drivers.OntapSANEconomyStorageDriverName {
+		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
 
 			// Validate SpaceAllocation
 			if pool.InternalAttributes[SpaceAllocation] == "" {
@@ -2808,6 +2841,12 @@ func getVolumeOptsCommon(
 	if volConfig.Encryption != "" {
 		opts["encryption"] = volConfig.Encryption
 	}
+	if volConfig.QosPolicy != "" {
+		opts["qosPolicy"] = volConfig.QosPolicy
+	}
+	if volConfig.AdaptiveQosPolicy != "" {
+		opts["adaptiveQosPolicy"] = volConfig.AdaptiveQosPolicy
+	}
 
 	return opts
 }
@@ -2884,8 +2923,8 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	drivers.Clone(ctx, config, &cloneConfig)
 
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
-	cloneConfig.Username = "<REDACTED>" // redact the username
-	cloneConfig.Password = "<REDACTED>" // redact the password
+	cloneConfig.Username = "<REDACTED>"         // redact the username
+	cloneConfig.Password = "<REDACTED>"         // redact the password
 	cloneConfig.ClientPrivateKey = "<REDACTED>" // redact the client private key
 	return cloneConfig
 }

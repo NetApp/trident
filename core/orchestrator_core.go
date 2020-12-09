@@ -1804,8 +1804,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	cloneConfig.CloneSourceVolume = volumeConfig.CloneSourceVolume
 	cloneConfig.CloneSourceVolumeInternal = sourceVolume.Config.InternalName
 	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
-	cloneConfig.QoS = volumeConfig.QoS
-	cloneConfig.QoSType = volumeConfig.QoSType
+	cloneConfig.Qos = volumeConfig.Qos
+	cloneConfig.QosType = volumeConfig.QosType
 
 	// Override this value only if SplitOnClone has been defined in clone volume's config
 	if volumeConfig.SplitOnClone != "" {
