@@ -3,6 +3,7 @@
 package k8sclient
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/ghodss/yaml"
@@ -77,4 +78,16 @@ func TestYAMLFactory(t *testing.T) {
 		}
 		//fmt.Printf("json: %v", string(jsonData))
 	}
+}
+
+func TestGetRegistryVal(t *testing.T) {
+	assert.Exactly(t, "registry.barnacle.netapp.com", getRegistryVal("registry.barnacle.netapp.com",
+		true))
+	assert.Exactly(t, "k8s.gcr.io/sig-storage", getRegistryVal("", true))
+	assert.Exactly(t, "quay.io/k8scsi", getRegistryVal("", false))
+	assert.Exactly(t, "nexus.barnacle.netapp.com",
+		getRegistryVal("nexus.barnacle.netapp.com", false))
+	assert.Exactly(t, "k8s.gcr.io", getRegistryVal("k8s.gcr.io/", true))
+	assert.Exactly(t, "registry.barnacle.netapp.com/foo/bar",
+		getRegistryVal("registry.barnacle.netapp.com/foo/bar", true))
 }

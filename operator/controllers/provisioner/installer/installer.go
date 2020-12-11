@@ -243,7 +243,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentProvisioner,
 	// Get default values
 	logFormat = DefaultLogFormat
 	tridentImage = TridentImage
-	imageRegistry = DefaultImageRegistry
+	imageRegistry = ""
 	kubeletDir = DefaultKubeletDir
 	autosupportImage = commonconfig.DefaultAutosupportImage
 

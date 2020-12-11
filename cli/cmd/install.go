@@ -486,11 +486,6 @@ func prepareCSIYAMLFiles() error {
 	daemonSetlabels := make(map[string]string)
 	daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 
-	csiSidecarRegistry := imageRegistry
-	if csiSidecarRegistry == "" {
-		csiSidecarRegistry = "quay.io"
-	}
-
 	topologyEnabled, err := client.IsTopologyInUse()
 	if err != nil {
 		return fmt.Errorf("could not determine node topology; %v", err)
@@ -529,14 +524,14 @@ func prepareCSIYAMLFiles() error {
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-		autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels,
+		autosupportHostname, imageRegistry, logFormat, []string{}, labels,
 		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-		tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
+		tridentImage, imageRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
 		enableNodePrep, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
@@ -810,11 +805,6 @@ func installTrident() (returnError error) {
 
 	} else {
 
-		csiSidecarRegistry := imageRegistry
-		if csiSidecarRegistry == "" {
-			csiSidecarRegistry = "quay.io"
-		}
-
 		topologyEnabled, err := client.IsTopologyInUse()
 		if err != nil {
 			return fmt.Errorf("could not determine node topology; %v", err)
@@ -898,7 +888,7 @@ func installTrident() (returnError error) {
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 					tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-					autosupportHostname, csiSidecarRegistry, logFormat, []string{}, labels, nil,
+					autosupportHostname, imageRegistry, logFormat, []string{}, labels, nil,
 					Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled))
 			logFields = log.Fields{}
 		}
@@ -923,7 +913,7 @@ func installTrident() (returnError error) {
 
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-					tridentImage, csiSidecarRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
+					tridentImage, imageRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
 					enableNodePrep, client.ServerVersion()))
 			logFields = log.Fields{}
 		}

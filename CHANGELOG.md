@@ -4,6 +4,10 @@
 
 ## Changes since v20.10.0
 
+- **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and
+                 quay.io/k8scsi otherwise. Private registries are still supported and will be used without any
+                 modification if provided.
+
 **Fixes:**
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.

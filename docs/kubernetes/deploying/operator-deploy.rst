@@ -183,7 +183,7 @@ defintions for creating a TridentProvisioner CR.
        IPv6:   false
        Debug:  true
        Image Pull Secrets:
-       Image Registry:  quay.io
+       Image Registry:  k8s.gcr.io/sig-storage (k8s 1.17+, otherwise quay.io/k8scsi)
        k8sTimeout:      30
        Kubelet Dir:     /var/lib/kubelet
        Log Format:      text
@@ -342,24 +342,24 @@ Customizing your deployment
 The Trident operator provides users the ability to customize the manner in which
 Trident is installed, using the following attributes in the TridentProvisioner ``spec``:
 
-========================= ====================================================================== ================================================
-Parameter                 Description                                                            Default
-========================= ====================================================================== ================================================
-debug                     Enable debugging for Trident                                           'false'
-useIPv6                   Install Trident over IPv6                                              'false'
-k8sTimeout                Timeout for Kubernetes operations                                      30sec
-silenceAutosupport        Don't send autosupport bundles to NetApp automatically                 'false'
-enableNodePrep            Manage worker node dependencies automatically (**BETA**)               'false'
-autosupportImage          The container image for Autosupport Telemetry                          "netapp/trident-autosupport:20.10.0"
-autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry          "http://proxy.example.com:8888"
-uninstall                 A flag used to uninstall Trident                                       'false'
-logFormat                 Trident logging format to be used [text,json]                          "text"
-tridentImage              Trident image to install                                               "netapp/trident:20.10"
-imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port]`` "quay.io"
-kubeletDir                Path to the kubelet directory on the host                              "/var/lib/kubelet"
+========================= ============================================================================== ==========================================================
+Parameter                 Description                                                                    Default
+========================= ============================================================================== ==========================================================
+debug                     Enable debugging for Trident                                                   'false'
+useIPv6                   Install Trident over IPv6                                                      'false'
+k8sTimeout                Timeout for Kubernetes operations                                              30sec
+silenceAutosupport        Don't send autosupport bundles to NetApp automatically                         'false'
+enableNodePrep            Manage worker node dependencies automatically (**BETA**)                       'false'
+autosupportImage          The container image for Autosupport Telemetry                                  "netapp/trident-autosupport:20.10.0"
+autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry                  "http://proxy.example.com:8888"
+uninstall                 A flag used to uninstall Trident                                               'false'
+logFormat                 Trident logging format to be used [text,json]                                  "text"
+tridentImage              Trident image to install                                                       "netapp/trident:20.10"
+imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port][/subpath] `` "k8s.gcr.io/sig-storage (k8s 1.17+) or quay.io/k8scsi"
+kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
 imagePullSecrets          Secrets to pull images from an internal registry
-========================= ====================================================================== ================================================
+========================= ============================================================================== =========================================================
 
 .. warning::
 

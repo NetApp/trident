@@ -48,9 +48,6 @@ const (
 	ControllerServer = "127.0.0.1:8000"
 	TridentContainer = "trident-main"
 
-	// DefaultImageRegistry is the address/port of an internal image registry.
-	DefaultImageRegistry = "quay.io"
-
 	// DefaultLogFormat is the the Trident logging format (text, json)
 	DefaultLogFormat = "text"
 

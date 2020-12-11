@@ -131,6 +131,9 @@ const (
 	// Minimum Kubernetes version for CSI Trident default (non-CSI not supported)
 	KubernetesCSIVersionMinForced = "v1.14.0"
 
+	KubernetesCSISidecarRegistryPre117 = "quay.io/k8scsi"
+	KubernetesCSISidecarRegistry117Plus = "k8s.gcr.io/sig-storage"
+
 	// Mininum Kubernetes version for CRD v1 support (below this, we'll use v1beta1)
 	KubernetesCRDVersionMinForced = "v1.16.0"
 

@@ -366,6 +366,7 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	}
 
 	var deploymentYAML string
+	isGCRRegistryVersion := false
 	switch version.MinorVersion() {
 	case 13:
 		deploymentYAML = csiDeployment113YAMLTemplate
@@ -377,7 +378,10 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 		fallthrough
 	default:
 		deploymentYAML = csiDeployment117YAMLTemplate
+		isGCRRegistryVersion = true
 	}
+
+	imageRegistry = getRegistryVal(imageRegistry, isGCRRegistryVersion)
 
 	if autosupportImage == "" {
 		autosupportImage = commonconfig.DefaultAutosupportImage
@@ -514,7 +518,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.0.2
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -526,7 +530,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -539,7 +543,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-cluster-driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-cluster-driver-registrar:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-cluster-driver-registrar:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -653,7 +657,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v1.6.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -665,7 +669,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v2.2.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -780,7 +784,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v1.6.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v1.6.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -792,7 +796,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v2.2.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v2.2.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -805,7 +809,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -919,7 +923,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.3
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.0.3
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -932,7 +936,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -945,7 +949,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-resizer:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -957,7 +961,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -998,12 +1002,16 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 		logLevel = "2"
 	}
 
-	var daemonSetYAML string
+	isGCRRegistryVersion := false
+	daemonSetYAML := daemonSet114YAMLTemplate
 	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
 		daemonSetYAML = daemonSet113YAMLTemplate
-	} else {
-		daemonSetYAML = daemonSet114YAMLTemplate
+	} else if (version.MajorVersion() == 1 && version.MinorVersion() >= 17) || version.MajorVersion() > 1 {
+		isGCRRegistryVersion = true
 	}
+
+
+	imageRegistry = getRegistryVal(imageRegistry, isGCRRegistryVersion)
 
 	kubeletDir = strings.TrimRight(kubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage)
@@ -1091,7 +1099,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v1.0.2
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v1.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--connection-timeout=24h"
@@ -1229,7 +1237,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-node-driver-registrar:v2.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.0.1
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -2571,4 +2579,15 @@ func constructServiceAccountSecrets(serviceAccountSecrets []string) string {
 	}
 
 	return serviceAccountSecretsData
+}
+
+// getRegistryVal uses a custom registry as is, if one is provided, otherwise, depending on k8s
+// version < 1.17 or 1.17+ use quay.io/k8scsi or k8s.gcr.io/sig-storage, respectively
+func getRegistryVal(registry string, isGCRRegistryVersion bool) string {
+	if registry != "" {
+		return strings.TrimSuffix(registry, "/")
+	} else if isGCRRegistryVersion {
+		return commonconfig.KubernetesCSISidecarRegistry117Plus
+	}
+	return commonconfig.KubernetesCSISidecarRegistryPre117
 }
