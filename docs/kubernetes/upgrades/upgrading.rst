@@ -36,6 +36,20 @@ If you are running ``18.07`` and seek to upgrade to the ``20.07`` release, then:
    Trident's metadata from it's own etcd to CRD objects. Make sure you check the
    documentation of the release to understand how the upgrade will work.
 
+.. important::
+
+  If you are running Kubernetes 1.17 or later, and are looking to upgrade to
+  ``20.07.1``, you should specify ``parameter.fsType`` (file system type) in
+  StorageClasses used by Trident. This is a **requirement** for
+  enforcing `Security Contexts <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`_
+  for SAN volumes. You can delete and re-create StorageClass objects without
+  disrupting pre-existing volumes.
+  The `sample-input <https://github.com/NetApp/trident/tree/stable/v20.07/trident-installer/sample-input>`_
+  directory contains examples, such as
+  `storage-class-basic.yaml.templ <https://github.com/NetApp/trident/blob/stable/v20.07/trident-installer/sample-input/storage-class-basic.yaml.templ>`_,
+  and `storage-class-bronze-default.yaml <https://github.com/NetApp/trident/blob/stable/v20.07/trident-installer/sample-input/storage-class-bronze-default.yaml>`_.
+  For more information, take a look at the :ref:`Known issues <fstype-fix>` tab.
+
 Understanding your upgrade paths
 --------------------------------
 

@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "storageDriverName": "ontap-nas",
+    "backendName": "ontap-nas-autoexport",
+    "managementLIF": "10.0.0.1",
+    "dataLIF": "10.0.0.2",
+    "autoExportCIDRs": ["192.168.0.0/24"],
+    "autoExportPolicy": true,
+    "svm": "trident_svm",
+    "username": "cluster-admin",
+    "password": "password"
+}

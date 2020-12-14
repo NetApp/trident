@@ -5,3 +5,4 @@ metadata:
 provisioner: netapp.io/trident
 parameters:
   storagePools: "NetAppAFF:.*;NetAppHCI:Gold"
+  fsType: "ext4"
