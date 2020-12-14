@@ -923,7 +923,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.0.3
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.0.4
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -936,7 +936,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -961,7 +961,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -1009,7 +1009,6 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 	} else if (version.MajorVersion() == 1 && version.MinorVersion() >= 17) || version.MajorVersion() > 1 {
 		isGCRRegistryVersion = true
 	}
-
 
 	imageRegistry = getRegistryVal(imageRegistry, isGCRRegistryVersion)
 
