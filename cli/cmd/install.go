@@ -254,8 +254,12 @@ func discoverInstallationEnvironment() error {
 	}
 	log.Debugf("Trident image: %s", tridentImage)
 
-	if imageRegistry != "" {
-		autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
+	if autosupportImage == "" {
+		autosupportImage = tridentconfig.DefaultAutosupportImage
+
+		if imageRegistry != "" {
+			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
+		}
 	}
 	log.Debugf("Autosupport image: %s", autosupportImage)
 
