@@ -127,7 +127,6 @@ func (d *Client) refreshToken(ctx context.Context) error {
 
 		Logc(ctx).WithFields(log.Fields{
 			"type":    d.token.Type(),
-			"token":   d.token.AccessToken,
 			"expires": d.token.Expiry.String(),
 		}).Trace("Token still valid.")
 
@@ -142,7 +141,6 @@ func (d *Client) refreshToken(ctx context.Context) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"type":    d.token.Type(),
-		"token":   d.token.AccessToken,
 		"expires": d.token.Expiry.String(),
 	}).Debug("Got fresh token.")
 
