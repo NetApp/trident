@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	hash "github.com/mitchellh/hashstructure"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -100,7 +100,7 @@ func makeStorageClass(ctx context.Context, options map[string]string) (*storagec
 	}
 
 	// Set name based on hash value
-	scHash, err := hash.Hash(scConfig, nil)
+	scHash, err := hash.Hash(scConfig, hash.FormatV2, nil)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"storageClass":            scConfig.Name,

@@ -919,7 +919,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.3
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-provisioner:v2.0.4
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -932,7 +932,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-attacher:v3.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -957,7 +957,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v3.0.1
+        image: {CSI_SIDECAR_REGISTRY}/k8scsi/csi-snapshotter:v3.0.2
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
