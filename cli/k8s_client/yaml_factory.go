@@ -496,6 +496,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -635,6 +636,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -762,6 +764,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -901,6 +904,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:

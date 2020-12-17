@@ -34,7 +34,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "20.10.0"
+	DefaultOrchestratorVersion       = "20.10.1"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -133,7 +133,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "netapp/trident-autosupport:20.10.0"
+	DefaultAutosupportImage = "netapp/trident-autosupport:20.10"
 )
 
 var (
