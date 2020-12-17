@@ -329,26 +329,29 @@ func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 // GetIPAddresses returns the sorted list of Global Unicast IP addresses available to Trident
 func GetIPAddresses(ctx context.Context) ([]string, error) {
 
+	Logc(ctx).Debug(">>>> osutils.GetIPAddresses")
+	defer Logc(ctx).Debug("<<<< osutils.GetIPAddresses")
+
 	ipAddrs := make([]string, 0)
-	addrsMap := make(map[string]bool)
-	addrs, err := net.InterfaceAddrs()
+	addrsMap := make(map[string]struct{})
+
+	// Get the set of potentially viable IP addresses for this host in an OS-appropriate way.
+	addrs, err := getIPAddresses(ctx)
 	if err != nil {
 		err = fmt.Errorf("could not gather system IP addresses; %v", err)
 		Logc(ctx).Error(err)
 		return nil, err
 	}
 
-	// Remove obviously bad addresses such as loopback/linklocal
+	// Strip netmask and use a map to ensure addresses are deduplicated.
 	for _, addr := range addrs {
+
 		// net.Addr are of form 1.2.3.4/32, but IP needs 1.2.3.4, so we must strip the netmask (also works for IPv6)
 		parsedAddr := net.ParseIP(strings.Split(addr.String(), "/")[0])
-		if parsedAddr.IsGlobalUnicast() {
-			Logc(ctx).WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
-			// Use a map to ensure addresses are deduplicated
-			addrsMap[parsedAddr.String()] = true
-		} else {
-			Logc(ctx).WithField("IPAddress", parsedAddr.String()).Debug("Ignoring unusable IP address.")
-		}
+
+		Logc(ctx).WithField("IPAddress", parsedAddr.String()).Debug("Discovered potentially viable IP address.")
+
+		addrsMap[parsedAddr.String()] = struct{}{}
 	}
 
 	for addr := range addrsMap {

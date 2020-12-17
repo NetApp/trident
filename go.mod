@@ -30,6 +30,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
+	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v0.0.0-20200820110305-ef1bb2697bc2
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // github.com/golang/crypto
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // github.com/golang/oauth2

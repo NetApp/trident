@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"regexp"
@@ -16,6 +17,7 @@ import (
 	"unsafe"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
 	"github.com/zcalusic/sysinfo"
 	"golang.org/x/sys/unix"
 
@@ -76,8 +78,8 @@ func GetFilesystemStats(
 	}).Debug("Filesystem size information")
 
 	available = int64(buf.Bavail) * buf.Bsize
-	capacity = int64(size)
-	usage = int64(capacity - available)
+	capacity = size
+	usage = capacity - available
 	inodes = int64(buf.Files)
 	inodesFree = int64(buf.Ffree)
 	inodesUsed = inodes - inodesFree
@@ -659,4 +661,138 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	host.OS.Version = osInfo.Version
 	host.OS.Release = osInfo.Release
 	return host, nil
+}
+
+// getIPAddresses uses the Linux-specific netlink library to get a host's external IP addresses.
+func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
+
+	Logc(ctx).Debug(">>>> osutils_linux.getIPAddresses")
+	defer Logc(ctx).Debug("<<<< osutils_linux.getIPAddresses")
+
+	// Use a map to deduplicate addresses found via different algorithms.
+	addressMap := make(map[string]net.Addr)
+
+	// Consider addresses from non-dummy interfaces
+	addresses, err := getIPAddressesExceptingDummyInterfaces(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, addr := range addresses {
+		addressMap[addr.String()] = addr
+	}
+
+	// Consider addresses from interfaces on default routes
+	addresses, err = getIPAddressesExceptingNondefaultRoutes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, addr := range addresses {
+		addressMap[addr.String()] = addr
+	}
+
+	addrs := make([]net.Addr, 0)
+	for _, addr := range addressMap {
+		addrs = append(addrs, addr)
+	}
+	return addrs, nil
+}
+
+// getIPAddressesExceptingDummyInterfaces returns all global unicast addresses from non-dummy interfaces.
+func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, error) {
+
+	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingDummyInterfaces")
+	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingDummyInterfaces")
+
+	allLinks, err := netlink.LinkList()
+	if err != nil {
+		Logc(ctx).Error(err)
+		return nil, err
+	}
+
+	links := make([]netlink.Link, 0)
+	for _, link := range allLinks {
+
+		if link.Type() == "dummy" {
+			log.WithFields(log.Fields{
+				"interface": link.Attrs().Name,
+				"type":      link.Type(),
+			}).Debug("Dummy interface, skipping.")
+			continue
+		}
+
+		links = append(links, link)
+	}
+
+	return getUsableAddressesFromLinks(ctx, links), nil
+}
+
+// getIPAddressesExceptingNondefaultRoutes returns all global unicast addresses from interfaces on default routes.
+func getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, error) {
+
+	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingNondefaultRoutes")
+	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingNondefaultRoutes")
+
+	// Get all default routes (nil destination)
+	routes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, &netlink.Route{}, netlink.RT_FILTER_DST)
+	if err != nil {
+		Logc(ctx).Error(err)
+		return nil, err
+	}
+
+	// Get deduplicated set of links associated with default routes
+	intfIndexMap := make(map[int]struct{})
+	for _, route := range routes {
+		Logc(ctx).WithField("route", route.String()).Debug("Considering default route.")
+		intfIndexMap[route.LinkIndex] = struct{}{}
+	}
+
+	links := make([]netlink.Link, 0)
+	for linkIndex := range intfIndexMap {
+		if link, err := netlink.LinkByIndex(linkIndex); err != nil {
+			Logc(ctx).Error(err)
+		} else {
+			links = append(links, link)
+		}
+	}
+
+	return getUsableAddressesFromLinks(ctx, links), nil
+}
+
+// getUsableAddressesFromLinks returns all global unicast addresses on the specified interfaces.
+func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []net.Addr {
+
+	addrs := make([]net.Addr, 0)
+
+	for _, link := range links {
+
+		logFields := log.Fields{"interface": link.Attrs().Name, "type": link.Type()}
+		Logc(ctx).WithFields(logFields).Debug("Considering interface.")
+
+		linkAddrs, err := netlink.AddrList(link, netlink.FAMILY_ALL)
+		if err != nil {
+			log.WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
+			continue
+		}
+
+		for _, linkAddr := range linkAddrs {
+
+			logFields := log.Fields{"interface": link.Attrs().Name, "address": linkAddr.String()}
+
+			ipNet := linkAddr.IPNet
+			if ipNet == nil {
+				log.WithFields(logFields).Debug("Address IPNet is nil, skipping.")
+				continue
+			}
+
+			if !ipNet.IP.IsGlobalUnicast() {
+				log.WithFields(logFields).Debug("Address is not global unicast, skipping.")
+				continue
+			}
+
+			log.WithFields(logFields).Debug("Address is potentially viable.")
+			addrs = append(addrs, ipNet)
+		}
+	}
+
+	return addrs
 }
