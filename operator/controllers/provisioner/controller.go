@@ -670,6 +670,34 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 	return nil
 }
 
+
+
+// ensureCompleteCleanup identifies if there are remnants from previous Trident uninstallation
+// and removes them, provided tridentctl-based installation does not exist. Since, it gets
+// executed after the uninstallation and is an extra clean-up step it does not return any error.
+func (c *Controller) ensureCompleteCleanup() {
+
+	var uninstallRequired bool
+	// Check for the CSI based Trident installation
+	csiDeploymentFound, _, err := c.isCSITridentInstalled()
+	if err != nil {
+		log.Error("Failed to identify if tridentctl-based Trident installation exist.")
+	} else if !csiDeploymentFound {
+		log.Info("Starting cleanup of remnants (if any) from previous Trident uninstallation.")
+		uninstallRequired = true
+	}
+
+	if uninstallRequired {
+		if err := c.uninstallTridentAll(metav1.NamespaceDefault); err != nil {
+			log.Error("Failed to cleanup.")
+			return
+		}
+
+		log.Info("Cleanup complete.")
+	}
+
+}
+
 // alphaSnapshotCRDsExist identifies if the alpha snapshot CRDs not present
 func (c *Controller) alphaSnapshotCRDsExist() (bool, []string, error) {
 	var alphaSnapshotCRDsExist bool
@@ -956,6 +984,10 @@ func (c *Controller) reconcileTridentNotPresent() error {
 		return err
 	} else if len(tridentCRs) == 0 {
 		log.Info("Reconciler found no TridentProvisioner CRs, nothing to do.")
+
+		// Ensure remnants from previous Operator-based installation (if any) are removed
+		c.ensureCompleteCleanup()
+
 		return nil
 	}
 
