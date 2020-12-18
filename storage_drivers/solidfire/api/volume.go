@@ -228,7 +228,7 @@ func (c *Client) DetachVolume(ctx context.Context, v Volume) (err error) {
 		return errors.New("detach volume error")
 	}
 
-	err = utils.ISCSIDisableDelete(ctx, v.Iqn, c.SVIP)
+	err = utils.ISCSILogout(ctx, v.Iqn, c.SVIP)
 	return
 }
 
