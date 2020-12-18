@@ -7,42 +7,46 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* Kubernetes 1.11 or later (latest: 1.19)
-* OpenShift 3.11, 4.2, 4.3, 4.4, and 4.5
+* Anthos GKE On-Prem v1.5
 * Docker Enterprise 2.1, 3.0, and 3.1
-* Anthos GKE On-Prem v1.1, v1.2, v1.3, and v1.4 (latest: v1.4)
+* Kubernetes 1.11 or later (latest: 1.19)
+* OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, and 4.6.8
 
 The Trident Operator is supported with these releases:
 
-* Kubernetes 1.14 or later (latest 1.19)
-* OpenShift 4.2, 4.3, 4.4, and 4.5
-* Anthos GKE On-Prem v1.1, v1.2, v1.3, and v1.4 (latest: v1.4)
+* Anthos GKE On-Prem v1.5
+* Kubernetes 1.14 or later (latest: 1.19)
+* OpenShift 4.2, 4.3, 4.4, 4.5, and 4.6.8
 
-In addition, Trident should work with any distribution of Docker or Kubernetes
-that uses one of the supported versions as a base, such as Rancher or Tectonic.
+.. important::
+
+  Red Hat OpenShift Container Platform users might observe their ``initiatorname.iscsi`` file to be blank if using any version below 4.6.8. This is a bug that has been identified by RedHat to be fixed with OpenShift 4.6.8. See `this bug fix announcement <https://access.redhat.com/errata/RHSA-2020:5259/>`_. NetApp recommends that you use Trident 20.10 on OpenShift 4.6.8.
+
+Trident also works with a host of other fully managed and self-managed Kubernetes offerings, including Google Cloud’s Google Kubernetes Engine (GKE), AWS’s Elastic Kubernetes Services (EKS), Azure’s Azure Kubernetes Service (AKS), and Rancher.
 
 Supported backends (storage)
 ============================
 
 To use Trident, you need one or more of the following supported backends:
 
-* FAS/AFF/Select 9.1 or later
-* HCI/SolidFire Element OS 8 or later
-* E/EF-Series SANtricity
 * Azure NetApp Files
 * Cloud Volumes ONTAP
 * Cloud Volumes Service for AWS
 * Cloud Volumes Service for GCP
+* E/EF-Series SANtricity
+* FAS/AFF/Select 9.1 or later
+* NetApp All SAN Array (ASA)
+* NetApp HCI/Element software 8 or later
 
-Feature Requirements
+Feature requirements
 ====================
 
 Trident requires some feature gates to be enabled for certain features
-to work. Refer to the table shown below to determine if you need to
+to work. See the table below to determine if you need to
 enable feature gates, based on your version of Trident and Kubernetes.
 
 ================================ =============== ========================== ===============================
-         Feature                 Trident version    Kubernetes version         Feature Gates Required?
+         Feature                 Trident version    Kubernetes version         Feature gates required?
 ================================ =============== ========================== ===============================
 CSI Trident                      19.07 and above   1.13\ :sup:`1` and above   Yes for ``1.13``\ :sup:`1`
 Volume Snapshots (beta)          20.01 and above       1.17 and above                    No
@@ -76,9 +80,9 @@ backend(s) you're using.
 These are the Linux distributions that are known to work:
 
 * Debian 8 or later
-* Ubuntu 18.04 or later
-* RHEL or CentOS 7.4 or later
 * RedHat CoreOS 4.2 and 4.3
+* RHEL or CentOS 7.4 or later
+* Ubuntu 18.04 or later
 
 The ``tridentctl`` utility also runs on any of these distributions of Linux.
 
