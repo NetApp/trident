@@ -5,7 +5,7 @@ Cloud Volumes Service (CVS) on GCP Volume Options
 
 Volume create options for the CVS on GCP driver:
 
-* ``size`` - the size of the volume, defaults to 1 TiB
+* ``size`` - the size of the volume, defaults to 100 GiB for CVS-Performance volumes or 1 TiB for CVS volumes.
 * ``serviceLevel`` - the CVS service level of the volume, defaults to ``standard``. Valid values are ``standard``, ``premium``, and ``extreme``.
 * ``snapshotReserve`` - this will set the snapshot reserve to the desired percentage. The default is no value, meaning CVS will select the snapshot reserve (usually 0%).
 
@@ -20,4 +20,4 @@ using the ``-o`` operator during the CLI operation.  These override any equivale
    # create a 5TiB premium volume
    docker volume create -d netapp --name demo -o size=5T -o serviceLevel=premium
 
-The minimum volume size is 1 TiB.
+The minimum volume size is 100 GiB for CVS-Performance volumes, or 1 TiB for CVS volumes.

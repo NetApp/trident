@@ -13,6 +13,7 @@
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
 
 **Enhancements:**
+- Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.
 
 **Beta Features:**
 

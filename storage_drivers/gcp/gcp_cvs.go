@@ -28,10 +28,11 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes    = 1000000000    // 1 GB
-	MinimumCVSVolumeSizeBytes = 1099511627776 // 1 TiB
-	MinimumAPIVersion         = "1.1.5"
-	MinimumSDEVersion         = "2020.2.6"
+	MinimumVolumeSizeBytes      = uint64(1000000000)    // 1 GB
+	MinimumCVSVolumeSizeBytesSW = uint64(1099511627776) // 1 TiB
+	MinimumCVSVolumeSizeBytesHW = uint64(107374182400)  // 100 GiB
+	MinimumAPIVersion           = "1.1.6"
+	MinimumSDEVersion           = "2020.10.0"
 
 	defaultServiceLevel    = api.UserServiceLevel1
 	defaultNfsMountOptions = "-o nfsvers=3"
@@ -611,6 +612,25 @@ func (d *NFSStorageDriver) Create(
 		return drivers.NewVolumeExistsError(name)
 	}
 
+	// Take storage class from volume config (named CVSStorageClass to avoid name collision)
+	// first (handles Docker case), then from pool.
+	storageClass := volConfig.CVSStorageClass
+	if storageClass == "" {
+		storageClass = pool.InternalAttributes[StorageClass]
+		volConfig.CVSStorageClass = storageClass
+	}
+
+	var minimumCVSVolumeSizeBytes uint64
+
+	switch storageClass {
+	case api.StorageClassSoftware:
+		minimumCVSVolumeSizeBytes = MinimumCVSVolumeSizeBytesSW
+	case api.StorageClassHardware:
+		minimumCVSVolumeSizeBytes = MinimumCVSVolumeSizeBytesHW
+	default:
+		return fmt.Errorf("invalid storageClass: %s", storageClass)
+	}
+
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
@@ -630,14 +650,15 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	// TODO: remove this code once CVS can handle smaller volumes
-	if sizeBytes < MinimumCVSVolumeSizeBytes {
+	if sizeBytes < minimumCVSVolumeSizeBytes {
 
 		Logc(ctx).WithFields(log.Fields{
-			"name": name,
-			"size": sizeBytes,
-		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (1 TiB).")
+			"name":          name,
+			"requestedSize": sizeBytes,
+			"minimumSize":   minimumCVSVolumeSizeBytes,
+		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable.")
 
-		sizeBytes = MinimumCVSVolumeSizeBytes
+		sizeBytes = minimumCVSVolumeSizeBytes
 		volConfig.Size = fmt.Sprintf("%d", sizeBytes)
 	}
 
@@ -691,14 +712,6 @@ func (d *NFSStorageDriver) Create(
 		volConfig.Network = network
 	}
 	gcpNetwork := fmt.Sprintf("projects/%s/global/networks/%s", d.Config.ProjectNumber, network)
-
-	// Take storage class from volume config (named CVSStorageClass to avoid name collision) first (handles Docker case),
-	//   then from pool
-	storageClass := volConfig.CVSStorageClass
-	if storageClass == "" {
-		storageClass = pool.InternalAttributes[StorageClass]
-		volConfig.CVSStorageClass = storageClass
-	}
 
 	// TODO: Remove when software storage class allows NFSv4
 	protocolTypes := []string{api.ProtocolTypeNFSv3}
