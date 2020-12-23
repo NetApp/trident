@@ -157,7 +157,8 @@ Trident can create CVS volumes in one of two service types:
    [`standard`, `premium`, and `extreme`].
 
 More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`.
-Currently, 1 TiB is the minimum volume size that will be provisioned. Future releases of CVS may remove this restriction.
+Currently, 100 GiB is the minimum CVS-Performance volume size that will be provisioned, while CVS volumes must be at
+least 1 TiB. Future releases of CVS may remove this restriction.
 
 .. table:: Cloud Volume Service driver capabilities
 

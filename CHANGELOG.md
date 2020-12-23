@@ -12,6 +12,7 @@
 - Changed iSCSI static discovery to sendtargets
 
 **Enhancements:**
+- Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.
 
 **Beta Features:**
 
