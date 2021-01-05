@@ -115,11 +115,6 @@ type MountTarget struct {
 	MountTargetID string `json:"mountTargetId"`
 	FileSystemID  string `json:"fileSystemId"`
 	IPAddress     string `json:"ipAddress"`
-	Subnet        string `json:"subnet"`
-	StartIP       string `json:"startIP"`
-	EndIP         string `json:"endIP"`
-	Gateway       string `json:"gateway"`
-	Netmask       string `json:"netmask"`
 	SmbServerFqdn string `json:"smbServerFqdn"`
 }
 

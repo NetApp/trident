@@ -3,7 +3,7 @@ module github.com/netapp/trident
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v49.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v49.1.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.13
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.5
 	github.com/Azure/go-autorest/autorest/date v0.3.0

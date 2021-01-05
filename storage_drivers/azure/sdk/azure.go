@@ -10,14 +10,12 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
-	"github.com/cenkalti/backoff/v4"
-
-	// Forced to use "latest" in order to get subnet Delegations
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2019-11-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-08-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-07-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-06-01/resources"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
@@ -172,7 +170,7 @@ func exportPolicyExportOne(er *ExportRule) *netapp.ExportPolicyRule {
 // exportPolicyExport turns an internal ExportPolicy into something consumable by the SDK
 func exportPolicyExport(ep *ExportPolicy) *netapp.VolumePropertiesExportPolicy {
 	var navp = netapp.VolumePropertiesExportPolicy{}
-	var rules = []netapp.ExportPolicyRule{}
+	var rules = make([]netapp.ExportPolicyRule, 0)
 
 	for _, rule := range ep.Rules {
 		var naep = exportPolicyExportOne(&rule)
@@ -222,7 +220,7 @@ func exportPolicyImportOne(epr *netapp.ExportPolicyRule) *ExportRule {
 // exportPolicyImport turns an SDK ExportPolicy into an internal one
 func exportPolicyImport(ep *netapp.VolumePropertiesExportPolicy) *ExportPolicy {
 	var naeps = ExportPolicy{}
-	var rules = []ExportRule{}
+	var rules = make([]ExportRule, 0)
 
 	for _, rule := range *ep.Rules {
 		var naep = exportPolicyImportOne(&rule)
@@ -319,21 +317,6 @@ func (d *Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volu
 		}
 		if mtp.IPAddress != nil {
 			mt.IPAddress = *mtp.IPAddress
-		}
-		if mtp.Subnet != nil {
-			mt.Subnet = *mtp.Subnet
-		}
-		if mtp.StartIP != nil {
-			mt.StartIP = *mtp.StartIP
-		}
-		if mtp.EndIP != nil {
-			mt.EndIP = *mtp.EndIP
-		}
-		if mtp.Gateway != nil {
-			mt.Gateway = *mtp.Gateway
-		}
-		if mtp.Netmask != nil {
-			mt.Netmask = *mtp.Netmask
 		}
 		if mtp.SmbServerFqdn != nil {
 			mt.SmbServerFqdn = *mtp.SmbServerFqdn
@@ -792,6 +775,7 @@ func (d *Client) RelabelVolume(
 	nv.ExportPolicy = nil
 	nv.ProtocolTypes = nil
 	nv.MountTargets = nil
+	nv.ThroughputMibps = nil
 
 	Logc(ctx).WithFields(log.Fields{
 		"name":          nv.Name,
@@ -818,7 +802,7 @@ func (d *Client) RelabelVolume(
 }
 
 // RenameRelabelVolume is probably not supported on Azure
-func (d *Client) RenameRelabelVolume(filesystem *FileSystem, newName string, labels []string) (*FileSystem, error) {
+func (d *Client) RenameRelabelVolume(_ *FileSystem, _ string, _ []string) (*FileSystem, error) {
 	return nil, fmt.Errorf("unimplemented")
 }
 
@@ -900,12 +884,10 @@ func (d *Client) GetSnapshotsForVolume(ctx context.Context, filesystem *FileSyst
 			// OwnerID <> "ID"?
 			Location: *ns.Location,
 			// no such field: UsedBytes:
+			FileSystemID: filesystem.FileSystemID,
 		}
 		if ns.SnapshotProperties.Created != nil {
 			s.Created = *ns.SnapshotProperties.Created
-		}
-		if ns.SnapshotProperties.FileSystemID != nil {
-			s.FileSystemID = *ns.SnapshotProperties.FileSystemID
 		}
 		if ns.SnapshotProperties.SnapshotID != nil {
 			s.SnapshotID = *ns.SnapshotProperties.SnapshotID

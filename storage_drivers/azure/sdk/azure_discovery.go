@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-06-01/resources"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
