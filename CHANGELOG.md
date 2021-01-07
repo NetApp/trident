@@ -9,16 +9,15 @@
 
 **Fixes:**
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
+- **Kubernetes:** Fixed issue of Ownership References set by Trident Operator on cluster-scoped Trident resources
+ (Issue [#474](https://github.com/NetApp/trident/issues/474)).
 - Changed iSCSI static discovery to sendtargets
+- Fixed E-series intermittent HTTP 422 error on volume creation.
 
 **Enhancements:**
+- **Kubernetes:** Added support for Kubernetes 1.20
+- **Kubernetes:** Updated CSI sidecars.
 - Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.
-
-**Beta Features:**
-
-**Deprecations:**
-
-**Fixes:**
 
 ## v20.10.0
 
