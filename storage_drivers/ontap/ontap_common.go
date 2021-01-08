@@ -1316,7 +1316,7 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 func ValidateStoragePrefix(storagePrefix string) error {
 
 	// Ensure storage prefix is compatible with ONTAP
-	matched, err := regexp.MatchString(`^$|^[a-zA-Z_.-][a-zA-Z0-9_.-]*$`, storagePrefix)
+	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)
 	if err != nil {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
