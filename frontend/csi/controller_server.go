@@ -60,9 +60,45 @@ func (p *Plugin) CreateVolume(
 		// Check if the size of existing volume is compatible with the new request
 		existingSize, _ := strconv.ParseInt(existingVolume.Config.Size, 10, 64)
 		if existingSize < req.GetCapacityRange().GetRequiredBytes() {
-			return nil, status.Error(
-				codes.AlreadyExists,
-				fmt.Sprintf("volume %s (but with different size) already exists", req.GetName()))
+			return nil, status.Error(codes.AlreadyExists,
+				fmt.Sprintf("volume %s (with different size) already exists", req.GetName()))
+		}
+
+		// If CSI asked for a clone, check that the existing volume matches the request
+		if req.VolumeContentSource != nil {
+			switch contentSource := req.VolumeContentSource.Type.(type) {
+
+			case *csi.VolumeContentSource_Volume:
+				sourceVolumeID := contentSource.Volume.VolumeId
+				if sourceVolumeID == "" {
+					return nil, status.Error(codes.InvalidArgument, "content source volume ID missing in request")
+				}
+				if sourceVolumeID != existingVolume.Config.CloneSourceVolume {
+					return nil, status.Error(codes.AlreadyExists,
+						fmt.Sprintf("volume %s (with different volume source) already exists", req.GetName()))
+				}
+
+			case *csi.VolumeContentSource_Snapshot:
+				sourceSnapshotID := contentSource.Snapshot.SnapshotId
+				if sourceSnapshotID == "" {
+					return nil, status.Error(codes.InvalidArgument, "content source snapshot ID missing in request")
+				}
+				cloneSourceVolume, cloneSourceSnapshot, err := storage.ParseSnapshotID(sourceSnapshotID)
+				if err != nil {
+					return nil, status.Error(codes.InvalidArgument, "invalid snapshot ID")
+				}
+				if cloneSourceVolume != existingVolume.Config.CloneSourceVolume {
+					return nil, status.Error(codes.AlreadyExists,
+						fmt.Sprintf("volume %s (with different volume source) already exists", req.GetName()))
+				}
+				if cloneSourceSnapshot != existingVolume.Config.CloneSourceSnapshot {
+					return nil, status.Error(codes.AlreadyExists,
+						fmt.Sprintf("volume %s (with different snapshot source) already exists", req.GetName()))
+				}
+
+			default:
+				return nil, status.Error(codes.InvalidArgument, "unsupported volume content source")
+			}
 		}
 
 		// Request matches existing volume, so just return it
@@ -205,6 +241,9 @@ func (p *Plugin) CreateVolume(
 				volConfig.CloneSourceVolume = cloneSourceVolume
 				volConfig.CloneSourceSnapshot = cloneSourceSnapshot
 			}
+
+		default:
+			return nil, status.Error(codes.InvalidArgument, "unsupported volume content source")
 		}
 	}
 
@@ -496,16 +535,14 @@ func (p *Plugin) ListVolumes(
 	return &csi.ListVolumesResponse{Entries: entries, NextToken: nextToken}, nil
 }
 
-func (p *Plugin) GetCapacity(
-	ctx context.Context, req *csi.GetCapacityRequest,
-) (*csi.GetCapacityResponse, error) {
+func (p *Plugin) GetCapacity(_ context.Context, _ *csi.GetCapacityRequest) (*csi.GetCapacityResponse, error) {
 
 	// Trident doesn't report pool capacities
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func (p *Plugin) ControllerGetCapabilities(
-	ctx context.Context, req *csi.ControllerGetCapabilitiesRequest,
+	ctx context.Context, _ *csi.ControllerGetCapabilitiesRequest,
 ) (*csi.ControllerGetCapabilitiesResponse, error) {
 
 	fields := log.Fields{"Method": "ControllerGetCapabilities", "Type": "CSI_Controller"}
@@ -763,6 +800,22 @@ func (p *Plugin) ControllerExpandVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
+	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block
+
+	// Return success if the volume is already at least as large as required
+	if volumeSize, err := strconv.ParseInt(volume.Config.Size, 10, 64); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volumeId":          volumeId,
+			"requestedCapacity": newSize,
+		}).Error("Could not parse existing volume size.")
+		return nil, p.getCSIErrorForOrchestratorError(err)
+	} else if volumeSize >= minSize {
+		return &csi.ControllerExpandVolumeResponse{
+			CapacityBytes:         volumeSize,
+			NodeExpansionRequired: nodeExpansionRequired,
+		}, nil
+	}
+
 	if err = p.orchestrator.ResizeVolume(ctx, volume.Config.Name, newSize); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"volumeId":          volumeId,
@@ -781,7 +834,6 @@ func (p *Plugin) ControllerExpandVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	nodeExpansionRequired := resizedVolume.Config.Protocol == tridentconfig.Block
 	responseSize, err := strconv.ParseInt(resizedVolume.Config.Size, 10, 64)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -798,6 +850,14 @@ func (p *Plugin) ControllerExpandVolume(
 	}
 
 	return &response, nil
+}
+
+func (p *Plugin) ControllerGetVolume(
+	_ context.Context, _ *csi.ControllerGetVolumeRequest,
+) (*csi.ControllerGetVolumeResponse, error) {
+
+	// Trident doesn't support ControllerGetVolume
+	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func (p *Plugin) getCSIVolumeFromTridentVolume(
