@@ -11,6 +11,7 @@
 **Fixes:**
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
+- **Kubernetes:** Fixed issue where the operator could leave a Trident node unregistered with kubelet (Issue [#487](https://github.com/NetApp/trident/issues/487)).
 
 **Enhancements:**
 - Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.

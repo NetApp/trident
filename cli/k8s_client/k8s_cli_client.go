@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -344,6 +345,27 @@ func (c *KubectlClient) GetDeploymentsByLabel(label string, allNamespaces bool) 
 	return deploymentList.Items, nil
 }
 
+// CheckDeploymentExists returns true if the specified deployment exists.
+func (c *KubectlClient) CheckDeploymentExists(name, namespace string) (bool, error) {
+
+	var deployment appsv1.Deployment
+
+	args := []string{"get", "deployment", name, "--namespace", namespace, "-o=json"}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("%s; %v", string(out), err)
+	}
+	if len(out) == 0 {
+		return false, nil
+	}
+
+	err = yaml.Unmarshal(out, &deployment)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // CheckDeploymentExistsByLabel returns true if one or more deployment objects
 // matching the specified label exist.
 func (c *KubectlClient) CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
@@ -381,10 +403,40 @@ func (c *KubectlClient) DeleteDeploymentByLabel(label string) error {
 	return nil
 }
 
-// DeleteDeployment deletes a deployment object matching the specified name and namespace
-func (c *KubectlClient) DeleteDeployment(name, namespace string) error {
+// DeleteDeployment deletes a deployment object matching the specified name and namespace.
+func (c *KubectlClient) DeleteDeployment(name, namespace string, foreground bool) error {
+	if !foreground {
+		return c.deleteDeploymentBackground(name, namespace)
+	}
+	return c.deleteDeploymentForeground(name, namespace)
+}
+
+// deleteDeploymentBackground deletes a deployment object matching the specified name and namespace.
+func (c *KubectlClient) deleteDeploymentBackground(name, namespace string) error {
 
 	cmdArgs := []string{"delete", "deployment", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes deployment.")
+
+	return nil
+}
+
+// deleteDeploymentForeground deletes a deployment object matching the specified name and namespace.  Note that
+// kubectl does not support specifying a foreground propagation policy, but this method uses --wait and --grace-period
+// to at least ensure the deployment is deleted synchronously and finalizers are honored.
+func (c *KubectlClient) deleteDeploymentForeground(name, namespace string) error {
+
+	cmdArgs := []string{
+		"delete", "deployment", name, "--namespace", namespace,
+		"--wait", "--grace-period", strconv.Itoa(int(c.timeout.Seconds())),
+	}
 	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %v", string(out), err)
@@ -659,6 +711,27 @@ func (c *KubectlClient) GetDaemonSetsByLabel(label string, allNamespaces bool) (
 	return daemonsetList.Items, nil
 }
 
+// CheckDaemonSetExists returns true if the specified daemonset exists.
+func (c *KubectlClient) CheckDaemonSetExists(name, namespace string) (bool, error) {
+
+	var daemonset appsv1.DaemonSet
+
+	args := []string{"get", "daemonset", name, "--namespace", namespace, "-o=json"}
+	out, err := exec.Command(c.cli, args...).CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("%s; %v", string(out), err)
+	}
+	if len(out) == 0 {
+		return false, nil
+	}
+
+	err = yaml.Unmarshal(out, &daemonset)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // CheckDaemonSetExistsByLabel returns true if one or more daemonset objects
 // matching the specified label exist.
 func (c *KubectlClient) CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
@@ -696,10 +769,40 @@ func (c *KubectlClient) DeleteDaemonSetByLabel(label string) error {
 	return nil
 }
 
-// DeleteDaemonSet deletes a DaemonSet object matching the specified name and namespace
-func (c *KubectlClient) DeleteDaemonSet(name, namespace string) error {
+// DeleteDaemonSet deletes a daemonset object matching the specified name and namespace.
+func (c *KubectlClient) DeleteDaemonSet(name, namespace string, foreground bool) error {
+	if !foreground {
+		return c.deleteDaemonSetBackground(name, namespace)
+	}
+	return c.deleteDaemonSetForeground(name, namespace)
+}
+
+// deleteDaemonSetBackground deletes a DaemonSet object matching the specified name and namespace.
+func (c *KubectlClient) deleteDaemonSetBackground(name, namespace string) error {
 
 	cmdArgs := []string{"delete", "daemonset", name, "--namespace", namespace}
+	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s; %v", string(out), err)
+	}
+
+	log.WithFields(log.Fields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Deleted Kubernetes daemonset.")
+
+	return nil
+}
+
+// deleteDaemonSetForeground deletes a daemonset object matching the specified name and namespace.  Note that
+// kubectl does not support specifying a foreground propagation policy, but this method uses --wait and --grace-period
+// to at least ensure the daemonset is deleted synchronously and finalizers are honored.
+func (c *KubectlClient) deleteDaemonSetForeground(name, namespace string) error {
+
+	cmdArgs := []string{
+		"delete", "daemonset", name, "--namespace", namespace,
+		"--wait", "--grace-period", strconv.Itoa(int(c.timeout.Seconds())),
+	}
 	out, err := exec.Command(c.cli, cmdArgs...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %v", string(out), err)

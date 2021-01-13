@@ -122,7 +122,7 @@ func (i *Installer) UninstallTrident() error {
 		return err
 	}
 
-	if err := i.removeRBACObjects(log.InfoLevel); err != nil {
+	if err := i.removeRBACObjects(); err != nil {
 		return err
 	}
 
@@ -152,10 +152,10 @@ func (i *Installer) UninstallLegacyTrident() error {
 		return err
 	}
 
-	return i.removeRBACObjects(log.InfoLevel)
+	return i.removeRBACObjects()
 }
 
-func (i *Installer) removeRBACObjects(logLevel log.Level) error {
+func (i *Installer) removeRBACObjects() error {
 
 	// Delete cluster role binding
 	if err := i.deleteTridentClusterRoleBinding(); err != nil {
@@ -283,7 +283,7 @@ func (i *Installer) RemoveMultipleDeployments(unwantedDeployments []appsv1.Deplo
 	if len(unwantedDeployments) > 0 {
 		for _, deploymentToRemove := range unwantedDeployments {
 			// Delete the deployment
-			if err = i.client.DeleteDeployment(deploymentToRemove.Name, deploymentToRemove.Namespace); err != nil {
+			if err = i.client.DeleteDeployment(deploymentToRemove.Name, deploymentToRemove.Namespace, true); err != nil {
 				log.WithFields(log.Fields{
 					"deployment": deploymentToRemove.Name,
 					"namespace":  deploymentToRemove.Namespace,
@@ -347,7 +347,7 @@ func (i *Installer) RemoveMultipleDaemonSets(unwantedDaemonsets []appsv1.DaemonS
 	if len(unwantedDaemonsets) > 0 {
 		for _, daemonsetToRemove := range unwantedDaemonsets {
 			// Delete the daemonset
-			if err = i.client.DeleteDaemonSet(daemonsetToRemove.Name, daemonsetToRemove.Namespace); err != nil {
+			if err = i.client.DeleteDaemonSet(daemonsetToRemove.Name, daemonsetToRemove.Namespace, true); err != nil {
 				log.WithFields(log.Fields{
 					"deployment": daemonsetToRemove.Name,
 					"namespace":  daemonsetToRemove.Namespace,

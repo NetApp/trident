@@ -80,9 +80,10 @@ type Interface interface {
 	Exec(podName, containerName string, commandArgs []string) ([]byte, error)
 	GetDeploymentByLabel(label string, allNamespaces bool) (*appsv1.Deployment, error)
 	GetDeploymentsByLabel(label string, allNamespaces bool) ([]appsv1.Deployment, error)
+	CheckDeploymentExists(name, namespace string) (bool, error)
 	CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDeploymentByLabel(label string) error
-	DeleteDeployment(name, namespace string) error
+	DeleteDeployment(name, namespace string, foreground bool) error
 	PatchDeploymentByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetServiceByLabel(label string, allNamespaces bool) (*v1.Service, error)
 	GetServicesByLabel(label string, allNamespaces bool) ([]v1.Service, error)
@@ -97,9 +98,10 @@ type Interface interface {
 	DeleteStatefulSet(name, namespace string) error
 	GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error)
 	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error)
+	CheckDaemonSetExists(name, namespace string) (bool, error)
 	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDaemonSetByLabel(label string) error
-	DeleteDaemonSet(name, namespace string) error
+	DeleteDaemonSet(name, namespace string, foreground bool) error
 	PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
 	GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error)
@@ -426,6 +428,18 @@ func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]
 	return deploymentList.Items, nil
 }
 
+// CheckDeploymentExists returns true if the specified deployment exists.
+func (k *KubeClient) CheckDeploymentExists(name, namespace string) (bool, error) {
+
+	if _, err := k.clientset.AppsV1().Deployments(namespace).Get(ctx(), name, getOpts); err != nil {
+		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // CheckDeploymentExistsByLabel returns true if one or more deployment objects
 // matching the specified label exist.
 func (k *KubeClient) CheckDeploymentExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
@@ -468,9 +482,18 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 	return nil
 }
 
-// DeleteDeployment deletes a deployment object matching the specified name and namespace
-func (k *KubeClient) DeleteDeployment(name, namespace string) error {
+// DeleteDeployment deletes a deployment object matching the specified name and namespace.
+func (k *KubeClient) DeleteDeployment(name, namespace string, foreground bool) error {
+	if !foreground {
+		return k.deleteDeploymentBackground(name, namespace)
+	}
+	return k.deleteDeploymentForeground(name, namespace)
+}
 
+// deleteDeploymentBackground deletes a deployment object matching the specified name and namespace.  It does so
+// with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
+// associated pod(s) asynchronously.
+func (k *KubeClient) deleteDeploymentBackground(name, namespace string) error {
 	if err := k.clientset.AppsV1().Deployments(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
@@ -479,6 +502,56 @@ func (k *KubeClient) DeleteDeployment(name, namespace string) error {
 		"deployment": name,
 		"namespace":  namespace,
 	}).Debug("Deleted Kubernetes deployment.")
+
+	return nil
+}
+
+// deleteDeploymentForeground deletes a deployment object matching the specified name and namespace.  It does so
+// with a foreground propagation policy, so that it can then wait for the deployment to disappear which will happen
+// only after all owned objects (i.e. pods) are cleaned up.
+func (k *KubeClient) deleteDeploymentForeground(name, namespace string) error {
+
+	logFields := log.Fields{"name": name, "namespace": namespace}
+	log.WithFields(logFields).Debug("Starting foreground deletion of Deployment.")
+
+	propagationPolicy := metav1.DeletePropagationForeground
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &propagationPolicy,
+	}
+
+	if err := k.clientset.AppsV1().Deployments(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+		return err
+	}
+
+	checkDeploymentExists := func() error {
+
+		if exists, err := k.CheckDeploymentExists(name, namespace); err != nil {
+			return err
+		} else if exists {
+			return fmt.Errorf("deployment %s/%s exists", namespace, name)
+		}
+		return nil
+	}
+
+	checkDeploymentNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name":      name,
+			"namespace": namespace,
+			"increment": duration,
+			"err":       err,
+		}).Debugf("Deployment still exists, waiting.")
+	}
+	checkDeploymentBackoff := backoff.NewExponentialBackOff()
+	checkDeploymentBackoff.MaxElapsedTime = k.timeout
+
+	log.WithFields(logFields).Trace("Waiting for Deployment to be deleted.")
+
+	if err := backoff.RetryNotify(checkDeploymentExists, checkDeploymentBackoff, checkDeploymentNotify); err != nil {
+		return fmt.Errorf("deployment %s/%s was not deleted after %3.2f seconds",
+			namespace, name, k.timeout.Seconds())
+	}
+
+	log.WithFields(logFields).Debug("Completed foreground deletion of Deployment.")
 
 	return nil
 }
@@ -756,6 +829,18 @@ func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]a
 	return daemonSetList.Items, nil
 }
 
+// CheckDaemonSetExists returns true if the specified daemonset exists.
+func (k *KubeClient) CheckDaemonSetExists(name, namespace string) (bool, error) {
+
+	if _, err := k.clientset.AppsV1().DaemonSets(namespace).Get(ctx(), name, getOpts); err != nil {
+		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // CheckDaemonSetExistsByLabel returns true if one or more daemonset objects
 // matching the specified label exist.
 func (k *KubeClient) CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
@@ -798,8 +883,18 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 	return nil
 }
 
-// DeleteDaemonSet deletes a DaemonSet object matching the specified name and namespace
-func (k *KubeClient) DeleteDaemonSet(name, namespace string) error {
+// DeleteDeployment deletes a deployment object matching the specified name and namespace.
+func (k *KubeClient) DeleteDaemonSet(name, namespace string, foreground bool) error {
+	if !foreground {
+		return k.deleteDaemonSetBackground(name, namespace)
+	}
+	return k.deleteDaemonSetForeground(name, namespace)
+}
+
+// deleteDaemonSetBackground deletes a daemonset object matching the specified name and namespace.  It does so
+// with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
+// associated pod(s) asynchronously.
+func (k *KubeClient) deleteDaemonSetBackground(name, namespace string) error {
 
 	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
@@ -809,6 +904,56 @@ func (k *KubeClient) DeleteDaemonSet(name, namespace string) error {
 		"DaemonSet": name,
 		"namespace": namespace,
 	}).Debug("Deleted Kubernetes DaemonSet.")
+
+	return nil
+}
+
+// deleteDaemonSetForeground deletes a daemonset object matching the specified name and namespace.  It does so
+// with a foreground propagation policy, so that it can then wait for the daemonset to disappear which will happen
+// only after all owned objects (i.e. pods) are cleaned up.
+func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
+
+	logFields := log.Fields{"name": name, "namespace": namespace}
+	log.WithFields(logFields).Debug("Starting foreground deletion of DaemonSet.")
+
+	propagationPolicy := metav1.DeletePropagationForeground
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &propagationPolicy,
+	}
+
+	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+		return err
+	}
+
+	checkDaemonSetExists := func() error {
+
+		if exists, err := k.CheckDaemonSetExists(name, namespace); err != nil {
+			return err
+		} else if exists {
+			return fmt.Errorf("daemonset %s/%s exists", namespace, name)
+		}
+		return nil
+	}
+
+	checkDaemonSetNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name":      name,
+			"namespace": namespace,
+			"increment": duration,
+			"err":       err,
+		}).Debugf("DaemonSet still exists, waiting.")
+	}
+	checkDaemonSetBackoff := backoff.NewExponentialBackOff()
+	checkDaemonSetBackoff.MaxElapsedTime = k.timeout
+
+	log.WithFields(logFields).Trace("Waiting for DaemonSet to be deleted.")
+
+	if err := backoff.RetryNotify(checkDaemonSetExists, checkDaemonSetBackoff, checkDaemonSetNotify); err != nil {
+		return fmt.Errorf("daemonset %s/%s was not deleted after %3.2f seconds",
+			namespace, name, k.timeout.Seconds())
+	}
+
+	log.WithFields(logFields).Debug("Completed foreground deletion of DaemonSet.")
 
 	return nil
 }
