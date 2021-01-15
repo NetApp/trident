@@ -4,7 +4,6 @@ package installer
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -367,6 +366,12 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentProvisioner,
 		return nil, "", err
 	}
 
+	// Remove any leftover transient Trident
+	err = i.cleanupTransientVersionPod()
+	if err != nil {
+		log.WithError(err).Warn("Could not remove transient Trident pods.")
+	}
+
 	// Identify if update is required because of change in K8s version or Trident Operator version
 	shouldUpdate = shouldUpdate || imageUpdateNeeded
 
@@ -504,50 +509,6 @@ func (i *Installer) createCustomResourceDefinitions(crdName, crdYAML string) (re
 		return
 	}
 	log.WithFields(logFields).Infof("Created custom resource definitions %v.", crdName)
-	return nil
-}
-
-func (i *Installer) ensureCRDsRegistered(crdNames []string) error {
-
-	for _, crdName := range crdNames {
-		if err := i.ensureCRDRegistered(crdName); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ensureCRDRegistered waits until a CRD is known to Kubernetes.
-func (i *Installer) ensureCRDRegistered(crdName string) error {
-
-	checkCRDRegistered := func() error {
-		if exists, err := i.client.CheckCRDExists(crdName); err != nil {
-			return err
-		} else if !exists {
-			return errors.New("CRD not registered")
-		}
-		return nil
-	}
-
-	checkCRDNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
-			"CRD": crdName,
-			"err": err,
-		}).Debug("CRD not registered, waiting.")
-	}
-
-	checkCRDBackoff := backoff.NewExponentialBackOff()
-	checkCRDBackoff.MaxInterval = 5 * time.Second
-	checkCRDBackoff.MaxElapsedTime = k8sTimeout
-
-	log.WithField("CRD", crdName).Trace("Waiting for CRD to be registered.")
-
-	if err := backoff.RetryNotify(checkCRDRegistered, checkCRDBackoff, checkCRDNotify); err != nil {
-		return fmt.Errorf("CRD was not registered after %3.2f seconds", k8sTimeout.Seconds())
-	}
-
-	log.WithField("CRD", crdName).Debug("CRD registered.")
 	return nil
 }
 
@@ -863,7 +824,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 					"but does not meet name '%s' requirement, marking it for deletion",
 					serviceAccount.Name, serviceAccountName)
 
-				unwantedServiceAccounts = append(unwantedServiceAccounts)
+				unwantedServiceAccounts = append(unwantedServiceAccounts, serviceAccount)
 			}
 		}
 	}
@@ -1686,25 +1647,6 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 	return pod, nil
 }
 
-func (i *Installer) checkVersionUsingREST(tridentPodName string) (string, error) {
-	cliCommand := []string{"tridentctl", "-s", ControllerServer, "version", "-o", "json"}
-	versionJSON, err := i.client.Exec(tridentPodName, TridentContainer, cliCommand)
-	if err != nil {
-		if len(versionJSON) > 0 {
-			err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
-		}
-		return "", err
-	}
-
-	var versionResponse api.VersionResponse
-	err = json.Unmarshal(versionJSON, &versionResponse)
-	if err != nil {
-		return "", err
-	}
-
-	return versionResponse.Server.Version, nil
-}
-
 func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 
 	var version, versionWithMetadata string
@@ -1847,28 +1789,19 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 }
 
 // createTridentVersionPod takes the pod name and trident image name to create a pod
-func (i *Installer) createTridentVersionPod(podName, imageName string, controllingCRDetails,
-	podLabels map[string]string) error {
-	var unwantedPods []v1.Pod
-	var err error
-
-	if pods, err := i.client.GetPodsByLabel(TridentVersionPodLabel, true); err != nil {
-		log.Errorf("Unable to get list of Trident version pod by label %v", appLabel)
-		return fmt.Errorf("unable to get list of Trident version pods")
-	} else if len(pods) == 0 {
-		log.Info("Trident version pod found.")
-	} else {
-		unwantedPods = pods
-	}
-
-	if err = i.RemoveMultiplePods(unwantedPods); err != nil {
+func (i *Installer) createTridentVersionPod(
+	podName, imageName string, controllingCRDetails, podLabels map[string]string,
+) error {
+	err := i.cleanupTransientVersionPod()
+	if err != nil {
 		return err
 	}
 
 	serviceAccountName := getServiceAccountName(csi)
 
-	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(podName, imageName,
-		serviceAccountName, imagePullSecrets, podLabels, controllingCRDetails)
+	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
+		podName, imageName, serviceAccountName, imagePullSecrets, podLabels, controllingCRDetails,
+	)
 
 	err = i.client.CreateObjectByYAML(newTridentVersionPodYAML)
 	if err != nil {
@@ -1877,6 +1810,26 @@ func (i *Installer) createTridentVersionPod(podName, imageName string, controlli
 	}
 	log.Info("Created Trident version pod.")
 
+	return nil
+}
+
+func (i *Installer) cleanupTransientVersionPod() error {
+	var unwantedPods []v1.Pod
+	var err error
+
+	if pods, err := i.client.GetPodsByLabel(TridentVersionPodLabel, true); err != nil {
+		log.Errorf("Unable to get list of Trident version pod by label %v", appLabel)
+		return fmt.Errorf("unable to get list of Trident version pods")
+	} else if len(pods) == 0 {
+		log.Debug("Trident version pod not found.")
+		return nil
+	} else {
+		unwantedPods = pods
+	}
+
+	if err = i.RemoveMultiplePods(unwantedPods); err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -676,8 +676,6 @@ func (c *Controller) removeTridentctlBasedInstallation(tridentCR *netappv1.Tride
 	return nil
 }
 
-
-
 // ensureCompleteCleanup identifies if there are remnants from previous Trident uninstallation
 // and removes them, provided tridentctl-based installation does not exist. Since, it gets
 // executed after the uninstallation and is an extra clean-up step it does not return any error.
@@ -1334,7 +1332,7 @@ func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentP
 }
 
 // installTridentAndUpdateStatus installs Trident and updates status of the ControllingCR accordingly
-// based on sucess or failure
+// based on success or failure
 func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentProvisioner,
 	currentInstalledTridentVersion, warningMessage string, shouldUpdate bool) error {
 
@@ -1384,7 +1382,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentPro
 }
 
 // uninstallTridentAndUpdateStatus uninstalls Trident and updates status of the ControllingCR accordingly
-// based on sucess or failure
+// based on success or failure
 func (c *Controller) uninstallTridentAndUpdateStatus(tridentCR netappv1.TridentProvisioner, currentInstalledTridentVersion string) (*netappv1.
 	TridentProvisioner, error) {
 

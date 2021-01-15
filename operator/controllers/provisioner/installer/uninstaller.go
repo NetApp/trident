@@ -926,19 +926,6 @@ func (i *Installer) deleteTridentTridentOpenShiftSCC() error {
 	return nil
 }
 
-func (i *Installer) deleteCustomResourceDefinitions() (returnError error) {
-
-	var logFields log.Fields
-
-	returnError = i.client.DeleteObjectByYAML(k8sclient.GetCRDsYAML(false), false)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not delete custom resource definitions in %s; %v", i.namespace, returnError)
-		return
-	}
-	log.WithFields(logFields).Info("Deleted custom resource definitions.")
-	return nil
-}
-
 func (i *Installer) deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
 
 	var logFields log.Fields
