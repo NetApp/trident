@@ -378,7 +378,7 @@ spec:
               fieldPath: metadata.name
         - name: OPERATOR_NAME
           value: trident-operator
-        image: netapp/trident-operator:20.10.0
+        image: netapp/trident-operator:21.01.0
         imagePullPolicy: IfNotPresent
         name: trident-operator
       serviceAccountName: trident-operator

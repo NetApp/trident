@@ -374,10 +374,13 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 		deploymentYAML = csiDeployment114YAMLTemplate
 	case 16:
 		deploymentYAML = csiDeployment116YAMLTemplate
-	case 17:
+	case 17, 18, 19:
+		deploymentYAML = csiDeployment117YAMLTemplate
+		isGCRRegistryVersion = true
+	case 20:
 		fallthrough
 	default:
-		deploymentYAML = csiDeployment117YAMLTemplate
+		deploymentYAML = csiDeployment120YAMLTemplate
 		isGCRRegistryVersion = true
 	}
 
@@ -500,6 +503,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -639,6 +643,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -662,6 +667,8 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
+        - "--retry-interval-start=8s"
+        - "--retry-interval-max=30s"
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -766,6 +773,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -789,6 +797,8 @@ spec:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
+        - "--retry-interval-start=8s"
+        - "--retry-interval-max=30s"
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -809,7 +819,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -905,6 +915,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -923,11 +934,13 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.0.4
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
+        - "--retry-interval-start=8s"
+        - "--retry-interval-max=30s"
         {PROVISIONER_FEATURE_GATES}
         env:
         - name: ADDRESS
@@ -936,7 +949,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.0.2
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -949,7 +962,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -961,7 +974,162 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.2
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.3
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      {IMAGE_PULL_SECRETS}
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      volumes:
+      - name: socket-dir
+        emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
+`
+
+const csiDeployment120YAMLTemplate = `---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {DEPLOYMENT_NAME}
+  {LABELS}
+  {OWNER_REF}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {LABEL_APP}
+  template:
+    metadata:
+      labels:
+        app: {LABEL_APP}
+    spec:
+      serviceAccount: trident-csi
+      containers:
+      - name: trident-main
+        image: {TRIDENT_IMAGE}
+        ports:
+        - containerPort: 8443
+        - containerPort: 8001
+        command:
+        - /trident_orchestrator
+        args:
+        - "--crd_persistence"
+        - "--k8s_pod"
+        - "--https_rest"
+        - "--https_port=8443"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
+        - "--log_format={LOG_FORMAT}"
+        - "--address={IP_LOCALHOST}"
+        - "--metrics"
+        {DEBUG}
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - "{IP_LOCALHOST}:8000"
+            - version
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "{IP_LOCALHOST}:8000"
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /plugin
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: trident-autosupport
+        image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: Always
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {AUTOSUPPORT_SERIAL_NUMBER}
+        {AUTOSUPPORT_HOSTNAME}
+        {DEBUG}
+        resources:
+          limits:
+            memory: 1Gi
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
+      - name: csi-provisioner
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=600s"
+        - "--csi-address=$(ADDRESS)"
+        - "--retry-interval-start=8s"
+        - "--retry-interval-max=30s"
+        {PROVISIONER_FEATURE_GATES}
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-attacher
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.1.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=60s"
+        - "--retry-interval-start=10s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-resizer
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.1.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-snapshotter
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.3
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -1236,7 +1404,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"

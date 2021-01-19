@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-08-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-09-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-07-01/network"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-06-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/cenkalti/backoff/v4"
@@ -344,29 +344,35 @@ func (d *Client) getVolumesFromPool(
 	ctx context.Context, cookie *AzureCapacityPoolCookie, poolName string,
 ) (*[]FileSystem, error) {
 
+	var fses []FileSystem
+
 	// poolName is an override, use the cookie's if not specified
 	if poolName == "" {
 		poolName = *cookie.CapacityPoolName
 	}
 
-	volumelist, err := d.SDKClient.VolumesClient.List(ctx,
+	volumeList, err := d.SDKClient.VolumesClient.List(ctx,
 		*cookie.ResourceGroup, *cookie.NetAppAccount, poolName)
 	if err != nil {
 		Logc(ctx).Errorf("Error fetching volumes from pool %s: %s", poolName, err)
 		return nil, err
 	}
 
-	volumes := *volumelist.Value
-
-	var fses []FileSystem
-
-	for _, v := range volumes {
-		fs, err := d.newFileSystemFromVolume(ctx, &v, cookie)
+	for ; volumeList.NotDone(); err = volumeList.NextWithContext(ctx) {
 		if err != nil {
-			Logc(ctx).Errorf("Internal error creating filesystem")
-			return nil, err
+			return nil, fmt.Errorf("error iterating volumes: %v", err)
 		}
-		fses = append(fses, *fs)
+
+		volumes := volumeList.Values()
+
+		for _, v := range volumes {
+			fs, err := d.newFileSystemFromVolume(ctx, &v, cookie)
+			if err != nil {
+				Logc(ctx).Errorf("Internal error creating filesystem")
+				return nil, err
+			}
+			fses = append(fses, *fs)
+		}
 	}
 
 	return &fses, nil

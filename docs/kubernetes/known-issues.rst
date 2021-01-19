@@ -10,7 +10,7 @@ This page contains a list of known issues that may be observed when using Triden
   in the `v20.10 <https://github.com/NetApp/trident/releases/tag/v20.10.0>`_
   release of Trident. This can only be observed when Trident initializes a
   backend/restarts if scheduled on a new node. Users are **recommended to upgrade**
-  to `v20.10 <https://github.com/NetApp/trident/releases/tag/v20.10.0>`_.
+  to `v20.10 <https://github.com/NetApp/trident/releases/tag/v20.10.0>`_ or later.
 
 * An upstream Kubernetes `bug <https://github.com/kubernetes/kubernetes/issues/84226>`_
   that could be encountered when rapidly attaching/detaching volumes has been

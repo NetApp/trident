@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/static:eddfb5cd7a24d656f77afae595ffe6c232eab847
+FROM gcr.io/distroless/static:480a6179aef97ba11817a86d1c7a0fed1e07e4b3
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident-operator.netapp.io" description="Trident Operator"

@@ -35,7 +35,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "20.10.0"
+	DefaultOrchestratorVersion       = "21.01.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -131,7 +131,7 @@ const (
 	// Minimum Kubernetes version for CSI Trident default (non-CSI not supported)
 	KubernetesCSIVersionMinForced = "v1.14.0"
 
-	KubernetesCSISidecarRegistryPre117 = "quay.io/k8scsi"
+	KubernetesCSISidecarRegistryPre117  = "quay.io/k8scsi"
 	KubernetesCSISidecarRegistry117Plus = "k8s.gcr.io/sig-storage"
 
 	// Mininum Kubernetes version for CRD v1 support (below this, we'll use v1beta1)
@@ -142,7 +142,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "netapp/trident-autosupport:20.10.0"
+	DefaultAutosupportImage = "netapp/trident-autosupport:20.10"
 )
 
 var (

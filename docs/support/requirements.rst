@@ -20,7 +20,7 @@ The Trident Operator is supported with these releases:
 
 .. important::
 
-  Red Hat OpenShift Container Platform users might observe their ``initiatorname.iscsi`` file to be blank if using any version below 4.6.8. This is a bug that has been identified by RedHat to be fixed with OpenShift 4.6.8. See `this bug fix announcement <https://access.redhat.com/errata/RHSA-2020:5259/>`_. NetApp recommends that you use Trident 20.10 on OpenShift 4.6.8.
+  Red Hat OpenShift Container Platform users might observe their ``initiatorname.iscsi`` file to be blank if using any version below 4.6.8. This is a bug that has been identified by RedHat to be fixed with OpenShift 4.6.8. See `this bug fix announcement <https://access.redhat.com/errata/RHSA-2020:5259/>`_. NetApp recommends that you use Trident 20.10 or later on OpenShift 4.6.8.
 
 Trident also works with a host of other fully managed and self-managed Kubernetes offerings, including Google Cloud’s Google Kubernetes Engine (GKE), AWS’s Elastic Kubernetes Services (EKS), Azure’s Azure Kubernetes Service (AKS), and Rancher.
 
