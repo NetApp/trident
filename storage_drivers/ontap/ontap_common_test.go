@@ -188,37 +188,35 @@ func Test_randomChapString16(t *testing.T) {
 func TestValidateStoragePrefix(t *testing.T) {
 
 	var storagePrefixTests = []struct {
-		storagePrefix string
-		expected      bool
+		storagePrefix   string
+		expected        bool
+		expectedEconomy bool
 	}{
-		{"+abcd_123_ABC", false},
-		{"1abcd_123_ABC", false},
-		{"_abcd_123_ABC", true},
-		{"abcd_123_ABC", true},
-		{"ABCD_123_abc", true},
-		{"abcd+123_ABC", false},
-		{"abcd-123", true},
-		{"abc.", true},
-		{"a", true},
-		{"1", false},
-		{"_", true},
-		{"-", true},
-		{":", false},
-		{".", true},
-		{"", true},
+		{"+abcd_123_ABC", false, false},
+		{"1abcd_123_ABC", false, true},
+		{"_abcd_123_ABC", true, true},
+		{"abcd_123_ABC", true, true},
+		{"ABCD_123_abc", true, true},
+		{"abcd+123_ABC", false, false},
+		{"abcd-123", true, true},
+		{"abc.", true, true},
+		{"a", true, true},
+		{"1", false, true},
+		{"_", true, true},
+		{"-", true, true},
+		{":", false, false},
+		{".", true, true},
+		{"", true, true},
 	}
 
 	for _, spt := range storagePrefixTests {
 
-		isValid := true
-		err := ValidateStoragePrefix(spt.storagePrefix)
-		if err != nil {
-			isValid = false
-		}
-
+		isValid := ValidateStoragePrefix(spt.storagePrefix) == nil
 		assert.Equal(t, spt.expected, isValid)
-	}
 
+		isValid = ValidateStoragePrefixEconomy(spt.storagePrefix) == nil
+		assert.Equal(t, spt.expectedEconomy, isValid)
+	}
 }
 
 func TestOntapCalculateOptimalFlexVolSize(t *testing.T) {

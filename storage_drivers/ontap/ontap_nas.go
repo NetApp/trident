@@ -138,9 +138,12 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	err := ValidateNASDriver(ctx, d.API, &d.Config)
-	if err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
+	}
+
+	if err := ValidateStoragePrefix(*d.Config.StoragePrefix); err != nil {
+		return err
 	}
 
 	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {

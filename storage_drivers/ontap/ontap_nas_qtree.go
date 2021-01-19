@@ -241,9 +241,12 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	err := ValidateNASDriver(ctx, d.API, &d.Config)
-	if err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
+	}
+
+	if err := ValidateStoragePrefixEconomy(*d.Config.StoragePrefix); err != nil {
+		return err
 	}
 
 	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
@@ -252,8 +255,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 
 	if !d.Config.AutoExportPolicy {
 		// Make sure we have an export policy for all the Flexvols we create
-		err = d.ensureDefaultExportPolicy(ctx)
-		if err != nil {
+		if err := d.ensureDefaultExportPolicy(ctx); err != nil {
 			return fmt.Errorf("error configuring export policy: %v", err)
 		}
 	}

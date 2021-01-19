@@ -1261,11 +1261,6 @@ func ValidateSANDriver(ctx context.Context, _ *api.Client, config *drivers.Ontap
 		}
 	}
 
-	err := ValidateStoragePrefix(*config.StoragePrefix)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -1305,11 +1300,6 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 		}
 	}
 
-	err = ValidateStoragePrefix(*config.StoragePrefix)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -1321,6 +1311,19 @@ func ValidateStoragePrefix(storagePrefix string) error {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
 		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
+	}
+
+	return err
+}
+
+func ValidateStoragePrefixEconomy(storagePrefix string) error {
+
+	// Ensure storage prefix is compatible with ONTAP
+	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)
+	if err != nil {
+		err = fmt.Errorf("could not check storage prefix; %v", err)
+	} else if !matched {
+		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash")
 	}
 
 	return err

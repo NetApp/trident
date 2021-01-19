@@ -385,9 +385,12 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("ONTAP version does not support FlexGroups")
 	}
 
-	err := ValidateNASDriver(ctx, d.API, &d.Config)
-	if err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
+	}
+
+	if err := ValidateStoragePrefix(*d.Config.StoragePrefix); err != nil {
+		return err
 	}
 
 	// Create a list `physicalPools` containing 1 entry

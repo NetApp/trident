@@ -354,6 +354,10 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("error driver validation failed: %v", err)
 	}
 
+	if err := ValidateStoragePrefixEconomy(*d.Config.StoragePrefix); err != nil {
+		return err
+	}
+
 	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
