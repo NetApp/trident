@@ -495,6 +495,11 @@ func (d *NASStorageDriver) Publish(
 	return publishFlexVolShare(ctx, d.API, &d.Config, publishInfo, name)
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *NASStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return nil
+}
+
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *NASStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (

@@ -13,6 +13,7 @@
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
 - **Kubernetes:** Fixed issue where the operator could leave a Trident node unregistered with kubelet (Issue [#487](https://github.com/NetApp/trident/issues/487)).
 - Fixed issue where digits in the storage prefix were disallowed from the ONTAP economy drivers (Issue [#476](https://github.com/NetApp/trident/issues/476)).
+- **Kubernetes:** Fixed issue where a snapshot transaction could keep Trident from starting (Issue [#490](https://github.com/NetApp/trident/issues/490)).
 
 **Enhancements:**
 - Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.

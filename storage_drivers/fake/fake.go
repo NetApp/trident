@@ -796,6 +796,11 @@ func (d *StorageDriver) Publish(context.Context, *storage.VolumeConfig, *utils.V
 	return errors.New("fake driver does not support Publish")
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return nil
+}
+
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *StorageDriver) GetSnapshot(_ context.Context, snapConfig *storage.SnapshotConfig) (

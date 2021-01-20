@@ -603,6 +603,11 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	return publishFlexVolShare(ctx, d.API, &d.Config, publishInfo, flexvol)
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *NASQtreeStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+}
+
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
 func (d *NASQtreeStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
 	*storage.Snapshot, error,
@@ -619,7 +624,7 @@ func (d *NASQtreeStorageDriver) GetSnapshot(ctx context.Context, snapConfig *sto
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -657,7 +662,7 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -674,7 +679,7 @@ func (d *NASQtreeStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig 
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -691,7 +696,7 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *
 		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // Test for the existence of a volume

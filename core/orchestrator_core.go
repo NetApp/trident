@@ -671,7 +671,8 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 				}
 				// Snapshot deletion is an idempotent operation, so it's safe to
 				// delete an already deleted snapshot.
-				if err := backend.DeleteSnapshot(ctx, v.SnapshotConfig, v.Config); err != nil {
+				err := backend.DeleteSnapshot(ctx, v.SnapshotConfig, v.Config)
+				if err != nil && !utils.IsUnsupportedError(err) {
 					return fmt.Errorf("error attempting to clean up snapshot %s from backend %s: %v",
 						v.SnapshotConfig.Name, backend.Name, err)
 				}
@@ -2971,6 +2972,11 @@ func (o *TridentOrchestrator) CreateSnapshot(
 
 	// Complete the snapshot config
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
+
+	// Ensure a snapshot is even possible before creating the transaction
+	if err := backend.CanSnapshot(ctx, snapshotConfig); err != nil {
+		return nil, err
+	}
 
 	// Add transaction in case the operation must be rolled back later
 	txn := &storage.VolumeTransaction{

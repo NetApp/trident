@@ -1016,6 +1016,11 @@ func (d *NFSStorageDriver) Publish(
 	return nil
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *NFSStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return nil
+}
+
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
 func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
 	*storage.Snapshot, error,

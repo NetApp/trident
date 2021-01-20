@@ -50,6 +50,7 @@ type Driver interface {
 	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
 	GetProtocol(ctx context.Context) tridentconfig.Protocol
 	Publish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
 	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
 	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
@@ -572,6 +573,11 @@ func (b *Backend) RemoveVolume(ctx context.Context, volConfig *VolumeConfig) err
 
 func (b *Backend) RemoveCachedVolume(volumeName string) {
 	delete(b.Volumes, volumeName)
+}
+
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (b *Backend) CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error {
+	return b.Driver.CanSnapshot(ctx, snapConfig)
 }
 
 func (b *Backend) GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error) {

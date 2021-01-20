@@ -870,6 +870,11 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(ctx context.Context, volume api.
 	return mapping, nil
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+}
+
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
 func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
 	*storage.Snapshot, error,
@@ -886,7 +891,7 @@ func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // SnapshotList returns the list of snapshots associated with the specified volume. The E-series volume
@@ -925,7 +930,7 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return nil, drivers.NewSnapshotsNotSupportedError(d.Name())
+	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -942,7 +947,7 @@ func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *stor
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot deletes a volume snapshot.
@@ -959,7 +964,7 @@ func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
@@ -1373,7 +1378,7 @@ func (d *SANStorageDriver) getVolumeExternal(
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver
-func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage.Driver) *roaring.Bitmap {
+func (d *SANStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*SANStorageDriver)
 	if !ok {

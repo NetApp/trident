@@ -430,18 +430,6 @@ func IsVolumeExistsError(err error) bool {
 	return ok
 }
 
-type SnapshotsNotSupportedError struct {
-	message string
-}
-
-func (e *SnapshotsNotSupportedError) Error() string { return e.message }
-
-func NewSnapshotsNotSupportedError(backendType string) error {
-	return &SnapshotsNotSupportedError{
-		message: fmt.Sprintf("snapshots are not supported by backend type %s", backendType),
-	}
-}
-
 // ToString identifies attributes of a struct, stringifies them such that they can be consumed by the
 // struct's stringer interface, redacts elements specified in the redactList, and replaces
 // config with external config format depending upon the value of sensitive flag.

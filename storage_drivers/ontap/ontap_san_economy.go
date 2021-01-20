@@ -915,6 +915,11 @@ func (d *SANEconomyStorageDriver) Publish(
 	return nil
 }
 
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *SANEconomyStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+	return nil
+}
+
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *SANEconomyStorageDriver) GetSnapshot(
@@ -1142,7 +1147,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(ctx context.Context, snapConfi
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return drivers.NewSnapshotsNotSupportedError(d.Name())
+	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot deletes a LUN snapshot.
