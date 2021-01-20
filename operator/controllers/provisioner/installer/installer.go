@@ -158,10 +158,10 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 	}
 
 	if currentDeployment == nil {
-		log.Debugf("No Trident deployment exist.")
+		log.Debugf("No Trident deployment exists.")
 		performImageVersionCheck = true
 	} else {
-		log.Debugf("Trident deployment exist.")
+		log.Debugf("Trident deployment exists.")
 
 		containers := currentDeployment.Spec.Template.Spec.Containers
 
@@ -175,13 +175,25 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 			}
 		}
 
-		deploymentImageVersion := currentDeployment.Labels[TridentVersionLabelKey]
 		// Contingency plan to recover Trident version information
-		if deploymentImageVersion == "" {
+		if currentDeployment.Labels[TridentVersionLabelKey] == "" {
 			log.Errorf("Deployment is missing the version information; fixing it.")
 			performImageVersionCheck = true
 		} else {
-			identifiedImageVersion = deploymentImageVersion
+			identifiedImageVersion = currentDeployment.Labels[TridentVersionLabelKey]
+
+			// Check if deployed Trident image matches the version this Operator supports
+			if supportedVersion, err := utils.ParseDate(DefaultTridentVersion); err != nil {
+				log.WithField("version", DefaultTridentVersion).Error("Could not parse default version.")
+				performImageVersionCheck = true
+			} else if deploymentVersion, err := utils.ParseDate(identifiedImageVersion); err != nil {
+				log.WithField("version", identifiedImageVersion).Error("Could not parse deployment version.")
+				performImageVersionCheck = true
+			} else if supportedVersion.ShortStringWithRelease() != deploymentVersion.ShortStringWithRelease() {
+				log.Debugf("Current Trident deployment image '%s' is not same as the supported Trident image '%s'.",
+					deploymentVersion.String(), supportedVersion.String())
+				performImageVersionCheck = true
+			}
 		}
 	}
 
@@ -195,7 +207,8 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 
 		tridentClientVersion, err := i.getTridentClientVersionInfo(tridentImage, controllingCRDetails)
 		if err != nil {
-			return "", fmt.Errorf("unable to get Trident image version information; err: %v", err)
+			return "", fmt.Errorf("unable to get Trident image version information, please ensure correct "+
+				"Trident image has been provided; err: %v", err)
 		}
 
 		tridentImageVersion, err := utils.ParseDate(tridentClientVersion.Client.Version)
@@ -733,7 +746,7 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 		err = i.patchK8sCSIDriver(currentK8sCSIDriver, []byte(newK8sCSIDriverYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]string,
@@ -854,7 +867,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 		err = i.patchTridentServiceAccount(currentServiceAccount, []byte(newServiceAccountYAML))
 	}
 
-	return newServiceAccount, nil
+	return newServiceAccount, err
 }
 
 func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels map[string]string,
@@ -930,7 +943,7 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 		err = i.patchTridentClusterRole(currentClusterRole, []byte(newClusterRoleYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels map[string]string,
@@ -1008,7 +1021,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 		err = i.patchTridentClusterRoleBinding(currentClusterRoleBinding, []byte(newClusterRoleBindingYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels map[string]string,
@@ -1082,7 +1095,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, label
 		err = i.patchTridentOpenShiftSCC(currentOpenShiftSCCJSON, []byte(newOpenShiftSCCYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createAndEnsureCRDs() (returnError error) {
@@ -1090,10 +1103,8 @@ func (i *Installer) createAndEnsureCRDs() (returnError error) {
 	returnError = i.createCRDs()
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
-		return
 	}
-
-	return nil
+	return
 }
 
 func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels map[string]string,
@@ -1173,7 +1184,7 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, 
 		err = i.patchTridentPodSecurityPolicy(currentPSP, []byte(newPSPYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createOrPatchTridentService(controllingCRDetails, labels map[string]string,
@@ -1247,7 +1258,7 @@ func (i *Installer) createOrPatchTridentService(controllingCRDetails, labels map
 		err = i.patchTridentService(currentService, []byte(newServiceYAML))
 	}
 
-	return nil
+	return err
 }
 
 func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[string]string,
@@ -1338,7 +1349,7 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 		}
 		log.Info("Created Trident secret.")
 	} else {
-		// It is very debatable if secrets should be patch
+		// It is very debatable if secrets should be patched
 
 		//log.WithFields(log.Fields{
 		//	"service":   currentSercret.Name,
