@@ -249,7 +249,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -802,7 +802,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Create the Flexvol
 	createResponse, err := d.API.VolumeCreate(
 		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+		exportPolicy, securityStyle, tieringPolicy, "", enableEncryption, snapshotReserveInt)
 	if err = api.GetError(ctx, createResponse, err); err != nil {
 		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}

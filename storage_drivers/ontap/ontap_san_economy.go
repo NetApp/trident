@@ -358,7 +358,7 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -1304,8 +1304,8 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 
 	// Create the flexvol
 	volCreateResponse, err := d.API.VolumeCreate(
-		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, tieringPolicy, encrypt, snapshotReserveInt)
+		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, "", encrypt, snapshotReserveInt)
 
 	if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)

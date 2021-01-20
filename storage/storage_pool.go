@@ -3,10 +3,13 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
-	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -76,16 +79,16 @@ func (pool *Pool) ConstructExternal() *PoolExternal {
 // GetLabelsJSON returns a JSON-formatted string containing the labels on this pool, suitable
 // for a label set on a storage volume.  The outer key may be customized.  For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
-func (pool *Pool) GetLabelsJSON(ctx context.Context, key string) string {
+func (pool *Pool) GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error) {
 
 	labelOffer, ok := pool.Attributes[sa.Labels].(sa.LabelOffer)
 	if !ok {
-		return ""
+		return "", nil
 	}
 
 	labelOfferMap := labelOffer.Labels()
 	if len(labelOfferMap) == 0 {
-		return ""
+		return "", nil
 	}
 
 	poolLabelMap := make(map[string]map[string]string)
@@ -94,8 +97,49 @@ func (pool *Pool) GetLabelsJSON(ctx context.Context, key string) string {
 	poolLabelJSON, err := json.Marshal(poolLabelMap)
 	if err != nil {
 		Logc(ctx).Errorf("Failed to marshal pool labels: %+v", poolLabelMap)
-		return ""
+		return "", err
 	}
 
-	return strings.ReplaceAll(string(poolLabelJSON), " ", "")
+	labelsJsonBytes := new(bytes.Buffer)
+	err = json.Compact(labelsJsonBytes, poolLabelJSON)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to compact pool labels: %s", string(poolLabelJSON))
+		return "", err
+	}
+
+	labelsJSON := labelsJsonBytes.String()
+
+	if labelLimit != 0 && len(labelsJSON) > labelLimit {
+		Logc(ctx).WithFields(log.Fields{
+			"labelsJSON":       labelsJSON,
+			"labelsJSONLength": len(labelsJSON),
+			"maxLabelLength":   labelLimit}).Error("label length exceeds the character limit")
+		return "", fmt.Errorf("label length %v exceeds the character limit of %v characters", len(labelsJSON),
+			labelLimit)
+	}
+
+	return labelsJSON, nil
+}
+
+// AllowLabelOverwrite returns true if it has a key we could have set. For example:
+// {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
+func AllowPoolLabelOverwrite(key, originalLabel string) bool {
+
+	if originalLabel == "" {
+		return false
+	}
+
+	var poolLabelMap map[string]map[string]string
+	err := json.Unmarshal([]byte(originalLabel), &poolLabelMap)
+	if err != nil {
+		// this key is not in our format and hence it is set by another product
+		// so it is readonly for us
+		return false
+	}
+	if _, ok := poolLabelMap[key]; ok {
+		// this key is in our format so it is set by us
+		// OK to overwrite
+		return true
+	}
+	return false
 }

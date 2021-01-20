@@ -36,6 +36,8 @@ const (
 	defaultExportRule      = "0.0.0.0/0"
 	defaultVolumeSizeStr   = "107374182400"
 
+	storageBackendLabelLimit = 0 // 0 allows unlimited characters
+
 	// Constants for internal pool attributes
 	Cookie         = "cookie"
 	Size           = "size"
@@ -616,7 +618,12 @@ func (d *NFSStorageDriver) Create(
 
 	labels := make(map[string]string)
 	labels[drivers.TridentLabelTag] = d.getTelemetryLabels(ctx)
-	labels[drivers.ProvisioningLabelTag] = pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag)
+
+	poolLabels, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, storageBackendLabelLimit)
+	if err != nil {
+		return err
+	}
+	labels[drivers.ProvisioningLabelTag] = poolLabels
 
 	Logc(ctx).WithFields(log.Fields{
 		"creationToken": name,

@@ -101,8 +101,8 @@ func CleanBackendName(backendName string) string {
 }
 
 func CreateCloneNAS(
-	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, useAsync bool,
-) error {
+	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, labelLimit int,
+	useAsync bool) error {
 
 	// if cloning a FlexGroup, useAsync will be true
 	if useAsync && !d.GetAPI().SupportsFeature(ctx, api.NetAppFlexGroupsClone) {
@@ -139,8 +139,13 @@ func CreateCloneNAS(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
+	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
+		labels, err = storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, labelLimit)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
@@ -152,9 +157,8 @@ func CreateCloneNAS(
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
-
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, split, d.GetConfig(), d.GetAPI(), useAsync)
+	return CreateOntapClone(ctx, name, source, snapshot, labels, split, d.GetConfig(), d.GetAPI(), useAsync)
 }
 
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
@@ -1736,7 +1740,7 @@ func probeForVolume(ctx context.Context, name string, client *api.Client) error 
 
 // Create a volume clone
 func CreateOntapClone(
-	ctx context.Context, name, source, snapshot string, split bool, config *drivers.OntapStorageDriverConfig,
+	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, useAsync bool,
 ) error {
 
@@ -1786,6 +1790,12 @@ func CreateOntapClone(
 		if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
 			return handleCreateOntapCloneErr(ctx, zerr, client, snapshot, source, name)
 		}
+	}
+
+	modifyCommentResponse, err := client.VolumeSetComment(ctx, name, labels)
+	if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
+		Logc(ctx).WithField("name", name).Errorf("Modifying comment failed: %v", err)
+		return fmt.Errorf("volume %s modify failed: %v", name, err)
 	}
 
 	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
@@ -2530,7 +2540,7 @@ func InitializeStoragePoolsCommon(
 // ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
 // for a field then a default should have been set in for that field in the initialize storage pools
 func ValidateStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, driverType string,
+	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, driverType string, labelLimit int,
 ) error {
 
 	// Validate pool-level attributes
@@ -2577,6 +2587,11 @@ func ValidateStoragePools(
 			if err != nil {
 				return fmt.Errorf("invalid value for snapshotDir in pool %s: %v", poolName, err)
 			}
+		}
+
+		_, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, labelLimit)
+		if err != nil {
+			return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
 		}
 
 		// Validate SecurityStyles

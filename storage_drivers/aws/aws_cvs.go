@@ -41,6 +41,8 @@ const (
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
 
+	storageBackendLabelLimit = 0 // 0 allows unlimited characters
+
 	// Constants for internal pool attributes
 	Size            = "size"
 	ServiceLevel    = "serviceLevel"
@@ -692,7 +694,10 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	labels := []string{d.getTelemetryLabels(ctx)}
-	poolLabels := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag)
+	poolLabels, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, storageBackendLabelLimit)
+	if err != nil {
+		return err
+	}
 	if poolLabels != "" {
 		labels = append(labels, poolLabels)
 	}

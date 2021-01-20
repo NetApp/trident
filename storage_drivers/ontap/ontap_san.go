@@ -155,7 +155,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -291,7 +291,7 @@ func (d *SANStorageDriver) Create(
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, "", enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -451,7 +451,7 @@ func (d *SANStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, split, &d.Config, d.API, false)
+	return CreateOntapClone(ctx, name, source, snapshot, "", split, &d.Config, d.API, false)
 }
 
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {

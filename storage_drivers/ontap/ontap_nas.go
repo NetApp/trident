@@ -146,7 +146,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name()); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -276,10 +276,15 @@ func (d *NASStorageDriver) Create(
 			continue
 		}
 
+		labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxNASLabelLength)
+		if err != nil {
+			return err
+		}
+
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -323,7 +328,7 @@ func (d *NASStorageDriver) Create(
 func (d *NASStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, false)
+	return CreateCloneNAS(ctx, d, volConfig, storagePool, api.MaxNASLabelLength, false)
 }
 
 // Destroy the volume
@@ -407,6 +412,18 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if err = api.GetError(ctx, renameResponse, err); err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, rename failed: %v", err)
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
+		}
+	}
+
+	// Update the volume labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
+		volumeIdAttrs := flexvol.VolumeIdAttributes()
+		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
+			modifyCommentResponse, err := d.API.VolumeSetComment(ctx, volConfig.InternalName, "")
+			if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
+				Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
+				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+			}
 		}
 	}
 

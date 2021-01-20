@@ -397,7 +397,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	var physicalPools = map[string]*storage.Pool{
 		d.physicalPool.Name: d.physicalPool,
 	}
-	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d.Name()); err != nil {
+	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d.Name(), 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -579,7 +579,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 func (d *NASFlexGroupStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, true)
+	return CreateCloneNAS(ctx, d, volConfig, storagePool, 0, true)
 }
 
 // Import brings an existing volume under trident's control

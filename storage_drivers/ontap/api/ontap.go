@@ -30,6 +30,8 @@ const (
 
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
 	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
+
+	MaxNASLabelLength = 1023
 )
 
 // ClientConfig holds the configuration data for Client objects
@@ -1125,7 +1127,7 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy string, encrypt bool, snapshotReserve int,
+	exportPolicy, securityStyle, tieringPolicy, comment string, encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -1136,7 +1138,8 @@ func (d Client) VolumeCreate(
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetEncrypt(encrypt)
+		SetEncrypt(encrypt).
+		SetVolumeComment(comment)
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1404,6 +1407,7 @@ func (d Client) volumeGetIterAll(prefix string, queryVolIDAttrs *azgo.VolumeIdAt
 		SetPolicy("")
 	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName("").
+		SetComment("").
 		SetContainingAggregateName("")
 	desiredVolSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().
 		SetPermissions("")
@@ -1449,7 +1453,7 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
@@ -1492,7 +1496,7 @@ func (d Client) VolumeListByAttrs(
 
 	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
@@ -1520,7 +1524,7 @@ func (d Client) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, s
 
 	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
@@ -1551,6 +1555,28 @@ func (d Client) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRena
 	response, err := azgo.NewVolumeRenameRequest().
 		SetVolume(volumeName).
 		SetNewVolumeName(newVolumeName).
+		ExecuteUsing(d.zr)
+	return response, err
+}
+
+// VolumeSetComment sets a volume's comment to the supplied value
+// equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
+func (d Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (
+	*azgo.VolumeModifyIterResponse, error) {
+
+	volattr := &azgo.VolumeModifyIterRequestAttributes{}
+	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
+	volidattr := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*idattr)
+	volattr.SetVolumeAttributes(*volidattr)
+
+	queryAttr := &azgo.VolumeModifyIterRequestQuery{}
+	volIDAttr := azgo.NewVolumeIdAttributesType().SetName(volumeName)
+	volIDAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volIDAttr)
+	queryAttr.SetVolumeAttributes(*volIDAttrs)
+
+	response, err := azgo.NewVolumeModifyIterRequest().
+		SetQuery(*queryAttr).
+		SetAttributes(*volattr).
 		ExecuteUsing(d.zr)
 	return response, err
 }
