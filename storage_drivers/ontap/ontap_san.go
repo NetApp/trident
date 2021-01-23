@@ -155,7 +155,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d.Name(), api.MaxSANLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -288,10 +288,15 @@ func (d *SANStorageDriver) Create(
 			continue
 		}
 
+		labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxSANLabelLength)
+		if err != nil {
+			return err
+		}
+
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, "", enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -436,8 +441,13 @@ func (d *SANStorageDriver) CreateClone(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
+	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
+		labels, err = storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxSANLabelLength)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
@@ -451,7 +461,7 @@ func (d *SANStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, "", split, &d.Config, d.API, false)
+	return CreateOntapClone(ctx, name, source, snapshot, labels, split, &d.Config, d.API, false)
 }
 
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
@@ -520,6 +530,16 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if err = api.GetError(ctx, renameResponse, err); err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, rename volume failed: %v", err)
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
+		}
+		if flexvol.VolumeIdAttributesPtr != nil {
+			volumeIdAttrs := flexvol.VolumeIdAttributes()
+			if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
+				modifyCommentResponse, err := d.API.VolumeSetComment(ctx, volConfig.InternalName, "")
+				if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
+					Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
+					return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+				}
+			}
 		}
 	} else {
 		// Volume import is not managed by Trident

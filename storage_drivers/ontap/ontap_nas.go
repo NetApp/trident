@@ -421,7 +421,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
 			modifyCommentResponse, err := d.API.VolumeSetComment(ctx, volConfig.InternalName, "")
 			if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
-				Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
+				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
 			}
 		}

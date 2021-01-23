@@ -397,7 +397,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	var physicalPools = map[string]*storage.Pool{
 		d.physicalPool.Name: d.physicalPool,
 	}
-	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d.Name(), 0); err != nil {
+	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d.Name(), api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -528,11 +528,16 @@ func (d *NASFlexGroupStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
 
+	labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxNASLabelLength)
+	if err != nil {
+		return err
+	}
+
 	// Create the FlexGroup
 	checkVolumeCreated := func() error {
 		_, err = d.API.FlexGroupCreate(
 			ctx, name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, enableEncryption, snapshotReserveInt)
+			exportPolicy, securityStyle, tieringPolicy, labels, enableEncryption, snapshotReserveInt)
 
 		return err
 	}
@@ -579,7 +584,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 func (d *NASFlexGroupStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, 0, true)
+	return CreateCloneNAS(ctx, d, volConfig, storagePool, api.MaxNASLabelLength, true)
 }
 
 // Import brings an existing volume under trident's control
@@ -624,6 +629,18 @@ func (d *NASFlexGroupStorageDriver) Import(
 
 	// We cannot rename flexgroups, so internal name should match the imported originalName
 	volConfig.InternalName = originalName
+
+	// Update the volume labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
+		volumeIdAttrs := flexgroup.VolumeIdAttributes()
+		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
+			modifyCommentResponse, err := d.API.FlexGroupSetComment(ctx, volConfig.InternalName, "")
+			if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
+				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)
+				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+			}
+		}
+	}
 
 	// Modify unix-permissions of the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {

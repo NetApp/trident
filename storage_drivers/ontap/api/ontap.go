@@ -32,6 +32,7 @@ const (
 	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
 
 	MaxNASLabelLength = 1023
+	MaxSANLabelLength = 254
 )
 
 // ClientConfig holds the configuration data for Client objects
@@ -795,7 +796,7 @@ func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResp
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy,
-	unixPermissions, exportPolicy, securityStyle, tieringPolicy string, encrypt bool, snapshotReserve int,
+	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 
 	junctionPath := fmt.Sprintf("/%s", name)
@@ -813,7 +814,8 @@ func (d Client) FlexGroupCreate(
 		SetVolumeSecurityStyle(securityStyle).
 		SetEncrypt(encrypt).
 		SetAggrList(aggrList).
-		SetJunctionPath(junctionPath)
+		SetJunctionPath(junctionPath).
+		SetVolumeComment(comment)
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -993,6 +995,37 @@ func (d Client) FlexGroupModifyUnixPermissions(
 	response, err := azgo.NewVolumeModifyIterAsyncRequest().
 		SetQuery(*queryAttr).
 		SetAttributes(*volAttr).
+		ExecuteUsing(d.zr)
+
+	if zerr := GetError(ctx, response, err); zerr != nil {
+		return response, zerr
+	}
+
+	err = d.WaitForAsyncResponse(ctx, *response, maxFlexGroupWait)
+	if err != nil {
+		return response, fmt.Errorf("error waiting for response: %v", err)
+	}
+
+	return response, err
+}
+
+// FlexGroupSetComment sets a flexgroup's comment to the supplied value
+func (d Client) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) (
+	*azgo.VolumeModifyIterAsyncResponse, error) {
+
+	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
+	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
+	volidattr := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*idattr)
+	volattr.SetVolumeAttributes(*volidattr)
+
+	queryAttr := &azgo.VolumeModifyIterAsyncRequestQuery{}
+	volIDAttr := azgo.NewVolumeIdAttributesType().SetName(volumeName)
+	volIDAttrs := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*volIDAttr)
+	queryAttr.SetVolumeAttributes(*volIDAttrs)
+
+	response, err := azgo.NewVolumeModifyIterAsyncRequest().
+		SetQuery(*queryAttr).
+		SetAttributes(*volattr).
 		ExecuteUsing(d.zr)
 
 	if zerr := GetError(ctx, response, err); zerr != nil {
@@ -1451,9 +1484,9 @@ func (d Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 		SetVolumeStateAttributes(*queryVolStateAttrs)
 	query.SetVolumeAttributes(*volumeAttributes)
 
-	// Limit the returned data to only the Flexvol names
+	// Limit the returned Flexvol data to names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
@@ -1494,7 +1527,7 @@ func (d Client) VolumeListByAttrs(
 		SetEncrypt(encrypt)
 	query.SetVolumeAttributes(*volumeAttributes)
 
-	// Limit the returned data to only the Flexvol names
+	// Limit the returned Flexvol data to names and comments
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
 	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
