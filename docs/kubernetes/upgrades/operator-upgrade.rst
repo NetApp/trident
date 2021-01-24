@@ -39,6 +39,19 @@ Initiating the upgrade
 After confirming that you meet the :ref:`Prerequisites <operator-prereq>`, you
 are good to go ahead and upgrade using the operator.
 
+.. warning::
+
+   If you are running Kubernetes 1.17 or later, and are looking to upgrade to
+   ``20.07.1`` or above, it is important you provide ``parameter.fsType`` in
+   StorageClasses used by Trident. StorageClasses can be deleted and recreated
+   without disrupting pre-existing volumes. This is a **requirement** for
+   enforcing `Security Contexts <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`_
+   for SAN volumes. The `sample-input <https://github.com/NetApp/trident/tree/master/trident-installer/sample-input>`_
+   directory contains examples, such as
+   `storage-class-basic.yaml.templ <https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-basic.yaml.templ>`_,
+   and `storage-class-bronze-default.yaml <https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-bronze-default.yaml>`_.
+   For more information, take a look at the :ref:`Known issues <fstype-fix>` tab.
+
 Upgrading from the operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basic-pvc-from-snap
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: basic-csi
+  resources:
+    requests:
+      storage: 1Gi
+  dataSource:
+    name: basic-snap
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io

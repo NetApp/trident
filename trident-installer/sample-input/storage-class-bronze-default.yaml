@@ -7,4 +7,4 @@ metadata:
 provisioner: netapp.io/trident
 parameters:
   storagePools: "solidfire_10.0.0.1:Bronze"
-
+  fsType: "ext4"
