@@ -1953,6 +1953,14 @@ func GetSnapshotCRDYAML(useCRDv1 bool) string {
 	}
 }
 
+func GetOrchestratorCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentOrchestratorCRDYAML_v1
+	} else {
+		return tridentOrchestratorCRDYAML_v1beta1
+	}
+}
+
 /*
 kubectl delete crd tridentversions.trident.netapp.io --wait=false
 kubectl delete crd tridentbackends.trident.netapp.io --wait=false
@@ -2204,6 +2212,30 @@ spec:
       priority: 1
       JSONPath: .state`
 
+const tridentOrchestratorCRDYAML_v1beta1 = `
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentorchestrators.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  names:
+    kind: TridentOrchestrator
+    listKind: TridentOrchestratorList
+    plural: tridentorchestrators
+    singular: tridentorchestrator
+    shortNames:
+    - torc
+    - torchestrator
+  scope: Cluster
+  subresources:
+    status: {}
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true`
+
 const customResourceDefinitionYAML_v1beta1 = tridentVersionCRDYAML_v1beta1 + "\n---" + tridentBackendCRDYAML_v1beta1 +
 	"\n---" + tridentStorageClassCRDYAML_v1beta1 + "\n---" + tridentVolumeCRDYAML_v1beta1 + "\n---" +
 	tridentNodeCRDYAML_v1beta1 + "\n---" + tridentTransactionCRDYAML_v1beta1 + "\n---" + tridentSnapshotCRDYAML_v1beta1
@@ -2453,6 +2485,33 @@ spec:
     categories:
     - trident
     - trident-internal`
+
+const tridentOrchestratorCRDYAML_v1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentorchestrators.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+  names:
+    kind: TridentOrchestrator
+    listKind: TridentOrchestratorList
+    plural: tridentorchestrators
+    singular: tridentorchestrator
+    shortNames:
+    - torc
+    - torchestrator
+  scope: Cluster`
 
 const customResourceDefinitionYAML_v1 = tridentVersionCRDYAML_v1 + "\n---" + tridentBackendCRDYAML_v1 +
 	"\n---" + tridentStorageClassCRDYAML_v1 + "\n---" + tridentVolumeCRDYAML_v1 + "\n---" +

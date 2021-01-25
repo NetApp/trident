@@ -2647,9 +2647,9 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 	var err error
 
 	log.WithFields(log.Fields{
-		"name": crdName,
+		"CRD": crdName,
 		"kind": gvk.Kind,
-	}).Debugf("Adding finalizers to CRD object %v.", crdName)
+	}).Debugf("Adding finalizers to CRD.")
 
 	// Get the CRD object
 	var unstruct *unstructured.Unstructured
@@ -2666,7 +2666,8 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 					// check if the Trident finalizer is already present
 					for _, element := range finalizersSlice {
 						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
-							log.Debugf("Trident finalizer already present on Kubernetes CRD object %v, nothing to do", crdName)
+							log.WithField("CRD", crdName).Debugf("Trident finalizer already present " +
+								"on Kubernetes CRD object, nothing to do.")
 							return nil
 						}
 					}
@@ -2758,9 +2759,9 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	log.WithFields(log.Fields{
-		"name": crdName,
+		"CRD": crdName,
 		"kind": gvk.Kind,
-	}).Debugf("Adding finalizers to CRD object.")
+	}).Debugf("Adding finalizers to CRD.")
 
 	// Get the CRD object
 	var unstruct *unstructured.Unstructured
@@ -2777,7 +2778,8 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 					// check if the Trident finalizer is already present
 					for _, element := range finalizersSlice {
 						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
-							log.Debugf("Trident finalizer already present on Kubernetes CRD object %v, nothing to do", crdName)
+							log.WithField("CRD", crdName).Debugf("Trident finalizer already present " +
+								"on Kubernetes CRD object, nothing to do.")
 							return nil
 						}
 					}

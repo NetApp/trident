@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -76,7 +76,7 @@ func (i *Installer) UninstallTrident() error {
 
 	// Set the global csi variable, which controls things like RBAC and app labels
 	// Should not use csiPreviewTridentInstalled || csiTridentInstalled as it give false when CSI trident
-	// installtion is deleted
+	// installation is deleted
 	csi = !legacyTridentInstalled
 
 	// Set the app labels (CSI takes precedence)
@@ -186,7 +186,7 @@ func (i *Installer) deleteTridentStatefulSet() error {
 
 	// Delete Trident statefulSet
 	if statefulSets, err := i.client.GetStatefulSetsByLabel(appLabel, true); err != nil {
-		log.Errorf("Unable to get list of statefulsets by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of statefulsets by label.")
 		return fmt.Errorf("unable to get list of statefulsets by label")
 	} else if len(statefulSets) == 0 {
 		log.WithFields(log.Fields{
@@ -200,7 +200,7 @@ func (i *Installer) deleteTridentStatefulSet() error {
 				"namespace":   statefulSets[0].Namespace,
 			}).Info("Trident Statefulset found by label.")
 		} else {
-			log.Warnf("Multiple Statefulsets found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple Statefulsets found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleStatefulSets(statefulSets); err != nil {
@@ -231,7 +231,10 @@ func (i *Installer) RemoveMultipleStatefulSets(unwantedStatefulSets []appsv1.Sta
 				undeletedStatefulSets = append(undeletedStatefulSets, fmt.Sprintf("%v/%v", statefulSetToRemove.Namespace,
 					statefulSetToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident Statefulset: %v/%v", statefulSetToRemove.Namespace, statefulSetToRemove.Name)
+				log.WithFields(log.Fields{
+					"statefulset": statefulSetToRemove.Name,
+					"namespace":   statefulSetToRemove.Namespace,
+				}).Infof("Deleted Trident Statefulset.")
 			}
 		}
 	}
@@ -248,7 +251,7 @@ func (i *Installer) deleteTridentDeployment() error {
 	// Delete Trident deployments
 	if deployments, err := i.client.GetDeploymentsByLabel(appLabel, true); err != nil {
 
-		log.Errorf("Unable to get list of deployments by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of deployments by label.")
 		return fmt.Errorf("unable to get list of deployments")
 
 	} else if len(deployments) == 0 {
@@ -264,7 +267,7 @@ func (i *Installer) deleteTridentDeployment() error {
 				"namespace":  deployments[0].Namespace,
 			}).Info("Trident deployment found by label.")
 		} else {
-			log.Warnf("Multiple deployments found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple deployments found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleDeployments(deployments); err != nil {
@@ -295,7 +298,10 @@ func (i *Installer) RemoveMultipleDeployments(unwantedDeployments []appsv1.Deplo
 				undeletedDeployments = append(undeletedDeployments, fmt.Sprintf("%v/%v", deploymentToRemove.Namespace,
 					deploymentToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident deployment: %v/%v", deploymentToRemove.Namespace, deploymentToRemove.Name)
+				log.WithFields(log.Fields{
+					"deployment": deploymentToRemove.Name,
+					"namespace":  deploymentToRemove.Namespace,
+				}).Infof("Deleted Trident deployment.")
 			}
 		}
 	}
@@ -312,7 +318,7 @@ func (i *Installer) deleteTridentDaemonSet() error {
 	// Delete Trident daemonsets
 	if daemonsets, err := i.client.GetDaemonSetsByLabel(TridentNodeLabel, true); err != nil {
 
-		log.Errorf("Unable to get list of daemonset by label %v", TridentNodeLabel)
+		log.WithField("label", TridentNodeLabel).Errorf("Unable to get list of daemonset by label.")
 		return fmt.Errorf("unable to get list of daemonset")
 
 	} else if len(daemonsets) == 0 {
@@ -328,7 +334,7 @@ func (i *Installer) deleteTridentDaemonSet() error {
 				"namespace": daemonsets[0].Namespace,
 			}).Info("Trident daemonsets found by label.")
 		} else {
-			log.Warnf("Multiple daemonsets found matching label: %s; removing all.", TridentNodeLabel)
+			log.WithField("label", TridentNodeLabel).Warnf("Multiple daemonsets found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleDaemonSets(daemonsets); err != nil {
@@ -359,7 +365,10 @@ func (i *Installer) RemoveMultipleDaemonSets(unwantedDaemonsets []appsv1.DaemonS
 				undeletedDaemonsets = append(undeletedDaemonsets, fmt.Sprintf("%v/%v", daemonsetToRemove.Namespace,
 					daemonsetToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident daemonset: %v/%v", daemonsetToRemove.Namespace, daemonsetToRemove.Name)
+				log.WithFields(log.Fields{
+					"daemonset": daemonsetToRemove.Name,
+					"namespace": daemonsetToRemove.Namespace,
+				}).Infof("Deleted Trident daemonset.")
 			}
 		}
 	}
@@ -377,7 +386,7 @@ func (i *Installer) deleteTridentService() error {
 
 	// Delete Trident services
 	if services, err := i.client.GetServicesByLabel(appLabel, true); err != nil {
-		log.Errorf("Unable to get list of services by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of services by label.")
 		return fmt.Errorf("unable to get list of services")
 	} else if len(services) == 0 {
 		log.WithFields(log.Fields{
@@ -400,7 +409,7 @@ func (i *Installer) deleteTridentService() error {
 				"namespace": services[0].Namespace,
 			}).Info("Trident service found by label.")
 		} else {
-			log.Warnf("Multiple services found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple services found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleServices(services); err != nil {
@@ -431,7 +440,10 @@ func (i *Installer) RemoveMultipleServices(unwantedServices []v1.Service) error 
 				undeletedServices = append(undeletedServices, fmt.Sprintf("%v/%v", serviceToRemove.Namespace,
 					serviceToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident service: %v/%v", serviceToRemove.Namespace, serviceToRemove.Name)
+				log.WithFields(log.Fields{
+					"service":   serviceToRemove.Name,
+					"namespace": serviceToRemove.Namespace,
+				}).Infof("Deleted Trident service.")
 			}
 		}
 	}
@@ -448,7 +460,7 @@ func (i *Installer) deleteTridentSecret() error {
 	secretName := getSecretName()
 
 	if secrets, err := i.client.GetSecretsByLabel(appLabel, false); err != nil {
-		log.Errorf("Unable to get list of Secrets by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of Secrets by label.")
 		return fmt.Errorf("unable to get list of Secrets by label")
 	} else if len(secrets) == 0 {
 		log.WithFields(log.Fields{
@@ -472,7 +484,7 @@ func (i *Installer) deleteTridentSecret() error {
 				"namespace": secrets[0].Namespace,
 			}).Info("Trident secret found by label.")
 		} else {
-			log.Warnf("Multiple secrets found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple secrets found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleSecrets(secrets); err != nil {
@@ -503,7 +515,10 @@ func (i *Installer) RemoveMultipleSecrets(unwantedSecrets []v1.Secret) error {
 				undeletedSecrets = append(undeletedSecrets, fmt.Sprintf("%v/%v", secretToRemove.Namespace,
 					secretToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident secret: %v/%v", secretToRemove.Namespace, secretToRemove.Name)
+				log.WithFields(log.Fields{
+					"secret":    secretToRemove.Name,
+					"namespace": secretToRemove.Namespace,
+				}).Infof("Deleted Trident secret.")
 			}
 		}
 	}
@@ -520,7 +535,7 @@ func (i *Installer) deletePodSecurityPolicy() error {
 	pspName := getPSPName()
 
 	if podSecurityPolicies, err := i.client.GetPodSecurityPoliciesByLabel(appLabel); err != nil {
-		log.Errorf("Unable to get list of Pod security policies by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of Pod security policies by label.")
 		return fmt.Errorf("unable to get list of Pod security policies")
 	} else if len(podSecurityPolicies) == 0 {
 
@@ -545,7 +560,7 @@ func (i *Installer) deletePodSecurityPolicy() error {
 				"namespace":         podSecurityPolicies[0].Namespace,
 			}).Info("Trident Pod security policy found by label.")
 		} else {
-			log.Warnf("Multiple Pod security policies found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple Pod security policies found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultiplePodSecurityPolicies(podSecurityPolicies); err != nil {
@@ -574,7 +589,7 @@ func (i *Installer) RemoveMultiplePodSecurityPolicies(unwantedPSPs []v1beta1.Pod
 				anyError = true
 				undeletedPSPs = append(undeletedPSPs, fmt.Sprintf("%v", PSPsToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident Pod security policy: %v", PSPsToRemove.Name)
+				log.WithField("podSecurityPolicy", PSPsToRemove.Name).Infof("Deleted Trident Pod security policy.")
 			}
 		}
 	}
@@ -591,7 +606,7 @@ func (i *Installer) deleteTridentCSIDriverCR() error {
 	CSIDriverName := getCSIDriverName()
 
 	if csiDrivers, err := i.client.GetCSIDriversByLabel(appLabel); err != nil {
-		log.Errorf("Unable to get list of CSI driver CRs by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver CRs by label.")
 		return fmt.Errorf("unable to get list of CSI driver CRs by label")
 	} else if len(csiDrivers) == 0 {
 		log.WithFields(log.Fields{
@@ -616,7 +631,7 @@ func (i *Installer) deleteTridentCSIDriverCR() error {
 				"namespace": csiDrivers[0].Namespace,
 			}).Info("Trident CSI driver CR found by label.")
 		} else {
-			log.Warnf("Multiple CSI driver CRs found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple CSI driver CRs found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleCSIDriverCRs(csiDrivers); err != nil {
@@ -645,7 +660,7 @@ func (i *Installer) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []v1beta12.C
 				anyError = true
 				undeletedCSIDriverCRs = append(undeletedCSIDriverCRs, fmt.Sprintf("%v", CSIDriverCRToRemove.Name))
 			} else {
-				log.Infof("Deleted CSI driver CR: %v", CSIDriverCRToRemove.Name)
+				log.WithField("csiDriver", CSIDriverCRToRemove.Name).Infof("Deleted CSI driver.")
 			}
 		}
 	}
@@ -663,7 +678,7 @@ func (i *Installer) deleteTridentClusterRoleBinding() error {
 
 	// Delete cluster role binding
 	if clusterRoleBindings, err := i.client.GetClusterRoleBindingsByLabel(appLabel); err != nil {
-		log.Errorf("Unable to get list of Pod security policies by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of Pod security policies by label.")
 		return fmt.Errorf("unable to get list of Pod security policies")
 	} else if len(clusterRoleBindings) == 0 {
 		log.WithFields(log.Fields{
@@ -688,7 +703,8 @@ func (i *Installer) deleteTridentClusterRoleBinding() error {
 				"namespace":          clusterRoleBindings[0].Namespace,
 			}).Info("Trident Cluster role binding found by label.")
 		} else {
-			log.Warnf("Multiple Cluster role bindings found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple Cluster role bindings found matching label; removing" +
+				" all.")
 		}
 
 		if err = i.RemoveMultipleClusterRoleBindings(clusterRoleBindings); err != nil {
@@ -717,7 +733,8 @@ func (i *Installer) RemoveMultipleClusterRoleBindings(unwantedClusterRoleBinding
 				anyError = true
 				undeletedClusterRoleBindings = append(undeletedClusterRoleBindings, fmt.Sprintf("%v", clusterRoleBindingToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident Cluster role binding: %v", clusterRoleBindingToRemove.Name)
+				log.WithField("clusterRoleBinding", clusterRoleBindingToRemove.Name).Infof(
+					"Deleted Trident Cluster role binding.")
 			}
 		}
 	}
@@ -735,7 +752,7 @@ func (i *Installer) deleteTridentClusterRole() error {
 
 	// Delete cluster role
 	if clusterRoles, err := i.client.GetClusterRolesByLabel(appLabel); err != nil {
-		log.Errorf("Unable to get list of Cluster roles by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of Cluster roles by label.")
 		return fmt.Errorf("unable to get list of Cluster roles")
 	} else if len(clusterRoles) == 0 {
 		log.WithFields(log.Fields{
@@ -760,7 +777,7 @@ func (i *Installer) deleteTridentClusterRole() error {
 				"namespace":   clusterRoles[0].Namespace,
 			}).Info("Trident Cluster role found by label.")
 		} else {
-			log.Warnf("Multiple Cluster roles found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple Cluster roles found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleClusterRoles(clusterRoles); err != nil {
@@ -789,7 +806,7 @@ func (i *Installer) RemoveMultipleClusterRoles(unwantedClusterRoles []v12.Cluste
 				anyError = true
 				undeletedClusterRoles = append(undeletedClusterRoles, fmt.Sprintf("%v", clusterRoleToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident Cluster role: %v", clusterRoleToRemove.Name)
+				log.WithField("clusterRole", clusterRoleToRemove.Name).Infof("Deleted Trident Cluster role.")
 			}
 		}
 	}
@@ -807,7 +824,7 @@ func (i *Installer) deleteTridentServiceAccount() error {
 
 	// Delete service account
 	if serviceAccounts, err := i.client.GetServiceAccountsByLabel(appLabel, false); err != nil {
-		log.Errorf("Unable to get list of Service accounts by label %v", appLabel)
+		log.WithField("label", appLabel).Errorf("Unable to get list of Service accounts by label.")
 		return fmt.Errorf("unable to get list of Service accounts")
 	} else if len(serviceAccounts) == 0 {
 		log.WithFields(log.Fields{
@@ -833,7 +850,7 @@ func (i *Installer) deleteTridentServiceAccount() error {
 				"namespace":      serviceAccounts[0].Namespace,
 			}).Info("Trident Service accounts found by label.")
 		} else {
-			log.Warnf("Multiple Service accounts found matching label: %s; removing all.", appLabel)
+			log.WithField("label", appLabel).Warnf("Multiple Service accounts found matching label; removing all.")
 		}
 
 		if err = i.RemoveMultipleServiceAccounts(serviceAccounts); err != nil {
@@ -865,8 +882,10 @@ func (i *Installer) RemoveMultipleServiceAccounts(unwantedServiceAccounts []v1.S
 				undeletedServiceAccounts = append(undeletedServiceAccounts, fmt.Sprintf("%v/%v", serviceAccountToRemove.Namespace,
 					serviceAccountToRemove.Name))
 			} else {
-				log.Infof("Deleted Trident service account: %v/%v", serviceAccountToRemove.Namespace,
-					serviceAccountToRemove.Name)
+				log.WithFields(log.Fields{
+					"serviceAccount": serviceAccountToRemove.Name,
+					"namespace":      serviceAccountToRemove.Namespace,
+				}).Infof("Deleted Trident service account.")
 			}
 		}
 	}
@@ -928,15 +947,13 @@ func (i *Installer) deleteTridentTridentOpenShiftSCC() error {
 
 func (i *Installer) deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
 
-	var logFields log.Fields
-
 	returnError = i.client.DeleteObjectByYAML(crdYAML, false)
 	if returnError != nil {
 		returnError = fmt.Errorf("could not delete custom resource definition %v in %s; %v", crdName, i.namespace,
 			returnError)
 		return
 	}
-	log.WithFields(logFields).Infof("Deleted custom resource definitions %v.", crdName)
+	log.WithField("CRD", crdName).Infof("Deleted custom resource definitions.")
 	return nil
 }
 
@@ -959,7 +976,10 @@ func (i *Installer) RemoveMultiplePods(unwantedPods []v1.Pod) error {
 				undeletedPods = append(undeletedPods, fmt.Sprintf("%v/%v", podToRemove.Namespace,
 					podToRemove.Name))
 			} else {
-				log.Infof("Deleted pod: %v/%v", podToRemove.Namespace, podToRemove.Name)
+				log.WithFields(log.Fields{
+					"pod":       podToRemove.Name,
+					"namespace": podToRemove.Namespace,
+				}).Infof("Deleted pod.")
 			}
 		}
 	}

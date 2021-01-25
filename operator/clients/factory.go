@@ -19,16 +19,18 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	operatorconfig "github.com/netapp/trident/operator/config"
-	"github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
+	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
+	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 )
 
 type Clients struct {
-	KubeConfig *rest.Config
-	KubeClient *kubernetes.Clientset
-	K8SClient  k8sclient.Interface
-	CRDClient  *versioned.Clientset
-	K8SVersion *k8sversion.Info
-	Namespace  string
+	KubeConfig     *rest.Config
+	KubeClient     *kubernetes.Clientset
+	K8SClient      k8sclient.Interface
+	CRDClient      *versioned.Clientset
+	CRDTprovClient *versionedTprov.Clientset
+	K8SVersion     *k8sversion.Info
+	Namespace      string
 }
 
 const k8sTimeout = 30 * time.Second
@@ -60,6 +62,12 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 	clients.CRDClient, err = versioned.NewForConfig(clients.KubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize CRD client; %v", err)
+	}
+
+	// Create the tprov CRD client
+	clients.CRDTprovClient, err = versionedTprov.NewForConfig(clients.KubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize Tprov CRD client; %v", err)
 	}
 
 	// Get the Kubernetes server version
@@ -95,6 +103,7 @@ func createK8SClientsExCluster(apiServerIP, kubeConfigPath string) (*Clients, er
 	)
 
 	kubeConfig, err := clientConfig.ClientConfig()
+
 	if err != nil {
 		return nil, err
 	}

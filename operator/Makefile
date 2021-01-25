@@ -1,4 +1,4 @@
-# Copyright 2020 NetApp, Inc. All Rights Reserved.
+# Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 GOARCH ?= amd64
 GOGC ?= ""
@@ -8,8 +8,8 @@ OPERATOR_VOLUME = operator_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
-OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/provisioner/installer
-TRIDENT_PROVISIONER_PKG = github.com/netapp/trident/operator/controllers/provisioner
+OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/orchestrator/installer
+TRIDENT_ORCHESTRATOR_PKG = github.com/netapp/trident/operator/controllers/orchestrator
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.18.2
 
@@ -126,6 +126,6 @@ vet:
 k8s_codegen:
 	tar zxvf ${K8S_CODE_GENERATOR}.tar.gz -C ./../ --no-same-owner
 	chmod +x ${K8S_CODE_GENERATOR}/generate-groups.sh
-	${K8S_CODE_GENERATOR}/generate-groups.sh all ${TRIDENT_PROVISIONER_PKG}/client \
-    ${TRIDENT_PROVISIONER_PKG}/apis "netapp:v1" -h ./../hack/boilerplate.go.txt
+	${K8S_CODE_GENERATOR}/generate-groups.sh all ${TRIDENT_ORCHESTRATOR_PKG}/client \
+    ${TRIDENT_ORCHESTRATOR_PKG}/apis "netapp:v1" -h ./../hack/boilerplate.go.txt
 	rm -rf ${K8S_CODE_GENERATOR}

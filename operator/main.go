@@ -14,7 +14,7 @@ import (
 	"time"
 
 	operatorclient "github.com/netapp/trident/operator/clients"
-	"github.com/netapp/trident/operator/controllers/provisioner"
+	"github.com/netapp/trident/operator/controllers/orchestrator"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/logging"
@@ -83,12 +83,12 @@ func main() {
 		log.WithField("error", err).Fatalf("Could not create Kubernetes k8sclient.")
 	}
 
-	// Create Trident Provisioner controller
-	tridentProvisioner, err := provisioner.NewController(k8sClients)
+	// Create Trident Orchestrator controller
+	tridentOrchestrator, err := orchestrator.NewController(k8sClients)
 	if err != nil {
-		log.WithField("error", err).Fatalf("Could not create Trident Provisioner controller.")
+		log.WithField("error", err).Fatalf("Could not create Trident Orchestrator controller.")
 	}
-	crdControllers = append(crdControllers, tridentProvisioner)
+	crdControllers = append(crdControllers, tridentOrchestrator)
 
 	// Activate the controllers
 	for _, c := range crdControllers {

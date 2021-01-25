@@ -55,7 +55,7 @@ func TestYAMLFactory(t *testing.T) {
 
 	ownerRef := make(map[string]string)
 	ownerRef["uid"] = "123456789"
-	ownerRef["kind"] = "TridentProvisioner"
+	ownerRef["kind"] = "TridentOrchestrator"
 
 	imagePullSecrets := []string{"thisisasecret"}
 

@@ -1,8 +1,8 @@
 apiVersion: trident.netapp.io/v1
-kind: TridentProvisioner
+kind: TridentOrchestrator
 metadata:
   name: trident
-  namespace: default
 spec:
   debug: false
+  namespace: default
   silenceAutosupport: false

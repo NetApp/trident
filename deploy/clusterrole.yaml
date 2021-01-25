@@ -196,6 +196,8 @@ rules:
   - tridentsnapshots
   - tridentprovisioners # Required for Tprov
   - tridentprovisioners/status # Required to update Tprov's status section
+  - tridentorchestrators # Required for Torc
+  - tridentorchestrators/status # Required to update Torc's status section
   verbs:
   - get
   - list
@@ -213,6 +215,12 @@ rules:
   resourceNames:
   - tridentpods
 # Now Operator specific permissions
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
 - apiGroups:
   - apps
   resources:
