@@ -107,6 +107,7 @@ type OntapStorageDriverConfig struct {
 	QtreePruneFlexvolsPeriod         string   `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
 	QtreeQuotaResizePeriod           string   `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
 	QtreesPerFlexvol                 string   `json:"qtreesPerFlexvol"`                 // default to 200
+	LUNsPerFlexvol                   string   `json:"lunsPerFlexvol"`                   // default to 100
 	EmptyFlexvolDeferredDeletePeriod string   `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
 	NfsMountOptions                  string   `json:"nfsMountOptions"`
 	LimitAggregateUsage              string   `json:"limitAggregateUsage"`

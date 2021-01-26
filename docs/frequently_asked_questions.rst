@@ -266,10 +266,10 @@ Refer to :ref:`CHAP authentication <CHAP authentication>` in the Design and Arch
 How does Trident deploy Qtrees on an ONTAP volume? How many Qtrees can be deployed on a single volume through Trident?
 ----------------------------------------------------------------------------------------------------------------------
 
-The ``ontap-nas-economy`` driver will create up to 200 Qtrees in the same FlexVol (configurable between 50 and 300),
+The ``ontap-nas-economy`` driver will create 200 Qtrees in the same FlexVol by default (configurable between 50 and 300), and the ``ontap-san-economy`` driver will create 100 LUNs in the same FlexVol by default (configurable between 50 and 200),
 100,000 Qtrees per cluster node, and 2.4M per cluster. When you enter a new PersistentVolumeClaim that is serviced by
 the economy driver, the driver looks to see if a FlexVol already exists that can service the new Qtree. If the FlexVol
-does not exist that can service the Qtree, a new FlexVol will be created.
+does not exist that can service the Qtree, a new FlexVol will be created. 
 
 Refer to :ref:`Choosing a driver <Choosing a driver>` for more information.
 

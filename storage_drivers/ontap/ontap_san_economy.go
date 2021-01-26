@@ -28,7 +28,9 @@ import (
 
 const (
 	maxLunNameLength      = 254
-	maxLunsPerFlexvol     = 100
+	minLUNsPerFlexvol     = 50
+	defaultLUNsPerFlexvol = 100
+	maxLUNsPerFlexvol     = 200
 	snapshotNameSeparator = "_snapshot_"
 )
 
@@ -211,6 +213,7 @@ type SANEconomyStorageDriver struct {
 	Telemetry         *Telemetry
 	flexvolNamePrefix string
 	helper            *LUNHelper
+	lunsPerFlexvol    int
 
 	physicalPools map[string]*storage.Pool
 	virtualPools  map[string]*storage.Pool
@@ -300,8 +303,24 @@ func (d *SANEconomyStorageDriver) Initialize(
 	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
 
+	// ensure lun cap is valid
+	if config.LUNsPerFlexvol == "" {
+		d.lunsPerFlexvol = defaultLUNsPerFlexvol
+	} else {
+		errstr := "invalid config value for lunsPerFlexvol"
+		if d.lunsPerFlexvol, err = strconv.Atoi(config.LUNsPerFlexvol); err != nil {
+			return fmt.Errorf("%v: %v", errstr, err)
+		}
+		if d.lunsPerFlexvol < minLUNsPerFlexvol {
+			return fmt.Errorf("%v: using %d lunsPerFlexvol (minimum is %d)", errstr, d.lunsPerFlexvol, minLUNsPerFlexvol)
+		} else if d.lunsPerFlexvol > maxLUNsPerFlexvol {
+			return fmt.Errorf("%v: using %d lunsPerFlexvol (maximum is %d)", errstr, d.lunsPerFlexvol, maxLUNsPerFlexvol)
+		}
+	}
+
 	Logc(ctx).WithFields(log.Fields{
 		"FlexvolNamePrefix": d.flexvolNamePrefix,
+		"LUNsPerFlexvol":    d.lunsPerFlexvol,
 	}).Debugf("SAN Economy driver settings.")
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
@@ -1375,7 +1394,7 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 				}
 			}
 
-			if count < maxLunsPerFlexvol {
+			if count < d.lunsPerFlexvol {
 				volumes = append(volumes, volName)
 			}
 		}

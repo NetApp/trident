@@ -64,7 +64,8 @@ ONTAP storage systems have a maximum volume count which varies based on the soft
 
 Trident's ``ontap-nas`` and ``ontap-san`` drivers provision a FlexVolume for each Kubernetes Persistent Volume (PV)
 which is created. The ``ontap-nas-economy`` driver creates approximately one FlexVolume for every 200 PVs (configurable
-between 50 and 300).  To prevent Trident from consuming all available volumes on the storage system, it is recommended
+between 50 and 300). The ``ontap-san-economy`` driver creates approximately one FlexVolume for every 100 PVs (configurable
+between 50 and 200). To prevent Trident from consuming all available volumes on the storage system, it is recommended
 that a limit be placed on the SVM.  This can be done from the command line:
 
 .. code-block:: console

@@ -22,7 +22,7 @@ The five drivers for ONTAP backends are listed below:
 * ``ontap-nas-economy`` – Each PV provisioned is a qtree, with a configurable number of qtrees per FlexVolume (default is 200).
 * ``ontap-nas-flexgroup`` - Each PV provisioned as a full ONTAP FlexGroup, and all aggregates assigned to a SVM are used.
 * ``ontap-san`` – Each PV provisioned is a LUN within its own FlexVolume.
-* ``ontap-san-economy`` - Each PV provisioned is a LUN within a set of automatically managed FlexVols.
+* ``ontap-san-economy`` - Each PV provisioned is a LUN, with a configurable number of LUNs per FlexVolume (default is 100).
 
 Choosing between the three NFS drivers has some ramifications to the features which are made available to the application.
 
