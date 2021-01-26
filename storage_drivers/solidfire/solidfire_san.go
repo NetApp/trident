@@ -38,6 +38,8 @@ const (
 	Zone    = "zone"
 	Media   = "media"
 	QoSType = "type"
+
+	MaxLabelLength = 512
 )
 
 const MinimumVolumeSizeBytes = 1000000000 // 1 GB
@@ -473,6 +475,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
 			pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 			pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
+			pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
 			if d.Config.Region != "" {
 				pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
@@ -702,6 +705,12 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
 		}
+
+		// Validate pool label sizes
+		_, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, MaxLabelLength)
+		if err != nil {
+			return fmt.Errorf("invalid value for label in pool %s: %v", pool.Name, err)
+		}
 	}
 
 	fields := log.Fields{
@@ -723,6 +732,17 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 // Make SolidFire name
 func MakeSolidFireName(name string) string {
 	return strings.Replace(name, "_", "-", -1)
+}
+
+// setProvisioningLabels sets the labels in the metadata map
+func (d *SANStorageDriver) setProvisioningLabels(ctx context.Context, storagePool *storage.Pool, meta map[string]string) error {
+	labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, MaxLabelLength)
+	if err != nil {
+		return err
+	}
+
+	meta[drivers.ProvisioningLabelTag] = labels
+	return nil
 }
 
 // Create a SolidFire volume
@@ -858,6 +878,9 @@ func (d *SANStorageDriver) Create(
 	}
 
 	meta["fstype"] = fstype
+	if err = d.setProvisioningLabels(ctx, storagePool, meta); err != nil {
+		return err
+	}
 
 	req.Qos = qos
 	req.TotalSize = int64(sizeBytes)
@@ -871,7 +894,7 @@ func (d *SANStorageDriver) Create(
 	return nil
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *SANStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
@@ -973,6 +996,18 @@ func (d *SANStorageDriver) CreateClone(
 		req.SnapshotID = s.SnapshotID
 	}
 
+	svMeta := sourceVolume.GetAttributesAsMap()
+	meta["fstype"] = svMeta["fstype"] // copy the fstype from the source's metadata
+	if err = d.setProvisioningLabels(ctx, storagePool, meta); err != nil {
+		return err
+	}
+	if meta[drivers.ProvisioningLabelTag] == "" {
+		if svLabels, svLabelsExists := svMeta[drivers.ProvisioningLabelTag]; svLabelsExists {
+			// fall back to the source volume's label
+			meta[drivers.ProvisioningLabelTag] = svLabels
+		}
+	}
+
 	// Create the clone of the source volume with the name specified
 	req.VolumeID = sourceVolume.VolumeID
 	req.Name = MakeSolidFireName(name)
@@ -1036,6 +1071,12 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		attrs[drivers.TridentLabelTag] = string(telemetry)
 		attrs["docker-name"] = originalName
 		attrs["fstype"] = strings.ToLower(volConfig.FileSystem)
+
+		// Update the volume labels if Trident will manage its lifecycle
+		svMeta := volume.GetAttributesAsMap()
+		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, svMeta[drivers.ProvisioningLabelTag]) {
+			attrs[drivers.ProvisioningLabelTag] = ""
+		}
 
 		var req api.ModifyVolumeRequest
 		req.VolumeID = volume.VolumeID

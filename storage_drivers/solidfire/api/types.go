@@ -59,6 +59,23 @@ type Volume struct {
 	Attributes         interface{}  `json:"attributes"`
 }
 
+// GetAttributesAsMap converts from an interface{} into a map[string]string
+func (v *Volume) GetAttributesAsMap() map[string]string {
+	result := map[string]string{}
+	if attrs, ok := v.Attributes.(map[string]interface{}); ok {
+		for key := range attrs {
+			// we're only converting string values at this time
+			// the map could have ints, bools, etc
+			// a future enhancement would be to check each type and convert to the string value
+			// but, for now, we only need the string values
+			if value, ok := attrs[key].(string); ok {
+				result[key] = value
+			}
+		}
+	}
+	return result
+}
+
 type Snapshot struct {
 	SnapshotID int64       `json:"snapshotID"`
 	VolumeID   int64       `json:"volumeID"`
