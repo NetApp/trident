@@ -1,0 +1,58 @@
+
+# imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
+imageRegistry: ""
+
+# imagePullPolicy sets the image pull policy for the trident-operator, trident, and other images.
+imagePullPolicy: IfNotPresent
+
+# imagePullSecrets sets the image pull secrets for the trident-operator, trident, and other images.
+imagePullSecrets: []
+
+# kubeletDir allows overriding the host location of kubelet's internal state. (default "/var/lib/kubelet")
+kubeletDir: ""
+
+
+
+# operatorDebug allows enabling debug logging in trident-operator.
+operatorDebug: false
+
+# operatorImage allows the complete override of the image for trident-operator.
+operatorImage: ""
+
+# operatorImageTag allows overriding the tag of the trident-operator image.
+operatorImageTag: ""
+
+
+
+# tridentDebug allows enabling debug logging from the Trident deployment.
+tridentDebug: false
+
+# tridentIPv6 allows enabling Trident to work in IPv6 clusters.
+tridentIPv6: false
+
+# tridentK8sTimeout overrides the default 30-second timeout for most Kubernetes API operations (if non-zero, in seconds).
+tridentK8sTimeout: 0
+
+# tridentSilenceAutosupport allows disabling Trident's periodic Autosupport reporting.
+tridentSilenceAutosupport: false
+
+# tridentAutosupportImage allows the complete override of the image for Trident's Autosupport container.
+tridentAutosupportImage: ""
+
+# tridentAutosupportImageTag allows overriding the tag of the image for Trident's Autosupport container.
+tridentAutosupportImageTag: ""
+
+# tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy
+tridentAutosupportProxy: ""
+
+# tridentLogFormat sets the Trident logging format (text or json).
+tridentLogFormat: "text"
+
+# tridentImage allows the complete override of the image for Trident.
+tridentImage: ""
+
+# tridentImageTag allows overriding the tag of the image for Trident.
+tridentImageTag: ""
+
+# tridentEnableNodePrep attempts to automatically install required packages on nodes
+tridentEnableNodePrep: false

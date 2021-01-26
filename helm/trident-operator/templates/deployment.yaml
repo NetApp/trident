@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: operator.trident.netapp.io
+  name: trident-operator
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: operator.trident.netapp.io
+      name: trident-operator
+  template:
+    metadata:
+      labels:
+        app: operator.trident.netapp.io
+        name: trident-operator
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      serviceAccountName: trident-operator
+      containers:
+      - command:
+        - /trident-operator
+        - --debug={{ include "trident-operator.debug" $ }}
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: trident-operator
+        image: {{ include "trident-operator.image" $ }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        name: trident-operator

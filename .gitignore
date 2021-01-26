@@ -10,6 +10,7 @@ operator/operator
 trident-installer.tar.gz
 trident
 trident-operator
+!trident-operator/
 !trident/
 *.pem
 *.csr

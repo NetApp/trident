@@ -1,0 +1,23 @@
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  namespace: {{ .Release.Namespace }}
+  debug: {{ include "trident.debug" $ }}
+  IPv6: {{ include "trident.IPv6" $ }}
+  k8sTimeout: {{ .Values.tridentK8sTimeout }}
+  silenceAutosupport: {{ include "trident.silenceAutosupport" $ }}
+  autosupportImage: {{ include "trident.autosupportImage" $ }}
+  autosupportProxy: {{ .Values.tridentAutosupportProxy }}
+  logFormat: {{ include "trident.logFormat" $ }}
+  tridentImage: {{ include "trident.image" $ }}
+  {{- if .Values.imageRegistry }}
+  imageRegistry: {{ .Values.imageRegistry }}
+  {{- end }}
+  kubeletDir: {{ .Values.kubeletDir }}
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  enableNodePrep: {{ include "trident.enableNodePrep" $ }}

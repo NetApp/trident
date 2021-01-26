@@ -5,6 +5,7 @@ GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
 GO_IMAGE = golang:1.14
+HELM_IMAGE = alpine/helm:latest
 GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
@@ -61,6 +62,8 @@ GO_CMD ?= go
 GO_LINUX = ${DR_LINUX} ${GO_CMD}
 
 GO_MACOS = ${DR_MACOS} ${GO_CMD}
+
+DR_HELM = docker run --rm -v "${ROOT}":"/apps" $(HELM_IMAGE)
 
 .PHONY = default build trident_build trident_build_all tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
 
@@ -125,7 +128,10 @@ tridentctl_macos_build:
 operator_build:
 	cd operator && $(MAKE) build
 
-trident_build_all: *.go trident_build tridentctl_macos_build
+helm_build:
+	@${DR_HELM} package --app-version ${TRIDENT_VERSION} --version ${TRIDENT_VERSION} ./helm/trident-operator
+
+trident_build_all: *.go trident_build tridentctl_macos_build helm_build
 
 dist_tag:
 ifneq ($(TRIDENT_DIST_TAG),$(TRIDENT_TAG))
@@ -144,6 +150,8 @@ dist_tar: build
 	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/operator.yaml
 	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/bundle.yaml
 	@rm /tmp/trident-installer/deploy/*.bak
+	@mkdir -p /tmp/trident-installer/helm
+	@cp -a trident-operator-*.tgz /tmp/trident-installer/helm
 	@mkdir -p /tmp/trident-installer/extras/bin
 	@cp ${BIN_DIR}/${BIN} /tmp/trident-installer/extras/bin/${TARBALL_BIN}
 	@mkdir -p /tmp/trident-installer/extras/macos/bin
@@ -205,7 +213,7 @@ k8s_codegen_operator:
 	cd operator && $(MAKE) k8s_codegen
 
 .git/hooks:
-	mkdir -p $@ 
+	mkdir -p $@
 
 .PHONY: install-lint lint-precommit lint-prepush
 install-lint:

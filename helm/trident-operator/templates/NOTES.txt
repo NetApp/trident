@@ -1,0 +1,15 @@
+
+Thank you for installing {{ .Chart.Name }}, which will deploy and manage NetApp's Trident CSI
+storage provisioner for Kubernetes.
+
+Your release is named '{{ .Release.Name }}' and is installed into the '{{ .Release.Namespace }}' namespace.
+Please note that there must be only one instance of Trident (and trident-operator) in a Kubernetes cluster.
+
+To configure Trident to manage storage resources, you will need a copy of tridentctl, which is
+available in pre-packaged Trident releases.  You may find all Trident releases and source code
+online at {{ .Chart.Home }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}

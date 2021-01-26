@@ -1,0 +1,14 @@
+apiVersion: v2
+name: trident-operator
+version: 1.0.0
+kubeVersion: ">= 1.16.0 < 1.21.0"
+description: "A Helm chart for deploying NetApp's Trident CSI storage provisioner using the Trident Operator."
+type: application
+keywords: ["NetApp", "Trident", "operator", "CSI"]
+home: "https://github.com/NetApp/trident"
+icon: "https://raw.githubusercontent.com/NetApp/trident/master/logo/trident.png"
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+appVersion: 21.01.0
