@@ -99,3 +99,12 @@ if needed.
    INFO Deleted installer cluster role binding.
    INFO Deleted installer cluster role.
    INFO Deleted installer service account.
+
+How to downgrade using Helm
+===========================
+
+To downgrade, use the ``helm rollback`` command. See the following example:
+
+.. code-block:: console
+
+  $ helm rollback trident [revision #]

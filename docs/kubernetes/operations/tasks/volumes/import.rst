@@ -3,9 +3,9 @@ Importing a volume
 ##################
 
 Beginning with the 19.04 release of Trident, you can import existing storage
-volumes as a Kubernetes PV using ``tridentctl import``. This document explains
+volumes as a Kubernetes PV using ``tridentctl import``. This section explains
 why importing volumes is an important requirement for Kubernetes environments,
-the drivers that support volume imports and examples that show how it's done.
+provides information about the drivers that support volume imports, and shows examples of how it's done.
 
 Volume Import Driver Support
 ----------------------------
@@ -145,9 +145,7 @@ which Trident will not manage, use the following command:
    | pvc-df07d542-afbc-11e9-8d9f-5254004dfdb7 | 1.0 GiB | standard      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | false   |
    +------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
 
-When using the ``--no-manage`` flag, Trident renames the volume, but it
-does not validate if the volume was mounted. The import operation will fail
-if the volume was not mounted manually.
+When using the ``--no-manage`` argument, Trident does not rename the volume or validate if the volume was mounted. The volume import operation will fail if the volume was not mounted manually.
 
 .. note::
 

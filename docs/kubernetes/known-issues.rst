@@ -4,6 +4,7 @@ Known issues
 This page contains a list of known issues that may be observed when using Trident.
 
 .. _igroup-bug:
+
 * When using Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
   for non-CSI deployments [Kubernetes ``1.11`` - ``1.13``], users may observe
   existing ``igroups`` being cleared of all existing IQNs. This has been fixed
@@ -27,7 +28,9 @@ This page contains a list of known issues that may be observed when using Triden
   Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_.
   Users can work with backends that use an empty storage prefix (``""``) or one
   that includes ``"-"``.
+
 .. _fstype-fix:
+
 * With Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_
   using the `v2.0.1 <https://github.com/kubernetes-csi/external-provisioner/blob/release-2.0/CHANGELOG/CHANGELOG-2.0.md#urgent-upgrade-notes>`_
   release of the CSI external-provisioner sidecar, users will now observe Trident

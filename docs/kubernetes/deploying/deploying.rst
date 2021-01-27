@@ -20,6 +20,9 @@ There are two ways you can deploy Trident:
    well as upgrades to the Trident installation**. Take a look at
    :ref:`Deploying with the Trident Operator <deploying-with-operator>`!
 
+   .. note::
+      Starting with Trident 21.01, you can use Helm to install Trident Operator.
+
 2. **Deploying Trident with tridentctl:** If you have already deployed
    previous releases, this is the method of deployment that you would have
    used. :ref:`This page <deploying-with-tridentctl>` explains all the steps
@@ -29,6 +32,11 @@ Choosing the right option
 -------------------------
 
 To determine which deployment option to use, you must consider the following:
+
+Why should I use Helm?
+~~~~~~~~~~~~~~~~~~~~~~
+
+If you have other applications that you are managing using Helm, starting with Trident 21.01, you can manage your Trident installation also using Helm.
 
 Why should I use the Trident Operator?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,8 +58,8 @@ the ability to monitor a Trident installation and actively take measures
 to address issues, such as when the Trident deployment is deleted or if
 the installation is modified accidentally. When the operator is set
 up as a deployment, a ``trident-operator-<generated-id>`` pod is created.
-This pod associates a TridentProvisioner CR with a Trident installation and always
-ensures there exists only one active TridentProvisioner. In other words, the
+This pod associates a TridentOrchestrator CR with a Trident installation and always
+ensures there exists only one active TridentOrchestrator. In other words, the
 operator makes sure there's only one instance of Trident in the cluster and
 controls its setup, making sure the installation is idempotent. When changes
 are made to the Trident install [such as deleting the Trident deployment or
@@ -62,21 +70,21 @@ Updating existing installations
 """""""""""""""""""""""""""""""
 
 With the operator it is easy to update an existing Trident deployment. Since
-the Trident install is initiated by the creation of a ``TridentProvisioner``
+the Trident install is initiated by the creation of a ``TridentOrchestrator``
 CR, you can edit it to make updates to an already created Trident installation.
 Wherein installations done with ``tridentctl`` will require an
 uninstall/reinstall to perform something similar, the operator only requires
-editing the TridentProvisioner CR.
+editing the TridentOrchestrator CR.
 
 As an example, consider a scenario where you need to enable Trident to generate
-debug logs. To do this, you will need to patch your TridentProvisioner to set
+debug logs. To do this, you will need to patch your TridentOrchestrator to set
 ``spec.debug`` to ``true``.
 
 .. code-block:: console
 
-   kubectl patch tprov <trident-provisioner-name> -n trident --type=merge -p '{"spec":{"debug":true}}'
+   kubectl patch torc <trident-orchestrator-name> -n trident --type=merge -p '{"spec":{"debug":true}}'
 
-After the TridentProvisioner is updated, the operator processes the updates and
+After the TridentOrchestrator is updated, the operator processes the updates and
 patches the existing installation. This may triggers the creation of new pods
 to modify the installation accordingly.
 
@@ -117,13 +125,16 @@ install to an operator-based deployment, or vice versa:
 1. Always use the same method for uninstalling Trident. If you have deployed Trident
    with ``tridentctl``, you must use the appropriate version of the ``tridentctl``
    binary  to uninstall Trident. Similarly, if deploying Trident with the operator,
-   you must edit the ``TridentProvisioner`` CR and set ``spec.uninstall=true``
+   you must edit the ``TridentOrchestrator`` CR and set ``spec.uninstall=true``
    to uninstall Trident.
 
 2. If you have a Trident Operator deployment that you want to remove and use ``tridentctl``
-   to deploy Trident, you must first edit the ``TridentProvisioner`` and set
+   to deploy Trident, you must first edit the ``TridentOrchestrator`` and set
    ``spec.uninstall=true`` to uninstall Trident. You will then have delete the
-   ``TridentProvisioner`` and the operator deployment.
+   ``TridentOrchestrator`` and the operator deployment.
    You can then install Trident with ``tridentctl``.
+
+3. If you have a manual Trident Operator deployment, and you want to use Helm-based Trident Operator deployment, you should manually uninstall the Trident Operator first, and then do the ``helm install``. This enables Helm to deploy the Trident Operator with the required labels and annotations. If you do not do this, your Helm-based Trident Operator deployment will fail with ``label validation error`` and ``annotation validation error``.
+   If you have a ``tridentctl``-based installation, you can use Helm-based deployment without running into issues.
 
 NetApp **does not recommend downgrading Trident releases** unless absolutely necessary.

@@ -6,7 +6,54 @@ Deploying with the Trident Operator
 
 If you are looking to deploy Trident using the Trident Operator, you are
 in the right place. This page contains all the steps required for getting
-started with the Trident Operator to install and manage Trident.
+started with the Trident Operator to install and manage Trident. You can deploy Trident Operator either manually or using Helm.
+
+Deploy Trident Operator by using Helm
+=====================================
+
+Perform the steps listed to deploy Trident Operator by using Helm.
+
+Prerequisites
+-------------
+
+To deploy Trident Operator by using Helm, you need the following:
+
+* Kubernetes 1.16 and later
+* Helm version 3
+
+1: Download the installer bundle
+--------------------------------
+
+Download the Trident 21.01 installer bundle from the `Trident GitHub <https://github.com/netapp/trident/releases>`_ page. The installer bundle includes the Helm chart in the ``/helm`` directory.
+
+2: Deploy the Trident operator
+------------------------------
+
+Use the ``helm install`` command and specify a name for your deployment. See the following example:
+
+.. code-block:: console
+
+  $ helm install <name> trident-operator-21.01.0.tgz
+
+There are two ways to pass configuration data during the install:
+
+* --values (or -f): Specify a YAML file with overrides. This can be specified multiple times and the rightmost file will take precedence.
+* --set: Specify overrides on the command line.
+
+For example, to change the default value of ``debug``, run the following --set command:
+
+.. code-block:: console
+
+  $ helm install <name> trident-operator-21.01.0.tgz --set tridentDebug=true
+
+The ``values.yaml`` file, which is part of the Helm chart provides the list of keys and their default values.
+
+``helm list`` shows you details about the Trident installation, such as name, namespace, chart, status, app version, revision number, and so on.
+
+Deploy Trident Operator manually
+================================
+
+Perform the steps listed to manually deploy Trident Operator.
 
 Prerequisites
 -------------
@@ -28,7 +75,7 @@ To deploy Trident using the operator you need:
   running Kubernetes ``1.14`` and above.
 * Access to a
   :ref:`supported NetApp storage system <Supported backends (storage)>`
-* :ref:`Volume mount capability <Worker preparation>` from all of the
+* :ref:`Volume mount capability <Preparing the worker node>` from all of the
   Kubernetes worker nodes
 * A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
   and configured to manage the Kubernetes cluster you want to use
@@ -75,7 +122,7 @@ you have the necessary privileges to.
 .. note::
 
    Using the Trident Operator to install Trident requires creating the
-   ``TridentProvisioner`` Custom Resource Definition and defining other
+   ``TridentOrchestrator`` Custom Resource Definition and defining other
    resources. You will need to perform these steps to setup the operator
    before you can install Trident.
 
@@ -90,19 +137,19 @@ Download the latest version of the `Trident installer bundle`_ from the
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
 
-Use the appropriate CRD manifest to create the ``TridentProvisioner`` Custom
-Resource Definition. You will then create a ``TridentProvisioner`` Custom Resource
+Use the appropriate CRD manifest to create the ``TridentOrchestrator`` Custom
+Resource Definition. You will then create a ``TridentOrchestrator`` Custom Resource
 later on to instantiate a Trident install by the operator.
 
 .. code-block:: bash
 
   # Is your Kubernetes version < 1.16?
-  kubectl create -f deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
+  kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_pre1.16.yaml
 
   # If not, your Kubernetes version must be 1.16 and above
-  kubectl create -f deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
+  kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
 
-Once the ``TridentProvisioner`` CRD is created, you will then have to create
+Once the ``TridentOrchestrator`` CRD is created, you will then have to create
 the resources required for the operator deployment, such as:
 
 * a ServiceAccount for the operator.
@@ -152,29 +199,29 @@ worker nodes in your cluster.
    There must only be **one instance of the operator in a Kubernetes cluster**.
    **Do not create multiple deployments of the Trident operator**.
 
-3: Creating a TridentProvisioner CR and installing Trident
-----------------------------------------------------------
+3: Creating a TridentOrchestrator CR and installing Trident
+-----------------------------------------------------------
 
 You are now ready to install Trident using the operator! This will require
-creating a TridentProvisioner CR. The Trident installer comes with example
-defintions for creating a TridentProvisioner CR.
+creating a TridentOrchestrator CR. The Trident installer comes with example
+defintions for creating a TridentOrchestrator CR.
 
 .. code-block:: console
 
-   $ kubectl create -f deploy/crds/tridentprovisioner_cr.yaml
-   tridentprovisioner.trident.netapp.io/trident created
+   $ kubectl create -f deploy/crds/tridentorchestrator_cr.yaml
+   tridentorchestrator.trident.netapp.io/trident created
 
-   $  kubectl get tprov -n trident
+   $  kubectl get torc -n trident
    NAME      AGE
    trident   5s
-   $ kubectl describe tprov trident -n trident
+   $ kubectl describe torc trident -n trident
    Name:         trident
    Namespace:    trident
    Labels:       <none>
    Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                   {"apiVersion":"trident.netapp.io/v1","kind":"TridentProvisioner","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
+                   {"apiVersion":"trident.netapp.io/v1","kind":"TridentOrchestrator","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
    API Version:  trident.netapp.io/v1
-   Kind:         TridentProvisioner
+   Kind:         TridentOrchestrator
    ...
    Spec:
      Debug:          true
@@ -200,13 +247,13 @@ defintions for creating a TridentProvisioner CR.
 Observing the status of the operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Status of the TridentProvisioner will indicate if the installation
+The Status of the TridentOrchestrator will indicate if the installation
 was successful and will display the version of Trident installed.
 
 +-----------------+--------------------------------------------------------------------------+
 | Status          |              Description                                                 |
 +=================+==========================================================================+
-| Installing      | The operator is installing Trident using this  ``TridentProvisioner`` CR.|
+| Installing      | The operator is installing Trident using this ``TridentOrchestrator`` CR.|
 +-----------------+--------------------------------------------------------------------------+
 | Installed       | Trident has successfully installed.                                      |
 +-----------------+--------------------------------------------------------------------------+
@@ -222,10 +269,10 @@ was successful and will display the version of Trident installed.
 +-----------------+--------------------------------------------------------------------------+
 | Updating        | The operator is updating an existing Trident installation.               |
 +-----------------+--------------------------------------------------------------------------+
-| Error           | The ``TridentProvisioner`` is not used. Another one already exists.      |
+| Error           | The ``TridentOrchestrator`` is not used. Another one already exists.     |
 +-----------------+--------------------------------------------------------------------------+
 
-During the installation, the status of the ``TridentProvisioner``
+During the installation, the status of the ``TridentOrchestrator``
 will change from ``Installing`` to ``Installed``. If you observe
 the ``Failed`` status and the operator is unable to recover by
 itself, there's probably something wrong and you
@@ -259,7 +306,7 @@ You can also use ``tridentctl`` to check the version of Trident installed.
 
 If that's what you see, you're done with this step, but **Trident is not
 yet fully configured.** Go ahead and continue to the
-:ref:`next step <4: Creating a Trident backend>` to create
+:ref:`next step <1: Creating a Trident backend>` to create
 a Trident backend using ``tridentctl``.
 
 However, if the installer does not complete successfully or you don't see
@@ -267,18 +314,18 @@ a **Running** ``trident-csi-<generated id>``, then Trident had a problem and the
 installed.
 
 To understand why the installation of Trident was unsuccessful, you should
-first take a look at the ``TridentProvisioner`` status.
+first take a look at the ``TridentOrchestrator`` status.
 
 .. code-block:: console
 
-  $ kubectl describe tprov trident-2 -n trident
+  $ kubectl describe torc trident-2 -n trident
   Name:         trident-2
   Namespace:    trident
   Labels:       <none>
   Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                  {"apiVersion":"trident.netapp.io/v1","kind":"TridentProvisioner","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
+                  {"apiVersion":"trident.netapp.io/v1","kind":"TridentOrchestrator","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
   API Version:  trident.netapp.io/v1
-  Kind:         TridentProvisioner
+  Kind:         TridentOrchestrator
   Status:
     Current Installation Params:
       IPv6:
@@ -294,10 +341,10 @@ first take a look at the ``TridentProvisioner`` status.
     Version:
   Events:                  <none>
 
-This error indicates that there already exists a TridentProvisioner that was
+This error indicates that there already exists a TridentOrchestrator that was
 used to install Trident. Since each Kubernetes cluster can only have one instance
 of Trident, the operator ensures that at any given time there only exists one
-active TridentProvisioner that it can create.
+active TridentOrchestrator that it can create.
 
 Another thing to do is to check the operator logs. Trailing the logs of the
 ``trident-operator`` container can point to where the problem lies.
@@ -327,8 +374,8 @@ something is not right.
 You can clearly see that the pods are not able to intialize completely as one
 or more container images were not fetched.
 
-To address the problem, you must edit the TridentProvisioner CR. Alternatively,
-you can delete the TridentProvisioner and create a new one with the modified,
+To address the problem, you must edit the TridentOrchestrator CR. Alternatively,
+you can delete the TridentOrchestrator and create a new one with the modified,
 accurate definition.
 
 If you continue to have trouble, visit the
@@ -340,7 +387,7 @@ Customizing your deployment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Trident operator provides users the ability to customize the manner in which
-Trident is installed, using the following attributes in the TridentProvisioner ``spec``:
+Trident is installed, using the following attributes in the TridentOrchestrator ``spec``:
 
 ========================= ============================================================================== ==========================================================
 Parameter                 Description                                                                    Default
@@ -359,21 +406,21 @@ imageRegistry             Path to an internal registry, of the format ``<registr
 kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
 imagePullSecrets          Secrets to pull images from an internal registry
-========================= ============================================================================== =========================================================
+========================= ============================================================================== ==========================================================
 
 .. warning::
 
-	Automatic worker node prep is a **beta feature** meant to be used in
+  Automatic worker node prep is a **beta feature** meant to be used in
   non-production environments only.
 
-You can use the attributes mentioned above when defining a TridentProvisioner to
+You can use the attributes mentioned above when defining a TridentOrchestrator to
 customize your Trident installation. Here's an example:
 
 .. code-block:: console
 
-   $ cat deploy/crds/tridentprovisioner_cr_imagepullsecrets.yaml
+   $ cat deploy/crds/tridentorchestrator_cr_imagepullsecrets.yaml
    apiVersion: trident.netapp.io/v1
-   kind: TridentProvisioner
+   kind: TridentOrchestrator
    metadata:
      name: trident
      namespace: trident
@@ -384,13 +431,18 @@ customize your Trident installation. Here's an example:
      - thisisasecret
 
 
-If you are looking to customize Trident's installation beyond what the TridentProvisioner's
+If you are looking to customize Trident's installation beyond what the TridentOrchestrator's
 arguments allow, you should consider using ``tridentctl`` to generate custom
 yaml manifests that you can modify as desired. Head on over to the
 :ref:`deployment guide for tridentctl <deploying-with-tridentctl>` to learn
 how this works.
 
-4: Creating a Trident backend
+Post-deployment steps
+=====================
+
+After you deploy Trident with the operator, you can proceed with creating a Trident backend, creating a storage class, provisioning a volume, and mounting the volume in a pod.
+
+1: Creating a Trident backend
 -----------------------------
 
 You can now go ahead and create a backend that will be used by Trident
@@ -429,7 +481,7 @@ and try again. If you continue to have trouble, visit the
 :ref:`troubleshooting guide <Troubleshooting>` for more advice on how to
 determine what went wrong.
 
-5: Creating a Storage Class
+2: Creating a Storage Class
 ---------------------------
 
 Kubernetes users provision volumes using persistent volume claims (PVCs) that
@@ -509,7 +561,7 @@ and Trident should have discovered the pools on the backend.
 
 .. _storage class: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storageclasses
 
-6: Provision your first volume
+3: Provision your first volume
 ------------------------------
 
 Now you're ready to dynamically provision your first volume. How exciting! This
@@ -534,7 +586,7 @@ class name matches the one that you created in 6.
     basic     Pending   pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   0                        basic          5s
     basic     Bound     pvc-3acb0d1c-b1ae-11e9-8d9f-5254004dfdb7   1Gi        RWO           basic          7s
 
-7: Mount the volume in a pod
+4: Mount the volume in a pod
 ----------------------------
 
 Now that you have a volume, let's mount it. We'll launch an nginx pod that

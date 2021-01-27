@@ -76,9 +76,37 @@ fetching the latest `installer bundle`_ and then installing the operator.
    # Create the resources and deploy the operator
    kubectl create -f deploy/bundle.yaml
 
-You do not have to create the Operator CRDs nor the ``tridentprovisioner`` CR
+You do not have to create the Operator CRDs nor the ``tridentorchestrator`` CR
 again. Just deploy the operator with the respective Trident Operator image and
 you are good to go.
+
+Upgrading a Helm-based operator install
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you have a Helm-based operator install, to upgrade, do the following:
+
+1. Download the latest Trident release.
+2. Use the ``helm upgrade`` command. See the following example:
+
+.. code-block:: console
+
+ $ helm upgrade <name> trident-operator-21.01.0.tgz
+
+where ``trident-operator-21.01.0.tgz`` reflects the version that you want to upgrade to.
+
+If you run ``helm list``, the output shows that the chart and app version have both been upgraded.
+
+To pass configuration data during the upgrade, use --set. For example, to change the default value of ``tridentDebug``, run the following --set command:
+
+.. code-block:: console
+
+  $ helm upgrade <name> trident-operator-21.01.0-custom.tgz --set tridentDebug=true
+
+If you run ``$ tridentctl logs``, you can see the debug messages.
+
+.. note::
+
+  If you set any non-default options during the initial installation, ensure that the options are included in the upgrade command, or else, the values will be reset to their defaults.
 
 Upgrading from a non-operator install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,9 +117,9 @@ of the Trident Operator by following the instructions provided in the
 :ref:`Operator deployment <deploying-with-operator>`. You must:
 
 1. Download the latest Trident release.
-2. Create the ``tridentProvisioner`` CRD from the manifest.
+2. Create the ``TridentOrchestrator`` CRD from the manifest.
 3. Deploy the operator.
-4. Create a ``TridentProvisioner`` CR for installing Trident.
+4. Create a ``TridentOrchestrator`` CR for installing Trident.
 5. Existing backends and PVCs will be automatically available.
 
 All of this is documented in thoroughly in the

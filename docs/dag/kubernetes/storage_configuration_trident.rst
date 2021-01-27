@@ -128,6 +128,57 @@ The number of IOPS dedicated to the containerized workloads depends on many aspe
 
 It's important to remember that a QoS policy assigned at the SVM level will result in all volumes provisioned to the SVM sharing the same IOPS pool.  If one, or a small number, of the containerized applications have a high IOPS requirement it could become a bully to the other containerized workloads.  If this is the case, you may want to consider using external automation to assign per-volume QoS policies.
 
+.. important::
+   You need to assign the QoS policy group to the SVM *only* if your ONTAP version is earlier than 9.8.
+
+Create QoS policy groups for Trident
+------------------------------------
+
+Quality of service (QoS) guarantees that performance of critical workloads is not degraded by competing workloads. ONTAP Quality of Service (QoS) policy groups provide QoS options for volumes, and enable users to define the throughput ceiling for one or more workloads. For more information about QoS, see `Guaranteeing throughput with QoS <https://docs.netapp.com/ontap-9/topic/com.netapp.doc.pow-perf-mon/GUID-77DF9BAF-4ED7-43F6-AECE-95DFB0680D2F.html>`_.
+You can specify QoS policy groups in the backend or in a storage pool, and they are applied to each volume created in that pool or backend.
+
+ONTAP has two kinds of QoS policy groups: traditional and adaptive. Traditional policy groups provide a flat maximum (or minimum, in later versions) throughput in IOPS. Adaptive QoS automatically scales the throughput to workload size, maintaining the ratio of IOPS to TBs|GBs as the size of the workload changes. That is a significant advantage when you are managing hundreds or thousands of workloads in a large deployment.
+
+Consider the following when you create QoS policy groups:
+
+* You should set the ``qosPolicy`` key in the ``defaults`` block of the backend configuration. See the following backend configuration example:
+
+.. code-block:: console
+
+  {
+    "version": 1,
+    "storageDriverName": "ontap-nas",
+    "managementLIF": "0.0.0.0",
+    "dataLIF": "0.0.0.0",
+    "svm": "svm0",
+    "username": "user",
+    "password": "pass",
+    "defaults": {
+      "qosPolicy": "standard-pg"
+    },
+    "storage": [
+      {
+        "labels": {"performance": "extreme"},
+        "defaults": {
+          "adaptiveQosPolicy": "extremely-adaptive-pg"
+        }
+      },
+      {
+        "labels": {"performance": "premium"},
+        "defaults": {
+          "qosPolicy": "premium-pg"
+        }
+      }
+    ]
+  }
+
+* You should apply the policy groups per volume, so that each volume gets the entire throughput as specified by the policy group. Shared policy groups are not supported.
+
+For more information about QoS policy groups, see the following links:
+
+* `ONTAP 9.8 QoS commands <https://docs.netapp.com/ontap-9/topic/com.netapp.doc.dot-cm-cmpr-980/TOC__qos.html>`_
+* `ONTAP 9.8 QoS policy group commands <https://docs.netapp.com/ontap-9/topic/com.netapp.doc.dot-cm-cmpr-980/TOC__qos__policy-group.html>`_
+
 Limit storage resource access to Kubernetes cluster members
 -----------------------------------------------------------
 

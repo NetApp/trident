@@ -27,7 +27,7 @@ To deploy Trident you need:
   :ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>`
 * Access to a
   :ref:`supported NetApp storage system <Supported backends (storage)>`
-* :ref:`Volume mount capability <Worker preparation>` from all of the
+* :ref:`Volume mount capability <Preparing the worker node>` from all of the
   Kubernetes worker nodes
 * A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
   and configured to manage the Kubernetes cluster you want to use
@@ -206,7 +206,7 @@ Auto Worker Node Prep section.
 
 .. warning::
 
-	Automatic worker node prep is a **beta feature** meant to be used in
+  Automatic worker node prep is a **beta feature** meant to be used in
   non-production environments only.
 
 If you are using a distribution of Kubernetes where kubelet keeps its data on a path

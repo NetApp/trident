@@ -43,7 +43,7 @@ ways:
 
 1. Using ``tridentctl install`` to install Trident.
 
-2. Using the Trident Operator.
+2. Using the Trident Operator. You can deploy Trident Operator either manually or by using Helm.
 
 This mode of installing is the easiest way to install Trident and
 works for most environments that do not impose network restrictions. The
@@ -56,7 +56,7 @@ In many organizations, production and development environments do not have acces
 To perform an air-gapped installation of Trident, you can use the ``--image-registry`` flag
 when invoking ``tridentctl install`` to point to a private image registry. If installing with
 the Trident Operator, you can alternatively specify ``spec.imageRegistry`` in your
-TridentProvisioner. This registry must contain the Trident image,
+TridentOrchestrator. This registry must contain the Trident image,
 (obtained `here <https://hub.docker.com/r/netapp/trident/>`_), the Trident
 Autosupport image (obtained `here <https://hub.docker.com/r/netapp/trident-autosupport/>`_),
 and the CSI sidecar images as required by your Kubernetes version.
@@ -66,6 +66,10 @@ for Trident's resources. This includes the deployment, daemonset, service accoun
 role that Trident creates as part of its installation.
 The :ref:`Customized Installation <Customized Installation>` section talks about the options available
 for performing a custom Trident install.
+
+.. important::
+
+  If you are using a private image repository, you should add ``/k8scsi`` for Kubernetes versions earlier than 1.17 or ``/sig-storage`` for Kubernetes versions later than 1.17 to the end of the private registry URL. When using a private registry while installing Trident using ``tridentctl``, you should use ``--trident-image`` and ``--autosupport-image`` in conjunction with ``--image-registry``. If you are installing Trident using the Trident operator, ensure that the orchestrator CR includes ``tridentImage`` and ``autosupportImage`` in the installation parameters.
 
 **Remote install mode**
 
