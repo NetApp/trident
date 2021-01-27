@@ -65,6 +65,7 @@ func TestOntapStorageDriverConfigString(t *testing.T) {
 		"ChapInitiatorSecret:<REDACTED>":       "chap initiator secret",
 		"ChapTargetUsername:<REDACTED>":        "chap target username",
 		"ChapTargetInitiatorSecret:<REDACTED>": "chap target initiator secret",
+		"ClientPrivateKey:<REDACTED>":          "client private key",
 	}
 
 	for _, ontapStorageDriverConfig := range ontapStorageDriverConfigs {

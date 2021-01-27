@@ -5,6 +5,8 @@ package azgo
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -27,13 +29,16 @@ type ZAPIResponseIterable interface {
 }
 
 type ZapiRunner struct {
-	ManagementLIF   string
-	SVM             string
-	Username        string
-	Password        string
-	Secure          bool
-	OntapiVersion   string
-	DebugTraceFlags map[string]bool // Example: {"api":false, "method":true}
+	ManagementLIF        string
+	SVM                  string
+	Username             string
+	Password             string
+	ClientPrivateKey     string
+	ClientCertificate    string
+	TrustedCACertificate string
+	Secure               bool
+	OntapiVersion        string
+	DebugTraceFlags      map[string]bool // Example: {"api":false, "method":true}
 }
 
 // GetZAPIName returns the name of the ZAPI request; it must parse the XML because ZAPIRequest is an interface
@@ -83,17 +88,17 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		}()
 	}
 
-	var s = ""
+	s := ""
 	if o.SVM == "" {
 		s = fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
-        <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21">
+          <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21">
             %s
-        </netapp>`, zapiCommand)
+          </netapp>`, zapiCommand)
 	} else {
 		s = fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
-        <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21" %s>
+		  <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21" %s>
             %s
-        </netapp>`, "vfiler=\""+o.SVM+"\"", zapiCommand)
+          </netapp>`, "vfiler=\""+o.SVM+"\"", zapiCommand)
 	}
 	if o.DebugTraceFlags["api"] {
 		log.Debugf("sending to '%s' xml: \n%s", o.ManagementLIF, s)
@@ -109,11 +114,46 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 
 	b := []byte(s)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/xml")
-	req.SetBasicAuth(o.Username, o.Password)
+
+	// Check to use cert/key and load the cert pair
+	var cert tls.Certificate
+	caCertPool := x509.NewCertPool()
+	skipVerify := true
+	if o.ClientCertificate != "" && o.ClientPrivateKey != "" {
+		certDecode, err := base64.StdEncoding.DecodeString(o.ClientCertificate)
+		if err != nil {
+			return nil, errors.New("failed to decode client certificate from base64")
+		}
+		keyDecode, err := base64.StdEncoding.DecodeString(o.ClientPrivateKey)
+		if err != nil {
+			return nil, errors.New("failed to decode private key from base64")
+		}
+		cert, err = tls.X509KeyPair(certDecode, keyDecode)
+		if err != nil {
+			log.Debugf("error: %v", err)
+			return nil, errors.New("cannot load certificate and key")
+		}
+	} else {
+		req.SetBasicAuth(o.Username, o.Password)
+	}
+
+	// Check to use trustedCACertificate to use InsecureSkipVerify or not
+	if o.TrustedCACertificate != "" {
+		trustedCACert, err := base64.StdEncoding.DecodeString(o.TrustedCACertificate)
+		if err != nil {
+			return nil, errors.New("failed to decode trusted CA certificate from base64")
+		}
+		skipVerify = false
+		caCertPool.AppendCertsFromPEM(trustedCACert)
+	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinTLSVersion},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinTLSVersion,
+			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool},
 	}
 
 	client := &http.Client{

@@ -21,7 +21,7 @@ import (
 )
 
 var ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
-	"ChapTargetUsername", "ChapTargetInitiatorSecret"}
+	"ChapTargetUsername", "ChapTargetInitiatorSecret", "ClientPrivateKey"}
 
 func GetOntapConfigRedactList() []string {
 	clone := ontapConfigRedactList

@@ -928,10 +928,19 @@ func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPe
 
 	switch {
 	case backend.Config.OntapConfig != nil:
-		secretMap["Username"] = backend.Config.OntapConfig.Username
-		secretMap["Password"] = backend.Config.OntapConfig.Password
-		backend.Config.OntapConfig.Username = secretName
-		backend.Config.OntapConfig.Password = secretName
+			secretMap["ClientPrivateKey"] = backend.Config.OntapConfig.ClientPrivateKey
+			backend.Config.OntapConfig.ClientPrivateKey = secretName
+
+			secretMap["Username"] = backend.Config.OntapConfig.Username
+			secretMap["Password"] = backend.Config.OntapConfig.Password
+			backend.Config.OntapConfig.Username = secretName
+			backend.Config.OntapConfig.Password = secretName
+
+		if backend.Config.OntapConfig.ClientPrivateKey != "" && backend.Config.OntapConfig.Username != "" {
+			log.Warn("Defaulting to certificate authentication, " +
+				"it is not advised to have both certificate/key and username/password in backend file.")
+		}
+
 		// CHAP settings
 		if p.Config.OntapConfig.UseCHAP {
 			secretMap["ChapUsername"] = backend.Config.OntapConfig.ChapUsername
@@ -987,11 +996,15 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 
 	switch {
 	case p.Config.OntapConfig != nil:
-		if p.Config.OntapConfig.Username, ok = secretMap["Username"]; !ok {
-			return makeError("Username")
-		}
-		if p.Config.OntapConfig.Password, ok = secretMap["Password"]; !ok {
-			return makeError("Password")
+		// Check key first
+		if p.Config.OntapConfig.ClientPrivateKey, ok = secretMap["ClientPrivateKey"]; !ok || p.Config.OntapConfig.
+			ClientPrivateKey == "" {
+			if p.Config.OntapConfig.Username, ok = secretMap["Username"]; !ok {
+				return makeError("Username or ClientPrivateKey")
+			}
+			if p.Config.OntapConfig.Password, ok = secretMap["Password"]; !ok {
+				return makeError("Password")
+			}
 		}
 		// CHAP settings
 		if p.Config.OntapConfig.UseCHAP {

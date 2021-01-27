@@ -85,6 +85,7 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 		"chap initiator secret":        "ChapInitiatorSecret:<REDACTED>",
 		"chap target username":         "ChapTargetUsername:<REDACTED>",
 		"chap target initiator secret": "ChapTargetInitiatorSecret:<REDACTED>",
+		"client private key":           "ClientPrivateKey:<REDACTED>",
 	}
 
 	for _, qtreeDriver := range qtreeDrivers {

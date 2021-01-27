@@ -120,6 +120,9 @@ type OntapStorageDriverConfig struct {
 	ChapInitiatorSecret       string                   `json:"chapInitiatorSecret"`
 	ChapTargetUsername        string                   `json:"chapTargetUsername"`
 	ChapTargetInitiatorSecret string                   `json:"chapTargetInitiatorSecret"`
+	ClientPrivateKey          string                   `json:"clientPrivateKey"`
+	ClientCertificate         string                   `json:"clientCertificate"`
+	TrustedCACertificate      string                   `json:"trustedCACertificate"`
 }
 
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.

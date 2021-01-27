@@ -41,6 +41,9 @@ type ClientConfig struct {
 	SVM                     string
 	Username                string
 	Password                string
+	ClientPrivateKey        string
+	ClientCertificate       string
+	TrustedCACertificate    string
 	DriverContext           tridentconfig.DriverContext
 	ContextBasedZapiRecords int
 	DebugTraceFlags         map[string]bool
@@ -66,12 +69,15 @@ func NewClient(config ClientConfig) *Client {
 	d := &Client{
 		config: config,
 		zr: &azgo.ZapiRunner{
-			ManagementLIF:   config.ManagementLIF,
-			SVM:             config.SVM,
-			Username:        config.Username,
-			Password:        config.Password,
-			Secure:          true,
-			DebugTraceFlags: config.DebugTraceFlags,
+			ManagementLIF:        config.ManagementLIF,
+			SVM:                  config.SVM,
+			Username:             config.Username,
+			Password:             config.Password,
+			ClientPrivateKey:     config.ClientPrivateKey,
+			ClientCertificate:    config.ClientCertificate,
+			TrustedCACertificate: config.TrustedCACertificate,
+			Secure:               true,
+			DebugTraceFlags:      config.DebugTraceFlags,
 		},
 		m: &sync.Mutex{},
 	}

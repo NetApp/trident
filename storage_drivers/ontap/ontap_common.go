@@ -1174,14 +1174,16 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 	}
 
 	client := api.NewClient(api.ClientConfig{
-		ManagementLIF:   config.ManagementLIF,
-		SVM:             config.SVM,
-		Username:        config.Username,
-		Password:        config.Password,
-		DriverContext:   config.DriverContext,
-		DebugTraceFlags: config.DebugTraceFlags,
+		ManagementLIF:        config.ManagementLIF,
+		SVM:                  config.SVM,
+		Username:             config.Username,
+		Password:             config.Password,
+		ClientCertificate:    config.ClientCertificate,
+		ClientPrivateKey:     config.ClientPrivateKey,
+		TrustedCACertificate: config.TrustedCACertificate,
+		DriverContext:        config.DriverContext,
+		DebugTraceFlags:      config.DebugTraceFlags,
 	})
-
 	if config.SVM != "" {
 
 		vserverResponse, err := client.VserverGetRequest()
@@ -1210,12 +1212,15 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 	svmUUID := string(vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid())
 
 	client = api.NewClient(api.ClientConfig{
-		ManagementLIF:   config.ManagementLIF,
-		SVM:             config.SVM,
-		Username:        config.Username,
-		Password:        config.Password,
-		DriverContext:   config.DriverContext,
-		DebugTraceFlags: config.DebugTraceFlags,
+		ManagementLIF:        config.ManagementLIF,
+		SVM:                  config.SVM,
+		Username:             config.Username,
+		Password:             config.Password,
+		ClientCertificate:    config.ClientCertificate,
+		ClientPrivateKey:     config.ClientPrivateKey,
+		TrustedCACertificate: config.TrustedCACertificate,
+		DriverContext:        config.DriverContext,
+		DebugTraceFlags:      config.DebugTraceFlags,
 	})
 	client.SVMUUID = svmUUID
 
@@ -2866,6 +2871,7 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
 	cloneConfig.Username = "<REDACTED>" // redact the username
 	cloneConfig.Password = "<REDACTED>" // redact the password
+	cloneConfig.ClientPrivateKey = "<REDACTED>" // redact the client private key
 	return cloneConfig
 }
 
