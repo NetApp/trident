@@ -1,6 +1,8 @@
-#####################
-Backend Configuration
-#####################
+.. _ontap-nas-configuration-parameters:
+
+###############################
+ONTAP NAS Backend Configuration
+###############################
 
 ========================= ================================================================================================= ================================================
 Parameter                 Description                                                                                       Default
@@ -14,8 +16,11 @@ svm                       Storage virtual machine to use                        
 labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                       ""
 autoExportPolicy          Enable automatic export policy creation and updating [Boolean]                                    false
 autoExportCIDRs           List of CIDRs to filter Kubernetes' node IPs against when autoExportPolicy is enabled             ["0.0.0.0/0", "::/0"]
-username                  Username to connect to the cluster/SVM
-password                  Password to connect to the cluster/SVM
+clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                      ""
+clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                      ""
+trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.        ""
+username                  Username to connect to the cluster/SVM. Used for credential-based auth.
+password                  Password to connect to the cluster/SVM. Used for credential-based auth.
 storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value                                    "" (not enforced by default)
@@ -23,6 +28,11 @@ nfsMountOptions           Comma-separated list of NFS mount options             
 qtreesPerFlexvol          Maximum qtrees per FlexVol, must be in range [50, 300]                                            "200"
 debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
 ========================= ================================================================================================= ================================================
+
+To communicate with the ONTAP cluster, Trident must be provided with authentication
+parameters. This could be the username/password to a security login (OR) an
+installed certificate. This is fully documented in the
+:ref:`Authentication Guide <ontap-nas-authentication>`.
 
 .. warning::
 

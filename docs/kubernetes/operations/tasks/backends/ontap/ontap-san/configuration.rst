@@ -1,6 +1,8 @@
-#####################
-Backend Configuration
-#####################
+.. _ontap-san-configuration-parameters:
+
+###############################
+ONTAP SAN Backend Configuration
+###############################
 
 ========================= ================================================================================================= ================================================
 Parameter                 Description                                                                                       Default
@@ -16,6 +18,11 @@ labels                    Set of arbitrary JSON-formatted labels to apply on vol
 chapTargetInitiatorSecret CHAP target initiator secret. Required if ``useCHAP=true``                                        ""
 chapUsername              Inbound username. Required if ``useCHAP=true``                                                    ""
 chapTargetUsername        Target username. Required if ``useCHAP=true``                                                     ""
+clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                      ""
+clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                      ""
+trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.        ""
+username                  Username to connect to the cluster/SVM. Used for credential-based auth.
+password                  Password to connect to the cluster/SVM. Used for credential-based auth.
 svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
 igroupName                Name of the igroup for SAN volumes to use                                                         "trident"
 username                  Username to connect to the cluster/SVM
@@ -26,6 +33,11 @@ limitVolumeSize           Fail provisioning if requested volume size is above th
 lunsPerFlexvol            Maximum LUNs per Flexvol, must be in range [50, 200]                                              "100"
 debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
 ========================= ================================================================================================= ================================================
+
+To communicate with the ONTAP cluster, Trident must be provided with authentication
+parameters. This could be the username/password to a security login (OR) an
+installed certificate. This is fully documented in the
+:ref:`Authentication Guide <ontap-san-authentication>`.
 
 .. warning::
 
@@ -42,6 +54,19 @@ specified address.
    When creating a backend, remember that the ``dataLIF`` and ``storagePrefix``
    cannot be modified after creation. To update these parameters you will need
    to create a new backend.
+
+The ``igroupName`` is set to an igroup that is already created on the ONTAP cluster.
+CSI Trident will automatically populate the igroup with node IQNs as volumes are
+created and attached. Similarly, node removals from the Kubernetes cluster will
+result in deleting the IQNs from the igroup.
+
+.. warning::
+
+   While ``igroupName`` can be updated for a backend, it is important to remember
+   that the new igroup will only be used for all volumes created henceforth.
+   Existing volumes will continue to use the old igroup. Updating ``igroupName``
+   is **not recommended** unless the old igroup will still remain untouched on the
+   storage cluster.
 
 A fully-qualified domain name (FQDN) can be specified for the ``managementLIF``
 option.

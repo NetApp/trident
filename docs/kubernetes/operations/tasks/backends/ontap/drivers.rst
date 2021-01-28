@@ -8,7 +8,8 @@ To create and use an ONTAP backend, you will need:
 * Choose the :ref:`ONTAP storage driver <Choosing a driver>` that you want to
   use
 * Complete ONTAP backend preparation for the driver of your choice
-* Credentials to an ONTAP SVM with :ref:`appropriate access <User permissions>`
+* Authentication credentials (username/password or certificate) to an ONTAP SVM
+  with :ref:`appropriate access <User permissions>`
 
 Trident provides 5 unique storage drivers for communicating with ONTAP
 clusters. Each driver handles the creation of volumes and access control
@@ -25,6 +26,15 @@ ontap-san-economy   iSCSI    Block      RWO,ROX,RWX            No Filesystem. Ra
 ontap-san           iSCSI    Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
 ontap-san-economy   iSCSI    Filesystem RWO,ROX                ``xfs``, ``ext3``, ``ext4``
 =================== ======== ========== ====================== ===============================
+
+.. note::
+
+  ONTAP backends can be authenticated by one of two means:
+    - Login credentials for a security role [username/password] **OR**
+    - Certificated-based, using the private key and the certificate that is
+      installed on the ONTAP cluster.
+  Users can update existing backends to move from one authentication mode to the other
+  with ``tridentctl update backend``.
 
 The ``ontap-san`` and ``ontap-san-economy`` drivers support the ``Filesystem``
 and ``Block`` volumeModes. Users can choose to create a raw block volume with

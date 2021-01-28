@@ -1,3 +1,5 @@
+.. _ontap-bidir-chap:
+
 #################################
 Using CHAP with ONTAP SAN drivers
 #################################

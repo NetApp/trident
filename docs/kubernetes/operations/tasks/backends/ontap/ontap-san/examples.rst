@@ -13,6 +13,33 @@ These examples are classified into two types:
 Minimal backend configuration for ontap drivers
 -----------------------------------------------
 
+ontap-san driver with certificate-based authentication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``clientCertificate``, ``clientPrivateKey`` and ``trustedCACertificate`` (optional,
+if using trusted CA) are populated in backend.json and take the Base64-encoded
+values of the client certificate, private key and trusted CA certificate respectively.
+
+.. code-block:: json
+
+  {
+      "version": 1,
+      "storageDriverName": "ontap-san",
+      "backendName": "DefaultSANBackend",
+      "managementLIF": "10.0.0.1",
+      "dataLIF": "10.0.0.3",
+      "svm": "svm_iscsi",
+      "useCHAP": true,
+      "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+      "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+      "chapTargetUsername": "iJF4heBRT0TCwxyz",
+      "chapUsername": "uh2aNCLSd6cNwxyz",
+      "igroupName": "trident",
+      "clientCertificate": "ZXR0ZXJwYXB...ICMgJ3BhcGVyc2",
+      "clientPrivateKey": "vciwKIyAgZG...0cnksIGRlc2NyaX",
+      "trustedCACertificate": "zcyBbaG...b3Igb3duIGNsYXNz"
+  }
+
 ontap-san driver with bidirectional CHAP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -29,6 +56,10 @@ with ``useCHAP`` set to ``true``.
         "svm": "svm_iscsi",
         "labels": {"k8scluster": "test-cluster-1", "backend": "testcluster1-sanbackend"},
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret"
@@ -45,6 +76,10 @@ ontap-san-economy driver
         "managementLIF": "10.0.0.1",
         "svm": "svm_iscsi_eco",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret"
@@ -73,6 +108,10 @@ ontap-san driver
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret",
@@ -125,6 +164,10 @@ iSCSI Example for ontap-san-economy driver
         "managementLIF": "10.0.0.1",
         "svm": "svm_iscsi_eco",
         "useCHAP": true,
+        "chapInitiatorSecret": "cl9qxIm36DKyawxy",
+        "chapTargetInitiatorSecret": "rqxigXgkesIpwxyz",
+        "chapTargetUsername": "iJF4heBRT0TCwxyz",
+        "chapUsername": "uh2aNCLSd6cNwxyz",
         "igroupName": "trident",
         "username": "vsadmin",
         "password": "secret",

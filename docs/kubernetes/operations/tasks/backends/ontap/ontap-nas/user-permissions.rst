@@ -1,3 +1,5 @@
+.. _ontap-nas-user-permissions:
+
 ################
 User permissions
 ################

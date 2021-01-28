@@ -1,3 +1,5 @@
+.. _ontap-san-user-permissions:
+
 ################
 User permissions
 ################
@@ -13,4 +15,3 @@ While it is possible to create a more restrictive role within ONTAP that a
 Trident driver can use, we don't recommend it. Most new releases of Trident
 will call additional APIs that would have to be accounted for, making upgrades
 difficult and error-prone.
-

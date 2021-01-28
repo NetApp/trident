@@ -10,9 +10,30 @@ NAS Drivers. These examples are classified into two types:
 
 2. Backends with :ref:`Virtual Storage Pools <Virtual Storage Pools>`.
 
-
 Minimal backend configuration for ontap drivers
 -----------------------------------------------
+
+ontap-nas driver with certificate-based authentication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``clientCertificate``, ``clientPrivateKey`` and ``trustedCACertificate`` (optional,
+if using trusted CA) are populated in backend.json and take the Base64-encoded
+values of the client certificate, private key and trusted CA certificate respectively.
+
+.. code-block:: json
+
+  {
+    "version": 1,
+    "backendName": "DefaultNASBackend",
+    "storageDriverName": "ontap-nas",
+    "managementLIF": "10.0.0.1",
+    "dataLIF": "10.0.0.15",
+    "svm": "nfs_svm",
+    "clientCertificate": "ZXR0ZXJwYXB...ICMgJ3BhcGVyc2",
+    "clientPrivateKey": "vciwKIyAgZG...0cnksIGRlc2NyaX",
+    "trustedCACertificate": "zcyBbaG...b3Igb3duIGNsYXNz",
+    "storagePrefix": "myPrefix_"
+  }
 
 ontap-nas driver with auto export policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
