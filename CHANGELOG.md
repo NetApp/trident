@@ -16,6 +16,7 @@
 /NetApp/trident/issues/431)).
 - Fixed issue where digits in the storage prefix were disallowed from the ONTAP economy drivers (Issue [#476](https://github.com/NetApp/trident/issues/476)).
 - **Kubernetes:** Fixed issue where a snapshot transaction could keep Trident from starting (Issue [#490](https://github.com/NetApp/trident/issues/490)).
+- **Kubernetes:** Handle the case where blkid fails to provide any output (Issue [#418](https://github.com/NetApp/trident/issues/418)).
 
 **Enhancements:**
 - **Kubernetes:** Updated scope of the Trident Operator to cluster-scope.

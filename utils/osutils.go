@@ -34,6 +34,7 @@ const (
 	resourceDeletionTimeoutSecs         = 40
 	fsRaw                               = "raw"
 	temporaryMountDir                   = "/tmp_mnt"
+	unknownFstype                       = "<unknown>"
 )
 
 var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
@@ -238,7 +239,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		if err != nil {
 			return fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
-	} else if existingFstype != fstype {
+	} else if existingFstype != unknownFstype && existingFstype != fstype {
 		Logc(ctx).WithFields(log.Fields{
 			"volume":          name,
 			"existingFstype":  existingFstype,
@@ -2365,15 +2366,19 @@ func getFSType(ctx context.Context, device string) (string, error) {
 
 			Logc(ctx).WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
 
-			if err = ensureDeviceUnformatted(ctx, device); err != nil {
-				Logc(ctx).WithField("device", device).Errorf("device may not be unformatted; err: %v", err)
+			if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
+				Logc(ctx).WithField("device",
+					device).Errorf("Unable to identify if the device is unformatted; err: %v", err)
 				return "", err
+			} else if !unformatted {
+				Logc(ctx).WithField("device", device).Errorf("Device is not unformatted; err: %v", err)
+				return "", fmt.Errorf("device %v is not unformatted", device)
 			}
 
 			return "", nil
 		}
 
-		Logc(ctx).WithField("device", device).Errorf("could not determine FSType for device; err: %v", err)
+		Logc(ctx).WithField("device", device).Errorf("Could not determine FSType for device; err: %v", err)
 		return "", err
 	}
 
@@ -2388,6 +2393,27 @@ func getFSType(ctx context.Context, device string) (string, error) {
 			}
 		}
 	}
+
+	if fsType == "" {
+		Logc(ctx).WithField("out", string(out)).Errorf("Unable to identify fsType.")
+
+		//  Read the device to see if it is in fact formatted
+		if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"device": device,
+				"err": err,
+			}).Debugf("Unable to identify if the device is not unformatted.")
+		} else if !unformatted {
+			Logc(ctx).WithField("device", device).Debugf("Device is not unformatted.")
+			return unknownFstype, nil
+		} else {
+			// If we are here blkid should have not retured exit status 0, we need to retry.
+			Logc(ctx).WithField("device", device).Errorf("Device is unformatted.")
+		}
+
+		return "", fmt.Errorf("unable to identify fsType")
+	}
+
 	return fsType, nil
 }
 
@@ -2440,23 +2466,23 @@ func ensureDeviceReadable(ctx context.Context, device string) error {
 	return nil
 }
 
-// ensureDeviceUnformatted reads first 2 MiBs of the device to ensures it is unformatted and contains all zeros
-func ensureDeviceUnformatted(ctx context.Context, device string) error {
+// isDeviceUnformatted reads first 2 MiBs of the device to identify if it is unformatted and contains all zeros
+func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 
-	Logc(ctx).WithField("device", device).Debug(">>>> osutils.ensureDeviceUnformatted")
-	defer Logc(ctx).Debug("<<<< osutils.ensureDeviceUnformatted")
+	Logc(ctx).WithField("device", device).Debug(">>>> osutils.isDeviceUnformatted")
+	defer Logc(ctx).Debug("<<<< osutils.isDeviceUnformatted")
 
 	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
 	out, err := execCommandWithTimeout(ctx, "dd", 5, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
-		return err
+		return false, err
 	}
 
 	// Ensure 2MiB of data read
 	if len(out) != 2097152 {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("read number of bytes not 2MiB")
-		return fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to "+
+		return false, fmt.Errorf("did not read 2MiB bytes from the device %v, instead read %d bytes; unable to "+
 			"ensure if the device is actually unformatted", device, len(out))
 	}
 
@@ -2465,12 +2491,12 @@ func ensureDeviceUnformatted(ctx context.Context, device string) error {
 	// Ensure all zeros
 	if outWithoutZeros := bytes.Trim(out, "\x00"); len(outWithoutZeros) != 0 {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("device contains non-zero values")
-		return fmt.Errorf("device %v is not unformatted", device)
+		return false, nil
 	}
 
 	Logc(ctx).WithFields(log.Fields{"device": device}).Info("Device in unformatted.")
 
-	return nil
+	return true, nil
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
