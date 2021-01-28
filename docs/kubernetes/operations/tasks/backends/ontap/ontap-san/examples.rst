@@ -27,6 +27,7 @@ with ``useCHAP`` set to ``true``.
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.3",
         "svm": "svm_iscsi",
+        "labels": {"k8scluster": "test-cluster-1", "backend": "testcluster1-sanbackend"},
         "useCHAP": true,
         "igroupName": "trident",
         "username": "vsadmin",
@@ -78,9 +79,10 @@ ontap-san driver
 
         "defaults": {
               "spaceAllocation": "false",
-              "encryption": "false"
+              "encryption": "false",
+              "qosPolicy": "standard"
         },
-        "labels":{"store":"san_store"},
+        "labels":{"store": "san_store", "kubernetes-cluster": "prod-cluster-1"},
         "region": "us_east_1",
         "storage": [
             {
@@ -88,7 +90,8 @@ ontap-san driver
                 "zone":"us_east_1a",
                 "defaults": {
                     "spaceAllocation": "true",
-                    "encryption": "true"
+                    "encryption": "true",
+                    "adaptiveQosPolicy": "adaptive-extreme"
                 }
             },
             {
@@ -96,7 +99,8 @@ ontap-san driver
                 "zone":"us_east_1b",
                 "defaults": {
                     "spaceAllocation": "false",
-                    "encryption": "true"
+                    "encryption": "true",
+                    "qosPolicy": "premium"
                 }
             },
             {

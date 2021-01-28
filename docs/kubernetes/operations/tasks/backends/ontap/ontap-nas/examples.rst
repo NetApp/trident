@@ -30,6 +30,7 @@ drivers.
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.2",
         "svm": "svm_nfs",
+        "labels": {"k8scluster": "test-cluster-east-1a", "backend": "test1-nasbackend"},
         "autoExportPolicy": true,
         "autoExportCIDRs": ["10.0.0.0/24"],
         "username": "admin",
@@ -47,6 +48,7 @@ ontap-nas-flexgroup driver
         "storageDriverName": "ontap-nas-flexgroup",
         "managementLIF": "10.0.0.1",
         "dataLIF": "10.0.0.2",
+        "labels": {"k8scluster": "test-cluster-east-1b", "backend": "test1-ontap-cluster"},
         "svm": "svm_nfs",
         "username": "vsadmin",
         "password": "secret",
@@ -62,6 +64,7 @@ ontap-nas driver with IPv6
     "storageDriverName": "ontap-nas",
     "backendName": "nas_ipv6_backend",
     "managementLIF": "[5c5d:5edf:8f:7657:bef8:109b:1b41:d491]",
+    "labels": {"k8scluster": "test-cluster-east-1a", "backend": "test1-ontap-ipv6"},
     "svm": "nas_ipv6_svm",
     "username": "vsadmin",
     "password": "netapp123"
@@ -110,9 +113,10 @@ ontap-nas driver with Virtual Pools
 
         "defaults": {
               "spaceReserve": "none",
-              "encryption": "false"
+              "encryption": "false",
+              "qosPolicy": "standard"
         },
-        "labels":{"store":"nas_store"},
+        "labels":{"store":"nas_store", "k8scluster": "prod-cluster-1"},
         "region": "us_east_1",
         "storage": [
             {
@@ -121,7 +125,8 @@ ontap-nas driver with Virtual Pools
                 "defaults": {
                     "spaceReserve": "volume",
                     "encryption": "true",
-                    "unixPermissions": "0755"
+                    "unixPermissions": "0755",
+                    "adaptiveQosPolicy": "adaptive-premium"
                 }
             },
             {
@@ -172,7 +177,7 @@ ontap-nas-flexgroup driver with Virtual Storage Pools
               "spaceReserve": "none",
               "encryption": "false"
         },
-        "labels":{"store":"flexgroup_store"},
+        "labels":{"store":"flexgroup_store", "k8scluster": "prod-cluster-1"},
         "region": "us_east_1",
         "storage": [
             {

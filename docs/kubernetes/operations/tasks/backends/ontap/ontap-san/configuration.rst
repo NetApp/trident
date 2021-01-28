@@ -12,11 +12,13 @@ managementLIF             IP address of a cluster or SVM management LIF         
 dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated** Derived by the SVM unless specified
 useCHAP                   Use CHAP to authenticate iSCSI for ONTAP SAN drivers [Boolean]                                    false
 chapInitiatorSecret       CHAP initiator secret. Required if ``useCHAP=true``                                               ""
+labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                       ""
 chapTargetInitiatorSecret CHAP target initiator secret. Required if ``useCHAP=true``                                        ""
 chapUsername              Inbound username. Required if ``useCHAP=true``                                                    ""
 chapTargetUsername        Target username. Required if ``useCHAP=true``                                                     ""
 svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
-igroupName                Name of the igroup for SAN volumes to use                                                         "trident"username                  Username to connect to the cluster/SVM
+igroupName                Name of the igroup for SAN volumes to use                                                         "trident"
+username                  Username to connect to the cluster/SVM
 password                  Password to connect to the cluster/SVM
 storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
@@ -29,7 +31,7 @@ debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
-  
+
 For the ``ontap-san*`` drivers, the default is to use all data LIF IPs from
 the SVM and to use iSCSI multipath. Specifying an IP address for the ``dataLIF``
 for the ``ontap-san*`` drivers forces them to disable multipath and use only the
@@ -67,6 +69,17 @@ For the ``ontap-san-economy`` driver, the ``limitVolumeSize``
 option will also restrict the maximum size of
 the volumes it manages for qtrees and LUNs.
 
+.. note::
+
+  Trident sets provisioning labels in the "Comments" field of all volumes
+  created using the ``ontap-san`` driver. For each volume created, the "Comments"
+  field on the FlexVol will be populated with all labels present on the storage
+  pool it is placed in. Storage admins can define labels per storage pool and
+  group all volumes created in a storage pool. This provides a convenient way of
+  differentiating volumes based on a set of customizable labels that are
+  provided in the backend configuration.
+
+
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
 configuration examples below.
@@ -77,12 +90,25 @@ Parameter                 Description                                           
 spaceAllocation           Space-allocation for LUNs                                       "true"
 spaceReserve              Space reservation mode; "none" (thin) or "volume" (thick)       "none"
 snapshotPolicy            Snapshot policy to use                                          "none"
+qosPolicy                 QoS policy group to assign for volumes created.
+                          Choose one of ``qosPolicy`` or ``adaptiveQosPolicy`` per
+                          storage pool/backend.                                           ""
+adaptiveQosPolicy         Adaptive QoS policy group to assign for volumes created.
+                          Choose one of ``qosPolicy`` or
+                          ``adaptiveQosPolicy`` per storage pool/backend.                 ""
 snapshotReserve           Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
 splitOnClone              Split a clone from its parent upon creation                     "false"
 encryption                Enable NetApp volume encryption                                 "false"
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
+
+.. note::
+
+  Using QoS policy groups with Trident requires ONTAP 9.8 or later.
+  It is recommended to use a **non-shared** QoS policy group and ensure the policy
+  group is applied to each constituent **individually**. A shared QoS policy group
+  will enforce the ceiling for the **total throughput** of all workloads.
 
 Here's an example with defaults defined:
 
@@ -96,11 +122,13 @@ Here's an example with defaults defined:
    "svm": "trident_svm",
    "username": "admin",
    "password": "password",
+   "labels": {"k8scluster": "dev2", "backend": "dev2-sanbackend"},
    "storagePrefix": "alternate-trident",
    "igroupName": "custom",
    "debugTraceFlags": {"api":false, "method":true},
    "defaults": {
        "spaceReserve": "volume",
+       "qosPolicy": "standard",
        "spaceAllocation": "false",
        "snapshotPolicy": "default",
        "snapshotReserve": "10"

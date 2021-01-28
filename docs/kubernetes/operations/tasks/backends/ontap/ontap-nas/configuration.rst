@@ -11,6 +11,7 @@ backendName               Custom name for the storage backend                   
 managementLIF             IP address of a cluster or SVM management LIF                                                     "10.0.0.1", "[2001:1234:abcd::fefe]"
 dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated** Derived by the SVM unless specified
 svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
+labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                       ""
 autoExportPolicy          Enable automatic export policy creation and updating [Boolean]                                    false
 autoExportCIDRs           List of CIDRs to filter Kubernetes' node IPs against when autoExportPolicy is enabled             ["0.0.0.0/0", "::/0"]
 username                  Username to connect to the cluster/SVM
@@ -71,6 +72,18 @@ storage backend's config file. If no mount options are specified in either the
 storage class or the config file, then Trident will not set any
 mount options on an associated persistent volume.
 
+.. note::
+
+  Trident sets provisioning labels in the "Comments" field of all volumes
+  created using the ``ontap-nas`` and ``ontap-nas-flexgroup``. Based on the driver
+  used, the comments are set on the FlexVol (``ontap-nas``) or FlexGroup
+  (``ontap-nas-flexgroup``). Trident will copy all labels present on a storage
+  pool to the storage volume at the time it is provisioned.
+  Storage admins can define labels per storage pool and group all volumes
+  created in a storage pool. This provides a convenient way of differentiating
+  volumes based on a set of customizable labels that are provided in the backend
+  configuration.
+
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
 configuration examples below.
@@ -80,6 +93,13 @@ Parameter                 Description                                           
 ========================= =============================================================== ================================================
 spaceReserve              Space reservation mode; "none" (thin) or "volume" (thick)       "none"
 snapshotPolicy            Snapshot policy to use                                          "none"
+qosPolicy                 QoS policy group to assign for volumes created.
+                          Choose one of ``qosPolicy`` or ``adaptiveQosPolicy`` per
+                          storage pool/backend.                                           ""
+adaptiveQosPolicy         Adaptive QoS policy group to assign for volumes created.
+                          **Not supported by ontap-nas-economy**. Choose one of
+                          ``qosPolicy`` or ``adaptiveQosPolicy`` per storage
+                          pool/backend.                                                   ""
 snapshotReserve           Percentage of volume reserved for snapshots                     "0" if snapshotPolicy is "none", else ""
 splitOnClone              Split a clone from its parent upon creation                     "false"
 encryption                Enable NetApp volume encryption                                 "false"
@@ -89,6 +109,13 @@ exportPolicy              Export policy to use                                  
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
+
+.. note::
+
+  Using QoS policy groups with Trident requires ONTAP 9.8 or later.
+  It is recommended to use a **non-shared** QoS policy group and ensure the policy
+  group is applied to each constituent **individually**. A shared QoS policy group
+  will enforce the ceiling for the **total throughput** of all workloads.
 
 Here's an example that establishes default values:
 
@@ -100,6 +127,7 @@ Here's an example that establishes default values:
     "backendName": "customBackendName",
     "managementLIF": "10.0.0.1",
     "dataLIF": "10.0.0.2",
+    "labels": {"k8scluster": "dev1", "backend": "dev1-nasbackend"},
     "svm": "trident_svm",
     "username": "cluster-admin",
     "password": "password",
@@ -109,6 +137,7 @@ Here's an example that establishes default values:
     "debugTraceFlags": {"api":false, "method":true},
     "defaults": {
       "spaceReserve": "volume",
+      "qosPolicy": "premium",
       "exportPolicy": "myk8scluster",
       "snapshotPolicy": "default",
       "snapshotReserve": "10"

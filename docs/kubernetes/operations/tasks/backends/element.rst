@@ -58,6 +58,7 @@ storageDriverName  Always "solidfire-san"
 backendName        Custom name for the storage backend                             "solidfire\_" + storage (iSCSI) IP address
 Endpoint           MVIP for the SolidFire cluster with tenant credentials
 SVIP               Storage (iSCSI) IP address and port
+labels             Set of arbitrary JSON-formatted labels to apply on volumes.     ""
 TenantName         Tenant name to use (created if not found)
 InitiatorIFace     Restrict iSCSI traffic to a specific host interface             "default"
 UseCHAP            Use CHAP to authenticate iSCSI
@@ -72,6 +73,15 @@ debugTraceFlags    Debug flags to use when troubleshooting.
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
   detailed log dump.
+
+.. note::
+
+  For all volumes created, Trident will copy all labels present
+  on a storage pool to the backing storage LUN at the time it is provisioned.
+  Storage admins can define labels per storage pool and group all volumes
+  created in a storage pool. This provides a convenient way of differentiating
+  volumes based on a set of customizable labels that are provided in the backend
+  configuration.
 
 Example configuration
 ---------------------
@@ -90,6 +100,7 @@ to consume each of these using the ``IOPS`` storage class parameter.
       "Endpoint": "https://<user>:<password>@<mvip>/json-rpc/8.0",
       "SVIP": "<svip>:3260",
       "TenantName": "<tenant>",
+      "labels": {"k8scluster": "dev1", "backend": "dev1-element-cluster"},
       "UseCHAP": true,
       "Types": [{"Type": "Bronze", "Qos": {"minIOPS": 1000, "maxIOPS": 2000, "burstIOPS": 4000}},
                 {"Type": "Silver", "Qos": {"minIOPS": 4000, "maxIOPS": 6000, "burstIOPS": 8000}},
@@ -122,7 +133,7 @@ values set above.
                 {"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}],
 
       "type": "Silver",
-      "labels":{"store":"solidfire"},
+      "labels":{"store":"solidfire", "k8scluster": "dev-1-cluster"},
       "region": "us-east-1",
 
       "storage": [

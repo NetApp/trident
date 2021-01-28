@@ -3,15 +3,23 @@ On-Demand Volume Snapshots
 ##########################
 
 Beginning with the 20.01 release of Trident, it is now possible to use the
-`beta Volume Snapshot feature`_ to create snapshots of PVs at the Kubernetes
+`Volume Snapshot feature`_ to create snapshots of PVs at the Kubernetes
 layer. These snapshots can be used to maintain point-in-time copies of
 volumes that have been created by Trident and can also be used to schedule
-the creation of additional volumes (clones). This feature is available for
-Kubernetes ``1.17`` and above.
+the creation of additional volumes (clones). This feature is available from
+Kubernetes ``1.17`` [Beta] and is GA from ``1.20``.
+
+.. note::
+
+	Kubernetes Volume Snapshot is GA from Kubernetes ``1.20``. To understand the
+  changes involved in moving from beta to GA, take a look at the
+  `release blog <https://kubernetes.io/blog/2020/12/10/kubernetes-1.20-volume-snapshot-moves-to-ga/>`_.
+  With the graduation to GA, the ``v1`` API version is introduced and is
+  backward compatible with ``v1beta1`` snapshots.
 
 Creating volume snapshots requires an external snapshot controller to be created,
-as well as some Custom Resource Definitions (CRDs). This is the responsibility of
-the Kubernetes orchestrator that is being used (E.g., Kubeadm, GKE, OpenShift).
+as well as some Custom Resource Definitions (CRDs). **This is the responsibility of
+the Kubernetes orchestrator that is being used (E.g., Kubeadm, GKE, OpenShift)**.
 Check with your Kubernetes orchestrator to confirm these requirements are met.
 You can create an external snapshot-controller and snapshot CRDs using the code
 snippet below.
@@ -21,12 +29,25 @@ snippet below.
    $ cat snapshot-setup.sh
    #!/bin/bash
    # Create volume snapshot CRDs
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
-   # Create the snapshot-controller in the default namespace.
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-2.1/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+   # Create the snapshot-controller in the desired namespace. Edit the YAML manifests below to modify namespace.
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+CSI Snapshotter provides a
+`Validating Webhook <https://github.com/kubernetes-csi/external-snapshotter#validating-webhook>`_
+to help users validate existing ``v1beta1`` snapshots and confirm they are valid
+resource objects. The validating webhook will automatically label invalid snapshot
+objects and prevent the creation of future invalid objects. As with volume snapshot
+CRDs and the snapshot controller, the validating webhook is deployed by the
+Kubernetes orchestrator. Instructions to deploy the validating webhook manually
+can be found `here <https://github.com/kubernetes-csi/external-snapshotter/blob/release-3.0/deploy/kubernetes/webhook-example/README.md>`_.
+Examples of invalid snapshot manifests can be obtained in the
+`examples <https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/examples/kubernetes>`_
+directory of the `external-snapshotter <https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0>`_.
+repository.
 
 .. note::
 
@@ -73,7 +94,8 @@ set up.
 .. code-block:: bash
 
    $ cat snap-sc.yaml
-   apiVersion: snapshot.storage.k8s.io/v1beta1
+   #Use apiVersion v1 for Kubernetes 1.20 and above. For Kubernetes 1.17 - 1.19, use apiVersion v1beta1.
+   apiVersion: snapshot.storage.k8s.io/v1
    kind: VolumeSnapshotClass
    metadata:
      name: csi-snapclass
@@ -92,7 +114,8 @@ We can now create a snapshot of an existing PVC.
 .. code-block:: bash
 
    $ cat snap.yaml
-   apiVersion: snapshot.storage.k8s.io/v1beta1
+   #Use apiVersion v1 for Kubernetes 1.20 and above. For Kubernetes 1.17 - 1.19, use apiVersion v1beta1.
+   apiVersion: snapshot.storage.k8s.io/v1
    kind: VolumeSnapshot
    metadata:
      name: pvc1-snap
@@ -181,4 +204,4 @@ to a pod and used just like any other PVC.
       corresponding Trident volume is updated to a "Deleting state". For the
       Trident volume to be deleted, the snapshots of the volume must be removed.
 
-.. _beta Volume Snapshot feature: https://kubernetes.io/docs/concepts/storage/volume-snapshots/
+.. _Volume Snapshot feature: https://kubernetes.io/docs/concepts/storage/volume-snapshots/
