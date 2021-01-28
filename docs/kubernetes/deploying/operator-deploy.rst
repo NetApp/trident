@@ -8,15 +8,47 @@ If you are looking to deploy Trident using the Trident Operator, you are
 in the right place. This page contains all the steps required for getting
 started with the Trident Operator to install and manage Trident. You can deploy Trident Operator either manually or using Helm.
 
+Prerequisites
+=============
+
+If you have not already familiarized yourself with the
+:ref:`basic concepts <What is Trident?>`, now is a great time to do that. Go
+ahead, we'll be here when you get back.
+
+To deploy Trident using the operator you need:
+
+.. sidebar:: Need Kubernetes?
+
+  If you do not already have a Kubernetes cluster, you can easily create one for
+  demonstration purposes using our
+  :ref:`simple Kubernetes install guide <Simple Kubernetes install>`.
+
+* Full privileges to a
+  :ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>`
+  running Kubernetes ``1.14`` and above. If choosing to deploy with Helm, you
+  will need Kubernetes ``1.16`` and above.
+* Helm 3 (if deploying using Helm).
+* Access to a
+  :ref:`supported NetApp storage system <Supported backends (storage)>`
+* :ref:`Volume mount capability <Preparing the worker node>` from all of the
+  Kubernetes worker nodes
+* A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
+  and configured to manage the Kubernetes cluster you want to use
+* Set the ``KUBECONFIG`` environment variable to point to your Kubernetes
+  cluster configuration.
+* Enable the :ref:`Feature Gates <Feature Requirements>` required by Trident
+* If you are using Kubernetes with Docker Enterprise, `follow their steps
+  to enable CLI access <https://docs.docker.com/ee/ucp/user-access/cli/>`_.
+
+Got all that? Great! Let's get started. You can choose to either
+:ref:`Deploy using Helm <Deploy Trident Operator by using Helm>` or
+:ref:`Using the Trident Operator <Deploy Trident Operator manually>`.
+
 Deploy Trident Operator by using Helm
 =====================================
 
-Perform the steps listed to deploy Trident Operator by using Helm.
-
-Prerequisites
--------------
-
-To deploy Trident Operator by using Helm, you need the following:
+Perform the steps listed to deploy Trident Operator by using Helm. You will
+need the following:
 
 * Kubernetes 1.16 and later
 * Helm version 3
@@ -55,37 +87,8 @@ Deploy Trident Operator manually
 
 Perform the steps listed to manually deploy Trident Operator.
 
-Prerequisites
--------------
-
-If you have not already familiarized yourself with the
-:ref:`basic concepts <What is Trident?>`, now is a great time to do that. Go
-ahead, we'll be here when you get back.
-
-To deploy Trident using the operator you need:
-
-.. sidebar:: Need Kubernetes?
-
-  If you do not already have a Kubernetes cluster, you can easily create one for
-  demonstration purposes using our
-  :ref:`simple Kubernetes install guide <Simple Kubernetes install>`.
-
-* Full privileges to a
-  :ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>`
-  running Kubernetes ``1.14`` and above.
-* Access to a
-  :ref:`supported NetApp storage system <Supported backends (storage)>`
-* :ref:`Volume mount capability <Preparing the worker node>` from all of the
-  Kubernetes worker nodes
-* A Linux host with ``kubectl`` (or ``oc``, if you're using OpenShift) installed
-  and configured to manage the Kubernetes cluster you want to use
-* Set the ``KUBECONFIG`` environment variable to point to your Kubernetes
-  cluster configuration.
-* Enable the :ref:`Feature Gates <Feature Requirements>` required by Trident
-* If you are using Kubernetes with Docker Enterprise, `follow their steps
-  to enable CLI access <https://docs.docker.com/ee/ucp/user-access/cli/>`_.
-
-Got all that? Great! Let's get started.
+If you are interested in upgrading an operator-based Trident install to the latest
+release, take a look at :ref:`Upgrading Trident <Upgrading Trident>`.
 
 1: Qualify your Kubernetes cluster
 ----------------------------------
@@ -121,7 +124,8 @@ you have the necessary privileges to.
 
 .. note::
 
-   Using the Trident Operator to install Trident requires creating the
+   Beginning with 21.01, the Trident Operator is cluster-scoped. Using the
+   Trident Operator to install Trident requires creating the
    ``TridentOrchestrator`` Custom Resource Definition and defining other
    resources. You will need to perform these steps to setup the operator
    before you can install Trident.
@@ -199,53 +203,123 @@ worker nodes in your cluster.
    There must only be **one instance of the operator in a Kubernetes cluster**.
    **Do not create multiple deployments of the Trident operator**.
 
-3: Creating a TridentOrchestrator CR and installing Trident
------------------------------------------------------------
+3: Creating a TridentOrchestrator and installing Trident
+--------------------------------------------------------
 
 You are now ready to install Trident using the operator! This will require
-creating a TridentOrchestrator CR. The Trident installer comes with example
-defintions for creating a TridentOrchestrator CR.
+creating a TridentOrchestrator. The Trident installer comes with example
+definitions for creating a TridentOrchestrator. This kicks off a Trident
+installation in the ``trident`` namespace.
 
 .. code-block:: console
 
    $ kubectl create -f deploy/crds/tridentorchestrator_cr.yaml
    tridentorchestrator.trident.netapp.io/trident created
 
-   $  kubectl get torc -n trident
-   NAME      AGE
-   trident   5s
-   $ kubectl describe torc trident -n trident
+   $  kubectl describe torc trident
    Name:         trident
-   Namespace:    trident
+   Namespace:
    Labels:       <none>
-   Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                   {"apiVersion":"trident.netapp.io/v1","kind":"TridentOrchestrator","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
+   Annotations:  <none>
    API Version:  trident.netapp.io/v1
    Kind:         TridentOrchestrator
    ...
    Spec:
-     Debug:          true
+     Debug:      true
+     Namespace:  trident
    Status:
      Current Installation Params:
-       IPv6:   false
-       Debug:  true
+       IPv6:                       false
+       Autosupport Hostname:
+       Autosupport Image:          netapp/trident-autosupport:20.10
+       Autosupport Proxy:
+       Autosupport Serial Number:
+       Debug:                      true
+       Enable Node Prep:           false
        Image Pull Secrets:
-       Image Registry:  k8s.gcr.io/sig-storage (k8s 1.17+, otherwise quay.io/k8scsi)
-       k8sTimeout:      30
-       Kubelet Dir:     /var/lib/kubelet
-       Log Format:      text
-       Trident Image:   netapp/trident:21.01.0
-     Message:           Trident installed
-     Status:            Installed
-     Version:           v21.01.0
+       Image Registry:
+       k8sTimeout:           30
+       Kubelet Dir:          /var/lib/kubelet
+       Log Format:           text
+       Silence Autosupport:  false
+       Trident Image:        netapp/trident:21.01.0
+     Message:                Trident installed
+     Namespace:              trident
+     Status:                 Installed
+     Version:                v21.01.0
    Events:
      Type    Reason      Age   From                        Message
      ----    ------      ----  ----                        -------
-     Normal  Installing  19s   trident-operator.netapp.io  Installing Trident
-     Normal  Installed   5s    trident-operator.netapp.io  Trident installed
+     Normal  Installing  74s   trident-operator.netapp.io  Installing Trident
+     Normal  Installed   67s   trident-operator.netapp.io  Trident installed
+
+.. _operator-customize:
+
+Customizing your deployment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Trident operator provides users the ability to customize the manner in which
+Trident is installed, using the following attributes in the TridentOrchestrator ``spec``:
+
+========================= ============================================================================== ==========================================================
+Parameter                 Description                                                                    Default
+========================= ============================================================================== ==========================================================
+namespace                 Namespace to install Trident in                                                "default"
+debug                     Enable debugging for Trident                                                   'false'
+useIPv6                   Install Trident over IPv6                                                      'false'
+k8sTimeout                Timeout for Kubernetes operations                                              30sec
+silenceAutosupport        Don't send autosupport bundles to NetApp automatically                         'false'
+enableNodePrep            Manage worker node dependencies automatically (**BETA**)                       'false'
+autosupportImage          The container image for Autosupport Telemetry                                  "netapp/trident-autosupport:21.01.0"
+autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry                  "http://proxy.example.com:8888"
+uninstall                 A flag used to uninstall Trident                                               'false'
+logFormat                 Trident logging format to be used [text,json]                                  "text"
+tridentImage              Trident image to install                                                       "netapp/trident:21.01"
+imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage (k8s 1.17+) or quay.io/k8scsi"
+kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
+wipeout                   A list of resources to delete to perform a complete removal of Trident
+imagePullSecrets          Secrets to pull images from an internal registry
+========================= ============================================================================== ==========================================================
+
+.. note::
+
+  ``spec.namespace`` is specified in the ``tridentOrchestrator`` to signify
+  which namespace Trident is installed in. This parameter **cannot be updated
+  after Trident is installed**. Attempting to do so will cause the Status of
+  ``tridentOrchestrator`` to change to ``Failed``. Trident is not meant to be
+  migrated across namespaces.
+
+.. warning::
+
+   Automatic worker node prep is a **beta feature** meant to be used in
+   non-production environments only.
+
+You can use the attributes mentioned above when defining a TridentOrchestrator to
+customize your Trident installation. Here's an example:
+
+.. code-block:: console
+
+   $ cat deploy/crds/tridentorchestrator_cr_imagepullsecrets.yaml
+   apiVersion: trident.netapp.io/v1
+   kind: TridentOrchestrator
+   metadata:
+     name: trident
+   spec:
+     debug: true
+     namespace: trident
+     tridentImage: netapp/trident:21.01.0
+     imagePullSecrets:
+     - thisisasecret
+
+
+If you are looking to customize Trident's installation beyond what the TridentOrchestrator's
+arguments allow, you should consider using ``tridentctl`` to generate custom
+yaml manifests that you can modify as desired. Head on over to the
+:ref:`deployment guide for tridentctl <deploying-with-tridentctl>` to learn
+how this works.
 
 Observing the status of the operator
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+====================================
 
 The Status of the TridentOrchestrator will indicate if the installation
 was successful and will display the version of Trident installed.
@@ -318,28 +392,38 @@ first take a look at the ``TridentOrchestrator`` status.
 
 .. code-block:: console
 
-  $ kubectl describe torc trident-2 -n trident
+  $ kubectl describe torc trident-2
   Name:         trident-2
-  Namespace:    trident
+  Namespace:
   Labels:       <none>
-  Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                  {"apiVersion":"trident.netapp.io/v1","kind":"TridentOrchestrator","metadata":{"annotations":{},"name":"trident","namespace":"trident"},"spe...
+  Annotations:  <none>
   API Version:  trident.netapp.io/v1
   Kind:         TridentOrchestrator
+  ...
   Status:
     Current Installation Params:
       IPv6:
+      Autosupport Hostname:
+      Autosupport Image:
+      Autosupport Proxy:
+      Autosupport Serial Number:
       Debug:
-      Image Pull Secrets:  <nil>
+      Enable Node Prep:
+      Image Pull Secrets:         <nil>
       Image Registry:
       k8sTimeout:
       Kubelet Dir:
       Log Format:
+      Silence Autosupport:
       Trident Image:
-    Message:               Trident is bound to another CR 'trident' in the same namespace
-    Status:                Error
+    Message:                      Trident is bound to another CR 'trident'
+    Namespace:                    trident-2
+    Status:                       Error
     Version:
-  Events:                  <none>
+  Events:
+    Type     Reason  Age                From                        Message
+    ----     ------  ----               ----                        -------
+    Warning  Error   16s (x2 over 16s)  trident-operator.netapp.io  Trident is bound to another CR 'trident'
 
 This error indicates that there already exists a TridentOrchestrator that was
 used to install Trident. Since each Kubernetes cluster can only have one instance
@@ -371,7 +455,7 @@ something is not right.
    trident-csi-9v95z                   1/2     ImagePullBackOff   0          5m18s
    trident-operator-766f7b8658-ldzsv   1/1     Running            0          8m17s
 
-You can clearly see that the pods are not able to intialize completely as one
+You can clearly see that the pods are not able to initialize completely as one
 or more container images were not fetched.
 
 To address the problem, you must edit the TridentOrchestrator CR. Alternatively,
@@ -380,62 +464,6 @@ accurate definition.
 
 If you continue to have trouble, visit the
 :ref:`troubleshooting guide <Troubleshooting>` for more advice.
-
-.. _operator-customize:
-
-Customizing your deployment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Trident operator provides users the ability to customize the manner in which
-Trident is installed, using the following attributes in the TridentOrchestrator ``spec``:
-
-========================= ============================================================================== ==========================================================
-Parameter                 Description                                                                    Default
-========================= ============================================================================== ==========================================================
-debug                     Enable debugging for Trident                                                   'false'
-useIPv6                   Install Trident over IPv6                                                      'false'
-k8sTimeout                Timeout for Kubernetes operations                                              30sec
-silenceAutosupport        Don't send autosupport bundles to NetApp automatically                         'false'
-enableNodePrep            Manage worker node dependencies automatically (**BETA**)                       'false'
-autosupportImage          The container image for Autosupport Telemetry                                  "netapp/trident-autosupport:21.01.0"
-autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry                  "http://proxy.example.com:8888"
-uninstall                 A flag used to uninstall Trident                                               'false'
-logFormat                 Trident logging format to be used [text,json]                                  "text"
-tridentImage              Trident image to install                                                       "netapp/trident:21.01"
-imageRegistry             Path to an internal registry, of the format ``<registry FQDN>[:port][/subpath] `` "k8s.gcr.io/sig-storage (k8s 1.17+) or quay.io/k8scsi"
-kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
-wipeout                   A list of resources to delete to perform a complete removal of Trident
-imagePullSecrets          Secrets to pull images from an internal registry
-========================= ============================================================================== ==========================================================
-
-.. warning::
-
-  Automatic worker node prep is a **beta feature** meant to be used in
-  non-production environments only.
-
-You can use the attributes mentioned above when defining a TridentOrchestrator to
-customize your Trident installation. Here's an example:
-
-.. code-block:: console
-
-   $ cat deploy/crds/tridentorchestrator_cr_imagepullsecrets.yaml
-   apiVersion: trident.netapp.io/v1
-   kind: TridentOrchestrator
-   metadata:
-     name: trident
-     namespace: trident
-   spec:
-     debug: true
-     tridentImage: netapp/trident:21.01.0
-     imagePullSecrets:
-     - thisisasecret
-
-
-If you are looking to customize Trident's installation beyond what the TridentOrchestrator's
-arguments allow, you should consider using ``tridentctl`` to generate custom
-yaml manifests that you can modify as desired. Head on over to the
-:ref:`deployment guide for tridentctl <deploying-with-tridentctl>` to learn
-how this works.
 
 Post-deployment steps
 =====================

@@ -1,3 +1,5 @@
+.. _upgrading-with-tridentctl:
+
 #############################
 Upgrading with ``tridentctl``
 #############################

@@ -52,7 +52,7 @@ If you are running ``18.07`` and seek to upgrade to the ``20.07`` release, then:
 Understanding your upgrade paths
 --------------------------------
 
-When upgrading to ``20.07``, users have two distinct paths:
+When upgrading, users have two distinct paths:
 
 1. Using the Trident Operator.
 2. Using ``tridentctl``.
@@ -61,11 +61,11 @@ We will examine both here.
 
 .. warning::
 
-   Trident only supports the beta feature release of Volume Snapshots. When upgrading
-   Trident, all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
+   CSI Volume Snapshots is now a feature that is GA, beginning with Kubernetes 1.20.
+   When upgrading Trident, all previous alpha snapshot CRs and CRDs (Volume Snapshot Classes,
    Volume Snapshots and Volume Snapshot Contents) must be removed before the upgrade is performed.
    Refer to `this blog <https://netapp.io/2020/01/30/alpha-to-beta-snapshots/>`_ to understand the
-   steps involved in migrating alpha snapshots to the beta spec.
+   steps involved in migrating alpha snapshots to the beta/GA spec.
 
 Which one do I choose?
 ----------------------
@@ -87,6 +87,8 @@ You can use the Trident Operator to upgrade as long as you are:
    at the customization that can be done with an operator install, check out the
    :ref:`Customizing your deployment <operator-customize>` section.
 
+You can upgrade from an install done using the operator or ``tridentctl``.
+
 .. warning::
 
    Do not use the operator to upgrade Trident if you are using an etcd based
@@ -94,10 +96,15 @@ You can use the Trident Operator to upgrade as long as you are:
 
 For a complete list of prerequisites, click :ref:`here <operator-prereq>`.
 
+To get started with upgrading using the operator, head on over to
+:ref:`Upgrading with the Trident Operator <Upgrading with the Trident Operator>`.
+
 ``tridentctl`` upgrades
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are not interested in what the Trident Operator has to offer (or) you have
 a customized install that cannot be supported by the operator, you can always
-choose to upgrade using ``tridentctl``. This is the preferred method of updating
+choose to upgrade using ``tridentctl``. This is the preferred method of upgrades
 for Trident releases ``19.04`` and earlier.
+
+To upgrade using ``tridentctl``, jump to :ref:`Upgrading with tridentctl <upgrading-with-tridentctl>`.

@@ -19,6 +19,22 @@ Uninstalling Trident
 Depending on how Trident is installed, there are multiple options to uninstall
 Trident.
 
+Uninstalling using Helm
+***********************
+
+If Trident was installed using Helm, it can be uninstalled using ``helm uninstall``.
+
+.. code-block:: bash
+
+  #List the Helm release corresponding to the Trident install.
+  $ helm ls -n trident
+  NAME   	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART                          	APP VERSION
+  trident	trident  	1       	2021-01-28 00:26:42.417764794 +0000 UTC	deployed	trident-operator-21.01.0	21.01.0
+
+  #Uninstall Helm release to remove Trident
+  $ helm uninstall trident -n trident
+  release "trident" uninstalled
+
 Uninstalling with the Trident Operator
 **************************************
 
@@ -41,7 +57,7 @@ To uninstall Trident, edit the ``TridentOrchestrator`` and set the
 
 .. code-block:: bash
 
-  $  kubectl patch torc <trident-orchestrator-name> -n trident --type=merge -p '{"spec":{"uninstall":true}}'
+  $  kubectl patch torc <trident-orchestrator-name> --type=merge -p '{"spec":{"uninstall":true}}'
 
 When the ``uninstall`` flag is set to ``true``, the Trident Operator
 uninstalls Trident but doesn't remove the TridentOrchestrator itself. You
@@ -61,7 +77,7 @@ wipe the slate clean, you can edit the ``TridentOrchestrator`` to pass the
 
 .. code-block:: bash
 
-   $ kubectl patch torc <trident-orchestrator-name> -n trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true}}'
+   $ kubectl patch torc <trident-orchestrator-name> --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true}}'
 
 
 This will **completely uninstall Trident and clear all metadata related
