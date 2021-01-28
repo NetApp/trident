@@ -38,6 +38,7 @@ const VolumeCreateTimeout = 10 * time.Second
 const DefaultTimeout = 120 * time.Second
 const defaultAPIURL = "https://cloudvolumesgcp-api.netapp.com"
 const defaultAPIAudienceURL = defaultAPIURL
+const MaxLabelLength = 255
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {

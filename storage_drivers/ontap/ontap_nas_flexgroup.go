@@ -528,7 +528,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
 
-	labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxNASLabelLength)
+	labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxNASLabelLength)
 	if err != nil {
 		return err
 	}
@@ -633,7 +633,7 @@ func (d *NASFlexGroupStorageDriver) Import(
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		volumeIdAttrs := flexgroup.VolumeIdAttributes()
-		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
+		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
 			modifyCommentResponse, err := d.API.FlexGroupSetComment(ctx, volConfig.InternalName, "")
 			if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
 				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)

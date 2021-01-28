@@ -288,7 +288,7 @@ func (d *SANStorageDriver) Create(
 			continue
 		}
 
-		labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxSANLabelLength)
+		labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
 		if err != nil {
 			return err
 		}
@@ -444,7 +444,7 @@ func (d *SANStorageDriver) CreateClone(
 	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-		labels, err = storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, api.MaxSANLabelLength)
+		labels, err = storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
 		if err != nil {
 			return err
 		}
@@ -533,7 +533,7 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 		if flexvol.VolumeIdAttributesPtr != nil {
 			volumeIdAttrs := flexvol.VolumeIdAttributes()
-			if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
+			if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
 				modifyCommentResponse, err := d.API.VolumeSetComment(ctx, volConfig.InternalName, "")
 				if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
 					Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)

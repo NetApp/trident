@@ -31,6 +31,7 @@ const httpTimeoutSeconds = 30
 const retryTimeoutSeconds = 30
 const VolumeCreateTimeout = 10 * time.Second
 const DefaultTimeout = 120 * time.Second
+const MaxLabelLength = 255
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {

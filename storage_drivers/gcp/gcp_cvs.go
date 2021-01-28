@@ -44,8 +44,6 @@ const (
 	defaultExportRule      = "0.0.0.0/0"
 	defaultNetwork         = "default"
 
-	storageBackendLabelLimit = 0 // 0 allows unlimited characters
-
 	// Constants for internal pool attributes
 	Size            = "size"
 	ServiceLevel    = "serviceLevel"
@@ -559,6 +557,11 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		if _, err = utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		}
+
+		if _, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength); err != nil {
+			return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
+		}
+
 	}
 
 	return nil
@@ -785,7 +788,7 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	labels := []string{d.getTelemetryLabels(ctx)}
-	poolLabels, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, storageBackendLabelLimit)
+	poolLabels, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
 	if err != nil {
 		return err
 	}
@@ -838,7 +841,7 @@ func (d *NFSStorageDriver) Create(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, pool *storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -1090,8 +1093,12 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
-		if _, err := d.API.RelabelVolume(ctx, volume, d.updateTelemetryLabels(ctx, volume)); err != nil {
-			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
+		labels := d.updateTelemetryLabels(ctx, volume)
+		labels = storage.DeleteProvisioningLabels(labels)
+
+		if _, err := d.API.RelabelVolume(ctx, volume, labels); err != nil {
+			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, "+
+				"relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
 		}
 		_, err := d.API.WaitForVolumeStates(

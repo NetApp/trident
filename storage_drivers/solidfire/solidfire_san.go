@@ -707,7 +707,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		}
 
 		// Validate pool label sizes
-		_, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, MaxLabelLength)
+		_, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
 		if err != nil {
 			return fmt.Errorf("invalid value for label in pool %s: %v", pool.Name, err)
 		}
@@ -736,12 +736,12 @@ func MakeSolidFireName(name string) string {
 
 // setProvisioningLabels sets the labels in the metadata map
 func (d *SANStorageDriver) setProvisioningLabels(ctx context.Context, storagePool *storage.Pool, meta map[string]string) error {
-	labels, err := storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, MaxLabelLength)
+	labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
 	if err != nil {
 		return err
 	}
 
-	meta[drivers.ProvisioningLabelTag] = labels
+	meta[storage.ProvisioningLabelTag] = labels
 	return nil
 }
 
@@ -1001,10 +1001,10 @@ func (d *SANStorageDriver) CreateClone(
 	if err = d.setProvisioningLabels(ctx, storagePool, meta); err != nil {
 		return err
 	}
-	if meta[drivers.ProvisioningLabelTag] == "" {
-		if svLabels, svLabelsExists := svMeta[drivers.ProvisioningLabelTag]; svLabelsExists {
+	if meta[storage.ProvisioningLabelTag] == "" {
+		if svLabels, svLabelsExists := svMeta[storage.ProvisioningLabelTag]; svLabelsExists {
 			// fall back to the source volume's label
-			meta[drivers.ProvisioningLabelTag] = svLabels
+			meta[storage.ProvisioningLabelTag] = svLabels
 		}
 	}
 
@@ -1074,8 +1074,8 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 		// Update the volume labels if Trident will manage its lifecycle
 		svMeta := volume.GetAttributesAsMap()
-		if storage.AllowPoolLabelOverwrite(drivers.ProvisioningLabelTag, svMeta[drivers.ProvisioningLabelTag]) {
-			attrs[drivers.ProvisioningLabelTag] = ""
+		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, svMeta[storage.ProvisioningLabelTag]) {
+			attrs[storage.ProvisioningLabelTag] = ""
 		}
 
 		var req api.ModifyVolumeRequest

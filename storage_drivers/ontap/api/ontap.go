@@ -1533,9 +1533,9 @@ func (d Client) VolumeListByAttrs(
 		SetEncrypt(encrypt)
 	query.SetVolumeAttributes(*volumeAttributes)
 
-	// Limit the returned Flexvol data to names and comments
+	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
@@ -1563,7 +1563,7 @@ func (d Client) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, s
 
 	// Limit the returned data to only the Flexvol names
 	desiredAttributes := &azgo.VolumeGetIterRequestDesiredAttributes{}
-	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("").SetComment("")
+	desiredVolIDAttrs := azgo.NewVolumeIdAttributesType().SetName("")
 	desiredVolumeAttributes := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*desiredVolIDAttrs)
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 

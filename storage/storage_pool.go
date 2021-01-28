@@ -15,6 +15,9 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
+// TODO: Try moving all ProvisioningLabelTag related code here
+const ProvisioningLabelTag = "provisioning"
+
 type Pool struct {
 	Name string
 	// A Trident storage pool can potentially satisfy more than one storage class.
@@ -142,4 +145,26 @@ func AllowPoolLabelOverwrite(key, originalLabel string) bool {
 		return true
 	}
 	return false
+}
+
+// updateProvisioningLabels returns the volume labels with an updated provisioning label provided
+// Note:- Currently not used. Will be used for update storagevolume labels
+func UpdateProvisioningLabels(provisioningLabel string, volumeLabels []string) []string {
+
+	newLabels := DeleteProvisioningLabels(volumeLabels)
+	return append(newLabels, provisioningLabel)
+}
+
+// deleteProvisioningLabels returns the volume labels with the provisioning label deleted
+func DeleteProvisioningLabels(volumeLabels []string) []string {
+
+	newLabels := make([]string, 0)
+
+	for _, label := range volumeLabels {
+		if !AllowPoolLabelOverwrite(ProvisioningLabelTag, label) {
+			newLabels = append(newLabels, label)
+		}
+	}
+
+	return newLabels
 }

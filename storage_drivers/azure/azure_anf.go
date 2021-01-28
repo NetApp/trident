@@ -619,11 +619,11 @@ func (d *NFSStorageDriver) Create(
 	labels := make(map[string]string)
 	labels[drivers.TridentLabelTag] = d.getTelemetryLabels(ctx)
 
-	poolLabels, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, storageBackendLabelLimit)
+	poolLabels, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, storageBackendLabelLimit)
 	if err != nil {
 		return err
 	}
-	labels[drivers.ProvisioningLabelTag] = poolLabels
+	labels[storage.ProvisioningLabelTag] = poolLabels
 
 	Logc(ctx).WithFields(log.Fields{
 		"creationToken": name,

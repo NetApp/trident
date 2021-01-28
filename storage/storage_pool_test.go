@@ -153,3 +153,70 @@ func TestAllowLabelOverwriteExternalFreeFormFalse(t *testing.T) {
 
 	assert.False(t, allowLabelOverwrite, "Allowed to overwrite external label")
 }
+
+func TestUpdateProvisionLabelsReplaceFirstSuccess(t *testing.T) {
+	originalLabels := []string{`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "foo", "bar"}
+
+	newLabels := UpdateProvisioningLabels(
+		`{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`, originalLabels)
+
+	assert.Equal(t, []string{"foo", "bar", `{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`},
+		newLabels, "Label is not updated correctly")
+}
+
+func TestUpdateProvisionLabelsReplaceMiddleSuccess(t *testing.T) {
+	originalLabels := []string{"foo", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "bar"}
+
+	newLabels := UpdateProvisioningLabels(
+		`{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`, originalLabels)
+
+	assert.Equal(t, []string{"foo", "bar", `{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`},
+		newLabels, "Label is not updated correctly")
+}
+
+func TestUpdateProvisionLabelsReplaceLastSuccess(t *testing.T) {
+	originalLabels := []string{"foo", "bar", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`}
+
+	newLabels := UpdateProvisioningLabels(
+		`{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`, originalLabels)
+
+	assert.Equal(t, []string{"foo", "bar", `{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`},
+		newLabels, "Label is not updated correctly")
+}
+
+func TestUpdateProvisionNotFoundSuccess(t *testing.T) {
+	originalLabels := []string{"foo", "bar"}
+
+	newLabels := UpdateProvisioningLabels(
+		`{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`, originalLabels)
+
+	assert.Equal(t, []string{"foo", "bar", `{"provisioning":{"labelName3":"labelValue3","labelName4":"labelValue4"}}`},
+		newLabels, "Label is not set correctly")
+}
+
+func TestDeleteProvisioningLabelsFoundFirstSuccess(t *testing.T) {
+	newLabels := DeleteProvisioningLabels([]string{
+		`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "foo", "bar"})
+
+	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
+}
+
+func TestDeleteProvisioningLabelsFoundMiddleSuccess(t *testing.T) {
+	newLabels := DeleteProvisioningLabels([]string{"foo",
+		`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "bar"})
+
+	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
+}
+
+func TestDeleteProvisioningLabelsFoundLastSuccess(t *testing.T) {
+	newLabels := DeleteProvisioningLabels([]string{
+		"foo", "bar", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`})
+
+	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
+}
+
+func TestDeleteProvisioningLabelsNotFoundSuccess(t *testing.T) {
+	newLabels := DeleteProvisioningLabels([]string{"foo", "bar"})
+
+	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not left as is")
+}

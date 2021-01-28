@@ -142,7 +142,7 @@ func CreateCloneNAS(
 	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-		labels, err = storagePool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, labelLimit)
+		labels, err = storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
 		if err != nil {
 			return err
 		}
@@ -2594,7 +2594,7 @@ func ValidateStoragePools(
 			}
 		}
 
-		_, err := pool.GetLabelsJSON(ctx, drivers.ProvisioningLabelTag, labelLimit)
+		_, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
 		if err != nil {
 			return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
 		}
