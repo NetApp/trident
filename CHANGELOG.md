@@ -11,20 +11,27 @@
 **Fixes:**
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
+- **Kubernetes:** Fixed issue of Ownership References set by Trident Operator on cluster-scoped Trident resources
+ (Issue [#474](https://github.com/NetApp/trident/issues/474)).
 - **Kubernetes:** Fixed issue where the operator could leave a Trident node unregistered with kubelet (Issue [#487](https://github.com/NetApp/trident/issues/487)).
-- **Kubernetes:** Fixed issue Operator reporting Trident installation multiple times (Issue [#431](https://github.com
-/NetApp/trident/issues/431)).
+- **Kubernetes:** Fixed issue Operator reporting Trident installation multiple times (Issue [#431](https://github.com/NetApp/trident/issues/431)).
 - Fixed issue where digits in the storage prefix were disallowed from the ONTAP economy drivers (Issue [#476](https://github.com/NetApp/trident/issues/476)).
+- Changed iSCSI static discovery to sendtargets
+- Fixed E-series intermittent HTTP 422 error on volume creation.
 - **Kubernetes:** Fixed issue where a snapshot transaction could keep Trident from starting (Issue [#490](https://github.com/NetApp/trident/issues/490)).
 - **Kubernetes:** Handle the case where blkid fails to provide any output (Issue [#418](https://github.com/NetApp/trident/issues/418)).
 
 **Enhancements:**
+- **Kubernetes:** Added support for Kubernetes 1.20
+- **Kubernetes:** Updated CSI sidecars.
 - **Kubernetes:** Updated scope of the Trident Operator to cluster-scope.
+- **Kubernetes:** Added Helm Chart Support
 - Updated GCP driver to allow CVS-Performance volumes as small as 100 GiB.
 - Added support for ONTAP QoS policy groups (Issue [#108](https://github.com/NetApp/trident/issues/108))
 - Added `lunsPerFlexvol` option to allow customizing the number of LUNs per FlexVol in the ontap-san-economy driver.
 - Allow user to authenticate with certificate and key for ONTAP backends.
 - Allow CA certificates for validating ONTAP certificates.
+- Set provisioning labels for all volumes for ONTAP-NAS, ONTAP-SAN, ONTAP-NAS-FLEXGROUP, SolidFire, and CVS drivers
 
 **Beta Features:**
 
