@@ -1,6 +1,9 @@
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
+
 package storageclass
 
 import (
+	"context"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -18,17 +21,20 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 		SupportedTopologies: supportedTopologies,
 	}
 
-	supported := isTopologySupportedByPool(nil, &fakePool1, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supported := isTopologySupportedByPool(context.TODO(), &fakePool1,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
 
-	supported = isTopologySupportedByPool(nil, &fakePool1, map[string]string{"topology.kubernetes.io/region": "R1"})
+	supported = isTopologySupportedByPool(context.TODO(), &fakePool1,
+		map[string]string{"topology.kubernetes.io/region": "R1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
 
-	supported = isTopologySupportedByPool(nil, &fakePool1, map[string]string{"topology.kubernetes.io/region": "Not supported"})
+	supported = isTopologySupportedByPool(context.TODO(), &fakePool1,
+		map[string]string{"topology.kubernetes.io/region": "Not supported"})
 	if supported {
 		t.Error("pool should not support topology")
 	}

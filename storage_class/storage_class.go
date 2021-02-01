@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storageclass
 
@@ -401,7 +401,7 @@ func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	var pools []*storage.Pool
 
 	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p)
-	if len(pools) == 0 {
+	if len(poolsForProtocol) == 0 {
 		Logc(ctx).Info("no backend pools support the requisite protocol")
 	}
 	pools = FilterPoolsOnTopology(ctx, poolsForProtocol, requisiteTopologies)
