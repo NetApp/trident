@@ -166,11 +166,11 @@ set of steps to be followed:
 
      #Delete the namespace-scoped operator
      $ kubectl delete -f deploy/bundle.yaml
-     $ serviceaccount "trident-operator" deleted
-     $ clusterrole.rbac.authorization.k8s.io "trident-operator" deleted
-     $ clusterrolebinding.rbac.authorization.k8s.io "trident-operator" deleted
-     $ deployment.apps "trident-operator" deleted
-     $ podsecuritypolicy.policy "tridentoperatorpods" deleted
+     serviceaccount "trident-operator" deleted
+     clusterrole.rbac.authorization.k8s.io "trident-operator" deleted
+     clusterrolebinding.rbac.authorization.k8s.io "trident-operator" deleted
+     deployment.apps "trident-operator" deleted
+     podsecuritypolicy.policy "tridentoperatorpods" deleted
 
      #Confirm the Trident operator was removed
      $ kubectl get all -n trident
