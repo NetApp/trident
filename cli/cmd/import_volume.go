@@ -40,9 +40,9 @@ var importVolumeCmd = &cobra.Command{
 	Short: "Import an existing volume to Trident",
 	Long: `Import an existing volume to Trident
 
-To import an existing volume, specify the name of the Trident backend 
-containing the volume, as well as the name that uniquely identifies 
-the volume on the storage (i.e. ONTAP FlexVol, Element Volume, CVS 
+To import an existing volume, specify the name of the Trident backend
+containing the volume, as well as the name that uniquely identifies
+the volume on the storage (i.e. ONTAP FlexVol, Element Volume, CVS
 Volume path').`,
 	Aliases: []string{"v"},
 	Args:    cobra.ExactArgs(2),
@@ -124,6 +124,9 @@ func volumeImport(backendName, internalVolumeName string, noManage bool, pvcData
 	err = json.Unmarshal(responseBody, &importVolumeResponse)
 	if err != nil {
 		return err
+	}
+	if importVolumeResponse.Volume == nil {
+		return fmt.Errorf("could not import volume: no volume returned")
 	}
 	volume := *importVolumeResponse.Volume
 

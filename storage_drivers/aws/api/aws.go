@@ -128,6 +128,9 @@ func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method strin
 		return nil, nil, err
 	} else if response != nil {
 		defer func() { _ = response.Body.Close() }()
+	} else {
+		Logc(ctx).Warnf("Error communicating with AWS REST interface. nil response")
+		return nil, nil, fmt.Errorf("nil response")
 	}
 
 	var responseBody []byte

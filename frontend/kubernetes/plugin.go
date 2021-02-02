@@ -1107,7 +1107,7 @@ func (p *Plugin) createVolumeAndPV(
 	if err != nil {
 		return nil, err
 	}
-	driverType, _ := p.orchestrator.GetDriverTypeForVolume(ctx, volExternal)
+	driverType, err := p.orchestrator.GetDriverTypeForVolume(ctx, volExternal)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"volume": uniqueName,

@@ -113,6 +113,10 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if err != nil {
 		return storage.SnapshotExternal{}, err
 	}
+	if getSnapshotResponse.Snapshot == nil {
+		return storage.SnapshotExternal{}, fmt.Errorf("could not get snapshot %s: no snapshot returned",
+			snapshotID)
+	}
 
 	return *getSnapshotResponse.Snapshot, nil
 }

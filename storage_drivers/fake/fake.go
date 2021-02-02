@@ -646,14 +646,18 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 		}
 	}
 
-	volAttrs := make(map[string]sa.Request)
-
 	logFields := log.Fields{
 		"backend":       d.Config.InstanceName,
 		"name":          volume.Config.Name,
 		"requestedPool": volume.Pool,
 		"sizeBytes":     volume.Config.Size,
 	}
+
+	if pool == nil {
+		Logc(ctx).WithFields(logFields).Error("Driver pools are nil")
+	}
+
+	volAttrs := make(map[string]sa.Request)
 
 	if err := d.Create(ctx, volume.Config, pool, volAttrs); err != nil {
 		Logc(ctx).WithFields(logFields).Error("Failed to bootstrap fake volume.")

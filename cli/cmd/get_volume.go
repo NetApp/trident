@@ -120,6 +120,9 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 	if err != nil {
 		return storage.VolumeExternal{}, err
 	}
+	if getVolumeResponse.Volume == nil {
+		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s: no volume returned", volumeName)
+	}
 
 	return *getVolumeResponse.Volume, nil
 }

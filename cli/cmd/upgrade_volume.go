@@ -86,6 +86,9 @@ func volumeUpgrade(volumeNames []string) error {
 		if err = json.Unmarshal(responseBody, &upgradeVolumeResponse); err != nil {
 			return err
 		}
+		if upgradeVolumeResponse.Volume == nil {
+			return fmt.Errorf("could not upgrade volume %s: no volume returned", volumeName)
+		}
 
 		volumes := []storage.VolumeExternal{*upgradeVolumeResponse.Volume}
 		WriteVolumes(volumes)

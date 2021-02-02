@@ -196,14 +196,6 @@ func (c *Client) AddVolumesToAccessGroup(ctx context.Context, req *AddVolumesToV
 	return err
 }
 
-// DeleteRange tbd
-func (c *Client) DeleteRange(ctx context.Context, startID, endID int64) {
-	idx := startID
-	for idx < endID {
-		c.DeleteVolume(ctx, idx) //nolint
-	}
-}
-
 // DeleteVolume tbd
 func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
 
