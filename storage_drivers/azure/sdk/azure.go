@@ -110,7 +110,9 @@ func NewDriver(config ClientConfig) *Client {
 func (d *Client) Init(ctx context.Context, pools map[string]*storage.Pool) (err error) {
 
 	// Find out what we have to work with in Azure
-	d.discoveryInit(ctx)
+	if err := d.discoveryInit(ctx); err != nil {
+		return err
+	}
 
 	// Map vpools to backend
 	for _, p := range pools {

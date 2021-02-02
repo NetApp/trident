@@ -26,6 +26,9 @@ const (
 	// Reload Azure resources every n minutes
 	refreshIntervalMinutes = 10
 
+	// HTTP requests (such as create backend) time out at 90s
+	discoveryTimeout = 80 * time.Second
+
 	DoNotUseSPoolName = "Couldn't do a reverse lookup for storage pool name"
 )
 
@@ -440,12 +443,13 @@ func (d *Client) countAzureResources(resourceGroups []ResourceGroup) (int, int, 
 }
 
 // refreshAzureResources wraps the toplevel discovery process for the timer thread
-func (d *Client) refreshAzureResources(ctx context.Context) {
+func (d *Client) refreshAzureResources(ctx context.Context) error {
 
 	// (re-)Discover what we have to work with in Azure
 	Logc(ctx).Debugf("Discovering Azure resources")
 
-	if err := d.discoverAzureResources(ctx); err != nil {
+	err := d.discoverAzureResources(ctx)
+	if err != nil {
 		Logc(ctx).Errorf("error discovering resources: %v", err)
 	}
 
@@ -453,6 +457,8 @@ func (d *Client) refreshAzureResources(ctx context.Context) {
 	if d.config.DebugTraceFlags["api"] {
 		d.dumpAzureResources(ctx)
 	}
+
+	return err
 }
 
 // refreshTimer waits refreshIntervalMinutes, does the refresh work, and then reschedules itself
@@ -471,19 +477,32 @@ func (d *Client) refreshTimer(ctx context.Context) {
 		return
 	}
 
-	d.refreshAzureResources(ctx)
+	_ = d.refreshAzureResources(ctx)
 
 	go d.refreshTimer(ctx)
 }
 
 // discoveryInit initializes the discovery pieces at startup
-func (d *Client) discoveryInit(ctx context.Context) {
+func (d *Client) discoveryInit(ctx context.Context) error {
 	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]*storage.Pool)
 	d.SDKClient.AzureResources.m = &sync.Mutex{}
 
 	// Discover resources at startup synchronously, then kick off the refresh timer thread
-	d.refreshAzureResources(ctx)
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- d.refreshAzureResources(ctx)
+	}()
+	select {
+	case <-time.After(discoveryTimeout):
+		return errors.New("timeout discovering resources")
+	case err := <-errCh:
+		if err != nil {
+			return err
+		}
+	}
+
 	go d.refreshTimer(ctx)
+	return nil
 }
 
 /////////////////////////////////////////////////////////////////////////////////
