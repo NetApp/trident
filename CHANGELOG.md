@@ -2,6 +2,11 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v21.01.0
+
+**Fixes:**
+- Fixed a parsing error when iscsiadm listed target portals with a negative group tag
+
 ## Changes since v20.10.0
 
 - **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and

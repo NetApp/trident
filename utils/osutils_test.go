@@ -334,7 +334,8 @@ func TestFilterTargets(t *testing.T) {
 			// Simple positive test, expect first
 			CommandOutput: "" +
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
+				"203.0.113.3:3260,-1 iqn.2010-01.com.solidfire:baz\n",
 			InputPortal:   "203.0.113.1:3260",
 			OutputIQNs:    []string{"iqn.1992-08.com.netapp:foo"},
 			ExpectedError: nil,
