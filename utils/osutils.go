@@ -2401,7 +2401,7 @@ func getFSType(ctx context.Context, device string) (string, error) {
 		if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"device": device,
-				"err": err,
+				"err":    err,
 			}).Debugf("Unable to identify if the device is not unformatted.")
 		} else if !unformatted {
 			Logc(ctx).WithField("device", device).Debugf("Device is not unformatted.")
@@ -2643,7 +2643,7 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 // filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
 // and returns the target IQNs for a given portal
 func filterTargets(ctx context.Context, output, tp string) ([]string, error) {
-	regex := regexp.MustCompile(`^([^,]+),(\d+)\s+(.+)$`)
+	regex := regexp.MustCompile(`^([^,]+),(-?\d+)\s+(.+)$`)
 	targets := make([]string, 0)
 	for idx, line := range strings.Split(output, "\n") {
 		if 0 == len(line) {
