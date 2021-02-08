@@ -10,12 +10,12 @@ the creation of additional volumes (clones). This feature is available from
 Kubernetes ``1.17`` [Beta] and is GA from ``1.20``.
 
 .. note::
-
+    
 	Kubernetes Volume Snapshot is GA from Kubernetes ``1.20``. To understand the
-  changes involved in moving from beta to GA, take a look at the
-  `release blog <https://kubernetes.io/blog/2020/12/10/kubernetes-1.20-volume-snapshot-moves-to-ga/>`_.
-  With the graduation to GA, the ``v1`` API version is introduced and is
-  backward compatible with ``v1beta1`` snapshots.
+	changes involved in moving from beta to GA, take a look at the `release blog 
+	<https://kubernetes.io/blog/2020/12/10/kubernetes-1.20-volume-snapshot-moves-to-ga/>`_. 
+	With the graduation to GA, the ``v1`` API version is introduced and is backward compatible 
+	with ``v1beta1`` snapshots.
 
 Creating volume snapshots requires an external snapshot controller to be created,
 as well as some Custom Resource Definitions (CRDs). **This is the responsibility of
@@ -29,9 +29,9 @@ snippet below.
    $ cat snapshot-setup.sh
    #!/bin/bash
    # Create volume snapshot CRDs
-   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
-   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
-   kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/tree/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
    # Create the snapshot-controller in the desired namespace. Edit the YAML manifests below to modify namespace.
    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
