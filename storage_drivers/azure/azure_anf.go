@@ -36,8 +36,6 @@ const (
 	defaultExportRule      = "0.0.0.0/0"
 	defaultVolumeSizeStr   = "107374182400"
 
-	storageBackendLabelLimit = 0 // 0 allows unlimited characters
-
 	// Constants for internal pool attributes
 	Cookie         = "cookie"
 	Size           = "size"
@@ -481,6 +479,10 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		if _, err = utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		}
+
+		if _, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, sdk.MaxLabelLength); err != nil {
+			return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
+		}
 	}
 
 	return nil
@@ -619,7 +621,7 @@ func (d *NFSStorageDriver) Create(
 	labels := make(map[string]string)
 	labels[drivers.TridentLabelTag] = d.getTelemetryLabels(ctx)
 
-	poolLabels, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, storageBackendLabelLimit)
+	poolLabels, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, sdk.MaxLabelLength)
 	if err != nil {
 		return err
 	}
@@ -840,6 +842,10 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
+		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volume.Labels[storage.ProvisioningLabelTag]) {
+			volume.Labels[storage.ProvisioningLabelTag] = ""
+		}
+
 		if _, err := d.SDK.RelabelVolume(ctx, volume, d.updateTelemetryLabels(ctx, volume)); err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)

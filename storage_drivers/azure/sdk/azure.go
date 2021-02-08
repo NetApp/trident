@@ -29,6 +29,7 @@ const (
 	// to avoid bigger problems.
 	SnapshotTimeout = 240 * time.Second
 	DefaultTimeout  = 120 * time.Second
+	MaxLabelLength  = 256
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -620,7 +621,8 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 
 	tags := make(map[string]*string)
 	for k, v := range request.Labels {
-		tags[k] = &v
+		newVar := [1]string{v}
+		tags[k] = &newVar[0]
 	}
 
 	newVol.Location = &location
@@ -738,7 +740,6 @@ func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSyst
 	return nil, fmt.Errorf("unimplemented")
 }
 
-// RelabelVolume updates the 'trident' telemetry label on a volume
 func (d *Client) RelabelVolume(
 	ctx context.Context, filesystem *FileSystem, labels map[string]string,
 ) (*FileSystem, error) {
@@ -765,8 +766,10 @@ func (d *Client) RelabelVolume(
 
 	// Now update the working copy with the incoming change
 	for k, v := range labels {
-		tags[k] = &v
+		newVar := [1]string{v}
+		tags[k] = &newVar[0]
 	}
+
 	nv.Tags = tags
 
 	// Workaround: nv.BaremetalTenantID is an Azure-supplied field, but we find that sometimes its
