@@ -4,12 +4,15 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/utils"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +41,9 @@ func storageClassList(storageClassNames []string) error {
 	var err error
 
 	// If no storage classes were specified, we'll get all of them
+	getAll := false
 	if len(storageClassNames) == 0 {
+		getAll = true
 		storageClassNames, err = GetStorageClasses()
 		if err != nil {
 			return err
@@ -52,6 +57,9 @@ func storageClassList(storageClassNames []string) error {
 
 		storageClass, err := GetStorageClass(storageClassName)
 		if err != nil {
+			if getAll && utils.IsNotFoundError(err) {
+				continue
+			}
 			return err
 		}
 		storageClasses = append(storageClasses, storageClass)
@@ -91,8 +99,14 @@ func GetStorageClass(storageClassName string) (api.StorageClass, error) {
 	if err != nil {
 		return api.StorageClass{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return api.StorageClass{}, fmt.Errorf("could not get storage class %s: %v", storageClassName,
+		errorMessage := fmt.Sprintf("could not get storage class %s: %v", storageClassName,
 			GetErrorFromHTTPResponse(response, responseBody))
+		switch response.StatusCode {
+		case http.StatusNotFound:
+			return api.StorageClass{}, utils.NotFoundError(errorMessage)
+		default:
+			return api.StorageClass{}, errors.New(errorMessage)
+		}
 	}
 
 	var getStorageClassResponse api.GetStorageClassResponse

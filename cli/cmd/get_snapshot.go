@@ -4,17 +4,20 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/dustin/go-humanize"
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 )
 
 var getSnapshotVolume string
@@ -47,7 +50,9 @@ func snapshotList(snapshotIDs []string) error {
 	var err error
 
 	// If no snapshots were specified, we'll get all of them
+	getAll := false
 	if len(snapshotIDs) == 0 {
+		getAll = true
 		snapshotIDs, err = GetSnapshots(getSnapshotVolume)
 		if err != nil {
 			return err
@@ -61,6 +66,9 @@ func snapshotList(snapshotIDs []string) error {
 
 		snapshot, err := GetSnapshot(snapshotID)
 		if err != nil {
+			if getAll && utils.IsNotFoundError(err) {
+				continue
+			}
 			return err
 		}
 		snapshots = append(snapshots, snapshot)
@@ -104,8 +112,14 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if err != nil {
 		return storage.SnapshotExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return storage.SnapshotExternal{}, fmt.Errorf("could not get snapshot %s: %v", snapshotID,
+		errorMessage := fmt.Sprintf("could not get snapshot %s: %v", snapshotID,
 			GetErrorFromHTTPResponse(response, responseBody))
+		switch response.StatusCode {
+		case http.StatusNotFound:
+			return storage.SnapshotExternal{}, utils.NotFoundError(errorMessage)
+		default:
+			return storage.SnapshotExternal{}, errors.New(errorMessage)
+		}
 	}
 
 	var getSnapshotResponse rest.GetSnapshotResponse

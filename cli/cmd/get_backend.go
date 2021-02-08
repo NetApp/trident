@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,7 +13,9 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 	drivers "github.com/netapp/trident/storage_drivers"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +44,9 @@ func backendList(backendNames []string) error {
 	var err error
 
 	// If no backends were specified, we'll get all of them
+	getAll := false
 	if len(backendNames) == 0 {
+		getAll = true
 		backendNames, err = GetBackends()
 		if err != nil {
 			return err
@@ -55,6 +60,9 @@ func backendList(backendNames []string) error {
 
 		backend, err := GetBackend(backendName)
 		if err != nil {
+			if getAll && utils.IsNotFoundError(err) {
+				continue
+			}
 			return err
 		}
 		backends = append(backends, backend)
@@ -94,8 +102,14 @@ func GetBackend(backendName string) (storage.BackendExternal, error) {
 	if err != nil {
 		return storage.BackendExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return storage.BackendExternal{}, fmt.Errorf("could not get backend %s: %v", backendName,
+		errorMessage := fmt.Sprintf("could not get backend %s: %v", backendName,
 			GetErrorFromHTTPResponse(response, responseBody))
+		switch response.StatusCode {
+		case http.StatusNotFound:
+			return storage.BackendExternal{}, utils.NotFoundError(errorMessage)
+		default:
+			return storage.BackendExternal{}, errors.New(errorMessage)
+		}
 	}
 
 	var getBackendResponse api.GetBackendResponse

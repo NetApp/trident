@@ -4,17 +4,18 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
-
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/utils"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -42,7 +43,9 @@ func nodeList(nodeNames []string) error {
 	var err error
 
 	// If no nodes were specified, we'll get all of them
+	getAll := false
 	if len(nodeNames) == 0 {
+		getAll = true
 		nodeNames, err = GetNodes()
 		if err != nil {
 			return err
@@ -56,6 +59,9 @@ func nodeList(nodeNames []string) error {
 
 		node, err := GetNode(nodeName)
 		if err != nil {
+			if getAll && utils.IsNotFoundError(err) {
+				continue
+			}
 			return err
 		}
 		nodes = append(nodes, *node)
@@ -95,8 +101,14 @@ func GetNode(nodeName string) (*utils.Node, error) {
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get node %s: %v", nodeName,
+		errorMessage := fmt.Sprintf("could not get node %s: %v", nodeName,
 			GetErrorFromHTTPResponse(response, responseBody))
+		switch response.StatusCode {
+		case http.StatusNotFound:
+			return nil, utils.NotFoundError(errorMessage)
+		default:
+			return nil, errors.New(errorMessage)
+		}
 	}
 
 	var getNodeResponse rest.GetNodeResponse

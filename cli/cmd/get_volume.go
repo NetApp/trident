@@ -4,15 +4,19 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/dustin/go-humanize"
+
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +50,9 @@ func volumeList(volumeNames []string) error {
 	var err error
 
 	// If no volumes were specified, we'll get all of them
+	getAll := false
 	if len(volumeNames) == 0 {
+		getAll = true
 		volumeNames, err = GetVolumes()
 		if err != nil {
 			return err
@@ -60,6 +66,9 @@ func volumeList(volumeNames []string) error {
 
 		volume, err := GetVolume(volumeName)
 		if err != nil {
+			if getAll && utils.IsNotFoundError(err) {
+				continue
+			}
 			return err
 		}
 
@@ -111,8 +120,14 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 	if err != nil {
 		return storage.VolumeExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
-		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s: %v", volumeName,
+		errorMessage := fmt.Sprintf("could not get volume %s: %v", volumeName,
 			GetErrorFromHTTPResponse(response, responseBody))
+		switch response.StatusCode {
+		case http.StatusNotFound:
+			return storage.VolumeExternal{}, utils.NotFoundError(errorMessage)
+		default:
+			return storage.VolumeExternal{}, errors.New(errorMessage)
+		}
 	}
 
 	var getVolumeResponse rest.GetVolumeResponse
