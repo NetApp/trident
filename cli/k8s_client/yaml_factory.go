@@ -74,12 +74,10 @@ func GetClusterRoleYAML(flavor OrchestratorFlavor, clusterRoleName string, label
 		clusterRoleYAML = clusterRoleYAMLTemplate
 	}
 
-	switch flavor {
-	case FlavorOpenShift:
+	// authorization.openshift.io/v1 is applicable to OCP 3.x only
+	if flavor == FlavorOpenShift && !csi {
 		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1")
-	default:
-		fallthrough
-	case FlavorKubernetes:
+	} else {
 		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1")
 	}
 
@@ -197,16 +195,14 @@ rules:
       - tridentpods
 `
 
-func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string) string {
+func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string, csi bool) string {
 
 	var crbYAML string
 
-	switch flavor {
-	case FlavorOpenShift:
+	// authorization.openshift.io/v1 is applicable to OCP 3.x only
+	if flavor == FlavorOpenShift && !csi {
 		crbYAML = clusterRoleBindingOpenShiftYAMLTemplate
-	default:
-		fallthrough
-	case FlavorKubernetes:
+	} else {
 		crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
 	}
 

@@ -191,7 +191,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 			} else if deploymentVersion, err := utils.ParseDate(identifiedImageVersion); err != nil {
 				log.WithField("version", identifiedImageVersion).Error("Could not parse deployment version.")
 				performImageVersionCheck = true
-			} else if supportedVersion.ShortStringWithRelease() != deploymentVersion.ShortStringWithRelease() {
+			} else if supportedVersion.ShortString() != deploymentVersion.ShortString() {
 				log.Debugf("Current Trident deployment image '%s' is not same as the supported Trident image '%s'.",
 					deploymentVersion.String(), supportedVersion.String())
 				performImageVersionCheck = true
@@ -1048,7 +1048,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 	}
 
 	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(), clusterRoleBindingName,
-		labels, controllingCRDetails)
+		labels, controllingCRDetails, csi)
 
 	if createClusterRoleBinding {
 		err = i.client.CreateObjectByYAML(newClusterRoleBindingYAML)

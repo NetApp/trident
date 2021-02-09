@@ -454,7 +454,7 @@ func prepareYAMLFiles() error {
 	}
 
 	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
-		getClusterRoleBindingName(false), nil, nil)
+		getClusterRoleBindingName(false), nil, nil, false)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
@@ -511,7 +511,7 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
-		getClusterRoleBindingName(true), nil, nil)
+		getClusterRoleBindingName(true), nil, nil, true)
 	if err = writeFile(clusterRoleBindingPath, clusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write cluster role binding YAML file; %v", err)
 	}
@@ -1393,7 +1393,7 @@ func createRBACObjects() (returnError error) {
 	} else {
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
-				getClusterRoleBindingName(csi), nil, nil))
+				getClusterRoleBindingName(csi), nil, nil, csi))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -1435,7 +1435,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete cluster role binding
 	clusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, client.Flavor(),
-		getClusterRoleBindingName(csi), nil, nil)
+		getClusterRoleBindingName(csi), nil, nil, csi)
 	if err := client.DeleteObjectByYAML(clusterRoleBindingYAML, true); err != nil {
 		log.WithField("error", err).Warning("Could not delete cluster role binding.")
 		anyErrors = true
