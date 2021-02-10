@@ -10,7 +10,7 @@
 
 **Fixes:**
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
-- Fixed a parsing error when iscsiadm listed target portals with a negative group tag
+- Fixed a parsing error when iscsiadm listed target portals with a negative group tag (Issue [#523](https://github.com/NetApp/trident/issues/523))
 
 ## v21.01.0
 
