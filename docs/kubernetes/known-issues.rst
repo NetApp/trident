@@ -3,6 +3,37 @@ Known issues
 
 This page contains a list of known issues that may be observed when using Trident.
 
+.. _2101-operator-bug:
+
+* The Trident operator released with v21.01.0 contains an `issue <https://github.com/NetApp/trident/issues/517>`_
+  that has been identified with OpenShift Container Platform (OCP 4.x).
+  Installations that are impacted by this issue will report this error:
+
+  .. code-block:: console
+
+    no kind ‘ClusterRole’ is registered for version ‘authorization.openshift.io/v1\’ in scheme ’k8s.io/kubernetes/pkg/api/legacyscheme/scheme.go:30.``.
+
+  This issue does not
+  affect the normal functioning of Trident, only the Trident Operator. This
+  prevents changes made to the TridentOrchestrator custom resource (CR) after
+  the install/upgrade from taking effect. **This has been fixed with**
+  `v21.01.1 <https://github.com/NetApp/trident/releases/tag/v21.01.1>`_. Users
+  are advised to bypass v21.01.0 and upgrade directly to v21.01.1 or later.
+
+* A previously identified issue where iSCSI target portals with a
+  negative group tag were ignored by Trident has been fixed with
+  `v21.01.1 <https://github.com/NetApp/trident/releases/tag/v21.01.1>`_. This
+  issue may be observed when ``iscsiadm`` reports target portals with a negative
+  group tag such as ``-1``, as shown in the example below:
+
+  .. code-block:: bash
+
+    #List iscsi node records
+    $iscsiadm -m node
+    192.168.0.134:3260,-1 iqn.1992-08.com.netapp:sn.6cffffffffffffffff5056b03185:vs.3
+
+  Upgrading to v21.01.1 or later will fix this issue.
+
 .. _igroup-bug:
 
 * When using Trident `v20.07.1 <https://github.com/NetApp/trident/releases/tag/v20.07.1>`_

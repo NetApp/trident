@@ -44,6 +44,14 @@ Got all that? Great! Let's get started. You can choose to either
 :ref:`Deploy using Helm <Deploy Trident Operator by using Helm>` or
 :ref:`Using the Trident Operator <Deploy Trident Operator manually>`.
 
+.. warning::
+
+  If you are looking to install Trident using the operator/Helm Chart on
+  OpenShift Container Platform, it is recommended that you install Trident v21.01.1
+  or later. The Trident operator released with v21.01.0 contains a
+  `known issue <https://github.com/NetApp/trident/issues/517>`_ that has been
+  fixed with v21.01.1. For more details take a look at :ref:`Known Issues <2101-operator-bug>`.
+
 Deploy Trident Operator by using Helm
 =====================================
 

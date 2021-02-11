@@ -49,6 +49,14 @@ If you are running ``18.07`` and seek to upgrade to the ``20.07`` release, then:
   and `storage-class-bronze-default.yaml <https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-bronze-default.yaml>`_.
   For more information, take a look at the :ref:`Known issues <fstype-fix>` tab.
 
+.. warning::
+
+  When upgrading Trident using the operator on OpenShift Container Platform, users
+  are recommended to upgrade to v21.01.1 or later. The Trident operator
+  released with v21.01.0 contains a `known issue <https://github.com/NetApp/trident/issues/517>`_
+  that has been fixed with v21.01.1. For more details take a look at
+  :ref:`Known Issues <2101-operator-bug>`.
+
 Understanding your upgrade paths
 --------------------------------
 

@@ -104,6 +104,14 @@ If the cluster is upgraded to an unsupported version:
   displayed to indicate that Trident is installed on an unsupported Kubernetes
   version.
 
+.. warning::
+
+  If you are looking to install Trident using the operator/Helm Chart on
+  OpenShift Container Platform, it is recommended that you install Trident v21.01.1
+  or later. The Trident operator released with v21.01.0 contains a
+  `known issue <https://github.com/NetApp/trident/issues/517>`_ that has been
+  fixed with v21.01.1. For more details take a look at :ref:`Known Issues <2101-operator-bug>`.
+
 When should I use tridentctl?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

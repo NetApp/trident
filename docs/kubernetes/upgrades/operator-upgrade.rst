@@ -33,6 +33,14 @@ To upgrade using the Trident operator:
    the CRDs for the alpha snapshot spec. For existing snapshots that should be
    deleted/migrated, please read `this blog`_.
 
+.. warning::
+
+ When upgrading Trident using the operator on OpenShift Container Platform, users
+ are recommended to upgrade to v21.01.1 or later. The Trident operator
+ released with v21.01.0 contains a `known issue <https://github.com/NetApp/trident/issues/517>`_
+ that has been fixed with v21.01.1. For more details take a look at
+ :ref:`Known Issues <2101-operator-bug>`.
+
 Initiating the upgrade
 ----------------------
 
