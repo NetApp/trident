@@ -1,7 +1,7 @@
 apiVersion: v2
 name: trident-operator
 version: 1.0.0
-kubeVersion: ">= 1.16.0 < 1.22.0"
+kubeVersion: ">= 1.16.0-0 < 1.22.0-0"
 description: "A Helm chart for deploying NetApp's Trident CSI storage provisioner using the Trident Operator."
 type: application
 keywords: ["NetApp", "Trident", "operator", "CSI"]
