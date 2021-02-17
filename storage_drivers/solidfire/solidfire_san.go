@@ -1001,11 +1001,22 @@ func (d *SANStorageDriver) CreateClone(
 	if err = d.setProvisioningLabels(ctx, storagePool, meta); err != nil {
 		return err
 	}
-	if meta[storage.ProvisioningLabelTag] == "" {
-		if svLabels, svLabelsExists := svMeta[storage.ProvisioningLabelTag]; svLabelsExists {
-			// fall back to the source volume's label
-			meta[storage.ProvisioningLabelTag] = svLabels
+	if storagePool != nil {
+		if meta[storage.ProvisioningLabelTag] == "" {
+			if svLabels, svLabelsExists := svMeta[storage.ProvisioningLabelTag]; svLabelsExists {
+				// fall back to the source volume's label
+				meta[storage.ProvisioningLabelTag] = svLabels
+			}
 		}
+	} else {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{}
+		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+		labels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
+		if err != nil {
+			return err
+		}
+		meta[storage.ProvisioningLabelTag] = labels
 	}
 
 	// Create the clone of the source volume with the name specified

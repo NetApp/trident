@@ -170,6 +170,9 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	if config.Zone != "" {
 		pool.Attributes[sa.Zone] = sa.NewStringOffer(config.Zone)
 	}
+
+	pool.Attributes[sa.Labels] = sa.NewLabelOffer(config.Labels)
+
 	if len(mediaOffers) > 0 {
 		pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
 		pool.InternalAttributes[Media] = pool.Attributes[sa.Media].ToString()
@@ -608,7 +611,23 @@ func (d *NASFlexGroupStorageDriver) Create(
 func (d *NASFlexGroupStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, api.MaxNASLabelLength, true)
+	sourceLabel := ""
+
+	// Ensure the volume exists
+	flexgroup, err := d.API.FlexGroupGet(volConfig.CloneSourceVolumeInternal)
+	if err != nil {
+		return err
+	} else if flexgroup == nil {
+		return fmt.Errorf("volume %s not found", volConfig.CloneSourceVolumeInternal)
+	}
+
+	// Get the source flexgroup's label
+	if flexgroup.VolumeIdAttributesPtr != nil {
+		volumeIdAttrs := flexgroup.VolumeIdAttributes()
+		sourceLabel = volumeIdAttrs.Comment()
+	}
+
+	return CreateCloneNAS(ctx, d, volConfig, storagePool, sourceLabel, api.MaxNASLabelLength, true)
 }
 
 // Import brings an existing volume under trident's control

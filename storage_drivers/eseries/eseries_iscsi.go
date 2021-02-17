@@ -321,6 +321,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
 		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
 		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
 		pool.InternalAttributes[Size] = d.Config.Size
 		pool.InternalAttributes[Region] = d.Config.Region

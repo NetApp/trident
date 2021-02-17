@@ -845,12 +845,27 @@ func (d *NFSStorageDriver) CreateClone(
 		"sourceSnapshot": sourceSnapshot.Name,
 	}).Debug("Cloning volume.")
 
+	var labels []string
+	labels = d.updateTelemetryLabels(ctx, sourceVolume)
+
+	if storagePool == nil {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{}
+		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
+		if err != nil {
+			return err
+		}
+
+		labels = storage.UpdateProvisioningLabels(poolLabels, labels)
+	}
+
 	createRequest := &api.FilesystemCreateRequest{
 		Name:              volConfig.Name,
 		Region:            sourceVolume.Region,
 		CreationToken:     name,
 		ExportPolicy:      sourceVolume.ExportPolicy,
-		Labels:            d.updateTelemetryLabels(ctx, sourceVolume),
+		Labels:            labels,
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		QuotaInBytes:      sourceVolume.QuotaInBytes,
 		ServiceLevel:      sourceVolume.ServiceLevel,

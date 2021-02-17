@@ -103,8 +103,8 @@ func CleanBackendName(backendName string) string {
 }
 
 func CreateCloneNAS(
-	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, labelLimit int,
-	useAsync bool) error {
+	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, sourceLabel string,
+	labelLimit int, useAsync bool) error {
 
 	// if cloning a FlexGroup, useAsync will be true
 	if useAsync && !d.GetAPI().SupportsFeature(ctx, api.NetAppFlexGroupsClone) {
@@ -118,7 +118,7 @@ func CreateCloneNAS(
 	if d.GetConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":      "CreateClone",
-			"Type":        "NASFlexGroupStorageDriver",
+			"Type":        "NASStorageDriver",
 			"name":        name,
 			"source":      source,
 			"snapshot":    snapshot,
@@ -144,7 +144,12 @@ func CreateCloneNAS(
 	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-		labels, err = storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
+		labels = sourceLabel
+	} else {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{}
+		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
 		if err != nil {
 			return err
 		}
@@ -2397,6 +2402,8 @@ func InitializeStoragePoolsCommon(
 		if config.Zone != "" {
 			pool.Attributes[sa.Zone] = sa.NewStringOffer(config.Zone)
 		}
+
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(config.Labels)
 
 		pool.InternalAttributes[Size] = config.Size
 		pool.InternalAttributes[Region] = config.Region

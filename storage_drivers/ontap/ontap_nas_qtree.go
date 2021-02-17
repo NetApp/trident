@@ -162,8 +162,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 		"SharedLockID":        d.sharedLockID,
 	}).Debugf("Qtree driver settings.")
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(),
+		d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}

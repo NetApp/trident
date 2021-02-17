@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/aws/api"
 	"github.com/netapp/trident/storage_drivers/azure/sdk"
 	"github.com/netapp/trident/utils"
 )
@@ -661,7 +662,7 @@ func (d *NFSStorageDriver) Create(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -783,13 +784,28 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("couldn't find cookie for volume %v", name)
 	}
 
+	var labels map[string]string
+	labels = d.updateTelemetryLabels(ctx, sourceVolume)
+
+	if storagePool == nil {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{}
+		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
+		if err != nil {
+			return err
+		}
+
+		labels[storage.ProvisioningLabelTag] = poolLabels
+	}
+
 	createRequest := &sdk.FilesystemCreateRequest{
 		Name:          volConfig.Name,
 		Location:      sourceVolume.Location,
 		CapacityPool:  sourceVolume.CapacityPoolName, // critical value for clone path
 		CreationToken: name,
 		ExportPolicy:  sourceVolume.ExportPolicy,
-		Labels:        d.updateTelemetryLabels(ctx, sourceVolume),
+		Labels:        labels,
 		ProtocolTypes: sourceVolume.ProtocolTypes,
 		QuotaInBytes:  sourceVolume.QuotaInBytes,
 		ServiceLevel:  sourceVolume.ServiceLevel,

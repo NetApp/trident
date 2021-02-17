@@ -86,8 +86,8 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(),
+		d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
@@ -338,7 +338,24 @@ func (d *NASStorageDriver) Create(
 func (d *NASStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, api.MaxNASLabelLength, false)
+
+	sourceLabel := ""
+
+	// Ensure the volume exists
+	flexvol, err := d.API.VolumeGet(volConfig.CloneSourceVolumeInternal)
+	if err != nil {
+		return err
+	} else if flexvol == nil {
+		return fmt.Errorf("volume %s not found", volConfig.CloneSourceVolumeInternal)
+	}
+
+	// Get the source volume's label
+	if flexvol.VolumeIdAttributesPtr != nil {
+		volumeIdAttrs := flexvol.VolumeIdAttributes()
+		sourceLabel = volumeIdAttrs.Comment()
+	}
+
+	return CreateCloneNAS(ctx, d, volConfig, storagePool, sourceLabel, api.MaxNASLabelLength, false)
 }
 
 // Destroy the volume

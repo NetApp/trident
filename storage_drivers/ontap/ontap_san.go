@@ -102,8 +102,8 @@ func (d *SANStorageDriver) Initialize(
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(),
+		d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
@@ -456,7 +456,25 @@ func (d *SANStorageDriver) CreateClone(
 	labels := ""
 	if storagePool != nil {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-		labels, err = storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
+
+		// Ensure the volume exists
+		flexvol, err := d.API.VolumeGet(volConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return err
+		} else if flexvol == nil {
+			return fmt.Errorf("volume %s not found", volConfig.CloneSourceVolumeInternal)
+		}
+
+		// Get the source volume's label
+		if flexvol.VolumeIdAttributesPtr != nil {
+			volumeIdAttrs := flexvol.VolumeIdAttributes()
+			labels = volumeIdAttrs.Comment()
+		}
+	} else {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{}
+		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
 		if err != nil {
 			return err
 		}

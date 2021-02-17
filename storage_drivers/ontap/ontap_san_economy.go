@@ -323,8 +323,8 @@ func (d *SANEconomyStorageDriver) Initialize(
 		"LUNsPerFlexvol":    d.lunsPerFlexvol,
 	}).Debugf("SAN Economy driver settings.")
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(
-		ctx, d, d.getStoragePoolAttributes(), d.BackendName())
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(),
+		d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
