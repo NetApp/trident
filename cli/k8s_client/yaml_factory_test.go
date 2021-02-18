@@ -3,6 +3,7 @@
 package k8sclient
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
@@ -64,8 +65,8 @@ func TestYAMLFactory(t *testing.T) {
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef),
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef),
+		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef, false),
+		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef, true),
 		GetDeploymentYAML(Name, ImageName, LogFormat, imagePullSecrets, labels, ownerRef, true),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
@@ -77,6 +78,26 @@ func TestYAMLFactory(t *testing.T) {
 			t.Fatalf("expected constant %v to be valid YAML", i)
 		}
 		//fmt.Printf("json: %v", string(jsonData))
+	}
+}
+
+// TestAPIVersion validates that we get correct APIVersion value
+func TestAPIVersion(t *testing.T) {
+
+	yamlsOutputs := map[string]string {
+		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false): "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true): "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, false): "authorization.openshift.io/v1",
+		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true): "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, false):"rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, true):"rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, false):"authorization.openshift.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, true):"rbac.authorization.k8s.io/v1",
+
+	}
+
+	for result, value := range yamlsOutputs {
+		assert.Contains(t, result, value, fmt.Sprintf("Incorrect API Version returned %s", value))
 	}
 }
 
