@@ -114,9 +114,9 @@ Trident AutoSupport image
 {{- if .Values.tridentAutosupportImage }}
 {{- .Values.tridentAutosupportImage }}
 {{- else if .Values.imageRegistry }}
-{{- .Values.imageRegistry }}/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion }}
+{{- .Values.imageRegistry }}/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- else }}
-{{- "" }}netapp/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion }}
+{{- "" }}netapp/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- end }}
 {{- end }}
 

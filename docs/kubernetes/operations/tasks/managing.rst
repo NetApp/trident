@@ -29,7 +29,7 @@ If Trident was installed using Helm, it can be uninstalled using ``helm uninstal
   #List the Helm release corresponding to the Trident install.
   $ helm ls -n trident
   NAME   	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART                          	APP VERSION
-  trident	trident  	1       	2021-01-28 00:26:42.417764794 +0000 UTC	deployed	trident-operator-21.01.0	21.01.0
+  trident	trident  	1       	2021-04-20 00:26:42.417764794 +0000 UTC	deployed	trident-operator-21.04.0  	21.04.0
 
   #Uninstall Helm release to remove Trident
   $ helm uninstall trident -n trident
