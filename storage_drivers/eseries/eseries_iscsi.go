@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -280,7 +280,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 	d.physicalPools = make(map[string]*storage.Pool)
 	d.virtualPools = make(map[string]*storage.Pool)
 
-	// To identify list of media types supported by physcial pools
+	// To identify list of media types supported by physical pools
 	mediaOffers := make([]sa.Offer, 0)
 
 	// Get pools

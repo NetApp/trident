@@ -4,15 +4,14 @@
 
 ## Changes since v21.01.0
 
-- **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and
-                 quay.io/k8scsi otherwise. Private registries are still supported and will be used without any
-                 modification if provided.
-
 **Fixes:**
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
 - Fixed a parsing error when iscsiadm listed target portals with a negative group tag
 
-## v21.01.0
+**Enhancements:**
+- Updated to golang 1.15
+
+## Changes since v20.10.0
 
 - **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and
                  quay.io/k8scsi otherwise. Private registries are still supported and will be used without any
@@ -43,6 +42,9 @@
 - Allow CA certificates for validating ONTAP certificates.
 - Set provisioning labels for all volumes for ONTAP-NAS, ONTAP-SAN, ONTAP-NAS-FLEXGROUP, SolidFire, and CVS drivers
 
+**Beta Features:**
+
+**Deprecations:**
 
 ## v20.10.0
 

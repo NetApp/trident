@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 	"time"
 )
@@ -51,6 +52,10 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	if err != nil {
 		return nil, err
 	}
+	caSerial, err := makeSerial()
+	if err != nil {
+		return nil, err
+	}
 	certInfo.CAKey = caKeyBase64
 	caKeyId, err := bigIntHash(caKey.D)
 	if err != nil {
@@ -58,14 +63,8 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	}
 	// Create CA cert
 	caCert := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(1),
-		Subject: pkix.Name{
-			Country:      []string{"US"},
-			Province:     []string{"NC"},
-			Locality:     []string{"RTP"},
-			Organization: []string{"NetApp"},
-			CommonName:   caCertName,
-		},
+		SerialNumber:          caSerial,
+		Subject:               makeSubject(caCertName),
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
@@ -91,25 +90,24 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	}
 	certInfo.ServerKey = serverKeyBase64
 
+	serverSerial, err := makeSerial()
+	if err != nil {
+		return nil, err
+	}
 	serverKeyId, err := bigIntHash(serverKey.D)
 	if err != nil {
 		return nil, err
 	}
 	// Create HTTPS server cert
 	serverCert := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(2),
-		Subject: pkix.Name{
-			Country:      []string{"US"},
-			Province:     []string{"NC"},
-			Locality:     []string{"RTP"},
-			Organization: []string{"NetApp"},
-			CommonName:   serverCertName,
-		},
+		SerialNumber:   serverSerial,
+		Subject:        makeSubject(serverCertName),
 		NotBefore:      notBefore,
 		NotAfter:       notAfter,
 		ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		AuthorityKeyId: caCert.SubjectKeyId,
 		SubjectKeyId:   serverKeyId,
+		DNSNames:       []string{serverCertName},
 	}
 
 	derBytes, err = x509.CreateCertificate(rand.Reader, &serverCert, &caCert, &serverKey.PublicKey, caKey)
@@ -129,20 +127,18 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	}
 	certInfo.ClientKey = clientKeyBase64
 
+	clientSerial, err := makeSerial()
+	if err != nil {
+		return nil, err
+	}
 	clientKeyId, err := bigIntHash(clientKey.D)
 	if err != nil {
 		return nil, err
 	}
 	// Create HTTPS client cert
 	clientCert := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(3),
-		Subject: pkix.Name{
-			Country:      []string{"US"},
-			Province:     []string{"NC"},
-			Locality:     []string{"RTP"},
-			Organization: []string{"NetApp"},
-			CommonName:   clientCertName,
-		},
+		SerialNumber:   clientSerial,
+		Subject:        makeSubject(clientCertName),
 		NotBefore:      notBefore,
 		NotAfter:       notAfter,
 		ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -157,6 +153,25 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	certInfo.ClientCert = certToBase64String(derBytes)
 
 	return certInfo, nil
+}
+
+func makeSubject(cn string) pkix.Name {
+	return pkix.Name{
+		Country:      []string{"US"},
+		Locality:     []string{"RTP"},
+		Organization: []string{"NetApp"},
+		Province:     []string{"NC"},
+		CommonName:   cn,
+	}
+}
+
+func makeSerial() (*big.Int, error) {
+	maxSerial := big.NewInt(math.MaxInt64)
+	serial, err := rand.Int(rand.Reader, maxSerial)
+	if nil != err {
+		return nil, err
+	}
+	return serial, nil
 }
 
 func keyToBase64String(key *ecdsa.PrivateKey) (string, error) {

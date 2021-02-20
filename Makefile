@@ -4,7 +4,7 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE = golang:1.14
+GO_IMAGE = golang:1.15
 HELM_IMAGE = alpine/helm:latest
 GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
