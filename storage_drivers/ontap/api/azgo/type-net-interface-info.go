@@ -18,31 +18,36 @@ type NetInterfaceInfoType struct {
 	CurrentPortPtr          *string                            `xml:"current-port"`
 	DataProtocolsPtr        *NetInterfaceInfoTypeDataProtocols `xml:"data-protocols"`
 	// work in progress
-	DnsDomainNamePtr          *DnsZoneType          `xml:"dns-domain-name"`
-	ExtendedStatusPtr         *string               `xml:"extended-status"`
-	FailoverGroupPtr          *FailoverGroupType    `xml:"failover-group"`
-	FailoverPolicyPtr         *string               `xml:"failover-policy"`
-	FirewallPolicyPtr         *string               `xml:"firewall-policy"`
-	ForceSubnetAssociationPtr *bool                 `xml:"force-subnet-association"`
-	HomeNodePtr               *string               `xml:"home-node"`
-	HomePortPtr               *string               `xml:"home-port"`
-	InterfaceNamePtr          *string               `xml:"interface-name"`
-	IpspacePtr                *string               `xml:"ipspace"`
-	IsAutoRevertPtr           *bool                 `xml:"is-auto-revert"`
-	IsDnsUpdateEnabledPtr     *bool                 `xml:"is-dns-update-enabled"`
-	IsHomePtr                 *bool                 `xml:"is-home"`
-	IsIpv4LinkLocalPtr        *bool                 `xml:"is-ipv4-link-local"`
-	LifUuidPtr                *UuidType             `xml:"lif-uuid"`
-	ListenForDnsQueryPtr      *bool                 `xml:"listen-for-dns-query"`
-	NetmaskPtr                *IpAddressType        `xml:"netmask"`
-	NetmaskLengthPtr          *int                  `xml:"netmask-length"`
-	OperationalStatusPtr      *string               `xml:"operational-status"`
-	RolePtr                   *string               `xml:"role"`
-	RoutingGroupNamePtr       *RoutingGroupTypeType `xml:"routing-group-name"`
-	SubnetNamePtr             *SubnetNameType       `xml:"subnet-name"`
-	UseFailoverGroupPtr       *string               `xml:"use-failover-group"`
-	VserverPtr                *string               `xml:"vserver"`
-	WwpnPtr                   *string               `xml:"wwpn"`
+	DnsDomainNamePtr          *DnsZoneType                      `xml:"dns-domain-name"`
+	ExtendedStatusPtr         *string                           `xml:"extended-status"`
+	FailoverGroupPtr          *FailoverGroupType                `xml:"failover-group"`
+	FailoverPolicyPtr         *string                           `xml:"failover-policy"`
+	FirewallPolicyPtr         *string                           `xml:"firewall-policy"`
+	ForceSubnetAssociationPtr *bool                             `xml:"force-subnet-association"`
+	HomeNodePtr               *string                           `xml:"home-node"`
+	HomePortPtr               *string                           `xml:"home-port"`
+	InterfaceNamePtr          *string                           `xml:"interface-name"`
+	IpspacePtr                *string                           `xml:"ipspace"`
+	IsAutoRevertPtr           *bool                             `xml:"is-auto-revert"`
+	IsDnsUpdateEnabledPtr     *bool                             `xml:"is-dns-update-enabled"`
+	IsHomePtr                 *bool                             `xml:"is-home"`
+	IsIpv4LinkLocalPtr        *bool                             `xml:"is-ipv4-link-local"`
+	IsVipPtr                  *bool                             `xml:"is-vip"`
+	LifUuidPtr                *UuidType                         `xml:"lif-uuid"`
+	ListenForDnsQueryPtr      *bool                             `xml:"listen-for-dns-query"`
+	NetmaskPtr                *IpAddressType                    `xml:"netmask"`
+	NetmaskLengthPtr          *int                              `xml:"netmask-length"`
+	OperationalStatusPtr      *string                           `xml:"operational-status"`
+	ProbePortPtr              *int                              `xml:"probe-port"`
+	RolePtr                   *string                           `xml:"role"`
+	RoutingGroupNamePtr       *string                           `xml:"routing-group-name"`
+	ServiceNamesPtr           *NetInterfaceInfoTypeServiceNames `xml:"service-names"`
+	// work in progress
+	ServicePolicyPtr    *string         `xml:"service-policy"`
+	SubnetNamePtr       *SubnetNameType `xml:"subnet-name"`
+	UseFailoverGroupPtr *string         `xml:"use-failover-group"`
+	VserverPtr          *string         `xml:"vserver"`
+	WwpnPtr             *string         `xml:"wwpn"`
 }
 
 // NewNetInterfaceInfoType is a factory method for creating new instances of NetInterfaceInfoType objects
@@ -66,10 +71,14 @@ func (o NetInterfaceInfoType) String() string {
 
 // Address is a 'getter' method
 func (o *NetInterfaceInfoType) Address() IpAddressType {
-	if o.AddressPtr != nil {
-		return *o.AddressPtr
+
+	var r IpAddressType
+	if o.AddressPtr == nil {
+		return r
 	}
-	return ""
+	r = *o.AddressPtr
+
+	return r
 }
 
 // SetAddress is a fluent style 'setter' method that can be chained
@@ -80,7 +89,13 @@ func (o *NetInterfaceInfoType) SetAddress(newValue IpAddressType) *NetInterfaceI
 
 // AddressFamily is a 'getter' method
 func (o *NetInterfaceInfoType) AddressFamily() string {
-	r := *o.AddressFamilyPtr
+
+	var r string
+	if o.AddressFamilyPtr == nil {
+		return r
+	}
+	r = *o.AddressFamilyPtr
+
 	return r
 }
 
@@ -92,7 +107,13 @@ func (o *NetInterfaceInfoType) SetAddressFamily(newValue string) *NetInterfaceIn
 
 // AdministrativeStatus is a 'getter' method
 func (o *NetInterfaceInfoType) AdministrativeStatus() string {
-	r := *o.AdministrativeStatusPtr
+
+	var r string
+	if o.AdministrativeStatusPtr == nil {
+		return r
+	}
+	r = *o.AdministrativeStatusPtr
+
 	return r
 }
 
@@ -104,7 +125,13 @@ func (o *NetInterfaceInfoType) SetAdministrativeStatus(newValue string) *NetInte
 
 // Comment is a 'getter' method
 func (o *NetInterfaceInfoType) Comment() string {
-	r := *o.CommentPtr
+
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
+
 	return r
 }
 
@@ -116,7 +143,13 @@ func (o *NetInterfaceInfoType) SetComment(newValue string) *NetInterfaceInfoType
 
 // CurrentNode is a 'getter' method
 func (o *NetInterfaceInfoType) CurrentNode() string {
-	r := *o.CurrentNodePtr
+
+	var r string
+	if o.CurrentNodePtr == nil {
+		return r
+	}
+	r = *o.CurrentNodePtr
+
 	return r
 }
 
@@ -128,7 +161,13 @@ func (o *NetInterfaceInfoType) SetCurrentNode(newValue string) *NetInterfaceInfo
 
 // CurrentPort is a 'getter' method
 func (o *NetInterfaceInfoType) CurrentPort() string {
-	r := *o.CurrentPortPtr
+
+	var r string
+	if o.CurrentPortPtr == nil {
+		return r
+	}
+	r = *o.CurrentPortPtr
+
 	return r
 }
 
@@ -160,7 +199,13 @@ func (o *NetInterfaceInfoTypeDataProtocols) SetDataProtocol(newValue []DataProto
 
 // DataProtocols is a 'getter' method
 func (o *NetInterfaceInfoType) DataProtocols() NetInterfaceInfoTypeDataProtocols {
-	r := *o.DataProtocolsPtr
+
+	var r NetInterfaceInfoTypeDataProtocols
+	if o.DataProtocolsPtr == nil {
+		return r
+	}
+	r = *o.DataProtocolsPtr
+
 	return r
 }
 
@@ -172,7 +217,13 @@ func (o *NetInterfaceInfoType) SetDataProtocols(newValue NetInterfaceInfoTypeDat
 
 // DnsDomainName is a 'getter' method
 func (o *NetInterfaceInfoType) DnsDomainName() DnsZoneType {
-	r := *o.DnsDomainNamePtr
+
+	var r DnsZoneType
+	if o.DnsDomainNamePtr == nil {
+		return r
+	}
+	r = *o.DnsDomainNamePtr
+
 	return r
 }
 
@@ -184,7 +235,13 @@ func (o *NetInterfaceInfoType) SetDnsDomainName(newValue DnsZoneType) *NetInterf
 
 // ExtendedStatus is a 'getter' method
 func (o *NetInterfaceInfoType) ExtendedStatus() string {
-	r := *o.ExtendedStatusPtr
+
+	var r string
+	if o.ExtendedStatusPtr == nil {
+		return r
+	}
+	r = *o.ExtendedStatusPtr
+
 	return r
 }
 
@@ -196,7 +253,13 @@ func (o *NetInterfaceInfoType) SetExtendedStatus(newValue string) *NetInterfaceI
 
 // FailoverGroup is a 'getter' method
 func (o *NetInterfaceInfoType) FailoverGroup() FailoverGroupType {
-	r := *o.FailoverGroupPtr
+
+	var r FailoverGroupType
+	if o.FailoverGroupPtr == nil {
+		return r
+	}
+	r = *o.FailoverGroupPtr
+
 	return r
 }
 
@@ -208,7 +271,13 @@ func (o *NetInterfaceInfoType) SetFailoverGroup(newValue FailoverGroupType) *Net
 
 // FailoverPolicy is a 'getter' method
 func (o *NetInterfaceInfoType) FailoverPolicy() string {
-	r := *o.FailoverPolicyPtr
+
+	var r string
+	if o.FailoverPolicyPtr == nil {
+		return r
+	}
+	r = *o.FailoverPolicyPtr
+
 	return r
 }
 
@@ -220,7 +289,13 @@ func (o *NetInterfaceInfoType) SetFailoverPolicy(newValue string) *NetInterfaceI
 
 // FirewallPolicy is a 'getter' method
 func (o *NetInterfaceInfoType) FirewallPolicy() string {
-	r := *o.FirewallPolicyPtr
+
+	var r string
+	if o.FirewallPolicyPtr == nil {
+		return r
+	}
+	r = *o.FirewallPolicyPtr
+
 	return r
 }
 
@@ -232,7 +307,13 @@ func (o *NetInterfaceInfoType) SetFirewallPolicy(newValue string) *NetInterfaceI
 
 // ForceSubnetAssociation is a 'getter' method
 func (o *NetInterfaceInfoType) ForceSubnetAssociation() bool {
-	r := *o.ForceSubnetAssociationPtr
+
+	var r bool
+	if o.ForceSubnetAssociationPtr == nil {
+		return r
+	}
+	r = *o.ForceSubnetAssociationPtr
+
 	return r
 }
 
@@ -244,7 +325,13 @@ func (o *NetInterfaceInfoType) SetForceSubnetAssociation(newValue bool) *NetInte
 
 // HomeNode is a 'getter' method
 func (o *NetInterfaceInfoType) HomeNode() string {
-	r := *o.HomeNodePtr
+
+	var r string
+	if o.HomeNodePtr == nil {
+		return r
+	}
+	r = *o.HomeNodePtr
+
 	return r
 }
 
@@ -256,7 +343,13 @@ func (o *NetInterfaceInfoType) SetHomeNode(newValue string) *NetInterfaceInfoTyp
 
 // HomePort is a 'getter' method
 func (o *NetInterfaceInfoType) HomePort() string {
-	r := *o.HomePortPtr
+
+	var r string
+	if o.HomePortPtr == nil {
+		return r
+	}
+	r = *o.HomePortPtr
+
 	return r
 }
 
@@ -268,7 +361,13 @@ func (o *NetInterfaceInfoType) SetHomePort(newValue string) *NetInterfaceInfoTyp
 
 // InterfaceName is a 'getter' method
 func (o *NetInterfaceInfoType) InterfaceName() string {
-	r := *o.InterfaceNamePtr
+
+	var r string
+	if o.InterfaceNamePtr == nil {
+		return r
+	}
+	r = *o.InterfaceNamePtr
+
 	return r
 }
 
@@ -280,7 +379,13 @@ func (o *NetInterfaceInfoType) SetInterfaceName(newValue string) *NetInterfaceIn
 
 // Ipspace is a 'getter' method
 func (o *NetInterfaceInfoType) Ipspace() string {
-	r := *o.IpspacePtr
+
+	var r string
+	if o.IpspacePtr == nil {
+		return r
+	}
+	r = *o.IpspacePtr
+
 	return r
 }
 
@@ -292,7 +397,13 @@ func (o *NetInterfaceInfoType) SetIpspace(newValue string) *NetInterfaceInfoType
 
 // IsAutoRevert is a 'getter' method
 func (o *NetInterfaceInfoType) IsAutoRevert() bool {
-	r := *o.IsAutoRevertPtr
+
+	var r bool
+	if o.IsAutoRevertPtr == nil {
+		return r
+	}
+	r = *o.IsAutoRevertPtr
+
 	return r
 }
 
@@ -304,7 +415,13 @@ func (o *NetInterfaceInfoType) SetIsAutoRevert(newValue bool) *NetInterfaceInfoT
 
 // IsDnsUpdateEnabled is a 'getter' method
 func (o *NetInterfaceInfoType) IsDnsUpdateEnabled() bool {
-	r := *o.IsDnsUpdateEnabledPtr
+
+	var r bool
+	if o.IsDnsUpdateEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsDnsUpdateEnabledPtr
+
 	return r
 }
 
@@ -316,7 +433,13 @@ func (o *NetInterfaceInfoType) SetIsDnsUpdateEnabled(newValue bool) *NetInterfac
 
 // IsHome is a 'getter' method
 func (o *NetInterfaceInfoType) IsHome() bool {
-	r := *o.IsHomePtr
+
+	var r bool
+	if o.IsHomePtr == nil {
+		return r
+	}
+	r = *o.IsHomePtr
+
 	return r
 }
 
@@ -328,7 +451,13 @@ func (o *NetInterfaceInfoType) SetIsHome(newValue bool) *NetInterfaceInfoType {
 
 // IsIpv4LinkLocal is a 'getter' method
 func (o *NetInterfaceInfoType) IsIpv4LinkLocal() bool {
-	r := *o.IsIpv4LinkLocalPtr
+
+	var r bool
+	if o.IsIpv4LinkLocalPtr == nil {
+		return r
+	}
+	r = *o.IsIpv4LinkLocalPtr
+
 	return r
 }
 
@@ -338,9 +467,33 @@ func (o *NetInterfaceInfoType) SetIsIpv4LinkLocal(newValue bool) *NetInterfaceIn
 	return o
 }
 
+// IsVip is a 'getter' method
+func (o *NetInterfaceInfoType) IsVip() bool {
+
+	var r bool
+	if o.IsVipPtr == nil {
+		return r
+	}
+	r = *o.IsVipPtr
+
+	return r
+}
+
+// SetIsVip is a fluent style 'setter' method that can be chained
+func (o *NetInterfaceInfoType) SetIsVip(newValue bool) *NetInterfaceInfoType {
+	o.IsVipPtr = &newValue
+	return o
+}
+
 // LifUuid is a 'getter' method
 func (o *NetInterfaceInfoType) LifUuid() UuidType {
-	r := *o.LifUuidPtr
+
+	var r UuidType
+	if o.LifUuidPtr == nil {
+		return r
+	}
+	r = *o.LifUuidPtr
+
 	return r
 }
 
@@ -352,7 +505,13 @@ func (o *NetInterfaceInfoType) SetLifUuid(newValue UuidType) *NetInterfaceInfoTy
 
 // ListenForDnsQuery is a 'getter' method
 func (o *NetInterfaceInfoType) ListenForDnsQuery() bool {
-	r := *o.ListenForDnsQueryPtr
+
+	var r bool
+	if o.ListenForDnsQueryPtr == nil {
+		return r
+	}
+	r = *o.ListenForDnsQueryPtr
+
 	return r
 }
 
@@ -364,7 +523,13 @@ func (o *NetInterfaceInfoType) SetListenForDnsQuery(newValue bool) *NetInterface
 
 // Netmask is a 'getter' method
 func (o *NetInterfaceInfoType) Netmask() IpAddressType {
-	r := *o.NetmaskPtr
+
+	var r IpAddressType
+	if o.NetmaskPtr == nil {
+		return r
+	}
+	r = *o.NetmaskPtr
+
 	return r
 }
 
@@ -376,7 +541,13 @@ func (o *NetInterfaceInfoType) SetNetmask(newValue IpAddressType) *NetInterfaceI
 
 // NetmaskLength is a 'getter' method
 func (o *NetInterfaceInfoType) NetmaskLength() int {
-	r := *o.NetmaskLengthPtr
+
+	var r int
+	if o.NetmaskLengthPtr == nil {
+		return r
+	}
+	r = *o.NetmaskLengthPtr
+
 	return r
 }
 
@@ -388,7 +559,13 @@ func (o *NetInterfaceInfoType) SetNetmaskLength(newValue int) *NetInterfaceInfoT
 
 // OperationalStatus is a 'getter' method
 func (o *NetInterfaceInfoType) OperationalStatus() string {
-	r := *o.OperationalStatusPtr
+
+	var r string
+	if o.OperationalStatusPtr == nil {
+		return r
+	}
+	r = *o.OperationalStatusPtr
+
 	return r
 }
 
@@ -398,9 +575,33 @@ func (o *NetInterfaceInfoType) SetOperationalStatus(newValue string) *NetInterfa
 	return o
 }
 
+// ProbePort is a 'getter' method
+func (o *NetInterfaceInfoType) ProbePort() int {
+
+	var r int
+	if o.ProbePortPtr == nil {
+		return r
+	}
+	r = *o.ProbePortPtr
+
+	return r
+}
+
+// SetProbePort is a fluent style 'setter' method that can be chained
+func (o *NetInterfaceInfoType) SetProbePort(newValue int) *NetInterfaceInfoType {
+	o.ProbePortPtr = &newValue
+	return o
+}
+
 // Role is a 'getter' method
 func (o *NetInterfaceInfoType) Role() string {
-	r := *o.RolePtr
+
+	var r string
+	if o.RolePtr == nil {
+		return r
+	}
+	r = *o.RolePtr
+
 	return r
 }
 
@@ -411,20 +612,90 @@ func (o *NetInterfaceInfoType) SetRole(newValue string) *NetInterfaceInfoType {
 }
 
 // RoutingGroupName is a 'getter' method
-func (o *NetInterfaceInfoType) RoutingGroupName() RoutingGroupTypeType {
-	r := *o.RoutingGroupNamePtr
+func (o *NetInterfaceInfoType) RoutingGroupName() string {
+
+	var r string
+	if o.RoutingGroupNamePtr == nil {
+		return r
+	}
+	r = *o.RoutingGroupNamePtr
+
 	return r
 }
 
 // SetRoutingGroupName is a fluent style 'setter' method that can be chained
-func (o *NetInterfaceInfoType) SetRoutingGroupName(newValue RoutingGroupTypeType) *NetInterfaceInfoType {
+func (o *NetInterfaceInfoType) SetRoutingGroupName(newValue string) *NetInterfaceInfoType {
 	o.RoutingGroupNamePtr = &newValue
+	return o
+}
+
+type LifServiceNameType string
+
+// NetInterfaceInfoTypeServiceNames is a wrapper
+type NetInterfaceInfoTypeServiceNames struct {
+	XMLName           xml.Name             `xml:"service-names"`
+	LifServiceNamePtr []LifServiceNameType `xml:"lif-service-name"`
+}
+
+// LifServiceName is a 'getter' method
+func (o *NetInterfaceInfoTypeServiceNames) LifServiceName() []LifServiceNameType {
+	r := o.LifServiceNamePtr
+	return r
+}
+
+// SetLifServiceName is a fluent style 'setter' method that can be chained
+func (o *NetInterfaceInfoTypeServiceNames) SetLifServiceName(newValue []LifServiceNameType) *NetInterfaceInfoTypeServiceNames {
+	newSlice := make([]LifServiceNameType, len(newValue))
+	copy(newSlice, newValue)
+	o.LifServiceNamePtr = newSlice
+	return o
+}
+
+// ServiceNames is a 'getter' method
+func (o *NetInterfaceInfoType) ServiceNames() NetInterfaceInfoTypeServiceNames {
+
+	var r NetInterfaceInfoTypeServiceNames
+	if o.ServiceNamesPtr == nil {
+		return r
+	}
+	r = *o.ServiceNamesPtr
+
+	return r
+}
+
+// SetServiceNames is a fluent style 'setter' method that can be chained
+func (o *NetInterfaceInfoType) SetServiceNames(newValue NetInterfaceInfoTypeServiceNames) *NetInterfaceInfoType {
+	o.ServiceNamesPtr = &newValue
+	return o
+}
+
+// ServicePolicy is a 'getter' method
+func (o *NetInterfaceInfoType) ServicePolicy() string {
+
+	var r string
+	if o.ServicePolicyPtr == nil {
+		return r
+	}
+	r = *o.ServicePolicyPtr
+
+	return r
+}
+
+// SetServicePolicy is a fluent style 'setter' method that can be chained
+func (o *NetInterfaceInfoType) SetServicePolicy(newValue string) *NetInterfaceInfoType {
+	o.ServicePolicyPtr = &newValue
 	return o
 }
 
 // SubnetName is a 'getter' method
 func (o *NetInterfaceInfoType) SubnetName() SubnetNameType {
-	r := *o.SubnetNamePtr
+
+	var r SubnetNameType
+	if o.SubnetNamePtr == nil {
+		return r
+	}
+	r = *o.SubnetNamePtr
+
 	return r
 }
 
@@ -436,7 +707,13 @@ func (o *NetInterfaceInfoType) SetSubnetName(newValue SubnetNameType) *NetInterf
 
 // UseFailoverGroup is a 'getter' method
 func (o *NetInterfaceInfoType) UseFailoverGroup() string {
-	r := *o.UseFailoverGroupPtr
+
+	var r string
+	if o.UseFailoverGroupPtr == nil {
+		return r
+	}
+	r = *o.UseFailoverGroupPtr
+
 	return r
 }
 
@@ -448,7 +725,13 @@ func (o *NetInterfaceInfoType) SetUseFailoverGroup(newValue string) *NetInterfac
 
 // Vserver is a 'getter' method
 func (o *NetInterfaceInfoType) Vserver() string {
-	r := *o.VserverPtr
+
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
+
 	return r
 }
 
@@ -460,7 +743,13 @@ func (o *NetInterfaceInfoType) SetVserver(newValue string) *NetInterfaceInfoType
 
 // Wwpn is a 'getter' method
 func (o *NetInterfaceInfoType) Wwpn() string {
-	r := *o.WwpnPtr
+
+	var r string
+	if o.WwpnPtr == nil {
+		return r
+	}
+	r = *o.WwpnPtr
+
 	return r
 }
 

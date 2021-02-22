@@ -2,9 +2,8 @@ package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // NetInterfaceGetIterRequest is a structure to represent a net-interface-get-iter Request ZAPI object
@@ -177,7 +176,13 @@ func (o NetInterfaceGetIterRequestDesiredAttributes) String() string {
 
 // NetInterfaceInfo is a 'getter' method
 func (o *NetInterfaceGetIterRequestDesiredAttributes) NetInterfaceInfo() NetInterfaceInfoType {
-	r := *o.NetInterfaceInfoPtr
+
+	var r NetInterfaceInfoType
+	if o.NetInterfaceInfoPtr == nil {
+		return r
+	}
+	r = *o.NetInterfaceInfoPtr
+
 	return r
 }
 
@@ -189,7 +194,13 @@ func (o *NetInterfaceGetIterRequestDesiredAttributes) SetNetInterfaceInfo(newVal
 
 // DesiredAttributes is a 'getter' method
 func (o *NetInterfaceGetIterRequest) DesiredAttributes() NetInterfaceGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+
+	var r NetInterfaceGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
+
 	return r
 }
 
@@ -201,7 +212,13 @@ func (o *NetInterfaceGetIterRequest) SetDesiredAttributes(newValue NetInterfaceG
 
 // MaxRecords is a 'getter' method
 func (o *NetInterfaceGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
+
 	return r
 }
 
@@ -224,7 +241,13 @@ func (o NetInterfaceGetIterRequestQuery) String() string {
 
 // NetInterfaceInfo is a 'getter' method
 func (o *NetInterfaceGetIterRequestQuery) NetInterfaceInfo() NetInterfaceInfoType {
-	r := *o.NetInterfaceInfoPtr
+
+	var r NetInterfaceInfoType
+	if o.NetInterfaceInfoPtr == nil {
+		return r
+	}
+	r = *o.NetInterfaceInfoPtr
+
 	return r
 }
 
@@ -236,7 +259,13 @@ func (o *NetInterfaceGetIterRequestQuery) SetNetInterfaceInfo(newValue NetInterf
 
 // Query is a 'getter' method
 func (o *NetInterfaceGetIterRequest) Query() NetInterfaceGetIterRequestQuery {
-	r := *o.QueryPtr
+
+	var r NetInterfaceGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
+
 	return r
 }
 
@@ -248,7 +277,13 @@ func (o *NetInterfaceGetIterRequest) SetQuery(newValue NetInterfaceGetIterReques
 
 // Tag is a 'getter' method
 func (o *NetInterfaceGetIterRequest) Tag() string {
-	r := *o.TagPtr
+
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
+
 	return r
 }
 
@@ -299,7 +334,13 @@ func (o *NetInterfaceGetIterResponseResultAttributesList) setValues(newValue []N
 
 // AttributesList is a 'getter' method
 func (o *NetInterfaceGetIterResponseResult) AttributesList() NetInterfaceGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+
+	var r NetInterfaceGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
+
 	return r
 }
 
@@ -311,7 +352,13 @@ func (o *NetInterfaceGetIterResponseResult) SetAttributesList(newValue NetInterf
 
 // NextTag is a 'getter' method
 func (o *NetInterfaceGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
+
 	return r
 }
 
@@ -323,7 +370,13 @@ func (o *NetInterfaceGetIterResponseResult) SetNextTag(newValue string) *NetInte
 
 // NumRecords is a 'getter' method
 func (o *NetInterfaceGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
+
 	return r
 }
 

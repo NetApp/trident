@@ -341,6 +341,7 @@ const (
 	LunGeometrySkip           feature = "LUN_GEOMETRY_SKIP"
 	FabricPoolForSVMDR        feature = "FABRICPOOL_FOR_SVMDR"
 	QosPolicies               feature = "QOS_POLICIES"
+	LIFServices               feature = "LIF_SERVICES"
 )
 
 // Indicate the minimum Ontapi version for each feature here
@@ -353,6 +354,7 @@ var features = map[feature]*utils.Version{
 	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	FabricPoolForSVMDR:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	QosPolicies:               utils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
+	LIFServices:               utils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
