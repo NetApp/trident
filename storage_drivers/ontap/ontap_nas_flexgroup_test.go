@@ -12,16 +12,13 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
-func newTestOntapNASFGDriver(showSensitive *bool) *NASFlexGroupStorageDriver {
+func newTestOntapNASFGDriver() *NASFlexGroupStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.ManagementLIF = "127.0.0.1"
 	config.SVM = "SVM1"
@@ -60,9 +57,7 @@ func newTestOntapNASFGDriver(showSensitive *bool) *NASFlexGroupStorageDriver {
 func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
 
 	var ontapNasFgDrivers = []NASFlexGroupStorageDriver{
-		*newTestOntapNASFGDriver(&[]bool{true}[0]),
-		*newTestOntapNASFGDriver(&[]bool{false}[0]),
-		*newTestOntapNASFGDriver(nil),
+		*newTestOntapNASFGDriver(),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -70,10 +65,6 @@ func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
 		"password":        "password1!",
 		"client username": "client_username",
 		"client password": "client_password",
-	}
-
-	sensitiveExcludeList := map[string]string{
-		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
@@ -89,39 +80,18 @@ func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, ontapNasFgDriver := range ontapNasFgDrivers {
-		sensitive, ok := ontapNasFgDriver.Config.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, ontapNasFgDriver.String(), val,
+				"ontap-nas-fg driver does not contain %v", key)
+			assert.Contains(t, ontapNasFgDriver.GoString(), val,
+				"ontap-nas-fg driver does not contain %v", key)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, ontapNasFgDriver.String(), val,
-					"ontap-nas-fg driver does not contain %v", key)
-				assert.Contains(t, ontapNasFgDriver.GoString(), val,
-					"ontap-nas-fg driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, ontapNasFgDriver.String(), val,
-					"ontap-nas-fg driver contains %v", key)
-				assert.NotContains(t, ontapNasFgDriver.GoString(), val,
-					"ontap-nas-fg driver contains %v", key)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, ontapNasFgDriver.String(), val,
-					"ontap-nas-fg driver does not contain %v", key)
-				assert.Contains(t, ontapNasFgDriver.GoString(), val,
-					"ontap-nas-fg driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, ontapNasFgDriver.String(), val,
-					"ontap-nas-fg driver redacts %v", key)
-				assert.NotContains(t, ontapNasFgDriver.GoString(), val,
-					"ontap-nas-fg driver redacts %v", key)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, ontapNasFgDriver.String(), val,
+				"ontap-nas-fg driver contains %v", key)
+			assert.NotContains(t, ontapNasFgDriver.GoString(), val,
+				"ontap-nas-fg driver contains %v", key)
 		}
 	}
 }

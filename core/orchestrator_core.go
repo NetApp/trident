@@ -1039,9 +1039,6 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	}
 
 	logFields := log.Fields{"backendName": backendName, "backendUUID": backendUUID, "configJSON": "<suppressed>"}
-	if originalBackend.GetDebugTraceFlags(ctx)["sensitive"] {
-		logFields["configJSON"] = configJSON
-	}
 
 	Logc(ctx).WithFields(log.Fields{
 		"originalBackend.Name":        originalBackend.Name,

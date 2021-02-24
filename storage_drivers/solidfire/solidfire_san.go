@@ -1809,8 +1809,7 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 
 // Implement stringer interface for the SANStorageDriver driver
 func (d SANStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
 }
 
 // Implement GoStringer interface for the SANStorageDriver driver

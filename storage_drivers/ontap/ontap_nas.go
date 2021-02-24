@@ -913,8 +913,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 
 // String makes NASStorageDriver satisfy the Stringer interface.
 func (d NASStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASStorageDriver satisfy the GoStringer interface.

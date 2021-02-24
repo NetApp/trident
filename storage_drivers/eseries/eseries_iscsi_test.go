@@ -95,53 +95,23 @@ func TestEseriesSANStorageDriverConfigString(t *testing.T) {
 	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
 			"method":    true,
-			"sensitive": true,
 		}),
-		*newTestEseriesSANDriver(map[string]bool{
-			"method":    true,
-			"sensitive": false,
-		}),
-		*newTestEseriesSANDriver(map[string]bool{}),
 	}
 
 	for _, toString := range []func(SANStorageDriver) string{callString, callGoString} {
-
 		for _, eseriesSANDriver := range eseriesSANDrivers {
-			sensitive, ok := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
 			eseriesSANDriver.API = newTestEseriesSANDriverAPI(&eseriesSANDriver.Config)
 
-			switch {
-
-			case !ok:
-				assert.Contains(t, toString(eseriesSANDriver), "<REDACTED>",
-					"Eseries driver does not contain <REDACTED>")
-				assert.Contains(t, toString(eseriesSANDriver), "API:<REDACTED>",
-					"Eseries driver does not redact API information")
-				assert.NotContains(t, toString(eseriesSANDriver), Username,
-					"Eseries driver contains  username")
-				assert.NotContains(t, toString(eseriesSANDriver), Password,
-					"Eseries driver contains password")
-				assert.NotContains(t, toString(eseriesSANDriver), PasswordArray,
-					"Eseries driver contains password array")
-			case ok && sensitive:
-				assert.Contains(t, toString(eseriesSANDriver), Username,
-					"Eseries driver does not contain username")
-				assert.Contains(t, toString(eseriesSANDriver), Password,
-					"Eseries driver does not contain password")
-				assert.Contains(t, toString(eseriesSANDriver), PasswordArray,
-					"Eseries driver does not contain password array")
-			case ok && !sensitive:
-				assert.Contains(t, toString(eseriesSANDriver), "<REDACTED>",
-					"Eseries driver does not contain <REDACTED>")
-				assert.Contains(t, toString(eseriesSANDriver), "API:<REDACTED>",
-					"Eseries driver does not redact API information")
-				assert.NotContains(t, toString(eseriesSANDriver), Username,
-					"Eseries driver contains  username")
-				assert.NotContains(t, toString(eseriesSANDriver), Password,
-					"Eseries driver contains password")
-				assert.NotContains(t, toString(eseriesSANDriver), PasswordArray,
-					"Eseries driver contains password array")
-			}
+			assert.Contains(t, toString(eseriesSANDriver), "<REDACTED>",
+				"Eseries driver does not contain <REDACTED>")
+			assert.Contains(t, toString(eseriesSANDriver), "API:<REDACTED>",
+				"Eseries driver does not redact API information")
+			assert.NotContains(t, toString(eseriesSANDriver), Username,
+				"Eseries driver contains  username")
+			assert.NotContains(t, toString(eseriesSANDriver), Password,
+				"Eseries driver contains password")
+			assert.NotContains(t, toString(eseriesSANDriver), PasswordArray,
+				"Eseries driver contains password array")
 		}
 	}
 }
@@ -165,12 +135,6 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
 			"method":    true,
-			"sensitive": true,
-			"api":       true,
-		}),
-		*newTestEseriesSANDriver(map[string]bool{
-			"method":    true,
-			"sensitive": false,
 			"api":       true,
 		}),
 		*newTestEseriesSANDriver(map[string]bool{}),
@@ -203,7 +167,6 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 
 	for _, eseriesSANDriver := range eseriesSANDrivers {
 		api := eseriesSANDriver.Config.DebugTraceFlags["api"]
-		sensitive := eseriesSANDriver.Config.DebugTraceFlags["sensitive"]
 		server.Config.TLSConfig = &tls.Config{
 			InsecureSkipVerify: !eseriesSANDriver.Config.WebProxyVerifyTLS,
 		}
@@ -218,16 +181,12 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 		})
 
 		switch {
-		case api && !sensitive:
+		case api:
 			assert.NotContains(t, output, "RaNd0M", "Logs contain sensitive information")
 			assert.Contains(t, output, "<suppressed>", "Logs do not suppress sensitive information")
 
 		case !api:
 			assert.Empty(t, output)
-
-		case api && sensitive:
-			assert.Contains(t, output, "RaNd0M", "Logs do not print sensitive information")
-			assert.NotContains(t, output, "<suppressed>", "Logs suppress sensitive information")
 		}
 	}
 }

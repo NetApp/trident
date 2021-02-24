@@ -22,17 +22,13 @@ const (
 	ClientX509CertURL = "https://random.com/x509Cert"
 )
 
-func newTestGCPDriver(showSensitive *bool) *NFSStorageDriver {
+func newTestGCPDriver() *NFSStorageDriver {
 	config := &drivers.GCPNFSStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	APIKey := drivers.GCPPrivateKey{
 		Type:                    "random_account",
@@ -87,74 +83,32 @@ func callGoString(s NFSStorageDriver) string {
 func TestGCPStorageDriverConfigString(t *testing.T) {
 
 	var GCPDrivers = []NFSStorageDriver{
-		*newTestGCPDriver(&[]bool{true}[0]),
-		*newTestGCPDriver(&[]bool{false}[0]),
-		*newTestGCPDriver(nil),
+		*newTestGCPDriver(),
 	}
 
 	for _, toString := range []func(NFSStorageDriver) string{callString, callGoString} {
 
 		for _, GCPDriver := range GCPDrivers {
-			sensitive, ok := GCPDriver.Config.DebugTraceFlags["sensitive"]
-
-			switch {
-
-			case !ok:
-				assert.Contains(t, toString(GCPDriver), "<REDACTED>",
-					"GCP driver does not contain <REDACTED>")
-				assert.Contains(t, toString(GCPDriver), "API:<REDACTED>",
-					"GCP driver does not redact API information")
-				assert.Contains(t, toString(GCPDriver), "ProjectNumber:<REDACTED>",
-					"GCP driver does not redact Project Number")
-				assert.Contains(t, toString(GCPDriver), "APIKey:<REDACTED>",
-					"GCP driver does not redact APIKey")
-				assert.NotContains(t, toString(GCPDriver), ProjectNumber,
-					"GCP driver contains project number")
-				assert.NotContains(t, toString(GCPDriver), PrivateKeyId,
-					"GCP driver contains Private Key Id")
-				assert.NotContains(t, toString(GCPDriver), PrivateKey,
-					"GCP driver contains Private Key")
-				assert.NotContains(t, toString(GCPDriver), ClientEmail,
-					"GCP driver contains Client Email")
-				assert.NotContains(t, toString(GCPDriver), ClientID,
-					"GCP driver contains Client ID")
-				assert.NotContains(t, toString(GCPDriver), ClientX509CertURL,
-					"GCP driver contains Client X509 Cert URL")
-			case ok && sensitive:
-				assert.Contains(t, toString(GCPDriver), ProjectNumber,
-					"GCP driver does not contains project number")
-				assert.Contains(t, toString(GCPDriver), PrivateKeyId,
-					"GCP driver does not contains Private Key Id")
-				assert.Contains(t, toString(GCPDriver), PrivateKey,
-					"GCP driver does not contains Private Key")
-				assert.Contains(t, toString(GCPDriver), ClientEmail,
-					"GCP driver does not contains Client Email")
-				assert.Contains(t, toString(GCPDriver), ClientID,
-					"GCP driver does not contains Client ID")
-				assert.Contains(t, toString(GCPDriver), ClientX509CertURL,
-					"GCP driver does not contains Client X509 Cert URL")
-			case ok && !sensitive:
-				assert.Contains(t, toString(GCPDriver), "<REDACTED>",
-					"GCP driver does not contain <REDACTED>")
-				assert.Contains(t, toString(GCPDriver), "API:<REDACTED>",
-					"GCP driver does not redact API information")
-				assert.Contains(t, toString(GCPDriver), "ProjectNumber:<REDACTED>",
-					"GCP driver does not redact Project Number")
-				assert.Contains(t, toString(GCPDriver), "APIKey:<REDACTED>",
-					"GCP driver does not redact APIKey")
-				assert.NotContains(t, toString(GCPDriver), ProjectNumber,
-					"GCP driver contains project number")
-				assert.NotContains(t, toString(GCPDriver), PrivateKeyId,
-					"GCP driver contains Private Key Id")
-				assert.NotContains(t, toString(GCPDriver), PrivateKey,
-					"GCP driver contains Private Key")
-				assert.NotContains(t, toString(GCPDriver), ClientEmail,
-					"GCP driver contains Client Email")
-				assert.NotContains(t, toString(GCPDriver), ClientID,
-					"GCP driver contains Client ID")
-				assert.NotContains(t, toString(GCPDriver), ClientX509CertURL,
-					"GCP driver contains Client X509 Cert URL")
-			}
+			assert.Contains(t, toString(GCPDriver), "<REDACTED>",
+				"GCP driver does not contain <REDACTED>")
+			assert.Contains(t, toString(GCPDriver), "API:<REDACTED>",
+				"GCP driver does not redact API information")
+			assert.Contains(t, toString(GCPDriver), "ProjectNumber:<REDACTED>",
+				"GCP driver does not redact Project Number")
+			assert.Contains(t, toString(GCPDriver), "APIKey:<REDACTED>",
+				"GCP driver does not redact APIKey")
+			assert.NotContains(t, toString(GCPDriver), ProjectNumber,
+				"GCP driver contains project number")
+			assert.NotContains(t, toString(GCPDriver), PrivateKeyId,
+				"GCP driver contains Private Key Id")
+			assert.NotContains(t, toString(GCPDriver), PrivateKey,
+				"GCP driver contains Private Key")
+			assert.NotContains(t, toString(GCPDriver), ClientEmail,
+				"GCP driver contains Client Email")
+			assert.NotContains(t, toString(GCPDriver), ClientID,
+				"GCP driver contains Client ID")
+			assert.NotContains(t, toString(GCPDriver), ClientX509CertURL,
+				"GCP driver contains Client X509 Cert URL")
 		}
 	}
 }

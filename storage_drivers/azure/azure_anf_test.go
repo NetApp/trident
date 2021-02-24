@@ -20,17 +20,13 @@ const (
 	ClientSecret   = "client-secret-23456789876454321"
 )
 
-func newTestANFDriver(showSensitive *bool) *NFSStorageDriver {
+func newTestANFDriver() *NFSStorageDriver {
 	config := &drivers.AzureNFSStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.SubscriptionID = SubscriptionID
 	config.TenantID = TenantID
@@ -69,70 +65,31 @@ func callGoString(s NFSStorageDriver) string {
 func TestANFStorageDriverConfigString(t *testing.T) {
 
 	var ANFDrivers = []NFSStorageDriver{
-		*newTestANFDriver(&[]bool{true}[0]),
-		*newTestANFDriver(&[]bool{false}[0]),
-		*newTestANFDriver(nil),
+		*newTestANFDriver(),
 	}
 
 	for _, toString := range []func(NFSStorageDriver) string{callString, callGoString} {
-
 		for _, ANFDriver := range ANFDrivers {
-			sensitive, ok := ANFDriver.Config.DebugTraceFlags["sensitive"]
-
-			switch {
-
-			case !ok:
-				assert.Contains(t, toString(ANFDriver), "<REDACTED>",
-					"ANF driver does not contain <REDACTED>")
-				assert.Contains(t, toString(ANFDriver), "SDK:<REDACTED>",
-					"ANF driver does not redact SDK information")
-				assert.Contains(t, toString(ANFDriver), "SubscriptionID:<REDACTED>",
-					"ANF driver does not redact API URL")
-				assert.Contains(t, toString(ANFDriver), "TenantID:<REDACTED>",
-					"ANF driver does not redact Tenant ID")
-				assert.Contains(t, toString(ANFDriver), "ClientID:<REDACTED>",
-					"ANF driver does not redact Client ID")
-				assert.Contains(t, toString(ANFDriver), "ClientSecret:<REDACTED>",
-					"ANF driver does not redact Client Secret")
-				assert.NotContains(t, toString(ANFDriver), SubscriptionID,
-					"ANF driver contains Subscription ID")
-				assert.NotContains(t, toString(ANFDriver), TenantID,
-					"ANF driver contains Tenant ID")
-				assert.NotContains(t, toString(ANFDriver), ClientID,
-					"ANF driver contains Client ID")
-				assert.NotContains(t, toString(ANFDriver), ClientSecret,
-					"ANF driver contains Client Secret")
-			case ok && sensitive:
-				assert.Contains(t, toString(ANFDriver), SubscriptionID,
-					"ANF driver does not contains Subscription ID")
-				assert.Contains(t, toString(ANFDriver), TenantID,
-					"ANF driver does not contains Tenant ID")
-				assert.Contains(t, toString(ANFDriver), ClientID,
-					"ANF driver does not contains Client ID")
-				assert.Contains(t, toString(ANFDriver), ClientSecret,
-					"ANF driver does not contains Client Secret")
-			case ok && !sensitive:
-				assert.Contains(t, toString(ANFDriver), "<REDACTED>",
-					"ANF driver does not contain <REDACTED>")
-				assert.Contains(t, toString(ANFDriver), "SDK:<REDACTED>",
-					"ANF driver does not redact SDK information")
-				assert.Contains(t, toString(ANFDriver), "SubscriptionID:<REDACTED>",
-					"ANF driver does not redact API URL")
-				assert.Contains(t, toString(ANFDriver), "TenantID:<REDACTED>",
-					"ANF driver does not redact Tenant ID")
-				assert.Contains(t, toString(ANFDriver), "ClientID:<REDACTED>",
-					"ANF driver does not redact Client ID")
-				assert.Contains(t, toString(ANFDriver), "ClientSecret:<REDACTED>",
-					"ANF driver does not redact Client Secret")
-				assert.NotContains(t, toString(ANFDriver), SubscriptionID,
-					"ANF driver contains Subscription ID")
-				assert.NotContains(t, toString(ANFDriver), TenantID,
-					"ANF driver contains Tenant ID")
-				assert.NotContains(t, toString(ANFDriver), ClientID,
-					"ANF driver contains Client ID")
-				assert.NotContains(t, toString(ANFDriver), ClientSecret,
-					"ANF driver contains Client Secret")
-			}
+			assert.Contains(t, toString(ANFDriver), "<REDACTED>",
+				"ANF driver does not contain <REDACTED>")
+			assert.Contains(t, toString(ANFDriver), "SDK:<REDACTED>",
+				"ANF driver does not redact SDK information")
+			assert.Contains(t, toString(ANFDriver), "SubscriptionID:<REDACTED>",
+				"ANF driver does not redact API URL")
+			assert.Contains(t, toString(ANFDriver), "TenantID:<REDACTED>",
+				"ANF driver does not redact Tenant ID")
+			assert.Contains(t, toString(ANFDriver), "ClientID:<REDACTED>",
+				"ANF driver does not redact Client ID")
+			assert.Contains(t, toString(ANFDriver), "ClientSecret:<REDACTED>",
+				"ANF driver does not redact Client Secret")
+			assert.NotContains(t, toString(ANFDriver), SubscriptionID,
+				"ANF driver contains Subscription ID")
+			assert.NotContains(t, toString(ANFDriver), TenantID,
+				"ANF driver contains Tenant ID")
+			assert.NotContains(t, toString(ANFDriver), ClientID,
+				"ANF driver contains Client ID")
+			assert.NotContains(t, toString(ANFDriver), ClientSecret,
+				"ANF driver contains Client Secret")
 		}
 	}
 }

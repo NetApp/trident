@@ -1297,9 +1297,8 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 
 // Implement stringer interface for the E-Series driver
 func (d SANStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
 	// Cannot use GetExternalConfig as it contains log statements
-	return drivers.ToString(sensitive, &d, []string{"API"}, nil)
+	return drivers.ToString(&d, []string{"API"}, nil)
 }
 
 // Implement GoStringer interface for the E-Series driver

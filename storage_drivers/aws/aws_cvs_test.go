@@ -20,17 +20,13 @@ const (
 	ProxyURL  = "https://randomproxy.aws.com"
 )
 
-func newTestAWSDriver(showSensitive *bool) *NFSStorageDriver {
+func newTestAWSDriver() *NFSStorageDriver {
 	config := &drivers.AWSNFSStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.APIURL = APIURL
 	config.APIKey = APIKey
@@ -73,60 +69,27 @@ func callGoString(s NFSStorageDriver) string {
 func TestAWSStorageDriverConfigString(t *testing.T) {
 
 	var AWSDrivers = []NFSStorageDriver{
-		*newTestAWSDriver(&[]bool{true}[0]),
-		*newTestAWSDriver(&[]bool{false}[0]),
-		*newTestAWSDriver(nil),
+		*newTestAWSDriver(),
 	}
 
 	for _, toString := range []func(NFSStorageDriver) string{callString, callGoString} {
-
 		for _, AWSDriver := range AWSDrivers {
-			sensitive, ok := AWSDriver.Config.DebugTraceFlags["sensitive"]
-
-			switch {
-
-			case !ok:
-				assert.Contains(t, toString(AWSDriver), "<REDACTED>",
-					"AWS driver does not contain <REDACTED>")
-				assert.Contains(t, toString(AWSDriver), "API:<REDACTED>",
-					"AWS driver does not redact API information")
-				assert.Contains(t, toString(AWSDriver), "APIURL:<REDACTED>",
-					"AWS driver does not redact API URL")
-				assert.Contains(t, toString(AWSDriver), "APIKey:<REDACTED>",
-					"AWS driver does not redact APIKey")
-				assert.Contains(t, toString(AWSDriver), "SecretKey:<REDACTED>",
-					"AWS driver does not redact Secret Key")
-				assert.NotContains(t, toString(AWSDriver), APIURL,
-					"AWS driver contains API URL")
-				assert.NotContains(t, toString(AWSDriver), APIKey,
-					"AWS driver contains API Key ")
-				assert.NotContains(t, toString(AWSDriver), SecretKey,
-					"AWS driver contains Secret Key")
-			case ok && sensitive:
-				assert.Contains(t, toString(AWSDriver), APIURL,
-					"AWS driver does not contains API URL")
-				assert.Contains(t, toString(AWSDriver), APIKey,
-					"AWS driver does not contains API Key")
-				assert.Contains(t, toString(AWSDriver), SecretKey,
-					"AWS driver does not contains Secret Key")
-			case ok && !sensitive:
-				assert.Contains(t, toString(AWSDriver), "<REDACTED>",
-					"AWS driver does not contain <REDACTED>")
-				assert.Contains(t, toString(AWSDriver), "API:<REDACTED>",
-					"AWS driver does not redact API information")
-				assert.Contains(t, toString(AWSDriver), "APIURL:<REDACTED>",
-					"AWS driver does not redact API URL")
-				assert.Contains(t, toString(AWSDriver), "APIKey:<REDACTED>",
-					"AWS driver does not redact APIKey")
-				assert.Contains(t, toString(AWSDriver), "SecretKey:<REDACTED>",
-					"AWS driver does not redact Secret Key")
-				assert.NotContains(t, toString(AWSDriver), APIURL,
-					"AWS driver contains API URL")
-				assert.NotContains(t, toString(AWSDriver), APIKey,
-					"AWS driver contains API Key ")
-				assert.NotContains(t, toString(AWSDriver), SecretKey,
-					"AWS driver contains Secret Key")
-			}
+			assert.Contains(t, toString(AWSDriver), "<REDACTED>",
+				"AWS driver does not contain <REDACTED>")
+			assert.Contains(t, toString(AWSDriver), "API:<REDACTED>",
+				"AWS driver does not redact API information")
+			assert.Contains(t, toString(AWSDriver), "APIURL:<REDACTED>",
+				"AWS driver does not redact API URL")
+			assert.Contains(t, toString(AWSDriver), "APIKey:<REDACTED>",
+				"AWS driver does not redact APIKey")
+			assert.Contains(t, toString(AWSDriver), "SecretKey:<REDACTED>",
+				"AWS driver does not redact Secret Key")
+			assert.NotContains(t, toString(AWSDriver), APIURL,
+				"AWS driver contains API URL")
+			assert.NotContains(t, toString(AWSDriver), APIKey,
+				"AWS driver contains API Key ")
+			assert.NotContains(t, toString(AWSDriver), SecretKey,
+				"AWS driver contains Secret Key")
 		}
 	}
 }

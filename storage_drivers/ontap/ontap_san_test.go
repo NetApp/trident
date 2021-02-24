@@ -12,16 +12,13 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
-func newTestOntapSANDriver(showSensitive *bool) *SANStorageDriver {
+func newTestOntapSANDriver() *SANStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.ManagementLIF = "127.0.0.1"
 	config.SVM = "SVM1"
@@ -60,9 +57,7 @@ func newTestOntapSANDriver(showSensitive *bool) *SANStorageDriver {
 func TestOntapSanStorageDriverConfigString(t *testing.T) {
 
 	var ontapSanDrivers = []SANStorageDriver{
-		*newTestOntapSANDriver(&[]bool{true}[0]),
-		*newTestOntapSANDriver(&[]bool{false}[0]),
-		*newTestOntapSANDriver(nil),
+		*newTestOntapSANDriver(),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -70,10 +65,6 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 		"password":        "password1!",
 		"client username": "client_username",
 		"client password": "client_password",
-	}
-
-	sensitiveExcludeList := map[string]string{
-		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
@@ -89,39 +80,18 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, ontapSanDriver := range ontapSanDrivers {
-		sensitive, ok := ontapSanDriver.Config.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, ontapSanDriver.String(), val,
+				"ontap-san driver does not contain %v", key)
+			assert.Contains(t, ontapSanDriver.GoString(), val,
+				"ontap-san driver does not contain %v", key)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, ontapSanDriver.String(), val,
-					"ontap-san driver does not contain %v", key)
-				assert.Contains(t, ontapSanDriver.GoString(), val,
-					"ontap-san driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, ontapSanDriver.String(), val,
-					"ontap-san driver contains %v", key)
-				assert.NotContains(t, ontapSanDriver.GoString(), val,
-					"ontap-san driver contains %v", key)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, ontapSanDriver.String(), val,
-					"ontap-san driver does not contain %v", key)
-				assert.Contains(t, ontapSanDriver.GoString(), val,
-					"ontap-san driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, ontapSanDriver.String(), val,
-					"ontap-san driver redacts %v", key)
-				assert.NotContains(t, ontapSanDriver.GoString(), val,
-					"ontap-san driver redacts %v", key)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, ontapSanDriver.String(), val,
+				"ontap-san driver contains %v", key)
+			assert.NotContains(t, ontapSanDriver.GoString(), val,
+				"ontap-san driver contains %v", key)
 		}
 	}
 }

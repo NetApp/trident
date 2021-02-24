@@ -1233,8 +1233,7 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 
 // String makes SANStorageDriver satisfy the Stringer interface.
 func (d SANStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANStorageDriver satisfy the GoStringer interface.

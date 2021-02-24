@@ -78,8 +78,7 @@ type StorageDriver struct {
 
 // Implement Stringer interface for the FakeStorageDriver driver
 func (d StorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, []string{"Secret"}, nil)
+	return drivers.ToString(&d, []string{"Secret"}, nil)
 }
 
 // Implement GoStringer interface for the FakeStorageDriver driver

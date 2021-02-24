@@ -4,6 +4,7 @@ package storagedrivers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netapp/trident/utils"
 	"reflect"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
 )
 
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
@@ -36,8 +36,7 @@ type CommonStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the CommonStorageDriverConfig driver
 func (d CommonStorageDriverConfig) String() string {
-	sensitive := d.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{}, nil)
+	return ToString(&d, []string{}, nil)
 }
 
 // ESeriesStorageDriverConfig holds settings for ESeriesStorageDriver
@@ -84,8 +83,7 @@ type EseriesStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the E-Series driver
 func (d ESeriesStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"Password", "PasswordArray", "Username"}, nil)
+	return ToString(&d, []string{"Password", "PasswordArray", "Username"}, nil)
 }
 
 // Implement GoStringer interface for the ESeriesStorageDriverConfig driver
@@ -127,8 +125,7 @@ type OntapStorageDriverConfig struct {
 
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.
 func (d OntapStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, GetOntapConfigRedactList(), nil)
+	return ToString(&d, GetOntapConfigRedactList(), nil)
 }
 
 // GoString makes OntapStorageDriverConfig satisfy the GoStringer interface.
@@ -194,8 +191,7 @@ type SolidfireStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the Solidfire driver
 func (d SolidfireStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"TenantName", "EndPoint"}, nil)
+	return ToString(&d, []string{"TenantName", "EndPoint"}, nil)
 }
 
 // Implement GoStringer interface for the SolidfireStorageDriverConfig driver
@@ -234,8 +230,7 @@ type AWSNFSStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the AWSNFSStorageDriverConfig driver
 func (d AWSNFSStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
+	return ToString(&d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
 }
 
 // Implement GoStringer interface for the AWSNFSStorageDriverConfig driver
@@ -276,8 +271,7 @@ type AzureNFSStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the AzureNFSStorageDriverConfig driver
 func (d AzureNFSStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
+	return ToString(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
 }
 
 // Implement GoStringer interface for the AzureNFSStorageDriverConfig driver
@@ -332,8 +326,7 @@ type GCPPrivateKey struct {
 
 // Implement stringer interface for the GCPNFSStorageDriverConfig driver
 func (d GCPNFSStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"ProjectNumber", "APIKey"}, nil)
+	return ToString(&d, []string{"ProjectNumber", "APIKey"}, nil)
 }
 
 // Implement GoStringer interface for the GCPNFSStorageDriverConfig driver
@@ -357,8 +350,7 @@ type FakeStorageDriverConfig struct {
 
 // Implement Stringer interface for the FakeStorageDriverConfig driver
 func (d FakeStorageDriverConfig) String() string {
-	sensitive := d.CommonStorageDriverConfig.DebugTraceFlags["sensitive"]
-	return ToString(sensitive, &d, []string{"Username", "Password"}, nil)
+	return ToString(&d, []string{"Username", "Password"}, nil)
 }
 
 // Implement GoStringer interface for the FakeStorageDriverConfig driver
@@ -437,9 +429,8 @@ func IsVolumeExistsError(err error) bool {
 }
 
 // ToString identifies attributes of a struct, stringifies them such that they can be consumed by the
-// struct's stringer interface, redacts elements specified in the redactList, and replaces
-// config with external config format depending upon the value of sensitive flag.
-func ToString(sensitive bool, structPointer interface{}, redactList []string, configVal interface{}) (out string) {
+// struct's stringer interface, and redacts elements specified in the redactList.
+func ToString(structPointer interface{}, redactList []string, configVal interface{}) (out string) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -453,20 +444,14 @@ func ToString(sensitive bool, structPointer interface{}, redactList []string, co
 	var output strings.Builder
 
 	for i := 0; i < elements.NumField(); i++ {
-
 		fieldName := elements.Type().Field(i).Name
-
-		if sensitive {
+		switch {
+		case fieldName == "Config" && configVal != nil:
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
+		case utils.SliceContainsString(redactList, fieldName):
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, "<REDACTED>"))
+		default:
 			output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
-		} else {
-			switch {
-			case fieldName == "Config" && configVal != nil:
-				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
-			case utils.SliceContainsString(redactList, fieldName):
-				output.WriteString(fmt.Sprintf("%v:%v ", fieldName, "<REDACTED>"))
-			default:
-				output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
-			}
 		}
 	}
 

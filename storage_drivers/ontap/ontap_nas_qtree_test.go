@@ -12,16 +12,13 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
-func newNASQtreeStorageDriver(showSensitive *bool) *NASQtreeStorageDriver {
+func newNASQtreeStorageDriver() *NASQtreeStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.ManagementLIF = "127.0.0.1"
 	config.SVM = "SVM1"
@@ -60,9 +57,7 @@ func newNASQtreeStorageDriver(showSensitive *bool) *NASQtreeStorageDriver {
 func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 
 	var qtreeDrivers = []NASQtreeStorageDriver{
-		*newNASQtreeStorageDriver(&[]bool{true}[0]),
-		*newNASQtreeStorageDriver(&[]bool{false}[0]),
-		*newNASQtreeStorageDriver(nil),
+		*newNASQtreeStorageDriver(),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -70,10 +65,6 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 		"password":        "password1!",
 		"client username": "client_username",
 		"client password": "client_password",
-	}
-
-	sensitiveExcludeList := map[string]string{
-		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
@@ -89,39 +80,18 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, qtreeDriver := range qtreeDrivers {
-		sensitive, ok := qtreeDriver.Config.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, qtreeDriver.String(), val,
+				"ontap-nas-economy driver does not contain %v", key)
+			assert.Contains(t, qtreeDriver.GoString(), val,
+				"ontap-nas-economy driver does not contain %v", key)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, qtreeDriver.String(), val,
-					"ontap-nas-economy driver does not contain %v", key)
-				assert.Contains(t, qtreeDriver.GoString(), val,
-					"ontap-nas-economy driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, qtreeDriver.String(), val,
-					"ontap-nas-economy driver contains %v", key)
-				assert.NotContains(t, qtreeDriver.GoString(), val,
-					"ontap-nas-economy driver contains %v", key)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, qtreeDriver.String(), val,
-					"ontap-nas-economy driver does not contain %v", key)
-				assert.Contains(t, qtreeDriver.GoString(), val,
-					"ontap-nas-economy driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, qtreeDriver.String(), val,
-					"ontap-nas-economy driver redacts %v", key)
-				assert.NotContains(t, qtreeDriver.GoString(), val,
-					"ontap-nas-economy driver redacts %v", key)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, qtreeDriver.String(), val,
+				"ontap-nas-economy driver contains %v", key)
+			assert.NotContains(t, qtreeDriver.GoString(), val,
+				"ontap-nas-economy driver contains %v", key)
 		}
 	}
 }

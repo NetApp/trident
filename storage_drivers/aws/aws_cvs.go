@@ -1604,8 +1604,7 @@ func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 
 // Implement stringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, []string{"API"}, d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, []string{"API"}, d.GetExternalConfig(context.Background()))
 }
 
 // Implement GoStringer interface for the NFSStorageDriver driver

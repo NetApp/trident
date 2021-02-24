@@ -19,17 +19,13 @@ const (
 	RedactedEndpoint = "https://<REDACTED>" + "@10.0.0.1/json-rpc/7.0"
 )
 
-func newTestSolidfireSANDriver(showSensitive *bool) *SANStorageDriver {
+func newTestSolidfireSANDriver() *SANStorageDriver {
 	config := &drivers.SolidfireStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.TenantName = TenantName
 	config.EndPoint = Endpoint
@@ -97,52 +93,23 @@ func callGoString(s SANStorageDriver) string {
 func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
 
 	var solidfireSANDrivers = []SANStorageDriver{
-		*newTestSolidfireSANDriver(&[]bool{true}[0]),
-		*newTestSolidfireSANDriver(&[]bool{false}[0]),
-		*newTestSolidfireSANDriver(nil),
+		*newTestSolidfireSANDriver(),
 	}
 
 	for _, toString := range []func(SANStorageDriver) string{callString, callGoString} {
-
 		for _, solidfireSANDriver := range solidfireSANDrivers {
-			sensitive, ok := solidfireSANDriver.Config.DebugTraceFlags["sensitive"]
-
-			switch {
-
-			case !ok:
-				assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
-					"Solidfire driver does not contain <REDACTED>")
-				assert.Contains(t, toString(solidfireSANDriver), "Client:<REDACTED>",
-					"Solidfire driver does not redact client API information")
-				assert.Contains(t, toString(solidfireSANDriver), "AccountID:<REDACTED>",
-					"Solidfire driver does not redact Account ID information")
-				assert.NotContains(t, toString(solidfireSANDriver), TenantName,
-					"Solidfire driver contains tenant name")
-				assert.NotContains(t, toString(solidfireSANDriver), RedactedEndpoint,
-					"Solidfire driver contains endpoint's admin and password")
-				assert.NotContains(t, toString(solidfireSANDriver), "2222",
-					"Solidfire driver contains Account ID")
-			case ok && sensitive:
-				assert.Contains(t, toString(solidfireSANDriver), TenantName,
-					"Solidfire driver does not contain tenant name")
-				assert.Contains(t, toString(solidfireSANDriver), Endpoint,
-					"Solidfire driver does not contain endpoint's admin and password")
-				assert.Contains(t, toString(solidfireSANDriver), "2222",
-					"Solidfire driver does not contain Account ID")
-			case ok && !sensitive:
-				assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
-					"Solidfire driver does not contain <REDACTED>")
-				assert.Contains(t, toString(solidfireSANDriver), "Client:<REDACTED>",
-					"Solidfire driver does not redact client API information")
-				assert.Contains(t, toString(solidfireSANDriver), "AccountID:<REDACTED>",
-					"Solidfire driver does not redact Account ID information")
-				assert.NotContains(t, toString(solidfireSANDriver), TenantName,
-					"Solidfire driver contains tenant name")
-				assert.NotContains(t, toString(solidfireSANDriver), RedactedEndpoint,
-					"Solidfire driver contains endpoint's admin and password")
-				assert.NotContains(t, toString(solidfireSANDriver), "2222",
-					"Solidfire driver contains Account ID")
-			}
+			assert.Contains(t, toString(solidfireSANDriver), "<REDACTED>",
+				"Solidfire driver does not contain <REDACTED>")
+			assert.Contains(t, toString(solidfireSANDriver), "Client:<REDACTED>",
+				"Solidfire driver does not redact client API information")
+			assert.Contains(t, toString(solidfireSANDriver), "AccountID:<REDACTED>",
+				"Solidfire driver does not redact Account ID information")
+			assert.NotContains(t, toString(solidfireSANDriver), TenantName,
+				"Solidfire driver contains tenant name")
+			assert.NotContains(t, toString(solidfireSANDriver), RedactedEndpoint,
+				"Solidfire driver contains endpoint's admin and password")
+			assert.NotContains(t, toString(solidfireSANDriver), "2222",
+				"Solidfire driver contains Account ID")
 		}
 	}
 }
@@ -207,7 +174,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			d := newTestSolidfireSANDriver(nil)
+			d := newTestSolidfireSANDriver()
 			d.Config.StoragePrefix = &test.StoragePrefix
 
 			err := d.populateConfigurationDefaults(context.Background(), &d.Config)

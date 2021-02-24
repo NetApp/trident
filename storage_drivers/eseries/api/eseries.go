@@ -136,7 +136,6 @@ func (d Client) InvokeAPI(
 
 	var request *http.Request
 	var err error
-	var prettyRequestBuffer bytes.Buffer
 	var prettyResponseBuffer bytes.Buffer
 
 	// Create the request
@@ -155,15 +154,8 @@ func (d Client) InvokeAPI(
 
 	// Log the request
 	if d.config.DebugTraceFlags["api"] {
-		if resourcePath == "" && !d.config.DebugTraceFlags["sensitive"] {
-			// Suppress the empty POST body since it contains the array password
-			utils.LogHTTPRequest(request, []byte("<suppressed>"))
-		} else {
-			if err := json.Indent(&prettyRequestBuffer, requestBody, "", "  "); err != nil {
-				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
-			}
-			utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
-		}
+		// Suppress the empty POST body since it contains the array password
+		utils.LogHTTPRequest(request, []byte("<suppressed>"))
 	}
 
 	// Send the request

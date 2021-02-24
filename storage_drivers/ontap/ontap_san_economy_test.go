@@ -22,7 +22,7 @@ func ToStringPointer(s string) *string {
 
 func NewTestLUNHelper(storagePrefix string, driverContext tridentconfig.DriverContext) *LUNHelper {
 	commonConfigJSON := fmt.Sprintf(`
-{   
+{
     "managementLIF":     "10.0.207.8",
     "dataLIF":           "10.0.207.7",
     "svm":               "iscsi_vs",
@@ -163,16 +163,13 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 	assert.Equal(t, "", volName2, "Strings are NOT equal")
 }
 
-func newTestOntapSanEcoDriver(showSensitive *bool) *SANEconomyStorageDriver {
+func newTestOntapSanEcoDriver() *SANEconomyStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
-	if showSensitive != nil {
-		config.CommonStorageDriverConfig.DebugTraceFlags["sensitive"] = *showSensitive
-	}
 
 	config.ManagementLIF = "127.0.0.1"
 	config.SVM = "SVM1"
@@ -211,9 +208,7 @@ func newTestOntapSanEcoDriver(showSensitive *bool) *SANEconomyStorageDriver {
 func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 
 	var sanEcoDrivers = []SANEconomyStorageDriver{
-		*newTestOntapSanEcoDriver(&[]bool{true}[0]),
-		*newTestOntapSanEcoDriver(&[]bool{false}[0]),
-		*newTestOntapSanEcoDriver(nil),
+		*newTestOntapSanEcoDriver(),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -221,10 +216,6 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 		"password":        "password1!",
 		"client username": "client_username",
 		"client password": "client_password",
-	}
-
-	sensitiveExcludeList := map[string]string{
-		"some information": "<REDACTED>",
 	}
 
 	externalIncludeList := map[string]string{
@@ -240,39 +231,18 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, sanEcoDriver := range sanEcoDrivers {
-		sensitive, ok := sanEcoDriver.Config.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, sanEcoDriver.String(), val,
+				"ontap-san-economy driver does not contain %v", key)
+			assert.Contains(t, sanEcoDriver.GoString(), val,
+				"ontap-san-economy driver does not contain %v", key)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, sanEcoDriver.String(), val,
-					"ontap-san-economy driver does not contain %v", key)
-				assert.Contains(t, sanEcoDriver.GoString(), val,
-					"ontap-san-economy driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, sanEcoDriver.String(), val,
-					"ontap-san-economy driver contains %v", key)
-				assert.NotContains(t, sanEcoDriver.GoString(), val,
-					"ontap-san-economy driver contains %v", key)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, sanEcoDriver.String(), val,
-					"ontap-san-economy driver does not contain %v", key)
-				assert.Contains(t, sanEcoDriver.GoString(), val,
-					"ontap-san-economy driver does not contain %v", key)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, sanEcoDriver.String(), val,
-					"ontap-san-economy driver redacts %v", key)
-				assert.NotContains(t, sanEcoDriver.GoString(), val,
-					"ontap-san-economy driver redacts %v", key)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, sanEcoDriver.String(), val,
+				"ontap-san-economy driver contains %v", key)
+			assert.NotContains(t, sanEcoDriver.GoString(), val,
+				"ontap-san-economy driver contains %v", key)
 		}
 	}
 }

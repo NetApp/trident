@@ -1856,8 +1856,7 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.
 func (d NASQtreeStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASQtreeStorageDriver satisfy the GoStringer interface.

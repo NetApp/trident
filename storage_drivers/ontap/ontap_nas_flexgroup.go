@@ -1195,8 +1195,7 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 
 // String makes NASFlexGroupStorageDriver satisfy the Stringer interface.
 func (d NASFlexGroupStorageDriver) String() string {
-	sensitive := d.Config.DebugTraceFlags["sensitive"]
-	return drivers.ToString(sensitive, &d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASFlexGroupStorageDriver satisfy the GoStringer interface.

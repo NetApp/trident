@@ -33,8 +33,7 @@ func newTestOntapStorageDriverConfig(debugTraceFlags map[string]bool) *OntapStor
 func TestOntapStorageDriverConfigString(t *testing.T) {
 
 	var ontapStorageDriverConfigs = []OntapStorageDriverConfig{
-		*newTestOntapStorageDriverConfig(map[string]bool{"method": true, "sensitive": true}),
-		*newTestOntapStorageDriverConfig(map[string]bool{"method": true, "sensitive": false}),
+		*newTestOntapStorageDriverConfig(map[string]bool{"method": true}),
 		*newTestOntapStorageDriverConfig(nil),
 	}
 
@@ -47,12 +46,6 @@ func TestOntapStorageDriverConfigString(t *testing.T) {
 		"ontap-chap-secret":        "chap initiator secret name",
 		"ontap-chap-target-secret": "chap target secret",
 		"ontap-chap-target-user":   "chap target username",
-	}
-
-	// key: string to exclude in debug logs when the sensitive flag is set to true
-	// value: string to include in unit test failure error message if key is missing when expected
-	sensitiveExcludeList := map[string]string{
-		"<REDACTED>": "some information",
 	}
 
 	// key: string to include in debug logs when the sensitive flag is set to false
@@ -69,39 +62,18 @@ func TestOntapStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, ontapStorageDriverConfig := range ontapStorageDriverConfigs {
-		sensitive, ok := ontapStorageDriverConfig.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, ontapStorageDriverConfig.String(), key,
+				"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
+			assert.Contains(t, ontapStorageDriverConfig.GoString(), key,
+				"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, ontapStorageDriverConfig.String(), key,
-					"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
-				assert.Contains(t, ontapStorageDriverConfig.GoString(), key,
-					"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, ontapStorageDriverConfig.String(), key,
-					"%s driver contains %v", ontapStorageDriverConfig.StorageDriverName, val)
-				assert.NotContains(t, ontapStorageDriverConfig.GoString(), key,
-					"%s driver contains %v", ontapStorageDriverConfig.StorageDriverName, val)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, ontapStorageDriverConfig.String(), key,
-					"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
-				assert.Contains(t, ontapStorageDriverConfig.GoString(), key,
-					"%s driver does not contain %v", ontapStorageDriverConfig.StorageDriverName, val)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, ontapStorageDriverConfig.String(), key,
-					"%s driver redacts %v", ontapStorageDriverConfig.StorageDriverName, val)
-				assert.NotContains(t, ontapStorageDriverConfig.GoString(), key,
-					"%s driver redacts %v", ontapStorageDriverConfig.StorageDriverName, val)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, ontapStorageDriverConfig.String(), key,
+				"%s driver contains %v", ontapStorageDriverConfig.StorageDriverName, val)
+			assert.NotContains(t, ontapStorageDriverConfig.GoString(), key,
+				"%s driver contains %v", ontapStorageDriverConfig.StorageDriverName, val)
 		}
 	}
 }
@@ -125,8 +97,7 @@ func newTestStorageDriverConfig(debugTraceFlags map[string]bool) *FakeStorageDri
 func TestStorageDriverConfigString(t *testing.T) {
 
 	var fakeStorageDriverConfigs = []FakeStorageDriverConfig{
-		*newTestStorageDriverConfig(map[string]bool{"method": true, "sensitive": true}),
-		*newTestStorageDriverConfig(map[string]bool{"method": true, "sensitive": false}),
+		*newTestStorageDriverConfig(map[string]bool{"method": true}),
 		*newTestStorageDriverConfig(nil),
 	}
 
@@ -135,12 +106,6 @@ func TestStorageDriverConfigString(t *testing.T) {
 	sensitiveIncludeList := map[string]string{
 		"fake-user":     "username",
 		"fake-password": "password",
-	}
-
-	// key: string to exclude in debug logs when the sensitive flag is set to true
-	// value: string to include in unit test failure error message if key is missing when expected
-	sensitiveExcludeList := map[string]string{
-		"<REDACTED>": "some information",
 	}
 
 	// key: string to include in debug logs when the sensitive flag is set to false
@@ -152,39 +117,18 @@ func TestStorageDriverConfigString(t *testing.T) {
 	}
 
 	for _, fakeStorageDriverConfig := range fakeStorageDriverConfigs {
-		sensitive, ok := fakeStorageDriverConfig.DebugTraceFlags["sensitive"]
+		for key, val := range externalIncludeList {
+			assert.Contains(t, fakeStorageDriverConfig.String(), key,
+				"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
+			assert.Contains(t, fakeStorageDriverConfig.GoString(), key,
+				"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
+		}
 
-		switch {
-
-		case !ok || (ok && !sensitive):
-			for key, val := range externalIncludeList {
-				assert.Contains(t, fakeStorageDriverConfig.String(), key,
-					"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
-				assert.Contains(t, fakeStorageDriverConfig.GoString(), key,
-					"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
-			}
-
-			for key, val := range sensitiveIncludeList {
-				assert.NotContains(t, fakeStorageDriverConfig.String(), key,
-					"%s driver config contains %v", fakeStorageDriverConfig.StorageDriverName, val)
-				assert.NotContains(t, fakeStorageDriverConfig.GoString(), key,
-					"%s driver config contains %v", fakeStorageDriverConfig.StorageDriverName, val)
-			}
-
-		case ok && sensitive:
-			for key, val := range sensitiveIncludeList {
-				assert.Contains(t, fakeStorageDriverConfig.String(), key,
-					"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
-				assert.Contains(t, fakeStorageDriverConfig.GoString(), key,
-					"%s driver config does not contain %v", fakeStorageDriverConfig.StorageDriverName, val)
-			}
-
-			for key, val := range sensitiveExcludeList {
-				assert.NotContains(t, fakeStorageDriverConfig.String(), key,
-					"%s driver config redacts %v", fakeStorageDriverConfig.StorageDriverName, val)
-				assert.NotContains(t, fakeStorageDriverConfig.GoString(), key,
-					"%s driver config redacts %v", fakeStorageDriverConfig.StorageDriverName, val)
-			}
+		for key, val := range sensitiveIncludeList {
+			assert.NotContains(t, fakeStorageDriverConfig.String(), key,
+				"%s driver config contains %v", fakeStorageDriverConfig.StorageDriverName, val)
+			assert.NotContains(t, fakeStorageDriverConfig.GoString(), key,
+				"%s driver config contains %v", fakeStorageDriverConfig.StorageDriverName, val)
 		}
 	}
 }

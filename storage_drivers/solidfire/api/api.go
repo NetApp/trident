@@ -177,7 +177,7 @@ func (c *Client) shouldLogResponseBody(method string) bool {
 
 	switch method {
 	case "GetAccountByName", "GetAccountByID", "ListAccounts":
-		return c.Config.DebugTraceFlags["sensitive"]
+		return false
 	case "GetClusterHardwareInfo":
 		return c.Config.DebugTraceFlags["hardwareInfo"]
 	default:

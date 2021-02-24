@@ -137,7 +137,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		for _, portal := range bkPortalsToLogin {
 			err = loginWithChap(
 				ctx, targetIQN, portal, username, initiatorSecret, targetUsername,
-				targetInitiatorSecret, iscsiInterface, false)
+				targetInitiatorSecret, iscsiInterface)
 			if err != nil {
 				Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
 				return fmt.Errorf("iSCSI login error: %v", err)
@@ -2861,9 +2861,7 @@ func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 
 // loginWithChap will login to the iSCSI target with the supplied credentials.
 func loginWithChap(
-	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string,
-	logSensitiveInfo bool,
-) error {
+	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string) error {
 
 	logFields := log.Fields{
 		"IQN":                   tiqn,
@@ -2873,10 +2871,6 @@ func loginWithChap(
 		"targetUsername":        targetUsername,
 		"targetInitiatorSecret": "****",
 		"iface":                 iface,
-	}
-	if logSensitiveInfo {
-		logFields["password"] = password
-		logFields["targetInitiatorSecret"] = targetInitiatorSecret
 	}
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.loginWithChap")
 	defer Logc(ctx).Debug("<<<< osutils.loginWithChap")

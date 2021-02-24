@@ -1507,18 +1507,13 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	outputArr = strings.Split(outputArr[1], "=\"")
 	outputArr = strings.Split(outputArr[1], "\"")
 
-	if debugTraceFlags == nil || !debugTraceFlags["sensitive"] {
-		assert.Equal(t, outputArr[0], "<suppressed>")
-	} else {
-		assert.NotContains(t, outputArr[0], "<suppressed>")
-	}
+	assert.Equal(t, outputArr[0], "<suppressed>")
 	cleanup(t, orchestrator)
 }
 
 func TestBackendPasswordsInLogs(t *testing.T) {
 	backendPasswordsInLogsHelper(t, nil)
-	backendPasswordsInLogsHelper(t, map[string]bool{"method": true, "sensitive": false})
-	backendPasswordsInLogsHelper(t, map[string]bool{"method": true, "sensitive": true})
+	backendPasswordsInLogsHelper(t, map[string]bool{"method": true})
 }
 
 func TestEmptyBackendDeletion(t *testing.T) {
