@@ -113,6 +113,28 @@ func TestGCPStorageDriverConfigString(t *testing.T) {
 	}
 }
 
+func TestMakeNetworkPath(t *testing.T) {
+
+	driver := newTestGCPDriver()
+
+	// Without shared VPC host project
+	driver.Config = drivers.GCPNFSStorageDriverConfig{
+		ProjectNumber: "737253775480",
+	}
+	assert.Equal(t,
+		"projects/737253775480/global/networks/myNetwork",
+		driver.makeNetworkPath("myNetwork"))
+
+	// With shared VPC host project
+	driver.Config = drivers.GCPNFSStorageDriverConfig{
+		ProjectNumber:     "737253775480",
+		HostProjectNumber: "527303026223",
+	}
+	assert.Equal(t,
+		"projects/527303026223/global/networks/myNetwork",
+		driver.makeNetworkPath("myNetwork"))
+}
+
 func TestValidateStoragePrefix(t *testing.T) {
 	tests := []struct {
 		Name          string

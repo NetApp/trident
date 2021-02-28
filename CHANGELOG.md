@@ -10,6 +10,7 @@
 
 **Enhancements:**
 - Updated to golang 1.15
+- Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
 
 ## Changes since v20.10.0
 

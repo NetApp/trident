@@ -1,10 +1,9 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 package storagedrivers
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/netapp/trident/utils"
 	"reflect"
 	"strings"
 
@@ -13,6 +12,7 @@ import (
 	trident "github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/utils"
 )
 
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
@@ -282,6 +282,7 @@ func (d AzureNFSStorageDriverConfig) GoString() string {
 type GCPNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	ProjectNumber       string        `json:"projectNumber"`
+	HostProjectNumber   string        `json:"hostProjectNumber"`
 	APIKey              GCPPrivateKey `json:"apiKey"`
 	APIRegion           string        `json:"apiRegion"`
 	APIURL              string        `json:"apiURL"`
@@ -326,7 +327,7 @@ type GCPPrivateKey struct {
 
 // Implement stringer interface for the GCPNFSStorageDriverConfig driver
 func (d GCPNFSStorageDriverConfig) String() string {
-	return ToString(&d, []string{"ProjectNumber", "APIKey"}, nil)
+	return ToString(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
 }
 
 // Implement GoStringer interface for the GCPNFSStorageDriverConfig driver

@@ -15,6 +15,8 @@ In addition to the global configuration values above, when using CVS on GCP, the
 +=======================+==========================================================================+==============================================+
 | ``projectNumber``     | GCP project number (required)                                            | "123456789012"                               |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
+| ``hostProjectNumber`` | GCP shared VPC host project number (required if using a shared VPC)      | "098765432109"                               |
++-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``apiRegion``         | CVS account region (required)                                            | "us-west2"                                   |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``apiKey``            | API key for GCP service account with CVS admin role (required)           | (contents of private key file)               |
@@ -32,6 +34,9 @@ The required value ``projectNumber`` may be found in the GCP web portal's Home s
 GCP region where this backend will provision volumes. The ``apiKey`` is the JSON-formatted contents of a GCP
 service account's private key file (copied verbatim into the backend config file).  The service account must have
 the ``netappcloudvolumes.admin`` role.
+
+If using a shared VPC network, both ``projectNumber`` and ``hostProjectNumber`` must be specified.  In that case,
+``projectNumber`` is the service project, and ``hostProjectNumber`` is the host project.
 
 The proxyURL config option must be used if a proxy server is needed to communicate with AWS. The proxy server may either
 be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of

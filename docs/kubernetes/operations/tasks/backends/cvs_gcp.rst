@@ -31,6 +31,7 @@ backendName               Custom name for the storage backend                   
 storageClass              Type of storage. Choose from ``hardware`` [Performance Optimized] "hardware"
                           or ``software`` [Scale Optimized (beta)]
 projectNumber             GCP account project number
+hostProjectNumber         GCP shared VPC host project number
 apiRegion                 CVS account region
 apiKey                    API key for GCP service account with CVS admin role
 proxyURL                  Proxy URL if proxy server required to connect to CVS Account
@@ -51,6 +52,9 @@ The required value ``projectNumber`` may be found in the GCP web portal's Home s
 GCP region where this backend will provision volumes. The ``apiKey`` is the JSON-formatted contents of a GCP
 service account's private key file (copied verbatim into the backend config file).  The service account must have
 the ``netappcloudvolumes.admin`` role.
+
+If using a shared VPC network, both ``projectNumber`` and ``hostProjectNumber`` must be specified.  In that case,
+``projectNumber`` is the service project, and ``hostProjectNumber`` is the host project.
 
 The ``storageClass`` is an optional parameter that can be used to choose the
 desired `CVS service type <https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US>`_.

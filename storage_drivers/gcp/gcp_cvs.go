@@ -154,6 +154,15 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 	}
 }
 
+func (d *NFSStorageDriver) makeNetworkPath(network string) string {
+
+	projectNumber := d.Config.ProjectNumber
+	if d.Config.HostProjectNumber != "" {
+		projectNumber = d.Config.HostProjectNumber
+	}
+	return fmt.Sprintf("projects/%s/global/networks/%s", projectNumber, network)
+}
+
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
@@ -716,7 +725,7 @@ func (d *NFSStorageDriver) Create(
 		network = pool.InternalAttributes[Network]
 		volConfig.Network = network
 	}
-	gcpNetwork := fmt.Sprintf("projects/%s/global/networks/%s", d.Config.ProjectNumber, network)
+	gcpNetwork := d.makeNetworkPath(network)
 
 	// TODO: Remove when software storage class allows NFSv4
 	protocolTypes := []string{api.ProtocolTypeNFSv3}
@@ -841,7 +850,7 @@ func (d *NFSStorageDriver) Create(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, pool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -934,7 +943,7 @@ func (d *NFSStorageDriver) CreateClone(
 		Logc(ctx).Debugf("Network not found in volume config, using '%s'.", d.Config.Network)
 		network = d.Config.Network
 	}
-	gcpNetwork := fmt.Sprintf("projects/%s/global/networks/%s", d.Config.ProjectNumber, network)
+	gcpNetwork := d.makeNetworkPath(network)
 
 	if sourceVolume.StorageClass == api.StorageClassSoftware && sourceVolume.Zone == "" {
 		return fmt.Errorf("software volumes require zone")
