@@ -12,8 +12,10 @@ Storage Orchestrator for Containers
 
 .. toctree::
    :caption: Introduction
-
+   :maxdepth: 2
+   
    introduction
+   astra-introduction
 
 .. toctree::
    :caption: Kubernetes
