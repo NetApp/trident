@@ -848,10 +848,13 @@ func (d *NFSStorageDriver) CreateClone(
 	var labels []string
 	labels = d.updateTelemetryLabels(ctx, sourceVolume)
 
-	if storagePool == nil {
+	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.Pool{}
-		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		storagePoolTemp := &storage.Pool{
+			Attributes: map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+			},
+		}
 		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
 		if err != nil {
 			return err

@@ -141,18 +141,22 @@ func CreateCloneNAS(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
-	labels := ""
-	if storagePool != nil {
-		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
-		labels = sourceLabel
-	} else {
+
+	labels := sourceLabel
+
+	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.Pool{}
-		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
+		storagePoolTemp := &storage.Pool{
+			Attributes: map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+			},
+		}
 		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
 		if err != nil {
 			return err
 		}
+	} else {
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
 	}
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value

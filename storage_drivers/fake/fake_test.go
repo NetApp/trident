@@ -3,12 +3,15 @@
 package fake
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/fake"
+	sa "github.com/netapp/trident/storage_attribute"
+	drivers "github.com/netapp/trident/storage_drivers"
 	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
 
@@ -57,5 +60,79 @@ func TestStorageDriverString(t *testing.T) {
 			assert.NotContains(t, fakeStorageDriver.GoString(), key,
 				"%s driver contains %v", fakeStorageDriver.Config.StorageDriverName, val)
 		}
+	}
+}
+
+func TestInitializeStoragePoolsLabels(t *testing.T) {
+
+	ctx := context.Background()
+	cases := []struct {
+		physicalPoolLabels   map[string]string
+		virtualPoolLabels    map[string]string
+		physicalExpected     string
+		virtualExpected      string
+		backendName          string
+		physicalErrorMessage string
+		virtualErrorMessage  string
+	}{
+		{
+			nil, nil, "", "", "fake",
+			"Label is not empty", "Label is not empty",
+		}, // no labels
+		{
+			map[string]string{"base-key": "base-value"}, nil,
+			`{"provisioning":{"base-key":"base-value"}}`,
+			`{"provisioning":{"base-key":"base-value"}}`, "fake",
+			"Base label is not set correctly", "Base label is not set correctly",
+		}, // base label only
+		{
+			nil, map[string]string{"virtual-key": "virtual-value"},
+			"",
+			`{"provisioning":{"virtual-key":"virtual-value"}}`, "fake",
+			"Base label is not empty", "Virtual pool label is not set correctly",
+		}, // virtual label only
+		{
+			map[string]string{"base-key": "base-value"},
+			map[string]string{"virtual-key": "virtual-value"},
+			`{"provisioning":{"base-key":"base-value"}}`,
+			`{"provisioning":{"base-key":"base-value","virtual-key":"virtual-value"}}`,
+			"fake",
+			"Base label is not set correctly", "Virtual pool label is not set correctly",
+		}, // base and virtual labels
+	}
+
+	for _, c := range cases {
+		physicalPools := map[string]*fake.StoragePool{"fake-backend_pool_0": {
+			Bytes: 50 * 1024 * 1024 * 1024,
+			Attrs: map[string]sa.Offer{
+				sa.IOPS:             sa.NewIntOffer(1000, 10000),
+				sa.Snapshots:        sa.NewBoolOffer(true),
+				sa.ProvisioningType: sa.NewStringOffer("thin", "thick"),
+				"uniqueOptions":     sa.NewStringOffer("foo", "bar", "baz"),
+			},
+		}}
+
+		fakePool := drivers.FakeStorageDriverPool{
+			Labels: c.physicalPoolLabels,
+			Region: "us_east_1",
+			Zone:   "us_east_1a"}
+
+		virtualPools := drivers.FakeStorageDriverPool{
+			Labels: c.virtualPoolLabels,
+			Region: "us_east_1",
+			Zone:   "us_east_1a"}
+
+		d, _ := NewFakeStorageDriverWithPools(ctx, physicalPools, fakePool,
+			[]drivers.FakeStorageDriverPool{virtualPools})
+
+		physicalPool := d.physicalPools["fake-backend_pool_0"]
+		label, err := physicalPool.GetLabelsJSON(ctx, "provisioning", 1023)
+		assert.Nil(t, err, "Error is not nil")
+		assert.Equal(t, c.physicalExpected, label, c.physicalErrorMessage)
+
+		virtualPool := d.virtualPools["fake_us_east_1_pool_0"]
+		label, err = virtualPool.GetLabelsJSON(ctx, "provisioning", 1023)
+		assert.Nil(t, err, "Error is not nil")
+		assert.Equal(t, c.virtualExpected, label, c.virtualErrorMessage)
 	}
 }

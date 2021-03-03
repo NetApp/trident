@@ -454,7 +454,19 @@ func (d *SANStorageDriver) CreateClone(
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
 	labels := ""
-	if storagePool != nil {
+	if storage.IsStoragePoolUnset(storagePool) {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{
+			Attributes: map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+			},
+		}
+		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
+		if err != nil {
+			return err
+		}
+
+	} else {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
 
 		// Ensure the volume exists
@@ -469,14 +481,6 @@ func (d *SANStorageDriver) CreateClone(
 		if flexvol.VolumeIdAttributesPtr != nil {
 			volumeIdAttrs := flexvol.VolumeIdAttributes()
 			labels = volumeIdAttrs.Comment()
-		}
-	} else {
-		// Set the base label
-		storagePoolTemp := &storage.Pool{}
-		storagePoolTemp.Attributes[sa.Labels] = sa.NewLabelOffer(d.GetConfig().Labels)
-		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
-		if err != nil {
-			return err
 		}
 	}
 

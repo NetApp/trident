@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"sort"
 
+	drivers "github.com/netapp/trident/storage_drivers"
+
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
@@ -167,4 +169,8 @@ func DeleteProvisioningLabels(volumeLabels []string) []string {
 	}
 
 	return newLabels
+}
+
+func IsStoragePoolUnset(storagePool *Pool) bool {
+	return storagePool == nil || storagePool.Name == drivers.UnsetPool
 }

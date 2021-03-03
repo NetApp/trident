@@ -122,6 +122,39 @@ func NewFakeStorageDriver(ctx context.Context, config drivers.FakeStorageDriverC
 	return driver
 }
 
+func NewFakeStorageDriverWithPools(ctx context.Context, pools map[string]*fake.StoragePool,
+	vpool drivers.FakeStorageDriverPool, vpools []drivers.FakeStorageDriverPool,
+) (*StorageDriver, error) {
+	driver := &StorageDriver{
+		initialized: true,
+		Config: drivers.FakeStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				Version:           drivers.ConfigVersion,
+				StorageDriverName: drivers.FakeStorageDriverName,
+			},
+			Protocol:              tridentconfig.File,
+			InstanceName:          "fake-instance",
+			Username:              "fake-user",
+			Password:              "fake-password",
+			Pools:                 pools,
+			FakeStorageDriverPool: vpool,
+			Storage:               vpools,
+		},
+		Volumes:            make(map[string]fake.Volume),
+		DestroyedVolumes:   make(map[string]bool),
+		Snapshots:          make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots: make(map[string]bool),
+		Secret:             "fake-secret",
+	}
+
+	err := driver.initializeStoragePools()
+	if err != nil {
+		return nil, fmt.Errorf("could not configure storage pools: %v", err)
+	}
+
+	return driver, nil
+}
+
 func NewFakeStorageDriverWithDebugTraceFlags(debugTraceFlags map[string]bool) *StorageDriver {
 	driver := &StorageDriver{
 		initialized: true,
@@ -371,6 +404,7 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 		pool.Attributes = fakeStoragePool.Attrs
 		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 		if d.Config.Region != "" {
 			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
 		}

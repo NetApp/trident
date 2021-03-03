@@ -850,7 +850,7 @@ func (d *NFSStorageDriver) Create(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, pool *storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -956,13 +956,31 @@ func (d *NFSStorageDriver) CreateClone(
 		"sourceBackup":   sourceBackupName,
 	}).Debug("Cloning volume.")
 
+	var labels []string
+	labels = d.updateTelemetryLabels(ctx, sourceVolume)
+
+	if pool == nil || pool.Name == drivers.UnsetPool {
+		// Set the base label
+		storagePoolTemp := &storage.Pool{
+			Attributes: map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+			},
+		}
+		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
+		if err != nil {
+			return err
+		}
+
+		labels = storage.UpdateProvisioningLabels(poolLabels, labels)
+	}
+
 	createRequest := &api.VolumeCreateRequest{
 		Name:              volConfig.Name,
 		Region:            sourceVolume.Region,
 		Zone:              sourceVolume.Zone,
 		CreationToken:     name,
 		ExportPolicy:      sourceVolume.ExportPolicy,
-		Labels:            d.updateTelemetryLabels(ctx, sourceVolume),
+		Labels:            labels,
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		QuotaInBytes:      sourceVolume.QuotaInBytes,
 		SecurityStyle:     defaultSecurityStyle,
