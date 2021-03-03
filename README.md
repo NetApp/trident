@@ -7,15 +7,14 @@
 [![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=stable-v21.01)](https://netapp-trident.readthedocs.io/en/stable-v21.01)
 [![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident)](https://goreportcard.com/report/github.com/netapp/trident)
 
-Trident is a fully supported open source project maintained by [NetApp](https://www.netapp.com). It has been designed from the ground up to help you meet the sophisticated persistence demands of your containerized applications.
+Trident is a fully supported open source project maintained by [NetApp](https://www.netapp.com). It has been designed from the ground up to help you meet your containerized applications' persistence demands using industry-standard interfaces, such as the [Container Storage Interface (CSI)](https://kubernetes-csi.github.io/docs/introduction.html).
 
-Through its support for popular container platforms like [Kubernetes](https://kubernetes.io) and [Docker](https://docker.com), Trident understands the natural and evolving languages of those platforms, and translates requirements expressed or implied through them into an automated and orchestrated response from the infrastructure.
+Trident deploys in Kubernetes clusters as pods and provides dynamic storage orchestration services for your Kubernetes workloads. It enables your containerized applications to quickly and easily consume persistent storage from NetApp’s broad portfolio that includes [ONTAP](https://www.netapp.com/us/products/data-management-software/ontap.aspx) (AFF/FAS/Select/Cloud), [Element](https://www.netapp.com/data-management/element-software?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident) (HCI/SolidFire), and [SANtricity](https://www.netapp.com/data-management/santricity?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident) (E/EF-Series) data management software, as well as the [Azure NetApp Files](https://cloud.netapp.com/azure-netapp-files?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident) service, [Cloud Volumes Service on Google Cloud](https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident), and the [Cloud Volumes Service on AWS](https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident).
 
-Today, that infrastructure includes our [ONTAP](https://www.netapp.com/us/products/data-management-software/ontap.aspx) (AFF/FAS/Select/Cloud), [Element](https://www.netapp.com/us/products/data-management-software/element-os.aspx) (HCI/SolidFire), and [SANtricity](https://www.netapp.com/us/products/data-management-software/santricity-os.aspx) (E/EF-Series) data management software, as well as the [Azure NetApp Files](https://azure.microsoft.com/en-us/services/netapp/) service, [Cloud Volumes Service on Google Cloud](https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=GitHub&utm_campaign=Trident) and the [Cloud Volumes Service on AWS](https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=GitHub&utm_campaign=Trident).
-
-That list continues to grow.
+Trident is also a foundational technology for NetApp's [Astra](http://cloud.netapp.com/Astra?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident), which addresses your data protection, disaster recovery, portability, and migration use cases for Kubernetes workloads leveraging NetApp's industry-leading data management technology for snapshots, backups, replication, and cloning.  
 
 Detailed documentation for Trident can be found on [Read the Docs](https://netapp-trident.readthedocs.io).
 
-Trident's support policy is outlined on [NetApp's Support site](https://mysupport.netapp.com/site/info/version-support)
-under the [Trident's Release and Support Lifecycle](https://mysupport.netapp.com/site/info/trident-support) tab.
+Take a look at the [Astra documentation](https://docs.netapp.com/us-en/astra/) to get started today.
+
+See [NetApp's Support site](https://mysupport.netapp.com/site/info/version-support) for details on Trident's support policy under the [Trident's Release and Support Lifecycle](https://mysupport.netapp.com/site/info/trident-support) tab.
