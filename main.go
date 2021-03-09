@@ -192,6 +192,15 @@ func getenvAsPointerToBool(key string) *bool {
 	return &result
 }
 
+// ensureDockerPluginExecPath ensures the docker plugin has utility path in PATH
+func ensureDockerPluginExecPath() {
+	path := os.Getenv("PATH")
+	if !strings.Contains(path, "/netapp") {
+		path = "/netapp:" + path
+		os.Setenv("PATH", path)
+	}
+}
+
 // processDockerPluginArgs replaces our container-launch.sh script
 // see also:  https://github.com/NetApp/trident/blob/stable/v20.07/contrib/docker/plugin/container-launch.sh
 func processDockerPluginArgs() error {
@@ -200,10 +209,15 @@ func processDockerPluginArgs() error {
 		return nil
 	}
 
+	ensureDockerPluginExecPath()
+
 	debug = getenvAsPointerToBool("debug")
 	enableREST = getenvAsPointerToBool("rest")
 	if configEnv := os.Getenv("config"); configEnv != "" {
-		configFile := filepath.Join(config.DockerPluginConfigLocation, configEnv)
+		configFile := configEnv
+		if !strings.HasPrefix(configFile, config.DockerPluginConfigLocation) {
+			configFile = filepath.Join(config.DockerPluginConfigLocation, configEnv)
+		}
 		if _, err := os.Stat(configFile); err != nil {
 			if os.IsNotExist(err) {
 				return errors.New("config file '" + configFile + "' does not exist")

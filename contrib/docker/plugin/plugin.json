@@ -4,9 +4,11 @@
         "entrypoint": ["/netapp/trident", "--address=0.0.0.0", "--port=8000"],
         "Env": [
         {
-            "Description": "Enable docker plugin mode (not user settable)",
+            "Description": "Enable docker plugin mode",
             "Name": "DOCKER_PLUGIN_MODE",
-            "Settable": null,
+            "Settable": [
+                "value"
+            ],
             "Value": "1"
         },
         {
