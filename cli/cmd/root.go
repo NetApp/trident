@@ -31,6 +31,7 @@ const (
 	FormatName = "name"
 	FormatWide = "wide"
 	FormatYAML = "yaml"
+	FormatMarkdown = "markdown"
 
 	ModeDirect  = "direct"
 	ModeTunnel  = "tunnel"
