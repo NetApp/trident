@@ -3,6 +3,7 @@
 package gcp
 
 import (
+	"context"
 	"regexp"
 	"testing"
 
@@ -205,6 +206,88 @@ func TestValidateStoragePrefix(t *testing.T) {
 				assert.NoError(t, err, "should be valid")
 			} else {
 				assert.Error(t, err, "should be invalid")
+			}
+		})
+	}
+}
+
+func TestInitializeStoragePoolsLabels(t *testing.T) {
+
+	ctx := context.Background()
+	d := newTestGCPDriver()
+
+	cases := []struct {
+		Name                 string
+		physicalPoolLabels   map[string]string
+		virtualPoolLabels    map[string]string
+		physicalExpected     string
+		virtualExpected      string
+		backendName          string
+		physicalErrorMessage string
+		virtualErrorMessage  string
+	}{
+		{
+			"no labels",
+			nil, nil, "", "", "gcp-cvs",
+			"Label is not empty", "Label is not empty",
+		},
+		{
+			"base label only",
+			map[string]string{"base-key": "base-value"}, nil,
+			`{"provisioning":{"base-key":"base-value"}}`,
+			`{"provisioning":{"base-key":"base-value"}}`, "gcp-cvs",
+			"Base label is not set correctly", "Base label is not set correctly",
+		},
+		{
+			"virtual label only",
+			nil, map[string]string{"virtual-key": "virtual-value"},
+			"",
+			`{"provisioning":{"virtual-key":"virtual-value"}}`, "gcp-cvs",
+			"Base label is not empty", "Virtual pool label is not set correctly",
+		},
+		{
+			"base and virtual labels",
+			map[string]string{"base-key": "base-value"},
+			map[string]string{"virtual-key": "virtual-value"},
+			`{"provisioning":{"base-key":"base-value"}}`,
+			`{"provisioning":{"base-key":"base-value","virtual-key":"virtual-value"}}`,
+			"gcp-cvs",
+			"Base label is not set correctly", "Virtual pool label is not set correctly",
+		},
+	}
+
+	for _, c := range cases {
+		c := c // capture range variable
+		t.Run(c.Name, func(t *testing.T) {
+			d.Config.Labels = c.physicalPoolLabels
+			if c.virtualPoolLabels != nil {
+				d.Config.Storage = []drivers.GCPNFSStorageDriverPool{
+					{
+						Region: "us_east_1",
+						Zone:   "us_east_1a",
+						SupportedTopologies: []map[string]string{
+							{
+								"topology.kubernetes.io/region": "us_east_1",
+								"topology.kubernetes.io/zone":   "us_east_1a",
+							},
+						},
+						Labels: c.virtualPoolLabels,
+					},
+				}
+			}
+			err := d.initializeStoragePools(ctx)
+			assert.Nil(t, err, "Error is not nil")
+
+			if c.virtualPoolLabels == nil {
+				physicalPool := d.pools["gcpcvs_12345_pool"]
+				label, err := physicalPool.GetLabelsJSON(ctx, "provisioning", 255)
+				assert.Nil(t, err, "Error is not nil")
+				assert.Equal(t, c.physicalExpected, label, c.physicalErrorMessage)
+			} else {
+				virtualPool := d.pools["gcpcvs_12345_pool_0"]
+				label, err := virtualPool.GetLabelsJSON(ctx, "provisioning", 255)
+				assert.Nil(t, err, "Error is not nil")
+				assert.Equal(t, c.virtualExpected, label, c.virtualErrorMessage)
 			}
 		})
 	}
