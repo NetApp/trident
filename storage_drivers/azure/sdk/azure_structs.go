@@ -52,6 +52,7 @@ type FileSystem struct {
 	ProtocolTypes     []string          `json:"protocolTypes,omitempty"`
 	QuotaInBytes      int64             `json:"quotaInBytes,omitempty"`
 	ServiceLevel      string            `json:"serviceLevel,omitempty"`
+	SnapshotDirectory bool              `json:"snapshotDirectory"`
 	Timezone          string            `json:"timezone,omitempty"`
 	UsedBytes         int               `json:"usedBytes,omitempty"`
 	Subnet            string            `json:"subnet,omitempty"`
@@ -59,20 +60,21 @@ type FileSystem struct {
 }
 
 type FilesystemCreateRequest struct {
-	Name           string            `json:"name"`
-	Location       string            `json:"location"`
-	CapacityPool   string            `json:"capacityPool"`
-	VirtualNetwork string            `json:"virtualNetwork"`
-	Subnet         string            `json:"subnet"`
-	CreationToken  string            `json:"creationToken"`
-	ExportPolicy   ExportPolicy      `json:"exportPolicy,omitempty"`
-	Labels         map[string]string `json:"labels,omitempty"`
-	PoolID         string            `json:"poolId,omitempty"`
-	ProtocolTypes  []string          `json:"protocolTypes,omitempty"`
-	QuotaInBytes   int64             `json:"quotaInBytes"`
-	ServiceLevel   string            `json:"serviceLevel"`
-	Timezone       string            `json:"timezone,omitempty"`
-	SnapshotID     string            `json:"snapshotId,omitempty"`
+	Name              string            `json:"name"`
+	Location          string            `json:"location"`
+	CapacityPool      string            `json:"capacityPool"`
+	VirtualNetwork    string            `json:"virtualNetwork"`
+	Subnet            string            `json:"subnet"`
+	CreationToken     string            `json:"creationToken"`
+	ExportPolicy      ExportPolicy      `json:"exportPolicy,omitempty"`
+	Labels            map[string]string `json:"labels,omitempty"`
+	PoolID            string            `json:"poolId,omitempty"`
+	ProtocolTypes     []string          `json:"protocolTypes,omitempty"`
+	QuotaInBytes      int64             `json:"quotaInBytes"`
+	ServiceLevel      string            `json:"serviceLevel"`
+	SnapshotDirectory bool              `json:"snapshotDirectory"`
+	Timezone          string            `json:"timezone,omitempty"`
+	SnapshotID        string            `json:"snapshotId,omitempty"`
 }
 
 type FilesystemRenameRequest struct {
