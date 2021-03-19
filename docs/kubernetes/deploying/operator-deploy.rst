@@ -73,7 +73,7 @@ Use the ``helm install`` command and specify a name for your deployment. See the
 
 .. code-block:: console
 
-  $ helm install <name> trident-operator-21.01.1.tgz
+  $ helm install <name> trident-operator-21.01.2.tgz
 
 There are two ways to pass configuration data during the install:
 
@@ -84,7 +84,7 @@ For example, to change the default value of ``debug``, run the following --set c
 
 .. code-block:: console
 
-  $ helm install <name> trident-operator-21.01.1.tgz --set tridentDebug=true
+  $ helm install <name> trident-operator-21.01.2.tgz --set tridentDebug=true
 
 The ``values.yaml`` file, which is part of the Helm chart provides the list of keys and their default values.
 
@@ -143,8 +143,8 @@ Download the latest version of the `Trident installer bundle`_ from the
 
 .. code-block:: console
 
-   wget https://github.com/NetApp/trident/releases/download/v21.01.1/trident-installer-21.01.1.tar.gz
-   tar -xf trident-installer-21.01.1.tar.gz
+   wget https://github.com/NetApp/trident/releases/download/v21.01.2/trident-installer-21.01.2.tar.gz
+   tar -xf trident-installer-21.01.2.tar.gz
    cd trident-installer
 
 .. _Trident installer bundle: https://github.com/NetApp/trident/releases/latest
@@ -250,11 +250,11 @@ installation in the ``trident`` namespace.
        Kubelet Dir:          /var/lib/kubelet
        Log Format:           text
        Silence Autosupport:  false
-       Trident Image:        netapp/trident:21.01.1
+       Trident Image:        netapp/trident:21.01.2
      Message:                Trident installed
      Namespace:              trident
      Status:                 Installed
-     Version:                v21.01.1
+     Version:                v21.01.2
    Events:
      Type    Reason      Age   From                        Message
      ----    ------      ----  ----                        -------
@@ -282,7 +282,7 @@ autosupportImage          The container image for Autosupport Telemetry         
 autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry                  "http://proxy.example.com:8888"
 uninstall                 A flag used to uninstall Trident                                               'false'
 logFormat                 Trident logging format to be used [text,json]                                  "text"
-tridentImage              Trident image to install                                                       "netapp/trident:21.01.1"
+tridentImage              Trident image to install                                                       "netapp/trident:21.01.2"
 imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage (k8s 1.17+) or quay.io/k8scsi"
 kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
@@ -315,7 +315,7 @@ customize your Trident installation. Here's an example:
    spec:
      debug: true
      namespace: trident
-     tridentImage: netapp/trident:21.01.1
+     tridentImage: netapp/trident:21.01.2
      imagePullSecrets:
      - thisisasecret
 
@@ -383,7 +383,7 @@ You can also use ``tridentctl`` to check the version of Trident installed.
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 21.01.1        | 21.01.1        |
+   | 21.01.2        | 21.01.2        |
    +----------------+----------------+
 
 If that's what you see, you're done with this step, but **Trident is not

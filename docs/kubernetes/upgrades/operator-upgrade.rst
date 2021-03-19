@@ -129,10 +129,10 @@ set of steps to be followed:
   .. code-block:: bash
 
       # Download the release required [21.01]
-      $ mkdir 21.01.1
-      $ cd 21.01.1
-      $ wget https://github.com/NetApp/trident/releases/download/v21.01.1/trident-installer-21.01.1.tar.gz
-      $ tar -xf trident-installer-21.01.1.tar.gz
+      $ mkdir 21.01.2
+      $ cd 21.01.2
+      $ wget https://github.com/NetApp/trident/releases/download/v21.01.2/trident-installer-21.01.2.tar.gz
+      $ tar -xf trident-installer-21.01.2.tar.gz
       $ cd trident-installer
 
       # Is your Kubernetes version < 1.16?
@@ -216,7 +216,7 @@ set of steps to be followed:
 
      #Ensure you are in the correct directory
      $ pwd
-     $ /root/21.01.1/trident-installer
+     $ /root/21.01.2/trident-installer
 
      #Install the cluster-scoped operator in the **same namespace**
      $ kubectl create -f deploy/bundle.yaml
@@ -247,7 +247,7 @@ set of steps to be followed:
      Message:                Trident installed
      Namespace:              trident
      Status:                 Installed
-     Version:                v21.01.1
+     Version:                v21.01.2
 
 
   Installing the cluster-scoped operator will:
@@ -256,7 +256,7 @@ set of steps to be followed:
      objects.
   ii. Delete ``TridentProvisioner`` objects and the ``tridentprovisioner`` CRD.
   iii. Upgrade Trident to the version of the cluster-scoped operator being used.
-       In the example above, Trident was upgraded to ``21.01.1``.
+       In the example above, Trident was upgraded to ``21.01.2``.
 
 Upgrading a Helm-based operator install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -268,9 +268,9 @@ If you have a Helm-based operator install, to upgrade, do the following:
 
 .. code-block:: console
 
- $ helm upgrade <name> trident-operator-21.01.1.tgz
+ $ helm upgrade <name> trident-operator-21.01.2.tgz
 
-where ``trident-operator-21.01.1.tgz`` reflects the version that you want to upgrade to.
+where ``trident-operator-21.01.2.tgz`` reflects the version that you want to upgrade to.
 
 If you run ``helm list``, the output shows that the chart and app version have both been upgraded.
 
@@ -278,7 +278,7 @@ To pass configuration data during the upgrade, use --set. For example, to change
 
 .. code-block:: console
 
-  $ helm upgrade <name> trident-operator-21.01.1-custom.tgz --set tridentDebug=true
+  $ helm upgrade <name> trident-operator-21.01.2-custom.tgz --set tridentDebug=true
 
 If you run ``$ tridentctl logs``, you can see the debug messages.
 
@@ -299,10 +299,10 @@ of the Trident Operator by following the instructions provided in the
 .. code-block:: bash
 
   # Download the release required [21.01]
-  $ mkdir 21.01.1
-  $ cd 21.01.1
-  $ wget https://github.com/NetApp/trident/releases/download/v21.01.1/trident-installer-21.01.1.tar.gz
-  $ tar -xf trident-installer-21.01.1.tar.gz
+  $ mkdir 21.01.2
+  $ cd 21.01.2
+  $ wget https://github.com/NetApp/trident/releases/download/v21.01.2/trident-installer-21.01.2.tar.gz
+  $ tar -xf trident-installer-21.01.2.tar.gz
   $ cd trident-installer
 
 2. Create the ``tridentorchestrator`` CRD from the manifest.
@@ -360,7 +360,7 @@ of the Trident Operator by following the instructions provided in the
   Message:                Trident installed
   Namespace:              trident
   Status:                 Installed
-  Version:                v21.01.1
+  Version:                v21.01.2
 
 5. Existing backends and PVCs will be automatically available.
 
