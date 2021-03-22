@@ -114,7 +114,7 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 			csi = true
 		}
 	} else {
-		return "", errors.New(fmt.Sprintln(K8sVersion, "The provided Kubernetes version is not supported"))
+		return "", errors.New(versionNotSupported)
 	}
 
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
