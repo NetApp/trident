@@ -20,6 +20,7 @@ import (
 
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -451,19 +452,22 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 		}
 	}
 
-	return nil, fmt.Errorf("filesystem with token '%s' not found", creationToken)
+	return nil, utils.NotFoundError(fmt.Sprintf("filesystem with token '%s' not found", creationToken))
 }
 
 // VolumeExistsByCreationToken checks whether a volume exists using its token as a key
 func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
-	fs, _ := d.GetVolumeByCreationToken(ctx, creationToken)
 
-	// Volume exists
-	if fs != nil {
-		return true, fs, nil
+	fs, err := d.GetVolumeByCreationToken(ctx, creationToken)
+	if err != nil {
+		if utils.IsNotFoundError(err) {
+			return false, nil, nil
+		} else {
+			return false, nil, err
+		}
 	}
-
-	return false, nil, nil
+	// Volume exists
+	return true, fs, nil
 }
 
 // GetVolumeByID returns a Filesystem based on its ID

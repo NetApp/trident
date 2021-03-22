@@ -1138,12 +1138,16 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return nil, fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The AWS volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil, nil
 	}
 
-	snapshots, err := d.API.GetSnapshotsForVolume(ctx, volume)
+	snapshots, err := d.API.GetSnapshotsForVolume(ctx, extantVolume)
 	if err != nil {
 		return nil, err
 	}
@@ -1162,7 +1166,7 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 			return &storage.Snapshot{
 				Config:    snapConfig,
 				Created:   created,
-				SizeBytes: volume.QuotaInBytes,
+				SizeBytes: extantVolume.QuotaInBytes,
 				State:     storage.SnapshotStateOnline,
 			}, nil
 		}
@@ -1345,17 +1349,21 @@ func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The AWS volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil
 	}
 
-	snapshot, err := d.API.GetSnapshotForVolume(ctx, volume, internalSnapName)
+	snapshot, err := d.API.GetSnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
-	if err := d.API.DeleteSnapshot(ctx, volume, snapshot); err != nil {
+	if err := d.API.DeleteSnapshot(ctx, extantVolume, snapshot); err != nil {
 		return err
 	}
 

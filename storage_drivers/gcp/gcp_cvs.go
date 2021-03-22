@@ -1231,7 +1231,7 @@ func (d *NFSStorageDriver) Destroy(ctx context.Context, name string) error {
 	// If volume doesn't exist, return success
 	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, name)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if !volumeExists {
 		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
@@ -1334,19 +1334,24 @@ func (d *NFSStorageDriver) GetSnapshot(
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return nil, fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The GCP volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil, nil
 	}
 
 	// Use snapshot or backup API depending on CVS storage class
-	switch volume.StorageClass {
+	switch extantVolume.StorageClass {
 	case api.StorageClassHardware:
-		return d.getSnapshot(ctx, volume, snapConfig)
+		return d.getSnapshot(ctx, extantVolume, snapConfig)
 	case api.StorageClassSoftware:
-		return d.getBackup(ctx, volume, snapConfig)
+		return d.getBackup(ctx, extantVolume, snapConfig)
 	default:
-		return nil, fmt.Errorf("unknown CVS storage class (%s) for volume %s", volume.StorageClass, volume.Name)
+		return nil, fmt.Errorf("unknown CVS storage class (%s) for volume %s",
+			extantVolume.StorageClass, extantVolume.Name)
 	}
 }
 
@@ -1753,19 +1758,23 @@ func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The GCP volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil
 	}
 
 	// Use snapshot or backup API depending on CVS storage class
-	switch volume.StorageClass {
+	switch extantVolume.StorageClass {
 	case api.StorageClassHardware:
-		return d.deleteSnapshot(ctx, volume, snapConfig)
+		return d.deleteSnapshot(ctx, extantVolume, snapConfig)
 	case api.StorageClassSoftware:
-		return d.deleteBackup(ctx, volume, snapConfig)
+		return d.deleteBackup(ctx, extantVolume, snapConfig)
 	default:
-		return fmt.Errorf("unknown CVS storage class (%s) for volume %s", volume.StorageClass, volume.Name)
+		return fmt.Errorf("unknown CVS storage class (%s) for volume %s", extantVolume.StorageClass, extantVolume.Name)
 	}
 }
 

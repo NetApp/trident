@@ -325,7 +325,7 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 	}
 
 	if len(filesystems) == 0 {
-		return nil, fmt.Errorf("filesystem with creationToken %s not found", creationToken)
+		return nil, utils.NotFoundError(fmt.Sprintf("filesystem with creationToken %s not found", creationToken))
 	} else if len(filesystems) > 1 {
 		return nil, fmt.Errorf("multiple filesystems with creationToken %s found", creationToken)
 	}
@@ -342,9 +342,12 @@ func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken 
 		return false, nil, errors.New("failed to get filesystem")
 	}
 
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return false, nil, err
+	if err := d.getErrorFromAPIResponse(response, responseBody); err != nil {
+		if utils.IsNotFoundError(err) {
+			return false, nil, nil
+		} else {
+			return false, nil, err
+		}
 	}
 
 	var filesystems []FileSystem
@@ -924,7 +927,12 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		if err := json.Unmarshal(responseBody, &responseData); err != nil {
 			return fmt.Errorf("could not parse API error response: %s; %v", string(responseBody), err)
 		} else {
-			return Error{response.StatusCode, responseData.Code, responseData.Message}
+			switch response.StatusCode {
+			case http.StatusNotFound:
+				return utils.NotFoundError(responseData.Message)
+			default:
+				return Error{response.StatusCode, responseData.Code, responseData.Message}
+			}
 		}
 	} else {
 		return nil
