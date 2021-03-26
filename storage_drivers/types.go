@@ -265,7 +265,8 @@ type AzureNFSStorageDriverPool struct {
 }
 
 type AzureNFSStorageDriverConfigDefaults struct {
-	ExportRule string `json:"exportRule"`
+	ExportRule  string `json:"exportRule"`
+	SnapshotDir string `json:"snapshotDir"`
 	CommonStorageDriverConfigDefaults
 }
 

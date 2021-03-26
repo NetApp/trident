@@ -268,6 +268,10 @@ func (d *Client) newFileSystemFromVolume(
 		fs.ID = *vol.ID
 	}
 
+	if vol.SnapshotDirectoryVisible != nil {
+		fs.SnapshotDirectory = *vol.SnapshotDirectoryVisible
+	}
+
 	if vol.VolumeProperties.FileSystemID != nil {
 		fs.FileSystemID = *vol.VolumeProperties.FileSystemID
 	}
@@ -629,11 +633,12 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 	newVol.Name = &request.Name
 	newVol.Tags = tags
 	newVol.VolumeProperties = &netapp.VolumeProperties{
-		CreationToken:  &request.CreationToken,
-		ServiceLevel:   cpool.ServiceLevel,
-		UsageThreshold: &request.QuotaInBytes,
-		ExportPolicy:   exportPolicyExport(&request.ExportPolicy),
-		ProtocolTypes:  &request.ProtocolTypes,
+		CreationToken:            &request.CreationToken,
+		ServiceLevel:             cpool.ServiceLevel,
+		UsageThreshold:           &request.QuotaInBytes,
+		ExportPolicy:             exportPolicyExport(&request.ExportPolicy),
+		ProtocolTypes:            &request.ProtocolTypes,
+		SnapshotDirectoryVisible: &request.SnapshotDirectory,
 	}
 
 	// Figure out what we need to do about vnets and subnets.  The basic plan for a normal
@@ -708,6 +713,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 			"virtualNetwork": vNet,
 			"subnet":         subnet,
 			"snapshotID":     request.SnapshotID,
+			"snapshotDir":    request.SnapshotDirectory,
 		}).Debug("Issuing create request.")
 	}
 

@@ -2138,7 +2138,7 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.Volume) *storage.V
 		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  "",
 		ExportPolicy:    "",
-		SnapshotDir:     "true",
+		SnapshotDir:     strconv.FormatBool(volumeAttrs.SnapshotDirectory),
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,

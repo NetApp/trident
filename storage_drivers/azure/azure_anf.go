@@ -33,6 +33,7 @@ const (
 	MinimumANFVolumeSizeBytes = 107374182400 // 100 GiB
 
 	defaultNfsMountOptions = "-o nfsvers=3"
+	defaultSnapshotDir     = "false"
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
 	defaultVolumeSizeStr   = "107374182400"
@@ -41,6 +42,7 @@ const (
 	Cookie         = "cookie"
 	Size           = "size"
 	ServiceLevel   = "serviceLevel"
+	SnapshotDir    = "snapshotDir"
 	ExportRule     = "exportRule"
 	Location       = "location"
 	VirtualNetwork = "virtualNetwork"
@@ -251,6 +253,10 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 		config.NfsMountOptions = defaultNfsMountOptions
 	}
 
+	if config.SnapshotDir == "" {
+		config.SnapshotDir = defaultSnapshotDir
+	}
+
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
@@ -263,6 +269,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 		"Size":            config.Size,
 		"ServiceLevel":    config.ServiceLevel,
 		"NfsMountOptions": config.NfsMountOptions,
+		"SnapshotDir":     config.SnapshotDir,
 		"LimitVolumeSize": config.LimitVolumeSize,
 		"ExportRule":      config.ExportRule,
 	}).Debugf("Configuration defaults")
@@ -297,6 +304,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 		pool.InternalAttributes[Size] = d.Config.Size
 		pool.InternalAttributes[ServiceLevel] = strings.Title(d.Config.ServiceLevel)
+		pool.InternalAttributes[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes[Location] = d.Config.Location
 		pool.InternalAttributes[VirtualNetwork] = d.Config.VirtualNetwork
@@ -342,6 +350,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 				serviceLevel = vpool.ServiceLevel
 			}
 
+			snapshotDir := d.Config.SnapshotDir
+			if vpool.SnapshotDir != "" {
+				snapshotDir = vpool.SnapshotDir
+			}
+
 			exportRule := d.Config.ExportRule
 			if vpool.ExportRule != "" {
 				exportRule = vpool.ExportRule
@@ -373,6 +386,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 			pool.InternalAttributes[Size] = size
 			pool.InternalAttributes[ServiceLevel] = strings.Title(serviceLevel)
+			pool.InternalAttributes[SnapshotDir] = snapshotDir
 			pool.InternalAttributes[ExportRule] = exportRule
 			pool.InternalAttributes[Location] = location
 			pool.InternalAttributes[VirtualNetwork] = vnet
@@ -473,6 +487,14 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 			_, netAddr, _ := net.ParseCIDR(rule)
 			if ipAddr == nil && netAddr == nil {
 				return fmt.Errorf("invalid address/CIDR for exportRule in pool %s: %s", poolName, rule)
+			}
+		}
+
+		// Validate snapshot dir
+		if pool.InternalAttributes[SnapshotDir] != "" {
+			_, err := strconv.ParseBool(pool.InternalAttributes[SnapshotDir])
+			if err != nil {
+				return fmt.Errorf("invalid value for snapshotDir in pool %s: %v", poolName, err)
 			}
 		}
 
@@ -581,6 +603,16 @@ func (d *NFSStorageDriver) Create(
 		serviceLevel = pool.InternalAttributes[ServiceLevel]
 	}
 
+	// Take snapshot directory from volume config first (handles Docker case), then from pool
+	snapshotDir := volConfig.SnapshotDir
+	if snapshotDir == "" {
+		snapshotDir = pool.InternalAttributes[SnapshotDir]
+	}
+	snapshotDirBool, err := strconv.ParseBool(snapshotDir)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotDir: %v", err)
+	}
+
 	// Determine mount options (volume config wins, followed by backend config)
 	mountOptions := d.Config.NfsMountOptions
 	if volConfig.MountOptions != "" {
@@ -632,22 +664,24 @@ func (d *NFSStorageDriver) Create(
 		"creationToken": name,
 		"size":          sizeBytes,
 		"serviceLevel":  serviceLevel,
+		"snapshotDir":   snapshotDirBool,
 		"protocolTypes": protocolTypes,
 		"exportPolicy":  fmt.Sprintf("%+v", exportPolicy),
 	}).Debug("Creating volume.")
 
 	createRequest := &sdk.FilesystemCreateRequest{
-		Name:           volConfig.Name,
-		Location:       pool.InternalAttributes[Location],
-		VirtualNetwork: pool.InternalAttributes[VirtualNetwork],
-		Subnet:         pool.InternalAttributes[Subnet],
-		CreationToken:  name,
-		ExportPolicy:   exportPolicy,
-		Labels:         labels,
-		ProtocolTypes:  protocolTypes,
-		QuotaInBytes:   int64(sizeBytes),
-		ServiceLevel:   serviceLevel,
-		PoolID:         storagePool.Name,
+		Name:              volConfig.Name,
+		Location:          pool.InternalAttributes[Location],
+		VirtualNetwork:    pool.InternalAttributes[VirtualNetwork],
+		Subnet:            pool.InternalAttributes[Subnet],
+		CreationToken:     name,
+		ExportPolicy:      exportPolicy,
+		Labels:            labels,
+		PoolID:            storagePool.Name,
+		ProtocolTypes:     protocolTypes,
+		QuotaInBytes:      int64(sizeBytes),
+		ServiceLevel:      serviceLevel,
+		SnapshotDirectory: snapshotDirBool,
 	}
 
 	// Create the volume
@@ -803,18 +837,19 @@ func (d *NFSStorageDriver) CreateClone(
 	}
 
 	createRequest := &sdk.FilesystemCreateRequest{
-		Name:          volConfig.Name,
-		Location:      sourceVolume.Location,
-		CapacityPool:  sourceVolume.CapacityPoolName, // critical value for clone path
-		CreationToken: name,
-		ExportPolicy:  sourceVolume.ExportPolicy,
-		Labels:        labels,
-		ProtocolTypes: sourceVolume.ProtocolTypes,
-		QuotaInBytes:  sourceVolume.QuotaInBytes,
-		ServiceLevel:  sourceVolume.ServiceLevel,
-		SnapshotID:    sourceSnapshot.SnapshotID,
-		PoolID:        *cookie.StoragePoolName,
-		Subnet:        sourceVolume.Subnet,
+		Name:              volConfig.Name,
+		Location:          sourceVolume.Location,
+		CapacityPool:      sourceVolume.CapacityPoolName, // critical value for clone path
+		Subnet:            sourceVolume.Subnet,
+		CreationToken:     name,
+		ExportPolicy:      sourceVolume.ExportPolicy,
+		Labels:            labels,
+		PoolID:            *cookie.StoragePoolName,
+		ProtocolTypes:     sourceVolume.ProtocolTypes,
+		QuotaInBytes:      sourceVolume.QuotaInBytes,
+		ServiceLevel:      sourceVolume.ServiceLevel,
+		SnapshotDirectory: sourceVolume.SnapshotDirectory,
+		SnapshotID:        sourceSnapshot.SnapshotID,
 	}
 
 	// Clone the volume
@@ -1570,7 +1605,7 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *sdk.FileSystem) *stora
 		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  "",
 		ExportPolicy:    "",
-		SnapshotDir:     "true",
+		SnapshotDir:     strconv.FormatBool(volumeAttrs.SnapshotDirectory),
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
