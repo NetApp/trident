@@ -546,7 +546,7 @@ func (d *NFSStorageDriver) Create(
 	// If the volume already exists, bail out
 	volumeExists, extantVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
+		return fmt.Errorf("error checking for existing volume %s: %v", name, err)
 	}
 	if volumeExists {
 		if extantVolume.ProvisioningState == sdk.StateCreating {
@@ -729,7 +729,7 @@ func (d *NFSStorageDriver) CreateClone(
 	// If the volume already exists, bail out
 	volumeExists, extantVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
+		return fmt.Errorf("error checking for existing volume %s: %v", name, err)
 	}
 	if volumeExists {
 		if extantVolume.ProvisioningState == sdk.StateCreating {
@@ -1013,9 +1013,8 @@ func (d *NFSStorageDriver) Destroy(ctx context.Context, name string) error {
 	// If volume doesn't exist, return success
 	// 'name' is in fact 'creationToken' here.
 	volumeExists, extantVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, name)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking for existing volume %s: %v", name, err)
 	}
 	if !volumeExists {
 		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
@@ -1110,12 +1109,16 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.SDK.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return nil, fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The ANF volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil, nil
 	}
 
-	snapshots, err := d.SDK.GetSnapshotsForVolume(ctx, volume)
+	snapshots, err := d.SDK.GetSnapshotsForVolume(ctx, extantVolume)
 	if err != nil {
 		return nil, err
 	}
@@ -1134,7 +1137,7 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 			return &storage.Snapshot{
 				Config:    snapConfig,
 				Created:   created,
-				SizeBytes: volume.QuotaInBytes,
+				SizeBytes: extantVolume.QuotaInBytes,
 				State:     storage.SnapshotStateOnline,
 			}, nil
 		}
@@ -1226,7 +1229,7 @@ func (d *NFSStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 	// Check if volume exists
 	volumeExists, sourceVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, internalVolName)
 	if err != nil {
-		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+		return nil, fmt.Errorf("error checking for existing volume %s: %v", internalVolName, err)
 	}
 	if !volumeExists {
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
@@ -1313,23 +1316,27 @@ func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	// Get the volume
 	creationToken := internalVolName
 
-	volume, err := d.SDK.GetVolumeByCreationToken(ctx, creationToken)
+	volumeExists, extantVolume, err := d.SDK.VolumeExistsByCreationToken(ctx, creationToken)
 	if err != nil {
-		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+		return fmt.Errorf("error checking for existing volume %s: %v", creationToken, err)
+	}
+	if !volumeExists {
+		// The ANF volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+		return nil
 	}
 
-	snapshot, err := d.SDK.GetSnapshotForVolume(ctx, volume, internalSnapName)
+	snapshot, err := d.SDK.GetSnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
-	if err = d.SDK.DeleteSnapshot(ctx, volume, snapshot); err != nil {
+	if err = d.SDK.DeleteSnapshot(ctx, extantVolume, snapshot); err != nil {
 		return err
 	}
 
 	// Wait for snapshot deletion to complete
 	if err := d.SDK.WaitForSnapshotState(
-		ctx, snapshot, volume, sdk.StateDeleted, []string{sdk.StateError}, sdk.SnapshotTimeout); err != nil {
+		ctx, snapshot, extantVolume, sdk.StateDeleted, []string{sdk.StateError}, sdk.SnapshotTimeout); err != nil {
 		return err
 	}
 

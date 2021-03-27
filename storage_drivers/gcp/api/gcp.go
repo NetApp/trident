@@ -387,7 +387,7 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 	}
 
 	if len(matchingVolumes) == 0 {
-		return nil, fmt.Errorf("volume with name %s not found", name)
+		return nil, utils.NotFoundError(fmt.Sprintf("volume with name %s not found", name))
 	} else if len(matchingVolumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with name %s found", name)
 	}
@@ -401,7 +401,7 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return nil, errors.New("failed to get volume")
+		return nil, err
 	}
 
 	err = d.getErrorFromAPIResponse(response, responseBody)
@@ -416,7 +416,7 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 	}
 
 	if len(volumes) == 0 {
-		return nil, fmt.Errorf("volume with creationToken %s not found", creationToken)
+		return nil, utils.NotFoundError(fmt.Sprintf("volume with creationToken %s not found", creationToken))
 	} else if len(volumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with creationToken %s found", creationToken)
 	}
@@ -430,12 +430,15 @@ func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken 
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
 	if err != nil {
-		return false, nil, errors.New("failed to get volume")
+		return false, nil, err
 	}
 
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return false, nil, err
+	if err := d.getErrorFromAPIResponse(response, responseBody); err != nil {
+		if utils.IsNotFoundError(err) {
+			return false, nil, nil
+		} else {
+			return false, nil, err
+		}
 	}
 
 	var volumes []Volume
@@ -1176,7 +1179,12 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		if err := json.Unmarshal(responseBody, &responseData); err != nil {
 			return fmt.Errorf("could not parse API error response: %s; %v", string(responseBody), err)
 		} else {
-			return Error{response.StatusCode, responseData.Code, responseData.Message}
+			switch response.StatusCode {
+			case http.StatusNotFound:
+				return utils.NotFoundError(responseData.Message)
+			default:
+				return Error{response.StatusCode, responseData.Code, responseData.Message}
+			}
 		}
 	} else {
 		return nil
