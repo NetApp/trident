@@ -1,0 +1,26 @@
+layout:
+  application:
+    - name: facade
+      source: asset:clientFacade
+      target: "{{ joinFilePath .Target .ClientPackage }}"
+      file_name: "{{ .Name }}_client.go"
+  models:
+    - name: definition
+      source: asset:model
+      target: "{{ joinFilePath .Target .ModelPackage }}"
+      file_name: "{{ (snakize (pascalize .Name)) }}.go"
+  operations:
+    - name: parameters
+      source: asset:clientParameter
+      target: "{{ joinFilePath .Target .ClientPackage .Package }}"
+      file_name: "{{ (snakize (pascalize .Name)) }}_parameters.go"
+    - name: responses
+      source: asset:clientResponse
+      target: "{{ joinFilePath .Target .ClientPackage .Package }}"
+      file_name: "{{ (snakize (pascalize .Name)) }}_responses.go"
+  operation_groups:
+    - name: client
+      source: asset:clientClient
+      target: "{{ joinFilePath .Target .ClientPackage .Name }}"
+      file_name: "{{ (snakize (pascalize .Name)) }}_client.go"
+

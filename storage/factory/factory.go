@@ -80,7 +80,8 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID str
 	// Pre-driver initialization setup
 	switch commonConfig.StorageDriverName {
 	case drivers.OntapNASStorageDriverName:
-		storageDriver = &ontap.NASStorageDriver{}
+		//storageDriver = &ontap.NASStorageDriver{} // TODO put back
+		storageDriver = &ontap.NASStorageDriverRest{} // TODO put back
 	case drivers.OntapNASFlexGroupStorageDriverName:
 		storageDriver = &ontap.NASFlexGroupStorageDriver{}
 	case drivers.OntapNASQtreeStorageDriverName:

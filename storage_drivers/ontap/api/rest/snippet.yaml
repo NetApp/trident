@@ -1,0 +1,10 @@
+paths:
+  /application/applications:
+    get:
+      operationId: application_collection_get
+      parameters:
+        - description: Filter by UUID
+          in: query
+          name: uuid
+          type: string
+
