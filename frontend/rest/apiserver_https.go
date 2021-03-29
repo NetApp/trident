@@ -24,7 +24,8 @@ type APIServerHTTPS struct {
 }
 
 func NewHTTPSServer(
-	p core.Orchestrator, address, port, caCertFile, serverCertFile, serverKeyFile string,
+	p core.Orchestrator, address, port, caCertFile, serverCertFile, serverKeyFile string, enableMutualTLS bool,
+	handler http.Handler,
 ) (*APIServerHTTPS, error) {
 
 	orchestrator = p
@@ -32,7 +33,7 @@ func NewHTTPSServer(
 	apiServer := &APIServerHTTPS{
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),
-			Handler:      &tlsAuthHandler{handler: NewRouter()},
+			Handler:      &tlsAuthHandler{handler: handler},
 			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert},
 			ReadTimeout:  config.HTTPTimeout,
 			WriteTimeout: config.HTTPTimeout,
@@ -40,6 +41,11 @@ func NewHTTPSServer(
 		caCertFile:     caCertFile,
 		serverCertFile: serverCertFile,
 		serverKeyFile:  serverKeyFile,
+	}
+
+	if !enableMutualTLS {
+		apiServer.server.Handler = handler
+		apiServer.server.TLSConfig.ClientAuth = tls.NoClientCert
 	}
 
 	if caCertFile != "" {

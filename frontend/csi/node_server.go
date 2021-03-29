@@ -487,6 +487,8 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 		Logc(ctx).WithField("node", p.nodeName).Info("Updated Trident controller with node registration.")
 		Logc(ctx).WithField("node", p.nodeName).Debug("Topology labels found for node: ", topologyLabels)
 	}
+
+	p.nodeIsRegistered = true
 }
 
 func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,

@@ -1166,12 +1166,19 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 		logLevel = "2"
 	}
 
-	isGCRRegistryVersion := false
-	daemonSetYAML := daemonSet114YAMLTemplate
-	if version.MajorVersion() == 1 && version.MinorVersion() == 13 {
-		daemonSetYAML = daemonSet113YAMLTemplate
-	} else if (version.MajorVersion() == 1 && version.MinorVersion() >= 17) || version.MajorVersion() > 1 {
-		isGCRRegistryVersion = true
+	isGCRRegistryVersion := true
+	daemonSetYAML := daemonSet118YAMLTemplate
+	if version.MajorVersion() == 1 {
+		switch version.MinorVersion() {
+		case 13:
+			daemonSetYAML = daemonSet113YAMLTemplate
+			isGCRRegistryVersion = false
+		case 14, 15, 16:
+			daemonSetYAML = daemonSet114YAMLTemplate
+			isGCRRegistryVersion = false
+		case 17:
+			daemonSetYAML = daemonSet114YAMLTemplate
+		}
 	}
 
 	imageRegistry = getRegistryVal(imageRegistry, isGCRRegistryVersion)
@@ -1230,7 +1237,25 @@ spec:
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
+        - "--https_rest"
+        - "--https_port=34572"
         {DEBUG}
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 3
+          timeoutSeconds: 1
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -1368,7 +1393,188 @@ spec:
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
+        - "--https_rest"
+        - "--https_port=34572"
         {DEBUG}
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 3
+          timeoutSeconds: 1
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        - name: PATH
+          value: /netapp:/bin
+        volumeMounts:
+        - name: plugin-dir
+          mountPath: /plugin
+        - name: plugins-mount-dir
+          mountPath: {KUBELET_DIR}/plugins
+        - name: pods-mount-dir
+          mountPath: {KUBELET_DIR}/pods
+          mountPropagation: "Bidirectional"
+        - name: dev-dir
+          mountPath: /dev
+        - name: sys-dir
+          mountPath: /sys
+        - name: host-dir
+          mountPath: /host
+          mountPropagation: "Bidirectional"
+        - name: trident-tracking-dir
+          mountPath: /var/lib/trident/tracking
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: driver-registrar
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.1.0
+        args:
+        - "--v={LOG_LEVEL}"
+        - "--csi-address=$(ADDRESS)"
+        - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+        env:
+        - name: ADDRESS
+          value: /plugin/csi.sock
+        - name: REGISTRATION_PATH
+          value: "{KUBELET_DIR}/plugins/csi.trident.netapp.io/csi.sock"
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: plugin-dir
+          mountPath: /plugin
+        - name: registration-dir
+          mountPath: /registration
+      {IMAGE_PULL_SECRETS}
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      volumes:
+      - name: plugin-dir
+        hostPath:
+          path: {KUBELET_DIR}/plugins/csi.trident.netapp.io/
+          type: DirectoryOrCreate
+      - name: registration-dir
+        hostPath:
+          path: {KUBELET_DIR}/plugins_registry/
+          type: Directory
+      - name: plugins-mount-dir
+        hostPath:
+          path: {KUBELET_DIR}/plugins
+          type: DirectoryOrCreate
+      - name: pods-mount-dir
+        hostPath:
+          path: {KUBELET_DIR}/pods
+          type: DirectoryOrCreate
+      - name: dev-dir
+        hostPath:
+          path: /dev
+          type: Directory
+      - name: sys-dir
+        hostPath:
+          path: /sys
+          type: Directory
+      - name: host-dir
+        hostPath:
+          path: /
+          type: Directory
+      - name: trident-tracking-dir
+        hostPath:
+          path: /var/lib/trident/tracking
+          type: DirectoryOrCreate
+      - name: certs
+        secret:
+          secretName: trident-csi
+`
+
+const daemonSet118YAMLTemplate = `---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {DAEMONSET_NAME}
+  {LABELS}
+  {OWNER_REF}
+spec:
+  selector:
+    matchLabels:
+      app: {LABEL_APP}
+  template:
+    metadata:
+      labels:
+        app: {LABEL_APP}
+    spec:
+      serviceAccount: trident-csi
+      hostNetwork: true
+      hostIPC: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: trident-main
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+          allowPrivilegeEscalation: true
+        image: {TRIDENT_IMAGE}
+        command:
+        - /trident_orchestrator
+        args:
+        - "--no_persistence"
+        - "--rest=false"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=node"
+        - "--log_format={LOG_FORMAT}"
+        - "--node_prep={NODE_PREP}"
+        - "--https_rest"
+        - "--https_port=34572"
+        {DEBUG}
+        startupProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 5
+          timeoutSeconds: 1
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 3
+          timeoutSeconds: 1
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            scheme: HTTPS
+            port: 34572
+          failureThreshold: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         env:
         - name: KUBE_NODE_NAME
           valueFrom:

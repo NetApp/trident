@@ -18,7 +18,7 @@ type Route struct {
 
 type Routes []Route
 
-var routes = Routes{
+var controllerRoutes = Routes{
 	Route{
 		"GetVersion",
 		"GET",

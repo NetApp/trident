@@ -53,6 +53,8 @@ type Plugin struct {
 	vCap  []*csi.VolumeCapability_AccessMode
 
 	opCache sync.Map
+
+	nodeIsRegistered bool
 }
 
 func NewControllerPlugin(
@@ -363,4 +365,8 @@ func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
 		Logc(ctx).Warn("AES encryption key not provided!")
 	}
 	return aesKey, nil
+}
+
+func (p *Plugin) IsReady() bool {
+	return p.nodeIsRegistered
 }
