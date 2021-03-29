@@ -44,7 +44,7 @@ Also, when using CVS on GCP, these default volume option settings are available.
 +=======================+==========================================================================+==========================+
 | ``exportRule``        | NFS access list (addresses and/or CIDR subnets), defaults to "0.0.0.0/0" | "10.0.1.0/24,10.0.2.100" |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
-| ``snapshotDir``       | Access to the .snapshot directory, defaults to "false"                   | "true"                   |
+| ``snapshotDir``       | Controls visibility of the .snapshot directory                           | "false"                  |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
 | ``snapshotReserve``   | Snapshot reserve percentage, default is "" to accept CVS default of 0    | "10"                     |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+

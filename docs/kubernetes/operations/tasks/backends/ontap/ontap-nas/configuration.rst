@@ -114,7 +114,7 @@ snapshotReserve           Percentage of volume reserved for snapshots           
 splitOnClone              Split a clone from its parent upon creation                     "false"
 encryption                Enable NetApp volume encryption                                 "false"
 unixPermissions           Mode for new volumes                                            "777"
-snapshotDir               Access to the .snapshot directory                               "false"
+snapshotDir               Controls visibility of the .snapshot directory                  "false"
 exportPolicy              Export policy to use                                            "default"
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration

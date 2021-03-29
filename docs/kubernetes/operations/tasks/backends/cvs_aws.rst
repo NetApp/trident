@@ -66,7 +66,7 @@ For an example, see the configuration examples below.
 Parameter                 Description                                                     Default
 ========================= =============================================================== ================================================
 exportRule                The export rule(s) for new volumes                              "0.0.0.0/0"
-snapshotDir               Access to the .snapshot directory                               "false"
+snapshotDir               Controls visibility of the .snapshot directory                  "false"
 snapshotReserve           Percentage of volume reserved for snapshots                     "" (accept CVS default of 0)
 size                      The size of new volumes                                         "100G"
 ========================= =============================================================== ================================================
