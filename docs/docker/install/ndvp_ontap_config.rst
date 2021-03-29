@@ -110,7 +110,7 @@ Also, when using ONTAP, these default option settings are available to avoid hav
 +------------------------------+--------------------------------------------------------------------------+------------+
 | ``unixPermissions``          | NAS option for provisioned NFS volumes, defaults to "777"                | 777        |
 +------------------------------+--------------------------------------------------------------------------+------------+
-| ``snapshotDir``              | NAS option for access to the .snapshot directory, defaults to "false"    | false      |
+| ``snapshotDir``              | NAS option for access to the .snapshot directory, defaults to "false"    | true       |
 +------------------------------+--------------------------------------------------------------------------+------------+
 | ``exportPolicy``             | NAS option for the NFS export policy to use, defaults to "default"       | default    |
 +------------------------------+--------------------------------------------------------------------------+------------+

@@ -16,7 +16,7 @@ Volume create options for both NFS and iSCSI:
 NFS has additional options that aren't relevant when using iSCSI:
 
 * ``unixPermissions`` - this controls the permission set for the volume itself. By default the permissions will be set to ``---rwxr-xr-x``, or in numerical notation ``0755``, and root will be the owner. Either the text or numerical format will work.
-* ``snapshotDir`` - setting this to ``true`` will make the .snapshot directory visible to clients accessing the volume. The default value is ``false``, meaning that access to snapshot data is disabled by default.  Some images, for example the official MySQL image, don't function as expected when the .snapshot directory is visible.
+* ``snapshotDir`` - setting this to ``true`` will make the .snapshot directory visible to clients accessing the volume. The default value is ``false``, meaning that visibility of the .snapshot directory is disabled by default.  Some images, for example the official MySQL image, don't function as expected when the .snapshot directory is visible.
 * ``exportPolicy`` - sets the export policy to be used for the volume.  The default is ``default``.
 * ``securityStyle`` - sets the security style to be used for access to the volume.  The default is ``unix``. Valid values are ``unix`` and ``mixed``.
 

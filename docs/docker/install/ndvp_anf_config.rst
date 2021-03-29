@@ -54,7 +54,7 @@ For an example, see the configuration examples below.
 Parameter        Description                                                     Default
 ================ =============================================================== ================================================
 exportRule       The export rule(s) for new volumes                              "0.0.0.0/0"
-snapshotDir      Access to the .snapshot directory, defaults to "false"          "true"
+snapshotDir      Controls visibility of the .snapshot directory                  "false"
 size             The default size of new volumes                                 "100G"
 ================ =============================================================== ================================================
 
