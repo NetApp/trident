@@ -449,7 +449,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.VserverGetAggregateNames()
+	vserverAggrs, err := d.API.SVMGetAggregateNames()
 	if err != nil {
 		return err
 	}
@@ -943,7 +943,7 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.C
 func (d *NASFlexGroupStorageDriver) vserverAggregates(svmName string) ([]string, error) {
 	var err error
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.VserverGetAggregateNames()
+	vserverAggrs, err := d.API.SVMGetAggregateNames()
 	if err != nil {
 		return nil, err
 	}

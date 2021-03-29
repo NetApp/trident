@@ -28,7 +28,7 @@ import (
 func SpecOnlyValidation(ctx context.Context, commonConfig *drivers.CommonStorageDriverConfig,
 	configInJSON string) error {
 
-	storageDriverConfig, err :=  drivers.GetDriverConfigByName(commonConfig.StorageDriverName)
+	storageDriverConfig, err := drivers.GetDriverConfigByName(commonConfig.StorageDriverName)
 	if err != nil {
 		return err
 	}
@@ -80,8 +80,19 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID str
 	// Pre-driver initialization setup
 	switch commonConfig.StorageDriverName {
 	case drivers.OntapNASStorageDriverName:
-		//storageDriver = &ontap.NASStorageDriver{} // TODO put back
-		storageDriver = &ontap.NASStorageDriverRest{} // TODO put back
+		// TODO remove, but for now, we have to unmarshall the JSON earlier here to see if we should use REST or ZAPI
+		config := &drivers.OntapStorageDriverConfig{}
+		config.CommonStorageDriverConfig = commonConfig
+		err := json.Unmarshal([]byte(configJSON), &config)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
+		}
+		if config.UseREST {
+			// TODO remove check, and always use the abstraction layer for both ZAPI and REST access
+			storageDriver = &ontap.NASStorageDriverAbstraction{}
+		} else {
+			storageDriver = &ontap.NASStorageDriver{}
+		}
 	case drivers.OntapNASFlexGroupStorageDriverName:
 		storageDriver = &ontap.NASFlexGroupStorageDriver{}
 	case drivers.OntapNASQtreeStorageDriverName:

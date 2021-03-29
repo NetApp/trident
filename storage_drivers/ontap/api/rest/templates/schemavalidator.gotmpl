@@ -914,13 +914,13 @@ func init() {
 const (
           {{ range .Enum }}
 
-          // BEGIN RIPPY DEBUGGING
+          // BEGIN DEBUGGING
           // {{ $.Name }}
           // {{ pascalize $.Name }}
           // {{ $propname }}
           // {{ pascalize $propname }}
           // {{ . }}
-          // END RIPPY DEBUGGING
+          // END DEBUGGING
 
           {{- $variant := print (pascalize $.Name) (pascalize $propname) (pascalize (cleanupEnumVariant .)) }}
   // {{ $variant }} captures enum value {{ printf "%q" . }}

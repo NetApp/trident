@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
 
-#../swagger generate model -f swagger_rippy_volume_minimal.yaml 
-#../swagger generate client -f swagger_rippy_volume_minimal.yaml -C default-client.yml
-
-
-. ./env.sh
-
 rm -rf ./models
 rm -rf ./client
 
-# TODO add this back in?  this is to force update the swagger YAML based on our findings to date
-# ./preprocess.py 
+# if you need to recreate the swagger_full_converted.yaml from the swagger_full.yaml, uncomment this
+# ./preprocess.py
 
-#swagger generate client -f swagger_rippy_volume_minimal.yaml \
 swagger generate client -f swagger_full_converted.yaml \
    -C ./templates/default-client.yml \
    --template-dir=./templates --allow-template-override  | tee regen.log

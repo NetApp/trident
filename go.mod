@@ -18,14 +18,14 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/evanphx/json-patch/v5 v5.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // 2/12/2019
+	github.com/go-openapi/errors v0.20.0
+	github.com/go-openapi/runtime v0.19.29
+	github.com/go-openapi/strfmt v0.20.1
+	github.com/go-openapi/swag v0.19.15
+	github.com/go-openapi/validate v0.20.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
 	github.com/google/uuid v1.2.0
-	github.com/go-openapi/errors v0.20.0
-	github.com/go-openapi/runtime v0.19.26
-	github.com/go-openapi/strfmt v0.20.0
-	github.com/go-openapi/swag v0.19.14
-	github.com/go-openapi/validate v0.20.2
 	github.com/gorilla/mux v1.8.0
 	github.com/mitchellh/copystructure v1.1.2
 	github.com/mitchellh/hashstructure/v2 v2.0.1

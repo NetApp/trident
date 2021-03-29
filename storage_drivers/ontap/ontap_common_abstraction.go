@@ -4,108 +4,75 @@ package ontap
 
 import (
 	"context"
-	cryptorand "crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"os"
 	"reflect"
-	"regexp"
 	"runtime/debug"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
-	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
 )
 
-const (
-	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
-	HousekeepingStartupDelaySecs = 10
-	LUNMetadataBufferMultiplier  = 1.1 // 10%
+////////////////////////////////////////////////////////////////////////////////////////////
+///             _____________________
+///            |   <<Interface>>    |
+///            |       ONTAPI       |
+///            |____________________|
+///                ^             ^
+///     Implements |             | Implements
+///   ____________________    ____________________
+///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+///  |___________________|   |___________________|
+///  | +API: RestClient  |   | +API: *Client     |
+///  |___________________|   |___________________|
+///
+////////////////////////////////////////////////////////////////////////////////////////////
 
-	// Constants for internal pool attributes
-	Size                  = "size"
-	Region                = "region"
-	Zone                  = "zone"
-	Media                 = "media"
-	SpaceAllocation       = "spaceAllocation"
-	SnapshotDir           = "snapshotDir"
-	SpaceReserve          = "spaceReserve"
-	SnapshotPolicy        = "snapshotPolicy"
-	SnapshotReserve       = "snapshotReserve"
-	UnixPermissions       = "unixPermissions"
-	ExportPolicy          = "exportPolicy"
-	SecurityStyle         = "securityStyle"
-	BackendType           = "backendType"
-	Replication           = "replication"
-	Snapshots             = "snapshots"
-	Clones                = "clones"
-	Encryption            = "encryption"
-	FileSystemType        = "fileSystemType"
-	ProvisioningType      = "provisioningType"
-	SplitOnClone          = "splitOnClone"
-	TieringPolicy         = "tieringPolicy"
-	QosPolicy             = "qosPolicy"
-	AdaptiveQosPolicy     = "adaptiveQosPolicy"
-	maxFlexGroupCloneWait = 120 * time.Second
-)
+////////////////////////////////////////////////////////////////////////////////////////////
+// Drivers that offer dual support are to call ONTAP REST or ZAPI's
+// via abstraction layer (ONTAPI interface)
+////////////////////////////////////////////////////////////////////////////////////////////
 
-//For legacy reasons, these strings mustn't change
-const (
-	artifactPrefixDocker     = "ndvp"
-	artifactPrefixKubernetes = "trident"
-	LUNAttributeFSType       = "com.netapp.ndvp.fstype"
-)
-
-type Telemetry struct {
+type TelemetryAbstraction struct {
 	tridentconfig.Telemetry
-	Plugin        string        `json:"plugin"`
-	SVM           string        `json:"svm"`
-	StoragePrefix string        `json:"storagePrefix"`
-	Driver        StorageDriver `json:"-"`
+	Plugin        string                   `json:"plugin"`
+	SVM           string                   `json:"svm"`
+	StoragePrefix string                   `json:"storagePrefix"`
+	Driver        StorageDriverAbstraction `json:"-"`
 	done          chan struct{}
 	ticker        *time.Ticker
 	stopped       bool
 }
 
-type StorageDriver interface {
+type StorageDriverAbstraction interface {
 	GetConfig() *drivers.OntapStorageDriverConfig
-	GetAPI() *api.Client
-	GetTelemetry() *Telemetry
+	GetAPI() api.OntapAPI
+	GetTelemetry() *TelemetryAbstraction
 	Name() string
 }
 
-type NASDriver interface {
+type NASDriverAbstraction interface {
 	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) (map[string]string, error)
-	GetAPI() *api.Client
+	GetAPI() api.OntapAPI
 	GetConfig() *drivers.OntapStorageDriverConfig
 }
 
-// CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
-func CleanBackendName(backendName string) string {
-	backendName = strings.ReplaceAll(backendName, "[", "")
-	backendName = strings.ReplaceAll(backendName, "]", "")
-	return strings.ReplaceAll(backendName, ":", ".")
-}
-
-func CreateCloneNAS(
-	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, sourceLabel string,
+func CreateCloneNASAbstraction(
+	ctx context.Context, d NASDriverAbstraction, volConfig *storage.VolumeConfig, storagePool *storage.Pool, sourceLabel string,
 	labelLimit int, useAsync bool) error {
 
 	// if cloning a FlexGroup, useAsync will be true
@@ -179,53 +146,13 @@ func CreateCloneNAS(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return CreateOntapClone(ctx, name, source, snapshot, labels, split, d.GetConfig(), d.GetAPI(), useAsync,
+	return CreateOntapCloneAbstraction(ctx, name, source, snapshot, labels, split, d.GetConfig(), d.GetAPI(), useAsync,
 		qosPolicyGroup)
 }
 
-// InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
-func InitializeOntapConfig(
-	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
-) (*drivers.OntapStorageDriverConfig, error) {
+func NewOntapTelemetryAbstraction(ctx context.Context, d StorageDriverAbstraction) *TelemetryAbstraction {
 
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapConfig")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapConfig")
-	}
-
-	commonConfig.DriverContext = driverContext
-
-	config := &drivers.OntapStorageDriverConfig{}
-	config.CommonStorageDriverConfig = commonConfig
-
-	// decode configJSON into OntapStorageDriverConfig object
-	err := json.Unmarshal([]byte(configJSON), &config)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
-	}
-
-	// Inject secret if not empty
-	if len(backendSecret) != 0 {
-		err = config.InjectSecrets(backendSecret)
-		if err != nil {
-			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
-		}
-	}
-
-	// Load default config parameters
-	err = PopulateConfigurationDefaults(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("could not populate configuration defaults: %v", err)
-	}
-
-	return config, nil
-}
-
-func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
-
-	t := &Telemetry{
+	t := &TelemetryAbstraction{
 		Plugin:        d.Name(),
 		SVM:           d.GetConfig().SVM,
 		StoragePrefix: *d.GetConfig().StoragePrefix,
@@ -254,11 +181,11 @@ func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
 
 // Start starts the flow of ASUP messages for the driver
 // These messages can be viewed via filer::> event log show -severity NOTICE.
-func (t *Telemetry) Start(ctx context.Context) {
+func (t *TelemetryAbstraction) Start(ctx context.Context) {
 
 	go func() {
 		time.Sleep(HousekeepingStartupDelaySecs * time.Second)
-		EMSHeartbeat(ctx, t.Driver)
+		EMSHeartbeatAbstraction(ctx, t.Driver)
 		for {
 			select {
 			case tick := <-t.ticker.C:
@@ -266,7 +193,7 @@ func (t *Telemetry) Start(ctx context.Context) {
 					"tick":   tick,
 					"driver": t.Driver.Name(),
 				}).Debug("Sending EMS heartbeat.")
-				EMSHeartbeat(ctx, t.Driver)
+				EMSHeartbeatAbstraction(ctx, t.Driver)
 			case <-t.done:
 				Logc(ctx).WithFields(log.Fields{
 					"driver": t.Driver.Name(),
@@ -277,7 +204,7 @@ func (t *Telemetry) Start(ctx context.Context) {
 	}()
 }
 
-func (t *Telemetry) Stop() {
+func (t *TelemetryAbstraction) Stop() {
 	if t.ticker != nil {
 		t.ticker.Stop()
 	}
@@ -289,7 +216,7 @@ func (t *Telemetry) Stop() {
 }
 
 // String makes Telemetry satisfy the Stringer interface.
-func (t Telemetry) String() (out string) {
+func (t TelemetryAbstraction) String() (out string) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Errorf("Panic in Telemetry#ToString; err: %v", r)
@@ -311,87 +238,18 @@ func (t Telemetry) String() (out string) {
 	return
 }
 
-// String makes Telemetry satisfy the GoStringer interface.
-func (t Telemetry) GoString() string {
+// GoString makes Telemetry satisfy the GoStringer interface.
+func (t TelemetryAbstraction) GoString() string {
 	return t.String()
 }
 
-func deleteExportPolicy(ctx context.Context, policy string, clientAPI *api.Client) error {
-	response, err := clientAPI.ExportPolicyDestroy(policy)
-	if err = api.GetError(ctx, response, err); err != nil {
-		err = fmt.Errorf("error deleting export policy: %v", err)
-	}
-	return err
-}
-
-func createExportRule(ctx context.Context, desiredPolicyRule, policyName string, clientAPI *api.Client) error {
-
-	ruleResponse, err := clientAPI.ExportRuleCreate(policyName, desiredPolicyRule,
-		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
-	if err = api.GetError(ctx, ruleResponse, err); err != nil {
-		err = fmt.Errorf("error creating export rule: %v", err)
-		Logc(ctx).WithFields(log.Fields{
-			"ExportPolicy": policyName,
-			"ClientMatch":  desiredPolicyRule,
-		}).Error(err)
-	}
-	return err
-}
-
-func deleteExportRule(ctx context.Context, ruleIndex int, policyName string, clientAPI *api.Client) error {
-
-	ruleDestroyResponse, err := clientAPI.ExportRuleDestroy(policyName, ruleIndex)
-	if err = api.GetError(ctx, ruleDestroyResponse, err); err != nil {
-		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v",
-			policyName, ruleIndex, err)
-		Logc(ctx).WithFields(log.Fields{
-			"ExportPolicy": policyName,
-			"RuleIndex":    ruleIndex,
-		}).Error(err)
-	}
-	return err
-}
-
-func isExportPolicyExists(ctx context.Context, policyName string, clientAPI *api.Client) (bool, error) {
-
-	policyGetResponse, err := clientAPI.ExportPolicyGet(policyName)
-	if err != nil {
-		err = fmt.Errorf("error getting export policy; %v", err)
-		Logc(ctx).WithField("exportPolicy", policyName).Error(err)
-		return false, err
-	}
-	if zerr := api.NewZapiError(policyGetResponse); !zerr.IsPassed() {
-		if zerr.Code() == azgo.EOBJECTNOTFOUND {
-			Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy not found.")
-			return false, nil
-		} else {
-			err = fmt.Errorf("error getting export policy; %v", zerr)
-			Logc(ctx).WithField("exportPolicy", policyName).Error(err)
-			return false, err
-		}
-	}
-	return true, nil
-}
-
-func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI *api.Client) error {
-
-	policyCreateResponse, err := clientAPI.ExportPolicyCreate(policyName)
-	if err != nil {
-		err = fmt.Errorf("error creating export policy %s: %v", policyName, err)
-	}
-	if zerr := api.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
-		if zerr.Code() == azgo.EDUPLICATEENTRY {
-			Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy already exists.")
-		} else {
-			err = fmt.Errorf("error creating export policy %s: %v", policyName, zerr)
-		}
-	}
-	return err
+func ensureExportPolicyExistsAbstraction(ctx context.Context, policyName string, clientAPI api.OntapAPI) error {
+	return clientAPI.ExportPolicyCreate(ctx, policyName)
 }
 
 // publishFlexVolShare ensures that the volume has the correct export policy applied.
-func publishFlexVolShare(
-	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
+func publishFlexVolShareAbstraction(
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 	publishInfo *utils.VolumePublishInfo, volumeName string,
 ) error {
 
@@ -410,53 +268,44 @@ func publishFlexVolShare(
 		return nil
 	}
 
-	if err := ensureNodeAccess(ctx, publishInfo, clientAPI, config); err != nil {
+	if err := ensureNodeAccessAbstraction(ctx, publishInfo, clientAPI, config); err != nil {
 		return err
 	}
 
 	// Update volume to use the correct export policy
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, policyName)
-	if err = api.GetError(ctx, volumeModifyResponse, err); err != nil {
-		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
-		Logc(ctx).Error(err)
-		return err
-	}
-	return nil
-}
-
-func getExportPolicyName(backendUUID string) string {
-	return fmt.Sprintf("trident-%s", backendUUID)
+	_, err := clientAPI.VolumeModifyExportPolicy(ctx, volumeName, policyName)
+	return err
 }
 
 // ensureNodeAccess check to see if the export policy exists and if not it will create it and force a reconcile.
 // This should be used during publish to make sure access is available if the policy has somehow been deleted.
 // Otherwise we should not need to reconcile, which could be expensive.
-func ensureNodeAccess(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, clientAPI *api.Client,
+func ensureNodeAccessAbstraction(
+	ctx context.Context, publishInfo *utils.VolumePublishInfo, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig,
 ) error {
 
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	if exists, err := isExportPolicyExists(ctx, policyName, clientAPI); err != nil {
+	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
 		return err
 	} else if !exists {
 		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
-		return reconcileNASNodeAccess(ctx, publishInfo.Nodes, config, clientAPI, policyName)
+		return reconcileNASNodeAccessAbstraction(ctx, publishInfo.Nodes, config, clientAPI, policyName)
 	}
 	Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy exists.")
 	return nil
 }
 
-func reconcileNASNodeAccess(
-	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI *api.Client,
+func reconcileNASNodeAccessAbstraction(
+	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI api.OntapAPI,
 	policyName string,
 ) error {
 
 	if !config.AutoExportPolicy {
 		return nil
 	}
-	err := ensureExportPolicyExists(ctx, policyName, clientAPI)
+	err := ensureExportPolicyExistsAbstraction(ctx, policyName, clientAPI)
 	if err != nil {
 		return err
 	}
@@ -466,7 +315,7 @@ func reconcileNASNodeAccess(
 		Logc(ctx).Error(err)
 		return err
 	}
-	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI)
+	err = reconcileExportPolicyRulesAbstraction(ctx, policyName, desiredRules, clientAPI)
 	if err != nil {
 		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
@@ -475,55 +324,36 @@ func reconcileNASNodeAccess(
 	return nil
 }
 
-func getDesiredExportPolicyRules(
-	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig,
-) ([]string, error) {
-
-	rules := make([]string, 0)
-	for _, node := range nodes {
-		// Filter the IPs based on the CIDRs provided by user
-		filteredIPs, err := utils.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
-		if err != nil {
-			return nil, err
-		}
-		if len(filteredIPs) > 0 {
-			rules = append(rules, strings.Join(filteredIPs, ","))
-		}
-	}
-	return rules, nil
-}
-
-func reconcileExportPolicyRules(
-	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI *api.Client,
+func reconcileExportPolicyRulesAbstraction(
+	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI api.OntapAPI,
 ) error {
+	fields := log.Fields{
+		"Method":             "reconcileExportPolicyRulesAbstraction",
+		"Type":               "ontap_common_abstraction",
+		"policyName":         policyName,
+		"desiredPolicyRules": desiredPolicyRules,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> reconcileExportPolicyRulesAbstraction")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< reconcileExportPolicyRulesAbstraction")
 
-	ruleListResponse, err := clientAPI.ExportRuleGetIterRequest(policyName)
-	if err = api.GetError(ctx, ruleListResponse, err); err != nil {
-		return fmt.Errorf("error listing export policy rules: %v", err)
-	}
-	rulesToRemove := make(map[string]int)
-	if ruleListResponse.Result.NumRecords() > 0 {
-		rulesAttrList := ruleListResponse.Result.AttributesList()
-		rules := rulesAttrList.ExportRuleInfo()
-		for _, rule := range rules {
-			rulesToRemove[rule.ClientMatch()] = rule.RuleIndex()
-		}
-	}
+	// first grab all existing rules
+	rules, err := clientAPI.ExportRuleList(ctx, policyName)
+
 	for _, rule := range desiredPolicyRules {
-		if _, ok := rulesToRemove[rule]; ok {
+		if _, ok := rules[rule]; ok {
 			// Rule already exists and we want it, so don't create it or delete it
-			delete(rulesToRemove, rule)
+			delete(rules, rule)
 		} else {
 			// Rule does not exist, so create it
-			err = createExportRule(ctx, rule, policyName, clientAPI)
+			_, err = clientAPI.ExportRuleCreate(ctx, policyName, rule)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	// Now that the desired rules exists, delete the undesired rules
-	for _, ruleIndex := range rulesToRemove {
-		err = deleteExportRule(ctx, ruleIndex, policyName, clientAPI)
+	for _, ruleIndex := range rules {
+		_, err = clientAPI.ExportRuleDestroy(ctx, policyName, ruleIndex)
 		if err != nil {
 			return err
 		}
@@ -531,7 +361,38 @@ func reconcileExportPolicyRules(
 	return nil
 }
 
-func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupName string, nodeIQNs []string) error {
+// resizeValidation performs needed validation checks prior to the resize operation.
+func resizeValidationAbstraction(
+	ctx context.Context, name string, sizeBytes uint64, volumeExists func(context.Context, string) (bool, error),
+	volumeSize func(context.Context, string) (int, error),
+) (uint64, error) {
+
+	// Check that volume exists
+	volExists, err := volumeExists(ctx, name)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Errorf("Error checking for existing volume.")
+		return 0, fmt.Errorf("error occurred checking for existing volume")
+	}
+	if !volExists {
+		return 0, fmt.Errorf("volume %s does not exist", name)
+	}
+
+	// Check that current size is smaller than requested size
+	volSize, err := volumeSize(ctx, name)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Errorf("Error checking volume size.")
+		return 0, fmt.Errorf("error occurred when checking volume size")
+	}
+	volSizeBytes := uint64(volSize)
+
+	if sizeBytes < volSizeBytes {
+		return 0, fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSize)
+	}
+
+	return volSizeBytes, nil
+}
+
+func reconcileSANNodeAccessAbstraction(ctx context.Context, clientAPI *api.Client, igroupName string, nodeIQNs []string) error {
 
 	err := ensureIGroupExists(clientAPI, igroupName)
 	if err != nil {
@@ -594,7 +455,7 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 	return nil
 }
 
-func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
+func cleanIgroupsAbstraction(ctx context.Context, client *api.Client, igroupName string) {
 
 	response, err := client.IgroupDestroy(igroupName)
 	err = api.GetError(ctx, response, err)
@@ -612,7 +473,7 @@ func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
 }
 
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
-func GetISCSITargetInfo(
+func GetISCSITargetInfoAbstraction(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
 ) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
 
@@ -647,16 +508,9 @@ func GetISCSITargetInfo(
 	return
 }
 
-var ontapDriverRedactList = [...]string{"API"}
-
-func GetOntapDriverRedactList() []string {
-	clone := ontapDriverRedactList
-	return clone[:]
-}
-
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
-func PopulateOntapLunMapping(
+func PopulateOntapLunMappingAbstraction(
 	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
 	ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
 ) error {
@@ -665,7 +519,7 @@ func PopulateOntapLunMapping(
 		targetIQN string
 	)
 	response, err := clientAPI.IscsiServiceGetIterRequest()
-	if err != nil || response.Result.ResultStatusAttr != "passed" {
+	if err != nil || (response != nil && response.Result.ResultStatusAttr != "passed") {
 		return fmt.Errorf("problem retrieving iSCSI services: %v, %v",
 			err, response.Result.ResultErrnoAttr)
 	}
@@ -722,7 +576,7 @@ func PopulateOntapLunMapping(
 // some host identity (but not locality) as well as storage controller API access.
 // This function assumes that the list of data LIF IP addresses does not change between driver initialization
 // and publish
-func PublishLUN(
+func PublishLUNAbstraction(
 	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
 	publishInfo *utils.VolumePublishInfo, lunPath, igroupName string, iSCSINodeName string,
 ) error {
@@ -858,7 +712,7 @@ func PublishLUN(
 }
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
-func getISCSIDataLIFsForReportingNodes(
+func getISCSIDataLIFsForReportingNodesAbstraction(
 	ctx context.Context, clientAPI *api.Client, ips []string, lunPath string, igroupName string,
 ) ([]string, error) {
 
@@ -892,50 +746,8 @@ func getISCSIDataLIFsForReportingNodes(
 	return reportedDataLIFs, nil
 }
 
-// randomString returns a string of the specified length.
-func randomChapString(strSize int) (string, error) {
-	b := make([]byte, strSize)
-	_, err := cryptorand.Read(b)
-	if err != nil {
-		log.Error(err)
-		return "", err
-	}
-	encoded := base64.StdEncoding.EncodeToString(b)
-	return encoded, nil
-}
-
-// randomString returns a string of length 16 (128 bits)
-func randomChapString16() (string, error) {
-	s, err := randomChapString(256)
-	if err != nil {
-		return "", err
-	}
-	if s == "" || len(s) < 256 {
-		return "", fmt.Errorf("invalid random string created '%s'", s)
-	}
-
-	result := ""
-	for i := 0; len(result) < 16; i++ {
-		if s[i] == '+' || s[i] == '/' || s[i] == '=' {
-			continue
-		} else {
-			result += string(s[i])
-		}
-	}
-
-	return result[0:16], nil
-}
-
-// ChapCredentials holds the bidrectional chap settings
-type ChapCredentials struct {
-	ChapUsername              string
-	ChapInitiatorSecret       string
-	ChapTargetUsername        string
-	ChapTargetInitiatorSecret string
-}
-
 // ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
-func ValidateBidrectionalChapCredentials(getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig) (*ChapCredentials, error) {
+func ValidateBidrectionalChapCredentialsAbstraction(getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig) (*ChapCredentials, error) {
 
 	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
 	if err != nil {
@@ -1004,7 +816,7 @@ func ValidateBidrectionalChapCredentials(getDefaultAuthResponse *azgo.IscsiIniti
 }
 
 // isDefaultAuthTypeOfType returns true if the default initiator's auth-type field is set to the provided authType value
-func isDefaultAuthTypeOfType(response *azgo.IscsiInitiatorGetDefaultAuthResponse, authType string) (bool, error) {
+func isDefaultAuthTypeOfTypeAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse, authType string) (bool, error) {
 	if response == nil {
 		return false, fmt.Errorf("response is nil")
 	}
@@ -1018,22 +830,22 @@ func isDefaultAuthTypeOfType(response *azgo.IscsiInitiatorGetDefaultAuthResponse
 }
 
 // IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
-func IsDefaultAuthTypeNone(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
+func IsDefaultAuthTypeNoneAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
 	return isDefaultAuthTypeOfType(response, "none")
 }
 
 // IsDefaultAuthTypeCHAP returns true if the default initiator's auth-type field is set to the value "CHAP"
-func IsDefaultAuthTypeCHAP(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
+func IsDefaultAuthTypeCHAPAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
 	return isDefaultAuthTypeOfType(response, "CHAP")
 }
 
 // IsDefaultAuthTypeDeny returns true if the default initiator's auth-type field is set to the value "deny"
-func IsDefaultAuthTypeDeny(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
+func IsDefaultAuthTypeDenyAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
 	return isDefaultAuthTypeOfType(response, "deny")
 }
 
 // InitializeSANDriver performs common ONTAP SAN driver initialization.
-func InitializeSANDriver(
+func InitializeSANDriverAbstraction(
 	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI *api.Client,
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
@@ -1077,7 +889,7 @@ func InitializeSANDriver(
 	if config.UseCHAP {
 
 		authType := "CHAP"
-		chapCredentials, err := ValidateBidrectionalChapCredentials(getDefaultAuthResponse, config)
+		chapCredentials, err := ValidateBidrectionalChapCredentialsAbstraction(getDefaultAuthResponse, config)
 		if err != nil {
 			return fmt.Errorf("error with CHAP credentials: %v", err)
 		}
@@ -1128,16 +940,7 @@ func InitializeSANDriver(
 	return nil
 }
 
-func getDefaultIgroupName(driverContext tridentconfig.DriverContext, backendUUID string) string {
-
-	if driverContext == tridentconfig.ContextCSI {
-		return drivers.GetDefaultIgroupName(driverContext) + "-" + backendUUID
-	} else {
-		return drivers.GetDefaultIgroupName(driverContext)
-	}
-}
-
-func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {
+func ensureIGroupExistsAbstraction(clientAPI *api.Client, igroupName string) error {
 	igroupResponse, err := clientAPI.IgroupCreate(igroupName, "iscsi", "linux")
 	if err != nil {
 		return fmt.Errorf("error creating igroup: %v", err)
@@ -1153,7 +956,7 @@ func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {
 
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
 // that are common to all the ONTAP drivers.
-func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
+func InitializeOntapDriverAbstraction(ctx context.Context, config *drivers.OntapStorageDriverConfig) (api.OntapAPI, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
@@ -1184,20 +987,15 @@ func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriv
 	}).Debug("Addresses found from ManagementLIF lookup.")
 
 	// Get the API client
-	client, err := InitializeOntapAPI(ctx, config)
+	client, err := InitializeOntapAPIAbstraction(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create Data ONTAP API client: %v", err)
 	}
 
-	// Make sure we're using a valid ONTAP version
-	ontapi, err := client.SystemGetOntapiVersion(ctx)
+	err = client.ValidateAPIVersion(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine Data ONTAP API version: %v", err)
+		return nil, err
 	}
-	if !client.SupportsFeature(ctx, api.MinimumONTAPIVersion) {
-		return nil, errors.New("ONTAP 9.3 or later is required")
-	}
-	Logc(ctx).WithField("Ontapi", ontapi).Debug("ONTAP API version.")
 
 	// Log cluster node serial numbers if we can get them
 	config.SerialNumbers, err = client.NodeListSerialNumbers(ctx)
@@ -1212,9 +1010,12 @@ func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriv
 	return client, nil
 }
 
-// InitializeOntapAPI returns an ontap.Client ZAPI client.  If the SVM isn't specified in the config
-// file, this method attempts to derive the one to use.
-func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
+// InitializeOntapAPI returns an ontap.Client ZAPI or REST client.  If the SVM isn't specified in the config
+// file, this method attempts to derive the one to use for ZAPI.
+func InitializeOntapAPIAbstraction(ctx context.Context, config *drivers.OntapStorageDriverConfig) (api.OntapAPI, error) {
+
+	var ontapAPI api.OntapAPI
+	var err error
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapAPI", "Type": "ontap_common"}
@@ -1222,63 +1023,28 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapAPI")
 	}
 
-	client := api.NewClient(api.ClientConfig{
-		ManagementLIF:        config.ManagementLIF,
-		SVM:                  config.SVM,
-		Username:             config.Username,
-		Password:             config.Password,
-		ClientCertificate:    config.ClientCertificate,
-		ClientPrivateKey:     config.ClientPrivateKey,
-		TrustedCACertificate: config.TrustedCACertificate,
-		DriverContext:        config.DriverContext,
-		DebugTraceFlags:      config.DebugTraceFlags,
-	})
-	if config.SVM != "" {
-
-		vserverResponse, err := client.VserverGetRequest()
-		if err = api.GetError(ctx, vserverResponse, err); err != nil {
-			return nil, fmt.Errorf("error reading SVM details: %v", err)
-		}
-
-		client.SVMUUID = string(vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid())
-
-		Logc(ctx).WithField("SVM", config.SVM).Debug("Using specified SVM.")
-		return client, nil
+	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
+	numRecords := api.DefaultZapiRecords
+	if config.DriverContext == tridentconfig.ContextDocker {
+		numRecords = api.MaxZapiRecords
 	}
 
-	// Use VserverGetIterRequest to populate config.SVM if it wasn't specified and we can derive it
-	vserverResponse, err := client.VserverGetIterRequest()
-	if err = api.GetError(ctx, vserverResponse, err); err != nil {
-		return nil, fmt.Errorf("error enumerating SVMs: %v", err)
+	if config.UseREST == true {
+		ontapAPI, err = api.NewRestClientFromOntapConfig(ctx, config)
+	} else {
+		ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords)
 	}
 
-	if vserverResponse.Result.NumRecords() != 1 {
-		return nil, errors.New("cannot derive SVM to use; please specify SVM in config file")
+	if err != nil {
+		return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
 	}
-
-	// Update everything to use our derived SVM
-	config.SVM = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverName()
-	svmUUID := string(vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid())
-
-	client = api.NewClient(api.ClientConfig{
-		ManagementLIF:        config.ManagementLIF,
-		SVM:                  config.SVM,
-		Username:             config.Username,
-		Password:             config.Password,
-		ClientCertificate:    config.ClientCertificate,
-		ClientPrivateKey:     config.ClientPrivateKey,
-		TrustedCACertificate: config.TrustedCACertificate,
-		DriverContext:        config.DriverContext,
-		DebugTraceFlags:      config.DebugTraceFlags,
-	})
-	client.SVMUUID = svmUUID
 
 	Logc(ctx).WithField("SVM", config.SVM).Debug("Using derived SVM.")
-	return client, nil
+	return ontapAPI, nil
 }
 
 // ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
-func ValidateSANDriver(ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig,
+func ValidateSANDriverAbstraction(ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig,
 	ips []string) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -1322,8 +1088,8 @@ func ValidateSANDriver(ctx context.Context, _ *api.Client, config *drivers.Ontap
 	return nil
 }
 
-// ValidateNASDriver contains the validation logic shared between ontap-nas and ontap-nas-economy.
-func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.OntapStorageDriverConfig) error {
+// ValidateNASDriverAbstraction contains the validation logic shared between ontap-nas and ontap-nas-economy.
+func ValidateNASDriverAbstraction(ctx context.Context, api api.OntapAPI, config *drivers.OntapStorageDriverConfig) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
@@ -1361,253 +1127,22 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 	return nil
 }
 
-func ValidateStoragePrefix(storagePrefix string) error {
-
-	// Ensure storage prefix is compatible with ONTAP
-	matched, err := regexp.MatchString(`^$|^[a-zA-Z_.-][a-zA-Z0-9_.-]*$`, storagePrefix)
-	if err != nil {
-		err = fmt.Errorf("could not check storage prefix; %v", err)
-	} else if !matched {
-		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
-	}
-
-	return err
-}
-
-func ValidateStoragePrefixEconomy(storagePrefix string) error {
-
-	// Ensure storage prefix is compatible with ONTAP
-	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)
-	if err != nil {
-		err = fmt.Errorf("could not check storage prefix; %v", err)
-	} else if !matched {
-		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash")
-	}
-
-	return err
-}
-
-func ValidateDataLIF(ctx context.Context, dataLIF string, dataLIFs []string) ([]string, error) {
-
-	addressesFromHostname, err := net.LookupHost(dataLIF)
-	if err != nil {
-		Logc(ctx).Error("Host lookup failed. ", err)
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"hostname":  dataLIF,
-		"addresses": addressesFromHostname,
-	}).Debug("Addresses found from hostname lookup.")
-
-	for _, hostNameAddress := range addressesFromHostname {
-		foundValidLIFAddress := false
-
-	loop:
-		for _, lifAddress := range dataLIFs {
-			if lifAddress == hostNameAddress {
-				foundValidLIFAddress = true
-				break loop
-			}
-		}
-		if foundValidLIFAddress {
-			Logc(ctx).WithField("hostNameAddress", hostNameAddress).Debug("Found matching Data LIF.")
-		} else {
-			Logc(ctx).WithField("hostNameAddress", hostNameAddress).Debug("Could not find matching Data LIF.")
-			return nil, fmt.Errorf("could not find Data LIF for %s", hostNameAddress)
-		}
-
-	}
-
-	return addressesFromHostname, nil
-}
-
-// Enable space-allocation by default. If not enabled, Data ONTAP takes the LUNs offline
-// when they're seen as full.
-// see: https://github.com/NetApp/trident/issues/135
-const DefaultSpaceAllocation = "true"
-const DefaultSpaceReserve = "none"
-const DefaultSnapshotPolicy = "none"
-const DefaultSnapshotReserve = "5"
-const DefaultUnixPermissions = "---rwxrwxrwx"
-const DefaultSnapshotDir = "false"
-const DefaultExportPolicy = "default"
-const DefaultSecurityStyle = "unix"
-const DefaultNfsMountOptionsDocker = "-o nfsvers=3"
-const DefaultNfsMountOptionsKubernetes = ""
-const DefaultSplitOnClone = "false"
-const DefaultEncryption = "false"
-const DefaultMirroring = "false"
-const DefaultLimitAggregateUsage = ""
-const DefaultLimitVolumeSize = ""
-const DefaultTieringPolicy = ""
-
-// PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
-func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> PopulateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< PopulateConfigurationDefaults")
-	}
-
-	// Ensure the default volume size is valid, using a "default default" of 1G if not set
-	if config.Size == "" {
-		config.Size = drivers.DefaultVolumeSize
-	} else {
-		_, err := utils.ConvertSizeToBytes(config.Size)
-		if err != nil {
-			return fmt.Errorf("invalid config value for default volume size: %v", err)
-		}
-	}
-
-	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		config.StoragePrefix = &prefix
-	}
-
-	if config.SpaceAllocation == "" {
-		config.SpaceAllocation = DefaultSpaceAllocation
-	}
-
-	if config.SpaceReserve == "" {
-		config.SpaceReserve = DefaultSpaceReserve
-	}
-
-	if config.SnapshotPolicy == "" {
-		config.SnapshotPolicy = DefaultSnapshotPolicy
-	}
-
-	if config.SnapshotReserve == "" {
-		if config.SnapshotPolicy == "none" {
-			config.SnapshotReserve = ""
-		} else {
-			config.SnapshotReserve = DefaultSnapshotReserve
-		}
-	}
-
-	if config.UnixPermissions == "" {
-		config.UnixPermissions = DefaultUnixPermissions
-	}
-
-	if config.SnapshotDir == "" {
-		config.SnapshotDir = DefaultSnapshotDir
-	}
-
-	if config.DriverContext != tridentconfig.ContextCSI {
-		config.AutoExportPolicy = false
-	}
-
-	if config.AutoExportPolicy {
-		config.ExportPolicy = "<automatic>"
-	} else if config.ExportPolicy == "" {
-		config.ExportPolicy = DefaultExportPolicy
-	}
-
-	if config.SecurityStyle == "" {
-		config.SecurityStyle = DefaultSecurityStyle
-	}
-
-	if config.NfsMountOptions == "" {
-		switch config.DriverContext {
-		case tridentconfig.ContextDocker:
-			config.NfsMountOptions = DefaultNfsMountOptionsDocker
-		default:
-			config.NfsMountOptions = DefaultNfsMountOptionsKubernetes
-		}
-	}
-
-	if config.SplitOnClone == "" {
-		config.SplitOnClone = DefaultSplitOnClone
-	} else {
-		_, err := strconv.ParseBool(config.SplitOnClone)
-		if err != nil {
-			return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
-		}
-	}
-
-	if config.FileSystemType == "" {
-		config.FileSystemType = drivers.DefaultFileSystemType
-	}
-
-	if config.Encryption == "" {
-		config.Encryption = DefaultEncryption
-	}
-
-	if config.Mirroring == "" {
-		config.Mirroring = DefaultMirroring
-	}
-
-	if config.LimitAggregateUsage == "" {
-		config.LimitAggregateUsage = DefaultLimitAggregateUsage
-	}
-
-	if config.LimitVolumeSize == "" {
-		config.LimitVolumeSize = DefaultLimitVolumeSize
-	}
-
-	if config.TieringPolicy == "" {
-		config.TieringPolicy = DefaultTieringPolicy
-	}
-
-	if len(config.AutoExportCIDRs) == 0 {
-		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"StoragePrefix":       *config.StoragePrefix,
-		"SpaceAllocation":     config.SpaceAllocation,
-		"SpaceReserve":        config.SpaceReserve,
-		"SnapshotPolicy":      config.SnapshotPolicy,
-		"SnapshotReserve":     config.SnapshotReserve,
-		"UnixPermissions":     config.UnixPermissions,
-		"SnapshotDir":         config.SnapshotDir,
-		"ExportPolicy":        config.ExportPolicy,
-		"SecurityStyle":       config.SecurityStyle,
-		"NfsMountOptions":     config.NfsMountOptions,
-		"SplitOnClone":        config.SplitOnClone,
-		"FileSystemType":      config.FileSystemType,
-		"Encryption":          config.Encryption,
-		"Mirroring":           config.Mirroring,
-		"LimitAggregateUsage": config.LimitAggregateUsage,
-		"LimitVolumeSize":     config.LimitVolumeSize,
-		"Size":                config.Size,
-		"TieringPolicy":       config.TieringPolicy,
-		"AutoExportPolicy":    config.AutoExportPolicy,
-		"AutoExportCIDRs":     config.AutoExportCIDRs,
-	}).Debugf("Configuration defaults")
-
-	return nil
-}
-
-func checkAggregateLimitsForFlexvol(
+func checkAggregateLimitsForFlexvolAbstraction(
 	ctx context.Context, flexvol string, requestedSizeInt uint64, config drivers.OntapStorageDriverConfig,
-	client *api.Client,
+	client api.OntapAPI,
 ) error {
 
-	var aggregate, spaceReserve string
-
-	volInfo, err := client.VolumeGet(flexvol)
+	volInfo, _, err := client.VolumeInfo(ctx, flexvol)
 	if err != nil {
 		return err
 	}
-	if volInfo.VolumeIdAttributesPtr != nil {
-		aggregate = volInfo.VolumeIdAttributesPtr.ContainingAggregateName()
-	} else {
-		return fmt.Errorf("aggregate info not available from Flexvol %s", flexvol)
-	}
-	if volInfo.VolumeSpaceAttributesPtr != nil {
-		spaceReserve = volInfo.VolumeSpaceAttributesPtr.SpaceGuarantee()
-	} else {
-		return fmt.Errorf("spaceReserve info not available from Flexvol %s", flexvol)
-	}
 
-	return checkAggregateLimits(ctx, aggregate, spaceReserve, requestedSizeInt, config, client)
+	return checkAggregateLimitsAbstraction(ctx, volInfo.Aggregates[0], volInfo.SpaceReserve, requestedSizeInt, config, client)
 }
 
-func checkAggregateLimits(
+func checkAggregateLimitsAbstraction(
 	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64,
-	config drivers.OntapStorageDriverConfig, client *api.Client,
+	config drivers.OntapStorageDriverConfig, client api.OntapAPI,
 ) error {
 
 	requestedSize := float64(requestedSizeInt)
@@ -1631,123 +1166,68 @@ func checkAggregateLimits(
 	}
 
 	// lookup aggregate
-	aggrSpaceResponse, aggrSpaceErr := client.AggrSpaceGetIterRequest(aggregate)
+	SVMAggregateSpaceList, aggrSpaceErr := client.GetSVMAggregateSpace(ctx, aggregate)
 	if aggrSpaceErr != nil {
 		return aggrSpaceErr
 	}
 
-	// iterate over results
-	if aggrSpaceResponse.Result.AttributesListPtr != nil {
-		for _, aggrSpace := range aggrSpaceResponse.Result.AttributesListPtr.SpaceInformationPtr {
-			aggrName := aggrSpace.Aggregate()
-			if aggregate != aggrName {
-				Logc(ctx).Debugf("Skipping " + aggrName)
-				continue
+	for _, aggrSpace := range SVMAggregateSpaceList {
+
+		if limitAggregateUsage != "" {
+			percentLimit, parseErr := strconv.ParseFloat(limitAggregateUsage, 64)
+			if parseErr != nil {
+				return parseErr
 			}
 
-			Logc(ctx).WithFields(log.Fields{
-				"aggrName":                            aggrName,
-				"size":                                aggrSpace.AggregateSize(),
-				"volumeFootprints":                    aggrSpace.VolumeFootprints(),
-				"volumeFootprintsPercent":             aggrSpace.VolumeFootprintsPercent(),
-				"usedIncludingSnapshotReserve":        aggrSpace.UsedIncludingSnapshotReserve(),
-				"usedIncludingSnapshotReservePercent": aggrSpace.UsedIncludingSnapshotReservePercent(),
-			}).Info("Dumping aggregate space")
+			usedIncludingSnapshotReserve := float64(aggrSpace.Used())
+			aggregateSize := float64(aggrSpace.Size())
 
-			if limitAggregateUsage != "" {
-				percentLimit, parseErr := strconv.ParseFloat(limitAggregateUsage, 64)
-				if parseErr != nil {
-					return parseErr
-				}
-
-				usedIncludingSnapshotReserve := float64(aggrSpace.UsedIncludingSnapshotReserve())
-				aggregateSize := float64(aggrSpace.AggregateSize())
-
-				spaceReserveIsThick := false
-				if spaceReserve == "volume" {
-					spaceReserveIsThick = true
-				}
-
-				if spaceReserveIsThick {
-					// we SHOULD include the requestedSize in our computation
-					percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
-					Logc(ctx).WithFields(log.Fields{
-						"percentUsedWithRequest": percentUsedWithRequest,
-						"percentLimit":           percentLimit,
-						"spaceReserve":           spaceReserve,
-					}).Debugf("Checking usage percentage limits")
-
-					if percentUsedWithRequest >= percentLimit {
-						errorMessage := fmt.Sprintf("aggregate usage of %.2f %% would exceed the limit of %.2f %%",
-							percentUsedWithRequest, percentLimit)
-						return errors.New(errorMessage)
-					}
-				} else {
-					// we should NOT include the requestedSize in our computation
-					percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
-					Logc(ctx).WithFields(log.Fields{
-						"percentUsedWithoutRequest": percentUsedWithoutRequest,
-						"percentLimit":              percentLimit,
-						"spaceReserve":              spaceReserve,
-					}).Debugf("Checking usage percentage limits")
-
-					if percentUsedWithoutRequest >= percentLimit {
-						errorMessage := fmt.Sprintf("aggregate usage of %.2f %% exceeds the limit of %.2f %%",
-							percentUsedWithoutRequest, percentLimit)
-						return errors.New(errorMessage)
-					}
-				}
+			spaceReserveIsThick := false
+			if spaceReserve == "volume" {
+				spaceReserveIsThick = true
 			}
 
-			Logc(ctx).Debugf("Request within specicifed limits, going to create.")
-			return nil
+			if spaceReserveIsThick {
+				// we SHOULD include the requestedSize in our computation
+				percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
+				Logc(ctx).WithFields(log.Fields{
+					"percentUsedWithRequest": percentUsedWithRequest,
+					"percentLimit":           percentLimit,
+					"spaceReserve":           spaceReserve,
+				}).Debugf("Checking usage percentage limits")
+
+				if percentUsedWithRequest >= percentLimit {
+					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% would exceed the limit of %.2f %%",
+						percentUsedWithRequest, percentLimit)
+					return errors.New(errorMessage)
+				}
+			} else {
+				// we should NOT include the requestedSize in our computation
+				percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
+				Logc(ctx).WithFields(log.Fields{
+					"percentUsedWithoutRequest": percentUsedWithoutRequest,
+					"percentLimit":              percentLimit,
+					"spaceReserve":              spaceReserve,
+				}).Debugf("Checking usage percentage limits")
+
+				if percentUsedWithoutRequest >= percentLimit {
+					errorMessage := fmt.Sprintf("aggregate usage of %.2f %% exceeds the limit of %.2f %%",
+						percentUsedWithoutRequest, percentLimit)
+					return errors.New(errorMessage)
+				}
+			}
 		}
+
+		Logc(ctx).Debugf("Request within specicifed limits, going to create.")
+		return nil
 	}
 
 	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
 }
 
-func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error) {
-
-	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(poolDefaultSizeBytes)
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
-	}
-	if sizeBytes < MinimumVolumeSizeBytes {
-		return 0, fmt.Errorf("requested volume size (%d bytes) is too small; "+
-			"the minimum volume size is %d bytes", sizeBytes, MinimumVolumeSizeBytes)
-	}
-	return sizeBytes, nil
-}
-
-func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
-
-	if snapshotReserve != "" {
-		// snapshotReserve defaults to "", so if it is explicitly set
-		// (either in config or create options), honor the value.
-		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 64)
-		if err != nil {
-			return api.NumericalValueNotSet, err
-		}
-		return int(snapshotReserveInt64), nil
-	} else {
-		// If snapshotReserve isn't set, then look at snapshotPolicy.  If the policy is "none",
-		// return 0.  Otherwise return -1, indicating that ONTAP should use its own default value.
-		if snapshotPolicy == "none" || snapshotPolicy == "" {
-			return 0, nil
-		} else {
-			snapshotReserveInt64, err := strconv.ParseInt(DefaultSnapshotReserve, 10, 64)
-			if err != nil {
-				return api.NumericalValueNotSet, err
-			}
-			return int(snapshotReserveInt64), nil
-		}
-	}
-}
-
 // EMSHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
-func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
+func EMSHeartbeatAbstraction(ctx context.Context, driver StorageDriverAbstraction) {
 
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
@@ -1758,58 +1238,15 @@ func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
 
 	message, _ := json.Marshal(driver.GetTelemetry())
 
-	emsResponse, err := driver.GetAPI().EmsAutosupportLog(
-		strconv.Itoa(drivers.ConfigVersion), false, "heartbeat", hostname,
-		string(message), 1, tridentconfig.OrchestratorName, 5)
+	driver.GetAPI().EmsAutosupportLog(ctx, driver.Name(), strconv.Itoa(drivers.ConfigVersion), false, "heartbeat",
+		hostname, string(message), 1, tridentconfig.OrchestratorName, 5)
 
-	if err = api.GetError(ctx, emsResponse, err); err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"driver": driver.Name(),
-			"error":  err,
-		}).Error("Error logging EMS message.")
-	} else {
-		Logc(ctx).WithField("driver", driver.Name()).Debug("Logged EMS message.")
-	}
-}
-
-const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
-
-// probeForVolume polls for the ONTAP volume to appear, with backoff retry logic
-func probeForVolume(ctx context.Context, name string, client *api.Client) error {
-
-	checkVolumeExists := func() error {
-		volExists, err := client.VolumeExists(ctx, name)
-		if err != nil {
-			return err
-		}
-		if !volExists {
-			return fmt.Errorf("volume %v does not yet exist", name)
-		}
-		return nil
-	}
-	volumeExistsNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Volume not yet present, waiting.")
-	}
-	volumeBackoff := backoff.NewExponentialBackOff()
-	volumeBackoff.InitialInterval = 1 * time.Second
-	volumeBackoff.Multiplier = 2
-	volumeBackoff.RandomizationFactor = 0.1
-	volumeBackoff.MaxElapsedTime = 30 * time.Second
-
-	// Run the volume check using an exponential backoff
-	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
-		Logc(ctx).WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
-		return fmt.Errorf("volume %v does not exist", name)
-	} else {
-		Logc(ctx).WithField("volume", name).Debug("Volume found.")
-		return nil
-	}
 }
 
 // Create a volume clone
-func CreateOntapClone(
+func CreateOntapCloneAbstraction(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
-	client *api.Client, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
+	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -1837,55 +1274,38 @@ func CreateOntapClone(
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
 		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
-		snapResponse, err := client.SnapshotCreate(snapshot, source)
-		if err = api.GetError(ctx, snapResponse, err); err != nil {
-			return fmt.Errorf("error creating snapshot: %v", err)
+		if _, err = client.SnapshotCreate(ctx, snapshot, source); err != nil {
+			return err
 		}
 	}
 
 	// Create the clone based on a snapshot
-	if useAsync {
-		cloneResponse, err := client.VolumeCloneCreateAsync(name, source, snapshot)
-		err = client.WaitForAsyncResponse(ctx, cloneResponse, maxFlexGroupCloneWait)
-		if err != nil {
-			return errors.New("waiting for async response failed")
-		}
-	} else {
-		cloneResponse, err := client.VolumeCloneCreate(name, source, snapshot)
-		if err != nil {
-			return fmt.Errorf("error creating clone: %v", err)
-		}
-		if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
-			return handleCreateOntapCloneErr(ctx, zerr, client, snapshot, source, name)
-		}
+	if _, err = client.VolumeCloneCreate(ctx, name, source, snapshot, useAsync); err != nil {
+		return err
 	}
 
-	modifyCommentResponse, err := client.VolumeSetComment(ctx, name, labels)
-	if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
-		Logc(ctx).WithField("name", name).Errorf("Modifying comment failed: %v", err)
-		return fmt.Errorf("volume %s modify failed: %v", name, err)
+	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
+		return err
 	}
 
 	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
 		// Mount the new volume
-		mountResponse, err := client.VolumeMount(name, "/"+name)
-		if err = api.GetError(ctx, mountResponse, err); err != nil {
-			return fmt.Errorf("error mounting volume to junction: %v", err)
+		if _, err = client.VolumeMount(ctx, name, "/"+name); err != nil {
+			return err
 		}
 	}
 
 	// Set the QoS Policy if necessary
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
-		qosResponse, err := client.VolumeSetQosPolicyGroupName(name, qosPolicyGroup)
-		if err = api.GetError(ctx, qosResponse, err); err != nil {
-			return fmt.Errorf("error setting QoS policy: %v", err)
+		if _, err := client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+			return err
 		}
 	}
 
 	// Split the clone if requested
 	if split {
-		splitResponse, err := client.VolumeCloneSplitStart(name)
-		if err = api.GetError(ctx, splitResponse, err); err != nil {
+		splitResponse, err := client.VolumeCloneSplitStart(ctx, name)
+		if err = api.GetErrorAbstraction(ctx, splitResponse, err); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}
@@ -1893,34 +1313,11 @@ func CreateOntapClone(
 	return nil
 }
 
-func handleCreateOntapCloneErr(
-	ctx context.Context, zerr api.ZapiError, client *api.Client, snapshot, source, name string,
-) error {
-
-	if zerr.Code() == azgo.EOBJECTNOTFOUND {
-		return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
-	} else if zerr.IsFailedToLoadJobError() {
-		fields := log.Fields{
-			"zerr": zerr,
-		}
-		Logc(ctx).WithFields(fields).Warn(
-			"Problem encountered during the clone create operation, " +
-				"attempting to verify the clone was actually created")
-		if volumeLookupError := probeForVolume(ctx, name, client); volumeLookupError != nil {
-			return volumeLookupError
-		}
-	} else {
-		return fmt.Errorf("error creating clone: %v", zerr)
-	}
-
-	return nil
-}
-
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
-func GetSnapshot(
+func GetSnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client *api.Client, sizeGetter func(string) (int, error),
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -1937,33 +1334,29 @@ func GetSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	size, err := sizeGetter(internalVolName)
+	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	snapshots, _, err := client.SnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
 	}
 
-	if snapListResponse.Result.AttributesListPtr != nil {
-		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
-			if snap.Name() == internalSnapName {
-
-				Logc(ctx).WithFields(log.Fields{
-					"snapshotName": internalSnapName,
-					"volumeName":   internalVolName,
-					"created":      snap.AccessTime(),
-				}).Debug("Found snapshot.")
-
-				return &storage.Snapshot{
-					Config:    snapConfig,
-					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
-					SizeBytes: int64(size),
-					State:     storage.SnapshotStateOnline,
-				}, nil
-			}
+	for _, snap := range snapshots {
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+			"created":      snap.CreateTime,
+		}).Debug("Found snapshot.")
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
 		}
 	}
 
@@ -1976,9 +1369,9 @@ func GetSnapshot(
 }
 
 // GetSnapshots returns the list of snapshots associated with the named volume.
-func GetSnapshots(
-	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
-	sizeGetter func(string) (int, error),
+func GetSnapshotsAbstraction(
+	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	sizeGetter func(context.Context, string) (int, error),
 ) ([]*storage.Snapshot, error) {
 
 	internalVolName := volConfig.InternalName
@@ -1993,51 +1386,48 @@ func GetSnapshots(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshotList")
 	}
 
-	size, err := sizeGetter(internalVolName)
+	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+	snapshots, snapListResponse, err := client.SnapshotList(ctx, internalVolName)
+	if err = api.GetErrorAbstraction(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
-	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Result.NumRecords())
-	snapshots := make([]*storage.Snapshot, 0)
+	result := make([]*storage.Snapshot, 0)
 
-	if snapListResponse.Result.AttributesListPtr != nil {
-		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
+	for _, snap := range snapshots {
 
-			Logc(ctx).WithFields(log.Fields{
-				"name":       snap.Name(),
-				"accessTime": snap.AccessTime(),
-			}).Debug("Snapshot")
+		Logc(ctx).WithFields(log.Fields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Snapshot")
 
-			snapshot := &storage.Snapshot{
-				Config: &storage.SnapshotConfig{
-					Version:            tridentconfig.OrchestratorAPIVersion,
-					Name:               snap.Name(),
-					InternalName:       snap.Name(),
-					VolumeName:         volConfig.Name,
-					VolumeInternalName: volConfig.InternalName,
-				},
-				Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}
-
-			snapshots = append(snapshots, snapshot)
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: int64(size),
+			State:     storage.SnapshotStateOnline,
 		}
+
+		result = append(result, snapshot)
 	}
 
-	return snapshots, nil
+	return result, nil
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
-func CreateSnapshot(
+func CreateSnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client *api.Client, sizeGetter func(string) (int, error),
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -2063,40 +1453,37 @@ func CreateSnapshot(
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
 	}
 
-	size, err := sizeGetter(internalVolName)
+	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapResponse, err := client.SnapshotCreate(internalSnapName, internalVolName)
-	if err = api.GetError(ctx, snapResponse, err); err != nil {
-		return nil, fmt.Errorf("could not create snapshot: %v", err)
+	if _, err := client.SnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
+		return nil, err
 	}
 
-	// Fetching list of snapshots to get snapshot access time
-	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	snapshots, _, err := client.SnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
 	}
-	if snapListResponse.Result.AttributesListPtr != nil {
-		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
-			if snap.Name() == internalSnapName {
-				return &storage.Snapshot{
-					Config:    snapConfig,
-					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
-					SizeBytes: int64(size),
-					State:     storage.SnapshotStateOnline,
-				}, nil
-			}
+
+	for _, snap := range snapshots {
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
 		}
 	}
 	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
 }
 
 // Restore a volume (in place) from a snapshot.
-func RestoreSnapshot(
+func RestoreSnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client *api.Client,
+	client api.OntapAPI,
 ) error {
 
 	internalSnapName := snapConfig.InternalName
@@ -2113,10 +1500,10 @@ func RestoreSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	snapResponse, err := client.SnapshotRestoreVolume(internalSnapName, internalVolName)
+	snapResponse, err := client.SnapshotRestoreVolume(ctx, internalSnapName, internalVolName)
 
-	if err = api.GetError(ctx, snapResponse, err); err != nil {
-		return fmt.Errorf("error restoring snapshot: %v", err)
+	if api.GetErrorAbstraction(ctx, snapResponse, err); err != nil {
+		return err
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -2128,9 +1515,9 @@ func RestoreSnapshot(
 }
 
 // DeleteSnapshot deletes a single snapshot.
-func DeleteSnapshot(
+func DeleteSnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client *api.Client,
+	client api.OntapAPI,
 ) error {
 
 	internalSnapName := snapConfig.InternalName
@@ -2147,17 +1534,14 @@ func DeleteSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	snapResponse, err := client.SnapshotDelete(internalSnapName, internalVolName)
-
+	_, err := client.SnapshotDelete(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return fmt.Errorf("error deleting snapshot: %v", err)
-	}
-	if zerr := api.NewZapiError(snapResponse); !zerr.IsPassed() {
-		if zerr.Code() == azgo.ESNAPSHOTBUSY {
+		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client)
+			_ = SplitVolumeFromBusySnapshotAbstraction(ctx, snapConfig, config, client)
 		}
-		return fmt.Errorf("error deleting snapshot: %v", zerr)
+		// we must return the err, even if we started a split, so the snapshot delete is retried
+		return err
 	}
 
 	Logc(ctx).WithField("snapshotName", internalSnapName).Debug("Deleted snapshot.")
@@ -2166,46 +1550,34 @@ func DeleteSnapshot(
 
 // SplitVolumeFromBusySnapshot gets the list of volumes backed by a busy snapshot and starts
 // a split operation on the first one (sorted by volume name).
-func SplitVolumeFromBusySnapshot(
+func SplitVolumeFromBusySnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client *api.Client,
+	client api.OntapAPI,
 ) error {
-
-	internalSnapName := snapConfig.InternalName
-	internalVolName := snapConfig.VolumeInternalName
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "SplitVolumeFromBusySnapshot",
 			"Type":         "ontap_common",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> SplitVolumeFromBusySnapshot")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< SplitVolumeFromBusySnapshot")
 	}
 
-	childVolumes, err := client.VolumeListAllBackedBySnapshot(ctx, internalVolName, internalSnapName)
+	childVolumes, _, err := client.VolumeListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"snapshotName":     internalSnapName,
-			"parentVolumeName": internalVolName,
-			"error":            err,
-		}).Error("Could not list volumes backed by snapshot.")
 		return err
-	} else if len(childVolumes) == 0 {
+	} else if childVolumes == nil || len(childVolumes) == 0 {
 		return nil
 	}
 
-	// We're going to start a single split operation, but there could be multiple children, so we
-	// sort the volumes by name to not have more than one split operation running at a time.
-	sort.Strings(childVolumes)
-
-	splitResponse, err := client.VolumeCloneSplitStart(childVolumes[0])
-	if err = api.GetError(ctx, splitResponse, err); err != nil {
+	splitResponse, err := client.VolumeCloneSplitStart(ctx, childVolumes[0])
+	if err = api.GetErrorAbstraction(ctx, splitResponse, err); err != nil {
 		Logc(ctx).WithFields(log.Fields{
-			"snapshotName":     internalSnapName,
-			"parentVolumeName": internalVolName,
+			"snapshotName":     snapConfig.InternalName,
+			"parentVolumeName": snapConfig.VolumeInternalName,
 			"cloneVolumeName":  childVolumes[0],
 			"error":            err,
 		}).Error("Could not begin splitting clone from snapshot.")
@@ -2213,8 +1585,8 @@ func SplitVolumeFromBusySnapshot(
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"snapshotName":     internalSnapName,
-		"parentVolumeName": internalVolName,
+		"snapshotName":     snapConfig.InternalName,
+		"parentVolumeName": snapConfig.VolumeInternalName,
 		"cloneVolumeName":  childVolumes[0],
 	}).Info("Began splitting clone from snapshot.")
 
@@ -2223,7 +1595,7 @@ func SplitVolumeFromBusySnapshot(
 
 // GetVolume checks for the existence of a volume.  It returns nil if the volume
 // exists and an error if it does not (or the API call fails).
-func GetVolume(ctx context.Context, name string, client *api.Client, config *drivers.OntapStorageDriverConfig) error {
+func GetVolumeAbstraction(ctx context.Context, name string, client api.OntapAPI, config *drivers.OntapStorageDriverConfig) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "GetVolume", "Type": "ontap_common"}
@@ -2243,22 +1615,8 @@ func GetVolume(ctx context.Context, name string, client *api.Client, config *dri
 	return nil
 }
 
-type ontapPerformanceClass string
-
-const (
-	ontapHDD    ontapPerformanceClass = "hdd"
-	ontapHybrid ontapPerformanceClass = "hybrid"
-	ontapSSD    ontapPerformanceClass = "ssd"
-)
-
-var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
-	ontapHDD:    {sa.Media: sa.NewStringOffer(sa.HDD)},
-	ontapHybrid: {sa.Media: sa.NewStringOffer(sa.Hybrid)},
-	ontapSSD:    {sa.Media: sa.NewStringOffer(sa.SSD)},
-}
-
 // discoverBackendAggrNamesCommon discovers names of the aggregates assigned to the configured SVM
-func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]string, error) {
+func discoverBackendAggrNamesCommonAbstraction(ctx context.Context, d StorageDriverAbstraction) ([]string, error) {
 
 	client := d.GetAPI()
 	config := d.GetConfig()
@@ -2273,7 +1631,7 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 	}()
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := client.SVMGetAggregateNames()
+	vserverAggrs, err := client.GetSVMAggregateNames(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2316,53 +1674,33 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 // getVserverAggrAttributes gets pool attributes using vserver-show-aggr-get-iter,
 // which will only succeed on Data ONTAP 9 and later.
 // If the aggregate attributes are read successfully, the pools passed to this function are updated accordingly.
-func getVserverAggrAttributes(
-	ctx context.Context, d StorageDriver, poolsAttributeMap *map[string]map[string]sa.Offer,
+func getVserverAggrAttributesAbstraction(
+	ctx context.Context, d StorageDriverAbstraction, poolsAttributeMap *map[string]map[string]sa.Offer,
 ) (err error) {
 
-	// Handle panics from the API layer
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("unable to inspect ONTAP backend: %v\nStack trace:\n%s", r, debug.Stack())
-		}
-	}()
-
-	result, err := d.GetAPI().VserverShowAggrGetIterRequest()
+	aggrList, err := d.GetAPI().GetSVMAggregateAttributes(ctx)
 	if err != nil {
-		return
+		return err
 	}
 
-	if zerr := api.NewZapiError(result.Result); !zerr.IsPassed() {
-		err = zerr
-		return
-	}
-
-	if result.Result.AttributesListPtr != nil {
-		for _, aggr := range result.Result.AttributesListPtr.ShowAggregatesPtr {
-			aggrName := string(aggr.AggregateName())
-			aggrType := aggr.AggregateType()
-
+	if aggrList != nil {
+		for aggrName, aggrType := range aggrList {
 			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
 			_, ok := (*poolsAttributeMap)[aggrName]
 			if !ok {
 				continue
 			}
 
+			fields := log.Fields{"aggregate": aggrName, "mediaType": aggrType}
+
 			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
 			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
 			if !ok {
-				Logc(ctx).WithFields(log.Fields{
-					"aggregate": aggrName,
-					"mediaType": aggrType,
-				}).Debug("Aggregate has unknown performance characteristics.")
-
+				Logc(ctx).WithFields(fields).Debug("Aggregate has unknown performance characteristics.")
 				continue
 			}
 
-			Logc(ctx).WithFields(log.Fields{
-				"aggregate": aggrName,
-				"mediaType": aggrType,
-			}).Debug("Read aggregate attributes.")
+			Logc(ctx).WithFields(fields).Debug("Read aggregate attributes.")
 
 			// Update the pool with the aggregate storage attributes
 			for attrName, attr := range storageAttrs {
@@ -2374,16 +1712,8 @@ func getVserverAggrAttributes(
 	return
 }
 
-// poolName constructs the name of the pool reported by this driver instance
-func poolName(name, backendName string) string {
-
-	return fmt.Sprintf("%s_%s",
-		backendName,
-		strings.Replace(name, "-", "", -1))
-}
-
-func InitializeStoragePoolsCommon(
-	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
+func InitializeStoragePoolsCommonAbstraction(
+	ctx context.Context, d StorageDriverAbstraction, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]*storage.Pool, map[string]*storage.Pool, error) {
 
 	config := d.GetConfig()
@@ -2394,7 +1724,7 @@ func InitializeStoragePoolsCommon(
 	mediaOffers := make([]sa.Offer, 0)
 
 	// Get name of the physical storage pools which in case of ONTAP is list of aggregates
-	physicalStoragePoolNames, err := discoverBackendAggrNamesCommon(ctx, d)
+	physicalStoragePoolNames, err := discoverBackendAggrNamesCommonAbstraction(ctx, d)
 	if err != nil || len(physicalStoragePoolNames) == 0 {
 		return physicalPools, virtualPools, fmt.Errorf("could not get storage pools from array: %v", err)
 	}
@@ -2406,7 +1736,7 @@ func InitializeStoragePoolsCommon(
 	}
 
 	// Update physical pool attributes map with aggregate info (i.e. MediaType)
-	aggrErr := getVserverAggrAttributes(ctx, d, &physicalStoragePoolAttributes)
+	aggrErr := getVserverAggrAttributesAbstraction(ctx, d, &physicalStoragePoolAttributes)
 
 	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
 		Logc(ctx).WithFields(log.Fields{
@@ -2631,8 +1961,8 @@ func InitializeStoragePoolsCommon(
 
 // ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
 // for a field then a default should have been set in for that field in the initialize storage pools
-func ValidateStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, d StorageDriver, labelLimit int) error {
+func ValidateStoragePoolsAbstraction(
+	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, d StorageDriverAbstraction, labelLimit int) error {
 
 	// Validate pool-level attributes
 	allPools := make([]*storage.Pool, 0, len(physicalPools)+len(virtualPools))
@@ -2791,40 +2121,7 @@ func ValidateStoragePools(
 	return nil
 }
 
-// getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
-func getStorageBackendSpecsCommon(backend *storage.Backend, physicalPools,
-	virtualPools map[string]*storage.Pool, backendName string) (err error) {
-
-	backend.Name = backendName
-
-	virtual := len(virtualPools) > 0
-
-	for _, pool := range physicalPools {
-		pool.Backend = backend
-		if !virtual {
-			backend.AddStoragePool(pool)
-		}
-	}
-
-	for _, pool := range virtualPools {
-		pool.Backend = backend
-		if virtual {
-			backend.AddStoragePool(pool)
-		}
-	}
-
-	return nil
-}
-
-func getStorageBackendPhysicalPoolNamesCommon(physicalPools map[string]*storage.Pool) []string {
-	physicalPoolNames := make([]string, 0)
-	for poolName := range physicalPools {
-		physicalPoolNames = append(physicalPoolNames, poolName)
-	}
-	return physicalPoolNames
-}
-
-func getVolumeOptsCommon(
+func getVolumeOptsCommonAbstraction(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
 ) map[string]string {
 
@@ -2905,124 +2202,8 @@ func getVolumeOptsCommon(
 	return opts
 }
 
-// getPoolsForCreate returns candidate storage pools for creating volumes
-func getPoolsForCreate(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
-	volAttributes map[string]sa.Request, physicalPools map[string]*storage.Pool, virtualPools map[string]*storage.Pool,
-) ([]*storage.Pool, error) {
-
-	// If a physical pool was requested, just use it
-	if _, ok := physicalPools[storagePool.Name]; ok {
-		return []*storage.Pool{storagePool}, nil
-	}
-
-	// If a virtual pool was requested, find a physical pool to satisfy it
-	if _, ok := virtualPools[storagePool.Name]; !ok {
-		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
-	}
-
-	// Make a storage class from the volume attributes to simplify pool matching
-	attributesCopy := make(map[string]sa.Request)
-	for k, v := range volAttributes {
-		attributesCopy[k] = v
-	}
-	delete(attributesCopy, sa.Selector)
-	storageClass := sc.NewFromAttributes(attributesCopy)
-
-	// Find matching pools
-	candidatePools := make([]*storage.Pool, 0)
-
-	for _, pool := range physicalPools {
-		if storageClass.Matches(ctx, pool) {
-			candidatePools = append(candidatePools, pool)
-		}
-	}
-
-	if len(candidatePools) == 0 {
-		err := fmt.Errorf("backend has no physical pools that can satisfy request")
-		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
-	}
-
-	// Shuffle physical pools
-	rand.Shuffle(len(candidatePools), func(i, j int) {
-		candidatePools[i], candidatePools[j] = candidatePools[j], candidatePools[i]
-	})
-
-	return candidatePools, nil
-}
-
-func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {
-
-	if tridentconfig.UsingPassthroughStore {
-		// With a passthrough store, the name mapping must remain reversible
-		return *commonConfig.StoragePrefix + name
-	} else {
-		// With an external store, any transformation of the name is fine
-		internal := drivers.GetCommonInternalVolumeName(commonConfig, name)
-		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
-		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
-		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
-		return internal
-	}
-}
-
-func createPrepareCommon(ctx context.Context, d storage.Driver, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
-}
-
-func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverConfig) interface{} {
-
-	// Clone the config so we don't risk altering the original
-	var cloneConfig drivers.OntapStorageDriverConfig
-	drivers.Clone(ctx, config, &cloneConfig)
-
-	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
-
-	cloneConfig.Username = drivers.REDACTED         // redact the username
-	cloneConfig.Password = drivers.REDACTED         // redact the password
-	cloneConfig.ClientPrivateKey = drivers.REDACTED // redact the client private key
-	cloneConfig.ChapInitiatorSecret = drivers.REDACTED
-	cloneConfig.ChapTargetInitiatorSecret = drivers.REDACTED
-	cloneConfig.ChapTargetUsername = drivers.REDACTED
-	cloneConfig.ChapUsername = drivers.REDACTED
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED} // redact the credentials
-	return cloneConfig
-}
-
-// resizeValidation performs needed validation checks prior to the resize operation.
-func resizeValidation(
-	ctx context.Context, name string, sizeBytes uint64, volumeExists func(context.Context, string) (bool, error),
-	volumeSize func(string) (int, error),
-) (uint64, error) {
-
-	// Check that volume exists
-	volExists, err := volumeExists(ctx, name)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Errorf("Error checking for existing volume.")
-		return 0, fmt.Errorf("error occurred checking for existing volume")
-	}
-	if !volExists {
-		return 0, fmt.Errorf("volume %s does not exist", name)
-	}
-
-	// Check that current size is smaller than requested size
-	volSize, err := volumeSize(name)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Errorf("Error checking volume size.")
-		return 0, fmt.Errorf("error occurred when checking volume size")
-	}
-	volSizeBytes := uint64(volSize)
-
-	if sizeBytes < volSizeBytes {
-		return 0, fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSize)
-	}
-
-	return volSizeBytes, nil
-}
-
 // Unmount a volume and then take it offline. This may need to be done before deleting certain types of volumes.
-func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, name string) (bool, error) {
+func UnmountAndOfflineVolume(ctx context.Context, API *api.Client, name string) (bool, error) {
 
 	// This call is sync and idempotent
 	umountResp, err := API.VolumeUnmount(name, true)
@@ -3059,7 +2240,7 @@ func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, na
 	return true, nil
 }
 
-func calculateEconomyFlexvolSize(
+func calculateOptimalSizeForFlexvolAbstraction(
 	ctx context.Context, flexvol string, volAttrs *azgo.VolumeAttributesType, newLunOrQtreeSizeBytes,
 	totalDiskLimitBytes uint64,
 ) uint64 {
@@ -3069,7 +2250,7 @@ func calculateEconomyFlexvolSize(
 
 	usableSpaceBytes := float64(newLunOrQtreeSizeBytes + totalDiskLimitBytes)
 	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSizeBytes
-	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
+	usableSpaceSnapReserve := usableSpaceBytes / snapReserveDivisor
 
 	var flexvolSizeBytes uint64
 	if usableSpaceSnapReserve < usableSpaceWithSnapshots {
@@ -3093,46 +2274,22 @@ func calculateEconomyFlexvolSize(
 	return flexvolSizeBytes
 }
 
-// calculateFlexvolSize calculates the size of the Flexvol taking into account the snapshot reserve
-func calculateFlexvolSize(
-	ctx context.Context, flexvol string, requestedSize uint64, snapshotReserve int,
-) uint64 {
-	snapReserveDivisor := 1.0 - (float64(snapshotReserve) / 100.0)
-
-	sizeWithSnapReserve := float64(requestedSize) / snapReserveDivisor
-
-	flexvolSizeBytes := uint64(sizeWithSnapReserve)
-
-	Logc(ctx).WithFields(log.Fields{
-		"flexvol":             flexvol,
-		"snapReserveDivisor":  snapReserveDivisor,
-		"requestedSize":       requestedSize,
-		"sizeWithSnapReserve": sizeWithSnapReserve,
-		"flexvolSizeBytes":    flexvolSizeBytes,
-	}).Debug("Calculated optimal size for Flexvol with snapshot reserve.")
-
-	return flexvolSizeBytes
-}
-
 // getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
-func getSnapshotReserveFromOntap(
-	ctx context.Context, name string, volumeGet func(string) (*azgo.VolumeAttributesType, error),
+func getSnapshotReserveFromOntapAbstraction(
+	ctx context.Context, clientAPI api.OntapAPI, name string,
 ) (int, error) {
+
 	snapshotPolicy := ""
 	snapshotReserveInt := 0
-	flexvol, err := volumeGet(name)
-	if flexvol.VolumeSnapshotAttributesPtr == nil || flexvol.VolumeSnapshotAttributesPtr.SnapshotPolicyPtr == nil {
-		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot policy for volume")
-	} else {
-		volumeSnapshotAttrs := flexvol.VolumeSnapshotAttributes()
-		snapshotPolicy = volumeSnapshotAttrs.SnapshotPolicy()
+
+	info, _, err := clientAPI.VolumeInfo(ctx, name)
+	if err != nil {
+		return snapshotReserveInt, fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
-	if flexvol.VolumeSpaceAttributesPtr == nil || flexvol.VolumeSpaceAttributesPtr.PercentageSnapshotReservePtr == nil {
-		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
-	} else {
-		volumeSpaceAttrs := flexvol.VolumeSpaceAttributes()
-		snapshotReserveInt = volumeSpaceAttrs.PercentageSnapshotReserve()
-	}
+
+	snapshotPolicy = info.SnapshotPolicy
+	snapshotReserveInt = info.SnapshotReserve
+
 	snapshotReserveInt, err = GetSnapshotReserve(snapshotPolicy, strconv.Itoa(snapshotReserveInt))
 	if err != nil {
 		return snapshotReserveInt, fmt.Errorf("invalid value for snapshotReserve: %v", err)

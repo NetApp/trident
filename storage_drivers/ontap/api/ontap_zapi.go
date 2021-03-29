@@ -22,9 +22,13 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ZAPI layer
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const (
-	defaultZapiRecords   = 100
-	maxZapiRecords       = 0xfffffffe
+	DefaultZapiRecords   = 100
+	MaxZapiRecords       = 0xfffffffe
 	NumericalValueNotSet = -1
 	maxFlexGroupWait     = 30 * time.Second
 
@@ -33,6 +37,9 @@ const (
 
 	MaxNASLabelLength = 1023
 	MaxSANLabelLength = 254
+
+	// errors
+	ESNAPSHOTBUSY_REST = "1638555"
 )
 
 var (
@@ -67,9 +74,9 @@ type Client struct {
 func NewClient(config ClientConfig) *Client {
 
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
-	config.ContextBasedZapiRecords = defaultZapiRecords
+	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
-		config.ContextBasedZapiRecords = maxZapiRecords
+		config.ContextBasedZapiRecords = MaxZapiRecords
 	}
 
 	d := &Client{
@@ -363,6 +370,19 @@ var features = map[feature]*utils.Version{
 	LIFServices:               utils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
 }
 
+// Indicate the minimum Ontap version for each feature here (non-API specific)
+var featuresByVersion = map[feature]*utils.Version{
+	MinimumONTAPIVersion:      utils.MustParseSemantic("9.3.0"),
+	NetAppFlexGroups:          utils.MustParseSemantic("9.2.0"),
+	NetAppFlexGroupsClone:     utils.MustParseSemantic("9.7.0"),
+	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("9.2.0"),
+	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("9.5.0"),
+	LunGeometrySkip:           utils.MustParseSemantic("9.5.0"),
+	FabricPoolForSVMDR:        utils.MustParseSemantic("9.5.0"),
+	QosPolicies:               utils.MustParseSemantic("9.8.0"),
+	LIFServices:               utils.MustParseSemantic("9.6.0"),
+} // TODO merage these 2
+
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (d Client) SupportsFeature(ctx context.Context, feature feature) bool {
 
@@ -431,7 +451,7 @@ func (d Client) IgroupDestroy(initiatorGroupName string) (*azgo.IgroupDestroyRes
 // IgroupList lists initiator groups
 func (d Client) IgroupList() (*azgo.IgroupGetIterResponse, error) {
 	response, err := azgo.NewIgroupGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -841,7 +861,7 @@ func (d Client) LunCount(ctx context.Context, volume string) (int, error) {
 	desiredAttributes.SetLunInfo(*desiredInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -873,7 +893,7 @@ func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResp
 
 // LunSize retrieves the size of the specified volume, does not work with economy driver
 func (d Client) LunSize(flexvolName string) (int, error) {
-	lunPath := 	fmt.Sprintf("/vol/%v/lun0", flexvolName)
+	lunPath := fmt.Sprintf("/vol/%v/lun0", flexvolName)
 	lunAttrs, err := d.LunGet(lunPath)
 	if err != nil {
 		return 0, err
@@ -1704,7 +1724,7 @@ func (d Client) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, s
 	desiredAttributes.SetVolumeAttributes(*desiredVolumeAttributes)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -2029,7 +2049,7 @@ func (d Client) QuotaGetEntry(target string) (*azgo.QuotaEntryType, error) {
 	desiredAttributes.SetQuotaEntry(*desiredQuotaEntryFields)
 
 	response, err := azgo.NewQuotaListEntriesIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -2061,7 +2081,7 @@ func (d Client) QuotaEntryList(volume string) (*azgo.QuotaListEntriesIterRespons
 	desiredAttributes.SetQuotaEntry(*desiredQuotaEntryFields)
 
 	response, err := azgo.NewQuotaListEntriesIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.zr)
@@ -2151,7 +2171,7 @@ func (d Client) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIter
 	query.SetExportRuleInfo(*exportRuleInfo)
 
 	response, err := azgo.NewExportRuleGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(d.zr)
 	return response, err
@@ -2188,7 +2208,7 @@ func (d Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	query.SetSnapshotInfo(*snapshotInfo)
 
 	response, err := azgo.NewSnapshotGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(d.zr)
 	return response, err
@@ -2223,7 +2243,7 @@ func (d Client) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotD
 // IscsiServiceGetIterRequest returns information about an iSCSI target
 func (d Client) IscsiServiceGetIterRequest() (*azgo.IscsiServiceGetIterResponse, error) {
 	response, err := azgo.NewIscsiServiceGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -2237,7 +2257,7 @@ func (d Client) IscsiNodeGetNameRequest() (*azgo.IscsiNodeGetNameResponse, error
 // IscsiInterfaceGetIterRequest returns information about the vserver's iSCSI interfaces
 func (d Client) IscsiInterfaceGetIterRequest() (*azgo.IscsiInterfaceGetIterResponse, error) {
 	response, err := azgo.NewIscsiInterfaceGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -2252,7 +2272,7 @@ func (d Client) IscsiInterfaceGetIterRequest() (*azgo.IscsiInterfaceGetIterRespo
 // equivalent to filer::> vserver show
 func (d Client) VserverGetIterRequest() (*azgo.VserverGetIterResponse, error) {
 	response, err := azgo.NewVserverGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -2271,7 +2291,7 @@ func (d Client) VserverGetIterAdminRequest() (*azgo.VserverGetIterResponse, erro
 	desiredAttributes.SetVserverInfo(*desiredInfo)
 
 	response, err := azgo.NewVserverGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(d.GetNontunneledZapiRunner())
@@ -2288,7 +2308,7 @@ func (d Client) VserverGetRequest() (*azgo.VserverGetResponse, error) {
 // VserverGetAggregateNames returns an array of names of the aggregates assigned to the configured vserver.
 // The vserver-get-iter API works with either cluster or vserver scope, so the ZAPI runner may or may not
 // be configured for tunneling; using the query parameter ensures we address only the configured vserver.
-func (d Client) VserverGetAggregateNames() ([]string, error) {
+func (d Client) SVMGetAggregateNames() ([]string, error) {
 
 	// Get just the SVM of interest
 	query := &azgo.VserverGetIterRequestQuery{}
@@ -2296,7 +2316,7 @@ func (d Client) VserverGetAggregateNames() ([]string, error) {
 	query.SetVserverInfo(*info)
 
 	response, err := azgo.NewVserverGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(d.zr)
 
@@ -2327,7 +2347,7 @@ func (d Client) VserverGetAggregateNames() ([]string, error) {
 func (d Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterResponse, error) {
 
 	response, err := azgo.NewVserverShowAggrGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(d.zr)
 	return response, err
 }
@@ -2421,7 +2441,7 @@ func (d Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 	query.SetVolumeAttributes(*volumeAttributes)
 
 	response, err := azgo.NewVolumeGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(zr)
 
@@ -2688,7 +2708,7 @@ func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 func (d Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 
 	response, err := azgo.NewNetInterfaceGetIterRequest().
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(azgo.NetInterfaceGetIterRequestQuery{
 			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{
 				OperationalStatusPtr: &LifOperationalStatusUp,
@@ -2785,7 +2805,7 @@ func (d Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 
 	response, err := azgo.NewSystemNodeGetIterRequest().
 		SetDesiredAttributes(*desiredAttributes).
-		SetMaxRecords(defaultZapiRecords).
+		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(zr)
 
 	Logc(ctx).WithFields(log.Fields{
