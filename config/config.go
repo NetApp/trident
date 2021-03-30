@@ -8,6 +8,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	"github.com/netapp/trident/utils"
 )
@@ -232,4 +233,30 @@ func version() string {
 	}
 
 	return version
+}
+
+func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) error {
+
+	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
+	minSupportedMMVersion := utils.MustParseSemantic(k8sMinVersion).ToMajorMinorVersion()
+	maxSupportedMMVersion := utils.MustParseSemantic(KubernetesVersionMax).ToMajorMinorVersion()
+
+	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
+		return utils.UnsupportedKubernetesVersionError(
+			fmt.Errorf("trident supports k8s versions in the range [%s, %s]",
+				minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString()))
+	}
+
+	return nil
+}
+
+func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sversion.Info) error {
+
+	k8sVersion, err := utils.ParseSemantic(versionInfo.GitVersion)
+	if err != nil {
+		return err
+	}
+
+	return ValidateKubernetesVersion(k8sMinVersion, k8sVersion)
+
 }

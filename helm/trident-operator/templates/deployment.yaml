@@ -27,6 +27,7 @@ spec:
       - command:
         - /trident-operator
         - --debug={{ include "trident-operator.debug" $ }}
+        - --skip-k8s-version-check={{ include "trident.skipK8sVersionCheck" $ }}
         env:
         - name: POD_NAME
           valueFrom:

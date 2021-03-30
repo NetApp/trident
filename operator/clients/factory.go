@@ -5,12 +5,10 @@ package clients
 import (
 	"fmt"
 	"io/ioutil"
-	"strings"
 	"time"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
-	tridentutils "github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
@@ -18,7 +16,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	operatorconfig "github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
 	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 )
@@ -74,11 +71,6 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 	clients.K8SVersion, err = clients.KubeClient.Discovery().ServerVersion()
 	if err != nil {
 		return nil, fmt.Errorf("could not get Kubernetes version: %v", err)
-	}
-
-	// Validate the Kubernetes server version
-	if err := ValidateKubernetesVersion(clients.K8SVersion); err != nil {
-		return nil, err
 	}
 
 	log.WithFields(log.Fields{
@@ -151,25 +143,4 @@ func createK8SClientsInCluster() (*Clients, error) {
 		K8SClient:  k8sClient,
 		Namespace:  namespace,
 	}, nil
-}
-
-func ValidateKubernetesVersion(versionInfo *k8sversion.Info) error {
-
-	k8sVersion, err := tridentutils.ParseSemantic(versionInfo.GitVersion)
-	if err != nil {
-		return err
-	}
-
-	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
-	minSupportedMMVersion := tridentutils.MustParseSemantic(commonconfig.KubernetesCSIVersionMinForced).ToMajorMinorVersion()
-	maxSupportedMMVersion := tridentutils.MustParseSemantic(commonconfig.KubernetesVersionMax).ToMajorMinorVersion()
-
-	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
-		return tridentutils.UnsupportedKubernetesVersionError(
-			fmt.Errorf("%s %s supports Kubernetes versions in the range [%s, %s]",
-				strings.Title(operatorconfig.OperatorName), operatorconfig.OperatorVersion.ShortString(),
-				minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString()))
-	}
-
-	return nil
 }

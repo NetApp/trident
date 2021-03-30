@@ -83,17 +83,18 @@ type Controller struct {
 	*clients.Clients
 	mutex *sync.Mutex
 
-	eventRecorder      record.EventRecorder
-	indexerCR          cache.Indexer
-	deploymentIndexer  cache.Indexer
-	daemonsetIndexer   cache.Indexer
-	informerCR         cache.SharedIndexInformer
-	deploymentInformer cache.SharedIndexInformer
-	daemonsetInformer  cache.SharedIndexInformer
-	watcherCR          cache.ListerWatcher
-	deploymentWatcher  cache.ListerWatcher
-	daemonsetWatcher   cache.ListerWatcher
-	stopChan           chan struct{}
+	eventRecorder       record.EventRecorder
+	indexerCR           cache.Indexer
+	deploymentIndexer   cache.Indexer
+	daemonsetIndexer    cache.Indexer
+	informerCR          cache.SharedIndexInformer
+	deploymentInformer  cache.SharedIndexInformer
+	daemonsetInformer   cache.SharedIndexInformer
+	watcherCR           cache.ListerWatcher
+	deploymentWatcher   cache.ListerWatcher
+	daemonsetWatcher    cache.ListerWatcher
+	stopChan            chan struct{}
+	skipK8sVersionCheck bool
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -103,7 +104,7 @@ type Controller struct {
 	workqueue workqueue.RateLimitingInterface
 }
 
-func NewController(clients *clients.Clients) (*Controller, error) {
+func NewController(clients *clients.Clients, skipK8sVersionCheck bool) (*Controller, error) {
 
 	log.WithField("Controller", ControllerName).Info("Initializing controller.")
 
@@ -113,6 +114,8 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 		stopChan:  make(chan struct{}),
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "TridentOrchestrator"),
 	}
+
+	c.skipK8sVersionCheck = skipK8sVersionCheck
 
 	// Set up event broadcaster
 	utilruntime.Must(scheme.AddToScheme(scheme.Scheme))
@@ -354,7 +357,7 @@ func (c *Controller) addOrchestrator(obj interface{}) {
 	}
 
 	log.WithFields(log.Fields{
-		"CR": name,
+		"CR":  name,
 		"CRD": CRDName,
 	}).Infof("CR added.")
 
@@ -398,7 +401,7 @@ func (c *Controller) updateOrchestrator(oldObj, newObj interface{}) {
 	}
 
 	log.WithFields(log.Fields{
-		"CR": newCR.Name,
+		"CR":  newCR.Name,
 		"CRD": CRDName,
 	}).Infof("CR updated.")
 
@@ -428,7 +431,7 @@ func (c *Controller) deleteOrchestrator(obj interface{}) {
 	}
 
 	log.WithFields(log.Fields{
-		"CR": name,
+		"CR":  name,
 		"CRD": CRDName,
 	}).Infof("CR deleted.")
 
@@ -744,13 +747,17 @@ func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.
 
 // k8sVersionPreinstallationCheck identifies if K8s version is valid or not
 func (c *Controller) k8sVersionPreinstallationCheck() error {
-
-	if isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion(); !isCurrentK8sVersionValid {
-		log.Error(warningMessage)
-		if crErr := c.updateAllCRs(warningMessage); crErr != nil {
-			log.Error(crErr)
+	isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion()
+	if c.skipK8sVersionCheck == false {
+		if !isCurrentK8sVersionValid {
+			log.Errorf(warningMessage)
+			return utils.UnsupportedConfigError(fmt.Errorf(warningMessage))
 		}
-		return utils.UnsupportedConfigError(fmt.Errorf(warningMessage))
+	} else {
+		if warningMessage != "" {
+			log.Warningf(warningMessage)
+		}
+		log.Warningf("Skipping the Kubernetes version check is not recommended for production environments")
 	}
 
 	return nil
@@ -820,7 +827,7 @@ func (c *Controller) handleMigrationScenario() error {
 		}
 
 		if err = c.createTridentOrchestratorCR(torc); err != nil {
-			msg := fmt.Sprintf("unable to create existing TridentOrchestrator(%v) from TridentProvisioner(" +
+			msg := fmt.Sprintf("unable to create existing TridentOrchestrator(%v) from TridentProvisioner("+
 				"%v/%v) spec; err: %v", name, namespace, name, err)
 			log.Errorf(msg)
 			return utils.ReconcileFailedError(fmt.Errorf(msg))
@@ -1169,7 +1176,7 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		// Failed to identify current trident version and K8s version
 		log.WithFields(log.Fields{
 			"controllingCR": controllingCR.Name,
-			"err": err,
+			"err":           err,
 		}).Errorf("Error identifying update scenario.")
 	}
 
@@ -1196,7 +1203,7 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 
 			// Update status of the tridentCR  to `Failed`
 			debugMessage := "Updating Trident Orchestrator CR after failed namespace check."
-			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation due to namespace change from" +
+			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation due to namespace change from"+
 				" `%v` to `%v`; namespace change is not allowed.", currentInstallationNamespace,
 				controllingCR.Spec.Namespace)
 
@@ -1221,8 +1228,9 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		// Unfortunately, it is not possible to verify tridentImage version at this stage,
 		// until we are inside the installation code we cannot perform some of the checks.
 		// This only identifies changes in the K8s version
+		// If we are skipping k8s version check, isCurrentK8sVersionSupported is irrelevant
 		var shouldUpdate bool
-		if isCurrentK8sVersionSupported {
+		if isCurrentK8sVersionSupported || c.skipK8sVersionCheck {
 			shouldUpdate = c.tridentUpgradeNeeded(tridentK8sConfigVersion)
 		}
 
@@ -1979,6 +1987,7 @@ func (c *Controller) validateCurrentK8sVersion() (bool, string) {
 	var warning string
 
 	currentK8sVersion, err := c.Clients.KubeClient.Discovery().ServerVersion()
+
 	if err != nil {
 		log.WithField("err", err).Error("Could not get Kubernetes version; unable to verify if update is required.")
 		return isValid, ""
@@ -1991,9 +2000,8 @@ func (c *Controller) validateCurrentK8sVersion() (bool, string) {
 	if currentK8sVersion != c.K8SVersion {
 		c.K8SVersion = currentK8sVersion
 	}
-
 	// Validate the Kubernetes server version
-	if err := clients.ValidateKubernetesVersion(currentK8sVersion); err != nil {
+	if err := commonconfig.ValidateKubernetesVersionFromInfo(commonconfig.KubernetesCSIVersionMinForced, currentK8sVersion); err != nil {
 		errMessage := fmt.Sprintf("Warning: Kubernetes version '%s' is unsupported; err: %v",
 			currentK8sVersion.String(), err)
 		log.Warnf(errMessage)

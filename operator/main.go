@@ -29,8 +29,9 @@ var (
 	logFormat = flag.String("log-format", "text", "Logging format (text, json)")
 
 	// Kubernetes
-	k8sAPIServer  = flag.String("k8s-api-server", "", "Kubernetes API server address")
-	k8sConfigPath = flag.String("k8s-config-path", "", "Path to KubeConfig file")
+	k8sAPIServer        = flag.String("k8s-api-server", "", "Kubernetes API server address")
+	k8sConfigPath       = flag.String("k8s-config-path", "", "Path to KubeConfig file")
+	skipK8sVersionCheck = flag.Bool("skip-k8s-version-check", false, "Skip k8s version check for Trident compatibility")
 )
 
 func printFlag(f *flag.Flag) {
@@ -84,7 +85,7 @@ func main() {
 	}
 
 	// Create Trident Orchestrator controller
-	tridentOrchestrator, err := orchestrator.NewController(k8sClients)
+	tridentOrchestrator, err := orchestrator.NewController(k8sClients, *skipK8sVersionCheck)
 	if err != nil {
 		log.WithField("error", err).Fatalf("Could not create Trident Orchestrator controller.")
 	}

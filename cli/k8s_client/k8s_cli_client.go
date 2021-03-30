@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/tools/clientcmd"
 
-	tridentconfig "github.com/netapp/trident/config"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 )
@@ -96,16 +95,6 @@ func NewKubectlClient(namespace string, k8sTimeout time.Duration) (Interface, er
 		return nil, err
 	}
 
-	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
-	minSupportedMMVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMin).ToMajorMinorVersion()
-	maxSupportedMMVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMax).ToMajorMinorVersion()
-
-	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
-		return nil, fmt.Errorf("%s %s supports Kubernetes versions in the range [%s, %s]",
-			strings.Title(tridentconfig.OrchestratorName), tridentconfig.OrchestratorVersion.ShortString(),
-			minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString())
-	}
-
 	client := &KubectlClient{
 		cli:       cli,
 		flavor:    flavor,
@@ -123,9 +112,9 @@ func NewKubectlClient(namespace string, k8sTimeout time.Duration) (Interface, er
 	}
 
 	log.WithFields(log.Fields{
-		"cli":       cli,
-		"flavor":    flavor,
-		"version":   k8sVersion.String(),
+		"cli":       client.cli,
+		"flavor":    client.flavor,
+		"version":   client.ServerVersion().String(),
 		"timeout":   client.timeout,
 		"namespace": client.namespace,
 	}).Debug("Initialized Kubernetes CLI client.")

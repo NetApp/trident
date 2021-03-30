@@ -154,3 +154,14 @@ Trident EnableNodePrep
 {{- "false" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Trident SkipK8sVersionCheck
+*/}}
+{{- define "trident.skipK8sVersionCheck" -}}
+{{- if .Values.tridentSkipK8sVersionCheck | printf "%v" | eq "true" }}
+{{- "true" }}
+{{- else }}
+{{- "false" }}
+{{- end }}
+{{- end }}

@@ -238,9 +238,9 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 	log.WithFields(log.Fields{
 		"cli":       kubeClient.cli,
 		"flavor":    kubeClient.flavor,
-		"version":   versionInfo.String(),
+		"version":   kubeClient.Version().String(),
 		"timeout":   kubeClient.timeout,
-		"namespace": namespace,
+		"namespace": kubeClient.namespace,
 	}).Debug("Initialized Kubernetes API client.")
 
 	return kubeClient, nil
@@ -2647,7 +2647,7 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 	var err error
 
 	log.WithFields(log.Fields{
-		"CRD": crdName,
+		"CRD":  crdName,
 		"kind": gvk.Kind,
 	}).Debugf("Adding finalizers to CRD.")
 
@@ -2759,7 +2759,7 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	log.WithFields(log.Fields{
-		"CRD": crdName,
+		"CRD":  crdName,
 		"kind": gvk.Kind,
 	}).Debugf("Adding finalizers to CRD.")
 

@@ -73,6 +73,7 @@ var (
 	useIPv6                 bool
 	silenceAutosupport      bool
 	enableNodePrep          bool
+	skipK8sVersionCheck     bool
 	pvName                  string
 	pvcName                 string
 	tridentImage            string
@@ -129,6 +130,7 @@ func init() {
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
 	installCmd.Flags().BoolVar(&csi, "csi", false, "Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).")
+	installCmd.Flags().BoolVar(&skipK8sVersionCheck, "skip-k8s-version-check", false, "Skip k8s version check for Trident compatibility")
 	installCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the installer as a pod in the cluster.")
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable", "Don't send autosupport bundles to NetApp automatically.")
@@ -150,6 +152,9 @@ func init() {
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
 
 	if err := installCmd.Flags().MarkHidden("in-cluster"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-custom-url"); err != nil {
@@ -268,6 +273,21 @@ func discoverInstallationEnvironment() error {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 
+	// Before the installation ensure K8s version is valid
+	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
+	if !skipK8sVersionCheck {
+		if err != nil {
+			log.Errorf("Kubernetes version '%s' is unsupported; err: %v", client.ServerVersion().String(), err)
+			return err
+		}
+	} else if err != nil && utils.IsUnsupportedKubernetesVersionError(err) {
+		log.Warningf("Trident is running on an unsupported Kubernetes version. Skipping the Kubernetes version "+
+			"check is not recommended for production environments: %v", client.ServerVersion().String())
+	} else {
+		log.Warningf("Skipping the Kubernetes version check is not recommended for production environments; "+
+			"Kubernetes version: %v", client.ServerVersion().String())
+	}
+
 	// Prepare input file paths
 	if err = prepareYAMLFilePaths(); err != nil {
 		return err
@@ -290,7 +310,7 @@ func discoverInstallationEnvironment() error {
 
 	log.WithFields(log.Fields{
 		"installationNamespace": TridentPodNamespace,
-		"kubernetesVersion":     client.Version().String(),
+		"kubernetesVersion":     client.ServerVersion().String(),
 	}).Debug("Validated installation environment.")
 
 	return nil

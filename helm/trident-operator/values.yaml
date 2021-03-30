@@ -56,3 +56,6 @@ tridentImageTag: ""
 
 # tridentEnableNodePrep attempts to automatically install required packages on nodes
 tridentEnableNodePrep: false
+
+# tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.
+tridentSkipK8sVersionCheck: false

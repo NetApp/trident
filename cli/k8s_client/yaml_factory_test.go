@@ -4,10 +4,12 @@ package k8sclient
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -84,16 +86,15 @@ func TestYAMLFactory(t *testing.T) {
 // TestAPIVersion validates that we get correct APIVersion value
 func TestAPIVersion(t *testing.T) {
 
-	yamlsOutputs := map[string]string {
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false): "rbac.authorization.k8s.io/v1",
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true): "rbac.authorization.k8s.io/v1",
-		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, false): "authorization.openshift.io/v1",
-		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true): "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, false):"rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, true):"rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, false):"authorization.openshift.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, true):"rbac.authorization.k8s.io/v1",
-
+	yamlsOutputs := map[string]string{
+		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false):                         "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                          "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, false):                   "authorization.openshift.io/v1",
+		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                    "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, false):       "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, true):        "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, false): "authorization.openshift.io/v1",
+		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, true):  "rbac.authorization.k8s.io/v1",
 	}
 
 	for result, value := range yamlsOutputs {
@@ -111,4 +112,61 @@ func TestGetRegistryVal(t *testing.T) {
 	assert.Exactly(t, "k8s.gcr.io", getRegistryVal("k8s.gcr.io/", true))
 	assert.Exactly(t, "registry.barnacle.netapp.com/foo/bar",
 		getRegistryVal("registry.barnacle.netapp.com/foo/bar", true))
+}
+
+// Simple validation of the CSI Deployment YAML
+func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
+
+	labels := make(map[string]string)
+	labels["app"] = "trident"
+
+	ownerRef := make(map[string]string)
+	ownerRef["uid"] = "123456789"
+	ownerRef["kind"] = "TridentProvisioner"
+
+	imagePullSecrets := []string{"thisisasecret"}
+
+	version := utils.MustParseSemantic("1.17.0")
+
+	yamlsOutputs := []string{
+		GetCSIDeploymentYAML("trident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
+			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+			"k8s.gcr.io", "text", imagePullSecrets, labels, nil, true, true, false, version, true),
+	}
+	for i, yamlData := range yamlsOutputs {
+
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected constant %v to be valid YAML", i)
+		}
+	}
+}
+
+// Simple validation of the CSI Deployment YAML
+func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
+
+	labels := make(map[string]string)
+	labels["app"] = "trident"
+
+	ownerRef := make(map[string]string)
+	ownerRef["uid"] = "123456789"
+	ownerRef["kind"] = "TridentProvisioner"
+
+	imagePullSecrets := []string{"thisisasecret"}
+
+	version := utils.MustParseSemantic("1.17.0")
+
+	yamlsOutputs := []string{
+		GetCSIDeploymentYAML("\ntrident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
+			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+			"k8s.gcr.io", "text", imagePullSecrets, labels, nil, true, true, false, version, true),
+	}
+
+	for i, yamlData := range yamlsOutputs {
+
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err == nil {
+			t.Fatalf("expected constant %v to be invalid YAML", i)
+		}
+	}
 }
