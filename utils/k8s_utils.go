@@ -24,8 +24,8 @@ const (
 	maxListTries = 3
 	// Number of fields per line in /proc/mounts as per the fstab man page.
 	expectedNumProcMntFieldsPerLine = 6
-	// Number of fields per line in /proc/self/mountinfo as per the fstab man page.
-	expectedNumProcSelfMntInfoFieldsPerLine = 11
+	// Minimum number of fields per line in /proc/self/mountinfo as per the proc man page.
+	minNumProcSelfMntInfoFieldsPerLine = 10
 	// Location of the mount file to use
 	procMountsPath = "/proc/mounts"
 	// Location of the mount file to use
@@ -148,11 +148,16 @@ func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
 			continue
 		}
 		fields := strings.Fields(line)
-		fieldLines := len(fields)
-		expectedFieldsPerLine := expectedNumProcSelfMntInfoFieldsPerLine
-		if fieldLines > expectedFieldsPerLine || fieldLines < (expectedFieldsPerLine-1) {
-			return nil, fmt.Errorf("wrong number of fields (expected %d or %d, got %d): %s", expectedFieldsPerLine,
-				expectedFieldsPerLine-1, len(fields), line)
+		numFields := len(fields)
+		if numFields < minNumProcSelfMntInfoFieldsPerLine {
+			return nil, fmt.Errorf("wrong number of fields (expected at least %d, got %d): %s",
+				minNumProcSelfMntInfoFieldsPerLine, numFields, line)
+		}
+
+		// separator must be in the 4th position from the end for the line to contain fsType, mountSource, and
+		//  superOptions
+		if fields[numFields-4] != "-" {
+			return nil, fmt.Errorf("malformed mountinfo (could not find separator): %s", line)
 		}
 
 		// If root value is marked deleted, skip the entry
@@ -179,9 +184,9 @@ func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
 		}
 		mp.ParentId = parentId
 
-		mp.FsType = fields[fieldLines-3]
-		mp.MountSource = fields[fieldLines-2]
-		mp.SuperOptions = strings.Split(fields[fieldLines-1], ",")
+		mp.FsType = fields[numFields-3]
+		mp.MountSource = fields[numFields-2]
+		mp.SuperOptions = strings.Split(fields[numFields-1], ",")
 
 		out = append(out, mp)
 	}
