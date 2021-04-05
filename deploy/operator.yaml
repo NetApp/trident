@@ -7,6 +7,8 @@ metadata:
     app: operator.trident.netapp.io
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       name: trident-operator

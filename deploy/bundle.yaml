@@ -365,6 +365,8 @@ metadata:
   namespace: trident
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: operator.trident.netapp.io
