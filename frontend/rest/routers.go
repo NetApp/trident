@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/frontend/csi"
 )
@@ -18,7 +19,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler
 
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+		handler = Logger(handler, route.Name, log.DebugLevel)
 
 		router.
 			Methods(route.Method).
@@ -38,7 +39,7 @@ func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
 		var handler http.Handler
 
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+		handler = Logger(handler, route.Name, log.TraceLevel)
 
 		router.
 			Methods(route.Method).

@@ -28,7 +28,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func Logger(inner http.Handler, routeName string) http.Handler {
+func Logger(inner http.Handler, routeName string, logLevel log.Level) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		requestId := ""
@@ -38,7 +38,7 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		}
 		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST)
 		r = r.WithContext(ctx)
-		logRestCallInfo("REST API call received.", r, start, routeName, "")
+		logRestCallInfo("REST API call received.", r, start, routeName, "", logLevel)
 
 		lrw := NewLoggingResponseWriter(w)
 		inner.ServeHTTP(lrw, r)
@@ -48,11 +48,11 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		endTime := float64(time.Since(start).Milliseconds())
 		restOpsSecondsTotal.WithLabelValues(r.Method, routeName, statusCode).Observe(endTime)
 
-		logRestCallInfo("REST API call complete.", r, start, routeName, statusCode)
+		logRestCallInfo("REST API call complete.", r, start, routeName, statusCode, logLevel)
 	})
 }
 
-func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string) {
+func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string, logLevel log.Level) {
 
 	logFields := log.Fields{
 		"method":   r.Method,
@@ -63,5 +63,13 @@ func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusC
 	if statusCode != "" {
 		logFields["status_code"] = statusCode
 	}
-	Logc(r.Context()).WithFields(logFields).Debug(msg)
+
+	switch logLevel {
+	case log.TraceLevel:
+		Logc(r.Context()).WithFields(logFields).Trace(msg)
+	case log.DebugLevel:
+		fallthrough
+	default:
+		Logc(r.Context()).WithFields(logFields).Debug(msg)
+	}
 }
