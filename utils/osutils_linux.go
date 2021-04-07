@@ -401,14 +401,16 @@ func installPackagesOnHost(ctx context.Context, packages []string, host HostSyst
 		}
 	}
 
-	args := []string{"install", "-y"}
-	args = append(args, packages...)
-	timeout := Max(int64(120*len(packages)), 120) // Increase timeout based on number of packages that need installed
-	output, err = execCommandWithTimeout(ctx, pkgMgr, time.Duration(timeout), true, args...)
-	if err != nil {
-		err = fmt.Errorf("problem installing packages with %s; %s; %+v", pkgMgr, string(output), err)
-		Logc(ctx).WithField("packages", packages).Error(err)
-		return err
+	args := []string{}
+	timeout := 120
+	for _, pkg := range packages {
+		args = []string{"install", "-y", pkg}
+		output, err = execCommandWithTimeout(ctx, pkgMgr, time.Duration(timeout), true, args...)
+		if err != nil {
+			err = fmt.Errorf("problem installing package with %s; %s; %+v", pkgMgr, string(output), err)
+			Logc(ctx).WithField("package", pkg).Error(err)
+			return err
+		}
 	}
 
 	return nil
@@ -449,7 +451,7 @@ func determineISCSIServices(host HostSystem) ([]string, error) {
 	case Centos, RHEL:
 		services = []string{"iscsid", "multipathd"}
 	case Ubuntu:
-		services = []string{"open-iscsi", "multipath-tools"}
+		services = []string{"iscsid", "open-iscsi", "multipath-tools"}
 	default:
 		err := fmt.Errorf("unsupported Linux distro: %s", host.OS.Distro)
 		return services, err
