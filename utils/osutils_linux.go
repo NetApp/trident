@@ -451,7 +451,7 @@ func determineISCSIServices(host HostSystem) ([]string, error) {
 	case Centos, RHEL:
 		services = []string{"iscsid", "multipathd"}
 	case Ubuntu:
-		services = []string{"iscsid", "open-iscsi", "multipath-tools"}
+		services = []string{"iscsid", "open-iscsi", "multipathd"}
 	default:
 		err := fmt.Errorf("unsupported Linux distro: %s", host.OS.Distro)
 		return services, err
