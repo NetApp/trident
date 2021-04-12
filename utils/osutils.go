@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -2642,28 +2642,23 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 
 // filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
 // and returns the target IQNs for a given portal
-func filterTargets(ctx context.Context, output, tp string) ([]string, error) {
+func filterTargets(output, tp string) []string {
 	regex := regexp.MustCompile(`^([^,]+),(-?\d+)\s+(.+)$`)
 	targets := make([]string, 0)
-	for idx, line := range strings.Split(output, "\n") {
+	for _, line := range strings.Split(output, "\n") {
 		if 0 == len(line) {
 			continue
 		}
 		matches := regex.FindStringSubmatch(line)
-		if 4 != len(matches) {
-			Logc(ctx).WithFields(log.Fields{
-				"linenum": idx + 1,
-				"output":  output,
-			}).Error("Failed to parse node list")
-			return nil, fmt.Errorf("failed to parse node list: \"%s\"", line)
-		}
-		portal := matches[1]
-		iqn := matches[3]
-		if tp == portal {
-			targets = append(targets, iqn)
+		if 4 == len(matches) {
+			portal := matches[1]
+			iqn := matches[3]
+			if tp == portal {
+				targets = append(targets, iqn)
+			}
 		}
 	}
-	return targets, nil
+	return targets
 }
 
 // getTargets gets a list of discovered iSCSI targets
@@ -2690,7 +2685,7 @@ func getTargets(ctx context.Context, tp string) ([]string, error) {
 		}).Error("Failed to list nodes")
 		return nil, fmt.Errorf("failed to list nodes: %v", err)
 	}
-	return filterTargets(ctx, string(output), tp)
+	return filterTargets(string(output), tp), nil
 }
 
 func updateDiscoveryDb(ctx context.Context, tp, iface, key, value string) error {
@@ -2801,11 +2796,7 @@ func ensureIscsiTarget(ctx context.Context, tp, targetIqn, username, password, t
 		return fmt.Errorf("failed to discover targets: %v", err)
 	}
 
-	targets, err = filterTargets(ctx, string(output), tp)
-	if err != nil {
-		// Logged
-		return err
-	}
+	targets = filterTargets(string(output), tp)
 	for _, iqn := range targets {
 		if targetIqn == iqn {
 			Logc(ctx).WithField("Target", iqn).Info("Target discovered successfully")

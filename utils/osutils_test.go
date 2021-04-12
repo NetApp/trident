@@ -1,11 +1,9 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package utils
 
 import (
-	"context"
 	"fmt"
-	"reflect"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -326,7 +324,6 @@ func TestFilterTargets(t *testing.T) {
 		CommandOutput string
 		InputPortal   string
 		OutputIQNs    []string
-		ExpectedError error
 	}
 
 	tests := []FilterCase{
@@ -336,27 +333,24 @@ func TestFilterTargets(t *testing.T) {
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
 				"203.0.113.3:3260,-1 iqn.2010-01.com.solidfire:baz\n",
-			InputPortal:   "203.0.113.1:3260",
-			OutputIQNs:    []string{"iqn.1992-08.com.netapp:foo"},
-			ExpectedError: nil,
+			InputPortal: "203.0.113.1:3260",
+			OutputIQNs:  []string{"iqn.1992-08.com.netapp:foo"},
 		},
 		{
 			// Simple positive test, expect second
 			CommandOutput: "" +
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
-			InputPortal:   "203.0.113.2:3260",
-			OutputIQNs:    []string{"iqn.1992-08.com.netapp:bar"},
-			ExpectedError: nil,
+			InputPortal: "203.0.113.2:3260",
+			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar"},
 		},
 		{
 			// Expect empty list
 			CommandOutput: "" +
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
-			InputPortal:   "203.0.113.3:3260",
-			OutputIQNs:    []string{},
-			ExpectedError: nil,
+			InputPortal: "203.0.113.3:3260",
+			OutputIQNs:  []string{},
 		},
 		{
 			// Expect multiple
@@ -364,17 +358,26 @@ func TestFilterTargets(t *testing.T) {
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:baz\n",
-			InputPortal:   "203.0.113.2:3260",
-			OutputIQNs:    []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
-			ExpectedError: nil,
+			InputPortal: "203.0.113.2:3260",
+			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
 		},
 		{
-			// Expect error
+			// Bad input
 			CommandOutput: "" +
 				"Foobar\n",
-			InputPortal:   "203.0.113.2:3260",
-			OutputIQNs:    nil,
-			ExpectedError: fmt.Errorf("failed to parse node list: \"Foobar\""),
+			InputPortal: "203.0.113.2:3260",
+			OutputIQNs:  []string{},
+		},
+		{
+			// Good and bad input
+			CommandOutput: "" +
+				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
+				"Foo\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
+				"Bar\n" +
+				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:baz\n",
+			InputPortal: "203.0.113.2:3260",
+			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
 		},
 		{
 			// Try nonstandard port number
@@ -382,24 +385,12 @@ func TestFilterTargets(t *testing.T) {
 				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
 				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
 				"203.0.113.2:3261,1025 iqn.1992-08.com.netapp:baz\n",
-			InputPortal:   "203.0.113.2:3261",
-			OutputIQNs:    []string{"iqn.1992-08.com.netapp:baz"},
-			ExpectedError: nil,
+			InputPortal: "203.0.113.2:3261",
+			OutputIQNs:  []string{"iqn.1992-08.com.netapp:baz"},
 		},
 	}
 	for _, testCase := range tests {
-		targets, err := filterTargets(context.TODO(),
-			testCase.CommandOutput, testCase.InputPortal)
-		if nil == testCase.ExpectedError && nil != err {
-			t.Errorf("Unexpected error: %v", err)
-			t.Fail()
-		} else if nil != testCase.ExpectedError && nil == err {
-			t.Errorf("Expected error missing")
-			t.Fail()
-		} else if !reflect.DeepEqual(testCase.ExpectedError, err) {
-			t.Errorf("Wrong error reported, expected '%v' got '%v'", testCase.ExpectedError, err)
-			t.Fail()
-		}
+		targets := filterTargets(testCase.CommandOutput, testCase.InputPortal)
 		assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
 	}
 }
