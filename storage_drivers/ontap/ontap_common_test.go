@@ -276,3 +276,69 @@ func TestOntapCalculateOptimalFlexVolSize(t *testing.T) {
 		})
 	}
 }
+
+func TestGetExternalConfigRedactSecrets(t *testing.T) {
+
+	var cases = []struct {
+		Name           string
+		originalConfig drivers.OntapStorageDriverConfig
+		externalConfig drivers.OntapStorageDriverConfig
+		errorMessage   string
+	}{
+		{
+			Name: "CHAP credentials provided",
+			originalConfig: drivers.OntapStorageDriverConfig{
+				Username:                  "test-username",
+				Password:                  "test-password",
+				ClientPrivateKey:          "test-client-private-key",
+				ChapInitiatorSecret:       "test-chap-initiator-secret",
+				ChapTargetInitiatorSecret: "test-chap-target-initiator-secret",
+				ChapTargetUsername:        "test-chap-target-username",
+				ChapUsername:              "test-chap-username",
+			},
+			externalConfig: drivers.OntapStorageDriverConfig{
+				Username:                  "<REDACTED>",
+				Password:                  "<REDACTED>",
+				ClientPrivateKey:          "<REDACTED>",
+				ChapInitiatorSecret:       "<REDACTED>",
+				ChapTargetInitiatorSecret: "<REDACTED>",
+				ChapTargetUsername:        "<REDACTED>",
+				ChapUsername:              "<REDACTED>",
+			},
+			errorMessage: "sensitive information not redacted correctly",
+		},
+		{
+			Name: "CHAP credentials not provided",
+			originalConfig: drivers.OntapStorageDriverConfig{
+				Username:                  "",
+				Password:                  "",
+				ClientPrivateKey:          "",
+				ChapInitiatorSecret:       "",
+				ChapTargetInitiatorSecret: "",
+				ChapTargetUsername:        "",
+				ChapUsername:              "",
+			},
+			externalConfig: drivers.OntapStorageDriverConfig{
+				Username:                  "<REDACTED>",
+				Password:                  "<REDACTED>",
+				ClientPrivateKey:          "<REDACTED>",
+				ChapInitiatorSecret:       "<REDACTED>",
+				ChapTargetInitiatorSecret: "<REDACTED>",
+				ChapTargetUsername:        "<REDACTED>",
+				ChapUsername:              "<REDACTED>",
+			},
+			errorMessage: "sensitive information not redacted correctly",
+		},
+	}
+
+	for _, c := range cases {
+		c := c // capture range variable
+		t.Run(c.Name, func(t *testing.T) {
+
+			externalConfig := getExternalConfig(context.TODO(), c.originalConfig)
+
+			assert.Equal(t, c.externalConfig, externalConfig, c.errorMessage)
+
+		})
+	}
+}

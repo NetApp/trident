@@ -2937,6 +2937,11 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	cloneConfig.Username = "<REDACTED>"         // redact the username
 	cloneConfig.Password = "<REDACTED>"         // redact the password
 	cloneConfig.ClientPrivateKey = "<REDACTED>" // redact the client private key
+	cloneConfig.ChapInitiatorSecret = "<REDACTED>"
+	cloneConfig.ChapTargetInitiatorSecret = "<REDACTED>"
+	cloneConfig.ChapTargetUsername = "<REDACTED>"
+	cloneConfig.ChapUsername = "<REDACTED>"
+
 	return cloneConfig
 }
 
