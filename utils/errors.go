@@ -315,3 +315,25 @@ func IsTempOperatorError(err error) bool {
 	_, ok := err.(*tempOperatorError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// invalidInputError
+/////////////////////////////////////////////////////////////////////////////
+
+type invalidInputError struct {
+	message string
+}
+
+func (e *invalidInputError) Error() string { return e.message }
+
+func InvalidInputError(message string) error {
+	return &invalidInputError{message}
+}
+
+func IsInvalidInputError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*invalidInputError)
+	return ok
+}

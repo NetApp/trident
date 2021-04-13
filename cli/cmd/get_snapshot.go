@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 
@@ -24,11 +25,12 @@ var getSnapshotVolume string
 
 func init() {
 	getCmd.AddCommand(getSnapshotCmd)
-	getSnapshotCmd.Flags().StringVar(&getSnapshotVolume, "volume", "", "Limit query to volume")
+	getSnapshotCmd.Flags().StringVar(&getSnapshotVolume, "volume", "", "Limit query to volume "+
+		"(unless additional arguments are provided)")
 }
 
 var getSnapshotCmd = &cobra.Command{
-	Use:     "snapshot [<id>...]",
+	Use:     "snapshot [<volume name>/<snapshot name>...]",
 	Short:   "Get one or more snapshots from Trident",
 	Aliases: []string{"s", "snap", "snapshots"},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -106,8 +108,12 @@ func GetSnapshots(volume string) ([]string, error) {
 
 func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 
-	url := BaseURL() + "/snapshot/" + snapshotID
+	if !strings.ContainsRune(snapshotID, '/') {
+		return storage.SnapshotExternal{}, utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
+			"Please use the format <volume name>/<snapshot name>", snapshotID))
+	}
 
+	url := BaseURL() + "/snapshot/" + snapshotID
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {
 		return storage.SnapshotExternal{}, err
