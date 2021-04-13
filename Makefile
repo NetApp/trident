@@ -130,7 +130,15 @@ operator_build:
 	cd operator && $(MAKE) build
 
 helm_build:
+	# Copy README file to helm chart for artifacthub.io
+	@cp README.md ./helm/trident-operator/
+# check if multiple variables are defined
+ifneq ($(and $(HELM_PGP_KEY),$(HELM_PGP_KEYRING)),)
+	@${DR_HELM} package --app-version ${TRIDENT_VERSION} --version ${TRIDENT_VERSION} ./helm/trident-operator --sign --key "${HELM_PGP_KEY}" --keyring "${HELM_PGP_KEYRING}"
+else
 	@${DR_HELM} package --app-version ${TRIDENT_VERSION} --version ${TRIDENT_VERSION} ./helm/trident-operator
+endif
+	-rm ./helm/trident-operator/README.md
 
 trident_build_all: *.go trident_build tridentctl_macos_build helm_build
 
