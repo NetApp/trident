@@ -31,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -185,7 +184,7 @@ type Interface interface {
 type KubeClient struct {
 	clientset    kubernetes.Interface
 	extClientset *apiextension.Clientset
-	apiResources []*metav1.APIResourceList
+	apiResources map[string]*metav1.APIResourceList
 	restConfig   *rest.Config
 	namespace    string
 	versionInfo  *version.Info
@@ -219,12 +218,15 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 	kubeClient := &KubeClient{
 		clientset:    clientset,
 		extClientset: extClientset,
-		apiResources: make([]*metav1.APIResourceList, 0),
+		apiResources: make(map[string]*metav1.APIResourceList),
 		restConfig:   config,
 		namespace:    namespace,
 		versionInfo:  versionInfo,
 		timeout:      k8sTimeout,
 	}
+
+	// Initialize the API resource cache
+	kubeClient.getAPIResources()
 
 	kubeClient.flavor = kubeClient.discoverKubernetesFlavor()
 
@@ -252,41 +254,48 @@ func NewFakeKubeClient() (Interface, error) {
 	clientset := fake.NewSimpleClientset()
 	kubeClient := &KubeClient{
 		clientset:    clientset,
-		apiResources: make([]*metav1.APIResourceList, 0),
+		apiResources: make(map[string]*metav1.APIResourceList),
 	}
 
 	return kubeClient, nil
 }
 
-func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
+// getAPIResources attempts to get all API resources from the K8S API server, and it populates this
+// clients resource cache with the returned data.  This function is called only once, as calling it
+// repeatedly when one or more API resources are unavailable can trigger API throttling.  If this
+// cache population fails, then the cache will be populated one GVR at a time on demand, which works
+// even if other resources aren't available.  This function's discovery client invocation performs the
+// equivalent of "kubectl api-resources".
+func (k *KubeClient) getAPIResources() {
 
 	// Read the API groups/resources available from the server
-	discoveryClient := k.clientset.Discovery()
-
-	_, apiResources, err := discoveryClient.ServerGroupsAndResources()
-	if err != nil {
-		log.WithField("error", err).Warning("Could not get server resources, defaulting to Kubernetes flavor.")
-		return FlavorKubernetes
+	if _, apiResources, err := k.clientset.Discovery().ServerGroupsAndResources(); err != nil {
+		log.WithField("error", err).Warn("Could not get all server resources.")
+	} else {
+		// Update the cache
+		for _, apiResourceList := range apiResources {
+			k.apiResources[apiResourceList.GroupVersion] = apiResourceList
+		}
 	}
+}
 
-	// Populate the cache so the dynamic client is fast
-	k.apiResources = apiResources
+func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 
-	resources, err := discovery.GroupVersionResources(k.apiResources)
-	if err != nil {
-		log.WithField("error", err).Warning("Could not parse server resources, defaulting to Kubernetes flavor.")
-		return FlavorKubernetes
-	}
+	// Look through the API resource cache for any with openshift group
+	for groupVersion := range k.apiResources {
 
-	for gvr := range resources {
+		gv, err := schema.ParseGroupVersion(groupVersion)
+		if err != nil {
+			log.WithField("groupVersion", groupVersion).Warnf("Could not parse group/version; %v", err)
+			continue
+		}
 
 		//log.WithFields(log.Fields{
-		//	"group":    gvr.Group,
-		//	"version":  gvr.Version,
-		//	"resource": gvr.Resource,
+		//	"group":    gv.Group,
+		//	"version":  gv.Version,
 		//}).Debug("Considering dynamic resource, looking for openshift group.")
 
-		if strings.Contains(gvr.Group, "openshift") {
+		if strings.Contains(gv.Group, "openshift") {
 			return FlavorOpenShift
 		}
 	}
@@ -2365,8 +2374,8 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 
 		discoveryClient := k.clientset.Discovery()
 
-		// Read the API groups/resources available from the server
-		_, apiResources, err := discoveryClient.ServerGroupsAndResources()
+		// The resource wasn't in the cache, so try getting just the one we need.
+		apiResourceList, err := discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 		if err != nil {
 			log.WithFields(log.Fields{
 				"group":   gvk.Group,
@@ -2377,10 +2386,10 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 			return nil, false, err
 		}
 
-		k.apiResources = apiResources
+		// Update the cache
+		k.apiResources[apiResourceList.GroupVersion] = apiResourceList
 
-		// Try again once after updating the API resources list
-		return k.getDynamicResourceNoRefresh(gvk)
+		return k.getDynamicResourceFromResourceList(gvk, apiResourceList)
 
 	} else {
 
@@ -2396,40 +2405,9 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 	gvk *schema.GroupVersionKind,
 ) (*schema.GroupVersionResource, bool, error) {
 
-	for _, resources := range k.apiResources {
-
-		groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
-		if err != nil {
-			log.WithField("groupVersion", groupVersion).Error("Could not parse group/version.")
-			continue
-		}
-
-		for _, resource := range resources.APIResources {
-
-			//log.WithFields(log.Fields{
-			//	"group":    groupVersion.Group,
-			//	"version":  groupVersion.Version,
-			//	"kind":     resource.Kind,
-			//	"resource": resource.Name,
-			//}).Debug("Considering dynamic API resource.")
-
-			if groupVersion.Group == gvk.Group &&
-				groupVersion.Version == gvk.Version &&
-				resource.Kind == gvk.Kind {
-
-				log.WithFields(log.Fields{
-					"group":    groupVersion.Group,
-					"version":  groupVersion.Version,
-					"kind":     resource.Kind,
-					"resource": resource.Name,
-				}).Debug("Found API resource.")
-
-				return &schema.GroupVersionResource{
-					Group:    groupVersion.Group,
-					Version:  groupVersion.Version,
-					Resource: resource.Name,
-				}, resource.Namespaced, nil
-			}
+	if apiResourceList, ok := k.apiResources[gvk.GroupVersion().String()]; ok {
+		if gvr, namespaced, err := k.getDynamicResourceFromResourceList(gvk, apiResourceList); err == nil {
+			return gvr, namespaced, nil
 		}
 	}
 
@@ -2437,7 +2415,60 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 		"group":   gvk.Group,
 		"version": gvk.Version,
 		"kind":    gvk.Kind,
-	}).Error("API resource not found.")
+	}).Debug("API resource not found.")
+
+	return nil, false, utils.NotFoundError("API resource not found")
+}
+
+// getDynamicResourceFromResourceList accepts an APIResourceList array as returned from the K8S API server
+// and returns a GroupVersionResource matching the supplied GroupVersionKind if and only if the GVK is
+// represented in the resource array.  For example:
+//
+// GroupVersion            Resource     Kind
+// -----------------------------------------------
+// apps/v1                 deployments  Deployment
+// apps/v1                 daemonsets   DaemonSet
+// events.k8s.io/v1beta1   events       Event
+//
+func (k *KubeClient) getDynamicResourceFromResourceList(
+	gvk *schema.GroupVersionKind, resources *metav1.APIResourceList,
+) (*schema.GroupVersionResource, bool, error) {
+
+	groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
+	if err != nil {
+		log.WithField("groupVersion", groupVersion).Errorf("Could not parse group/version; %v", err)
+		return nil, false, utils.NotFoundError("Could not parse group/version")
+	}
+
+	if groupVersion.Group != gvk.Group || groupVersion.Version != gvk.Version {
+		return nil, false, utils.NotFoundError("API resource not found, group/version mismatch")
+	}
+
+	for _, resource := range resources.APIResources {
+
+		//log.WithFields(log.Fields{
+		//	"group":    groupVersion.Group,
+		//	"version":  groupVersion.Version,
+		//	"kind":     resource.Kind,
+		//	"resource": resource.Name,
+		//}).Debug("Considering dynamic API resource.")
+
+		if resource.Kind == gvk.Kind {
+
+			log.WithFields(log.Fields{
+				"group":    groupVersion.Group,
+				"version":  groupVersion.Version,
+				"kind":     resource.Kind,
+				"resource": resource.Name,
+			}).Debug("Found API resource.")
+
+			return &schema.GroupVersionResource{
+				Group:    groupVersion.Group,
+				Version:  groupVersion.Version,
+				Resource: resource.Name,
+			}, resource.Namespaced, nil
+		}
+	}
 
 	return nil, false, utils.NotFoundError("API resource not found")
 }
