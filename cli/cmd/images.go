@@ -23,8 +23,8 @@ var versionNotSupported = "The provided Kubernetes version is not supported: "
 var versionNotSemantic = "The provided Kubernetes version was not given in semantic versioning: "
 
 type ImageSet struct {
-	Images []string `json:"images"`
-	K8sVersion string `json:"k8sVersion"`
+	Images     []string `json:"images"`
+	K8sVersion string   `json:"k8sVersion"`
 }
 
 type ImageList struct {
@@ -117,6 +117,8 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		return "", errors.New(versionNotSupported)
 	}
 
+	labels := make(map[string]string)
+
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	if csi {
 		yaml = k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
@@ -125,9 +127,9 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 			nil, false, false, true, semVersion, false)
 		// trident image here is an empty string because we are already going to get it from the deployment yaml
 		yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",
-			"", []string{}, nil, nil, false, false, semVersion)
+			"", []string{}, labels, nil, false, false, semVersion)
 	} else {
-		yaml = k8sclient.GetDeploymentYAML("", tridentconfig.BuildImage, "", []string{}, nil,
+		yaml = k8sclient.GetDeploymentYAML("", tridentconfig.BuildImage, "", []string{}, labels,
 			nil, false)
 	}
 	return yaml, nil

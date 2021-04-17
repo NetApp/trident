@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	TridentAppLabelKey = "app"
+	TridentAppLabelKey       = "app"
+	DefaultContainerLabelKey = "kubectl.kubernetes.io/default-container"
 )
 
 func GetNamespaceYAML(namespace string) string {
@@ -409,6 +410,11 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	if topologyEnabled {
 		provisionerFeatureGates = "- --feature-gates=Topology=True"
 	}
+
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels[DefaultContainerLabelKey] = "trident-main"
 
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
@@ -930,7 +936,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -1085,7 +1091,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.1.1
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -1182,6 +1188,8 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 	}
 
 	imageRegistry = getRegistryVal(imageRegistry, isGCRRegistryVersion)
+
+	labels[DefaultContainerLabelKey] = "trident-main"
 
 	kubeletDir = strings.TrimRight(kubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage)

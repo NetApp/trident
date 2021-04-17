@@ -11,9 +11,10 @@
 - Fixed issue where unexpected output in iscsiadm discovery commands may cause target discovery to fail.
 
 **Enhancements:**
-- Updated to golang 1.15
+- Updated to golang 1.15.
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
 - Added snapshotDir parameter to Azure NetApp Files backend definition.
+- **Kubernetes:** Added support for Kubernetes 1.21.
 
 ## Changes since v20.10.0
 

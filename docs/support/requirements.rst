@@ -9,13 +9,13 @@ Trident supports multiple container engines and orchestrators, including:
 
 * Anthos GKE On-Prem v1.5
 * Docker Enterprise 2.1, 3.0, and 3.1
-* Kubernetes 1.11 or later (latest: 1.20)
+* Kubernetes 1.11 or later (latest: 1.21)
 * OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, 4.6.8, and later
 
 The Trident Operator is supported with these releases:
 
 * Anthos GKE On-Prem v1.5
-* Kubernetes 1.14 or later (latest: 1.20)
+* Kubernetes 1.14 or later (latest: 1.21)
 * OpenShift 4.2, 4.3, 4.4, 4.5, 4.6.8, and later
 
 .. important::
@@ -112,5 +112,5 @@ before you install Trident:
 1.13                             csi-provisioner:v1.0.2, csi-attacher:v1.0.1, csi-cluster-driver-registrar:v1.0.1, csi-node-driver-registrar:v1.0.2
 1.14 and 1.15                    csi-provisioner:v1.6.1, csi-attacher:v2.2.1, csi-node-driver-registrar:v2.1.0
 1.16                             csi-provisioner:v1.6.1, csi-attacher:v2.2.1, csi-resizer:v1.1.0, csi-node-driver-registrar:v2.1.0
-1.17, 1.18, 1.19, and 1.20       csi-provisioner:v2.1.0, csi-attacher:v3.1.0, csi-resizer:v1.1.0, csi-snapshotter:v3.0.3, csi-node-driver-registrar:v2.1.0
+1.17, 1.18, 1.19, 1.20, 1.21     csi-provisioner:v2.1.1, csi-attacher:v3.1.0, csi-resizer:v1.1.0, csi-snapshotter:v3.0.3, csi-node-driver-registrar:v2.1.0
 ================================ =========================================================================================================================

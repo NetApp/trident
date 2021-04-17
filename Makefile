@@ -105,7 +105,6 @@ trident_build:
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/chwrap chwrap/chwrap.go
 	cp ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} .
-	${BIN_DIR}/${CLI_BIN} images -o markdown > trident-required-images.md
 	chwrap/make-tarball.sh ${BIN_DIR}/chwrap chwrap.tar
 	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 ifdef REGISTRY_ADDR
@@ -125,6 +124,9 @@ tridentctl_macos_build:
 	@mkdir -p ${MACOS_BIN_DIR}
 	@chmod 777 ${MACOS_BIN_DIR}
 	@${GO_MACOS} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/macos/${CLI_BIN} ${CLI_PKG}
+
+tridentctl_images:
+	${BIN_DIR}/${CLI_BIN} images -o markdown > trident-required-images.md
 
 operator_build:
 	cd operator && $(MAKE) build
