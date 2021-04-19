@@ -37,6 +37,9 @@ the `quickstart guide`_ will walk you through.
 
 .. _quickstart guide: https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-quickstart-set-up-account-create-volumes
 
+.. note::
+  Trident 21.04.0 and earlier do not support Manual QoS capacity pools.
+
 Backend configuration options
 -----------------------------
 

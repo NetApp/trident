@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-09-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	log "github.com/sirupsen/logrus"
 
@@ -187,14 +188,20 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 		return nil, err
 	}
 
-	plist := *pools.Value
+	for _, p := range *pools.Value {
 
-	for _, p := range plist {
 		if exists, _ := d.capacityPoolWithName(*p.Name); exists != nil {
-			Logc(ctx).Errorf("duplicate capacity pool '%s' in resource group '%s' ignored during discovery; unique names required",
-				exists.Name, rgroup)
+			Logc(ctx).Errorf("Ignoring discovered capacity pool '%s' in resource group '%s' because its "+
+				"name is not unique", exists.Name, rgroup)
 			continue
 		}
+
+		if p.QosType == netapp.Manual {
+			Logc(ctx).Warningf("Ignoring discovered capacity pool '%s' in resource group '%s' because it "+
+				"uses manual QoS", *p.Name, rgroup)
+			continue
+		}
+
 		cpools = append(cpools,
 			CapacityPool{
 				Location:          *p.Location,
@@ -209,6 +216,7 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 				Size:              *p.PoolProperties.Size,
 				ServiceLevel:      string(p.ServiceLevel),
 				ProvisioningState: *p.PoolProperties.ProvisioningState,
+				QosType:           string(p.QosType),
 			})
 	}
 
@@ -412,7 +420,7 @@ func (d *Client) dumpAzureResources(ctx context.Context) {
 		for _, na := range rg.NetAppAccounts {
 			Logc(ctx).Debugf("    ANF Account: %s, Location: %s\n", na.Name, na.Location)
 			for _, cp := range na.CapacityPools {
-				Logc(ctx).Debugf("      CPool: %s, [%s]\n", cp.Name, cp.ServiceLevel)
+				Logc(ctx).Debugf("      CPool: %s, [%s, %s]\n", cp.Name, cp.ServiceLevel, cp.QosType)
 			}
 		}
 		for _, vn := range rg.VirtualNetworks {

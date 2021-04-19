@@ -36,6 +36,7 @@ type CapacityPool struct {
 	Size              int64       `json:"size,omitempty"`
 	ServiceLevel      string      `json:"serviceLevel,omitempty"`
 	ProvisioningState string      `json:"provisioningState,omitempty"`
+	QosType           string      `json:"qosType,omitempty"`
 }
 
 type FileSystem struct {
