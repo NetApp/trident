@@ -20,7 +20,7 @@ func newNASQtreeStorageDriver() *NASQtreeStorageDriver {
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
 
-	config.ManagementLIF = "127.0.0.1"
+	config.ManagementLIF = ONTAPTEST_LOCALHOST
 	config.SVM = "SVM1"
 	config.Aggregate = "aggr1"
 	config.Username = "ontap-nas-qtree-user"

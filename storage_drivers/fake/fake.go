@@ -17,7 +17,6 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
-
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
@@ -86,7 +85,7 @@ func (d StorageDriver) GoString() string {
 	return d.String()
 }
 
-func NewFakeStorageBackend(ctx context.Context, configJSON string) (sb *storage.Backend, err error) {
+func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID string) (sb *storage.Backend, err error) {
 
 	// Parse the common config struct from JSON
 	commonConfig, err := drivers.ValidateCommonSettings(ctx, configJSON)
@@ -98,7 +97,7 @@ func NewFakeStorageBackend(ctx context.Context, configJSON string) (sb *storage.
 	storageDriver := &StorageDriver{}
 
 	if initializeErr := storageDriver.Initialize(
-		ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig); initializeErr != nil {
+		ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig, backendUUID); initializeErr != nil {
 		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return nil, err
@@ -273,7 +272,7 @@ func (d *StorageDriver) poolName(region string) string {
 
 func (d *StorageDriver) Initialize(
 	ctx context.Context, _ tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, _ string,
 ) error {
 
 	d.Config.CommonStorageDriverConfig = commonConfig

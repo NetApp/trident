@@ -148,7 +148,7 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {

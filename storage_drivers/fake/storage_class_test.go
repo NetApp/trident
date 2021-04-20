@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
@@ -24,7 +26,7 @@ func TestAttributeMatches(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
-	backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
+	backend, err := NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
 	if err != nil {
 		t.Fatalf("Unable to construct backend using mock driver.")
 	}
@@ -198,7 +200,7 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to construct config JSON.")
 	}
-	backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
+	backend, err := NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
 	if err != nil {
 		t.Fatalf("Unable to construct backend using mock driver.")
 	}
@@ -333,7 +335,7 @@ func TestSpecificBackends(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
-		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -451,7 +453,7 @@ func TestRegex(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}
@@ -675,7 +677,7 @@ func TestRegex2(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.backendName, err)
 		}
-		backend, err := NewFakeStorageBackend(ctx(), fakeConfig)
+		backend, err := NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
 		if err != nil {
 			t.Fatalf("Unable to construct backend using mock driver.")
 		}

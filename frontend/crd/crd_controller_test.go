@@ -279,7 +279,7 @@ func TestCrdController(t *testing.T) {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig, uuid.New().String()); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.Online = true
@@ -439,7 +439,7 @@ func TestCrdController2(t *testing.T) {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig, uuid.New().String()); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.Online = true

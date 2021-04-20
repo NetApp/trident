@@ -27,7 +27,7 @@ import (
 type Driver interface {
 	Name() string
 	BackendName() string
-	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig) error
+	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig, string) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate(ctx context.Context, backendUUID string)
@@ -928,13 +928,13 @@ func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPe
 
 	switch {
 	case backend.Config.OntapConfig != nil:
-			secretMap["ClientPrivateKey"] = backend.Config.OntapConfig.ClientPrivateKey
-			backend.Config.OntapConfig.ClientPrivateKey = secretName
+		secretMap["ClientPrivateKey"] = backend.Config.OntapConfig.ClientPrivateKey
+		backend.Config.OntapConfig.ClientPrivateKey = secretName
 
-			secretMap["Username"] = backend.Config.OntapConfig.Username
-			secretMap["Password"] = backend.Config.OntapConfig.Password
-			backend.Config.OntapConfig.Username = secretName
-			backend.Config.OntapConfig.Password = secretName
+		secretMap["Username"] = backend.Config.OntapConfig.Username
+		secretMap["Password"] = backend.Config.OntapConfig.Password
+		backend.Config.OntapConfig.Username = secretName
+		backend.Config.OntapConfig.Password = secretName
 
 		if backend.Config.OntapConfig.ClientPrivateKey != "" && backend.Config.OntapConfig.Username != "" {
 			log.Warn("Defaulting to certificate authentication, " +

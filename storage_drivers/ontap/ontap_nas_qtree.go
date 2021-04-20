@@ -95,7 +95,7 @@ func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 // Initialize from the provided config
 func (d *NASQtreeStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {

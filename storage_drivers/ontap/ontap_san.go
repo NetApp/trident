@@ -69,7 +69,7 @@ func (d *SANStorageDriver) BackendName() string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -108,8 +108,11 @@ func (d *SANStorageDriver) Initialize(
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
 
-	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate)
+	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
+
+	// clean up igroup for failed driver
 	if err != nil {
+		cleanIgroups(ctx, d.API, d.Config.IgroupName)
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
@@ -132,6 +135,10 @@ func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
 	}
+
+	// clean up igroup for terminated driver
+	cleanIgroups(ctx, d.API, d.Config.IgroupName)
+
 	if d.Telemetry != nil {
 		d.Telemetry.Stop()
 	}

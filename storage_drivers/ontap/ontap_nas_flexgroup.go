@@ -68,7 +68,7 @@ func (d *NASFlexGroupStorageDriver) BackendName() string {
 // Initialize from the provided config
 func (d *NASFlexGroupStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {

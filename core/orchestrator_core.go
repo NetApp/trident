@@ -203,7 +203,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			Logc(ctx).WithFields(errorLogFields).Warn("Problem adding backend.")
 
 			if newBackendExternal != nil {
-				newBackend, _ := factory.NewStorageBackendForConfig(ctx, serializedConfig)
+				newBackend, _ := factory.NewStorageBackendForConfig(ctx, serializedConfig, b.BackendUUID)
 				newBackend.BackendUUID = b.BackendUUID
 				newBackend.Name = b.Name
 				newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
@@ -849,7 +849,7 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 		}
 	}()
 
-	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON)
+	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
 	if backend != nil {
 		backend.BackendUUID = backendUUID
 	}
@@ -1018,7 +1018,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	Logc(ctx).WithFields(logFields).Debug(">>>>>> updateBackendByBackendUUID")
 
 	// Second, validate the update.
-	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON)
+	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
 	if err != nil {
 		return nil, err
 	}

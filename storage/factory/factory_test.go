@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/google/uuid"
+
 	drivers "github.com/netapp/trident/storage_drivers"
 )
 
@@ -33,7 +35,7 @@ func TestInitializeRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to marshal ONTAP config:  ", err)
 	}
-	_, err = NewStorageBackendForConfig(context.Background(), string(marshaledJSON))
+	_, err = NewStorageBackendForConfig(context.Background(), string(marshaledJSON), uuid.New().String())
 	if err == nil {
 		t.Error("Failed to get error for invalid configuration.")
 	}

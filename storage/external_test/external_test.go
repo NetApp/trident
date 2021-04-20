@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/factory"
 	"github.com/netapp/trident/storage/fake"
@@ -38,7 +40,7 @@ func TestConstructExternalBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to construct config JSON.")
 	}
-	fakeBackend, err := factory.NewStorageBackendForConfig(context.Background(), configJSON)
+	fakeBackend, err := factory.NewStorageBackendForConfig(context.Background(), configJSON, uuid.New().String())
 	if err != nil {
 		t.Fatal("Unable to construct backend:  ", err)
 	}

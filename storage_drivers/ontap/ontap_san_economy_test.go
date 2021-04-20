@@ -5,7 +5,13 @@ package ontap
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"net"
+	"strconv"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/netapp/trident/utils"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -163,17 +169,18 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 	assert.Equal(t, "", volName2, "Strings are NOT equal")
 }
 
-func newTestOntapSanEcoDriver() *SANEconomyStorageDriver {
+func newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName string) *SANEconomyStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
 	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
+	config.CommonStorageDriverConfig.DebugTraceFlags["api"] = true
 
-	config.ManagementLIF = "127.0.0.1"
+	config.ManagementLIF = vserverAdminHost + ":" + vserverAdminPort
 	config.SVM = "SVM1"
-	config.Aggregate = "aggr1"
+	config.Aggregate = vserverAggrName
 	config.Username = "ontap-san-economy-user"
 	config.Password = "password1!"
 	config.StorageDriverName = "ontap-san-economy"
@@ -188,9 +195,9 @@ func newTestOntapSanEcoDriver() *SANEconomyStorageDriver {
 		SVM:                     "SVM1",
 		Username:                "client_username",
 		Password:                "client_password",
-		DriverContext:           tridentconfig.DriverContext("driverContext"),
+		DriverContext:           tridentconfig.ContextCSI,
 		ContextBasedZapiRecords: 100,
-		DebugTraceFlags:         nil,
+		DebugTraceFlags:         config.CommonStorageDriverConfig.DebugTraceFlags,
 	}
 
 	sanEcoDriver.API = api.NewClient(clientConfig)
@@ -207,8 +214,13 @@ func newTestOntapSanEcoDriver() *SANEconomyStorageDriver {
 
 func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
 	var sanEcoDrivers = []SANEconomyStorageDriver{
-		*newTestOntapSanEcoDriver(),
+		*newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -244,5 +256,257 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 			assert.NotContains(t, sanEcoDriver.GoString(), val,
 				"ontap-san-economy driver contains %v", key)
 		}
+	}
+}
+
+func TestOntapSanEconomyReconcileNodeAccess(t *testing.T) {
+	ctx := context.Background()
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]struct {
+		igroupName         string
+		igroupExistingIQNs []string
+		nodes              []*utils.Node
+		igroupFinalIQNs    []string
+	}{
+		// Add a backend
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{},
+				nodes: []*utils.Node{
+					{
+						Name: "node1",
+						IQN:  "IQN1",
+					},
+					{
+						Name: "node2",
+						IQN:  "IQN2",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN1", "IQN2"},
+			},
+		},
+		// 2 same cluster backends/ nodes unchanged - both current
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{"IQN1", "IQN2"},
+				nodes: []*utils.Node{
+					{
+						Name: "node1",
+						IQN:  "IQN1",
+					},
+					{
+						Name: "node2",
+						IQN:  "IQN2",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN1", "IQN2"},
+			},
+			{
+				igroupName:         "igroup2",
+				igroupExistingIQNs: []string{"IQN3", "IQN4"},
+				nodes: []*utils.Node{
+					{
+						Name: "node3",
+						IQN:  "IQN3",
+					},
+					{
+						Name: "node4",
+						IQN:  "IQN4",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN3", "IQN4"},
+			},
+		},
+		// 2 different cluster backends - add node
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{"IQN1"},
+				nodes: []*utils.Node{
+					{
+						Name: "node1",
+						IQN:  "IQN1",
+					},
+					{
+						Name: "node2",
+						IQN:  "IQN2",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN1", "IQN2"},
+			},
+			{
+				igroupName:         "igroup2",
+				igroupExistingIQNs: []string{"IQN3", "IQN4"},
+				nodes: []*utils.Node{
+					{
+						Name: "node3",
+						IQN:  "IQN3",
+					},
+					{
+						Name: "node4",
+						IQN:  "IQN4",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN3", "IQN4"},
+			},
+		},
+		// 2 different cluster backends - remove node
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{"IQN1", "IQN2"},
+				nodes: []*utils.Node{
+					{
+						Name: "node1",
+						IQN:  "IQN1",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN1"},
+			},
+			{
+				igroupName:         "igroup2",
+				igroupExistingIQNs: []string{"IQN3", "IQN4"},
+				nodes: []*utils.Node{
+					{
+						Name: "node3",
+						IQN:  "IQN3",
+					},
+					{
+						Name: "node4",
+						IQN:  "IQN4",
+					},
+				},
+				igroupFinalIQNs: []string{"IQN3", "IQN4"},
+			},
+		},
+	}
+
+	for _, testCase := range cases {
+
+		igroups = map[string]map[string]struct{}{}
+
+		var ontapSanDrivers []SANEconomyStorageDriver
+
+		for _, driverInfo := range testCase {
+
+			// simulate existing IQNs on the vserver
+			igroupsIQNMap := map[string]struct{}{}
+			for _, iqn := range driverInfo.igroupExistingIQNs {
+				igroupsIQNMap[iqn] = struct{}{}
+			}
+
+			igroups[driverInfo.igroupName] = igroupsIQNMap
+
+			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanEcoStorageDriver.Config.IgroupName = driverInfo.igroupName
+			ontapSanDrivers = append(ontapSanDrivers, *sanEcoStorageDriver)
+		}
+
+		for driverIndex, driverInfo := range testCase {
+			ontapSanDrivers[driverIndex].ReconcileNodeAccess(ctx, driverInfo.nodes,
+				uuid.New().String())
+		}
+
+		for _, driverInfo := range testCase {
+
+			assert.Equal(t, len(driverInfo.igroupFinalIQNs), len(igroups[driverInfo.igroupName]))
+
+			for _, iqn := range driverInfo.igroupFinalIQNs {
+				assert.Contains(t, igroups[driverInfo.igroupName], iqn)
+			}
+		}
+	}
+}
+func TestOntapSanEconomyTerminate(t *testing.T) {
+	ctx := context.Background()
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]struct {
+		igroupName         string
+		igroupExistingIQNs []string
+	}{
+		// 2 different cluster backends - remove backend
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{"IQN1", "IQN2"},
+			},
+			{
+				igroupName:         "igroup2",
+				igroupExistingIQNs: []string{"IQN3", "IQN4"},
+			},
+		},
+		{
+			{
+				igroupName:         "igroup1",
+				igroupExistingIQNs: []string{},
+			},
+		},
+	}
+
+	for _, testCase := range cases {
+
+		igroups = map[string]map[string]struct{}{}
+
+		var ontapSanDrivers []SANEconomyStorageDriver
+
+		for _, driverInfo := range testCase {
+
+			// simulate existing IQNs on the vserver
+			igroupsIQNMap := map[string]struct{}{}
+			for _, iqn := range driverInfo.igroupExistingIQNs {
+				igroupsIQNMap[iqn] = struct{}{}
+			}
+
+			igroups[driverInfo.igroupName] = igroupsIQNMap
+
+			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanEcoStorageDriver.Config.IgroupName = driverInfo.igroupName
+			sanEcoStorageDriver.Telemetry = nil
+			ontapSanDrivers = append(ontapSanDrivers, *sanEcoStorageDriver)
+		}
+
+		for driverIndex, driverInfo := range testCase {
+			ontapSanDrivers[driverIndex].Terminate(ctx, "")
+			assert.NotContains(t, igroups, igroups[driverInfo.igroupName])
+		}
+
 	}
 }

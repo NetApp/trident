@@ -80,7 +80,7 @@ func (d *SANStorageDriver) Protocol() string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
+	commonConfig *drivers.CommonStorageDriverConfig, _ string,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here

@@ -3,13 +3,29 @@
 package ontap
 
 import (
+	"bytes"
 	"context"
+	"math/rand"
+	"net"
+	"os"
+	"strconv"
 	"testing"
 
+	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/logger"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+)
+
+const (
+	ONTAPTEST_LOCALHOST         = "127.0.0.1"
+	ONTAPTEST_SERVER_MIN_PORT   = 40000
+	ONTAPTEST_SERVER_MAX_PORT   = 50000
+	ONTAPTEST_VSERVER_AGGR_NAME = "data"
 )
 
 func newTestOntapSANConfig() *drivers.OntapStorageDriverConfig {
@@ -24,7 +40,7 @@ func newTestOntapSANConfig() *drivers.OntapStorageDriverConfig {
 	config.CommonStorageDriverConfig.DebugTraceFlags["api_get_volumes"] = true
 	config.DebugTraceFlags = config.CommonStorageDriverConfig.DebugTraceFlags
 
-	config.ManagementLIF = "127.0.0.1"
+	config.ManagementLIF = ONTAPTEST_LOCALHOST
 	config.SVM = "SVM1"
 	config.Aggregate = "aggr1"
 	config.Username = "username"
@@ -275,6 +291,397 @@ func TestOntapCalculateOptimalFlexVolSize(t *testing.T) {
 			assert.Equal(t, test.expectedFlexvolSize, newFlexvolSize)
 		})
 	}
+}
+
+func captureOutput(f func()) string {
+	var buf bytes.Buffer
+	startingLevel := log.GetLevel()
+	defer log.SetLevel(startingLevel)
+	defer log.SetOutput(os.Stdout)
+	log.SetOutput(&buf)
+	log.SetLevel(log.DebugLevel)
+	f()
+	return buf.String()
+}
+
+func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]string{
+		// default igroup names with new 2 installations
+		{
+			"",
+			"",
+		},
+		// one old installation and one new
+		{
+			"trident",
+			"",
+		},
+		// 2 backends with user defined igroup names
+		{
+			"custom1",
+			"custom2",
+		},
+		// one old installation, one custom
+		{
+			"trident",
+			"custom",
+		},
+	}
+
+	for _, igroupNames := range cases {
+
+		var ontapSanDrivers []SANStorageDriver
+		var expectedIgroupNames []string
+		var backendUUIDs []string
+
+		for i, igroupName := range igroupNames {
+			/* this call assumes:
+			1. The driver API will log methods and apis
+			2. CSI driver context
+			3. the config's backendUUID is set to a unique string
+			*/
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver.Config.IgroupName = igroupName
+			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
+
+			backendUUIDs = append(backendUUIDs, uuid.New().String())
+
+			expectedIgroupName := igroupName
+			if expectedIgroupName == "" {
+				expectedIgroupName = "trident-" + backendUUIDs[i]
+			}
+			expectedIgroupNames = append(expectedIgroupNames, expectedIgroupName)
+		}
+
+		igroupNameMap := map[string]struct{}{}
+		for _, v := range expectedIgroupNames {
+			assert.NotContains(t, igroupNameMap, v, "Igroup name not unique!")
+			igroupNameMap[v] = struct{}{}
+		}
+
+		for i, ontapSanDriver := range ontapSanDrivers {
+
+			output := captureOutput(func() {
+				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
+			})
+
+			assert.Contains(t, output, "<initiator-group-name>"+expectedIgroupNames[i]+"</initiator-group-name>",
+				"Logs do not contain correct igroup name")
+		}
+	}
+}
+
+func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]string{
+		// default igroup names with new 2 installations
+		{
+			"",
+			"",
+		},
+		// one old installation and one new
+		{
+			"trident",
+			"",
+		},
+		// 2 backends with user defined igroup names
+		{
+			"custom1",
+			"custom2",
+		},
+		// one old installation, one custom
+		{
+			"trident",
+			"custom",
+		},
+	}
+
+	for _, igroupNames := range cases {
+
+		var ontapSanDrivers []SANEconomyStorageDriver
+		var expectedIgroupNames []string
+		var backendUUIDs []string
+
+		for i, igroupName := range igroupNames {
+			/* this call assumes:
+			1. The driver API will log methods and apis
+			2. CSI driver context
+			3. the config's backendUUID is set to a unique string
+			*/
+			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver.Config.IgroupName = igroupName
+			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
+
+			backendUUIDs = append(backendUUIDs, uuid.New().String())
+
+			expectedIgroupName := igroupName
+			if expectedIgroupName == "" {
+				expectedIgroupName = "trident-" + backendUUIDs[i]
+			}
+			expectedIgroupNames = append(expectedIgroupNames, expectedIgroupName)
+		}
+
+		igroupNameMap := map[string]struct{}{}
+		for _, v := range expectedIgroupNames {
+			assert.NotContains(t, igroupNameMap, v, "Igroup name not unique!")
+			igroupNameMap[v] = struct{}{}
+		}
+
+		for i, ontapSanDriver := range ontapSanDrivers {
+
+			output := captureOutput(func() {
+				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
+			})
+
+			assert.Contains(t, output, "<initiator-group-name>"+expectedIgroupNames[i]+"</initiator-group-name>",
+				"Logs do not contain correct igroup name")
+		}
+	}
+}
+
+func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]string{
+		// default igroup names with new 2 installations
+		{
+			"",
+			"",
+		},
+		// one old installation and one new
+		{
+			drivers.GetDefaultIgroupName(tridentconfig.ContextDocker),
+			"",
+		},
+		// 2 backends with user defined igroup names
+		{
+			"custom1",
+			"custom2",
+		},
+		// one old installation, one custom
+		{
+			drivers.GetDefaultIgroupName(tridentconfig.ContextDocker),
+			"custom",
+		},
+	}
+
+	for _, igroupNames := range cases {
+
+		var ontapSanDrivers []SANStorageDriver
+		var expectedIgroupNames []string
+		var backendUUIDs []string
+
+		for _, igroupName := range igroupNames {
+			/* this call assumes:
+			1. The driver API will log methods and apis
+			2. CSI driver context
+			3. the config's backendUUID is set to a unique string
+			*/
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver.Config.IgroupName = igroupName
+			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
+			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
+
+			backendUUIDs = append(backendUUIDs, uuid.New().String())
+
+			expectedIgroupName := igroupName
+			if expectedIgroupName == "" {
+				expectedIgroupName = "netappdvp"
+			}
+			expectedIgroupNames = append(expectedIgroupNames, expectedIgroupName)
+		}
+
+		for i, ontapSanDriver := range ontapSanDrivers {
+
+			output := captureOutput(func() {
+				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
+			})
+
+			assert.Contains(t, output, "<initiator-group-name>"+expectedIgroupNames[i]+"</initiator-group-name>",
+				"Logs do not contain correct igroup name")
+		}
+	}
+}
+
+func TestOntapSanEcoInitializeDriverIgroupNameDocker(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
+		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			log.Error("Panic in fake filer", r)
+		}
+	}()
+
+	cases := [][]string{
+		// default igroup names with new 2 installations
+		{
+			"",
+			"",
+		},
+		// one old installation and one new
+		{
+			drivers.GetDefaultIgroupName(tridentconfig.ContextDocker),
+			"",
+		},
+		// 2 backends with user defined igroup names
+		{
+			"custom1",
+			"custom2",
+		},
+		// one old installation, one custom
+		{
+			drivers.GetDefaultIgroupName(tridentconfig.ContextDocker),
+			"custom",
+		},
+	}
+
+	for _, igroupNames := range cases {
+
+		var ontapSanDrivers []SANEconomyStorageDriver
+		var expectedIgroupNames []string
+		var backendUUIDs []string
+
+		for _, igroupName := range igroupNames {
+			/* this call assumes:
+			1. The driver API will log methods and apis
+			2. CSI driver context
+			3. the config's backendUUID is set to a unique string
+			*/
+			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver.Config.IgroupName = igroupName
+			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
+			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
+
+			backendUUIDs = append(backendUUIDs, uuid.New().String())
+
+			expectedIgroupName := igroupName
+			if expectedIgroupName == "" {
+				expectedIgroupName = "netappdvp"
+			}
+			expectedIgroupNames = append(expectedIgroupNames, expectedIgroupName)
+		}
+
+		for i, ontapSanDriver := range ontapSanDrivers {
+
+			output := captureOutput(func() {
+				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
+			})
+
+			assert.Contains(t, output, "<initiator-group-name>"+expectedIgroupNames[i]+"</initiator-group-name>",
+				"Logs do not contain correct igroup name")
+		}
+	}
+}
+
+func TestOntapSanGetDefaultIgroupName(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	cases := []struct {
+		driverContext      tridentconfig.DriverContext
+		backendUUID        string
+		expectedIgroupName string
+	}{
+		{
+			tridentconfig.ContextCSI,
+			"UNIQUE-CSI-UUID",
+			"trident-UNIQUE-CSI-UUID",
+		},
+		{
+			tridentconfig.ContextKubernetes,
+			"UNIQUE-KUBERNETES-UUID",
+			"trident-UNIQUE-KUBERNETES-UUID",
+		},
+		{
+			tridentconfig.ContextDocker,
+			"UNIQUE-DOCKER-UUID",
+			"netappdvp",
+		},
+	}
+
+	for _, c := range cases {
+		actualIgroupName := getDefaultIgroupName(c.driverContext, c.backendUUID)
+		assert.Equal(t, c.expectedIgroupName, actualIgroupName, "Unexpected igroupName")
+
+	}
+
 }
 
 func TestGetExternalConfigRedactSecrets(t *testing.T) {

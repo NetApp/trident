@@ -22,7 +22,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire"
 )
 
-func NewStorageBackendForConfig(ctx context.Context, configJSON string) (sb *storage.Backend, err error) {
+func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID string) (sb *storage.Backend, err error) {
 
 	var storageDriver storage.Driver
 
@@ -82,7 +82,7 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON string) (sb *sto
 	Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
 
 	// Initialize the driver.  If this fails, return a 'failed' backend object.
-	if err = storageDriver.Initialize(ctx, config.CurrentDriverContext, configJSON, commonConfig); err != nil {
+	if err = storageDriver.Initialize(ctx, config.CurrentDriverContext, configJSON, commonConfig, backendUUID); err != nil {
 
 		Logc(ctx).WithField("error", err).Error("Could not initialize storage driver.")
 

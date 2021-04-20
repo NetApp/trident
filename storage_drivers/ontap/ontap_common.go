@@ -584,6 +584,23 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 	return nil
 }
 
+func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
+
+	response, err := client.IgroupDestroy(igroupName)
+	err = api.GetError(ctx, response, err)
+	zerr, zerrOK := err.(api.ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
+		Logc(ctx).WithField("igroup", igroupName).Debug("No such initiator group (igroup).")
+	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
+		Logc(ctx).WithField("igroup", igroupName).Info("Initiator group (igroup) currently in use.")
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"igroup": igroupName,
+			"error":  err.Error(),
+		}).Error("Initiator group (igroup) could not be deleted.")
+	}
+}
+
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
 func GetISCSITargetInfo(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
@@ -1008,7 +1025,7 @@ func IsDefaultAuthTypeDeny(response *azgo.IscsiInitiatorGetDefaultAuthResponse) 
 // InitializeSANDriver performs common ONTAP SAN driver initialization.
 func InitializeSANDriver(
 	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI *api.Client,
-	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error,
+	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -1018,7 +1035,7 @@ func InitializeSANDriver(
 	}
 
 	if config.IgroupName == "" {
-		config.IgroupName = drivers.GetDefaultIgroupName(driverContext)
+		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
 	}
 
 	// Defer validation to the driver's validate method
@@ -1106,6 +1123,15 @@ func InitializeSANDriver(
 	}
 
 	return nil
+}
+
+func getDefaultIgroupName(driverContext tridentconfig.DriverContext, backendUUID string) string {
+
+	if driverContext == tridentconfig.ContextDocker {
+		return drivers.GetDefaultIgroupName(driverContext)
+	} else {
+		return drivers.GetDefaultIgroupName(driverContext) + "-" + backendUUID
+	}
 }
 
 func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {

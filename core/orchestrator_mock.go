@@ -219,7 +219,7 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backe
 		return nil, utils.NotFoundError(fmt.Sprintf("backend name:%v uuid:%v was not found", backendName, backendUUID))
 	}
 
-	newBackend, err := factory.NewStorageBackendForConfig(ctx, configJSON)
+	newBackend, err := factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
 	if err != nil {
 		return nil, err
 	}
