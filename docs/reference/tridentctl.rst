@@ -22,6 +22,7 @@ commands and global options:
     delete      Remove one or more resources from Trident
     get         Get one or more resources from Trident
     help        Help about any command
+    images      Print a table of the container images Trident needs
     import      Import an existing resource to Trident
     install     Install Trident
     logs        Print the logs from Trident
@@ -100,6 +101,19 @@ Import an existing volume to Trident
     -f, --filename string   Path to YAML or JSON PVC file
     -h, --help              help for volume
         --no-manage         Create PV/PVC only, don't assume volume lifecycle management
+
+images
+-------------
+Print a table of the container images Trident needs
+
+.. code-block:: console
+
+  Usage:
+    tridentctl images [flags]
+
+  Flags:
+    -h, --help                 Help for images
+    -v, --k8s-version string   Semantic version of Kubernetes cluster
 
 install
 -------
