@@ -94,14 +94,11 @@ func TestHelperGetters(t *testing.T) {
 	snapPath := helper.GetSnapPath("my-Bucket", "storagePrefix_my-Lun", "snap-1")
 	assert.Equal(t, "/vol/my_Bucket/storagePrefix_my_Lun_snapshot_snap_1", snapPath, "Strings not equal")
 
-	snapName1 := helper.GetSnapshotName("my-Lun", "my-Snapshot")
+	snapName1 := helper.GetSnapshotName("storagePrefix_my-Lun", "my-Snapshot")
 	assert.Equal(t, "storagePrefix_my_Lun_snapshot_my_Snapshot", snapName1, "Strings not equal")
 
 	snapName2 := helper.GetSnapshotName("my-Lun", "snapshot-123")
-	assert.Equal(t, "storagePrefix_my_Lun_snapshot_snapshot_123", snapName2, "Strings not equal")
-
-	internalSnapName := helper.GetInternalSnapshotName("storagePrefix_my-Lun", "my-Snapshot")
-	assert.Equal(t, "storagePrefix_my_Lun_snapshot_my_Snapshot", internalSnapName, "Strings not equal")
+	assert.Equal(t, "my_Lun_snapshot_snapshot_123", snapName2, "Strings not equal")
 
 	internalVolName := helper.GetInternalVolumeName("my-Lun")
 	assert.Equal(t, "storagePrefix_my_Lun", internalVolName, "Strings not equal")

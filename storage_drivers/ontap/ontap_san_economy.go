@@ -55,22 +55,10 @@ func NewLUNHelper(config drivers.OntapStorageDriverConfig, context tridentconfig
 	return &helper
 }
 
-// volName is expected not to have the storage prefix included
-// parameters: volName=my-Lun snapName=my-Snapshot
-// output: storagePrefix_my_Lun_snapshot_my_Snapshot
-// parameters: volName=my-Lun snapName=snapshot-123
-// output: storagePrefix_my_Lun_snapshot_snapshot_123
-func (o *LUNHelper) GetSnapshotName(volName, snapName string) string {
-	volName = strings.ReplaceAll(volName, "-", "_")
-	snapName = o.getInternalSnapshotName(snapName)
-	name := fmt.Sprintf("%v%v%v", *o.Config.StoragePrefix, volName, snapName)
-	return name
-}
-
 // internalVolName is expected to have the storage prefix included
 // parameters: internalVolName=storagePrefix_my-Lun snapName=my-Snapshot
 // output: storagePrefix_my_Lun_snapshot_my_Snapshot
-func (o *LUNHelper) GetInternalSnapshotName(internalVolName, snapName string) string {
+func (o *LUNHelper) GetSnapshotName(internalVolName, snapName string) string {
 	internalVolName = strings.ReplaceAll(internalVolName, "-", "_")
 	snapName = o.getInternalSnapshotName(snapName)
 	name := fmt.Sprintf("%v%v", internalVolName, snapName)
@@ -699,7 +687,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 
 	// Check if called from CreateClone and is from a snapshot
 	if isLunCreateFromSnapshot {
-		source = d.helper.GetInternalSnapshotName(source, snapshot)
+		source = d.helper.GetSnapshotName(source, snapshot)
 	}
 
 	// If the source doesn't exist, return an error
@@ -1002,7 +990,7 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< getSnapshotEconomy")
 	}
 
-	fullSnapshotName := d.helper.GetInternalSnapshotName(internalVolumeName, internalSnapName)
+	fullSnapshotName := d.helper.GetSnapshotName(internalVolumeName, internalSnapName)
 	exists, bucketVol, err := d.LUNExists(ctx, fullSnapshotName, d.FlexvolNamePrefix())
 	if err != nil {
 		Logc(ctx).Errorf("Error checking for existing LUN: %v", err)
@@ -1151,7 +1139,7 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 	size := lunInfo.Size()
 
 	// Create the snapshot name/string
-	lunName := d.helper.GetSnapshotName(snapConfig.VolumeName, internalSnapName)
+	lunName := d.helper.GetSnapshotName(snapConfig.VolumeInternalName, internalSnapName)
 
 	// Create the "snap-LUN" where the snapshot is a LUN clone of the source LUN
 	err = d.createLUNClone(
@@ -1212,7 +1200,7 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig
 
 	internalSnapName := snapConfig.InternalName
 	// Creating the path string pattern
-	snapLunName := d.helper.GetSnapshotName(snapConfig.VolumeName, internalSnapName)
+	snapLunName := d.helper.GetSnapshotName(snapConfig.VolumeInternalName, internalSnapName)
 
 	// Check to see if the source LUN exists
 	exists, bucketVol, err := d.LUNExists(ctx, snapLunName, d.FlexvolNamePrefix())
