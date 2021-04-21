@@ -129,29 +129,39 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	// Ensure we are logged into correct portals
 	if publishInfo.UseCHAP {
-		bkPortalsToLogin, err := portalsToLogin(ctx, targetIQN, bkportal)
+		bkPortalsToLogin, loggedIn, err := portalsToLogin(ctx, targetIQN, bkportal)
 		if err != nil {
 			return err
 		}
 
 		for _, portal := range bkPortalsToLogin {
-			err = loginWithChap(
-				ctx, targetIQN, portal, username, initiatorSecret, targetUsername,
+			err = loginWithChap(ctx, targetIQN, portal, username, initiatorSecret, targetUsername,
 				targetInitiatorSecret, iscsiInterface)
 			if err != nil {
-				Logc(ctx).Errorf("Failed to login with CHAP credentials: %+v ", err)
-				return fmt.Errorf("iSCSI login error: %v", err)
+				Logc(ctx).WithFields(log.Fields{
+					"err": err,
+					"portal": portal,
+				}).Errorf("Failed to login to portal using CHAP.")
+
+				continue
 			}
+
+			loggedIn = true
+		}
+
+		if !loggedIn {
+			return fmt.Errorf("iSCSI login failed using CHAP")
 		}
 	} else {
-		portalIpsToLogin, err := portalsIpsToLogin(ctx, targetIQN, portalIps)
+		portalIpsToLogin, loggedIn, err := portalsIpsToLogin(ctx, targetIQN, portalIps)
 		if err != nil {
 			return err
 		}
 
-		err = EnsureISCSISessions(ctx, targetIQN, iscsiInterface, portalIpsToLogin)
-		if err != nil {
-			return fmt.Errorf("iSCSI session error: %v", err)
+		newLogin := EnsureISCSISessions(ctx, targetIQN, iscsiInterface, portalIpsToLogin)
+
+		if !loggedIn && !newLogin {
+			return fmt.Errorf("iSCSI login failed")
 		}
 	}
 
@@ -1367,7 +1377,7 @@ func iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool,
 // portalsToLogin checks to see if session to for all the specified portals exist to the specified
 // target. If a session does not exist for a give portal it is added to list of portals that Trident
 // needs to login to.
-func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]string, error) {
+func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]string, bool, error) {
 
 	logFields := log.Fields{
 		"targetIQN": targetIQN,
@@ -1383,7 +1393,7 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 	sessionInfo, err := getISCSISessionInfo(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
-		return portalsNotLoggedIn, err
+		return portalsNotLoggedIn, false, err
 	}
 
 	for _, e := range sessionInfo {
@@ -1402,13 +1412,14 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 		}
 	}
 
-	return portalsNotLoggedIn, nil
+	loggedIn := len(portals) != len(portalsNotLoggedIn)
+	return portalsNotLoggedIn, loggedIn, nil
 }
 
 // portalsIpsToLogin checks to see if session to for all the specified portal IPs exist to the specified
 // target. If a session does not exist for a give portal IP it is added to list of portals IPs that Trident
 // needs to login to.
-func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []string) ([]string, error) {
+func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []string) ([]string, bool, error) {
 
 	logFields := log.Fields{
 		"targetIQN":  targetIQN,
@@ -1424,7 +1435,7 @@ func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []strin
 	sessionInfo, err := getISCSISessionInfo(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
-		return portalIpsNotLoggedIn, err
+		return portalIpsNotLoggedIn, false, err
 	}
 
 	for _, e := range sessionInfo {
@@ -1433,7 +1444,8 @@ func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []strin
 		}
 	}
 
-	return portalIpsNotLoggedIn, nil
+	loggedIn := len(portalsIps) != len(portalIpsNotLoggedIn)
+	return portalIpsNotLoggedIn, loggedIn, nil
 }
 
 // getHostportIP returns just the IP address part of the given input IP address and strips any port information
@@ -2915,8 +2927,7 @@ func loginWithChap(
 	return nil
 }
 
-func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIps []string) error {
-
+func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIps []string) bool {
 	logFields := log.Fields{
 		"targetIQN":  targetIQN,
 		"portalsIps": portalsIps,
@@ -2925,12 +2936,21 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.EnsureISCSISessions")
 	defer Logc(ctx).Debug("<<<< osutils.EnsureISCSISessions")
 
+	loggedInPortals := make([]string, 0)
+
 	for _, portalIp := range portalsIps {
 		listAllISCSIDevices(ctx)
 
-		if err := ensureIscsiTarget(ctx, formatPortal(portalIp), targetIQN, "", "", "", "", iface); nil != err {
-			// Logged
-			return err
+		formattedPortal := formatPortal(portalIp)
+		if err := ensureIscsiTarget(ctx, formattedPortal, targetIQN, "", "", "", "",
+			iface); nil != err {
+			Logc(ctx).WithFields(log.Fields{
+				"tp": formattedPortal,
+				"targetIqn": targetIQN,
+				"iface": iface,
+				"err": err,
+			}).Errorf("unable to ensure iSCSI target exists: %v", err)
+			continue
 		}
 
 		// Set scanning to manual
@@ -2938,31 +2958,54 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		_ = configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual")
 
 		// Update replacement timeout
-		if err := configureISCSITarget(
-			ctx, targetIQN, portalIp, "node.session.timeo.replacement_timeout", "5"); err != nil {
-			return fmt.Errorf("set replacement timeout failed: %v", err)
+		timeout_param := "node.session.timeo.replacement_timeout"
+		if err := configureISCSITarget(ctx, targetIQN, portalIp, timeout_param, "5"); err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"iqn": targetIQN,
+				"portal": portalIp,
+				"name": timeout_param,
+				"value": "5",
+				"err": err,
+			}).Errorf("set replacement timeout failed: %v", err)
+			continue
 		}
 
 		// Log in to target
 		if err := loginISCSITarget(ctx, targetIQN, portalIp); err != nil {
-			return fmt.Errorf("login to iSCSI target failed: %v", err)
+			Logc(ctx).WithFields(log.Fields{
+				"err": err,
+				"portalIP": portalIp,
+			}).Error("Login to iSCSI target failed.")
+			continue
 		}
+
+		loggedInPortals = append(loggedInPortals, portalIp)
 	}
 
-	for _, portalIp := range portalsIps {
+	var successfulLogin bool
+
+	for _, portalIp := range loggedInPortals {
 		// Recheck to ensure a session is now open
 		sessionExists, err := iSCSISessionExists(ctx, portalIp)
 		if err != nil {
-			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
+			Logc(ctx).WithFields(log.Fields{
+				"err": err,
+				"portalIP": portalIp,
+			}).Error("Could not recheck for iSCSI session.")
+			continue
 		}
+
 		if !sessionExists {
-			return fmt.Errorf("expected iSCSI session %v NOT found, please login to the iSCSI portal", portalIp)
+			Logc(ctx).Errorf("Expected iSCSI session %v NOT found, please login to the iSCSI portal", portalIp)
+			continue
 		}
+
+		successfulLogin = true
 
 		Logc(ctx).WithField("portalIp", portalIp).Debug("Session established with iSCSI portal.")
 	}
 
-	return nil
+	return successfulLogin
 }
 
 func EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error {
@@ -3046,7 +3089,7 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 			return fmt.Errorf("could not recheck for iSCSI session: %v", err)
 		}
 		if !sessionExists {
-			return fmt.Errorf("expected iSCSI session %v NOT found, please login to the iSCSI portal", hostDataIP)
+			return fmt.Errorf("Expected iSCSI session %v NOT found, please login to the iSCSI portal", hostDataIP)
 		}
 	}
 

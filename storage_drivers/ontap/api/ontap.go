@@ -35,6 +35,12 @@ const (
 	MaxSANLabelLength = 254
 )
 
+var (
+	// must be string pointers, but cannot take address of a const, so don't modify these at runtime!
+	LifOperationalStatusUp   = "up"
+	LifOperationalStatusDown = "down"
+)
+
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
 	ManagementLIF           string
@@ -2582,11 +2588,18 @@ func (d Client) isVserverInSVMDR(ctx context.Context) bool {
 // MISC operations BEGIN
 
 // NetInterfaceGet returns the list of network interfaces with associated metadata
-// equivalent to filer::> net interface list
+// equivalent to filer::> net interface list, but only those LIFs that are operational
 func (d Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
+
 	response, err := azgo.NewNetInterfaceGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
+		SetQuery( azgo.NetInterfaceGetIterRequestQuery{
+			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{
+				OperationalStatusPtr: &LifOperationalStatusUp,
+			},
+		}).
 		ExecuteUsing(d.zr)
+
 	return response, err
 }
 
@@ -2596,6 +2609,7 @@ func (d Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (str
 		return "", fmt.Errorf("error checking network interfaces: %v", err)
 	}
 	var nodeName string
+
 	if lifResponse.Result.AttributesListPtr != nil {
 		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
 			if ip == attrs.Address() {
@@ -2603,6 +2617,11 @@ func (d Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (str
 				break
 			}
 		}
+	}
+
+	if nodeName == "" {
+		Logc(ctx).Warningf("No node found; no node meets the criteria (IP address: " +
+			"%s with at least one data LIF operational status of up)", ip)
 	}
 
 	return nodeName, nil
@@ -2624,6 +2643,10 @@ func (d Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([
 				}
 			}
 		}
+	}
+
+	if len(dataLIFs) < 1 {
+		return []string{}, fmt.Errorf("no data LIFs meet the provided criteria (protocol: %s)", protocol)
 	}
 
 	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Data LIFs")

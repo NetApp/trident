@@ -8,6 +8,7 @@
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
 - Fixed a parsing error when iscsiadm listed target portals with a negative group tag
 - Fixed issue where docker plugin could not be upgraded from v19.10 to v21.01 (Issue [#507](https://github.com/NetApp/trident/issues/507))
+- Fixed issue where disabled dataLIFs are picked up by controller during ControllerPublishVolume (Issue [#524](https://github.com/NetApp/trident/issues/524))
 - Fixed issue where unexpected output in iscsiadm discovery commands may cause target discovery to fail.
 
 **Enhancements:**
