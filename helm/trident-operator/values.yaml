@@ -1,3 +1,23 @@
+# Default values for standalone.
+# This is a YAML-formatted file.
+
+## Node labels for pod assignment
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+## Pod Annotations
+podAnnotations: {}
+
+## Deployment Annotations
+deploymentAnnotations: {}
+
+## Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+## Affinity for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
 
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
