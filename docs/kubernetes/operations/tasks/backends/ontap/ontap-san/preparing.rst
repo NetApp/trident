@@ -218,9 +218,18 @@ igroup name is specified in the configuration.
 
 .. important::
 
-   Dedicating an igroup for Trident is a good practice that is beneficial for
-   the Kubernetes admin as well as the storage admin. CSI Trident automates the
-   addition and removal of cluster node IQNs to the igroup, greatly simplifying its management.
+   Dedicating an igroup for each unique instance of Trident is a best practice
+   that is beneficial for the Kubernetes admin as well as the storage admin. CSI
+   Trident automates the addition and removal of cluster node IQNs to the igroup,
+   greatly simplifying its management. When using the same SVM across Kubernetes
+   environments (and Trident installs), using a dedicated igroup ensures that
+   changes made to one Kubernetes cluster don't influence igroups associated with
+   another.
+
+   In addition, it is also important to ensure each node in the Kubernetes cluster
+   has a unique IQN. As mentioned above, Trident automatically handles the addition
+   and removal of IQNs. Reusing IQNs across hosts can lead to undesirable scenarios
+   where hosts get mistaken for one another and access to LUNs is denied.
 
 While Trident associates new LUNs with the configured igroup, it does not
 create or otherwise manage igroups themselves. The igroup must exist before the

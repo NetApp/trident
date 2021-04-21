@@ -10,11 +10,11 @@ the creation of additional volumes (clones). This feature is available from
 Kubernetes ``1.17`` [Beta] and is GA from ``1.20``.
 
 .. note::
-    
+
 	Kubernetes Volume Snapshot is GA from Kubernetes ``1.20``. To understand the
-	changes involved in moving from beta to GA, take a look at the `release blog 
-	<https://kubernetes.io/blog/2020/12/10/kubernetes-1.20-volume-snapshot-moves-to-ga/>`_. 
-	With the graduation to GA, the ``v1`` API version is introduced and is backward compatible 
+	changes involved in moving from beta to GA, take a look at the `release blog
+	<https://kubernetes.io/blog/2020/12/10/kubernetes-1.20-volume-snapshot-moves-to-ga/>`_.
+	With the graduation to GA, the ``v1`` API version is introduced and is backward compatible
 	with ``v1beta1`` snapshots.
 
 Creating volume snapshots requires an external snapshot controller to be created,
@@ -75,6 +75,16 @@ below:
     Element/HCI cluster. VolumeSnapshots are represented by Element snapshots of
     the underlying LUN. These snapshots are point-in-time copies and only take
     up a small amount of system resources and space.
+
+When working with the ``ontap-nas`` and ``ontap-san`` drivers, ONTAP snapshots are
+point-in-time copies of the FlexVol and consume space on the FlexVol itself. This
+can result in the amount of writable space in the volume to reduce with time as
+snapshots are created/scheduled. One simple way of addressing this is to grow
+the volume by :ref:`resizing through Kubernetes<Volume Expansion>`. Another
+option is to delete snapshots that are no longer required. When a VolumeSnapshot
+created through Kubernetes is deleted, Trident will delete the associated ONTAP
+snapshot. ONTAP snapshots that were not created through Kubernetes can also be
+deleted.
 
 With Trident, you can use VolumeSnapshots to create new PVs from them. Creating
 PVs from these snapshots is performed by using the FlexClone technology for

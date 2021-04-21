@@ -22,80 +22,81 @@ Install the following system packages:
 
 **RHEL / CentOS**
 
-  .. code-block:: bash
+.. code-block:: bash
 
-    sudo yum install -y nfs-utils
+  sudo yum install -y nfs-utils
 
 .. note::
   You should ensure that the NFS service is started up during boot time.
 
 **Ubuntu / Debian**
 
-  .. code-block:: bash
+.. code-block:: bash
 
-    sudo apt-get install -y nfs-common
+  sudo apt-get install -y nfs-common
 
 iSCSI
 =====
 
 .. _iscsi-worker-node-prep:
 
-.. warning::
+Keep in mind the following considerations when using iSCSI volumes:
 
-   If using RHCOS >=4.5 or RHEL or CentOS >=8.2 with the ``solidfire-san`` driver ensure
-   that the CHAP authentication algorithm is set to ``MD5`` in ``/etc/iscsi/iscsid.conf``
+* Each node in the Kubernetes cluster must have a unique IQN. This is a **necessary
+  prerequisite** that must be fulfilled.
 
-   .. code-block:: bash
+* If using RHCOS >=4.5 or RHEL or CentOS >=8.2 with the ``solidfire-san`` driver ensure
+  that the CHAP authentication algorithm is set to ``MD5`` in ``/etc/iscsi/iscsid.conf``
+ .. code-block:: bash
 
-      sudo sed -i 's/^\(node.session.auth.chap_algs\).*/\1 = MD5/' /etc/iscsi/iscsid.conf
+  sudo sed -i 's/^\(node.session.auth.chap_algs\).*/\1 = MD5/' /etc/iscsi/iscsid.conf
+  
+* When using worker nodes that run RHEL/RedHat CoreOS with iSCSI
+  PVs, make sure to specify the ``discard`` mountOption in the
+  `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/#mount-options>`_
+  to perform inline space reclamation. See
+  RedHat's documentation `here <https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems>`_.
 
 .. note::
    You should ensure that the iSCSI service is started up during boot time.
 
-.. note::
-   When using worker nodes that run RHEL/RedHat CoreOS with iSCSI
-   PVs, make sure to specify the ``discard`` mountOption in the
-   `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/#mount-options>`_
-   to perform inline space reclamation. See
-   RedHat's documentation `here <https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems>`_.
-
 **RHEL / CentOS**
 
-  #. Install the following system packages:
+#. Install the following system packages:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       sudo yum install -y lsscsi iscsi-initiator-utils sg3_utils device-mapper-multipath
+     sudo yum install -y lsscsi iscsi-initiator-utils sg3_utils device-mapper-multipath
 
-  #. Check that iscsi-initiator-utils version is 6.2.0.874-2.el7 or higher:
+#. Check that iscsi-initiator-utils version is 6.2.0.874-2.el7 or higher:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       rpm -q iscsi-initiator-utils
+     rpm -q iscsi-initiator-utils
 
-  #. Set scanning to manual:
+#. Set scanning to manual:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
+     sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
 
-  #. Enable multipathing:
+#. Enable multipathing:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       sudo mpathconf --enable --with_multipathd y
+     sudo mpathconf --enable --with_multipathd y
 
-  #. Ensure that ``iscsid`` and ``multipathd`` are running:
+#. Ensure that ``iscsid`` and ``multipathd`` are running:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       sudo systemctl enable --now iscsid multipathd
+     sudo systemctl enable --now iscsid multipathd
 
-  #. Start and enable ``iscsi``:
+#. Start and enable ``iscsi``:
 
-     .. code-block:: bash
+   .. code-block:: bash
 
-       sudo systemctl enable --now iscsi
+     sudo systemctl enable --now iscsi
 
 **Ubuntu / Debian**
 

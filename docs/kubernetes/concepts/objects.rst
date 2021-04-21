@@ -97,8 +97,10 @@ as such and periodically retry the operation until it succeeds or the PV is
 manually deleted.  If the PV uses the ``Retain`` policy, Trident ignores it and
 assumes the administrator will clean it up from Kubernetes and the backend,
 allowing the volume to be backed up or inspected before its removal.  Note that
-deleting the PV will not cause Trident to delete the backing volume; it must be
-removed manually via the REST API (i.e., ``tridentctl``).
+deleting the PV will not cause Trident to delete the backing volume; to remove
+the backing volume, use ``tridentctl delete volume``. This will instruct Trident
+to delete the volume from the storage cluster and remove it from Trident's
+database.
 
 Trident supports the creation of Volume Snapshots using the CSI
 specification:

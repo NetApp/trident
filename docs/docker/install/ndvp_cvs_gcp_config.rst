@@ -23,7 +23,7 @@ In addition to the global configuration values above, when using CVS on GCP, the
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``proxyURL``          | Proxy URL if proxy server required to connect to CVS account             | "http://proxy-server-hostname/"              |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
-| ``nfsMountOptions``   | NFS mount options; defaults to "-o nfsvers=3"                            | "vers=3,proto=tcp,timeo=600"                 |
+| ``nfsMountOptions``   | NFS mount options; defaults to "-o nfsvers=3"                            | "nfsvers=3,proto=tcp,timeo=600"              |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``network``           | GCP network used for CVS volumes, defaults to "default"                  | "default"                                    |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+

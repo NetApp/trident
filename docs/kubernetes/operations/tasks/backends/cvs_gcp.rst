@@ -43,6 +43,13 @@ debugTraceFlags           Debug flags to use when troubleshooting.
                           E.g.: {"api":false, "method":true}                                null
 ========================= ================================================================= =================================================
 
+The ``apiRegion`` represents the GCP region where Trident creates CVS volumes.
+Trident can mount and attach volumes on Kubernetes nodes that belong to the same
+GCP region. When creating a backend, it is important to ensure ``apiRegion``
+matches the region Kubernetes nodes are deployed in. When creating cross-region
+Kubernetes clusters, CVS volumes that are created in a given ``apiRegion`` can
+only be used in workloads scheduled on nodes that are in the same GCP region.
+
 .. warning::
 
   Do not use ``debugTraceFlags`` unless you are troubleshooting and require a
@@ -183,7 +190,7 @@ region. This example also shows the usage of proxyURL config option in a backend
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloudvolumes-admin-sa%40my-gcp-project.iam.gserviceaccount.com"
         },
         "proxyURL": "http://proxy-server-hostname/",
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
         "limitVolumeSize": "10Ti",
         "serviceLevel": "premium",
         "defaults": {
@@ -225,7 +232,7 @@ overwrite the default values set above.
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloudvolumes-admin-sa%40my-gcp-project.iam.gserviceaccount.com"
         },
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
 
         "defaults": {
             "snapshotReserve": "5",

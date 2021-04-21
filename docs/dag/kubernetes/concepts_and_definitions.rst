@@ -44,10 +44,9 @@ At a minimum, the PV must contain these parameters:
 * Protocol - Type of protocol (e.g. "iSCSI" or "NFS") to use and additional information needed to access the storage. For example, an NFS PV will need the NFS server and a mount path.
 * Reclaim policy - It describes the Kubernetes action when the PV is released. Three reclaim policy options are available:
 
-  * Retain -  Mark the volume as waiting for administrator action. The volume cannot be reissued to another PVC.
-  * Recycle - Kubernetes will connect the volume to a temporary pod and issue a ``rm -rf`` command to clear the data after the volume is released. For our interests, this is only supported by NFS volumes.
-  * Delete - Kubernetes will delete the PV when it is released. However, Kubernetes does not delete the storage which was referenced by the PV. A storage administrator will need to delete the volume on the backend.
-
+  * Retain - Manually reclaim the Persistent Volume. When an associated PersistentVolumeClaim is deleted, the PersistentVolume will continue to be present.
+  * Recycle - A **deprecated** mode of operation where the volume is scrubbed and made available for a new PersistentVolumeClaim.
+  * Delete - The PersistentVolume object and its associated storage volume are deleted when the PersistentVolumeClaim is deleted. This is the default ``reclaimPolicy`` used.
 More information about PVs can be found in the `Kubernetes PV <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes>`_ or `OpenShift PV <https://docs.openshift.com/container-platform/3.11/architecture/additional_concepts/storage.html#persistent-volumes>`_ documentation.
 
 Storage Class

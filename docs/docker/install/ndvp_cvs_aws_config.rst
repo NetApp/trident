@@ -23,7 +23,7 @@ required values are all available in the CVS web user interface.
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``proxyURL``          | Proxy URL if proxy server required to connect to CVS account             | "http://proxy-server-hostname/"              |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
-| ``nfsMountOptions``   | NFS mount options; defaults to "-o nfsvers=3"                            | "vers=3,proto=tcp,timeo=600"                 |
+| ``nfsMountOptions``   | NFS mount options; defaults to "-o nfsvers=3"                            | "nfsvers=3,proto=tcp,timeo=600"              |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+
 | ``serviceLevel``      | Performance level (standard, premium, extreme), defaults to "standard"   | "premium"                                    |
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+

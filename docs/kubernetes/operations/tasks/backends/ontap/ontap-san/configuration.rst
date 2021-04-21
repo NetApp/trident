@@ -58,7 +58,9 @@ specified address.
 The ``igroupName`` is set to an igroup that is already created on the ONTAP cluster.
 CSI Trident will automatically populate the igroup with node IQNs as volumes are
 created and attached. Similarly, node removals from the Kubernetes cluster will
-result in deleting the IQNs from the igroup.
+result in deleting the IQNs from the igroup. NetApp recommends using an igroup
+per Kubernetes cluster, if the SVM is to be shared between environments. This is
+necessary for Trident to maintain IQN additions/deletions automatically.
 
 .. warning::
 
@@ -127,6 +129,25 @@ encryption                Enable NetApp volume encryption                       
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
+
+.. _ontap-san-snapshot-reserve:
+
+For volumes created using the ``ontap-san`` driver, Trident provisions a FlexVol and
+a LUN, both of which are of the requested size in the PVC. If the
+``snapshotReserve`` parameter is used in a backend definition, this would reserve
+a portion of the allocated space to be used for storing snapshots. For example,
+a 1GiB PVC created with the ``ontap-san`` driver on a backend with ``snapshotReserve=20``
+will result in a 1GiB FlexVol and LUN provisioned with 0.8GiB of usable space. Users are
+required to calculate the size of the PVC by factoring the amount of
+``snapshotReserve`` configured. Existing volumes can be :ref:`resized<Volume Expansion>`
+through Trident to grow usable space available on the volume. Because
+``snapshotReserve`` is a soft limit on the amount of space reserved for ONTAP
+snapshots, it is also possible that the filesystem space gets eaten into when
+the space used by snapshots grows beyond the reserve. This applies to ONTAP snapshots
+taken on the storage volume, as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
+To accommodate this behavior, users can choose to grow their volumes by resizing.
+Alternatively, users can also free up space by deleting snapshots that are not
+required.
 
 .. note::
 

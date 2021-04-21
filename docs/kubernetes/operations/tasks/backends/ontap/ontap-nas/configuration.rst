@@ -120,6 +120,25 @@ securityStyle             Security style for new volumes                        
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
 
+.. _ontap-nas-snapshot-reserve:
+
+When ``snapshotReserve`` is set on a backend using the ``ontap-nas`` storage
+driver, volumes created by Trident will have a portion of the requested size
+dedicated for volume snapshots. This includes ONTAP snapshots scheduled through ONTAP,
+as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
+For example, a 2GiB PVC request will always result in the creation of a 2GiB FlexVol.
+If ``snapshotReserve=20``, the amount of available space visible to the end user
+will be 1.6GiB. Users are required to calculate the size of the PVC by factoring
+the amount of ``snapshotReserve`` configured. Existing volumes can be
+:ref:`resized<Volume Expansion>` through Trident to grow usable space available
+on the volume. Because ``snapshotReserve`` is a soft limit on the amount of space
+reserved for ONTAP snapshots, it is also possible that the filesystem space gets eaten into when
+the space used by snapshots grows beyond the reserve. This applies to ONTAP snapshots
+taken on the storage volume, as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
+To accommodate this behavior, users can choose to grow their volumes by resizing.
+Alternatively, users can also free up space by deleting snapshots that are not
+required.
+
 .. note::
 
   Using QoS policy groups with Trident requires ONTAP 9.8 or later.

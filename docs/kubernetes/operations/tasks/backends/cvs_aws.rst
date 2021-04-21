@@ -114,7 +114,7 @@ This example shows a backend file that applies the same aspects to all Trident c
         "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
         "proxyURL": "http://proxy-server-hostname/",
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
         "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",
         "defaults": {
@@ -143,7 +143,7 @@ In the sample backend definition file shown below, specific defaults are set for
         "apiURL": "https://cds-aws-bundles.netapp.com:8080/v1",
         "apiKey": "EnterYourAPIKeyHere***********************",
         "secretKey": "EnterYourSecretKeyHere******************",
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
 
         "defaults": {
             "snapshotReserve": "5",

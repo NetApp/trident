@@ -171,7 +171,7 @@ volume provisioning defaults.
         "serviceLevel": "Premium",
         "virtualNetwork": "my-virtual-network",
         "subnet": "my-subnet",
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
         "limitVolumeSize": "500Gi",
         "defaults": {
             "exportRule": "10.0.0.0/24,10.0.1.0/24,10.0.2.100",
@@ -200,7 +200,7 @@ This is just scratching the surface of the power of virtual storage pools and th
         "tenantID": "68e4f836-edc1-fake-bff9-b2d865ee56cf",
         "clientID": "dd043f63-bf8e-fake-8076-8de91e5713aa",
         "clientSecret": "SECRET",
-        "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
+        "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
         "labels": {
             "cloud": "azure"
         },
