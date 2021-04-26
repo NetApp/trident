@@ -63,6 +63,12 @@ const (
 	TridentProvisionersCRDName = "tridentprovisioners.trident.netapp.io"
 
 	UninstallationNote = ". NOTE: This CR has uninstalled status; delete this CR to allow new Trident installation."
+
+	SkipK8sVersionCheckWarning = "WARNING: Kubernetes version check manually skipped. This install flag is *not* " +
+		"recommended for production environments."
+	SkipK8sVersionCheckSupportWarning = "ERROR: Trident is running on an unsupported version of Kubernetes: %s. " +
+		"NetApp will not take Support calls or open Support tickets when using Trident with an unsupported version " +
+		"of Kubernetes."
 )
 
 var (
@@ -748,16 +754,13 @@ func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.
 // k8sVersionPreinstallationCheck identifies if K8s version is valid or not
 func (c *Controller) k8sVersionPreinstallationCheck() error {
 	isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion()
-	if c.skipK8sVersionCheck == false {
-		if !isCurrentK8sVersionValid {
-			log.Errorf(warningMessage)
+	if !isCurrentK8sVersionValid {
+		if crErr := c.updateAllCRs(warningMessage); crErr != nil {
+			log.Error(crErr)
+		}
+		if !c.skipK8sVersionCheck {
 			return utils.UnsupportedConfigError(fmt.Errorf(warningMessage))
 		}
-	} else {
-		if warningMessage != "" {
-			log.Warningf(warningMessage)
-		}
-		log.Warningf("Skipping the Kubernetes version check is not recommended for production environments")
 	}
 
 	return nil
@@ -1223,6 +1226,10 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 
 		// Check: Current K8s version should be supported, if not is there a warning message to notify users
 		isCurrentK8sVersionSupported, warningMessage := c.validateCurrentK8sVersion()
+		eventType := corev1.EventTypeNormal
+		if warningMessage != "" {
+			eventType = corev1.EventTypeWarning
+		}
 
 		// Check: If we have a valid K8s version
 		// Unfortunately, it is not possible to verify tridentImage version at this stage,
@@ -1242,8 +1249,7 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 
 			controllingCR, err = c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage,
 				string(AppStatusUpdating), currentInstalledTridentVersion, currentInstallationNamespace,
-				corev1.EventTypeNormal,
-				&controllingCR.Status.CurrentInstallationParams)
+				eventType, &controllingCR.Status.CurrentInstallationParams)
 			if err != nil {
 				return utils.ReconcileFailedError(fmt.Errorf(
 					"unable to update status of the CR '%v' to installing", controllingCRName))
@@ -1303,12 +1309,14 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 	debugMessage := "Updating TridentOrchestrator CR after installation."
 	statusMessage := "Trident installed"
 
+	eventType := corev1.EventTypeNormal
 	if warningMessage != "" {
 		statusMessage = statusMessage + "; " + warningMessage
+		eventType = corev1.EventTypeWarning
 	}
 
 	_, err = c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(AppStatusInstalled),
-		identifiedTridentVersion, tridentCR.Spec.Namespace, corev1.EventTypeNormal, identifiedSpecValues)
+		identifiedTridentVersion, tridentCR.Spec.Namespace, eventType, identifiedSpecValues)
 
 	return err
 }
@@ -1997,15 +2005,29 @@ func (c *Controller) validateCurrentK8sVersion() (bool, string) {
 		return isValid, ""
 	}
 
+	if c.skipK8sVersionCheck {
+		log.Warning(SkipK8sVersionCheckWarning)
+		warning = SkipK8sVersionCheckWarning
+	}
+
 	if currentK8sVersion != c.K8SVersion {
 		c.K8SVersion = currentK8sVersion
 	}
 	// Validate the Kubernetes server version
 	if err := commonconfig.ValidateKubernetesVersionFromInfo(commonconfig.KubernetesCSIVersionMinForced, currentK8sVersion); err != nil {
-		errMessage := fmt.Sprintf("Warning: Kubernetes version '%s' is unsupported; err: %v",
+		if c.skipK8sVersionCheck {
+			log.Errorf(SkipK8sVersionCheckSupportWarning, c.K8SVersion.String())
+			warning += "; " + fmt.Sprintf(SkipK8sVersionCheckSupportWarning, c.K8SVersion.String())
+		}
+
+		errMessage := fmt.Sprintf("Kubernetes version '%s' is unsupported; err: %v",
 			currentK8sVersion.String(), err)
-		log.Warnf(errMessage)
-		warning = errMessage
+		log.Error(errMessage)
+		if warning != "" {
+			warning += "; " + errMessage
+		} else {
+			warning = errMessage
+		}
 	} else {
 		log.WithField("version", currentK8sVersion.String()).Debugf("Kubernetes version is supported.")
 		isValid = true

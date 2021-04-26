@@ -275,17 +275,24 @@ func discoverInstallationEnvironment() error {
 
 	// Before the installation ensure K8s version is valid
 	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
-	if !skipK8sVersionCheck {
+	if skipK8sVersionCheck {
+		log.Warningf("Kubernetes version check manually skipped. This install flag is *not* recommended for " +
+			"production environments.")
+		if err != nil {
+			if utils.IsUnsupportedKubernetesVersionError(err) {
+				log.Errorf("Trident is running on an unsupported version of Kubernetes: %s. NetApp will not take Support "+
+					"calls or open Support tickets when using Trident with an unsupported version of Kubernetes.",
+					client.ServerVersion().String())
+				log.Errorf("Kubernetes version '%s' is unsupported; err: %v", client.ServerVersion().String(), err)
+			} else {
+				return err
+			}
+		}
+	} else {
 		if err != nil {
 			log.Errorf("Kubernetes version '%s' is unsupported; err: %v", client.ServerVersion().String(), err)
 			return err
 		}
-	} else if err != nil && utils.IsUnsupportedKubernetesVersionError(err) {
-		log.Warningf("Trident is running on an unsupported Kubernetes version. Skipping the Kubernetes version "+
-			"check is not recommended for production environments: %v", client.ServerVersion().String())
-	} else {
-		log.Warningf("Skipping the Kubernetes version check is not recommended for production environments; "+
-			"Kubernetes version: %v", client.ServerVersion().String())
 	}
 
 	// Prepare input file paths
