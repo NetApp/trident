@@ -1127,10 +1127,10 @@ func InitializeSANDriver(
 
 func getDefaultIgroupName(driverContext tridentconfig.DriverContext, backendUUID string) string {
 
-	if driverContext == tridentconfig.ContextDocker {
-		return drivers.GetDefaultIgroupName(driverContext)
-	} else {
+	if driverContext == tridentconfig.ContextCSI {
 		return drivers.GetDefaultIgroupName(driverContext) + "-" + backendUUID
+	} else {
+		return drivers.GetDefaultIgroupName(driverContext)
 	}
 }
 

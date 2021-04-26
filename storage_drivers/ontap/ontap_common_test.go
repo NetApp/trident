@@ -363,6 +363,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 			*/
 			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
+			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 
 			backendUUIDs = append(backendUUIDs, uuid.New().String())
@@ -452,6 +453,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
 			*/
 			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
+			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 
 			backendUUIDs = append(backendUUIDs, uuid.New().String())
@@ -667,7 +669,7 @@ func TestOntapSanGetDefaultIgroupName(t *testing.T) {
 		{
 			tridentconfig.ContextKubernetes,
 			"UNIQUE-KUBERNETES-UUID",
-			"trident-UNIQUE-KUBERNETES-UUID",
+			"trident",
 		},
 		{
 			tridentconfig.ContextDocker,
