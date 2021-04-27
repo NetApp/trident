@@ -13,6 +13,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var testSlice = []string{
+	"foo",
+	"bar",
+	"earn",
+	"baz",
+	"con:1234",
+	"silicon:1234",
+	"bigstring",
+	"verybigstring",
+	"superbingstring",
+}
+
 func TestPow(t *testing.T) {
 	log.Debug("Running TestPow...")
 
@@ -105,22 +117,25 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 
 }
 
-func TestSliceContainsString(t *testing.T) {
-	log.Debug("Running TestSliceContainsString...")
+func TestSliceContainsStringCase(t *testing.T) {
+	log.Debug("Running TestSliceContainsStringCase...")
 
-	slice := []string{
-		"foo",
-		"bar",
+	var testCases = []struct {
+		Text           string
+		ExpectedResult bool
+	}{
+		{"foo", true},
+		{"Foo", false},
+		{"foobar", false},
+		{"silicon:1234", true},
+		{"sIliCon:1234", false},
+		{"silicon:12344", false},
+		{"", false},
 	}
 
-	if !SliceContainsString(slice, "foo") {
-		t.Errorf("Slice SHOULD contain string %v", "foo")
-	}
-	if !SliceContainsString(slice, "bar") {
-		t.Errorf("Slice SHOULD contain string %v", "bar")
-	}
-	if SliceContainsString(slice, "baz") {
-		t.Errorf("Slice should NOT contain string %v", "baz")
+	for _, testCase := range testCases {
+		contains := SliceContainsString(testSlice, testCase.Text)
+		assert.Equal(t, testCase.ExpectedResult, contains)
 	}
 }
 
@@ -157,19 +172,8 @@ func TestRemoveStringFromSlice(t *testing.T) {
 func TestRemoveStringFromSliceConditionally(t *testing.T) {
 	log.Debug("Running TestRemoveStringFromSlice...")
 
-	slice := []string{
-		"foo",
-		"bar",
-		"earn",
-		"baz",
-		"ear",
-		"con:1234",
-		"silicon:1234",
-		"bigstring",
-		"verybigstring",
-		"superbingstring",
-	}
-	updatedSlice := slice
+	updatedSlice := make([]string, len(testSlice))
+	copy(updatedSlice, testSlice)
 
 	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "foo",
 		func(val1, val2 string) bool { return val1 == val2 })
@@ -214,6 +218,53 @@ func TestRemoveStringFromSliceConditionally(t *testing.T) {
 	}
 	if SliceContainsString(updatedSlice, "superbingstring") {
 		t.Errorf("Slice should NOT contain string %v", "superbingstring")
+	}
+}
+
+func TestSliceContainsStringCaseInsensitive(t *testing.T) {
+	log.Debug("Running TestSliceContainsStringCaseInsensitive...")
+
+	var testCases = []struct {
+		Text           string
+		ExpectedResult bool
+	}{
+		{"foo", true},
+		{"Foo", true},
+		{"foobar", false},
+		{"silicon:1234", true},
+		{"sIliCon:1234", true},
+		{"silicon:12344", false},
+		{"", false},
+	}
+
+	for _, testCase := range testCases {
+		contains := SliceContainsStringCaseInsensitive(testSlice, testCase.Text)
+		assert.Equal(t, testCase.ExpectedResult, contains)
+	}
+}
+
+func TestSliceContainsStringConditionally(t *testing.T) {
+	log.Debug("Running TestSliceContainsStringConditionally...")
+
+	var testCases = []struct {
+		Text           string
+		MatchFunc      func(string, string) bool
+		ExpectedResult bool
+	}{
+		{"foo", func(val1, val2 string) bool { return val1 == val2 }, true},
+		{"Foo", func(val1, val2 string) bool { return val1 == val2 }, false},
+		{"Foo", func(val1, val2 string) bool { return strings.EqualFold(val1, val2) }, true},
+		{"ear", func(val1, val2 string) bool { return val1 == val2 }, false},
+		{"Ear", func(val1, val2 string) bool { return val1 == val2 }, false},
+		{"Ear", func(val1, val2 string) bool { return strings.EqualFold(val1, val2) }, false},
+		{"ear", func(val1, val2 string) bool { return strings.Contains(val1, val2) }, true},
+		{"Ear", func(val1, val2 string) bool { return strings.Contains(val1, val2) }, false},
+		{"Ear", func(val1, val2 string) bool { return strings.Contains(strings.ToLower(val1), strings.ToLower(val2)) }, true},
+	}
+
+	for _, testCase := range testCases {
+		contains := SliceContainsStringConditionally(testSlice, testCase.Text, testCase.MatchFunc)
+		assert.Equal(t, testCase.ExpectedResult, contains)
 	}
 }
 

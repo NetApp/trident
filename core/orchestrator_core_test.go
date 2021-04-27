@@ -402,7 +402,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate config JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddBackend(ctx(), fakeConfig)
+		_, err = orchestrator.AddBackend(ctx(), fakeConfig, "")
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true
@@ -881,7 +881,7 @@ func TestCloneVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddBackend(ctx(), cfg)
+		_, err = orchestrator.AddBackend(ctx(), cfg, "")
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true
@@ -1136,7 +1136,7 @@ func addBackend(
 	if err != nil {
 		t.Fatal("Unable to create mock driver config JSON: ", err)
 	}
-	_, err = orchestrator.AddBackend(ctx(), configJSON)
+	_, err = orchestrator.AddBackend(ctx(), configJSON, "")
 	if err != nil {
 		t.Fatalf("Unable to add initial backend: %v", err)
 	}
@@ -1289,7 +1289,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			continue
 		}
 
-		_, err = orchestrator.UpdateBackend(ctx(), backendName, newConfigJSON)
+		_, err = orchestrator.UpdateBackend(ctx(), backendName, newConfigJSON, "")
 
 		if err != nil {
 			t.Errorf("%s:  unable to update backend with a nonconflicting change:  %v", c.name, err)
@@ -1483,7 +1483,7 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 		t.Fatalf("Unable to generate config JSON for %s:  %v", backendName, err)
 	}
 
-	_, err = orchestrator.AddBackend(ctx(), fakeConfig)
+	_, err = orchestrator.AddBackend(ctx(), fakeConfig, "")
 	if err != nil {
 		t.Errorf("Unable to add backend %s:  %v", backendName, err)
 	}
@@ -1495,7 +1495,7 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	}
 
 	output := captureOutput(func() {
-		_, err = orchestrator.UpdateBackend(ctx(), backendName, newConfigJSON)
+		_, err = orchestrator.UpdateBackend(ctx(), backendName, newConfigJSON, "")
 	})
 
 	if err != nil {
@@ -1766,7 +1766,7 @@ func TestLoadBackend(t *testing.T) {
 		},
 		volumes,
 	)
-	originalBackend, err := orchestrator.AddBackend(ctx(), configJSON)
+	originalBackend, err := orchestrator.AddBackend(ctx(), configJSON, "")
 	if err != nil {
 		t.Fatal("Unable to initially add backend:  ", err)
 	}
@@ -1779,7 +1779,7 @@ func TestLoadBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to marshal config from stored backend:  ", err)
 	}
-	newBackend, err := orchestrator.AddBackend(ctx(), newConfig)
+	newBackend, err := orchestrator.AddBackend(ctx(), newConfig, "")
 	if err != nil {
 		t.Error("Unable to update backend from config:  ", err)
 	} else if !reflect.DeepEqual(newBackend, originalBackend) {
@@ -1814,7 +1814,7 @@ func prepRecoveryTest(
 		},
 		[]fake.Volume{},
 	)
-	_, err = orchestrator.AddBackend(ctx(), configJSON)
+	_, err = orchestrator.AddBackend(ctx(), configJSON, "")
 	if err != nil {
 		t.Fatal("Unable to initialize backend: ", err)
 	}
@@ -2161,7 +2161,7 @@ func TestOrchestratorNotReady(t *testing.T) {
 	orchestrator.bootstrapped = false
 	orchestrator.bootstrapError = utils.NotReadyError()
 
-	backend, err = orchestrator.AddBackend(ctx(), "")
+	backend, err = orchestrator.AddBackend(ctx(), "", "")
 	if backend != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AddBackend to return an error.")
 	}
@@ -2743,7 +2743,7 @@ func TestSnapshotVolumes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to generate cfg JSON for %s:  %v", c.name, err)
 		}
-		_, err = orchestrator.AddBackend(ctx(), cfg)
+		_, err = orchestrator.AddBackend(ctx(), cfg, "")
 		if err != nil {
 			t.Errorf("Unable to add backend %s:  %v", c.name, err)
 			errored = true

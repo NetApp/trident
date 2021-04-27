@@ -95,7 +95,7 @@ func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 // Initialize from the provided config
 func (d *NASQtreeStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -105,7 +105,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 
 	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig)
+	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -1594,6 +1594,10 @@ func (d *NASQtreeStorageDriver) GetUpdateType(_ context.Context, driverOrig stor
 		bitmap.Add(storage.UsernameChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
 		bitmap.Add(storage.PrefixChange)
 	}
@@ -1862,4 +1866,9 @@ func (d NASQtreeStorageDriver) String() string {
 // GoString makes NASQtreeStorageDriver satisfy the GoStringer interface.
 func (d NASQtreeStorageDriver) GoString() string {
 	return d.String()
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d NASQtreeStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

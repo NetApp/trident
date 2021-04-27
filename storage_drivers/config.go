@@ -47,3 +47,15 @@ const TridentLabelTag = "trident"
 
 // Topology label names
 const TopologyLabelPrefix = "topology.kubernetes.io"
+
+const REDACTED = "<REDACTED>"
+
+// Backend Credentials specific
+type CredentialStore string
+
+const (
+	CredentialStoreK8sSecret CredentialStore = "secret"
+
+	KeyName string = "name"
+	KeyType string = "type"
+)

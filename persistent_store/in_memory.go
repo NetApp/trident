@@ -95,6 +95,10 @@ func (c *InMemoryClient) GetBackend(_ context.Context, backendName string) (*sto
 	return ret, nil
 }
 
+func (c *InMemoryClient) GetBackendSecret(_ context.Context, _ string) (map[string]string, error) {
+	return nil, nil
+}
+
 func (c *InMemoryClient) UpdateBackend(ctx context.Context, b *storage.Backend) error {
 	// UpdateBackend requires the backend to already exist.
 	if _, ok := c.backends[b.Name]; !ok {

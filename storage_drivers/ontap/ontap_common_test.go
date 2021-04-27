@@ -5,6 +5,7 @@ package ontap
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"math/rand"
 	"net"
 	"os"
@@ -688,6 +689,23 @@ func TestOntapSanGetDefaultIgroupName(t *testing.T) {
 
 func TestGetExternalConfigRedactSecrets(t *testing.T) {
 
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Credentials: map[string]string{"name": "secretname", "type": "secret"},
+		StoragePrefixRaw:  json.RawMessage("\"\""),
+		StoragePrefix:     nil,
+	}
+
+	commonConfigNoCredentials := &drivers.CommonStorageDriverConfig{
+		StoragePrefixRaw:  json.RawMessage("\"\""),
+		StoragePrefix:     nil,
+	}
+
+	expectedCommonConfig := &drivers.CommonStorageDriverConfig{
+		Credentials: map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED},
+		StoragePrefixRaw:  json.RawMessage("\"\""),
+		StoragePrefix:     nil,
+	}
+
 	var cases = []struct {
 		Name           string
 		originalConfig drivers.OntapStorageDriverConfig
@@ -704,15 +722,17 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 				ChapTargetInitiatorSecret: "test-chap-target-initiator-secret",
 				ChapTargetUsername:        "test-chap-target-username",
 				ChapUsername:              "test-chap-username",
+				CommonStorageDriverConfig: commonConfig,
 			},
 			externalConfig: drivers.OntapStorageDriverConfig{
-				Username:                  "<REDACTED>",
-				Password:                  "<REDACTED>",
-				ClientPrivateKey:          "<REDACTED>",
-				ChapInitiatorSecret:       "<REDACTED>",
-				ChapTargetInitiatorSecret: "<REDACTED>",
-				ChapTargetUsername:        "<REDACTED>",
-				ChapUsername:              "<REDACTED>",
+				Username:                  drivers.REDACTED,
+				Password:                  drivers.REDACTED,
+				ClientPrivateKey:          drivers.REDACTED,
+				ChapInitiatorSecret:       drivers.REDACTED,
+				ChapTargetInitiatorSecret: drivers.REDACTED,
+				ChapTargetUsername:        drivers.REDACTED,
+				ChapUsername:              drivers.REDACTED,
+				CommonStorageDriverConfig: expectedCommonConfig,
 			},
 			errorMessage: "sensitive information not redacted correctly",
 		},
@@ -726,15 +746,17 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 				ChapTargetInitiatorSecret: "",
 				ChapTargetUsername:        "",
 				ChapUsername:              "",
+				CommonStorageDriverConfig: commonConfigNoCredentials,
 			},
 			externalConfig: drivers.OntapStorageDriverConfig{
-				Username:                  "<REDACTED>",
-				Password:                  "<REDACTED>",
-				ClientPrivateKey:          "<REDACTED>",
-				ChapInitiatorSecret:       "<REDACTED>",
-				ChapTargetInitiatorSecret: "<REDACTED>",
-				ChapTargetUsername:        "<REDACTED>",
-				ChapUsername:              "<REDACTED>",
+				Username:                  drivers.REDACTED,
+				Password:                  drivers.REDACTED,
+				ClientPrivateKey:          drivers.REDACTED,
+				ChapInitiatorSecret:       drivers.REDACTED,
+				ChapTargetInitiatorSecret: drivers.REDACTED,
+				ChapTargetUsername:        drivers.REDACTED,
+				ChapUsername:              drivers.REDACTED,
+				CommonStorageDriverConfig: expectedCommonConfig,
 			},
 			errorMessage: "sensitive information not redacted correctly",
 		},

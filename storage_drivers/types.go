@@ -15,6 +15,55 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+// DriverConfig provides a common interface for storage config related operations
+type DriverConfig interface {
+	String() string
+	GoString() string
+	GetCredentials() (string, string, error)
+	HasCredentials() bool
+	SetBackendName(backendName string)
+	InjectSecrets(secretMap map[string]string) error
+	ExtractSecrets() map[string]string
+	HideSensitiveWithSecretName(secretName string)
+	GetAndHideSensitive(secretName string) map[string]string
+	CheckForCRDControllerForbiddenAttributes() []string
+	SpecOnlyValidation() error
+}
+
+func GetDriverConfigByName(driverName string) (DriverConfig, error) {
+
+	var storageDriverConfig DriverConfig
+
+	switch driverName {
+	case OntapNASStorageDriverName:
+		fallthrough
+	case OntapNASQtreeStorageDriverName:
+		fallthrough
+	case OntapSANStorageDriverName:
+		fallthrough
+	case OntapSANEconomyStorageDriverName:
+		fallthrough
+	case OntapNASFlexGroupStorageDriverName:
+		storageDriverConfig = &OntapStorageDriverConfig{}
+	case SolidfireSANStorageDriverName:
+		storageDriverConfig = &SolidfireStorageDriverConfig{}
+	case EseriesIscsiStorageDriverName:
+		storageDriverConfig = &ESeriesStorageDriverConfig{}
+	case AWSNFSStorageDriverName:
+		storageDriverConfig = &AWSNFSStorageDriverConfig{}
+	case AzureNFSStorageDriverName:
+		storageDriverConfig = &AzureNFSStorageDriverConfig{}
+	case GCPNFSStorageDriverName:
+		storageDriverConfig = &GCPNFSStorageDriverConfig{}
+	case FakeStorageDriverName:
+		storageDriverConfig = &FakeStorageDriverConfig{}
+	default:
+		return nil, fmt.Errorf("unknown storage driver: %v", driverName)
+	}
+
+	return storageDriverConfig, nil
+}
+
 // CommonStorageDriverConfig holds settings in common across all StorageDrivers
 type CommonStorageDriverConfig struct {
 	Version           int                   `json:"version"`
@@ -28,6 +77,7 @@ type CommonStorageDriverConfig struct {
 	SerialNumbers     []string              `json:"serialNumbers,omitEmpty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
+	Credentials       map[string]string     `json:"credentials"`
 }
 
 type CommonStorageDriverConfigDefaults struct {
@@ -36,7 +86,22 @@ type CommonStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the CommonStorageDriverConfig driver
 func (d CommonStorageDriverConfig) String() string {
-	return ToString(&d, []string{}, nil)
+	return ToString(&d, []string{"Credentials"}, nil)
+}
+
+// GetCredentials function returns secret name and type  (if set), otherwise empty strings
+func (d *CommonStorageDriverConfig) GetCredentials() (string, string, error) {
+	return getCredentialNameAndType(d.Credentials)
+}
+
+// HasCredentials returns if the credentials field is set, otherwise false
+func (d *CommonStorageDriverConfig) HasCredentials() bool {
+	return len(d.Credentials) != 0
+}
+
+// SetBackendName sets the backend name
+func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
+	d.BackendName = backendName
 }
 
 // ESeriesStorageDriverConfig holds settings for ESeriesStorageDriver
@@ -91,6 +156,71 @@ func (d ESeriesStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *ESeriesStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.Username, ok = secretMap[strings.ToLower("Username")]; !ok {
+		return injectionError("Username")
+	}
+	if d.Password, ok = secretMap[strings.ToLower("Password")]; !ok {
+		return injectionError("Password")
+	}
+	if d.PasswordArray, ok = secretMap[strings.ToLower("PasswordArray")]; !ok {
+		return injectionError("PasswordArray")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *ESeriesStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["Username"] = d.Username
+	secretMap["Password"] = d.Password
+	secretMap["PasswordArray"] = d.PasswordArray
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *ESeriesStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.Username = secretName
+	d.Password = secretName
+	d.PasswordArray = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *ESeriesStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d ESeriesStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d ESeriesStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
+}
+
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
 	*CommonStorageDriverConfig                // embedded types replicate all fields
@@ -131,6 +261,108 @@ func (d OntapStorageDriverConfig) String() string {
 // GoString makes OntapStorageDriverConfig satisfy the GoStringer interface.
 func (d OntapStorageDriverConfig) GoString() string {
 	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.ClientPrivateKey, ok = secretMap[strings.ToLower("ClientPrivateKey")]; !ok || d.
+		ClientPrivateKey == "" {
+		if d.Username, ok = secretMap[strings.ToLower("Username")]; !ok {
+			return injectionError("Username or ClientPrivateKey")
+		}
+		if d.Password, ok = secretMap[strings.ToLower("Password")]; !ok {
+			return injectionError("Password")
+		}
+	}
+	// CHAP settings
+	if d.UseCHAP {
+		if d.ChapUsername, ok = secretMap[strings.ToLower("ChapUsername")]; !ok {
+			return injectionError("ChapUsername")
+		}
+		if d.ChapInitiatorSecret, ok = secretMap[strings.ToLower("ChapInitiatorSecret")]; !ok {
+			return injectionError("ChapInitiatorSecret")
+		}
+		if d.ChapTargetUsername, ok = secretMap[strings.ToLower("ChapTargetUsername")]; !ok {
+			return injectionError("ChapTargetUsername")
+		}
+		if d.ChapTargetInitiatorSecret, ok = secretMap[strings.ToLower("ChapTargetInitiatorSecret")]; !ok {
+			return injectionError("ChapTargetInitiatorSecret")
+		}
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["ClientPrivateKey"] = d.ClientPrivateKey
+	secretMap["Username"] = d.Username
+	secretMap["Password"] = d.Password
+
+	if d.ClientPrivateKey != "" && d.Username != "" {
+		log.Warn("Defaulting to certificate authentication, " +
+			"it is not advised to have both certificate/key and username/password in backend file.")
+	}
+
+	// CHAP settings
+	if d.UseCHAP {
+		secretMap["ChapUsername"] = d.ChapUsername
+		secretMap["ChapInitiatorSecret"] = d.ChapInitiatorSecret
+		secretMap["ChapTargetUsername"] = d.ChapTargetUsername
+		secretMap["ChapTargetInitiatorSecret"] = d.ChapTargetInitiatorSecret
+	}
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *OntapStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+
+	d.ClientPrivateKey = secretName
+	d.Username = secretName
+	d.Password = secretName
+
+	// CHAP settings
+	if d.UseCHAP {
+		d.ChapUsername = secretName
+		d.ChapInitiatorSecret = secretName
+		d.ChapTargetUsername = secretName
+		d.ChapTargetInitiatorSecret = secretName
+	}
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *OntapStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d OntapStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d OntapStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
 }
 
 type OntapStorageDriverPool struct {
@@ -199,6 +431,61 @@ func (d SolidfireStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *SolidfireStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.EndPoint, ok = secretMap[strings.ToLower("EndPoint")]; !ok {
+		return injectionError("EndPoint")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *SolidfireStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["EndPoint"] = d.EndPoint
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *SolidfireStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.EndPoint = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *SolidfireStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d SolidfireStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
+}
+
 type AWSNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	APIURL              string `json:"apiURL"`
@@ -236,6 +523,66 @@ func (d AWSNFSStorageDriverConfig) String() string {
 // Implement GoStringer interface for the AWSNFSStorageDriverConfig driver
 func (d AWSNFSStorageDriverConfig) GoString() string {
 	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *AWSNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.APIKey, ok = secretMap[strings.ToLower("APIKey")]; !ok {
+		return injectionError("APIKey")
+	}
+	if d.SecretKey, ok = secretMap[strings.ToLower("SecretKey")]; !ok {
+		return injectionError("SecretKey")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d AWSNFSStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["APIKey"] = d.APIKey
+	secretMap["SecretKey"] = d.SecretKey
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *AWSNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.APIKey = secretName
+	d.SecretKey = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *AWSNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d AWSNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d AWSNFSStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
 }
 
 type AzureNFSStorageDriverConfig struct {
@@ -278,6 +625,66 @@ func (d AzureNFSStorageDriverConfig) String() string {
 // Implement GoStringer interface for the AzureNFSStorageDriverConfig driver
 func (d AzureNFSStorageDriverConfig) GoString() string {
 	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *AzureNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.ClientID, ok = secretMap[strings.ToLower("ClientID")]; !ok {
+		return injectionError("ClientID")
+	}
+	if d.ClientSecret, ok = secretMap[strings.ToLower("ClientSecret")]; !ok {
+		return injectionError("ClientSecret")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *AzureNFSStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["ClientID"] = d.ClientID
+	secretMap["ClientSecret"] = d.ClientSecret
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *AzureNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.ClientID = secretName
+	d.ClientSecret = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *AzureNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d AzureNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d AzureNFSStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
 }
 
 type GCPNFSStorageDriverConfig struct {
@@ -336,6 +743,66 @@ func (d GCPNFSStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *GCPNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.APIKey.PrivateKey, ok = secretMap[strings.ToLower("Private_Key")]; !ok {
+		return injectionError("Private_Key")
+	}
+	if d.APIKey.PrivateKeyID, ok = secretMap[strings.ToLower("Private_Key_ID")]; !ok {
+		return injectionError("Private_Key_ID")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *GCPNFSStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["Private_Key"] = d.APIKey.PrivateKey
+	secretMap["Private_Key_ID"] = d.APIKey.PrivateKeyID
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *GCPNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.APIKey.PrivateKey = secretName
+	d.APIKey.PrivateKeyID = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *GCPNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d GCPNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d GCPNFSStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
+}
+
 type FakeStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	Protocol trident.Protocol `json:"protocol"`
@@ -358,6 +825,54 @@ func (d FakeStorageDriverConfig) String() string {
 // Implement GoStringer interface for the FakeStorageDriverConfig driver
 func (d FakeStorageDriverConfig) GoString() string {
 	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *FakeStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+	// Nothing to do
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *FakeStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["Username"] = d.Username
+	secretMap["Password"] = d.Password
+
+	return secretMap
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *FakeStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.Username = secretName
+	d.Password = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *FakeStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	return map[string]string{}
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d FakeStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d FakeStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
 }
 
 type FakeStorageDriverPool struct {
@@ -451,7 +966,7 @@ func ToString(structPointer interface{}, redactList []string, configVal interfac
 		case fieldName == "Config" && configVal != nil:
 			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
 		case utils.SliceContainsString(redactList, fieldName):
-			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, "<REDACTED>"))
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, REDACTED))
 		default:
 			output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
 		}
@@ -459,4 +974,65 @@ func ToString(structPointer interface{}, redactList []string, configVal interfac
 
 	out = output.String()
 	return
+}
+
+func injectionError(fieldName string) error {
+	return fmt.Errorf("%s field missing from backend secrets", fieldName)
+}
+
+// getCredentialNameAndType return secret name and type (if set) otherwise empty strings
+func getCredentialNameAndType(credentials map[string]string) (string, string, error) {
+
+	if len(credentials) == 0 {
+		return "", "", nil
+	}
+
+	// Ensure Credentials does not contain any invalid key/value pair - this check ensures
+	// we can expand this list in future without any risk
+	credentialKeys := make([]string, 0, len(credentials))
+
+	for k, _ := range credentials {
+		credentialKeys = append(credentialKeys, k)
+	}
+
+	allowedCredentialKeys := []string{KeyName, KeyType}
+
+	var invalidKeys []string
+	for _, key := range credentialKeys {
+		if !utils.SliceContainsString(allowedCredentialKeys, key) {
+			invalidKeys = append(invalidKeys, key)
+		}
+	}
+
+	if len(invalidKeys) > 0 {
+		return "", "", fmt.Errorf("credentials field contains invalid fields '%v' attribute", invalidKeys)
+	}
+
+	secretName, ok := credentials[KeyName]
+	if !ok {
+		return "", "", fmt.Errorf("credentials field is missing 'name' attribute")
+	}
+
+	secretStore, ok := credentials[KeyType]
+	if !ok {
+		// if type is missing default to K8s secret
+		secretStore = string(CredentialStoreK8sSecret)
+	}
+
+	if secretStore != string(CredentialStoreK8sSecret) {
+		return "", "", fmt.Errorf("credentials field does not support type '%s'", secretStore)
+	}
+
+	return secretName, secretStore, nil
+}
+
+func checkMapContainsAttributes(forbiddenMap map[string]string) []string {
+	var forbiddenList []string
+	for key, value := range forbiddenMap {
+		if value != "" {
+			forbiddenList = append(forbiddenList, key)
+		}
+	}
+
+	return forbiddenList
 }

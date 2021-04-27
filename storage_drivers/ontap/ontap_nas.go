@@ -64,7 +64,7 @@ func (d *NASStorageDriver) BackendName() string {
 // Initialize from the provided config
 func (d *NASStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -74,7 +74,7 @@ func (d *NASStorageDriver) Initialize(
 	}
 
 	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig)
+	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -838,6 +838,10 @@ func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 		bitmap.Add(storage.UsernameChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
 		bitmap.Add(storage.PrefixChange)
 	}
@@ -919,4 +923,9 @@ func (d NASStorageDriver) String() string {
 // GoString makes NASStorageDriver satisfy the GoStringer interface.
 func (d NASStorageDriver) GoString() string {
 	return d.String()
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

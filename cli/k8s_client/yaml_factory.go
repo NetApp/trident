@@ -118,7 +118,8 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -187,7 +188,8 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -1734,7 +1736,8 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["*"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
     verbs: ["*"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -1775,7 +1778,8 @@ rules:
     resources: ["csidrivers", "csinodeinfos"]
     verbs: ["*"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes", "tridenttransactions", "tridentsnapshots"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
     verbs: ["*"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -2087,18 +2091,6 @@ metadata:
   {OWNER_REF}
 `
 
-func GetCRDNames() []string {
-	return []string{
-		"tridentversions.trident.netapp.io",
-		"tridentbackends.trident.netapp.io",
-		"tridentstorageclasses.trident.netapp.io",
-		"tridentvolumes.trident.netapp.io",
-		"tridentnodes.trident.netapp.io",
-		"tridenttransactions.trident.netapp.io",
-		"tridentsnapshots.trident.netapp.io",
-	}
-}
-
 func GetCRDsYAML(useCRDv1 bool) string {
 	if useCRDv1 {
 		return customResourceDefinitionYAML_v1
@@ -2120,6 +2112,14 @@ func GetBackendCRDYAML(useCRDv1 bool) string {
 		return tridentBackendCRDYAML_v1
 	} else {
 		return tridentBackendCRDYAML_v1beta1
+	}
+}
+
+func GetBackendConfigCRDYAML(useCRDv1 bool) string {
+	if useCRDv1 {
+		return tridentBackendConfigCRDYAML_v1
+	} else {
+		return tridentBackendConfigCRDYAML_v1beta1
 	}
 }
 
@@ -2174,6 +2174,7 @@ func GetOrchestratorCRDYAML(useCRDv1 bool) string {
 /*
 kubectl delete crd tridentversions.trident.netapp.io --wait=false
 kubectl delete crd tridentbackends.trident.netapp.io --wait=false
+kubectl delete crd tridentbackendconfigs.trident.netapp.io --wait=false
 kubectl delete crd tridentstorageclasses.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumes.trident.netapp.io --wait=false
 kubectl delete crd tridentnodes.trident.netapp.io --wait=false
@@ -2182,6 +2183,7 @@ kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentbackendconfigs.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentstorageclasses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -2190,6 +2192,7 @@ kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizer
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
+kubectl delete crd tridentbackendconfigs.trident.netapp.io
 kubectl delete crd tridentstorageclasses.trident.netapp.io
 kubectl delete crd tridentvolumes.trident.netapp.io
 kubectl delete crd tridentnodes.trident.netapp.io
@@ -2261,6 +2264,65 @@ spec:
       description: The backend UUID
       priority: 0
       JSONPath: .backendUUID`
+
+const tridentBackendConfigCRDYAML_v1beta1 = `
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackendconfigs.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  subresources:
+    status: {}
+  names:
+    plural: tridentbackendconfigs
+    singular: tridentbackendconfig
+    kind: TridentBackendConfig
+    shortNames:
+    - tbc
+    - tbconfig
+    - tbackendconfig
+    categories:
+    - trident
+    - trident-internal
+    - trident-external
+  additionalPrinterColumns:
+    - name: Backend Name
+      type: string
+      description: The backend name
+      priority: 0
+      JSONPath: .status.backendInfo.backendName
+    - name: Backend UUID
+      type: string
+      description: The backend UUID
+      priority: 0
+      JSONPath: .status.backendInfo.backendUUID
+    - name: Phase
+      type: string
+      description: The backend config phase
+      priority: 0
+      JSONPath: .status.phase
+    - name: Status
+      type: string
+      description: The result of the last operation
+      priority: 0
+      JSONPath: .status.lastOperationStatus
+    - name: Storage Driver
+      type: string
+      description: The storage driver type
+      priority: 1
+      JSONPath: .spec.storageDriverName
+    - name: Deletion Policy
+      type: string
+      description: The deletion policy
+      priority: 1
+      JSONPath: .status.deletionPolicy`
 
 const tridentStorageClassCRDYAML_v1beta1 = `
 apiVersion: apiextensions.k8s.io/v1beta1
@@ -2446,9 +2508,14 @@ spec:
     served: true
     storage: true`
 
-const customResourceDefinitionYAML_v1beta1 = tridentVersionCRDYAML_v1beta1 + "\n---" + tridentBackendCRDYAML_v1beta1 +
-	"\n---" + tridentStorageClassCRDYAML_v1beta1 + "\n---" + tridentVolumeCRDYAML_v1beta1 + "\n---" +
-	tridentNodeCRDYAML_v1beta1 + "\n---" + tridentTransactionCRDYAML_v1beta1 + "\n---" + tridentSnapshotCRDYAML_v1beta1
+const customResourceDefinitionYAML_v1beta1 = tridentVersionCRDYAML_v1beta1 +
+	"\n---" + tridentBackendCRDYAML_v1beta1 +
+	"\n---" + tridentBackendConfigCRDYAML_v1beta1 +
+	"\n---" + tridentStorageClassCRDYAML_v1beta1 +
+	"\n---" + tridentVolumeCRDYAML_v1beta1 +
+	"\n---" + tridentNodeCRDYAML_v1beta1 +
+	"\n---" + tridentTransactionCRDYAML_v1beta1 +
+	"\n---" + tridentSnapshotCRDYAML_v1beta1
 
 const tridentVersionCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
@@ -2520,6 +2587,68 @@ spec:
     categories:
     - trident
     - trident-internal`
+
+const tridentBackendConfigCRDYAML_v1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackendconfigs.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - name: Backend Name
+        type: string
+        description: The backend name
+        priority: 0
+        jsonPath: .status.backendInfo.backendName
+      - name: Backend UUID
+        type: string
+        description: The backend UUID
+        priority: 0
+        jsonPath: .status.backendInfo.backendUUID
+      - name: Phase
+        type: string
+        description: The backend config phase
+        priority: 0
+        jsonPath: .status.phase
+      - name: Status
+        type: string
+        description: The result of the last operation
+        priority: 0
+        jsonPath: .status.lastOperationStatus
+      - name: Storage Driver
+        type: string
+        description: The storage driver type
+        priority: 1
+        jsonPath: .spec.storageDriverName
+      - name: Deletion Policy
+        type: string
+        description: The deletion policy
+        priority: 1
+        jsonPath: .status.deletionPolicy
+  scope: Namespaced
+  names:
+    plural: tridentbackendconfigs
+    singular: tridentbackendconfig
+    kind: TridentBackendConfig
+    shortNames:
+    - tbc
+    - tbconfig
+    - tbackendconfig
+    categories:
+    - trident
+    - trident-internal
+    - trident-external`
 
 const tridentStorageClassCRDYAML_v1 = `
 apiVersion: apiextensions.k8s.io/v1
@@ -2723,9 +2852,14 @@ spec:
     - torchestrator
   scope: Cluster`
 
-const customResourceDefinitionYAML_v1 = tridentVersionCRDYAML_v1 + "\n---" + tridentBackendCRDYAML_v1 +
-	"\n---" + tridentStorageClassCRDYAML_v1 + "\n---" + tridentVolumeCRDYAML_v1 + "\n---" +
-	tridentNodeCRDYAML_v1 + "\n---" + tridentTransactionCRDYAML_v1 + "\n---" + tridentSnapshotCRDYAML_v1 + "\n"
+const customResourceDefinitionYAML_v1 = tridentVersionCRDYAML_v1 +
+	"\n---" + tridentBackendCRDYAML_v1 +
+	"\n---" + tridentBackendConfigCRDYAML_v1 +
+	"\n---" + tridentStorageClassCRDYAML_v1 +
+	"\n---" + tridentVolumeCRDYAML_v1 +
+	"\n---" + tridentNodeCRDYAML_v1 +
+	"\n---" + tridentTransactionCRDYAML_v1 +
+	"\n---" + tridentSnapshotCRDYAML_v1 + "\n"
 
 func GetCSIDriverCRDYAML() string {
 	return CSIDriverCRDYAML

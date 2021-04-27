@@ -126,7 +126,7 @@ func (d *SANStorageDriver) poolName(name string) string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -145,6 +145,15 @@ func (d *SANStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err := config.InjectSecrets(backendSecret)
+		if err != nil {
+			return fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
+	}
+
 	d.Config = *config
 
 	// Apply config defaults
@@ -1744,9 +1753,13 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	if strings.Contains(cloneConfig.EndPoint, "@") {
 		endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
 		if len(endpointHalves) > 0 {
-			cloneConfig.EndPoint = fmt.Sprintf("https://<REDACTED>@%s", endpointHalves[1])
+			cloneConfig.EndPoint = fmt.Sprintf("https://%s@%s", drivers.REDACTED, endpointHalves[1])
 		}
 	}
+
+	// redact the credentials
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED}
+
 	return cloneConfig
 }
 
@@ -1894,6 +1907,10 @@ func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 		}
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
 		bitmap.Add(storage.PrefixChange)
 	}
@@ -1996,4 +2013,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 	}
 
 	return nil
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

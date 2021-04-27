@@ -3,6 +3,7 @@
 package storagedrivers
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,5 +131,66 @@ func TestStorageDriverConfigString(t *testing.T) {
 			assert.NotContains(t, fakeStorageDriverConfig.GoString(), key,
 				"%s driver config contains %v", fakeStorageDriverConfig.StorageDriverName, val)
 		}
+	}
+}
+
+func TestGetCredentialNameAndType(t *testing.T) {
+	type CredentialNameAndType struct {
+		Values map[string]string
+		Name   string
+		Type   string
+		Error  error
+	}
+
+	inputs := []CredentialNameAndType{
+		{
+			map[string]string{"name": "secret1", "type": "secret"},
+			"secret1",
+			"secret",
+			nil,
+		},
+		{
+			map[string]string{"name": "secret1"},
+			"secret1",
+			"secret",
+			nil,
+		},
+		{
+			map[string]string{"type": "secret"},
+			"",
+			"",
+			fmt.Errorf("credentials field is missing 'name' attribute"),
+		},
+		{
+			map[string]string{"name": "", "type": "KMIP"},
+			"",
+			"",
+			fmt.Errorf("credentials field does not support type '%s'", "KMIP"),
+		},
+		{
+			map[string]string{"name": "", "type": "secret", "randomKey": "randomValue"},
+			"",
+			"",
+			fmt.Errorf("credentials field contains invalid fields '%v' attribute", []string{"randomKey"}),
+		},
+		{
+			map[string]string{},
+			"",
+			"",
+			nil,
+		},
+		{
+			nil,
+			"",
+			"",
+			nil,
+		},
+	}
+
+	for _, input := range inputs {
+		secretName, secretType, err := getCredentialNameAndType(input.Values)
+		assert.Equal(t, secretName, input.Name)
+		assert.Equal(t, secretType, input.Type)
+		assert.Equal(t, err, input.Error)
 	}
 }

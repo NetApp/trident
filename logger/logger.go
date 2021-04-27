@@ -10,10 +10,16 @@ import (
 
 func Logc(ctx context.Context) *log.Entry {
 
-	return log.WithFields(log.Fields{
+	entry := log.WithFields(log.Fields{
 		"requestID":     ctx.Value(ContextKeyRequestID),
 		"requestSource": ctx.Value(ContextKeyRequestSource),
 	})
+
+	if val := ctx.Value(CRDControllerEvent); val != nil {
+		entry = entry.WithField(CRDControllerEvent, val)
+	}
+
+	return entry
 }
 
 func GenerateRequestContext(ctx context.Context, requestID, requestSource string) context.Context {

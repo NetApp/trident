@@ -38,13 +38,14 @@ const (
 	DefaultPVName      = tridentconfig.OrchestratorName
 
 	// CRD names
-	BackendCRDName      = "tridentbackends.trident.netapp.io"
-	NodeCRDName         = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName  = "tridenttransactions.trident.netapp.io"
-	VersionCRDName      = "tridentversions.trident.netapp.io"
-	VolumeCRDName       = "tridentvolumes.trident.netapp.io"
-	SnapshotCRDName     = "tridentsnapshots.trident.netapp.io"
+	BackendCRDName       = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName = "tridentbackendconfigs.trident.netapp.io"
+	NodeCRDName          = "tridentnodes.trident.netapp.io"
+	StorageClassCRDName  = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName   = "tridenttransactions.trident.netapp.io"
+	VersionCRDName       = "tridentversions.trident.netapp.io"
+	VolumeCRDName        = "tridentvolumes.trident.netapp.io"
+	SnapshotCRDName      = "tridentsnapshots.trident.netapp.io"
 
 	NamespaceFilename          = "trident-namespace.yaml"
 	ServiceAccountFilename     = "trident-serviceaccount.yaml"
@@ -113,6 +114,7 @@ var (
 
 	CRDnames = []string{
 		BackendCRDName,
+		BackendConfigCRDName,
 		NodeCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,

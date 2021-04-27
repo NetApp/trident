@@ -243,6 +243,11 @@ func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) 
 	return existingBackend.ConstructPersistent(ctx), nil
 }
 
+func (c *PassthroughClient) GetBackendSecret(_ context.Context, _ string) (map[string]string, error) {
+
+	return nil, nil
+}
+
 func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend *storage.Backend) error {
 
 	if _, ok := c.liveBackends[backend.Name]; !ok {

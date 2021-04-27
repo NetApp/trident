@@ -349,7 +349,7 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 	response := &AddBackendResponse{}
 	AddGeneric(w, r, response,
 		func(body []byte) int {
-			backend, err := orchestrator.AddBackend(r.Context(), string(body))
+			backend, err := orchestrator.AddBackend(r.Context(), string(body), "")
 			if err != nil {
 				response.setError(err)
 			}
@@ -394,7 +394,7 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
 	UpdateGeneric(w, r, "backend", response,
 		func(backendName string, body []byte) int {
-			backend, err := orchestrator.UpdateBackend(r.Context(), backendName, string(body))
+			backend, err := orchestrator.UpdateBackend(r.Context(), backendName, string(body), "")
 			if err != nil {
 				response.Error = err.Error()
 			}

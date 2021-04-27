@@ -377,8 +377,22 @@ func NewHTTPError(response *http.Response) *HTTPError {
 
 // SliceContainsString checks to see if a []string contains a string
 func SliceContainsString(slice []string, s string) bool {
+	return SliceContainsStringConditionally(slice, s, func(val1, val2 string) bool { return val1 == val2 })
+}
+
+// SliceContainsStringCaseInsensitive is SliceContainsString but case insensitive
+func SliceContainsStringCaseInsensitive(slice []string, s string) bool {
+	matchFunc := func(main, val string) bool {
+		return strings.EqualFold(main, val)
+	}
+
+	return SliceContainsStringConditionally(slice, s, matchFunc)
+}
+
+// SliceContainsStringConditionally checks to see if a []string contains a string based on certain criteria
+func SliceContainsStringConditionally(slice []string, s string, fn func(string, string) bool) bool {
 	for _, item := range slice {
-		if item == s {
+		if fn(item, s) {
 			return true
 		}
 	}

@@ -99,6 +99,14 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStor
 		}
 	}
 
+	if config.Credentials != nil {
+		Logc(ctx).Debug("Credentials field not empty.")
+
+		if _, _, err := config.GetCredentials(); err != nil {
+			return nil, err
+		}
+	}
+
 	Logc(ctx).Debugf("Parsed commonConfig: %+v", *config)
 
 	return config, nil
@@ -215,4 +223,18 @@ func CheckSupportedFilesystem(ctx context.Context, fs string, volumeInternalName
 	default:
 		return fstype, fmt.Errorf("unsupported fileSystemType option: %s", fstype)
 	}
+}
+
+func AreSameCredentials(credentials1, credentials2 map[string]string) bool {
+	secretName1, secretStore1, err := getCredentialNameAndType(credentials1)
+	if err != nil {
+		return false
+	}
+
+	secretName2, secretStore2, err := getCredentialNameAndType(credentials2)
+	if err != nil {
+		return false
+	}
+
+	return secretName1 == secretName2 && secretStore1 == secretStore2
 }

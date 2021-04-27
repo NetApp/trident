@@ -18,15 +18,18 @@ type Orchestrator interface {
 	GetFrontend(ctx context.Context, name string) (frontend.Plugin, error)
 	GetVersion(ctx context.Context) (string, error)
 
-	AddBackend(ctx context.Context, configJSON string) (*storage.BackendExternal, error)
+	AddBackend(ctx context.Context, configJSON, configRef string) (*storage.BackendExternal, error)
 	DeleteBackend(ctx context.Context, backend string) error
 	DeleteBackendByBackendUUID(ctx context.Context, backendName, backendUUID string) error
 	GetBackend(ctx context.Context, backend string) (*storage.BackendExternal, error)
 	GetBackendByBackendUUID(ctx context.Context, backendUUID string) (*storage.BackendExternal, error)
 	ListBackends(ctx context.Context) ([]*storage.BackendExternal, error)
-	UpdateBackend(ctx context.Context, backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error)
-	UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackend(ctx context.Context, backendName, configJSON, configRef string) (storageBackendExternal *storage.
+		BackendExternal, err error)
+	UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID,
+		configRef string) (storageBackendExternal *storage.BackendExternal, err error)
 	UpdateBackendState(ctx context.Context, backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
+	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error

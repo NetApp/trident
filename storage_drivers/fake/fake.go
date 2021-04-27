@@ -96,8 +96,8 @@ func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID s
 
 	storageDriver := &StorageDriver{}
 
-	if initializeErr := storageDriver.Initialize(
-		ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig, backendUUID); initializeErr != nil {
+	if initializeErr := storageDriver.Initialize( ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig,
+		nil, backendUUID); initializeErr != nil {
 		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)
 		return nil, err
@@ -272,13 +272,21 @@ func (d *StorageDriver) poolName(region string) string {
 
 func (d *StorageDriver) Initialize(
 	ctx context.Context, _ tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	d.Config.CommonStorageDriverConfig = commonConfig
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
 	if err != nil {
 		return fmt.Errorf("unable to initialize fake driver: %v", err)
+	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err := d.Config.InjectSecrets(backendSecret)
+		if err != nil {
+			return fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
 	}
 
 	err = d.populateConfigurationDefaults(ctx, &d.Config)
@@ -1192,6 +1200,10 @@ func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driv
 		bitmap.Add(storage.PrefixChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	return roaring.New()
 }
 
@@ -1273,4 +1285,9 @@ func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.
 	}
 
 	return nil
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d StorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

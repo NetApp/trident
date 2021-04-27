@@ -10,6 +10,9 @@ const (
 	ContextSourceDocker   = "Docker"
 	ContextSourceCSI      = "CSI"
 	ContextSourceInternal = "Internal"
+
+	CRDControllerEvent = "crdControllerEvent"
+	LogSource          = "logSource"
 )
 
 // ContextKey is used for context.Context value. The value requires a key that is not primitive type.

@@ -149,7 +149,7 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -162,7 +162,7 @@ func (d *NFSStorageDriver) Initialize(
 	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{15,35}$`)
 
 	// Parse the config
-	config, err := d.initializeAzureConfig(ctx, configJSON, commonConfig)
+	config, err := d.initializeAzureConfig(ctx, configJSON, commonConfig, backendSecret)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver. %v", d.Name(), err)
 	}
@@ -403,8 +403,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 // initializeAzureConfig parses the Azure config, mixing in the specified common config.
 func (d *NFSStorageDriver) initializeAzureConfig(
-	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
-) (*drivers.AzureNFSStorageDriverConfig, error) {
+	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (*drivers.AzureNFSStorageDriverConfig, error) {
 
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NFSStorageDriver"}
@@ -418,6 +417,14 @@ func (d *NFSStorageDriver) initializeAzureConfig(
 	// decode configJSON into AzureNFSStorageDriverConfig object
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration. %v", err)
+	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err := config.InjectSecrets(backendSecret)
+		if err != nil {
+			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
 	}
 
 	return config, nil
@@ -1540,7 +1547,8 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = "<REDACTED>" // redact the Secret
+	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }
 
@@ -1651,6 +1659,10 @@ func (d *NFSStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 		bitmap.Add(storage.PrefixChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	return bitmap
 }
 
@@ -1681,4 +1693,9 @@ func validateStoragePrefix(storagePrefix string) error {
 		return fmt.Errorf("storage prefix may only contain letters and hyphens")
 	}
 	return nil
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d NFSStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

@@ -81,7 +81,8 @@ func (m *MockOrchestrator) GetVersion(context.Context) (string, error) {
 
 // TODO:  Add extra methods to add backends without needing to provide a valid,
 // stringified JSON config.
-func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON string) (*storage.BackendExternal, error) {
+func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON, configRef string) (*storage.BackendExternal,
+	error) {
 	// We need to do this to determine if the backend is NFS or not.
 	backend := &storage.Backend{
 		Name:        fmt.Sprintf("mock-%d", len(m.backendsByUUID)),
@@ -202,16 +203,18 @@ func (m *MockOrchestrator) AddMockFakeNASBackend(ctx context.Context, name strin
 //TODO:  Add other mock backends here as necessary.
 
 // UpdateBackend updates an existing backend
-func (m *MockOrchestrator) UpdateBackend(ctx context.Context, backendName, configJSON string) (storageBackendExternal *storage.BackendExternal, err error) {
+func (m *MockOrchestrator) UpdateBackend(ctx context.Context, backendName, configJSON,
+	configRef string) (storageBackendExternal *storage.BackendExternal, err error) {
 	backend, err := m.GetBackend(ctx, backendName)
 	if err != nil {
 		return nil, err
 	}
-	return m.UpdateBackendByBackendUUID(ctx, backendName, configJSON, backend.BackendUUID)
+	return m.UpdateBackendByBackendUUID(ctx, backendName, configJSON, backend.BackendUUID, backend.ConfigRef)
 }
 
 // UpdateBackendByBackendUUID updates an existing backend
-func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID string) (storageBackendExternal *storage.BackendExternal, err error) {
+func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID,
+	configRef string) (storageBackendExternal *storage.BackendExternal, err error) {
 
 	originalBackend, found := m.backendsByUUID[backendUUID]
 	if !found {
@@ -219,7 +222,7 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backe
 		return nil, utils.NotFoundError(fmt.Sprintf("backend name:%v uuid:%v was not found", backendName, backendUUID))
 	}
 
-	newBackend, err := factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
+	newBackend, err := m.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -229,10 +232,45 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(ctx context.Context, backe
 	return newBackend.ConstructExternal(ctx), nil
 }
 
+// validateAndCreateBackendFromConfig validates config and creates backend based on Config
+func (m *MockOrchestrator) validateAndCreateBackendFromConfig(ctx context.Context,
+	configJSON, backendUUID string) (backendExternal *storage.Backend, err error) {
+
+	commonConfig, configInJSON, err := factory.ValidateCommonSettings(ctx, configJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return factory.NewStorageBackendForConfig(ctx, configInJSON, backendUUID, commonConfig, nil)
+}
+
 // UpdateBackendState updates an existing backend
 func (m *MockOrchestrator) UpdateBackendState(ctx context.Context, backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error) {
 	//TODO
 	return nil, fmt.Errorf("operation not currently supported")
+}
+
+// RemoveBackendConfigRef sets backend configRef to empty and updates it.
+func (m *MockOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUUID,
+	configRef string) (err error) {
+
+	originalBackend, found := m.backendsByUUID[backendUUID]
+	if !found {
+		m.dumpKnownBackends()
+		return utils.NotFoundError(fmt.Sprintf("backend uuid:%v was not found", backendUUID))
+	}
+
+	if originalBackend.ConfigRef != "" {
+		if originalBackend.ConfigRef != configRef {
+			return fmt.Errorf("TridentBackendConfig with UID '%s' cannot request removal of configRef '%s' for backend"+
+				" with UUID '%s'", configRef, originalBackend.ConfigRef, backendUUID)
+		}
+
+		originalBackend.ConfigRef = ""
+		m.backendsByUUID[backendUUID] = originalBackend
+	}
+
+	return nil
 }
 
 func (m *MockOrchestrator) dumpKnownBackends() {

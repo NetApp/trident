@@ -270,7 +270,7 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 	backendName := "fakeOne"
 	volumes := make([]fake.Volume, 0)
 	fakeConfig, err := fakeDriver.NewFakeStorageDriverConfigJSON(backendName, config.File, tu.GenerateFakePools(1), volumes)
-	_, err = o.AddBackend(ctx(), fakeConfig)
+	_, err = o.AddBackend(ctx(), fakeConfig, "")
 	if err != nil {
 		t.Errorf("Unable to add backend %s: %v", backendName, err)
 	}

@@ -29,6 +29,7 @@ func NewTridentBackend(ctx context.Context, persistent *storage.BackendPersisten
 		},
 		BackendName: persistent.Name,
 		BackendUUID: persistent.BackendUUID,
+		ConfigRef:   persistent.ConfigRef,
 	}
 
 	if persistent.BackendUUID != "" {
@@ -62,6 +63,7 @@ func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.Backend
 		"in.BackendName":    in.BackendName,
 		"in.BackendUUID":    in.BackendUUID,
 		"in.State":          in.State,
+		"in.ConfigRef":      in.ConfigRef,
 	}).Debug("Applying backend update.")
 
 	config, err := json.Marshal(persistent.Config)
@@ -74,6 +76,7 @@ func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.Backend
 	in.Online = persistent.Online
 	in.Version = persistent.Version
 	in.State = string(persistent.State)
+	in.ConfigRef = persistent.ConfigRef
 	if in.BackendUUID == "" && persistent.BackendUUID != "" {
 		in.BackendUUID = persistent.BackendUUID
 	}
@@ -90,6 +93,7 @@ func (in *TridentBackend) Persistent() (*storage.BackendPersistent, error) {
 		Version:     in.Version,
 		Online:      in.Online,
 		State:       storage.BackendState(in.State),
+		ConfigRef:   in.ConfigRef,
 	}
 
 	return persistent, json.Unmarshal(in.Config.Raw, &persistent.Config)

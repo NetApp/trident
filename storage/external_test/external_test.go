@@ -40,7 +40,14 @@ func TestConstructExternalBackend(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to construct config JSON.")
 	}
-	fakeBackend, err := factory.NewStorageBackendForConfig(context.Background(), configJSON, uuid.New().String())
+
+	commonConfig, configInJSON, err := factory.ValidateCommonSettings(context.Background(), configJSON)
+	if err != nil {
+		t.Error("Failed to validate settings for invalid configuration.")
+	}
+
+	fakeBackend, err := factory.NewStorageBackendForConfig(context.Background(), configInJSON, uuid.New().String(),
+		commonConfig, nil)
 	if err != nil {
 		t.Fatal("Unable to construct backend:  ", err)
 	}

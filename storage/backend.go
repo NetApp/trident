@@ -27,7 +27,8 @@ import (
 type Driver interface {
 	Name() string
 	BackendName() string
-	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig, string) error
+	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig,
+		map[string]string, string) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate(ctx context.Context, backendUUID string)
@@ -69,6 +70,7 @@ type Driver interface {
 	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
 	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error
+	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
 type Backend struct {
@@ -79,6 +81,7 @@ type Backend struct {
 	State       BackendState
 	Storage     map[string]*Pool
 	Volumes     map[string]*Volume
+	ConfigRef   string
 }
 
 type UpdateBackendStateRequest struct {
@@ -189,6 +192,15 @@ func (b *Backend) GetDriverName() string {
 
 func (b *Backend) GetProtocol(ctx context.Context) tridentconfig.Protocol {
 	return b.Driver.GetProtocol(ctx)
+}
+
+func (b *Backend) IsCredentialsFieldSet(ctx context.Context) bool {
+	commonConfig := b.Driver.GetCommonConfig(ctx)
+	if commonConfig != nil {
+		return commonConfig.Credentials != nil
+	}
+
+	return false
 }
 
 func (b *Backend) AddVolume(
@@ -739,6 +751,7 @@ const (
 	UsernameChange
 	PasswordChange
 	PrefixChange
+	CredentialsChange
 )
 
 func (b *Backend) GetUpdateType(ctx context.Context, origBackend *Backend) *roaring.Bitmap {
@@ -818,6 +831,7 @@ type BackendExternal struct {
 	State       BackendState           `json:"state"`
 	Online      bool                   `json:"online"`
 	Volumes     []string               `json:"volumes"`
+	ConfigRef   string                 `json:"configRef"`
 }
 
 func (b *Backend) ConstructExternal(ctx context.Context) *BackendExternal {
@@ -830,6 +844,7 @@ func (b *Backend) ConstructExternal(ctx context.Context) *BackendExternal {
 		Online:      b.Online,
 		State:       b.State,
 		Volumes:     make([]string, 0),
+		ConfigRef:   b.ConfigRef,
 	}
 
 	for name, pool := range b.Storage {
@@ -854,6 +869,32 @@ type PersistentStorageBackendConfig struct {
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
+func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverConfig, error) {
+
+	var driverConfig drivers.DriverConfig
+
+	switch {
+	case psbc.OntapConfig != nil:
+		driverConfig = psbc.OntapConfig
+	case psbc.SolidfireConfig != nil:
+		driverConfig = psbc.SolidfireConfig
+	case psbc.EseriesConfig != nil:
+		driverConfig = psbc.EseriesConfig
+	case psbc.AWSConfig != nil:
+		driverConfig = psbc.AWSConfig
+	case psbc.AzureConfig != nil:
+		driverConfig = psbc.AzureConfig
+	case psbc.GCPConfig != nil:
+		driverConfig = psbc.GCPConfig
+	case psbc.FakeStorageDriverConfig != nil:
+		driverConfig = psbc.FakeStorageDriverConfig
+	default:
+		return nil, errors.New("unknown backend type")
+	}
+
+	return driverConfig, nil
+}
+
 type BackendPersistent struct {
 	Version     string                         `json:"version"`
 	Config      PersistentStorageBackendConfig `json:"config"`
@@ -861,6 +902,7 @@ type BackendPersistent struct {
 	BackendUUID string                         `json:"backendUUID"`
 	Online      bool                           `json:"online"`
 	State       BackendState                   `json:"state"`
+	ConfigRef   string                         `json:"configRef"`
 }
 
 func (b *Backend) ConstructPersistent(ctx context.Context) *BackendPersistent {
@@ -871,6 +913,7 @@ func (b *Backend) ConstructPersistent(ctx context.Context) *BackendPersistent {
 		Online:      b.Online,
 		State:       b.State,
 		BackendUUID: b.BackendUUID,
+		ConfigRef:   b.ConfigRef,
 	}
 	b.Driver.StoreConfig(ctx, &persistentBackend.Config)
 	return persistentBackend
@@ -909,158 +952,79 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 	return string(bytes), err
 }
 
-// ExtractBackendSecrets clones itself (a BackendPersistent struct), builds a map of any secret data it
-// contains (credentials, etc.), clears those fields in the clone, and returns the clone and the map.
-func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPersistent, map[string]string, error) {
+// GetBackendCredentials identifies the storage driver and returns the credentials field name and type (if set)
+func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
+
+	driverConfig, err := p.Config.GetDriverConfig()
+	if err != nil {
+		return "", "", fmt.Errorf("cannot get credentials: %v", err)
+	}
+
+	return driverConfig.GetCredentials()
+}
+
+// ExtractBackendSecrets clones itself (a BackendPersistent struct), identified if the backend is using
+// trident created secret (tbe-<backendUUID>) or user-provided secret (via credentials field),
+// if these valus are same or not and accordingly sets usingTridentSecretName boolean field.
+// From the clone it builds a map of secret data it contains (username, password, etc.),
+// replaces those fields with the correct secret name, and returns the clone,
+// the secret data map (or empty map if using credentials field) and usingTridentSecretName field.
+func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPersistent, map[string]string,
+	bool, error) {
+
+	var secretType string
+	var credentialsFieldSet, usingTridentSecretName bool
 
 	clone, err := copystructure.Copy(*p)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, usingTridentSecretName, err
 	}
 
 	backend, ok := clone.(BackendPersistent)
 	if !ok {
-		return nil, nil, err
+		return nil, nil, usingTridentSecretName, err
 	}
 
-	secretName = fmt.Sprintf("secret:%s", secretName)
-	secretMap := make(map[string]string)
-
-	switch {
-	case backend.Config.OntapConfig != nil:
-		secretMap["ClientPrivateKey"] = backend.Config.OntapConfig.ClientPrivateKey
-		backend.Config.OntapConfig.ClientPrivateKey = secretName
-
-		secretMap["Username"] = backend.Config.OntapConfig.Username
-		secretMap["Password"] = backend.Config.OntapConfig.Password
-		backend.Config.OntapConfig.Username = secretName
-		backend.Config.OntapConfig.Password = secretName
-
-		if backend.Config.OntapConfig.ClientPrivateKey != "" && backend.Config.OntapConfig.Username != "" {
-			log.Warn("Defaulting to certificate authentication, " +
-				"it is not advised to have both certificate/key and username/password in backend file.")
+	// Check if user-provided credentials field is set
+	if backendSecretName, backendSecretType, err := p.GetBackendCredentials(); err != nil {
+		log.Errorf("Could not determined if backend credentials field exist; %v", err)
+		return nil, nil, usingTridentSecretName, err
+	} else if backendSecretName != "" {
+		if backendSecretName == secretName {
+			usingTridentSecretName = true
 		}
 
-		// CHAP settings
-		if p.Config.OntapConfig.UseCHAP {
-			secretMap["ChapUsername"] = backend.Config.OntapConfig.ChapUsername
-			secretMap["ChapInitiatorSecret"] = backend.Config.OntapConfig.ChapInitiatorSecret
-			secretMap["ChapTargetUsername"] = backend.Config.OntapConfig.ChapTargetUsername
-			secretMap["ChapTargetInitiatorSecret"] = backend.Config.OntapConfig.ChapTargetInitiatorSecret
-			backend.Config.OntapConfig.ChapUsername = secretName
-			backend.Config.OntapConfig.ChapInitiatorSecret = secretName
-			backend.Config.OntapConfig.ChapTargetUsername = secretName
-			backend.Config.OntapConfig.ChapTargetInitiatorSecret = secretName
-		}
-	case p.Config.SolidfireConfig != nil:
-		secretMap["EndPoint"] = backend.Config.SolidfireConfig.EndPoint
-		backend.Config.SolidfireConfig.EndPoint = secretName
-	case p.Config.EseriesConfig != nil:
-		secretMap["Username"] = backend.Config.EseriesConfig.Username
-		secretMap["Password"] = backend.Config.EseriesConfig.Password
-		secretMap["PasswordArray"] = backend.Config.EseriesConfig.PasswordArray
-		backend.Config.EseriesConfig.Username = secretName
-		backend.Config.EseriesConfig.Password = secretName
-		backend.Config.EseriesConfig.PasswordArray = secretName
-	case p.Config.AWSConfig != nil:
-		secretMap["APIKey"] = backend.Config.AWSConfig.APIKey
-		secretMap["SecretKey"] = backend.Config.AWSConfig.SecretKey
-		backend.Config.AWSConfig.APIKey = secretName
-		backend.Config.AWSConfig.SecretKey = secretName
-	case p.Config.AzureConfig != nil:
-		secretMap["ClientID"] = backend.Config.AzureConfig.ClientID
-		secretMap["ClientSecret"] = backend.Config.AzureConfig.ClientSecret
-		backend.Config.AzureConfig.ClientID = secretName
-		backend.Config.AzureConfig.ClientSecret = secretName
-	case p.Config.GCPConfig != nil:
-		secretMap["Private_Key"] = backend.Config.GCPConfig.APIKey.PrivateKey
-		secretMap["Private_Key_ID"] = backend.Config.GCPConfig.APIKey.PrivateKeyID
-		backend.Config.GCPConfig.APIKey.PrivateKey = secretName
-		backend.Config.GCPConfig.APIKey.PrivateKeyID = secretName
-	case p.Config.FakeStorageDriverConfig != nil:
-		// Nothing to do
-	default:
-		return nil, nil, errors.New("cannot extract secrets, unknown backend type")
+		secretName = backendSecretName
+		secretType = backendSecretType
+		credentialsFieldSet = true
 	}
 
-	return &backend, secretMap, nil
+	if secretType == "" {
+		secretType = "secret"
+	}
+
+	secretName = fmt.Sprintf("%s:%s", secretType, secretName)
+
+	driverConfig, err := backend.Config.GetDriverConfig()
+	if err != nil {
+		return nil, nil, usingTridentSecretName, fmt.Errorf("cannot extract secrets: %v", err)
+	}
+
+	secretMap := driverConfig.GetAndHideSensitive(secretName)
+
+	if credentialsFieldSet {
+		return &backend, nil, usingTridentSecretName, nil
+	}
+
+	return &backend, secretMap, usingTridentSecretName, nil
 }
 
 func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) error {
 
-	makeError := func(fieldName string) error {
-		return fmt.Errorf("%s field missing from backend secrets", fieldName)
+	driverConfig, err := p.Config.GetDriverConfig()
+	if err != nil {
+		return fmt.Errorf("cannot inject secrets: %v", err)
 	}
 
-	var ok bool
-
-	switch {
-	case p.Config.OntapConfig != nil:
-		// Check key first
-		if p.Config.OntapConfig.ClientPrivateKey, ok = secretMap["ClientPrivateKey"]; !ok || p.Config.OntapConfig.
-			ClientPrivateKey == "" {
-			if p.Config.OntapConfig.Username, ok = secretMap["Username"]; !ok {
-				return makeError("Username or ClientPrivateKey")
-			}
-			if p.Config.OntapConfig.Password, ok = secretMap["Password"]; !ok {
-				return makeError("Password")
-			}
-		}
-		// CHAP settings
-		if p.Config.OntapConfig.UseCHAP {
-			if p.Config.OntapConfig.ChapUsername, ok = secretMap["ChapUsername"]; !ok {
-				return makeError("ChapUsername")
-			}
-			if p.Config.OntapConfig.ChapInitiatorSecret, ok = secretMap["ChapInitiatorSecret"]; !ok {
-				return makeError("ChapInitiatorSecret")
-			}
-			if p.Config.OntapConfig.ChapTargetUsername, ok = secretMap["ChapTargetUsername"]; !ok {
-				return makeError("ChapTargetUsername")
-			}
-			if p.Config.OntapConfig.ChapTargetInitiatorSecret, ok = secretMap["ChapTargetInitiatorSecret"]; !ok {
-				return makeError("ChapTargetInitiatorSecret")
-			}
-		}
-	case p.Config.SolidfireConfig != nil:
-		if p.Config.SolidfireConfig.EndPoint, ok = secretMap["EndPoint"]; !ok {
-			return makeError("EndPoint")
-		}
-	case p.Config.EseriesConfig != nil:
-		if p.Config.EseriesConfig.Username, ok = secretMap["Username"]; !ok {
-			return makeError("Username")
-		}
-		if p.Config.EseriesConfig.Password, ok = secretMap["Password"]; !ok {
-			return makeError("Password")
-		}
-		if p.Config.EseriesConfig.PasswordArray, ok = secretMap["PasswordArray"]; !ok {
-			return makeError("PasswordArray")
-		}
-	case p.Config.AWSConfig != nil:
-		if p.Config.AWSConfig.APIKey, ok = secretMap["APIKey"]; !ok {
-			return makeError("APIKey")
-		}
-		if p.Config.AWSConfig.SecretKey, ok = secretMap["SecretKey"]; !ok {
-			return makeError("SecretKey")
-		}
-	case p.Config.AzureConfig != nil:
-		if p.Config.AzureConfig.ClientID, ok = secretMap["ClientID"]; !ok {
-			return makeError("ClientID")
-		}
-		if p.Config.AzureConfig.ClientSecret, ok = secretMap["ClientSecret"]; !ok {
-			return makeError("ClientSecret")
-		}
-	case p.Config.GCPConfig != nil:
-		if p.Config.GCPConfig.APIKey.PrivateKey, ok = secretMap["Private_Key"]; !ok {
-			return makeError("Private_Key")
-		}
-		if p.Config.GCPConfig.APIKey.PrivateKeyID, ok = secretMap["Private_Key_ID"]; !ok {
-			return makeError("Private_Key_ID")
-		}
-	case p.Config.FakeStorageDriverConfig != nil:
-		// Nothing to do
-	default:
-		return errors.New("cannot inject secrets, unknown backend type")
-	}
-
-	return nil
+	return driverConfig.InjectSecrets(secretMap)
 }

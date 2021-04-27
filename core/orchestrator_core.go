@@ -173,6 +173,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			"persistentBackend.BackendUUID": b.BackendUUID,
 			"persistentBackend.online":      b.Online,
 			"persistentBackend.state":       b.State,
+			"persistentBackend.configRef":   b.ConfigRef,
 			"handler":                       "Bootstrap",
 		}).Debug("Processing backend.")
 
@@ -182,7 +183,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			return err
 		}
 
-		newBackendExternal, backendErr := o.addBackend(ctx, serializedConfig, b.BackendUUID)
+		newBackendExternal, backendErr := o.addBackend(ctx, serializedConfig, b.BackendUUID, b.ConfigRef)
 		if backendErr == nil {
 			newBackendExternal.BackendUUID = b.BackendUUID
 		} else {
@@ -203,8 +204,9 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			Logc(ctx).WithFields(errorLogFields).Warn("Problem adding backend.")
 
 			if newBackendExternal != nil {
-				newBackend, _ := factory.NewStorageBackendForConfig(ctx, serializedConfig, b.BackendUUID)
+				newBackend, _ := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, b.BackendUUID)
 				newBackend.BackendUUID = b.BackendUUID
+				newBackend.ConfigRef = b.ConfigRef
 				newBackend.Name = b.Name
 				newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
 				o.backends[newBackendExternal.BackendUUID] = newBackend
@@ -236,6 +238,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			Logc(ctx).WithFields(log.Fields{
 				"backend":                        newBackend.Name,
 				"backendUUID":                    newBackend.BackendUUID,
+				"configRef":                      newBackend.ConfigRef,
 				"persistentBackends.BackendUUID": b.BackendUUID,
 				"online":                         newBackend.Online,
 				"state":                          newBackend.State,
@@ -801,7 +804,7 @@ func (o *TridentOrchestrator) GetVersion(context.Context) (string, error) {
 }
 
 // AddBackend handles creation of a new storage backend
-func (o *TridentOrchestrator) AddBackend(ctx context.Context, configJSON string) (
+func (o *TridentOrchestrator) AddBackend(ctx context.Context, configJSON, configRef string) (
 	backendExternal *storage.BackendExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -813,7 +816,7 @@ func (o *TridentOrchestrator) AddBackend(ctx context.Context, configJSON string)
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	backend, err := o.addBackend(ctx, configJSON, uuid.New().String())
+	backend, err := o.addBackend(ctx, configJSON, uuid.New().String(), configRef)
 	if err != nil {
 		return backend, err
 	}
@@ -833,7 +836,7 @@ func (o *TridentOrchestrator) AddBackend(ctx context.Context, configJSON string)
 // addBackend creates a new storage backend. It assumes the mutex lock is
 // already held or not required (e.g., during bootstrapping).
 func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
-	backendUUID string) (backendExternal *storage.BackendExternal, err error) {
+	backendUUID, configRef string) (backendExternal *storage.BackendExternal, err error) {
 
 	var (
 		newBackend = true
@@ -848,15 +851,17 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 		}
 	}()
 
-	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
+	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
 	if backend != nil {
 		backend.BackendUUID = backendUUID
+		backend.ConfigRef = configRef
 	}
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"err":         err.Error(),
 			"backend":     backend,
 			"backendUUID": backendUUID,
+			"configRef":   configRef,
 		}).Debug("NewStorageBackendForConfig failed.")
 
 		if backend != nil && backend.State.IsFailed() {
@@ -870,7 +875,7 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 	if foundBackend != nil {
 		// Let the updateBackend method handle an existing backend
 		newBackend = false
-		return o.updateBackend(ctx, backend.Name, configJSON)
+		return o.updateBackend(ctx, backend.Name, configJSON, configRef)
 	}
 
 	// can we find this backend by name instead of UUID? (if so, it's also an update)
@@ -878,13 +883,37 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 	if foundBackend != nil {
 		// Let the updateBackend method handle an existing backend
 		newBackend = false
-		return o.updateBackend(ctx, backend.Name, configJSON)
+		return o.updateBackend(ctx, backend.Name, configJSON, configRef)
+	}
+
+	if configRef != "" {
+		// can we find this backend by configRef (if so, then something is wrong)
+		foundBackend, _ := o.getBackendByConfigRef(configRef)
+		if foundBackend != nil {
+			// IDEALLY WE SHOULD NOT BE HERE:
+			// If we are here it means that there already exists a backend with the
+			// given configRef but the backendName and backendUUID of that backend
+			// do not match backend.Name or the backend.BackendUUID, this can only
+			// happen with a newly created tbc which failed to updated status
+			// on success and had a name change in the next reconcile loop.
+			Logc(ctx).WithFields(log.Fields{
+				"backendName":    foundBackend.Name,
+				"backendUUID":    foundBackend.BackendUUID,
+				"newBackendName": backend.Name,
+				"newbackendUUID": backend.BackendUUID,
+			}).Debug("Backend found by configRef.")
+
+			// Let the updateBackend method handle an existing backend
+			newBackend = false
+			return o.updateBackend(ctx, foundBackend.Name, configJSON, configRef)
+		}
 	}
 
 	// not found by name OR by UUID, we're adding a new backend
 	Logc(ctx).WithFields(log.Fields{
 		"backend":             backend.Name,
 		"backend.BackendUUID": backend.BackendUUID,
+		"backend.ConfigRef":   backend.ConfigRef,
 	}).Debug("Adding a new backend.")
 	if err = o.updateBackendOnPersistentStore(ctx, backend, true); err != nil {
 		return nil, err
@@ -911,8 +940,45 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 	return backend.ConstructExternal(ctx), nil
 }
 
+// validateAndCreateBackendFromConfig validates config and creates backend based on Config
+func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(ctx context.Context,
+	configJSON string, backendUUID string) (backendExternal *storage.Backend, err error) {
+
+	var backendSecret map[string]string
+
+	commonConfig, configInJSON, err := factory.ValidateCommonSettings(ctx, configJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	// For backends created using CRD Controller ensure there are no forbidden fields
+	if o.isCRDContext(ctx) {
+		if err = factory.SpecOnlyValidation(ctx, commonConfig, configInJSON); err != nil {
+			return nil, utils.UnsupportedConfigError(err)
+		}
+	}
+
+	// If Credentials are set, fetch them and set them in the configJSON matching field names
+	if len(commonConfig.Credentials) != 0 {
+		secretName, _, err := commonConfig.GetCredentials()
+		if err != nil {
+			return nil, err
+		} else if secretName == "" {
+			return nil, fmt.Errorf("credentials `name` field cannot be empty")
+		}
+
+		if backendSecret, err = o.storeClient.GetBackendSecret(ctx, secretName); err != nil {
+			return nil, err
+		} else if backendSecret == nil {
+			return nil, fmt.Errorf("backend credentials not found")
+		}
+	}
+
+	return factory.NewStorageBackendForConfig(ctx, configInJSON, backendUUID, commonConfig, backendSecret)
+}
+
 // UpdateBackend updates an existing backend.
-func (o *TridentOrchestrator) UpdateBackend(ctx context.Context, backendName, configJSON string) (
+func (o *TridentOrchestrator) UpdateBackend(ctx context.Context, backendName, configJSON, configRef string) (
 	backendExternal *storage.BackendExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -924,7 +990,7 @@ func (o *TridentOrchestrator) UpdateBackend(ctx context.Context, backendName, co
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	backend, err := o.updateBackend(ctx, backendName, configJSON)
+	backend, err := o.updateBackend(ctx, backendName, configJSON, configRef)
 	if err != nil {
 		return backend, err
 	}
@@ -942,20 +1008,21 @@ func (o *TridentOrchestrator) UpdateBackend(ctx context.Context, backendName, co
 }
 
 // updateBackend updates an existing backend. It assumes the mutex lock is already held.
-func (o *TridentOrchestrator) updateBackend(ctx context.Context, backendName, configJSON string) (
+func (o *TridentOrchestrator) updateBackend(ctx context.Context, backendName, configJSON, configRef string) (
 	backendExternal *storage.BackendExternal, err error) {
 	backendToUpdate, err := o.getBackendByBackendName(backendName)
 	if err != nil {
 		return nil, err
 	}
 	backendUUID := backendToUpdate.BackendUUID
-	return o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID)
+
+	return o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID, configRef)
 }
 
 // UpdateBackendByBackendUUID updates an existing backend.
 func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
-	ctx context.Context, backendName, configJSON, backendUUID string,
-) (backend *storage.BackendExternal, err error) {
+	ctx context.Context, backendName, configJSON, backendUUID, configRef string) (backend *storage.BackendExternal,
+	err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -966,7 +1033,7 @@ func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	backend, err = o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID)
+	backend, err = o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID, configRef)
 	if err != nil {
 		return backend, err
 	}
@@ -986,7 +1053,7 @@ func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
 // TODO combine this one and the one above
 // updateBackendByBackendUUID updates an existing backend. It assumes the mutex lock is already held.
 func (o *TridentOrchestrator) updateBackendByBackendUUID(
-	ctx context.Context, backendName, configJSON, backendUUID string,
+	ctx context.Context, backendName, configJSON, backendUUID, callingConfigRef string,
 ) (backendExternal *storage.BackendExternal, err error) {
 
 	var (
@@ -1004,8 +1071,50 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	Logc(ctx).WithFields(log.Fields{
 		"originalBackend.Name":        originalBackend.Name,
 		"originalBackend.BackendUUID": originalBackend.BackendUUID,
+		"originalBackend.ConfigRef":   originalBackend.ConfigRef,
 		"GetExternalConfig":           originalBackend.Driver.GetExternalConfig(ctx),
 	}).Debug("found original backend")
+
+	originalConfigRef := originalBackend.ConfigRef
+
+	// Do not allow update of TridentBackendConfig-based backends using tridentctl
+	if originalConfigRef != "" {
+		if !o.isCRDContext(ctx) {
+			Logc(ctx).WithFields(log.Fields{
+				"backendName": backendName,
+				"backendUUID": backendUUID,
+				"configRef":   originalConfigRef,
+			}).Error("Cannot update backend created using TridentBackendConfig CR; please update the" +
+				" TridentBackendConfig CR instead.")
+
+			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; please update" +
+				" the TridentBackendConfig CR", backendName)
+		}
+	}
+
+	// If originalBackend.ConfigRef happens to be empty, we should assign callingConfigRef to
+	// originalBackend.ConfigRef as part of linking legacy tridentctl backend with TridentBackendConfig-based backend
+	if originalConfigRef != callingConfigRef {
+		ctxSource := ctx.Value(ContextKeyRequestSource)
+		if originalConfigRef == "" && ctxSource != nil && ctxSource == ContextSourceCRD {
+			Logc(ctx).WithFields(log.Fields{
+				"backendName":             originalBackend.Name,
+				"backendUUID":             originalBackend.BackendUUID,
+				"originalConfigRef":       originalConfigRef,
+				"TridentBackendConfigUID": callingConfigRef,
+			}).Infof("Backend is not bound to any Trident Backend Config, attempting to bind it.")
+		} else {
+			Logc(ctx).WithFields(log.Fields{
+				"backendName":       originalBackend.Name,
+				"backendUUID":       originalBackend.BackendUUID,
+				"originalConfigRef": originalConfigRef,
+				"invalidConfigRef":  callingConfigRef,
+			}).Errorf("Backend update initiated using an invalid ConfigRef.")
+			return nil, utils.UnsupportedConfigError(fmt.Errorf(
+				"backend '%v' update initiated using an invalid configRef, it is associated with configRef " +
+				"'%v' and not '%v'", originalBackend.Name, originalConfigRef, callingConfigRef))
+		}
+	}
 
 	defer func() {
 		Logc(ctx).WithFields(logFields).Debug("<<<<<< updateBackendByBackendUUID")
@@ -1017,11 +1126,12 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	Logc(ctx).WithFields(logFields).Debug(">>>>>> updateBackendByBackendUUID")
 
 	// Second, validate the update.
-	backend, err = factory.NewStorageBackendForConfig(ctx, configJSON, backendUUID)
+	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
 	if err != nil {
 		return nil, err
 	}
 	backend.BackendUUID = backendUUID
+	backend.ConfigRef = callingConfigRef
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}
@@ -1076,7 +1186,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 			return nil, err
 		}
 	case updateCode.Contains(storage.PrefixChange):
-		err := errors.New("updating the storage prefix isn't currently supported")
+		err := utils.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	default:
@@ -1242,6 +1352,15 @@ func (o *TridentOrchestrator) getBackendByBackendName(backendName string) (*stor
 	return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 }
 
+func (o *TridentOrchestrator) getBackendByConfigRef(configRef string) (*storage.Backend, error) {
+	for _, b := range o.backends {
+		if b.ConfigRef == configRef {
+			return b, nil
+		}
+	}
+	return nil, utils.NotFoundError(fmt.Sprintf("backend based on configRef '%v' was not found", configRef))
+}
+
 func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (*storage.Backend, error) {
 	backend := o.backends[backendUUID]
 	if backend != nil {
@@ -1385,6 +1504,21 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 		return utils.NotFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
 
+	// Do not allow deletion of TridentBackendConfig-based backends using tridentctl
+	if backend.ConfigRef != "" {
+		if !o.isCRDContext(ctx) {
+			Logc(ctx).WithFields(log.Fields{
+				"backendName": backendName,
+				"backendUUID": backendUUID,
+				"configRef":   backend.ConfigRef,
+			}).Error("Cannot delete backend created using TridentBackendConfig CR; delete the TridentBackendConfig" +
+				" CR first.")
+
+			return fmt.Errorf("cannot delete backend '%v' created using TridentBackendConfig CR; delete the" +
+				" TridentBackendConfig CR first", backendName)
+		}
+	}
+
 	backend.Online = false // TODO eventually remove
 	backend.State = storage.Deleting
 	storageClasses := make(map[string]*storageclass.StorageClass)
@@ -1410,6 +1544,31 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 	}).Debug("OfflineBackend information.")
 
 	return o.storeClient.UpdateBackend(ctx, backend)
+}
+
+// RemoveBackendConfigRef sets backend configRef to empty and updates it.
+func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error) {
+	defer recordTiming("backend_update", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	var b *storage.Backend
+	if b, err = o.getBackendByBackendUUID(backendUUID); err != nil {
+		return utils.NotFoundError(fmt.Sprintf("backend with UUID '%s' not found", backendUUID))
+	}
+
+	if b.ConfigRef != "" {
+		if b.ConfigRef != configRef {
+			return fmt.Errorf("TridentBackendConfig with UID '%s' cannot request removal of configRef '%s' for backend"+
+				" with UUID '%s'", configRef, b.ConfigRef, backendUUID)
+		}
+
+		b.ConfigRef = ""
+	}
+
+	return o.storeClient.UpdateBackend(ctx, b)
 }
 
 func (o *TridentOrchestrator) AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (
@@ -3904,6 +4063,7 @@ func (o *TridentOrchestrator) updateBackendOnPersistentStore(
 			Logc(ctx).WithFields(log.Fields{
 				"backend":             backend.Name,
 				"backend.BackendUUID": backend.BackendUUID,
+				"backend.ConfigRef":   backend.ConfigRef,
 			}).Debug("Updating an existing backend.")
 			err = o.storeClient.UpdateBackend(ctx, backend)
 		}
@@ -3935,4 +4095,9 @@ func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
 		"oldBackendName": origBackend.Name,
 	}).Debug("Renaming a backend and updating volumes.")
 	return o.storeClient.ReplaceBackendAndUpdateVolumes(ctx, origBackend, newBackend)
+}
+
+func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
+	ctxSource := ctx.Value(ContextKeyRequestSource)
+	return ctxSource != nil && ctxSource == ContextSourceCRD
 }

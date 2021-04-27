@@ -80,7 +80,7 @@ func (d *SANStorageDriver) Protocol() string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here
@@ -101,6 +101,15 @@ func (d *SANStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err := config.InjectSecrets(backendSecret)
+		if err != nil {
+			return fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
+	}
+
 	d.Config = *config
 
 	// Apply config defaults
@@ -1238,9 +1247,10 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.Username = "<REDACTED>"      // redact the username
-	cloneConfig.Password = "<REDACTED>"      // redact the password
-	cloneConfig.PasswordArray = "<REDACTED>" // redact the password
+	cloneConfig.Username = drivers.REDACTED      // redact the username
+	cloneConfig.Password = drivers.REDACTED      // redact the password
+	cloneConfig.PasswordArray = drivers.REDACTED // redact the password
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }
 
@@ -1398,6 +1408,10 @@ func (d *SANStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 		bitmap.Add(storage.UsernameChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
 		bitmap.Add(storage.PrefixChange)
 	}
@@ -1494,4 +1508,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 	}
 
 	return nil
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

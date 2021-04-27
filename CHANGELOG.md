@@ -16,6 +16,7 @@
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
 - Added snapshotDir parameter to Azure NetApp Files backend definition.
 - **Kubernetes:** Added support for Kubernetes 1.21.
+- **Kubernetes:** Added support for Trident backend creation using Kubectl.
 
 ## Changes since v20.10.0
 

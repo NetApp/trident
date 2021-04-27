@@ -237,21 +237,27 @@ func (k *CRDClientV1) addBackendPersistent(ctx context.Context, backendPersisten
 	if backendPersistent.BackendUUID == "" {
 		return fmt.Errorf("backend %s does not have a UUID set", backendPersistent.Name)
 	}
+
 	secretName := k.backendSecretName(backendPersistent.BackendUUID)
 
-	// In the unlikely event a secret already exists for this new backend, delete it
-	if secretExists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
-		return err
-	} else if secretExists {
-		if err = k.k8sClient.DeleteSecretDefault(secretName); err != nil {
-			return err
-		}
-	}
-
 	// Extract sensitive info to a map
-	redactedBackendPersistent, secretMap, err := backendPersistent.ExtractBackendSecrets(secretName)
+	redactedBackendPersistent, secretMap, _, err := backendPersistent.ExtractBackendSecrets(secretName)
 	if err != nil {
 		return err
+	}
+
+	// secretMap should be empty if Credentials field exists, Trident should create Secrets instead
+	credentialsFieldNotSet := secretMap != nil
+
+	if credentialsFieldNotSet {
+		// In the unlikely event a secret already exists for this new backend, delete it
+		if secretExists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
+			return err
+		} else if secretExists {
+			if err = k.k8sClient.DeleteSecretDefault(secretName); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Create the backend resource struct
@@ -271,23 +277,25 @@ func (k *CRDClientV1) addBackendPersistent(ctx context.Context, backendPersisten
 		"backend":     crd.Name,
 	}).Debug("Created backend resource.")
 
-	// Create a secret containing the sensitive info
-	secret := k.makeBackendSecret(secretName, crd, secretMap)
+	if credentialsFieldNotSet {
+		// Create a secret containing the sensitive info
+		secret := k.makeBackendSecret(secretName, crd, secretMap)
 
-	if _, err = k.k8sClient.CreateSecret(secret); err != nil {
-		Logc(ctx).WithField("secret", secretName).Error("Could not create backend secret, will delete backend resource.")
+		if _, err = k.k8sClient.CreateSecret(secret); err != nil {
+			Logc(ctx).WithField("secret", secretName).Error("Could not create backend secret, will delete backend resource.")
 
-		// If secret creation failed, clean up by deleting the backend we just created
-		deleteErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, crd.Name, k.deleteOpts())
-		if deleteErr != nil {
-			Logc(ctx).WithField("backend", crd.Name).Error("Could not delete backend resource after secret create failure.")
-		} else {
-			Logc(ctx).WithField("backend", crd.Name).Warning("Deleted backend resource after secret create failure.")
+			// If secret creation failed, clean up by deleting the backend we just created
+			deleteErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, crd.Name, k.deleteOpts())
+			if deleteErr != nil {
+				Logc(ctx).WithField("backend", crd.Name).Error("Could not delete backend resource after secret create failure.")
+			} else {
+				Logc(ctx).WithField("backend", crd.Name).Warning("Deleted backend resource after secret create failure.")
+			}
+
+			return err
 		}
-
-		return err
+		Logc(ctx).WithField("secret", secretName).Debug("Created backend secret.")
 	}
-	Logc(ctx).WithField("secret", secretName).Debug("Created backend secret.")
 
 	return nil
 }
@@ -425,35 +433,28 @@ func (k *CRDClientV1) addSecretToBackend(
 		"handler":                       "Bootstrap",
 	}
 
-	secretName := k.backendSecretName(backendPersistent.BackendUUID)
+	var secretName string
+	var err error
+
+	// Check if user-provided credentials are in use
+	if secretName, _, err = backendPersistent.GetBackendCredentials(); err != nil {
+		Logc(ctx).WithFields(logFields).Errorf("Could determined if credentials field exist; %v", err)
+		return nil, err
+	} else if secretName == "" {
+		// Credentials field not set, use the default backend secret name
+		secretName = k.backendSecretName(backendPersistent.BackendUUID)
+	}
 
 	// Before retrieving the secret, ensure it exists.  If we find the secret does not exist, we
 	// log a warning but return the backend object unmodified so that Trident can bootstrap itself
 	// normally (albeit with the backend in a failed state due to missing credentials).
-	if exists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
-		Logc(ctx).WithFields(logFields).Errorf("Could not check for backend secret; %v", err)
+	secretMap, err := k.GetBackendSecret(ctx, secretName)
+	if err != nil {
 		return nil, err
-	} else if !exists {
-		Logc(ctx).WithFields(logFields).Warnf("Backend must be updated because its secret does not exist.")
+	} else if secretMap == nil {
 		return backendPersistent, nil
 	}
 
-	// Get the secret containing the backend's sensitive info
-	secret, err := k.k8sClient.GetSecret(secretName)
-	if err != nil {
-		Logc(ctx).WithFields(logFields).Errorf("Could not get backend secret; %v", err)
-		return nil, err
-	}
-
-	// Decode secret data into map.  The fake client returns only StringData while the real
-	// API returns only Data, so we must use both here to support the unit tests.
-	secretMap := make(map[string]string)
-	for key, value := range secret.Data {
-		secretMap[key] = string(value)
-	}
-	for key, value := range secret.StringData {
-		secretMap[key] = value
-	}
 	// Set all sensitive fields on the backend
 	if err := backendPersistent.InjectBackendSecrets(secretMap); err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("Could not inject backend secrets; %v", err)
@@ -461,6 +462,44 @@ func (k *CRDClientV1) addSecretToBackend(
 	}
 
 	return backendPersistent, nil
+}
+
+// GetBackendSecret accepts a secret name and retrieves the corresponding secret
+// containing any sensitive data.
+func (k *CRDClientV1) GetBackendSecret(ctx context.Context, secretName string) (map[string]string, error) {
+
+	// Before retrieving the secret, ensure it exists.  If we find the secret does not exist, we
+	// log a warning.
+	if exists, err := k.k8sClient.CheckSecretExists(secretName); err != nil {
+		Logc(ctx).Errorf("Could not check for backend secret; %v", err)
+		return nil, err
+	} else if !exists {
+		Logc(ctx).Warnf("Backend must be updated because its secret does not exist.")
+		return nil, nil
+	}
+
+	// Get the secret containing the backend's sensitive info
+	secret, err := k.k8sClient.GetSecret(secretName)
+	if err != nil {
+		Logc(ctx).Errorf("Could not get backend secret; %v", err)
+		return nil, err
+	}
+
+	// Decode secret data into map.  The fake client returns only StringData while the real
+	// API returns only Data, so we must use both here to support the unit tests.
+	// Also users can use different cases when providing the secret, so it is better
+	// to store them in a uniform manner and later on rely on same case to read them
+	secretMap := make(map[string]string)
+	for key, value := range secret.Data {
+		secretMap[strings.ToLower(key)] = string(value)
+	}
+	for key, value := range secret.StringData {
+		secretMap[strings.ToLower(key)] = value
+	}
+
+	Logc(ctx).Debugf("Retrieved backend secret.")
+
+	return secretMap, nil
 }
 
 // UpdateBackend uses a Backend object to update a backend's persistent state
@@ -504,7 +543,8 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 	origCRDCopy := crd.DeepCopy()
 
 	// Extract sensitive info to a map for storage in a secret
-	redactedBackendPersistent, secretMap, err := backendPersistent.ExtractBackendSecrets(secretName)
+	redactedBackendPersistent, secretMap, usingTridentSecretName, err := backendPersistent.ExtractBackendSecrets(
+		secretName)
 	if err != nil {
 		return err
 	}
@@ -525,71 +565,87 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 		"backend":     crd.Name,
 	}).Debug("Updated backend resource.")
 
-	// Check if the secret exists, so we can update or create it as needed
-	secretExists, err := k.k8sClient.CheckSecretExists(secretName)
-	if err != nil {
-		return err
-	}
+	// secretMap should be empty if Credentials field exists, Trident should update Secrets instead
+	credentialsFieldNotSet := secretMap != nil
 
-	var secretError error
-	var secret *corev1.Secret
-
-	if !secretExists {
-
-		// Create a secret containing the backend's sensitive info
-		secret = k.makeBackendSecret(secretName, crd, secretMap)
-
-		if _, secretError = k.k8sClient.CreateSecret(secret); secretError != nil {
-			Logc(ctx).WithFields(log.Fields{
-				"secret": secretName,
-				"error":  secretError,
-			}).Error("Could not create backend secret, will unroll backend update.")
+	if credentialsFieldNotSet {
+		// Check if the secret exists, so we can update or create it as needed
+		secretExists, err := k.k8sClient.CheckSecretExists(secretName)
+		if err != nil {
+			return err
 		}
 
-	} else {
+		var secretError error
+		var secret *corev1.Secret
 
-		// Get the secret that we will update
-		secret, secretError = k.k8sClient.GetSecret(secretName)
+		if !secretExists {
 
-		if secretError != nil {
+			// Create a secret containing the backend's sensitive info
+			secret = k.makeBackendSecret(secretName, crd, secretMap)
 
-			// No need update if the get failed, so skip to the backend rollback
-			Logc(ctx).WithFields(log.Fields{
-				"secret": secretName,
-				"error":  secretError,
-			}).Error("Could not get backend secret, will unroll backend update.")
-
-		} else {
-
-			// Copy the backend's sensitive info into the secret
-			secret.StringData = secretMap
-
-			// Update the secret
-			if _, secretError = k.k8sClient.UpdateSecret(secret); secretError != nil {
-
+			if _, secretError = k.k8sClient.CreateSecret(secret); secretError != nil {
 				Logc(ctx).WithFields(log.Fields{
 					"secret": secretName,
 					"error":  secretError,
-				}).Error("Could not update backend secret, will unroll backend update.")
+				}).Error("Could not create backend secret, will unroll backend update.")
+			}
+
+		} else {
+
+			// Get the secret that we will update
+			secret, secretError = k.k8sClient.GetSecret(secretName)
+
+			if secretError != nil {
+
+				// No need update if the get failed, so skip to the backend rollback
+				Logc(ctx).WithFields(log.Fields{
+					"secret": secretName,
+					"error":  secretError,
+				}).Error("Could not get backend secret, will unroll backend update.")
+
+			} else {
+
+				// Copy the backend's sensitive info into the secret
+				secret.StringData = secretMap
+
+				// Update the secret
+				if _, secretError = k.k8sClient.UpdateSecret(secret); secretError != nil {
+
+					Logc(ctx).WithFields(log.Fields{
+						"secret": secretName,
+						"error":  secretError,
+					}).Error("Could not update backend secret, will unroll backend update.")
+				}
+			}
+		}
+
+		// If anything went wrong with the secret, unroll the backend update.
+		if secretError != nil {
+
+			// If the secret update failed, unroll the backend update
+			_, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(ctx, origCRDCopy, updateOpts)
+			if updateErr != nil {
+				Logc(ctx).WithField("backend", crd.Name).Error("Could not restore backend after secret update failure.")
+			} else {
+				Logc(ctx).WithField("backend", crd.Name).Warning("Restored backend after secret update failure.")
+			}
+
+			return err
+		}
+
+		Logc(ctx).WithField("secret", secretName).Debug("Updated backend secret.")
+	} else {
+		// Do not delete secret if user provided the default tbe-<backendUUID> secret
+		if !usingTridentSecretName {
+			// If backend has been changed to use credentials field,
+			// then attempt to delete the default tbe-<backendUUID> secret
+			if secretExists, err := k.k8sClient.CheckSecretExists(secretName); err == nil && secretExists {
+				if err := k.k8sClient.DeleteSecretDefault(secretName); err == nil {
+					Logc(ctx).WithField("secret", secretName).Debug("Deleted old backend secret.")
+				}
 			}
 		}
 	}
-
-	// If anything went wrong with the secret, unroll the backend update.
-	if secretError != nil {
-
-		// If the secret update failed, unroll the backend update
-		_, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(ctx, origCRDCopy, updateOpts)
-		if updateErr != nil {
-			Logc(ctx).WithField("backend", crd.Name).Error("Could not restore backend after secret update failure.")
-		} else {
-			Logc(ctx).WithField("backend", crd.Name).Warning("Restored backend after secret update failure.")
-		}
-
-		return err
-	}
-
-	Logc(ctx).WithField("secret", secretName).Debug("Updated backend secret.")
 
 	return nil
 }
@@ -638,12 +694,14 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) (er
 		}
 	}()
 
-	// Delete the secret
-	secretName := k.backendSecretName(b.BackendUUID)
-	if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
-		return err
+	// Delete the secret if created by Trident
+	if !b.IsCredentialsFieldSet(ctx) {
+		secretName := k.backendSecretName(b.BackendUUID)
+		if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
+			return err
+		}
+		Logc(ctx).WithField("secret", secretName).Debug("Deleted backend secret.")
 	}
-	Logc(ctx).WithField("secret", secretName).Debug("Deleted backend secret.")
 
 	return nil
 }
@@ -827,21 +885,28 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 	}
 	secretName := k.backendSecretName(origCRD.BackendUUID)
 
-	// Get the secret that we will update
-	secret, err := k.k8sClient.GetSecret(secretName)
-	if err != nil {
-		return err
-	}
-
 	// Get the persistent form of the new backend so we can update the resource with it
 	newBackendPersistent := newBackend.ConstructPersistent(ctx)
 
 	// Extract sensitive info to a map and write it to the secret
-	redactedNewBackendPersistent, secretMap, err := newBackendPersistent.ExtractBackendSecrets(secretName)
+	redactedNewBackendPersistent, secretMap, usingTridentSecretName, err := newBackendPersistent.ExtractBackendSecrets(
+		secretName)
 	if err != nil {
 		return err
 	}
-	secret.StringData = secretMap
+
+	// secretMap should be empty if Credentials field exists, Trident should create Secrets instead
+	credentialsFieldNotSet := secretMap != nil
+
+	var secret *corev1.Secret
+	if credentialsFieldNotSet {
+		// Get the secret that we will update
+		secret, err = k.k8sClient.GetSecret(secretName)
+		if err != nil {
+			return err
+		}
+		secret.StringData = secretMap
+	}
 
 	// Update the backend resource struct
 	if err = origCRD.Apply(ctx, redactedNewBackendPersistent); err != nil {
@@ -861,22 +926,35 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 		"backend":     newCRD.Name,
 	}).Debug("Replaced backend resource.")
 
-	// Update the secret
-	if _, err := k.k8sClient.UpdateSecret(secret); err != nil {
+	if credentialsFieldNotSet {
+		// Update the secret
+		if _, err := k.k8sClient.UpdateSecret(secret); err != nil {
 
-		Logc(ctx).WithField("secret", secretName).Error("Could not update backend secret, will unroll backend update.")
+			Logc(ctx).WithField("secret", secretName).Error("Could not update backend secret, will unroll backend update.")
 
-		// If the secret update failed, unroll the backend update
-		_, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(ctx, origCRDCopy, updateOpts)
-		if updateErr != nil {
-			Logc(ctx).WithField("backend", origCRD.Name).Error("Could not restore backend after secret update failure.")
-		} else {
-			Logc(ctx).WithField("backend", origCRD.Name).Warning("Restored backend after secret update failure.")
+			// If the secret update failed, unroll the backend update
+			_, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(ctx, origCRDCopy, updateOpts)
+			if updateErr != nil {
+				Logc(ctx).WithField("backend", origCRD.Name).Error("Could not restore backend after secret update failure.")
+			} else {
+				Logc(ctx).WithField("backend", origCRD.Name).Warning("Restored backend after secret update failure.")
+			}
+
+			return err
 		}
-
-		return err
+		Logc(ctx).WithField("secret", secretName).Debug("Updated backend secret.")
+	} else {
+		// Do not delete secret if user provided the default tbe-<backendUUID> secret
+		if !usingTridentSecretName {
+			// If backend has been changed to use credentials field,
+			// then attempt to delete the default tbe-<backendUUID> secret
+			if secretExists, err := k.k8sClient.CheckSecretExists(secretName); err == nil && secretExists {
+				if err := k.k8sClient.DeleteSecretDefault(secretName); err == nil {
+					Logc(ctx).WithField("secret", secretName).Debug("Deleted old backend secret.")
+				}
+			}
+		}
 	}
-	Logc(ctx).WithField("secret", secretName).Debug("Updated backend secret.")
 
 	return nil
 }

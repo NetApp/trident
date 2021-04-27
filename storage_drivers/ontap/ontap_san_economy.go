@@ -242,7 +242,7 @@ func (d *SANEconomyStorageDriver) FlexvolNamePrefix() string {
 // Initialize from the provided config
 func (d *SANEconomyStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendUUID string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -252,7 +252,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig)
+	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -1720,6 +1720,10 @@ func (d *SANEconomyStorageDriver) GetUpdateType(_ context.Context, driverOrig st
 		bitmap.Add(storage.UsernameChange)
 	}
 
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
 	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
 		bitmap.Add(storage.PrefixChange)
 	}
@@ -1959,4 +1963,9 @@ func (d SANEconomyStorageDriver) String() string {
 // GoString makes SANEconomyStorageDriver satisfy the GoStringer interface.
 func (d SANEconomyStorageDriver) GoString() string {
 	return d.String()
+}
+
+// GetCommonConfig returns driver's CommonConfig
+func (d SANEconomyStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+	return d.Config.CommonStorageDriverConfig
 }

@@ -25,6 +25,50 @@ type TridentCRD interface {
 	RemoveTridentFinalizers()
 }
 
+// TridentBackendConfig defines a Trident backend.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBackendConfig struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for the Trident Backend
+	Spec   TridentBackendConfigSpec   `json:"spec"`
+	Status TridentBackendConfigStatus `json:"status"`
+}
+
+// TridentBackendConfigList is a list of TridentBackend objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentBackendConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentBackendConfig objects
+	Items []*TridentBackendConfig `json:"items"`
+}
+
+// TridentBackendConfigSpec defines the desired state of TridentBackendConfig
+type TridentBackendConfigSpec struct {
+	runtime.RawExtension
+}
+
+// TridentBackendConfigStatus defines the observed state of TridentBackendConfig
+type TridentBackendConfigStatus struct {
+	Message             string                          `json:"message"`
+	BackendInfo         TridentBackendConfigBackendInfo `json:"backendInfo"`
+	DeletionPolicy      string                          `json:"deletionPolicy"`
+	Phase               string                          `json:"phase"`
+	LastOperationStatus string                          `json:"lastOperationStatus"`
+}
+
+type TridentBackendConfigBackendInfo struct {
+	BackendName string `json:"backendName"`
+	BackendUUID string `json:"backendUUID"`
+}
+
 // TridentBackend defines a Trident backend.
 // +genclient
 // +k8s:openapi-gen=true
@@ -45,6 +89,8 @@ type TridentBackend struct {
 	Online bool `json:"online"`
 	// State records the TridentBackend's state
 	State string `json:"state"`
+	// ConfigRef is a reference to the TridentBackendConfig object
+	ConfigRef string `json:"configRef"`
 }
 
 // TridentBackendList is a list of TridentBackend objects.

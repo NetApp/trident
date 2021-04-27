@@ -184,8 +184,8 @@ func CreateCloneNAS(
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
 func InitializeOntapConfig(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig,
-) (*drivers.OntapStorageDriverConfig, error) {
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (*drivers.
+		OntapStorageDriverConfig, error) {
 
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
@@ -202,6 +202,14 @@ func InitializeOntapConfig(
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration: %v", err)
+	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err = config.InjectSecrets(backendSecret)
+		if err != nil {
+			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
 	}
 
 	// Load default config parameters
@@ -2960,14 +2968,16 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	drivers.Clone(ctx, config, &cloneConfig)
 
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
-	cloneConfig.Username = "<REDACTED>"         // redact the username
-	cloneConfig.Password = "<REDACTED>"         // redact the password
-	cloneConfig.ClientPrivateKey = "<REDACTED>" // redact the client private key
-	cloneConfig.ChapInitiatorSecret = "<REDACTED>"
-	cloneConfig.ChapTargetInitiatorSecret = "<REDACTED>"
-	cloneConfig.ChapTargetUsername = "<REDACTED>"
-	cloneConfig.ChapUsername = "<REDACTED>"
 
+	cloneConfig.Username = drivers.REDACTED         // redact the username
+	cloneConfig.Password = drivers.REDACTED         // redact the password
+	cloneConfig.ClientPrivateKey = drivers.REDACTED // redact the client private key
+	cloneConfig.ChapInitiatorSecret = drivers.REDACTED
+	cloneConfig.ChapTargetInitiatorSecret = drivers.REDACTED
+	cloneConfig.ChapTargetUsername = drivers.REDACTED
+	cloneConfig.ChapUsername = drivers.REDACTED
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED,
+		drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }
 

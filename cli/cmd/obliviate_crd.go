@@ -97,6 +97,12 @@ func deleteCRs() error {
 		return err
 	}
 
+	// deleting backend config before backends is desirable, do not want backend deletion without
+	// the backendconfig deletion to trigger another backend creation
+	if err := deleteBackendConfigs(); err != nil {
+		return err
+	}
+
 	if err := deleteBackends(); err != nil {
 		return err
 	}
@@ -229,6 +235,64 @@ func deleteBackends() error {
 
 		deleteFunc := crdClientset.TridentV1().TridentBackends(resetNamespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), backend.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	log.WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteBackendConfigs() error {
+
+	crd := "tridentbackendconfigs.trident.netapp.io"
+	logFields := log.Fields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := kubeClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		log.WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	backendConfigs, err := crdClientset.TridentV1().TridentBackendConfigs(resetNamespace).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(backendConfigs.Items) == 0 {
+		log.WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, backendConfig := range backendConfigs.Items {
+		if backendConfig.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentBackendConfigs(resetNamespace).Delete(ctx(), backendConfig.Name,
+				deleteOpts)
+		}
+	}
+
+	backendConfigs, err = crdClientset.TridentV1().TridentBackendConfigs(resetNamespace).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, backendConfig := range backendConfigs.Items {
+		if backendConfig.HasTridentFinalizers() {
+			crCopy := backendConfig.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentBackendConfigs(resetNamespace).Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				log.Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentBackendConfigs(resetNamespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), backendConfig.Name, nil); err != nil {
 			log.Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -527,6 +591,7 @@ func deleteCRDs() error {
 
 	crdNames := []string{
 		"tridentversions.trident.netapp.io",
+		"tridentbackendconfigs.trident.netapp.io",
 		"tridentbackends.trident.netapp.io",
 		"tridentstorageclasses.trident.netapp.io",
 		"tridentvolumes.trident.netapp.io",

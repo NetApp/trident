@@ -35,7 +35,14 @@ func TestInitializeRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to marshal ONTAP config:  ", err)
 	}
-	_, err = NewStorageBackendForConfig(context.Background(), string(marshaledJSON), uuid.New().String())
+
+	commonConfig, configInJSON, err := ValidateCommonSettings(context.Background(), string(marshaledJSON))
+	if err != nil {
+		t.Error("Failed to validate settings for invalid configuration.")
+	}
+
+	_, err = NewStorageBackendForConfig(context.Background(), configInJSON, uuid.New().String(),
+		commonConfig, nil)
 	if err == nil {
 		t.Error("Failed to get error for invalid configuration.")
 	}
