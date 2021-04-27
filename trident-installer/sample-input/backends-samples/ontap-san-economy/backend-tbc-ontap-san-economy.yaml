@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-ontap-san-eco-secret
+type: Opaque
+stringData:
+  username: cluster-admin
+  password: password
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-san-eco
+spec:
+  version: 1
+  storageDriverName: ontap-san-economy
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  svm: trident_svm_eco
+  credentials: 
+    name: backend-tbc-ontap-san-eco-secret

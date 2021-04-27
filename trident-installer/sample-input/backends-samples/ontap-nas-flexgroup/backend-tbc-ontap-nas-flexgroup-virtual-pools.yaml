@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-ontap-nas-flexgroup-vp-secret
+type: Opaque
+stringData:
+  username: vsadmin
+  password: password
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-nas-flexgroup-vp
+spec:
+  version: 1
+  storageDriverName: ontap-nas-flexgroup
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  backendName: tbc-ontap-nas-flexgroup-vp
+  svm: trident_svm
+  credentials:
+    name: backend-tbc-ontap-nas-flexgroup-vp-secret
+  defaults:
+    spaceReserve: none
+    encryption: 'false'
+  labels:
+    store: flexgroup_store
+  region: us_east_1
+  storage:
+  - labels:
+      protection: gold
+      points: '50000'
+    zone: us_east_1a
+    defaults:
+      spaceReserve: volume
+      encryption: 'true'
+      unixPermissions: '0755'
+  - labels:
+      protection: gold
+      points: '30000'
+    zone: us_east_1b
+    defaults:
+      spaceReserve: none
+      encryption: 'true'
+      unixPermissions: '0755'
+  - labels:
+      protection: silver
+      points: '20000'
+    zone: us_east_1c
+    defaults:
+      spaceReserve: none
+      encryption: 'true'
+      unixPermissions: '0775'
+  - labels:
+      protection: bronze
+      points: '10000'
+    zone: us_east_1d
+    defaults:
+      spaceReserve: volume
+      encryption: 'false'
+      unixPermissions: '0775'

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-ontap-san-chap-secret
+type: Opaque
+stringData:
+  username: cluster-admin
+  password: password
+  chapInitiatorSecret: cl9qxIm36DKyawxy
+  chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+  chapTargetUsername: iJF4heBRT0TCwxyz
+  chapUsername: uh2aNCLSd6cNwxyz
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-san-chap
+spec:
+  version: 1
+  storageDriverName: ontap-san
+  backendName: tbc-ontap-san-chap
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  svm: trident_svm
+  useCHAP: true
+  credentials: 
+    name: backend-tbc-ontap-san-chap-secret

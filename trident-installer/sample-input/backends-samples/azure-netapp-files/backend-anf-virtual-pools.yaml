@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-anf-vp-secret
+type: Opaque
+stringData:
+  clientID: abcde356-bf8e-fake-c111-abcde35613aa
+  clientSecret: rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-anf-vp
+spec:
+  version: 1
+  storageDriverName: azure-netapp-files
+  subscriptionID: 12abc678-4774-fake-a1b2-a7abcde39312
+  tenantID: a7abcde3-edc1-fake-b111-a7abcde356cf
+  credentials:
+    name: backend-tbc-anf-vp-secret
+  nfsMountOptions: "nfsvers=3"
+  labels:
+    cloud: azure
+  location: eastus
+  storage:
+    - labels:
+        performance: gold
+      serviceLevel: Ultra
+    - labels:
+        performance: silver
+      serviceLevel: Premium
+    - labels:
+        performance: bronze
+      serviceLevel: Standard
+  deletionPolicy: retain

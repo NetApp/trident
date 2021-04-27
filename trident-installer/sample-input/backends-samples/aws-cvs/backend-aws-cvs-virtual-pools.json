@@ -9,8 +9,8 @@
 
   "defaults": {
     "snapshotReserve": "10",
-    "exportRule": "0.0.0.0/0,10.0.0.0/24",
-    "size": "200Gi"
+    "exportRule": "10.0.0.0/24",
+    "size": "1000Gi"
   },
 
   "labels": {"cloud": "aws"},
@@ -21,8 +21,7 @@
       "serviceLevel": "extreme",
       "defaults": {
         "snapshotReserve": "5",
-        "exportRule": "0.0.0.0/0",
-        "size": "100Gi"
+        "exportRule": "0.0.0.0/0"
       }
     },
     {

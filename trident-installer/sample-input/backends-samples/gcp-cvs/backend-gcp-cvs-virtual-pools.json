@@ -20,7 +20,7 @@
 
   "defaults": {
     "snapshotReserve": "10",
-    "exportRule": "0.0.0.0/0,10.0.0.0/24",
+    "exportRule": "10.0.0.0/24",
     "size": "2Ti"
   },
 

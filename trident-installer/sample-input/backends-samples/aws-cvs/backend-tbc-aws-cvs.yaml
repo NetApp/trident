@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-aws-cvs-secret
+type: Opaque
+stringData:
+  apiKey: znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE
+  secretKey: rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-aws-cvs
+spec:
+  version: 1
+  storageDriverName: aws-cvs
+  apiURL: https://cds-aws-bundles.netapp.com:8080/v1
+  apiRegion: us-east-1
+  credentials:
+    name: backend-tbc-aws-cvs-secret

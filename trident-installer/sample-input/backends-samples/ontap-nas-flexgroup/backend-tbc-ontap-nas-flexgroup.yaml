@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-ontap-nas-flexgroup-secret
+type: Opaque
+stringData:
+  username: vsadmin
+  password: password
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-nas-flexgroup
+spec:
+  version: 1
+  storageDriverName: ontap-nas-flexgroup
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  backendName: tbc-ontap-nas-flexgroup
+  svm: trident_svm
+  credentials: 
+    name: backend-tbc-ontap-nas-flexgroup-secret

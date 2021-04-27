@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-solidfire-secret
+type: Opaque
+stringData:
+  EndPoint: https://user:password@10.0.0.1/json-rpc/8.0
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-solidfire
+spec:
+  version: 1
+  storageDriverName: solidfire-san
+  credentials:
+    name: backend-tbc-solidfire-secret
+  SVIP: 10.0.0.1:3260
+  TenantName: trident
+  Types:
+    - Type: Bronze
+      Qos:
+        minIOPS: 1000
+        maxIOPS: 2000
+        burstIOPS: 4000
+    - Type: Silver
+      Qos:
+        minIOPS: 4000
+        maxIOPS: 6000
+        burstIOPS: 8000
+    - Type: Gold
+      Qos:
+        minIOPS: 6000
+        maxIOPS: 8000
+        burstIOPS: 10000

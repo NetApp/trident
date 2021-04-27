@@ -1,7 +1,0 @@
-{
-    "version": "1",
-    "name": "sample",
-    "protocol": "file",
-    "size": "1GB",
-    "storageClass": "silver"
-}
