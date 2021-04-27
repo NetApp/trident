@@ -41,11 +41,6 @@ be used with Trident to retrieve metrics. The blog explains how you
 can run Prometheus as an operator in your Kubernetes cluster and the creation of a
 ServiceMonitor to obtain Trident's metrics.
 
-.. note::
-
-  Metrics that are part of the Trident ``core`` subsystem are deprecated and
-  marked for removal in a later release.
-
 Scraping Trident metrics
 ------------------------
 
