@@ -38,6 +38,7 @@ type Client interface {
 	UpdateBackend(ctx context.Context, b *storage.Backend) error
 	UpdateBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
 	DeleteBackend(ctx context.Context, backend *storage.Backend) error
+	IsBackendDeleting(ctx context.Context, backend *storage.Backend) bool
 	GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error)
 	DeleteBackends(ctx context.Context) error
 	ReplaceBackendAndUpdateVolumes(ctx context.Context, origBackend, newBackend *storage.Backend) error

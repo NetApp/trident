@@ -269,6 +269,10 @@ func (c *PassthroughClient) DeleteBackend(_ context.Context, backend *storage.Ba
 	return nil
 }
 
+func (c *PassthroughClient) IsBackendDeleting(_ context.Context, backend *storage.Backend) bool {
+	return false
+}
+
 // ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
 // reflect the new backend name
 func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(

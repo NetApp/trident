@@ -122,6 +122,10 @@ func (c *InMemoryClient) DeleteBackend(_ context.Context, b *storage.Backend) er
 	return nil
 }
 
+func (c *InMemoryClient) IsBackendDeleting(_ context.Context, b *storage.Backend) bool {
+	return false
+}
+
 // ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
 // reflect the new backend name
 func (c *InMemoryClient) ReplaceBackendAndUpdateVolumes(

@@ -672,9 +672,7 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 
 	switch crd := obj.(type) {
 	case *tridentv1.TridentBackend:
-		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
-			c.removeBackendFinalizers(ctx, crd)
-		}
+		//nothing to do
 	case *tridentv1.TridentNode:
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			c.removeNodeFinalizers(ctx, crd)

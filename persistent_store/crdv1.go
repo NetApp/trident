@@ -596,27 +596,47 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 
 // DeleteBackend accepts a Backend object and deletes the custom resource from Kubernetes along
 // with its corresponding secret.
-func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) error {
+func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) (err error) {
 
-	Logc(ctx).WithFields(log.Fields{
-		"b.Name":        b.Name,
-		"b.BackendUUID": b.BackendUUID,
-	}).Debug("DeleteBackend.")
+	logFields := log.Fields{
+		"backendName":     b.Name,
+		"backendUUID": b.BackendUUID,
+	}
 
-	// Get the CRD that we will delete
-	backend, err := k.getBackendCRD(ctx, b.Name)
+	Logc(ctx).WithFields(logFields).Debug("DeleteBackend.")
+
+	// Get the CR that needs to be deleted
+	var backend *v1.TridentBackend
+	backend, err = k.getBackendCRD(ctx, b.Name)
 	if err != nil {
-		return err
+		if MatchKeyNotFoundErr(err) {
+			keyError := err.(*Error)
+			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No backend to remove.", keyError.Key)
+		} else {
+			Logc(ctx).WithFields(logFields).Errorf("Unable to remove backend: %v", err)
+			return err
+		}
+	} else {
+		logFields["resource"] = backend.Name
+
+		// Delete the backend resource
+		if err := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, backend.Name,
+			k.deleteOpts()); err != nil {
+			return err
+		}
+
+		Logc(ctx).WithFields(logFields).Debug("Deleted backend resource.")
 	}
 
-	// Delete the backend resource
-	if err := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, backend.Name, k.deleteOpts()); err != nil {
-		return err
-	}
-	Logc(ctx).WithFields(log.Fields{
-		"backend":  backend.BackendName,
-		"resource": backend.Name,
-	}).Debug("Deleted backend resource.")
+	// Backend is either deleted or not present, now ensure finalizer is removed
+	defer func() {
+		if finalizerErr := k.removeBackendFinalizer(ctx, b); finalizerErr != nil {
+			finalizerErr = fmt.Errorf("unable to remove backend finalizer: %v", finalizerErr)
+			if err != nil {
+				err = fmt.Errorf("%v; %v", finalizerErr, err)
+			}
+		}
+	}()
 
 	// Delete the secret
 	secretName := k.backendSecretName(b.BackendUUID)
@@ -626,6 +646,76 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) err
 	Logc(ctx).WithField("secret", secretName).Debug("Deleted backend secret.")
 
 	return nil
+}
+
+// removeBackendFinalizer accepts a Backend object and removes the finalizer from the corresponding TridentBackend CR
+func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b *storage.Backend) error {
+
+	logFields := log.Fields{
+		"backendName":     b.Name,
+		"backendUUID": b.BackendUUID,
+	}
+
+	// Get the CRD that we will delete
+	backend, err := k.getBackendCRD(ctx, b.Name)
+	if err != nil {
+		if MatchKeyNotFoundErr(err) {
+			keyError := err.(*Error)
+			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No finalizers to remove.", keyError.Key)
+			return nil
+		} else {
+			Logc(ctx).WithFields(logFields).Errorf("Unable to remove finalizer: %v", err)
+			return err
+		}
+	}
+	logFields["resource"] = backend.Name
+
+	if backend.HasTridentFinalizers() {
+		Logc(ctx).WithFields(logFields).Debug("Has finalizers, removing them.")
+
+		backendCopy := backend.DeepCopy()
+		backendCopy.RemoveTridentFinalizers()
+		if _, err := k.crdClient.TridentV1().TridentBackends(backend.Namespace).Update(ctx, backendCopy,
+			updateOpts); err != nil {
+			Logc(ctx).WithFields(logFields).Errorf("Problem removing finalizers: %v", err)
+			return err
+		}
+	} else {
+		Logc(ctx).WithFields(logFields).Debug("No finalizers to remove.")
+	}
+
+	return nil
+}
+
+// IsBackendDeleting identifies if the backend is a deleting or not based on CR's deletionTimestamp
+func (k *CRDClientV1) IsBackendDeleting(ctx context.Context, b *storage.Backend) bool {
+
+	logFields := log.Fields{
+		"backendName":     b.Name,
+		"backendUUID": b.BackendUUID,
+	}
+
+	// Get the CR that needs to be verified
+	backend, err := k.getBackendCRD(ctx, b.Name)
+	if err != nil {
+		if MatchKeyNotFoundErr(err) {
+			keyError := err.(*Error)
+			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. Backend may not exist", keyError.Key)
+			return false
+		} else {
+			Logc(ctx).WithFields(logFields).Errorf("Unable identify if the backend exists: %v", err)
+			return false
+		}
+	}
+	logFields["resource"] = backend.Name
+
+	// If the backend is deleting return true
+	if !backend.ObjectMeta.DeletionTimestamp.IsZero() {
+		Logc(ctx).WithFields(logFields).Debugf("Backend is deleting.")
+		return true
+	}
+
+	return false
 }
 
 // GetBackends retrieves the list of backends persisted as custom resources and returns them

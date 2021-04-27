@@ -431,13 +431,12 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 			continue
 		}
 
-		if backend.State.IsDeleting() && !backend.HasVolumes() {
+		if !backend.HasVolumes() && (backend.State.IsDeleting() || o.storeClient.IsBackendDeleting(ctx, backend)) {
 			backend.Terminate(ctx)
 			delete(o.backends, backendUUID)
 			err := o.storeClient.DeleteBackend(ctx, backend)
 			if err != nil {
-				return fmt.Errorf("failed to delete empty offline backend %s:"+
-					"%v", backendUUID, err)
+				return fmt.Errorf("failed to delete empty offline/deleting backend %s: %v", backendUUID, err)
 			}
 		}
 	}

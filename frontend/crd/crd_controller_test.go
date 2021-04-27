@@ -345,7 +345,7 @@ func TestCrdController(t *testing.T) {
 	if !crdByName.HasTridentFinalizers() {
 		t.Fatalf("expected CRD to have finalizers")
 	}
-	crdController.removeFinalizers(ctx(), crdByName, true)
+	crdController.removeBackendFinalizers(ctx(), crdByName)
 	// to validate the finalizer removal, we must retrieve it again, after the update
 	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	if getErr != nil {
