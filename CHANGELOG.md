@@ -2,24 +2,28 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.01.0
+## v21.04.0
 
 **Fixes:**
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
-- Fixed a parsing error when iscsiadm listed target portals with a negative group tag
-- Fixed issue where docker plugin could not be upgraded from v19.10 to v21.01 (Issue [#507](https://github.com/NetApp/trident/issues/507))
-- Fixed issue where disabled dataLIFs are picked up by controller during ControllerPublishVolume (Issue [#524](https://github.com/NetApp/trident/issues/524))
+- Fixed a parsing error when iscsiadm listed target portals with a negative group tag  (Issue [#523](https://github.com/NetApp/trident/issues/523)).
+- **Docker:** Fixed issue where Docker plugin could not be upgraded from v19.10 to v21.01 (Issue [#507](https://github.com/NetApp/trident/issues/507)).
+- Fixed issue where disabled data LIFs are picked up by controller during ControllerPublishVolume (Issue [#524](https://github.com/NetApp/trident/issues/524)).
 - Fixed issue where unexpected output in iscsiadm discovery commands may cause target discovery to fail.
+- Fixed issue where ontap-san-economy snapshots could not be restored or deleted with storage prefix (Issue [#461](https://github.com/NetApp/trident/issues/461)).
+- **Kubernetes:** Trident in CSI mode now uses a unique igroup for each ONTAP SAN backend (Issue [437](https://github.com/NetApp/trident/issues/437)).
 
 **Enhancements:**
-- Updated to golang 1.15.
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
-- Added support for smaller scale-optimized CVS volumes in GCP.
+- Added support for smaller (300 GiB) scale-optimized CVS volumes in GCP. Smaller volume support must be enabled in GCP CVS account.
 - Added snapshotDir parameter to Azure NetApp Files backend definition.
+- **Kubernetes:** Added recreate strategy in Trident Operator deployment (Issue [#508](https://github.com/NetApp/trident/issues/508)).
+- **Kubernetes:** Added an images sub-command to tridentctl to display the container images required for a Trident installation on a specific Kubernetes version.
 - **Kubernetes:** Added support for Kubernetes 1.21.
-- **Kubernetes:** Added support for Trident backend creation using Kubectl.
+- **Kubernetes:** Added support for Trident backend creation using kubectl (Issue [#358](https://github.com/NetApp/trident/issues/358)).
+- **Kubernetes:** Added startup, liveness and readiness probes for Trident node pods (Issue [#436](https://github.com/NetApp/trident/issues/436)).
 
-## Changes since v20.10.0
+## v21.01.0
 
 - **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and
                  quay.io/k8scsi otherwise. Private registries are still supported and will be used without any
