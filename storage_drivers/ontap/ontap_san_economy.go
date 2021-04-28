@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -318,7 +318,9 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	if err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID); err != nil {
-		cleanIgroups(ctx, d.API, d.Config.IgroupName)
+		if d.Config.DriverContext == tridentconfig.ContextCSI {
+			cleanIgroups(ctx, d.API, d.Config.IgroupName)
+		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
@@ -342,8 +344,10 @@ func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
 	}
 
-	// clean up igroup for terminated driver
-	cleanIgroups(ctx, d.API, d.Config.IgroupName)
+	if d.Config.DriverContext == tridentconfig.ContextCSI {
+		// clean up igroup for terminated driver
+		cleanIgroups(ctx, d.API, d.Config.IgroupName)
+	}
 
 	if d.Telemetry != nil {
 		d.Telemetry.Stop()
