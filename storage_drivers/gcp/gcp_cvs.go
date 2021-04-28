@@ -28,11 +28,13 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes      = uint64(1000000000)    // 1 GB
-	MinimumCVSVolumeSizeBytesSW = uint64(1099511627776) // 1 TiB
-	MinimumCVSVolumeSizeBytesHW = uint64(107374182400)  // 100 GiB
-	MinimumAPIVersion           = "1.1.6"
-	MinimumSDEVersion           = "2020.10.0"
+	MinimumVolumeSizeBytes               = uint64(1000000000)    // 1 GB
+	MinimumCVSVolumeSizeBytesSWLowRange  = uint64(322122547200)  // 300 GiB
+	MaximumCVSVolumeSizeBytesSWLowRange  = uint64(644245094400)  // 600 GiB
+	MinimumCVSVolumeSizeBytesSWHighRange = uint64(1099511627776) // 1 TiB
+	MinimumCVSVolumeSizeBytesHW          = uint64(107374182400)  // 100 GiB
+	MinimumAPIVersion                    = "1.1.6"
+	MinimumSDEVersion                    = "2020.10.0"
 
 	defaultServiceLevel    = api.UserServiceLevel1
 	defaultNfsMountOptions = "-o nfsvers=3"
@@ -161,6 +163,40 @@ func (d *NFSStorageDriver) makeNetworkPath(network string) string {
 		projectNumber = d.Config.HostProjectNumber
 	}
 	return fmt.Sprintf("projects/%s/global/networks/%s", projectNumber, network)
+}
+
+// applyMinimumVolumeSizeSW applies the volume size rules for CVS-SO, including the separate disjoint ranges
+func (d *NFSStorageDriver) applyMinimumVolumeSizeSW(sizeBytes uint64) uint64 {
+
+	if sizeBytes <= MinimumCVSVolumeSizeBytesSWLowRange {
+		sizeBytes = MinimumCVSVolumeSizeBytesSWLowRange
+	} else if sizeBytes <= MaximumCVSVolumeSizeBytesSWLowRange {
+		return sizeBytes
+	} else if sizeBytes <= MinimumCVSVolumeSizeBytesSWHighRange {
+		return MinimumCVSVolumeSizeBytesSWHighRange
+	}
+
+	return sizeBytes
+}
+
+// applyMinimumVolumeSizeHW applies the volume size rules for CVS-PO
+func (d *NFSStorageDriver) applyMinimumVolumeSizeHW(sizeBytes uint64) uint64 {
+
+	if sizeBytes < MinimumCVSVolumeSizeBytesHW {
+		return MinimumCVSVolumeSizeBytesHW
+	}
+
+	return sizeBytes
+}
+
+// validateVolumeResizeSW checks whether a CVS-SO resize would cross the gap between the low & high size ranges
+func (d *NFSStorageDriver) validateVolumeResizeSW(currentSizeBytes, newSizeBytes uint64) bool {
+
+	if currentSizeBytes <= MaximumCVSVolumeSizeBytesSWLowRange && newSizeBytes > MaximumCVSVolumeSizeBytesSWLowRange {
+		return false
+	}
+
+	return true
 }
 
 // Initialize initializes this driver from the provided config
@@ -642,45 +678,43 @@ func (d *NFSStorageDriver) Create(
 		volConfig.CVSStorageClass = storageClass
 	}
 
-	var minimumCVSVolumeSizeBytes uint64
-
-	switch storageClass {
-	case api.StorageClassSoftware:
-		minimumCVSVolumeSizeBytes = MinimumCVSVolumeSizeBytesSW
-	case api.StorageClassHardware:
-		minimumCVSVolumeSizeBytes = MinimumCVSVolumeSizeBytesHW
-	default:
-		return fmt.Errorf("invalid storageClass: %s", storageClass)
-	}
-
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	if sizeBytes == 0 {
+	if requestedSizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes[Size])
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		requestedSizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if sizeBytes < MinimumVolumeSizeBytes {
+	if requestedSizeBytes < MinimumVolumeSizeBytes {
 		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes)
+			requestedSizeBytes, MinimumVolumeSizeBytes)
 	}
 
-	// TODO: remove this code once CVS can handle smaller volumes
-	if sizeBytes < minimumCVSVolumeSizeBytes {
+	// Apply volume size rules
+	var sizeBytes uint64
+	switch storageClass {
+	case api.StorageClassSoftware:
+		sizeBytes = d.applyMinimumVolumeSizeSW(requestedSizeBytes)
+	case api.StorageClassHardware:
+		sizeBytes = d.applyMinimumVolumeSizeHW(requestedSizeBytes)
+	default:
+		return fmt.Errorf("invalid storageClass: %s", storageClass)
+	}
+
+	if requestedSizeBytes < sizeBytes {
 
 		Logc(ctx).WithFields(log.Fields{
 			"name":          name,
-			"requestedSize": sizeBytes,
-			"minimumSize":   minimumCVSVolumeSizeBytes,
+			"requestedSize": requestedSizeBytes,
+			"minimumSize":   sizeBytes,
 		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable.")
 
-		sizeBytes = minimumCVSVolumeSizeBytes
 		volConfig.Size = fmt.Sprintf("%d", sizeBytes)
 	}
 
@@ -776,7 +810,7 @@ func (d *NFSStorageDriver) Create(
 		}
 	}
 
-	if volConfig.StorageClass == api.StorageClassSoftware && zone == "" {
+	if storageClass == api.StorageClassSoftware && zone == "" {
 		return fmt.Errorf("software volumes require zone")
 	}
 
@@ -1947,6 +1981,12 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	// Make sure the request isn't above the configured maximum volume size (if any)
 	if _, _, err := drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
 		return err
+	}
+
+	// Make were we're not crossing the CVS-SO size gap (delete this when no longer necessary)
+	if volConfig.CVSStorageClass == api.StorageClassSoftware &&
+		!d.validateVolumeResizeSW(uint64(volume.QuotaInBytes), sizeBytes) {
+		return fmt.Errorf("requested size %d is to large for volume %s", sizeBytes, name)
 	}
 
 	// Resize the volume

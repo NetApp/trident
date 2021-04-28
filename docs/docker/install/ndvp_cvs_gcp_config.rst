@@ -4,7 +4,7 @@ Cloud Volumes Service (CVS) on GCP Configuration
 .. note::
 
    The NetApp Cloud Volumes Service for GCP does not support CVS-Performance volumes less than 100 GiB in size, or CVS
-   volumes less than 1 TiB in size. To make it easier to deploy applications, Trident automatically creates volumes of
+   volumes less than 300 GiB in size. To make it easier to deploy applications, Trident automatically creates volumes of
    the minimum size if a too-small volume is requested. Future releases of the Cloud Volumes Service may remove this
    restriction.
 
@@ -53,7 +53,7 @@ Also, when using CVS on GCP, these default volume option settings are available.
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
 | ``snapshotReserve``   | Snapshot reserve percentage, default is "" to accept CVS default of 0    | "10"                     |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
-| ``size``              | Volume size, defaults to "1TiB"                                          | "10T"                    |
+| ``size``              | Volume size, defaults to "100GiB"                                        | "10T"                    |
 +-----------------------+--------------------------------------------------------------------------+--------------------------+
 
 Example CVS on GCP Config File

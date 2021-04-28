@@ -4,7 +4,7 @@ Cloud Volumes Service for GCP
 
 .. note::
   The NetApp Cloud Volumes Service for GCP does not support CVS-Performance volumes less than 100 GiB in size, or CVS
-  volumes less than 1 TiB in size. To make it easier to deploy applications, Trident automatically creates volumes of
+  volumes less than 300 GiB in size. To make it easier to deploy applications, Trident automatically creates volumes of
   the minimum size if a too-small volume is requested. Future releases of the Cloud Volumes Service may remove this
   restriction.
 
@@ -29,7 +29,7 @@ version                   Always 1
 storageDriverName         "gcp-cvs"
 backendName               Custom name for the storage backend                               Driver name + "_" + part of API key
 storageClass              Type of storage. Choose from ``hardware`` [Performance Optimized] "hardware"
-                          or ``software`` [Scale Optimized (beta)]
+                          or ``software`` [Scale Optimized]
 projectNumber             GCP account project number
 hostProjectNumber         GCP shared VPC host project number
 apiRegion                 CVS account region
@@ -69,14 +69,6 @@ Users can choose from the base CVS service type[``storageClass=software``] or th
 type [``storageClass=hardware``], which Trident uses by default. Make sure you specify an ``apiRegion`` that
 provides the respective CVS ``storageClass`` in your backend definition.
 
-.. note::
-
-   Trident's integration with the base
-   `CVS service type <https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US>`_
-   on GCP is a **beta feature**, not meant for production
-   workloads. Trident is **fully supported** with the CVS-Performance service type
-   and uses it by default.
-
 The proxyURL config option must be used if a proxy server is needed to communicate with GCP. The proxy server may either
 be an HTTP proxy or an HTTPS proxy. In case of an HTTPS proxy, certificate validation is skipped to allow the usage of
 self-signed certificates in the proxy server. Proxy servers with authentication enabled are not supported.
@@ -95,7 +87,7 @@ Parameter                 Description                                           
 exportRule                The export rule(s) for new volumes                              "0.0.0.0/0"
 snapshotDir               Controls visibility of the .snapshot directory                  "false"
 snapshotReserve           Percentage of volume reserved for snapshots                     "" (accept CVS default of 0)
-size                      The size of new volumes                                         "1T"
+size                      The size of new volumes                                         "100Gi"
 ========================= =============================================================== ================================================
 
 The ``exportRule`` value must be a comma-separated list of any combination of
@@ -140,8 +132,7 @@ Example configurations
 
 This example shows a backend definition that uses the base CVS service type, which
 is meant for general-purpose workloads and provides light/moderate performance,
-coupled with high zonal availability. This is a **beta** Trident integration that
-can be used in test environments.
+coupled with high zonal availability.
 
 .. code-block:: json
 

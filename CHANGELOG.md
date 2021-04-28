@@ -14,6 +14,7 @@
 **Enhancements:**
 - Updated to golang 1.15.
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
+- Added support for smaller scale-optimized CVS volumes in GCP.
 - Added snapshotDir parameter to Azure NetApp Files backend definition.
 - **Kubernetes:** Added support for Kubernetes 1.21.
 - **Kubernetes:** Added support for Trident backend creation using Kubectl.

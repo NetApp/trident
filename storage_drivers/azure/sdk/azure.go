@@ -707,19 +707,17 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 
 	newVol.SubnetID = &subnetID
 
-	if d.config.DebugTraceFlags["api"] {
-		Logc(ctx).WithFields(log.Fields{
-			"name":           request.Name,
-			"creationToken":  request.CreationToken,
-			"resourceGroup":  resourceGroup,
-			"netAppAccount":  netAppAccount,
-			"capacityPool":   cpoolName,
-			"virtualNetwork": vNet,
-			"subnet":         subnet,
-			"snapshotID":     request.SnapshotID,
-			"snapshotDir":    request.SnapshotDirectory,
-		}).Debug("Issuing create request.")
-	}
+	Logc(ctx).WithFields(log.Fields{
+		"name":           request.Name,
+		"creationToken":  request.CreationToken,
+		"resourceGroup":  resourceGroup,
+		"netAppAccount":  netAppAccount,
+		"capacityPool":   cpoolName,
+		"virtualNetwork": vNet,
+		"subnet":         subnet,
+		"snapshotID":     request.SnapshotID,
+		"snapshotDir":    request.SnapshotDirectory,
+	}).Debug("Issuing create request.")
 
 	// This API returns a netapp.VolumesCreateOrUpdateFuture, which is some kind of
 	// azure.Future thing that is an abstraction for monitoring long-running operations.
