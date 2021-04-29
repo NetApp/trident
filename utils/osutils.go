@@ -30,6 +30,7 @@ import (
 const (
 	iSCSIErrNoObjsFound                 = 21
 	iSCSIDeviceDiscoveryTimeoutSecs     = 90
+	lunMapDiscoveryTimeoutSecs          = 90
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	resourceDeletionTimeoutSecs         = 40
 	fsRaw                               = "raw"
@@ -139,7 +140,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 				targetInitiatorSecret, iscsiInterface)
 			if err != nil {
 				Logc(ctx).WithFields(log.Fields{
-					"err": err,
+					"err":    err,
 					"portal": portal,
 				}).Errorf("Failed to login to portal using CHAP.")
 
@@ -679,6 +680,34 @@ func getDeviceInfoForLUN(
 		return nil, err
 	} else if 0 == len(devices) {
 		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
+	} else if len(devices) < len(hostSessionMap) {
+		// In case we have fewer devices than host sessions, allow some more time for the discovery
+		waitForMoreDevices := func() error {
+			devices, err = getDevicesForLUN(paths)
+			if err != nil {
+				return err
+			}
+			if len(devices) < len(hostSessionMap) {
+				return errors.New("Devices fewer than host sessions")
+			}
+			return nil
+		}
+		deviceNotify := func(err error, duration time.Duration) {
+			Logc(ctx).WithField("increment", duration).Debug("Devices less than sessions, waiting")
+		}
+		discoveryMaxDuration := lunMapDiscoveryTimeoutSecs * time.Second
+		deviceBackoff := backoff.NewExponentialBackOff()
+		deviceBackoff.InitialInterval = 1 * time.Second
+		deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
+		deviceBackoff.RandomizationFactor = 0.1
+		deviceBackoff.MaxElapsedTime = discoveryMaxDuration
+
+		// Run the check/scan using an exponential backoff
+		if err := backoff.RetryNotify(waitForMoreDevices, deviceBackoff, deviceNotify); err != nil {
+			Logc(ctx).Warnf("Could not find more devices for LUN %d after %3.2f seconds.", lunID, discoveryMaxDuration.Seconds())
+		} else {
+			Logc(ctx).WithField("devices", devices).Debug("LUN target devices found.")
+		}
 	}
 
 	multipathDevice := ""
@@ -2945,10 +2974,10 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		if err := ensureIscsiTarget(ctx, formattedPortal, targetIQN, "", "", "", "",
 			iface); nil != err {
 			Logc(ctx).WithFields(log.Fields{
-				"tp": formattedPortal,
+				"tp":        formattedPortal,
 				"targetIqn": targetIQN,
-				"iface": iface,
-				"err": err,
+				"iface":     iface,
+				"err":       err,
 			}).Errorf("unable to ensure iSCSI target exists: %v", err)
 			continue
 		}
@@ -2961,11 +2990,11 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		timeout_param := "node.session.timeo.replacement_timeout"
 		if err := configureISCSITarget(ctx, targetIQN, portalIp, timeout_param, "5"); err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"iqn": targetIQN,
+				"iqn":    targetIQN,
 				"portal": portalIp,
-				"name": timeout_param,
-				"value": "5",
-				"err": err,
+				"name":   timeout_param,
+				"value":  "5",
+				"err":    err,
 			}).Errorf("set replacement timeout failed: %v", err)
 			continue
 		}
@@ -2973,7 +3002,7 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		// Log in to target
 		if err := loginISCSITarget(ctx, targetIQN, portalIp); err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"err": err,
+				"err":      err,
 				"portalIP": portalIp,
 			}).Error("Login to iSCSI target failed.")
 			continue
@@ -2989,7 +3018,7 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		sessionExists, err := iSCSISessionExists(ctx, portalIp)
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"err": err,
+				"err":      err,
 				"portalIP": portalIp,
 			}).Error("Could not recheck for iSCSI session.")
 			continue
