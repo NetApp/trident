@@ -2,7 +2,7 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## v21.04.0
+## Changes since v21.01.0
 
 **Fixes:**
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
