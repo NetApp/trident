@@ -1,6 +1,7 @@
 Troubleshooting
 ^^^^^^^^^^^^^^^
 
+* When working with OpenShift and SAN volumes provisioned by Trident, application pods should use the ``hostmount-anyuid`` SCC level or higher to ensure that Trident can access the host device to mount the volume on the host and not just the container. If an SCC with insufficient permissions (such as ``restricted``) is set on the pod, Trident cannot mount and attach the volume. To be able to access the host device, the application pod's SCC should be at least ``hostmount-anyuid``.
 * If there was a failure during install, run ``tridentctl logs -l all -n trident``
   and look for problems in the logs for the ``trident-main`` and CSI containers (when
   using the CSI provisioner).
