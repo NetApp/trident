@@ -9,8 +9,8 @@ should provision volumes from it.
 Trident will automatically offer up storage pools from backends that together
 match the requirements defined by a storage class.
 
-To get started, choose the storage system type that you will be using as a
-backend:
+Choose the storage system type that you will be using as a backend, and create the backend using one of the options
+described :ref:`here <backend-management>`.
 
 .. toctree::
    :maxdepth: 2

@@ -35,7 +35,7 @@ for a step by step procedure.
 Can Trident be installed remotely?
 ----------------------------------
 
-Trident v18.10 and above supports :ref:`remote install capability <Trident installation modes>` from any machine that has kubectl access to the cluster. After kubectl access is verified (e.g. initiate a `kubectl get nodes` command from the remote machine to verify), follow the installation instructions.
+Trident v18.10 and above supports :ref:`remote install capability <Trident installation modes>` from any machine that has ``kubectl`` access to the cluster. After ``kubectl`` access is verified (e.g. initiate a `kubectl get nodes` command from the remote machine to verify), follow the installation instructions.
 
 Refer to :ref:`Deploying <Deploying>` for more information on how to install Trident.
 
@@ -151,6 +151,58 @@ Trident Backend Configuration and Use
 =====================================
 
 This section covers Trident backend definition file configurations and use.
+
+How do I create a backend?
+--------------------------
+
+Users have two unique ways of creating a backend:
+
+* Using ``kubectl``: Refer to :ref:`Backend Management with kubectl <manage_tbc_backend>`
+  to understand how this works.
+* Using ``tridentctl``: Users can alternatively choose to create and manage backends using
+  ``tridentctl``. Backends can be created using ``tridentctl create`` and updated with
+  ``tridentctl update``. Refer to :ref:`Backend operations with tridentctl <tridentctl-backend-management>`
+  for more information.
+
+Both options are **independent** of how Trident was installed and work the same
+for Operator/Helm/``tridentctl`` installations.
+
+How do I create and manage backends with ``kubectl``?
+-----------------------------------------------------
+
+Using the ``TridentBackendConfig`` (``tbc``) Custom Resource Definition (CRD). The ``TridentBackendConfig`` CR format is new, however, it understands existing backend configuration inputs that users use today for creating backends and also includes a couple of new fields, such as ``credentials`` and ``deletionPolicy``.
+
+The ``TridentBackendConfig`` CR itself does not represent a backend, creating one results either in a new Trident backend (tbe CR that Trident creates) or binding to an existing Trident backend.
+
+Take a look at :ref:`Backend Management with kubectl <manage_tbc_backend>` to get started.
+
+Can I create backends with both ``kubectl`` and ``tridentctl``?
+---------------------------------------------------------------
+
+Yes. Backends that are created using ``TridentBackendConfigs`` will be managed using ``kubectl``.
+Backends created with ``tridentctl`` will need to be managed with ``tridentctl``.
+
+Can I use ``tridentctl`` to manage ``TridentBackendConfig``-based backends?
+---------------------------------------------------------------------------
+
+You cannot use ``tridentctl`` to perform ``create``, ``modify``, and ``delete``
+operations on ``TridentBackendConfig``-based backends. However, you can perform the
+``get`` operation on successfully created ``TridentBackendConfig``-based backends.
+
+If the ``deletionPolicy`` is set to ``retain``, ``TridentBackendConfig`` objects
+can be deleted and associated backends can be managed with ``tridentctl``.
+
+Take a look at :ref:`Managing TridentBackendConfig backends using tridentctl <kubectl-to-tridentctl>`.
+
+Can I use ``TridentBackendConfig`` to manage ``tridentctl``-based backends?
+---------------------------------------------------------------------------
+
+No, you cannot use ``TridentBackendConfig`` to perform ``create``, ``get``,
+``modify``, and ``delete`` operations on ``tridentctl``-based backends.
+Users can choose to bind existing backends [created using ``tridentctl``] to a new
+``TridentBackendConfig`` CR and manage them **using** the CR and **not using** ``tridentctl``.
+
+Take a look at :ref:`Managing tridentctl backends using TridentBackendConfig <tridentctl-to-kubectl>`.
 
 Do we need to define both Management and Data LIFs in an ONTAP backend definition file?
 ---------------------------------------------------------------------------------------
@@ -269,7 +321,7 @@ How does Trident deploy Qtrees on an ONTAP volume? How many Qtrees can be deploy
 The ``ontap-nas-economy`` driver will create 200 Qtrees in the same FlexVol by default (configurable between 50 and 300), and the ``ontap-san-economy`` driver will create 100 LUNs in the same FlexVol by default (configurable between 50 and 200),
 100,000 Qtrees per cluster node, and 2.4M per cluster. When you enter a new PersistentVolumeClaim that is serviced by
 the economy driver, the driver looks to see if a FlexVol already exists that can service the new Qtree. If the FlexVol
-does not exist that can service the Qtree, a new FlexVol will be created. 
+does not exist that can service the Qtree, a new FlexVol will be created.
 
 Refer to :ref:`Choosing a driver <Choosing a driver>` for more information.
 

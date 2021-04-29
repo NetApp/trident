@@ -9,6 +9,6 @@ Common tasks
   monitoring
   worker
   backends/index
-  backends
+  managing-backends/index
   storage-classes
   volumes/index
