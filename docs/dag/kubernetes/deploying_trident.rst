@@ -82,14 +82,12 @@ command to verify you can connect to the required Kubernetes cluster.
 Complete the Trident deployment from the remote machine using the normal
 installation steps.
 
-Trident Installation on Docker UCP 3.1
-======================================
+Trident Installation on Mirantis Kubernetes Engine (MKE) 3.1
+============================================================
 
-Docker EE Universal Control Plane (UCP) is the cluster management layer that sits on top of the Docker Enterprise Engine. Once deployed, administrators interact with their cluster via UCP instead of each node's individual Docker engines. Since the UCP supports both Kubernetes and Docker via a Web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
+Mirantis Kubernetes Engine (formerly Universal Control Plane (UCP)) is the cluster management layer that sits on top of Mirantis Container Runtime (formerly Docker Engine - Enterprise). Once deployed, administrators interact with their cluster via MKE instead of each node's individual engines. Because MKE supports both Kubernetes and Docker via a web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
 
-Installing Trident for Kubernetes on UCP managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for Kubernetes.
-
-Please note that starting with Docker EE 2.1 UCP and Trident 19.01, it's no longer required to specify the ``--ucp-host`` and ``--ucp-bearer-token`` parameters while installing and uninstalling Trident. Deploy the ``tridentctl install -n <namespace>`` command to start the installation on the UCP managed nodes.
+Installing Trident for Kubernetes on MKE-managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for Kubernetes.
 
 Deploying Trident as an enhanced CSI Provisioner
 ================================================

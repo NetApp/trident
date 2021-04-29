@@ -37,8 +37,8 @@ To deploy Trident using the operator you need:
 * Set the ``KUBECONFIG`` environment variable to point to your Kubernetes
   cluster configuration.
 * Enable the :ref:`Feature Gates <Feature Requirements>` required by Trident
-* If you are using Kubernetes with Docker Enterprise, `follow their steps
-  to enable CLI access <https://docs.docker.com/ee/ucp/user-access/cli/>`_.
+* If you are using Kubernetes with Mirantis Container Runtime (formerly Docker Engine - Enterprise), `follow their steps
+  to enable CLI access <https://docs.mirantis.com/containers/v3.1/mke-ops-guide/access-cluster.html#cli-access>`_.
 
 Got all that? Great! Let's get started. You can choose to either
 :ref:`Deploy using Helm <Deploy Trident Operator by using Helm>` or
