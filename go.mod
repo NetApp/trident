@@ -16,6 +16,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-plugins-helpers v0.0.0-20200102110956-c9a8a2d92ccc
 	github.com/dustin/go-humanize v1.0.0
+	github.com/dyson/certman v0.2.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // 2/12/2019
 	github.com/go-logfmt/logfmt v0.5.0
