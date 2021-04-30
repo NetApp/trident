@@ -8,6 +8,31 @@ Cloud Volumes Service (CVS) on GCP Configuration
    the minimum size if a too-small volume is requested. Future releases of the Cloud Volumes Service may remove this
    restriction.
 
+Trident now includes support for smaller volumes with the default CVS service type on
+GCP (https://cloud.google.com/architecture/partners/netapp-cloud-volumes/service-types).
+For backends created with ``storageClass=software``, volumes will now have a
+minimum provisioning size of 300 GiB. CVS currently provides this feature under
+Controlled Availability and does **not provide** technical support.
+Users must sign up for access to sub-1TiB
+volumes `here <https://docs.google.com/forms/d/e/1FAIpQLSc7_euiPtlV8bhsKWvwBl3gm9KUL4kOhD7lnbHC3LlQ7m02Dw/viewform>`_.
+NetApp recommends customers consume sub-1TiB volumes for **non-production** workloads.
+
+.. warning::
+
+ When deploying backends using the default CVS service type [``storageClass=software``],
+ users **must obtain access** to the sub-1TiB volumes feature on GCP for the Project Number(s)
+ and Project ID(s) in question. This is necessary for Trident to provision sub-1TiB volumes.
+ If not, volume creations **will fail** for PVCs that are <600 GiB. Obtain access to sub-1TiB
+ volumes using `this <https://docs.google.com/forms/d/e/1FAIpQLSc7_euiPtlV8bhsKWvwBl3gm9KUL4kOhD7lnbHC3LlQ7m02Dw/viewform>`_
+ form.
+
+Volumes created by Trident for the default CVS service level will be provisioned as follows:
+
+1. PVCs that are smaller than 300 GiB will result in Trident creating a 300 GiB CVS volume.
+2. PVCs that are between 300 GiB to 600 GiB will result in Trident creating a CVS volume of the requested size.
+3. PVCs that are between 600 GiB and 1 TiB will result in Trident creating a 1TiB CVS volume.
+4. PVCs that are greater than 1 TiB will result in Trident creating a CVS volume of the requested size.
+
 In addition to the global configuration values above, when using CVS on GCP, these options are available.
 
 +-----------------------+--------------------------------------------------------------------------+----------------------------------------------+

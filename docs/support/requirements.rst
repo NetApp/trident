@@ -7,20 +7,18 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* Anthos GKE On-Prem v1.5
-* Mirantis Container Runtime (formerly Docker Engine - Enterprise) 2.1, 3.0, and 3.1
+* Mirantis Container Runtime (formerly Docker Engine - Enterprise) 2.1, 3.0, 3.1, and 3.2.11
 * Kubernetes 1.11 or later (latest: 1.21)
-* OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, 4.6.8, and later
+* OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, 4.6 [4.6.8+], 4.7 (latest 4.7)
 
 The Trident Operator is supported with these releases:
 
-* Anthos GKE On-Prem v1.5
 * Kubernetes 1.14 or later (latest: 1.21)
-* OpenShift 4.2, 4.3, 4.4, 4.5, 4.6.8, and later
+* OpenShift 4.2, 4.3, 4.4, 4.5, 4.6 [4.6.8+], 4.7 (latest 4.7)
 
 .. important::
 
-  Red Hat OpenShift Container Platform users might observe their ``initiatorname.iscsi`` file to be blank if using any version below 4.6.8. This is a bug that has been identified by RedHat to be fixed with OpenShift 4.6.8. See `this bug fix announcement <https://access.redhat.com/errata/RHSA-2020:5259/>`_. NetApp recommends that you use Trident 21.01 on OpenShift 4.6.8 and later.
+  Red Hat OpenShift Container Platform users might observe their ``initiatorname.iscsi`` file to be blank if using any version below 4.6.8. This is a bug that has been identified by RedHat to be fixed with OpenShift 4.6.8. See `this bug fix announcement <https://access.redhat.com/errata/RHSA-2020:5259/>`_. NetApp recommends that you use Trident on OpenShift 4.6.8 and later.
 
 Trident also works with a host of other fully managed and self-managed Kubernetes offerings, including Google Cloud’s Google Kubernetes Engine (GKE), AWS’s Elastic Kubernetes Services (EKS), Azure’s Azure Kubernetes Service (AKS), and Rancher.
 
@@ -103,7 +101,7 @@ configuration can use it. See the
 Container images and corresponding Kubernetes versions
 ======================================================
 
-For air-gapped installations, see the following table for what container images are needed to install 
+For air-gapped installations, see the following table for what container images are needed to install
 Trident:
 
 +------------------------+-------------------------------------------------------------+

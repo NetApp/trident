@@ -147,17 +147,26 @@ Cloud Volumes Service with GCP Backend Driver
 ---------------------------------------------
 
 Trident uses the ``gcp-cvs`` driver to link with the Cloud Volumes Service on the GCP backend. To configure the GCP backend on Trident, you are required specify ``projectNumber``, ``apiRegion``, and ``apiKey`` in the backend file. The project number may be found in the GCP web portal, while the API key must be taken from the service account private key file that you created while setting up API access for Cloud Volumes on GCP.
-Trident can create CVS volumes in one of two service types:
+Trident can create CVS volumes in one of two `service types <https://cloud.google.com/architecture/partners/netapp-cloud-volumes/service-types>`_:
 
-1. The base CVS service type, which provides high zonal availability with
+1. **CVS**: The base CVS service type, which provides high zonal availability with
    limited/moderate performance levels.
-2. The CVS-Performance service type, which is performance optimized and suited
+2. **CVS-Performance**: Performance-optimized service type best suited
    for production workloads that value performance. Choose from three unique service levels
    [`standard`, `premium`, and `extreme`].
 
 More information on this driver may be found in the :ref:`Cloud Volumes Service for GCP Documentation <Cloud Volumes Service for GCP>`.
 Currently, 100 GiB is the minimum CVS-Performance volume size that will be provisioned, while CVS volumes must be at
 least 300 GiB. Future releases of CVS may remove this restriction.
+
+.. warning::
+
+ When deploying backends using the default CVS service type [``storageClass=software``],
+ users **must obtain access** to the sub-1TiB volumes feature on GCP for the Project Number(s)
+ and Project ID(s) in question. This is necessary for Trident to provision sub-1TiB volumes.
+ If not, volume creations **will fail** for PVCs that are <600 GiB. Obtain access to sub-1TiB
+ volumes using `this <https://docs.google.com/forms/d/e/1FAIpQLSc7_euiPtlV8bhsKWvwBl3gm9KUL4kOhD7lnbHC3LlQ7m02Dw/viewform>`_
+ form.
 
 .. table:: Cloud Volume Service driver capabilities
 
