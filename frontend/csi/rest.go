@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/dyson/certman"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
@@ -37,11 +38,15 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 		tlsConfig.InsecureSkipVerify = true
 	}
 	if "" != certFile && "" != keyFile {
-		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+		cm, err := certman.New(certFile, keyFile)
 		if err != nil {
 			return nil, err
 		}
-		tlsConfig.Certificates = []tls.Certificate{cert}
+
+		if err := cm.Watch(); err != nil {
+			return nil, fmt.Errorf("Failed to start watcher on key pair: %v", err)
+		}
+		tlsConfig.GetCertificate = cm.GetCertificate
 	}
 	return &RestClient{
 		url: url,
