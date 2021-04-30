@@ -77,12 +77,14 @@ Refer to :ref:`Customized Installation <Customized Installation>` for instructio
 Can we share the same ONTAP backend SVM for two separate Trident instances for two separate Kubernetes clusters?
 ----------------------------------------------------------------------------------------------------------------
 
-Although it is not advised, you can use the same backend SVM for 2 Trident instances. Specify a unique Trident volume name for
-each Trident instance during installation and/or specify a unique StoragePrefix parameter in the setup/backend.json file. This is to ensure the same FlexVol isn't used for both instances.
+Although it is not advised, you can use the same backend SVM for multiple Trident instances.
+Specifying a unique ``StoragePrefix`` parameter in the backend.json file will help
+track the volumes created in each Kubernetes environment.
 
-Refer to: :ref:`Customized Installation <Customized Installation>` for information on specifying a unique Trident volume name.
-Refer to: :ref:`Global Configuration <Global Configuration>` for information on creating a unique StoragePrefix.
-
+If using the ONTAP SAN drivers (``ontap-san`` and/or ``ontap-san-economy``), it is
+important to ensure **unique** igroups are used. The simplest way to do this is
+to have Trident create igroups for you. Take a look at :ref:`igroup Management <igroup-management>`
+to learn how that works.
 
 Is it possible to install Trident under ContainerLinux (formerly CoreOS)?
 -------------------------------------------------------------------------

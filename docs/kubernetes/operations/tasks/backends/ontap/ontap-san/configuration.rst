@@ -24,7 +24,7 @@ trustedCACertificate      Base64-encoded value of trusted CA certificate. Option
 username                  Username to connect to the cluster/SVM. Used for credential-based auth.
 password                  Password to connect to the cluster/SVM. Used for credential-based auth.
 svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
-igroupName                Name of the igroup for SAN volumes to use                                                         "trident"
+igroupName                Name of the igroup for SAN volumes to use                                                         "trident-<backend-UUID>"
 username                  Username to connect to the cluster/SVM
 password                  Password to connect to the cluster/SVM
 storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
@@ -55,20 +55,22 @@ specified address.
    cannot be modified after creation. To update these parameters you will need
    to create a new backend.
 
-The ``igroupName`` is set to an igroup that is already created on the ONTAP cluster.
-CSI Trident will automatically populate the igroup with node IQNs as volumes are
-created and attached. Similarly, node removals from the Kubernetes cluster will
-result in deleting the IQNs from the igroup. NetApp recommends using an igroup
-per Kubernetes cluster, if the SVM is to be shared between environments. This is
+The ``igroupName`` can be set to an igroup that is already created on the ONTAP cluster.
+If unspecified, Trident automatically creates an igroup named ``trident-<backend-UUID>``.
+If providing a pre-defined ``igroupName``, NetApp recommends using an igroup per
+Kubernetes cluster, if the SVM is to be shared between environments. This is
 necessary for Trident to maintain IQN additions/deletions automatically.
 
-.. warning::
+Backends can also have igroups updated after creation:
 
-   While ``igroupName`` can be updated for a backend, it is important to remember
-   that the new igroup will only be used for all volumes created henceforth.
-   Existing volumes will continue to use the old igroup. Updating ``igroupName``
-   is **not recommended** unless the old igroup will still remain untouched on the
-   storage cluster.
+* ``igroupName`` can be updated to point to a new igroup that is created and managed
+  on the SVM outside of Trident.
+* ``igroupName`` can be omitted. In this case, Trident will create and manage a
+  ``trident-<backend-UUID>`` igroup automatically.
+
+In both cases, volume attachments will continue to be accessible.
+Future volume attachments will use the updated igroup. This update does not disrupt
+access to volumes present on the backend.
 
 A fully-qualified domain name (FQDN) can be specified for the ``managementLIF``
 option.

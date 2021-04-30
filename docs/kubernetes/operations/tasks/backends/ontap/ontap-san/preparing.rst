@@ -207,12 +207,28 @@ created, nor impact volume connections made after. A successful backend update
 indicates that Trident can communicate with the ONTAP backend and handle future
 volume operations.
 
+.. _igroup-management:
+
 igroup Management
 -----------------
 
 Trident uses `igroups`_ to control access to the volumes (LUNs) that it
-provisions. It expects to find an igroup called ``trident`` unless a different
-igroup name is specified in the configuration.
+provisions. Trident administrators have two options when it comes to specifying
+igroups for backends:
+
+* Trident can automatically create and manage an igroup per backend. If
+  ``igroupName`` is not included in the backend definition, Trident creates an
+  igroup named ``trident-<backend-UUID>`` on the SVM. This will ensure each
+  backend has a dedicated igroup and handle the automated addition/deletion of
+  Kubernetes node IQNs.
+* Alternatively, pre-created igroups can also be provided in a backend definition.
+  This can be done using the ``igroupName`` config parameter. Trident will
+  add/delete Kubernetes node IQNs to the pre-existing igroup.
+
+For backends that have ``igroupName`` defined, the ``igroupName`` can be deleted
+with a ``tridentctl backend update`` to have Trident auto-handle igroups. This
+will not disrupt access to volumes that are already attached to workloads. Future
+connections will be handled using the igroup Trident created.
 
 .. _igroups: https://library.netapp.com/ecmdocs/ECMP1196995/html/GUID-CF01DCCD-2C24-4519-A23B-7FEF55A0D9A3.html
 
@@ -231,19 +247,18 @@ igroup name is specified in the configuration.
    and removal of IQNs. Reusing IQNs across hosts can lead to undesirable scenarios
    where hosts get mistaken for one another and access to LUNs is denied.
 
-While Trident associates new LUNs with the configured igroup, it does not
-create or otherwise manage igroups themselves. The igroup must exist before the
-storage backend is added to Trident.
-
-If Trident is configured to function as a CSI Provisioner, Trident manages the
-addition of IQNs from worker nodes when mounting PVCs. As and when PVCs are
-attached to pods running on a given node, Trident adds the node's IQN to the
-igroup configured in your backend definition.
+If Trident is configured to function as a CSI Provisioner, Kubernetes node IQNs
+are automatically added to/removed from the igroup. When nodes are added to a
+Kubernetes cluster, ``trident-csi`` DaemonSet deploys a pod (``trident-csi-xxxxx``)
+on the newly added nodes and registers the new nodes it can attach volumes to.
+Node IQNs are also added to the backend's igroup. A similar set of steps handle
+the removal of IQNs when node(s) are cordoned, drained, and deleted from Kubernetes.
 
 If Trident does not run as a CSI Provisioner, the igroup must be manually updated
-to contain the iSCSI IQNs from every worker node in the Kubernetes cluster. The
-igroup needs to be updated when new nodes are added to the cluster, and
-they should be removed when nodes are removed as well.
+to contain the iSCSI IQNs from every worker node in the Kubernetes cluster. IQNs
+of nodes that join the Kubernetes cluster will need to be added to the igroup.
+Similarly, IQNs of nodes that are removed from the Kubernetes cluster must be
+removed from the igroup.
 
 Authenticating Connections with Bidirectional CHAP
 --------------------------------------------------
