@@ -1,5 +1,7 @@
 {% extends '!layout.html' %}
 {% block footer %} {{ super() }}
+<!-- Copyright 2021 NetApp, Inc. All Rights Reserved. -->
+
 <style>
     .highlight {
         background-color: #f0f0f0;
@@ -11,11 +13,6 @@
 {% block extrabody %}
 <br/>
 <div class="wy-nav-content-wrap">
-    <div class="wy-nav-content">
-        <h4 style="color:red">This is the absolute latest documentation from the master branch.</h4>
-        It may contain details that differ from the release you are running. To see the documentation
-        for your release, select the appropriate version at the bottom of the table of contents.
-    </div>
     <div class="wy-nav-content">
         <h4 style="color:red">Upgrading Trident on Kubernetes?</h4>
         Refer to <a href="https://netapp-trident.readthedocs.io/en/latest/kubernetes/upgrades/index.html" target="_blank">Upgrading Trident</a>.

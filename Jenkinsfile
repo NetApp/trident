@@ -1,4 +1,4 @@
-@Library(['tools@master', 'tools-override@main']) _
+@Library(['tools@master', 'tools-override@stable/v21.04']) _
 
 node {
 
