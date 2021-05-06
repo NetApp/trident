@@ -31,7 +31,6 @@ const (
 	iSCSIErrNoObjsFound                 = 21
 	iSCSIDeviceDiscoveryTimeoutSecs     = 90
 	multipathDeviceDiscoveryTimeoutSecs = 90
-	resourceDeletionTimeoutSecs         = 40
 	fsRaw                               = "raw"
 	temporaryMountDir                   = "/tmp_mnt"
 	unknownFstype                       = "<unknown>"
@@ -140,7 +139,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 				targetInitiatorSecret, iscsiInterface)
 			if err != nil {
 				Logc(ctx).WithFields(log.Fields{
-					"err": err,
+					"err":    err,
 					"portal": portal,
 				}).Errorf("Failed to login to portal using CHAP.")
 
@@ -410,31 +409,38 @@ func EnsureFileExists(ctx context.Context, path string) error {
 
 // DeleteResourceAtPath makes sure that given named file or (empty) directory is removed
 func DeleteResourceAtPath(ctx context.Context, resource string) error {
-	return waitForResourceDeletionAtPath(ctx, resource)
-}
-
-// waitForResourceDeletionAtPath accepts a resource name and waits until it is deleted and returns error if it times out
-func waitForResourceDeletionAtPath(ctx context.Context, resource string) error {
 
 	fields := log.Fields{"resource": resource}
-	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForResourceDeletionAtPath")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForResourceDeletionAtPath")
 
-	maxDuration := resourceDeletionTimeoutSecs * time.Second
-
-	checkResourceDeletion := func() error {
-		if _, err := os.Stat(resource); err == nil {
-			if err = os.Remove(resource); err != nil {
-				Logc(ctx).WithFields(fields).Debugf("Failed to remove resource, %s", err)
-				return fmt.Errorf("failed to remove resource %s; %s", resource, err)
-			}
+	// Check if resource exists
+	if _, err := os.Stat(resource); err != nil {
+		if os.IsNotExist(err) {
+			Logc(ctx).WithFields(fields).Debugf("Resource not found.")
 			return nil
-		} else if !os.IsNotExist(err) {
+		} else {
 			Logc(ctx).WithFields(fields).Debugf("Can't determine if resource exists; %s", err)
 			return fmt.Errorf("can't determine if resource %s exists; %s", resource, err)
 		}
+	}
 
-		return nil
+	// Remove resource
+	if err := os.Remove(resource); err != nil {
+		Logc(ctx).WithFields(fields).Debugf("Failed to remove resource, %s", err)
+		return fmt.Errorf("failed to remove resource %s; %s", resource, err)
+	}
+
+	return nil
+}
+
+// WaitForResourceDeletionAtPath accepts a resource name and waits until it is deleted and returns error if it times out
+func WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDuration time.Duration) error {
+
+	fields := log.Fields{"resource": resource}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.WaitForResourceDeletionAtPath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.WaitForResourceDeletionAtPath")
+
+	checkResourceDeletion := func() error {
+		return DeleteResourceAtPath(ctx, resource)
 	}
 
 	deleteNotify := func(err error, duration time.Duration) {
@@ -818,7 +824,7 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 		Logc(ctx).Debug("Skipping multipath discovery, multipathd isn't running.")
 
 		if len(devices) > 1 || advertisedPortalCount > 1 {
-			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is not running, however the " +
+			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is not running, however the "+
 				"number of devices (%d) or portals (%d) is greater than 1.", len(devices), advertisedPortalCount)
 		}
 
@@ -828,7 +834,7 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 			// If Trident is unable to find the find_multipaths value, assume it to be default "no"
 			Logc(ctx).Errorf("unable to get the find_multipaths value from the multipath.conf: %v", err)
 		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
-			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is running but find_multipaths " +
+			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is running but find_multipaths "+
 				"value is set to '%s' in the multipath configuration. !!!Please correct this issue!!!", findMultipathsValue)
 
 			if advertisedPortalCount <= 1 {
@@ -2675,6 +2681,37 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 	return
 }
 
+// WaitForUmount detaches from the supplied location, retrying until it succeeds.
+func WaitForUmount(ctx context.Context, mountpoint string, maxDuration time.Duration) error {
+
+	logFields := log.Fields{"mountpoint": mountpoint}
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.WaitForUmount")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.WaitForUmount")
+
+	umountVolume := func() error {
+		return Umount(ctx, mountpoint)
+	}
+
+	umountNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Unmount failed, retrying.")
+	}
+
+	umountBackoff := backoff.NewExponentialBackOff()
+	umountBackoff.InitialInterval = 1 * time.Second
+	umountBackoff.Multiplier = 2
+	umountBackoff.RandomizationFactor = 0.1
+	umountBackoff.MaxElapsedTime = maxDuration
+
+	// Run the umount using an exponential backoff
+	if err := backoff.RetryNotify(umountVolume, umountBackoff, umountNotify); err != nil {
+		Logc(ctx).Warnf("Could not unmount device after %3.2f seconds.", maxDuration.Seconds())
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Device unmounted.")
+	return nil
+}
+
 // filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
 // and returns the target IQNs for a given portal
 func filterTargets(output, tp string) []string {
@@ -2968,10 +3005,10 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		if err := ensureIscsiTarget(ctx, formattedPortal, targetIQN, "", "", "", "",
 			iface); nil != err {
 			Logc(ctx).WithFields(log.Fields{
-				"tp": formattedPortal,
+				"tp":        formattedPortal,
 				"targetIqn": targetIQN,
-				"iface": iface,
-				"err": err,
+				"iface":     iface,
+				"err":       err,
 			}).Errorf("unable to ensure iSCSI target exists: %v", err)
 			continue
 		}
@@ -2984,11 +3021,11 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		timeout_param := "node.session.timeo.replacement_timeout"
 		if err := configureISCSITarget(ctx, targetIQN, portalIp, timeout_param, "5"); err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"iqn": targetIQN,
+				"iqn":    targetIQN,
 				"portal": portalIp,
-				"name": timeout_param,
-				"value": "5",
-				"err": err,
+				"name":   timeout_param,
+				"value":  "5",
+				"err":    err,
 			}).Errorf("set replacement timeout failed: %v", err)
 			continue
 		}
@@ -2996,7 +3033,7 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		// Log in to target
 		if err := loginISCSITarget(ctx, targetIQN, portalIp); err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"err": err,
+				"err":      err,
 				"portalIP": portalIp,
 			}).Error("Login to iSCSI target failed.")
 			continue
@@ -3012,7 +3049,7 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		sessionExists, err := iSCSISessionExists(ctx, portalIp)
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"err": err,
+				"err":      err,
 				"portalIP": portalIp,
 			}).Error("Could not recheck for iSCSI session.")
 			continue
