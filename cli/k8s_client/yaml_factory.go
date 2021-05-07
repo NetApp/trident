@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -1133,7 +1133,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.3
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v4.0.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -3080,7 +3080,7 @@ func replaceMultiline(originalYAML string, labels, ownerRef map[string]string, i
 		case "IMAGE_PULL_SECRETS":
 			originalYAML = strings.Replace(originalYAML, tagWithSpaces, constructImagePullSecrets(imagePullSecrets, createSpaces(spaceCount)), 1)
 		default:
-			fmt.Errorf("found an unsupported tag %s in the YAML", tag)
+			// Unsupported tag
 			return ""
 		}
 	}
