@@ -74,6 +74,7 @@ func InitLoggingForDocker(logName, logFormat string) error {
 func InitLogLevel(debug bool, logLevel string) error {
 	if debug {
 		log.SetLevel(log.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	} else {
 		level, err := log.ParseLevel(logLevel)
 		if err != nil {
