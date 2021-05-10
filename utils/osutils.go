@@ -710,13 +710,7 @@ func getDeviceInfoForLUN(
 		}
 	}
 
-	multipathDevice := ""
-	for _, device := range devices {
-		multipathDevice = findMultipathDeviceForDevice(ctx, device)
-		if multipathDevice != "" {
-			break
-		}
-	}
+	multipathDevice := waitForMultipathDeviceForDevices(ctx, devices)
 
 	var devicePath string
 	if multipathDevice != "" {
