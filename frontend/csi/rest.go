@@ -11,11 +11,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
+
+const HTTPClientTimeout = time.Second * 30
 
 type RestClient struct {
 	url        string
@@ -49,6 +52,7 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 			},
+			Timeout: HTTPClientTimeout,
 		},
 	}, nil
 }

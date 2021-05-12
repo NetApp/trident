@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const HTTPTimeout = time.Second * 300
+const HTTPClientTimeout = time.Second * 300
 
 func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
 
@@ -33,7 +33,7 @@ func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*
 		LogHTTPRequest(request, requestBody)
 	}
 
-	client := &http.Client{Timeout: HTTPTimeout}
+	client := &http.Client{Timeout: HTTPClientTimeout}
 	response, err := client.Do(request)
 
 	var responseBody []byte
