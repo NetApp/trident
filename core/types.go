@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -67,6 +67,7 @@ type Orchestrator interface {
 	GetNode(ctx context.Context, nName string) (*utils.Node, error)
 	ListNodes(ctx context.Context) ([]*utils.Node, error)
 	DeleteNode(ctx context.Context, nName string) error
+	PeriodicallyReconcileNodeAccessOnBackends()
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)

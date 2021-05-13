@@ -1,3 +1,5 @@
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
+
 package logger
 
 const (
@@ -10,6 +12,7 @@ const (
 	ContextSourceDocker   = "Docker"
 	ContextSourceCSI      = "CSI"
 	ContextSourceInternal = "Internal"
+	ContextSourcePeriodic = "Periodic"
 
 	CRDControllerEvent = "crdControllerEvent"
 	LogSource          = "logSource"

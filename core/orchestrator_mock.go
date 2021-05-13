@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -650,6 +650,10 @@ func (m *MockOrchestrator) DeleteStorageClass(ctx context.Context, scName string
 	}
 	delete(m.storageClasses, scName)
 	return nil
+}
+
+func (m *MockOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
+	return
 }
 
 func (m *MockOrchestrator) AddNode(_ context.Context, node *utils.Node, _ NodeEventCallback) error {

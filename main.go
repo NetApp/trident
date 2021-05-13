@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -453,6 +453,10 @@ func main() {
 		if err := f.Activate(); err != nil {
 			log.Error(err)
 		}
+	}
+
+	if config.CurrentDriverContext == config.ContextCSI {
+		go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
 	}
 
 	// Register and wait for a shutdown signal

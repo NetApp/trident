@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -74,14 +74,15 @@ type Driver interface {
 }
 
 type Backend struct {
-	Driver      Driver
-	Name        string
-	BackendUUID string
-	Online      bool
-	State       BackendState
-	Storage     map[string]*Pool
-	Volumes     map[string]*Volume
-	ConfigRef   string
+	Driver             Driver
+	Name               string
+	BackendUUID        string
+	Online             bool
+	State              BackendState
+	Storage            map[string]*Pool
+	Volumes            map[string]*Volume
+	ConfigRef          string
+	nodeAccessUpToDate bool
 }
 
 type UpdateBackendStateRequest struct {
@@ -312,8 +313,6 @@ func (b *Backend) GetDebugTraceFlags(ctx context.Context) map[string]bool {
 	} else {
 		return flags
 	}
-
-	return emptyMap
 }
 
 func (b *Backend) CloneVolume(
@@ -788,12 +787,27 @@ func (b *Backend) Terminate(ctx context.Context) {
 	}
 }
 
+// InvalidateNodeAccess marks the backend as needing the node access rule reconciled
+func (b *Backend) InvalidateNodeAccess() {
+	b.nodeAccessUpToDate = false
+}
+
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
 func (b *Backend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node) error {
-	if b.State == Online || b.State == Deleting {
-		return b.Driver.ReconcileNodeAccess(ctx, nodes, b.BackendUUID)
+	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
+		// Only reconcile backends that need it
+		if b.nodeAccessUpToDate {
+			Logc(ctx).WithField("backend", b.Name).Trace("Backend node access rules are already up-to-date, skipping.")
+			return nil
+		}
+		Logc(ctx).WithField("backend", b.Name).Trace("Backend node access rules are out-of-date, updating.")
+		err = b.Driver.ReconcileNodeAccess(ctx, nodes, b.BackendUUID)
+		if err == nil {
+			b.nodeAccessUpToDate = true
+		}
+		return err
 	}
 	return nil
 }

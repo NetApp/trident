@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -29,6 +29,11 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
+)
+
+const (
+	NodeAccessReconcilePeriod      = time.Second * 30
+	NodeRegistrationCooldownPeriod = time.Second * 30
 )
 
 // recordTiming is used to record in Prometheus the total time taken for an operation as follows:
@@ -66,19 +71,21 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 }
 
 type TridentOrchestrator struct {
-	backends          map[string]*storage.Backend // key is UUID, not name
-	volumes           map[string]*storage.Volume
-	frontends         map[string]frontend.Plugin
-	mutex             *sync.Mutex
-	storageClasses    map[string]*storageclass.StorageClass
-	nodes             map[string]*utils.Node
-	snapshots         map[string]*storage.Snapshot
-	storeClient       persistentstore.Client
-	bootstrapped      bool
-	bootstrapError    error
-	txnMonitorTicker  *time.Ticker
-	txnMonitorChannel chan struct{}
-	txnMonitorStopped bool
+	backends             map[string]*storage.Backend // key is UUID, not name
+	volumes              map[string]*storage.Volume
+	frontends            map[string]frontend.Plugin
+	mutex                *sync.Mutex
+	storageClasses       map[string]*storageclass.StorageClass
+	nodes                map[string]*utils.Node
+	snapshots            map[string]*storage.Snapshot
+	storeClient          persistentstore.Client
+	bootstrapped         bool
+	bootstrapError       error
+	txnMonitorTicker     *time.Ticker
+	txnMonitorChannel    chan struct{}
+	txnMonitorStopped    bool
+	lastNodeRegistration time.Time
+	stopNodeAccessLoop   chan bool
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -132,7 +139,7 @@ func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) erro
 }
 
 func (o *TridentOrchestrator) Bootstrap() error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 	var err error
 
 	if len(o.frontends) == 0 {
@@ -452,6 +459,9 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 // Stop stops the orchestrator core.
 func (o *TridentOrchestrator) Stop() {
+
+	// Stop the node access reconciliation background task
+	o.stopNodeAccessLoop <- true
 
 	// Stop transaction monitor
 	o.StopTransactionMonitor()
@@ -999,6 +1009,8 @@ func (o *TridentOrchestrator) UpdateBackend(ctx context.Context, backendName, co
 	if err != nil {
 		return backend, err
 	}
+	// Node access rules may have changed in the backend config
+	b.InvalidateNodeAccess()
 	err = o.reconcileNodeAccessOnBackend(ctx, b)
 	if err != nil {
 		return backend, err
@@ -1042,6 +1054,8 @@ func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
 	if err != nil {
 		return backend, err
 	}
+	// Node access rules may have changed in the backend config
+	b.InvalidateNodeAccess()
 	err = o.reconcileNodeAccessOnBackend(ctx, b)
 	if err != nil {
 		return backend, err
@@ -1087,7 +1101,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 			}).Error("Cannot update backend created using TridentBackendConfig CR; please update the" +
 				" TridentBackendConfig CR instead.")
 
-			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; please update" +
+			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; please update"+
 				" the TridentBackendConfig CR", backendName)
 		}
 	}
@@ -1111,8 +1125,8 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 				"invalidConfigRef":  callingConfigRef,
 			}).Errorf("Backend update initiated using an invalid ConfigRef.")
 			return nil, utils.UnsupportedConfigError(fmt.Errorf(
-				"backend '%v' update initiated using an invalid configRef, it is associated with configRef " +
-				"'%v' and not '%v'", originalBackend.Name, originalConfigRef, callingConfigRef))
+				"backend '%v' update initiated using an invalid configRef, it is associated with configRef "+
+					"'%v' and not '%v'", originalBackend.Name, originalConfigRef, callingConfigRef))
 		}
 	}
 
@@ -1514,7 +1528,7 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 			}).Error("Cannot delete backend created using TridentBackendConfig CR; delete the TridentBackendConfig" +
 				" CR first.")
 
-			return fmt.Errorf("cannot delete backend '%v' created using TridentBackendConfig CR; delete the" +
+			return fmt.Errorf("cannot delete backend '%v' created using TridentBackendConfig CR; delete the"+
 				" TridentBackendConfig CR first", backendName)
 		}
 	}
@@ -2894,7 +2908,18 @@ func (o *TridentOrchestrator) PublishVolume(ctx context.Context, volumeName stri
 	}
 	publishInfo.Nodes = nodes
 	publishInfo.BackendUUID = volume.BackendUUID
-	return o.backends[volume.BackendUUID].PublishVolume(ctx, volume.Config, publishInfo)
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		// Not a not found error because this is not user input
+		return fmt.Errorf("backend %s not found", volume.BackendUUID)
+	}
+	if err := o.reconcileNodeAccessOnBackend(ctx, backend); err != nil {
+		err = fmt.Errorf("unable to update node access rules on backend %s; %v", backend.Name, err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	return backend.PublishVolume(ctx, volume.Config, publishInfo)
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
@@ -3898,14 +3923,50 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 		nodes = append(nodes, n)
 	}
 
-	err := b.ReconcileNodeAccess(ctx, nodes)
-	if err != nil {
-		err = fmt.Errorf("unable to reconcile node access on backend; %v", err)
-		Logc(ctx).WithField("Backend", b.Name).Error(err)
-		return err
-	}
+	return b.ReconcileNodeAccess(ctx, nodes)
+}
 
-	return nil
+// safeReconcileNodeAccessOnBackend wraps reconcileNodeAccessOnBackend in a mutex lock for use in functions that aren't
+// already locked
+func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Context, b *storage.Backend) error {
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	return o.reconcileNodeAccessOnBackend(ctx, b)
+}
+
+// PeriodicallyReconcileNodeAccessOnBackends is intended to be run as a goroutine and will periodically run
+// safeReconcileNodeAccessOnBackend for each backend in the orchestrator
+func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic)
+
+	Logc(ctx).Info("Starting periodic node access reconciliation service.")
+	defer Logc(ctx).Info("Stopping periodic node access reconciliation service.")
+
+	// Every period seconds after the last run
+	for range time.Tick(NodeAccessReconcilePeriod) {
+		select {
+		case <-o.stopNodeAccessLoop:
+			// Exit on shutdown signal
+			return
+
+		default:
+			Logc(ctx).Trace("Periodic node access reconciliation loop beginning.")
+			// Wait at least cooldown seconds after the last node registration to prevent thundering herd
+			if time.Now().After(o.lastNodeRegistration.Add(NodeRegistrationCooldownPeriod)) {
+				for _, backend := range o.backends {
+					if err := o.safeReconcileNodeAccessOnBackend(ctx, backend); err != nil {
+						// If there's a problem log an error and keep going
+						Logc(ctx).WithField("backend", backend.Name).WithError(err).Error(
+							"Problem encountered updating node access rules for backend.")
+					}
+				}
+			} else {
+				Logc(ctx).Trace("Time is too soon since last node registration, " +
+					"delaying node access rule reconciliation.")
+			}
+		}
+	}
 }
 
 func (o *TridentOrchestrator) AddNode(
@@ -3945,7 +4006,15 @@ func (o *TridentOrchestrator) AddNode(
 
 	o.nodes[node.Name] = node
 
-	return o.reconcileNodeAccessOnAllBackends(ctx)
+	o.lastNodeRegistration = time.Now()
+	o.invalidateAllBackendNodeAccess()
+	return nil
+}
+
+func (o *TridentOrchestrator) invalidateAllBackendNodeAccess() {
+	for _, backend := range o.backends {
+		backend.InvalidateNodeAccess()
+	}
 }
 
 func (o *TridentOrchestrator) handleUpdatedNodePrep(
@@ -4047,6 +4116,7 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nName string) (err
 		return err
 	}
 	delete(o.nodes, nName)
+	o.invalidateAllBackendNodeAccess()
 	return o.reconcileNodeAccessOnAllBackends(ctx)
 }
 

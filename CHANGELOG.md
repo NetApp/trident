@@ -19,6 +19,7 @@
 - Fixed issue where unexpected output in iscsiadm discovery commands may cause target discovery to fail.
 - Fixed issue where ontap-san-economy snapshots could not be restored or deleted with storage prefix (Issue [#461](https://github.com/NetApp/trident/issues/461)).
 - **Kubernetes:** Trident in CSI mode now uses a unique igroup for each ONTAP SAN backend (Issue [437](https://github.com/NetApp/trident/issues/437)).
+- **Kubernetes:** Increased speed of node pod registrations.
 
 **Enhancements:**
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
