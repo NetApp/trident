@@ -1248,13 +1248,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=34572"
+        - "--https_port=51199"
         {DEBUG}
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1262,7 +1262,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -1404,13 +1404,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=34572"
+        - "--https_port=51199"
         {DEBUG}
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1418,7 +1418,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -1559,13 +1559,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=34572"
+        - "--https_port=51199"
         {DEBUG}
         startupProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 5
           timeoutSeconds: 1
           periodSeconds: 5
@@ -1573,7 +1573,7 @@ spec:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1581,7 +1581,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 34572
+            port: 51199
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
