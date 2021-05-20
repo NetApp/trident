@@ -419,25 +419,23 @@ func getTestResponse(ctx context.Context, requestBody io.Reader, vserverAdminHos
 	return responseBytes, nil
 }
 
-func newUnstartedVserver(ctx context.Context, vserverAdminHost, vserverAdminPort, vserverAggrName string) *httptest.Server {
-
+func newUnstartedVserver(ctx context.Context, vserverAdminHost, vserverAggrName string) *httptest.Server {
 	mux := http.NewServeMux()
+	server := httptest.NewUnstartedServer(mux)
+	listener, err := net.Listen("tcp", vserverAdminHost+":0")
+	if err != nil {
+		Logc(ctx).Fatal(err)
+	}
+	server.Listener = listener
+	_, port, _ := net.SplitHostPort(listener.Addr().String())
 	mux.HandleFunc("/servlets/", func(w http.ResponseWriter, r *http.Request) {
 
-		response, err := getTestResponse(ctx, r.Body, vserverAdminHost, vserverAdminPort, vserverAggrName)
+		response, err := getTestResponse(ctx, r.Body, vserverAdminHost, port, vserverAggrName)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 		}
 
 		w.Write(response)
 	})
-
-	server := httptest.NewUnstartedServer(mux)
-
-	listener, err := net.Listen("tcp", vserverAdminHost+":"+vserverAdminPort)
-	if err != nil {
-		Logc(ctx).Fatal(err)
-	}
-	server.Listener = listener
 	return server
 }

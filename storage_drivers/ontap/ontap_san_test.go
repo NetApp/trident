@@ -4,9 +4,7 @@ package ontap
 
 import (
 	"context"
-	"math/rand"
 	"net"
-	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -23,8 +21,7 @@ import (
 func TestOntapSanStorageDriverConfigString(t *testing.T) {
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
 	var ontapSanDrivers = []SANStorageDriver{
@@ -114,11 +111,9 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 	ctx := context.Background()
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -268,7 +263,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 
 			igroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 		}
@@ -292,11 +287,9 @@ func TestOntapSanTerminate(t *testing.T) {
 	ctx := context.Background()
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -348,7 +341,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 			igroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			sanStorageDriver.Telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)

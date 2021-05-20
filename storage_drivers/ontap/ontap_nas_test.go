@@ -4,9 +4,7 @@ package ontap
 
 import (
 	"context"
-	"math/rand"
 	"net"
-	"strconv"
 	"testing"
 
 	"github.com/prometheus/common/log"
@@ -23,8 +21,7 @@ import (
 func TestOntapNasStorageDriverConfigString(t *testing.T) {
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
+	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
 	var ontapNasDrivers = []NASStorageDriver{
@@ -113,11 +110,9 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	ctx := context.Background()
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -130,7 +125,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 		}
 	}()
 
-	d := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+	d := newTestOntapNASDriver(vserverAdminHost, port, vserverAggrName)
 	d.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
 			Region: "us_east_1",
