@@ -5,7 +5,6 @@ package crd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"reflect"
 	"time"
 
@@ -21,9 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1 "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
@@ -32,8 +29,7 @@ import (
 	"github.com/netapp/trident/core"
 	. "github.com/netapp/trident/logger"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	tridentscheme "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
 	tridentinformers "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions"
 	tridentinformersv1 "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp/v1"
@@ -91,7 +87,7 @@ type TridentCrdController struct {
 	kubeClientset kubernetes.Interface
 
 	// crdClientset is a clientset for our own API group
-	crdClientset clientset.Interface
+	crdClientset tridentv1clientset.Interface
 
 	crdControllerStopChan chan struct{}
 	crdInformerFactory    tridentinformers.SharedInformerFactory
@@ -147,62 +143,27 @@ type TridentCrdController struct {
 	recorder record.EventRecorder
 }
 
-func NewTridentCrdController(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*TridentCrdController, error) {
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, kubeConfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the CLI-based Kubernetes client
-	client, err := clik8sclient.NewKubectlClient("", 30*time.Second)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	// when running in binary mode, we use the current namespace as determined by the CLI client
-	return newTridentCrdController(o, kubeConfig, client.Namespace())
-}
-
-func NewTridentCrdControllerInCluster(o core.Orchestrator) (*TridentCrdController, error) {
-	kubeConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	// when running in a pod, we use the Trident pod's namespace
-	bytes, err := ioutil.ReadFile(config.TridentNamespaceFile)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error":         err,
-			"namespaceFile": config.TridentNamespaceFile,
-		}).Fatal("Trident CRD Controller frontend failed to obtain Trident's namespace.")
-	}
-	tridentNamespace := string(bytes)
-
-	return newTridentCrdController(o, kubeConfig, tridentNamespace)
-}
-
-// newTridentCrdController returns a new Trident CRD controller frontend
-func newTridentCrdController(
-	orchestrator core.Orchestrator, kubeConfig *rest.Config, tridentNamespace string,
+// NewTridentCrdController returns a new Trident CRD controller frontend
+func NewTridentCrdController(
+	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
-	kubeClientset, err := kubernetes.NewForConfig(kubeConfig)
+
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+
+	Logx(ctx).Debug("Creating CRDv1 controller.")
+
+	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}
 
-	crdClientset, err := versioned.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClientset, crdClientset)
+	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient, clients.TridentClient)
 }
 
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
 	orchestrator core.Orchestrator, tridentNamespace string,
-	kubeClientset kubernetes.Interface, crdClientset clientset.Interface,
+	kubeClientset kubernetes.Interface, crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
 
 	log.WithFields(log.Fields{
@@ -970,7 +931,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 
 func (c *TridentCrdController) addBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
-	) error {
+) error {
 
 	Logx(ctx).WithFields(log.Fields{
 		"backendConfig.Name": backendConfig.Name,
@@ -1016,7 +977,7 @@ func (c *TridentCrdController) addBackendConfig(
 
 func (c *TridentCrdController) updateBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
-	) error {
+) error {
 
 	logFields := log.Fields{
 		"backendConfig.Name": backendConfig.Name,
@@ -1097,7 +1058,7 @@ func (c *TridentCrdController) updateBackendConfig(
 
 func (c *TridentCrdController) deleteBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
-	) error {
+) error {
 
 	logFields := log.Fields{
 		"backendConfig.Name": backendConfig.Name,
@@ -1122,7 +1083,7 @@ func (c *TridentCrdController) deleteBackendConfig(
 
 			message, phase, err := c.deleteBackendConfigUsingPolicyDelete(ctx, backendConfig, logFields)
 			if err != nil {
-				lastOperationStatus :=  OperationStatusFailed
+				lastOperationStatus := OperationStatusFailed
 				if phase == tridentv1.PhaseDeleting {
 					lastOperationStatus = OperationStatusSuccess
 				}
@@ -1172,7 +1133,7 @@ func (c *TridentCrdController) deleteBackendConfig(
 
 func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, logFields map[string]interface{},
-	) (string, tridentv1.TridentBackendConfigPhase, error) {
+) (string, tridentv1.TridentBackendConfigPhase, error) {
 
 	var phase tridentv1.TridentBackendConfigPhase
 	var backend *tridentv1.TridentBackend
@@ -1270,7 +1231,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 
 func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, logFields map[string]interface{},
-	) (string, tridentv1.TridentBackendConfigPhase, error) {
+) (string, tridentv1.TridentBackendConfigPhase, error) {
 
 	var phase tridentv1.TridentBackendConfigPhase
 	var backend *tridentv1.TridentBackend
@@ -1328,7 +1289,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 // getTridentBackend returns a TridentBackend CR with the given backendUUID
 func (c *TridentCrdController) getTridentBackend(
 	ctx context.Context, namespace, backendUUID string,
-	) (*tridentv1.TridentBackend, error) {
+) (*tridentv1.TridentBackend, error) {
 
 	// Get list of all the backends
 	backendList, err := c.crdClientset.TridentV1().TridentBackends(namespace).List(ctx, listOpts)
@@ -1352,7 +1313,7 @@ func (c *TridentCrdController) getTridentBackend(
 
 // getBackendConfigWithBackendUUID identifies if the backend config referencing a given backendUUID exists or not
 func (c *TridentCrdController) getBackendConfigWithBackendUUID(ctx context.Context, namespace, backendUUID string,
-	) (*tridentv1.TridentBackendConfig, error) {
+) (*tridentv1.TridentBackendConfig, error) {
 	// Get list of all the backend configs
 	backendConfigList, err := c.crdClientset.TridentV1().TridentBackendConfigs(namespace).List(ctx, listOpts)
 	if err != nil {
@@ -1406,7 +1367,7 @@ func (c *TridentCrdController) getBackendConfigsWithSecret(ctx context.Context, 
 
 // getBackendInfo creates TridentBackendConfigBackendInfo object based on the provided information
 func (c *TridentCrdController) getBackendInfo(_ context.Context, backendName, backendUUID string,
-	) tridentv1.TridentBackendConfigBackendInfo {
+) tridentv1.TridentBackendConfigBackendInfo {
 	return tridentv1.TridentBackendConfigBackendInfo{
 		BackendName: backendName,
 		BackendUUID: backendUUID,
@@ -1417,7 +1378,7 @@ func (c *TridentCrdController) getBackendInfo(_ context.Context, backendName, ba
 func (c *TridentCrdController) updateTbcEventAndStatus(
 	ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
 	newStatus tridentv1.TridentBackendConfigStatus, debugMessage, eventType string,
-	) (tbcCRNew *tridentv1.TridentBackendConfig, err error) {
+) (tbcCRNew *tridentv1.TridentBackendConfig, err error) {
 
 	var logEvent bool
 
@@ -1505,7 +1466,7 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(ctx context.Co
 			newTbcCR, err = c.crdClientset.TridentV1().TridentBackendConfigs(tbcCR.Namespace).UpdateStatus(
 				ctx, crClone, updateOpts)
 			if err != nil {
-				Logx(ctx).WithFields(logFields).Errorf("another attempt to update the status failed: %v; " +
+				Logx(ctx).WithFields(logFields).Errorf("another attempt to update the status failed: %v; "+
 					"backend (name: %v, backendUUID: %v) requires manual intervention", err,
 					newStatusDetails.BackendInfo.BackendName, newStatusDetails.BackendInfo.BackendUUID)
 			} else {
@@ -1519,7 +1480,7 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(ctx context.Co
 
 // updateTridentBackendConfigCR updates the TridentBackendConfigCR
 func (c *TridentCrdController) updateTridentBackendConfigCR(ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
-	) (*tridentv1.TridentBackendConfig, error) {
+) (*tridentv1.TridentBackendConfig, error) {
 
 	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
 
@@ -1685,7 +1646,7 @@ func (c *TridentCrdController) removeStorageClassFinalizers(ctx context.Context,
 
 // removeTransactionFinalizers removes Trident's finalizers from TridentTransaction CRs
 func (c *TridentCrdController) removeTransactionFinalizers(ctx context.Context, tx *tridentv1.TridentTransaction,
-) (err error){
+) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
 		"tx.ResourceVersion":              tx.ResourceVersion,

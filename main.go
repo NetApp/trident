@@ -168,11 +168,7 @@ func processCmdLineArgs() {
 
 	case *useCRD:
 		log.Debug("Trident is configured with a CRD client.")
-		if *k8sAPIServer != "" || *k8sConfigPath != "" {
-			storeClient, err = persistentstore.NewCRDClientV1(*k8sAPIServer, *k8sConfigPath)
-		} else {
-			storeClient, err = persistentstore.NewCRDClientV1InCluster()
-		}
+		storeClient, err = persistentstore.NewCRDClientV1(*k8sAPIServer, *k8sConfigPath)
 		if err != nil {
 			log.Fatalf("Unable to create the Kubernetes store client. %v", err)
 		}
@@ -294,14 +290,9 @@ func main() {
 	// Create Kubernetes *or* Docker *or* CSI/K8S frontend
 	if enableKubernetes {
 
-		var kubernetesFrontend frontend.Plugin
 		config.CurrentDriverContext = config.ContextKubernetes
 
-		if *k8sAPIServer != "" {
-			kubernetesFrontend, err = kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
-		} else if *k8sPod {
-			kubernetesFrontend, err = kubernetes.NewPluginInCluster(orchestrator)
-		}
+		kubernetesFrontend, err := kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
 		if err != nil {
 			log.Fatalf("Unable to start the Kubernetes frontend. %v", err)
 		}
@@ -309,12 +300,7 @@ func main() {
 		postBootstrapFrontends = append(postBootstrapFrontends, kubernetesFrontend)
 
 		if *useCRD {
-			var crdController frontend.Plugin
-			if *k8sAPIServer != "" {
-				crdController, err = crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
-			} else {
-				crdController, err = crd.NewTridentCrdControllerInCluster(orchestrator)
-			}
+			crdController, err := crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
 			if err != nil {
 				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
 			}
@@ -357,10 +343,8 @@ func main() {
 		}
 
 		var hybridFrontend frontend.Plugin
-		if *k8sAPIServer != "" {
+		if *k8sAPIServer != "" || *k8sPod {
 			hybridFrontend, err = k8shelper.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
-		} else if *k8sPod {
-			hybridFrontend, err = k8shelper.NewPluginInCluster(orchestrator)
 		} else {
 			hybridFrontend = plainhelper.NewPlugin(orchestrator)
 		}
@@ -396,12 +380,7 @@ func main() {
 		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
 
 		if *useCRD {
-			var crdController frontend.Plugin
-			if *k8sAPIServer != "" {
-				crdController, err = crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
-			} else {
-				crdController, err = crd.NewTridentCrdControllerInCluster(orchestrator)
-			}
+			crdController, err := crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
 			if err != nil {
 				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
 			}

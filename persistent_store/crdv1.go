@@ -5,22 +5,18 @@ package persistentstore
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
@@ -43,79 +39,35 @@ var (
 
 // CRDClientV1 stores persistent state in CRD objects in Kubernetes
 type CRDClientV1 struct {
-	crdClient versioned.Interface
-	k8sClient k8sclient.Interface
+	crdClient tridentv1clientset.Interface
+	k8sClient clik8sclient.Interface
 	version   *config.PersistentStateVersion
 	namespace string
 }
 
-func NewCRDClientV1(apiServerIP, kubeConfigPath string) (*CRDClientV1, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+func NewCRDClientV1(masterURL, kubeConfigPath string) (*CRDClientV1, error) {
 
-	Logc(ctx).WithFields(log.Fields{
-		"apiServerIP":    apiServerIP,
-		"kubeConfigPath": kubeConfigPath,
-	}).Debug("Creating CRDv1 persistent store client.")
-
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, kubeConfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the CLI-based Kubernetes client
-	k8sClient, err := k8sclient.NewKubectlClient("", 30*time.Second)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	// When running in binary mode, we use the current namespace as determined by the CLI client
-	return newCRDClientV1(ctx, kubeConfig, k8sClient)
-}
-
-func NewCRDClientV1InCluster() (*CRDClientV1, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
 	Logc(ctx).Debug("Creating CRDv1 persistent store client.")
 
-	kubeConfig, err := rest.InClusterConfig()
+	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}
-
-	// When running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(config.TridentNamespaceFile)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"error":         err,
-			"namespaceFile": config.TridentNamespaceFile,
-		}).Error("CRDv1 persistence client failed to obtain Trident's namespace!")
-		return nil, err
-	}
-
-	k8sClient, err := k8sclient.NewKubeClient(kubeConfig, string(namespaceBytes), 30*time.Second)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	return newCRDClientV1(ctx, kubeConfig, k8sClient)
-}
-
-func newCRDClientV1(ctx context.Context, kubeConfig *rest.Config, k8sClient k8sclient.Interface) (*CRDClientV1, error) {
-
-	crdClient, err := versioned.NewForConfig(kubeConfig)
 
 	Logc(ctx).WithFields(log.Fields{
-		"tridentNamespace": k8sClient.Namespace(),
+		"tridentNamespace": clients.Namespace,
 	}).Debug("Created CRDv1 persistence client.")
 
 	return &CRDClientV1{
-		crdClient: crdClient,
-		k8sClient: k8sClient,
+		crdClient: clients.TridentClient,
+		k8sClient: clients.K8SClient,
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: string(CRDV1Store),
 			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
-		namespace: k8sClient.Namespace(),
+		namespace: clients.Namespace,
 	}, err
 }
 

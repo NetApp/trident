@@ -7,12 +7,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -28,7 +26,6 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -37,7 +34,7 @@ import (
 	"github.com/netapp/trident/frontend"
 	k8sclient "github.com/netapp/trident/k8s_client"
 	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	trident_informers "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
@@ -62,9 +59,9 @@ type StorageClassSummary struct {
 type Plugin struct {
 	orchestrator             core.Orchestrator
 	kubeClient               kubernetes.Interface
-	crdClient                *versioned.Clientset
+	crdClient                *tridentv1clientset.Clientset
 	getNamespacedKubeClient  func(*rest.Config, string) (k8sclient.Interface, error)
-	kubeConfig               rest.Config
+	restConfig               rest.Config
 	eventRecorder            record.EventRecorder
 	claimController          cache.Controller
 	claimControllerStopChan  chan struct{}
@@ -87,71 +84,25 @@ type Plugin struct {
 	crdInformerFactory       trident_informers.SharedInformerFactory
 }
 
-func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin, error) {
+func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (*Plugin, error) {
 
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, kubeConfigPath)
+	Logc(ctx).Info("Initializing Kubernetes frontend.")
+
+	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the CLI-based Kubernetes client
-	client, err := clik8sclient.NewKubectlClient("", 30*time.Second)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
-	}
-
-	// when running in binary mode, we use the current namespace as determined by the CLI client
-	return newKubernetesPlugin(ctx, o, kubeConfig, client.Namespace())
-}
-
-func NewPluginInCluster(o core.Orchestrator) (*Plugin, error) {
-
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
-
-	kubeConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	// when running in a pod, we use the Trident pod's namespace
-	bytes, err := ioutil.ReadFile(config.TridentNamespaceFile)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"error":         err,
-			"namespaceFile": config.TridentNamespaceFile,
-		}).Fatal("Kubernetes frontend failed to obtain Trident's namespace!")
-	}
-	tridentNamespace := string(bytes)
-
-	return newKubernetesPlugin(ctx, o, kubeConfig, tridentNamespace)
-}
-
-func newKubernetesPlugin(
-	ctx context.Context, orchestrator core.Orchestrator, kubeConfig *rest.Config, tridentNamespace string,
-) (*Plugin, error) {
-
-	Logc(ctx).WithFields(log.Fields{
-		"namespace": tridentNamespace,
-	}).Info("Initializing Kubernetes frontend.")
-
-	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	crdClient, err := versioned.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
+	kubeClient := clients.KubeClient
 
 	ret := &Plugin{
 		orchestrator:             orchestrator,
 		kubeClient:               kubeClient,
-		crdClient:                crdClient,
+		crdClient:                clients.TridentClient,
 		getNamespacedKubeClient:  k8sclient.NewKubeClient,
-		kubeConfig:               *kubeConfig,
+		restConfig:               *clients.RestConfig,
 		claimControllerStopChan:  make(chan struct{}),
 		volumeControllerStopChan: make(chan struct{}),
 		classControllerStopChan:  make(chan struct{}),
@@ -160,7 +111,7 @@ func newKubernetesPlugin(
 		pendingClaimMatchMap:     make(map[string]*v1.PersistentVolume),
 		defaultStorageClasses:    make(map[string]bool, 1),
 		storageClassCache:        make(map[string]*StorageClassSummary),
-		tridentNamespace:         tridentNamespace,
+		tridentNamespace:         clients.Namespace,
 	}
 
 	ret.kubernetesVersion, err = kubeClient.Discovery().ServerVersion()
@@ -850,7 +801,7 @@ func (p *Plugin) createVolumeFromConfig(
 
 	var vol *storage.VolumeExternal
 
-	k8sClient, err := p.getNamespacedKubeClient(&p.kubeConfig, namespace)
+	k8sClient, err := p.getNamespacedKubeClient(&p.restConfig, namespace)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"namespace": namespace,
@@ -994,7 +945,7 @@ func (p *Plugin) createPV(
 	}
 
 	// We create the CHAP secret in Trident's namespace
-	k8sClientCHAP, err := p.getNamespacedKubeClient(&p.kubeConfig, p.tridentNamespace)
+	k8sClientCHAP, err := p.getNamespacedKubeClient(&p.restConfig, p.tridentNamespace)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"namespace": p.tridentNamespace,

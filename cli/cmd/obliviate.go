@@ -4,18 +4,13 @@ package cmd
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/logging"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 )
 
 var forceObliviate bool
@@ -62,29 +57,24 @@ func initLogging() {
 
 func initClients() error {
 
+	clients, err := k8sclient.CreateK8SClients("", configPath, TridentPodNamespace)
+	if err != nil {
+		return err
+	}
+	clients.K8SClient.SetTimeout(k8sTimeout)
+	k8sClient = clients.K8SClient
+	crdClientset = clients.TridentClient
+
 	// Detect whether we are running inside a pod
-	if namespaceBytes, err := ioutil.ReadFile(config.TridentNamespaceFile); err == nil {
+	if clients.InK8SPod {
 
 		if !forceObliviate {
 			return errors.New("obliviation canceled")
 		}
 
-		// The namespace file exists, so we're in a pod.  Create an API-based client.
-		kubeConfig, err := rest.InClusterConfig()
-		if err != nil {
-			return err
-		}
-		resetNamespace = string(namespaceBytes)
+		resetNamespace = clients.Namespace
 
-		log.WithField("namespace", resetNamespace).Debug("Running in a pod, creating API-based clients.")
-
-		if kubeClient, err = k8sclient.NewKubeClient(kubeConfig, resetNamespace, k8sTimeout); err != nil {
-			return err
-		}
-
-		if crdClientset, err = crdclient.NewForConfig(kubeConfig); err != nil {
-			return err
-		}
+		log.WithField("namespace", resetNamespace).Debug("Running in a pod.")
 
 	} else {
 
@@ -96,22 +86,12 @@ func initClients() error {
 			}
 		}
 
-		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
-		log.WithField("kubeConfigPath", configPath).Debug("Running outside a pod, creating CLI-based client.")
-
-		if kubeClient, err = k8sclient.NewKubectlClient("", k8sTimeout); err != nil {
-			return err
-		}
 		resetNamespace = TridentPodNamespace
 		if resetNamespace == "" {
-			resetNamespace = kubeClient.Namespace()
+			resetNamespace = k8sClient.Namespace()
 		}
 
-		if restConfig, err := clientcmd.BuildConfigFromFlags("", configPath); err != nil {
-			return err
-		} else if crdClientset, err = crdclient.NewForConfig(restConfig); err != nil {
-			return err
-		}
+		log.WithField("namespace", resetNamespace).Debug("Running outside a pod.")
 	}
 
 	return nil

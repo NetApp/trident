@@ -126,9 +126,9 @@ func createK8SClientsInCluster() (*Clients, error) {
 	}
 
 	// when running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(commonconfig.TridentNamespaceFile)
+	namespaceBytes, err := ioutil.ReadFile(commonconfig.NamespaceFile)
 	if err != nil {
-		return nil, fmt.Errorf("could not read namespace file %s; %v", commonconfig.TridentNamespaceFile, err)
+		return nil, fmt.Errorf("could not read namespace file %s; %v", commonconfig.NamespaceFile, err)
 	}
 	namespace := string(namespaceBytes)
 

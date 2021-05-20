@@ -51,7 +51,7 @@ func deleteAlphaSnapshotCRDs() error {
 		logFields := log.Fields{"CRD": crdName}
 
 		// See if CRD exists
-		exists, err := kubeClient.CheckCRDExists(crdName)
+		exists, err := k8sClient.CheckCRDExists(crdName)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func deleteAlphaSnapshotCRDs() error {
 		}
 
 		// Get the CRD and check version
-		crd, err := kubeClient.GetCRD(crdName)
+		crd, err := k8sClient.GetCRD(crdName)
 		if err != nil {
 			return err
 		}
@@ -83,13 +83,13 @@ func deleteAlphaSnapshotCRDs() error {
 		log.WithFields(logFields).Debug("Deleting CRD.")
 
 		// Try deleting CRD
-		if err = kubeClient.DeleteCRD(crdName); err != nil {
+		if err = k8sClient.DeleteCRD(crdName); err != nil {
 			log.WithFields(logFields).Errorf("Could not delete CRD; %v", err)
 			return err
 		}
 
 		// Check if CRD still exists (mostly likely pinned by finalizer)
-		if exists, err = kubeClient.CheckCRDExists(crdName); err != nil {
+		if exists, err = k8sClient.CheckCRDExists(crdName); err != nil {
 			return err
 		} else if !exists {
 			log.WithFields(logFields).Info("CRD deleted.")
@@ -99,7 +99,7 @@ func deleteAlphaSnapshotCRDs() error {
 		log.WithFields(logFields).Debug("CRD still present, must remove finalizers.")
 
 		// Remove finalizer
-		if err = kubeClient.RemoveFinalizerFromCRD(crdName); err != nil {
+		if err = k8sClient.RemoveFinalizerFromCRD(crdName); err != nil {
 			log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
 			return err
 		} else {
@@ -107,7 +107,7 @@ func deleteAlphaSnapshotCRDs() error {
 		}
 
 		// Check if removing the finalizer allowed the CRD to be deleted
-		if exists, err = kubeClient.CheckCRDExists(crdName); err != nil {
+		if exists, err = k8sClient.CheckCRDExists(crdName); err != nil {
 			return err
 		} else if !exists {
 			log.WithFields(logFields).Info("CRD deleted after removing finalizers.")

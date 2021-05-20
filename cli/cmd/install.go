@@ -22,7 +22,6 @@ import (
 	policy "k8s.io/api/policy/v1beta1"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -57,8 +56,9 @@ const (
 	CRDsFilename               = "trident-crds.yaml"
 	PodSecurityPolicyFilename  = "trident-podsecuritypolicy.yaml"
 
-	TridentCSI    = "trident-csi"
-	TridentLegacy = "trident"
+	TridentCSI           = "trident-csi"
+	TridentLegacy        = "trident"
+	TridentMainContainer = "trident-main"
 
 	CSIDriver  = "csi.trident.netapp.io"
 	TridentPSP = "tridentpods"
@@ -327,27 +327,14 @@ func discoverInstallationEnvironment() error {
 
 func initClient() (k8sclient.Interface, error) {
 
-	// Detect whether we are running inside a pod
-	if namespaceBytes, err := ioutil.ReadFile(tridentconfig.TridentNamespaceFile); err == nil {
-
-		// The namespace file exists, so we're in a pod.  Create an API-based client.
-		kubeConfig, err := rest.InClusterConfig()
-		if err != nil {
-			return nil, err
-		}
-		namespace := string(namespaceBytes)
-
-		log.WithField("namespace", namespace).Debug("Running in a pod, creating API-based client.")
-
-		return k8sclient.NewKubeClient(kubeConfig, namespace, k8sTimeout)
-
-	} else {
-
-		// The namespace file didn't exist, so assume we're outside a pod.  Create a CLI-based client.
-		log.Debug("Running outside a pod, creating CLI-based client.")
-
-		return k8sclient.NewKubectlClient("", k8sTimeout)
+	clients, err := k8sclient.CreateK8SClients("", "", "")
+	if err != nil {
+		return nil, err
 	}
+
+	clients.K8SClient.SetTimeout(k8sTimeout)
+
+	return clients.K8SClient, nil
 }
 
 func processInstallationArguments(cmd *cobra.Command) {
@@ -1299,8 +1286,8 @@ func deleteCustomResourceDefinitions() error {
 	var err error
 
 	resetNamespace = TridentPodNamespace
-	kubeClient = client
-	crdClientset, err = kubeClient.GetCRDClient()
+	k8sClient = client
+	crdClientset, err = k8sClient.GetCRDClient()
 	if err != nil {
 		return err
 	}
@@ -1639,18 +1626,68 @@ func validateTridentDaemonSet() error {
 
 func waitForTridentPod() (*v1.Pod, error) {
 
+	var deployment *appsv1.Deployment
 	var pod *v1.Pod
+	var err error
 
 	checkPodRunning := func() error {
-		var podError error
-		pod, podError = client.GetPodByLabel(appLabel, false)
-		if podError != nil || pod.Status.Phase != v1.PodRunning {
-			return errors.New("pod not running")
+
+		deployment, err = client.GetDeploymentByLabel(appLabel, false)
+		if err != nil {
+			return err
 		}
+
+		// If Trident was just uninstalled, there could be multiple pods for a brief time.  Calling GetPodByLabel
+		// ensures only one is running.
+		pod, err = client.GetPodByLabel(appLabel, false)
+		if err != nil {
+			return err
+		}
+
+		// Ensure the pod hasn't been deleted.
+		if pod.DeletionTimestamp != nil {
+			return errors.New("trident pod is terminating")
+		}
+
+		// Ensure the pod is running
+		if pod.Status.Phase != v1.PodRunning {
+			return errors.New("trident pod is not running")
+		}
+
+		// Ensure the pod spec contains the correct image.  The running container may report a different
+		// image name if there are multiple tags for the same image hash, but the pod spec should be correct.
+		for _, container := range pod.Spec.Containers {
+			if container.Name == TridentMainContainer {
+				if container.Image != tridentImage {
+					return fmt.Errorf("trident pod spec reports a different image (%s) than required (%s)",
+						container.Image, tridentImage)
+				}
+			}
+		}
+
+		// Ensure the Trident controller container is the correct image.
+		tridentContainerOK := false
+		for _, container := range pod.Status.ContainerStatuses {
+			if container.Name == TridentMainContainer {
+				if container.State.Running == nil {
+					return errors.New("trident container is not running")
+				} else if !container.Ready {
+					return errors.New("trident container is not ready")
+				}
+				tridentContainerOK = true
+			}
+		}
+
+		if !tridentContainerOK {
+			return fmt.Errorf("running container %s not found in trident deployment", TridentMainContainer)
+		}
+
 		return nil
 	}
+
 	podNotify := func(err error, duration time.Duration) {
 		log.WithFields(log.Fields{
+			"status":    err,
 			"increment": duration,
 		}).Debugf("Trident pod not yet running, waiting.")
 	}
@@ -1683,8 +1720,9 @@ func waitForTridentPod() (*v1.Pod, error) {
 	}
 
 	log.WithFields(log.Fields{
-		"pod":       pod.Name,
-		"namespace": TridentPodNamespace,
+		"deployment": deployment.Name,
+		"pod":        pod.Name,
+		"namespace":  TridentPodNamespace,
 	}).Info("Trident pod started.")
 
 	return pod, nil
@@ -1716,6 +1754,7 @@ func waitForRESTInterface() error {
 	}
 	restNotify := func(err error, duration time.Duration) {
 		log.WithFields(log.Fields{
+			"error":     err,
 			"increment": duration,
 		}).Debugf("REST interface not yet up, waiting.")
 	}

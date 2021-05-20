@@ -5,7 +5,6 @@ package kubernetes
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strings"
 	"time"
@@ -25,7 +24,6 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/record"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -63,7 +61,7 @@ type K8SHelperPlugin interface {
 
 type Plugin struct {
 	orchestrator  core.Orchestrator
-	kubeConfig    rest.Config
+	restConfig    rest.Config
 	kubeClient    kubernetes.Interface
 	kubeVersion   *k8sversion.Info
 	namespace     string
@@ -91,61 +89,18 @@ type Plugin struct {
 }
 
 // NewPlugin instantiates this plugin when running outside a pod.
-func NewPlugin(o core.Orchestrator, apiServerIP, kubeConfigPath string) (*Plugin, error) {
+func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (*Plugin, error) {
 
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(apiServerIP, kubeConfigPath)
+	Logc(ctx).Info("Initializing K8S helper frontend.")
+
+	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the CLI-based Kubernetes client
-	client, err := clik8sclient.NewKubectlClient("", 30*time.Second)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client: %v", err)
-	}
-
-	// When running in binary mode, we use the current namespace as determined by the CLI client
-	return newKubernetesPlugin(ctx, o, kubeConfig, client.Namespace())
-}
-
-// NewPluginInCluster instantiates this plugin when running inside a pod.
-func NewPluginInCluster(o core.Orchestrator) (*Plugin, error) {
-
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
-
-	kubeConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	// When running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(config.TridentNamespaceFile)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"error":         err,
-			"namespaceFile": config.TridentNamespaceFile,
-		}).Error("K8S helper failed to obtain Trident's namespace!")
-		return nil, err
-	}
-
-	return newKubernetesPlugin(ctx, o, kubeConfig, string(namespaceBytes))
-}
-
-// newKubernetesPlugin initializes this plugin, checks the K8S verison, and sets up the watchers for
-// various Kubernetes objects.
-func newKubernetesPlugin(
-	ctx context.Context, orchestrator core.Orchestrator, kubeConfig *rest.Config, namespace string,
-) (*Plugin, error) {
-
-	Logc(ctx).WithField("namespace", namespace).Info("Initializing K8S helper frontend.")
-
-	// Create the Kubernetes client
-	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
+	kubeClient := clients.KubeClient
 
 	// Get the Kubernetes version
 	kubeVersion, err := kubeClient.Discovery().ServerVersion()
@@ -155,14 +110,14 @@ func newKubernetesPlugin(
 
 	p := &Plugin{
 		orchestrator:           orchestrator,
-		kubeConfig:             *kubeConfig,
-		kubeClient:             kubeClient,
+		restConfig:             *clients.RestConfig,
+		kubeClient:             clients.KubeClient,
 		kubeVersion:            kubeVersion,
 		pvcControllerStopChan:  make(chan struct{}),
 		pvControllerStopChan:   make(chan struct{}),
 		scControllerStopChan:   make(chan struct{}),
 		nodeControllerStopChan: make(chan struct{}),
-		namespace:              namespace,
+		namespace:              clients.Namespace,
 	}
 
 	Logc(ctx).WithFields(log.Fields{

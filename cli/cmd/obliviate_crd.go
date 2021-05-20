@@ -21,8 +21,8 @@ import (
 var (
 	configPath string
 
-	// kubeClient is our clientset
-	kubeClient k8sclient.Interface
+	// k8sClient is our clientset
+	k8sClient k8sclient.Interface
 
 	// crdClientset is a clientset for our own API group
 	crdClientset crdclient.Interface
@@ -64,9 +64,11 @@ var obliviateCRDCmd = &cobra.Command{
 	},
 }
 
-func ObliviateCRDs(kubeClientVal k8sclient.Interface, crdClientsetVal crdclient.Interface, namespace string,
-	timeout time.Duration) error {
-	kubeClient = kubeClientVal
+func ObliviateCRDs(
+	kubeClientVal k8sclient.Interface, crdClientsetVal crdclient.Interface, namespace string, timeout time.Duration,
+) error {
+
+	k8sClient = kubeClientVal
 	crdClientset = crdClientsetVal
 	resetNamespace = namespace
 	k8sTimeout = timeout
@@ -136,7 +138,7 @@ func deleteVersions() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -193,7 +195,7 @@ func deleteBackends() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -250,7 +252,7 @@ func deleteBackendConfigs() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -308,7 +310,7 @@ func deleteStorageClasses() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -365,7 +367,7 @@ func deleteVolumes() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -422,7 +424,7 @@ func deleteNodes() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -479,7 +481,7 @@ func deleteTransactions() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -536,7 +538,7 @@ func deleteSnapshots() error {
 	logFields := log.Fields{"CRD": crd}
 
 	// See if CRD exists
-	exists, err := kubeClient.CheckCRDExists(crd)
+	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
@@ -605,7 +607,7 @@ func deleteCRDs() error {
 		logFields := log.Fields{"CRD": crdName}
 
 		// See if CRD exists
-		exists, err := kubeClient.CheckCRDExists(crdName)
+		exists, err := k8sClient.CheckCRDExists(crdName)
 		if err != nil {
 			return err
 		}
@@ -615,7 +617,7 @@ func deleteCRDs() error {
 		}
 
 		// Get the CRD and check for finalizers
-		crd, err := kubeClient.GetCRD(crdName)
+		crd, err := k8sClient.GetCRD(crdName)
 		if isNotFoundError(err) {
 			log.WithFields(logFields).Info("CRD not found.")
 			continue
@@ -623,7 +625,7 @@ func deleteCRDs() error {
 
 		// Remove finalizers if present
 		if len(crd.Finalizers) > 0 {
-			if err := kubeClient.RemoveFinalizerFromCRD(crdName); err != nil {
+			if err := k8sClient.RemoveFinalizerFromCRD(crdName); err != nil {
 				log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
 				return err
 			} else {
@@ -637,7 +639,7 @@ func deleteCRDs() error {
 		if crd.DeletionTimestamp.IsZero() {
 			log.WithFields(logFields).Debug("Deleting CRD.")
 
-			err := kubeClient.DeleteCRD(crdName)
+			err := k8sClient.DeleteCRD(crdName)
 			if isNotFoundError(err) {
 				log.WithFields(logFields).Info("CRD not found during deletion.")
 				continue
@@ -728,7 +730,7 @@ func waitForCRDDeletion(name string, timeout time.Duration) error {
 
 	checkDeleted := func() error {
 
-		exists, err := kubeClient.CheckCRDExists(name)
+		exists, err := k8sClient.CheckCRDExists(name)
 		if !exists || isNotFoundError(err) {
 			return nil
 		}

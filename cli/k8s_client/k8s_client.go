@@ -51,6 +51,9 @@ const (
 	FlavorKubernetes OrchestratorFlavor = "k8s"
 	FlavorOpenShift  OrchestratorFlavor = "openshift"
 
+	ExitCodeSuccess = 0
+	ExitCodeFailure = 1
+
 	YAMLSeparator = `\n---\s*\n`
 
 	// CRD Finalizer name
@@ -74,6 +77,7 @@ type Interface interface {
 	ServerVersion() *utils.Version
 	Namespace() string
 	SetNamespace(namespace string)
+	SetTimeout(time.Duration)
 	Flavor() OrchestratorFlavor
 	CLI() string
 	Exec(podName, containerName string, commandArgs []string) ([]byte, error)
@@ -325,6 +329,10 @@ func (k *KubeClient) Namespace() string {
 
 func (k *KubeClient) SetNamespace(namespace string) {
 	k.namespace = namespace
+}
+
+func (k *KubeClient) SetTimeout(timeout time.Duration) {
+	k.timeout = timeout
 }
 
 func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) ([]byte, error) {

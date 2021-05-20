@@ -138,7 +138,7 @@ const (
 	// Mininum Kubernetes version for CRD v1 support (below this, we'll use v1beta1)
 	KubernetesCRDVersionMinForced = "v1.16.0"
 
-	TridentNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
