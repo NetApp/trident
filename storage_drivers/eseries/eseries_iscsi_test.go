@@ -55,7 +55,7 @@ func newTestEseriesSANDriver(debugTraceFlags map[string]bool) *SANStorageDriver 
 func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api.Client {
 
 	telemetry := make(map[string]string)
-	telemetry["version"] = "21.04.0"
+	telemetry["version"] = "21.07.0"
 	telemetry["plugin"] = "eseries"
 	telemetry["storagePrefix"] = *config.StoragePrefix
 
@@ -94,7 +94,7 @@ func TestEseriesSANStorageDriverConfigString(t *testing.T) {
 
 	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
-			"method":    true,
+			"method": true,
 		}),
 	}
 
@@ -134,8 +134,8 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 
 	var eseriesSANDrivers = []SANStorageDriver{
 		*newTestEseriesSANDriver(map[string]bool{
-			"method":    true,
-			"api":       true,
+			"method": true,
+			"api":    true,
 		}),
 		*newTestEseriesSANDriver(map[string]bool{}),
 	}

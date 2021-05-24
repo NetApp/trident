@@ -100,13 +100,13 @@ If you are unsure as to how Trident is installed, here is a simple test to run:
   +----------------+----------------+
   | SERVER VERSION | CLIENT VERSION |
   +----------------+----------------+
-  | 21.04.0        | 21.04.0        |
+  | 21.07.0        | 21.07.0        |
   +----------------+----------------+
 
   $ kubectl describe pod trident-csi-79df798bdc-2jzpq -n trident | grep "Image" -A 2 -B 2 | head -4
   trident-main:
     Container ID:  docker://e088b1ffc7017ddba8144d334cbc1eb646bf3491be031ef583a3f189ed965213
-    Image:         netapp/trident:21.04.0
+    Image:         netapp/trident:21.07.0
     Image ID:      docker-pullable://netapp/trident@sha256:28095a20d8cfffaaaaakkkkkeeeeeec4925ac5d652341b6eaa2ea9352f1e0
 
   #Is the version of Trident being used >=21.01? If yes, check if a ``tridentorchestrator`` is present.
@@ -119,7 +119,7 @@ If you are unsure as to how Trident is installed, here is a simple test to run:
   Message:                Trident installed
   Namespace:              trident
   Status:                 Installed
-  Version:                v21.04.0
+  Version:                v21.07.0
 
   #Is the version of Trident being used in the range [20.04 - 20.10]? If yes, check if a ``tridentprovisioner`` is present.
   #If yes, then you have installed Trident using the operator.
@@ -234,7 +234,7 @@ which will be installed using the namespace-scoped operator.
     tridentorchestrator.trident.netapp.io "trident" deleted
 
 3. Delete the cluster-scoped operator. To do this, you will need the manifest
-   used to deploy the operator. You can obtain it `here <https://github.com/NetApp/trident/blob/stable/v21.04/deploy/bundle.yaml>`_
+   used to deploy the operator. You can obtain it `here <https://github.com/NetApp/trident/blob/stable/v21.07/deploy/bundle.yaml>`_
    from the Trident GitHub repo. **Make sure you switch to the required branch**.
 
 4. Delete the ``tridentorchestrator`` CRD.

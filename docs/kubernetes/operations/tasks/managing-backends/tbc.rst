@@ -55,7 +55,7 @@ See the following example for the format of the ``TridentBackendConfig`` CR:
         name: backend-tbc-ontap-san-secret
 
 You can also take a look at the examples present in the
-`trident-installer <https://github.com/NetApp/trident/tree/stable/v21.04/trident-installer/sample-input/backends-samples>`_
+`trident-installer <https://github.com/NetApp/trident/tree/stable/v21.07/trident-installer/sample-input/backends-samples>`_
 directory for sample configurations for the desired storage platform/service.
 
 The ``spec`` takes backend-specific configuration parameters. In this example,
