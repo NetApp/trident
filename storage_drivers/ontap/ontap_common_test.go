@@ -6,10 +6,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"math/rand"
 	"net"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -24,8 +22,6 @@ import (
 
 const (
 	ONTAPTEST_LOCALHOST         = "127.0.0.1"
-	ONTAPTEST_SERVER_MIN_PORT   = 40000
-	ONTAPTEST_SERVER_MAX_PORT   = 50000
 	ONTAPTEST_VSERVER_AGGR_NAME = "data"
 )
 
@@ -310,11 +306,9 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 	logger.Logc(ctx).Level = log.TraceLevel
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -362,7 +356,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -400,11 +394,9 @@ func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
 	logger.Logc(ctx).Level = log.TraceLevel
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -452,7 +444,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -490,11 +482,9 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 	logger.Logc(ctx).Level = log.TraceLevel
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -542,7 +532,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -574,11 +564,9 @@ func TestOntapSanEcoInitializeDriverIgroupNameDocker(t *testing.T) {
 	logger.Logc(ctx).Level = log.TraceLevel
 
 	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := strconv.Itoa(rand.Intn(ONTAPTEST_SERVER_MAX_PORT-ONTAPTEST_SERVER_MIN_PORT) +
-		ONTAPTEST_SERVER_MIN_PORT)
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAdminPort, vserverAggrName)
+	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -626,7 +614,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameDocker(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName)
+			sanStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
