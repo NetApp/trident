@@ -2581,6 +2581,34 @@ func (d Client) isVserverInSVMDR(ctx context.Context) bool {
 	return isSVMDRSource || isSVMDRDestination
 }
 
+func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
+
+	query := &azgo.VserverPeerGetIterRequestQuery{}
+
+	response, err := azgo.NewVserverPeerGetIterRequest().
+		SetQuery(*query).
+		ExecuteUsing(d.zr)
+
+	if err != nil {
+		return false , err
+	}
+	if err = GetError(ctx, response, err); err != nil {
+		return false , fmt.Errorf("error getting peer info: %v", err)
+	}
+
+	peerFound := false
+	if response.Result.AttributesListPtr != nil {
+		for _, peerInfo := range response.Result.AttributesListPtr.VserverPeerInfo() {
+			peeredVserver := peerInfo.Vserver()
+			if peeredVserver == d.config.SVM {
+				peerFound = true
+			}
+		}
+	}
+
+	return peerFound, err
+}
+
 // SNAPMIRROR operations END
 /////////////////////////////////////////////////////////////////////////////
 

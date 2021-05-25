@@ -121,6 +121,9 @@ func TestUnmarshalOffer(t *testing.T) {
 			Min: 5,
 			Max: 10,
 		},
+		Replication: &boolOffer{
+			Offer: false,
+		},
 		Snapshots: &boolOffer{
 			Offer: true,
 		},
@@ -156,6 +159,9 @@ func TestUnmarshalRequest(t *testing.T) {
 	requestMap := map[string]Request{
 		IOPS: &intRequest{
 			Request: 5,
+		},
+		Replication: &boolRequest{
+			Request: true,
 		},
 		Snapshots: &boolRequest{
 			Request: true,

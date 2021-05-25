@@ -52,6 +52,7 @@ const (
 	ExportPolicy          = "exportPolicy"
 	SecurityStyle         = "securityStyle"
 	BackendType           = "backendType"
+	Replication           = "replication"
 	Snapshots             = "snapshots"
 	Clones                = "clones"
 	Encryption            = "encryption"
@@ -1442,6 +1443,7 @@ const DefaultNfsMountOptionsDocker = "-o nfsvers=3"
 const DefaultNfsMountOptionsKubernetes = ""
 const DefaultSplitOnClone = "false"
 const DefaultEncryption = "false"
+const DefaultMirroring = "false"
 const DefaultLimitAggregateUsage = ""
 const DefaultLimitVolumeSize = ""
 const DefaultTieringPolicy = ""
@@ -1534,6 +1536,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.Encryption = DefaultEncryption
 	}
 
+	if config.Mirroring == "" {
+		config.Mirroring = DefaultMirroring
+	}
+
 	if config.LimitAggregateUsage == "" {
 		config.LimitAggregateUsage = DefaultLimitAggregateUsage
 	}
@@ -1564,6 +1570,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"SplitOnClone":        config.SplitOnClone,
 		"FileSystemType":      config.FileSystemType,
 		"Encryption":          config.Encryption,
+		"Mirroring":           config.Mirroring,
 		"LimitAggregateUsage": config.LimitAggregateUsage,
 		"LimitVolumeSize":     config.LimitVolumeSize,
 		"Size":                config.Size,

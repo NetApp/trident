@@ -10,6 +10,7 @@ const (
 	Snapshots  = "snapshots"
 	Clones     = "clones"
 	Encryption = "encryption"
+	Replication = "trident.netapp.io/replication"
 
 	// Constants for string list attributes
 	ProvisioningType = "provisioningType"
@@ -59,4 +60,5 @@ var attrTypes = map[string]Type{
 	UniqueOptions:    stringType,
 	TestingAttribute: boolType,
 	NonexistentBool:  boolType,
+	Replication:      boolType,
 }

@@ -86,7 +86,7 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(),
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, d.getStoragePoolAttributes(ctx),
 		d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
@@ -660,13 +660,16 @@ func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
-func (d *NASStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
+func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
 
+	client := d.GetAPI()
+	mirroring, _ := client.IsVserverDRCapable(ctx)
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Clones:           sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.Replication:      sa.NewBoolOffer(mirroring),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

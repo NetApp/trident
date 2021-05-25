@@ -2,9 +2,8 @@ package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorGetIterRequest is a structure to represent a snapmirror-get-iter Request ZAPI object
@@ -115,7 +114,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 	combined.Result.SetAttributesList(SnapmirrorGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for !done {
+	for done != true {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -150,7 +149,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done {
+		if done == true {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr
