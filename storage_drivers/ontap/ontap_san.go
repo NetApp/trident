@@ -705,6 +705,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, name string) error {
 		}
 	}
 
+	// If flexvol has been a snapmirror destination
+	snapDeleteResponse, err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM)
+	if err != nil && snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+		return fmt.Errorf("error deleting snapmirror info for volume %v: %v", name, err)
+	}
+
+	// Ensure no leftover snapmirror metadata
+	err = d.API.SnapmirrorRelease(name, d.Config.SVM)
+	if err != nil {
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", name, err)
+	}
+
 	// Delete the Flexvol & LUN
 	volDestroyResponse, err := d.API.VolumeDestroy(name, true)
 	if err != nil {

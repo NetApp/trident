@@ -2581,6 +2581,63 @@ func (d Client) isVserverInSVMDR(ctx context.Context) bool {
 	return isSVMDRSource || isSVMDRDestination
 }
 
+// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
+// Intended to be used on the source vserver
+func (d Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+	query := azgo.SnapmirrorGetDestinationIterRequestQuery{}
+	params := azgo.NewSnapmirrorDestinationInfoType()
+	params.SetSourceVserver(sourceSVMName)
+	params.SetSourceVolume(sourceFlexvolName)
+	query.SetSnapmirrorDestinationInfo(*params)
+	request := azgo.NewSnapmirrorGetDestinationIterRequest()
+	request.SetQuery(query)
+
+	response, err := request.ExecuteUsing(d.zr)
+	if err != nil {
+		return err
+	}
+
+	list := response.Result.AttributesList()
+	relationships := list.SnapmirrorDestinationInfo()
+
+	for relationship := range relationships {
+		requestQuery := azgo.SnapmirrorReleaseRequest{}
+		requestQuery.SetRelationshipId(relationships[relationship].RelationshipId())
+		requestQuery.SetDestinationLocation(relationships[relationship].DestinationLocation())
+		_, err := requestQuery.ExecuteUsing(d.zr)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Intended to be from the destination vserver
+func (d Client) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*azgo.
+SnapmirrorDestroyResponse, error) {
+
+	query := azgo.NewSnapmirrorDestroyRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+
+	response, err := query.ExecuteUsing(d.zr)
+	return response, err
+}
+
+// Intended to be from the destination vserver
+func (d Client) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+SnapmirrorDestroyResponse, error) {
+
+	query := azgo.NewSnapmirrorDestroyRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	response, err := query.ExecuteUsing(d.zr)
+	return response, err
+}
+
 func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 
 	query := &azgo.VserverPeerGetIterRequestQuery{}

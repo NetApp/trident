@@ -378,6 +378,18 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, name string) error {
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
 
+	// If flexvol has been a snapmirror destination
+	snapDeleteResponse, err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM)
+	if err != nil && snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+		return fmt.Errorf("error deleting snapmirror info for volume %v: %v", name, err)
+	}
+
+	// Ensure no leftover snapmirror metadata
+	err = d.API.SnapmirrorRelease(name, d.Config.SVM)
+	if err != nil {
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", name, err)
+	}
+
 	volDestroyResponse, err := d.API.VolumeDestroy(name, true)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
