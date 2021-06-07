@@ -1,6 +1,6 @@
 module github.com/netapp/trident
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v53.1.0+incompatible
@@ -19,7 +19,6 @@ require (
 	github.com/evanphx/json-patch/v5 v5.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // 2/12/2019
 	github.com/go-logfmt/logfmt v0.5.0
-	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
 	github.com/google/uuid v1.2.0
