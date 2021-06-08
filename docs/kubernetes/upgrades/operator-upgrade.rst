@@ -90,8 +90,30 @@ b. ``TridentProvisioner`` is now replaced with ``TridentOrchestrator`` as the
    namespace Trident must be installed/upgraded from using the ``spec.namespace``
    field. You can take a look at an example `here <https://github.com/NetApp/trident/blob/stable/v21.01/deploy/crds/tridentorchestrator_cr.yaml>`_.
 
-Upgrading Trident using the cluster-scoped operator
+Upgrading a cluster-scoped Trident operator install
 ===================================================
+
+To upgrade **from**: Trident 21.01 and later **to**: Trident 21.04 and later, here is the
+set of steps to be followed:
+
+1. Delete the Trident operator that was used to install the current Trident instance. For example, if you are upgrading from v21.01, run the following command:
+
+   .. code-block:: bash
+
+       kubectl delete -f 21.01/trident-installer/deploy/bundle.yaml -n trident
+
+2. **[OPTIONAL]**: If the install parameters need to be modified, update the ``TridentOrchestrator`` spec. These could be changes, such as modifying the custom Trident image, private image registry, to pull container images from, enabling debug logs, or specifying image pull secrets. This would require editing the ``TridentOrchestrator`` object that you had created when installing Trident.
+
+3. Install Trident by using the ``bundle.yaml`` file that sets up the Trident operator for the new version. Run the following command:
+
+   .. code-block:: bash
+
+       kubectl install -f 21.04/trident-installer/deploy/bundle.yaml -n trident.
+
+As part of this step, the 21.04 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator. 
+
+Upgrading a namespace-scoped Trident operator install
+=====================================================
 
 To upgrade **from**: an instance of Trident installed using the namespace-scoped
 operator [versions ``20.04`` through ``20.10``] **to**: a newer release that makes
