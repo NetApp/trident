@@ -65,10 +65,16 @@ again. Under most circumstances, this is a matter of seconds.
      netapp:latest       my_volume
 
 
+   .. note::
+
+      If you are upgrading from an old version of Trident (pre-20.10) to Trident 20.10 or later, you might run into an error. For more information, see :ref:`Known Issues <known-issues>`. If you run into the error, you should first disable the plugin, then remove the plugin, and then install the required Trident version by passing an extra config parameter:
+
+      .. code-block:: bash
+
+       docker plugin install netapp/trident-plugin:20.10 --alias netapp --grant-all-permissions config=config.json
+
 Uninstalling Trident
 --------------------
-
-   .. note:: Do not uninstall the plugin in order to upgrade it, as Docker may become confused as to which plugin owns any existing volumes; use the upgrade instructions in the previous section instead.
 
 #. Remove any volumes that the plugin created.
 
@@ -86,3 +92,12 @@ Uninstalling Trident
    .. code-block:: bash
 
      docker plugin rm netapp:latest
+
+
+  .. note::
+
+    If you are upgrading from an old version of Trident (pre-20.10) to Trident 20.10 or later, you might run into an error. For more information, see :ref:`Known Issues <known-issues>`. If you run into the error, you should first disable the plugin, then remove the plugin, and then install the required Trident version by passing an extra config parameter:
+
+    .. code-block:: bash
+
+     docker plugin install netapp/trident-plugin:20.10 --alias netapp --grant-all-permissions config=config.json

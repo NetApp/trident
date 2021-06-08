@@ -1,13 +1,35 @@
 Known issues
 ^^^^^^^^^^^^
 
-#. Volume names must be a minimum of 2 characters in length
+* **Upgrading Trident Docker Volume Plugin to 20.10 and later from older versions results in upgrade failure with the no such file or directory error.**
+
+Workaround:
+
+#. Disable the plugin.
+
+    .. code-block:: bash
+
+       docker plugin disable -f netapp:latest
+
+#. Remove the plugin.
+
+    .. code-block:: bash
+
+       docker plugin rm -f netapp:latest
+
+#. Reinstall the plugin by providing the extra config parameter.
+
+    .. code-block:: bash
+
+       docker plugin install netapp/trident-plugin:20.10 --alias netapp --grant-all-permissions config=config.json
+
+* **Volume names must be a minimum of 2 characters in length**
 
    .. note::
       This is a Docker client limitation. The client will interpret a single character name as being a Windows path.
       `See bug 25773 <https://github.com/docker/docker/issues/25773>`_.
 
-#. Docker Swarm has certain behaviors that prevent us from supporting it with every storage and driver combination:
+* **Docker Swarm has certain behaviors that prevent us from supporting it with every storage and driver combination**:
 
    - Docker Swarm presently makes use of volume name instead of volume ID as its unique volume identifier.
    - Volume requests are simultaneously sent to each node in a Swarm cluster.
@@ -22,5 +44,4 @@ Known issues
 
    NetApp has provided feedback to the Docker team, but does not have any indication of future recourse.
 
-#. If a FlexGroup is in the process of being provisioned, ONTAP will not provision a second FlexGroup if the second
-   FlexGroup has one or more aggregates in common with the FlexGroup being provisioned.
+* **If a FlexGroup is in the process of being provisioned, ONTAP will not provision a second FlexGroup if the second FlexGroup has one or more aggregates in common with the FlexGroup being provisioned.**
