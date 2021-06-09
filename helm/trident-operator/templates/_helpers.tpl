@@ -130,8 +130,19 @@ Trident log format
 {{- "text" }}
 {{- end }}
 {{- end }}
-{{/*
 
+{{/*
+Trident probe port
+*/}}
+{{- define "trident.probePort" -}}
+{{- if eq .Values.tridentProbePort "json" }}
+{{- .Values.tridentProbePort }}
+{{- else }}
+{{- 17546 }}
+{{- end }}
+{{- end }}
+
+{{/*
 Trident image
 */}}
 {{- define "trident.image" -}}

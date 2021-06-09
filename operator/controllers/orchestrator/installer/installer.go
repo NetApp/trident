@@ -62,6 +62,7 @@ var (
 	enableNodePrep     bool
 
 	logFormat     string
+	probePort     string
 	tridentImage  string
 	imageRegistry string
 	kubeletDir    string
@@ -261,6 +262,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 
 	// Get default values
 	logFormat = DefaultLogFormat
+	probePort = DefaultProbePort
 	tridentImage = TridentImage
 	imageRegistry = ""
 	kubeletDir = DefaultKubeletDir
@@ -285,6 +287,9 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 	}
 	if cr.Spec.LogFormat != "" {
 		logFormat = cr.Spec.LogFormat
+	}
+	if cr.Spec.ProbePort != nil {
+		probePort = strconv.FormatInt(*cr.Spec.ProbePort, 10)
 	}
 	if cr.Spec.KubeletDir != "" {
 		kubeletDir = cr.Spec.KubeletDir
@@ -513,6 +518,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 		ImageRegistry:           imageRegistry,
 		IPv6:                    strconv.FormatBool(useIPv6),
 		SilenceAutosupport:      strconv.FormatBool(silenceAutosupport),
+		ProbePort:               probePort,
 		AutosupportImage:        autosupportImage,
 		AutosupportProxy:        autosupportProxy,
 		AutosupportSerialNumber: autosupportSerialNumber,
@@ -524,8 +530,8 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 	}
 
 	log.WithFields(log.Fields{
-		"namespace":  i.namespace,
-		"version":    labels[TridentVersionLabelKey],
+		"namespace": i.namespace,
+		"version":   labels[TridentVersionLabelKey],
 	}).Info("Trident is installed.")
 	return &identifiedSpecValues, labels[TridentVersionLabelKey], nil
 }
@@ -1551,7 +1557,8 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 	labels[appLabelKey] = TridentNodeLabelValue
 
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
-		logFormat, imagePullSecrets, labels, controllingCRDetails, debug, enableNodePrep, i.client.ServerVersion())
+		logFormat, probePort, imagePullSecrets, labels, controllingCRDetails, debug, enableNodePrep,
+		i.client.ServerVersion())
 
 	if createDaemonset {
 		// Create the daemonset
@@ -1905,7 +1912,7 @@ func (i *Installer) createTridentVersionPod(
 		return err
 	}
 	log.WithFields(log.Fields{
-		"pod": podName,
+		"pod":       podName,
 		"namespace": i.namespace,
 	}).Info("Created Trident version pod.")
 

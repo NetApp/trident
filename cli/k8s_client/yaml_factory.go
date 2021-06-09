@@ -1160,7 +1160,7 @@ spec:
           sizeLimit: 1Gi
 `
 
-func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat string,
+func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat, probePort string,
 	imagePullSecrets []string, labels, controllingCRDetails map[string]string, debug, nodePrep bool,
 	version *utils.Version) string {
 
@@ -1203,6 +1203,7 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", logFormat)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(nodePrep))
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", probePort)
 	daemonSetYAML = replaceMultiline(daemonSetYAML, labels, controllingCRDetails, imagePullSecrets)
 
 	return daemonSetYAML
@@ -1248,13 +1249,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=51199"
+        - "--https_port={PROBE_PORT}"
         {DEBUG}
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1262,7 +1263,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -1404,13 +1405,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=51199"
+        - "--https_port={PROBE_PORT}"
         {DEBUG}
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1418,7 +1419,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -1559,13 +1560,13 @@ spec:
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
         - "--https_rest"
-        - "--https_port=51199"
+        - "--https_port={PROBE_PORT}"
         {DEBUG}
         startupProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 5
           timeoutSeconds: 1
           periodSeconds: 5
@@ -1573,7 +1574,7 @@ spec:
           httpGet:
             path: /liveness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 3
           timeoutSeconds: 1
           periodSeconds: 10
@@ -1581,7 +1582,7 @@ spec:
           httpGet:
             path: /readiness
             scheme: HTTPS
-            port: 51199
+            port: {PROBE_PORT}
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
