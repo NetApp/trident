@@ -127,7 +127,7 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 			nil, false, false, true, semVersion, false)
 		// trident image here is an empty string because we are already going to get it from the deployment yaml
 		yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",
-			"", []string{}, labels, nil, false, false, semVersion)
+			"", "", []string{}, labels, nil, false, false, semVersion)
 	} else {
 		yaml = k8sclient.GetDeploymentYAML("", tridentconfig.BuildImage, "", []string{}, labels,
 			nil, false)

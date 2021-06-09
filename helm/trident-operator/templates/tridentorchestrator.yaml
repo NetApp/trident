@@ -11,6 +11,7 @@ spec:
   autosupportImage: {{ include "trident.autosupportImage" $ }}
   autosupportProxy: {{ .Values.tridentAutosupportProxy }}
   logFormat: {{ include "trident.logFormat" $ }}
+  probePort: {{ include "trident.probePort" $ }}
   tridentImage: {{ include "trident.image" $ }}
   {{- if .Values.imageRegistry }}
   imageRegistry: {{ .Values.imageRegistry }}

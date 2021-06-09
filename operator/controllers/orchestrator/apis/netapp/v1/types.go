@@ -42,6 +42,7 @@ type TridentOrchestratorSpec struct {
 	AutosupportHostname     string   `json:"autosupportHostname,omitempty"`
 	Uninstall               bool     `json:"uninstall,omitempty"`
 	LogFormat               string   `json:"logFormat,omitempty"`
+	ProbePort               *int64   `json:"probePort,omitempty"`
 	TridentImage            string   `json:"tridentImage,omitempty"`
 	ImageRegistry           string   `json:"imageRegistry,omitempty"`
 	KubeletDir              string   `json:"kubeletDir,omitempty"`
@@ -69,6 +70,7 @@ type TridentOrchestratorSpecValues struct {
 	AutosupportHostname     string   `json:"autosupportHostname"`
 	K8sTimeout              string   `json:"k8sTimeout"`
 	LogFormat               string   `json:"logFormat"`
+	ProbePort               string   `json:"probePort"`
 	TridentImage            string   `json:"tridentImage"`
 	ImageRegistry           string   `json:"imageRegistry"`
 	KubeletDir              string   `json:"kubeletDir"`

@@ -51,6 +51,9 @@ const (
 	// DefaultLogFormat is the the Trident logging format (text, json)
 	DefaultLogFormat = "text"
 
+	// DefaultProbePort is Trident's default port for K8S liveness/readiness probes
+	DefaultProbePort = "17546"
+
 	// DefaultKubeletDir is the host location of kubelet's internal state
 	DefaultKubeletDir = "/var/lib/kubelet"
 

@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 package cmd
 
 import (
@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -86,6 +87,7 @@ var (
 	kubeletDir              string
 	imageRegistry           string
 	logFormat               string
+	probePort               int64
 	k8sTimeout              time.Duration
 
 	// CLI-based K8S client
@@ -143,6 +145,8 @@ func init() {
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
+	installCmd.Flags().Int64Var(&probePort, "probe-port", 17546,
+		"The port used by the node pods for liveness/readiness probes. Must not already be in use on the worker hosts.")
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "", "The address/port of a proxy for sending Autosupport Telemetry")
@@ -564,8 +568,8 @@ func prepareCSIYAMLFiles() error {
 	}
 
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-		tridentImage, imageRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
-		enableNodePrep, client.ServerVersion())
+		tridentImage, imageRegistry, kubeletDir, logFormat, strconv.FormatInt(probePort, 10), []string{},
+		daemonSetlabels, nil, Debug, enableNodePrep, client.ServerVersion())
 	if err = writeFile(csiDaemonSetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -946,8 +950,8 @@ func installTrident() (returnError error) {
 
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-					tridentImage, imageRegistry, kubeletDir, logFormat, []string{}, daemonSetlabels, nil, Debug,
-					enableNodePrep, client.ServerVersion()))
+					tridentImage, imageRegistry, kubeletDir, logFormat, strconv.FormatInt(probePort, 10), []string{},
+					daemonSetlabels, nil, Debug, enableNodePrep, client.ServerVersion()))
 			logFields = log.Fields{}
 		}
 		if returnError != nil {
