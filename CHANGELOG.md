@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.01.0
+## Changes since v21.04.0
+
+**Fixes:**
+- **Kubernetes:** Switched the node pod liveness/readiness probe port to default to a port in the registered port 
+  range rather than ephemeral. This port can also now be changed easily during installation.
+
+## v21.04.0
 
 **Fixes:**
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
