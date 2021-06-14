@@ -6,7 +6,8 @@
 
 **Fixes:**
 - **Kubernetes:** Switched the node pod liveness/readiness probe port to default to a port in the registered port 
-  range rather than ephemeral. This port can also now be changed easily during installation.
+  range rather than ephemeral. This port can also now be changed easily during installation (Issue [#578](https://github.com/NetApp/trident/issues/578)).
+- Fixed issue where snapshot & tiering policies were not handled correctly by ontap-san-economy driver.
 
 ## v21.04.0
 

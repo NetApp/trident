@@ -1371,8 +1371,8 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
-	volListResponse, err := d.API.VolumeListByAttrs(d.FlexvolNamePrefix(), aggregate, spaceReserve, tieringPolicy,
-		snapshotPolicy, enableSnapshotDir, encrypt)
+	volListResponse, err := d.API.VolumeListByAttrs(d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy,
+		tieringPolicy, enableSnapshotDir, encrypt)
 
 	if err = api.GetError(ctx, volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)
