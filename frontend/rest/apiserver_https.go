@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -34,7 +34,7 @@ func NewHTTPSServer(
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),
 			Handler:      &tlsAuthHandler{handler: handler},
-			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert},
+			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert, MinVersion: config.MinTLSVersion},
 			ReadTimeout:  config.HTTPTimeout,
 			WriteTimeout: config.HTTPTimeout,
 		},
