@@ -461,7 +461,9 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 func (o *TridentOrchestrator) Stop() {
 
 	// Stop the node access reconciliation background task
-	o.stopNodeAccessLoop <- true
+	if o.stopNodeAccessLoop != nil {
+		o.stopNodeAccessLoop <- true
+	}
 
 	// Stop transaction monitor
 	o.StopTransactionMonitor()
@@ -3938,6 +3940,7 @@ func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Conte
 // safeReconcileNodeAccessOnBackend for each backend in the orchestrator
 func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 
+	o.stopNodeAccessLoop = make(chan bool)
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic)
 
 	Logc(ctx).Info("Starting periodic node access reconciliation service.")
