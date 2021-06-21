@@ -40,10 +40,15 @@ Ports
 
 Trident communicates over the following ports:
 
-======== ===========================
+======== ============================================================
   Port            Purpose
-======== ===========================
+======== ============================================================
 8443     Backchannel HTTPS
 8001     Prometheus metrics endpoint
 8000     Trident REST server
-======== ===========================
+17546    Liveness/readiness probe port used by Trident daemonset pods
+======== ============================================================
+
+.. Note::
+
+  The liveness/readiness probe port can be changed during installation time using the ``--probe-port`` flag. It is important to ensure this port isn't being used by another process on the worker nodes. 
