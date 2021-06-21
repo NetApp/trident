@@ -1,3 +1,5 @@
+.. _ndvp-global-config:
+
 Global Configuration
 ====================
 

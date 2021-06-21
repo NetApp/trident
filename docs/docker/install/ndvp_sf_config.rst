@@ -1,7 +1,7 @@
-Element OS/SolidFire Configuration
-==================================
+Element Software Configuration
+==============================
 
-In addition to the global configuration values above, when using SolidFire, these options are available.
+In addition to the :ref:`global configuration values <ndvp-global-config>`, when using Element software (NetApp HCI/SolidFire), these options are available.
 
 +-----------------------+-------------------------------------------------------------------------------+----------------------------+
 | Option                | Description                                                                   | Example                    |
@@ -19,14 +19,14 @@ In addition to the global configuration values above, when using SolidFire, thes
 | ``LegacyNamePrefix``  | Prefix for upgraded Trident installs                                          | "netappdvp-"               |
 +-----------------------+-------------------------------------------------------------------------------+----------------------------+
 
-The SolidFire driver does not support Docker Swarm.
+The ``solidfire-san`` driver does not support Docker Swarm.
 
 **LegacyNamePrefix** If you used a version of Trident prior to 1.3.2 and perform an
 upgrade with existing volumes, you'll need to set this value in order to access
 your old volumes that were mapped via the ``volume-name`` method.
 
-Example Solidfire Config File
------------------------------
+Example Element Software Config File
+------------------------------------
 
 .. code-block:: json
 
