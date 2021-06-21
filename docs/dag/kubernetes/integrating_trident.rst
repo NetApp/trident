@@ -72,9 +72,9 @@ Cloud Volumes ONTAP provides data control along with enterprise-class storage fe
 ``ontap-san-economy``. These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
 
 
-Element (HCI/SolidFire)
------------------------
-The ``solidfire-san`` driver used with the HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element OS storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element OS Web UI.
+Element software (NetApp HCI/SolidFire)
+---------------------------------------
+The ``solidfire-san`` driver used with the NetApp HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element software web UI.
 
 .. table:: SolidFire SAN driver capabilities
 

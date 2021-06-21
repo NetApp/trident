@@ -1,11 +1,11 @@
 .. _sf_vol_opts:
 
-Element OS/SolidFire Volume Options
-===================================
+Element Software Volume Options
+===============================
 
-The SolidFire driver options expose the size and quality of service (QoS) policies associated with the volume. When the volume is created, the QoS policy associated with it is specified using the ``-o type=service_level`` nomenclature.
+The Element Software driver options expose the size and quality of service (QoS) policies associated with the volume. When the volume is created, the QoS policy associated with it is specified using the ``-o type=service_level`` nomenclature.
 
-The first step to defining a QoS service level with the SolidFire driver is to create at least one type and specify the minimum, maximum, and burst IOPS associated with a name in the configuration file.
+The first step to defining a QoS service level with the Element driver is to create at least one type and specify the minimum, maximum, and burst IOPS associated with a name in the configuration file.
 
 **Example Configuration File with QoS Definitions**
 
@@ -51,10 +51,10 @@ In the above configuration we have three policy definitions: *Bronze*, *Silver*,
    # create a 100GiB Bronze volume
    docker volume create -d solidfire --name sfBronze -o type=Bronze -o size=100G
 
-Other SolidFire Create Options
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Other Element Software Create Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Volume create options for SolidFire:
+Volume create options for Element include:
 
 * ``size`` - the size of the volume, defaults to 1GiB or config entry ``... "defaults": {"size": "5G"}``
 * ``blocksize`` - use either ``512`` or ``4096``, defaults to 512 or config entry ``DefaultBlockSize``

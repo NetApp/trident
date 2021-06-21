@@ -18,20 +18,20 @@ For more information about Trident, visit `ThePub <https://netapp.io/persistent-
 ONTAP
 -----
 
-ONTAP is NetApp’s multiprotocol, unified storage operating system that provides advanced data management capabilities for any application. ONTAP systems may have all-flash, hybrid, or all-HDD configurations and offer many different deployment models, including engineered hardware (FAS and AFF), white-box (ONTAP Select), and cloud-only (Cloud Volumes ONTAP). Trident supports all the above mentioned ONTAP deployment models. 
+ONTAP is NetApp’s multiprotocol, unified storage operating system that provides advanced data management capabilities for any application. ONTAP systems may have all-flash, hybrid, or all-HDD configurations and offer many different deployment models, including engineered hardware (FAS and AFF), white-box (ONTAP Select), and cloud-only (Cloud Volumes ONTAP). Trident supports all the above mentioned ONTAP deployment models.
 
-Cloud Volumes ONTAP 
+Cloud Volumes ONTAP
 ===================
 
 `Cloud Volumes ONTAP <http://cloud.netapp.com/ontap-cloud?utm_source=GitHub&utm_campaign=Trident>`_ is a software-only storage appliance that runs the ONTAP data management software in the cloud. You can use Cloud Volumes ONTAP for production workloads, disaster recovery, DevOps, file shares, and database management.It extends enterprise storage to the cloud by offering storage efficiencies, high availability, data replication, data tiering and application consistency.
 
 
-Element OS
-----------
+Element Software
+----------------
 
-Element OS enables the storage administrator to consolidate workloads by guaranteeing performance and enabling a simplified and streamlined storage footprint. Coupled with an API to enable automation of all aspects of storage management, Element OS enables storage administrators to do more with less effort.
+Element Software enables the storage administrator to consolidate workloads by guaranteeing performance and enabling a simplified and streamlined storage footprint. Coupled with an API to enable automation of all aspects of storage management, Element enables storage administrators to do more with less effort.
 
-Trident supports all Element OS clusters, more information can be found at `Element Software <https://www.netapp.com/us/products/data-management-software/element-os.aspx>`_.
+More information can be found `here <https://www.netapp.com/data-management/element-software/>`_.
 
 NetApp HCI
 ==========
