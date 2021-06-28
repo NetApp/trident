@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -7,7 +7,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/prometheus/common/log"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -112,7 +111,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -121,7 +120,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 

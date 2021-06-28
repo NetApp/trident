@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -2614,7 +2614,7 @@ func (d Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
 // Intended to be from the destination vserver
 func (d Client) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*azgo.
-SnapmirrorDestroyResponse, error) {
+	SnapmirrorDestroyResponse, error) {
 
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2626,7 +2626,7 @@ SnapmirrorDestroyResponse, error) {
 
 // Intended to be from the destination vserver
 func (d Client) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-SnapmirrorDestroyResponse, error) {
+	SnapmirrorDestroyResponse, error) {
 
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2647,10 +2647,10 @@ func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 		ExecuteUsing(d.zr)
 
 	if err != nil {
-		return false , err
+		return false, err
 	}
 	if err = GetError(ctx, response, err); err != nil {
-		return false , fmt.Errorf("error getting peer info: %v", err)
+		return false, fmt.Errorf("error getting peer info: %v", err)
 	}
 
 	peerFound := false
@@ -2678,7 +2678,7 @@ func (d Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 
 	response, err := azgo.NewNetInterfaceGetIterRequest().
 		SetMaxRecords(defaultZapiRecords).
-		SetQuery( azgo.NetInterfaceGetIterRequestQuery{
+		SetQuery(azgo.NetInterfaceGetIterRequestQuery{
 			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{
 				OperationalStatusPtr: &LifOperationalStatusUp,
 			},
@@ -2705,7 +2705,7 @@ func (d Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (str
 	}
 
 	if nodeName == "" {
-		Logc(ctx).Warningf("No node found; no node meets the criteria (IP address: " +
+		Logc(ctx).Warningf("No node found; no node meets the criteria (IP address: "+
 			"%s with at least one data LIF operational status of up)", ip)
 	}
 
@@ -2795,9 +2795,11 @@ func (d Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 	// Get the serial numbers
 	if response.Result.AttributesListPtr != nil {
 		for _, node := range response.Result.AttributesListPtr.NodeDetailsInfo() {
-			serialNumber := node.NodeSerialNumber()
-			if serialNumber != "" {
-				serialNumbers = append(serialNumbers, serialNumber)
+			if node.NodeSerialNumberPtr != nil {
+				serialNumber := node.NodeSerialNumber()
+				if serialNumber != "" {
+					serialNumbers = append(serialNumbers, serialNumber)
+				}
 			}
 		}
 	}

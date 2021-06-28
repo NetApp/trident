@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/netapp/trident/utils"
-	"github.com/prometheus/common/log"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -113,7 +112,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -122,7 +121,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -249,7 +248,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 
 	for _, testCase := range cases {
 
-		igroups = map[string]map[string]struct{}{}
+		api.FakeIgroups = map[string]map[string]struct{}{}
 
 		var ontapSanDrivers []SANStorageDriver
 
@@ -261,7 +260,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 				igroupsIQNMap[iqn] = struct{}{}
 			}
 
-			igroups[driverInfo.igroupName] = igroupsIQNMap
+			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
 			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
@@ -275,10 +274,10 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 
 		for _, driverInfo := range testCase {
 
-			assert.Equal(t, len(driverInfo.igroupFinalIQNs), len(igroups[driverInfo.igroupName]))
+			assert.Equal(t, len(driverInfo.igroupFinalIQNs), len(api.FakeIgroups[driverInfo.igroupName]))
 
 			for _, iqn := range driverInfo.igroupFinalIQNs {
-				assert.Contains(t, igroups[driverInfo.igroupName], iqn)
+				assert.Contains(t, api.FakeIgroups[driverInfo.igroupName], iqn)
 			}
 		}
 	}
@@ -289,7 +288,7 @@ func TestOntapSanTerminate(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -298,7 +297,7 @@ func TestOntapSanTerminate(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -327,7 +326,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 	for _, testCase := range cases {
 
-		igroups = map[string]map[string]struct{}{}
+		api.FakeIgroups = map[string]map[string]struct{}{}
 
 		var ontapSanDrivers []SANStorageDriver
 
@@ -339,7 +338,7 @@ func TestOntapSanTerminate(t *testing.T) {
 				igroupsIQNMap[iqn] = struct{}{}
 			}
 
-			igroups[driverInfo.igroupName] = igroupsIQNMap
+			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
 			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
@@ -349,7 +348,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 		for driverIndex, driverInfo := range testCase {
 			ontapSanDrivers[driverIndex].Terminate(ctx, "")
-			assert.NotContains(t, igroups, igroups[driverInfo.igroupName])
+			assert.NotContains(t, api.FakeIgroups, api.FakeIgroups[driverInfo.igroupName])
 		}
 
 	}

@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -17,6 +17,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/logger"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
@@ -308,7 +309,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -317,7 +318,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -396,7 +397,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -405,7 +406,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameCSI(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -484,7 +485,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -493,7 +494,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -566,7 +567,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameDocker(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := newUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
 	server.StartTLS()
 
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
@@ -575,7 +576,7 @@ func TestOntapSanEcoInitializeDriverIgroupNameDocker(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			server.Close()
-			log.Error("Panic in fake filer", r)
+			t.Error("Panic in fake filer", r)
 		}
 	}()
 
@@ -678,20 +679,20 @@ func TestOntapSanGetDefaultIgroupName(t *testing.T) {
 func TestGetExternalConfigRedactSecrets(t *testing.T) {
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
-		Credentials: map[string]string{"name": "secretname", "type": "secret"},
-		StoragePrefixRaw:  json.RawMessage("\"\""),
-		StoragePrefix:     nil,
+		Credentials:      map[string]string{"name": "secretname", "type": "secret"},
+		StoragePrefixRaw: json.RawMessage("\"\""),
+		StoragePrefix:    nil,
 	}
 
 	commonConfigNoCredentials := &drivers.CommonStorageDriverConfig{
-		StoragePrefixRaw:  json.RawMessage("\"\""),
-		StoragePrefix:     nil,
+		StoragePrefixRaw: json.RawMessage("\"\""),
+		StoragePrefix:    nil,
 	}
 
 	expectedCommonConfig := &drivers.CommonStorageDriverConfig{
-		Credentials: map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED},
-		StoragePrefixRaw:  json.RawMessage("\"\""),
-		StoragePrefix:     nil,
+		Credentials:      map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED},
+		StoragePrefixRaw: json.RawMessage("\"\""),
+		StoragePrefix:    nil,
 	}
 
 	var cases = []struct {
@@ -760,4 +761,54 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 
 		})
 	}
+}
+
+func newTestOntapDriverConfig(
+	vserverAdminHost, vserverAdminPort, vserverAggrName string,
+) *drivers.OntapStorageDriverConfig {
+	config := &drivers.OntapStorageDriverConfig{}
+	sp := func(s string) *string { return &s }
+
+	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{}
+	config.CommonStorageDriverConfig.DebugTraceFlags = make(map[string]bool)
+	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
+	config.CommonStorageDriverConfig.DebugTraceFlags["api"] = true
+	// config.Labels = map[string]string{"app": "wordpress"}
+	config.ManagementLIF = vserverAdminHost + ":" + vserverAdminPort
+	config.SVM = "SVM1"
+	config.Aggregate = vserverAggrName
+	config.Username = "ontap-san-user"
+	config.Password = "password1!"
+	config.StorageDriverName = "ontap-san"
+	config.StoragePrefix = sp("test_")
+
+	return config
+}
+
+func TestOntapSerialNumberMissing(t *testing.T) {
+	ctx := context.Background()
+	logger.Logc(ctx).Level = log.TraceLevel
+
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
+	server.StartTLS()
+
+	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
+	assert.Nil(t, err, "Unable to get Web host port %s", port)
+
+	defer func() {
+		if r := recover(); r != nil {
+			server.Close()
+			t.Error("Panic in fake filer", r)
+		}
+	}()
+
+	config := newTestOntapDriverConfig(vserverAdminHost, port, vserverAggrName)
+	// Get the API client
+	client, err := InitializeOntapAPI(ctx, config)
+	assert.Nil(t, err, "Unable to create ONTAP API client")
+	_, err = client.NodeListSerialNumbers(ctx)
+	assert.Nil(t, err, "Error reading node serial numbers")
 }
