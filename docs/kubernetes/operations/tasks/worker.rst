@@ -50,7 +50,7 @@ Keep in mind the following considerations when using iSCSI volumes:
  .. code-block:: bash
 
   sudo sed -i 's/^\(node.session.auth.chap_algs\).*/\1 = MD5/' /etc/iscsi/iscsid.conf
-  
+
 * When using worker nodes that run RHEL/RedHat CoreOS with iSCSI
   PVs, make sure to specify the ``discard`` mountOption in the
   `StorageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/#mount-options>`_
@@ -85,6 +85,12 @@ Keep in mind the following considerations when using iSCSI volumes:
    .. code-block:: bash
 
      sudo mpathconf --enable --with_multipathd y
+
+   .. note::
+      You should ensure the ``/etc/multipath.conf`` file does not contain ``find_multipaths yes``
+      under the ``defaults`` section. Acceptable values for ``find_multipath`` are ``no``,
+      ``greedy``, or ``strict``, but because older versions of multipath-tools don't support values
+      other than ``no`` it's safest to omit ``find_multipath`` to get the default behavior.
 
 #. Ensure that ``iscsid`` and ``multipathd`` are running:
 
@@ -132,9 +138,16 @@ Keep in mind the following considerations when using iSCSI volumes:
      sudo tee /etc/multipath.conf <<-'EOF'
      defaults {
          user_friendly_names yes
-         find_multipaths yes
      }
      EOF
+
+   .. note::
+      You should ensure the ``/etc/multipath.conf`` file does not contain ``find_multipaths yes``
+      under the ``defaults`` section. Acceptable values for ``find_multipath`` are ``no``,
+      ``greedy``, or ``strict``, but because older versions of multipath-tools don't support values
+      other than ``no`` it's safest to omit ``find_multipath`` to get the default behavior.
+
+   .. code-block:: bash
 
      sudo systemctl enable --now multipath-tools.service
      sudo service multipath-tools restart

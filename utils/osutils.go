@@ -106,6 +106,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	var lunSerial = publishInfo.IscsiLunSerial
 	var fstype = publishInfo.FilesystemType
 	var options = publishInfo.MountOptions
+	var advertisedPortalCount = 1 + len(publishInfo.IscsiPortals)
 
 	if iscsiInterface == "" {
 		iscsiInterface = "default"
@@ -199,7 +200,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return err
 	}
 
-	err = waitForMultipathDeviceForLUN(ctx, lunID, targetIQN)
+	err = waitForMultipathDeviceForLUN(ctx, lunID, advertisedPortalCount, targetIQN)
 	if err != nil {
 		return err
 	}
@@ -696,13 +697,12 @@ func getDeviceInfoForLUN(
 		devicePath = "/dev/" + devices[0]
 	}
 
-	err = ensureDeviceReadableWithRetry(ctx, devicePath)
-	if err != nil {
-		return nil, err
-	}
-
 	fsType := ""
 	if needFSType {
+		err = ensureDeviceReadableWithRetry(ctx, devicePath)
+		if err != nil {
+			return nil, err
+		}
 
 		fsType, err = getFSType(ctx, devicePath)
 		if err != nil {
@@ -773,7 +773,7 @@ func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDevi
 }
 
 // waitForMultipathDeviceForLUN
-func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName string) error {
+func waitForMultipathDeviceForLUN(ctx context.Context, lunID, advertisedPortalCount int, iSCSINodeName string) error {
 
 	fields := log.Fields{
 		"lunID":         lunID,
@@ -794,61 +794,84 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName 
 		return err
 	}
 
-	waitForMultipathDeviceForDevices(ctx, devices)
+	waitForMultipathDeviceForDevices(ctx, advertisedPortalCount, devices)
 	return nil
 }
 
 // waitForMultipathDeviceForDevices accepts a list of sd* device names and waits until
 // a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
-func waitForMultipathDeviceForDevices(ctx context.Context, devices []string) string {
+func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount int, devices []string) string {
 
 	fields := log.Fields{"devices": devices}
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils.waitForMultipathDeviceForDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.waitForMultipathDeviceForDevices")
 
-	if len(devices) <= 1 {
+	// Even is the device len = 1, we should check for the multipath device, other devices may be
+	// taking time to be acknowledged
+	if len(devices) < 1 {
 		Logc(ctx).Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
 		return ""
-	} else if !multipathdIsRunning(ctx) {
-		Logc(ctx).Debug("Skipping multipath discovery, multipathd isn't running.")
-		return ""
 	}
 
-	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
-	multipathDevice := ""
+	if !multipathdIsRunning(ctx) {
+		Logc(ctx).Debug("Skipping multipath discovery, multipathd isn't running.")
 
-	checkMultipathDeviceExists := func() error {
+		if len(devices) > 1 || advertisedPortalCount > 1 {
+			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is not running, however the " +
+				"number of devices (%d) or portals (%d) is greater than 1.", len(devices), advertisedPortalCount)
+		}
 
-		for _, device := range devices {
-			multipathDevice = findMultipathDeviceForDevice(ctx, device)
-			if multipathDevice != "" {
-				return nil
+		return ""
+	} else {
+		if findMultipathsValue, err := identifyFindMultipathsValue(ctx); err != nil {
+			// If Trident is unable to find the find_multipaths value, assume it to be default "no"
+			Logc(ctx).Errorf("unable to get the find_multipaths value from the multipath.conf: %v", err)
+		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
+			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is running but find_multipaths " +
+				"value is set to '%s' in the multipath configuration. !!!Please correct this issue!!!", findMultipathsValue)
+
+			if advertisedPortalCount <= 1 {
+				Logc(ctx).Warnf("Skipping multipath discovery, %d portal(s) specified.", advertisedPortalCount)
+				return ""
 			}
 		}
-		if multipathDevice == "" {
-			return errors.New("multipath device not yet present")
+
+		maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
+		multipathDevice := ""
+
+		checkMultipathDeviceExists := func() error {
+
+			for _, device := range devices {
+				multipathDevice = findMultipathDeviceForDevice(ctx, device)
+				if multipathDevice != "" {
+					return nil
+				}
+			}
+			if multipathDevice == "" {
+				return errors.New("multipath device not yet present")
+			}
+			return nil
 		}
-		return nil
-	}
 
-	deviceNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
-	}
+		deviceNotify := func(err error, duration time.Duration) {
+			Logc(ctx).WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
+		}
 
-	multipathDeviceBackoff := backoff.NewExponentialBackOff()
-	multipathDeviceBackoff.InitialInterval = 1 * time.Second
-	multipathDeviceBackoff.Multiplier = 1.414 // approx sqrt(2)
-	multipathDeviceBackoff.RandomizationFactor = 0.1
-	multipathDeviceBackoff.MaxElapsedTime = maxDuration
+		multipathDeviceBackoff := backoff.NewExponentialBackOff()
+		multipathDeviceBackoff.InitialInterval = 1 * time.Second
+		multipathDeviceBackoff.Multiplier = 1.414 // approx sqrt(2)
+		multipathDeviceBackoff.RandomizationFactor = 0.1
+		multipathDeviceBackoff.MaxElapsedTime = maxDuration
 
-	// Run the check/scan using an exponential backoff
-	if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
-		Logc(ctx).Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
-	} else {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
+		// Run the check/scan using an exponential backoff
+		if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
+			Logc(ctx).Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
+		} else {
+			Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
+		}
+		return multipathDevice
 	}
-	return multipathDevice
 }
 
 // waitForDevice accepts a device name and waits until it is present and returns error if it times out
@@ -2854,7 +2877,7 @@ func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 
 	args := []string{"-m", "node", "-T", iqn, "-l", "-p", formatPortal(portal)}
 	listAllISCSIDevices(ctx)
-	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
+	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, args...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
@@ -2919,7 +2942,7 @@ func loginWithChap(
 	}
 
 	loginArgs := append(args, []string{"--login"}...)
-	if _, err := execIscsiadmCommand(ctx, loginArgs...); err != nil {
+	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, loginArgs...); err != nil {
 		Logc(ctx).Error("Error running iscsiadm login.")
 		return err
 	}
@@ -3103,6 +3126,11 @@ func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
 	return execCommand(ctx, "iscsiadm", args...)
 }
 
+// execIscsiadmCommandWithTimeout uses the 'iscsiadm' command to perform operations with timeout
+func execIscsiadmCommandWithTimeout(ctx context.Context, timeout time.Duration, args ...string) ([]byte, error) {
+	return execCommandWithTimeout(ctx, "iscsiadm", timeout, true, args...)
+}
+
 // execCommand invokes an external process
 func execCommand(ctx context.Context, name string, args ...string) ([]byte, error) {
 
@@ -3264,4 +3292,22 @@ func listAllISCSIDevices(ctx context.Context) {
 		"multipath -ll output":       string(out1),
 		"iscsiadm -m session output": string(out2),
 	}).Trace("Listing all iSCSI Devices.")
+}
+
+// identifyFindMultipathsValue reads /etc/multipath.conf and identifies find_multipaths value (if set)
+func identifyFindMultipathsValue(ctx context.Context) (string, error) {
+	if output, err := execCommandWithTimeout(ctx, "multipathd", 5, false, "show", "config"); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"error": err,
+		}).Error("Could not read multipathd configuration")
+
+		return "", fmt.Errorf("could not read multipathd configuration: %v", err)
+	} else {
+		findMultipathsValue := GetFindMultipathValue(string(output))
+
+		Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
+
+		return findMultipathsValue, nil
+	}
+
 }

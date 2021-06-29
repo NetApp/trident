@@ -497,6 +497,31 @@ func CountSpacesBeforeText(text string) int {
 	return len(text) - len(strings.TrimLeft(text, " \t"))
 }
 
+// GetFindMultipathValue returns the value of find_multipaths
+// Returned values:
+// no (or off): Create a multipath device for every path that is not explicitly disabled
+// yes (or on): Create a device if one of some conditions are met
+// other possible values: smart, greedy, strict
+func GetFindMultipathValue(text string) string {
+
+	// This matches pattern in a multiline string of type "    find_multipaths: yes"
+	tagsWithIndentationRegex := regexp.MustCompile(`(?m)^[\t ]*find_multipaths[\t ]*["|']?(?P<tagName>[\w-_]+)["|']?[\t ]*$`)
+	tag := tagsWithIndentationRegex.FindStringSubmatch(text)
+
+	// Since we have two of `()` in the pattern, we want to use the tag identified by the second `()`.
+	if len(tag) > 1 {
+		if tag[1] == "off" {
+			return "no"
+		} else if tag[1] == "on" {
+			return "yes"
+		}
+
+		return tag[1]
+	}
+
+	return ""
+}
+
 // GetNFSVersionFromMountOptions accepts a set of mount options, a default NFS version, and a list of
 // supported NFS versions, and it returns the NFS version specified by the mount options, or the default
 // if none is found, plus an error (if any).  If a set of supported versions is supplied, and the returned
