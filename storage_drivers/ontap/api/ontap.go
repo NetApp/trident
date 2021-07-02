@@ -871,6 +871,17 @@ func (d Client) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResp
 	return response, err
 }
 
+// LunSize retrieves the size of the specified volume, does not work with economy driver
+func (d Client) LunSize(flexvolName string) (int, error) {
+	lunPath := 	fmt.Sprintf("/vol/%v/lun0", flexvolName)
+	lunAttrs, err := d.LunGet(lunPath)
+	if err != nil {
+		return 0, err
+	}
+
+	return lunAttrs.Size(), nil
+}
+
 // LUN operations END
 /////////////////////////////////////////////////////////////////////////////
 

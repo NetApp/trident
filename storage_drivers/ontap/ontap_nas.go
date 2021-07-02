@@ -185,20 +185,6 @@ func (d *NASStorageDriver) Create(
 		return err
 	}
 
-	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
-	if err != nil {
-		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
-	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
-	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
-	if err != nil {
-		return err
-	}
-
 	// Get options
 	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 	if err != nil {
@@ -207,7 +193,6 @@ func (d *NASStorageDriver) Create(
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	size := strconv.FormatUint(sizeBytes, 10)
 	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
 	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
@@ -219,6 +204,29 @@ func (d *NASStorageDriver) Create(
 	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
 	qosPolicy := storagePool.InternalAttributes[QosPolicy]
 	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
+
+	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
+	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
+	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
+
+	// Get the flexvol size based on the snapshot reserve
+	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
+	if err != nil {
+		return err
+	}
+	size := strconv.FormatUint(flexvolSize, 10)
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
@@ -233,11 +241,6 @@ func (d *NASStorageDriver) Create(
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
-	}
-
-	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
-	if err != nil {
-		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
 	if tieringPolicy == "" {
@@ -279,7 +282,7 @@ func (d *NASStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+			ctx, aggregate, spaceReserve, flexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -865,47 +868,54 @@ func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 }
 
 // Resize expands the volume size.
-func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64) error {
 
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NASStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
+			"Method":            "Resize",
+			"Type":              "NASStorageDriver",
+			"name":               name,
+			"requestedSizeBytes": requestedSizeBytes,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	flexvolSize, err := resizeValidation(ctx, name, sizeBytes, d.API.VolumeExists, d.API.VolumeSize)
+	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
 	if err != nil {
 		return err
 	}
 
 	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
-	if flexvolSize == sizeBytes {
+	if flexvolSize == requestedSizeBytes {
 		return nil
 	}
 
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeGet)
+	if err != nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
+	}
+
+	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
-		ctx, name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		ctx, name, newFlexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
-	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(sizeBytes, 10))
+	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(newFlexvolSize, 10))
 	if err = api.GetError(ctx, response.Result, err); err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
 
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 	return nil
 }
 

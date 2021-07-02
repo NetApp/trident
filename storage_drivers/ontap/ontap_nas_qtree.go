@@ -922,7 +922,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	return calculateOptimalSizeForFlexvol(ctx, flexvol, volAttrs, newQtreeSizeBytes, totalDiskLimitBytes), nil
+	return calculateEconomyFlexvolSize(ctx, flexvol, volAttrs, newQtreeSizeBytes, totalDiskLimitBytes), nil
 }
 
 // addDefaultQuotaForFlexvol adds a default quota rule to a Flexvol so that quotas for

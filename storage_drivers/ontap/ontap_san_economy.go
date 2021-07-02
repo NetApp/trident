@@ -1447,7 +1447,7 @@ func (d *SANEconomyStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	flexvolSizeBytes := calculateOptimalSizeForFlexvol(ctx, flexvol, volAttrs, newLunSizeBytes, totalDiskLimitBytes)
+	flexvolSizeBytes := calculateEconomyFlexvolSize(ctx, flexvol, volAttrs, newLunSizeBytes, totalDiskLimitBytes)
 
 	return flexvolSizeBytes, nil
 }

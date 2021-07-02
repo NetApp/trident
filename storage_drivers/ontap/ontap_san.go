@@ -209,20 +209,6 @@ func (d *SANStorageDriver) Create(
 		return err
 	}
 
-	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
-	if err != nil {
-		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
-	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
-	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
-	if err != nil {
-		return err
-	}
-
 	// Get options
 	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 	if err != nil {
@@ -231,7 +217,7 @@ func (d *SANStorageDriver) Create(
 
 	// Get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	size := strconv.FormatUint(sizeBytes, 10)
+
 	spaceAllocation, _ := strconv.ParseBool(utils.GetV(opts, "spaceAllocation", storagePool.InternalAttributes[SpaceAllocation]))
 	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
 	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
@@ -245,19 +231,40 @@ func (d *SANStorageDriver) Create(
 	qosPolicy := storagePool.InternalAttributes[QosPolicy]
 	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
 
+	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
+	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
+	lunSizeBytes, err := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes[Size])
+	if err != nil {
+		return err
+	}
+	lunSize := strconv.FormatUint(lunSizeBytes, 10)
+	// Get the flexvol size based on the snapshot reserve
+	flexvolSize := calculateFlexvolSize(ctx, name, lunSizeBytes, snapshotReserveInt)
+	// Add extra 10% to the Flexvol to account for LUN metadata
+	flexvolBufferSize := uint64(LUNMetadataBufferMultiplier * float64(flexvolSize))
+
+	volumeSize := strconv.FormatUint(flexvolBufferSize, 10)
+
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, lunSizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
 	enableEncryption, err := strconv.ParseBool(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
-	}
-
-	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
-	if err != nil {
-		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
 	fstype, err = drivers.CheckSupportedFilesystem(
@@ -278,17 +285,18 @@ func (d *SANStorageDriver) Create(
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
 	Logc(ctx).WithFields(log.Fields{
-		"name":              name,
-		"size":              size,
-		"spaceAllocation":   spaceAllocation,
-		"spaceReserve":      spaceReserve,
-		"snapshotPolicy":    snapshotPolicy,
-		"snapshotReserve":   snapshotReserveInt,
-		"unixPermissions":   unixPermissions,
-		"snapshotDir":       snapshotDir,
-		"exportPolicy":      exportPolicy,
-		"securityStyle":     securityStyle,
-		"encryption":        enableEncryption,
+		"name":            name,
+		"lunSize":         lunSize,
+		"flexvolSize":     flexvolBufferSize,
+		"spaceAllocation": spaceAllocation,
+		"spaceReserve":    spaceReserve,
+		"snapshotPolicy":  snapshotPolicy,
+		"snapshotReserve": snapshotReserveInt,
+		"unixPermissions": unixPermissions,
+		"snapshotDir":     snapshotDir,
+		"exportPolicy":    exportPolicy,
+		"securityStyle":   securityStyle,
+		"encryption":      enableEncryption,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")
@@ -301,7 +309,7 @@ func (d *SANStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+			ctx, aggregate, spaceReserve, flexvolBufferSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -317,7 +325,7 @@ func (d *SANStorageDriver) Create(
 
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
-			ctx, name, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
+			ctx, name, aggregate, volumeSize, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
 			tieringPolicy, labels, api.QosPolicyGroup{}, enableEncryption, snapshotReserveInt)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
@@ -344,7 +352,7 @@ func (d *SANStorageDriver) Create(
 
 		// Create the LUN.  If this fails, clean up and move on to the next pool.
 		// QoS policy is set at the LUN layer
-		lunCreateResponse, err := d.API.LunCreate(lunPath, int(sizeBytes), osType, qosPolicyGroup, false,
+		lunCreateResponse, err := d.API.LunCreate(lunPath, int(lunSizeBytes), osType, qosPolicyGroup, false,
 			spaceAllocation)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name,
@@ -395,32 +403,6 @@ func (d *SANStorageDriver) Create(
 		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", string(d.Config.DriverContext))
 		if err = api.GetError(ctx, attrResponse, err); err != nil {
 			Logc(ctx).WithField("name", name).Warning("Failed to save the driver context attribute for new volume.")
-		}
-
-		// Resize FlexVol to be the same size or bigger than LUN because ONTAP creates
-		// larger LUNs sometimes based on internal geometry
-		lunSize := uint64(lunCreateResponse.Result.ActualSize())
-		if initialVolumeSize, err := d.API.VolumeSize(name); err != nil {
-			Logc(ctx).WithField("name", name).Warning("Failed to get volume size.")
-		} else if lunSize != uint64(initialVolumeSize) {
-			volumeSizeResponse, err := d.API.VolumeSetSize(name, strconv.FormatUint(lunSize, 10))
-			if err = api.GetError(ctx, volumeSizeResponse, err); err != nil {
-				volConfig.Size = strconv.FormatUint(uint64(initialVolumeSize), 10)
-				Logc(ctx).WithFields(log.Fields{
-					"name":              name,
-					"initialVolumeSize": initialVolumeSize,
-					"lunSize":           lunSize}).Warning("Failed to resize new volume to LUN size.")
-			} else {
-				if adjustedVolumeSize, err := d.API.VolumeSize(name); err != nil {
-					Logc(ctx).WithField("name", name).Warning("Failed to get volume size after the second resize operation.")
-				} else {
-					volConfig.Size = strconv.FormatUint(uint64(adjustedVolumeSize), 10)
-					Logc(ctx).WithFields(log.Fields{
-						"name":              name,
-						"initialVolumeSize": initialVolumeSize,
-						"adjustedVolSize":   adjustedVolumeSize}).Debug("FlexVol resized.")
-				}
-			}
 		}
 		return nil
 	}
@@ -832,7 +814,7 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeSize)
+	return CreateSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.LunSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1109,15 +1091,15 @@ func (d *SANStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 }
 
 // Resize expands the volume size.
-func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64) error {
 
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "SANStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
+			"Method":             "Resize",
+			"Type":               "SANStorageDriver",
+			"name":               name,
+			"requestedSizeBytes": requestedSizeBytes,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
@@ -1136,7 +1118,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return fmt.Errorf("volume %s does not exist", name)
 	}
 
-	volSize, err := d.API.VolumeSize(name)
+	currentFlexvolSize, err := d.API.VolumeSize(name)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"error": err,
@@ -1145,35 +1127,60 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return fmt.Errorf("error occurred when checking volume size")
 	}
 
-	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSize), tridentconfig.SANResizeDelta)
+	lun, err := d.API.LunGet(lunPath(name))
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"error": err,
+			"LUN":  lunPath(name),
+		}).Error("Error getting LUN.")
+		return fmt.Errorf("error occurred when getting the LUN")
+	}
+	currentLunSize := lun.Size()
+
+	lunSizeBytes := uint64(currentLunSize)
+	if requestedSizeBytes < lunSizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, lunSizeBytes)
+	}
+
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeGet)
+	if err != nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
+	}
+
+	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
+
+	sameLUNSize, err := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
+		tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err
 	}
 
-	if sameSize {
+	sameFlexvolSize, err := utils.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
+		tridentconfig.SANResizeDelta)
+	if err != nil {
+		return err
+	}
+
+	if sameLUNSize && sameFlexvolSize {
 		Logc(ctx).WithFields(log.Fields{
-			"requestedSize":     sizeBytes,
-			"currentVolumeSize": volSize,
+			"requestedSize":     requestedSizeBytes,
+			"currentLUNSize":    currentLunSize,
 			"name":              name,
 			"delta":             tridentconfig.SANResizeDelta,
-		}).Info("Requested size and current volume size are within the delta and therefore considered the same size" +
+		}).Info("Requested size and current LUN size are within the delta and therefore considered the same size" +
 			" for SAN resize operations.")
-		volConfig.Size = strconv.FormatUint(uint64(volSize), 10)
+		volConfig.Size = strconv.FormatUint(uint64(currentLunSize), 10)
 		return nil
 	}
 
-	volSizeBytes := uint64(volSize)
-	if sizeBytes < volSizeBytes {
-		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
-	}
-
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
-		ctx, name, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		ctx, name, newFlexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -1187,10 +1194,10 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		}
 
 		lunMaxSize := lunGeometry.Result.MaxResizeSize()
-		if lunMaxSize < int(sizeBytes) {
+		if lunMaxSize < int(requestedSizeBytes) {
 			Logc(ctx).WithFields(log.Fields{
 				"error":      err,
-				"sizeBytes":  sizeBytes,
+				"requestedSizeBytes":  requestedSizeBytes,
 				"lunMaxSize": lunMaxSize,
 				"lunPath":    lunPath(name),
 			}).Error("Requested size is larger than LUN's maximum capacity.")
@@ -1199,44 +1206,24 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Resize FlexVol
-	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(sizeBytes, 10))
-	if err = api.GetError(ctx, response.Result, err); err != nil {
-		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
-		return fmt.Errorf("volume resize failed")
+	if !sameFlexvolSize {
+		response, err := d.API.VolumeSetSize(name, strconv.FormatUint(newFlexvolSize, 10))
+		if err = api.GetError(ctx, response.Result, err); err != nil {
+			Logc(ctx).WithField("error", err).Error("Volume resize failed.")
+			return fmt.Errorf("volume resize failed")
+		}
 	}
 
 	// Resize LUN0
-	returnSize, err := d.API.LunResize(lunPath(name), int(sizeBytes))
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("LUN resize failed.")
-		return fmt.Errorf("volume resize failed")
-	}
-
-	// Resize FlexVol to be the same size or bigger than LUN because ONTAP creates
-	// larger LUNs sometimes based on internal geometry
-	if initialVolumeSize, err := d.API.VolumeSize(name); err != nil {
-		Logc(ctx).WithField("name", name).Warning("Failed to get volume size.")
-	} else if returnSize != uint64(initialVolumeSize) {
-		volumeSizeResponse, err := d.API.VolumeSetSize(name, strconv.FormatUint(returnSize, 10))
-		if err = api.GetError(ctx, volumeSizeResponse, err); err != nil {
-			volConfig.Size = strconv.FormatUint(uint64(initialVolumeSize), 10)
-			Logc(ctx).WithFields(log.Fields{
-				"name":               name,
-				"initialVolumeSize":  initialVolumeSize,
-				"adjustedVolumeSize": returnSize}).Warning("Failed to resize volume to match LUN size.")
-		} else {
-			if adjustedVolumeSize, err := d.API.VolumeSize(name); err != nil {
-				Logc(ctx).WithField("name", name).
-					Warning("Failed to get volume size after the second resize operation.")
-			} else {
-				volConfig.Size = strconv.FormatUint(uint64(adjustedVolumeSize), 10)
-				Logc(ctx).WithFields(log.Fields{
-					"name":               name,
-					"initialVolumeSize":  initialVolumeSize,
-					"adjustedVolumeSize": adjustedVolumeSize}).Debug("FlexVol resized.")
-			}
+	returnSize := lunSizeBytes
+	if !sameLUNSize {
+		returnSize, err = d.API.LunResize(lunPath(name), int(requestedSizeBytes))
+		if err != nil {
+			Logc(ctx).WithField("error", err).Error("LUN resize failed.")
+			return fmt.Errorf("volume resize failed")
 		}
 	}
+
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
 	return nil
 }

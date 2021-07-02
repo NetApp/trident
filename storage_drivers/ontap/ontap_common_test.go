@@ -233,7 +233,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 	}
 }
 
-func TestOntapCalculateOptimalFlexVolSize(t *testing.T) {
+func TestOntapCalculateEconomyFlexvolSize(t *testing.T) {
 	tests := []struct {
 		name                      string
 		flexvol                   string
@@ -284,9 +284,51 @@ func TestOntapCalculateOptimalFlexVolSize(t *testing.T) {
 					SizeUsedBySnapshotsPtr:       &test.sizeUsedBySnapshots,
 				},
 			}
-			newFlexvolSize := calculateOptimalSizeForFlexvol(context.Background(), test.flexvol, volAttrs,
+			newFlexvolSize := calculateEconomyFlexvolSize(context.Background(), test.flexvol, volAttrs,
 				test.newQtreeSize, test.totalDiskLimit)
 			assert.Equal(t, test.expectedFlexvolSize, newFlexvolSize)
+		})
+	}
+}
+
+func TestOntapCalculateFlexvolSize(t *testing.T) {
+	tests := []struct {
+		name                      string
+		flexvol                   string
+		requestedSize              uint64
+		percentageSnapshotReserve int
+		expectedFlexvolSize       uint64
+	}{
+		{
+			name:                      "5 GiB 0% snap reserve",
+			requestedSize:             5368709120,
+			percentageSnapshotReserve: 0,
+			expectedFlexvolSize:       5368709120,
+		},
+		{
+			name:                      "3 GiB 5% snap reserve",
+			requestedSize:             3221225472,
+			percentageSnapshotReserve: 5,
+			expectedFlexvolSize:       3390763654,
+		},
+		{
+			name:                      "1 GiB 50% snap reserve",
+			requestedSize:             1073741824,
+			percentageSnapshotReserve: 50,
+			expectedFlexvolSize:       2147483648,
+		},
+		{
+			name:                      "1 GiB 90% snap reserve",
+			requestedSize:             1073741824,
+			percentageSnapshotReserve: 90,
+			expectedFlexvolSize:       10737418240,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			flexvolSize := calculateFlexvolSize(context.Background(), test.flexvol, test.requestedSize,
+				test.percentageSnapshotReserve)
+			assert.Equal(t, test.expectedFlexvolSize, flexvolSize)
 		})
 	}
 }

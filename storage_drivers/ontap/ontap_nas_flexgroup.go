@@ -448,24 +448,6 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return drivers.NewVolumeExistsError(name)
 	}
 
-	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
-	if err != nil {
-		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
-	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
-		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
-	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
-	if err != nil {
-		return err
-	}
-	if sizeBytes > math.MaxInt64 {
-		return errors.New("invalid size requested")
-	}
-	size := int(sizeBytes)
-
 	// Get the aggregates assigned to the SVM.  There must be at least one!
 	vserverAggrs, err := d.API.VserverGetAggregateNames()
 	if err != nil {
@@ -520,6 +502,26 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
+
+	// Determine volume size in bytes
+	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
+	// get the flexvol size based on the snapshot reserve
+	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
+	sizeBytes, err = GetVolumeSize(flexvolSize, storagePool.InternalAttributes[Size])
+	if err != nil {
+		return err
+	}
+	if sizeBytes > math.MaxInt64 {
+		return errors.New("invalid size requested")
+	}
+	size := int(sizeBytes)
 
 	if tieringPolicy == "" {
 		tieringPolicy = "none"
@@ -1139,38 +1141,45 @@ func (d *NASFlexGroupStorageDriver) GetUpdateType(_ context.Context, driverOrig 
 
 // Resize expands the FlexGroup size.
 func (d *NASFlexGroupStorageDriver) Resize(
-	ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64,
+	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
 ) error {
 
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NASFlexGroupStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
+			"Method":             "Resize",
+			"Type":               "NASFlexGroupStorageDriver",
+			"name":               name,
+			"requestedSizeBytes": requestedSizeBytes,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	flexvolSize, err := resizeValidation(ctx, name, sizeBytes, d.API.FlexGroupExists, d.API.FlexGroupSize)
+	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.FlexGroupExists, d.API.FlexGroupSize)
 	if err != nil {
 		return err
 	}
 
 	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
-	if flexvolSize == sizeBytes {
+	if flexvolSize == requestedSizeBytes {
 		return nil
 	}
 
-	_, err = d.API.FlexGroupSetSize(ctx, name, strconv.FormatUint(sizeBytes, 10))
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.FlexGroupGet)
+	if err != nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
+	}
+
+	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+
+	_, err = d.API.FlexGroupSetSize(ctx, name, strconv.FormatUint(newFlexvolSize, 10))
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("FlexGroup resize failed.")
 		return fmt.Errorf("flexgroup resize failed")
 	}
 
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 	return nil
 }
 

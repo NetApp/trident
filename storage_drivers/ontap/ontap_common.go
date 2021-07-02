@@ -37,6 +37,7 @@ import (
 const (
 	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
 	HousekeepingStartupDelaySecs = 10
+	LUNMetadataBufferMultiplier  = 1.1 // 10%
 
 	// Constants for internal pool attributes
 	Size                  = "size"
@@ -1434,7 +1435,7 @@ func ValidateDataLIF(ctx context.Context, dataLIF string, dataLIFs []string) ([]
 const DefaultSpaceAllocation = "true"
 const DefaultSpaceReserve = "none"
 const DefaultSnapshotPolicy = "none"
-const DefaultSnapshotReserve = ""
+const DefaultSnapshotReserve = "5"
 const DefaultUnixPermissions = "---rwxrwxrwx"
 const DefaultSnapshotDir = "false"
 const DefaultExportPolicy = "default"
@@ -1485,7 +1486,11 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 	}
 
 	if config.SnapshotReserve == "" {
-		config.SnapshotReserve = DefaultSnapshotReserve
+		if config.SnapshotPolicy == "none" {
+			config.SnapshotReserve = ""
+		} else {
+			config.SnapshotReserve = DefaultSnapshotReserve
+		}
 	}
 
 	if config.UnixPermissions == "" {
@@ -1735,10 +1740,14 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 	} else {
 		// If snapshotReserve isn't set, then look at snapshotPolicy.  If the policy is "none",
 		// return 0.  Otherwise return -1, indicating that ONTAP should use its own default value.
-		if snapshotPolicy == "none" {
+		if snapshotPolicy == "none" || snapshotPolicy == "" {
 			return 0, nil
 		} else {
-			return api.NumericalValueNotSet, nil
+			snapshotReserveInt64, err := strconv.ParseInt(DefaultSnapshotReserve, 10, 64)
+			if err != nil {
+				return api.NumericalValueNotSet, err
+			}
+			return int(snapshotReserveInt64), nil
 		}
 	}
 }
@@ -3057,7 +3066,7 @@ func UnmountAndOfflineVolume(ctx context.Context, API *api.Client, name string) 
 	return true, nil
 }
 
-func calculateOptimalSizeForFlexvol(
+func calculateEconomyFlexvolSize(
 	ctx context.Context, flexvol string, volAttrs *azgo.VolumeAttributesType, newLunOrQtreeSizeBytes,
 	totalDiskLimitBytes uint64,
 ) uint64 {
@@ -3089,4 +3098,52 @@ func calculateOptimalSizeForFlexvol(
 	}).Debug("Calculated optimal size for Flexvol with new LUN or QTree.")
 
 	return flexvolSizeBytes
+}
+
+// calculateFlexvolSize calculates the size of the Flexvol taking into account the snapshot reserve
+func calculateFlexvolSize(
+	ctx context.Context, flexvol string, requestedSize uint64, snapshotReserve int,
+) uint64 {
+	snapReserveDivisor := 1.0 - (float64(snapshotReserve) / 100.0)
+
+	sizeWithSnapReserve := float64(requestedSize) / snapReserveDivisor
+
+	flexvolSizeBytes := uint64(sizeWithSnapReserve)
+
+	Logc(ctx).WithFields(log.Fields{
+		"flexvol":                flexvol,
+		"snapReserveDivisor":     snapReserveDivisor,
+		"requestedSize":          requestedSize,
+		"sizeWithSnapReserve":    sizeWithSnapReserve,
+		"flexvolSizeBytes":       flexvolSizeBytes,
+	}).Debug("Calculated optimal size for Flexvol with snapshot reserve.")
+
+	return flexvolSizeBytes
+}
+
+// getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
+func getSnapshotReserveFromOntap(
+	ctx context.Context, name string, volumeGet func(string) (*azgo.VolumeAttributesType, error),
+) (int, error) {
+	snapshotPolicy := ""
+	snapshotReserveInt := 0
+	flexvol, err := volumeGet(name)
+	if flexvol.VolumeSnapshotAttributesPtr == nil || flexvol.VolumeSnapshotAttributesPtr.SnapshotPolicyPtr == nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot policy for volume")
+	} else {
+		volumeSnapshotAttrs := flexvol.VolumeSnapshotAttributes()
+		snapshotPolicy = volumeSnapshotAttrs.SnapshotPolicy()
+	}
+	if flexvol.VolumeSpaceAttributesPtr == nil || flexvol.VolumeSpaceAttributesPtr.PercentageSnapshotReservePtr == nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
+	} else {
+		volumeSpaceAttrs := flexvol.VolumeSpaceAttributes()
+		snapshotReserveInt = volumeSpaceAttrs.PercentageSnapshotReserve()
+	}
+	snapshotReserveInt, err = GetSnapshotReserve(snapshotPolicy, strconv.Itoa(snapshotReserveInt))
+	if err != nil {
+		return snapshotReserveInt, fmt.Errorf("invalid value for snapshotReserve: %v", err)
+	}
+
+	return snapshotReserveInt, nil
 }
