@@ -215,7 +215,8 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	d.initialized = true
-	return nil
+
+	return fmt.Errorf("trident %s does not support E-series", tridentconfig.DefaultOrchestratorVersion)
 }
 
 func (d *SANStorageDriver) Initialized() bool {
@@ -1247,9 +1248,9 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.Username = drivers.REDACTED      // redact the username
-	cloneConfig.Password = drivers.REDACTED      // redact the password
-	cloneConfig.PasswordArray = drivers.REDACTED // redact the password
+	cloneConfig.Username = drivers.REDACTED                                                                           // redact the username
+	cloneConfig.Password = drivers.REDACTED                                                                           // redact the password
+	cloneConfig.PasswordArray = drivers.REDACTED                                                                      // redact the password
 	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }

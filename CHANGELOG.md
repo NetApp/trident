@@ -9,6 +9,11 @@
 **Enhancements:**
 - **Kubernetes:** Updated to csi-snapshotter v4.0.0 for k8s 1.20+
 
+**Beta Features:**
+
+**Deprecations:**
+- Disabled E-series driver.
+
 ## v21.04.0
 
 **Fixes:**
