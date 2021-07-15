@@ -128,9 +128,10 @@ To maintain a persistent pod that will always be deployed on the same node with 
 Container Storage Interface
 ===========================
 
-The Cloud Native Computing Foundation (CNCF) is actively working on a standardized Container
-Storage Interface (CSI). NetApp is active in the CSI Special Interest Group (SIG). CSI
-is meant to be a standard mechanism used by various container orchestrators to expose
-storage systems to containers. Trident fully conforms with CSI v1.2 specifications
-and supports all volume operations. Trident's enhanced CSI support is production ready and currently supported
-on Kubernetes versions ``1.13`` and above.
+The Container Storage Interface (CSI) is a standard for exposing arbitrary block and file storage
+systems to containerized workloads on container orchestrators like Kubernetes. 
+Using CSI, third-party storage providers can write and deploy plugins exposing new storage systems
+in Kubernetes without ever having to touch the core Kubernetes code.
+
+Trident fully conforms to the CSI specification and provides multiple storage drivers, enabling users
+to find the perfect balance when it comes to granularity, scalability, and feature support. 

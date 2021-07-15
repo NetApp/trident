@@ -2,9 +2,7 @@
 Upgrading with the Trident Operator
 ###################################
 
-Trident's operator now supports brownfield installations and provides an easy
-upgrade path for users that seek to use the operator and greatly simplify
-Trident's operation. This document shall talk about the prerequisites and how
+Trident's operator provides an easy upgrade path for users that seek to manage Trident directly through Kubernetes. This document talks about the prerequisites and how
 the upgrade will work.
 
 .. _operator-prereq:
@@ -19,16 +17,16 @@ To upgrade using the Trident operator:
    ``trident-csi-*`` naming pattern, you are running CSI Trident. Move on to
    step 2.
 2. Only CRD based Trident Installation may exist. This represents all Trident
-   releases ``19.07`` and above. If you passed step 1, you have most likely also
+   releases ``19.07`` and later. If you passed step 1, you have most likely also
    cleared step 2.
 3. CRDs that **exist as a result of Trident CSI uninstallation** are supported.
    If you have uninstalled CSI Trident and the metadata from the installation
    persists, you can upgrade using the operator.
 4. Only one Trident installation should exist across all the namespaces in a
    given Kubernetes cluster.
-5. You must be using a Kubernetes cluster that runs version ``1.14`` and above.
+5. You must be using a Kubernetes cluster that runs version ``1.17`` and later.
    See :ref:`Requirements <Requirements>`
-6. Alpha Snapshot CRDs should not be present. If they are present, you must
+6. Alpha Snapshot CRDs **should not be present**. If they are present, you must
    remove them with ``tridentctl obliviate alpha-snapshot-crd``. This will delete
    the CRDs for the alpha snapshot spec. For existing snapshots that should be
    deleted/migrated, please read `this blog`_.
@@ -41,8 +39,7 @@ are good to go ahead and upgrade using the operator.
 
 .. warning::
 
-   If you are running Kubernetes 1.17 or later, and are looking to upgrade to
-   ``20.07.1`` or above, it is important you provide ``parameter.fsType`` in
+   When upgrading, it is important you provide ``parameter.fsType`` in
    StorageClasses used by Trident. StorageClasses can be deleted and recreated
    without disrupting pre-existing volumes. This is a **requirement** for
    enforcing `Security Contexts <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`_
@@ -93,8 +90,7 @@ b. ``TridentProvisioner`` is now replaced with ``TridentOrchestrator`` as the
 Upgrading a cluster-scoped Trident operator install
 ===================================================
 
-To upgrade **from**: Trident 21.01 and later **to**: Trident 21.04 and later, here is the
-set of steps to be followed:
+To upgrade **from**: Trident 21.01 and later, here is the set of steps to be followed:
 
 1. Delete the Trident operator that was used to install the current Trident instance. For example, if you are upgrading from v21.01, run the following command:
 
@@ -108,17 +104,15 @@ set of steps to be followed:
 
    .. code-block:: bash
 
-       kubectl install -f 21.04/trident-installer/deploy/bundle.yaml -n trident.
+       kubectl install -f 21.07/trident-installer/deploy/bundle.yaml -n trident.
 
-As part of this step, the 21.04 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator. 
+As part of this step, the 21.07 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator. 
 
 Upgrading a namespace-scoped Trident operator install
 =====================================================
 
 To upgrade **from**: an instance of Trident installed using the namespace-scoped
-operator [versions ``20.04`` through ``20.10``] **to**: a newer release that makes
-use of the cluster-scoped operator [versions ``21.01`` and later], here is the
-set of steps to be followed:
+operator [versions ``20.07`` through ``20.10``], here is the set of steps to be followed:
 
 1. Before all else, determine the status of the existing Trident install. To do
    this, check the ``Status`` field of the ``TridentProvisioner``. The ``Status``
@@ -142,17 +136,12 @@ set of steps to be followed:
 
   .. code-block:: bash
 
-      # Download the release required [21.01]
+      # Download the release required [21.07]
       $ mkdir 21.07.0
       $ cd 21.07.0
       $ wget https://github.com/NetApp/trident/releases/download/v21.07.0/trident-installer-21.07.0.tar.gz
       $ tar -xf trident-installer-21.07.0.tar.gz
       $ cd trident-installer
-
-      # Is your Kubernetes version < 1.16?
-      $ kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_pre1.16.yaml
-
-      # If not, your Kubernetes version must be 1.16 and above
       $ kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
 
 3. Delete the namespace-scoped operator using its manifest. To complete this step,
@@ -312,7 +301,7 @@ of the Trident Operator by following the instructions provided in the
 
 .. code-block:: bash
 
-  # Download the release required [21.01]
+  # Download the release required [21.07]
   $ mkdir 21.07.0
   $ cd 21.07.0
   $ wget https://github.com/NetApp/trident/releases/download/v21.07.0/trident-installer-21.07.0.tar.gz
@@ -323,10 +312,6 @@ of the Trident Operator by following the instructions provided in the
 
 .. code-block:: bash
 
-  # Is your Kubernetes version < 1.16?
-  $ kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_pre1.16.yaml
-
-  # If not, your Kubernetes version must be 1.16 and above
   $ kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
 
 3. Deploy the operator.
@@ -377,9 +362,6 @@ of the Trident Operator by following the instructions provided in the
   Version:                v21.07.0
 
 5. Existing backends and PVCs will be automatically available.
-
-All of this is documented thoroughly in the
-:ref:`Operator deployment <deploying-with-operator>` section.
 
 .. note::
 

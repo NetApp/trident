@@ -10,7 +10,7 @@ advantage of the great new features Trident has to offer.
 
 .. important::
    Upgrading to a Trident release that is more than a year ahead (5 releases
-   ahead and above) will require you to perform a multi-step upgrade.
+   ahead and later) will require you to perform a multi-step upgrade.
 
 This section walks you through the upgrade process to move to the
 latest release of Trident.
@@ -19,17 +19,17 @@ Determining your upgrade candidate
 ----------------------------------
 
 Trident recommends upgrading to the ``YY.MM`` release from the ``YY-1.MM`` release
-and any in between; for example, to perform a direct upgrade to ``20.07`` it is
-recommended to do so from ``19.07`` and above (including dot releases such as
-``19.07.1``). If you are working with an earlier release ( < ``YY-1.MM``), you
+and any in between; for example, to perform a direct upgrade to ``21.07`` it is
+recommended to do so from ``20.07`` and later (including dot releases such as
+``20.07.1``). If you are working with an older version of Trident ( < ``YY-1.MM``), you
 must perform a multi-step upgrade. This will require you to first move to the
 most recent release that fits your four-release window.
 
-If you are running ``18.07`` and seek to upgrade to the ``20.07`` release, then:
+If you are running ``19.07`` and seek to upgrade to the ``21.07`` release, then:
 
-1. You must first upgrade from ``18.07`` to ``19.07``. Refer to the documentation
+1. You must first upgrade from ``19.07`` to ``20.07``. Refer to the documentation
    of the respective release to obtain specific instructions for upgrading.
-2. Upgrade from ``19.07`` to ``20.07`` using the instructions provided below.
+2. Upgrade from ``20.07`` to ``21.07`` using the instructions provided below.
 
 .. important::
    All upgrades for versions ``19.04`` and earlier will require the migration of
@@ -38,15 +38,14 @@ If you are running ``18.07`` and seek to upgrade to the ``20.07`` release, then:
 
 .. warning::
 
-  If you are running Kubernetes 1.17 or later, and are looking to upgrade to
-  ``20.07.1`` or above, it is important you provide ``parameter.fsType`` in
+  When upgrading Trident, it is important you provide ``parameter.fsType`` in
   StorageClasses used by Trident. StorageClasses can be deleted and recreated
   without disrupting pre-existing volumes. This is a **requirement** for
   enforcing `Security Contexts <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`_
   for SAN volumes. The `sample-input <https://github.com/NetApp/trident/tree/master/trident-installer/sample-input>`_
   directory contains examples, such as
-  `storage-class-basic.yaml.templ <https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-basic.yaml.templ>`_,
-  and `storage-class-bronze-default.yaml <https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-bronze-default.yaml>`_.
+  `storage-class-basic.yaml.templ <https://github.com/NetApp/trident/blob/stable/v21.07/trident-installer/sample-input/storage-class-samples/storage-class-basic.yaml.templ>`_,
+  and `storage-class-bronze-default.yaml <https://github.com/NetApp/trident/blob/stable/v21.07/trident-installer/sample-input/storage-class-samples/storage-class-bronze-default.yaml>`_.
   For more information, take a look at the :ref:`Known issues <fstype-fix>` tab.
 
 Understanding your upgrade paths
@@ -81,8 +80,8 @@ There are multiple reasons to want to use the Trident Operator, as detailed
 
 You can use the Trident Operator to upgrade as long as you are:
 
-1. Running CSI Trident (``19.07`` and above).
-2. Using a CRD-based Trident release (``19.07`` and above).
+1. Running CSI Trident (``19.07`` and later).
+2. Using a CRD-based Trident release (``19.07`` and later).
 3. **not** performing a customized install (using custom YAMLs). To take a look
    at the customization that can be done with an operator install, check out the
    :ref:`Customizing your deployment <operator-customize>` section.

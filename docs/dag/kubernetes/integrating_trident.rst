@@ -337,12 +337,6 @@ Take a look at the :ref:`Expanding an NFS volume` and
 :ref:`Expanding an iSCSI volume` for examples and conditions that must be met.
 To allow possible expansion later, set `allowVolumeExpansion` to `true` in your StorageClass associated with the volume. Whenever the Persistent Volume needs to be resized, edit the ``spec.resources.requests.storage`` annotation in the Persistent Volume Claim to the required volume size. Trident will automatically take care of resizing the volume on the storage cluster.
 
-.. note::
-
-   1. Resizing iSCSI PVs requires Kubernetes 1.16 and Trident 19.10 or later.
-   2. Kubernetes, prior to version 1.12, does not support PV resize as the admission controller may reject PVC size updates. The Trident team has changed Kubernetes to allow such changes starting with Kubernetes 1.12. While we recommend using Kubernetes 1.12, it is still possible to resize NFS PVs for earlier versions of Kubernetes that support resize. This is done by disabling the PersistentVolumeClaimResize admission plugin when the Kubernetes API server is started.
-
-
 Import an existing volume into Kubernetes
 -----------------------------------------
 
@@ -443,9 +437,6 @@ If your OpenShift cluster is already running, and therefore Trident has been dep
    +-----------------------------------------------------+--------------------------------------------------------------------------------------+
    | ``openshift_logging_es_ops_pvc_prefix``             | A prefix for the ops instance PVCs.                                                  |
    +-----------------------------------------------------+--------------------------------------------------------------------------------------+
-
-.. note::
-   A bug exists in OpenShift 3.9 which prevents a storage class from being used when the value for ``openshift_logging_es_ops_pvc_dynamic`` is set to ``true``.  However, this can be worked around by, counterintuitively, setting the variable to ``false``, which will include the storage class in the PVC.
 
 **Deploy the logging stack**
 

@@ -13,13 +13,11 @@ Expanding an iSCSI volume
 Trident ``19.10`` introduces support for expanding an iSCSI PV using the
 CSI provisioner. Provided Trident is configured to function as a CSI
 provisioner, you can expand iSCSI PVs that have been created by Trident.
-This feature is supported with Kubernetes versions ``1.16`` and above.
 
 .. note::
 
    iSCSI volume expansion is supported by the ``ontap-san``,
-   ``ontap-san-economy``, ``solidfire-san`` and ``eseries-iscsi`` drivers and
-   requires Kubernetes ``1.16`` and above.
+   ``ontap-san-economy``, and ``solidfire-san`` drivers.
 
 For growing an iSCSI PV, you must ensure the following items are taken care of:
 
@@ -171,11 +169,6 @@ Starting with ``v18.10``, Trident supports volume expansion for NFS PVs. More
 specifically, PVs provisioned on ``ontap-nas``, ``ontap-nas-economy``,
 ``ontap-nas-flexgroup``, ``aws-cvs``, ``gcp-cvs``, and ``azure-netapp-files``
 backends can be expanded.
-
-Volume resize was introduced in
-Kubernetes ``v1.8`` as an alpha feature and was promoted to beta in ``v1.11``,
-which means this feature is enabled by default starting with Kubernetes
-``v1.11``.
 
 To resize an NFS PV, the admin first needs to configure the storage class to
 allow volume expansion by setting the ``allowVolumeExpansion`` field to ``true``:

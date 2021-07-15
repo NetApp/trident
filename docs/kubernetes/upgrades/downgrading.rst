@@ -10,18 +10,6 @@ certain reasons that require considering a downgrade path:
 2. Immediate fix for bugs observed as a result of an upgrade
 3. Dependency issues, unsuccessful and incomplete upgrades
 
-With the ``19.07`` release, Trident introduced
-:ref:`Custom Resource Definitions(CRDs) <Kubernetes CustomResourceDefinition objects>`
-to store Trident's metadata. This marked a move from previous versions,
-which used a dedicated etcd instance to write the metadata to a PV created
-and managed by Trident for this purpose (the ``trident`` PV). A
-greenfield installation of Trident versions ``19.07`` and above will create these CRDs
-and use the CRDs to maintain its state. Upgrading from any version of Trident that
-used the legacy etcd [versions ``19.04`` and below] to versions ``19.07`` and above
-will involve
-:ref:`migrating the etcd contents to create CRD objects <What happens when you upgrade>`.
-The ``trident`` volume still lives on the storage cluster.
-
 When to downgrade
 =================
 
@@ -132,19 +120,21 @@ If you are unsure as to how Trident is installed, here is a simple test to run:
   Status:                 Installed
   Version:                v20.10.1
 
+.. _downgrading-with-tridentctl:
+
 Handling downgrades with ``tridentctl``
 ---------------------------------------
 
 After understanding :ref:`when to downgrade/not downgrade <When to downgrade>`, these
 are the steps involved in moving down to an earlier release using ``tridentctl``.
 This sequence walks you through the downgrade process to move from
-Trident ``19.10`` to ``19.07``.
+Trident ``21.07`` to ``20.07``.
 
 1. Before beginning the downgrade, it is recommended to take a snapshot of your
    Kubernetes cluster's etcd. This allows you to backup the current state of Trident's
    CRDs.
 2. Uninstall Trident with the existing ``tridentctl`` binary. In this case, you will
-   uninstall with the ``19.10`` binary.
+   uninstall with the ``21.07`` binary.
 
   .. code-block:: console
 
@@ -152,7 +142,7 @@ Trident ``19.10`` to ``19.07``.
      +----------------+----------------+
      | SERVER VERSION | CLIENT VERSION |
      +----------------+----------------+
-     | 19.10.0        | 19.10.0        |
+     | 21.07.0        | 21.07.0        |
      +----------------+----------------+
 
      $ tridentctl uninstall -n trident
@@ -167,14 +157,14 @@ Trident ``19.10`` to ``19.07``.
      INFO The uninstaller did not delete Trident's namespace in case it is going to be reused.
      INFO Trident uninstallation succeeded.
 
-3. Obtain the Trident binary for the desired version [``19.07``]
+3. Obtain the Trident binary for the desired version [``20.07``]
    and use it to install Trident.
    Generate custom yamls for a :ref:`customized installation <Customized Installation>`
    if needed.
 
    .. code-block:: console
 
-      $ cd 19.07/trident-installer/
+      $ cd 20.07/trident-installer/
       $ ./tridentctl install -n trident-ns
       INFO Created installer service account.            serviceaccount=trident-installer
       INFO Created installer cluster role.               clusterrole=trident-installer
@@ -201,21 +191,39 @@ Handling downgrades with the Trident Operator
 ---------------------------------------------
 
 For installs done using the Trident Operator, the downgrade process is different
-and does not require the use of ``tridentctl``. There can be one of three options:
+and does not require the use of ``tridentctl``. There can be one of two options:
 
-i. Trident is installed using the cluster-scoped operator (``21.01`` and above).
-ii. Trident is installed using the namespace-scoped operator (``20.04`` - ``20.10``).
-iii. Trident was installed using ``tridenctl``, and not the operator.
+i. Trident is installed using the operator.
+ii. Trident is installed using ``tridenctl``, and not the operator.
 
-Downgrading from cluster-scoped operator to namespace-scoped operator
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For (1), Trident can be downgraded to either:
 
-This section summarizes the steps involved in downgrading
+- A version that is installed using the namespace-scoped operator [``20.07`` - ``20.10``].
+- A version that is installed using the cluster-scoped operator [``21.01`` and above].
 
-**FROM:** Trident ``21.01`` and above, installed using the cluster-scoped operator.
+In the case of (2), refer to :ref:`Handling downgrades with tridentctl <downgrading-with-tridentctl>`.
 
-**TO:** Trident release that falls in the range [``20.04`` - ``20.10``],
-which will be installed using the namespace-scoped operator.
+Downgrading to cluster-scoped operator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To downgrade Trident to a release that uses the cluster-scoped operator, follow the steps mentioned below:
+
+1. Uninstall Trident [See :ref:`Uninstalling with the Trident Operator <Uninstalling with the Trident Operator>`].
+   **Do not wipeout the CRDs unless you want to completely remove an existing installation**.
+
+2. Delete the cluster-scoped operator. To do this, you will need the manifest
+   used to deploy the operator. You can obtain it from the Trident `GitHub repo <https://github.com/NetApp/trident/blob/stable/v21.07/deploy/bundle.yaml>`_.
+   **Make sure you switch to the required branch**.
+
+3. Continue downgrading by installing the desired
+   version of Trident. Follow the documentation for the desired release. For example, the
+   instructions to install ``21.04`` are available in the
+   `Deploying with the Trident Operator <https://netapp-trident.readthedocs.io/en/stable-v21.04/kubernetes/deploying/operator-deploy.html#>`_.
+
+Downgrading to namespace-scoped operator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section summarizes the steps involved in downgrading to a Trident release that falls in the range [``20.04`` - ``20.10``], which will be installed using the namespace-scoped operator.
 
 1. Uninstall Trident [See :ref:`Uninstalling with the Trident Operator <Uninstalling with the Trident Operator>`].
    **Do not wipeout the CRDs unless you want to completely remove an existing install**.

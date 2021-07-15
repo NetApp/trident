@@ -95,31 +95,7 @@ For example, if the latest version is 21.07.0:
 ------------------
 
 Install Trident in the desired namespace by executing the
-:ref:`tridentctl install <install>` command. The installation procedure
-slightly differs depending on the version of Kubernetes being used.
-
-Installing Trident on Kubernetes 1.13
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-On Kubernetes ``1.13``, there are a couple of options when installing Trident:
-
-- Install Trident in the desired namespace by executing the
-  ``tridentctl install`` command with the ``--csi`` flag. The CSI interface is
-  `first included in Kubernetes 1.13 <https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/>`_.
-  and requires activating :ref:`feature gates <Feature Requirements>`.
-  The output observed when installing will be similar to that shown
-  :ref:`below <Installing Trident on Kubernetes 1.14 and above>`.
-
-- If for some reason the :ref:`feature gates <Feature Requirements>` required by Trident
-  cannot be enabled, you can install Trident without the ``--csi`` flag. This will
-  configure Trident to work in its traditional format without using the CSI
-  specification.
-
-Installing Trident on Kubernetes 1.14 and above
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Install Trident in the desired namespace by executing the
-``tridentctl install`` command.
+:ref:`tridentctl install <install>` command.
 
 .. code-block:: console
 

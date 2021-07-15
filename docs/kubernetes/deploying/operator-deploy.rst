@@ -25,8 +25,7 @@ To deploy Trident using the operator you need:
 
 * Full privileges to a
   :ref:`supported Kubernetes cluster <Supported frontends (orchestrators)>`
-  running Kubernetes ``1.14`` and above. If choosing to deploy with Helm, you
-  will need Kubernetes ``1.16`` and above.
+  running Kubernetes ``1.17`` and later.
 * Helm 3 (if deploying using Helm).
 * Access to a
   :ref:`supported NetApp storage system <Supported backends (storage)>`
@@ -48,7 +47,7 @@ Deploy Trident Operator by using Helm
 Perform the steps listed to deploy Trident Operator by using Helm. You will
 need the following:
 
-* Kubernetes 1.16 and later
+* Kubernetes 1.17 and later
 * Helm version 3
 
 1: Download the installer bundle
@@ -107,7 +106,7 @@ you have the necessary privileges to.
 
 .. code-block:: bash
 
-  # Is your Kubernetes version greater than 1.14?
+  # Is your Kubernetes version greater than 1.17?
   kubectl version
 
   # Are you a Kubernetes cluster administrator?
@@ -146,10 +145,7 @@ later on to instantiate a Trident install by the operator.
 
 .. code-block:: bash
 
-  # Is your Kubernetes version < 1.16?
-  kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_pre1.16.yaml
-
-  # If not, your Kubernetes version must be 1.16 and above
+  # Kubernetes version must be 1.17 and later
   kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
 
 Once the ``TridentOrchestrator`` CRD is created, you will then have to create
@@ -274,7 +270,7 @@ autosupportProxy          The address/port of a proxy for sending Autosupport Te
 uninstall                 A flag used to uninstall Trident                                               'false'
 logFormat                 Trident logging format to be used [text,json]                                  "text"
 tridentImage              Trident image to install                                                       "netapp/trident:21.07"
-imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage (k8s 1.17+) or quay.io/k8scsi"
+imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage"
 kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
 imagePullSecrets          Secrets to pull images from an internal registry
