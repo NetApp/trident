@@ -192,21 +192,6 @@ func (d *SANStorageDriver) Initialize(
 		if err != nil {
 			return err
 		}
-	} else if context == tridentconfig.ContextKubernetes {
-		hostGroup, err := d.API.GetHostGroup(ctx, d.Config.AccessGroup)
-		if err != nil {
-			return fmt.Errorf("could not check for host group %s: %v", d.Config.AccessGroup, err)
-		} else if hostGroup.ClusterRef == "" {
-			return fmt.Errorf("host group %s doesn't exist for E-Series array %s and needs to be manually "+
-				"created; please also ensure all relevant Hosts are defined on the array and added to the Host Group",
-				d.Config.AccessGroup, d.Config.ControllerA)
-		} else {
-			Logc(ctx).WithFields(log.Fields{
-				"driver":     d.Name(),
-				"controller": d.Config.ControllerA,
-				"hostGroup":  hostGroup.Label,
-			}).Warnf("Please ensure all relevant hosts are added to Host Group %s.", d.Config.AccessGroup)
-		}
 	} else if context == tridentconfig.ContextCSI {
 		_, err = d.API.EnsureHostGroup(ctx)
 		if err != nil {

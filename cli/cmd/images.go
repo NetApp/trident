@@ -102,36 +102,26 @@ func listImages() error {
 }
 
 func getInstallYaml(semVersion *utils.Version) (string, error) {
-	var yaml string
+
 	minorVersion := semVersion.ToMajorMinorVersion().MinorVersion()
 	isSupportedVersion := minorVersion <= utils.MustParseSemantic(tridentconfig.KubernetesVersionMax).MinorVersion() &&
 		minorVersion >= utils.MustParseSemantic(tridentconfig.KubernetesVersionMin).MinorVersion()
 
-	if isSupportedVersion {
-		if semVersion.LessThan(utils.MustParseSemantic(tridentconfig.KubernetesCSIVersionMinForced)) {
-			csi = false
-		} else {
-			csi = true
-		}
-	} else {
+	if !isSupportedVersion {
 		return "", errors.New(versionNotSupported)
 	}
 
 	labels := make(map[string]string)
 
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
-	if csi {
-		yaml = k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-			tridentconfig.BuildImage, tridentconfig.DefaultAutosupportImage, "", "",
-			"", "", "", "", []string{}, nil,
-			nil, false, false, true, semVersion, false)
-		// trident image here is an empty string because we are already going to get it from the deployment yaml
-		yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",
-			"", "", []string{}, labels, nil, false, false, semVersion)
-	} else {
-		yaml = k8sclient.GetDeploymentYAML("", tridentconfig.BuildImage, "", []string{}, labels,
-			nil, false)
-	}
+	yaml := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
+		tridentconfig.BuildImage, tridentconfig.DefaultAutosupportImage, "", "",
+		"", "", "", "", []string{}, nil,
+		nil, false, false, true, semVersion, false)
+	// trident image here is an empty string because we are already going to get it from the deployment yaml
+	yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",
+		"", "", []string{}, labels, nil, false, false, semVersion)
+
 	return yaml, nil
 }
 

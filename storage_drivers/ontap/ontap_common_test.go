@@ -699,11 +699,6 @@ func TestOntapSanGetDefaultIgroupName(t *testing.T) {
 			"trident-UNIQUE-CSI-UUID",
 		},
 		{
-			tridentconfig.ContextKubernetes,
-			"UNIQUE-KUBERNETES-UUID",
-			"trident",
-		},
-		{
 			tridentconfig.ContextDocker,
 			"UNIQUE-DOCKER-UUID",
 			"netappdvp",

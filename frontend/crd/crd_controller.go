@@ -54,6 +54,7 @@ const (
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
 
+	controllerName                 = "crd"
 	controllerAgentName            = "trident-crd-controller"
 	tridentBackendConfigsQueueName = "TridentBackendConfigs"
 )
@@ -299,7 +300,7 @@ func (c *TridentCrdController) Deactivate() error {
 }
 
 func (c *TridentCrdController) GetName() string {
-	return string(config.ContextCRD)
+	return controllerName
 }
 
 func (c *TridentCrdController) Version() string {

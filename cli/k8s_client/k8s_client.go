@@ -22,7 +22,7 @@ import (
 	"k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
-	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -125,7 +125,7 @@ type Interface interface {
 	GetPVByLabel(label string) (*v1.PersistentVolume, error)
 	CheckPVExists(pvName string) (bool, error)
 	DeletePVByLabel(label string) error
-	GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error)
+	GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error)
 	CheckCRDExists(crdName string) (bool, error)
 	DeleteCRD(crdName string) error
 	GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error)
@@ -1302,9 +1302,9 @@ func (k *KubeClient) DeletePVByLabel(label string) error {
 	return nil
 }
 
-func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1beta1.CustomResourceDefinition, error) {
+func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error) {
 	var options metav1.GetOptions
-	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(ctx(), crdName, options)
+	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Get(ctx(), crdName, options)
 }
 
 func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
@@ -1318,7 +1318,7 @@ func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
 }
 
 func (k *KubeClient) DeleteCRD(crdName string) error {
-	return k.extClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(ctx(), crdName, k.deleteOptions())
+	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Delete(ctx(), crdName, k.deleteOptions())
 }
 
 // GetPodSecurityPolicyByLabel returns a pod security policy object matching the specified label if it is unique
@@ -2743,7 +2743,7 @@ func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVe
 func (k *KubeClient) AddFinalizerToCRDs(CRDnames []string) error {
 	gvk := &schema.GroupVersionKind{
 		Group:   "apiextensions.k8s.io",
-		Version: "v1beta1",
+		Version: "v1",
 		Kind:    "CustomResourceDefinition",
 	}
 
@@ -2778,11 +2778,11 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	   customresourcedefinitions         crd,crds            apiextensions.k8s.io           false        CustomResourceDefinition         [create delete deletecollection get list patch update watch]
 
 	   $ kubectl  api-versions | grep apiextensions
-	   apiextensions.k8s.io/v1beta1
+	   apiextensions.k8s.io/v1
 	*/
 	gvk := &schema.GroupVersionKind{
 		Group:   "apiextensions.k8s.io",
-		Version: "v1beta1",
+		Version: "v1",
 		Kind:    "CustomResourceDefinition",
 	}
 	// Get a matching API resource
@@ -2857,11 +2857,11 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	   customresourcedefinitions         crd,crds            apiextensions.k8s.io           false        CustomResourceDefinition         [create delete deletecollection get list patch update watch]
 
 	   $ kubectl  api-versions | grep apiextensions
-	   apiextensions.k8s.io/v1beta1
+	   apiextensions.k8s.io/v1
 	*/
 	gvk := &schema.GroupVersionKind{
 		Group:   "apiextensions.k8s.io",
-		Version: "v1beta1",
+		Version: "v1",
 		Kind:    "CustomResourceDefinition",
 	}
 	// Get a matching API resource

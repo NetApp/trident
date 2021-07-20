@@ -26,7 +26,6 @@ import (
 	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
 	plainhelper "github.com/netapp/trident/frontend/csi/helpers/plain"
 	"github.com/netapp/trident/frontend/docker"
-	"github.com/netapp/trident/frontend/kubernetes"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
@@ -92,10 +91,9 @@ var (
 	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
 	enableMetrics  = flag.Bool("metrics", false, "Enable metrics interface")
 
-	storeClient      persistentstore.Client
-	enableKubernetes bool
-	enableDocker     bool
-	enableCSI        bool
+	storeClient  persistentstore.Client
+	enableDocker bool
+	enableCSI    bool
 )
 
 func printFlag(f *flag.Flag) {
@@ -112,13 +110,9 @@ func processCmdLineArgs() {
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""
-	enableKubernetes = (*k8sPod || *k8sAPIServer != "") && !enableCSI
 	enableDocker = *configPath != "" && !enableCSI
 
 	frontendCount := 0
-	if enableKubernetes {
-		frontendCount++
-	}
 	if enableDocker {
 		frontendCount++
 	}
@@ -128,9 +122,9 @@ func processCmdLineArgs() {
 
 	if frontendCount > 1 {
 		log.Fatal("Trident can only run one frontend type (Kubernetes, Docker, CSI).")
-	} else if !enableKubernetes && !enableDocker && !enableCSI && !*useInMemory {
+	} else if !enableDocker && !enableCSI && !*useInMemory {
 		log.Fatal("Insufficient arguments provided for Trident to start.  Specify " +
-			"k8sAPIServer (for Kubernetes) or configPath (for Docker) or csiEndpoint (for CSI).")
+			"--config (for Docker) or --csi_endpoint (for CSI).")
 	}
 
 	// Determine persistent store type from arguments
@@ -193,7 +187,7 @@ func ensureDockerPluginExecPath() {
 	path := os.Getenv("PATH")
 	if !strings.Contains(path, "/netapp") {
 		path = "/netapp:" + path
-		os.Setenv("PATH", path)
+		_ = os.Setenv("PATH", path)
 	}
 }
 
@@ -253,7 +247,7 @@ func main() {
 	// Set log format
 	err = logging.InitLogFormat(*logFormat)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		_, _ = fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -287,35 +281,15 @@ func main() {
 	enableMutualTLS := true
 	handler := rest.NewRouter()
 
-	// Create Kubernetes *or* Docker *or* CSI/K8S frontend
-	if enableKubernetes {
-
-		config.CurrentDriverContext = config.ContextKubernetes
-
-		kubernetesFrontend, err := kubernetes.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
-		if err != nil {
-			log.Fatalf("Unable to start the Kubernetes frontend. %v", err)
-		}
-		orchestrator.AddFrontend(kubernetesFrontend)
-		postBootstrapFrontends = append(postBootstrapFrontends, kubernetesFrontend)
-
-		if *useCRD {
-			crdController, err := crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
-			if err != nil {
-				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
-			}
-			orchestrator.AddFrontend(crdController)
-			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
-		}
-
-	} else if enableDocker {
+	// Create Docker *or* CSI/K8S frontend
+	if enableDocker {
 
 		config.CurrentDriverContext = config.ContextDocker
 
 		// Set up multi-output logging
 		err = logging.InitLoggingForDocker(*driverName, *logFormat)
 		if err != nil {
-			fmt.Fprint(os.Stderr, err)
+			_, _ = fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
 		}
 

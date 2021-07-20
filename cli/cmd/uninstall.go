@@ -1,13 +1,12 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
 	"fmt"
-	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/api/core/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
@@ -16,15 +15,6 @@ import (
 func init() {
 	RootCmd.AddCommand(uninstallCmd)
 	uninstallCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during uninstallation.")
-	uninstallCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to use for an in-cluster uninstall operation.")
-	uninstallCmd.Flags().BoolVar(&inCluster, "in-cluster", false, "Run the uninstaller as a job in the cluster.")
-
-	if err := uninstallCmd.Flags().MarkHidden("trident-image"); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-	if err := uninstallCmd.Flags().MarkHidden("in-cluster"); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
 }
 
 var uninstallCmd = &cobra.Command{
@@ -41,16 +31,9 @@ var uninstallCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if inCluster {
-			// Run the uninstaller as a Kubernetes job
-			if err := uninstallTridentInCluster(); err != nil {
-				log.Fatalf("Uninstall failed; %v", err)
-			}
-		} else {
-			// Run the uninstaller directly using the Kubernetes client
-			if err := uninstallTrident(); err != nil {
-				log.Fatalf("Uninstall failed; %v", err)
-			}
+		// Run the uninstaller directly using the Kubernetes client
+		if err := uninstallTrident(); err != nil {
+			log.Fatalf("Uninstall failed; %v", err)
 		}
 	},
 }
@@ -371,7 +354,7 @@ func uninstallTrident() error {
 	}
 
 	if csi {
-		CSIDriverYAML := k8sclient.GetCSIDriverCRYAML(getCSIDriverName(), nil, nil)
+		CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), client.ServerVersion(), nil, nil)
 
 		if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
 			log.WithField("error", err).Warning("Could not delete csidriver custom resource.")
@@ -391,144 +374,4 @@ func uninstallTrident() error {
 	}
 
 	return nil
-}
-
-func uninstallTridentInCluster() (returnError error) {
-
-	// Ensure Trident installer pod isn't already present
-	if podPresent, namespace, err := client.CheckPodExistsByLabel(TridentInstallerLabel, true); err != nil {
-		return fmt.Errorf("could not check if Trident uninstaller pod is present; %v", err)
-	} else if podPresent {
-		if returnError = client.DeletePodByLabel(TridentInstallerLabel); returnError != nil {
-			log.WithFields(log.Fields{
-				"pod":       "trident-installer",
-				"namespace": namespace,
-			}).Error("Could not delete pod; please delete it manually and try again.")
-			return
-		}
-	}
-
-	// Ensure Trident installer configmap isn't already present (try to clean it up if present)
-	if configmapPresent, namespace, err := client.CheckConfigMapExistsByLabel(TridentInstallerLabel, true); err != nil {
-		return fmt.Errorf("could not check if Trident installer configmap is present; %v", err)
-	} else if configmapPresent {
-		if returnError = client.DeleteConfigMapByLabel(TridentInstallerLabel); returnError != nil {
-			log.WithFields(log.Fields{
-				"configmap": "trident-installer",
-				"namespace": namespace,
-			}).Error("Could not delete configmap; please delete it manually and try again.")
-			return
-		}
-	}
-
-	// Remove any RBAC objects from a previous Trident installation
-	if anyCleanupErrors := removeInstallerRBACObjects(log.DebugLevel); anyCleanupErrors {
-		returnError = fmt.Errorf("could not remove one or more previous Trident installer artifacts; " +
-			"please delete them manually and try again")
-		return
-	}
-
-	// Create the RBAC objects
-	if returnError = createInstallerRBACObjects(); returnError != nil {
-		return
-	}
-
-	// Make sure we always clean up the RBAC objects
-	defer func() {
-		if anyCleanupErrors := removeInstallerRBACObjects(log.InfoLevel); anyCleanupErrors {
-			log.Errorf("could not remove one or more Trident installer artifacts; " +
-				"please delete them manually")
-		}
-	}()
-
-	// Create the installer arguments
-	commandArgs := []string{
-		"tridentctl", "uninstall",
-		"--namespace", TridentPodNamespace,
-	}
-	if Debug {
-		commandArgs = append(commandArgs, "--debug")
-	}
-	if silent {
-		commandArgs = append(commandArgs, "--silent")
-	}
-	if tridentImage != "" {
-		commandArgs = append(commandArgs, "--trident-image")
-		commandArgs = append(commandArgs, tridentImage)
-	}
-	commandArgs = append(commandArgs, "--in-cluster=false")
-
-	if csi {
-		// Delete installer pod security policy if it already exists
-		podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
-		if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-			log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
-				"please delete it manually.")
-		} else {
-			log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted previous installer pod security policy.")
-		}
-
-		// Create installer pod security policy
-		errMessage := "could not create installer pod security policy"
-		returnError = createObjectsByYAML("installerPodSecurityPolicy",
-			k8sclient.GetInstallerSecurityPolicyYAML(), errMessage)
-		if returnError != nil {
-			return returnError
-		}
-		log.WithFields(log.Fields{"podsecuritypolicy": "tridentinstaller"}).Info("Created installer pod security policy.")
-
-		defer func() {
-			// Delete pod security policy
-			podSecurityPolicyYAML := k8sclient.GetInstallerSecurityPolicyYAML()
-			if err := client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-				log.WithField("error", err).Errorf("Could not delete installer pod security policy; " +
-					"please delete it manually.")
-			} else {
-				log.WithField("podSecurityPolicy", "tridentinstaller").Info("Deleted installer pod security policy.")
-			}
-		}()
-	}
-
-	// Create the uninstall pod
-	returnError = client.CreateObjectByYAML(k8sclient.GetUninstallerPodYAML(
-		TridentInstallerLabelValue, tridentImage, commandArgs))
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create uninstaller pod; %v", returnError)
-		return
-	}
-	log.WithFields(log.Fields{"pod": "trident-installer"}).Info("Created uninstaller pod.")
-
-	// Wait for Trident installation pod to start
-	var uninstallPod *v1.Pod
-	uninstallPod, returnError = waitForPodToStart(TridentInstallerLabel, "installer")
-	if returnError != nil {
-		return
-	}
-
-	// Wait for pod to finish & output logs
-	client.FollowPodLogs(uninstallPod.Name, "", uninstallPod.Namespace, logLogFmtMessage)
-
-	uninstallPod, returnError = waitForPodToFinish(TridentInstallerLabel, "installer")
-	if returnError != nil {
-		return
-	}
-
-	// Clean up the pod if it succeeded, otherwise leave it around for inspection
-	if uninstallPod.Status.Phase == v1.PodSucceeded {
-
-		if returnError = client.DeletePodByLabel(TridentInstallerLabel); returnError != nil {
-			log.WithFields(log.Fields{"pod": "trident-installer"}).Error("Could not delete uninstaller pod;" +
-				"please delete it manually.")
-		} else {
-			log.WithFields(log.Fields{"pod": "trident-installer"}).Info("Deleted uninstaller pod.")
-		}
-	} else {
-
-		log.WithFields(log.Fields{
-			"pod": "trident-installer",
-		}).Warningf("Uninstaller pod status is %s. Use '%s describe pod %s -n %s' for more information.",
-			uninstallPod.Status.Phase, client.CLI(), uninstallPod.Name, client.Namespace())
-	}
-
-	return
 }

@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	Name            = "trident"
-	Namespace       = "trident"
-	FlavorK8s       = "k8s"
-	FlavorOpenshift = "openshift"
-	ImageName       = "trident-image"
-	LogFormat       = "text"
+	Name                 = "trident"
+	Namespace            = "trident"
+	FlavorK8s            = "k8s"
+	FlavorOpenshift      = "openshift"
+	ImageName            = "trident-image"
+	AutosupportImageName = "trident-asup-images"
+	LogFormat            = "text"
 )
 
 var Secrets = []string{"thisisasecret1", "thisisasecret2"}
@@ -27,18 +28,8 @@ var Secrets = []string{"thisisasecret1", "thisisasecret2"}
 func TestYAML(t *testing.T) {
 	yamls := []string{
 		namespaceYAMLTemplate,
-		installerServiceAccountYAML,
-		installerClusterRoleOpenShiftYAML,
-		installerClusterRoleKubernetesYAMLTemplate,
-		installerClusterRoleBindingOpenShiftYAMLTemplate,
-		installerClusterRoleBindingKubernetesV1YAMLTemplate,
-		installerPodTemplate,
-		uninstallerPodTemplate,
 		openShiftSCCQueryYAMLTemplate,
-		customResourceDefinitionYAML_v1beta1,
-		customResourceDefinitionYAML_v1,
-		CSIDriverCRDYAML,
-		CSINodeInfoCRDYAML,
+		customResourceDefinitionYAMLv1,
 	}
 	for i, yamlData := range yamls {
 		//jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -62,6 +53,8 @@ func TestYAMLFactory(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
+	version := utils.MustParseSemantic("1.21.0")
+
 	yamlsOutputs := []string{
 		GetServiceAccountYAML(Name, nil, nil, nil),
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
@@ -69,7 +62,9 @@ func TestYAMLFactory(t *testing.T) {
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
 		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef, false),
 		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef, true),
-		GetDeploymentYAML(Name, ImageName, LogFormat, imagePullSecrets, labels, ownerRef, true),
+		GetCSIDeploymentYAML(Name, ImageName, AutosupportImageName, "", "",
+			"", "", "", "text", imagePullSecrets,
+			labels, ownerRef, false, false, false, version, false),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
 	}
@@ -100,18 +95,6 @@ func TestAPIVersion(t *testing.T) {
 	for result, value := range yamlsOutputs {
 		assert.Contains(t, result, value, fmt.Sprintf("Incorrect API Version returned %s", value))
 	}
-}
-
-func TestGetRegistryVal(t *testing.T) {
-	assert.Exactly(t, "registry.barnacle.netapp.com", getRegistryVal("registry.barnacle.netapp.com",
-		true))
-	assert.Exactly(t, "k8s.gcr.io/sig-storage", getRegistryVal("", true))
-	assert.Exactly(t, "quay.io/k8scsi", getRegistryVal("", false))
-	assert.Exactly(t, "nexus.barnacle.netapp.com",
-		getRegistryVal("nexus.barnacle.netapp.com", false))
-	assert.Exactly(t, "k8s.gcr.io", getRegistryVal("k8s.gcr.io/", true))
-	assert.Exactly(t, "registry.barnacle.netapp.com/foo/bar",
-		getRegistryVal("registry.barnacle.netapp.com/foo/bar", true))
 }
 
 // Simple validation of the CSI Deployment YAML

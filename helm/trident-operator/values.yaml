@@ -2,7 +2,7 @@
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
 
-# imagePullPolicy sets the image pull policy for the trident-operator, trident, and other images.
+# imagePullPolicy sets the image pull policy for the trident-operator.
 imagePullPolicy: IfNotPresent
 
 # imagePullSecrets sets the image pull secrets for the trident-operator, trident, and other images.
@@ -57,7 +57,7 @@ tridentImageTag: ""
 # tridentEnableNodePrep attempts to automatically install required packages on nodes
 tridentEnableNodePrep: false
 
-# tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.
+# (Deprecated) tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.
 tridentSkipK8sVersionCheck: false
 
 # tridentProbePort allows overriding the default port used for k8s liveness/readiness probes

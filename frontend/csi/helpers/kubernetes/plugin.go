@@ -56,6 +56,7 @@ var (
 
 type K8SHelperPlugin interface {
 	frontend.Plugin
+	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
 	UpgradeVolume(ctx context.Context, request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error)
 }
 

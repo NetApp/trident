@@ -19,7 +19,6 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
-	"github.com/netapp/trident/frontend/kubernetes"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -668,15 +667,12 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), string(config.ContextKubernetes))
-			if err != nil {
-				k8sFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
-			}
+			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
 			if err != nil {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8s, ok := k8sFrontend.(kubernetes.KubernetesPlugin)
+			k8s, ok := k8sFrontend.(k8shelper.K8SHelperPlugin)
 			if !ok {
 				err = fmt.Errorf("unable to obtain Kubernetes frontend")
 				response.setError(err)

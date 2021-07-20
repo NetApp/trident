@@ -17,7 +17,7 @@ import (
 	"k8s.io/api/policy/v1beta1"
 	v12 "k8s.io/api/rbac/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
-	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/rest"
 
 	"github.com/netapp/trident/cli/api"
@@ -96,8 +96,6 @@ var (
 		VolumeSnapshotClassCRDName,
 		VolumeSnapshotContentCRDName,
 	}
-
-	useCRDv1 bool
 )
 
 type Installer struct {
@@ -154,7 +152,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 	var performImageVersionCheck bool
 	var identifiedImageVersion string
 
-	currentDeployment, _, _, err := i.TridentDeploymentInformation(appLabel, csi)
+	currentDeployment, _, _, err := i.TridentDeploymentInformation(appLabel)
 	if err != nil {
 		return identifiedImageVersion,
 			fmt.Errorf("unable to get existing deployment information for the image verification; err: %v", err)
@@ -327,11 +325,6 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
 
-	minForcedCRDVersion := utils.MustParseSemantic(commonconfig.KubernetesCRDVersionMinForced)
-	if i.client.ServerVersion().AtLeast(minForcedCRDVersion) {
-		useCRDv1 = true
-	}
-
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
 	managedByCR := "true"
@@ -444,56 +437,39 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 		return nil, "", returnError
 	}
 
-	if !csi {
-		// Create or patch or update the legacy deployment object
-		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
-			return nil, "", returnError
-		}
-	} else {
+	// Create or patch or update the CSI Driver object if necessary
+	returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
+		return nil, "", returnError
+	}
 
-		// Create or patch or update the CSI CRDs if necessary (1.13 only)
-		returnError = i.createK8S113CSICustomResourceDefinitions()
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Kubernetes 1.13 CSI CRDs; %v", returnError)
-			return nil, "", returnError
-		}
+	// Create or patch or update the Trident Service
+	returnError = i.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create the Trident Service; %v", returnError)
+		return nil, "", returnError
+	}
 
-		// Create or patch or update the CSI Driver object if necessary (1.14+)
-		returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
-			return nil, "", returnError
-		}
+	// Create or update the Trident Secret
+	returnError = i.createOrPatchTridentSecret(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create the Trident Secret; %v", returnError)
+		return nil, "", returnError
+	}
 
-		// Create or patch or update the Trident Service
-		returnError = i.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident Service; %v", returnError)
-			return nil, "", returnError
-		}
+	// Create or update the Trident CSI deployment
+	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
+		return nil, "", returnError
+	}
 
-		// Create or update the Trident Secret
-		returnError = i.createOrPatchTridentSecret(controllingCRDetails, labels, shouldUpdate)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident Secret; %v", returnError)
-			return nil, "", returnError
-		}
-
-		// Create or update the Trident CSI deployment
-		returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
-			return nil, "", returnError
-		}
-
-		// Create or update the Trident CSI daemonset
-		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident DaemonSet; %v", returnError)
-			return nil, "", returnError
-		}
+	// Create or update the Trident CSI daemonset
+	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create the Trident DaemonSet; %v", returnError)
+		return nil, "", returnError
 	}
 
 	// Wait for Trident pod to be running
@@ -558,60 +534,32 @@ func (i *Installer) protectCustomResourceDefinitions() error {
 	return nil
 }
 
-func (i *Installer) createK8S113CSICustomResourceDefinitions() error {
-
-	// We only have to create these CRDs on Kubernetes 1.13
-	if i.client.ServerVersion().MajorVersion() != 1 || i.client.ServerVersion().MinorVersion() != 13 {
-		return nil
-	}
-
-	csiDriversCRDExists, err := i.client.CheckCRDExists("csidrivers.csi.storage.k8s.io")
-	if err != nil {
-		return fmt.Errorf("could not check if CRD csidrivers.csi.storage.k8s.io exists; %v", err)
-	} else if !csiDriversCRDExists {
-		if err = i.client.CreateObjectByYAML(k8sclient.GetCSIDriverCRDYAML()); err != nil {
-			return fmt.Errorf("could not create CRD csidrivers.csi.storage.k8s.io; %v", err)
-		}
-	}
-
-	csiNodeInfosCRDExists, err := i.client.CheckCRDExists("csinodeinfos.csi.storage.k8s.io")
-	if err != nil {
-		return fmt.Errorf("could not check if CRD csinodeinfos.csi.storage.k8s.io exists; %v", err)
-	} else if !csiNodeInfosCRDExists {
-		if err = i.client.CreateObjectByYAML(k8sclient.GetCSINodeInfoCRDYAML()); err != nil {
-			return fmt.Errorf("could not create CRD csinodeinfos.csi.storage.k8s.io; %v", err)
-		}
-	}
-
-	return nil
-}
-
 // createCRDs creates and establishes each of the CRDs individually
 func (i *Installer) createCRDs() error {
 	var err error
 
-	if err = i.CreateCRD(VersionCRDName, k8sclient.GetVersionCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(VersionCRDName, k8sclient.GetVersionCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(BackendCRDName, k8sclient.GetBackendCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(BackendCRDName, k8sclient.GetBackendCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(NodeCRDName, k8sclient.GetNodeCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML()); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML(useCRDv1)); err != nil {
+	if err = i.CreateCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML()); err != nil {
 		return err
 	}
 
@@ -666,9 +614,9 @@ func (i *Installer) ensureCRDEstablished(crdName string) error {
 			return err
 		}
 		for _, condition := range crd.Status.Conditions {
-			if condition.Type == apiextensionv1beta1.Established {
+			if condition.Type == apiextensionv1.Established {
 				switch condition.Status {
-				case apiextensionv1beta1.ConditionTrue:
+				case apiextensionv1.ConditionTrue:
 					return nil
 				default:
 					return fmt.Errorf("CRD %s Established condition is %s", crdName, condition.Status)
@@ -699,13 +647,9 @@ func (i *Installer) ensureCRDEstablished(crdName string) error {
 	return nil
 }
 
-func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
 
-	// We only have to create this object on Kubernetes 1.14+
-	if i.client.ServerVersion().MajorVersion() != 1 || i.client.ServerVersion().MinorVersion() < 14 {
-		return nil
-	}
+	// TODO (cknight): switch to v1 CSIDriver when 1.18 is our minimum version
 
 	createCSIDriver := true
 	CSIDriverName := getCSIDriverName()
@@ -725,9 +669,8 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
-			log.WithField("CSIDriver", CSIDriverName).Info(
-				"Deleted Trident CSI driver custom resource; replacing it with a labeled Trident CSI driver custom" +
-					" resource.")
+			log.WithField("CSIDriver", CSIDriverName).Info("Deleted Trident CSI driver custom resource; " +
+				"replacing it with a labeled Trident CSI driver custom resource.")
 		}
 
 	} else if shouldUpdate {
@@ -758,7 +701,8 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 		return err
 	}
 
-	newK8sCSIDriverYAML := k8sclient.GetCSIDriverCRYAML(CSIDriverName, labels, controllingCRDetails)
+	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, i.client.ServerVersion(), labels,
+		controllingCRDetails)
 
 	if createCSIDriver {
 		err = i.client.CreateObjectByYAML(newK8sCSIDriverYAML)
@@ -852,7 +796,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 	var serviceAccountSecretNames []string
 	var err error
 
-	serviceAccountName := getServiceAccountName(csi)
+	serviceAccountName := getServiceAccountName(true)
 
 	if serviceAccounts, err := i.client.GetServiceAccountsByLabel(appLabel, false); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of service accounts by label.")
@@ -938,7 +882,7 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 	var unwantedClusterRoles []v12.ClusterRole
 	var err error
 
-	clusterRoleName := getClusterRoleName(csi)
+	clusterRoleName := getClusterRoleName(true)
 
 	if clusterRoles, err := i.client.GetClusterRolesByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
@@ -983,7 +927,7 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 		return err
 	}
 
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(i.client.Flavor(), clusterRoleName, labels, controllingCRDetails, csi)
+	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(i.client.Flavor(), clusterRoleName, labels, controllingCRDetails, true)
 
 	if createClusterRole {
 		err = i.client.CreateObjectByYAML(newClusterRoleYAML)
@@ -1010,7 +954,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 	var unwantedClusterRoleBindings []v12.ClusterRoleBinding
 	var err error
 
-	clusterRoleBindingName := getClusterRoleBindingName(csi)
+	clusterRoleBindingName := getClusterRoleBindingName(true)
 
 	if clusterRoleBindings, err := i.client.GetClusterRoleBindingsByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
@@ -1059,7 +1003,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 	}
 
 	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(), clusterRoleBindingName,
-		labels, controllingCRDetails, csi)
+		labels, controllingCRDetails, true)
 
 	if createClusterRoleBinding {
 		err = i.client.CreateObjectByYAML(newClusterRoleBindingYAML)
@@ -1089,13 +1033,8 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, label
 	var logFields log.Fields
 	var err error
 
-	if csi {
-		openShiftSCCOldUserName = "trident-csi"
-		openShiftSCCOldName = "privileged"
-	} else {
-		openShiftSCCOldUserName = "trident"
-		openShiftSCCOldName = "anyuid"
-	}
+	openShiftSCCOldUserName = "trident-csi"
+	openShiftSCCOldName = "privileged"
 
 	openShiftSCCUserName := getOpenShiftSCCUserName()
 	openShiftSCCName := getOpenShiftSCCName()
@@ -1213,12 +1152,7 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, 
 		return err
 	}
 
-	var newPSPYAML string
-	if csi {
-		newPSPYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
-	} else {
-		newPSPYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
-	}
+	newPSPYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
 
 	if createPSP {
 		// Create pod security policy
@@ -1430,14 +1364,14 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels map[string]string,
 	shouldUpdate, newServiceAccount bool) error {
 
-	deploymentName := getDeploymentName(csi)
+	deploymentName := getDeploymentName(true)
 
 	topologyEnabled, err := i.client.IsTopologyInUse()
 	if err != nil {
 		return err
 	}
 
-	currentDeployment, unwantedDeployments, createDeployment, err := i.TridentDeploymentInformation(appLabel, csi)
+	currentDeployment, unwantedDeployments, createDeployment, err := i.TridentDeploymentInformation(appLabel)
 	if err != nil {
 		return err
 	}
@@ -1452,16 +1386,11 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 	if err = i.RemoveMultipleDeployments(unwantedDeployments); err != nil {
 		return err
 	}
-	var newDeploymentYAML string
-	if csi {
-		newDeploymentYAML = k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
-			autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
-			imageRegistry, logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
-			silenceAutosupport, i.client.ServerVersion(), topologyEnabled)
-	} else {
-		newDeploymentYAML = k8sclient.GetDeploymentYAML(deploymentName, tridentImage, logFormat, imagePullSecrets, labels,
-			controllingCRDetails, debug)
-	}
+
+	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
+		autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
+		imageRegistry, logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
+		silenceAutosupport, i.client.ServerVersion(), topologyEnabled)
 
 	if createDeployment {
 		// Create the deployment
@@ -1487,13 +1416,15 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 // TridentDeploymentInformation identifies the Operator based Trident CSI deployment and unwanted deployments,
 // this method can be used for multiple purposes at different point during the Reconcile so it makes sense to
 // keep it separate from the createOrPatchTridentDeployment
-func (i *Installer) TridentDeploymentInformation(deploymentLabel string, csiVal bool) (*appsv1.Deployment,
-	[]appsv1.Deployment, bool, error) {
+func (i *Installer) TridentDeploymentInformation(
+	deploymentLabel string,
+) (*appsv1.Deployment, []appsv1.Deployment, bool, error) {
+
 	createDeployment := true
 	var currentDeployment *appsv1.Deployment
 	var unwantedDeployments []appsv1.Deployment
 
-	deploymentName := getDeploymentName(csiVal)
+	deploymentName := getDeploymentName(true)
 
 	if deployments, err := i.client.GetDeploymentsByLabel(deploymentLabel, true); err != nil {
 
@@ -1900,7 +1831,7 @@ func (i *Installer) createTridentVersionPod(
 		return err
 	}
 
-	serviceAccountName := getServiceAccountName(csi)
+	serviceAccountName := getServiceAccountName(true)
 
 	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
 		podName, imageName, serviceAccountName, imagePullSecrets, podLabels, controllingCRDetails,

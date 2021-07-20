@@ -186,8 +186,8 @@ func CreateCloneNAS(
 // InitializeOntapConfig parses the ONTAP config, mixing in the specified common config.
 func InitializeOntapConfig(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (*drivers.
-		OntapStorageDriverConfig, error) {
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
+) (*drivers.OntapStorageDriverConfig, error) {
 
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
@@ -1057,13 +1057,6 @@ func InitializeSANDriver(
 	err := ensureIGroupExists(clientAPI, config.IgroupName)
 	if err != nil {
 		return err
-	}
-	if driverContext == tridentconfig.ContextKubernetes {
-		Logc(ctx).WithFields(log.Fields{
-			"driver": drivers.OntapSANStorageDriverName,
-			"SVM":    config.SVM,
-			"igroup": config.IgroupName,
-		}).Warn("Please ensure all relevant hosts are added to the initiator group.")
 	}
 
 	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth()

@@ -71,7 +71,7 @@ func TestSnapshotNames_DockerContext(t *testing.T) {
 }
 
 func TestSnapshotNames_KubernetesContext(t *testing.T) {
-	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextKubernetes)
+	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 
 	k8sSnapName1 := helper.getInternalSnapshotName("snapshot-0bf1ec69_da4b_11e9_bd10_000c29e763d8")
 	assert.Equal(t, "_snapshot_snapshot_0bf1ec69_da4b_11e9_bd10_000c29e763d8", k8sSnapName1, "Strings not equal")
@@ -131,7 +131,7 @@ func TestGetComponents_DockerContext(t *testing.T) {
 }
 
 func TestGetComponents_KubernetesContext(t *testing.T) {
-	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextKubernetes)
+	helper := NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	snapName := helper.GetSnapshotNameFromSnapLUNPath("/vol/myBucket/storagePrefix_myLun_snapshot_snapshot_123")
 	assert.Equal(t, "snapshot_123", snapName, "Strings not equal")
 

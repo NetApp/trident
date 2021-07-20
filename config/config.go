@@ -113,30 +113,19 @@ const (
 	/* Kubernetes deployment constants */
 	ContainerTrident = "trident-main"
 
-	ContextDocker     DriverContext = "docker"
-	ContextKubernetes DriverContext = "kubernetes"
-	ContextCSI        DriverContext = "csi"
-	ContextCRD        DriverContext = "crd"
+	ContextDocker DriverContext = "docker"
+	ContextCSI    DriverContext = "csi"
 
 	PlatformDocker     Platform = "docker"
 	PlatformKubernetes Platform = "kubernetes"
 	PlatformCSI        Platform = "csi" // plain CSI, no other CO present
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.11.0"
+	KubernetesVersionMin = "v1.17.0"
 	KubernetesVersionMax = "v1.21.0"
 
-	// Minimum Kubernetes version for CSI Trident (non-CSI is the default)
-	KubernetesCSIVersionMinOptional = "v1.13.0"
-
-	// Minimum Kubernetes version for CSI Trident default (non-CSI not supported)
-	KubernetesCSIVersionMinForced = "v1.14.0"
-
-	KubernetesCSISidecarRegistryPre117  = "quay.io/k8scsi"
-	KubernetesCSISidecarRegistry117Plus = "k8s.gcr.io/sig-storage"
-
-	// Mininum Kubernetes version for CRD v1 support (below this, we'll use v1beta1)
-	KubernetesCRDVersionMinForced = "v1.16.0"
+	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
+	KubernetesCSISidecarRegistry = "k8s.gcr.io/sig-storage"
 
 	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
@@ -243,7 +232,7 @@ func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) 
 
 	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
 		return utils.UnsupportedKubernetesVersionError(
-			fmt.Errorf("trident supports k8s versions in the range [%s, %s]",
+			fmt.Errorf("Trident supports Kubernetes versions in the range [%s, %s]",
 				minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString()))
 	}
 

@@ -66,7 +66,7 @@ func deleteAlphaSnapshotCRDs() error {
 			return err
 		}
 		alpha := false
-		if strings.ToLower(crd.Spec.Version) == "v1alpha1" {
+		if strings.Contains(strings.ToLower(crd.APIVersion), "alpha") {
 			alpha = true
 		}
 		for _, version := range crd.Spec.Versions {
