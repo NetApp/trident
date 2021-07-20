@@ -4,7 +4,7 @@ metadata:
   name: bronze
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: netapp.io/trident
+provisioner: csi.trident.netapp.io
 parameters:
   storagePools: "solidfire_10.0.0.1:Bronze"
   fsType: "ext4"

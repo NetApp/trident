@@ -2,7 +2,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: ontap-gold
-provisioner: netapp.io/trident
+provisioner: csi.trident.netapp.io
 parameters:
   backendType: "ontap-nas"
   media: "ssd"

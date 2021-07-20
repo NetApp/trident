@@ -2,7 +2,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: solidfire-bronze
-provisioner: netapp.io/trident
+provisioner: csi.trident.netapp.io
 parameters:
   backendType: "solidfire-san"
   IOPS: "1500"

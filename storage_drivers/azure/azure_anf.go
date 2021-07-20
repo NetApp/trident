@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -23,7 +23,6 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/aws/api"
 	"github.com/netapp/trident/storage_drivers/azure/sdk"
 	"github.com/netapp/trident/utils"
 )
@@ -835,7 +834,7 @@ func (d *NFSStorageDriver) CreateClone(
 				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
 			},
 		}
-		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
+		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, sdk.MaxLabelLength)
 		if err != nil {
 			return err
 		}
@@ -1547,7 +1546,7 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
+	cloneConfig.ClientSecret = drivers.REDACTED                                                                       // redact the Secret
 	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }

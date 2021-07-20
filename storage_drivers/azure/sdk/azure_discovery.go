@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 // Package sdk provides a high-level interface to the Azure NetApp Files SDK
 package sdk
@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-09-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-04-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	log "github.com/sirupsen/logrus"
 
@@ -181,14 +181,18 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 
 	var cpools []CapacityPool
 
-	pools, err := d.SDKClient.PoolsClient.List(ctx, rgroup, naa)
-
+	list, err := d.SDKClient.PoolsClient.ListComplete(ctx, rgroup, naa)
 	if err != nil {
 		Logc(ctx).Errorf("error fetching capacity pools for rg %s, account %s: %v\n", rgroup, naa, err)
 		return nil, err
 	}
 
-	for _, p := range *pools.Value {
+	for ; list.NotDone(); err = list.NextWithContext(ctx) {
+		if err != nil {
+			return nil, fmt.Errorf("error iterating capacity pools for rg %s, account %s: %v", rgroup, naa, err)
+		}
+
+		p := list.Value()
 
 		if exists, _ := d.capacityPoolWithName(*p.Name); exists != nil {
 			Logc(ctx).Errorf("Ignoring discovered capacity pool '%s' in resource group '%s' because its "+
@@ -196,7 +200,7 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 			continue
 		}
 
-		if p.QosType == netapp.Manual {
+		if p.QosType == netapp.QosTypeManual {
 			Logc(ctx).Warningf("Ignoring discovered capacity pool '%s' in resource group '%s' because it "+
 				"uses manual QoS", *p.Name, rgroup)
 			continue
@@ -226,15 +230,20 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 // Get a list of NetAppAccounts within a given Resource Group
 func (d *Client) discoverNetAppAccounts(ctx context.Context, rgroup string) (*[]NetAppAccount, error) {
 
-	naaListIter, err := d.SDKClient.AccountsClient.List(ctx, rgroup)
+	var netappAccounts []NetAppAccount
+
+	list, err := d.SDKClient.AccountsClient.ListComplete(ctx, rgroup)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching netappaccounts for %s: %v", rgroup, err)
 	}
 
-	naaList := *naaListIter.Value
-	var naas []NetAppAccount
+	for ; list.NotDone(); err = list.NextWithContext(ctx) {
+		if err != nil {
+			return nil, fmt.Errorf("error iterating netappaccounts for rg %s: %v", rgroup, err)
+		}
 
-	for _, naa := range naaList {
+		naa := list.Value()
+
 		na := NetAppAccount{
 			Name:     *naa.Name,
 			Location: *naa.Location,
@@ -247,10 +256,10 @@ func (d *Client) discoverNetAppAccounts(ctx context.Context, rgroup string) (*[]
 		}
 		na.CapacityPools = *cpools
 
-		naas = append(naas, na)
+		netappAccounts = append(netappAccounts, na)
 	}
 
-	return &naas, nil
+	return &netappAccounts, nil
 }
 
 // Get a list of Subnets within a given Resource_Group:VirtualNetwork pairing
