@@ -82,12 +82,6 @@ command to verify you can connect to the required Kubernetes cluster.
 Complete the Trident deployment from the remote machine using the normal
 installation steps.
 
-Trident Installation on Mirantis Kubernetes Engine (MKE) 3.1
-============================================================
-
-Mirantis Kubernetes Engine (formerly Universal Control Plane (UCP)) is the cluster management layer that sits on top of Mirantis Container Runtime (formerly Docker Engine - Enterprise). Once deployed, administrators interact with their cluster via MKE instead of each node's individual engines. Because MKE supports both Kubernetes and Docker via a web UI or CLI, administrators can use either a Kubernetes YAMLs or Docker Compose files to deploy images from the centralized location. It also provides cluster-wide monitoring of deployed containers, services, and pods.
-
-Installing Trident for Kubernetes on MKE-managed nodes is similar to installing Trident on Kubernetes. Refer to the following :ref:`documentation <Deploying>` for instructions on how to install Trident for Kubernetes.
 
 Deploying Trident as an enhanced CSI Provisioner
 ================================================

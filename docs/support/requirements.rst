@@ -7,7 +7,7 @@ Supported frontends (orchestrators)
 
 Trident supports multiple container engines and orchestrators, including:
 
-* Mirantis Container Runtime (formerly Docker Engine - Enterprise) 2.1, 3.0, 3.1, and 3.2.11
+* Mirantis Kubernetes Engine 3.4
 * Kubernetes 1.11 or later (latest: 1.21)
 * OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, 4.6 [4.6.8+], 4.7 (latest 4.7)
 
