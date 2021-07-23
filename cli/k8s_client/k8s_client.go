@@ -183,6 +183,7 @@ type Interface interface {
 	RemoveFinalizerFromCRD(crdName string) error
 	GetCRDClient() (*crdclient.Clientset, error)
 	IsTopologyInUse() (bool, error)
+	GetSnapshotterCRDVersion() string
 }
 
 type KubeClient struct {
@@ -2632,6 +2633,40 @@ func (k *KubeClient) IsTopologyInUse() (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
+	snapshotterCRDName := "volumesnapshots.snapshot.storage.k8s.io"
+	versionBeta := "v1beta1"
+	versionGA := "v1"
+
+	crd, err := k.GetCRD(snapshotterCRDName)
+	if err != nil {
+		log.WithField("CRD", snapshotterCRDName).Warnf("Unable to get VolumeSnapshot CRD: %v", err)
+		return
+	}
+
+	var servingBeta, servingGA bool
+	for _, snapshotterVersion := range crd.Spec.Versions {
+		if snapshotterVersion.Served == true {
+			if strings.ToLower(snapshotterVersion.Name) == versionBeta {
+				servingBeta = true
+			} else if strings.ToLower(snapshotterVersion.Name) == versionGA {
+				servingGA = true
+			}
+		}
+	}
+
+	// Both may be serving a Kubernetes version, select the GA version
+	if servingGA {
+		snapshotterCRDVersion = versionGA
+	} else if servingBeta {
+		snapshotterCRDVersion = versionBeta
+	}
+
+	log.WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.",snapshotterCRDVersion)
+
+	return
 }
 
 func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {

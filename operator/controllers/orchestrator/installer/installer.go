@@ -1387,9 +1387,11 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 		return err
 	}
 
+	snapshotCRDVersion := i.identifyCSISnapshotterVersion(currentDeployment)
+
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
 		autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
-		imageRegistry, logFormat, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
+		imageRegistry, logFormat, snapshotCRDVersion, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
 		silenceAutosupport, i.client.ServerVersion(), topologyEnabled)
 
 	if createDeployment {
@@ -1462,6 +1464,28 @@ func (i *Installer) TridentDeploymentInformation(
 	}
 
 	return currentDeployment, unwantedDeployments, createDeployment, nil
+}
+
+// identifyCSISnapshotterVersion uses the below approach to identify CSI Snapshotter Version:
+// If successful in retrieving the CSI Snapshotter CRD Version, use it as it is
+// Else if failed, then CSI Snapshotter CRD Version will be empty
+// then get existing CSI Snapshotter Version and identify v1beta1 vs v1.
+func (i *Installer) identifyCSISnapshotterVersion(currentDeployment *appsv1.Deployment) (snapshotCRDVersion string) {
+
+	if snapshotCRDVersion = i.client.GetSnapshotterCRDVersion(); snapshotCRDVersion == "" && currentDeployment != nil {
+		containers := currentDeployment.Spec.Template.Spec.Containers
+
+		for _, container := range containers {
+			if container.Name == "csi-snapshotter" {
+				log.WithField("currentSnapshotterImage", container.Image).Debug("Found CSI Snapshotter image.")
+				if strings.Contains(container.Image, ":v4") {
+					snapshotCRDVersion = "v1"
+				}
+			}
+		}
+	}
+
+	return
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels map[string]string,

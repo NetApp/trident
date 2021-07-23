@@ -215,3 +215,10 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
+
+.. Note::
+
+  On Kubernetes version 1.20 and later, use the validated ``k8s.gcr.io/sig-storage/csi-snapshotter:v4.x``
+  image if only ``v1`` version is serving ``volumesnapshots.snapshot.storage.k8s.io`` CRD. If the
+  ``v1beta1`` version is serving the CRD with/without the ``v1`` version, use the validated
+  ``k8s.gcr.io/sig-storage/csi-snapshotter:v3.x`` image.

@@ -47,6 +47,11 @@ var getImageCmd = &cobra.Command{
 			TunnelCommand(append(command, args...))
 			return nil
 		} else {
+			// Create the Kubernetes client
+			var err error
+			if client, err = initClient(); err != nil {
+				log.Fatalf("could not initialize Kubernetes client; %v", err)
+			}
 			return printImages()
 		}
 	},
@@ -111,12 +116,17 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		return "", errors.New(versionNotSupported)
 	}
 
+	var snapshotCRDVersion string
+	if client != nil {
+		snapshotCRDVersion = client.GetSnapshotterCRDVersion()
+	}
+
 	labels := make(map[string]string)
 
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	yaml := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 		tridentconfig.BuildImage, tridentconfig.DefaultAutosupportImage, "", "",
-		"", "", "", "", []string{}, nil,
+		"", "", "", "", snapshotCRDVersion, []string{}, nil,
 		nil, false, false, true, semVersion, false)
 	// trident image here is an empty string because we are already going to get it from the deployment yaml
 	yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",

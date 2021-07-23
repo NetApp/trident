@@ -395,6 +395,8 @@ func prepareYAMLFiles() error {
 	daemonSetlabels := make(map[string]string)
 	daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 
+	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
+
 	topologyEnabled, err := client.IsTopologyInUse()
 	if err != nil {
 		return fmt.Errorf("could not determine node topology; %v", err)
@@ -433,7 +435,7 @@ func prepareYAMLFiles() error {
 
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-		autosupportHostname, imageRegistry, logFormat, []string{}, labels,
+		autosupportHostname, imageRegistry, logFormat, snapshotCRDVersion, []string{}, labels,
 		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
@@ -689,6 +691,8 @@ func installTrident() (returnError error) {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 
+	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
+
 	topologyEnabled, err := client.IsTopologyInUse()
 	if err != nil {
 		return fmt.Errorf("could not determine node topology; %v", err)
@@ -765,7 +769,7 @@ func installTrident() (returnError error) {
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
 				tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-				autosupportHostname, imageRegistry, logFormat, []string{}, labels, nil,
+				autosupportHostname, imageRegistry, logFormat, snapshotCRDVersion, []string{}, labels, nil,
 				Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled))
 		logFields = log.Fields{}
 	}

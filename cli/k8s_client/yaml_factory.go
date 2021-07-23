@@ -275,7 +275,8 @@ spec:
 
 func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber, autosupportHostname,
-	imageRegistry, logFormat string, imagePullSecrets []string, labels, controllingCRDetails map[string]string,
+	imageRegistry, logFormat, snapshotCRDVersion string, imagePullSecrets []string, labels,
+	controllingCRDetails map[string]string,
 	debug, useIPv6, silenceAutosupport bool, version *utils.Version, topologyEnabled bool) string {
 
 	var debugLine, logLevel, ipLocalhost string
@@ -294,11 +295,17 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	}
 
 	var deploymentYAML string
+
+	csiSnapshotterVersion := "v3.0.3"
 	switch version.MinorVersion() {
 	case 17, 18, 19:
 		deploymentYAML = csiDeployment117YAMLTemplate
 	default:
 		deploymentYAML = csiDeployment120YAMLTemplate
+
+		if snapshotCRDVersion == "v1" {
+			csiSnapshotterVersion = "v4.1.1"
+		}
 	}
 
 	if imageRegistry == "" {
@@ -341,6 +348,7 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SNAPSHOTTER_VERSION}", csiSnapshotterVersion)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
@@ -485,7 +493,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v3.0.3
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -639,7 +647,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v4.0.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"

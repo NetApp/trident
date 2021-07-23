@@ -63,7 +63,7 @@ func TestYAMLFactory(t *testing.T) {
 		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef, false),
 		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef, true),
 		GetCSIDeploymentYAML(Name, ImageName, AutosupportImageName, "", "",
-			"", "", "", "text", imagePullSecrets,
+			"", "", "", "text", "", imagePullSecrets,
 			labels, ownerRef, false, false, false, version, false),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
@@ -114,7 +114,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 	yamlsOutputs := []string{
 		GetCSIDeploymentYAML("trident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
 			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
-			"k8s.gcr.io", "text", imagePullSecrets, labels, nil, true, true, false, version, true),
+			"k8s.gcr.io", "text", "v1", imagePullSecrets, labels, nil, true, true, false, version, true),
 	}
 	for i, yamlData := range yamlsOutputs {
 
@@ -142,7 +142,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 	yamlsOutputs := []string{
 		GetCSIDeploymentYAML("\ntrident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
 			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
-			"k8s.gcr.io", "text", imagePullSecrets, labels, nil, true, true, false, version, true),
+			"k8s.gcr.io", "text", "v1beta1", imagePullSecrets, labels, nil, true, true, false, version, true),
 	}
 
 	for i, yamlData := range yamlsOutputs {
