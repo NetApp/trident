@@ -207,7 +207,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	// Lookup all the SCSI device information, and include filesystem type only if not raw block volume
 	needFSType := fstype != fsRaw
 
-	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, targetIQN, needFSType)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, targetIQN, needFSType, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -663,7 +663,7 @@ type ScsiDeviceInfo struct {
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScanIfNeeded so that the device paths are known to exist.
 func getDeviceInfoForLUN(
-	ctx context.Context, lunID int, iSCSINodeName string, needFSType bool,
+	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
 ) (*ScsiDeviceInfo, error) {
 
 	fields := log.Fields{
@@ -675,8 +675,15 @@ func getDeviceInfoForLUN(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.getDeviceInfoForLUN")
 
 	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+
+	// During detach if hostSessionMap count is zero, we should be fine
 	if len(hostSessionMap) == 0 {
-		return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+		if isDetachCall {
+			Logc(ctx).WithFields(fields).Debug("No iSCSI hosts found for target.")
+			return nil, nil
+		}  else {
+			return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+		}
 	}
 
 	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
@@ -976,13 +983,20 @@ func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName strin
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils.PrepareDeviceForRemoval")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.PrepareDeviceForRemoval")
 
-	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, true)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"error": err,
 			"lunID": lunID,
 		}).Warn("Could not get device info for removal, skipping host removal steps.")
 		return err
+	}
+
+	if deviceInfo == nil {
+		Logc(ctx).WithFields(log.Fields{
+			"lunID": lunID,
+		}).Debug("No device found for removal, skipping host removal steps.")
+		return nil
 	}
 
 	return removeSCSIDevice(ctx, deviceInfo, force)
@@ -1523,7 +1537,7 @@ func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minS
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils.ISCSIRescanDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.ISCSIRescanDevices")
 
-	deviceInfo, err := getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
 	} else if deviceInfo == nil {

@@ -4,7 +4,14 @@
 
 ## Changes since v21.04.0
 
+- **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully
+  read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing
+  configuration uses the default ``find_multipaths`` value, which should __NOT__ be ``yes``  or ``smart``.
+
 **Fixes:**
+- Updated the "Preparing the worker node" section of documentation to use default `find_multipaths` value for iSCSI
+  multipathing.
+- Fix the issue of not waiting for the multipath device to appear when discovered device count is 1 (Issue [#511](https://github.com/NetApp/trident/issues/511)).
 
 **Enhancements:**
 - **Kubernetes:** Updated to csi-snapshotter v4.0.0 for k8s 1.20+
