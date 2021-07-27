@@ -27,7 +27,12 @@ limitVolumeSize           Fail provisioning if requested volume size is above th
 nfsMountOptions           Comma-separated list of NFS mount options                                                         ""
 qtreesPerFlexvol          Maximum qtrees per FlexVol, must be in range [50, 300]                                            "200"
 debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
+useREST                   Boolean parameter to use ONTAP REST APIs. **Tech-preview**                                            false
 ========================= ================================================================================================= ================================================
+
+.. note::
+
+   ``useREST`` is provided as a **tech-preview** that is recommended for test environments and not for **production workloads**. When set to ``true``, Trident will use ONTAP REST APIs to communicate with the backend. This feature requires ONTAP 9.8 and later. In addition, the ONTAP login role used must have access to the ``ontap`` application. This is satisfied by pre-defined ``vsadmin`` and ``cluster-admin`` roles.
 
 To communicate with the ONTAP cluster, Trident must be provided with authentication
 parameters. This could be the username/password to a security login (OR) an
