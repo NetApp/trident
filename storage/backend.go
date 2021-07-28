@@ -449,8 +449,8 @@ func (b *Backend) GetVolumeExternal(ctx context.Context, volumeName string) (*Vo
 		return nil, err
 	}
 
-	if b.Driver.Get(ctx, volumeName) != nil {
-		return nil, fmt.Errorf("volume %s was not found", volumeName)
+	if err := b.Driver.Get(ctx, volumeName); err != nil {
+		return nil, fmt.Errorf("failed to get volume %s: %v", volumeName, err)
 	}
 
 	volExternal, err := b.Driver.GetVolumeExternal(ctx, volumeName)

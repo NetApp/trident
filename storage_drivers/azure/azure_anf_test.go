@@ -3,6 +3,7 @@
 package azure
 
 import (
+	"context"
 	"regexp"
 	"testing"
 	"time"
@@ -182,5 +183,44 @@ func TestValidateStoragePrefix(t *testing.T) {
 				assert.Error(t, err, "should be invalid")
 			}
 		})
+	}
+}
+
+// TestContainsCpool tests ContainsCpool, that find exact same cpool name match in the cpool list.
+func TestContainsCpool(t *testing.T) {
+	tests := []struct {
+		CpoolList string
+		CpoolName string
+		Contains  bool
+	}{
+		{
+			CpoolList: "cpool-aa,cpool-bb,cpool-cc,cpool-gg,cpool-kk",
+			CpoolName: "cpool-cc",
+			Contains:  true,
+		},
+		{
+			CpoolList: "cpool-aa,cpool-bb, cpool-cc,cpool-gg,cpool-kk",
+			CpoolName: "cpool-cc",
+			Contains:  false,
+		},
+		{
+			CpoolList: "cpool-aa,cpool-bb,cpool-cc,cpool-gg,cpool-kk",
+			CpoolName: "cpool-c",
+			Contains:  false,
+		},
+		{
+			CpoolList: "cpool-aa,cpool-bb, cpool-cc,cpool-gg,cpool-kk",
+			CpoolName: " cpool-cc",
+			Contains:  true,
+		},
+		{
+			CpoolList: "cpool-aa,cpool-bb,cpool-cc,cpool-gg,cpool-cc,cpool-kk",
+			CpoolName: "cpool-cc",
+			Contains:  true,
+		},
+	}
+	for _, test := range tests {
+		contains := containsCpool(context.TODO(), test.CpoolList, test.CpoolName)
+		assert.Equal(t, test.Contains, contains)
 	}
 }

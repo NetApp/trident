@@ -612,3 +612,13 @@ func Max(x, y int64) int64 {
 	}
 	return y
 }
+
+// SplitString is same as strings.Split except it returns a nil ([]string(nil)) of size 0 instead of
+// string slice with an empty string (size 1) when string to be split is empty.
+func SplitString(_ context.Context, s, sep string) []string {
+	if s == "" {
+		return nil
+	}
+
+	return strings.Split(s, sep)
+}

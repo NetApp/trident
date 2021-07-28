@@ -3360,5 +3360,4 @@ func identifyFindMultipathsValue(ctx context.Context) (string, error) {
 
 		return findMultipathsValue, nil
 	}
-
 }

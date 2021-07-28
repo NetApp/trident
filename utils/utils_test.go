@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"context"
 	"math/rand"
 	"strings"
 	"testing"
@@ -544,4 +545,34 @@ func TestGetFindMultipathValue(t *testing.T) {
 
 	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "no", findMultipathsValue)
+}
+
+func TestSplitString(t *testing.T) {
+	log.Debug("Running TestSplitString...")
+
+	ctx := context.TODO()
+
+	stringList := SplitString(ctx, "a,b, c", ",")
+	assert.Equal(t, []string{"a","b"," c"}, stringList)
+
+	stringList = SplitString(ctx, "a,b,c", ",")
+	assert.Equal(t, []string{"a","b","c"}, stringList)
+
+	stringList = SplitString(ctx, "a,b,c", "")
+	assert.Equal(t, []string{"a",",","b",",","c"}, stringList)
+
+	stringList = SplitString(ctx, "a,b,c", ";")
+	assert.Equal(t, []string{"a,b,c"}, stringList)
+
+	stringList = SplitString(ctx, "", ",")
+	assert.Equal(t, []string(nil), stringList)
+
+	stringList = SplitString(ctx, "", ";")
+	assert.Equal(t, []string(nil), stringList)
+
+	stringList = SplitString(ctx, " ", ";")
+	assert.Equal(t, []string{" "}, stringList)
+
+	stringList = SplitString(ctx, ";a;b", ";")
+	assert.Equal(t, []string{"","a","b"}, stringList)
 }

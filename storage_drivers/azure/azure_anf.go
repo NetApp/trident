@@ -46,6 +46,7 @@ const (
 	Location       = "location"
 	VirtualNetwork = "virtualNetwork"
 	Subnet         = "subnet"
+	CapacityPools  = "capacityPools"
 
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
@@ -308,6 +309,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes[Location] = d.Config.Location
 		pool.InternalAttributes[VirtualNetwork] = d.Config.VirtualNetwork
 		pool.InternalAttributes[Subnet] = d.Config.Subnet
+		pool.InternalAttributes[CapacityPools] = strings.Join(d.Config.CapacityPools, ",")
 
 		pool.SupportedTopologies = d.Config.SupportedTopologies
 
@@ -342,6 +344,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			supportedTopologies := d.Config.SupportedTopologies
 			if vpool.SupportedTopologies != nil {
 				supportedTopologies = vpool.SupportedTopologies
+			}
+
+			capacityPools := d.Config.CapacityPools
+			if vpool.CapacityPools != nil {
+				capacityPools = vpool.CapacityPools
 			}
 
 			serviceLevel := d.Config.ServiceLevel
@@ -390,6 +397,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes[Location] = location
 			pool.InternalAttributes[VirtualNetwork] = vnet
 			pool.InternalAttributes[Subnet] = subnet
+			pool.InternalAttributes[CapacityPools] = strings.Join(capacityPools, ",")
 
 			pool.SupportedTopologies = supportedTopologies
 
@@ -511,6 +519,18 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 
 		if _, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, sdk.MaxLabelLength); err != nil {
 			return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
+		}
+
+		// Validate that the Capacity Pools values are valid
+		if pool.InternalAttributes[CapacityPools] != "" {
+			capacityPoolList := utils.SplitString(ctx, pool.InternalAttributes[CapacityPools], ",")
+			discoveredCapacityPoolNames := d.SDK.GetCapacityPoolNames()
+
+			for _, capacityPool := range capacityPoolList {
+				if !utils.SliceContainsString(discoveredCapacityPoolNames, capacityPool) {
+					return fmt.Errorf("invalid value for capacity pool %s in pool %s", capacityPool, poolName)
+				}
+			}
 		}
 	}
 
@@ -752,6 +772,18 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("could not find source volume: %v", err)
 	}
 
+	// Check if storage pool's list of capacity pools (if any) contains source volume's capacity pool
+	if storagePool.Name != "" {
+		if !containsCpool(ctx, storagePool.InternalAttributes[CapacityPools], sourceVolume.CapacityPoolName) {
+			return fmt.Errorf("source volume's capacity pool '%s' not part of storage pool '%s'",
+				sourceVolume.CapacityPoolName, storagePool.Name)
+		}
+	} else {
+		if err = d.ensureVolPartOfValidCpool(ctx, sourceVolume.CapacityPoolName); err != nil {
+			return err
+		}
+	}
+
 	var sourceSnapshot *sdk.Snapshot
 
 	if snapshot != "" {
@@ -887,6 +919,11 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	volume, err := d.SDK.GetVolumeByCreationToken(ctx, creationToken)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	err = d.ensureVolPartOfValidCpool(ctx, volume.CapacityPoolName)
+	if err != nil {
+		return err
 	}
 
 	// Get the volume size
@@ -1385,7 +1422,7 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 	return volumeNames, nil
 }
 
-// Test for the existence of a volume
+// Get is a test for the existence of a volume
 func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1394,9 +1431,12 @@ func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
 	}
 
-	_, err := d.SDK.GetVolumeByCreationToken(ctx, name)
+	volume, err := d.SDK.GetVolumeByCreationToken(ctx, name)
+	if err != nil {
+		return fmt.Errorf("could not get volume %s: %v", name, err)
+	}
 
-	return err
+	return d.ensureVolPartOfValidCpool(ctx, volume.CapacityPoolName)
 }
 
 // Resize increases a volume's quota
@@ -1697,4 +1737,34 @@ func validateStoragePrefix(storagePrefix string) error {
 // GetCommonConfig returns driver's CommonConfig
 func (d NFSStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
+}
+
+func (d NFSStorageDriver) ensureVolPartOfValidCpool(ctx context.Context, volumeCpoolName string) error {
+	// If there is a vpool without any capacityPools flag, then skip this check
+	// else ensure cpool name must exist in one of the vpool's cpool lists
+	var volInValidCpool bool
+	for _, vpool := range d.pools {
+		if containsCpool(ctx, vpool.InternalAttributes[CapacityPools], volumeCpoolName) {
+			volInValidCpool = true
+			break
+		}
+	}
+
+	if !volInValidCpool {
+		return utils.NotFoundError(fmt.Sprintf("volume is part of another capacity pool not referenced by the backend" +
+			" %s", d.BackendName()))
+	}
+
+	return nil
+}
+
+func containsCpool(ctx context.Context, cpoolListString, cpoolName string) bool {
+	cpoolList := utils.SplitString(ctx, cpoolListString, ",")
+	if len(cpoolList) == 0 {
+		return true
+	} else if utils.SliceContainsString(cpoolList, cpoolName) {
+		return true
+	}
+
+	return false
 }

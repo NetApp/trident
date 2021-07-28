@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,12 +18,14 @@ import (
 
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 const (
 	PServiceLevel = "serviceLevel"
 	PLocation     = "location"
 	PSubnet       = "subnet"
+	PCapacityPools = "capacityPools"
 
 	// Reload Azure resources every n minutes
 	refreshIntervalMinutes = 10
@@ -121,7 +124,8 @@ func (d *Client) GetCookieByCapacityPoolName(poolname string) (*AzureCapacityPoo
 }
 
 // GetCookieByStoragePoolName searches for a cookie with a matching storage pool name
-func (d *Client) GetCookieByStoragePoolName(spoolname string) (*AzureCapacityPoolCookie, error) {
+func (d *Client) GetCookieByStoragePoolName(ctx context.Context, spoolname,
+	serviceLevel string) (*AzureCapacityPoolCookie, error) {
 	spool := d.SDKClient.AzureResources.StoragePoolMap[spoolname]
 	if spool == nil {
 		return nil, fmt.Errorf("no pool '%s' registered", spoolname)
@@ -131,10 +135,7 @@ func (d *Client) GetCookieByStoragePoolName(spoolname string) (*AzureCapacityPoo
 	d.SDKClient.AzureResources.m.Lock()
 	defer d.SDKClient.AzureResources.m.Unlock()
 
-	cpool, err := d.randomCapacityPoolWithStoragePoolAttributes(
-		spool.InternalAttributes[PLocation],
-		spool.InternalAttributes[PServiceLevel],
-		spool.InternalAttributes[PSubnet])
+	cpool, err := d.randomCapacityPoolWithStoragePoolAttributes(ctx, spool, serviceLevel)
 
 	if err != nil {
 		return nil, err
@@ -465,14 +466,71 @@ func (d *Client) refreshAzureResources(ctx context.Context) error {
 	// (re-)Discover what we have to work with in Azure
 	Logc(ctx).Debugf("Discovering Azure resources")
 
+	var discoveryErrors []string
+
 	err := d.discoverAzureResources(ctx)
 	if err != nil {
 		Logc(ctx).Errorf("error discovering resources: %v", err)
 	}
 
+	// Ensure we have harmony between the discovered Capacity Pools and
+	// the Capacity Pools (if any) specified in the backend config pool
+	if allCpools := d.GetCapacityPoolNames(); len(allCpools) == 0 {
+		Logc(ctx).Errorf("No capacity pool discovered.")
+	} else {
+		for poolName, pool := range d.SDKClient.AzureResources.StoragePoolMap {
+
+			var validCpools []string
+			realCpoolNamesFilter := d.filterRealCapacityPools(ctx, pool)
+
+			if len(realCpoolNamesFilter) == 0 {
+				msg := fmt.Sprintf("No valid capacity pool found for the pool %s", poolName)
+				Logc(ctx).Errorf(msg)
+				discoveryErrors = append(discoveryErrors, msg)
+				continue
+			}
+
+			// This condition ensures that the capacity pool that does exist also matches pool's
+			// attributes such as location, service level and subnet
+			cpoolsWithAttr, filterErr := d.filterCpoolBasedOnAttributesAndCpoolNames(ctx, pool.InternalAttributes[PLocation],
+				pool.InternalAttributes[PServiceLevel], pool.InternalAttributes[PSubnet], poolName,
+				realCpoolNamesFilter)
+			if filterErr != nil {
+				msg := fmt.Sprintf("Unable to get list of capacity pools based on location, "+
+					"service level, subnet and capacity pool name filters for the pool %v: %v", poolName, filterErr)
+				Logc(ctx).Errorf(msg)
+				discoveryErrors = append(discoveryErrors, msg)
+			} else if cpoolsWithAttr == nil || len(*cpoolsWithAttr) == 0 {
+				msg := fmt.Sprintf("No capacity pools found based on location, "+
+					"service level, subnet and capacity pool name filters for the pool %v", poolName)
+				Logc(ctx).Errorf(msg)
+				discoveryErrors = append(discoveryErrors, msg)
+			} else if len(*cpoolsWithAttr) > 0 {
+				validCpools = d.ExtractCapacityPoolNames(cpoolsWithAttr)
+			}
+
+			// Print the mapping in the logs so that it is easy to understand the mapping at the time of the operation.
+			Logc(ctx).Debugf("Storage Pool '%v' mapped to capacity pool '%v'.", poolName,
+				strings.Join(validCpools, ", "))
+		}
+	}
+
 	// This is noisy, hide it behind api tracing.
 	if d.config.DebugTraceFlags["api"] {
 		d.dumpAzureResources(ctx)
+	}
+
+	var discoveryErrorMsg string
+	if len(discoveryErrors) > 0 {
+		discoveryErrorMsg = strings.Join(discoveryErrors, "; ")
+	}
+
+	if err != nil {
+		if discoveryErrorMsg != "" {
+			return fmt.Errorf("%v; Error(s) after resource discovery: %s", err, discoveryErrorMsg)
+		}
+	} else if discoveryErrorMsg != "" {
+		return fmt.Errorf("error(s) after resource discovery: %s", discoveryErrorMsg)
 	}
 
 	return err
@@ -501,7 +559,6 @@ func (d *Client) refreshTimer(ctx context.Context) {
 
 // discoveryInit initializes the discovery pieces at startup
 func (d *Client) discoveryInit(ctx context.Context) error {
-	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]*storage.Pool)
 	d.SDKClient.AzureResources.m = &sync.Mutex{}
 
 	// Discover resources at startup synchronously, then kick off the refresh timer thread
@@ -571,6 +628,25 @@ func (d *Client) getCapacityPools() *[]CapacityPool {
 	}
 
 	return &cpools
+}
+
+// GetCapacityPoolNames returns names of _ALL_ ANF Capacity Pools
+func (d *Client) GetCapacityPoolNames() []string {
+	return d.ExtractCapacityPoolNames(d.getCapacityPools())
+}
+
+// ExtractCapacityPoolNames returns names of Capacity Pools
+func (d *Client) ExtractCapacityPoolNames(allpools *[]CapacityPool) []string {
+
+	var cpoolNames []string
+
+	if allpools != nil {
+		for _, p := range *allpools {
+			cpoolNames = append(cpoolNames, poolShortname(p.Name))
+		}
+	}
+
+	return cpoolNames
 }
 
 // getCapacityPool returns a single capacity pool by name
@@ -792,8 +868,39 @@ func (d *Client) commonSet(c1 *[]CapacityPool, c2 *[]CapacityPool) *[]CapacityPo
 	return &common
 }
 
-// capacityPoolsWithStoragePoolAttributes returns all capacity pools that match specified attributes
-func (d *Client) capacityPoolsWithStoragePoolAttributes(location string, servicelevel string, subnet string) (*[]CapacityPool, error) {
+// filterRealCapacityPools verifies the names of the capacity pool name filters (if set) in the storage pool are
+// still valid or not, and returns list of the valid capacity pool name filters.
+// If storage pool has no capacity pool specified then all the real capacity pools names are returned
+func (d *Client) filterRealCapacityPools(ctx context.Context, pool *storage.Pool) []string {
+	var realCpoolNamesFilter []string
+
+	allCpools := d.GetCapacityPoolNames()
+	if len(allCpools) == 0 {
+		Logc(ctx).Errorf("There are no capacity pools.")
+		return realCpoolNamesFilter
+	}
+
+	// This condition lets us know if a capacity pool name that is mentioned
+	// in the storage pool exists or not
+	cpoolList := utils.SplitString(ctx, pool.InternalAttributes[PCapacityPools], ",")
+	if len(cpoolList) != 0 {
+		for _, capacityPool := range cpoolList {
+			if !utils.SliceContainsString(allCpools, capacityPool) {
+				Logc(ctx).Errorf("Invalid value for capacity pool %s in pool %s", capacityPool, pool.Name)
+			} else {
+				realCpoolNamesFilter = append(realCpoolNamesFilter, capacityPool)
+			}
+		}
+	} else {
+		realCpoolNamesFilter = allCpools
+	}
+
+	return realCpoolNamesFilter
+}
+
+// filterCpoolBasedOnAttributes returns all capacity pools that match specified attributes
+func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet string) (
+	*[]CapacityPool, error) {
 
 	var withLocs *[]CapacityPool
 	var withLevs *[]CapacityPool
@@ -814,47 +921,100 @@ func (d *Client) capacityPoolsWithStoragePoolAttributes(location string, service
 		withNets, _ = d.capacityPoolsWithSubnet(subnet)
 	}
 
-	var common *[]CapacityPool
 
-	// This isn't gonna scale so great.
-	if withLocs != nil && len(*withLocs) > 0 {
-		common = withLocs
-		if withLevs != nil && len(*withLevs) > 0 {
-			common = d.commonSet(common, withLevs)
+	var common *[]CapacityPool
+	haveLocBasedCpools := withLocs != nil && len(*withLocs) > 0
+	haveServiceLevelBasedCpools := withLevs != nil && len(*withLevs) > 0
+	haveSubnetBasedCpools := withNets != nil && len(*withNets) > 0
+
+	// If Failed to discover cpool against any of the attributes then return an empty list
+	if (location != "" && !haveLocBasedCpools) || (servicelevel != "" && !haveServiceLevelBasedCpools) ||
+		(subnet != "" && !haveSubnetBasedCpools) {
+		return common, nil
+	}
+
+	cpoolFilterLists := []*[]CapacityPool {withLocs, withLevs, withNets}
+
+	for _, filteredList := range cpoolFilterLists {
+		if filteredList != nil && len(*filteredList) > 0 {
+			if common == nil || len(*common) == 0 {
+				common = filteredList
+			} else {
+				common = d.commonSet(common, filteredList)
+			}
 		}
-		if withNets != nil && len(*withNets) > 0 {
-			common = d.commonSet(common, withNets)
-		}
-	} else if withLevs != nil && len(*withLevs) > 0 {
-		common = withLevs
-		if withNets != nil && len(*withNets) > 0 {
-			common = d.commonSet(common, withNets)
-		}
-	} else {
-		common = withNets
 	}
 
 	return common, nil
 }
 
+// filterCpoolBasedOnAttributesAndCpoolNames returns all capacity pools that match specified attributes and cpool names
+func (d *Client) filterCpoolBasedOnAttributesAndCpoolNames(
+	ctx context.Context, location, servicelevel, subnet, poolName string, cpoolNamesFilter []string,
+	) (*[]CapacityPool, error) {
+
+	cpools, err := d.filterCpoolBasedOnAttributes(location, servicelevel, subnet)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter the list of capacity pools based on the capacity pool names when supplied
+	if len(cpoolNamesFilter) > 0 && cpools != nil && len(*cpools) > 0 {
+		var filteredCpools []CapacityPool
+		for _, cp := range *cpools {
+			if utils.SliceContainsString(cpoolNamesFilter, poolShortname(cp.Name)) {
+				filteredCpools = append(filteredCpools, cp)
+			} else {
+				Logc(ctx).Debugf("Skipping capacity pool '%s' as it is not part of the listed capacity pools '%v" +
+					"' for the storage pool '%v'", poolShortname(cp.Name), strings.Join(cpoolNamesFilter,","), poolName)
+			}
+		}
+
+		return &filteredCpools, nil
+	}
+
+	return cpools, nil
+}
+
 // randomCapacityPoolWithStoragePoolAttributes searches for a capacity pool that matches any
 // passed-in attributes
-func (d *Client) randomCapacityPoolWithStoragePoolAttributes(location string, servicelevel string, subnet string) (*CapacityPool, error) {
+func (d *Client) randomCapacityPoolWithStoragePoolAttributes(ctx context.Context, spool *storage.Pool,
+	serviceLevel string) (*CapacityPool, error) {
 
 	var cp *CapacityPool
 
-	cpools, err := d.capacityPoolsWithStoragePoolAttributes(location, servicelevel, subnet)
+	// Ensure that names in the capacity Pool filter are still valid
+	realCpoolNamesFilter := d.filterRealCapacityPools(ctx, spool)
+
+	if len(realCpoolNamesFilter) == 0 {
+		Logc(ctx).Errorf("No valid capacity pool name found in the storage pool %s", spool.Name)
+		return cp, nil
+	}
+
+	cpools, err := d.filterCpoolBasedOnAttributesAndCpoolNames(ctx,
+		spool.InternalAttributes[PLocation],
+		serviceLevel,
+		spool.InternalAttributes[PSubnet],
+		spool.Name,
+		utils.SplitString(ctx, spool.InternalAttributes[PCapacityPools], ","))
 	if err != nil {
 		return nil, err
 	}
 
 	if cpools != nil && len(*cpools) > 0 {
+
+		cpoolNames := d.ExtractCapacityPoolNames(cpools)
+		Logc(ctx).Debugf("Capacity Pool(s) '%s' discovered for the storage pool '%s'.", strings.Join(cpoolNames, ","),
+			spool.Name)
+
 		rnd := 0
 		max := len(*cpools)
 		if max > 1 {
 			rnd = rand.Intn(max)
 		}
 		cp = &(*cpools)[rnd]
+
+		Logc(ctx).Debugf("Capacity Pool '%s' selected.", poolShortname(cp.Name))
 	}
 
 	return cp, nil

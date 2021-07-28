@@ -111,14 +111,15 @@ func NewDriver(config ClientConfig) *Client {
 // Init runs startup logic after allocating the driver resources
 func (d *Client) Init(ctx context.Context, pools map[string]*storage.Pool) (err error) {
 
+	// Map vpools to backend
+	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]*storage.Pool)
+	for _, p := range pools {
+		d.registerStoragePool(*p)
+	}
+
 	// Find out what we have to work with in Azure
 	if err := d.discoveryInit(ctx); err != nil {
 		return err
-	}
-
-	// Map vpools to backend
-	for _, p := range pools {
-		d.registerStoragePool(*p)
 	}
 
 	return nil
@@ -591,7 +592,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 	if request.PoolID == DoNotUseSPoolName {
 		cookie, err = d.GetCookieByCapacityPoolName(request.CapacityPool)
 	} else {
-		cookie, err = d.GetCookieByStoragePoolName(request.PoolID)
+		cookie, err = d.GetCookieByStoragePoolName(ctx, request.PoolID, request.ServiceLevel)
 	}
 	if err != nil {
 		return nil, err

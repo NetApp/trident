@@ -48,7 +48,14 @@ virtualNetwork     Name of a virtual network with a delegated subnet            
 subnet             Name of a subnet delegated to ``Microsoft.Netapp/volumes``      "" (random)
 nfsMountOptions    Fine-grained control of NFS mount options                       "-o nfsvers=3"
 limitVolumeSize    Fail provisioning if requested volume size is above this value  "" (not enforced by default)
+capacityPools      List of Capacity Pools to use for provisioning                  [] (not enforced by default)
 ================== =============================================================== ================================================
+
+.. warning::
+  Modifying the ``capacityPools`` field in an existing backend such that it reduces the number
+  of capacity pools used for provisioning results in orphaned volumes, which are provisioned
+  on the capacity pool/pools that are not part of the ``capacityPools`` list anymore. Cloning
+  operations on these orphaned volumes will fail.
 
 You can control how each volume is provisioned by default using these options in a special section of the configuration.
 For an example, see the configuration examples below.

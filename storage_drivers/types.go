@@ -610,6 +610,7 @@ type AzureNFSStorageDriverPool struct {
 	VirtualNetwork                      string              `json:"virtualNetwork"`
 	Subnet                              string              `json:"subnet"`
 	SupportedTopologies                 []map[string]string `json:"supportedTopologies"`
+	CapacityPools                       []string            `json:"capacityPools"`
 	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 

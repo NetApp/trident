@@ -7,14 +7,24 @@
 - **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully
   read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing
   configuration uses the default ``find_multipaths`` value, which should __NOT__ be ``yes``  or ``smart``.
+  
+- **IMPORTANT**: In Trident versions earlier than 21.07, you could create ANF backend with no valid Capacity Pools
+  corresponding to a Service Level. As a result the volumes were provisioned in the Capacity Pool of different
+  Service Level type. This issue has been fixed but for an ANF backend, where there are no Capacity Pools
+  corresponding to a Service Level, the backend might get into a failed state. To correct this, fix the
+  `serviceLevel` in the ANF backend file or add a Capacity Pool that matches the backend's `serviceLevel`, and
+  then run the backend update operation.
 
 **Fixes:**
 - Updated the "Preparing the worker node" section of documentation to use default `find_multipaths` value for iSCSI
   multipathing.
 - Fix the issue of not waiting for the multipath device to appear when discovered device count is 1 (Issue [#511](https://github.com/NetApp/trident/issues/511)).
+- Fixed ANF issue with backend creation even when there are no valid Capacity Pool corresponding to a Service Level.
 
 **Enhancements:**
-- **Kubernetes:** Updated to csi-snapshotter v4.0.0 for k8s 1.20+
+- **Kubernetes:** Updated to csi-snapshotter v4.0.0 for Kubernetes 1.20+
+- Added ability to restrict volume provisioning to a subset of Capacity Pools using `capacityPools` field in the ANF
+  backends.
 
 **Beta Features:**
 
