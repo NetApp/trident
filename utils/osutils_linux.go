@@ -335,13 +335,13 @@ func packageInstalledOnHost(ctx context.Context, pkg string, host HostSystem) (b
 func getPackageManagerForHost(ctx context.Context, host HostSystem) (string, error) {
 	switch host.OS.Distro {
 	case Centos, RHEL:
-		version, err := strconv.ParseInt(host.OS.Version, 10, 0)
+		version, err := strconv.ParseFloat(host.OS.Version, 0)
 		if err != nil {
 			err = fmt.Errorf("error parsing OS version; %+v", err)
 			Logc(ctx).WithField("version", host.OS.Version).Error(err)
 			return "", err
 		}
-		if version < int64(8) {
+		if int64(version) < int64(8) {
 			return "yum", nil
 		} else {
 			return "dnf", nil
