@@ -17,6 +17,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
+
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
@@ -96,7 +97,7 @@ func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID s
 
 	storageDriver := &StorageDriver{}
 
-	if initializeErr := storageDriver.Initialize( ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig,
+	if initializeErr := storageDriver.Initialize(ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig,
 		nil, backendUUID); initializeErr != nil {
 		err = fmt.Errorf("problem initializing storage driver '%s': %v",
 			commonConfig.StorageDriverName, initializeErr)

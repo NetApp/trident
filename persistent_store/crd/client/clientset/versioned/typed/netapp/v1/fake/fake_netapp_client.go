@@ -22,12 +22,20 @@ func (c *FakeTridentV1) TridentBackendConfigs(namespace string) v1.TridentBacken
 	return &FakeTridentBackendConfigs{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentMirrorRelationships(namespace string) v1.TridentMirrorRelationshipInterface {
+	return &FakeTridentMirrorRelationships{c, namespace}
+}
+
 func (c *FakeTridentV1) TridentNodes(namespace string) v1.TridentNodeInterface {
 	return &FakeTridentNodes{c, namespace}
 }
 
 func (c *FakeTridentV1) TridentSnapshots(namespace string) v1.TridentSnapshotInterface {
 	return &FakeTridentSnapshots{c, namespace}
+}
+
+func (c *FakeTridentV1) TridentSnapshotInfos(namespace string) v1.TridentSnapshotInfoInterface {
+	return &FakeTridentSnapshotInfos{c, namespace}
 }
 
 func (c *FakeTridentV1) TridentStorageClasses(namespace string) v1.TridentStorageClassInterface {

@@ -14,10 +14,14 @@ type Interface interface {
 	TridentBackends() TridentBackendInformer
 	// TridentBackendConfigs returns a TridentBackendConfigInformer.
 	TridentBackendConfigs() TridentBackendConfigInformer
+	// TridentMirrorRelationships returns a TridentMirrorRelationshipInformer.
+	TridentMirrorRelationships() TridentMirrorRelationshipInformer
 	// TridentNodes returns a TridentNodeInformer.
 	TridentNodes() TridentNodeInformer
 	// TridentSnapshots returns a TridentSnapshotInformer.
 	TridentSnapshots() TridentSnapshotInformer
+	// TridentSnapshotInfos returns a TridentSnapshotInfoInformer.
+	TridentSnapshotInfos() TridentSnapshotInfoInformer
 	// TridentStorageClasses returns a TridentStorageClassInformer.
 	TridentStorageClasses() TridentStorageClassInformer
 	// TridentTransactions returns a TridentTransactionInformer.
@@ -49,6 +53,11 @@ func (v *version) TridentBackendConfigs() TridentBackendConfigInformer {
 	return &tridentBackendConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
+// TridentMirrorRelationships returns a TridentMirrorRelationshipInformer.
+func (v *version) TridentMirrorRelationships() TridentMirrorRelationshipInformer {
+	return &tridentMirrorRelationshipInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
 // TridentNodes returns a TridentNodeInformer.
 func (v *version) TridentNodes() TridentNodeInformer {
 	return &tridentNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
@@ -57,6 +66,11 @@ func (v *version) TridentNodes() TridentNodeInformer {
 // TridentSnapshots returns a TridentSnapshotInformer.
 func (v *version) TridentSnapshots() TridentSnapshotInformer {
 	return &tridentSnapshotInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentSnapshotInfos returns a TridentSnapshotInfoInformer.
+func (v *version) TridentSnapshotInfos() TridentSnapshotInfoInformer {
+	return &tridentSnapshotInfoInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentStorageClasses returns a TridentStorageClassInformer.

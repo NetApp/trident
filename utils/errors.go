@@ -221,6 +221,30 @@ func IsUnsupportedKubernetesVersionError(err error) bool {
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// reconcileDeferredError
+/////////////////////////////////////////////////////////////////////////////
+
+type reconcileDeferredError struct {
+	message string
+}
+
+func (e *reconcileDeferredError) Error() string { return e.message }
+
+func ReconcileDeferredError(err error) error {
+	return &reconcileDeferredError{
+		message: err.Error(),
+	}
+}
+
+func IsReconcileDeferredError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*reconcileDeferredError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // reconcileIncompleteError
 /////////////////////////////////////////////////////////////////////////////
 
@@ -233,6 +257,12 @@ func (e *reconcileIncompleteError) Error() string { return e.message }
 func ReconcileIncompleteError() error {
 	return &reconcileIncompleteError{
 		message: "reconcile incomplete",
+	}
+}
+
+func ConvertToReconcileIncompleteError(err error) error {
+	return &reconcileIncompleteError{
+		message: err.Error(),
 	}
 }
 

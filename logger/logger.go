@@ -1,3 +1,5 @@
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
+
 package logger
 
 import (
@@ -16,7 +18,7 @@ func Logc(ctx context.Context) *log.Entry {
 	})
 
 	if val := ctx.Value(CRDControllerEvent); val != nil {
-		entry = entry.WithField(CRDControllerEvent, val)
+		entry = entry.WithField(string(CRDControllerEvent), val)
 	}
 
 	return entry

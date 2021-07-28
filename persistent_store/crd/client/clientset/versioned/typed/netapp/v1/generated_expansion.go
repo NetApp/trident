@@ -8,9 +8,13 @@ type TridentBackendExpansion interface{}
 
 type TridentBackendConfigExpansion interface{}
 
+type TridentMirrorRelationshipExpansion interface{}
+
 type TridentNodeExpansion interface{}
 
 type TridentSnapshotExpansion interface{}
+
+type TridentSnapshotInfoExpansion interface{}
 
 type TridentStorageClassExpansion interface{}
 

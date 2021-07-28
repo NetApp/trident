@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -10,13 +10,15 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/netapp/trident/storage"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap"
+	"github.com/netapp/trident/config"
+	fake_storage "github.com/netapp/trident/storage/fake"
+	"github.com/netapp/trident/storage_drivers/fake"
+	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
 
 var (
@@ -33,28 +35,21 @@ func init() {
 
 func TestNewBackend(t *testing.T) {
 	// Build backend
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
-			StorageDriverName: drivers.OntapNASStorageDriverName,
-		},
-		ManagementLIF: "10.0.0.4",
-		DataLIF:       "10.0.0.100",
-		SVM:           "svm1",
-		Username:      "admin",
-		Password:      "netapp",
+	mockPools := tu.GetFakePools()
+	volumes := make([]fake_storage.Volume, 0)
+	fakeConfig, err := fake.NewFakeStorageDriverConfigJSON("mock", config.File, mockPools, volumes)
+	if err != nil {
+		t.Fatal("Unable to construct config JSON.")
 	}
-	nfsDriver := ontap.NASStorageDriver{
-		Config: nfsServerConfig,
-	}
-	nfsServer := &storage.Backend{
-		Driver: &nfsDriver,
-		Name:   "nfs_server_1-" + nfsServerConfig.ManagementLIF,
+	nfsServer, err := fake.NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
+	if err != nil {
+		t.Fatalf("Unable to create fake storage backend: %v", err)
 	}
 
 	// Convert to Kubernetes Object using the NewTridentBackend method
 	backend, err := NewTridentBackend(ctx(), nfsServer.ConstructPersistent(ctx()))
 	if err != nil {
-		t.Fatal("Unable to construct TridentBackend CRD: ", err)
+		t.Fatalf("Unable to construct TridentBackend CRD: %v", err)
 	}
 
 	// Build expected result
@@ -67,7 +62,7 @@ func TestNewBackend(t *testing.T) {
 			Name: "tbe-",
 		},
 		BackendName: nfsServer.Name,
-		Online:      false,
+		Online:      true,
 		Version:     "1",
 		Config: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent(ctx()).Config)),
@@ -75,6 +70,7 @@ func TestNewBackend(t *testing.T) {
 	}
 	expected.ObjectMeta.Name = backend.ObjectMeta.Name
 	expected.BackendUUID = backend.BackendUUID
+	expected.State = "online"
 
 	if expected.ObjectMeta.Name != backend.ObjectMeta.Name {
 		t.Fatalf("%v differs:  '%v' != '%v'", "ObjectMeta.Name", expected.ObjectMeta.Name, backend.ObjectMeta.Name)
@@ -101,22 +97,15 @@ func TestNewBackend(t *testing.T) {
 
 func TestBackend_Persistent(t *testing.T) {
 	// Build backend
-	nfsServerConfig := drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
-			StorageDriverName: drivers.OntapNASStorageDriverName,
-		},
-		ManagementLIF: "10.0.0.4",
-		DataLIF:       "10.0.0.100",
-		SVM:           "svm1",
-		Username:      "admin",
-		Password:      "netapp",
+	mockPools := tu.GetFakePools()
+	volumes := make([]fake_storage.Volume, 0)
+	fakeConfig, err := fake.NewFakeStorageDriverConfigJSON("mock", config.File, mockPools, volumes)
+	if err != nil {
+		t.Fatal("Unable to construct config JSON.")
 	}
-	nfsDriver := ontap.NASStorageDriver{
-		Config: nfsServerConfig,
-	}
-	nfsServer := &storage.Backend{
-		Driver: &nfsDriver,
-		Name:   "nfs_server_1-" + nfsServerConfig.ManagementLIF,
+	nfsServer, err := fake.NewFakeStorageBackend(ctx(), fakeConfig, uuid.New().String())
+	if err != nil {
+		t.Fatalf("Unable to create fake storage backend: %v", err)
 	}
 
 	// Build Kubernetes Object
@@ -129,7 +118,8 @@ func TestBackend_Persistent(t *testing.T) {
 			Name: NameFix(nfsServer.Name),
 		},
 		BackendName: nfsServer.Name,
-		Online:      false,
+		Online:      true,
+		State:       "online",
 		Version:     "1",
 		Config: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent(ctx()).Config)),

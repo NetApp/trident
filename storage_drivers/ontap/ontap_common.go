@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -64,6 +64,28 @@ const (
 	QosPolicy             = "qosPolicy"
 	AdaptiveQosPolicy     = "adaptiveQosPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
+
+	SnapmirrorStatusIdle         = "idle"
+	SnapmirrorStatusTransferring = "transferring"
+	SnapmirrorStatusChecking     = "checking"
+	SnapmirrorStatusQuiescing    = "quiescing"
+	SnapmirrorStatusQuiesced     = "quiesced"
+	SnapmirrorStatusQueued       = "queued"
+	SnapmirrorStatusPreparing    = "preparing"
+	SnapmirrorStatusFinalizing   = "finalizing"
+	SnapmirrorStatusAborting     = "aborting"
+	SnapmirrorStatusBreaking     = "breaking"
+
+	SnapmirrorStateUninitialized = "uninitialized"
+	SnapmirrorStateSnapmirrored  = "snapmirrored"
+	SnapmirrorStateBroken        = "broken-off"
+
+	SnapmirrorPolicyTypeSync        = "sync_mirror"
+	SnapmirrorPolicyTypeAsync       = "async_mirror"
+	SnapmirrorPolicyTypeVault       = "vault"
+	SnapmirrorPolicyTypeMirrorVault = "mirror_vault"
+
+	SnapmirrorPolicyRuleAll = "all_source_snapshots"
 )
 
 //For legacy reasons, these strings mustn't change
@@ -311,7 +333,7 @@ func (t Telemetry) String() (out string) {
 	return
 }
 
-// String makes Telemetry satisfy the GoStringer interface.
+// GoString makes Telemetry satisfy the GoStringer interface.
 func (t Telemetry) GoString() string {
 	return t.String()
 }
@@ -1358,7 +1380,61 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 		}
 	}
 
+	// Validate replication options
+	if config.ReplicationPolicy != "" {
+		exists, err := api.SnapmirrorPolicyExists(ctx, config.ReplicationPolicy)
+		if err != nil {
+			return fmt.Errorf("failed to list replication policies: %v", err)
+		} else if !exists {
+			return fmt.Errorf("specified replicationPolicy %v does not exist", config.ReplicationPolicy)
+		}
+	}
+
+	if config.ReplicationSchedule != "" {
+		exists, err := api.JobScheduleExists(ctx, config.ReplicationSchedule)
+		if err != nil {
+			return fmt.Errorf("failed to list job schedules: %v", err)
+		} else if !exists {
+			return fmt.Errorf("specified replicationSchedule %v does not exist", config.ReplicationSchedule)
+		}
+	}
+
 	return nil
+}
+
+func ValidateReplicationPolicy(ctx context.Context, policyName string, api *api.Client) error {
+	if policyName == "" {
+		return nil
+	}
+
+	smPolicy, err := api.SnapmirrorPolicyGet(ctx, policyName)
+	if err != nil {
+		return fmt.Errorf("error getting snapmirror policy: %v", err)
+	}
+
+	switch smPolicy.Type() {
+	case SnapmirrorPolicyTypeSync:
+		// If the policy is synchronous we're fine
+		return nil
+	case SnapmirrorPolicyTypeAsync:
+		// If the policy is async, check below for correct rule
+		break
+	default:
+		return fmt.Errorf("unsupported mirror policy type %v, must be %v or %v", smPolicy.Type(),
+			SnapmirrorPolicyTypeSync, SnapmirrorPolicyTypeAsync)
+	}
+
+	// Check async policies for the "all_source_snapshots" rule
+	rulesList := smPolicy.SnapmirrorPolicyRules()
+	rules := rulesList.SnapmirrorPolicyRuleInfo()
+
+	for _, rule := range rules {
+		if rule.SnapmirrorLabel() == SnapmirrorPolicyRuleAll {
+			return nil
+		}
+	}
+	return fmt.Errorf("snapmirror policy %v is of type %v and is missing the %v rule", policyName,
+		SnapmirrorPolicyTypeAsync, SnapmirrorPolicyRuleAll)
 }
 
 func ValidateStoragePrefix(storagePrefix string) error {
@@ -1846,6 +1922,9 @@ func CreateOntapClone(
 	// Create the clone based on a snapshot
 	if useAsync {
 		cloneResponse, err := client.VolumeCloneCreateAsync(name, source, snapshot)
+		if err = api.GetError(ctx, cloneResponse, err); err != nil {
+			return fmt.Errorf("error creating clone: %v", err)
+		}
 		err = client.WaitForAsyncResponse(ctx, cloneResponse, maxFlexGroupCloneWait)
 		if err != nil {
 			return errors.New("waiting for async response failed")
@@ -3139,4 +3218,12 @@ func getSnapshotReserveFromOntap(
 	}
 
 	return snapshotReserveInt, nil
+}
+
+func parseVolumeHandle(volumeHandle string) (svm string, flexvol string, err error) {
+	tokens := strings.SplitN(volumeHandle, ":", 2)
+	if len(tokens) != 2 {
+		return "", "", fmt.Errorf("invalid volume handle")
+	}
+	return tokens[0], tokens[1], nil
 }

@@ -1601,8 +1601,8 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AWSNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.APIKey = drivers.REDACTED    // redact the API key
-	cloneConfig.SecretKey = drivers.REDACTED // redact the Secret key
+	cloneConfig.APIKey = drivers.REDACTED                                                                             // redact the API key
+	cloneConfig.SecretKey = drivers.REDACTED                                                                          // redact the Secret key
 	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }

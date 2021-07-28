@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 package crd
 
 import (
@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -123,6 +124,11 @@ func GetTestKubernetesClientset() *k8s_fake.Clientset {
 	return client
 }
 
+func GetTestSnapshotClientset() *fakesnapshots.Clientset {
+	client := fakesnapshots.NewSimpleClientset()
+	return client
+}
+
 func GetTestCrdClientset() *crdFake.Clientset {
 	client := crdFake.NewSimpleClientset()
 	return client
@@ -227,9 +233,10 @@ func TestCrdController(t *testing.T) {
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 	addCrdTestReactors(crdClient, testingCache)
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -389,9 +396,10 @@ func TestCrdController2(t *testing.T) {
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 	addCrdTestReactors(crdClient, testingCache)
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}

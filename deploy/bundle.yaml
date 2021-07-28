@@ -204,6 +204,10 @@ rules:
   - tridentsnapshots
   - tridentbackendconfigs
   - tridentbackendconfigs/status
+  - tridentmirrorrelationships
+  - tridentmirrorrelationships/status
+  - tridentsnapshotinfos
+  - tridentsnapshotinfos/status
   - tridentprovisioners # Required for Tprov
   - tridentprovisioners/status # Required to update Tprov's status section
   - tridentorchestrators # Required for Torc

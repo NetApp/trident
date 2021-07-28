@@ -5,6 +5,7 @@ package logger
 const (
 	ContextKeyRequestID     ContextKey = "requestID"
 	ContextKeyRequestSource ContextKey = "requestSource"
+	CRDControllerEvent      ContextKey = "crdControllerEvent"
 
 	ContextSourceCRD      = "CRD"
 	ContextSourceREST     = "REST"
@@ -14,8 +15,7 @@ const (
 	ContextSourceInternal = "Internal"
 	ContextSourcePeriodic = "Periodic"
 
-	CRDControllerEvent = "crdControllerEvent"
-	LogSource          = "logSource"
+	LogSource = "logSource"
 )
 
 // ContextKey is used for context.Context value. The value requires a key that is not primitive type.

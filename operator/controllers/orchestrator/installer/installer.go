@@ -30,14 +30,16 @@ import (
 
 const (
 	// CRD names
-	BackendCRDName       = "tridentbackends.trident.netapp.io"
-	BackendConfigCRDName = "tridentbackendconfigs.trident.netapp.io"
-	NodeCRDName          = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName  = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName   = "tridenttransactions.trident.netapp.io"
-	VersionCRDName       = "tridentversions.trident.netapp.io"
-	VolumeCRDName        = "tridentvolumes.trident.netapp.io"
-	SnapshotCRDName      = "tridentsnapshots.trident.netapp.io"
+	BackendCRDName            = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
+	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
+	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
+	NodeCRDName               = "tridentnodes.trident.netapp.io"
+	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
+	VersionCRDName            = "tridentversions.trident.netapp.io"
+	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
+	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
 
 	VolumeSnapshotCRDName        = "volumesnapshots.snapshot.storage.k8s.io"
 	VolumeSnapshotClassCRDName   = "volumesnapshotclasses.snapshot.storage.k8s.io"
@@ -83,6 +85,8 @@ var (
 	CRDnames = []string{
 		BackendCRDName,
 		BackendConfigCRDName,
+		MirrorRelationshipCRDName,
+		SnapshotInfoCRDName,
 		NodeCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,
@@ -542,6 +546,12 @@ func (i *Installer) createCRDs() error {
 		return err
 	}
 	if err = i.CreateCRD(BackendCRDName, k8sclient.GetBackendCRDYAML()); err != nil {
+		return err
+	}
+	if err = i.CreateCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML()); err != nil {
+		return err
+	}
+	if err = i.CreateCRD(SnapshotInfoCRDName, k8sclient.GetSnapshotInfoCRDYAML()); err != nil {
 		return err
 	}
 	if err = i.CreateCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML()); err != nil {

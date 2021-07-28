@@ -53,6 +53,11 @@ type VolumeConfig struct {
 	RequisiteTopologies       []map[string]string    `json:"requisiteTopologies,omitempty"`
 	PreferredTopologies       []map[string]string    `json:"preferredTopologies,omitempty"`
 	AllowedTopologies         []map[string]string    `json:"allowedTopologies,omitempty"`
+	MirrorHandle              string                 `json:"mirrorHandle,omitempty"`
+	// IsMirrorDestination is whether the volume is currently the destination in a mirror relationship
+	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
+	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
+	PeerVolumeHandle string `json:"requiredPeerVolumeHandle,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

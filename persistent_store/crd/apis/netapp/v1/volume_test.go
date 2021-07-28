@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -101,7 +101,7 @@ func TestVolume_Persistent(t *testing.T) {
 	}
 
 	// Build persistent object by calling TridentBackend.Persistent
-	peristent, err := volume.Persistent()
+	persistent, err := volume.Persistent()
 	if err != nil {
 		t.Fatal("Unable to construct TridentVolume persistent object: ", err)
 	}
@@ -110,8 +110,8 @@ func TestVolume_Persistent(t *testing.T) {
 	expected := vol.ConstructExternal()
 
 	// Compare
-	if !cmp.Equal(peristent, expected) {
-		if diff := cmp.Diff(peristent, expected); diff != "" {
+	if !cmp.Equal(persistent, expected) {
+		if diff := cmp.Diff(persistent, expected); diff != "" {
 			t.Fatalf("TridentVolume does not match expected result, difference (-expected +actual):%s", diff)
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"time"
 
+	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -47,9 +48,11 @@ const (
 	EventForceUpdate EventType = "forceupdate"
 	EventDelete      EventType = "delete"
 
-	ObjectTypeTridentBackendConfig ObjectType = "trident-backend-config"
-	ObjectTypeTridentBackend       ObjectType = "trident-backend"
-	ObjectTypeSecret               ObjectType = "secret"
+	ObjectTypeTridentBackendConfig      ObjectType = "trident-backend-config"
+	ObjectTypeTridentBackend            ObjectType = "trident-backend"
+	ObjectTypeSecret                    ObjectType = "secret"
+	ObjectTypeTridentMirrorRelationship ObjectType = "mirror-relationship"
+	ObjectTypeTridentSnapshotInfo       ObjectType = "snapshot-info"
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -85,7 +88,8 @@ type TridentCrdController struct {
 	orchestrator core.Orchestrator
 
 	// kubeClientset is a standard kubernetes clientset
-	kubeClientset kubernetes.Interface
+	kubeClientset     kubernetes.Interface
+	snapshotClientSet k8ssnapshots.Interface
 
 	// crdClientset is a clientset for our own API group
 	crdClientset tridentv1clientset.Interface
@@ -104,6 +108,14 @@ type TridentCrdController struct {
 	// TridentBackendConfig CRD handling
 	backendConfigsLister listers.TridentBackendConfigLister
 	backendConfigsSynced cache.InformerSynced
+
+	// TridentMirrorRelationship CRD handling
+	mirrorLister listers.TridentMirrorRelationshipLister
+	mirrorSynced cache.InformerSynced
+
+	// TridentSnapshotInfo CRD handling
+	snapshotInfoLister listers.TridentSnapshotInfoLister
+	snapshotInfoSynced cache.InformerSynced
 
 	// TridentNode CRD handling
 	nodesLister listers.TridentNodeLister
@@ -149,7 +161,7 @@ func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
 
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	Logx(ctx).Debug("Creating CRDv1 controller.")
 
@@ -158,13 +170,15 @@ func NewTridentCrdController(
 		return nil, err
 	}
 
-	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient, clients.TridentClient)
+	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient,
+		clients.SnapshotClient, clients.TridentClient)
 }
 
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
 	orchestrator core.Orchestrator, tridentNamespace string,
-	kubeClientset kubernetes.Interface, crdClientset tridentv1clientset.Interface,
+	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
+	crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
 
 	log.WithFields(log.Fields{
@@ -174,6 +188,7 @@ func newTridentCrdControllerImpl(
 	// Set resync to 0 sec so that reconciliation is on demand
 	crdInformerFactory := tridentinformers.NewSharedInformerFactory(crdClientset, time.Second*0)
 	crdInformer := tridentinformersv1.New(crdInformerFactory, tridentNamespace, nil)
+	allNSCrdInformer := tridentinformersv1.New(crdInformerFactory, corev1.NamespaceAll, nil)
 
 	// Set resync to 0 sec so that reconciliation is on demand
 	kubeInformerFactory := goinformer.NewSharedInformerFactory(kubeClientset, time.Second*0)
@@ -181,6 +196,8 @@ func newTridentCrdControllerImpl(
 
 	backendInformer := crdInformer.TridentBackends()
 	backendConfigInformer := crdInformer.TridentBackendConfigs()
+	mirrorInformer := allNSCrdInformer.TridentMirrorRelationships()
+	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
 	nodeInformer := crdInformer.TridentNodes()
 	storageClassInformer := crdInformer.TridentStorageClasses()
 	transactionInformer := crdInformer.TridentTransactions()
@@ -200,6 +217,7 @@ func newTridentCrdControllerImpl(
 	controller := &TridentCrdController{
 		orchestrator:          orchestrator,
 		kubeClientset:         kubeClientset,
+		snapshotClientSet:     snapshotClientset,
 		crdClientset:          crdClientset,
 		crdControllerStopChan: make(chan struct{}),
 		crdInformerFactory:    crdInformerFactory,
@@ -210,6 +228,10 @@ func newTridentCrdControllerImpl(
 		backendsSynced:        backendInformer.Informer().HasSynced,
 		backendConfigsLister:  backendConfigInformer.Lister(),
 		backendConfigsSynced:  backendConfigInformer.Informer().HasSynced,
+		mirrorLister:          mirrorInformer.Lister(),
+		mirrorSynced:          mirrorInformer.Informer().HasSynced,
+		snapshotInfoLister:    snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:    snapshotInfoInformer.Informer().HasSynced,
 		nodesLister:           nodeInformer.Lister(),
 		nodesSynced:           nodeInformer.Informer().HasSynced,
 		storageClassesLister:  storageClassInformer.Lister(),
@@ -239,17 +261,29 @@ func newTridentCrdControllerImpl(
 	})
 
 	backendInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		// Do not handle add backends here, otherwise it may results in continous
+		// Do not handle add backends here, otherwise it may results in continuous
 		// reconcile loops esp. in cases where backends are created as a result
 		// of a backend config.
 		UpdateFunc: func(oldCrd, newCrd interface{}) {
 			// When a CR has a finalizer those come as update events and not deletes,
 			// Do not handle any other update events other than backend deletion
-			// otherwise it may results in continous reconcile loops.
-			ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+			// otherwise it may results in continuous reconcile loops.
+			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 			controller.removeFinalizers(ctx, newCrd, false)
 		},
 		DeleteFunc: controller.deleteTridentBackendEvent,
+	})
+
+	mirrorInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addMirrorRelationship,
+		UpdateFunc: controller.updateMirrorRelationship,
+		DeleteFunc: controller.deleteMirrorRelationship,
+	})
+
+	snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addSnapshotInfo,
+		UpdateFunc: controller.updateSnapshotInfo,
+		DeleteFunc: controller.deleteSnapshotInfo,
 	})
 
 	secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -272,7 +306,7 @@ func newTridentCrdControllerImpl(
 	for _, informer := range informers {
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
-				ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 				controller.removeFinalizers(ctx, newCrd, false)
 			},
 		})
@@ -332,7 +366,9 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) {
 		c.transactionsSynced,
 		c.versionsSynced,
 		c.volumesSynced,
+		c.mirrorSynced,
 		c.snapshotsSynced,
+		c.snapshotInfoSynced,
 		c.secretsSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
 		log.Errorf("Error: %v", waitErr)
@@ -363,7 +399,7 @@ func (c *TridentCrdController) runWorker() {
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) addTridentBackendConfigEvent(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
 	Logx(ctx).Debug("TridentCrdController#addTridentBackendConfigEvent")
@@ -389,7 +425,7 @@ func (c *TridentCrdController) addTridentBackendConfigEvent(obj interface{}) {
 // it into a namespace/name string which is then put onto the work queue. This method
 // should *not* be passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateTridentBackendConfigEvent")
@@ -427,7 +463,7 @@ func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interfac
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) deleteTridentBackendConfigEvent(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteTridentBackendConfigEvent")
@@ -447,15 +483,13 @@ func (c *TridentCrdController) deleteTridentBackendConfigEvent(obj interface{}) 
 	}
 
 	c.workqueue.Add(keyItem)
-
-	return
 }
 
 // deleteTridentBackendEvent takes a TridentBackend resource and converts it into a namespace/name
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackend.
 func (c *TridentCrdController) deleteTridentBackendEvent(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteTridentBackendEvent")
@@ -490,15 +524,13 @@ func (c *TridentCrdController) deleteTridentBackendEvent(obj interface{}) {
 	}
 
 	c.workqueue.Add(keyItem)
-
-	return
 }
 
 // updateSecretEvent takes a Kubernetes secret resource and converts it
 // into a namespace/name string which is then put onto the work queue.
 // This method should *not* be passed resources of any type other than Secrets.
 func (c *TridentCrdController) updateSecretEvent(old, new interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateSecretEvent")
@@ -541,7 +573,7 @@ func (c *TridentCrdController) updateSecretEvent(old, new interface{}) {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the reconcileBackendConfig.
 func (c *TridentCrdController) processNextWorkItem() bool {
-	ctx := GenerateRequestContext(nil, "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	Logx(ctx).Debug("TridentCrdController#processNextWorkItem")
 
 	obj, shutdown := c.workqueue.Get()
@@ -592,6 +624,27 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		case ObjectTypeTridentBackendConfig:
 			if err := c.reconcileBackendConfig(&keyItem); err != nil {
 				return err
+			}
+		case ObjectTypeTridentMirrorRelationship:
+			if err := c.reconcileTMR(&keyItem); err != nil {
+				if utils.IsReconcileDeferredError(err) {
+					// If it is a deferred error, then do not remove the object from the queue
+					return nil
+				} else if utils.IsReconcileIncompleteError(err) {
+					// If the reconcile is incomplete, then do not remove the object from the queue
+					return nil
+				} else {
+					return err
+				}
+			}
+		case ObjectTypeTridentSnapshotInfo:
+			if err := c.reconcileTSI(&keyItem); err != nil {
+				if utils.IsReconcileDeferredError(err) {
+					// If it is a deferred error, then do not remove the object from the queue
+					return nil
+				} else {
+					return err
+				}
 			}
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
@@ -887,7 +940,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 				"Also encountered error while updating the status: %v", err, statusErr)
 		}
 
-		return fmt.Errorf("encountered error while retriving the deletion policy :%v", err)
+		return fmt.Errorf("encountered error while retrieving the deletion policy :%v", err)
 	}
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1175,7 +1228,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		_ = c.orchestrator.RemoveBackendConfigRef(ctx, backendConfig.Status.BackendInfo.BackendUUID,
 			string(backendConfig.UID))
 	} else if backend.State == string(storage.Deleting) {
-		message = fmt.Sprintf("Backend is in a deleting state, cannot proceed with the TridentBackendConfig deletion. ")
+		message = "Backend is in a deleting state, cannot proceed with the TridentBackendConfig deletion. "
 		phase = tridentv1.PhaseDeleting
 
 		Logx(ctx).WithFields(logFields).Errorf(message + "Re-adding this work item back to the queue.")
@@ -1537,6 +1590,14 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			return c.removeSnapshotFinalizers(ctx, crd)
 		}
+	case *tridentv1.TridentMirrorRelationship:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			return c.removeTMRFinalizers(ctx, crd)
+		}
+	case *tridentv1.TridentSnapshotInfo:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			return c.removeTSIFinalizers(ctx, crd)
+		}
 	default:
 		Logx(ctx).Warnf("unexpected type %T", crd)
 		return fmt.Errorf("unexpected type %T", crd)
@@ -1732,6 +1793,56 @@ func (c *TridentCrdController) removeSnapshotFinalizers(ctx context.Context, sna
 		snapCopy := snap.DeepCopy()
 		snapCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentSnapshots(snap.Namespace).Update(ctx, snapCopy, updateOpts)
+		if err != nil {
+			Logx(ctx).Errorf("Problem removing finalizers: %v", err)
+			return
+		}
+	} else {
+		Logx(ctx).Debug("No finalizers to remove.")
+	}
+
+	return
+}
+
+// removeTMRFinalizers removes Trident's finalizers from TridentMirrorRelationship CRs
+func (c *TridentCrdController) removeTMRFinalizers(ctx context.Context, tmr *tridentv1.TridentMirrorRelationship,
+) (err error) {
+
+	Logx(ctx).WithFields(log.Fields{
+		"tmr.ResourceVersion":              tmr.ResourceVersion,
+		"tmr.ObjectMeta.DeletionTimestamp": tmr.ObjectMeta.DeletionTimestamp,
+	}).Debug("removeTMRFinalizers")
+
+	if tmr.HasTridentFinalizers() {
+		Logx(ctx).Debug("Has finalizers, removing them.")
+		tmrCopy := tmr.DeepCopy()
+		tmrCopy.RemoveTridentFinalizers()
+		_, err = c.crdClientset.TridentV1().TridentMirrorRelationships(tmr.Namespace).Update(ctx, tmrCopy, updateOpts)
+		if err != nil {
+			Logx(ctx).Errorf("Problem removing finalizers: %v", err)
+			return
+		}
+	} else {
+		Logx(ctx).Debug("No finalizers to remove.")
+	}
+
+	return
+}
+
+// removeTSIFinalizers removes Trident's finalizers from TridentSnapshotInfo CRs
+func (c *TridentCrdController) removeTSIFinalizers(ctx context.Context, tsi *tridentv1.TridentSnapshotInfo,
+) (err error) {
+
+	Logx(ctx).WithFields(log.Fields{
+		"tsi.ResourceVersion":              tsi.ResourceVersion,
+		"tsi.ObjectMeta.DeletionTimestamp": tsi.ObjectMeta.DeletionTimestamp,
+	}).Debug("removeTSIFinalizers")
+
+	if tsi.HasTridentFinalizers() {
+		Logx(ctx).Debug("Has finalizers, removing them.")
+		tsiCopy := tsi.DeepCopy()
+		tsiCopy.RemoveTridentFinalizers()
+		_, err = c.crdClientset.TridentV1().TridentSnapshotInfos(tsi.Namespace).Update(ctx, tsiCopy, updateOpts)
 		if err != nil {
 			Logx(ctx).Errorf("Problem removing finalizers: %v", err)
 			return

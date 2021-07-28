@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 )
 
@@ -85,8 +86,9 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Create the volume config
+	annotations := processPVCAnnotations(pvc, fsType)
 	volumeConfig := getVolumeConfig(ctx, pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
-		processPVCAnnotations(pvc, fsType), sc, requisiteTopology, preferredTopology)
+		annotations, sc, requisiteTopology, preferredTopology)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
 	if cloneSourcePVName, err := p.getCloneSourceInfo(ctx, pvc); err != nil {
@@ -95,7 +97,67 @@ func (p *Plugin) GetVolumeConfig(
 		volumeConfig.CloneSourceVolume = cloneSourcePVName
 	}
 
+	// Check for TMRs pointing to this PVC
+	mirrorRelationshipName := getAnnotation(annotations, AnnMirrorRelationship)
+	volumeConfig.PeerVolumeHandle, err = p.getPVCMirrorPeer(pvc, mirrorRelationshipName)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Issue discovering potential mirroring peers for PVC %v", pvc.Name)
+		return nil, err
+	}
+	if mirrorRelationshipName != "" || volumeConfig.PeerVolumeHandle != "" {
+		volumeConfig.IsMirrorDestination = true
+	}
 	return volumeConfig, nil
+}
+
+// getPVCMirrorPeer returns the spec.remoteVolumeHandle of the TMR pointing to this PVC
+// or returns an error if the TMR cannot be discovered
+func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelationshipName string) (string, error) {
+	var relationship *netappv1.TridentMirrorRelationship
+	if mirrorRelationshipName != "" {
+		relationshipObj, exists, err := p.mrIndexer.GetByKey(pvc.Namespace + "/" + mirrorRelationshipName)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			return "", fmt.Errorf("the TMR %s for PVC %s does not exist", mirrorRelationshipName, pvc.Name)
+		}
+		relationship = relationshipObj.(*netappv1.TridentMirrorRelationship)
+	}
+	// If TMR is pointing to PVC but PVC is missing annotation, we search for a single TMR pointing to the PVC
+	relationships := p.mrIndexer.List()
+	for index := range relationships {
+		rel := relationships[index].(*netappv1.TridentMirrorRelationship)
+		mappings := rel.Spec.VolumeMappings
+		for index := range mappings {
+			volMap := mappings[index]
+			if volMap.LocalPVCName == pvc.Name && rel.Namespace == pvc.Namespace {
+				if relationship == nil {
+					relationship = rel
+				} else if mirrorRelationshipName != "" && mirrorRelationshipName != relationship.Name {
+					return "", fmt.Errorf("a different TMR refers to the PVC %v", pvc.Name)
+				} else if mirrorRelationshipName == "" {
+					return "", fmt.Errorf("multiple TMRs refer to PVC %v", pvc.Name)
+				}
+			}
+		}
+	}
+
+	if relationship != nil {
+		// If the desired state is established and a remote volume handle is set
+		if len(relationship.Spec.VolumeMappings) > 0 && relationship.Spec.VolumeMappings[0].RemoteVolumeHandle != "" {
+			if relationship.Spec.MirrorState == netappv1.MirrorStateEstablished ||
+				relationship.Spec.MirrorState == netappv1.MirrorStateReestablished {
+
+				remoteVolumeHandle := relationship.Spec.VolumeMappings[0].RemoteVolumeHandle
+				if remoteVolumeHandle == "" {
+					return "", fmt.Errorf("PVC '%v' linked to invalid TMR '%v'", pvc.Name, relationship.Name)
+				}
+				return remoteVolumeHandle, nil
+			}
+		}
+	}
+	return "", nil
 }
 
 // getPVCForCSIVolume accepts the name of a volume being requested by the CSI provisioner,

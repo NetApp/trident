@@ -14,8 +14,10 @@ type TridentV1Interface interface {
 	RESTClient() rest.Interface
 	TridentBackendsGetter
 	TridentBackendConfigsGetter
+	TridentMirrorRelationshipsGetter
 	TridentNodesGetter
 	TridentSnapshotsGetter
+	TridentSnapshotInfosGetter
 	TridentStorageClassesGetter
 	TridentTransactionsGetter
 	TridentVersionsGetter
@@ -35,12 +37,20 @@ func (c *TridentV1Client) TridentBackendConfigs(namespace string) TridentBackend
 	return newTridentBackendConfigs(c, namespace)
 }
 
+func (c *TridentV1Client) TridentMirrorRelationships(namespace string) TridentMirrorRelationshipInterface {
+	return newTridentMirrorRelationships(c, namespace)
+}
+
 func (c *TridentV1Client) TridentNodes(namespace string) TridentNodeInterface {
 	return newTridentNodes(c, namespace)
 }
 
 func (c *TridentV1Client) TridentSnapshots(namespace string) TridentSnapshotInterface {
 	return newTridentSnapshots(c, namespace)
+}
+
+func (c *TridentV1Client) TridentSnapshotInfos(namespace string) TridentSnapshotInfoInterface {
+	return newTridentSnapshotInfos(c, namespace)
 }
 
 func (c *TridentV1Client) TridentStorageClasses(namespace string) TridentStorageClassInterface {

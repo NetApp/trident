@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -23,6 +23,94 @@ type TridentCRD interface {
 	GetFinalizers() []string
 	HasTridentFinalizers() bool
 	RemoveTridentFinalizers()
+}
+
+// TridentSnapshotInfo maps a k8s snapshot to the Trident internal snapshot.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentSnapshotInfo struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for the Trident Backend
+	Spec   TridentSnapshotInfoSpec   `json:"spec"`
+	Status TridentSnapshotInfoStatus `json:"status"`
+}
+
+// TridentSnapshotInfoList is a list of TridentSnapshotInfo objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentSnapshotInfoList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentSnapshotInfo objects
+	Items []*TridentSnapshotInfo `json:"items"`
+}
+
+// TridentSnapshotInfoSpec defines the desired state of TridentSnapshotInfo
+type TridentSnapshotInfoSpec struct {
+	SnapshotName string `json:"snapshotName"`
+}
+
+// TridentSnapshotInfoStatus defines the observed state of TridentSnapshotInfo
+type TridentSnapshotInfoStatus struct {
+	SnapshotHandle     string `json:"snapshotHandle"`
+	LastTransitionTime string `json:"lastTransitionTime"`
+	ObservedGeneration int    `json:"observedGeneration"`
+}
+
+// TridentMirrorRelationship defines a Trident Mirror relationship.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentMirrorRelationship struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for the Trident Backend
+	Spec   TridentMirrorRelationshipSpec   `json:"spec"`
+	Status TridentMirrorRelationshipStatus `json:"status"`
+}
+
+// TridentMirrorRelationshipList is a list of TridentBackend objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentMirrorRelationshipList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentMirrorRelationship objects
+	Items []*TridentMirrorRelationship `json:"items"`
+}
+
+// TridentMirrorRelationshipSpec defines the desired state of TridentMirrorRelationship
+type TridentMirrorRelationshipSpec struct {
+	MirrorState           string                                    `json:"state"`
+	ReplicationPolicyName string                                    `json:"replicationPolicyName"`
+	VolumeMappings        []*TridentMirrorRelationshipVolumeMapping `json:"volumeMappings"`
+}
+type TridentMirrorRelationshipVolumeMapping struct {
+	RemoteVolumeHandle   string `json:"remoteVolumeHandle"`
+	LocalPVCName         string `json:"localPVCName"`
+	LatestSnapshotHandle string `json:"latestSnapshotHandle"`
+}
+type TridentMirrorRelationshipCondition struct {
+	MirrorState        string `json:"state"`
+	Message            string `json:"message"`
+	LastTransitionTime string `json:"lastTransitionTime"`
+	ObservedGeneration int    `json:"observedGeneration"`
+	LocalVolumeHandle  string `json:"localVolumeHandle"`
+	LocalPVCName       string `json:"localPVCName"`
+	RemoteVolumeHandle string `json:"remoteVolumeHandle"`
+}
+
+// TridentMirrorRelationshipStatus defines the observed state of TridentMirrorRelationship
+type TridentMirrorRelationshipStatus struct {
+	Conditions []*TridentMirrorRelationshipCondition `json:"conditions"`
 }
 
 // TridentBackendConfig defines a Trident backend.

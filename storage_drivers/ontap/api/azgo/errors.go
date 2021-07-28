@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
@@ -28,3 +28,6 @@ const EINVALIDINPUTERROR = "13115"
 const EDUPLICATEENTRY = "13130"
 const EAGGRDOESNOTEXIST = "14420"
 const EOBJECTNOTFOUND = "15661"
+const EDEST_ISNOT_DP_VOLUME = "17114"
+const ENOTRANSFERINPROGRESS = "17130"
+const ETRANSFERINPROGRESS = "17131"

@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
@@ -25,15 +26,16 @@ import (
 )
 
 type Clients struct {
-	RestConfig    *rest.Config
-	KubeClient    *kubernetes.Clientset
-	K8SClient     Interface
-	TprovClient   *tprov.Clientset
-	TorcClient    *torc.Clientset
-	TridentClient *tridentv1clientset.Clientset
-	K8SVersion    *k8sversion.Info
-	Namespace     string
-	InK8SPod      bool
+	RestConfig     *rest.Config
+	KubeClient     *kubernetes.Clientset
+	SnapshotClient *k8ssnapshots.Clientset
+	K8SClient      Interface
+	TprovClient    *tprov.Clientset
+	TorcClient     *torc.Clientset
+	TridentClient  *tridentv1clientset.Clientset
+	K8SVersion     *k8sversion.Info
+	Namespace      string
+	InK8SPod       bool
 }
 
 const (
@@ -77,6 +79,11 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 
 	// Create the Kubernetes client
 	clients.KubeClient, err = kubernetes.NewForConfig(clients.RestConfig)
+	if err != nil {
+		return nil, err
+	}
+	// Create the k8s snapshot client
+	clients.SnapshotClient, err = k8ssnapshots.NewForConfig(clients.RestConfig)
 	if err != nil {
 		return nil, err
 	}

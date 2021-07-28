@@ -119,7 +119,9 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
+"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
+"tridentsnapshotinfos/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -186,7 +188,9 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status"]
+"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
+"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
+"tridentsnapshotinfos/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -1225,6 +1229,14 @@ func GetBackendConfigCRDYAML() string {
 	return tridentBackendConfigCRDYAMLv1
 }
 
+func GetMirrorRelationshipCRDYAML() string {
+	return tridentMirrorRelationshipCRDYAMLv1
+}
+
+func GetSnapshotInfoCRDYAML() string {
+	return tridentSnapshotInfoCRDYAMLv1
+}
+
 func GetStorageClassCRDYAML() string {
 	return tridentStorageClassCRDYAMLv1
 }
@@ -1252,6 +1264,7 @@ func GetOrchestratorCRDYAML() string {
 /*
 kubectl delete crd tridentversions.trident.netapp.io --wait=false
 kubectl delete crd tridentbackends.trident.netapp.io --wait=false
+kubectl delete crd tridentmirrorrelationships.trident.netapp.io --wait=false
 kubectl delete crd tridentbackendconfigs.trident.netapp.io --wait=false
 kubectl delete crd tridentstorageclasses.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumes.trident.netapp.io --wait=false
@@ -1261,6 +1274,7 @@ kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentmirrorrelationships.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackendconfigs.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentstorageclasses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1270,6 +1284,7 @@ kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizer
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
+kubectl delete crd tridentmirrorrelationships.trident.netapp.io
 kubectl delete crd tridentbackendconfigs.trident.netapp.io
 kubectl delete crd tridentstorageclasses.trident.netapp.io
 kubectl delete crd tridentvolumes.trident.netapp.io
@@ -1348,6 +1363,158 @@ spec:
     categories:
     - trident
     - trident-internal`
+
+const tridentMirrorRelationshipCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentmirrorrelationships.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                state:
+                  type: string
+                  enum:
+                  - ""
+                  - promoted
+                  - established
+                  - reestablished
+                volumeMappings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      latestSnapshotHandle:
+                        type: string
+                      localPVCName:
+                        type: string
+                      remoteVolumeHandle:
+                        type: string
+                    required:
+                    - localPVCName
+                  minItems: 1
+                  maxItems: 1
+                  type: array
+              required:
+              - volumeMappings
+            status:
+              type: object
+              properties:
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                      localPVCName:
+                        type: string
+                      localVolumeHandle:
+                        type: string
+                      remoteVolumeHandle:
+                        type: string
+                      message:
+                        type: string
+                      observedGeneration:
+                        type: integer
+                      state:
+                        type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - description: The desired mirror state
+        jsonPath: .spec.state
+        name: Desired State
+        type: string
+      - description: Local PVCs for the mirror
+        jsonPath: .spec.volumeMappings[*].localPVCName
+        name: Local PVC
+        type: string
+      - description: Status
+        jsonPath: .status.conditions[*].state
+        name: Actual state
+        type: string
+      - description: Status message
+        jsonPath: .status.conditions[*].message
+        name: Message
+        type: string
+  scope: Namespaced
+  names:
+    plural: tridentmirrorrelationships
+    singular: tridentmirrorrelationship
+    kind: TridentMirrorRelationship
+    shortNames:
+    - tmr
+    - tmrelationship
+    - tmirrorrelationship
+    categories:
+    - trident
+    - trident-internal
+    - trident-external`
+
+const tridentSnapshotInfoCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentsnapshotinfos.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                snapshotName:
+                  type: string
+              required:
+              - snapshotName
+            status:
+              type: object
+              properties:
+                lastTransitionTime:
+                  type: string
+                observedGeneration:
+                  type: integer
+                snapshotHandle:
+                  type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Snapshot Handle
+          type: string
+          description: VolumeSnapshotContent Handle
+          priority: 0
+          jsonPath: .status.snapshotHandle
+  scope: Namespaced
+  names:
+    plural: tridentsnapshotinfos
+    singular: tridentsnapshotinfo
+    kind: TridentSnapshotInfo
+    shortNames:
+    - tsi
+    - tsinfo
+    - tsnapshotinfo
+    categories:
+    - trident
+    - trident-internal
+    - trident-external
+`
 
 const tridentBackendConfigCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
@@ -1616,6 +1783,8 @@ spec:
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
+	"\n---" + tridentMirrorRelationshipCRDYAMLv1 +
+	"\n---" + tridentSnapshotInfoCRDYAMLv1 +
 	"\n---" + tridentStorageClassCRDYAMLv1 +
 	"\n---" + tridentVolumeCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +

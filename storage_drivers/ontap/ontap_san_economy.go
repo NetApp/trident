@@ -1343,7 +1343,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	// Create the flexvol
 	volCreateResponse, err := d.API.VolumeCreate(
 		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
-		tieringPolicy, "", api.QosPolicyGroup{}, encrypt, snapshotReserveInt)
+		tieringPolicy, "", api.QosPolicyGroup{}, encrypt, snapshotReserveInt, false)
 
 	if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)

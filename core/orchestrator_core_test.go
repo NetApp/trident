@@ -1916,6 +1916,31 @@ func TestAddVolumeRecovery(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
+	// Add a single backend of fake
+	// create volume with relationship annotation added
+	// witness failure
+	const (
+		backendName      = "addRecoveryBackend"
+		scName           = "addRecoveryBackendSC"
+		fullVolumeName   = "addRecoveryVolumeFull"
+		txOnlyVolumeName = "addRecoveryVolumeTxOnly"
+	)
+	orchestrator := getOrchestrator()
+	prepRecoveryTest(t, orchestrator, backendName, scName)
+	// It's easier to add the volume and then reinject the transaction begin
+	// afterwards
+	fullVolumeConfig := tu.GenerateVolumeConfig(fullVolumeName, 50, scName,
+		config.File)
+	fullVolumeConfig.PeerVolumeHandle = "fakesvm:fakevolume"
+	fullVolumeConfig.IsMirrorDestination = true
+	_, err := orchestrator.AddVolume(ctx(), fullVolumeConfig)
+	if err == nil || !strings.Contains(err.Error(), "no suitable") {
+		t.Fatal("Unexpected failure")
+	}
+	cleanup(t, orchestrator)
+}
+
 func TestDeleteVolumeRecovery(t *testing.T) {
 	const (
 		backendName      = "deleteRecoveryBackend"

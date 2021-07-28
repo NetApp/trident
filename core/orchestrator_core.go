@@ -1675,6 +1675,12 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 		backend = pool.Backend
 
+		// Mirror destinations can only be placed on mirroring enabled backends
+		if volumeConfig.IsMirrorDestination && !backend.CanMirror() {
+			Logc(ctx).Debugf("MirrorDestinations can only be placed on mirroring enabled backends")
+			ineligibleBackends[backend.BackendUUID] = struct{}{}
+		}
+
 		// If the pool's backend cannot possibly work, skip trying
 		if _, ok := ineligibleBackends[backend.BackendUUID]; ok {
 			continue
@@ -2921,7 +2927,18 @@ func (o *TridentOrchestrator) PublishVolume(ctx context.Context, volumeName stri
 		return err
 	}
 
-	return backend.PublishVolume(ctx, volume.Config, publishInfo)
+	err = backend.PublishVolume(ctx, volume.Config, publishInfo)
+	if err != nil {
+		return err
+	}
+	if o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": volume.Config.Name,
+		}).Error("Unable to update the volume in persistent store.")
+		return err
+	}
+
+	return nil
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
@@ -4173,4 +4190,104 @@ func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
 func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
 	ctxSource := ctx.Value(ContextKeyRequestSource)
 	return ctxSource != nil && ctxSource == ContextSourceCRD
+}
+
+// EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend
+func (o *TridentOrchestrator) EstablishMirror(
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+) (err error) {
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_establish", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+	return backend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+}
+
+// ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
+func (o *TridentOrchestrator) ReestablishMirror(
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+) (err error) {
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_reestablish", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+	return backend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+}
+
+// PromoteMirror makes the local volume the primary
+func (o *TridentOrchestrator) PromoteMirror(
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
+) (waitingForSnapshot bool, err error) {
+
+	if o.bootstrapError != nil {
+		return false, o.bootstrapError
+	}
+	defer recordTiming("mirror_promote", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return false, err
+	}
+	return backend.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
+}
+
+// GetMirrorStatus returns the current status of the mirror relationship
+func (o *TridentOrchestrator) GetMirrorStatus(
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+) (status string, err error) {
+
+	if o.bootstrapError != nil {
+		return "", o.bootstrapError
+	}
+	defer recordTiming("mirror_status", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return "", err
+	}
+
+	return backend.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
+}
+
+func (o *TridentOrchestrator) CanBackendMirror(
+	ctx context.Context, backendUUID string,
+) (capable bool, err error) {
+
+	if o.bootstrapError != nil {
+		return false, o.bootstrapError
+	}
+	defer recordTiming("mirror_capable", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return false, err
+	}
+	return backend.CanMirror(), nil
 }

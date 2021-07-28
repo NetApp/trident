@@ -73,6 +73,14 @@ type Driver interface {
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
+// Mirrorer provides a common interface for backends that support mirror replication
+type Mirrorer interface {
+	EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error
+	ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error
+	PromoteMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string) (bool, error)
+	GetMirrorStatus(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, error)
+}
+
 type Backend struct {
 	Driver             Driver
 	Name               string
@@ -436,6 +444,12 @@ func (b *Backend) PublishVolume(
 
 	// Ensure backend is ready
 	if err := b.ensureOnlineOrDeleting(ctx); err != nil {
+		return err
+	}
+	// This is to ensure all backend volume mounting has occurred
+	// FIXME(ameade): Should probably be renamed from createfollowup
+	if err := b.Driver.CreateFollowup(ctx, volConfig); err != nil {
+		// TODO: Should this error be obfuscated to a more general error?
 		return err
 	}
 
@@ -1041,4 +1055,52 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 	}
 
 	return driverConfig.InjectSecrets(secretMap)
+}
+
+func (b *Backend) EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
+	mirrorDriver, ok := b.Driver.(Mirrorer)
+	if !ok {
+		return utils.UnsupportedError(
+			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.Driver.Name()))
+	}
+
+	return mirrorDriver.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+}
+
+func (b *Backend) PromoteMirror(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
+) (bool, error) {
+
+	mirrorDriver, ok := b.Driver.(Mirrorer)
+	if !ok {
+		return false, utils.UnsupportedError(
+			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.Driver.Name()))
+	}
+
+	return mirrorDriver.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
+}
+
+func (b *Backend) ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
+	mirrorDriver, ok := b.Driver.(Mirrorer)
+	if !ok {
+		return utils.UnsupportedError(
+			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.Driver.Name()))
+	}
+
+	return mirrorDriver.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+}
+
+func (b *Backend) GetMirrorStatus(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, error) {
+	mirrorDriver, ok := b.Driver.(Mirrorer)
+	if !ok {
+		return "", utils.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.Driver.Name()))
+	}
+	return mirrorDriver.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
+
+}
+
+func (b *Backend) CanMirror() bool {
+	_, ok := b.Driver.(Mirrorer)
+	return ok
 }

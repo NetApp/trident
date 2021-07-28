@@ -20,6 +20,7 @@ type Volume struct {
 	TieringPolicy   string
 	UnixPermissions string
 	UUID            string
+	DPVolume        bool
 }
 
 type Volumes []Volume

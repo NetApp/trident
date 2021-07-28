@@ -55,6 +55,7 @@ const (
 	AnnNotManaged         = annPrefix + "/notManaged"
 	AnnImportOriginalName = annPrefix + "/importOriginalName"
 	AnnImportBackendUUID  = annPrefix + "/importBackendUUID"
+	AnnMirrorRelationship = annPrefix + "/mirrorRelationship"
 )
 
 var features = map[helpers.Feature]*utils.Version{

@@ -285,18 +285,18 @@ func (d *SANStorageDriver) Create(
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
 	Logc(ctx).WithFields(log.Fields{
-		"name":            name,
-		"lunSize":         lunSize,
-		"flexvolSize":     flexvolBufferSize,
-		"spaceAllocation": spaceAllocation,
-		"spaceReserve":    spaceReserve,
-		"snapshotPolicy":  snapshotPolicy,
-		"snapshotReserve": snapshotReserveInt,
-		"unixPermissions": unixPermissions,
-		"snapshotDir":     snapshotDir,
-		"exportPolicy":    exportPolicy,
-		"securityStyle":   securityStyle,
-		"encryption":      enableEncryption,
+		"name":              name,
+		"lunSize":           lunSize,
+		"flexvolSize":       flexvolBufferSize,
+		"spaceAllocation":   spaceAllocation,
+		"spaceReserve":      spaceReserve,
+		"snapshotPolicy":    snapshotPolicy,
+		"snapshotReserve":   snapshotReserveInt,
+		"unixPermissions":   unixPermissions,
+		"snapshotDir":       snapshotDir,
+		"exportPolicy":      exportPolicy,
+		"securityStyle":     securityStyle,
+		"encryption":        enableEncryption,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")
@@ -326,7 +326,7 @@ func (d *SANStorageDriver) Create(
 		// Create the volume
 		volCreateResponse, err := d.API.VolumeCreate(
 			ctx, name, aggregate, volumeSize, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle,
-			tieringPolicy, labels, api.QosPolicyGroup{}, enableEncryption, snapshotReserveInt)
+			tieringPolicy, labels, api.QosPolicyGroup{}, enableEncryption, snapshotReserveInt, false)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -1131,7 +1131,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"error": err,
-			"LUN":  lunPath(name),
+			"LUN":   lunPath(name),
 		}).Error("Error getting LUN.")
 		return fmt.Errorf("error occurred when getting the LUN")
 	}
@@ -1164,10 +1164,10 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	if sameLUNSize && sameFlexvolSize {
 		Logc(ctx).WithFields(log.Fields{
-			"requestedSize":     requestedSizeBytes,
-			"currentLUNSize":    currentLunSize,
-			"name":              name,
-			"delta":             tridentconfig.SANResizeDelta,
+			"requestedSize":  requestedSizeBytes,
+			"currentLUNSize": currentLunSize,
+			"name":           name,
+			"delta":          tridentconfig.SANResizeDelta,
 		}).Info("Requested size and current LUN size are within the delta and therefore considered the same size" +
 			" for SAN resize operations.")
 		volConfig.Size = strconv.FormatUint(uint64(currentLunSize), 10)
@@ -1196,10 +1196,10 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		lunMaxSize := lunGeometry.Result.MaxResizeSize()
 		if lunMaxSize < int(requestedSizeBytes) {
 			Logc(ctx).WithFields(log.Fields{
-				"error":      err,
-				"requestedSizeBytes":  requestedSizeBytes,
-				"lunMaxSize": lunMaxSize,
-				"lunPath":    lunPath(name),
+				"error":              err,
+				"requestedSizeBytes": requestedSizeBytes,
+				"lunMaxSize":         lunMaxSize,
+				"lunPath":            lunPath(name),
 			}).Error("Requested size is larger than LUN's maximum capacity.")
 			return fmt.Errorf("volume resize failed as requested size is larger than LUN's maximum capacity")
 		}

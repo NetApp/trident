@@ -1285,7 +1285,7 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 func (d Client) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
-	snapshotReserve int,
+	snapshotReserve int, dpVolume bool,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -1293,7 +1293,6 @@ func (d Client) VolumeCreate(
 		SetSize(size).
 		SetSpaceReserve(spaceReserve).
 		SetSnapshotPolicy(snapshotPolicy).
-		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
 		SetEncrypt(encrypt).
@@ -1301,6 +1300,12 @@ func (d Client) VolumeCreate(
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
+	}
+
+	if dpVolume {
+		request.SetVolumeType("DP")
+	} else {
+		request.SetUnixPermissions(unixPermissions)
 	}
 
 	// Allowed ONTAP tiering Policy values
@@ -1542,6 +1547,22 @@ func (d Client) VolumeGet(name string) (*azgo.VolumeAttributesType, error) {
 		SetName(azgo.VolumeNameType(name)).
 		SetStyleExtended("flexvol")
 	return d.volumeGetIterCommon(name, queryVolIDAttrs)
+}
+
+// VolumeGetType returns the volume type such as RW or DP
+func (d Client) VolumeGetType(name string) (string, error) {
+
+	// Limit the Flexvols to the one matching the name
+	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
+		SetName(azgo.VolumeNameType(name)).
+		SetStyleExtended("flexvol")
+	volGet, err := d.volumeGetIterCommon(name, queryVolIDAttrs)
+	if err != nil {
+		return "", err
+	}
+
+	attributes := volGet.VolumeIdAttributes()
+	return attributes.Type(), nil
 }
 
 func (d Client) volumeGetIterCommon(name string,
@@ -2546,6 +2567,28 @@ func (d Client) SnapmirrorGetDestinationIterRequest(relGroupType string) (*azgo.
 	return response, err
 }
 
+// GetPeeredVservers returns a list of vservers peered with the vserver for this backend
+func (d Client) GetPeeredVservers(ctx context.Context) ([]string, error) {
+	peers := *new([]string)
+
+	query := &azgo.VserverPeerGetIterRequestQuery{}
+	info := azgo.VserverPeerInfoType{}
+	info.SetVserver(d.config.SVM)
+	query.SetVserverPeerInfo(info)
+
+	response, err := azgo.NewVserverPeerGetIterRequest().
+		SetQuery(*query).
+		ExecuteUsing(d.zr)
+
+	if response.Result.AttributesListPtr != nil {
+		for _, peerInfo := range response.Result.AttributesListPtr.VserverPeerInfo() {
+			peeredVserver := peerInfo.PeerVserver()
+			peers = append(peers, peeredVserver)
+		}
+	}
+	return peers, err
+}
+
 // IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
 func (d Client) IsVserverDRDestination(ctx context.Context) (bool, error) {
 
@@ -2612,6 +2655,99 @@ func (d Client) isVserverInSVMDR(ctx context.Context) bool {
 	return isSVMDRSource || isSVMDRDestination
 }
 
+func (d Client) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorGetResponse, error) {
+
+	query := azgo.NewSnapmirrorGetRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	return query.ExecuteUsing(d.zr)
+}
+
+func (d Client) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.
+	SnapmirrorCreateResponse, error) {
+
+	query := azgo.NewSnapmirrorCreateRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	if repPolicy != "" {
+		query.SetPolicy(repPolicy)
+	}
+	if repSchedule != "" {
+		query.SetSchedule(repSchedule)
+	}
+
+	return query.ExecuteUsing(d.zr)
+}
+
+func (d Client) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorInitializeResponse, error) {
+
+	query := azgo.NewSnapmirrorInitializeRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	return query.ExecuteUsing(d.zr)
+}
+
+func (d Client) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorResyncResponse, error) {
+
+	query := azgo.NewSnapmirrorResyncRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	response, err := query.ExecuteUsing(d.zr)
+	err = d.WaitForAsyncResponse(GenerateRequestContext(nil, "", ""), *response, 60)
+	return response, err
+}
+
+func (d Client) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorBreakResponse, error) {
+
+	query := azgo.NewSnapmirrorBreakRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	return query.ExecuteUsing(d.zr)
+}
+
+func (d Client) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorQuiesceResponse, error) {
+
+	query := azgo.NewSnapmirrorQuiesceRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	return query.ExecuteUsing(d.zr)
+}
+
+func (d Client) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
+	SnapmirrorAbortResponse, error) {
+
+	query := azgo.NewSnapmirrorAbortRequest()
+	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVserver(localSVMName)
+	query.SetSourceVolume(remoteFlexvolName)
+	query.SetSourceVserver(remoteSVMName)
+
+	return query.ExecuteUsing(d.zr)
+}
+
 // SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 // Intended to be used on the source vserver
 func (d Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
@@ -2651,8 +2787,7 @@ func (d Client) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName st
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
 
-	response, err := query.ExecuteUsing(d.zr)
-	return response, err
+	return query.ExecuteUsing(d.zr)
 }
 
 // Intended to be from the destination vserver
@@ -2665,8 +2800,7 @@ func (d Client) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolNa
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
-	response, err := query.ExecuteUsing(d.zr)
-	return response, err
+	return query.ExecuteUsing(d.zr)
 }
 
 func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
@@ -2695,6 +2829,72 @@ func (d Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	}
 
 	return peerFound, err
+}
+
+func (d Client) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
+
+	result, err := azgo.NewSnapmirrorPolicyGetIterRequest().ExecuteUsing(d.zr)
+	if err = GetError(ctx, result, err); err != nil {
+		return false, fmt.Errorf("error listing snapmirror policies: %v", err)
+	}
+
+	list := result.Result.AttributesList()
+	policies := list.SnapmirrorPolicyInfo()
+
+	for _, policy := range policies {
+		if policyName == policy.PolicyName() {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (d Client) SnapmirrorPolicyGet(
+	ctx context.Context, policyName string,
+) (*azgo.SnapmirrorPolicyInfoType, error) {
+
+	desiredPolicy := azgo.NewSnapmirrorPolicyInfoType()
+	desiredPolicy.SetPolicyName(policyName)
+
+	query := &azgo.SnapmirrorPolicyGetIterRequestQuery{}
+	query.SetSnapmirrorPolicyInfo(*desiredPolicy)
+
+	result, err := azgo.NewSnapmirrorPolicyGetIterRequest().SetQuery(*query).ExecuteUsing(d.zr)
+	if err = GetError(ctx, result, err); err != nil {
+		return nil, fmt.Errorf("error listing snapmirror policies: %v", err)
+	}
+
+	list := result.Result.AttributesList()
+	policies := list.SnapmirrorPolicyInfo()
+
+	switch len(policies) {
+	case 0:
+		return nil, utils.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
+	case 1:
+		return &policies[0], nil
+	default:
+		return nil, fmt.Errorf("more than one snapmirror policy found with name %v", policyName)
+	}
+}
+
+func (d Client) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
+
+	result, err := azgo.NewJobScheduleGetIterRequest().ExecuteUsing(d.zr)
+	if err = GetError(ctx, result, err); err != nil {
+		return false, fmt.Errorf("error listing snapmirror policies: %v", err)
+	}
+
+	list := result.Result.AttributesList()
+	schedules := list.JobScheduleInfo()
+
+	for _, job := range schedules {
+		if jobName == job.JobScheduleName() {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // SNAPMIRROR operations END

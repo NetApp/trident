@@ -295,7 +295,7 @@ func TestOntapCalculateFlexvolSize(t *testing.T) {
 	tests := []struct {
 		name                      string
 		flexvol                   string
-		requestedSize              uint64
+		requestedSize             uint64
 		percentageSnapshotReserve int
 		expectedFlexvolSize       uint64
 	}{
@@ -848,4 +848,22 @@ func TestOntapSerialNumberMissing(t *testing.T) {
 	assert.Nil(t, err, "Unable to create ONTAP API client")
 	_, err = client.NodeListSerialNumbers(ctx)
 	assert.Nil(t, err, "Error reading node serial numbers")
+}
+
+func TestParseVolumeHandle(t *testing.T) {
+	svm, flexvol, err := parseVolumeHandle("fakesvm:fakeflexvol")
+	assert.Equal(t, "fakesvm", svm, "Unexpected svm name")
+	assert.Equal(t, "fakeflexvol", flexvol, "Unexpected flexvol name")
+	assert.Equal(t, nil, err, "Unexpected error")
+
+	svm, flexvol, err = parseVolumeHandle("fakesvm:fakeflexvol:withextra")
+	assert.Equal(t, "fakesvm", svm, "Unexpected svm name")
+	assert.Equal(t, "fakeflexvol:withextra", flexvol, "Unexpected flexvol name")
+	assert.Equal(t, nil, err, "Unexpected error")
+
+	_, _, err = parseVolumeHandle("")
+	assert.NotEqual(t, nil, err, "Expected error")
+
+	_, _, err = parseVolumeHandle("fakesvm")
+	assert.NotEqual(t, nil, err, "Expected error")
 }

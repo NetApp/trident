@@ -337,6 +337,7 @@ func (d *NASStorageDriverAbstraction) Create(
 				SnapshotReserve: snapshotReserveInt,
 				TieringPolicy:   tieringPolicy,
 				UnixPermissions: unixPermissions,
+				DPVolume:        volConfig.IsMirrorDestination,
 			})
 
 		if err != nil {

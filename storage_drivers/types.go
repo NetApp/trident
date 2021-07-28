@@ -252,6 +252,8 @@ type OntapStorageDriverConfig struct {
 	ClientPrivateKey          string                   `json:"clientPrivateKey"`
 	ClientCertificate         string                   `json:"clientCertificate"`
 	TrustedCACertificate      string                   `json:"trustedCACertificate"`
+	ReplicationPolicy         string                   `json:"replicationPolicy"`
+	ReplicationSchedule       string                   `json:"replicationSchedule"`
 }
 
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.

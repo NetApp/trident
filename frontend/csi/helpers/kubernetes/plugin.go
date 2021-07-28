@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -33,6 +33,8 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -62,6 +64,7 @@ type K8SHelperPlugin interface {
 
 type Plugin struct {
 	orchestrator  core.Orchestrator
+	tridentClient clientset.Interface
 	restConfig    rest.Config
 	kubeClient    kubernetes.Interface
 	kubeVersion   *k8sversion.Info
@@ -87,6 +90,11 @@ type Plugin struct {
 	nodeController         cache.SharedIndexInformer
 	nodeControllerStopChan chan struct{}
 	nodeSource             cache.ListerWatcher
+
+	mrIndexer            cache.Indexer
+	mrController         cache.SharedIndexInformer
+	mrControllerStopChan chan struct{}
+	mrSource             cache.ListerWatcher
 }
 
 // NewPlugin instantiates this plugin when running outside a pod.
@@ -111,6 +119,7 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 
 	p := &Plugin{
 		orchestrator:           orchestrator,
+		tridentClient:          clients.TridentClient,
 		restConfig:             *clients.RestConfig,
 		kubeClient:             clients.KubeClient,
 		kubeVersion:            kubeVersion,
@@ -118,6 +127,7 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		pvControllerStopChan:   make(chan struct{}),
 		scControllerStopChan:   make(chan struct{}),
 		nodeControllerStopChan: make(chan struct{}),
+		mrControllerStopChan:   make(chan struct{}),
 		namespace:              clients.Namespace,
 	}
 
@@ -263,6 +273,24 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		},
 	)
 
+	// Set up a watch for TridentMirrorRelationships
+	p.mrSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return clients.TridentClient.TridentV1().TridentMirrorRelationships(v1.NamespaceAll).List(ctx, options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return clients.TridentClient.TridentV1().TridentMirrorRelationships(v1.NamespaceAll).Watch(ctx, options)
+		},
+	}
+	// Set up the TMR indexing controller
+	p.mrController = cache.NewSharedIndexInformer(
+		p.mrSource,
+		&netappv1.TridentMirrorRelationship{},
+		CacheSyncPeriod,
+		cache.Indexers{nameIndex: MetaNameKeyFunc},
+	)
+	p.mrIndexer = p.mrController.GetIndexer()
+
 	return p, nil
 }
 
@@ -314,6 +342,7 @@ func (p *Plugin) Activate() error {
 	go p.pvController.Run(p.pvControllerStopChan)
 	go p.scController.Run(p.scControllerStopChan)
 	go p.nodeController.Run(p.nodeControllerStopChan)
+	go p.mrController.Run(p.mrControllerStopChan)
 	go p.reconcileNodes(ctx)
 
 	// Configure telemetry
@@ -334,6 +363,7 @@ func (p *Plugin) Deactivate() error {
 	close(p.pvControllerStopChan)
 	close(p.scControllerStopChan)
 	close(p.nodeControllerStopChan)
+	close(p.mrControllerStopChan)
 	return nil
 }
 

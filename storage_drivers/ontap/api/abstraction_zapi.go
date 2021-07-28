@@ -53,7 +53,7 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) (*APIResp
 
 	volCreateResponse, err := d.API.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if err != nil {
 		return nil, fmt.Errorf("error creating volume: %v", err)
 	}

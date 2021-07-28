@@ -805,7 +805,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	createResponse, err := d.API.VolumeCreate(
 		ctx, flexvol, aggregate, size, spaceReserve, snapshotPolicy, unixPermissions,
 		exportPolicy, securityStyle, tieringPolicy, "", api.QosPolicyGroup{}, enableEncryption,
-		snapshotReserveInt)
+		snapshotReserveInt, false)
 	if err = api.GetError(ctx, createResponse, err); err != nil {
 		return "", fmt.Errorf("error creating Flexvol: %v", err)
 	}
