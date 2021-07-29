@@ -279,7 +279,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 
 	// Check if volumeSnapshot is bound to a volumeSnapshotContent
 	snapContentName := ""
-	if k8sSnapshot.Status.BoundVolumeSnapshotContentName != nil {
+	if k8sSnapshot.Status != nil && k8sSnapshot.Status.BoundVolumeSnapshotContentName != nil {
 		snapContentName = *k8sSnapshot.Status.BoundVolumeSnapshotContentName
 	}
 	if snapContentName == "" {
@@ -321,7 +321,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 	}
 
 	// Check if VolumeSnapshotContent has internal name set
-	if snapContent.Status.SnapshotHandle == nil || *snapContent.Status.SnapshotHandle == "" {
+	if snapContent.Status == nil || snapContent.Status.SnapshotHandle == nil || *snapContent.Status.SnapshotHandle == "" {
 		message := fmt.Sprintf("SnapshotHandle for VolumeSnapshotContent '%v' is not yet set.", snapContent.Name)
 		Logx(ctx).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
