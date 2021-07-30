@@ -35,13 +35,11 @@ iSCSI
 
      .. code-block:: bash
 
-       sudo mpathconf --enable --with_multipathd y
+       sudo mpathconf --enable --with_multipathd y --find_multipaths n
 
      .. note::
-        You should ensure the ``/etc/multipath.conf`` file does not contain ``find_multipaths yes``
-        under the ``defaults`` section. Acceptable values for ``find_multipath`` are ``no``,
-        ``greedy``, or ``strict``, but because older versions of multipath-tools don't support values
-        other than ``no`` it's safest to omit ``find_multipath`` to get the default behavior.
+        You should ensure the ``/etc/multipath.conf`` file contains ``find_multipaths no``
+        under the ``defaults`` section.
 
   #. Ensure that `iscsid` and `multipathd` are enabled and running:
 
@@ -84,14 +82,13 @@ iSCSI
        sudo tee /etc/multipath.conf <<-'EOF'
        defaults {
            user_friendly_names yes
+           find_multipaths no
        }
        EOF
 
      .. note::
-        You should ensure the ``/etc/multipath.conf`` file does not contain ``find_multipaths yes``
-        under the ``defaults`` section. Acceptable values for ``find_multipath`` are ``no``,
-        ``greedy``, or ``strict``, but because older versions of multipath-tools don't support values
-        other than ``no`` it's safest to omit ``find_multipath`` to get the default behavior.
+        You should ensure the ``/etc/multipath.conf`` file contains ``find_multipaths no``
+        under the ``defaults`` section.
 
      .. code-block:: bash
 

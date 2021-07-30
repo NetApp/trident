@@ -6,7 +6,7 @@
 
 - **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully
   read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing
-  configuration uses the default ``find_multipaths`` value, which should __NOT__ be ``yes``  or ``smart``.
+  configuration uses the ``find_multipaths`` value set to ``no``.
   
 - **IMPORTANT**: In Trident versions earlier than 21.07, you could create ANF backend with no valid Capacity Pools
   corresponding to a Service Level. As a result the volumes were provisioned in the Capacity Pool of different
