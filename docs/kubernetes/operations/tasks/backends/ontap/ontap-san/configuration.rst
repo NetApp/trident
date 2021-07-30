@@ -108,6 +108,8 @@ the volumes it manages for qtrees and LUNs.
   differentiating volumes based on a set of customizable labels that are
   provided in the backend configuration.
 
+Configuration options for provisioning volumes
+----------------------------------------------
 
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
@@ -131,25 +133,6 @@ encryption                Enable NetApp volume encryption                       
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
-
-.. _ontap-san-snapshot-reserve:
-
-For volumes created using the ``ontap-san`` driver, Trident provisions a FlexVol and
-a LUN, both of which are of the requested size in the PVC. If the
-``snapshotReserve`` parameter is used in a backend definition, this would reserve
-a portion of the allocated space to be used for storing snapshots. For example,
-a 1GiB PVC created with the ``ontap-san`` driver on a backend with ``snapshotReserve=20``
-will result in a 1GiB FlexVol and LUN provisioned with 0.8GiB of usable space. Users are
-required to calculate the size of the PVC by factoring the amount of
-``snapshotReserve`` configured. Existing volumes can be :ref:`resized<Volume Expansion>`
-through Trident to grow usable space available on the volume. Because
-``snapshotReserve`` is a soft limit on the amount of space reserved for ONTAP
-snapshots, it is also possible that the filesystem space gets eaten into when
-the space used by snapshots grows beyond the reserve. This applies to ONTAP snapshots
-taken on the storage volume, as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
-To accommodate this behavior, users can choose to grow their volumes by resizing.
-Alternatively, users can also free up space by deleting snapshots that are not
-required.
 
 .. note::
 
@@ -182,3 +165,21 @@ Here's an example with defaults defined:
        "snapshotReserve": "10"
    }
   }
+
+.. note::
+
+   For all volumes created using the ``ontap-san`` driver, Trident adds an extra 10 percent capacity to the FlexVol to accommodate the LUN metadata. The LUN will be provisioned with the exact size that the user requests in the PVC. Trident adds 10 percent to the FlexVol (shows as ``Available`` size in ONTAP). Users will now get the amount of usable capacity they requested. This change also prevents LUNs from becoming read-only unless the available space is fully utilized. This **does not** apply to ``ontap-san-economy``.
+
+For backends that define ``snapshotReserve``, Trident calculates the size of volumes as follows:
+
+Total volume size = [(PVC requested size) / (1 - (``snapshotReserve`` percentage) / 100)] * 1.1
+
+The 1.1 is the extra 10 percent Trident adds to the FlexVol to accommodate the LUN metadata. For ``snapshotReserve`` = 5%, and PVC request = 5GiB, the total volume size is 5.79GiB and the available size is 5.5GiB. The ``volume show`` command should show results similar to this example:
+
+.. _figVolshow:
+
+.. figure:: images/vol-show-san.png
+    :align: center
+    :figclass: alight-center
+
+Currently, resizing is the only way to use the new calculation for an existing volume.

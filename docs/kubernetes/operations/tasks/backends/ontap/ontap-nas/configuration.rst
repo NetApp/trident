@@ -99,6 +99,9 @@ mount options on an associated persistent volume.
   volumes based on a set of customizable labels that are provided in the backend
   configuration.
 
+Configuration options for provisioning volumes
+----------------------------------------------
+
 You can control how each volume is provisioned by default using these options
 in a special section of the configuration. For an example, see the
 configuration examples below.
@@ -124,25 +127,6 @@ exportPolicy              Export policy to use                                  
 securityStyle             Security style for new volumes                                  "unix"
 tieringPolicy             Tiering policy to use                                           "none"; "snapshot-only" for pre-ONTAP 9.5 SVM-DR configuration
 ========================= =============================================================== ================================================
-
-.. _ontap-nas-snapshot-reserve:
-
-When ``snapshotReserve`` is set on a backend using the ``ontap-nas`` storage
-driver, volumes created by Trident will have a portion of the requested size
-dedicated for volume snapshots. This includes ONTAP snapshots scheduled through ONTAP,
-as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
-For example, a 2GiB PVC request will always result in the creation of a 2GiB FlexVol.
-If ``snapshotReserve=20``, the amount of available space visible to the end user
-will be 1.6GiB. Users are required to calculate the size of the PVC by factoring
-the amount of ``snapshotReserve`` configured. Existing volumes can be
-:ref:`resized<Volume Expansion>` through Trident to grow usable space available
-on the volume. Because ``snapshotReserve`` is a soft limit on the amount of space
-reserved for ONTAP snapshots, it is also possible that the filesystem space gets eaten into when
-the space used by snapshots grows beyond the reserve. This applies to ONTAP snapshots
-taken on the storage volume, as well as :ref:`Kubernetes VolumeSnapshots<On-Demand Volume Snapshots>`.
-To accommodate this behavior, users can choose to grow their volumes by resizing.
-Alternatively, users can also free up space by deleting snapshots that are not
-required.
 
 .. note::
 
@@ -177,3 +161,19 @@ Here's an example that establishes default values:
       "snapshotReserve": "10"
     }
   }
+
+For ``ontap-nas`` and ``ontap-nas-flexgroups``, Trident now uses a new calculation to ensure that the FlexVol is sized correctly with the ``snapshotReserve`` percentage and PVC. When the user requests a PVC, Trident creates the original FlexVol with more space by using the new calculation. This calculation ensures that the user receives the writable space they requested for in the PVC, and not lesser space than what they requested. Before v21.07, when the user requests a PVC (for example, 5GiB), with the ``snapshotReserve`` to 50 percent, they get only 2.5GiB of writeable space. This is because what the user requested for is the whole volume and ``snapshotReserve`` is a percentage of that. With Trident 21.07, what the user requests for is the writeable space and Trident defines the ``snapshotReserve`` number as the percentage of the whole volume. This **does not** apply to ``ontap-nas-economy``. See the following example to see how this works:
+
+The calculation is as follows:
+
+Total volume size = (PVC requested size) / (1 - (``snapshotReserve`` percentage) / 100)
+
+For ``snapshotReserve`` = 50%, and PVC request = 5GiB, the total volume size is 2/.5 = 10GiB and the available size is 5GiB, which is what the user requested in the PVC request. The ``volume show`` command should show results similar to this example:
+
+.. _figVolshow:
+
+.. figure:: images/volume-show.png
+    :align: center
+    :figclass: alight-center
+
+Existing backends from previous installs will provision volumes as explained above when upgrading Trident. For volumes that you created before upgrading, you should resize their volumes for the change to be observed. For example, a 2GiB PVC with ``snapshotReserve=50`` earlier resulted in a volume that provides 1GiB of writable space. Resizing the volume to 3GiB, for example, provides the application with 3GiB of writable space on a 6 GiB volume.
