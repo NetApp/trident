@@ -16,20 +16,33 @@
   then run the backend update operation.
 
 **Fixes:**
-- Updated the "Preparing the worker node" section of documentation to use default `find_multipaths` value for iSCSI
-  multipathing.
-- Fix the issue of not waiting for the multipath device to appear when discovered device count is 1 (Issue [#511](https://github.com/NetApp/trident/issues/511)).
+- Updated the "Preparing the worker node" section of documentation to use default `find_multipaths` value for iSCSI multipathing.
+- Fixed the issue of not waiting for the multipath device to appear when discovered device count is 1 (Issue [#511](https://github.com/NetApp/trident/issues/511)).
 - Fixed ANF issue with backend creation even when there are no valid Capacity Pool corresponding to a Service Level.
+- **Kubernetes:** Kubernetes version check for Helm install now matches prerelease versions (Issue [#530](https://github.com/NetApp/trident/issues/530)).
+- Fixed issue where Trident crashed when ONTAP did not return serial number.
+- **Kubernetes:** Installer now selects correct csi-snapshotter version for Kubernetes and snapshot CRD versions.
+- Fixed issue where automatic node prep could not parse floating-point OS versions.
+- Changed ASUP image pull policy to `IfNotPresent`.
 
 **Enhancements:**
-- **Kubernetes:** Updated to csi-snapshotter v4.0.0 for Kubernetes 1.20+
-- Added ability to restrict volume provisioning to a subset of Capacity Pools using `capacityPools` field in the ANF
-  backends.
+- **Kubernetes:** Updated to csi-snapshotter v4.0.0 for Kubernetes 1.20+.
+- Added ability to restrict volume provisioning to a subset of Capacity Pools using `capacityPools` field in the ANF backends.
+- ONTAP-SAN, ONTAP-NAS, and ONTAP-NAS-Flexgroup drivers now regard the `snapshotReserve` percentage as a percentage of the whole FlexVol size for new volumes (Issues [#554](https://github.com/NetApp/trident/issues/554), [#496](https://github.com/NetApp/trident/issues/496)).
+- ONTAP-SAN adds extra 10% to FlexVol size to account for LUN metadata (Issue [#555](https://github.com/NetApp/trident/issues/555)).
+- `tridentctl install` now shows timestamps in debug mode.
+- **Kubernetes:** Reduced HTTP timeout for CSI frontend to optimize node registration.
+- **Kubernetes:** Liveness port is now configurable and default changed to 17546.
+- Updated minimum TLS version to 1.2.
 
-**Beta Features:**
+**Experimental Enhancements:**
+- Added tech preview REST support for the ONTAP NAS driver.
+- Added support for volume replication in ONTAP NAS driver.
 
 **Deprecations:**
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.17.
 - Disabled E-series driver.
+- **Kubernetes:** Removed pre-CSI support.
 
 ## v21.04.0
 
