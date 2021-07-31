@@ -8,13 +8,13 @@ Supported frontends (orchestrators)
 Trident supports multiple container engines and orchestrators, including:
 
 * Mirantis Kubernetes Engine 3.4
-* Kubernetes 1.11 or later (latest: 1.21)
-* OpenShift 3.11, 4.2, 4.3, 4.4, 4.5, 4.6 [4.6.8+], 4.7 (latest 4.7)
+* Kubernetes 1.17 or later (latest: 1.21)
+* OpenShift 4.4, 4.5, 4.6 [4.6.8+], 4.7, 4.8 (latest 4.8)
 
 The Trident Operator is supported with these releases:
 
-* Kubernetes 1.14 or later (latest: 1.21)
-* OpenShift 4.2, 4.3, 4.4, 4.5, 4.6 [4.6.8+], 4.7 (latest 4.7)
+* Kubernetes 1.17 or later (latest: 1.21)
+* OpenShift 4.4, 4.5, 4.6 [4.6.8+], 4.7, 4.8 (latest 4.8)
 
 .. important::
 
@@ -39,31 +39,21 @@ To use Trident, you need one or more of the following supported backends:
 Feature requirements
 ====================
 
-Trident requires some feature gates to be enabled for certain features
-to work. See the table below to determine if you need to
-enable feature gates, based on your version of Trident and Kubernetes.
+The table below summarizes the features available with this release of Trident and the versions of Kubernetes it supports.
 
-================================ =============== ========================== ===============================
-         Feature                 Trident version    Kubernetes version         Feature gates required?
-================================ =============== ========================== ===============================
-CSI Trident                      19.07 and above   1.13\ :sup:`1` and above   Yes for ``1.13``\ :sup:`1`
-Volume Snapshots (beta)          20.01 and above       1.17 and above                    No
-PVC from Volume Snapshots (beta) 20.01 and above       1.17 and above                    No
-iSCSI PV resize                  19.10 and above       1.16 and above                    No
-ONTAP Bidirectional CHAP         20.04 and above       1.11 and above                    No
-Dynamic Export Policies          20.04 and above  1.13\ :sup:`1` and above   Requires CSI Trident\ :sup:`1`
-Trident Operator                 20.04 and above       1.14 and above                    No
-Auto Worker Node Prep (beta)     20.10 and above  1.13\ :sup:`1` and above   Requires CSI Trident\ :sup:`1`
-CSI Topology                     20.10 and above       1.17 and above                    No
-================================ =============== ========================== ===============================
-
-| Footnote:
-| `1`: Requires enabling ``CSIDriverRegistry`` and ``CSINodeInfo``
-       for Kubernetes 1.13. Install CSI Trident on Kubernetes 1.13 using
-       the ``--csi`` switch when invoking ``tridentctl install``.
-
-Check with your Kubernetes vendor to determine the appropriate procedure
-for enabling feature gates.
+================================ ========================== ===============================
+         Feature                   Kubernetes version         Feature gates required?
+================================ ========================== ===============================
+CSI Trident                      1.17 and later                    No
+Volume Snapshots                 1.17 and later                    No
+PVC from Volume Snapshots        1.17 and later                    No
+iSCSI PV resize                  1.17 and later                    No
+ONTAP Bidirectional CHAP         1.17 and later                    No
+Dynamic Export Policies          1.17 and later                    No
+Trident Operator                 1.17 and later                    No
+Auto Worker Node Prep (beta)     1.17 and later                    No
+CSI Topology                     1.17 and later                    No
+================================ ========================== ===============================
 
 Supported host operating systems
 ================================
@@ -107,45 +97,9 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 | KUBERNETES VERSION     | CONTAINER IMAGE                                             |
 +========================+=============================================================+
-| v1.11.0                | netapp/trident:21.04.0                                      |
+| v1.17.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
-| v1.12.0                | netapp/trident:21.04.0                                      |
-+------------------------+-------------------------------------------------------------+
-| v1.13.0                | netapp/trident:21.04.0                                      |
-+------------------------+-------------------------------------------------------------+
-| v1.14.0                | netapp/trident:21.04.0                                      |
-+------------------------+-------------------------------------------------------------+
-|                        | netapp/trident-autosupport:21.01                            |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-provisioner:v1.6.1                       |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-attacher:v2.2.1                          |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-node-driver-registrar:v2.1.0             |
-+------------------------+-------------------------------------------------------------+
-| v1.15.0                | netapp/trident:21.04.0                                      |
-+------------------------+-------------------------------------------------------------+
-|                        | netapp/trident-autosupport:21.01                            |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-provisioner:v1.6.1                       |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-attacher:v2.2.1                          |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-node-driver-registrar:v2.1.0             |
-+------------------------+-------------------------------------------------------------+
-| v1.16.0                | netapp/trident:21.04.0                                      |
-+------------------------+-------------------------------------------------------------+
-|                        | netapp/trident-autosupport:21.01                            |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-provisioner:v1.6.1                       |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-attacher:v2.2.1                          |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-resizer:v1.1.0                           |
-+------------------------+-------------------------------------------------------------+
-|                        | quay.io/k8scsi/csi-node-driver-registrar:v2.1.0             |
-+------------------------+-------------------------------------------------------------+
-| v1.17.0                | netapp/trident:21.04.0                                      |
+|                        | netapp/trident-operator:21.07.0                             |
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
@@ -159,7 +113,9 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
-| v1.18.0                | netapp/trident:21.04.0                                      |
+| v1.18.0                | netapp/trident:21.07.0                                      |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-operator:21.07.0                             |
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
@@ -173,7 +129,9 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
-| v1.19.0                | netapp/trident:21.04.0                                      |
+| v1.19.0                | netapp/trident:21.07.0                                      |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-operator:21.07.0                             |
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
@@ -187,7 +145,9 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
-| v1.20.0                | netapp/trident:21.04.0                                      |
+| v1.20.0                | netapp/trident:21.07.0                                      |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-operator:21.07.0                             |
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
@@ -197,11 +157,13 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3               |
+|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
-| v1.21.0                | netapp/trident:21.04.0                                      |
+| v1.21.0                | netapp/trident:21.07.0                                      |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-operator:21.07.0                             |
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
@@ -211,7 +173,7 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3               |
+|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+

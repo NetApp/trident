@@ -20,7 +20,7 @@ This section covers Trident Installation on a Kubernetes cluster.
 What are the supported versions of etcd?
 ----------------------------------------
 
-From the 19.07 release, Trident no longer needs an etcd. It uses CRDs to maintain
+Trident no longer needs an etcd. It uses CRDs to maintain
 state.
 
 
@@ -109,30 +109,6 @@ Yes, Trident supports the Azure NetApp Files service in Azure as well as the Clo
 and GCP.
 
 Refer to :ref:`Supported backends <Supported backends (storage)>` for more information.
-
-What versions of Kubernetes support Trident as an enhanced CSI Provisioner?
----------------------------------------------------------------------------
-
-Kubernetes versions ``1.13`` and above support running Trident as a CSI Provisioner. Before installing
-Trident, ensure the required :ref:`feature gates <Feature Requirements>` are enabled.
-
-Refer to :ref:`Requirements <Supported frontends (orchestrators)>` for a list
-of supported orchestrators.
-
-Why should I install Trident to work as a CSI Provisioner?
-----------------------------------------------------------
-
-With each new release, Trident aims to adhere to the latest
-CSI specification. This enables users to make use of developments
-in the upstream CSI community when Trident functions as a CSI Provisioner.
-Trident can continue to fix issues or add features without touching
-the Kubernetes core, while also absorbing any standardized future changes or features efficiently.
-
-How do I install Trident to work as a CSI Provisioner?
-------------------------------------------------------
-
-The installation procedure is detailed under the :ref:`Deployment <deploying-in-kubernetes>` section.
-Ensure that the :ref:`feature gates <Feature Requirements>` are enabled.
 
 How does Trident maintain state if it doesn't use etcd?
 -------------------------------------------------------

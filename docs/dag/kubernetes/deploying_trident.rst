@@ -53,23 +53,67 @@ works for most environments that do not impose network restrictions. The
 
 In many organizations, production and development environments do not have access to public repositories for pulling and posting images as these environments are completely secured and restricted. Such environments only allow pulling images from trusted private repositories.
 
-To perform an air-gapped installation of Trident, you can use the ``--image-registry`` flag
-when invoking ``tridentctl install`` to point to a private image registry. If installing with
-the Trident Operator, you can alternatively specify ``spec.imageRegistry`` in your
-TridentOrchestrator. This registry must contain the Trident image,
-(obtained `here <https://hub.docker.com/r/netapp/trident/>`_), the Trident
-Autosupport image (obtained `here <https://hub.docker.com/r/netapp/trident-autosupport/>`_),
-and the CSI sidecar images as required by your Kubernetes version.
+To perform an air-gapped installation of Trident:
+
+*  The ``--image-registry`` flag can be used when invoking ``tridentctl  install`` to point to a private image registry that contains the required CSI sidecar images. Additionally, ``--autosupport-image`` and ``--trident-image`` must point to the Trident Autosupport and Trident container image paths, respectively.
+
+   .. code-block:: bash
+
+      # Install Trident from a private image registry for Kubernetes 1.17
+
+      $ docker image ls
+      REPOSITORY                                                          TAG                                        IMAGE ID       CREATED         SIZE
+      registry.internal-domain.com/sig-storage/csi-provisioner            v2.1.1                                     93d588bf66c4   6 hours ago     51.7MB
+      registry.internal-domain.com/sig-storage/csi-attacher               v3.1.0                                     03ce9595bf92   6 hours ago     49.2MB
+      registry.internal-domain.com/sig-storage/csi-resizer                v1.1.0                                     a8fe79377034   6 hours ago     49.2MB
+      registry.internal-domain.com/sig-storage/csi-snapshotter            v3.0.3                                     000846ee5335   6 hours ago     47.8MB
+      registry.internal-domain.com/sig-storage/csi-node-driver-registrar  v2.1.0                                     ef2b13b2a066   6 hours ago     19.7MB
+      registry.internal-domain.com/netapp/trident                         21.07.0                                    0de972eb1c6f   6 hours ago     93.1MB
+      registry.internal-domain.com/netapp/trident-autosupport             21.01                                      8122afeecc7a   5 months ago    40.2MB
+      
+      $ tridentctl install --image-registry=registry.internal-domain.com --trident-image=registry.internal-domain.com/netapp/trident:21.07.0 --autosupport-image=registry.internal-domain.com/netapp/trident-autosupport:21.01
+      
+*  If installing with the Trident Operator, specify ``spec.imageRegistry``, ``spec.tridentImage``, and ``spec.autosupportImage`` as follows:
+  
+   * ``imageRegistry`` should point to the private image registry that contains the CSI sidecar container images.
+   * ``tridentImage`` should be set to the path of the Trident container image hosted on the private registry.
+   * ``autosupportImage`` should be set to the path of the Trident Autosupport image hosted on the private registry.
+
+   .. code-block:: bash
+
+      # List the container images present in the private image registry
+
+      $ docker image ls
+      REPOSITORY                                                          TAG                                        IMAGE ID       CREATED         SIZE
+      registry.internal-domain.com/sig-storage/csi-provisioner            v2.1.1                                     93d588bf66c4   6 hours ago     51.7MB
+      registry.internal-domain.com/sig-storage/csi-attacher               v3.1.0                                     03ce9595bf92   6 hours ago     49.2MB
+      registry.internal-domain.com/sig-storage/csi-resizer                v1.1.0                                     a8fe79377034   6 hours ago     49.2MB
+      registry.internal-domain.com/sig-storage/csi-snapshotter            v3.0.3                                     000846ee5335   6 hours ago     47.8MB
+      registry.internal-domain.com/sig-storage/csi-node-driver-registrar  v2.1.0                                     ef2b13b2a066   6 hours ago     19.7MB
+      registry.internal-domain.com/netapp/trident                         21.07.0                                    0de972eb1c6f   6 hours ago     93.1MB
+      registry.internal-domain.com/netapp/trident-autosupport             21.01                                      8122afeecc7a   5 months ago    40.2MB
+      
+      # Examine the contents of TridentOrchestrator
+
+      $ cat tridentorchestrator_cr.yaml
+      apiVersion: trident.netapp.io/v1
+      kind: TridentOrchestrator
+      metadata:
+        name: trident
+      spec:
+        imageRegistry: registry.internal-domain.com
+        tridentImage: registry.internal-domain.com/netapp/trident:21.07.0
+        autosupportImage: registry.internal-domain.com/netapp/trident-autosupport:21.01
+        namespace: trident
+
+      $ kubectl create -f tridentorchestrator_cr.yaml -n trident
+      tridentorchestrator.trident.netapp.io/trident created
 
 To customize your installation further, you can use ``tridentctl`` to generate the manifests
 for Trident's resources. This includes the deployment, daemonset, service account and the cluster
 role that Trident creates as part of its installation.
 The :ref:`Customized Installation <Customized Installation>` section talks about the options available
 for performing a custom Trident install.
-
-.. important::
-
-  If you are using a private image repository, you should add ``/k8scsi`` for Kubernetes versions earlier than 1.17 or ``/sig-storage`` for Kubernetes versions later than 1.17 to the end of the private registry URL. When using a private registry while installing Trident using ``tridentctl``, you should use ``--trident-image`` and ``--autosupport-image`` in conjunction with ``--image-registry``. If you are installing Trident using the Trident operator, ensure that the orchestrator CR includes ``tridentImage`` and ``autosupportImage`` in the installation parameters.
 
 **Remote install mode**
 
@@ -82,21 +126,6 @@ command to verify you can connect to the required Kubernetes cluster.
 Complete the Trident deployment from the remote machine using the normal
 installation steps.
 
-
-Deploying Trident as an enhanced CSI Provisioner
-================================================
-
-Trident provides a CSI frontend that can be used to install Trident as a CSI provisioner. Available exclusively
-for Kubernetes ``1.13`` and above, this allows Trident to absorb standardized features like snapshots
-while still retaining its ability to innovate on the storage model.
-
-To setup Trident as a CSI provisioner, refer to the :ref:`Deployment Guide <deploying-in-kubernetes>`. Ensure
-that the required :ref:`Feature Gates <Feature Requirements>` are enabled.
-After deploying, you should consider :ref:`Upgrading existing PVs to CSI volumes <Upgrading legacy volumes to CSI volumes>`
-if you would like to
-use new features such as :ref:`On-demand snapshots <On-Demand Volume Snapshots>`.
-
-.. _installer bundle: https://github.com/NetApp/trident/releases/latest
 
 CRDs for maintaining Trident's state
 ====================================
@@ -156,27 +185,3 @@ Use quotas and range limits to control storage consumption
 Kubernetes has two features which, when combined, provide a powerful mechanism for limiting the resource consumption by applications.  The `storage quota mechanism <https://kubernetes.io/docs/concepts/policy/resource-quotas/#storage-resource-quota>`_ allows the administrator to implement global, and storage class specific, capacity and object count consumption limits on a per-namespace basis.  Further, using a `range limit <https://kubernetes.io/docs/tasks/administer-cluster/limit-storage-consumption/#limitrange-to-limit-requests-for-storage>`_ will ensure that the PVC requests must be within both a minimum and maximum value before the request is forwarded to the provisioner.
 
 These values are defined on a per-namespace basis, which means that each namespace will need to have values defined which fall in line with their resource requirements.  An example of `how to leverage quotas <https://netapp.io/2017/06/09/self-provisioning-storage-kubernetes-without-worry/>`_ can be found on `netapp.io <https://netapp.io>`_.
-
-
-Deploying Trident to OpenShift
-==============================
-
-OpenShift uses Kubernetes for the underlying container orchestrator. Consequently, the same recommendations will apply when using Trident with Kubernetes or OpenShift. However, there are some minor additions when using OpenShift which should be taken into consideration.
-
-Deploy Trident to infrastructure nodes (OpenShift 3.11)
--------------------------------------------------------
-
-Trident is a core service to the OpenShift cluster, provisioning and managing the volumes used across all projects. Consideration should be given to deploying Trident to the infrastructure nodes in order to provide the same level of care and concern.
-
-To deploy Trident to the infrastructure nodes, the project for Trident must be created by an administrator using the `oc adm` command. This prevents the project from inheriting the default node selector, which forces the pod to execute on compute nodes.
-
-.. code-block:: console
-
-   # create the project which Trident will be deployed to using
-   # the non-default node selector
-   oc adm new-project <project_name> --node-selector="region=infra"
-
-   # deploy Trident using the project name
-   tridentctl install -n <project_name>
-
-The result of the above command is that any pod deployed to the project will be scheduled to nodes which have the tag "``region=infra``".  This also removes the default node selector used by other projects which schedule pods to nodes which have the label "``node-role.kubernetes.io/compute=true``".
