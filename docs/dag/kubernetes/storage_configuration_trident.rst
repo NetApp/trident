@@ -1,10 +1,10 @@
 .. _storage_configuration_trident:
 
 *********************************
-Storage Configuration for Trident
 *********************************
+Storage Configuration for Trident
 
-Each storage platform in NetApp's portfolio has unique capabilities that benefit applications, containerized or not. Trident works with each of the major platforms: ONTAP, Element, and E-Series.  There is not one platform which is better suited for all applications and scenarios than another, however, the needs of the application and the team administering the device should be taken into account when choosing a platform.
+Each storage platform in NetApp's portfolio has unique capabilities that benefit applications, containerized or not. Trident works with each of the following platforms: ONTAP, Element Software, Cloud Volumes ONTAP, Cloud Volumes Service for AWS and Google Cloud, and Azure NetApp Files.  There is not one platform which is better suited for all applications and scenarios than another, however, the needs of the application and the team administering the device should be taken into account when choosing a platform.
 
 The storage administrator(s), Kubernetes administrator(s), and the application team(s) should work with their NetApp team to ensure that the most appropriate platform is selected.
 
@@ -22,10 +22,6 @@ Some of the best practices guides are listed below, however, refer to the `NetAp
 
   * `Configuring SolidFire for Linux <http://www.netapp.com/us/media/tr-4639.pdf>`_
   * `NetApp HCI Deployment Guide <https://library.netapp.com/ecm/ecm_download_file/ECMLP2847696>`_
-
-* E-Series
-
-  * `Installing and Configuring for Linux Express Guide <https://library.netapp.com/ecm/ecm_download_file/ECMLP2601376>`_
 
 Some example application best practices guides:
 
@@ -271,21 +267,6 @@ However, if CHAP is cannot be enabled and VAGs are required, create the access g
    VAGs are only supported by Trident in non-CSI mode of operation.
 
 For more information on how to setup Volume Access Groups and CHAP authentication, please refer the NetApp HCI Installation and setup guide.
-
-Best practices for configuring E-Series
-=======================================
-
-**E-Series Disk Pools and Volume Groups**
-
-Create disk pools or volume groups based on your requirement and determine how the total storage capacity must be organized into volumes and shared among hosts. Both the disk pool and the volume group consist of a set of drives which are logically grouped to provide one or more volumes to an application host. All of the drives in a disk pool or volume group should be of the same media type.
-
-**E-Series Host Groups**
-
-Host groups are used by Trident to access the volumes (LUNs) that it provisions. By default, Trident uses the host group called "trident" unless a different host group name is specified in the configuration. Trident, by itself will not create or manage host groups. Host group has to be created before the E-Series storage backend is setup on Trident. Make sure that all the Kubernetes worker nodes iSCSI IQN names are updated in the host group.
-
-**E-Series Snapshot Schedule**
-
-Create a snapshot schedule and assign the volume created by Trident to a snapshot schedule so that volume backups can be taken at the required interval. Based on the snapshots taken as per the snapshot policy, rollback operations can be done on volumes by restoring a snapshot image to the base volume. Setting up Snapshot Consistency Groups are also ideal for applications that span multiple volumes. The purpose of a consistency group is to take simultaneous snapshot images of multiple volumes, thus ensuring consistent copies of a collection of volumes at a particular point in time. Snapshot schedule and Consistency group cannot be set through Trident. It has to be configured through SANtricity System Manager
 
 Best practices for configuring Cloud Volumes Service on AWS
 ===========================================================

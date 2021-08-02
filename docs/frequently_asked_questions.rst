@@ -348,7 +348,7 @@ Refer to :ref:`Storage Class design to emulate QoS policies <Storage Class desig
 How do we specify thin or thick provisioning through Trident?
 -------------------------------------------------------------
 
-The ONTAP drivers support either thin or thick provisioning. E-Series only support thick provisioning. Element software backends only support thin provisioning.
+The ONTAP drivers support either thin or thick provisioning. Element Software backends only support thin provisioning.
 
 The ONTAP drivers default to thin provisioning. If thick provisioning is desired, you may configure either the backend definition file or the `StorageClass`. If both are configured, the StorageClass takes precedence. Configure the following for ONTAP:
 

@@ -11,7 +11,7 @@ These configuration variables apply to all Trident configurations, regardless of
 | ``version``           | Config file version number                                                                   | 1           |
 +-----------------------+----------------------------------------------------------------------------------------------+-------------+
 | ``storageDriverName`` | | ``ontap-nas``, ``ontap-san``, ``ontap-nas-economy``,                                       | ontap-nas   |
-|                       | | ``ontap-nas-flexgroup``, ``eseries-iscsi``,                                                |             |
+|                       | | ``ontap-nas-flexgroup``,                                                                   |             |
 |                       | | ``solidfire-san``, ``azure-netapp-files``, ``aws-cvs``, or ``gcp-cvs``.                    |             |
 +-----------------------+----------------------------------------------------------------------------------------------+-------------+
 | ``storagePrefix``     | Optional prefix for volume names.  Default: "netappdvp\_".                                   | staging\_   |

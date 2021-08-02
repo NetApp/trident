@@ -5,8 +5,7 @@ Trident integrates natively with `Kubernetes`_ and its
 `Persistent Volume framework`_ to seamlessly provision and manage volumes
 from systems running any combination of NetApp's
 `ONTAP`_ (AFF/FAS/Select/Cloud),
-`Element`_ (HCI/SolidFire), and
-`SANtricity`_ (E/EF-Series) data management platforms,
+`Element Software`_ (NetApp HCI/SolidFire),
 plus our
 `Azure NetApp Files`_ service in Azure,
 `Cloud Volumes Service for AWS`_, and
@@ -110,8 +109,7 @@ and is a great way to get started on the Trident journey.
 .. _Kubernetes: https://kubernetes.io
 .. _Persistent Volume framework: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 .. _ONTAP: https://www.netapp.com/us/products/data-management-software/ontap.aspx
-.. _Element: https://www.netapp.com/us/products/data-management-software/element-os.aspx
-.. _SANtricity: https://www.netapp.com/us/products/data-management-software/santricity-os.aspx
+.. _Element Software: https://www.netapp.com/us/products/data-management-software/element-os.aspx
 .. _Cloud Volumes Service for AWS: https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _Cloud Volumes Service for GCP: https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _perspective of an end user: https://youtu.be/WZ3nwl4aILU

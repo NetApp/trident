@@ -40,15 +40,6 @@ NetApp HCI simplifies the management and scale of the datacenter by automating r
 
 NetApp HCI is fully supported by Trident, it can provision and manage storage devices for containerized applications directly against the underlying HCI storage platform. For more information about NetApp HCI visit `NetApp HCI <https://www.netapp.com/us/products/converged-systems/hyper-converged-infrastructure.aspx>`_.
 
-SANtricity
-----------
-
-NetApp's E and EF Series storage platforms, using the SANtricity operating system, provides robust storage that is highly available, performant, and capable of delivering storage services for applications at any scale.
-
-Trident can create and manage SANtricity volumes across the portfolio of products.
-
-For more information about SANtricity and the storage platforms which use it, see `SANtricity Software <https://www.netapp.com/us/products/data-management-software/santricity-os.aspx>`_.
-
 Azure NetApp Files
 ------------------
 

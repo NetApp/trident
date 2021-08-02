@@ -78,7 +78,7 @@ defaults that you set in the backend configuration:
 =================================== ================= ======================================================
 Annotation                          Volume Option     Supported Drivers
 =================================== ================= ======================================================
-trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, eseries-iscsi, ontap-san-economy
+trident.netapp.io/fileSystem        fileSystem        ontap-san, solidfire-san, ontap-san-economy
 trident.netapp.io/cloneFromPVC      cloneSourceVolume ontap-nas, ontap-san, solidfire-san, aws-cvs, azure-netapp-files, gcp-cvs, ontap-san-economy
 trident.netapp.io/splitOnClone      splitOnClone      ontap-nas, ontap-san
 trident.netapp.io/protocol          protocol          any
@@ -218,11 +218,11 @@ Storage attributes and their possible values can be classified into two groups:
 Attribute         Type   Values                                  Offer                                                      Request                        Supported by
 ================= ====== ======================================= ========================================================== ============================== ===================================================================
 media\ :sup:`1`   string hdd, hybrid, ssd                        Pool contains media of this type; hybrid means both        Media type specified           ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san, solidfire-san
-provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all ontap & eseries-iscsi;
+provisioningType  string thin, thick                             Pool supports this provisioning method                     Provisioning method specified  thick: all ontap;
                                                                                                                                                            thin: all ontap & solidfire-san
 backendType       string | ontap-nas, ontap-nas-economy,         Pool belongs to this type of backend                       Backend specified              All drivers
                          | ontap-nas-flexgroup, ontap-san,
-                         | solidfire-san, eseries-iscsi,
+                         | solidfire-san,
                          | aws-cvs, gcp-cvs,
                          | azure-netapp-files, ontap-san-economy
 snapshots         bool   true, false                             Pool supports volumes with snapshots                       Volume with snapshots enabled  ontap-nas, ontap-san, solidfire-san, aws-cvs,  gcp-cvs
@@ -279,7 +279,7 @@ use ``tridentctl get backend`` to get the list of backends and their pools.
 ================= ======= ======================================= ================================================= ========================================================== ==================
 Attribute         Type    Values                                  Description                                       Relevant Drivers                                           Kubernetes Version
 ================= ======= ======================================= ================================================= ========================================================== ==================
-fsType            string  ext4, ext3, xfs, etc.                   The file system type for block volumes            solidfire-san, ontap-san, ontap-san-economy, eseries-iscsi All
+fsType            string  ext4, ext3, xfs, etc.                   The file system type for block volumes            solidfire-san, ontap-san, ontap-san-economy                 All
 ================= ======= ======================================= ================================================= ========================================================== ==================
 
 The Trident installer bundle provides several example storage class definitions
@@ -484,9 +484,7 @@ volume name, resulting in a name of the form ``<prefix>-<volume-name>``. It then
 proceeds to sanitize the name, replacing characters not permitted in the
 backend.  For ONTAP backends, it replaces hyphens with underscores (thus, the
 internal name becomes ``<prefix>_<volume-name>``), and for Element backends, it
-replaces underscores with hyphens. For E-Series, which imposes a
-30-character limit on all object names, Trident generates a random string for
-the internal name of each volume. For CVS (AWS), which imposes a 16-to-36-character
+replaces underscores with hyphens. For CVS (AWS), which imposes a 16-to-36-character
 limit on the unique volume creation token, Trident generates a random string for the
 internal name of each volume.
 

@@ -217,7 +217,7 @@ In this section, let us examine how SnapMirror destination volumes can be made a
 Element Software snapshots
 ==========================
 
-Backup data on an Element volume by setting a snapshot schedule for the volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element software web UI or using Element APIs.
+Backup data on an Element volume by setting a snapshot schedule for the volume, ensuring the snapshots are taken at the required intervals. Currently, it is not possible to set a snapshot schedule to a volume through the ``solidfire-san`` driver. Set it using the Element Software web UI or using Element APIs.
 
 In the event of data corruption, we can choose a particular snapshot and rollback the volume to the snapshot manually. This reverts any changes made to the volume since the snapshot was created.
 

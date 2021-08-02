@@ -1,7 +1,7 @@
 Managing volumes
 ################
 
-Creating and consuming storage from ONTAP, SolidFire, E-Series systems and the Cloud Volumes Service is easy
+Creating and consuming storage from ONTAP, SolidFire, and the Cloud Volumes Service is easy
 with Trident. Simply use the standard ``docker volume`` commands with the Trident driver name specified when needed.
 
 Create a Volume
@@ -39,7 +39,6 @@ Refer to the documentation below for your configured storage system to determine
 
    backends/ontap_options
    backends/solidfire_options
-   backends/eseries_options
    backends/cvs_aws_options
    backends/cvs_gcp_options
    backends/anf_options

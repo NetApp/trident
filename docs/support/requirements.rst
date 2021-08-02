@@ -31,10 +31,9 @@ To use Trident, you need one or more of the following supported backends:
 * Cloud Volumes ONTAP
 * Cloud Volumes Service for AWS
 * Cloud Volumes Service for GCP
-* E/EF-Series SANtricity
 * FAS/AFF/Select 9.3 or later
 * NetApp All SAN Array (ASA)
-* NetApp HCI/Element software 8 or later
+* NetApp HCI/Element Software 8 or later
 
 Feature requirements
 ====================
