@@ -1,7 +1,7 @@
 Element Software Configuration
 ==============================
 
-In addition to the :ref:`global configuration values <ndvp-global-config>`, when using Element software (NetApp HCI/SolidFire), these options are available.
+In addition to the :ref:`global configuration values <ndvp-global-config>`, when using Element Software (NetApp HCI/SolidFire), these options are available.
 
 +-----------------------+-------------------------------------------------------------------------------+----------------------------+
 | Option                | Description                                                                   | Example                    |

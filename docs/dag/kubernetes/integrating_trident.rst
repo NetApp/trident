@@ -72,9 +72,9 @@ Cloud Volumes ONTAP provides data control along with enterprise-class storage fe
 ``ontap-san-economy``. These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
 
 
-Element software (NetApp HCI/SolidFire)
+Element Software (NetApp HCI/SolidFire)
 ---------------------------------------
-The ``solidfire-san`` driver used with the NetApp HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element software web UI.
+The ``solidfire-san`` driver used with the NetApp HCI/SolidFire platforms, helps the admin configure an Element backend for Trident on the basis of QoS limits. If you would like to design your backend to set the specific QoS limits on the volumes provisioned by Trident, use the ``type`` parameter in the backend file. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, Element storage features like volume resize and volume replication are not supported through the ``solidfire-san`` driver. These operations should be done manually through Element Software web UI.
 
 .. table:: SolidFire SAN driver capabilities
 
@@ -87,22 +87,6 @@ The ``solidfire-san`` driver used with the NetApp HCI/SolidFire platforms, helps
 | Footnote:
 | Yes\ :sup:`1`:  Not Trident managed
 | Yes\ :sup:`2`: Supported for raw-block volumes
-
-SANtricity (E-Series)
-------------------------
-To configure an E-Series backend for Trident, set the ``storageDriverName`` parameter to ``eseries-iscsi`` driver in the backend configuration. Once the E-Series backend has been configured, any requests to provision volume from the E-Series will be handled by Trident based on the host groups. Trident uses host groups to gain access to the LUNs that it provisions and by default, it looks for a host group named ``trident`` unless a different host group name is specified using the ``accessGroupName`` parameter in the backend configuration. The admin also can restrict the volume size that could be created on the storage using the `limitVolumeSize` parameter. Currently, E-Series storage features like volume resize and volume replication are not supported through the ``eseries-iscsi`` driver. These operations should be done manually through SANtricity System Manager.
-
-.. table:: E-Series driver capabilities
-
-   +-------------------+---------------+---------------+--------------+------+--------+---------------+
-   | E-Series Driver   | Snapshots     | Clones        | Multi-attach | QoS  | Resize | Replication   |
-   +===================+===============+===============+==============+======+========+===============+
-   | ``eseries-iscsi`` | Yes\ :sup:`1` | Yes\ :sup:`1` | Yes\ :sup:`2`| No   |   Yes  | Yes\ :sup:`1` |
-   +-------------------+---------------+---------------+--------------+------+--------+---------------+
-
-| Footnote:
-| Yes\ :sup:`1`:  Not Trident managed
-| Yes\ :sup:`2`:  Supported for raw-block volumes
 
 Azure NetApp Files Backend Driver
 ---------------------------------
@@ -233,7 +217,7 @@ Storage Pools is a level abstraction introduced between the backend and the
 Kubernetes Storage Class so that the administrator can define parameters along
 with labels which can be referenced through Kubernetes Storage Classes as a
 selector, in a backend-agnostic way. Virtual Storage Pools can be defined for
-all supported NetApp backends with Trident. That list includes E-Series,
+all supported NetApp backends with Trident. That list includes
 SolidFire/HCI, ONTAP, Cloud Volumes Service on AWS and GCP, as well as Azure
 NetApp Files.
 

@@ -10,8 +10,8 @@ applications' persistence demands using industry-standard interfaces, such as th
 Trident deploys in Kubernetes clusters as pods and provides dynamic storage
 orchestration services for your Kubernetes workloads. It enables your
 containerized applications to quickly and easily consume persistent storage from
-NetApp’s broad portfolio that includes `ONTAP`_ (AFF/FAS/Select/Cloud), `Element software`_
-(HCI/SolidFire), and `SANtricity`_ (E/EF-Series) data management software, as
+NetApp’s broad portfolio that includes `ONTAP`_ (AFF/FAS/Select/Cloud), `Element Software`_
+(HCI/SolidFire), as
 well as the `Azure NetApp Files`_ service, `Cloud Volumes Service on Google Cloud`_,
 and the `Cloud Volumes Service on AWS`_.
 
@@ -29,7 +29,7 @@ See `NetApp's Support site`_ for details on Trident's support policy under the
 .. _Kubernetes: https://kubernetes.io
 .. _Docker: https://docker.com
 .. _ONTAP: https://www.netapp.com/us/products/data-management-software/ontap.aspx
-.. _Element software: https://www.netapp.com/data-management/element-software?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
+.. _Element Software: https://www.netapp.com/data-management/element-software?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _SANtricity: https://www.netapp.com/data-management/santricity?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _Azure NetApp Files: https://cloud.netapp.com/azure-netapp-files?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _Azure: https://azure.microsoft.com/

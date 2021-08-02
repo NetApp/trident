@@ -16,16 +16,13 @@ workloads. It enables your containerized applications to quickly and easily cons
 broad portfolio that includes [ONTAP](https://www.netapp.com/us/products/data-management-software/ontap.aspx) (
 AFF/FAS/Select/Cloud)
 , [Element](https://www.netapp.com/data-management/element-software?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident) (
-HCI/SolidFire),
-and [SANtricity](https://www.netapp.com/data-management/santricity?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident) (
-E/EF-Series) data management software, as well as
+HCI/SolidFire), as well as
 the [Azure NetApp Files](https://cloud.netapp.com/azure-netapp-files?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident)
 service, [Cloud Volumes Service on Google Cloud](https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident)
 , and
-the [Cloud Volumes Service on AWS](https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident)
-.
+the [Cloud Volumes Service on AWS](https://cloud.netapp.com/cloud-volumes-service-for-aws?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident).
 
-Trident is also a foundational technology for
+It is also a foundational technology for
 NetApp's [Astra](http://cloud.netapp.com/Astra?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident), which
 addresses your data protection, disaster recovery, portability, and migration use cases for Kubernetes workloads
 leveraging NetApp's industry-leading data management technology for snapshots, backups, replication, and cloning.
