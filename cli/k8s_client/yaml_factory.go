@@ -795,6 +795,7 @@ spec:
           mountPath: /plugin
         - name: plugins-mount-dir
           mountPath: {KUBELET_DIR}/plugins
+          mountPropagation: "Bidirectional"
         - name: pods-mount-dir
           mountPath: {KUBELET_DIR}/pods
           mountPropagation: "Bidirectional"
@@ -958,6 +959,7 @@ spec:
           mountPath: /plugin
         - name: plugins-mount-dir
           mountPath: {KUBELET_DIR}/plugins
+          mountPropagation: "Bidirectional"
         - name: pods-mount-dir
           mountPath: {KUBELET_DIR}/pods
           mountPropagation: "Bidirectional"

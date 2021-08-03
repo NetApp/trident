@@ -681,7 +681,7 @@ func getDeviceInfoForLUN(
 		if isDetachCall {
 			Logc(ctx).WithFields(fields).Debug("No iSCSI hosts found for target.")
 			return nil, nil
-		}  else {
+		} else {
 			return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 		}
 	}
