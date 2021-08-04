@@ -12,9 +12,9 @@
 <br/>
 <div class="wy-nav-content-wrap">
 	<div class="wy-nav-content">
-		<h4 style="color:red">Upgrading Trident on Kubernetes?</h4>
-		Refer to <a href="https://netapp-trident.readthedocs.io/en/latest/kubernetes/upgrades/index.html"
-					target="_blank">Upgrading Trident</a>.
-	</div>
+		<h4 style="color:red"><font size="+3">Looking to install/upgrade to 21.07.0?</font></h4>
+	        <font size="+1">Users are informed that Trident v21.07.0 is <b>NOT AVAILABLE FOR DOWNLOAD</b>. Changes introduced to snapshotReserve with v21.07.0 can result in <a href="https://github.com/NetApp/trident/issues/611" target="_blank">CSI VolumeSnapshots being unusable to create PersistentVolumeClaim(s)</a>.
+<br><br>This will be fixed with v21.07.1. If you have already upgraded to v21.07.0, users are advised to delete newly created VolumeSnapshots (provisioned with v21.07.0) and downgrade to the previous release in use.</font>
+        </div>
 </div>
 {% endblock %}
