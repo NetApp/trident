@@ -2,7 +2,18 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.04.0
+## Changes since v21.07.0
+
+**Fixes:**
+- Fixed custom YAML installer issue with different image (Issue [#613](https://github.com/NetApp/trident/issues/613)).
+
+**Enhancements:**
+
+**Experimental Enhancements:**
+
+**Deprecations:**
+
+## v21.04.0
 
 - **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully
   read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing

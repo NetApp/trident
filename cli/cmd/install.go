@@ -1335,7 +1335,7 @@ func validateTridentDeployment() error {
 			appLabelKey, appLabelValue)
 	}
 
-	tridentImage := ""
+	tridentImage = ""
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		if container.Name == tridentconfig.ContainerTrident {
 			tridentImage = container.Image
@@ -1343,6 +1343,8 @@ func validateTridentDeployment() error {
 	}
 	if tridentImage == "" {
 		return fmt.Errorf("the Trident deployment must define the %s container", tridentconfig.ContainerTrident)
+	} else {
+		log.WithField("image", tridentImage).Debug("Read Trident image from custom YAML.")
 	}
 
 	return nil
