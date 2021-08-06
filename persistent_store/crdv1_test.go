@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -17,9 +17,6 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	//k8s_fake "k8s.io/client-go/kubernetes/fake"
-
 	k8stesting "k8s.io/client-go/testing"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -204,11 +201,10 @@ func TestKubernetesBackend(t *testing.T) {
 	NFSDriver := ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	}
-	NFSServer := &storage.Backend{
-		Driver: &NFSDriver,
-		Name:   "nfs-server-1-" + NFSServerConfig.ManagementLIF,
-	}
-	NFSServer.BackendUUID = uuid.New().String()
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&NFSDriver)
+	NFSServer.SetName("nfs-server-1-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 
 	err := p.AddBackend(ctx(), NFSServer)
 	if err != nil {
@@ -217,11 +213,10 @@ func TestKubernetesBackend(t *testing.T) {
 	}
 
 	// Getting a storage backend
-	//var recoveredBackend *storage.BackendPersistent
 	var ontapConfig drivers.OntapStorageDriverConfig
-	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name())
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	configJSON, err := recoveredBackend.MarshalConfig()
 	if err != nil {
@@ -249,9 +244,9 @@ func TestKubernetesBackend(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	recoveredBackend, err = p.GetBackend(ctx(), NFSServer.Name)
+	recoveredBackend, err = p.GetBackend(ctx(), NFSServer.Name())
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	configJSON, err = recoveredBackend.MarshalConfig()
 	if err != nil {
@@ -288,13 +283,12 @@ func TestKubernetesBackends(t *testing.T) {
 			Username:      "admin",
 			Password:      "netapp",
 		}
-		NFSServer := &storage.Backend{
-			Driver: &ontap.NASStorageDriver{
-				Config: NFSServerConfig,
-			},
-			Name:        "nfs-server-" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF,
-			BackendUUID: uuid.New().String(),
-		}
+		NFSServer := &storage.StorageBackend{}
+		NFSServer.SetDriver(&ontap.NASStorageDriver{
+			Config: NFSServerConfig,
+		})
+		NFSServer.SetName("nfs-server-" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF)
+		NFSServer.SetBackendUUID(uuid.New().String())
 
 		err = p.AddBackend(ctx(), NFSServer)
 		if err != nil {
@@ -333,7 +327,7 @@ func TestKubernetesBackends(t *testing.T) {
 				secretMap[key] = string(value)
 			}
 			for key, value := range secret.StringData {
-				secretMap[key] = string(value)
+				secretMap[key] = value
 			}
 
 			if secretMap["Username"] != NFSServerConfig.Username {
@@ -380,13 +374,12 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.Backend{
-		Driver: &ontap.NASStorageDriver{
-			Config: NFSServerConfig,
-		},
-		Name: "nfs-server-1-" + NFSServerConfig.ManagementLIF,
-	}
-	NFSServer.BackendUUID = uuid.New().String()
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	})
+	NFSServer.SetName("nfs-server-1-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 
 	err := p.AddBackend(ctx(), NFSServer)
 	if err != nil {
@@ -419,15 +412,14 @@ func TestKubernetesVolume(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.Backend{
-		Driver: &ontap.NASStorageDriver{
-			Config: NFSServerConfig,
-		},
-		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
-	}
-	NFSServer.BackendUUID = uuid.New().String()
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	})
+	NFSServer.SetName("NFS_server-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 	vol1Config := storage.VolumeConfig{
-		Version:      string(config.OrchestratorAPIVersion),
+		Version:      config.OrchestratorAPIVersion,
 		Name:         "vol1",
 		Size:         "1GB",
 		Protocol:     config.File,
@@ -435,7 +427,7 @@ func TestKubernetesVolume(t *testing.T) {
 	}
 	vol1 := &storage.Volume{
 		Config:      &vol1Config,
-		BackendUUID: NFSServer.BackendUUID,
+		BackendUUID: NFSServer.BackendUUID(),
 		Pool:        storagePool,
 	}
 	err := p.AddVolume(ctx(), vol1)
@@ -448,7 +440,7 @@ func TestKubernetesVolume(t *testing.T) {
 	var recoveredVolume *storage.VolumeExternal
 	recoveredVolume, err = p.GetVolume(ctx(), vol1.Config.Name)
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	if recoveredVolume.BackendUUID != vol1.BackendUUID || recoveredVolume.Config.Size != vol1.Config.Size {
 		t.Error("Recovered volume does not match!")
@@ -462,7 +454,7 @@ func TestKubernetesVolume(t *testing.T) {
 	}
 	recoveredVolume, err = p.GetVolume(ctx(), vol1.Config.Name)
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	if recoveredVolume.Config.Size != vol1Config.Size {
 		t.Error("Volume update failed!")
@@ -491,17 +483,16 @@ func TestKubernetesVolumes(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.Backend{
-		Driver: &ontap.NASStorageDriver{
-			Config: NFSServerConfig,
-		},
-		Name: "NFS_server-" + NFSServerConfig.ManagementLIF,
-	}
-	NFSServer.BackendUUID = uuid.New().String()
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	})
+	NFSServer.SetName("NFS_server-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 
 	for i := 1; i <= 5; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         "vol" + strconv.Itoa(i),
 			Size:         strconv.Itoa(i) + "GB",
 			Protocol:     config.File,
@@ -509,7 +500,7 @@ func TestKubernetesVolumes(t *testing.T) {
 		}
 		vol := &storage.Volume{
 			Config:      &volConfig,
-			BackendUUID: NFSServer.BackendUUID,
+			BackendUUID: NFSServer.BackendUUID(),
 		}
 		err = p.AddVolume(ctx(), vol)
 		if err != nil {
@@ -548,7 +539,7 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 	// Adding volume transactions
 	for i := 1; i <= 5; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         "vol" + strconv.Itoa(i),
 			Size:         strconv.Itoa(i) + "GB",
 			Protocol:     config.File,
@@ -606,7 +597,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 
 	firstTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         "testVol",
 			Size:         "1 GB",
 			Protocol:     config.File,
@@ -616,7 +607,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 	}
 	secondTxn := &storage.VolumeTransaction{
 		Config: &storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         "testVol",
 			Size:         "1 GB",
 			Protocol:     config.File,
@@ -659,21 +650,20 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 		},
 		TenantName: "docker",
 	}
-	sfBackend := &storage.Backend{
-		Driver: &solidfire.SANStorageDriver{
-			Config: sfConfig,
-		},
-		Name: "solidfire" + "_10.0.0.9",
-	}
-	sfBackend.BackendUUID = uuid.New().String()
+	sfBackend := &storage.StorageBackend{}
+	sfBackend.SetDriver(&solidfire.SANStorageDriver{
+		Config: sfConfig,
+	})
+	sfBackend.SetName("solidfire" + "_10.0.0.9")
+	sfBackend.SetBackendUUID(uuid.New().String())
 	if err = p.AddBackend(ctx(), sfBackend); err != nil {
 		t.Fatal(err.Error())
 	}
 
 	var retrievedConfig drivers.SolidfireStorageDriverConfig
-	recoveredBackend, err := p.GetBackend(ctx(), sfBackend.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), sfBackend.Name())
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	configJSON, err := recoveredBackend.MarshalConfig()
 	if err != nil {
@@ -767,17 +757,16 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	NFSDriver := ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	}
-	NFSServer := &storage.Backend{
-		Driver: &NFSDriver,
-		Name:   "ontapnas_" + NFSServerConfig.DataLIF,
-	}
-	NFSServer.BackendUUID = uuid.New().String()
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&NFSDriver)
+	NFSServer.SetName("ontapnas_" + NFSServerConfig.DataLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 	err = p.AddBackend(ctx(), NFSServer)
 	if err != nil {
 		t.Fatalf("Backend creation failed: %v\n", err)
 	}
 
-	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name)
+	recoveredBackend, err := p.GetBackend(ctx(), NFSServer.Name())
 	if err != nil {
 		t.Error(err.Error())
 		t.Fatalf("Backend lookup failed for:%v err: %v\n", recoveredBackend, err)
@@ -789,7 +778,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         fmt.Sprintf("vol%d", i),
 			Size:         "1GB",
 			Protocol:     config.File,
@@ -809,9 +798,8 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	}
 	log.Debugf("GetBackends: %v, %v\n", backends, err)
 	backend, err := p.GetBackend(ctx(), backends[0].Name)
-	if err != nil ||
-		backend.Name != NFSServer.Name {
-		t.Fatalf("Backend retrieval failed; backend:%v err:%v\n", backend.Name, err)
+	if err != nil || backend.Name != NFSServer.Name() {
+		t.Fatalf("Backend retrieval failed; backend: %v err: %v\n", backends[0].Name, err)
 	}
 	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
 	volumes, err := p.GetVolumes(ctx())
@@ -830,12 +818,11 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
 	}
 
-	newNFSServer := &storage.Backend{
-		Driver: &NFSDriver,
-		// Renaming the NFS server
-		Name:        "AFF",
-		BackendUUID: NFSServer.BackendUUID,
-	}
+	newNFSServer := &storage.StorageBackend{}
+	newNFSServer.SetDriver(&NFSDriver)
+	// Renaming the NFS server
+	newNFSServer.SetName("AFF")
+	newNFSServer.SetBackendUUID(NFSServer.BackendUUID())
 	err = p.ReplaceBackendAndUpdateVolumes(ctx(), NFSServer, newNFSServer)
 	if err != nil {
 		t.Fatalf("ReplaceBackendAndUpdateVolumes failed: %v\n", err)
@@ -848,9 +835,9 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	}
 	log.Debugf("GetBackends: %v, %v\n", backends, err)
 	backend, err = p.GetBackend(ctx(), backends[0].Name)
-	if err != nil ||
-		backend.Name != newNFSServer.Name {
-		t.Fatalf("Backend retrieval failed; backend.Name:%v newNFSServer.Name:%v err:%v\n", backend.Name, newNFSServer.Name, err)
+	if err != nil || backend.Name != newNFSServer.Name() {
+		t.Fatalf("Backend retrieval failed; backend.Name: %v newNFSServer.Name: %v err:%v\n", backends[0].Name,
+			newNFSServer.Name(), err)
 	}
 	log.Debugf("GetBackend(%v): %v, %v\n", backends[0].Name, backend, err)
 
@@ -862,19 +849,18 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	log.Debugf("GetVolumes: %v, %v\n", volumes, err)
 	for i := 0; i < 5; i++ {
 		volume, err := p.GetVolume(ctx(), fmt.Sprintf("vol%d", i))
+		if err != nil || volume.BackendUUID != recoveredBackend.BackendUUID {
+			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n", volume, err)
+		}
 		log.WithFields(log.Fields{
 			"volume":                   volume,
 			"volume.BackendUUID":       volume.BackendUUID,
-			"newNFSServer.Name":        newNFSServer.Name,
-			"newNFSServer.BackendUUID": newNFSServer.BackendUUID,
-			"NFSServer.Name":           newNFSServer.Name,
-			"NFSServer.BackendUUID":    NFSServer.BackendUUID,
+			"newNFSServer.Name":        newNFSServer.Name(),
+			"newNFSServer.BackendUUID": newNFSServer.BackendUUID(),
+			"NFSServer.Name":           newNFSServer.Name(),
+			"NFSServer.BackendUUID":    NFSServer.BackendUUID(),
 		}).Debug("GetVolumes.")
 
-		if err != nil || volume.BackendUUID != recoveredBackend.BackendUUID {
-			t.Fatalf("Volume retrieval failed; volume:%v err:%v\n",
-				volume, err)
-		}
 		log.Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
 	}
 
@@ -975,15 +961,14 @@ func TestKubernetesSnapshot(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.Backend{
-		Driver: &ontap.NASStorageDriver{
-			Config: NFSServerConfig,
-		},
-		Name:        "NFS_server-" + NFSServerConfig.ManagementLIF,
-		BackendUUID: uuid.New().String(),
-	}
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	})
+	NFSServer.SetName("NFS_server-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 	vol1Config := storage.VolumeConfig{
-		Version:      string(config.OrchestratorAPIVersion),
+		Version:      config.OrchestratorAPIVersion,
 		Name:         "vol1",
 		Size:         "1GB",
 		Protocol:     config.File,
@@ -991,7 +976,7 @@ func TestKubernetesSnapshot(t *testing.T) {
 	}
 	vol1 := &storage.Volume{
 		Config:      &vol1Config,
-		BackendUUID: NFSServer.BackendUUID,
+		BackendUUID: NFSServer.BackendUUID(),
 		Pool:        storagePool,
 	}
 	err := p.AddVolume(ctx(), vol1)
@@ -1065,17 +1050,16 @@ func TestKubernetesSnapshots(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.Backend{
-		Driver: &ontap.NASStorageDriver{
-			Config: NFSServerConfig,
-		},
-		Name:        "NFS_server-" + NFSServerConfig.ManagementLIF,
-		BackendUUID: uuid.New().String(),
-	}
+	NFSServer := &storage.StorageBackend{}
+	NFSServer.SetDriver(&ontap.NASStorageDriver{
+		Config: NFSServerConfig,
+	})
+	NFSServer.SetName("NFS_server-" + NFSServerConfig.ManagementLIF)
+	NFSServer.SetBackendUUID(uuid.New().String())
 
 	for i := 1; i <= 5; i++ {
 		volConfig := storage.VolumeConfig{
-			Version:      string(config.OrchestratorAPIVersion),
+			Version:      config.OrchestratorAPIVersion,
 			Name:         "vol" + strconv.Itoa(i),
 			Size:         strconv.Itoa(i) + "GB",
 			Protocol:     config.File,
@@ -1083,7 +1067,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 		}
 		vol := &storage.Volume{
 			Config:      &volConfig,
-			BackendUUID: NFSServer.BackendUUID,
+			BackendUUID: NFSServer.BackendUUID(),
 		}
 		err = p.AddVolume(ctx(), vol)
 		if err != nil {

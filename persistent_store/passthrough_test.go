@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -18,11 +18,11 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-func getFakeBackend() *storage.Backend {
+func getFakeBackend() *storage.StorageBackend {
 	return getFakeBackendWithName("fake_backend")
 }
 
-func getFakeBackendWithName(name string) *storage.Backend {
+func getFakeBackendWithName(name string) *storage.StorageBackend {
 
 	fakeConfig := drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -39,19 +39,19 @@ func getFakeBackendWithName(name string) *storage.Backend {
 	return fakeBackend
 }
 
-func getFakeVolume(fakeBackend *storage.Backend) *storage.Volume {
+func getFakeVolume(fakeBackend *storage.StorageBackend) *storage.Volume {
 	return getFakeVolumeWithName("fake_volume", fakeBackend)
 }
 
-func getFakeVolumeWithName(name string, fakeBackend *storage.Backend) *storage.Volume {
+func getFakeVolumeWithName(name string, fakeBackend *storage.StorageBackend) *storage.Volume {
 
 	volumeConfig := &storage.VolumeConfig{
 		Name:         name,
 		InternalName: name + "_internal",
 	}
 
-	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID,
-		fakeBackend.Storage["pool-0"].Name, false)
+	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID(),
+		fakeBackend.Storage()["pool-0"].Name, false)
 }
 
 func getFakeVolumeTransaction() *storage.VolumeTransaction {
@@ -121,7 +121,7 @@ func getFakeSnapshot() *storage.Snapshot {
 func newPassthroughClient() *PassthroughClient {
 	return &PassthroughClient{
 		bootBackends: make([]*storage.BackendPersistent, 0),
-		liveBackends: make(map[string]*storage.Backend),
+		liveBackends: make(map[string]storage.Backend),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "passthrough",
 			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
@@ -149,7 +149,10 @@ func TestPassthroughClient_NewPassthroughClientSingleFile(t *testing.T) {
 	if len(p.liveBackends) != 0 {
 		t.Error("Passthrough client should not have created a live backend!")
 	}
-	os.Remove(configPath)
+	err = os.Remove(configPath)
+	if err != nil {
+		t.Fatalf("could not remove file: %v", err)
+	}
 }
 
 func TestPassthroughClient_NewPassthroughClientDirectory(t *testing.T) {
@@ -180,9 +183,18 @@ func TestPassthroughClient_NewPassthroughClientDirectory(t *testing.T) {
 	if len(p.liveBackends) != 0 {
 		t.Error("Passthrough client should not have created a live backend!")
 	}
-	os.Remove(configPath + "/backend1")
-	os.Remove(configPath + "/backend2")
-	os.Remove(configPath)
+	err = os.Remove(configPath + "/backend1")
+	if err != nil {
+		t.Fatalf("could not remove file: %v", err)
+	}
+	err = os.Remove(configPath + "/backend2")
+	if err != nil {
+		t.Fatalf("could not remove file: %v", err)
+	}
+	err = os.Remove(configPath)
+	if err != nil {
+		t.Fatalf("could not remove file: %v", err)
+	}
 }
 
 func TestPassthroughClient_GetType(t *testing.T) {
@@ -231,8 +243,8 @@ func TestPassthroughClient_GetVersion(t *testing.T) {
 	result, _ := p.GetVersion(ctx())
 
 	expected := &config.PersistentStateVersion{
-		"passthrough",
-		config.OrchestratorAPIVersion,
+		PersistentStoreVersion: "passthrough",
+		OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 	}
 	if *result != *expected {
 		t.Error("Passthrough client returned unexpected version!")
@@ -242,14 +254,17 @@ func TestPassthroughClient_GetVersion(t *testing.T) {
 func TestPassthroughClient_SetVersion(t *testing.T) {
 	p := newPassthroughClient()
 
-	if err := p.SetVersion(ctx(), &config.PersistentStateVersion{"invalid", "unknown"}); err != nil {
+	if err := p.SetVersion(ctx(), &config.PersistentStateVersion{
+		PersistentStoreVersion: "invalid",
+		OrchestratorAPIVersion: "unknown",
+	}); err != nil {
 		t.Errorf("Error setting version: %v", err)
 	}
 
 	result, _ := p.GetVersion(ctx())
 	expected := &config.PersistentStateVersion{
-		"passthrough",
-		config.OrchestratorAPIVersion,
+		PersistentStoreVersion: "passthrough",
+		OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 	}
 	if *result != *expected {
 		t.Error("Passthrough client returned unexpected version!")
@@ -283,12 +298,11 @@ func TestPassthroughClient_GetBackend(t *testing.T) {
 	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
 		t.Errorf("Error adding backend: %v %v", fakeBackend, err)
 	}
-	result, err := p.GetBackend(ctx(), fakeBackend.Name)
-
+	result, err := p.GetBackend(ctx(), fakeBackend.Name())
 	if err != nil {
-		t.Error("Could not get backend from passthrough client!")
+		t.Fatal("Could not get backend from passthrough client!")
 	}
-	if result.Name != fakeBackend.Name {
+	if result.Name != fakeBackend.Name() {
 		t.Error("Got incorrect backend from passthrough client!")
 	}
 }
@@ -297,7 +311,7 @@ func TestPassthroughClient_GetBackendNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 
-	result, err := p.GetBackend(ctx(), fakeBackend.Name)
+	result, err := p.GetBackend(ctx(), fakeBackend.Name())
 
 	if result != nil || err == nil {
 		t.Error("Got incorrect backend from passthrough client!")
@@ -310,16 +324,16 @@ func TestPassthroughClient_UpdateBackend(t *testing.T) {
 	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
 		t.Errorf("Error adding backend: %v %v", fakeBackend, err)
 	}
-	fakeBackend.State = storage.Deleting
+	fakeBackend.SetState(storage.Deleting)
 
 	err := p.UpdateBackend(ctx(), fakeBackend)
 
 	if err != nil {
 		t.Error("Could not update backend on passthrough client!")
 	}
-	result, err := p.GetBackend(ctx(), fakeBackend.Name)
+	result, err := p.GetBackend(ctx(), fakeBackend.Name())
 	if err != nil {
-		t.Error("Could not get backend from passthrough client!")
+		t.Fatal("Could not get backend from passthrough client!")
 	}
 	if !result.State.IsDeleting() {
 		t.Error("Backend not updated on passthrough client!")
@@ -371,10 +385,10 @@ func TestPassthroughClient_DeleteBackendNonexistent(t *testing.T) {
 func TestPassthroughClient_GetBackends(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend1 := getFakeBackend()
-	fakeBackend1.Name = "fake1"
+	fakeBackend1.SetName("fake1")
 	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent(ctx()))
 	fakeBackend2 := getFakeBackend()
-	fakeBackend2.Name = "fake2"
+	fakeBackend2.SetName("fake2")
 	p.bootBackends = append(p.bootBackends, fakeBackend2.ConstructPersistent(ctx()))
 
 	result, err := p.GetBackends(ctx())
@@ -409,13 +423,13 @@ func TestPassthroughClient_GetBackendsNonexistent(t *testing.T) {
 func TestPassthroughClient_DeleteBackends(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend1 := getFakeBackend()
-	fakeBackend1.Name = "fake1"
+	fakeBackend1.SetName("fake1")
 	if err := p.AddBackend(ctx(), fakeBackend1); err != nil {
 		t.Errorf("Failure adding backend: %v %v", fakeBackend1, err)
 	}
 	p.bootBackends = append(p.bootBackends, fakeBackend1.ConstructPersistent(ctx()))
 	fakeBackend2 := getFakeBackend()
-	fakeBackend2.Name = "fake2"
+	fakeBackend2.SetName("fake2")
 	if err := p.AddBackend(ctx(), fakeBackend2); err != nil {
 		t.Errorf("Failure adding backend: %v %v", fakeBackend2, err)
 	}
@@ -599,7 +613,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_1",
 		Size:         "1000000000",
 	}
-	err := fakeBackend.Driver.Create(ctx(), volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	err := fakeBackend.Driver().Create(ctx(), volConfig, fakeBackend.Storage()["pool-0"], make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}
@@ -609,7 +623,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_2",
 		Size:         "2000000000",
 	}
-	err = fakeBackend.Driver.Create(ctx(), volConfig, fakeBackend.Storage["pool-0"], make(map[string]sa.Request))
+	err = fakeBackend.Driver().Create(ctx(), volConfig, fakeBackend.Storage()["pool-0"], make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}

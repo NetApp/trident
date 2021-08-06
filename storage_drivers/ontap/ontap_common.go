@@ -688,8 +688,10 @@ func PopulateOntapLunMapping(
 	)
 	response, err := clientAPI.IscsiServiceGetIterRequest()
 	if err != nil || response.Result.ResultStatusAttr != "passed" {
-		return fmt.Errorf("problem retrieving iSCSI services: %v, %v",
-			err, response.Result.ResultErrnoAttr)
+		if err == nil {
+			err = fmt.Errorf(response.Result.ResultErrnoAttr)
+		}
+		return fmt.Errorf("problem retrieving iSCSI services: %v", err)
 	}
 	if response.Result.AttributesListPtr != nil {
 		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
@@ -706,8 +708,10 @@ func PopulateOntapLunMapping(
 
 	lunSerialResponse, err := clientAPI.LunGetSerialNumber(lunPath)
 	if err != nil || "passed" != lunSerialResponse.Result.ResultStatusAttr {
-		return fmt.Errorf("problem retrieving LUN info: %v, %v", err,
-			lunSerialResponse.Result.ResultErrnoAttr)
+		if err == nil {
+			err = fmt.Errorf(lunSerialResponse.Result.ResultErrnoAttr)
+		}
+		return fmt.Errorf("problem retrieving LUN info: %v", err)
 	}
 	serial := lunSerialResponse.Result.SerialNumber()
 
@@ -1262,7 +1266,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
 		}
 
-		client.SVMUUID = string(vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid())
+		client.SVMUUID = vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid()
 
 		Logc(ctx).WithField("SVM", config.SVM).Debug("Using specified SVM.")
 		return client, nil
@@ -1280,7 +1284,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 
 	// Update everything to use our derived SVM
 	config.SVM = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverName()
-	svmUUID := string(vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid())
+	svmUUID := vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid()
 
 	client = api.NewClient(api.ClientConfig{
 		ManagementLIF:        config.ManagementLIF,
@@ -1882,7 +1886,7 @@ func probeForVolume(ctx context.Context, name string, client *api.Client) error 
 	}
 }
 
-// Create a volume clone
+// CreateOntapClone creates a volume clone
 func CreateOntapClone(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
@@ -2172,7 +2176,7 @@ func CreateSnapshot(
 	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
 }
 
-// Restore a volume (in place) from a snapshot.
+// RestoreSnapshot restore a volume (in place) from a snapshot.
 func RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client,
@@ -2418,10 +2422,11 @@ func getVserverAggrAttributes(
 
 	if result.Result.AttributesListPtr != nil {
 		for _, aggr := range result.Result.AttributesListPtr.ShowAggregatesPtr {
-			aggrName := string(aggr.AggregateName())
+			aggrName := aggr.AggregateName()
 			aggrType := aggr.AggregateType()
 
-			// Find matching pool.  There are likely more aggregates in the cluster than those assigned to this backend's SVM.
+			// Find matching pool. There are likely more aggregates in the cluster than those assigned to this
+			// backend's SVM.
 			_, ok := (*poolsAttributeMap)[aggrName]
 			if !ok {
 				continue
@@ -2871,10 +2876,11 @@ func ValidateStoragePools(
 }
 
 // getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
-func getStorageBackendSpecsCommon(backend *storage.Backend, physicalPools,
-	virtualPools map[string]*storage.Pool, backendName string) (err error) {
+func getStorageBackendSpecsCommon(
+	backend storage.Backend, physicalPools, virtualPools map[string]*storage.Pool, backendName string,
+) (err error) {
 
-	backend.Name = backendName
+	backend.SetName(backendName)
 
 	virtual := len(virtualPools) > 0
 
@@ -3100,7 +3106,8 @@ func resizeValidation(
 	return volSizeBytes, nil
 }
 
-// Unmount a volume and then take it offline. This may need to be done before deleting certain types of volumes.
+// UnmountAndOfflineVolumeAbstraction unmounts a volume and then take it offline.
+// This may need to be done before deleting certain types of volumes.
 func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, name string) (bool, error) {
 
 	// This call is sync and idempotent
@@ -3200,6 +3207,9 @@ func getSnapshotReserveFromOntap(
 	snapshotPolicy := ""
 	snapshotReserveInt := 0
 	flexvol, err := volumeGet(name)
+	if err != nil {
+		return 0, fmt.Errorf("error getting volume: %v", err)
+	}
 	if flexvol.VolumeSnapshotAttributesPtr == nil || flexvol.VolumeSnapshotAttributesPtr.SnapshotPolicyPtr == nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot policy for volume")
 	} else {

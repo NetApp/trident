@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -25,7 +25,7 @@ import (
 )
 
 type PassthroughClient struct {
-	liveBackends map[string]*storage.Backend
+	liveBackends map[string]storage.Backend
 	bootBackends []*storage.BackendPersistent
 	version      *config.PersistentStateVersion
 }
@@ -46,7 +46,7 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 	client := &PassthroughClient{
-		liveBackends: make(map[string]*storage.Backend),
+		liveBackends: make(map[string]storage.Backend),
 		bootBackends: make([]*storage.BackendPersistent, 0),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "passthrough",
@@ -185,8 +185,7 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 		Version: config.OrchestratorAPIVersion,
 		Config:  storage.PersistentStorageBackendConfig{},
 		Name:    "",
-		//Online:  true,
-		State: storage.Online,
+		State:   storage.Online,
 	}
 	persistentBackendJSON, _ := json.Marshal(persistentBackend)
 
@@ -200,7 +199,7 @@ func (c *PassthroughClient) GetType() StoreType {
 }
 
 func (c *PassthroughClient) Stop() error {
-	c.liveBackends = make(map[string]*storage.Backend)
+	c.liveBackends = make(map[string]storage.Backend)
 	c.bootBackends = make([]*storage.BackendPersistent, 0)
 	return nil
 }
@@ -217,15 +216,15 @@ func (c *PassthroughClient) SetVersion(context.Context, *config.PersistentStateV
 	return nil
 }
 
-func (c *PassthroughClient) AddBackend(ctx context.Context, backend *storage.Backend) error {
+func (c *PassthroughClient) AddBackend(ctx context.Context, backend storage.Backend) error {
 
 	// The passthrough store persists backends for the purpose of contacting
 	// the storage controllers.  If the store ever needs to write backends
 	// back to a file system for subsequent bootstrapping, that logic will live
 	// here and in UpdateBackend().
 
-	Logc(ctx).WithField("backend", backend.Name).Debugf("Passthrough store adding backend.")
-	c.liveBackends[backend.Name] = backend
+	Logc(ctx).WithField("backend", backend.Name()).Debugf("Passthrough store adding backend.")
+	c.liveBackends[backend.Name()] = backend
 	return nil
 }
 
@@ -248,14 +247,14 @@ func (c *PassthroughClient) GetBackendSecret(_ context.Context, _ string) (map[s
 	return nil, nil
 }
 
-func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend *storage.Backend) error {
+func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend storage.Backend) error {
 
-	if _, ok := c.liveBackends[backend.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
+	if _, ok := c.liveBackends[backend.Name()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
 	}
 
-	Logc(ctx).Debugf("Passthrough store updating backend: %s", backend.Name)
-	c.liveBackends[backend.Name] = backend
+	Logc(ctx).Debugf("Passthrough store updating backend: %s", backend.Name())
+	c.liveBackends[backend.Name()] = backend
 	return nil
 }
 
@@ -264,26 +263,26 @@ func (c *PassthroughClient) UpdateBackendPersistent(context.Context, *storage.Ba
 	return nil
 }
 
-func (c *PassthroughClient) DeleteBackend(_ context.Context, backend *storage.Backend) error {
+func (c *PassthroughClient) DeleteBackend(_ context.Context, backend storage.Backend) error {
 
-	if _, ok := c.liveBackends[backend.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, backend.Name)
+	if _, ok := c.liveBackends[backend.Name()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
 	}
 
-	delete(c.liveBackends, backend.Name)
+	delete(c.liveBackends, backend.Name())
 	return nil
 }
 
-func (c *PassthroughClient) IsBackendDeleting(_ context.Context, backend *storage.Backend) bool {
+func (c *PassthroughClient) IsBackendDeleting(context.Context, storage.Backend) bool {
 	return false
 }
 
 // ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
 // reflect the new backend name
 func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(
-	context.Context, *storage.Backend, *storage.Backend,
+	context.Context, storage.Backend, storage.Backend,
 ) error {
-	//TODO
+	// TODO
 	return NewPersistentStoreError(NotSupported, "")
 }
 
@@ -300,7 +299,7 @@ func (c *PassthroughClient) GetBackends(context.Context) ([]*storage.BackendPers
 }
 
 func (c *PassthroughClient) DeleteBackends(context.Context) error {
-	c.liveBackends = make(map[string]*storage.Backend)
+	c.liveBackends = make(map[string]storage.Backend)
 	return nil
 }
 
@@ -376,7 +375,7 @@ func (c *PassthroughClient) GetVolumes(ctx context.Context) ([]*storage.VolumeEx
 // This method is designed to run in a goroutine, so it passes its results back
 // via a channel that is shared by all such goroutines.
 func (c *PassthroughClient) getVolumesFromBackend(
-	ctx context.Context, backend *storage.Backend, volumeChannel chan *storage.VolumeExternalWrapper,
+	ctx context.Context, backend storage.Backend, volumeChannel chan *storage.VolumeExternalWrapper,
 	waitGroup *sync.WaitGroup,
 ) {
 	defer waitGroup.Done()
@@ -384,11 +383,10 @@ func (c *PassthroughClient) getVolumesFromBackend(
 	// Create a channel that each backend can use, then copy values from
 	// there to the common channel until the backend channel is closed.
 	backendChannel := make(chan *storage.VolumeExternalWrapper)
-	go backend.Driver.GetVolumeExternalWrappers(ctx, backendChannel)
+	go backend.Driver().GetVolumeExternalWrappers(ctx, backendChannel)
 	for volume := range backendChannel {
 		if volume.Volume != nil {
-			//volume.Volume.Backend = backend.Name
-			volume.Volume.BackendUUID = backend.BackendUUID
+			volume.Volume.BackendUUID = backend.BackendUUID()
 		}
 		volumeChannel <- volume
 	}

@@ -85,7 +85,7 @@ func (s *StorageClass) regexMatcherImpl(
 
 	poolsMatch := false
 	for _, storagePoolName := range storagePoolList {
-		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend.Name)
+		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend.Name())
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"storagePoolName":          storagePoolName,
@@ -225,20 +225,20 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) b
 // CheckAndAddBackend iterates through each of the storage pools
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
-func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b *storage.Backend) int {
+func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend) int {
 
 	Logc(ctx).WithFields(log.Fields{
-		"backend":      b.Name,
+		"backend":      b.Name(),
 		"storageClass": s.GetName(),
 	}).Debug("Checking backend for storage class")
 
-	if !b.State.IsOnline() {
-		Logc(ctx).WithField("backend", b.Name).Warn("Backend not online.")
+	if !b.State().IsOnline() {
+		Logc(ctx).WithField("backend", b.Name()).Warn("Backend not online.")
 		return 0
 	}
 
 	added := 0
-	for _, storagePool := range b.Storage {
+	for _, storagePool := range b.Storage() {
 		if s.Matches(ctx, storagePool) {
 			s.pools = append(s.pools, storagePool)
 			storagePool.AddStorageClass(s.GetName())
@@ -252,9 +252,9 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b *storage.Backen
 	return added
 }
 
-func (s *StorageClass) IsAddedToBackend(backend *storage.Backend, storageClassName string) bool {
+func (s *StorageClass) IsAddedToBackend(backend storage.Backend, storageClassName string) bool {
 
-	for _, storagePool := range backend.Storage {
+	for _, storagePool := range backend.Storage() {
 		for _, storageClass := range storagePool.StorageClasses {
 			if storageClass == storageClassName {
 				return true
@@ -265,7 +265,7 @@ func (s *StorageClass) IsAddedToBackend(backend *storage.Backend, storageClassNa
 	return false
 }
 
-func (s *StorageClass) RemovePoolsForBackend(backend *storage.Backend) {
+func (s *StorageClass) RemovePoolsForBackend(backend storage.Backend) {
 	newStoragePools := make([]*storage.Pool, 0)
 	for _, storagePool := range s.pools {
 		if storagePool.Backend != backend {
@@ -303,7 +303,7 @@ func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.
 }
 
 // isTopologySupportedByPool returns whether the specific pool can create volumes accessible by the given topology
-func isTopologySupportedByPool(ctx context.Context, pool *storage.Pool, topology map[string]string) bool {
+func isTopologySupportedByPool(_ context.Context, pool *storage.Pool, topology map[string]string) bool {
 	requisiteFound := false
 	for _, supported := range pool.SupportedTopologies {
 		eachFound := true
@@ -424,7 +424,7 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 		StoragePools: make(map[string][]string),
 	}
 	for _, storagePool := range s.pools {
-		backendName := storagePool.Backend.Name
+		backendName := storagePool.Backend.Name()
 		if storagePoolList, ok := ret.StoragePools[backendName]; ok {
 			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),

@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -32,16 +32,18 @@ type Client interface {
 	GetType() StoreType
 	Stop() error
 
-	AddBackend(ctx context.Context, b *storage.Backend) error
+	AddBackend(ctx context.Context, b storage.Backend) error
 	AddBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
 	GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error)
-	UpdateBackend(ctx context.Context, b *storage.Backend) error
+	UpdateBackend(ctx context.Context, b storage.Backend) error
 	UpdateBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
-	DeleteBackend(ctx context.Context, backend *storage.Backend) error
-	IsBackendDeleting(ctx context.Context, backend *storage.Backend) bool
+	DeleteBackend(ctx context.Context, backend storage.Backend) error
+	IsBackendDeleting(ctx context.Context, backend storage.Backend) bool
 	GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error)
 	DeleteBackends(ctx context.Context) error
-	ReplaceBackendAndUpdateVolumes(ctx context.Context, origBackend, newBackend *storage.Backend) error
+	ReplaceBackendAndUpdateVolumes(
+		ctx context.Context, origBackend storage.Backend, newBackend storage.Backend,
+	) error
 	GetBackendSecret(ctx context.Context, secretName string) (map[string]string, error)
 
 	AddVolume(ctx context.Context, vol *storage.Volume) error

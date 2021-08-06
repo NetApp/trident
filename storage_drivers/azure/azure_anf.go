@@ -1194,7 +1194,7 @@ func (d *NFSStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	return nil, nil
 }
 
-// Return the list of snapshots associated with the specified volume
+// GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *NFSStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
@@ -1386,7 +1386,7 @@ func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	return nil
 }
 
-// Return the list of volumes associated with this tenant
+// List returns the list of volumes associated with this tenant
 func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1422,7 +1422,7 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 	return volumeNames, nil
 }
 
-// Get is a test for the existence of a volume
+// Get tests for the existence of a volume
 func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1500,10 +1500,10 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	return nil
 }
 
-// Retrieve storage capabilities and register pools with specified backend.
-func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+// GetStorageBackendSpecs retrieves storage capabilities and register pools with specified backend.
+func (d *NFSStorageDriver) GetStorageBackendSpecs(ctx context.Context, backend storage.Backend) error {
 
-	backend.Name = d.BackendName()
+	backend.SetName(d.BackendName())
 
 	for _, pool := range d.pools {
 		pool.Backend = backend
@@ -1517,7 +1517,7 @@ func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
 }
@@ -1586,8 +1586,9 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = drivers.REDACTED                                                                       // redact the Secret
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
+	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED,
+		drivers.KeyType: drivers.REDACTED} // redact the credentials
 	return cloneConfig
 }
 
@@ -1675,12 +1676,12 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *sdk.FileSystem) *stora
 	}
 }
 
-// Implement stringer interface for the NFSStorageDriver driver
+// String implements stringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) String() string {
 	return drivers.ToString(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
-// Implement GoStringer interface for the NFSStorageDriver driver
+// GoString implements GoStringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) GoString() string {
 	return d.String()
 }

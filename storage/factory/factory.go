@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package factory
 
@@ -63,7 +63,7 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (commonConfi
 }
 
 func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (sb *storage.Backend,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (sb storage.Backend,
 	err error) {
 
 	// Some drivers may panic during initialize if given invalid parameters,
@@ -143,7 +143,7 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID str
 		Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
 	}
 
-	sb.State = storage.Online
+	sb.SetState(storage.Online)
 
 	return sb, err
 }

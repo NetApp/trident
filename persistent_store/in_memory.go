@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -37,7 +37,7 @@ func NewInMemoryClient() *InMemoryClient {
 		nodes:          make(map[string]*utils.Node),
 		snapshots:      make(map[string]*storage.SnapshotPersistent),
 		version: &config.PersistentStateVersion{
-			"memory", config.OrchestratorAPIVersion,
+			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
 	}
 }
@@ -68,7 +68,7 @@ func (c *InMemoryClient) SetVersion(context.Context, *config.PersistentStateVers
 	return nil
 }
 
-func (c *InMemoryClient) AddBackend(ctx context.Context, b *storage.Backend) error {
+func (c *InMemoryClient) AddBackend(ctx context.Context, b storage.Backend) error {
 	backend := b.ConstructPersistent(ctx)
 	if _, ok := c.backends[backend.Name]; ok {
 		return fmt.Errorf("backend %s already exists", backend.Name)
@@ -99,12 +99,12 @@ func (c *InMemoryClient) GetBackendSecret(_ context.Context, _ string) (map[stri
 	return nil, nil
 }
 
-func (c *InMemoryClient) UpdateBackend(ctx context.Context, b *storage.Backend) error {
+func (c *InMemoryClient) UpdateBackend(ctx context.Context, b storage.Backend) error {
 	// UpdateBackend requires the backend to already exist.
-	if _, ok := c.backends[b.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
+	if _, ok := c.backends[b.Name()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, b.Name())
 	}
-	c.backends[b.Name] = b.ConstructPersistent(ctx)
+	c.backends[b.Name()] = b.ConstructPersistent(ctx)
 	return nil
 }
 
@@ -118,24 +118,24 @@ func (c *InMemoryClient) UpdateBackendPersistent(_ context.Context, update *stor
 	return nil
 }
 
-func (c *InMemoryClient) DeleteBackend(_ context.Context, b *storage.Backend) error {
-	if _, ok := c.backends[b.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, b.Name)
+func (c *InMemoryClient) DeleteBackend(ctx context.Context, b storage.Backend) error {
+	if _, ok := c.backends[b.Name()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, b.Name())
 	}
-	delete(c.backends, b.Name)
+	delete(c.backends, b.Name())
 	return nil
 }
 
-func (c *InMemoryClient) IsBackendDeleting(_ context.Context, b *storage.Backend) bool {
+func (c *InMemoryClient) IsBackendDeleting(ctx context.Context, backend storage.Backend) bool {
 	return false
 }
 
 // ReplaceBackendAndUpdateVolumes renames a backend and updates all volumes to
 // reflect the new backend name
 func (c *InMemoryClient) ReplaceBackendAndUpdateVolumes(
-	context.Context, *storage.Backend, *storage.Backend,
+	context.Context, storage.Backend, storage.Backend,
 ) error {
-	//TODO
+	// TODO
 	return NewPersistentStoreError(NotSupported, "")
 }
 
@@ -406,7 +406,7 @@ func (c *InMemoryClient) DeleteSnapshot(_ context.Context, snapshot *storage.Sna
 	return nil
 }
 
-// DeleteVolumeIgnoreNotFound deletes a snapshot from the persistent store,
+// DeleteSnapshotIgnoreNotFound deletes a snapshot from the persistent store,
 // returning no error if the record does not exist.
 func (c *InMemoryClient) DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error {
 	_ = c.DeleteSnapshot(ctx, snapshot)

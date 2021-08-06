@@ -71,7 +71,7 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 }
 
 type TridentOrchestrator struct {
-	backends             map[string]*storage.Backend // key is UUID, not name
+	backends             map[string]storage.Backend // key is UUID, not name
 	volumes              map[string]*storage.Volume
 	frontends            map[string]frontend.Plugin
 	mutex                *sync.Mutex
@@ -91,7 +91,7 @@ type TridentOrchestrator struct {
 // NewTridentOrchestrator returns a storage orchestrator instance
 func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator {
 	return &TridentOrchestrator{
-		backends:       make(map[string]*storage.Backend), // key is UUID, not name
+		backends:       make(map[string]storage.Backend), // key is UUID, not name
 		volumes:        make(map[string]*storage.Volume),
 		frontends:      make(map[string]frontend.Plugin),
 		storageClasses: make(map[string]*storageclass.StorageClass),
@@ -212,9 +212,9 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 
 			if newBackendExternal != nil {
 				newBackend, _ := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, b.BackendUUID)
-				newBackend.BackendUUID = b.BackendUUID
-				newBackend.ConfigRef = b.ConfigRef
-				newBackend.Name = b.Name
+				newBackend.SetBackendUUID(b.BackendUUID)
+				newBackend.SetConfigRef(b.ConfigRef)
+				newBackend.SetName(b.Name)
 				newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
 				o.backends[newBackendExternal.BackendUUID] = newBackend
 
@@ -234,21 +234,21 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 		// added backend, so we have to go fetch it manually.
 		newBackend, found := o.backends[b.BackendUUID]
 		if found {
-			newBackend.Online = b.Online
+			newBackend.SetOnline(b.Online)
 			if backendErr != nil {
-				newBackend.State = storage.Failed
+				newBackend.SetState(storage.Failed)
 			} else {
 				if b.State == storage.Deleting {
-					newBackend.State = storage.Deleting
+					newBackend.SetState(storage.Deleting)
 				}
 			}
 			Logc(ctx).WithFields(log.Fields{
-				"backend":                        newBackend.Name,
-				"backendUUID":                    newBackend.BackendUUID,
-				"configRef":                      newBackend.ConfigRef,
+				"backend":                        newBackend.Name(),
+				"backendUUID":                    newBackend.BackendUUID(),
+				"configRef":                      newBackend.ConfigRef(),
 				"persistentBackends.BackendUUID": b.BackendUUID,
-				"online":                         newBackend.Online,
-				"state":                          newBackend.State,
+				"online":                         newBackend.Online(),
+				"state":                          newBackend.State(),
 				"handler":                        "Bootstrap",
 			}).Info("Added an existing backend.")
 		} else {
@@ -304,7 +304,7 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 	volCount := 0
 	for _, v := range volumes {
 		// TODO:  If the API evolves, check the Version field here.
-		var backend *storage.Backend
+		var backend storage.Backend
 		var ok bool
 		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned)
 		o.volumes[vol.Config.Name] = vol
@@ -316,8 +316,8 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 			}).Warning("Couldn't find backend. Setting state to MissingBackend.")
 			vol.State = storage.VolumeStateMissingBackend
 		} else {
-			backend.Volumes[vol.Config.Name] = vol
-			if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+			backend.Volumes()[vol.Config.Name] = vol
+			if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
 				fakeDriver.BootstrapVolume(ctx, vol)
 			}
 		}
@@ -357,7 +357,7 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 			if !ok {
 				snapshot.State = storage.SnapshotStateMissingBackend
 			} else {
-				if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+				if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
 					fakeDriver.BootstrapSnapshot(ctx, snapshot)
 				}
 			}
@@ -437,11 +437,11 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 	// Clean up any offline backends that lack volumes.  This can happen if
 	// a connection to the store fails when attempting to delete a backend.
 	for backendUUID, backend := range o.backends {
-		if backend.State.IsFailed() {
+		if backend.State().IsFailed() {
 			continue
 		}
 
-		if !backend.HasVolumes() && (backend.State.IsDeleting() || o.storeClient.IsBackendDeleting(ctx, backend)) {
+		if !backend.HasVolumes() && (backend.State().IsDeleting() || o.storeClient.IsBackendDeleting(ctx, backend)) {
 			backend.Terminate(ctx)
 			delete(o.backends, backendUUID)
 			err := o.storeClient.DeleteBackend(ctx, backend)
@@ -480,8 +480,9 @@ func (o *TridentOrchestrator) updateMetrics() {
 	backendsGauge.Reset()
 	tridentBackendInfo.Reset()
 	for _, backend := range o.backends {
-		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State.String()).Inc()
-		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name, backend.BackendUUID).Set(float64(1))
+		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State().String()).Inc()
+		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name(),
+			backend.BackendUUID()).Set(float64(1))
 	}
 
 	volumesGauge.Reset()
@@ -497,7 +498,7 @@ func (o *TridentOrchestrator) updateMetrics() {
 				string(volume.State),
 				string(volume.Config.VolumeMode)).Inc()
 
-			volumeAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID, string(volume.State),
+			volumeAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID(), string(volume.State),
 				string(volume.Config.VolumeMode)).Add(bytes)
 		}
 	}
@@ -515,7 +516,7 @@ func (o *TridentOrchestrator) updateMetrics() {
 				snapshotGauge.WithLabelValues(
 					driverName,
 					vol.BackendUUID).Inc()
-				snapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID).
+				snapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID()).
 					Add(float64(snapshot.SizeBytes))
 			}
 		}
@@ -579,7 +580,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 			for _, backend := range o.backends {
 				// Backend offlining is serialized with volume creation,
 				// so we can safely skip offline backends.
-				if !backend.State.IsOnline() && !backend.State.IsDeleting() {
+				if !backend.State().IsOnline() && !backend.State().IsDeleting() {
 					continue
 				}
 				// Volume deletion is an idempotent operation, so it's safe to
@@ -587,7 +588,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 
 				if err := backend.RemoveVolume(ctx, v.Config); err != nil {
 					return fmt.Errorf("error attempting to clean up volume %s from backend %s: %v", v.Config.Name,
-						backend.Name, err)
+						backend.Name(), err)
 				}
 			}
 		}
@@ -642,7 +643,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 			// Handles case 2)
 			for _, backend := range o.backends {
 				// Skip backends that aren't ready to accept a snapshot delete operation
-				if !backend.State.IsOnline() && !backend.State.IsDeleting() {
+				if !backend.State().IsOnline() && !backend.State().IsDeleting() {
 					continue
 				}
 				// Snapshot deletion is an idempotent operation, so it's safe to
@@ -650,7 +651,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 				err := backend.DeleteSnapshot(ctx, v.SnapshotConfig, v.Config)
 				if err != nil && !utils.IsUnsupportedError(err) {
 					return fmt.Errorf("error attempting to clean up snapshot %s from backend %s: %v",
-						v.SnapshotConfig.Name, backend.Name, err)
+						v.SnapshotConfig.Name, backend.Name(), err)
 				}
 			}
 		}
@@ -798,9 +799,7 @@ func (o *TridentOrchestrator) GetFrontend(ctx context.Context, name string) (fro
 	}
 }
 
-func (o *TridentOrchestrator) validateBackendUpdate(
-	oldBackend *storage.Backend, newBackend *storage.Backend,
-) error {
+func (o *TridentOrchestrator) validateBackendUpdate(oldBackend, newBackend storage.Backend) error {
 	// Validate that backend type isn't being changed as backend type has
 	// implications for the internal volume names.
 	if oldBackend.GetDriverName() != newBackend.GetDriverName() {
@@ -852,7 +851,7 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 
 	var (
 		newBackend = true
-		backend    *storage.Backend
+		backend    storage.Backend
 	)
 
 	defer func() {
@@ -865,8 +864,8 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 
 	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
 	if backend != nil {
-		backend.BackendUUID = backendUUID
-		backend.ConfigRef = configRef
+		backend.SetBackendUUID(backendUUID)
+		backend.SetConfigRef(configRef)
 	}
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -876,26 +875,26 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 			"configRef":   configRef,
 		}).Debug("NewStorageBackendForConfig failed.")
 
-		if backend != nil && backend.State.IsFailed() {
+		if backend != nil && backend.State().IsFailed() {
 			return backend.ConstructExternal(ctx), err
 		}
 		return nil, err
 	}
 
 	// can we find this backend by UUID? (if so, it's an update)
-	foundBackend := o.backends[backend.BackendUUID]
+	foundBackend := o.backends[backend.BackendUUID()]
 	if foundBackend != nil {
 		// Let the updateBackend method handle an existing backend
 		newBackend = false
-		return o.updateBackend(ctx, backend.Name, configJSON, configRef)
+		return o.updateBackend(ctx, backend.Name(), configJSON, configRef)
 	}
 
 	// can we find this backend by name instead of UUID? (if so, it's also an update)
-	foundBackend, _ = o.getBackendByBackendName(backend.Name)
+	foundBackend, _ = o.getBackendByBackendName(backend.Name())
 	if foundBackend != nil {
 		// Let the updateBackend method handle an existing backend
 		newBackend = false
-		return o.updateBackend(ctx, backend.Name, configJSON, configRef)
+		return o.updateBackend(ctx, backend.Name(), configJSON, configRef)
 	}
 
 	if configRef != "" {
@@ -905,32 +904,32 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 			// IDEALLY WE SHOULD NOT BE HERE:
 			// If we are here it means that there already exists a backend with the
 			// given configRef but the backendName and backendUUID of that backend
-			// do not match backend.Name or the backend.BackendUUID, this can only
+			// do not match backend.Name() or the backend.BackendUUID(), this can only
 			// happen with a newly created tbc which failed to updated status
 			// on success and had a name change in the next reconcile loop.
 			Logc(ctx).WithFields(log.Fields{
-				"backendName":    foundBackend.Name,
-				"backendUUID":    foundBackend.BackendUUID,
-				"newBackendName": backend.Name,
-				"newbackendUUID": backend.BackendUUID,
+				"backendName":    foundBackend.Name(),
+				"backendUUID":    foundBackend.BackendUUID(),
+				"newBackendName": backend.Name(),
+				"newbackendUUID": backend.BackendUUID(),
 			}).Debug("Backend found by configRef.")
 
 			// Let the updateBackend method handle an existing backend
 			newBackend = false
-			return o.updateBackend(ctx, foundBackend.Name, configJSON, configRef)
+			return o.updateBackend(ctx, foundBackend.Name(), configJSON, configRef)
 		}
 	}
 
 	// not found by name OR by UUID, we're adding a new backend
 	Logc(ctx).WithFields(log.Fields{
-		"backend":             backend.Name,
-		"backend.BackendUUID": backend.BackendUUID,
-		"backend.ConfigRef":   backend.ConfigRef,
+		"backend":             backend.Name(),
+		"backend.BackendUUID": backend.BackendUUID(),
+		"backend.ConfigRef":   backend.ConfigRef(),
 	}).Debug("Adding a new backend.")
 	if err = o.updateBackendOnPersistentStore(ctx, backend, true); err != nil {
 		return nil, err
 	}
-	o.backends[backend.BackendUUID] = backend
+	o.backends[backend.BackendUUID()] = backend
 
 	// Update storage class information
 	classes := make([]string, 0, len(o.storageClasses))
@@ -941,11 +940,11 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 	}
 	if len(classes) == 0 {
 		Logc(ctx).WithFields(log.Fields{
-			"backend": backend.Name,
+			"backend": backend.Name(),
 		}).Info("Newly added backend satisfies no storage classes.")
 	} else {
 		Logc(ctx).WithFields(log.Fields{
-			"backend": backend.Name,
+			"backend": backend.Name(),
 		}).Infof("Newly added backend satisfies storage classes %s.", strings.Join(classes, ", "))
 	}
 
@@ -954,7 +953,7 @@ func (o *TridentOrchestrator) addBackend(ctx context.Context, configJSON,
 
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
 func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(ctx context.Context,
-	configJSON string, backendUUID string) (backendExternal *storage.Backend, err error) {
+	configJSON string, backendUUID string) (backendExternal storage.Backend, err error) {
 
 	var backendSecret map[string]string
 
@@ -1028,7 +1027,7 @@ func (o *TridentOrchestrator) updateBackend(ctx context.Context, backendName, co
 	if err != nil {
 		return nil, err
 	}
-	backendUUID := backendToUpdate.BackendUUID
+	backendUUID := backendToUpdate.BackendUUID()
 
 	return o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID, configRef)
 }
@@ -1073,7 +1072,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 ) (backendExternal *storage.BackendExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 	)
 
 	// Check whether the backend exists.
@@ -1085,13 +1084,13 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	logFields := log.Fields{"backendName": backendName, "backendUUID": backendUUID, "configJSON": "<suppressed>"}
 
 	Logc(ctx).WithFields(log.Fields{
-		"originalBackend.Name":        originalBackend.Name,
-		"originalBackend.BackendUUID": originalBackend.BackendUUID,
-		"originalBackend.ConfigRef":   originalBackend.ConfigRef,
-		"GetExternalConfig":           originalBackend.Driver.GetExternalConfig(ctx),
+		"originalBackend.Name":        originalBackend.Name(),
+		"originalBackend.BackendUUID": originalBackend.BackendUUID(),
+		"originalBackend.ConfigRef":   originalBackend.ConfigRef(),
+		"GetExternalConfig":           originalBackend.Driver().GetExternalConfig(ctx),
 	}).Debug("found original backend")
 
-	originalConfigRef := originalBackend.ConfigRef
+	originalConfigRef := originalBackend.ConfigRef()
 
 	// Do not allow update of TridentBackendConfig-based backends using tridentctl
 	if originalConfigRef != "" {
@@ -1114,21 +1113,21 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		ctxSource := ctx.Value(ContextKeyRequestSource)
 		if originalConfigRef == "" && ctxSource != nil && ctxSource == ContextSourceCRD {
 			Logc(ctx).WithFields(log.Fields{
-				"backendName":             originalBackend.Name,
-				"backendUUID":             originalBackend.BackendUUID,
+				"backendName":             originalBackend.Name(),
+				"backendUUID":             originalBackend.BackendUUID(),
 				"originalConfigRef":       originalConfigRef,
 				"TridentBackendConfigUID": callingConfigRef,
 			}).Infof("Backend is not bound to any Trident Backend Config, attempting to bind it.")
 		} else {
 			Logc(ctx).WithFields(log.Fields{
-				"backendName":       originalBackend.Name,
-				"backendUUID":       originalBackend.BackendUUID,
+				"backendName":       originalBackend.Name(),
+				"backendUUID":       originalBackend.BackendUUID(),
 				"originalConfigRef": originalConfigRef,
 				"invalidConfigRef":  callingConfigRef,
 			}).Errorf("Backend update initiated using an invalid ConfigRef.")
 			return nil, utils.UnsupportedConfigError(fmt.Errorf(
 				"backend '%v' update initiated using an invalid configRef, it is associated with configRef "+
-					"'%v' and not '%v'", originalBackend.Name, originalConfigRef, callingConfigRef))
+					"'%v' and not '%v'", originalBackend.Name(), originalConfigRef, callingConfigRef))
 		}
 	}
 
@@ -1146,16 +1145,16 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	if err != nil {
 		return nil, err
 	}
-	backend.BackendUUID = backendUUID
-	backend.ConfigRef = callingConfigRef
+	backend.SetBackendUUID(backendUUID)
+	backend.SetConfigRef(callingConfigRef)
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}
 	Logc(ctx).WithFields(log.Fields{
-		"originalBackend.Name":        originalBackend.Name,
-		"originalBackend.BackendUUID": originalBackend.BackendUUID,
-		"backend":                     backend.Name,
-		"backend.BackendUUID":         backend.BackendUUID,
+		"originalBackend.Name":        originalBackend.Name(),
+		"originalBackend.BackendUUID": originalBackend.BackendUUID(),
+		"backend":                     backend.Name(),
+		"backend.BackendUUID":         backend.BackendUUID(),
 		"backendUUID":                 backendUUID,
 	}).Debug("Updating an existing backend.")
 
@@ -1181,23 +1180,23 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.BackendRename):
-		checkingBackend, lookupErr := o.getBackendByBackendName(backend.Name)
+		checkingBackend, lookupErr := o.getBackendByBackendName(backend.Name())
 		if lookupErr == nil {
 			// Don't rename if the name is already in use
-			err := fmt.Errorf("backend name %v is already in use by %v", backend.Name, checkingBackend.BackendUUID)
+			err := fmt.Errorf("backend name %v is already in use by %v", backend.Name(), checkingBackend.BackendUUID())
 			Logc(ctx).WithField("error", err).Error("Backend update failed.")
 			return nil, err
 		} else if utils.IsNotFoundError(lookupErr) {
 			// We couldn't find it so it's not in use, let's rename
 			if err := o.replaceBackendAndUpdateVolumesOnPersistentStore(ctx, originalBackend, backend); err != nil {
 				Logc(ctx).WithField("error", err).Errorf(
-					"Could not rename backend from %v to %v", originalBackend.Name, backend.Name)
+					"Could not rename backend from %v to %v", originalBackend.Name(), backend.Name())
 				return nil, err
 			}
 		} else {
 			// Unexpected error while checking if the backend is already in use
 			err := fmt.Errorf("unexpected problem while renaming backend from %v to %v; %v",
-				originalBackend.Name, backend.Name, lookupErr)
+				originalBackend.Name(), backend.Name(), lookupErr)
 			Logc(ctx).WithField("error", err).Error("Backend update failed.")
 			return nil, err
 		}
@@ -1209,23 +1208,23 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		// Update backend information
 		if err = o.updateBackendOnPersistentStore(ctx, backend, false); err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not persist renamed backend from %v to %v",
-				originalBackend.Name, backend.Name)
+				originalBackend.Name(), backend.Name())
 			return nil, err
 		}
 	}
 
 	// Update the backend state in memory
-	delete(o.backends, originalBackend.BackendUUID)
+	delete(o.backends, originalBackend.BackendUUID())
 	// the fake driver needs these copied forward
-	if originalFakeDriver, ok := originalBackend.Driver.(*fake.StorageDriver); ok {
+	if originalFakeDriver, ok := originalBackend.Driver().(*fake.StorageDriver); ok {
 		Logc(ctx).Debug("Using fake driver, going to copy volumes forward...")
-		if fakeDriver, ok := backend.Driver.(*fake.StorageDriver); ok {
+		if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
 			fakeDriver.CopyVolumes(originalFakeDriver.Volumes)
 			Logc(ctx).Debug("Copied volumes forward.")
 		}
 	}
 	originalBackend.Terminate(ctx)
-	o.backends[backend.BackendUUID] = backend
+	o.backends[backend.BackendUUID()] = backend
 
 	// Update the volume state in memory
 	// Identify orphaned volumes (i.e., volumes that are not present on the
@@ -1235,10 +1234,10 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	// such volumes and mark them as orphaned. This is a best effort activity,
 	// so it doesn't have to be part of the persistent store transaction.
 	for volName, vol := range o.volumes {
-		if vol.BackendUUID == originalBackend.BackendUUID {
-			vol.BackendUUID = backend.BackendUUID
+		if vol.BackendUUID == originalBackend.BackendUUID() {
+			vol.BackendUUID = backend.BackendUUID()
 			updatePersistentStore := false
-			volumeExists := backend.Driver.Get(ctx, vol.Config.InternalName) == nil
+			volumeExists := backend.Driver().Get(ctx, vol.Config.InternalName) == nil
 			if !volumeExists {
 				if !vol.Orphaned {
 					vol.Orphaned = true
@@ -1246,7 +1245,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 					Logc(ctx).WithFields(log.Fields{
 						"volume":                  volName,
 						"vol.Config.InternalName": vol.Config.InternalName,
-						"backend":                 backend.Name,
+						"backend":                 backend.Name(),
 					}).Warn("Backend update resulted in an orphaned volume.")
 				}
 			} else {
@@ -1256,7 +1255,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 					Logc(ctx).WithFields(log.Fields{
 						"volume":                  volName,
 						"vol.Config.InternalName": vol.Config.InternalName,
-						"backend":                 backend.Name,
+						"backend":                 backend.Name(),
 					}).Info("The volume is no longer orphaned as a result of the backend update.")
 				}
 			}
@@ -1265,7 +1264,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 					return nil, err
 				}
 			}
-			o.backends[backend.BackendUUID].Volumes[volName] = vol
+			o.backends[backend.BackendUUID()].Volumes()[volName] = vol
 		}
 	}
 
@@ -1279,11 +1278,11 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	}
 	if len(classes) == 0 {
 		Logc(ctx).WithFields(log.Fields{
-			"backend": backend.Name,
+			"backend": backend.Name(),
 		}).Info("Updated backend satisfies no storage classes.")
 	} else {
 		Logc(ctx).WithFields(log.Fields{
-			"backend": backend.Name,
+			"backend": backend.Name(),
 		}).Infof("Updated backend satisfies storage classes %s.",
 			strings.Join(classes, ", "))
 	}
@@ -1294,7 +1293,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	return backend.ConstructExternal(ctx), nil
 }
 
-// UpdateBackend updates an existing backend.
+// UpdateBackendState updates an existing backend's state.
 func (o *TridentOrchestrator) UpdateBackendState(ctx context.Context, backendName, backendState string) (
 	backendExternal *storage.BackendExternal, err error) {
 	if o.bootstrapError != nil {
@@ -1310,12 +1309,12 @@ func (o *TridentOrchestrator) UpdateBackendState(ctx context.Context, backendNam
 	return o.updateBackendState(ctx, backendName, backendState)
 }
 
-// updateBackend updates an existing backend. It assumes the mutex lock is already held.
+// updateBackendState updates an existing backend's state. It assumes the mutex lock is already held.
 func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backendName, backendState string) (
 	backendExternal *storage.BackendExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 	)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -1343,7 +1342,7 @@ func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backendNam
 	if !newBackendState.IsOnline() {
 		backend.Terminate(ctx)
 	}
-	backend.State = newBackendState
+	backend.SetState(newBackendState)
 
 	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
 }
@@ -1351,33 +1350,33 @@ func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backendNam
 func (o *TridentOrchestrator) getBackendUUIDByBackendName(backendName string) (string, error) {
 	backendUUID := ""
 	for _, b := range o.backends {
-		if b.Name == backendName {
-			backendUUID = b.BackendUUID
+		if b.Name() == backendName {
+			backendUUID = b.BackendUUID()
 			return backendUUID, nil
 		}
 	}
 	return "", utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 }
 
-func (o *TridentOrchestrator) getBackendByBackendName(backendName string) (*storage.Backend, error) {
+func (o *TridentOrchestrator) getBackendByBackendName(backendName string) (storage.Backend, error) {
 	for _, b := range o.backends {
-		if b.Name == backendName {
+		if b.Name() == backendName {
 			return b, nil
 		}
 	}
 	return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 }
 
-func (o *TridentOrchestrator) getBackendByConfigRef(configRef string) (*storage.Backend, error) {
+func (o *TridentOrchestrator) getBackendByConfigRef(configRef string) (storage.Backend, error) {
 	for _, b := range o.backends {
-		if b.ConfigRef == configRef {
+		if b.ConfigRef() == configRef {
 			return b, nil
 		}
 	}
 	return nil, utils.NotFoundError(fmt.Sprintf("backend based on configRef '%v' was not found", configRef))
 }
 
-func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (*storage.Backend, error) {
+func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (storage.Backend, error) {
 	backend := o.backends[backendUUID]
 	if backend != nil {
 		return backend, nil
@@ -1385,8 +1384,9 @@ func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (*stor
 	return nil, utils.NotFoundError(fmt.Sprintf("backend uuid %v was not found", backendUUID))
 }
 
-func (o *TridentOrchestrator) GetBackend(ctx context.Context, backendName string) (
-	backendExternal *storage.BackendExternal, err error) {
+func (o *TridentOrchestrator) GetBackend(
+	ctx context.Context, backendName string,
+) (backendExternal *storage.BackendExternal, err error) {
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1521,12 +1521,12 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 	}
 
 	// Do not allow deletion of TridentBackendConfig-based backends using tridentctl
-	if backend.ConfigRef != "" {
+	if backend.ConfigRef() != "" {
 		if !o.isCRDContext(ctx) {
 			Logc(ctx).WithFields(log.Fields{
 				"backendName": backendName,
 				"backendUUID": backendUUID,
-				"configRef":   backend.ConfigRef,
+				"configRef":   backend.ConfigRef(),
 			}).Error("Cannot delete backend created using TridentBackendConfig CR; delete the TridentBackendConfig" +
 				" CR first.")
 
@@ -1535,10 +1535,10 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 		}
 	}
 
-	backend.Online = false // TODO eventually remove
-	backend.State = storage.Deleting
+	backend.SetOnline(false) // TODO eventually remove
+	backend.SetState(storage.Deleting)
 	storageClasses := make(map[string]*storageclass.StorageClass)
-	for _, storagePool := range backend.Storage {
+	for _, storagePool := range backend.Storage() {
 		for _, scName := range storagePool.StorageClasses {
 			storageClasses[scName] = o.storageClasses[scName]
 		}
@@ -1554,9 +1554,9 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 	}
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        backend,
-		"backend.Name":   backend.Name,
-		"backend.State":  backend.State.String(),
-		"backend.Online": backend.Online,
+		"backend.Name":   backend.Name(),
+		"backend.State":  backend.State().String(),
+		"backend.Online": backend.Online(),
 	}).Debug("OfflineBackend information.")
 
 	return o.storeClient.UpdateBackend(ctx, backend)
@@ -1570,18 +1570,18 @@ func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backen
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	var b *storage.Backend
+	var b storage.Backend
 	if b, err = o.getBackendByBackendUUID(backendUUID); err != nil {
 		return utils.NotFoundError(fmt.Sprintf("backend with UUID '%s' not found", backendUUID))
 	}
 
-	if b.ConfigRef != "" {
-		if b.ConfigRef != configRef {
+	if b.ConfigRef() != "" {
+		if b.ConfigRef() != configRef {
 			return fmt.Errorf("TridentBackendConfig with UID '%s' cannot request removal of configRef '%s' for backend"+
-				" with UUID '%s'", configRef, b.ConfigRef, backendUUID)
+				" with UUID '%s'", configRef, b.ConfigRef(), backendUUID)
 		}
 
-		b.ConfigRef = ""
+		b.SetConfigRef("")
 	}
 
 	return o.storeClient.UpdateBackend(ctx, b)
@@ -1626,7 +1626,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 		vol     *storage.Volume
 		pool    *storage.Pool
 		txn     *storage.VolumeTransaction
@@ -1661,7 +1661,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, volumeConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, vol, txn, volumeConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, volumeConfig)
 	}()
 
 	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
@@ -1678,16 +1678,16 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		// Mirror destinations can only be placed on mirroring enabled backends
 		if volumeConfig.IsMirrorDestination && !backend.CanMirror() {
 			Logc(ctx).Debugf("MirrorDestinations can only be placed on mirroring enabled backends")
-			ineligibleBackends[backend.BackendUUID] = struct{}{}
+			ineligibleBackends[backend.BackendUUID()] = struct{}{}
 		}
 
 		// If the pool's backend cannot possibly work, skip trying
-		if _, ok := ineligibleBackends[backend.BackendUUID]; ok {
+		if _, ok := ineligibleBackends[backend.BackendUUID()]; ok {
 			continue
 		}
 
 		// CreatePrepare has a side effect that updates the volumeConfig with the backend-specific internal name
-		backend.Driver.CreatePrepare(ctx, volumeConfig)
+		backend.Driver().CreatePrepare(ctx, volumeConfig)
 
 		// Update transaction with updated volumeConfig
 		txn = &storage.VolumeTransaction{
@@ -1702,8 +1702,8 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		if err != nil {
 
 			logFields := log.Fields{
-				"backend":     backend.Name,
-				"backendUUID": backend.BackendUUID,
+				"backend":     backend.Name(),
+				"backendUUID": backend.BackendUUID(),
 				"pool":        pool.Name,
 				"volume":      volumeConfig.Name,
 				"error":       err,
@@ -1720,11 +1720,11 @@ func (o *TridentOrchestrator) addVolumeInitial(
 			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
 			errorMessages = append(errorMessages,
 				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
-					volumeConfig.Name, pool.Name, backend.Name, err.Error()))
+					volumeConfig.Name, pool.Name, backend.Name(), err.Error()))
 
 			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
 			if drivers.IsBackendIneligibleError(err) {
-				ineligibleBackends[backend.BackendUUID] = struct{}{}
+				ineligibleBackends[backend.BackendUUID()] = struct{}{}
 			}
 		} else {
 			// Volume creation succeeded, so register it and return the result
@@ -1750,7 +1750,7 @@ func (o *TridentOrchestrator) addVolumeRetry(
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 		pool    *storage.Pool
 		vol     *storage.Volume
 	)
@@ -1768,7 +1768,7 @@ func (o *TridentOrchestrator) addVolumeRetry(
 			txn.VolumeCreatingConfig.BackendUUID, volumeConfig.Name))
 	}
 
-	pool, found = backend.Storage[txn.VolumeCreatingConfig.Pool]
+	pool, found = backend.Storage()[txn.VolumeCreatingConfig.Pool]
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("pool %s for backend %s not found",
 			txn.VolumeCreatingConfig.Pool, txn.VolumeCreatingConfig.BackendUUID))
@@ -1779,15 +1779,15 @@ func (o *TridentOrchestrator) addVolumeRetry(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, volumeConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, vol, txn, volumeConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, volumeConfig)
 	}()
 
 	vol, err = backend.AddVolume(ctx, volumeConfig, pool, make(map[string]sa.Request), true)
 	if err != nil {
 
 		logFields := log.Fields{
-			"backend":     backend.Name,
-			"backendUUID": backend.BackendUUID,
+			"backend":     backend.Name(),
+			"backendUUID": backend.BackendUUID(),
 			"pool":        pool.Name,
 			"volume":      volumeConfig.Name,
 			"error":       err,
@@ -1811,7 +1811,7 @@ func (o *TridentOrchestrator) addVolumeRetry(
 // addVolumeFinish is called after successful completion of a volume create/clone operation
 // to save the volume in the persistent store as well as Trident's in-memory cache.
 func (o *TridentOrchestrator) addVolumeFinish(
-	ctx context.Context, txn *storage.VolumeTransaction, vol *storage.Volume, backend *storage.Backend,
+	ctx context.Context, txn *storage.VolumeTransaction, vol *storage.Volume, backend storage.Backend,
 	pool *storage.Pool,
 ) (externalVol *storage.VolumeExternal, err error) {
 
@@ -1876,7 +1876,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 		vol     *storage.Volume
 		pool    *storage.Pool
 		txn     *storage.VolumeTransaction
@@ -1960,13 +1960,13 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	// is because pool names are autogenerated based and are based on their relative arrangement.
 	sourceVolumePoolName := sourceVolume.Pool
 	if sourceVolumePoolName != drivers.UnsetPool {
-		if sourceVolumeStoragePool, ok := backend.Storage[sourceVolumePoolName]; ok {
+		if sourceVolumeStoragePool, ok := backend.Storage()[sourceVolumePoolName]; ok {
 			pool = sourceVolumeStoragePool
 		}
 	}
 
 	// Create the backend-specific internal names so they are saved in the transaction
-	backend.Driver.CreatePrepare(ctx, cloneConfig)
+	backend.Driver().CreatePrepare(ctx, cloneConfig)
 
 	// Add transaction in case the operation must be rolled back later
 	txn = &storage.VolumeTransaction{
@@ -1982,15 +1982,15 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, cloneConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, vol, txn, cloneConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig)
 	}()
 
 	// Create the clone
 	if vol, err = backend.CloneVolume(ctx, cloneConfig, pool, false); err != nil {
 
 		logFields := log.Fields{
-			"backend":      backend.Name,
-			"backendUUID":  backend.BackendUUID,
+			"backend":      backend.Name(),
+			"backendUUID":  backend.BackendUUID(),
 			"volume":       cloneConfig.Name,
 			"sourceVolume": cloneConfig.CloneSourceVolume,
 			"error":        err,
@@ -2005,7 +2005,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 
 		Logc(ctx).WithFields(logFields).Warn("Failed to create cloned volume on this backend.")
 		return nil, fmt.Errorf("failed to create cloned volume %s on backend %s: %v",
-			cloneConfig.Name, backend.Name, err)
+			cloneConfig.Name, backend.Name(), err)
 	}
 
 	// Volume creation succeeded, so register it and return the result
@@ -2017,7 +2017,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	var (
-		backend *storage.Backend
+		backend storage.Backend
 		vol     *storage.Volume
 		pool    *storage.Pool
 	)
@@ -2040,7 +2040,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	// or non-existent pool.
 	sourceVolumePoolName := txn.VolumeCreatingConfig.Pool
 	if sourceVolumePoolName != drivers.UnsetPool {
-		if sourceVolumeStoragePool, ok := backend.Storage[sourceVolumePoolName]; ok {
+		if sourceVolumeStoragePool, ok := backend.Storage()[sourceVolumePoolName]; ok {
 			pool = sourceVolumeStoragePool
 		}
 	}
@@ -2053,15 +2053,15 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, cloneConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, vol, txn, cloneConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, cloneConfig)
 	}()
 
 	// Create the clone
 	if vol, err = backend.CloneVolume(ctx, cloneConfig, pool, true); err != nil {
 
 		logFields := log.Fields{
-			"backend":      backend.Name,
-			"backendUUID":  backend.BackendUUID,
+			"backend":      backend.Name(),
+			"backendUUID":  backend.BackendUUID(),
 			"volume":       cloneConfig.Name,
 			"sourceVolume": cloneConfig.CloneSourceVolume,
 			"error":        err,
@@ -2082,7 +2082,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
-// This func is used by volume import so it doesn't check core's o.volumes to see if the
+// GetVolumeExternal is used by volume import so it doesn't check core's o.volumes to see if the
 // volume exists or not. Instead it asks the driver if the volume exists before requesting
 // the volume size. Returns the VolumeExternal representation of the volume.
 func (o *TridentOrchestrator) GetVolumeExternal(ctx context.Context, volumeName string, backendName string) (
@@ -2141,10 +2141,11 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 	}
 
 	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
-		return fmt.Errorf("storageClass %s does not match any storage pools for backend %s", volumeConfig.StorageClass, backend.Name)
+		return fmt.Errorf("storageClass %s does not match any storage pools for backend %s",
+			volumeConfig.StorageClass, backend.Name())
 	}
 
-	if backend.Driver.Get(ctx, originalName) != nil {
+	if backend.Driver().Get(ctx, originalName) != nil {
 		return utils.NotFoundError(fmt.Sprintf("volume %s was not found", originalName))
 	}
 
@@ -2159,9 +2160,9 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 	backendProtocol := backend.GetProtocol(ctx)
 	// Make sure the resultant protocol matches the backend protocol
 	if protocol != config.ProtocolAny && protocol != backendProtocol {
-		return fmt.Errorf("requested volume mode (%s), access mode (%s), protocol (%s) are incompatible "+
-			"with the backend %s", volumeConfig.VolumeMode, volumeConfig.AccessMode,
-			volumeConfig.Protocol, backend.Name)
+		return fmt.Errorf(
+			"requested volume mode (%s), access mode (%s), protocol (%s) are incompatible with the backend %s",
+			volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol, backend.Name())
 	}
 
 	// For `Any` protocol make it same as the requested backend's protocol
@@ -2434,8 +2435,8 @@ func (o *TridentOrchestrator) DeleteVolumeTransaction(ctx context.Context, volTx
 // addVolumeCleanup is used as a deferred method from the volume create/clone methods
 // to clean up in case anything goes wrong during the operation.
 func (o *TridentOrchestrator) addVolumeCleanup(
-	ctx context.Context, err error, backend *storage.Backend, vol *storage.Volume, volTxn *storage.VolumeTransaction,
-	volumeConfig *storage.VolumeConfig,
+	ctx context.Context, err error, backend storage.Backend, vol *storage.Volume,
+	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig,
 ) error {
 
 	var (
@@ -2497,7 +2498,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 // to handles the case where a volume creation took too long, is still ongoing, and must be
 // preserved in a transaction.
 func (o *TridentOrchestrator) addVolumeRetryCleanup(
-	ctx context.Context, err error, backend *storage.Backend, pool *storage.Pool, vol *storage.Volume,
+	ctx context.Context, err error, backend storage.Backend, pool *storage.Pool,
 	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig,
 ) error {
 
@@ -2529,7 +2530,7 @@ func (o *TridentOrchestrator) addVolumeRetryCleanup(
 		creatingTxn := &storage.VolumeTransaction{
 			VolumeCreatingConfig: &storage.VolumeCreatingConfig{
 				StartTime:    time.Now(),
-				BackendUUID:  backend.BackendUUID,
+				BackendUUID:  backend.BackendUUID(),
 				Pool:         pool.Name,
 				VolumeConfig: *volumeConfig,
 			},
@@ -2605,7 +2606,9 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 	return err
 }
 
-func (o *TridentOrchestrator) GetVolume(ctx context.Context, volume string) (volExternal *storage.VolumeExternal, err error) {
+func (o *TridentOrchestrator) GetVolume(
+	_ context.Context, volume string,
+) (volExternal *storage.VolumeExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -2622,7 +2625,7 @@ func (o *TridentOrchestrator) GetVolume(ctx context.Context, volume string) (vol
 	return vol.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetDriverTypeForVolume(ctx context.Context, vol *storage.VolumeExternal) (string, error) {
+func (o *TridentOrchestrator) GetDriverTypeForVolume(_ context.Context, vol *storage.VolumeExternal) (string, error) {
 	if o.bootstrapError != nil {
 		return config.UnknownDriver, o.bootstrapError
 	}
@@ -2639,12 +2642,14 @@ func (o *TridentOrchestrator) GetDriverTypeForVolume(ctx context.Context, vol *s
 // exists in memory.
 func (o *TridentOrchestrator) getDriverTypeForVolume(backendUUID string) (string, error) {
 	if b, ok := o.backends[backendUUID]; ok {
-		return b.Driver.Name(), nil
+		return b.Driver().Name(), nil
 	}
 	return config.UnknownDriver, nil
 }
 
-func (o *TridentOrchestrator) GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (volumeType config.VolumeType, err error) {
+func (o *TridentOrchestrator) GetVolumeType(
+	_ context.Context, vol *storage.VolumeExternal,
+) (volumeType config.VolumeType, err error) {
 	if o.bootstrapError != nil {
 		return config.UnknownVolumeType, o.bootstrapError
 	}
@@ -2779,7 +2784,7 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 		return err
 	}
 
-	if volumeBackend.State.IsDeleting() && !volumeBackend.HasVolumes() {
+	if volumeBackend.State().IsDeleting() && !volumeBackend.HasVolumes() {
 		if err := o.storeClient.DeleteBackend(ctx, volumeBackend); err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"backendUUID": volume.BackendUUID,
@@ -2870,7 +2875,9 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 	return o.deleteVolume(ctx, volumeName)
 }
 
-func (o *TridentOrchestrator) ListVolumesByPlugin(ctx context.Context, pluginName string) (volumes []*storage.VolumeExternal, err error) {
+func (o *TridentOrchestrator) ListVolumesByPlugin(
+	_ context.Context, pluginName string,
+) (volumes []*storage.VolumeExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -2885,7 +2892,7 @@ func (o *TridentOrchestrator) ListVolumesByPlugin(ctx context.Context, pluginNam
 		if backendName := backend.GetDriverName(); pluginName != backendName {
 			continue
 		}
-		for _, vol := range backend.Volumes {
+		for _, vol := range backend.Volumes() {
 			volumes = append(volumes, vol.ConstructExternal())
 		}
 	}
@@ -2922,7 +2929,7 @@ func (o *TridentOrchestrator) PublishVolume(ctx context.Context, volumeName stri
 		return fmt.Errorf("backend %s not found", volume.BackendUUID)
 	}
 	if err := o.reconcileNodeAccessOnBackend(ctx, backend); err != nil {
-		err = fmt.Errorf("unable to update node access rules on backend %s; %v", backend.Name, err)
+		err = fmt.Errorf("unable to update node access rules on backend %s; %v", backend.Name(), err)
 		Logc(ctx).Error(err)
 		return err
 	}
@@ -3052,7 +3059,7 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 	}
 
 	// Best effort removal of the mount point
-	os.Remove(mountpoint)
+	_ = os.Remove(mountpoint)
 	return nil
 }
 
@@ -3095,7 +3102,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 
 	var (
 		ok       bool
-		backend  *storage.Backend
+		backend  storage.Backend
 		volume   *storage.Volume
 		snapshot *storage.Snapshot
 	)
@@ -3158,7 +3165,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	snapshot, err = backend.CreateSnapshot(ctx, snapshotConfig, volume.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create snapshot %s for volume %s on backend %s: %v",
-			snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name, err)
+			snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name(), err)
 	}
 
 	// Save references to new snapshot
@@ -3173,8 +3180,9 @@ func (o *TridentOrchestrator) CreateSnapshot(
 // addSnapshotCleanup is used as a deferred method from the snapshot create method
 // to clean up in case anything goes wrong during the operation.
 func (o *TridentOrchestrator) addSnapshotCleanup(
-	ctx context.Context, err error, backend *storage.Backend, snapshot *storage.Snapshot,
-	volTxn *storage.VolumeTransaction, snapConfig *storage.SnapshotConfig) error {
+	ctx context.Context, err error, backend storage.Backend, snapshot *storage.Snapshot,
+	volTxn *storage.VolumeTransaction, snapConfig *storage.SnapshotConfig,
+) error {
 
 	var (
 		cleanupErr, txErr error
@@ -3234,11 +3242,11 @@ func (o *TridentOrchestrator) GetSnapshot(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	return o.getSnapshot(ctx, volumeName, snapshotName, true)
+	return o.getSnapshot(ctx, volumeName, snapshotName)
 }
 
 func (o *TridentOrchestrator) getSnapshot(
-	ctx context.Context, volumeName, snapshotName string, update bool,
+	ctx context.Context, volumeName, snapshotName string,
 ) (*storage.SnapshotExternal, error) {
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
@@ -3327,7 +3335,7 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 		Logc(ctx).WithFields(log.Fields{
 			"volume":   snapshot.Config.VolumeName,
 			"snapshot": snapshot.Config.Name,
-			"backend":  backend.Name,
+			"backend":  backend.Name(),
 			"error":    err,
 		}).Error("Unable to delete snapshot from backend.")
 		return err
@@ -3490,7 +3498,9 @@ func (o *TridentOrchestrator) ListSnapshots(context.Context) (snapshots []*stora
 	return snapshots, nil
 }
 
-func (o *TridentOrchestrator) ListSnapshotsByName(ctx context.Context, snapshotName string) (snapshots []*storage.SnapshotExternal, err error) {
+func (o *TridentOrchestrator) ListSnapshotsByName(
+	_ context.Context, snapshotName string,
+) (snapshots []*storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3510,7 +3520,9 @@ func (o *TridentOrchestrator) ListSnapshotsByName(ctx context.Context, snapshotN
 	return snapshots, nil
 }
 
-func (o *TridentOrchestrator) ListSnapshotsForVolume(ctx context.Context, volumeName string) (snapshots []*storage.SnapshotExternal, err error) {
+func (o *TridentOrchestrator) ListSnapshotsForVolume(
+	_ context.Context, volumeName string,
+) (snapshots []*storage.SnapshotExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3573,7 +3585,7 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 	defer o.updateMetrics()
 
 	// Make a temporary copy of backends in case anything goes wrong
-	tempBackends := make(map[string]*storage.Backend)
+	tempBackends := make(map[string]storage.Backend)
 	for k, v := range o.backends {
 		tempBackends[k] = v
 	}
@@ -3585,7 +3597,7 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 
 	// Clear out cached volumes in the backends
 	for _, backend := range o.backends {
-		backend.Volumes = make(map[string]*storage.Volume)
+		backend.SetVolumes(make(map[string]*storage.Volume))
 	}
 
 	// Re-run the volume bootstrapping code
@@ -3930,7 +3942,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx context.Conte
 	return nil
 }
 
-func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b *storage.Backend) error {
+func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend) error {
 
 	if config.CurrentDriverContext != config.ContextCSI {
 		return nil
@@ -3947,7 +3959,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 
 // safeReconcileNodeAccessOnBackend wraps reconcileNodeAccessOnBackend in a mutex lock for use in functions that aren't
 // already locked
-func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Context, b *storage.Backend) error {
+func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend) error {
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	return o.reconcileNodeAccessOnBackend(ctx, b)
@@ -3977,7 +3989,7 @@ func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 				for _, backend := range o.backends {
 					if err := o.safeReconcileNodeAccessOnBackend(ctx, backend); err != nil {
 						// If there's a problem log an error and keep going
-						Logc(ctx).WithField("backend", backend.Name).WithError(err).Error(
+						Logc(ctx).WithField("backend", backend.Name()).WithError(err).Error(
 							"Problem encountered updating node access rules for backend.")
 					}
 				}
@@ -4141,7 +4153,7 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nName string) (err
 }
 
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(
-	ctx context.Context, backend *storage.Backend, newBackend bool,
+	ctx context.Context, backend storage.Backend, newBackend bool,
 ) error {
 
 	// Update the persistent store with the backend information
@@ -4151,9 +4163,9 @@ func (o *TridentOrchestrator) updateBackendOnPersistentStore(
 			err = o.storeClient.AddBackend(ctx, backend)
 		} else {
 			Logc(ctx).WithFields(log.Fields{
-				"backend":             backend.Name,
-				"backend.BackendUUID": backend.BackendUUID,
-				"backend.ConfigRef":   backend.ConfigRef,
+				"backend":             backend.Name(),
+				"backend.BackendUUID": backend.BackendUUID(),
+				"backend.ConfigRef":   backend.ConfigRef(),
 			}).Debug("Updating an existing backend.")
 			err = o.storeClient.UpdateBackend(ctx, backend)
 		}
@@ -4177,12 +4189,13 @@ func (o *TridentOrchestrator) updateVolumeOnPersistentStore(ctx context.Context,
 }
 
 func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
-	ctx context.Context, origBackend, newBackend *storage.Backend) error {
+	ctx context.Context, origBackend, newBackend storage.Backend,
+) error {
 
 	// Update both backend and volume information in persistent store
 	Logc(ctx).WithFields(log.Fields{
-		"newBackendName": newBackend.Name,
-		"oldBackendName": origBackend.Name,
+		"newBackendName": newBackend.Name(),
+		"oldBackendName": origBackend.Name(),
 	}).Debug("Renaming a backend and updating volumes.")
 	return o.storeClient.ReplaceBackendAndUpdateVolumes(ctx, origBackend, newBackend)
 }
@@ -4209,7 +4222,11 @@ func (o *TridentOrchestrator) EstablishMirror(
 	if err != nil {
 		return err
 	}
-	return backend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
 // ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
@@ -4229,7 +4246,11 @@ func (o *TridentOrchestrator) ReestablishMirror(
 	if err != nil {
 		return err
 	}
-	return backend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
 // PromoteMirror makes the local volume the primary
@@ -4249,7 +4270,11 @@ func (o *TridentOrchestrator) PromoteMirror(
 	if err != nil {
 		return false, err
 	}
-	return backend.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return false, fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
 }
 
 // GetMirrorStatus returns the current status of the mirror relationship
@@ -4269,8 +4294,11 @@ func (o *TridentOrchestrator) GetMirrorStatus(
 	if err != nil {
 		return "", err
 	}
-
-	return backend.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return "", fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
 func (o *TridentOrchestrator) CanBackendMirror(

@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -738,7 +738,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// Make SolidFire name
+// MakeSolidFireName normalizes names for Solidfire
 func MakeSolidFireName(name string) string {
 	return strings.Replace(name, "_", "-", -1)
 }
@@ -1283,7 +1283,7 @@ func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	return nil, nil
 }
 
-// SnapshotList returns the list of snapshots associated with the specified volume
+// GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
@@ -1571,9 +1571,9 @@ func (d *SANStorageDriver) VolumeExists(ctx context.Context, name string) (bool,
 }
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
-func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 
-	backend.Name = d.BackendName()
+	backend.SetName(d.BackendName())
 
 	virtual := len(d.virtualPools) > 0
 
@@ -1587,7 +1587,7 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *st
 	return nil
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
 }
@@ -1822,12 +1822,12 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 	return d.getVolumeExternal(name, &volume), nil
 }
 
-// Implement stringer interface for the SANStorageDriver driver
+// String implements stringer interface for the SANStorageDriver driver
 func (d SANStorageDriver) String() string {
 	return drivers.ToString(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
 }
 
-// Implement GoStringer interface for the SANStorageDriver driver
+// GoString implements GoStringer interface for the SANStorageDriver driver
 func (d SANStorageDriver) GoString() string {
 	return d.String()
 }

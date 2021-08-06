@@ -266,7 +266,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -359,7 +359,7 @@ func (d *NASStorageDriver) Create(
 	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *NASStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
@@ -405,6 +405,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, name string) error {
 
 	// If flexvol has been a snapmirror destination
 	snapDeleteResponse, err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM)
+	err = api.GetError(ctx, snapDeleteResponse, err)
 	if err != nil && snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
 		return fmt.Errorf("error deleting snapmirror info for volume %v: %v", name, err)
 	}
@@ -601,7 +602,7 @@ func (d *NASStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeSize)
 }
 
-// Return the list of snapshots associated with the specified volume
+// GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *NASStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
@@ -675,7 +676,7 @@ func (d *NASStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	return DeleteSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
-// Test for the existence of a volume
+// Get tests for the existence of a volume
 func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -687,12 +688,12 @@ func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
 	return GetVolume(ctx, name, d.API, &d.Config)
 }
 
-// Retrieve storage backend capabilities
-func (d *NASStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+// GetStorageBackendSpecs retrieves storage backend capabilities
+func (d *NASStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
@@ -940,6 +941,7 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	response, err := d.API.VolumeSetSize(name, strconv.FormatUint(newFlexvolSize, 10))
+	err = api.GetError(ctx, response, err)
 	if err = api.GetError(ctx, response.Result, err); err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")

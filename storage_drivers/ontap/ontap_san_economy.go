@@ -626,7 +626,7 @@ func (d *SANEconomyStorageDriver) Create(
 	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *SANEconomyStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
 ) error {
@@ -1239,7 +1239,7 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig
 	return d.DeleteBucketIfEmpty(ctx, bucketVol)
 }
 
-// Test for the existence of a volume
+// Get tests for the existence of a volume
 func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1487,12 +1487,12 @@ func (d *SANEconomyStorageDriver) getTotalLUNSize(flexvol string) (uint64, error
 	return totalDiskLimit, nil
 }
 
-// Retrieve storage backend capabilities
-func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+// GetStorageBackendSpecs retrieves storage backend capabilities
+func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANEconomyStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
@@ -1764,7 +1764,7 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 	return false, "", nil
 }
 
-// Create a LUN with the specified options and find (or create) a bucket volume for the LUN
+// Resize a LUN with the specified options and find (or create) a bucket volume for the LUN
 func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 
 	name := volConfig.InternalName

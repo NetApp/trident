@@ -890,7 +890,7 @@ func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
-// SnapshotList returns the list of snapshots associated with the specified volume. The E-series volume
+// GetSnapshots returns the list of snapshots associated with the specified volume. The E-series volume
 // plugin does not support snapshots, so this method always returns an empty array.
 func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
@@ -1031,8 +1031,8 @@ func (d *SANStorageDriver) getVolume(ctx context.Context, name string) (api.Volu
 }
 
 // GetStorageBackendSpecs retrieve storage capabilities and register pools with specified backend.
-func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
-	backend.Name = d.BackendName()
+func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
+	backend.SetName(d.BackendName())
 
 	virtual := len(d.virtualPools) > 0
 
@@ -1057,7 +1057,7 @@ func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	physicalPoolNames := make([]string, 0)
 	for poolName := range d.physicalPools {
@@ -1291,13 +1291,13 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 	return d.getVolumeExternal(&volumeAttrs), nil
 }
 
-// Implement stringer interface for the E-Series driver
+// String implements stringer interface for the E-Series driver
 func (d SANStorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
 	return drivers.ToString(&d, []string{"API"}, nil)
 }
 
-// Implement GoStringer interface for the E-Series driver
+// GoString implements GoStringer interface for the E-Series driver
 func (d SANStorageDriver) GoString() string {
 	return d.String()
 }
@@ -1468,6 +1468,9 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// Update volSizeBytes to return new volume size
 	vol, err = d.getVolume(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error getting volume: %v", err)
+	}
 	volSizeBytes, err = strconv.ParseUint(vol.VolumeSize, 10, 64)
 	if err != nil {
 		return fmt.Errorf("error occurred when checking final volume size")

@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -360,7 +360,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
 	}
 
 	volConfig.QosPolicy = qosPolicy
@@ -428,7 +428,7 @@ func (d *NASQtreeStorageDriver) Create(
 	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *NASQtreeStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
 ) error {
@@ -701,7 +701,7 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
-// Test for the existence of a volume
+// Get tests for the existence of a volume
 func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1307,12 +1307,12 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Contex
 	return nil
 }
 
-// Retrieve storage backend capabilities
-func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+// GetStorageBackendSpecs retrieves storage backend capabilities
+func (d *NASQtreeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASQtreeStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }

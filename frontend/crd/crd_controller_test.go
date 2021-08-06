@@ -255,7 +255,7 @@ func TestCrdController(t *testing.T) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
 	// * create a fake backend
-	// ** add it to the mock orchestator
+	// ** add it to the mock orchestrator
 	// ** initialize it
 	// * create a CRD version from the fake backend
 	fakeConfig := fake.StorageDriver{
@@ -270,13 +270,12 @@ func TestCrdController(t *testing.T) {
 	driver := fake.StorageDriver{
 		Config: fakeConfig.Config,
 	}
-	fakeBackend := &storage.Backend{
-		Driver:      &driver,
-		Name:        "fake1",
-		BackendUUID: uuid.New().String(),
-	}
+	fakeBackend := &storage.StorageBackend{}
+	fakeBackend.SetDriver(&driver)
+	fakeBackend.SetName("fake1")
+	fakeBackend.SetBackendUUID(uuid.New().String())
 	orchestrator.AddFakeBackend(ctx(), fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
+	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name())
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}
@@ -287,21 +286,21 @@ func TestCrdController(t *testing.T) {
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
 
-	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig, nil,
+	if initializeErr := fakeBackend.Driver().Initialize(ctx(), "testing", configJSON, commonConfig, nil,
 		uuid.New().String()); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
-	fakeBackend.Online = true
-	fakeBackend.State = storage.BackendState("online")
+	fakeBackend.SetOnline(true)
+	fakeBackend.SetState(storage.Online)
 
 	// create a k8s CRD Object for use by the client-go bindings and crd persistence layer
 	backendCRD, err := tridentv1.NewTridentBackend(ctx(), fakeBackend.ConstructPersistent(ctx()))
 	if err != nil {
 		t.Fatal("Unable to construct TridentBackend CRD: ", err)
 	}
-	if backendCRD.BackendName != fakeBackend.Name {
+	if backendCRD.BackendName != fakeBackend.Name() {
 		t.Fatalf("error creating backend backendCRD.BackendName '%v' != fakeBackend.Name '%v'",
-			backendCRD.BackendName, fakeBackend.Name)
+			backendCRD.BackendName, fakeBackend.Name())
 	}
 
 	// create a new CRD object through the client-go api
@@ -328,7 +327,7 @@ func TestCrdController(t *testing.T) {
 			"backend.BackendName": backend.BackendName,
 			"backend.BackendUUID": backend.BackendUUID,
 		}).Debug("Checking.")
-		if backend.BackendName == fakeBackend.Name {
+		if backend.BackendName == fakeBackend.Name() {
 			log.WithFields(log.Fields{
 				"backend.Name":        backend.Name,
 				"backend.BackendName": backend.BackendName,
@@ -338,7 +337,7 @@ func TestCrdController(t *testing.T) {
 		}
 	}
 	if crdName == "" {
-		t.Fatalf("error finding CRD with backend.BackendName == '%v' via list", fakeBackend.Name)
+		t.Fatalf("error finding CRD with backend.BackendName == '%v' via list", fakeBackend.Name())
 	}
 
 	crdByName, getErr := crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
@@ -354,7 +353,10 @@ func TestCrdController(t *testing.T) {
 	if !crdByName.HasTridentFinalizers() {
 		t.Fatalf("expected CRD to have finalizers")
 	}
-	crdController.removeBackendFinalizers(ctx(), crdByName)
+	err = crdController.removeBackendFinalizers(ctx(), crdByName)
+	if err != nil {
+		t.Fatalf("error removing backend finalizers: %v", err)
+	}
 	// to validate the finalizer removal, we must retrieve it again, after the update
 	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
 	if getErr != nil {
@@ -418,7 +420,7 @@ func TestCrdController2(t *testing.T) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
 	// * create a fake backend
-	// ** add it to the mock orchestator
+	// ** add it to the mock orchestrator
 	// ** initialize it
 	// * create a CRD version from the fake backend
 	fakeConfig := fake.StorageDriver{
@@ -430,16 +432,15 @@ func TestCrdController2(t *testing.T) {
 			Protocol: config.File,
 		},
 	}
-	fakeDriver := fake.StorageDriver{
+	storageDriver := fake.StorageDriver{
 		Config: fakeConfig.Config,
 	}
-	fakeBackend := &storage.Backend{
-		Driver:      &fakeDriver,
-		Name:        "fake1",
-		BackendUUID: uuid.New().String(),
-	}
+	fakeBackend := &storage.StorageBackend{}
+	fakeBackend.SetDriver(&storageDriver)
+	fakeBackend.SetName("fake1")
+	fakeBackend.SetBackendUUID(uuid.New().String())
 	orchestrator.AddFakeBackend(ctx(), fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name)
+	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name())
 	if err != nil {
 		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
 	}
@@ -449,21 +450,21 @@ func TestCrdController2(t *testing.T) {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver.Initialize(ctx(), "testing", configJSON, commonConfig, nil,
+	if initializeErr := fakeBackend.Driver().Initialize(ctx(), "testing", configJSON, commonConfig, nil,
 		uuid.New().String()); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
-	fakeBackend.Online = true
-	fakeBackend.State = storage.BackendState("online")
+	fakeBackend.SetOnline(true)
+	fakeBackend.SetState(storage.Online)
 
 	// create a k8s CRD Object for use by the client-go bindings and crd persistence layer
 	backendCRD, err := tridentv1.NewTridentBackend(ctx(), fakeBackend.ConstructPersistent(ctx()))
 	if err != nil {
 		t.Fatal("Unable to construct TridentBackend CRD: ", err)
 	}
-	if backendCRD.BackendName != fakeBackend.Name {
+	if backendCRD.BackendName != fakeBackend.Name() {
 		t.Fatalf("error creating backend backendCRD.BackendName '%v' != fakeBackend.Name '%v'",
-			backendCRD.BackendName, fakeBackend.Name)
+			backendCRD.BackendName, fakeBackend.Name())
 	}
 
 	// create a new Backend CRD object through the client-go api
@@ -474,7 +475,7 @@ func TestCrdController2(t *testing.T) {
 
 	// Build a storage.volume
 	volConfig := storage.VolumeConfig{
-		Version:      string(config.OrchestratorAPIVersion),
+		Version:      config.OrchestratorAPIVersion,
 		Name:         "vol1",
 		InternalName: "internal_vol1",
 		Size:         "1GB",
@@ -532,7 +533,7 @@ func TestCrdController2(t *testing.T) {
 	// validate our Volume is present
 	volumeList, listErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
-		t.Fatalf("error listing CRD volumes: %v", err.Error())
+		t.Fatalf("error listing CRD volumes: %v", listErr.Error())
 	}
 	if len(volumeList.Items) != 1 {
 		t.Fatalf("error while listing volumes, unexpected volume list length: %v", len(volumeList.Items))
@@ -541,7 +542,7 @@ func TestCrdController2(t *testing.T) {
 	// validate our Snapshot is present
 	snapshotList, listErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
-		t.Fatalf("error listing CRD snapshots: %v", err.Error())
+		t.Fatalf("error listing CRD snapshots: %v", listErr.Error())
 	}
 	if len(snapshotList.Items) != 1 {
 		t.Fatalf("error while listing snapshots, unexpected snapshot list length: %v", len(snapshotList.Items))

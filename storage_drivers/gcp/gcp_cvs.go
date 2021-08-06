@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -1888,7 +1888,7 @@ func (d *NFSStorageDriver) deleteBackup(
 		[]string{api.StateDeleted}, []string{api.StateError}, d.defaultTimeout())
 }
 
-// Return the list of volumes associated with this tenant
+// List returns the list of volumes associated with this tenant
 func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1924,7 +1924,7 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 	return volumeNames, nil
 }
 
-// Test for the existence of a volume
+// Get tests for the existence of a volume
 func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -2005,10 +2005,10 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	return err
 }
 
-// Retrieve storage capabilities and register pools with specified backend.
-func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+// GetStorageBackendSpecs retrieves storage capabilities and register pools with specified backend.
+func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 
-	backend.Name = d.BackendName()
+	backend.SetName(d.BackendName())
 
 	for _, pool := range d.pools {
 		pool.Backend = backend
@@ -2022,7 +2022,7 @@ func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
 }
@@ -2136,13 +2136,13 @@ func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 	return d.getVolumeExternal(volumeAttrs), nil
 }
 
-// Implement stringer interface for the NFSStorageDriver driver
+// String implements stringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
 	return drivers.ToString(&d, []string{"API"}, nil)
 }
 
-// Implement GoStringer interface for the NFSStorageDriver driver
+// GoString implements GoStringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) GoString() string {
 	return d.String()
 }

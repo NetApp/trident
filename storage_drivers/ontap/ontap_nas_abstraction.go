@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -273,7 +273,7 @@ func (d *NASStorageDriverAbstraction) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -355,7 +355,6 @@ func (d *NASStorageDriverAbstraction) Create(
 		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 		if !enableSnapshotDir {
 			snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name)
-			//if err = api.GetError(ctx, snapDirResponse, err); err != nil {
 			if err = api.GetErrorAbstraction(ctx, snapDirResponse, err); err != nil {
 				return err
 			}
@@ -681,7 +680,9 @@ func (d *NASStorageDriverAbstraction) Get(ctx context.Context, name string) erro
 }
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
-func (d *NASStorageDriverAbstraction) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+func (d *NASStorageDriverAbstraction) GetStorageBackendSpecs(
+	_ context.Context, backend storage.Backend,
+) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 

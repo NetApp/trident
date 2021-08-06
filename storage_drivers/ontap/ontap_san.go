@@ -411,7 +411,7 @@ func (d *SANStorageDriver) Create(
 	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
-// Create a volume clone
+// CreateClone creates a volume clone
 func (d *SANStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
 ) error {
@@ -864,7 +864,7 @@ func (d *SANStorageDriver) Get(ctx context.Context, name string) error {
 }
 
 // Retrieve storage backend capabilities
-func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	return getStorageBackendSpecsCommon(backend, d.physicalPools, d.virtualPools, d.BackendName())
 }
 

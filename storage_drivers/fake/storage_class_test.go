@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -313,7 +313,7 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 }
 
 func TestSpecificBackends(t *testing.T) {
-	backends := make(map[string]*storage.Backend)
+	backends := make(map[string]*storage.StorageBackend)
 	mockPools := tu.GetFakePools()
 	for _, c := range []struct {
 		name      string
@@ -415,7 +415,7 @@ func TestSpecificBackends(t *testing.T) {
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
 					t.Errorf("%s:  Found unexpected match for storage class:  "+
-						"%s:%s", test.name, vc.Backend.Name, vc.Name)
+						"%s:%s", test.name, vc.Backend.Name(), vc.Name)
 				}
 			}
 		}
@@ -431,7 +431,7 @@ func TestSpecificBackends(t *testing.T) {
 }
 
 func TestRegex(t *testing.T) {
-	backends := make(map[string]*storage.Backend)
+	backends := make(map[string]*storage.StorageBackend)
 	mockPools := tu.GetFakePools()
 	for _, c := range []struct {
 		backendName string
@@ -637,7 +637,8 @@ func TestRegex(t *testing.T) {
 					test.expected[len(test.expected)-1] = nil
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
-					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description, pool.Backend.Name, pool.Name)
+					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description,
+						pool.Backend.Name(), pool.Name)
 				}
 			}
 		}
@@ -653,7 +654,7 @@ func TestRegex(t *testing.T) {
 
 // This tests some specific defect scenarios that were found
 func TestRegex2(t *testing.T) {
-	backends := make(map[string]*storage.Backend)
+	backends := make(map[string]*storage.StorageBackend)
 	mockPools := tu.GetFakePools()
 	for _, c := range []struct {
 		backendName string
@@ -762,7 +763,8 @@ func TestRegex2(t *testing.T) {
 					test.expected[len(test.expected)-1] = nil
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
-					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description, pool.Backend.Name, pool.Name)
+					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description,
+						pool.Backend.Name(), pool.Name)
 				}
 			}
 		}
@@ -771,7 +773,8 @@ func TestRegex2(t *testing.T) {
 			for i, e := range test.expected {
 				expectedNames[i] = e.String()
 			}
-			t.Errorf("%s:  Storage class failed to match storage pools %s", test.description, strings.Join(expectedNames, ", "))
+			t.Errorf("%s: Storage class failed to match storage pools %s", test.description,
+				strings.Join(expectedNames, ", "))
 		}
 	}
 }

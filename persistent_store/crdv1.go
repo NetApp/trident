@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -153,11 +153,11 @@ func (k *CRDClientV1) Stop() error {
 
 // AddBackend accepts a Backend object and persists it in a custom resource with all of its
 // sensitive data redacted and written to a corresponding K8S Secret.
-func (k *CRDClientV1) AddBackend(ctx context.Context, backend *storage.Backend) error {
+func (k *CRDClientV1) AddBackend(ctx context.Context, backend storage.Backend) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"backend":      backend,
-		"backend.Name": backend.Name,
+		"backend.Name": backend.Name(),
 	}).Debug("AddBackend.")
 
 	return k.addBackendPersistent(ctx, backend.ConstructPersistent(ctx))
@@ -455,11 +455,11 @@ func (k *CRDClientV1) GetBackendSecret(ctx context.Context, secretName string) (
 }
 
 // UpdateBackend uses a Backend object to update a backend's persistent state
-func (k *CRDClientV1) UpdateBackend(ctx context.Context, update *storage.Backend) error {
+func (k *CRDClientV1) UpdateBackend(ctx context.Context, update storage.Backend) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"update":      update,
-		"update.Name": update.Name,
+		"update.Name": update.Name(),
 	}).Debug("UpdateBackend.")
 
 	return k.updateBackendPersistent(ctx, update.ConstructPersistent(ctx))
@@ -604,18 +604,18 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 
 // DeleteBackend accepts a Backend object and deletes the custom resource from Kubernetes along
 // with its corresponding secret.
-func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) (err error) {
+func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err error) {
 
 	logFields := log.Fields{
-		"backendName":     b.Name,
-		"backendUUID": b.BackendUUID,
+		"backendName": b.Name(),
+		"backendUUID": b.BackendUUID(),
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("DeleteBackend.")
 
 	// Get the CR that needs to be deleted
 	var backend *v1.TridentBackend
-	backend, err = k.getBackendCRD(ctx, b.Name)
+	backend, err = k.getBackendCRD(ctx, b.Name())
 	if err != nil {
 		if MatchKeyNotFoundErr(err) {
 			keyError := err.(*Error)
@@ -648,7 +648,7 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) (er
 
 	// Delete the secret if created by Trident
 	if !b.IsCredentialsFieldSet(ctx) {
-		secretName := k.backendSecretName(b.BackendUUID)
+		secretName := k.backendSecretName(b.BackendUUID())
 		if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
 			return err
 		}
@@ -659,15 +659,15 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b *storage.Backend) (er
 }
 
 // removeBackendFinalizer accepts a Backend object and removes the finalizer from the corresponding TridentBackend CR
-func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b *storage.Backend) error {
+func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Backend) error {
 
 	logFields := log.Fields{
-		"backendName":     b.Name,
-		"backendUUID": b.BackendUUID,
+		"backendName": b.Name(),
+		"backendUUID": b.BackendUUID(),
 	}
 
 	// Get the CRD that we will delete
-	backend, err := k.getBackendCRD(ctx, b.Name)
+	backend, err := k.getBackendCRD(ctx, b.Name())
 	if err != nil {
 		if MatchKeyNotFoundErr(err) {
 			keyError := err.(*Error)
@@ -698,15 +698,15 @@ func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b *storage.Bac
 }
 
 // IsBackendDeleting identifies if the backend is a deleting or not based on CR's deletionTimestamp
-func (k *CRDClientV1) IsBackendDeleting(ctx context.Context, b *storage.Backend) bool {
+func (k *CRDClientV1) IsBackendDeleting(ctx context.Context, b storage.Backend) bool {
 
 	logFields := log.Fields{
-		"backendName":     b.Name,
-		"backendUUID": b.BackendUUID,
+		"backendName": b.Name(),
+		"backendUUID": b.BackendUUID(),
 	}
 
 	// Get the CR that needs to be verified
-	backend, err := k.getBackendCRD(ctx, b.Name)
+	backend, err := k.getBackendCRD(ctx, b.Name())
 	if err != nil {
 		if MatchKeyNotFoundErr(err) {
 			keyError := err.(*Error)
@@ -761,7 +761,7 @@ func (k *CRDClientV1) GetBackends(ctx context.Context) ([]*storage.BackendPersis
 	return results, nil
 }
 
-// DeleteBackend deletes all backend custom resources from Kubernetes along
+// DeleteBackends deletes all backend custom resources from Kubernetes along
 // with their corresponding secrets.
 func (k *CRDClientV1) DeleteBackends(ctx context.Context) error {
 
@@ -803,19 +803,19 @@ func (k *CRDClientV1) DeleteBackends(ctx context.Context) error {
 // ReplaceBackendAndUpdateVolumes accepts two backend objects (origBackend and newBackend) and uses the
 // new backend object to replace the original one.
 func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
-	ctx context.Context, origBackend, newBackend *storage.Backend,
+	ctx context.Context, origBackend storage.Backend, newBackend storage.Backend,
 ) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"origBackend":             origBackend,
-		"origBackend.Name":        origBackend.Name,
-		"origBackend.BackendUUID": origBackend.BackendUUID,
+		"origBackend.Name":        origBackend.Name(),
+		"origBackend.BackendUUID": origBackend.BackendUUID(),
 		"newBackend":              newBackend,
-		"newBackend.Name":         newBackend.Name,
+		"newBackend.Name":         newBackend.Name(),
 	}).Debug("ReplaceBackendAndUpdateVolumes.")
 
 	// Get the custom resource for the original backend
-	origCRD, err := k.getBackendCRD(ctx, origBackend.Name)
+	origCRD, err := k.getBackendCRD(ctx, origBackend.Name())
 	if err != nil {
 		return err
 	}
@@ -833,7 +833,7 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 
 	// Ensure the backend has a valid UUID and create the secret name
 	if origCRD.BackendUUID == "" {
-		return fmt.Errorf("backend %s does not have a UUID set", origBackend.Name)
+		return fmt.Errorf("backend %s does not have a UUID set", origBackend.Name())
 	}
 	secretName := k.backendSecretName(origCRD.BackendUUID)
 

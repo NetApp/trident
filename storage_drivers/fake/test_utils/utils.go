@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package testutils
 
@@ -27,7 +27,7 @@ type PoolMatch struct {
 }
 
 func (p *PoolMatch) Matches(pool *storage.Pool) bool {
-	return pool.Name == p.Pool && pool.Backend.Name == p.Backend
+	return pool.Name == p.Pool && pool.Backend.Name() == p.Backend
 }
 
 func (p *PoolMatch) String() string {

@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 package ontap
 
 import (
@@ -528,7 +528,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID)
+		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -816,7 +816,7 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(
 	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
 }
 
-// Return the list of snapshots associated with the specified volume
+// GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *NASFlexGroupStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
@@ -890,7 +890,7 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(ctx context.Context, snapConf
 	return DeleteSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
-// Tests the existence of a FlexGroup. Returns nil if the FlexGroup
+// Get tests the existence of a FlexGroup. Returns nil if the FlexGroup
 // exists and an error otherwise.
 func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error {
 
@@ -912,9 +912,9 @@ func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error 
 	return nil
 }
 
-// getStorageBackendSpecsCommon updates the specified Backend object with StoragePools.
-func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
-	backend.Name = d.BackendName()
+// GetStorageBackendSpecs updates the specified Backend object with StoragePools.
+func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
+	backend.SetName(d.BackendName())
 
 	virtual := len(d.virtualPools) > 0
 
@@ -933,7 +933,7 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, ba
 	return nil
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	physicalPoolNames := make([]string, 0)
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)

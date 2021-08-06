@@ -61,7 +61,7 @@ func TestNewBackend(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "tbe-",
 		},
-		BackendName: nfsServer.Name,
+		BackendName: nfsServer.Name(),
 		Online:      true,
 		Version:     "1",
 		Config: runtime.RawExtension{
@@ -115,9 +115,9 @@ func TestBackend_Persistent(t *testing.T) {
 			Kind:       "TridentBackend",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: NameFix(nfsServer.Name),
+			Name: NameFix(nfsServer.Name()),
 		},
-		BackendName: nfsServer.Name,
+		BackendName: nfsServer.Name(),
 		Online:      true,
 		State:       "online",
 		Version:     "1",

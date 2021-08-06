@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -76,17 +76,17 @@ type StorageDriver struct {
 	Secret string
 }
 
-// Implement Stringer interface for the FakeStorageDriver driver
+// String implements Stringer interface for the FakeStorageDriver driver
 func (d StorageDriver) String() string {
 	return drivers.ToString(&d, []string{"Secret"}, nil)
 }
 
-// Implement GoStringer interface for the FakeStorageDriver driver
+// GoString implements GoStringer interface for the FakeStorageDriver driver
 func (d StorageDriver) GoString() string {
 	return d.String()
 }
 
-func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID string) (sb *storage.Backend, err error) {
+func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID string) (sb *storage.StorageBackend, err error) {
 
 	// Parse the common config struct from JSON
 	commonConfig, err := drivers.ValidateCommonSettings(ctx, configJSON)
@@ -122,9 +122,13 @@ func NewFakeStorageDriver(ctx context.Context, config drivers.FakeStorageDriverC
 	return driver
 }
 
-func NewFakeStorageDriverWithPools(ctx context.Context, pools map[string]*fake.StoragePool,
-	vpool drivers.FakeStorageDriverPool, vpools []drivers.FakeStorageDriverPool,
+func NewFakeStorageDriverWithPools(
+	_ context.Context,
+	pools map[string]*fake.StoragePool,
+	vpool drivers.FakeStorageDriverPool,
+	vpools []drivers.FakeStorageDriverPool,
 ) (*StorageDriver, error) {
+
 	driver := &StorageDriver{
 		initialized: true,
 		Config: drivers.FakeStorageDriverConfig{
@@ -1033,13 +1037,13 @@ func (d *StorageDriver) Resize(_ context.Context, volConfig *storage.VolumeConfi
 	return nil
 }
 
-func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend *storage.Backend) error {
+func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no backend is specified
-		backend.Name = d.Config.InstanceName
+		backend.SetName(d.Config.InstanceName)
 	} else {
-		backend.Name = d.Config.BackendName
+		backend.SetName(d.Config.BackendName)
 	}
 
 	virtual := len(d.virtualPools) > 0
@@ -1061,7 +1065,7 @@ func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend *stora
 	return nil
 }
 
-// Retrieve storage backend physical pools
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *StorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	physicalPoolNames := make([]string, 0)
 	for poolName := range d.physicalPools {

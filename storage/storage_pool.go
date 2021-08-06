@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -24,13 +24,13 @@ type Pool struct {
 	Name string
 	// A Trident storage pool can potentially satisfy more than one storage class.
 	StorageClasses      []string
-	Backend             *Backend
+	Backend             Backend
 	Attributes          map[string]sa.Offer // These attributes are used to match storage classes
 	InternalAttributes  map[string]string   // These attributes are defined & used internally by storage drivers
 	SupportedTopologies []map[string]string
 }
 
-func NewStoragePool(backend *Backend, name string) *Pool {
+func NewStoragePool(backend Backend, name string) *Pool {
 	return &Pool{
 		Name:               name,
 		StorageClasses:     make([]string, 0),

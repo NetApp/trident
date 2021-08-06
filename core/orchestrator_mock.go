@@ -53,9 +53,7 @@ func newMockBackend(protocol config.Protocol) *mockBackend {
 // TridentOrchestrator, since their functionality is not inherently interesting
 // or testable.
 type MockOrchestrator struct {
-	//backends           map[string]*storage.Backend
-	backendsByUUID map[string]*storage.Backend
-	//mockBackends       map[string]*mockBackend
+	backendsByUUID     map[string]storage.Backend
 	mockBackendsByUUID map[string]*mockBackend
 	storageClasses     map[string]*storageclass.StorageClass
 	volumes            map[string]*storage.Volume
@@ -67,11 +65,11 @@ func (m *MockOrchestrator) Bootstrap() error {
 	return nil
 }
 
-func (m *MockOrchestrator) AddFrontend(f frontend.Plugin) {
+func (m *MockOrchestrator) AddFrontend(_ frontend.Plugin) {
 	// NOP for the time being, since users of MockOrchestrator don't need this
 }
 
-func (m *MockOrchestrator) GetFrontend(ctx context.Context, name string) (frontend.Plugin, error) {
+func (m *MockOrchestrator) GetFrontend(_ context.Context, _ string) (frontend.Plugin, error) {
 	return nil, nil
 }
 
@@ -81,24 +79,21 @@ func (m *MockOrchestrator) GetVersion(context.Context) (string, error) {
 
 // TODO:  Add extra methods to add backends without needing to provide a valid,
 // stringified JSON config.
-func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON, configRef string) (*storage.BackendExternal,
+func (m *MockOrchestrator) AddBackend(ctx context.Context, _, _ string) (*storage.BackendExternal,
 	error) {
 	// We need to do this to determine if the backend is NFS or not.
-	backend := &storage.Backend{
-		Name:        fmt.Sprintf("mock-%d", len(m.backendsByUUID)),
-		BackendUUID: uuid.New().String(),
-		Driver:      nil,
-		Online:      true,
-		State:       storage.Online,
-		Storage:     make(map[string]*storage.Pool),
-	}
+	backend := &storage.StorageBackend{}
+	backend.SetName(fmt.Sprintf("mock-%d", len(m.backendsByUUID)))
+	backend.SetBackendUUID(uuid.New().String())
+	backend.SetDriver(nil)
+	backend.SetOnline(true)
+	backend.SetState(storage.Online)
+	backend.SetStorage(make(map[string]*storage.Pool))
 	mock := newMockBackend(backend.GetProtocol(ctx))
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	//m.backends[backend.Name] = backend
-	//m.mockBackends[backend.Name] = mock
-	m.backendsByUUID[backend.BackendUUID] = backend
-	m.mockBackendsByUUID[backend.BackendUUID] = mock
+	m.backendsByUUID[backend.BackendUUID()] = backend
+	m.mockBackendsByUUID[backend.BackendUUID()] = mock
 	return backend.ConstructExternal(ctx), nil
 }
 
@@ -106,28 +101,26 @@ func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON, configRef
 // backend config JSON.
 func (m *MockOrchestrator) addMockBackend(
 	name string, protocol config.Protocol,
-) *storage.Backend {
+) *storage.StorageBackend {
 	mock := newMockBackend(protocol)
-	backend := &storage.Backend{
-		Name:        name,
-		BackendUUID: uuid.New().String(),
-		Driver:      nil,
-		Online:      true,
-		State:       storage.Online,
-		Storage:     make(map[string]*storage.Pool),
-	}
+	backend := &storage.StorageBackend{}
+	backend.SetName(name)
+	backend.SetBackendUUID(uuid.New().String())
+	backend.SetDriver(nil)
+	backend.SetOnline(true)
+	backend.SetState(storage.Online)
+	backend.SetStorage(make(map[string]*storage.Pool))
+
 	mock.name = name
-	mock.backendUUID = backend.BackendUUID
-	//m.backends[backend.Name] = backend
-	//m.mockBackends[backend.Name] = mock
-	m.backendsByUUID[backend.BackendUUID] = backend
-	m.mockBackendsByUUID[backend.BackendUUID] = mock
+	mock.backendUUID = backend.BackendUUID()
+	m.backendsByUUID[backend.BackendUUID()] = backend
+	m.mockBackendsByUUID[backend.BackendUUID()] = mock
 	return backend
 }
 
 func (m *MockOrchestrator) AddMockONTAPNFSBackend(ctx context.Context, name, lif string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.File)
-	backend.Driver = &ontap.NASStorageDriver{
+	backend.SetDriver(&ontap.NASStorageDriver{
 		Config: drivers.OntapStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -135,15 +128,15 @@ func (m *MockOrchestrator) AddMockONTAPNFSBackend(ctx context.Context, name, lif
 			},
 			DataLIF: lif,
 		},
-	}
-	mock := m.mockBackendsByUUID[backend.BackendUUID]
+	})
+	mock := m.mockBackendsByUUID[backend.BackendUUID()]
 	mock.accessInfo.NfsServerIP = lif
 	return backend.ConstructExternal(ctx)
 }
 
 func (m *MockOrchestrator) AddMockONTAPSANBackend(ctx context.Context, name, lif string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
-	backend.Driver = &ontap.SANStorageDriver{
+	backend.SetDriver(&ontap.SANStorageDriver{
 		Config: drivers.OntapStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -151,28 +144,26 @@ func (m *MockOrchestrator) AddMockONTAPSANBackend(ctx context.Context, name, lif
 			},
 			DataLIF: lif,
 		},
-	}
+	})
 	// add any iscsi specific bits you need here...
-	//mock := m.mockBackendsByUUID[backend.BackendUUID]
-	//mock.accessInfo.IscsiUsername = "user"
 	return backend.ConstructExternal(ctx)
 }
 
-func (m *MockOrchestrator) AddFakeBackend(ctx context.Context, backend *storage.Backend) *storage.BackendExternal {
+func (m *MockOrchestrator) AddFakeBackend(ctx context.Context, backend *storage.StorageBackend) *storage.BackendExternal {
 	mock := &mockBackend{
-		name:        backend.Name,
-		backendUUID: backend.BackendUUID,
+		name:        backend.Name(),
+		backendUUID: backend.BackendUUID(),
 		volumes:     make(map[string]*storage.Volume),
 		protocol:    backend.GetProtocol(ctx),
 	}
-	m.backendsByUUID[backend.BackendUUID] = backend
-	m.mockBackendsByUUID[backend.BackendUUID] = mock
+	m.backendsByUUID[backend.BackendUUID()] = backend
+	m.mockBackendsByUUID[backend.BackendUUID()] = mock
 	return backend.ConstructExternal(ctx)
 }
 
 func (m *MockOrchestrator) AddMockFakeSANBackend(ctx context.Context, name string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
-	backend.Driver = &fake.StorageDriver{
+	backend.SetDriver(&fake.StorageDriver{
 		Config: drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -180,14 +171,13 @@ func (m *MockOrchestrator) AddMockFakeSANBackend(ctx context.Context, name strin
 			},
 			Protocol: config.Block,
 		},
-	}
-	//mock := m.mockBackendsByUUID[backend.BackendUUID]
+	})
 	return backend.ConstructExternal(ctx)
 }
 
 func (m *MockOrchestrator) AddMockFakeNASBackend(ctx context.Context, name string) *storage.BackendExternal {
 	backend := m.addMockBackend(name, config.Block)
-	backend.Driver = &fake.StorageDriver{
+	backend.SetDriver(&fake.StorageDriver{
 		Config: drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
@@ -195,16 +185,15 @@ func (m *MockOrchestrator) AddMockFakeNASBackend(ctx context.Context, name strin
 			},
 			Protocol: config.File,
 		},
-	}
-	//mock := m.mockBackendsByUUID[backend.BackendUUID]
+	})
 	return backend.ConstructExternal(ctx)
 }
 
-//TODO:  Add other mock backends here as necessary.
+// TODO:  Add other mock backends here as necessary.
 
 // UpdateBackend updates an existing backend
 func (m *MockOrchestrator) UpdateBackend(
-	ctx context.Context, backendName, configJSON, configRef string,
+	ctx context.Context, backendName, configJSON, _ string,
 ) (storageBackendExternal *storage.BackendExternal, err error) {
 	backend, err := m.GetBackend(ctx, backendName)
 	if err != nil {
@@ -215,7 +204,7 @@ func (m *MockOrchestrator) UpdateBackend(
 
 // UpdateBackendByBackendUUID updates an existing backend
 func (m *MockOrchestrator) UpdateBackendByBackendUUID(
-	ctx context.Context, backendName, configJSON, backendUUID, configRef string,
+	ctx context.Context, backendName, configJSON, backendUUID, _ string,
 ) (storageBackendExternal *storage.BackendExternal, err error) {
 
 	originalBackend, found := m.backendsByUUID[backendUUID]
@@ -237,7 +226,7 @@ func (m *MockOrchestrator) UpdateBackendByBackendUUID(
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
 func (m *MockOrchestrator) validateAndCreateBackendFromConfig(
 	ctx context.Context, configJSON, backendUUID string,
-) (backendExternal *storage.Backend, err error) {
+) (backendExternal storage.Backend, err error) {
 
 	commonConfig, configInJSON, err := factory.ValidateCommonSettings(ctx, configJSON)
 	if err != nil {
@@ -249,16 +238,14 @@ func (m *MockOrchestrator) validateAndCreateBackendFromConfig(
 
 // UpdateBackendState updates an existing backend
 func (m *MockOrchestrator) UpdateBackendState(
-	ctx context.Context, backendName, backendState string,
-) (storageBackendExternal *storage.BackendExternal,
-	err error) {
-	//TODO
+	_ context.Context, _, _ string,
+) (storageBackendExternal *storage.BackendExternal, err error) {
+	// TODO
 	return nil, fmt.Errorf("operation not currently supported")
 }
 
 // RemoveBackendConfigRef sets backend configRef to empty and updates it.
-func (m *MockOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUUID,
-	configRef string) (err error) {
+func (m *MockOrchestrator) RemoveBackendConfigRef(_ context.Context, backendUUID, configRef string) (err error) {
 
 	originalBackend, found := m.backendsByUUID[backendUUID]
 	if !found {
@@ -266,13 +253,13 @@ func (m *MockOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUU
 		return utils.NotFoundError(fmt.Sprintf("backend uuid:%v was not found", backendUUID))
 	}
 
-	if originalBackend.ConfigRef != "" {
-		if originalBackend.ConfigRef != configRef {
+	if originalBackend.ConfigRef() != "" {
+		if originalBackend.ConfigRef() != configRef {
 			return fmt.Errorf("TridentBackendConfig with UID '%s' cannot request removal of configRef '%s' for backend"+
-				" with UUID '%s'", configRef, originalBackend.ConfigRef, backendUUID)
+				" with UUID '%s'", configRef, originalBackend.ConfigRef(), backendUUID)
 		}
 
-		originalBackend.ConfigRef = ""
+		originalBackend.SetConfigRef("")
 		m.backendsByUUID[backendUUID] = originalBackend
 	}
 
@@ -289,13 +276,13 @@ func (m *MockOrchestrator) dumpKnownBackends() {
 	}).Debug("MockOrchestrator#dumpKnownBackends spinning through backends")
 	for _, backend := range m.backendsByUUID {
 		log.WithFields(log.Fields{
-			"backend.Name":        backend.Name,
-			"backend.BackendUUID": backend.BackendUUID,
+			"backend.Name":        backend.Name(),
+			"backend.BackendUUID": backend.BackendUUID(),
 		}).Debug("MockOrchestrator#getBackendByName found")
 	}
 }
 
-func (m *MockOrchestrator) getBackendByName(backendName string) (*storage.Backend, error) {
+func (m *MockOrchestrator) getBackendByName(backendName string) (storage.Backend, error) {
 	log.WithFields(log.Fields{"backendName": backendName}).Debug(">>>MockOrchestrator#getBackendByName")
 	defer log.WithFields(log.Fields{"backendName": backendName}).Debug("<<<MockOrchestrator#getBackendByName")
 
@@ -306,9 +293,9 @@ func (m *MockOrchestrator) getBackendByName(backendName string) (*storage.Backen
 	for _, backend := range m.backendsByUUID {
 		log.WithFields(log.Fields{
 			"backendName":  backendName,
-			"backend.Name": backend.Name,
+			"backend.Name": backend.Name(),
 		}).Debug("MockOrchestrator#getBackendByName checking")
-		if backend.Name == backendName {
+		if backend.Name() == backendName {
 			log.Debug("MockOrchestrator#getBackendByName returning")
 			return backend, nil
 		}
@@ -322,7 +309,6 @@ func (m *MockOrchestrator) GetBackend(ctx context.Context, backendName string) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	//b, found := m.backends[backendName]
 	b, err := m.getBackendByName(backendName)
 	if err != nil {
 		return nil, err
@@ -337,7 +323,6 @@ func (m *MockOrchestrator) GetBackendByBackendUUID(
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	//b, found := m.backends[backendUUID]
 	b, found := m.backendsByUUID[backendUUID]
 	if !found {
 		return nil, utils.NotFoundError("not found")
@@ -357,19 +342,19 @@ func (m *MockOrchestrator) ListBackends(ctx context.Context) ([]*storage.Backend
 	return backends, nil
 }
 
-func (m *MockOrchestrator) DeleteBackend(ctx context.Context, backend string) error {
+func (m *MockOrchestrator) DeleteBackend(_ context.Context, _ string) error {
 	// Implement this if it becomes necessary to test.
 	return nil
 }
 
-func (m *MockOrchestrator) DeleteBackendByBackendUUID(ctx context.Context, backendName, backendUUID string) error {
+func (m *MockOrchestrator) DeleteBackendByBackendUUID(_ context.Context, _, _ string) error {
 	// Implement this if it becomes necessary to test.
 	return nil
 }
 
 func (m *MockOrchestrator) AddVolume(
-	ctx context.Context, volumeConfig *storage.VolumeConfig,
-) (*storage.VolumeExternal, error) {
+	_ context.Context, volumeConfig *storage.VolumeConfig,) (*storage.VolumeExternal,
+	error) {
 	var mockBackends map[string]*mockBackend
 
 	// Don't bother with actually getting the backends from the storage class;
@@ -385,11 +370,9 @@ func (m *MockOrchestrator) AddVolume(
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if volumeConfig.Protocol == config.ProtocolAny {
-		//mockBackends = m.mockBackends
 		mockBackends = m.mockBackendsByUUID
 	} else {
 		mockBackends = make(map[string]*mockBackend)
-		//for name, b := range m.mockBackends {
 		for _, b := range m.mockBackendsByUUID {
 			name := b.name
 			log.WithFields(
@@ -412,12 +395,11 @@ func (m *MockOrchestrator) AddVolume(
 	index := rand.Intn(len(mockBackends))
 	backendName := reflect.ValueOf(mockBackends).MapKeys()[index].String()
 	mockBackend := mockBackends[backendName]
-	//backend := m.backends[backendName]
 	backend, err := m.getBackendByName(backendName)
 	if err != nil {
 		return nil, err
 	}
-	backendUUID := backend.BackendUUID
+	backendUUID := backend.BackendUUID()
 	// Use something other than the volume config name itself.
 	volumeConfig.InternalName = GetFakeInternalName(volumeConfig.Name)
 	if mockBackend.protocol == config.File {
@@ -436,25 +418,25 @@ func (m *MockOrchestrator) AddVolume(
 }
 
 func (m *MockOrchestrator) CloneVolume(
-	ctx context.Context, volumeConfig *storage.VolumeConfig,
+	_ context.Context, _ *storage.VolumeConfig,
 ) (*storage.VolumeExternal, error) {
 	// TODO: write this method to enable CloneVolume unit tests
 	return nil, nil
 }
 
 func (m *MockOrchestrator) GetVolumeExternal(
-	ctx context.Context, volumeName string, backendName string,
+	_ context.Context, _ string, _ string,
 ) (*storage.VolumeExternal, error) {
 	// TODO: write this method to enable GetVolumeExternal unit tests
 	return nil, nil
 }
 
 func (m *MockOrchestrator) LegacyImportVolume(
-	ctx context.Context,
-	volumeConfig *storage.VolumeConfig,
-	backendName string,
-	notManaged bool,
-	createPVandPVC VolumeCallback,
+	_ context.Context,
+	_ *storage.VolumeConfig,
+	_ string,
+	_ bool,
+	_ VolumeCallback,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	// TODO: write this method to enable GetVolumeExternal unit tests
@@ -462,7 +444,7 @@ func (m *MockOrchestrator) LegacyImportVolume(
 }
 
 func (m *MockOrchestrator) ImportVolume(
-	ctx context.Context, volumeConfig *storage.VolumeConfig,
+	_ context.Context, _ *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
 
 	// TODO: write this method to enable GetVolumeExternal unit tests
@@ -490,7 +472,7 @@ func (m *MockOrchestrator) ValidateVolumes(
 	return correct
 }
 
-func (m *MockOrchestrator) GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error) {
+func (m *MockOrchestrator) GetVolume(_ context.Context, volume string) (*storage.VolumeExternal, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -501,7 +483,7 @@ func (m *MockOrchestrator) GetVolume(ctx context.Context, volume string) (*stora
 	return vol.ConstructExternal(), nil
 }
 
-func (m *MockOrchestrator) SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error {
+func (m *MockOrchestrator) SetVolumeState(_ context.Context, volumeName string, state storage.VolumeState) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -513,24 +495,24 @@ func (m *MockOrchestrator) SetVolumeState(ctx context.Context, volumeName string
 	return nil
 }
 
-// Copied verbatim from TridentOrchestrator
-func (m *MockOrchestrator) GetDriverTypeForVolume(ctx context.Context, vol *storage.VolumeExternal) (string, error) {
+// TODO (akerr): copying the following methods from TridentOrchestrator is a bad idea long-term as code will diverge
+
+// GetDriverTypeForVolume is copied verbatim from TridentOrchestrator
+func (m *MockOrchestrator) GetDriverTypeForVolume(_ context.Context, vol *storage.VolumeExternal) (string, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	//if b, ok := m.backends[vol.BackendUUID]; ok {
 	if b, ok := m.backendsByUUID[vol.BackendUUID]; ok {
-		return b.Driver.Name(), nil
+		return b.Driver().Name(), nil
 	}
 	return config.UnknownDriver, nil
 }
 
-// Copied verbatim from TridentOrchestrator
-func (m *MockOrchestrator) GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error) {
+// GetVolumeType is copied verbatim from TridentOrchestrator
+func (m *MockOrchestrator) GetVolumeType(_ context.Context, vol *storage.VolumeExternal) (config.VolumeType, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	//driver := m.backends[vol.BackendUUID].GetDriverName()
 	driver := m.backendsByUUID[vol.BackendUUID].GetDriverName()
 	switch {
 	case driver == drivers.OntapNASStorageDriverName:
@@ -558,7 +540,7 @@ func (m *MockOrchestrator) ListVolumes(context.Context) ([]*storage.VolumeExtern
 	return volumes, nil
 }
 
-func (m *MockOrchestrator) DeleteVolume(ctx context.Context, volumeName string) error {
+func (m *MockOrchestrator) DeleteVolume(_ context.Context, volumeName string) error {
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -569,14 +551,13 @@ func (m *MockOrchestrator) DeleteVolume(ctx context.Context, volumeName string) 
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
-	//delete(m.mockBackends[volume.BackendUUID].volumes, volume.Config.Name)
 	delete(m.mockBackendsByUUID[volume.BackendUUID].volumes, volume.Config.Name)
 	delete(m.volumes, volume.Config.Name)
 	return nil
 }
 
 func (m *MockOrchestrator) ListVolumesByPlugin(
-	ctx context.Context, pluginName string,
+	context.Context, string,
 ) ([]*storage.VolumeExternal, error) {
 	// Currently returns nil, since this is backend agnostic.  Change this
 	// if we ever have non-apiserver functionality depend on this function.
@@ -584,29 +565,29 @@ func (m *MockOrchestrator) ListVolumesByPlugin(
 }
 
 func (m *MockOrchestrator) AttachVolume(
-	ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo,
+	context.Context, string, string, *utils.VolumePublishInfo,
 ) error {
 	return nil
 }
 
-func (m *MockOrchestrator) DetachVolume(ctx context.Context, volumeName, mountpoint string) error {
+func (m *MockOrchestrator) DetachVolume(context.Context, string, string) error {
 	return nil
 }
 
 func (m *MockOrchestrator) PublishVolume(
-	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
+	context.Context, string, *utils.VolumePublishInfo,
 ) error {
 	return nil
 }
 
 func (m *MockOrchestrator) CreateSnapshot(
-	ctx context.Context, snapshotConfig *storage.SnapshotConfig,
+	context.Context, *storage.SnapshotConfig,
 ) (*storage.SnapshotExternal, error) {
 	return nil, nil
 }
 
 func (m *MockOrchestrator) GetSnapshot(
-	ctx context.Context, volumeName, snapshotName string,
+	context.Context, string, string,
 ) (*storage.SnapshotExternal, error) {
 	return nil, nil
 }
@@ -616,24 +597,24 @@ func (m *MockOrchestrator) ListSnapshots(context.Context) ([]*storage.SnapshotEx
 }
 
 func (m *MockOrchestrator) ListSnapshotsByName(
-	ctx context.Context, snapshotName string,
+	context.Context, string,
 ) ([]*storage.SnapshotExternal, error) {
 	return make([]*storage.SnapshotExternal, 0), nil
 }
 
 func (m *MockOrchestrator) ListSnapshotsForVolume(
-	ctx context.Context, volumeName string,
+	context.Context, string,
 ) ([]*storage.SnapshotExternal, error) {
 	return make([]*storage.SnapshotExternal, 0), nil
 }
 
 func (m *MockOrchestrator) ReadSnapshotsForVolume(
-	ctx context.Context, volumeName string,
+	context.Context, string,
 ) ([]*storage.SnapshotExternal, error) {
 	return make([]*storage.SnapshotExternal, 0), nil
 }
 
-func (m *MockOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error {
+func (m *MockOrchestrator) DeleteSnapshot(context.Context, string, string) error {
 	return nil
 }
 
@@ -641,13 +622,13 @@ func (m *MockOrchestrator) ReloadVolumes(context.Context) error {
 	return nil
 }
 
-func (m *MockOrchestrator) ResizeVolume(ctx context.Context, volumeName, newSize string) error {
+func (m *MockOrchestrator) ResizeVolume(context.Context, string, string) error {
 	return nil
 }
 
 func NewMockOrchestrator() *MockOrchestrator {
 	return &MockOrchestrator{
-		backendsByUUID:     make(map[string]*storage.Backend),
+		backendsByUUID:     make(map[string]storage.Backend),
 		mockBackendsByUUID: make(map[string]*mockBackend),
 		// backends:       make(map[string]*storage.Backend),
 		// mockBackends:   make(map[string]*mockBackend),
@@ -684,7 +665,7 @@ func (m *MockOrchestrator) ListStorageClasses(ctx context.Context) ([]*storagecl
 	return ret, nil
 }
 
-func (m *MockOrchestrator) DeleteStorageClass(ctx context.Context, scName string) error {
+func (m *MockOrchestrator) DeleteStorageClass(_ context.Context, scName string) error {
 	if _, ok := m.storageClasses[scName]; !ok {
 		return utils.NotFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
@@ -703,7 +684,7 @@ func (m *MockOrchestrator) AddNode(_ context.Context, node *utils.Node, _ NodeEv
 	return nil
 }
 
-func (m *MockOrchestrator) GetNode(ctx context.Context, nName string) (*utils.Node, error) {
+func (m *MockOrchestrator) GetNode(_ context.Context, nName string) (*utils.Node, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	node, found := m.nodes[nName]
@@ -723,7 +704,7 @@ func (m *MockOrchestrator) ListNodes(context.Context) ([]*utils.Node, error) {
 	return ret, nil
 }
 
-func (m *MockOrchestrator) DeleteNode(ctx context.Context, nName string) error {
+func (m *MockOrchestrator) DeleteNode(_ context.Context, nName string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if _, ok := m.nodes[nName]; !ok {
@@ -733,17 +714,17 @@ func (m *MockOrchestrator) DeleteNode(ctx context.Context, nName string) error {
 	return nil
 }
 
-func (m *MockOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
+func (m *MockOrchestrator) AddVolumeTransaction(context.Context, *storage.VolumeTransaction) error {
 	return nil
 }
 
 func (m *MockOrchestrator) GetVolumeTransaction(
-	ctx context.Context, volTxn *storage.VolumeTransaction,
+	context.Context, *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
 	return nil, nil
 }
 
-func (m *MockOrchestrator) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
+func (m *MockOrchestrator) DeleteVolumeTransaction(context.Context, *storage.VolumeTransaction) error {
 	return nil
 }
 
