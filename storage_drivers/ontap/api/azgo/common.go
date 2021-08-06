@@ -16,8 +16,10 @@ import (
 	"strings"
 	"time"
 
-	tridentconfig "github.com/netapp/trident/config"
+	xrv "github.com/mattermost/xml-roundtrip-validator"
 	log "github.com/sirupsen/logrus"
+
+	tridentconfig "github.com/netapp/trident/config"
 )
 
 type ZAPIRequest interface {
@@ -172,7 +174,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		log.Debugf("response Headers: %s", response.Header)
 	}
 
-	return response, err
+	return ValidateZAPIResponse(response)
 }
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
@@ -253,4 +255,39 @@ func ToString(val reflect.Value) string {
 	}
 
 	return buffer.String()
+}
+
+func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
+	resp, err := ioutil.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	respString := string(resp)
+	// Remove newlines
+	sanitizedString := strings.ReplaceAll(respString,"\n", "")
+
+	if errs := xrv.ValidateAll(strings.NewReader(sanitizedString)); len(errs) > 0 {
+		for verr := range errs {
+			log.Errorf("validation of ZAPI XML caused an error: %v", verr)
+		}
+		return nil, errors.New("zapiCommand XML response validation failed")
+	}
+
+	// Create a manual http response using the already read body, while using all the other fields as-is; this should
+	// prevent us from having to change the return type to []byte, which would likely require changes to a large number
+	// of azgo files. Creating a response manually with only the Body would not be seen as valid by consumers of the
+	// response
+	return &http.Response{
+		Status: response.Status,
+		StatusCode: response.StatusCode,
+		Proto: response.Proto,
+		ProtoMajor: response.ProtoMajor,
+		ProtoMinor: response.ProtoMinor,
+		Body: ioutil.NopCloser(bytes.NewBufferString(respString)),
+		ContentLength: int64(len(respString)),
+		Request: response.Request,
+		Header: response.Header,
+	}, nil
 }

@@ -29,6 +29,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.0.0
+	github.com/mattermost/xml-roundtrip-validator v0.1.0
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/olekukonko/tablewriter v0.0.5
