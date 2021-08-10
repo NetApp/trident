@@ -1276,6 +1276,231 @@ func (d RestClient) VolumeCloneCreateAsync(
 	return d.PollJobStatus(ctx, cloneCreateResult.Payload)
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// IGROUP operations BEGIN
+
+// IgroupCreate creates the specified initiator group
+// equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
+func (d RestClient) IgroupCreate(
+	ctx context.Context,
+	initiatorGroupName, initiatorGroupType, osType string) error {
+
+	params := san.NewIgroupCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	igroupInfo := &models.Igroup{
+		Name:     initiatorGroupName,
+		Protocol: ToStringPointer(initiatorGroupType),
+		OsType:   osType,
+	}
+
+	igroupInfo.Svm = &models.IgroupSvm{Name: d.config.SVM}
+
+	params.SetInfo(igroupInfo)
+
+	igroupCreateAccepted, err := d.api.San.IgroupCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if igroupCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from igroup create")
+	}
+
+	if igroupCreateAccepted.Payload == nil {
+		return fmt.Errorf("unexpected response from igroup create, payload was nil")
+	} else {
+		if igroupCreateAccepted.Payload.NumRecords != 1 {
+			return fmt.Errorf("unexpected response from igroup create, created %v igroups", igroupCreateAccepted.Payload.NumRecords)
+		}
+	}
+
+	return nil
+}
+
+// IgroupAdd adds an initiator to an initiator group
+// equivalent to filer::> igroup add -vserver iscsi_vs -igroup docker -initiator iqn.1993-08.org.debian:01:9031309bbebd
+func (d RestClient) IgroupAdd(
+	ctx context.Context,
+	initiatorGroupName, initiator string) error {
+
+	igroup, err := d.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return err
+	}
+	if igroup == nil {
+		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
+	}
+	igroupUUID := igroup.UUID
+
+	params := san.NewIgroupInitiatorCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IgroupUUIDPathParameter = igroupUUID
+
+	igroupInitiator := &models.IgroupInitiator{
+		Name: initiator,
+	}
+
+	params.SetInfo(igroupInitiator)
+
+	_, err = d.api.San.IgroupInitiatorCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// IgroupRemove removes an initiator from an initiator group
+func (d RestClient) IgroupRemove(
+	ctx context.Context,
+	initiatorGroupName, initiator string) error {
+
+	igroup, err := d.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return err
+	}
+	if igroup == nil {
+		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
+	}
+	igroupUUID := igroup.UUID
+
+	params := san.NewIgroupInitiatorDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IgroupUUIDPathParameter = igroupUUID
+	params.NamePathParameter = initiator
+
+	deleteAccepted, err := d.api.San.IgroupInitiatorDelete(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if deleteAccepted == nil {
+		return fmt.Errorf("unexpected response from igroup remove")
+	}
+
+	return nil
+}
+
+// IgroupDestroy destroys an initiator group
+func (d RestClient) IgroupDestroy(
+	ctx context.Context,
+	initiatorGroupName string) error {
+
+	igroup, err := d.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return err
+	}
+	if igroup == nil {
+		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
+	}
+	igroupUUID := igroup.UUID
+
+	params := san.NewIgroupDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = igroupUUID
+
+	lunDeleteResult, err := d.api.San.IgroupDelete(params, d.authInfo)
+	if err != nil {
+		return fmt.Errorf("could not delete igroup: %v", err)
+	}
+	if lunDeleteResult == nil {
+		return fmt.Errorf("could not delete igroup: %v", "unexpected result")
+	}
+
+	return nil
+}
+
+// IgroupList lists initiator groups
+func (d RestClient) IgroupList(ctx context.Context, pattern string) (*san.IgroupCollectionGetOK, error) {
+
+	if pattern == "" {
+		pattern = "*"
+	}
+
+	params := san.NewIgroupCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+
+	params.ReturnRecords = ToBoolPointer(true)
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(pattern))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.San.IgroupCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.San.IgroupCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// IgroupGet gets the igroup with the specified uuid
+func (d RestClient) IgroupGet(
+	ctx context.Context,
+	uuid string,
+) (*san.IgroupGetOK, error) {
+
+	params := san.NewIgroupGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	return d.api.San.IgroupGet(params, d.authInfo)
+}
+
+// IgroupGetByName gets the igroup with the specified name
+func (d RestClient) IgroupGetByName(
+	ctx context.Context,
+	initiatorGroupName string,
+) (*models.Igroup, error) {
+
+	// TODO improve this
+	result, err := d.IgroupList(ctx, initiatorGroupName)
+	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
+		return result.Payload.Records[0], nil
+	}
+	return nil, err
+}
+
+// IGROUP operations END
+/////////////////////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////////////////////
 // LUN operations
 //////////////////////////////////////////////////////////////////////////////
@@ -1284,7 +1509,7 @@ func (d RestClient) VolumeCloneCreateAsync(
 func (d RestClient) LunCreate(
 	ctx context.Context,
 	lunName, size string,
-) (*san.LunCreateCreated, error) {
+) error {
 
 	params := san.NewLunCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
@@ -1295,7 +1520,7 @@ func (d RestClient) LunCreate(
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
 	lunInfo := &models.Lun{
-		Name:   lunName,
+		Name:   lunName, // example:  /vol/myVolume/myLun1
 		OsType: models.LunOsTypeLinux,
 		Space: &models.LunSpace{
 			Size: int64(sizeBytes),
@@ -1305,7 +1530,23 @@ func (d RestClient) LunCreate(
 
 	params.SetInfo(lunInfo)
 
-	return d.api.San.LunCreate(params, d.authInfo)
+	lunCreateAccepted, err := d.api.San.LunCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from lun create")
+	}
+
+	if lunCreateAccepted.Payload == nil {
+		return fmt.Errorf("unexpected response from lun create, payload was nil")
+	} else {
+		if lunCreateAccepted.Payload.NumRecords != 1 {
+			return fmt.Errorf("unexpected response from lun create, created %v luns", lunCreateAccepted.Payload.NumRecords)
+		}
+	}
+
+	return nil
 }
 
 // LunGet gets the LUN with the specified uuid
@@ -1395,14 +1636,22 @@ func (d RestClient) LunList(
 func (d RestClient) LunDelete(
 	ctx context.Context,
 	lunUUID string,
-) (*san.LunDeleteOK, error) {
+) error {
 
 	params := san.NewLunDeleteParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 	params.UUIDPathParameter = lunUUID
 
-	return d.api.San.LunDelete(params, d.authInfo)
+	lunDeleteResult, err := d.api.San.LunDelete(params, d.authInfo)
+	if err != nil {
+		return fmt.Errorf("could not delete lun: %v", err)
+	}
+	if lunDeleteResult == nil {
+		return fmt.Errorf("could not delete lun: %v", "unexpected result")
+	}
+
+	return nil
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2471,3 +2720,1115 @@ func (d RestClient) ExportRuleDestroy(
 
 	return d.api.Nas.ExportRuleDelete(params, d.authInfo)
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// FlexGroup operations BEGIN
+
+func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeAggregatesItems0 {
+	var result []*models.VolumeAggregatesItems0
+	for _, aggregateName := range aggrs {
+		item := &models.VolumeAggregatesItems0{
+			Name: aggregateName,
+		}
+		result = append(result, item)
+	}
+	return result
+}
+
+// FlexGroupCreate creates a FlexGroup with the specified options
+// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
+func (d RestClient) FlexGroupCreate(
+	ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy,
+	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
+	encrypt bool, snapshotReserve int,
+) error {
+
+	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	// TODO merge this with VolumeCreate as much as possible, Style is the main difference between the two
+	volumeInfo := &models.Volume{
+		Name:           name,
+		Size:           int64(size),
+		Guarantee:      &models.VolumeGuarantee{Type: spaceReserve},
+		SnapshotPolicy: &models.VolumeSnapshotPolicy{Name: snapshotPolicy},
+		Comment:        ToStringPointer(comment),
+		State:          models.VolumeStateOnline,
+		Style:          models.VolumeStyleFlexgroup,
+	}
+
+	volumeInfoAggregates := ToSliceVolumeAggregatesItems(aggrs)
+	if len(volumeInfoAggregates) > 0 {
+		volumeInfo.Aggregates = volumeInfoAggregates
+	}
+
+	if snapshotReserve != NumericalValueNotSet {
+		volumeInfo.Space = &models.VolumeSpace{
+			Snapshot: &models.VolumeSpaceSnapshot{
+				ReservePercent: ToInt64Pointer(snapshotReserve),
+			},
+		}
+	}
+
+	volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
+
+	if encrypt {
+		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: true}
+	}
+	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
+		if qosPolicyGroup.Name != "" {
+			volumeInfo.Qos = &models.VolumeQos{
+				Policy: &models.VolumeQosPolicy{Name: qosPolicyGroup.Name},
+			}
+		}
+	}
+
+	if tieringPolicy != "" {
+		volumeInfo.Tiering = &models.VolumeTiering{Policy: tieringPolicy}
+	}
+
+	// handle NAS options
+	volumeNas := &models.VolumeNas{}
+	if securityStyle != "" {
+		volumeNas.SecurityStyle = ToStringPointer(securityStyle)
+		volumeInfo.Nas = volumeNas
+	}
+	if unixPermissions != "" {
+		unixPermissions = convertUnixPermissions(unixPermissions)
+		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		if parseErr != nil {
+			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+		}
+		volumeNas.UnixPermissions = volumePermissions
+		volumeInfo.Nas = volumeNas
+	}
+	if exportPolicy != "" {
+		volumeNas.ExportPolicy = &models.VolumeNasExportPolicy{Name: exportPolicy}
+		volumeInfo.Nas = volumeNas
+	}
+
+	params.SetInfo(volumeInfo)
+
+	volumeCreateAccepted, err := d.api.Storage.VolumeCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from volume create")
+	}
+
+	return d.PollJobStatus(ctx, volumeCreateAccepted.Payload)
+}
+
+// FlexGroupDestroy destroys a FlexGroup
+func (d RestClient) FlexGroupDestroy(
+	ctx context.Context, name string,
+) error {
+	volume, err := d.FlexGroupGetByName(ctx, name)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume: %v", name)
+	}
+
+	// TODO ensure this is appropriate for deletes that take a long time
+	//
+	// GET /api/cluster/jobs/e95ec57d-f066-11eb-b8e0-00a0986e75a0?fields=%2A%2A HTTP/1.1
+	// Host: 10.63.171.241
+	// User-Agent: Go-http-client/1.1
+	// Accept: application/hal+json
+	// Accept: application/json
+	// Authorization: Basic YWRtaW46TmV0YXBwMTIz
+	// Accept-Encoding: gzip
+	//
+	//
+	// HTTP/1.1 200 OK
+	// Content-Length: 324
+	// Cache-Control: no-cache,no-store,must-revalidate
+	// Content-Type: application/hal+json
+	// Date: Thu, 29 Jul 2021 12:17:30 GMT
+	// Server: libzapid-httpd
+	// X-Content-Type-Options: nosniff
+	//
+	// {
+	//   "uuid": "e95ec57d-f066-11eb-b8e0-00a0986e75a0",
+	//   "description": "DELETE /api/storage/volumes/65566050-f066-11eb-b8e0-00a0986e75a0",
+	//   "state": "running",
+	//   "start_time": "2021-07-29T08:17:15-04:00",
+	//   "_links": {
+	// 	"self": {
+	// 	  "href": "/api/cluster/jobs/e95ec57d-f066-11eb-b8e0-00a0986e75a0?fields=**"
+	// 	}
+	//   }
+	// }
+	// WARN[40739] Job not completed after 30.00 seconds.        UUID=e95ec57d-f066-11eb-b8e0-00a0986e75a0 requestID="<nil>" requestSource="<nil>"
+	// error: job e95ec57d-f066-11eb-b8e0-00a0986e75a0 not yet done
+
+	return d.VolumeDelete(ctx, volume.UUID)
+}
+
+// FlexGroupExists tests for the existence of a FlexGroup
+func (d RestClient) FlexGroupExists(ctx context.Context, name string) (bool, error) {
+	return d.VolumeExists(ctx, name)
+}
+
+// FlexGroupSize retrieves the size of the specified volume
+func (d RestClient) FlexGroupSize(ctx context.Context, name string) (int, error) {
+	return d.VolumeSize(ctx, name)
+}
+
+// FlexGroupSetSize sets the size of the specified FlexGroup
+func (d RestClient) FlexGroupSetSize(ctx context.Context, name, newSize string) error {
+	return d.VolumeSetSize(ctx, name, newSize)
+}
+
+// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
+// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
+func (d RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
+	ctx context.Context, name string,
+) error {
+	return d.VolumeDisableSnapshotDirectoryAccess(ctx, name)
+}
+
+func (d RestClient) FlexGroupModifyUnixPermissions(
+	ctx context.Context, volumeName, unixPermissions string,
+) error {
+	return d.VolumeModifyUnixPermissions(ctx, volumeName, unixPermissions)
+}
+
+// FlexGroupSetComment sets a flexgroup's comment to the supplied value
+func (d RestClient) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
+	return d.VolumeSetComment(ctx, volumeName, newVolumeComment)
+}
+
+// FlexGroupGet returns all relevant details for a single FlexGroup
+func (d RestClient) FlexGroupGet(ctx context.Context, name string) (*models.Volume, error) {
+	return d.FlexGroupGetByName(ctx, name)
+}
+
+// FlexGroupGetByName gets the flexgroup with the specified name
+func (d RestClient) FlexGroupGetByName(
+	ctx context.Context,
+	volumeName string,
+) (*models.Volume, error) {
+
+	result, err := d.FlexGroupGetAll(ctx, volumeName)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == 0 {
+		return nil, nil
+	}
+	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
+		return result.Payload.Records[0], nil
+	}
+	return nil, fmt.Errorf("could not find unique volume with name '%v'; found %d matching volumes", volumeName, result.Payload.NumRecords)
+}
+
+// FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
+func (d RestClient) FlexGroupGetAll(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error) {
+
+	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(pattern))
+	params.SetStateQueryParameter(ToStringPointer(models.VolumeStateOnline))
+	params.SetStyleQueryParameter(ToStringPointer(models.VolumeStyleFlexgroup))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// FlexGroup operations END
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+// QTREE operations BEGIN
+
+// QtreeCreate creates a qtree with the specified options
+// equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
+func (d RestClient) QtreeCreate(
+	ctx context.Context,
+	name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string) error {
+
+	params := storage.NewQtreeCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	qtreeInfo := &models.Qtree{
+		Name: name,
+		Volume: &models.QtreeVolume{
+			Name: volumeName,
+		},
+	}
+
+	qtreeInfo.Svm = &models.QtreeSvm{Name: d.config.SVM}
+
+	// handle options
+	if unixPermissions != "" {
+		unixPermissions = convertUnixPermissions(unixPermissions)
+		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		if parseErr != nil {
+			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+		}
+		qtreeInfo.UnixPermissions = volumePermissions
+	}
+	if exportPolicy != "" {
+		qtreeInfo.ExportPolicy = &models.QtreeExportPolicy{
+			Name: exportPolicy,
+		}
+	}
+	if securityStyle != "" {
+		qtreeInfo.SecurityStyle = models.SecurityStyle(securityStyle)
+	}
+
+	// TODO handle qosPolicy (it's missing from the generated bindings)
+
+	params.SetInfo(qtreeInfo)
+
+	createAccepted, err := d.api.Storage.QtreeCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if createAccepted == nil {
+		return fmt.Errorf("unexpected response from qtree create")
+	}
+
+	return d.PollJobStatus(ctx, createAccepted.Payload)
+}
+
+// QtreeRename renames a qtree
+// equivalent to filer::> volume qtree rename
+func (d RestClient) QtreeRename(
+	ctx context.Context,
+	path, newPath string) error {
+
+	qtree, err := d.QtreeGetByPath(ctx, path)
+	if err != nil {
+		return err
+	}
+	if qtree == nil {
+		return fmt.Errorf("could not find qtree with path %v", path)
+	}
+
+	// TODO add sanity checks around qtree.ID and qtree.Volume?
+	params := storage.NewQtreeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IDPathParameter = strconv.FormatInt(int64(qtree.ID), 10)
+	params.VolumeUUIDPathParameter = qtree.Volume.UUID
+
+	qtreeInfo := &models.Qtree{
+		Name: strings.TrimPrefix(newPath, "/"+qtree.Volume.Name+"/"),
+	}
+
+	params.SetInfo(qtreeInfo)
+
+	modifyAccepted, err := d.api.Storage.QtreeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if modifyAccepted == nil {
+		return fmt.Errorf("unexpected response from qtree modify")
+	}
+
+	return d.PollJobStatus(ctx, modifyAccepted.Payload)
+}
+
+// QtreeDestroyAsync destroys a qtree in the background
+// equivalent to filer::> volume qtree delete -foreground false
+func (d RestClient) QtreeDestroyAsync(
+	ctx context.Context,
+	path string, force bool) error {
+
+	// TODO force isn't used
+
+	qtree, err := d.QtreeGetByPath(ctx, path)
+	if err != nil {
+		return err
+	}
+	if qtree == nil {
+		return fmt.Errorf("unexpected response from qtree lookup by path")
+	}
+	if qtree.Volume == nil {
+		return fmt.Errorf("unexpected response from qtree lookup by path, missing volume information")
+	}
+
+	params := storage.NewQtreeDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IDPathParameter = strconv.FormatInt(int64(qtree.ID), 10)
+	params.VolumeUUIDPathParameter = qtree.Volume.UUID
+
+	deleteAccepted, err := d.api.Storage.QtreeDelete(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if deleteAccepted == nil {
+		return fmt.Errorf("unexpected response from quota delete")
+	}
+
+	return d.PollJobStatus(ctx, deleteAccepted.Payload)
+}
+
+// QtreeList returns the names of all Qtrees whose names match the supplied prefix
+// equivalent to filer::> volume qtree show
+func (d RestClient) QtreeList(
+	ctx context.Context,
+	prefix, volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
+
+	namePattern := "*"
+	if prefix != "" {
+		namePattern = prefix + "*"
+	}
+
+	volumePattern := "*"
+	if volumePrefix != "" {
+		volumePattern = volumePrefix + "*"
+	}
+
+	// Limit the qtrees to those matching the Flexvol name prefix
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(namePattern))         // Qtree name prefix
+	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
+	params.SetFields([]string{"**"})                                   // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QtreeCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// QtreeGetByPath gets the qtree with the specified path
+func (d RestClient) QtreeGetByPath(
+	ctx context.Context,
+	path string,
+) (*models.Qtree, error) {
+
+	// Limit the qtrees to those specified path
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetPathQueryParameter(ToStringPointer(path))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if result.Payload == nil {
+		return nil, fmt.Errorf("qtree path %s not found", path)
+	} else if len(result.Payload.Records) > 1 {
+		return nil, fmt.Errorf("more than one qtree at path %s found", path)
+	} else if len(result.Payload.Records) == 1 {
+		return result.Payload.Records[0], nil
+	} else if HasNextLink(result.Payload) {
+		return nil, fmt.Errorf("more than one qtree at path %s found", path)
+	}
+
+	return nil, fmt.Errorf("qtree path %s not found", path)
+}
+
+// QtreeGetByName gets the qtree with the specified name in the specified volume
+func (d RestClient) QtreeGetByName(
+	ctx context.Context,
+	name, volumeName string,
+) (*models.Qtree, error) {
+
+	// Limit to the single qtree /volumeName/name
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(name))
+	params.SetVolumeNameQueryParameter(ToStringPointer(volumeName))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if result.Payload == nil {
+		return nil, fmt.Errorf("qtree %s not found", name)
+	} else if len(result.Payload.Records) > 1 {
+		return nil, fmt.Errorf("more than one qtree %s found", name)
+	} else if len(result.Payload.Records) == 1 {
+		return result.Payload.Records[0], nil
+	} else if HasNextLink(result.Payload) {
+		return nil, fmt.Errorf("more than one qtree %s found", name)
+	}
+
+	return nil, fmt.Errorf("qtree %s not found", name)
+}
+
+// QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
+func (d RestClient) QtreeCount(
+	ctx context.Context,
+	volume string) (int, error) {
+
+	// Limit the qtrees to those in the specified Flexvol name
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetVolumeNameQueryParameter(ToStringPointer(volume)) // Flexvol name
+	params.SetFields([]string{"**"})                            // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return 0, err
+	}
+	if result == nil {
+		return 0, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QtreeCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return 0, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+
+	// There will always be one qtree for the Flexvol, so decrement by 1
+	n := len(result.Payload.Records)
+	switch n {
+	case 0:
+		fallthrough
+	case 1:
+		return 0, nil
+	default:
+		return n - 1, nil
+	}
+}
+
+// QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
+func (d RestClient) QtreeExists(
+	ctx context.Context,
+	name, volumePrefix string) (bool, string, error) {
+
+	volumePattern := "*"
+	if volumePrefix != "" {
+		volumePattern = volumePrefix + "*"
+	}
+
+	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(name))                // Qtree name
+	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
+	params.SetFields([]string{"**"})                                   // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return false, "", err
+	}
+	if result == nil {
+		return false, "", nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QtreeCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return false, "", errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+
+	if result.Payload == nil {
+		return false, "", nil
+	}
+
+	// Ensure qtree is unique
+	n := result.Payload.NumRecords
+	if n != 1 {
+		return false, "", nil
+	}
+
+	// Get containing Flexvol
+	volume := result.Payload.Records[0].Volume
+	if volume == nil {
+		return false, "", nil
+	}
+	flexvol := volume.Name
+
+	return true, flexvol, nil
+}
+
+// QtreeGet returns all relevant details for a single qtree
+// equivalent to filer::> volume qtree show
+func (d RestClient) QtreeGet(
+	ctx context.Context,
+	name, volumePrefix string) (*models.Qtree, error) {
+
+	pattern := "*"
+	if volumePrefix != "" {
+		pattern = volumePrefix + "*"
+	}
+
+	// Limit the qtrees to those matching the Flexvol name prefix
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetNameQueryParameter(ToStringPointer(name))          // qtree name
+	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
+	params.SetFields([]string{"**"})                             // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if result.Payload == nil {
+		return nil, fmt.Errorf("qtree %s not found", name)
+	} else if len(result.Payload.Records) > 1 {
+		return nil, fmt.Errorf("more than one qtree %s found", name)
+	} else if len(result.Payload.Records) == 1 {
+		return result.Payload.Records[0], nil
+	} else if HasNextLink(result.Payload) {
+		return nil, fmt.Errorf("more than one qtree %s found", name)
+	}
+
+	return nil, fmt.Errorf("qtree %s not found", name)
+}
+
+// QtreeGetAll returns all relevant details for all qtrees whose Flexvol names match the supplied prefix
+// equivalent to filer::> volume qtree show
+func (d RestClient) QtreeGetAll(
+	ctx context.Context,
+	volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
+
+	pattern := "*"
+	if volumePrefix != "" {
+		pattern = volumePrefix + "*"
+	}
+
+	// Limit the qtrees to those matching the Flexvol name prefix
+	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
+	params.SetFields([]string{"**"})                             // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QtreeCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// QtreeModifyExportPolicy modifies the export policy for the qtree
+func (d RestClient) QtreeModifyExportPolicy(
+	ctx context.Context,
+	name, volumeName, newExportPolicyName string) error {
+
+	qtree, err := d.QtreeGetByName(ctx, name, volumeName)
+	if err != nil {
+		return err
+	}
+	if qtree == nil {
+		return fmt.Errorf("could not find qtree %v", name)
+	}
+
+	// TODO add sanity checks around qtree.ID and qtree.Volume?
+	params := storage.NewQtreeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IDPathParameter = strconv.FormatInt(int64(qtree.ID), 10)
+	params.VolumeUUIDPathParameter = qtree.Volume.UUID
+
+	qtreeInfo := &models.Qtree{
+		ExportPolicy: &models.QtreeExportPolicy{
+			Name: newExportPolicyName,
+		},
+	}
+
+	params.SetInfo(qtreeInfo)
+
+	modifyAccepted, err := d.api.Storage.QtreeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if modifyAccepted == nil {
+		return fmt.Errorf("unexpected response from qtree modify")
+	}
+
+	return d.PollJobStatus(ctx, modifyAccepted.Payload)
+}
+
+// QuotaOn enables quotas on a Flexvol
+// equivalent to filer::> volume quota on
+func (d RestClient) QuotaOn(
+	ctx context.Context,
+	volumeName string) error {
+	return d.quotaModify(ctx, volumeName, true)
+}
+
+// QuotaOff disables quotas on a Flexvol
+// equivalent to filer::> volume quota off
+func (d RestClient) QuotaOff(
+	ctx context.Context,
+	volumeName string) error {
+	return d.quotaModify(ctx, volumeName, false)
+}
+
+// quotaModify enables/disables quotas on a Flexvol
+func (d RestClient) quotaModify(
+	ctx context.Context,
+	volumeName string,
+	quotaEnabled bool) error {
+
+	volume, err := d.VolumeGetByName(ctx, volumeName)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	if volume.Quota.Enabled == quotaEnabled {
+		// nothing to do, already the specified value
+		return nil
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Quota: &models.VolumeQuota{
+			Enabled: quotaEnabled,
+		},
+	}
+
+	params.SetInfo(volumeInfo)
+
+	modifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if modifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, modifyAccepted.Payload)
+}
+
+// QuotaResize resizes quotas on a Flexvol
+// equivalent to filer::> volume quota resize
+// func (d RestClient) QuotaResize(
+// 	ctx context.Context,
+// 	volume string) (*azgo.QuotaResizeResponse, error) {
+// 	response, err := azgo.NewQuotaResizeRequest().
+// 		SetVolume(volume).
+// 		ExecuteUsing(d.zr)
+// 	return response, err
+// }
+
+// QuotaStatus returns the quota status for a Flexvol
+// equivalent to filer::> volume quota show
+// func (d RestClient) QuotaStatus(
+// 	ctx context.Context,
+// 	volume string) (*azgo.QuotaStatusResponse, error) {
+// 	response, err := azgo.NewQuotaStatusRequest().
+// 		SetVolume(volume).
+// 		ExecuteUsing(d.zr)
+// 	return response, err
+// }
+
+// QuotaSetEntry creates a new quota rule with an optional hard disk limit
+// equivalent to filer::> volume quota policy rule create
+func (d RestClient) QuotaSetEntry(
+	ctx context.Context,
+	qtreeName, volumeName, quotaTarget, quotaType, diskLimit string) error {
+
+	params := storage.NewQuotaRuleCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	quotaRuleInfo := &models.QuotaRule{
+		Qtree: &models.QuotaRuleQtree{
+			Name: qtreeName,
+		},
+		Volume: &models.QuotaRuleVolume{
+			Name: volumeName,
+		},
+		Type: quotaType,
+	}
+
+	quotaRuleInfo.Svm = &models.QuotaRuleSvm{Name: d.config.SVM}
+
+	// handle options
+	if diskLimit != "" {
+		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+		if parseErr != nil {
+			return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
+		}
+		quotaRuleInfo.Space = &models.QuotaRuleSpace{
+			HardLimit: hardLimit,
+		}
+	}
+	// TODO handle quotaTarget
+
+	params.SetInfo(quotaRuleInfo)
+
+	createAccepted, err := d.api.Storage.QuotaRuleCreate(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if createAccepted == nil {
+		return fmt.Errorf("unexpected response from quota rule create")
+	}
+
+	return d.PollJobStatus(ctx, createAccepted.Payload)
+}
+
+// QuotaEntryGet returns the disk limit for a single qtree
+// equivalent to filer::> volume quota policy rule show
+func (d RestClient) QuotaGetEntry(
+	ctx context.Context,
+	target string) (*models.QuotaRule, error) {
+
+	qtree, err := d.QtreeGetByPath(ctx, target)
+	if err != nil {
+		return nil, err
+	}
+	if qtree == nil {
+		return nil, fmt.Errorf("could not find qtree with path %v", target)
+	}
+
+	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	// TODO add sanity checks around qtree.ID and qtree.Volume?
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.QtreeIDQueryParameter = &qtree.ID
+	params.VolumeUUIDQueryParameter = &qtree.Volume.UUID
+
+	// TODO Limit the returned data to only the disk limit
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+
+	if result.Payload == nil {
+		return nil, fmt.Errorf("quota rule entries for %s not found", target)
+	} else if len(result.Payload.Records) > 1 {
+		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
+	} else if len(result.Payload.Records) == 1 {
+		return result.Payload.Records[0], nil
+	} else if HasNextLink(result.Payload) {
+		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
+	}
+
+	return nil, fmt.Errorf("no entries for %s", target)
+}
+
+// QuotaEntryList returns the disk limit quotas for a Flexvol
+// equivalent to filer::> volume quota policy rule show
+func (d RestClient) QuotaEntryList(
+	ctx context.Context,
+	volumeName string) (*storage.QuotaRuleCollectionGetOK, error) {
+
+	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecords = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.VolumeNameQueryParameter = ToStringPointer(volumeName)
+
+	// TODO Limit the returned data to only the disk limit
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NEXT_LOOP:
+		for !done {
+			resultNext, errNext := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo,
+				WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NEXT_LOOP
+			}
+
+			result.Payload.NumRecords += resultNext.Payload.NumRecords
+			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NEXT_LOOP
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// QTREE operations END
+/////////////////////////////////////////////////////////////////////////////
