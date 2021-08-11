@@ -906,9 +906,32 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		Logc(ctx).WithField("time", snapshot.Created).Error("Could not parse RFC3339 snapshot time.")
 		createdSeconds = time.Now()
 	}
+	volume, err := p.orchestrator.GetVolume(ctx, snapshot.Config.VolumeName)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": snapshot.Config.VolumeName,
+		}).Error("Could not find volume.")
+		return nil, err
+	}
+	volCapacityString, err := utils.ConvertSizeToBytes(volume.Config.Size)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": volume.Config.InternalName,
+			"size":   volume.Config.Size,
+		}).Error("Could not parse volume size.")
+		return nil, err
+	}
+	volCapacity, err := strconv.ParseInt(volCapacityString, 10, 64)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": volume.Config.InternalName,
+			"size":   volume.Config.Size,
+		}).Error("Could not parse volume size.")
+		return nil, err
+	}
 
 	return &csi.Snapshot{
-		SizeBytes:      snapshot.SizeBytes,
+		SizeBytes:      utils.MinInt64(snapshot.SizeBytes, volCapacity),
 		SnapshotId:     storage.MakeSnapshotID(snapshot.Config.VolumeName, snapshot.Config.Name),
 		SourceVolumeId: snapshot.Config.VolumeName,
 		CreationTime:   &timestamp.Timestamp{Seconds: createdSeconds.Unix()},
