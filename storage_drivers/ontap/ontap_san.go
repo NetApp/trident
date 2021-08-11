@@ -774,7 +774,7 @@ func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeSize)
+	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.LunSize)
 }
 
 // Return the list of snapshots associated with the specified volume
@@ -792,7 +792,7 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshots(ctx, volConfig, &d.Config, d.API, d.API.VolumeSize)
+	return GetSnapshots(ctx, volConfig, &d.Config, d.API, d.API.LunSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume

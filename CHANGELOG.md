@@ -6,6 +6,7 @@
 
 **Fixes:**
 - Fixed custom YAML installer issue with different image (Issue [#613](https://github.com/NetApp/trident/issues/613)).
+- Fixed snapshot size calculation (Issue [#611](https://github.com/NetApp/trident/issues/611)).
 
 **Enhancements:**
 

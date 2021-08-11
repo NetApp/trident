@@ -1035,6 +1035,20 @@ func (d Client) FlexGroupExists(ctx context.Context, name string) (bool, error) 
 	return true, nil
 }
 
+// FlexGroupUsedSize retrieves the used space of the specified volume
+func (d Client) FlexGroupUsedSize(name string) (int, error) {
+	volAttrs, err := d.FlexGroupGet(name)
+	if err != nil {
+		return 0, err
+	}
+	if volAttrs == nil {
+		return 0, fmt.Errorf("error getting used space for FlexGroup: %v", name)
+	}
+
+	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+	return volSpaceAttrs.SizeUsed() - volSpaceAttrs.SizeUsedBySnapshots(), nil
+}
+
 // FlexGroupSize retrieves the size of the specified volume
 func (d Client) FlexGroupSize(name string) (int, error) {
 	volAttrs, err := d.FlexGroupGet(name)
@@ -1480,6 +1494,18 @@ func (d Client) VolumeExists(ctx context.Context, name string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// VolumeUsedSize retrieves the used bytes of the specified volume
+func (d Client) VolumeUsedSize(name string) (int, error) {
+
+	volAttrs, err := d.VolumeGet(name)
+	if err != nil {
+		return 0, err
+	}
+	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
+
+	return volSpaceAttrs.SizeUsed() - volSpaceAttrs.SizeUsedBySnapshots(), nil
 }
 
 // VolumeSize retrieves the size of the specified volume

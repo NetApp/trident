@@ -471,8 +471,7 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 	}
 }
 
-const multipathConf =
-`
+const multipathConf = `
 defaults {
     user_friendly_names yes
     find_multipaths no
@@ -553,13 +552,13 @@ func TestSplitString(t *testing.T) {
 	ctx := context.TODO()
 
 	stringList := SplitString(ctx, "a,b, c", ",")
-	assert.Equal(t, []string{"a","b"," c"}, stringList)
+	assert.Equal(t, []string{"a", "b", " c"}, stringList)
 
 	stringList = SplitString(ctx, "a,b,c", ",")
-	assert.Equal(t, []string{"a","b","c"}, stringList)
+	assert.Equal(t, []string{"a", "b", "c"}, stringList)
 
 	stringList = SplitString(ctx, "a,b,c", "")
-	assert.Equal(t, []string{"a",",","b",",","c"}, stringList)
+	assert.Equal(t, []string{"a", ",", "b", ",", "c"}, stringList)
 
 	stringList = SplitString(ctx, "a,b,c", ";")
 	assert.Equal(t, []string{"a,b,c"}, stringList)
@@ -574,5 +573,17 @@ func TestSplitString(t *testing.T) {
 	assert.Equal(t, []string{" "}, stringList)
 
 	stringList = SplitString(ctx, ";a;b", ";")
-	assert.Equal(t, []string{"","a","b"}, stringList)
+	assert.Equal(t, []string{"", "a", "b"}, stringList)
+}
+
+func TestMinInt64(t *testing.T) {
+	log.Debug("Running TestMinInt64...")
+	assert.Equal(t, int64(2), MinInt64(2, 3))
+	assert.Equal(t, int64(2), MinInt64(3, 2))
+	assert.Equal(t, int64(-2), MinInt64(-2, 3))
+	assert.Equal(t, int64(-2), MinInt64(3, -2))
+	assert.Equal(t, int64(-3), MinInt64(3, -3))
+	assert.Equal(t, int64(-3), MinInt64(-3, 3))
+	assert.Equal(t, int64(0), MinInt64(0, 0))
+	assert.Equal(t, int64(2), MinInt64(2, 2))
 }

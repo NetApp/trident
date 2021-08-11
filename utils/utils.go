@@ -622,3 +622,11 @@ func SplitString(_ context.Context, s, sep string) []string {
 
 	return strings.Split(s, sep)
 }
+
+// MinInt64 returns the lower of the two integers specified
+func MinInt64(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}

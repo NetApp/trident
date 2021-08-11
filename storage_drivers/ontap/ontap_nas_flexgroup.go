@@ -813,7 +813,7 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
 }
 
 // Return the list of snapshots associated with the specified volume
@@ -831,7 +831,7 @@ func (d *NASFlexGroupStorageDriver) GetSnapshots(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshots(ctx, volConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return GetSnapshots(ctx, volConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -853,7 +853,7 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupSize)
+	return CreateSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
