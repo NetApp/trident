@@ -129,7 +129,6 @@ This example shows a backend file that applies the same aspects to all Trident c
         "apiKey": "znHczZsrrtHisIsAbOguSaPIKeyAZNchRAGzlzZE",
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
         "nfsMountOptions": "vers=3,proto=tcp,timeo=600",
-        "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",
         "defaults": {
             "snapshotReserve": "5",
@@ -222,7 +221,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extreme-extra-protection
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=extreme; protection=extra"
     allowVolumeExpansion: true
@@ -231,7 +230,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extreme-standard-protection
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=premium; protection=standard"
     allowVolumeExpansion: true
@@ -240,7 +239,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-premium-extra-protection
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=premium; protection=extra"
     allowVolumeExpansion: true
@@ -249,7 +248,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-premium
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=premium; protection=standard"
     allowVolumeExpansion: true
@@ -258,7 +257,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-standard
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "performance=standard"
     allowVolumeExpansion: true
@@ -267,7 +266,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extra-protection
-    provisioner: netapp.io/trident
+    provisioner: csi.trident.netapp.io
     parameters:
       selector: "protection=extra"
     allowVolumeExpansion: true
