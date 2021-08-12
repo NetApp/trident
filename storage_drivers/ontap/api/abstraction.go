@@ -88,6 +88,8 @@ type OntapAPI interface {
 	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) (*APIResponse, error)
 	VolumeSetSize(ctx context.Context, name, newSize string) (*APIResponse, error)
 	VolumeSize(ctx context.Context, volumeName string) (int, error)
+	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
+
 	TieringPolicyValue(ctx context.Context) string
 }
 

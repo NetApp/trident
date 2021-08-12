@@ -590,7 +590,7 @@ func (d *NASStorageDriverAbstraction) GetSnapshot(ctx context.Context, snapConfi
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeSize)
+	return GetSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -608,7 +608,7 @@ func (d *NASStorageDriverAbstraction) GetSnapshots(ctx context.Context, volConfi
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshotsAbstraction(ctx, volConfig, &d.Config, d.API, d.API.VolumeSize)
+	return GetSnapshotsAbstraction(ctx, volConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -630,7 +630,7 @@ func (d *NASStorageDriverAbstraction) CreateSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeSize)
+	return CreateSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.

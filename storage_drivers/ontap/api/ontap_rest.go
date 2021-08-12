@@ -717,6 +717,28 @@ func (d RestClient) VolumeSize(
 	return int(volume.Size), nil
 }
 
+// VolumeUsedSize retrieves the used bytes of the specified volume
+func (d RestClient) VolumeUsedSize(ctx context.Context, volumeName string) (int, error) {
+
+	volume, err := d.VolumeGetByName(ctx, volumeName)
+	if err != nil {
+		return 0, err
+	}
+	if volume == nil {
+		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	if volume.Space == nil {
+		return 0, fmt.Errorf("could not find space attributes for volume %v", volumeName)
+	}
+
+	if volume.Space.Snapshot == nil {
+		return 0, fmt.Errorf("could not find snapshot space attributes for volume %v", volumeName)
+	}
+
+	return int(volume.Space.Used - volume.Space.Snapshot.Used), nil
+}
+
 // VolumeSetSize sets the size of the specified volume
 func (d RestClient) VolumeSetSize(
 	ctx context.Context,

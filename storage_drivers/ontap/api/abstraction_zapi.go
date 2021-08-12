@@ -530,6 +530,10 @@ func (d OntapAPIZAPI) VolumeSize(_ context.Context, volumeName string) (int, err
 	return d.API.VolumeSize(volumeName)
 }
 
+func (d OntapAPIZAPI) VolumeUsedSize(_ context.Context, volumeName string) (int, error) {
+	return d.API.VolumeUsedSize(volumeName)
+}
+
 func (d OntapAPIZAPI) VolumeSetSize(ctx context.Context, name, newSize string) (*APIResponse, error) {
 	volumeSetSizeResponse, err := d.API.VolumeSetSize(name, newSize)
 

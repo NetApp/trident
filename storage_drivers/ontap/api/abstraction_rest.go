@@ -423,6 +423,10 @@ func (d OntapAPIREST) VolumeSize(ctx context.Context, volumeName string) (int, e
 	return d.API.VolumeSize(ctx, volumeName)
 }
 
+func (d OntapAPIREST) VolumeUsedSize(ctx context.Context, volumeName string) (int, error) {
+	return d.API.VolumeUsedSize(ctx, volumeName)
+}
+
 func (d OntapAPIREST) VolumeSetSize(ctx context.Context, name, newSize string) (*APIResponse, error) {
 	if err := d.API.VolumeSetSize(ctx, name, newSize); err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
