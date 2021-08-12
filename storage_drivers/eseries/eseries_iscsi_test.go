@@ -55,7 +55,7 @@ func newTestEseriesSANDriver(debugTraceFlags map[string]bool) *SANStorageDriver 
 func newTestEseriesSANDriverAPI(config *drivers.ESeriesStorageDriverConfig) *api.Client {
 
 	telemetry := make(map[string]string)
-	telemetry["version"] = "21.07.0"
+	telemetry["version"] = "21.07.1"
 	telemetry["plugin"] = "eseries"
 	telemetry["storagePrefix"] = *config.StoragePrefix
 

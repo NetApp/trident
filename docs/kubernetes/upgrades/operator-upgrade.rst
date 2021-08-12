@@ -104,9 +104,9 @@ To upgrade **from**: Trident 21.01 and later, here is the set of steps to be fol
 
    .. code-block:: bash
 
-       kubectl install -f 21.07/trident-installer/deploy/bundle.yaml -n trident.
+       kubectl install -f 21.07.1/trident-installer/deploy/bundle.yaml -n trident.
 
-As part of this step, the 21.07 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator. 
+As part of this step, the 21.07.1 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator.
 
 Upgrading a namespace-scoped Trident operator install
 =====================================================
@@ -136,11 +136,11 @@ operator [versions ``20.07`` through ``20.10``], here is the set of steps to be 
 
   .. code-block:: bash
 
-      # Download the release required [21.07]
-      $ mkdir 21.07.0
-      $ cd 21.07.0
-      $ wget https://github.com/NetApp/trident/releases/download/v21.07.0/trident-installer-21.07.0.tar.gz
-      $ tar -xf trident-installer-21.07.0.tar.gz
+      # Download the release required [21.07.1]
+      $ mkdir 21.07.1
+      $ cd 21.07.1
+      $ wget https://github.com/NetApp/trident/releases/download/v21.07.1/trident-installer-21.07.1.tar.gz
+      $ tar -xf trident-installer-21.07.1.tar.gz
       $ cd trident-installer
       $ kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
 
@@ -219,7 +219,7 @@ operator [versions ``20.07`` through ``20.10``], here is the set of steps to be 
 
      #Ensure you are in the correct directory
      $ pwd
-     $ /root/21.07.0/trident-installer
+     $ /root/21.07.1/trident-installer
 
      #Install the cluster-scoped operator in the **same namespace**
      $ kubectl create -f deploy/bundle.yaml
@@ -250,7 +250,7 @@ operator [versions ``20.07`` through ``20.10``], here is the set of steps to be 
      Message:                Trident installed
      Namespace:              trident
      Status:                 Installed
-     Version:                v21.07.0
+     Version:                v21.07.1
 
 
   Installing the cluster-scoped operator will:
@@ -259,7 +259,7 @@ operator [versions ``20.07`` through ``20.10``], here is the set of steps to be 
      objects.
   ii. Delete ``TridentProvisioner`` objects and the ``tridentprovisioner`` CRD.
   iii. Upgrade Trident to the version of the cluster-scoped operator being used.
-       In the example above, Trident was upgraded to ``21.07.0``.
+       In the example above, Trident was upgraded to ``21.07.1``.
 
 Upgrading a Helm-based operator install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,9 +271,9 @@ If you have a Helm-based operator install, to upgrade, do the following:
 
 .. code-block:: console
 
- $ helm upgrade <name> trident-operator-21.07.0.tgz
+ $ helm upgrade <name> trident-operator-21.07.1.tgz
 
-where ``trident-operator-21.07.0.tgz`` reflects the version that you want to upgrade to.
+where ``trident-operator-21.07.1.tgz`` reflects the version that you want to upgrade to.
 
 If you run ``helm list``, the output shows that the chart and app version have both been upgraded.
 
@@ -281,7 +281,7 @@ To pass configuration data during the upgrade, use --set. For example, to change
 
 .. code-block:: console
 
-  $ helm upgrade <name> trident-operator-21.07.0-custom.tgz --set tridentDebug=true
+  $ helm upgrade <name> trident-operator-21.07.1-custom.tgz --set tridentDebug=true
 
 If you run ``$ tridentctl logs``, you can see the debug messages.
 
@@ -301,11 +301,11 @@ of the Trident Operator by following the instructions provided in the
 
 .. code-block:: bash
 
-  # Download the release required [21.07]
-  $ mkdir 21.07.0
-  $ cd 21.07.0
-  $ wget https://github.com/NetApp/trident/releases/download/v21.07.0/trident-installer-21.07.0.tar.gz
-  $ tar -xf trident-installer-21.07.0.tar.gz
+  # Download the release required [21.07.1]
+  $ mkdir 21.07.1
+  $ cd 21.07.1
+  $ wget https://github.com/NetApp/trident/releases/download/v21.07.1/trident-installer-21.07.1.tar.gz
+  $ tar -xf trident-installer-21.07.1.tar.gz
   $ cd trident-installer
 
 2. Create the ``tridentorchestrator`` CRD from the manifest.
@@ -359,7 +359,7 @@ of the Trident Operator by following the instructions provided in the
   Message:                Trident installed
   Namespace:              trident
   Status:                 Installed
-  Version:                v21.07.0
+  Version:                v21.07.1
 
 5. Existing backends and PVCs will be automatically available.
 

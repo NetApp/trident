@@ -22,7 +22,7 @@ spec:
       serviceAccountName: trident-operator
       containers:
         - name: trident-operator
-          image: netapp/trident-operator:21.07.0
+          image: netapp/trident-operator:21.07.1
           command:
           - "/trident-operator"
           - "--debug"
