@@ -5,7 +5,7 @@
 package fake
 
 import (
-	tridentv1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
+	tridentv1 "github.com/netapp/trident/v21/operator/controllers/provisioner/apis/netapp/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

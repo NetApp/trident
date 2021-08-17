@@ -15,9 +15,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	trident "github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 var ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",

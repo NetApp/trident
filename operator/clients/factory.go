@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"time"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	commonconfig "github.com/netapp/trident/config"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	commonconfig "github.com/netapp/trident/v21/config"
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
@@ -16,8 +16,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
+	"github.com/netapp/trident/v21/operator/controllers/orchestrator/client/clientset/versioned"
+	versionedTprov "github.com/netapp/trident/v21/operator/controllers/provisioner/client/clientset/versioned"
 )
 
 type Clients struct {

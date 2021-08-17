@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 type Server struct {

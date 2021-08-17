@@ -12,15 +12,15 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-	"github.com/netapp/trident/utils"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	netappv1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/v21/storage"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // NASStorageDriver is for NFS storage provisioning

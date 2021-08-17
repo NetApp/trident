@@ -3,7 +3,7 @@
 package installer
 
 import (
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 var (

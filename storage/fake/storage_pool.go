@@ -3,7 +3,7 @@ package fake
 import (
 	"encoding/json"
 
-	sa "github.com/netapp/trident/storage_attribute"
+	sa "github.com/netapp/trident/v21/storage_attribute"
 )
 
 type StoragePool struct {

@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 func (p *Plugin) Probe(

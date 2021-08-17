@@ -10,11 +10,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage/factory"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	fakedriver "github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage/factory"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	fakedriver "github.com/netapp/trident/v21/storage_drivers/fake"
 )
 
 func TestConstructExternalBackend(t *testing.T) {

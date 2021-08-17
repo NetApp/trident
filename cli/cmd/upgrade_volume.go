@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/v21/cli/api"
+	"github.com/netapp/trident/v21/frontend/rest"
+	"github.com/netapp/trident/v21/storage"
 )
 
 var upgradeAllVolumes bool

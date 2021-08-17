@@ -36,7 +36,7 @@ def walk(v):
         for key in list(v.keys()):
             walk(v[key])
 
-with open('/Users/jrippy/projects/rippy/ontap_rest/wip/src/github.com/netapp/trident/storage_drivers/ontap/api/rest/snippet.yaml') as input_file:
+with open('/Users/jrippy/projects/rippy/ontap_rest/wip/src/github.com/netapp/trident/v21/storage_drivers/ontap/api/rest/snippet.yaml') as input_file:
 
     yaml = ruamel.yaml.YAML()
     yaml.indent(sequence=4, offset=2)

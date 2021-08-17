@@ -2,7 +2,7 @@
 
 package logging
 
-import "github.com/netapp/trident/config"
+import "github.com/netapp/trident/v21/config"
 
 const (
 	LogRoot              = "/var/log/" + config.OrchestratorName

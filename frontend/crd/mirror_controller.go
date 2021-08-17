@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
-	. "github.com/netapp/trident/logger"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	netappv1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type AppStatus string

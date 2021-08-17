@@ -10,8 +10,8 @@ import (
 
 	"github.com/mitchellh/copystructure"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type VolumeConfig struct {

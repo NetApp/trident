@@ -9,10 +9,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	trident "github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage/fake"
-	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
+	trident "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage/fake"
+	sfapi "github.com/netapp/trident/v21/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // DriverConfig provides a common interface for storage config related operations

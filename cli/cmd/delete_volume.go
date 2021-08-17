@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netapp/trident/cli/api"
+	"github.com/netapp/trident/v21/cli/api"
 	"github.com/spf13/cobra"
 )
 

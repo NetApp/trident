@@ -5,7 +5,7 @@ package v1
 import (
 	"testing"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 
 	log "github.com/sirupsen/logrus"
 )

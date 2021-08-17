@@ -16,7 +16,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
-	drivers "github.com/netapp/trident/storage_drivers"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
 )
 
 // TestInitializeRecovery intentionally passes a bogus config to

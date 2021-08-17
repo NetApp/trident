@@ -18,14 +18,14 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	sc "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	sc "github.com/netapp/trident/v21/storage_class"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

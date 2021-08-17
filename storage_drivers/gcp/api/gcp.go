@@ -21,10 +21,10 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // Sample curl command to invoke the REST interface:

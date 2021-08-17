@@ -8,10 +8,10 @@ GO_IMAGE = golang:1.16
 HELM_IMAGE = alpine/helm:3.6.1
 GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
-TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
-TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
-TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
-VERSION_FILE = github.com/netapp/trident/hack/VERSION
+TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident/v21
+TRIDENT_CONFIG_PKG = github.com/netapp/trident/v21/config
+TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/v21/persistent_store/crd
+VERSION_FILE = github.com/netapp/trident/v21/hack/VERSION
 K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
 
 ## build flags variables
@@ -29,7 +29,7 @@ COVERAGE_DIR = ${ROOT}/coverage
 BIN ?= trident_orchestrator
 TARBALL_BIN ?= trident
 CLI_BIN ?= tridentctl
-CLI_PKG ?= github.com/netapp/trident/cli
+CLI_PKG ?= github.com/netapp/trident/v21/cli
 K8S ?= ""
 BUILD = build
 VERSION ?= $(shell cat ${ROOT}/hack/VERSION)

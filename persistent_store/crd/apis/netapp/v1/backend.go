@@ -10,9 +10,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // NewTridentBackend creates a new backend CRD object from an internal storage.BackendPersistent object

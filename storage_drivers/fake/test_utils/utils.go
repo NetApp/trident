@@ -5,11 +5,11 @@ package testutils
 import (
 	"fmt"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
 )
 
 const (

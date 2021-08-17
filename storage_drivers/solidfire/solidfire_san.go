@@ -17,13 +17,13 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

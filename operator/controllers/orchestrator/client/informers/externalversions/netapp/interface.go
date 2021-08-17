@@ -5,8 +5,8 @@
 package netapp
 
 import (
-	internalinterfaces "github.com/netapp/trident/operator/controllers/orchestrator/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/netapp/trident/operator/controllers/orchestrator/client/informers/externalversions/netapp/v1"
+	internalinterfaces "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/informers/externalversions/netapp/v1"
 )
 
 // Interface provides access to each of this group's versions.

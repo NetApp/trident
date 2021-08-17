@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sa "github.com/netapp/trident/storage_attribute"
+	sa "github.com/netapp/trident/v21/storage_attribute"
 )
 
 func TestGetLabelsJSONNoCharacterLimitSuccess(t *testing.T) {

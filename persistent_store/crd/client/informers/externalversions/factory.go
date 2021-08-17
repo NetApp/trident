@@ -9,9 +9,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	internalinterfaces "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/internalinterfaces"
-	netapp "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp"
+	versioned "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
+	internalinterfaces "github.com/netapp/trident/v21/persistent_store/crd/client/informers/externalversions/internalinterfaces"
+	netapp "github.com/netapp/trident/v21/persistent_store/crd/client/informers/externalversions/netapp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

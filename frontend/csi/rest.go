@@ -13,9 +13,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const HTTPClientTimeout = time.Second * 30

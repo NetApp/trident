@@ -12,9 +12,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/v21/utils"
 )
 
 //RestError encapsulates the status, reason, and errno values from a REST invocation, and it provides helper methods for detecting

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 type Route struct {

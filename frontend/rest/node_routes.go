@@ -3,7 +3,7 @@
 package rest
 
 import (
-	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi"
 )
 
 func nodeRoutes(plugin *csi.Plugin) []Route {

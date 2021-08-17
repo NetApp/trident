@@ -9,8 +9,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/core"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/v21/core"
+	netappv1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
 )
 
 func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {

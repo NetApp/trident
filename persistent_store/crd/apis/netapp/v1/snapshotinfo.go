@@ -7,7 +7,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

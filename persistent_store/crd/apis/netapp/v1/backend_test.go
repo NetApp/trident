@@ -15,10 +15,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/netapp/trident/config"
-	fake_storage "github.com/netapp/trident/storage/fake"
-	"github.com/netapp/trident/storage_drivers/fake"
-	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/v21/config"
+	fake_storage "github.com/netapp/trident/v21/storage/fake"
+	"github.com/netapp/trident/v21/storage_drivers/fake"
+	tu "github.com/netapp/trident/v21/storage_drivers/fake/test_utils"
 )
 
 var (

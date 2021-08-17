@@ -26,14 +26,14 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	commonconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/operator/clients"
-	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
-	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned/scheme"
-	"github.com/netapp/trident/operator/controllers/orchestrator/installer"
-	tprovv1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	commonconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/operator/clients"
+	netappv1 "github.com/netapp/trident/v21/operator/controllers/orchestrator/apis/netapp/v1"
+	"github.com/netapp/trident/v21/operator/controllers/orchestrator/client/clientset/versioned/scheme"
+	"github.com/netapp/trident/v21/operator/controllers/orchestrator/installer"
+	tprovv1 "github.com/netapp/trident/v21/operator/controllers/provisioner/apis/netapp/v1"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type AppStatus string

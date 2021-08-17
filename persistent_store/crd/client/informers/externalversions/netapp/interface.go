@@ -5,8 +5,8 @@
 package netapp
 
 import (
-	internalinterfaces "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp/v1"
+	internalinterfaces "github.com/netapp/trident/v21/persistent_store/crd/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/netapp/trident/v21/persistent_store/crd/client/informers/externalversions/netapp/v1"
 )
 
 // Interface provides access to each of this group's versions.

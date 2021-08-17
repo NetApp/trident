@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storageattribute "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
+	storageclass "github.com/netapp/trident/v21/storage_class"
 )
 
 func TestNewStorageClass(t *testing.T) {

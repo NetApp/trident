@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/netapp/trident/cli/cmd"
+	"github.com/netapp/trident/v21/cli/cmd"
 )
 
 func main() {

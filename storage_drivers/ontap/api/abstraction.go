@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////

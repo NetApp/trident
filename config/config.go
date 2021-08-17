@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type Protocol string

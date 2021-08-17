@@ -19,7 +19,7 @@ import (
 	xrv "github.com/mattermost/xml-roundtrip-validator"
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
+	tridentconfig "github.com/netapp/trident/v21/config"
 )
 
 type ZAPIRequest interface {

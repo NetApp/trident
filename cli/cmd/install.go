@@ -23,12 +23,12 @@ import (
 	policy "k8s.io/api/policy/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/netapp/trident/cli/api"
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/logging"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/cli/api"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/logging"
+	crdclient "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

@@ -5,7 +5,7 @@
 package fake
 
 import (
-	v1 "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned/typed/netapp/v1"
+	v1 "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/clientset/versioned/typed/netapp/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/cli/api"
+	"github.com/netapp/trident/v21/frontend/rest"
+	"github.com/netapp/trident/v21/utils"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"

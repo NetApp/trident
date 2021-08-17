@@ -9,14 +9,14 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	tridentconfig "github.com/netapp/trident/config"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
 )
 
 // ToStringPointer takes a string and returns a string pointer

@@ -8,8 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	tridentconfig "github.com/netapp/trident/config"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	tridentconfig "github.com/netapp/trident/v21/config"
 )
 
 func init() {

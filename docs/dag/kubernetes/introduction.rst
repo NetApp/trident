@@ -16,7 +16,7 @@ Deploying an application using containers doesn't change its fundamental resourc
 
 To facilitate the consumption of storage resources by containerized applications,
 `NetApp <https://www.netapp.com/>`_ created and released an open source project
-known as `Trident <https://github.com/netapp/trident>`_.  Trident is a storage
+known as `Trident <https://github.com/netapp/trident/v21>`_.  Trident is a storage
 orchestrator which integrates with Docker and Kubernetes, as well as platforms
 built on those technologies, such as `Red Hat OpenShift <https://www.openshift.com/>`_,
 `Rancher <https://rancher.com/>`_, and `IBM Cloud Private <https://www.ibm.com/cloud/private>`_.

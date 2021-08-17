@@ -14,11 +14,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/logger"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/logger"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/azgo"
 )
 
 const (

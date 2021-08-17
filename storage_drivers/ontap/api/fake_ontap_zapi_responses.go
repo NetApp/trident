@@ -14,8 +14,8 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/azgo"
 )
 
 const (

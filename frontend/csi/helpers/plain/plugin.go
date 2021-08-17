@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
-	frontendcommon "github.com/netapp/trident/frontend/common"
-	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/core"
+	frontendcommon "github.com/netapp/trident/v21/frontend/common"
+	"github.com/netapp/trident/v21/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi/helpers"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
 )
 
 type Plugin struct {

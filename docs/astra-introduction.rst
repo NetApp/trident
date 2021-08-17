@@ -14,6 +14,6 @@ recovery, data audit, and migration use-cases for Kubernetes workloads.
 Take a look at the `Astra documentation`_ to get started today. You can sign up
 for a free trial today on the `Astra page`_.
 
-.. _Trident: https://github.com/netapp/trident
+.. _Trident: https://github.com/netapp/trident/v21
 .. _Astra page: http://cloud.netapp.com/Astra?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident
 .. _Astra documentation: https://docs.netapp.com/us-en/astra/

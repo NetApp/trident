@@ -12,8 +12,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/core"
 )
 
 type APIServerHTTPS struct {

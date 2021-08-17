@@ -8,9 +8,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
-	persistentstore "github.com/netapp/trident/persistent_store"
-	"github.com/netapp/trident/storage"
+	. "github.com/netapp/trident/v21/logger"
+	persistentstore "github.com/netapp/trident/v21/persistent_store"
+	"github.com/netapp/trident/v21/storage"
 )
 
 const (

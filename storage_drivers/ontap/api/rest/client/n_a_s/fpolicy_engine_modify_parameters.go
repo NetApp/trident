@@ -15,7 +15,7 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/rest/models"
 )
 
 // NewFpolicyEngineModifyParams creates a new FpolicyEngineModifyParams object,

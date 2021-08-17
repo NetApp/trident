@@ -9,8 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage"
 
 	"github.com/google/go-cmp/cmp"
 )

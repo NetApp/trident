@@ -7,10 +7,10 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/config"
-	csiConfig "github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	csiConfig "github.com/netapp/trident/v21/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi/helpers"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

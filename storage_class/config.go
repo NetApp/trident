@@ -5,7 +5,7 @@ package storageclass
 import (
 	"encoding/json"
 
-	storageattribute "github.com/netapp/trident/storage_attribute"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
 )
 
 // UnmarshalJSON parses a JSON-formatted byte array into a storage class config struct.

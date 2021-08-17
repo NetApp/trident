@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
-	sc "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage"
+	sc "github.com/netapp/trident/v21/storage_class"
 )
 
 func findVolumeInMap(

@@ -13,10 +13,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	storageattribute "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
 )
 
 type BackendPoolInfo struct {

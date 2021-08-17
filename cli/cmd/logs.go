@@ -13,7 +13,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 const (

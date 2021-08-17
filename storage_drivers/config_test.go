@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 func TestGetCommonInternalVolumeName(t *testing.T) {

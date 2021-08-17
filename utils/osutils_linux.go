@@ -21,7 +21,7 @@ import (
 	"github.com/zcalusic/sysinfo"
 	"golang.org/x/sys/unix"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 type statFSResult struct {

@@ -5,9 +5,9 @@
 package fake
 
 import (
-	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	tridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
-	faketridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1/fake"
+	clientset "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
+	tridentv1 "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
+	faketridentv1 "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned/typed/netapp/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

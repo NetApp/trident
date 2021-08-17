@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	commonconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	commonconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

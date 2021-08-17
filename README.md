@@ -5,7 +5,7 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/netapp/trident.svg)](https://github.com/NetApp/trident/commits)
 [![license](https://img.shields.io/github/license/netapp/trident.svg)](LICENSE)
 [![Docs](https://readthedocs.org/projects/netapp-trident/badge/?version=latest)](https://netapp-trident.readthedocs.io)
-[![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident)](https://goreportcard.com/report/github.com/netapp/trident)
+[![Go Report Card](https://goreportcard.com/badge/github.com/netapp/trident/v21)](https://goreportcard.com/report/github.com/netapp/trident/v21)
 
 Trident is a fully supported open source project maintained by [NetApp](https://www.netapp.com). It has been designed
 from the ground up to help you meet your containerized applications' persistence demands using industry-standard

@@ -5,11 +5,11 @@ package core
 import (
 	"context"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/storage"
-	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/frontend"
+	"github.com/netapp/trident/v21/storage"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type Orchestrator interface {

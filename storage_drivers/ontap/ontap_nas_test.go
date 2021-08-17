@@ -9,10 +9,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	tridentconfig "github.com/netapp/trident/config"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
 )
 
 // Copyright 2019 NetApp, Inc. All Rights Reserved.

@@ -9,13 +9,13 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/core"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

@@ -13,9 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/utils"
 )
 
 var K8sVersion string

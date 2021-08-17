@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/version"
 
-	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi"
 )
 
 func TestSupportsFeature(t *testing.T) {

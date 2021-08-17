@@ -5,12 +5,12 @@ GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
 GO_IMAGE = golang:1.16
 OPERATOR_VOLUME = operator_build
-TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
-OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
-OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
-OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/orchestrator/installer
-TRIDENT_ORCHESTRATOR_PKG = github.com/netapp/trident/operator/controllers/orchestrator
-VERSION_FILE = github.com/netapp/trident/hack/VERSION
+TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident/v21
+OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/v21/operator
+OPERATOR_CONFIG_PKG = github.com/netapp/trident/v21/operator/config
+OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/v21/operator/controllers/orchestrator/installer
+TRIDENT_ORCHESTRATOR_PKG = github.com/netapp/trident/v21/operator/controllers/orchestrator
+VERSION_FILE = github.com/netapp/trident/v21/hack/VERSION
 K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.18.2
 
 ## build flags variables

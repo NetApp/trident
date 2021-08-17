@@ -15,9 +15,9 @@ import (
 	commontypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.

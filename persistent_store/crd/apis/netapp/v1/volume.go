@@ -9,9 +9,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // NewTridentVolume creates a new storage class CRD object from a internal

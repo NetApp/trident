@@ -5,8 +5,8 @@ package v1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const PersistentStateVersionName = "trident"

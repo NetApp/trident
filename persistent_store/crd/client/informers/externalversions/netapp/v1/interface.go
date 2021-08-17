@@ -5,7 +5,7 @@
 package v1
 
 import (
-	internalinterfaces "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/netapp/trident/v21/persistent_store/crd/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

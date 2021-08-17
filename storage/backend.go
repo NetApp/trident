@@ -16,11 +16,11 @@ import (
 	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // Driver provides a common interface for storage related operations

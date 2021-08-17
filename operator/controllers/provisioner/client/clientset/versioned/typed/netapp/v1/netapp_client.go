@@ -5,8 +5,8 @@
 package v1
 
 import (
-	v1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
-	"github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned/scheme"
+	v1 "github.com/netapp/trident/v21/operator/controllers/provisioner/apis/netapp/v1"
+	"github.com/netapp/trident/v21/operator/controllers/provisioner/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

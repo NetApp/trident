@@ -5,11 +5,11 @@ package config
 import (
 	"fmt"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 
 	log "github.com/sirupsen/logrus"
 
-	tridentutils "github.com/netapp/trident/utils"
+	tridentutils "github.com/netapp/trident/v21/utils"
 )
 
 type Platform string

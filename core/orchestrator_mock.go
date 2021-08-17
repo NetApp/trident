@@ -15,15 +15,15 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/factory"
-	storageclass "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/fake"
-	"github.com/netapp/trident/storage_drivers/ontap"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/frontend"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/storage/factory"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/fake"
+	"github.com/netapp/trident/v21/storage_drivers/ontap"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type mockBackend struct {

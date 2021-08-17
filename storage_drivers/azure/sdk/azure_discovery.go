@@ -16,9 +16,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

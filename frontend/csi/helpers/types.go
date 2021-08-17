@@ -5,8 +5,8 @@ package helpers
 import (
 	"context"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage"
 )
 
 const (

@@ -9,9 +9,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	internalinterfaces "github.com/netapp/trident/operator/controllers/orchestrator/client/informers/externalversions/internalinterfaces"
-	netapp "github.com/netapp/trident/operator/controllers/orchestrator/client/informers/externalversions/netapp"
+	versioned "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/clientset/versioned"
+	internalinterfaces "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/informers/externalversions/internalinterfaces"
+	netapp "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/informers/externalversions/netapp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

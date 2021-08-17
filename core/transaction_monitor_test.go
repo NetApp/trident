@@ -9,14 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/config"
-	persistentstore "github.com/netapp/trident/persistent_store"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
-	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
-	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	persistentstore "github.com/netapp/trident/v21/persistent_store"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	fakeDriver "github.com/netapp/trident/v21/storage_drivers/fake"
+	tu "github.com/netapp/trident/v21/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

@@ -5,7 +5,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi"
 )
 
 // Node endpoint for startup and liveness probe

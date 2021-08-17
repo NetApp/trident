@@ -10,7 +10,7 @@ The NetApp portfolio of storage products integrates with many different aspects 
 Trident
 -------
 
-NetApp Trident is a dynamic storage provisioner for the containers ecosystem. It provides the ability to create storage volumes for containerized applications managed by Docker and Kubernetes. Trident is a fully supported, open source project hosted on `GitHub <https://github.com/netapp/trident>`_.
+NetApp Trident is a dynamic storage provisioner for the containers ecosystem. It provides the ability to create storage volumes for containerized applications managed by Docker and Kubernetes. Trident is a fully supported, open source project hosted on `GitHub <https://github.com/netapp/trident/v21>`_.
 Trident works with the portfolio of NetApp storage platforms to deliver storage on-demand to applications according to policies defined by the administrator. When used with Kubernetes, Trident is deployed using native paradigms and provides persistent storage to all namespaces in the cluster.
 For more information about Trident, visit `ThePub <https://netapp.io/persistent-storage-provisioner-for-kubernetes/>`_.
 

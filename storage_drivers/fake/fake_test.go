@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	drivers "github.com/netapp/trident/storage_drivers"
-	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	testutils "github.com/netapp/trident/v21/storage_drivers/fake/test_utils"
 )
 
 // TestNewConfig tests that marshaling works properly.  This has broken

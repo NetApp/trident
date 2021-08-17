@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 type locks struct {

@@ -17,19 +17,19 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/frontend/crd"
-	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
-	plainhelper "github.com/netapp/trident/frontend/csi/helpers/plain"
-	"github.com/netapp/trident/frontend/docker"
-	"github.com/netapp/trident/frontend/metrics"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/logging"
-	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/core"
+	"github.com/netapp/trident/v21/frontend"
+	"github.com/netapp/trident/v21/frontend/crd"
+	"github.com/netapp/trident/v21/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi/helpers"
+	k8shelper "github.com/netapp/trident/v21/frontend/csi/helpers/kubernetes"
+	plainhelper "github.com/netapp/trident/v21/frontend/csi/helpers/plain"
+	"github.com/netapp/trident/v21/frontend/docker"
+	"github.com/netapp/trident/v21/frontend/metrics"
+	"github.com/netapp/trident/v21/frontend/rest"
+	"github.com/netapp/trident/v21/logging"
+	persistentstore "github.com/netapp/trident/v21/persistent_store"
 )
 
 var (

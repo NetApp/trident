@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
-	sc "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
-	fakedriver "github.com/netapp/trident/storage_drivers/fake"
-	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/storage"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	sc "github.com/netapp/trident/v21/storage_class"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	fakedriver "github.com/netapp/trident/v21/storage_drivers/fake"
+	testutils "github.com/netapp/trident/v21/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 func getFakeBackend() *storage.StorageBackend {

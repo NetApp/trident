@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 func (c *Client) CreateSnapshot(ctx context.Context, req *CreateSnapshotRequest) (snapshot Snapshot, err error) {

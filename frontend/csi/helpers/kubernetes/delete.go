@@ -7,9 +7,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/frontend/csi"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@ package fake
 import (
 	"context"
 
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	netappv1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

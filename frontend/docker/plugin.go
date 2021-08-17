@@ -18,12 +18,12 @@ import (
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
-	frontendcommon "github.com/netapp/trident/frontend/common"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/core"
+	frontendcommon "github.com/netapp/trident/v21/frontend/common"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"sort"
 
-	drivers "github.com/netapp/trident/storage_drivers"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
 
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
-	sa "github.com/netapp/trident/storage_attribute"
+	. "github.com/netapp/trident/v21/logger"
+	sa "github.com/netapp/trident/v21/storage_attribute"
 )
 
 // TODO: Try moving all ProvisioningLabelTag related code here

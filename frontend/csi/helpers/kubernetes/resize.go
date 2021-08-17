@@ -10,9 +10,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/frontend/csi"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 /////////////////////////////////////////////////////////////////////////////

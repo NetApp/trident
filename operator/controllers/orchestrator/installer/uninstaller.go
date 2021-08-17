@@ -5,7 +5,7 @@ package installer
 import (
 	"fmt"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -14,8 +14,8 @@ import (
 	v12 "k8s.io/api/rbac/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
 
-	"github.com/netapp/trident/cli/cmd"
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	"github.com/netapp/trident/v21/cli/cmd"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
 )
 
 func (i *Installer) isTridentInstalled() (installed bool, namespace string, err error) {

@@ -7,7 +7,7 @@ package versioned
 import (
 	"fmt"
 
-	tridentv1 "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned/typed/netapp/v1"
+	tridentv1 "github.com/netapp/trident/v21/operator/controllers/provisioner/client/clientset/versioned/typed/netapp/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

@@ -20,12 +20,12 @@ import (
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/rest"
 
-	"github.com/netapp/trident/cli/api"
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	commonconfig "github.com/netapp/trident/config"
-	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/cli/api"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	commonconfig "github.com/netapp/trident/v21/config"
+	netappv1 "github.com/netapp/trident/v21/operator/controllers/orchestrator/apis/netapp/v1"
+	crdclient "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

@@ -53,7 +53,7 @@ need the following:
 1: Download the installer bundle
 --------------------------------
 
-Download the Trident 21.07 installer bundle from the `Trident GitHub <https://github.com/netapp/trident/releases>`_
+Download the Trident 21.07 installer bundle from the `Trident GitHub <https://github.com/netapp/trident/v21/releases>`_
 page. The installer bundle includes the Helm chart in the ``/helm`` directory.
 
 2: Deploy the Trident operator

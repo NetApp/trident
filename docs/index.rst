@@ -4,11 +4,11 @@ Trident
 Storage Orchestrator for Containers
 
 .. image:: https://img.shields.io/github/last-commit/netapp/trident.svg
-   :target: https://github.com/netapp/trident
+   :target: https://github.com/netapp/trident/v21
 .. image:: https://img.shields.io/github/license/netapp/trident.svg
    :target: https://github.com/NetApp/trident/blob/master/LICENSE
-.. image:: https://goreportcard.com/badge/github.com/netapp/trident
-   :target: https://goreportcard.com/report/github.com/netapp/trident
+.. image:: https://goreportcard.com/badge/github.com/netapp/trident/v21
+   :target: https://goreportcard.com/report/github.com/netapp/trident/v21
 
 .. toctree::
    :caption: Introduction

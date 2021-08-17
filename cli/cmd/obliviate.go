@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/logging"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	"github.com/netapp/trident/v21/logging"
 )
 
 var forceObliviate bool

@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
 	"github.com/stretchr/testify/assert"
 )
 

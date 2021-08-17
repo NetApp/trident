@@ -2,7 +2,7 @@
 
 package csi
 
-import "github.com/netapp/trident/frontend/csi/helpers"
+import "github.com/netapp/trident/v21/frontend/csi/helpers"
 
 const (
 	Version           = "1.1"

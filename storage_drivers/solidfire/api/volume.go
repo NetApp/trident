@@ -12,8 +12,8 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // ListVolumesForAccount tbd

@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 )
 
 func newTestOntapStorageDriverConfig(debugTraceFlags map[string]bool) *OntapStorageDriverConfig {

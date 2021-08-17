@@ -9,7 +9,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 const (

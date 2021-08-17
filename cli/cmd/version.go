@@ -12,10 +12,10 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/cli/api"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/frontend/rest"
+	"github.com/netapp/trident/v21/utils"
 )
 
 var (

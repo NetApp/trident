@@ -24,7 +24,7 @@ Take a look at the `Astra documentation`_ to get started today.
 See `NetApp's Support site`_ for details on Trident's support policy under the
 `Trident's Release and Support Lifecycle`_ tab.
 
-.. _open source project: https://github.com/netapp/trident
+.. _open source project: https://github.com/netapp/trident/v21
 .. _NetApp: https://www.netapp.com
 .. _Kubernetes: https://kubernetes.io
 .. _Docker: https://docker.com

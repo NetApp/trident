@@ -10,17 +10,17 @@ import (
 
 	"github.com/ghodss/yaml"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/aws"
-	"github.com/netapp/trident/storage_drivers/azure"
-	"github.com/netapp/trident/storage_drivers/eseries"
-	"github.com/netapp/trident/storage_drivers/fake"
-	"github.com/netapp/trident/storage_drivers/gcp"
-	"github.com/netapp/trident/storage_drivers/ontap"
-	"github.com/netapp/trident/storage_drivers/solidfire"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/aws"
+	"github.com/netapp/trident/v21/storage_drivers/azure"
+	"github.com/netapp/trident/v21/storage_drivers/eseries"
+	"github.com/netapp/trident/v21/storage_drivers/fake"
+	"github.com/netapp/trident/v21/storage_drivers/gcp"
+	"github.com/netapp/trident/v21/storage_drivers/ontap"
+	"github.com/netapp/trident/v21/storage_drivers/solidfire"
 )
 
 // SpecOnlyValidation applies to values supplied through the CRD controller, this ensures that

@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/rest/models"
 )
 
 // NewSnaplockLogCreateParams creates a new SnaplockLogCreateParams object,

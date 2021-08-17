@@ -5,8 +5,8 @@ package v1
 import (
 	"encoding/json"
 
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

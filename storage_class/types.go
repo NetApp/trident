@@ -3,8 +3,8 @@
 package storageclass
 
 import (
-	"github.com/netapp/trident/storage"
-	storageattribute "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/v21/storage"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
 )
 
 type StorageClass struct {

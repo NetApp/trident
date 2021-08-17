@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 // Get default QoS information

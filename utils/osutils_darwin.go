@@ -7,7 +7,7 @@ import (
 	"errors"
 	"net"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/v21/logger"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and darwin.

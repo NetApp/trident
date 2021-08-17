@@ -5,7 +5,7 @@ package common
 import (
 	"testing"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/config"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -19,17 +19,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8stesting "k8s.io/client-go/testing"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/config"
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
-	"github.com/netapp/trident/storage"
-	storageattribute "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap"
-	"github.com/netapp/trident/storage_drivers/solidfire"
-	"github.com/netapp/trident/utils"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	"github.com/netapp/trident/v21/config"
+	v1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned/fake"
+	"github.com/netapp/trident/v21/storage"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap"
+	"github.com/netapp/trident/v21/storage_drivers/solidfire"
+	"github.com/netapp/trident/v21/utils"
 )
 
 var (

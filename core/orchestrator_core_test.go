@@ -20,16 +20,16 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/mocks"
-	persistentstore "github.com/netapp/trident/persistent_store"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage/fake"
-	sa "github.com/netapp/trident/storage_attribute"
-	storageclass "github.com/netapp/trident/storage_class"
-	fakedriver "github.com/netapp/trident/storage_drivers/fake"
-	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	"github.com/netapp/trident/v21/mocks"
+	persistentstore "github.com/netapp/trident/v21/persistent_store"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/storage/fake"
+	sa "github.com/netapp/trident/v21/storage_attribute"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	fakedriver "github.com/netapp/trident/v21/storage_drivers/fake"
+	tu "github.com/netapp/trident/v21/storage_drivers/fake/test_utils"
+	"github.com/netapp/trident/v21/utils"
 )
 
 var (

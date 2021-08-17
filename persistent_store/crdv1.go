@@ -12,14 +12,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	clik8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/storage"
-	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	clik8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	v1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
+	tridentv1clientset "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/v21/storage"
+	storageclass "github.com/netapp/trident/v21/storage_class"
+	"github.com/netapp/trident/v21/utils"
 )
 
 // Compile time checks to ensure CRDClientV1 implements Client & CRDClient

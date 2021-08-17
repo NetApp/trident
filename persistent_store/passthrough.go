@@ -16,12 +16,12 @@ import (
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	sc "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	sc "github.com/netapp/trident/v21/storage_class"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type PassthroughClient struct {

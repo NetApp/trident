@@ -19,10 +19,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/netapp/trident/config"
-	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	tprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
-	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/v21/config"
+	torc "github.com/netapp/trident/v21/operator/controllers/orchestrator/client/clientset/versioned"
+	tprov "github.com/netapp/trident/v21/operator/controllers/provisioner/client/clientset/versioned"
+	tridentv1clientset "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
 )
 
 type Clients struct {

@@ -9,12 +9,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/utils"
 	"github.com/stretchr/testify/assert"
 
-	tridentconfig "github.com/netapp/trident/config"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api"
+	tridentconfig "github.com/netapp/trident/v21/config"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api"
 )
 
 func TestOntapSanStorageDriverConfigString(t *testing.T) {

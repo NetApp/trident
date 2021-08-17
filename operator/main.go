@@ -13,13 +13,13 @@ import (
 	"syscall"
 	"time"
 
-	operatorclient "github.com/netapp/trident/operator/clients"
-	"github.com/netapp/trident/operator/controllers/orchestrator"
+	operatorclient "github.com/netapp/trident/v21/operator/clients"
+	"github.com/netapp/trident/v21/operator/controllers/orchestrator"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/logging"
-	"github.com/netapp/trident/operator/config"
-	"github.com/netapp/trident/operator/controllers"
+	"github.com/netapp/trident/v21/logging"
+	"github.com/netapp/trident/v21/operator/config"
+	"github.com/netapp/trident/v21/operator/controllers"
 )
 
 var (

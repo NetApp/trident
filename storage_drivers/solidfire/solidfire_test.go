@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/solidfire/api"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/solidfire/api"
 )
 
 const (

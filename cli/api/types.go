@@ -3,8 +3,8 @@
 package api
 
 import (
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type ErrorResponse struct {

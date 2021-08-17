@@ -14,8 +14,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	k8sclient "github.com/netapp/trident/v21/cli/k8s_client"
+	crdclient "github.com/netapp/trident/v21/persistent_store/crd/client/clientset/versioned"
 )
 
 var (

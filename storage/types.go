@@ -7,9 +7,9 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 
-	"github.com/netapp/trident/config"
-	storageattribute "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/v21/config"
+	storageattribute "github.com/netapp/trident/v21/storage_attribute"
+	"github.com/netapp/trident/v21/utils"
 )
 
 type Backend interface {

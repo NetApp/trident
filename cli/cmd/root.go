@@ -19,8 +19,8 @@ import (
 	k8s "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/v21/cli/api"
+	"github.com/netapp/trident/v21/config"
 
 	// Load all auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"

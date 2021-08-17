@@ -10,11 +10,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
-	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/v21/cli/api"
+	"github.com/netapp/trident/v21/frontend/rest"
+	"github.com/netapp/trident/v21/storage"
+	"github.com/netapp/trident/v21/utils"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"

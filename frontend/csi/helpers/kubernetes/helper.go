@@ -12,13 +12,13 @@ import (
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	"github.com/netapp/trident/config"
-	frontendcommon "github.com/netapp/trident/frontend/common"
-	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	. "github.com/netapp/trident/logger"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/v21/config"
+	frontendcommon "github.com/netapp/trident/v21/frontend/common"
+	"github.com/netapp/trident/v21/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi/helpers"
+	. "github.com/netapp/trident/v21/logger"
+	netappv1 "github.com/netapp/trident/v21/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/v21/storage"
 )
 
 /////////////////////////////////////////////////////////////////////////////

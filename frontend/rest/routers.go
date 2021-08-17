@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/frontend/csi"
+	"github.com/netapp/trident/v21/frontend/csi"
 )
 
 // NewRouter is used to set up HTTP and HTTPS endpoints for the controller

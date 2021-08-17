@@ -16,10 +16,10 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage"
-	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	. "github.com/netapp/trident/v21/logger"
+	"github.com/netapp/trident/v21/storage"
+	drivers "github.com/netapp/trident/v21/storage_drivers"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/azgo"
 )
 
 func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/v21/storage_drivers/ontap/api/azgo"
 )
 
 func TestGetError(t *testing.T) {
