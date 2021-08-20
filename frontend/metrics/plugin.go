@@ -38,7 +38,11 @@ func (s *Server) Activate() error {
 	go func() {
 		log.WithField("address", s.server.Addr).Info("Activating metrics frontend.")
 		http.Handle("/metrics", s.server.Handler)
-		if err := s.server.ListenAndServe(); err != nil {
+
+		err := s.server.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.WithField("address", s.server.Addr).Info("Metrics frontend server has closed.")
+		} else if err != nil {
 			log.Fatal(err)
 		}
 	}()

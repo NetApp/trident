@@ -40,8 +40,11 @@ func NewHTTPServer(p core.Orchestrator, address, port string) *APIServerHTTP {
 func (s *APIServerHTTP) Activate() error {
 	go func() {
 		log.WithField("address", s.server.Addr).Info("Activating HTTP REST frontend.")
+
 		err := s.server.ListenAndServe()
-		if err != nil {
+		if err == http.ErrServerClosed {
+			log.WithField("address", s.server.Addr).Info("HTTP REST frontend server has closed.")
+		} else if err != nil {
 			log.Fatal(err)
 		}
 	}()

@@ -66,8 +66,11 @@ func NewHTTPSServer(
 func (s *APIServerHTTPS) Activate() error {
 	go func() {
 		log.WithField("address", s.server.Addr).Infof("Activating HTTPS REST frontend.")
+
 		err := s.server.ListenAndServeTLS(s.serverCertFile, s.serverKeyFile)
-		if err != nil {
+		if err == http.ErrServerClosed {
+			log.WithField("address", s.server.Addr).Info("HTTPS REST frontend server has closed.")
+		} else if err != nil {
 			log.Fatal(err)
 		}
 	}()
