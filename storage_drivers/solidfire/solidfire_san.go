@@ -1201,6 +1201,11 @@ func (d *SANStorageDriver) Publish(
 		return errors.New("volume attach failure")
 	}
 
+	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
+	if fstype == drivers.FsXfs {
+		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
+	}
+
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = 0
 	publishInfo.IscsiTargetPortal = d.Config.SVIP

@@ -59,3 +59,6 @@ const (
 	KeyName string = "name"
 	KeyType string = "type"
 )
+
+// Mount options managed by drivers
+const MountOptionNoUUID = "nouuid"

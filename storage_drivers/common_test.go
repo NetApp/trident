@@ -3,6 +3,7 @@
 package storagedrivers
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,3 +51,41 @@ func TestAreSameCredentials(t *testing.T) {
 	}
 }
 
+func TestEnsureJoinedStringContainsElem(t *testing.T) {
+	tests := []struct {
+		joined   string
+		elem     string
+		sep      string
+		expected string
+	}{
+		{
+			elem:     "abc",
+			sep:      ",",
+			expected: "abc",
+		},
+		{
+			joined:   "abc,def",
+			elem:     "efg",
+			sep:      ",",
+			expected: "abc,def,efg",
+		},
+		{
+			joined:   "def",
+			elem:     "abc",
+			sep:      ".",
+			expected: "def.abc",
+		},
+		{
+			joined:   "defabc|123",
+			elem:     "abc",
+			sep:      "|",
+			expected: "defabc|123",
+		},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			actual := ensureJoinedStringContainsElem(test.joined, test.elem, test.sep)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}

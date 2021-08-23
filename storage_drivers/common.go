@@ -238,3 +238,20 @@ func AreSameCredentials(credentials1, credentials2 map[string]string) bool {
 
 	return secretName1 == secretName2 && secretStore1 == secretStore2
 }
+
+// EnsureMountOption ensures option is present in mount options; option is appended to mountOptions if not present
+func EnsureMountOption(mountOptions, option string) string {
+	return ensureJoinedStringContainsElem(mountOptions, option, ",")
+}
+
+// ensureJoinedStringContainsElem adds elem to joined string if not present; requires that elem is not part of a longer
+// element
+func ensureJoinedStringContainsElem(joined, elem, sep string) string {
+	if strings.Contains(joined, elem) {
+		return joined
+	}
+	if joined == "" {
+		return elem
+	}
+	return joined + sep + elem
+}

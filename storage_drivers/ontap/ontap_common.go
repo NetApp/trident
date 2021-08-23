@@ -862,6 +862,11 @@ func PublishLUN(
 		filteredIPs = ips
 	}
 
+	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
+	if fstype == drivers.FsXfs {
+		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
+	}
+
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
