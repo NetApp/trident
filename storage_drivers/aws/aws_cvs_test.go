@@ -1,11 +1,14 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package aws
 
 import (
+	"io/ioutil"
+	"os"
 	"regexp"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -19,6 +22,12 @@ const (
 	SecretKey = "-----BEGIN PRIVATE KEY-----GGGGHHHHIIIIIJJJJJJKKKKLLL----END PRIVATE KEY-----"
 	ProxyURL  = "https://randomproxy.aws.com"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func newTestAWSDriver() *NFSStorageDriver {
 	config := &drivers.AWSNFSStorageDriverConfig{}
@@ -100,7 +109,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 		StoragePrefix string
 		Valid         bool
 	}{
-		//Invalid storage prefixes
+		// Invalid storage prefixes
 		{
 			Name:          "storage prefix starts with plus",
 			StoragePrefix: "+abcd_123_ABC",

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,7 +46,7 @@ func init() {
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Simple cache for our CRD objects, since we don't have a real database layer here
 // TODO merge this and the equivalent in frontends/crd/crd_controller_test ??
 
@@ -92,7 +93,7 @@ func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCach
 
 	crdFakeClient.Fake.PrependReactor(
 		"*" /* all operations */, "*", /* all object types */
-		//"create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
+		// "create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
 		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 
 			log.Tracef("actionCopy: %T\n", actionCopy) // use this to find any other types to add
@@ -166,6 +167,7 @@ func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCach
 }
 
 func GetTestKubernetesClient() (*CRDClientV1, k8sclient.Interface) {
+	log.SetOutput(ioutil.Discard)
 	testingCache := NewTestingCache()
 
 	client := fake.NewSimpleClientset()
@@ -516,8 +518,7 @@ func TestKubernetesVolumes(t *testing.T) {
 		t.FailNow()
 	}
 	if len(volumes) != 5 {
-		t.Errorf("Expected %d volumes; retrieved %d", 5,
-			len(volumes))
+		t.Errorf("Expected %d volumes; retrieved %d", 5, len(volumes))
 	}
 
 	// Deleting all volumes
@@ -569,12 +570,10 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 	for _, v := range volTxns {
 		txn, err := p.GetExistingVolumeTransaction(ctx(), v)
 		if err != nil {
-			t.Errorf("Unable to get existing volume transaction %s:  %v",
-				v.Config.Name, err)
+			t.Errorf("Unable to get existing volume transaction %s:  %v", v.Config.Name, err)
 		}
 		if !reflect.DeepEqual(txn, v) {
-			t.Errorf("Got incorrect volume transaction for %s (got %s)",
-				v.Config.Name, txn.Config.Name)
+			t.Errorf("Got incorrect volume transaction for %s (got %s)", v.Config.Name, txn.Config.Name)
 		}
 		if err := p.DeleteVolumeTransaction(ctx(), v); err != nil {
 			t.Errorf("Unable to delete volume: %v", err)
@@ -629,8 +628,7 @@ func TestKubernetesDuplicateVolumeTransaction(t *testing.T) {
 	if len(volTxns) != 1 {
 		t.Errorf("Expected one volume transaction; got %d", len(volTxns))
 	} else if volTxns[0].Config.StorageClass != "gold" {
-		t.Errorf("Vol transaction changed.  Expected storage class gold;"+
-			" got %s.", volTxns[0].Config.StorageClass)
+		t.Errorf("Vol transaction changed.  Expected storage class gold; got %s.", volTxns[0].Config.StorageClass)
 	}
 	for i, volTxn := range volTxns {
 		if err = p.DeleteVolumeTransaction(ctx(), volTxn); err != nil {
@@ -672,8 +670,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 	if err = json.Unmarshal([]byte(configJSON), &retrievedConfig); err != nil {
 		t.Error("Unable to unmarshal backend into ontap configuration: ", err)
 	} else if retrievedConfig.Size != sfConfig.Size {
-		t.Errorf("Backend state doesn't match: %v != %v",
-			retrievedConfig.Size, sfConfig.Size)
+		t.Errorf("Backend state doesn't match: %v != %v", retrievedConfig.Size, sfConfig.Size)
 	}
 
 	if err = p.DeleteBackend(ctx(), sfBackend); err != nil {

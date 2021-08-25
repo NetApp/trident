@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -59,9 +59,11 @@ func TestBackendState(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		assert.Equal(t, test.input.String(), test.output, "Strings not equal")
-		assert.True(t, test.predicate(test.input), "Predicate failed")
+		t.Run(
+			testName, func(t *testing.T) {
+				assert.Equal(t, test.input.String(), test.output, "Strings not equal")
+				assert.True(t, test.predicate(test.input), "Predicate failed")
+			},
+		)
 	}
 }

@@ -11,8 +11,6 @@ import (
 )
 
 func TestParseIPv6Valid(t *testing.T) {
-	log.Debug("Running TestParseIPv6Valid...")
-
 	tests := map[string]struct {
 		input     string
 		output    bool
@@ -69,15 +67,13 @@ func TestParseIPv6Valid(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		assert.True(t, test.predicate(test.input), "Predicate failed")
+		t.Run(testName, func(t *testing.T) {
+			assert.True(t, test.predicate(test.input), "Predicate failed")
+		})
 	}
 }
 
 func TestParseIPv4Valid(t *testing.T) {
-	log.Debug("Running TestParseIPv4Valid...")
-
 	tests := map[string]struct {
 		input     string
 		output    bool
@@ -113,15 +109,13 @@ func TestParseIPv4Valid(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		assert.False(t, test.predicate(test.input), "Predicate failed")
+		t.Run(testName, func(t *testing.T) {
+			assert.False(t, test.predicate(test.input), "Predicate failed")
+		})
 	}
 }
 
 func TestSanitizeString(t *testing.T) {
-	log.Debug("Running TestSanitizeString...")
-
 	tests := map[string]struct {
 		input  string
 		output string
@@ -136,12 +130,10 @@ func TestSanitizeString(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-		result := sanitizeString(test.input)
-		t.Logf("      test.input: '%s'", test.input)
-		t.Logf("     test.output: '%s'", test.output)
-		t.Logf("          result: '%s'", result)
-		assert.True(t, test.output == result, fmt.Sprintf("Expected %v not %v", test.output, result))
+		t.Run(testName, func(t *testing.T) {
+			result := sanitizeString(test.input)
+			assert.True(t, test.output == result, fmt.Sprintf("Expected %v not %v", test.output, result))
+		})
 	}
 }
 
@@ -177,23 +169,18 @@ func TestPidRunningOrIdleRegex(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-		result := pidRunningOrIdleRegex.MatchString(test.input)
-		t.Logf("              test.input: '%s'", test.input)
-		t.Logf("     test.expectedOutput: '%v'", test.expectedOutput)
-		t.Logf("           actual result: '%v'", result)
-		assert.True(t, test.expectedOutput == result)
+		t.Run(testName, func(t *testing.T) {
+			result := pidRunningOrIdleRegex.MatchString(test.input)
+			assert.True(t, test.expectedOutput == result)
+		})
 	}
 }
 
 func TestGetHostportIP(t *testing.T) {
-	log.Debug("Running TestGetHostportIP...")
-
 	type IPAddresses struct {
 		InputIP  string
 		OutputIP string
 	}
-
 	tests := []IPAddresses{
 		{
 			InputIP:  "1.2.3.4:5678",
@@ -225,18 +212,17 @@ func TestGetHostportIP(t *testing.T) {
 		},
 	}
 	for _, testCase := range tests {
-		assert.Equal(t, testCase.OutputIP, getHostportIP(testCase.InputIP), "IP mismatch")
+		t.Run(testCase.InputIP, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputIP, getHostportIP(testCase.InputIP), "IP mismatch")
+		})
 	}
 }
 
 func TestEnsureHostportFormatted(t *testing.T) {
-	log.Debug("Running TestEnsureHostportFormatted...")
-
 	type IPAddresses struct {
 		InputIP  string
 		OutputIP string
 	}
-
 	tests := []IPAddresses{
 		{
 			InputIP:  "1.2.3.4:5678",
@@ -272,19 +258,18 @@ func TestEnsureHostportFormatted(t *testing.T) {
 		},
 	}
 	for _, testCase := range tests {
-		assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
-			"Hostport not correctly formatted")
+		t.Run(testCase.InputIP, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
+				"Hostport not correctly formatted")
+		})
 	}
 }
 
 func TestFormatPortal(t *testing.T) {
-	log.Debug("Running TestFormatPortal...")
-
 	type IPAddresses struct {
 		InputPortal  string
 		OutputPortal string
 	}
-
 	tests := []IPAddresses{
 		{
 			InputPortal:  "203.0.113.1",
@@ -312,20 +297,18 @@ func TestFormatPortal(t *testing.T) {
 		},
 	}
 	for _, testCase := range tests {
-		assert.Equal(t, testCase.OutputPortal, formatPortal(testCase.InputPortal),
-			"Portal not correctly formatted")
+		t.Run(testCase.InputPortal, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputPortal, formatPortal(testCase.InputPortal), "Portal not correctly formatted")
+		})
 	}
 }
 
 func TestFilterTargets(t *testing.T) {
-	log.Debug("Running TestFilterTargets...")
-
 	type FilterCase struct {
 		CommandOutput string
 		InputPortal   string
 		OutputIQNs    []string
 	}
-
 	tests := []FilterCase{
 		{
 			// Simple positive test, expect first
@@ -390,7 +373,9 @@ func TestFilterTargets(t *testing.T) {
 		},
 	}
 	for _, testCase := range tests {
-		targets := filterTargets(testCase.CommandOutput, testCase.InputPortal)
-		assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
+		t.Run(testCase.InputPortal, func(t *testing.T) {
+			targets := filterTargets(testCase.CommandOutput, testCase.InputPortal)
+			assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
+		})
 	}
 }

@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2020 NetApp, Inc. All Rights Reserved.
- */
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -8,13 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetCRDMapFromBundle(t *testing.T) {
-	log.Debug("Running TestGetCRDMapFromBundle...")
-
 	CRDBundle := createCRDBundle(CRDnames)
 
 	crdMap := getCRDMapFromBundle(CRDBundle)
@@ -35,8 +30,6 @@ func TestGetCRDMapFromBundle(t *testing.T) {
 }
 
 func TestValidateCRDsPass(t *testing.T) {
-	log.Debug("Running TestValidateCRDsPass...")
-
 	CRDBundle := createCRDBundle(CRDnames)
 
 	crdMap := getCRDMapFromBundle(CRDBundle)
@@ -45,8 +38,6 @@ func TestValidateCRDsPass(t *testing.T) {
 }
 
 func TestValidateCRDsMissingCRDsFail(t *testing.T) {
-	log.Debug("Running TestValidateCRDsMissingCRDsFail...")
-
 	CRDBundle := createCRDBundle(CRDnames[1 : len(CRDnames)-1])
 
 	crdMap := getCRDMapFromBundle(CRDBundle)
@@ -55,8 +46,6 @@ func TestValidateCRDsMissingCRDsFail(t *testing.T) {
 }
 
 func TestValidateCRDsExtraCRDsFail(t *testing.T) {
-	log.Debug("Running TestValidateCRDsExtraCRDsFail...")
-
 	newCRDNames := append(CRDnames, "xyz.trident.netapp.io")
 
 	CRDBundle := createCRDBundle(newCRDNames)

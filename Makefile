@@ -178,7 +178,7 @@ dist: dist_tar dist_tag
 test_all:
 	@mkdir -p ${COVERAGE_DIR}
 	@chmod 777 ${COVERAGE_DIR}
-	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out $(shell go list ./... | grep -v /vendor/)
+	@go test -v -coverprofile=${COVERAGE_DIR}/coverage.out ./...
 
 test_coverage_report:
 	@go tool cover -func=${COVERAGE_DIR}/coverage.out -o ${COVERAGE_DIR}/function-coverage.txt

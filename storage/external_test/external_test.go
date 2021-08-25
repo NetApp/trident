@@ -1,14 +1,17 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package externaltest
 
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage/factory"
@@ -16,6 +19,12 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func TestConstructExternalBackend(t *testing.T) {
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(

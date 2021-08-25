@@ -1,12 +1,22 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storageattribute
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func TestMatches(t *testing.T) {
 	for i, test := range []struct {
@@ -28,81 +38,102 @@ func TestMatches(t *testing.T) {
 		{NewBoolRequest(false), NewIntOffer(0, 10), false},
 		{NewBoolRequest(false), NewLabelOffer(map[string]string{"performance": "gold"}), false},
 
-		{NewLabelRequestMustCompile("performance = gold"),
+		{
+			NewLabelRequestMustCompile("performance = gold"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance=gold;protection-ha=low-minimal"),
+		{
+			NewLabelRequestMustCompile("performance=gold;protection-ha=low-minimal"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection-ha": "low-minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance=gold;protection=full"),
+		{
+			NewLabelRequestMustCompile("performance=gold;protection=full"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance=gold;protection=minimal"),
+		{
+			NewLabelRequestMustCompile("performance=gold;protection=minimal"),
 			NewLabelOffer(map[string]string{"performance": "silver", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance=gold;protection=minimal"),
+		{
+			NewLabelRequestMustCompile("performance=gold;protection=minimal"),
 			NewLabelOffer(map[string]string{"performance": "silver", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("protection != full"),
+		{
+			NewLabelRequestMustCompile("protection != full"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance = gold;protection != minimal"),
+		{
+			NewLabelRequestMustCompile("performance = gold;protection != minimal"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance in (gold,silver)"),
+		{
+			NewLabelRequestMustCompile("performance in (gold,silver)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance in (silver, bronze)"),
+		{
+			NewLabelRequestMustCompile("performance in (silver, bronze)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance in (gold, silver); protection in (minimal, full)"),
+		{
+			NewLabelRequestMustCompile("performance in (gold, silver); protection in (minimal, full)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance notin (gold,silver)"),
+		{
+			NewLabelRequestMustCompile("performance notin (gold,silver)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance notin (silver, bronze)"),
+		{
+			NewLabelRequestMustCompile("performance notin (silver, bronze)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("location notin (east, west)"),
+		{
+			NewLabelRequestMustCompile("location notin (east, west)"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance"),
+		{
+			NewLabelRequestMustCompile("performance"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("performance;protection"),
+		{
+			NewLabelRequestMustCompile("performance;protection"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("!performance; !protection"),
+		{
+			NewLabelRequestMustCompile("!performance; !protection"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("protection;!cloud"),
+		{
+			NewLabelRequestMustCompile("protection;!cloud"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			true,
 		},
-		{NewLabelRequestMustCompile("protection;foo"),
+		{
+			NewLabelRequestMustCompile("protection;foo"),
 			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"}),
 			false,
 		},
-		{NewLabelRequestMustCompile("performance=gold;protection!=full;cloud in (aws, azure);!foo"),
-			NewLabelOffer(map[string]string{"performance": "gold", "protection": "minimal"},
-				map[string]string{"cloud": "aws", "bar": "baz"}),
+		{
+			NewLabelRequestMustCompile("performance=gold;protection!=full;cloud in (aws, azure);!foo"),
+			NewLabelOffer(
+				map[string]string{"performance": "gold", "protection": "minimal"},
+				map[string]string{"cloud": "aws", "bar": "baz"},
+			),
 			true,
 		},
 	} {
@@ -147,8 +178,7 @@ func TestUnmarshalOffer(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(offerMap, targetOfferMap) {
-		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", offerMap,
-			targetOfferMap)
+		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", offerMap, targetOfferMap)
 	}
 }
 

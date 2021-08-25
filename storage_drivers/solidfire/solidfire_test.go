@@ -1,11 +1,15 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
@@ -18,6 +22,12 @@ const (
 )
 
 var ctx = context.Background
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func getDriver() *SANStorageDriver {
 
@@ -48,7 +58,8 @@ func getDriver() *SANStorageDriver {
 						MinIOPS:   1000,
 						MaxIOPS:   2000,
 						BurstIOPS: 4000,
-					}},
+					},
+				},
 				{
 					Type: "Silver",
 					QOS: api.QoS{

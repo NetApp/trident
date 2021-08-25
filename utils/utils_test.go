@@ -1,17 +1,18 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package utils
 
 import (
 	"context"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 var testSlice = []string{
@@ -24,6 +25,12 @@ var testSlice = []string{
 	"bigstring",
 	"verybigstring",
 	"superbingstring",
+}
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
 }
 
 func TestPow(t *testing.T) {
@@ -260,7 +267,11 @@ func TestSliceContainsStringConditionally(t *testing.T) {
 		{"Ear", func(val1, val2 string) bool { return strings.EqualFold(val1, val2) }, false},
 		{"ear", func(val1, val2 string) bool { return strings.Contains(val1, val2) }, true},
 		{"Ear", func(val1, val2 string) bool { return strings.Contains(val1, val2) }, false},
-		{"Ear", func(val1, val2 string) bool { return strings.Contains(strings.ToLower(val1), strings.ToLower(val2)) }, true},
+		{
+			"Ear",
+			func(val1, val2 string) bool { return strings.Contains(strings.ToLower(val1), strings.ToLower(val2)) },
+			true,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -301,8 +312,10 @@ func TestReplaceImageRegistry(t *testing.T) {
 func TestFilterIPs(t *testing.T) {
 	log.Debug("Running TestFilterIPs...")
 
-	inputIPs := []string{"10.100.0.2", "192.168.0.1", "192.168.0.2", "10.100.0.1",
-		"eb9b::2", "eb9b::1", "bd15::1", "bd15::2"}
+	inputIPs := []string{
+		"10.100.0.2", "192.168.0.1", "192.168.0.2", "10.100.0.1",
+		"eb9b::2", "eb9b::1", "bd15::1", "bd15::2",
+	}
 
 	// Randomize the input list of IPs
 	rand.Seed(time.Now().UnixNano())
@@ -317,8 +330,10 @@ func TestFilterIPs(t *testing.T) {
 	// Return sorted list of all IPs
 	testIOs = append(testIOs, filterIPsIO{
 		inputCIDRs: []string{"0.0.0.0/0", "::/0"},
-		outputIPs: []string{"10.100.0.1", "10.100.0.2", "192.168.0.1", "192.168.0.2",
-			"bd15::1", "bd15::2", "eb9b::1", "eb9b::2"},
+		outputIPs: []string{
+			"10.100.0.1", "10.100.0.2", "192.168.0.1", "192.168.0.2",
+			"bd15::1", "bd15::2", "eb9b::1", "eb9b::2",
+		},
 	})
 	// Return sorted list of IPv4 only
 	testIOs = append(testIOs, filterIPsIO{

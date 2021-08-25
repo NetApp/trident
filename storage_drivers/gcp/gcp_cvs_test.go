@@ -1,12 +1,15 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -22,6 +25,12 @@ const (
 	ClientID          = "98765432123456789"
 	ClientX509CertURL = "https://random.com/x509Cert"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func newTestGCPDriver() *NFSStorageDriver {
 	config := &drivers.GCPNFSStorageDriverConfig{}
@@ -122,18 +131,14 @@ func TestMakeNetworkPath(t *testing.T) {
 	driver.Config = drivers.GCPNFSStorageDriverConfig{
 		ProjectNumber: "737253775480",
 	}
-	assert.Equal(t,
-		"projects/737253775480/global/networks/myNetwork",
-		driver.makeNetworkPath("myNetwork"))
+	assert.Equal(t, "projects/737253775480/global/networks/myNetwork", driver.makeNetworkPath("myNetwork"))
 
 	// With shared VPC host project
 	driver.Config = drivers.GCPNFSStorageDriverConfig{
 		ProjectNumber:     "737253775480",
 		HostProjectNumber: "527303026223",
 	}
-	assert.Equal(t,
-		"projects/527303026223/global/networks/myNetwork",
-		driver.makeNetworkPath("myNetwork"))
+	assert.Equal(t, "projects/527303026223/global/networks/myNetwork", driver.makeNetworkPath("myNetwork"))
 }
 
 func TestApplyMinimumVolumeSizeSW(t *testing.T) {
@@ -285,7 +290,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 		StoragePrefix string
 		Valid         bool
 	}{
-		//Invalid storage prefixes
+		// Invalid storage prefixes
 		{
 			Name:          "storage prefix starts with plus",
 			StoragePrefix: "+abcd_123_ABC",
@@ -330,7 +335,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 			Name:          "storage prefix is empty",
 			StoragePrefix: "",
 		},
-		//Valid storage prefixes
+		// Valid storage prefixes
 		{
 			Name:          "storage prefix has dash",
 			StoragePrefix: "abcd-123",

@@ -1,13 +1,16 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package azure
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"testing"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -20,6 +23,12 @@ const (
 	ClientID       = "1-clientid-23456789876454321"
 	ClientSecret   = "client-secret-23456789876454321"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func newTestANFDriver() *NFSStorageDriver {
 	config := &drivers.AzureNFSStorageDriverConfig{}
@@ -101,7 +110,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 		StoragePrefix string
 		Valid         bool
 	}{
-		//Invalid storage prefixes
+		// Invalid storage prefixes
 		{
 			Name:          "storage prefix starts with plus",
 			StoragePrefix: "+abcd_123_ABC",
@@ -142,7 +151,7 @@ func TestValidateStoragePrefix(t *testing.T) {
 			Name:          "storage prefix is single colon",
 			StoragePrefix: ":",
 		},
-		//Valid storage prefixes
+		// Valid storage prefixes
 		{
 			Name:          "storage prefix is single letter",
 			StoragePrefix: "a",

@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package sdk
 
@@ -31,8 +31,9 @@ func TestPoolShortname(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-		assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
+		t.Run(testName, func(t *testing.T) {
+			assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
+		})
 	}
 }
 
@@ -59,8 +60,8 @@ func TestVolumeShortname(t *testing.T) {
 		},
 	}
 	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
+		t.Run(testName, func(t *testing.T) {
+			assert.True(t, test.predicate(test.input, test.output), "Predicate failed")
+		})
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +26,12 @@ const (
 	Password      = "password"
 	PasswordArray = "passwords"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 func newTestEseriesSANDriver(debugTraceFlags map[string]bool) *SANStorageDriver {
 	config := &drivers.ESeriesStorageDriverConfig{}
@@ -141,8 +148,7 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/devmgr/v2/storage-systems/", func(w http.ResponseWriter, r *http.Request) {
-	})
+	mux.HandleFunc("/devmgr/v2/storage-systems/", func(w http.ResponseWriter, r *http.Request) {})
 
 	server := httptest.NewUnstartedServer(mux)
 

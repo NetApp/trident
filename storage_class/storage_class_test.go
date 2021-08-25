@@ -4,6 +4,8 @@ package storageclass
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -11,11 +13,18 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
+
 func TestDoesPoolSupportTopology(t *testing.T) {
 	log.Debug("Running TestDoesPoolSupportTopology...")
 
 	supportedTopologies := make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	fakePool1 := storage.Pool{
 		Name:                "fake pool 1",
 		SupportedTopologies: supportedTopologies,
@@ -40,14 +49,17 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 	}
 
 	supportedTopologies = make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	fakePool2 := storage.Pool{
 		Name:                "fake pool 2",
 		SupportedTopologies: supportedTopologies,
 	}
 
-	supported = isTopologySupportedByPool(nil, &fakePool2, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supported = isTopologySupportedByPool(nil, &fakePool2,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
@@ -59,7 +71,8 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 		SupportedTopologies: supportedTopologies,
 	}
 
-	supported = isTopologySupportedByPool(nil, &fakePool3, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supported = isTopologySupportedByPool(nil, &fakePool3,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
@@ -70,7 +83,8 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 
 	fakePools := make([]*storage.Pool, 0)
 	supportedTopologies := make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	fakePool1 := storage.Pool{
 		Name:                "fake pool 1",
 		SupportedTopologies: supportedTopologies,
@@ -78,8 +92,10 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 	fakePools = append(fakePools, &fakePool1)
 
 	supportedTopologies = make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	fakePool2 := storage.Pool{
 		Name:                "fake pool 2",
 		SupportedTopologies: supportedTopologies,
@@ -110,37 +126,44 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 	}
 
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	filteredPools = FilterPoolsOnTopology(nil, fakePools, requisiteTopologies)
 	if len(filteredPools) != 2 {
 		t.Error("all pools should be returned")
 	}
 
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	filteredPools = FilterPoolsOnTopology(nil, fakePools, requisiteTopologies)
 	if len(filteredPools) != 1 {
 		t.Error("only fake pool 2 should be returned")
 	}
 
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	filteredPools = FilterPoolsOnTopology(nil, fakePools, requisiteTopologies)
 	if len(filteredPools) != 2 {
 		t.Error("all pools should be returned")
 	}
 
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "I do not exist", "topology.kubernetes.io/zone": "Z2"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "I do not exist", "topology.kubernetes.io/zone": "Z2"})
 	filteredPools = FilterPoolsOnTopology(nil, fakePools, requisiteTopologies)
 	if len(filteredPools) != 0 {
 		t.Error("no pools should match")
 	}
 
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
 	filteredPools = FilterPoolsOnTopology(nil, fakePools, requisiteTopologies)
 	if len(filteredPools) != 2 {
 		t.Error("all pools should be returned")
@@ -150,8 +173,10 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 		Name: "fake pool unrestricted",
 	}
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
 	filteredPools = FilterPoolsOnTopology(nil, []*storage.Pool{&fakePoolNoRestriction}, requisiteTopologies)
 	if len(filteredPools) == 0 {
 		t.Error("all pools should be returned")
@@ -162,8 +187,10 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 		SupportedTopologies: make([]map[string]string, 0),
 	}
 	requisiteTopologies = make([]map[string]string, 0)
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	requisiteTopologies = append(requisiteTopologies, map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	requisiteTopologies = append(requisiteTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
 	filteredPools = FilterPoolsOnTopology(nil, []*storage.Pool{&fakePoolNoRestriction}, requisiteTopologies)
 	if len(filteredPools) == 0 {
 		t.Error("all pools should be returned")
@@ -176,7 +203,8 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 
 	fakePools := make([]*storage.Pool, 0)
 	supportedTopologies := make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	fakePool1 := storage.Pool{
 		Name:                "fake pool 1",
 		SupportedTopologies: supportedTopologies,
@@ -184,8 +212,10 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 	fakePools = append(fakePools, &fakePool1)
 
 	supportedTopologies = make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	fakePool2 := storage.Pool{
 		Name:                "fake pool 2",
 		SupportedTopologies: supportedTopologies,
@@ -204,14 +234,16 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 	}
 
 	preferredTopologies = make([]map[string]string, 0)
-	preferredTopologies = append(preferredTopologies, map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
+	preferredTopologies = append(preferredTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	orderedPools = SortPoolsByPreferredTopologies(nil, fakePools, preferredTopologies)
 	if len(orderedPools) != 2 {
 		t.Errorf("2 pools should be returned, got %d", len(orderedPools))
 	}
 
 	preferredTopologies = make([]map[string]string, 0)
-	preferredTopologies = append(preferredTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	preferredTopologies = append(preferredTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	orderedPools = SortPoolsByPreferredTopologies(nil, fakePools, preferredTopologies)
 	if len(orderedPools) != 2 {
 		t.Errorf("2 pools should be returned, got %d", len(orderedPools))
@@ -221,7 +253,8 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 	}
 
 	supportedTopologies = make([]map[string]string, 0)
-	supportedTopologies = append(supportedTopologies, map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
+	supportedTopologies = append(supportedTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
 	fakePool3 := storage.Pool{
 		Name:                "fake pool 3",
 		SupportedTopologies: supportedTopologies,
@@ -229,7 +262,8 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 	fakePools = append(fakePools, &fakePool3)
 
 	preferredTopologies = make([]map[string]string, 0)
-	preferredTopologies = append(preferredTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	preferredTopologies = append(preferredTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
 	orderedPools = SortPoolsByPreferredTopologies(nil, fakePools, preferredTopologies)
 	if len(orderedPools) != 3 {
 		t.Errorf("2 pools should be returned, got %d", len(orderedPools))
@@ -239,8 +273,10 @@ func TestSortPoolsByPreferredTopologies(t *testing.T) {
 	}
 
 	preferredTopologies = make([]map[string]string, 0)
-	preferredTopologies = append(preferredTopologies, map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
-	preferredTopologies = append(preferredTopologies, map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
+	preferredTopologies = append(preferredTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z2"})
+	preferredTopologies = append(preferredTopologies,
+		map[string]string{"topology.kubernetes.io/region": "R3", "topology.kubernetes.io/zone": "Z3"})
 	orderedPools = SortPoolsByPreferredTopologies(nil, fakePools, preferredTopologies)
 	if len(orderedPools) != 3 {
 		t.Errorf("3 pools should be returned, got %d", len(orderedPools))

@@ -1,11 +1,14 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package fake
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
@@ -14,6 +17,12 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
 
 // TestNewConfig tests that marshaling works properly.  This has broken
 // in the past.
@@ -102,25 +111,29 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		physicalPools := map[string]*fake.StoragePool{"fake-backend_pool_0": {
-			Bytes: 50 * 1024 * 1024 * 1024,
-			Attrs: map[string]sa.Offer{
-				sa.IOPS:             sa.NewIntOffer(1000, 10000),
-				sa.Snapshots:        sa.NewBoolOffer(true),
-				sa.ProvisioningType: sa.NewStringOffer("thin", "thick"),
-				"uniqueOptions":     sa.NewStringOffer("foo", "bar", "baz"),
+		physicalPools := map[string]*fake.StoragePool{
+			"fake-backend_pool_0": {
+				Bytes: 50 * 1024 * 1024 * 1024,
+				Attrs: map[string]sa.Offer{
+					sa.IOPS:             sa.NewIntOffer(1000, 10000),
+					sa.Snapshots:        sa.NewBoolOffer(true),
+					sa.ProvisioningType: sa.NewStringOffer("thin", "thick"),
+					"uniqueOptions":     sa.NewStringOffer("foo", "bar", "baz"),
+				},
 			},
-		}}
+		}
 
 		fakePool := drivers.FakeStorageDriverPool{
 			Labels: c.physicalPoolLabels,
 			Region: "us_east_1",
-			Zone:   "us_east_1a"}
+			Zone:   "us_east_1a",
+		}
 
 		virtualPools := drivers.FakeStorageDriverPool{
 			Labels: c.virtualPoolLabels,
 			Region: "us_east_1",
-			Zone:   "us_east_1a"}
+			Zone:   "us_east_1a",
+		}
 
 		d, _ := NewFakeStorageDriverWithPools(ctx, physicalPools, fakePool,
 			[]drivers.FakeStorageDriverPool{virtualPools})
