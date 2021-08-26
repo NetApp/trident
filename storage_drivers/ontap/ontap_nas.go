@@ -14,7 +14,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -139,9 +138,10 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := ValidateReplicationPolicy(ctx, d.Config.ReplicationPolicy, d.API); err != nil {
-		return fmt.Errorf("replication policy validation error: %v", err)
+	if err := ValidateReplicationConfig(ctx, &d.Config, d.API); err != nil {
+		return fmt.Errorf("replication validation failed: %v", err)
 	}
+
 	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
@@ -149,6 +149,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 	if err := ValidateStoragePrefix(*d.Config.StoragePrefix); err != nil {
 		return err
 	}
+
 	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
@@ -158,7 +159,8 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 
 // Create a volume with the specified options
 func (d *NASStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -185,15 +187,8 @@ func (d *NASStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		remoteSVM, _, err := parseVolumeHandle(volConfig.PeerVolumeHandle)
-		if err != nil {
-			err = fmt.Errorf("could not determine required peer SVM; %v", err)
-			return drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
-		}
-		peeredVservers, _ := d.API.GetPeeredVservers(ctx)
-		if !utils.SliceContainsString(peeredVservers, remoteSVM) {
-			err = fmt.Errorf("backend SVM %v is not peered with required SVM %v", d.Config.SVM, remoteSVM)
-			return drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
+		if err = checkSVMPeered(ctx, volConfig, d.GetAPI(), d.GetConfig()); err != nil {
+			return err
 		}
 	}
 
@@ -247,7 +242,8 @@ func (d *NASStorageDriver) Create(
 	size := strconv.FormatUint(flexvolSize, 10)
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -300,7 +296,8 @@ func (d *NASStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, flexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+			ctx, aggregate, spaceReserve, flexvolSize, d.Config, d.GetAPI(),
+		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -405,7 +402,6 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, name string) error {
 
 	// If flexvol has been a snapmirror destination
 	snapDeleteResponse, err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM)
-	err = api.GetError(ctx, snapDeleteResponse, err)
 	if err != nil && snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
 		return fmt.Errorf("error deleting snapmirror info for volume %v: %v", name, err)
 	}
@@ -816,8 +812,7 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *NASStorageDriver) getVolumeExternal(
-	volumeAttrs *azgo.VolumeAttributesType) *storage.VolumeExternal {
+func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *azgo.VolumeAttributesType) *storage.VolumeExternal {
 
 	volumeExportAttrs := volumeAttrs.VolumeExportAttributesPtr
 	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
@@ -898,7 +893,9 @@ func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 }
 
 // Resize expands the volume size.
-func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64) error {
+func (d *NASStorageDriver) Resize(
+	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
+) error {
 
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
@@ -930,12 +927,14 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
-		ctx, name, newFlexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
+	); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -977,357 +976,38 @@ func (d NASStorageDriver) String() string {
 }
 
 // GoString makes NASStorageDriver satisfy the GoStringer interface.
-func (d NASStorageDriver) GoString() string {
+func (d *NASStorageDriver) GoString() string {
 	return d.String()
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d *NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
 
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
-func (d NASStorageDriver) EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
-	if err != nil {
-		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
-	}
-	remoteSVMName, remoteFlexvolName, err := parseVolumeHandle(remoteVolumeHandle)
-	if err != nil {
-		return fmt.Errorf("could not parse remoteVolumeHandle '%v'; %v", remoteVolumeHandle, err)
-	}
-
-	// Ensure the destination is a DP volume
-	volType, err := d.API.VolumeGetType(localFlexvolName)
-	if err != nil {
-		return fmt.Errorf("could not determine volume type")
-	}
-	if volType != "dp" {
-		return fmt.Errorf("mirrors can only be established with empty DP volumes as the destination")
-	}
-
-	// Check if a snapmirror relationship already exists
-	snapmirror, err := d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	relationshipNotFound := false
-	initialized := false
-	if err = api.GetError(ctx, snapmirror, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); ok {
-			relationshipNotFound = zerr.Code() == azgo.EOBJECTNOTFOUND
-			if !relationshipNotFound && !zerr.IsPassed() {
-				Logc(ctx).WithError(err).Error("Error on snapmirror get")
-				return err
-			}
-		}
-	}
-	if relationshipNotFound {
-		_, err := d.API.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
-			d.Config.ReplicationPolicy, d.Config.ReplicationSchedule)
-		if err != nil {
-			if zerr, ok := err.(api.ZapiError); ok && zerr.Code() != azgo.EDUPLICATEENTRY {
-				Logc(ctx).WithError(err).Error("Error on snapmirror create")
-				return err
-			}
-		}
-		// Get the snapmirror after creation
-		snapmirror, err = d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if err = api.GetError(ctx, snapmirror, err); err != nil {
-			Logc(ctx).WithError(err).Error("Error on snapmirror get")
-			return err
-		}
-	}
-
-	attributes := snapmirror.Result.Attributes()
-	info := attributes.SnapmirrorInfo()
-	initialized = info.MirrorState() != SnapmirrorStateUninitialized
-	snapmirrorIdle := info.RelationshipStatus() == SnapmirrorStatusIdle
-
-	// Initialize the snapmirror
-	if !initialized && snapmirrorIdle {
-		_, err := d.API.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if zerr, ok := err.(api.ZapiError); ok {
-			if !zerr.IsPassed() {
-				// Snapmirror is current initializing
-				if zerr.Code() == azgo.ETRANSFERINPROGRESS {
-					Logc(ctx).Debug("snapmirror transfer already in progress")
-				} else {
-					Logc(ctx).WithError(err).Error("Error on snapmirror initialize")
-					return err
-				}
-			}
-		}
-
-	}
-	return nil
+func (d *NASStorageDriver) EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
+	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI(), d.GetConfig())
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
-func (d NASStorageDriver) ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
-	if err != nil {
-		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
-	}
-	remoteSVMName, remoteFlexvolName, err := parseVolumeHandle(remoteVolumeHandle)
-	if err != nil {
-		return fmt.Errorf("could not parse remoteVolumeHandle '%v'; %v", remoteVolumeHandle, err)
-	}
-
-	relationshipNotFound := false
-	initialized := false
-	snapmirrorIdle := true
-
-	// Check if a snapmirror relationship already exists
-	snapmirror, err := d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err = api.GetError(ctx, snapmirror, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); ok {
-			relationshipNotFound = zerr.Code() == azgo.EOBJECTNOTFOUND
-			if !relationshipNotFound && !zerr.IsPassed() {
-				Logc(ctx).WithError(err).Error("Error on snapmirror get")
-				return err
-			}
-		}
-	}
-	if snapmirror != nil && !relationshipNotFound {
-		attributes := snapmirror.Result.Attributes()
-		info := attributes.SnapmirrorInfo()
-		initialized = info.MirrorState() != SnapmirrorStateUninitialized || info.LastTransferType() != ""
-		snapmirrorIdle = info.RelationshipStatus() == SnapmirrorStatusIdle
-	}
-
-	// If the snapmirror is already established we have nothing to do
-	if initialized && snapmirrorIdle {
-		return nil
-	}
-
-	// Create the relationship if it doesn't exist
-	if relationshipNotFound {
-		snapCreate, err := d.API.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
-			d.Config.ReplicationPolicy, d.Config.ReplicationSchedule)
-		if err = api.GetError(ctx, snapCreate, err); err != nil {
-			if zerr, ok := err.(api.ZapiError); !ok || zerr.Code() != azgo.EDUPLICATEENTRY {
-				Logc(ctx).WithError(err).Error("Error on snapmirror create")
-				return err
-			}
-		}
-	}
-
-	// Resync the relationship
-	snapResync, err := d.API.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err = api.GetError(ctx, snapResync, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); !ok || zerr.Code() != azgo.ETRANSFERINPROGRESS {
-			Logc(ctx).WithError(err).Error("Error on snapmirror resync")
-			// If we fail on the resync, we need to cleanup the snapmirror
-			// it will be recreated in a future TMR reconcile loop through this function
-			snapDelete, deleteErr := d.API.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-			if deleteErr = api.GetError(ctx, snapDelete, deleteErr); deleteErr != nil {
-				log.WithError(deleteErr).Warn("Error on snapmirror delete")
-			}
-			return err
-		}
-	}
-
-	// Verify the state of the relationship
-	snapmirror, err = d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err = api.GetError(ctx, snapmirror, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); ok {
-			// If the snapmirror does not exist yet, we need to check back later
-			if zerr.Code() == azgo.EOBJECTNOTFOUND {
-				return utils.ReconcileIncompleteError()
-			}
-		} else {
-			Logc(ctx).WithError(err).Error("Error on snapmirror get")
-			return err
-		}
-	}
-	// Check if the snapmirror is healthy
-	attributes := snapmirror.Result.Attributes()
-	info := attributes.SnapmirrorInfo()
-	if !info.IsHealthy() {
-		err = fmt.Errorf(info.UnhealthyReason())
-		Logc(ctx).WithError(err).Error("Error on snapmirror resync")
-		snapDelete, deleteErr := d.API.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if deleteErr = api.GetError(ctx, snapDelete, deleteErr); deleteErr != nil {
-			log.WithError(deleteErr).Warn("Error on snapmirror delete")
-		}
-		return err
-	}
-	return nil
+func (d *NASStorageDriver) ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
+	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI(), d.GetConfig())
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
-func (d NASStorageDriver) PromoteMirror(
+func (d *NASStorageDriver) PromoteMirror(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
 ) (bool, error) {
-
-	if remoteVolumeHandle == "" {
-		return false, nil
-	}
-
-	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
-	if err != nil {
-		return false, fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
-	}
-	remoteSVMName, remoteFlexvolName, err := parseVolumeHandle(remoteVolumeHandle)
-	if err != nil {
-		return false, fmt.Errorf("could not parse remoteVolumeHandle '%v'; %v", remoteVolumeHandle, err)
-	}
-
-	relationshipNotFound := false
-	snapmirror, err := d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err = api.GetError(ctx, snapmirror, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); ok {
-			relationshipNotFound = zerr.Code() == azgo.EOBJECTNOTFOUND
-			if !relationshipNotFound && !zerr.IsPassed() {
-				Logc(ctx).WithError(err).Error("Error on snapmirror get")
-				return false, err
-			}
-		}
-	}
-
-	if d.Config.ReplicationPolicy != "" {
-		smPolicy, err := d.API.SnapmirrorPolicyGet(ctx, d.Config.ReplicationPolicy)
-		if err != nil {
-			return false, err
-		}
-		// If the policy is a synchronous type we shouldn't wait for a snapshot
-		if smPolicy.Type() == SnapmirrorPolicyTypeSync {
-			snapshotHandle = ""
-		}
-	}
-
-	// Check for snapshot
-	if snapshotHandle != "" {
-		snapshotTokens := strings.Split(snapshotHandle, "/")
-		if len(snapshotTokens) != 2 {
-			return false, fmt.Errorf("invalid snapshot handle %v", snapshotHandle)
-		}
-		_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
-		if err != nil {
-			return false, err
-		}
-
-		found := false
-		snapshotResponse, _ := d.API.SnapshotList(localFlexvolName)
-		snapshotList := snapshotResponse.Result.AttributesList()
-		for _, snapshot := range snapshotList.SnapshotInfo() {
-			if snapshot.Name() == snapshotName {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			Logc(ctx).WithField("snapshot", snapshotHandle).Info("Snapshot not yet present.")
-			return true, nil
-		}
-	}
-
-	if !relationshipNotFound {
-		snapQuiesce, err := d.API.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if err = api.GetError(ctx, snapQuiesce, err); err != nil {
-			log.WithError(err).Info("Error on snapmirror quiesce")
-			return false, err
-		}
-
-		snapAbort, err := d.API.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if err = api.GetError(ctx, snapAbort, err); err != nil {
-			if zerr, ok := err.(api.ZapiError); !ok || zerr.Code() != azgo.ENOTRANSFERINPROGRESS {
-				log.WithError(err).Info("Error on snapmirror abort")
-				return false, err
-			}
-		}
-
-		snapmirror, err = d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if err = api.GetError(ctx, snapmirror, err); err != nil {
-			if zerr, ok := err.(api.ZapiError); ok {
-				if !zerr.IsPassed() {
-					Logc(ctx).WithError(err).Error("Error on snapmirror get")
-					return false, err
-				}
-			}
-		}
-
-		// Skip the break if snapmirror is uninitialized, otherwise it will fail saying the volume is not initialized
-		snapmirrorAttributes := snapmirror.Result.Attributes()
-		snapmirrorInfo := snapmirrorAttributes.SnapmirrorInfo()
-		if snapmirrorInfo.MirrorState() != SnapmirrorStateUninitialized {
-			snapBreak, err := d.API.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-			if err = api.GetError(ctx, snapBreak, err); err != nil {
-				if zerr, ok := err.(api.ZapiError); !ok || zerr.Code() != azgo.EDEST_ISNOT_DP_VOLUME {
-					log.WithError(err).Info("Error on snapmirror break")
-					return false, err
-				}
-			}
-		}
-
-		snapDelete, err := d.API.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if err = api.GetError(ctx, snapDelete, err); err != nil {
-			log.WithError(err).Info("Error on snapmirror delete")
-			return false, err
-		}
-	}
-	return false, nil
+	return promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle, d.GetAPI(), d.GetConfig())
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship
-func (d NASStorageDriver) GetMirrorStatus(
+func (d *NASStorageDriver) GetMirrorStatus(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
 ) (string, error) {
-
-	// Empty remote means there is no mirror to check for
-	if remoteVolumeHandle == "" {
-		return "", nil
-	}
-
-	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
-	if err != nil {
-		return "", fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
-	}
-	remoteSVMName, remoteFlexvolName, err := parseVolumeHandle(remoteVolumeHandle)
-	if err != nil {
-		return "", fmt.Errorf("could not parse remoteVolumeHandle '%v'; %v", remoteVolumeHandle, err)
-	}
-
-	created := true
-	snapmirror, err := d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err = api.GetError(ctx, snapmirror, err); err != nil {
-		if zerr, ok := err.(api.ZapiError); !ok || zerr.Code() != azgo.EOBJECTNOTFOUND {
-			// If snapmirror is gone then the volume is promoted
-			return netappv1.MirrorStatePromoted, nil
-		} else {
-			Logc(ctx).WithError(err).Error("Error on snapmirror get")
-			created = false
-		}
-	}
-
-	// Translate the snapmirror status to a mirror status
-	if created {
-		attributes := snapmirror.Result.Attributes()
-		info := attributes.SnapmirrorInfo()
-		mirrorState := info.MirrorState()
-		relationshipStatus := info.RelationshipStatus()
-		switch relationshipStatus {
-		case SnapmirrorStatusBreaking:
-			return netappv1.MirrorStatePromoting, nil
-		case SnapmirrorStatusQuiescing:
-			return netappv1.MirrorStatePromoting, nil
-		case SnapmirrorStatusAborting:
-			return netappv1.MirrorStatePromoting, nil
-		default:
-			switch mirrorState {
-			case SnapmirrorStateBroken:
-				if relationshipStatus == SnapmirrorStatusTransferring {
-					return netappv1.MirrorStateEstablishing, nil
-				}
-				return netappv1.MirrorStatePromoting, nil
-			case SnapmirrorStateUninitialized:
-				return netappv1.MirrorStateEstablishing, nil
-			case SnapmirrorStateSnapmirrored:
-				return netappv1.MirrorStateEstablished, nil
-			}
-		}
-	}
-	return "", nil
+	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI())
 }

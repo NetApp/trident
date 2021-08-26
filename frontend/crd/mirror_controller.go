@@ -318,7 +318,8 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 			"DeletionTimestamp", mirrorRCopy.ObjectMeta.DeletionTimestamp).Debug(
 			"TridentCrdController#handleTridentMirrorRelationship CR is being deleted.")
 
-		deleted, err := c.ensureMirrorReadyForDeletion(ctx, mirrorRCopy, mirrorRCopy.Spec.VolumeMappings[0], statusCondition)
+		deleted, err := c.ensureMirrorReadyForDeletion(ctx, mirrorRCopy, mirrorRCopy.Spec.VolumeMappings[0],
+			statusCondition)
 		if err != nil {
 			return err
 		} else if !deleted {

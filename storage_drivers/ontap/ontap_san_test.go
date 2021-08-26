@@ -8,13 +8,12 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-
-	"github.com/netapp/trident/utils"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/utils"
 )
 
 func TestOntapSanStorageDriverConfigString(t *testing.T) {
@@ -49,17 +48,13 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 
 	for _, ontapSanDriver := range ontapSanDrivers {
 		for key, val := range externalIncludeList {
-			assert.Contains(t, ontapSanDriver.String(), val,
-				"ontap-san driver does not contain %v", key)
-			assert.Contains(t, ontapSanDriver.GoString(), val,
-				"ontap-san driver does not contain %v", key)
+			assert.Contains(t, ontapSanDriver.String(), val, "ontap-san driver does not contain %v", key)
+			assert.Contains(t, ontapSanDriver.GoString(), val, "ontap-san driver does not contain %v", key)
 		}
 
 		for key, val := range sensitiveIncludeList {
-			assert.NotContains(t, ontapSanDriver.String(), val,
-				"ontap-san driver contains %v", key)
-			assert.NotContains(t, ontapSanDriver.GoString(), val,
-				"ontap-san driver contains %v", key)
+			assert.NotContains(t, ontapSanDriver.String(), val, "ontap-san driver contains %v", key)
+			assert.NotContains(t, ontapSanDriver.GoString(), val, "ontap-san driver contains %v", key)
 		}
 	}
 }
@@ -268,8 +263,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 		}
 
 		for driverIndex, driverInfo := range testCase {
-			ontapSanDrivers[driverIndex].ReconcileNodeAccess(ctx, driverInfo.nodes,
-				uuid.New().String())
+			ontapSanDrivers[driverIndex].ReconcileNodeAccess(ctx, driverInfo.nodes, uuid.New().String())
 		}
 
 		for _, driverInfo := range testCase {

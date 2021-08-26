@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -124,7 +124,7 @@ func (p *Plugin) CreateVolume(
 	var fsType string
 	volumeMode := tridentconfig.Filesystem
 	protocol := tridentconfig.ProtocolAny
-	//var mountFlags []string
+	// var mountFlags []string
 
 	if req.GetVolumeCapabilities() != nil {
 		for _, capability := range req.GetVolumeCapabilities() {
@@ -141,7 +141,7 @@ func (p *Plugin) CreateVolume(
 			if mount := capability.GetMount(); mount != nil {
 				isFileMountAccessType = true
 				fsType = mount.GetFsType()
-				//mountFlags = mount.GetMountFlags()
+				// mountFlags = mount.GetMountFlags()
 			}
 		}
 	}
@@ -152,7 +152,8 @@ func (p *Plugin) CreateVolume(
 	} else if isRawBlockAccessType {
 		if !p.helper.SupportsFeature(ctx, CSIBlockVolumes) {
 			Logc(ctx).WithFields(fields).Error("Raw block volumes are not supported for this container orchestrator.")
-			return nil, status.Error(codes.FailedPrecondition, "raw block volumes are not supported for this container orchestrator")
+			return nil, status.Error(codes.FailedPrecondition,
+				"raw block volumes are not supported for this container orchestrator")
 		}
 		volumeMode = tridentconfig.RawBlock
 		fsType = fsRaw
@@ -360,6 +361,7 @@ func (p *Plugin) ControllerPublishVolume(
 	// Update NFS export rules (?), add node IQN to igroup, etc.
 	err = p.orchestrator.PublishVolume(ctx, volume.Config.Name, volumePublishInfo)
 	if err != nil {
+		Logc(ctx).Error(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -865,7 +867,8 @@ func (p *Plugin) ControllerGetVolume(
 }
 
 func (p *Plugin) getCSIVolumeFromTridentVolume(
-	ctx context.Context, volume *storage.VolumeExternal) (*csi.Volume, error) {
+	ctx context.Context, volume *storage.VolumeExternal,
+) (*csi.Volume, error) {
 
 	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
 	if err != nil {
@@ -899,7 +902,8 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(
 }
 
 func (p *Plugin) getCSISnapshotFromTridentSnapshot(
-	ctx context.Context, snapshot *storage.SnapshotExternal) (*csi.Snapshot, error) {
+	ctx context.Context, snapshot *storage.SnapshotExternal,
+) (*csi.Snapshot, error) {
 
 	createdSeconds, err := time.Parse(time.RFC3339, snapshot.Created)
 	if err != nil {
@@ -956,8 +960,9 @@ func (p *Plugin) getAccessForCSIAccessMode(accessMode csi.VolumeCapability_Acces
 	}
 }
 
-func (p *Plugin) getProtocolForCSIAccessMode(accessMode csi.VolumeCapability_AccessMode_Mode,
-	volumeMode tridentconfig.VolumeMode) tridentconfig.Protocol {
+func (p *Plugin) getProtocolForCSIAccessMode(
+	accessMode csi.VolumeCapability_AccessMode_Mode, volumeMode tridentconfig.VolumeMode,
+) tridentconfig.Protocol {
 	protocol := tridentconfig.ProtocolAny
 
 	// Mapping of AccessMode to equivalent an protocol:

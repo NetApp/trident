@@ -160,7 +160,7 @@ func (o APIResponse) Errno() string {
 	return o.errno
 }
 
-// GetErrorAbstraction inspects the supplied *APIResponse and error parameters to determine if an error occured
+// GetErrorAbstraction inspects the supplied *APIResponse and error parameters to determine if an error occurred
 func GetErrorAbstraction(ctx context.Context, response *APIResponse, errorIn error) (errorOut error) {
 	defer func() {
 		if r := recover(); r != nil {

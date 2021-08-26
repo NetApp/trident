@@ -22,9 +22,9 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 // ZAPI layer
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const (
 	DefaultZapiRecords   = 100
@@ -336,7 +336,7 @@ func NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy string) (QosPolicyGroup, err
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // API feature operations BEGIN
 
 // API functions are named in a NounVerb pattern. This reflects how the azgo
@@ -404,14 +404,16 @@ func (d Client) SupportsFeature(ctx context.Context, feature feature) bool {
 }
 
 // API feature operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // IGROUP operations BEGIN
 
 // IgroupCreate creates the specified initiator group
 // equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
-func (d Client) IgroupCreate(initiatorGroupName, initiatorGroupType, osType string) (*azgo.IgroupCreateResponse, error) {
+func (d Client) IgroupCreate(
+	initiatorGroupName, initiatorGroupType, osType string,
+) (*azgo.IgroupCreateResponse, error) {
 	response, err := azgo.NewIgroupCreateRequest().
 		SetInitiatorGroupName(initiatorGroupName).
 		SetInitiatorGroupType(initiatorGroupType).
@@ -456,7 +458,7 @@ func (d Client) IgroupList() (*azgo.IgroupGetIterResponse, error) {
 	return response, err
 }
 
-//IgroupGet gets a specified initiator group
+// IgroupGet gets a specified initiator group
 func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoType, error) {
 	query := &azgo.IgroupGetIterRequestQuery{}
 	iGroupInfo := azgo.NewInitiatorGroupInfoType().
@@ -481,9 +483,9 @@ func (d Client) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoTy
 }
 
 // IGROUP operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // LUN operations BEGIN
 
 // LunCreate creates a lun with the specified attributes
@@ -516,8 +518,9 @@ func (d Client) LunCreate(
 }
 
 // LunCloneCreate clones a LUN from a snapshot
-func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string,
-	qosPolicyGroup QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
+func (d Client) LunCloneCreate(
+	volumeName, sourceLun, destinationLun string, qosPolicyGroup QosPolicyGroup,
+) (*azgo.CloneCreateResponse, error) {
 	request := azgo.NewCloneCreateRequest().
 		SetVolume(volumeName).
 		SetSourcePath(sourceLun).
@@ -535,8 +538,9 @@ func (d Client) LunCloneCreate(volumeName, sourceLun, destinationLun string,
 }
 
 // LunSetQosPolicyGroup sets the qos policy group or adaptive qos policy group on a lun; does not unset policy groups
-func (d Client) LunSetQosPolicyGroup(lunPath string,
-	qosPolicyGroup QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error) {
+func (d Client) LunSetQosPolicyGroup(
+	lunPath string, qosPolicyGroup QosPolicyGroup,
+) (*azgo.LunSetQosPolicyGroupResponse, error) {
 	request := azgo.NewLunSetQosPolicyGroupRequest().
 		SetPath(lunPath)
 
@@ -903,9 +907,9 @@ func (d Client) LunSize(flexvolName string) (int, error) {
 }
 
 // LUN operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // FlexGroup operations BEGIN
 
 // FlexGroupCreate creates a FlexGroup with the specified options
@@ -1148,8 +1152,9 @@ func (d Client) FlexGroupModifyUnixPermissions(
 }
 
 // FlexGroupSetComment sets a flexgroup's comment to the supplied value
-func (d Client) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) (
-	*azgo.VolumeModifyIterAsyncResponse, error) {
+func (d Client) FlexGroupSetComment(
+	ctx context.Context, volumeName, newVolumeComment string,
+) (*azgo.VolumeModifyIterAsyncResponse, error) {
 
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
 	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
@@ -1289,9 +1294,9 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 }
 
 // FlexGroup operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // VOLUME operations BEGIN
 
 // VolumeCreate creates a volume with the specified options
@@ -1337,9 +1342,9 @@ func (d Client) VolumeCreate(
 	// ==========
 	// ONTAP DRIVER             ONTAP 9.3                           ONTAP 9.4                           ONTAP 9.5
 	// ONTAP-NAS                other-values(backup)/pass(fail)     other-values(backup)/pass(fail)     other-values(
-	//backup)/pass(fail)
+	// backup)/pass(fail)
 	// ONTAP-NAS-ECO            other-values(backup)/pass(fail)     other-values(backup)/pass(fail)     other-values(
-	//backup)/pass(fail)
+	// backup)/pass(fail)
 	//
 	// PLEASE NOTE:
 	// 1. 'backup' tiering policy is for dp-volumes only.
@@ -1378,7 +1383,9 @@ func (d Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*
 	return response, err
 }
 
-func (d Client) VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error) {
+func (d Client) VolumeModifyUnixPermissions(
+	volumeName, unixPermissions string,
+) (*azgo.VolumeModifyIterResponse, error) {
 	volAttr := &azgo.VolumeModifyIterRequestAttributes{}
 	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
@@ -1447,8 +1454,9 @@ func (d Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeM
 
 // Use this to set the QoS Policy Group for volume clones since
 // we can't set adaptive policy groups directly during volume clone creation.
-func (d Client) VolumeSetQosPolicyGroupName(name string,
-	qosPolicyGroup QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error) {
+func (d Client) VolumeSetQosPolicyGroupName(
+	name string, qosPolicyGroup QosPolicyGroup,
+) (*azgo.VolumeModifyIterResponse, error) {
 	volModAttr := &azgo.VolumeModifyIterRequestAttributes{}
 	volQosAttr := azgo.NewVolumeQosAttributesType()
 
@@ -1591,8 +1599,9 @@ func (d Client) VolumeGetType(name string) (string, error) {
 	return attributes.Type(), nil
 }
 
-func (d Client) volumeGetIterCommon(name string,
-	queryVolIDAttrs *azgo.VolumeIdAttributesType) (*azgo.VolumeAttributesType, error) {
+func (d Client) volumeGetIterCommon(
+	name string, queryVolIDAttrs *azgo.VolumeIdAttributesType,
+) (*azgo.VolumeAttributesType, error) {
 
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
 
@@ -1634,8 +1643,9 @@ func (d Client) VolumeGetAll(prefix string) (response *azgo.VolumeGetIterRespons
 	return d.volumeGetIterAll(prefix, queryVolIDAttrs, queryVolStateAttrs)
 }
 
-func (d Client) volumeGetIterAll(prefix string, queryVolIDAttrs *azgo.VolumeIdAttributesType,
-	queryVolStateAttrs *azgo.VolumeStateAttributesType) (*azgo.VolumeGetIterResponse, error) {
+func (d Client) volumeGetIterAll(
+	prefix string, queryVolIDAttrs *azgo.VolumeIdAttributesType, queryVolStateAttrs *azgo.VolumeStateAttributesType,
+) (*azgo.VolumeGetIterResponse, error) {
 
 	query := &azgo.VolumeGetIterRequestQuery{}
 	volumeAttributes := azgo.NewVolumeAttributesType().
@@ -1804,7 +1814,8 @@ func (d Client) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRena
 // VolumeSetComment sets a volume's comment to the supplied value
 // equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
 func (d Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (
-	*azgo.VolumeModifyIterResponse, error) {
+	*azgo.VolumeModifyIterResponse, error,
+) {
 
 	volattr := &azgo.VolumeModifyIterRequestAttributes{}
 	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
@@ -1824,15 +1835,16 @@ func (d Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComme
 }
 
 // VOLUME operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // QTREE operations BEGIN
 
 // QtreeCreate creates a qtree with the specified options
 // equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
-func (d Client) QtreeCreate(name, volumeName, unixPermissions, exportPolicy,
-	securityStyle, qosPolicy string) (*azgo.QtreeCreateResponse, error) {
+func (d Client) QtreeCreate(
+	name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
+) (*azgo.QtreeCreateResponse, error) {
 	request := azgo.NewQtreeCreateRequest().
 		SetQtree(name).
 		SetVolume(volumeName).
@@ -2065,7 +2077,9 @@ func (d Client) QuotaStatus(volume string) (*azgo.QuotaStatusResponse, error) {
 
 // QuotaSetEntry creates a new quota rule with an optional hard disk limit
 // equivalent to filer::> volume quota policy rule create
-func (d Client) QuotaSetEntry(qtreeName, volumeName, quotaTarget, quotaType, diskLimit string) (*azgo.QuotaSetEntryResponse, error) {
+func (d Client) QuotaSetEntry(
+	qtreeName, volumeName, quotaTarget, quotaType, diskLimit string,
+) (*azgo.QuotaSetEntryResponse, error) {
 
 	request := azgo.NewQuotaSetEntryRequest().
 		SetQtree(qtreeName).
@@ -2136,9 +2150,9 @@ func (d Client) QuotaEntryList(volume string) (*azgo.QuotaListEntriesIterRespons
 }
 
 // QTREE operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // EXPORT POLICY operations BEGIN
 
 // ExportPolicyCreate creates an export policy
@@ -2234,9 +2248,9 @@ func (d Client) ExportRuleDestroy(policy string, ruleIndex int) (*azgo.ExportRul
 }
 
 // EXPORT POLICY operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // SNAPSHOT operations BEGIN
 
 // SnapshotCreate creates a snapshot of a volume
@@ -2282,9 +2296,9 @@ func (d Client) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotD
 }
 
 // SNAPSHOT operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // ISCSI operations BEGIN
 
 // IscsiServiceGetIterRequest returns information about an iSCSI target
@@ -2310,9 +2324,9 @@ func (d Client) IscsiInterfaceGetIterRequest() (*azgo.IscsiInterfaceGetIterRespo
 }
 
 // ISCSI operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // VSERVER operations BEGIN
 
 // VserverGetIterRequest returns the vservers on the system
@@ -2400,9 +2414,9 @@ func (d Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterRes
 }
 
 // VSERVER operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // AGGREGATE operations BEGIN
 
 // AggrSpaceGetIterRequest returns the aggregates on the system
@@ -2556,9 +2570,9 @@ func (d Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 }
 
 // AGGREGATE operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // SNAPMIRROR operations BEGIN
 
 // SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
@@ -2578,8 +2592,9 @@ func (d Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.SnapmirrorG
 
 // SnapmirrorGetDestinationIterRequest returns the snapmirror operations on the source cluster
 // equivalent to filer::> snapmirror list-destinations
-func (d Client) SnapmirrorGetDestinationIterRequest(relGroupType string) (*azgo.
-	SnapmirrorGetDestinationIterResponse, error) {
+func (d Client) SnapmirrorGetDestinationIterRequest(
+	relGroupType string,
+) (*azgo.SnapmirrorGetDestinationIterResponse, error) {
 
 	// Limit list-destination to relationship-group-type matching passed relGroupType
 	query := &azgo.SnapmirrorGetDestinationIterRequestQuery{}
@@ -2681,8 +2696,9 @@ func (d Client) isVserverInSVMDR(ctx context.Context) bool {
 	return isSVMDRSource || isSVMDRDestination
 }
 
-func (d Client) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorGetResponse, error) {
+func (d Client) SnapmirrorGet(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorGetResponse, error) {
 
 	query := azgo.NewSnapmirrorGetRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2693,8 +2709,9 @@ func (d Client) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName,
 	return query.ExecuteUsing(d.zr)
 }
 
-func (d Client) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.
-	SnapmirrorCreateResponse, error) {
+func (d Client) SnapmirrorCreate(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
+) (*azgo.SnapmirrorCreateResponse, error) {
 
 	query := azgo.NewSnapmirrorCreateRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2712,8 +2729,9 @@ func (d Client) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolNa
 	return query.ExecuteUsing(d.zr)
 }
 
-func (d Client) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorInitializeResponse, error) {
+func (d Client) SnapmirrorInitialize(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorInitializeResponse, error) {
 
 	query := azgo.NewSnapmirrorInitializeRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2724,8 +2742,9 @@ func (d Client) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexv
 	return query.ExecuteUsing(d.zr)
 }
 
-func (d Client) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorResyncResponse, error) {
+func (d Client) SnapmirrorResync(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorResyncResponse, error) {
 
 	query := azgo.NewSnapmirrorResyncRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2738,8 +2757,9 @@ func (d Client) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolNa
 	return response, err
 }
 
-func (d Client) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorBreakResponse, error) {
+func (d Client) SnapmirrorBreak(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorBreakResponse, error) {
 
 	query := azgo.NewSnapmirrorBreakRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2750,8 +2770,9 @@ func (d Client) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolNam
 	return query.ExecuteUsing(d.zr)
 }
 
-func (d Client) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorQuiesceResponse, error) {
+func (d Client) SnapmirrorQuiesce(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorQuiesceResponse, error) {
 
 	query := azgo.NewSnapmirrorQuiesceRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2762,8 +2783,9 @@ func (d Client) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolN
 	return query.ExecuteUsing(d.zr)
 }
 
-func (d Client) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorAbortResponse, error) {
+func (d Client) SnapmirrorAbort(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorAbortResponse, error) {
 
 	query := azgo.NewSnapmirrorAbortRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2806,8 +2828,9 @@ func (d Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 }
 
 // Intended to be from the destination vserver
-func (d Client) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*azgo.
-	SnapmirrorDestroyResponse, error) {
+func (d Client) SnapmirrorDeleteViaDestination(
+	localFlexvolName, localSVMName string,
+) (*azgo.SnapmirrorDestroyResponse, error) {
 
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2817,8 +2840,9 @@ func (d Client) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName st
 }
 
 // Intended to be from the destination vserver
-func (d Client) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.
-	SnapmirrorDestroyResponse, error) {
+func (d Client) SnapmirrorDelete(
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*azgo.SnapmirrorDestroyResponse, error) {
 
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
@@ -2924,9 +2948,9 @@ func (d Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 }
 
 // SNAPMIRROR operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // MISC operations BEGIN
 
 // NetInterfaceGet returns the list of network interfaces with associated metadata
@@ -3082,7 +3106,8 @@ func (d Client) EmsAutosupportLog(
 	eventDescription string,
 	eventID int,
 	eventSource string,
-	logLevel int) (*azgo.EmsAutosupportLogResponse, error) {
+	logLevel int,
+) (*azgo.EmsAutosupportLogResponse, error) {
 
 	response, err := azgo.NewEmsAutosupportLogRequest().
 		SetAutoSupport(autoSupport).
@@ -3135,15 +3160,17 @@ func (d Client) TieringPolicyValue(ctx context.Context) string {
 }
 
 // MISC operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 // iSCSI initiator operations BEGIN
 
 // IscsiInitiatorAddAuth creates and sets the authorization details for a single initiator
 // equivalent to filer::> vserver iscsi security create -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
 //                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-func (d Client) IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorAddAuthResponse, error) {
+func (d Client) IscsiInitiatorAddAuth(
+	initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string,
+) (*azgo.IscsiInitiatorAddAuthResponse, error) {
 	request := azgo.NewIscsiInitiatorAddAuthRequest().
 		SetInitiator(initiator).
 		SetAuthType(authType).
@@ -3223,7 +3250,9 @@ func (d Client) IscsiInitiatorGetIter() ([]azgo.IscsiInitiatorListEntryInfoType,
 // IscsiInitiatorModifyCHAPParams modifies the authorization details for a single initiator
 // equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
 //                          -user-name outboundUserName -outbound-user-name outboundPassphrase
-func (d Client) IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
+func (d Client) IscsiInitiatorModifyCHAPParams(
+	initiator, userName, passphrase, outboundUserName, outboundPassphrase string,
+) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
 	request := azgo.NewIscsiInitiatorModifyChapParamsRequest().
 		SetInitiator(initiator).
 		SetUserName(userName).
@@ -3239,7 +3268,9 @@ func (d Client) IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, 
 // IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 //                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-func (d Client) IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {
+func (d Client) IscsiInitiatorSetDefaultAuth(
+	authType, userName, passphrase, outboundUserName, outboundPassphrase string,
+) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {
 	request := azgo.NewIscsiInitiatorSetDefaultAuthRequest().
 		SetAuthType(authType).
 		SetUserName(userName).
@@ -3253,4 +3284,4 @@ func (d Client) IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, out
 }
 
 // iSCSI initiator operations END
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////

@@ -65,59 +65,19 @@ const (
 	AdaptiveQosPolicy     = "adaptiveQosPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
 
-	SnapmirrorStatusIdle         = "idle"
-	SnapmirrorStatusTransferring = "transferring"
-	SnapmirrorStatusChecking     = "checking"
-	SnapmirrorStatusQuiescing    = "quiescing"
-	SnapmirrorStatusQuiesced     = "quiesced"
-	SnapmirrorStatusQueued       = "queued"
-	SnapmirrorStatusPreparing    = "preparing"
-	SnapmirrorStatusFinalizing   = "finalizing"
-	SnapmirrorStatusAborting     = "aborting"
-	SnapmirrorStatusBreaking     = "breaking"
-
-	SnapmirrorStateUninitialized = "uninitialized"
-	SnapmirrorStateSnapmirrored  = "snapmirrored"
-	SnapmirrorStateBroken        = "broken-off"
-
-	SnapmirrorPolicyTypeSync        = "sync_mirror"
-	SnapmirrorPolicyTypeAsync       = "async_mirror"
-	SnapmirrorPolicyTypeVault       = "vault"
-	SnapmirrorPolicyTypeMirrorVault = "mirror_vault"
-
-	SnapmirrorPolicyRuleAll = "all_source_snapshots"
+	VolTypeRW  = "rw"  // read-write
+	VolTypeLS  = "ls"  // load-sharing
+	VolTypeDP  = "dp"  // data-protection
+	VolTypeDC  = "dc"  // data-cache
+	VolTypeTMP = "tmp" // temporary
 )
 
-//For legacy reasons, these strings mustn't change
+// For legacy reasons, these strings mustn't change
 const (
 	artifactPrefixDocker     = "ndvp"
 	artifactPrefixKubernetes = "trident"
 	LUNAttributeFSType       = "com.netapp.ndvp.fstype"
 )
-
-type Telemetry struct {
-	tridentconfig.Telemetry
-	Plugin        string        `json:"plugin"`
-	SVM           string        `json:"svm"`
-	StoragePrefix string        `json:"storagePrefix"`
-	Driver        StorageDriver `json:"-"`
-	done          chan struct{}
-	ticker        *time.Ticker
-	stopped       bool
-}
-
-type StorageDriver interface {
-	GetConfig() *drivers.OntapStorageDriverConfig
-	GetAPI() *api.Client
-	GetTelemetry() *Telemetry
-	Name() string
-}
-
-type NASDriver interface {
-	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) (map[string]string, error)
-	GetAPI() *api.Client
-	GetConfig() *drivers.OntapStorageDriverConfig
-}
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
 func CleanBackendName(backendName string) string {
@@ -128,7 +88,8 @@ func CleanBackendName(backendName string) string {
 
 func CreateCloneNAS(
 	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool *storage.Pool, sourceLabel string,
-	labelLimit int, useAsync bool) error {
+	labelLimit int, useAsync bool,
+) error {
 
 	// if cloning a FlexGroup, useAsync will be true
 	if useAsync && !d.GetAPI().SupportsFeature(ctx, api.NetAppFlexGroupsClone) {
@@ -364,8 +325,7 @@ func deleteExportRule(ctx context.Context, ruleIndex int, policyName string, cli
 
 	ruleDestroyResponse, err := clientAPI.ExportRuleDestroy(policyName, ruleIndex)
 	if err = api.GetError(ctx, ruleDestroyResponse, err); err != nil {
-		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v",
-			policyName, ruleIndex, err)
+		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
 		Logc(ctx).WithFields(log.Fields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
@@ -957,16 +917,10 @@ func randomChapString16() (string, error) {
 	return result[0:16], nil
 }
 
-// ChapCredentials holds the bidrectional chap settings
-type ChapCredentials struct {
-	ChapUsername              string
-	ChapInitiatorSecret       string
-	ChapTargetUsername        string
-	ChapTargetInitiatorSecret string
-}
-
 // ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
-func ValidateBidrectionalChapCredentials(getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig) (*ChapCredentials, error) {
+func ValidateBidrectionalChapCredentials(
+	getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig,
+) (*ChapCredentials, error) {
 
 	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
 	if err != nil {
@@ -1135,8 +1089,7 @@ func InitializeSANDriver(
 		}
 
 		setDefaultAuthResponse, err := clientAPI.IscsiInitiatorSetDefaultAuth(
-			authType,
-			chapCredentials.ChapUsername, chapCredentials.ChapInitiatorSecret,
+			authType, chapCredentials.ChapUsername, chapCredentials.ChapInitiatorSecret,
 			chapCredentials.ChapTargetUsername, chapCredentials.ChapTargetInitiatorSecret)
 		if err != nil {
 			return fmt.Errorf("error setting CHAP credentials: %v", err)
@@ -1309,8 +1262,9 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 }
 
 // ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
-func ValidateSANDriver(ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig,
-	ips []string) error {
+func ValidateSANDriver(
+	ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
+) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
@@ -1389,61 +1343,7 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 		}
 	}
 
-	// Validate replication options
-	if config.ReplicationPolicy != "" {
-		exists, err := api.SnapmirrorPolicyExists(ctx, config.ReplicationPolicy)
-		if err != nil {
-			return fmt.Errorf("failed to list replication policies: %v", err)
-		} else if !exists {
-			return fmt.Errorf("specified replicationPolicy %v does not exist", config.ReplicationPolicy)
-		}
-	}
-
-	if config.ReplicationSchedule != "" {
-		exists, err := api.JobScheduleExists(ctx, config.ReplicationSchedule)
-		if err != nil {
-			return fmt.Errorf("failed to list job schedules: %v", err)
-		} else if !exists {
-			return fmt.Errorf("specified replicationSchedule %v does not exist", config.ReplicationSchedule)
-		}
-	}
-
 	return nil
-}
-
-func ValidateReplicationPolicy(ctx context.Context, policyName string, api *api.Client) error {
-	if policyName == "" {
-		return nil
-	}
-
-	smPolicy, err := api.SnapmirrorPolicyGet(ctx, policyName)
-	if err != nil {
-		return fmt.Errorf("error getting snapmirror policy: %v", err)
-	}
-
-	switch smPolicy.Type() {
-	case SnapmirrorPolicyTypeSync:
-		// If the policy is synchronous we're fine
-		return nil
-	case SnapmirrorPolicyTypeAsync:
-		// If the policy is async, check below for correct rule
-		break
-	default:
-		return fmt.Errorf("unsupported mirror policy type %v, must be %v or %v", smPolicy.Type(),
-			SnapmirrorPolicyTypeSync, SnapmirrorPolicyTypeAsync)
-	}
-
-	// Check async policies for the "all_source_snapshots" rule
-	rulesList := smPolicy.SnapmirrorPolicyRules()
-	rules := rulesList.SnapmirrorPolicyRuleInfo()
-
-	for _, rule := range rules {
-		if rule.SnapmirrorLabel() == SnapmirrorPolicyRuleAll {
-			return nil
-		}
-	}
-	return fmt.Errorf("snapmirror policy %v is of type %v and is missing the %v rule", policyName,
-		SnapmirrorPolicyTypeAsync, SnapmirrorPolicyRuleAll)
 }
 
 func ValidateStoragePrefix(storagePrefix string) error {
@@ -1453,7 +1353,8 @@ func ValidateStoragePrefix(storagePrefix string) error {
 	if err != nil {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
-		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
+		err = fmt.Errorf(
+			"storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
 	}
 
 	return err
@@ -1799,8 +1700,9 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
-		return 0, fmt.Errorf("requested volume size (%d bytes) is too small; "+
-			"the minimum volume size is %d bytes", sizeBytes, MinimumVolumeSizeBytes)
+		return 0, fmt.Errorf(
+			"requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
+			sizeBytes, MinimumVolumeSizeBytes)
 	}
 	return sizeBytes, nil
 }
@@ -1883,7 +1785,8 @@ func probeForVolume(ctx context.Context, name string, client *api.Client) error 
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
-		Logc(ctx).WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
+		Logc(ctx).WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.",
+			volumeBackoff.MaxElapsedTime.Seconds())
 		return fmt.Errorf("volume %v does not exist", name)
 	} else {
 		Logc(ctx).WithField("volume", name).Debug("Volume found.")
@@ -2331,8 +2234,6 @@ func GetVolume(ctx context.Context, name string, client *api.Client, config *dri
 	return nil
 }
 
-type ontapPerformanceClass string
-
 const (
 	ontapHDD    ontapPerformanceClass = "hdd"
 	ontapHybrid ontapPerformanceClass = "hybrid"
@@ -2465,10 +2366,7 @@ func getVserverAggrAttributes(
 
 // poolName constructs the name of the pool reported by this driver instance
 func poolName(name, backendName string) string {
-
-	return fmt.Sprintf("%s_%s",
-		backendName,
-		strings.Replace(name, "-", "", -1))
+	return fmt.Sprintf("%s_%s", backendName, strings.Replace(name, "-", "", -1))
 }
 
 func InitializeStoragePoolsCommon(
@@ -2503,8 +2401,9 @@ func InitializeStoragePoolsCommon(
 		}).Warn("User has insufficient privileges to obtain aggregate info. " +
 			"Storage classes with physical attributes such as 'media' will not match pools on this backend.")
 	} else if aggrErr != nil {
-		Logc(ctx).Errorf("Could not obtain aggregate info; storage classes with physical attributes such as 'media' will"+
-			" not match pools on this backend: %v.", aggrErr)
+		Logc(ctx).Errorf(
+			"Could not obtain aggregate info; storage classes with physical attributes such as 'media' will not match"+
+				" pools on this backend: %v.", aggrErr)
 	}
 
 	// Define physical pools
@@ -2721,7 +2620,8 @@ func InitializeStoragePoolsCommon(
 // ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
 // for a field then a default should have been set in for that field in the initialize storage pools
 func ValidateStoragePools(
-	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, d StorageDriver, labelLimit int) error {
+	ctx context.Context, physicalPools, virtualPools map[string]*storage.Pool, d StorageDriver, labelLimit int,
+) error {
 
 	// Validate pool-level attributes
 	allPools := make([]*storage.Pool, 0, len(physicalPools)+len(virtualPools))
@@ -2807,8 +2707,9 @@ func ValidateStoragePools(
 				return fmt.Errorf("trident does not support QoS policies for ONTAP version")
 			}
 
-			if _, err := api.NewQosPolicyGroup(pool.InternalAttributes[QosPolicy],
-				pool.InternalAttributes[AdaptiveQosPolicy]); err != nil {
+			if _, err := api.NewQosPolicyGroup(
+				pool.InternalAttributes[QosPolicy], pool.InternalAttributes[AdaptiveQosPolicy],
+			); err != nil {
 				return err
 			}
 
@@ -2836,7 +2737,8 @@ func ValidateStoragePools(
 			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
 			if sizeBytes < MinimumVolumeSizeBytes {
 				return fmt.Errorf("invalid value for size in pool %s. Requested volume size ("+
-					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes, MinimumVolumeSizeBytes)
+					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes,
+					MinimumVolumeSizeBytes)
 			}
 		}
 
@@ -2931,8 +2833,7 @@ func getVolumeOptsCommon(
 					"provisioner":      "ONTAP",
 					"method":           "getVolumeOptsCommon",
 					"provisioningType": provisioningTypeReq.Value(),
-				}).Warnf("Expected 'thick' or 'thin' for %s; ignoring.",
-					sa.ProvisioningType)
+				}).Warnf("Expected 'thick' or 'thin' for %s; ignoring.", sa.ProvisioningType)
 			}
 		} else {
 			Logc(ctx).WithFields(log.Fields{
@@ -3075,8 +2976,10 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 	cloneConfig.ChapTargetInitiatorSecret = drivers.REDACTED
 	cloneConfig.ChapTargetUsername = drivers.REDACTED
 	cloneConfig.ChapUsername = drivers.REDACTED
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED} // redact the credentials
+	cloneConfig.Credentials = map[string]string{
+		drivers.KeyName: drivers.REDACTED,
+		drivers.KeyType: drivers.REDACTED,
+	} // redact the credentials
 	return cloneConfig
 }
 
@@ -3241,4 +3144,17 @@ func parseVolumeHandle(volumeHandle string) (svm string, flexvol string, err err
 		return "", "", fmt.Errorf("invalid volume handle")
 	}
 	return tokens[0], tokens[1], nil
+}
+
+func isFlexvolRW(ctx context.Context, ontap *api.Client, name string) (bool, error) {
+	flexvol, err := ontap.VolumeGet(name)
+	if err != nil {
+		Logc(ctx).Error(err)
+		return false, fmt.Errorf("could not get volume %v", name)
+	}
+	idAttrs := flexvol.VolumeIdAttributes()
+	if idAttrs.Type() == VolTypeRW {
+		return true, nil
+	}
+	return false, nil
 }

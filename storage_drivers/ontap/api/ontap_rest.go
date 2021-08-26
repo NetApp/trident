@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -1916,7 +1916,7 @@ func (d RestClient) PollJobStatus(
 	case models.JobStateSuccess:
 		return nil
 	case models.JobStateFailure:
-		// TOOD return a new error object that contains the message and code etc
+		// TODO return a new error object that contains the message and code etc
 		//return fmt.Errorf("%v", jobResult.Payload.Message)
 		return NewRestErrorFromPayload(jobResult.Payload)
 	default:
