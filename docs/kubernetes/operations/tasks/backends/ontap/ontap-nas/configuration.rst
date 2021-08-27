@@ -19,8 +19,8 @@ autoExportCIDRs           List of CIDRs to filter Kubernetes' node IPs against w
 clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                      ""
 clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                      ""
 trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.        ""
-username                  Username to connect to the cluster/SVM. Used for credential-based auth.
-password                  Password to connect to the cluster/SVM. Used for credential-based auth.
+username                  Username with ONTAPI privileges inside the SVM.
+password                  Username password inside the SVM. Used for credential-based auth.
 storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
 limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
 limitVolumeSize           Fail provisioning if requested volume size is above this value                                    "" (not enforced by default)
